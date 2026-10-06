@@ -6,7 +6,7 @@ Committed work is listed first. Exploratory ideas are marked as such.
 
 - S2 run: validated on 2026-10-06 in win32 (design time and runtime) and win64 (design time; the run starts cleanly): accent and Standard styles, resizing, and Click. Still to check: light mode, and the running win64 window by eye.
 - S2 fix: the button doesn't repaint when the container's BackColor changes. `UserControl_AmbientChanged` is already handled, and commit f660d83 made its check case-insensitive, but the fix is unverified. The form theme spec also forces a redraw of all child controls after a theme change.
-- Repair tbUI3Test: put back the `[IMPORTED] tbUI3` reference (version 1.0.0.1), call `UI3ApplyWindowTheme Me` in frmMain's Form_Load and Form_Activate, run it, and re-export `tbUI3Test/src`. See HANDOFF.md.
+- Validate the repaired tbUI3Test from commit 94b621b: visually run the win32 and win64 harness with `UI3ApplyWindowTheme Me`, confirm the title bar/form background/button rendering, and then test light mode separately.
 - Finish the form theme baseline (`docs/2026-10-06-form-theme-spec.md`): the drop-on `UI3FormTheme` control, live theme switching (subclass WM_SETTINGCHANGE "ImmersiveColorSet", WM_DWMCOLORIZATIONCOLORCHANGED and WM_THEMECHANGED), and the cached theme. Then check dark and light, win32 and win64, and that the IDE doesn't crash when the debugger stops.
 - S3: icon glyphs in Segoe Fluent Icons, falling back to Segoe MDL2 Assets, plus a test on a machine without Segoe UI Variable.
 - S4: windowless and transparent. In S2 the control is still windowed and clears to the container's BackColor. S4 must remove that and blend over whatever is behind the control.
@@ -15,6 +15,16 @@ Committed work is listed first. Exploratory ideas are marked as such.
 - S7: hover, pressed and disabled visuals, compared against the WinUI Gallery.
 - S8: keyboard, focus visuals, and Default and Cancel.
 - S9: coexistence with WinDevLib and a GDI+ package, with no name clashes.
+
+## Committed: reference-package review
+
+- Keep `reference-packages/ReferencePackages.twinproj` as the canonical package-laboratory snapshot and keep its loose `reference-packages/src/` mirror synchronized for code search and diffing.
+- Review WinRT's UISettings implementation for a supported Windows theme/accent path. If adopted, copy/adapt only the minimal required interfaces/helpers with attribution; do not add a WinRT package dependency.
+- Compare the planned live-theme subclassing against TBMANLIB's subclass implementation and proven PacketPilot/SPConnect patterns before finalizing UI3FormTheme.
+- Mine VBCCR18 for mature toolbox-control behavior: focus, keyboard handling, Default/Cancel semantics, persistence, designer lifecycle, and 32/64-bit patterns.
+- Review TwinTimerLib before designing animation/timing infrastructure, AutoCompleteLib before native Edit autocomplete, and OLEGuids/WinDevLibImpl before implementing COM/OLE/accessibility interfaces.
+- GdiPlus is retained in the laboratory for comparison/reference only. Direct2D/DirectWrite remains tbUI3's primary rendering architecture; do not introduce GDI/GDI+ unless a specific requirement demonstrates that the modern path cannot satisfy it.
+- Maintain third-party provenance/licence notes for any implementation fragments adapted into tbUI3.
 
 ## Committed: technical follow-ups
 

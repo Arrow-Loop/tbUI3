@@ -17,6 +17,14 @@
   - After rebuilding tbUI3, re-import the `.twinpack` into tbUI3Test (Ctrl+T, then Available Packages). `tbUI3Test/src/Packages/tbUI3` is the embedded copy.
 - Never change the class, interface or event IDs of an existing control. They are listed in `tbUI3/UI3Button-ids.json`.
 
+## Dependencies and reference packages
+
+- tbUI3 must remain self-contained apart from baseline twinBASIC/compiler references that every consumer project can reasonably be expected to have.
+- Do not add WinRT, WinDevLib, WinDevLibImpl, GdiPlus, TBMAN, VBCCR, or another TWINSERV package as a tbUI3 dependency merely because the reference project uses it.
+- `reference-packages/ReferencePackages.twinproj` is a package-archeology laboratory. Its enabled packages are there to inspect proven twinBASIC implementations.
+- When a reference implementation is useful, first check its licence and provenance. Adapt only the smallest needed portion, keep implementation plumbing private where practical, and record attribution/source details.
+- The loose `reference-packages/src/` mirror is for search and review. The validated `.twinproj` remains the canonical snapshot of the laboratory project.
+
 ## Branches
 
 - Work goes on `tbui3-dev`. Shane decides what reaches `main`.

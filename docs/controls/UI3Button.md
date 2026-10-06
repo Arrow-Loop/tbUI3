@@ -34,7 +34,8 @@ Current S3 candidate adds icon content; it is not yet validated.
 | Subtle style | `SubtleButtonStyle` resources | planned, not implemented yet |
 | PointerOver/Pressed/Disabled | Button `CommonStates` VisualStateGroup | planned S7, not implemented yet |
 | Focus visual | `UseSystemFocusVisuals`, `FocusVisualMargin=-3` | planned S8 |
-| Semantic icon glyph mapping | microsoft-ui-xaml Symbol table | source-derived dual Fluent/MDL2 mapping |
+| Semantic icon glyph mapping | microsoft-ui-xaml `icon.cpp` `CSymbolIcon::ConvertSymbolValueToGlyph` | Fluent column matches WinUI for all 197 symbols (checked 2026-10-06). The second "legacy" MDL2 table is probably unnecessary; see `../reviews/2026-10-06-s3-source-review.md` |
+| Icon font | `icon.cpp`: SymbolIcon uses Segoe Fluent Icons only | Segoe Fluent Icons; the Segoe MDL2 Assets fallback for Windows 10 is a **tbUI3 convenience** |
 | Semantic SymbolIcon size | microsoft-ui-xaml IconElement/SymbolIcon core, 20 DIPs | source-derived |
 | `Icon` / `IconGlyph` / `IconFontName` | no Button-specific WinUI property; stands in for arbitrary `Button.Content` | **tbUI3 convenience API** |
 | `IconPosition` | no Button-specific WinUI property | **tbUI3 convenience API** |

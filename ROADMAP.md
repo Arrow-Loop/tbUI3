@@ -5,16 +5,21 @@ Committed work is listed first. Exploratory ideas are marked as such.
 ## Committed: spike A (see 2026-10-06-spike-spec.md)
 
 - S2 run: validated on 2026-10-06 in win32 and win64 at design time and runtime: accent/Standard styles, resizing and Click. UI3Window dark-mode visual baseline passed in both architectures. Light mode is deferred by user choice and remains unvalidated.
-- S2 fix: the button doesn't repaint when the container's BackColor changes. `UserControl_AmbientChanged` is already handled, and commit f660d83 made its check case-insensitive, but the fix is unverified. The form theme spec also forces a redraw of all child controls after a theme change.
+- S2 fix: the button didn't repaint when the container's BackColor changed. `UserControl_AmbientChanged` is handled case-insensitively (f660d83), and UI3Window now redraws every child control after a theme change, which probably covers it. Still to check on its own: change a form's BackColor at runtime without UI3FormTheme and confirm the button repaints.
 - UI3Window baseline: win32 and win64 dark-mode runtime visuals passed; Click passed in win64. Light mode is deferred by user choice and remains unvalidated.
 - **Form theme baseline complete (2026-10-06):** 1.0.0.2 builds/imports cleanly; code-based Attach/Detach and drop-on `UI3FormTheme` both passed the runtime tests, including live accent and light/dark changes plus clean teardown in win32/win64.
-- S3: **1.0.0.3 implementation candidate is packed but fidelity review is required before validation.** The semantic Symbol mappings and 20-DIP SymbolIcon size are source-derived. `Icon`, `IconGlyph`, `IconFontName`, `IconPosition`, and `IconSpacing` are tbUI3 convenience abstractions over WinUI Button.Content; the current 8-DIP IconSpacing default is general Gallery guidance, not a Button XAML value. First gate is now a Button source-matrix review against the exact XAML/resources, then compile/import/runtime validation.
+- S3: **1.0.0.3 implementation candidate is packed but fidelity review is required before validation.** The semantic Symbol mappings and 20-DIP SymbolIcon size are source-derived. `Icon`, `IconGlyph`, `IconFontName`, `IconPosition`, and `IconSpacing` are tbUI3 convenience abstractions over WinUI Button.Content; the current 8-DIP IconSpacing default is general Gallery guidance, not a Button XAML value. The source review is done (`docs/reviews/2026-10-06-s3-source-review.md`); next is compile/import/runtime validation on Shane's PC. Before 1.0.0.3 ships, settle the review's two points: (a) probably drop the second "legacy" glyph table and use WinUI's single table with the MDL2 fallback, after one MDL2 check on the PC; (b) make `UI3Icon` values WinUI's fixed Symbol values (`&HE10B` and so on) so saved forms never shift when the table is regenerated.
 - S4: windowless and transparent. In S2 the control is still windowed and clears to the container's BackColor. S4 must remove that and blend over whatever is behind the control.
 - S5: Mica, building on UI3Window. The title bar and the #202020/#F3F3F3 background are already in place.
 - S6: per-monitor DPI. S2 uses `GetDeviceCaps(LOGPIXELSX)` on the paint DC, which gives the system DPI, not the monitor's.
 - S7: hover, pressed and disabled visuals, compared against the WinUI Gallery.
 - S8: keyboard, focus visuals, and Default and Cancel.
 - S9: coexistence with WinDevLib and a GDI+ package, with no name clashes.
+
+## Committed: housekeeping
+
+- Commit Shane's saved local tbUI3Test (with the dropped UI3FormTheme) and its `src/` export to `tbui3-dev`. The repository copy is older than his PC's.
+- Decide where `reference-packages/` lives. It adds about 112 MB of third-party package source to this repository; a separate repository (or keeping only the notes and a list of package versions) would keep tbUI3 small. Check each package's licence before it is published anywhere.
 
 ## Committed: reference-derived follow-ups
 

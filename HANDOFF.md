@@ -15,7 +15,7 @@ The decisions are in `docs/2026-10-06-first-pass-report.md` and `docs/2026-10-06
 
 ## Where things are
 
-- **Repo:** Arrow-Loop/tbUI3 (private). The work branch is `tbui3-dev`. `main` holds only the S1 commit. PR #1 (`tbui3-dev` into `main`) is open, and Shane merges it.
+- **Repo:** Arrow-Loop/tbUI3 (private). The work branch is `tbui3-dev`. `main` holds only the S1 commit. PR #1 (`tbui3-dev` into `main`) is still open; it was opened without Shane asking, and he decides whether to merge or close it.
 - **Shane's PC:** the clone is `E:\Code Projects\tbUI3`, and twinBASIC BETA 997 is in `D:\twinBASIC`. The CLI (`bin\twinBASIC_win64.exe`) can only `export` and `import`; it has no build command, so builds happen in the IDE.
 - **Stale folder:** `E:\Code Projects\WinUI 3` is an old duplicate. Ignore it.
 - **Shane's machine:** dark mode, accent #FF4343.
@@ -29,13 +29,15 @@ The decisions are in `docs/2026-10-06-first-pass-report.md` and `docs/2026-10-06
 | S2: resizing | Passed |
 | S2: win64 | Passed at runtime by eye; looks identical to win32, and Click raises the Hello World message box |
 | S2: light mode | Deferred by Shane; not validated |
-| S2: repaint when the form's BackColor changes | Bug. Cause still open (see ROADMAP) |
+| S2: repaint when the form's BackColor changes | Probably fixed by UI3Window's redraw of all child controls, but never checked on its own (see ROADMAP) |
 | UI3Window (dark/light title bar, #202020/#F3F3F3 background) | dark mode passed in win32 and win64; light mode deferred |
 | Form theme spec: drop-on control, live switching, theme cache | Passed. UI3FormTheme is in the toolbox, drops onto frmMain, replaces manual Attach/Detach, and passes the same runtime behavior tests |
 
 ## First job for the next session: compile the 1.0.0.3 S3 package
 
 The canonical tbUI3 package now contains the S3 icon candidate. The repository tbUI3Test binary was deliberately left alone because Shane's local test form contains the validated designer-dropped UI3FormTheme.
+
+The source review that ROADMAP.md put before this step is done; it is in `docs/reviews/2026-10-06-s3-source-review.md`. It found the code ready to build, and raised two points to settle before 1.0.0.3 ships: the second "legacy" glyph table is probably unnecessary, and the `UI3Icon` numbers should become WinUI's fixed Symbol values so saved forms never shift. Building first is fine; settle both before any form saves an icon you want to keep.
 
 1. Pull the latest `tbui3-dev`.
 2. Open `tbUI3/tbUI3.twinproj` in BETA 997 and check Diagnostics/build.
@@ -45,7 +47,9 @@ The canonical tbUI3 package now contains the S3 icon candidate. The repository t
 6. Test icon-only by temporarily clearing Caption, then restore it.
 7. Test at least Left and Top positions plus an enlarged button.
 8. After win32 passes, repeat runtime in win64.
+   Also run the one MDL2 check in the review (an `IconGlyph` of `ChrW(&HE8FB)` with `IconFontName` set to `Segoe MDL2 Assets`).
 9. Do not overwrite Shane's local frmMain/tbUI3Test binary from the older repository copy before its UI3FormTheme designer state is synced.
+10. Commit Shane's saved local tbUI3Test (the `.twinproj` and its `src/` export) to `tbui3-dev`, so the repository matches his PC again.
 
 
 ## Reference package laboratory

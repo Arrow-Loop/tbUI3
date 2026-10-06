@@ -27,9 +27,23 @@ D:\twinBASIC\bin\twinBASIC_win64.exe import "tbUI3\tbUI3.twinproj" "tbUI3\src\" 
 Export after saving in the IDE; import after editing files under `src/` (close the project in the
 IDE first).
 
+## Current development state
+
+- `UI3Button` is the first working Direct2D/DirectWrite control. Standard and Accent rest-state rendering, resizing and Click have been validated in win32 and win64 dark mode.
+- Package version 1.0.0.2 contains the next candidate: `UI3Window.Attach/Detach` plus the nonvisual drop-on `UI3FormTheme`, cached theme/accent state and live Windows theme/accent notifications. This 1.0.0.2 candidate is awaiting its first BETA 997 compile/runtime validation.
+- Light mode has deliberately not been validated yet.
+- The next visual milestone after the form-theme checkpoint is S3 icon glyph support; its implementation spec is already written.
+
+## Control coverage
+
+`docs/CONTROL_INVENTORY.md` is the authoritative coverage map. tbUI3 targets the broad practical WinUI 3 control/style surface, including the hundreds of documented variants represented across WinUI Gallery, while collapsing related Microsoft classes/styles into a much smaller set of VB-style toolbox families selected through properties such as `Style`, `Mode` and `Presentation`.
+
+The current inventory is reconciled against WinUI Gallery main commit `b927a6253d6b183be55b90287b8a04fde14d31a3` (2026-10-05).
+
 ## Project documents
 
 - `CHANGELOG.md` records what was done. `ROADMAP.md` records what comes next.
+- `THIRD-PARTY-NOTICES.md` records the exact open-source implementation/resource provenance adapted into the self-contained package.
 - `AGENTS.md` describes how to work on the repository.
 - `docs/` holds the design notes, including the spike A plan in `docs/2026-10-06-spike-spec.md`.
 - `tools/` holds Node scripts that edit `.twinproj` files in place, keeping every entry they don't change byte-identical.

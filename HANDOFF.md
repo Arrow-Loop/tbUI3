@@ -60,10 +60,17 @@ The source/project candidate now contains UI3FormTheme, UI3Window.Attach/Detach,
 
 - `docs/CONTROL_INVENTORY.md` is the authoritative control/variant coverage map.
 - The package goal is broad practical WinUI 3 coverage, including the hundreds of documented Gallery/style/behavior variants, **not** hundreds of toolbox entries.
-- Preserve Claude decision D6: one coherent `UI3...` control family exposes related Microsoft controls through `Style`, `Mode`, `Presentation` or other focused properties. Example: `UI3Button` covers Button, Accent, Toggle, Repeat, Hyperlink, DropDown, Split, ToggleSplit and command-bar button variants.
+- Preserve Claude decision D6: one coherent `UI3...` control family exposes related Microsoft controls through `Style`, `Mode`, `Presentation` or other focused properties. Example: `UI3Button` covers Standard, Accent, Subtle, Toggle, Repeat, Hyperlink, DropDown, Split, ToggleSplit and command-bar button variants.
 - Current Microsoft Gallery snapshot used for the inventory: 2026-10-05 main commit `b927a6253d6b183be55b90287b8a04fde14d31a3`, 125 catalog pages.
 - Fundamentals/design/accessibility pages become package-wide requirements, while platform/service pages such as Clipboard, shell notifications or AppWindow are not misrepresented as draggable controls.
 - Do not add package dependencies merely to cover a Gallery host/service. Use private native implementations, optional adapters/companions or documented existing platform facilities as appropriate.
+
+## Prepared next milestone
+
+- `docs/2026-10-06-s3-icon-spec.md` is the S3 implementation specification, ready once the 1.0.0.2 form-theme checkpoint passes.
+- Important discovery: Microsoft's Symbol table maps many semantic icons to different Unicode points in Segoe Fluent Icons versus legacy Segoe MDL2 Assets. The implementation must use dual semantic mappings rather than changing only the font family.
+- Ordinary text remains Segoe UI Variable Text with Segoe UI fallback; system icons use Segoe Fluent Icons with Segoe MDL2 Assets fallback.
+- Current Gallery also exposes SubtleButtonStyle, now recorded as part of the UI3Button family target.
 
 ## Gotchas
 

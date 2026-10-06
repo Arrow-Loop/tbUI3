@@ -27,6 +27,8 @@ Committed work is listed first. Exploratory ideas are marked as such.
 
 ## Committed: technical follow-ups
 
+- Stable public-control IDs: every new public toolbox control gets a checked-in `tbUI3/UI3<Control>-ids.json` record when first created; established FormDesignerId/ClassId/InterfaceId/EventInterfaceId values are never regenerated during ordinary work.
+
 - High contrast. The tokens currently cover only the Default (dark) and Light dictionaries.
 - DirectWrite locale. The text format hard-codes "en-us". Use the user's locale instead.
 - Old folder. `E:\Code Projects\WinUI 3` on Shane's PC is a stale duplicate of this repository. Delete it once Shane confirms. Arrow-Loop/WinUI3-twinBASIC stays as the archive of the June 2026 attempt; add a README pointer there to this repository.

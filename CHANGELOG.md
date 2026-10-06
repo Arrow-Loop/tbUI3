@@ -4,6 +4,13 @@ All notable changes to tbUI3. Dates are when the change was made, not released. 
 
 ## Unreleased
 
+### 2026-10-06, UI3IconPage first build on Shane's PC (1.0.0.5 candidate)
+
+- Shane added `txtSearch`, `picGrid` and `vsbGrid` in the page designer and built it (commit 2e022ed). `tbUI3/src` was regenerated from his project.
+- **Fixed:** opening the picker raised "Automation error" (80004005). `PropertyPage_SelectionChanged` set `Me.Changed = False` while the IDE was still handing the page its controls (`SetObjects`), and the property frame refused the status change. The line was removed, because a page starts unchanged. After the fix, Shane saw the picker open on the button's current icon (Sort, &HE174, drawn as U+E8CB).
+- **Open bug:** picking another icon and clicking OK or Apply did not change the button. Cause not yet known. `PropertyPage_ApplyChanges` temporarily shows a diagnostic message box (whether it ran, the value, any error when setting `Icon`, and what `Icon` reads back as). It must be removed once the cause is found.
+- Added mouse-wheel scrolling to the grid (`picGrid_MouseWheel`, a twinBASIC PictureBox event; one notch moves one row). Not built yet.
+
 ### 2026-10-06, UI3IconPage icon picker (1.0.0.5 candidate, not built)
 
 - Started from Shane's spike page (commit a5af8a4). `tbUI3/src` was regenerated from his project, because the CLI export needs absolute paths and failed.

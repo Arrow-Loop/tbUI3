@@ -35,7 +35,7 @@ The decisions are in `docs/2026-10-06-first-pass-report.md` and `docs/2026-10-06
 | S3 icons (1.0.0.3): build, designer and runtime rendering, icon left and top, enlarged button, icon-only, MDL2 font check, win64 | Passed on Shane's PC, 2026-10-06 |
 | 1.0.0.4: Caption can be cleared in the designer | Passed on Shane's PC in win32 and win64, 2026-10-06 |
 | Property page from `(Custom)` → `...` | Works (spike, 2026-10-06); the per-property `[PropertyPage]` link does not work in BETA 997 |
-| 1.0.0.5: UI3IconPage searchable icon picker | Written, not built. Needs `txtSearch`, `picGrid` and `vsbGrid` added in the page designer |
+| 1.0.0.5: UI3IconPage searchable icon picker | Built and opens on Shane's PC. OK and Apply do not set `Icon` yet; `ApplyChanges` has a temporary diagnostic message box to remove once fixed |
 
 ## First job for the next session
 

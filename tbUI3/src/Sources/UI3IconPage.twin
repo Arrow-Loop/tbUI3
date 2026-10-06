@@ -38,23 +38,31 @@ Class UI3IconPage
         m_Selected = 0
         If Me.SelectedControls.Count > 0 Then
             On Error Resume Next
-            m_Selected = CLng(CallByName(Me.SelectedControls(0), "Icon", VbGet))
+            m_Selected = CLng(CallByName(Me.SelectedControls(0), "Icon", vbGet))
             On Error GoTo 0
         End If
         txtSearch.Text = ""
         ApplyFilter
         ScrollToSelected
         UpdateInfo
-        Me.Changed = False
     End Sub
 
     Private Sub PropertyPage_ApplyChanges()
+        ' DIAGNOSTIC (temporary): reports what Apply does, to find why the icon was not set.
+        Dim report As String
         Dim ctl As Object
+        report = "ApplyChanges ran." & vbCrLf & "Selected controls: " & Me.SelectedControls.Count & vbCrLf & "Value to set: " & m_Selected
         For Each ctl In Me.SelectedControls
             On Error Resume Next
-            CallByName ctl, "Icon", VbLet, m_Selected
+            Err.Clear
+            CallByName ctl, "Icon", vbLet, m_Selected
+            If Err.Number <> 0 Then report = report & vbCrLf & "Set failed: " & Err.Number & " " & Err.Description
+            Err.Clear
+            report = report & vbCrLf & "Icon reads back as: " & CallByName(ctl, "Icon", vbGet)
+            If Err.Number <> 0 Then report = report & vbCrLf & "Read back failed: " & Err.Number & " " & Err.Description
             On Error GoTo 0
         Next
+        MsgBox report, vbInformation, "UI3IconPage diagnostic"
     End Sub
 
     Private Sub LayoutControls()
@@ -361,6 +369,19 @@ Failed:
 
     Private Sub vsbGrid_Scroll()
         picGrid.Refresh
+    End Sub
+
+    Private Sub picGrid_MouseWheel(ByVal Delta As Integer, ByVal Horizontal As Boolean)
+        ' One wheel notch (WHEEL_DELTA = 120) moves one row; smaller deltas still move one row.
+        If Horizontal Or Not vsbGrid.Enabled Then Exit Sub
+        Dim notches As Long
+        notches = Delta \ 120
+        If notches = 0 Then notches = Sgn(Delta)
+        Dim newValue As Long
+        newValue = vsbGrid.Value - notches
+        If newValue < vsbGrid.Min Then newValue = vsbGrid.Min
+        If newValue > vsbGrid.Max Then newValue = vsbGrid.Max
+        vsbGrid.Value = newValue
     End Sub
 
     Private Sub UpdateInfo()

@@ -35,6 +35,8 @@ The decisions are in `docs/2026-10-06-first-pass-report.md` and `docs/2026-10-06
 
 ## First job for the next session: validate the 1.0.0.2 form-theme engine
 
+**Final overnight structural check:** the canonical tbUI3 package matches its loose package mirror byte-for-byte for all current Sources/descriptors and Settings. tbUI3Test's packed frmMain/Settings match its loose mirror, and its 12-file embedded tbUI3 package matches the canonical package exactly. This is not compiler/runtime validation.
+
 The source/project candidate now contains UI3FormTheme, UI3Window.Attach/Detach, cached theme/accent state and live subclass notifications.
 
 1. Pull the latest tbui3-dev and open tbUI3/tbUI3.twinproj in BETA 997.

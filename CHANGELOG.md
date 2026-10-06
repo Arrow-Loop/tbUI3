@@ -10,6 +10,8 @@ All notable changes to tbUI3. Dates are when the change was made, not released. 
 - **Fixed:** opening the picker raised "Automation error" (80004005). `PropertyPage_SelectionChanged` set `Me.Changed = False` while the IDE was still handing the page its controls (`SetObjects`), and the property frame refused the status change. The line was removed, because a page starts unchanged. After the fix, Shane saw the picker open on the button's current icon (Sort, &HE174, drawn as U+E8CB).
 - **Open bug:** picking another icon and clicking OK or Apply did not change the button. Cause not yet known. `PropertyPage_ApplyChanges` temporarily shows a diagnostic message box (whether it ran, the value, any error when setting `Icon`, and what `Icon` reads back as). It must be removed once the cause is found.
 - Added mouse-wheel scrolling to the grid (`picGrid_MouseWheel`, a twinBASIC PictureBox event; one notch moves one row). Not built yet.
+- Added `tools/twinproj-src.mjs` (compare, extract, patch between a `.twinproj` and its `src/`), the scripts the cloud sessions had been using from a temp folder. Checked: compare reports all 15 entries the same, and a no-op patch leaves the project byte-identical.
+- HANDOFF.md now holds the next steps for the session after this one, including what to do if the Apply test fails.
 
 ### 2026-10-06, UI3IconPage icon picker (1.0.0.5 candidate, not built)
 

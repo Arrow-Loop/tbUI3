@@ -3,20 +3,29 @@
 [InterfaceId("04830CFD-8885-44BA-B656-3BE3DC1EB5B5")]
 [EventInterfaceId("9537C7F3-9248-4E57-A001-3F7866775C78")]
 [COMControl]
-[Description("tbUI3 button (WinUI equivalent: Button). Spike S2: drawn with Direct2D and DirectWrite.")]
+[Description("tbUI3 button. Direct2D/DirectWrite WinUI rendering with semantic system-icon support.")]
 Public Class UI3Button
 
-    ' Spike S2: rest state of WinUI's DefaultButtonStyle and AccentButtonStyle
-    ' (Button_themeresources.xaml), drawn through an ID2D1DCRenderTarget bound to the
-    ' paint DC. Hover, pressed, disabled and focus states come in later spike steps.
+    ' S2 implements the rest state of WinUI's DefaultButtonStyle and AccentButtonStyle.
+    ' S3 adds semantic icon content while preserving those visuals. Hover, pressed,
+    ' disabled and focus states remain later roadmap steps.
 
     Public Event Click()
 
     Private Const DEFAULT_CAPTION As String = "Button"
     Private Const DEFAULT_STYLE As Long = 0
+    Private Const DEFAULT_ICON As Long = 0
+    Private Const DEFAULT_ICON_GLYPH As String = ""
+    Private Const DEFAULT_ICON_FONT_NAME As String = ""
+    Private Const DEFAULT_ICON_POSITION As Long = 0
 
     Private m_Caption As String
     Private m_Style As UI3ButtonStyle
+    Private m_Icon As UI3Icon
+    Private m_IconGlyph As String
+    Private m_IconFontName As String
+    Private m_IconPosition As UI3IconPosition
+    Private m_IconSpacing As Single
     Private m_Target As ID2D1DCRenderTarget
 
     Public Property Get Caption() As String
@@ -39,19 +48,91 @@ Public Class UI3Button
         UserControl.Refresh
     End Property
 
+    [Description("Semantic WinUI symbol icon. tbUI3 selects the matching Segoe Fluent Icons or Segoe MDL2 Assets glyph.")]
+    Public Property Get Icon() As UI3Icon
+        Icon = m_Icon
+    End Property
+
+    Public Property Let Icon(ByVal Value As UI3Icon)
+        m_Icon = Value
+        PropertyChanged "Icon"
+        UserControl.Refresh
+    End Property
+
+    [Description("Advanced raw glyph override. When non-empty, this takes precedence over Icon.")]
+    Public Property Get IconGlyph() As String
+        IconGlyph = m_IconGlyph
+    End Property
+
+    Public Property Let IconGlyph(ByVal Value As String)
+        m_IconGlyph = Value
+        PropertyChanged "IconGlyph"
+        UserControl.Refresh
+    End Property
+
+    [Description("Font family used only with an explicit IconGlyph. Leave empty for Segoe Fluent Icons with Segoe MDL2 Assets fallback.")]
+    Public Property Get IconFontName() As String
+        IconFontName = m_IconFontName
+    End Property
+
+    Public Property Let IconFontName(ByVal Value As String)
+        m_IconFontName = Value
+        PropertyChanged "IconFontName"
+        UserControl.Refresh
+    End Property
+
+    [Description("Position of the icon relative to Caption.")]
+    Public Property Get IconPosition() As UI3IconPosition
+        IconPosition = m_IconPosition
+    End Property
+
+    Public Property Let IconPosition(ByVal Value As UI3IconPosition)
+        If Value < ui3IconLeft Or Value > ui3IconBottom Then Err.Raise 380
+        m_IconPosition = Value
+        PropertyChanged "IconPosition"
+        UserControl.Refresh
+    End Property
+
+    [Description("Gap in DIPs between icon and Caption. Default 8, following WinUI Gallery spacing guidance.")]
+    Public Property Get IconSpacing() As Single
+        IconSpacing = m_IconSpacing
+    End Property
+
+    Public Property Let IconSpacing(ByVal Value As Single)
+        If Value < 0 Then Err.Raise 380
+        m_IconSpacing = Value
+        PropertyChanged "IconSpacing"
+        UserControl.Refresh
+    End Property
+
     Private Sub UserControl_InitProperties()
         m_Caption = DEFAULT_CAPTION
         m_Style = DEFAULT_STYLE
+        m_Icon = DEFAULT_ICON
+        m_IconGlyph = DEFAULT_ICON_GLYPH
+        m_IconFontName = DEFAULT_ICON_FONT_NAME
+        m_IconPosition = DEFAULT_ICON_POSITION
+        m_IconSpacing = ButtonIconSpacingDefault
     End Sub
 
     Private Sub UserControl_ReadProperties(PropBag As PropertyBag)
         m_Caption = PropBag.ReadProperty("Caption", DEFAULT_CAPTION)
         m_Style = PropBag.ReadProperty("Style", DEFAULT_STYLE)
+        m_Icon = PropBag.ReadProperty("Icon", DEFAULT_ICON)
+        m_IconGlyph = PropBag.ReadProperty("IconGlyph", DEFAULT_ICON_GLYPH)
+        m_IconFontName = PropBag.ReadProperty("IconFontName", DEFAULT_ICON_FONT_NAME)
+        m_IconPosition = PropBag.ReadProperty("IconPosition", DEFAULT_ICON_POSITION)
+        m_IconSpacing = PropBag.ReadProperty("IconSpacing", ButtonIconSpacingDefault)
     End Sub
 
     Private Sub UserControl_WriteProperties(PropBag As PropertyBag)
         PropBag.WriteProperty "Caption", m_Caption, DEFAULT_CAPTION
         PropBag.WriteProperty "Style", m_Style, DEFAULT_STYLE
+        PropBag.WriteProperty "Icon", m_Icon, DEFAULT_ICON
+        PropBag.WriteProperty "IconGlyph", m_IconGlyph, DEFAULT_ICON_GLYPH
+        PropBag.WriteProperty "IconFontName", m_IconFontName, DEFAULT_ICON_FONT_NAME
+        PropBag.WriteProperty "IconPosition", m_IconPosition, DEFAULT_ICON_POSITION
+        PropBag.WriteProperty "IconSpacing", m_IconSpacing, ButtonIconSpacingDefault
     End Sub
 
     Private Sub UserControl_Resize()
@@ -100,9 +181,9 @@ Public Class UI3Button
         drawing = True
         DrawButton w, h
         drawing = False
+
         Dim hr As Long
         hr = m_Target.EndDraw(0, 0)
-        ' D2DERR_RECREATE_TARGET or any other failure: rebuild the target on the next paint.
         If hr < 0 Then
             PaintWithDirect2D = hr
             Set m_Target = Nothing
@@ -134,11 +215,6 @@ Failed:
         t = ButtonBorderThemeThickness
 
         If m_Style = ui3ButtonAccent Then
-            ' AccentButtonBackground = AccentFillColorDefaultBrush:
-            ' SystemAccentColorLight2 (dark), SystemAccentColorDark1 (light).
-            ' AccentButtonForeground = TextOnAccentFillColorPrimaryBrush.
-            ' AccentButtonBorderBrush = AccentControlElevationBorderBrush, flipped (ScaleY -1) in both themes.
-            ' AccentButtonStyle BackgroundSizing = OuterBorderEdge.
             If dark Then
                 fill = AccentShade(ACCENT_LIGHT2)
                 foreground = DARK_TextOnAccentFillColorPrimary
@@ -153,11 +229,6 @@ Failed:
             borderAtBottom = True
             fillInset = 0
         Else
-            ' ButtonBackground = ControlFillColorDefaultBrush.
-            ' ButtonForeground = TextFillColorPrimaryBrush.
-            ' ButtonBorderBrush = ControlElevationBorderBrush: not flipped in the dark
-            ' dictionary (lighter edge at the top), flipped in light (darker edge at the bottom).
-            ' DefaultButtonStyle BackgroundSizing = InnerBorderEdge.
             If dark Then
                 fill = DARK_ControlFillColorDefault
                 foreground = DARK_TextFillColorPrimary
@@ -174,8 +245,6 @@ Failed:
             fillInset = t
         End If
 
-        ' The control is windowed for now, so paint the container's colour behind the
-        ' translucent WinUI fills and the rounded corners.
         backdrop = ColorFromArgb(ArgbFromOleColor(ContainerBackColor()))
         m_Target.Clear backdrop
 
@@ -193,8 +262,27 @@ Failed:
         box = RoundedRect(t / 2, t / 2, w - t / 2, h - t / 2, r - t / 2)
         m_Target.DrawRoundedRectangle box, border, t, 0
 
-        DrawCenteredText m_Target, m_Caption, ButtonPaddingLeft, ButtonPaddingTop, _
+        Dim iconFamily As String
+        Dim glyph As String
+        ResolveIconContent glyph, iconFamily
+
+        DrawButtonContent m_Target, m_Caption, glyph, iconFamily, SymbolIconDefaultFontSize, _
+            m_IconPosition, m_IconSpacing, ButtonPaddingLeft, ButtonPaddingTop, _
             w - ButtonPaddingRight, h - ButtonPaddingBottom, foreground
+    End Sub
+
+    Private Sub ResolveIconContent(ByRef Glyph As String, ByRef FontFamily As String)
+        Glyph = ""
+        FontFamily = ""
+
+        If Len(m_IconGlyph) <> 0 Then
+            Glyph = m_IconGlyph
+            FontFamily = m_IconFontName
+            If Len(FontFamily) = 0 Then FontFamily = SystemIconFontFamily()
+        ElseIf m_Icon <> ui3IconNone Then
+            FontFamily = SystemIconFontFamily()
+            Glyph = SemanticIconGlyph(m_Icon, FontFamily)
+        End If
     End Sub
 
     Private Function ContainerBackColor() As Long
@@ -203,7 +291,6 @@ Failed:
         ContainerBackColor = UserControl.Ambient.BackColor
     End Function
 
-    ' Visible evidence when Direct2D fails, so a spike run shows the error code.
     Private Sub PaintFailure(ByVal hr As Long)
         On Error Resume Next
         UserControl.ScaleMode = vbPixels

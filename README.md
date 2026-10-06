@@ -32,7 +32,7 @@ IDE first).
 - `UI3Button` is the first working Direct2D/DirectWrite control. Standard and Accent rest-state rendering, resizing and Click have been validated in win32 and win64 dark mode.
 - Package version 1.0.0.2 contains the validated form-theme baseline: `UI3Window.Attach/Detach` plus the nonvisual drop-on `UI3FormTheme`, cached theme/accent state and live Windows theme/accent notifications.
 - Live light/dark switching has been validated during runtime testing.
-- The active implementation milestone is S3 icon glyph support; its implementation spec is already written.
+- The active implementation milestone is S3 icon glyph support. Package version 1.0.0.3 contains the first packed candidate and awaits BETA 997 compile/runtime validation.
 
 ## Control coverage
 

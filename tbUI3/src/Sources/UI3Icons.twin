@@ -1,0 +1,428 @@
+' Semantic WinUI icon mapping.
+'
+' Generated from microsoft-ui-xaml docs/design-notes/symbol-enum-spec.md,
+' main commit f1d1408bdeee58d077efb763063fd059b1f12c4a (2026-10-06).
+' Microsoft maps many semantic symbols to different PUA code points in
+' Segoe Fluent Icons and legacy Segoe MDL2 Assets. Keep both mappings.
+
+Private Module UI3Icons
+
+    Private Const FLUENT_ICON_FONT As String = "Segoe Fluent Icons"
+    Private Const LEGACY_ICON_FONT As String = "Segoe MDL2 Assets"
+
+    Public Function SystemIconFontFamily() As String
+        If FontFamilyExists(FLUENT_ICON_FONT) Then
+            SystemIconFontFamily = FLUENT_ICON_FONT
+        Else
+            SystemIconFontFamily = LEGACY_ICON_FONT
+        End If
+    End Function
+
+    Public Function SemanticIconGlyph(ByVal Icon As UI3Icon, ByVal FontFamily As String) As String
+        Dim codePoint As Long
+        Dim legacy As Boolean
+
+        If Icon = ui3IconNone Then Exit Function
+        legacy = (StrComp(FontFamily, LEGACY_ICON_FONT, vbTextCompare) = 0)
+
+        Select Case Icon
+            Case ui3IconAccept
+                If legacy Then codePoint = &HE10B& Else codePoint = &HE8FB&
+            Case ui3IconAccount
+                If legacy Then codePoint = &HE168& Else codePoint = &HE910&
+            Case ui3IconAdd
+                If legacy Then codePoint = &HE109& Else codePoint = &HE710&
+            Case ui3IconAddFriend
+                If legacy Then codePoint = &HE1E2& Else codePoint = &HE8FA&
+            Case ui3IconAdmin
+                If legacy Then codePoint = &HE1A7& Else codePoint = &HE7EF&
+            Case ui3IconAlignCenter
+                If legacy Then codePoint = &HE1A1& Else codePoint = &HE8E3&
+            Case ui3IconAlignLeft
+                If legacy Then codePoint = &HE1A2& Else codePoint = &HE8E4&
+            Case ui3IconAlignRight
+                If legacy Then codePoint = &HE1A0& Else codePoint = &HE8E2&
+            Case ui3IconAllApps
+                If legacy Then codePoint = &HE179& Else codePoint = &HE71D&
+            Case ui3IconAttach
+                If legacy Then codePoint = &HE16C& Else codePoint = &HE723&
+            Case ui3IconAttachCamera
+                If legacy Then codePoint = &HE12D& Else codePoint = &HE8A2&
+            Case ui3IconAudio
+                If legacy Then codePoint = &HE189& Else codePoint = &HE8D6&
+            Case ui3IconBack
+                If legacy Then codePoint = &HE112& Else codePoint = &HE72B&
+            Case ui3IconBackToWindow
+                If legacy Then codePoint = &HE1D8& Else codePoint = &HE73F&
+            Case ui3IconBlockContact
+                If legacy Then codePoint = &HE1E0& Else codePoint = &HE8F8&
+            Case ui3IconBold
+                If legacy Then codePoint = &HE19B& Else codePoint = &HE8DD&
+            Case ui3IconBookmarks
+                If legacy Then codePoint = &HE12F& Else codePoint = &HE8A4&
+            Case ui3IconBrowsePhotos
+                If legacy Then codePoint = &HE155& Else codePoint = &HE7C5&
+            Case ui3IconBullets
+                If legacy Then codePoint = &HE133& Else codePoint = &HE8FD&
+            Case ui3IconCalculator
+                If legacy Then codePoint = &HE1D0& Else codePoint = &HE8EF&
+            Case ui3IconCalendar
+                If legacy Then codePoint = &HE163& Else codePoint = &HE787&
+            Case ui3IconCalendarDay
+                If legacy Then codePoint = &HE161& Else codePoint = &HE8BF&
+            Case ui3IconCalendarReply
+                If legacy Then codePoint = &HE1DB& Else codePoint = &HE8F5&
+            Case ui3IconCalendarWeek
+                If legacy Then codePoint = &HE162& Else codePoint = &HE8C0&
+            Case ui3IconCamera
+                If legacy Then codePoint = &HE114& Else codePoint = &HE722&
+            Case ui3IconCancel
+                If legacy Then codePoint = &HE10A& Else codePoint = &HE711&
+            Case ui3IconCaption
+                If legacy Then codePoint = &HE15A& Else codePoint = &HE8BA&
+            Case ui3IconCellPhone
+                If legacy Then codePoint = &HE1C9& Else codePoint = &HE8EA&
+            Case ui3IconCharacter
+                If legacy Then codePoint = &HE164& Else codePoint = &HE8C1&
+            Case ui3IconClear
+                If legacy Then codePoint = &HE106& Else codePoint = &HE894&
+            Case ui3IconClearSelection
+                If legacy Then codePoint = &HE1C5& Else codePoint = &HE8E6&
+            Case ui3IconClock
+                If legacy Then codePoint = &HE121& Else codePoint = &HE823&
+            Case ui3IconClosedCaption
+                If legacy Then codePoint = &HE190& Else codePoint = &HE7F0&
+            Case ui3IconClosePane
+                If legacy Then codePoint = &HE127& Else codePoint = &HE89F&
+            Case ui3IconComment
+                If legacy Then codePoint = &HE134& Else codePoint = &HE90A&
+            Case ui3IconContact
+                If legacy Then codePoint = &HE13D& Else codePoint = &HE77B&
+            Case ui3IconContact2
+                If legacy Then codePoint = &HE187& Else codePoint = &HE8D4&
+            Case ui3IconContactInfo
+                If legacy Then codePoint = &HE136& Else codePoint = &HE779&
+            Case ui3IconContactPresence
+                If legacy Then codePoint = &HE181& Else codePoint = &HE8CF&
+            Case ui3IconCopy
+                If legacy Then codePoint = &HE16F& Else codePoint = &HE8C8&
+            Case ui3IconCrop
+                If legacy Then codePoint = &HE123& Else codePoint = &HE7A8&
+            Case ui3IconCut
+                If legacy Then codePoint = &HE16B& Else codePoint = &HE8C6&
+            Case ui3IconDelete
+                If legacy Then codePoint = &HE107& Else codePoint = &HE74D&
+            Case ui3IconDirections
+                If legacy Then codePoint = &HE1D1& Else codePoint = &HE8F0&
+            Case ui3IconDisableUpdates
+                If legacy Then codePoint = &HE194& Else codePoint = &HE8D8&
+            Case ui3IconDisconnectDrive
+                If legacy Then codePoint = &HE17A& Else codePoint = &HE8CD&
+            Case ui3IconDislike
+                If legacy Then codePoint = &HE19E& Else codePoint = &HE8E0&
+            Case ui3IconDockBottom
+                If legacy Then codePoint = &HE147& Else codePoint = &HE90E&
+            Case ui3IconDockLeft
+                If legacy Then codePoint = &HE145& Else codePoint = &HE90C&
+            Case ui3IconDockRight
+                If legacy Then codePoint = &HE146& Else codePoint = &HE90D&
+            Case ui3IconDocument
+                If legacy Then codePoint = &HE130& Else codePoint = &HE8A5&
+            Case ui3IconDownload
+                If legacy Then codePoint = &HE118& Else codePoint = &HE896&
+            Case ui3IconEdit
+                If legacy Then codePoint = &HE104& Else codePoint = &HE70F&
+            Case ui3IconEmoji
+                If legacy Then codePoint = &HE11D& Else codePoint = &HE899&
+            Case ui3IconEmoji2
+                If legacy Then codePoint = &HE170& Else codePoint = &HE76E&
+            Case ui3IconFavorite
+                If legacy Then codePoint = &HE113& Else codePoint = &HE734&
+            Case ui3IconFilter
+                If legacy Then codePoint = &HE16E& Else codePoint = &HE71C&
+            Case ui3IconFind
+                If legacy Then codePoint = &HE11A& Else codePoint = &HE721&
+            Case ui3IconFlag
+                If legacy Then codePoint = &HE129& Else codePoint = &HE7C1&
+            Case ui3IconFolder
+                If legacy Then codePoint = &HE188& Else codePoint = &HE8B7&
+            Case ui3IconFont
+                If legacy Then codePoint = &HE185& Else codePoint = &HE8D2&
+            Case ui3IconFontColor
+                If legacy Then codePoint = &HE186& Else codePoint = &HE8D3&
+            Case ui3IconFontDecrease
+                If legacy Then codePoint = &HE1C6& Else codePoint = &HE8E7&
+            Case ui3IconFontIncrease
+                If legacy Then codePoint = &HE1C7& Else codePoint = &HE8E8&
+            Case ui3IconFontSize
+                If legacy Then codePoint = &HE1C8& Else codePoint = &HE8E9&
+            Case ui3IconForward
+                If legacy Then codePoint = &HE111& Else codePoint = &HE72A&
+            Case ui3IconFourBars
+                If legacy Then codePoint = &HE1E9& Else codePoint = &HE908&
+            Case ui3IconFullScreen
+                If legacy Then codePoint = &HE1D9& Else codePoint = &HE740&
+            Case ui3IconGlobalNavigationButton
+                If legacy Then codePoint = &HE700& Else codePoint = &HE700&
+            Case ui3IconGlobe
+                If legacy Then codePoint = &HE12B& Else codePoint = &HE774&
+            Case ui3IconGo
+                If legacy Then codePoint = &HE143& Else codePoint = &HE8AD&
+            Case ui3IconGoToStart
+                If legacy Then codePoint = &HE1E4& Else codePoint = &HE8FC&
+            Case ui3IconGoToToday
+                If legacy Then codePoint = &HE184& Else codePoint = &HE8D1&
+            Case ui3IconHangUp
+                If legacy Then codePoint = &HE137& Else codePoint = &HE778&
+            Case ui3IconHelp
+                If legacy Then codePoint = &HE11B& Else codePoint = &HE897&
+            Case ui3IconHideBcc
+                If legacy Then codePoint = &HE16A& Else codePoint = &HE8C5&
+            Case ui3IconHighlight
+                If legacy Then codePoint = &HE193& Else codePoint = &HE7E6&
+            Case ui3IconHome
+                If legacy Then codePoint = &HE10F& Else codePoint = &HE80F&
+            Case ui3IconImport
+                If legacy Then codePoint = &HE150& Else codePoint = &HE8B5&
+            Case ui3IconImportAll
+                If legacy Then codePoint = &HE151& Else codePoint = &HE8B6&
+            Case ui3IconImportant
+                If legacy Then codePoint = &HE171& Else codePoint = &HE8C9&
+            Case ui3IconItalic
+                If legacy Then codePoint = &HE199& Else codePoint = &HE8DB&
+            Case ui3IconKeyboard
+                If legacy Then codePoint = &HE144& Else codePoint = &HE765&
+            Case ui3IconLeaveChat
+                If legacy Then codePoint = &HE11F& Else codePoint = &HE89B&
+            Case ui3IconLibrary
+                If legacy Then codePoint = &HE1D3& Else codePoint = &HE8F1&
+            Case ui3IconLike
+                If legacy Then codePoint = &HE19F& Else codePoint = &HE8E1&
+            Case ui3IconLikeDislike
+                If legacy Then codePoint = &HE19D& Else codePoint = &HE8DF&
+            Case ui3IconLink
+                If legacy Then codePoint = &HE167& Else codePoint = &HE71B&
+            Case ui3IconList
+                If legacy Then codePoint = &HE14C& Else codePoint = &HEA37&
+            Case ui3IconMail
+                If legacy Then codePoint = &HE119& Else codePoint = &HE715&
+            Case ui3IconMailFilled
+                If legacy Then codePoint = &HE135& Else codePoint = &HE8A8&
+            Case ui3IconMailForward
+                If legacy Then codePoint = &HE120& Else codePoint = &HE89C&
+            Case ui3IconMailReply
+                If legacy Then codePoint = &HE172& Else codePoint = &HE8CA&
+            Case ui3IconMailReplyAll
+                If legacy Then codePoint = &HE165& Else codePoint = &HE8C2&
+            Case ui3IconManage
+                If legacy Then codePoint = &HE178& Else codePoint = &HE912&
+            Case ui3IconMap
+                If legacy Then codePoint = &HE1C4& Else codePoint = &HE707&
+            Case ui3IconMapDrive
+                If legacy Then codePoint = &HE17B& Else codePoint = &HE8CE&
+            Case ui3IconMapPin
+                If legacy Then codePoint = &HE139& Else codePoint = &HE7B7&
+            Case ui3IconMemo
+                If legacy Then codePoint = &HE1D5& Else codePoint = &HE77C&
+            Case ui3IconMessage
+                If legacy Then codePoint = &HE15F& Else codePoint = &HE8BD&
+            Case ui3IconMicrophone
+                If legacy Then codePoint = &HE1D6& Else codePoint = &HE720&
+            Case ui3IconMore
+                If legacy Then codePoint = &HE10C& Else codePoint = &HE712&
+            Case ui3IconMoveToFolder
+                If legacy Then codePoint = &HE19C& Else codePoint = &HE8DE&
+            Case ui3IconMusicInfo
+                If legacy Then codePoint = &HE142& Else codePoint = &HE90B&
+            Case ui3IconMute
+                If legacy Then codePoint = &HE198& Else codePoint = &HE74F&
+            Case ui3IconNewFolder
+                If legacy Then codePoint = &HE1DA& Else codePoint = &HE8F4&
+            Case ui3IconNewWindow
+                If legacy Then codePoint = &HE17C& Else codePoint = &HE78B&
+            Case ui3IconNext
+                If legacy Then codePoint = &HE101& Else codePoint = &HE893&
+            Case ui3IconOneBar
+                If legacy Then codePoint = &HE1E6& Else codePoint = &HE905&
+            Case ui3IconOpenFile
+                If legacy Then codePoint = &HE1A5& Else codePoint = &HE8E5&
+            Case ui3IconOpenLocal
+                If legacy Then codePoint = &HE197& Else codePoint = &HE8DA&
+            Case ui3IconOpenPane
+                If legacy Then codePoint = &HE126& Else codePoint = &HE8A0&
+            Case ui3IconOpenWith
+                If legacy Then codePoint = &HE17D& Else codePoint = &HE7AC&
+            Case ui3IconOrientation
+                If legacy Then codePoint = &HE14F& Else codePoint = &HE8B4&
+            Case ui3IconOtherUser
+                If legacy Then codePoint = &HE1A6& Else codePoint = &HE7EE&
+            Case ui3IconOutlineStar
+                If legacy Then codePoint = &HE1CE& Else codePoint = &HE734&
+            Case ui3IconPage
+                If legacy Then codePoint = &HE132& Else codePoint = &HE729&
+            Case ui3IconPage2
+                If legacy Then codePoint = &HE160& Else codePoint = &HE7C3&
+            Case ui3IconPaste
+                If legacy Then codePoint = &HE16D& Else codePoint = &HE77F&
+            Case ui3IconPause
+                If legacy Then codePoint = &HE103& Else codePoint = &HE769&
+            Case ui3IconPeople
+                If legacy Then codePoint = &HE125& Else codePoint = &HE716&
+            Case ui3IconPermissions
+                If legacy Then codePoint = &HE192& Else codePoint = &HE8D7&
+            Case ui3IconPhone
+                If legacy Then codePoint = &HE13A& Else codePoint = &HE717&
+            Case ui3IconPhoneBook
+                If legacy Then codePoint = &HE1D4& Else codePoint = &HE780&
+            Case ui3IconPictures
+                If legacy Then codePoint = &HE158& Else codePoint = &HE8B9&
+            Case ui3IconPin
+                If legacy Then codePoint = &HE141& Else codePoint = &HE718&
+            Case ui3IconPlaceholder
+                If legacy Then codePoint = &HE18A& Else codePoint = &HE18A&
+            Case ui3IconPlay
+                If legacy Then codePoint = &HE102& Else codePoint = &HE768&
+            Case ui3IconPostUpdate
+                If legacy Then codePoint = &HE1D7& Else codePoint = &HE8F3&
+            Case ui3IconPreview
+                If legacy Then codePoint = &HE295& Else codePoint = &HE8FF&
+            Case ui3IconPreviewLink
+                If legacy Then codePoint = &HE12A& Else codePoint = &HE8A1&
+            Case ui3IconPrevious
+                If legacy Then codePoint = &HE100& Else codePoint = &HE892&
+            Case ui3IconPrint
+                If legacy Then codePoint = &HE749& Else codePoint = &HE749&
+            Case ui3IconPriority
+                If legacy Then codePoint = &HE182& Else codePoint = &HE8D0&
+            Case ui3IconProtectedDocument
+                If legacy Then codePoint = &HE131& Else codePoint = &HE8A6&
+            Case ui3IconRead
+                If legacy Then codePoint = &HE166& Else codePoint = &HE8C3&
+            Case ui3IconRedo
+                If legacy Then codePoint = &HE10D& Else codePoint = &HE7A6&
+            Case ui3IconRefresh
+                If legacy Then codePoint = &HE149& Else codePoint = &HE72C&
+            Case ui3IconRemote
+                If legacy Then codePoint = &HE148& Else codePoint = &HE8AF&
+            Case ui3IconRemove
+                If legacy Then codePoint = &HE108& Else codePoint = &HE738&
+            Case ui3IconRename
+                If legacy Then codePoint = &HE13E& Else codePoint = &HE8AC&
+            Case ui3IconRepair
+                If legacy Then codePoint = &HE15E& Else codePoint = &HE90F&
+            Case ui3IconRepeatAll
+                If legacy Then codePoint = &HE1CD& Else codePoint = &HE8EE&
+            Case ui3IconRepeatOne
+                If legacy Then codePoint = &HE1CC& Else codePoint = &HE8ED&
+            Case ui3IconReportHacked
+                If legacy Then codePoint = &HE1DE& Else codePoint = &HE730&
+            Case ui3IconReShare
+                If legacy Then codePoint = &HE1CA& Else codePoint = &HE8EB&
+            Case ui3IconRotate
+                If legacy Then codePoint = &HE14A& Else codePoint = &HE7AD&
+            Case ui3IconRotateCamera
+                If legacy Then codePoint = &HE124& Else codePoint = &HE89E&
+            Case ui3IconSave
+                If legacy Then codePoint = &HE105& Else codePoint = &HE74E&
+            Case ui3IconSaveLocal
+                If legacy Then codePoint = &HE159& Else codePoint = &HE78C&
+            Case ui3IconScan
+                If legacy Then codePoint = &HE294& Else codePoint = &HE8FE&
+            Case ui3IconSelectAll
+                If legacy Then codePoint = &HE14E& Else codePoint = &HE8B3&
+            Case ui3IconSend
+                If legacy Then codePoint = &HE122& Else codePoint = &HE724&
+            Case ui3IconSetLockScreen
+                If legacy Then codePoint = &HE18C& Else codePoint = &HE7B5&
+            Case ui3IconSetTile
+                If legacy Then codePoint = &HE18D& Else codePoint = &HE97B&
+            Case ui3IconSetting
+                If legacy Then codePoint = &HE115& Else codePoint = &HE713&
+            Case ui3IconShare
+                If legacy Then codePoint = &HE72D& Else codePoint = &HE72D&
+            Case ui3IconShop
+                If legacy Then codePoint = &HE14D& Else codePoint = &HE719&
+            Case ui3IconShowBcc
+                If legacy Then codePoint = &HE169& Else codePoint = &HE8C4&
+            Case ui3IconShowResults
+                If legacy Then codePoint = &HE15C& Else codePoint = &HE8BC&
+            Case ui3IconShuffle
+                If legacy Then codePoint = &HE14B& Else codePoint = &HE8B1&
+            Case ui3IconSlideShow
+                If legacy Then codePoint = &HE173& Else codePoint = &HE786&
+            Case ui3IconSolidStar
+                If legacy Then codePoint = &HE1CF& Else codePoint = &HE735&
+            Case ui3IconSort
+                If legacy Then codePoint = &HE174& Else codePoint = &HE8CB&
+            Case ui3IconStop
+                If legacy Then codePoint = &HE15B& Else codePoint = &HE71A&
+            Case ui3IconStopSlideShow
+                If legacy Then codePoint = &HE191& Else codePoint = &HE620&
+            Case ui3IconStreet
+                If legacy Then codePoint = &HE1C3& Else codePoint = &HE913&
+            Case ui3IconSwitch
+                If legacy Then codePoint = &HE13C& Else codePoint = &HE8AB&
+            Case ui3IconSwitchApps
+                If legacy Then codePoint = &HE1E1& Else codePoint = &HE8F9&
+            Case ui3IconSync
+                If legacy Then codePoint = &HE117& Else codePoint = &HE895&
+            Case ui3IconSyncFolder
+                If legacy Then codePoint = &HE1DF& Else codePoint = &HE8F7&
+            Case ui3IconTag
+                If legacy Then codePoint = &HE1CB& Else codePoint = &HE8EC&
+            Case ui3IconTarget
+                If legacy Then codePoint = &HE1D2& Else codePoint = &HF5F0&
+            Case ui3IconThreeBars
+                If legacy Then codePoint = &HE1E8& Else codePoint = &HE907&
+            Case ui3IconTouchPointer
+                If legacy Then codePoint = &HE1E3& Else codePoint = &HE7C9&
+            Case ui3IconTrim
+                If legacy Then codePoint = &HE12C& Else codePoint = &HE78A&
+            Case ui3IconTwoBars
+                If legacy Then codePoint = &HE1E7& Else codePoint = &HE906&
+            Case ui3IconTwoPage
+                If legacy Then codePoint = &HE11E& Else codePoint = &HE89A&
+            Case ui3IconUnderline
+                If legacy Then codePoint = &HE19A& Else codePoint = &HE8DC&
+            Case ui3IconUndo
+                If legacy Then codePoint = &HE10E& Else codePoint = &HE7A7&
+            Case ui3IconUnFavorite
+                If legacy Then codePoint = &HE195& Else codePoint = &HE8D9&
+            Case ui3IconUnPin
+                If legacy Then codePoint = &HE196& Else codePoint = &HE77A&
+            Case ui3IconUnSyncFolder
+                If legacy Then codePoint = &HE1DD& Else codePoint = &HE8F6&
+            Case ui3IconUp
+                If legacy Then codePoint = &HE110& Else codePoint = &HE74A&
+            Case ui3IconUpload
+                If legacy Then codePoint = &HE11C& Else codePoint = &HE898&
+            Case ui3IconVideo
+                If legacy Then codePoint = &HE116& Else codePoint = &HE714&
+            Case ui3IconVideoChat
+                If legacy Then codePoint = &HE13B& Else codePoint = &HE8AA&
+            Case ui3IconView
+                If legacy Then codePoint = &HE18B& Else codePoint = &HE890&
+            Case ui3IconViewAll
+                If legacy Then codePoint = &HE138& Else codePoint = &HE8A9&
+            Case ui3IconVolume
+                If legacy Then codePoint = &HE15D& Else codePoint = &HE767&
+            Case ui3IconWebCam
+                If legacy Then codePoint = &HE156& Else codePoint = &HE8B8&
+            Case ui3IconWorld
+                If legacy Then codePoint = &HE128& Else codePoint = &HE909&
+            Case ui3IconXboxOneConsole
+                If legacy Then codePoint = &HE990& Else codePoint = &HE990&
+            Case ui3IconZeroBars
+                If legacy Then codePoint = &HE1E5& Else codePoint = &HE904&
+            Case ui3IconZoom
+                If legacy Then codePoint = &HE1A3& Else codePoint = &HE71E&
+            Case ui3IconZoomIn
+                If legacy Then codePoint = &HE12E& Else codePoint = &HE8A3&
+            Case ui3IconZoomOut
+                If legacy Then codePoint = &HE1A4& Else codePoint = &HE71F&
+        End Select
+
+        If codePoint <> 0 Then SemanticIconGlyph = ChrW$(codePoint)
+    End Function
+
+End Module

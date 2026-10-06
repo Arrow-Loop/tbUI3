@@ -33,16 +33,19 @@ The decisions are in `docs/2026-10-06-first-pass-report.md` and `docs/2026-10-06
 | UI3Window (dark/light title bar, #202020/#F3F3F3 background) | dark mode passed in win32 and win64; light mode deferred |
 | Form theme spec: drop-on control, live switching, theme cache | Passed. UI3FormTheme is in the toolbox, drops onto frmMain, replaces manual Attach/Detach, and passes the same runtime behavior tests |
 
-## First job for the next session: implement S3 icon support
+## First job for the next session: compile the 1.0.0.3 S3 package
 
-The form-theme milestone is complete. Start from `docs/2026-10-06-s3-icon-spec.md`.
+The canonical tbUI3 package now contains the S3 icon candidate. The repository tbUI3Test binary was deliberately left alone because Shane's local test form contains the validated designer-dropped UI3FormTheme.
 
-1. Extend the icon enums/public API without creating separate toolbox button variants.
-2. Add the DirectWrite icon-font path with Segoe Fluent Icons → Segoe MDL2 Assets fallback.
-3. Use dual semantic glyph mappings where Microsoft assigns different code points to Fluent and MDL2.
-4. Add measured icon-only and icon+Caption layout to UI3Button while preserving existing Standard/Accent visuals.
-5. Keep S3 scoped to icon/text rendering and font fallback. Do not mix in S4 transparency, S5 Mica, S7 pointer states or S8 keyboard/default/cancel behavior.
-6. Build/import in BETA 997 and validate win32 first, then win64.
+1. Pull the latest `tbui3-dev`.
+2. Open `tbUI3/tbUI3.twinproj` in BETA 997 and check Diagnostics/build.
+3. If clean, import the freshly built 1.0.0.3 package into Shane's current local tbUI3Test.
+4. On UI3Button1, set `Icon` to a semantic icon such as `ui3IconAccept`; keep the existing Caption for the first test.
+5. Validate design-time rendering first, then win32 runtime/Click.
+6. Test icon-only by temporarily clearing Caption, then restore it.
+7. Test at least Left and Top positions plus an enlarged button.
+8. After win32 passes, repeat runtime in win64.
+9. Do not overwrite Shane's local frmMain/tbUI3Test binary from the older repository copy before its UI3FormTheme designer state is synced.
 
 
 ## Reference package laboratory

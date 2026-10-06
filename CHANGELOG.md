@@ -13,7 +13,7 @@ All notable changes to tbUI3. Dates are when the change was made, not released. 
   - icon-only, which centres in the button;
   - the MDL2 check: `IconGlyph = ChrW(&HE8FB&)` with `IconFontName = "Segoe MDL2 Assets"` draws a modern check mark, which confirms that the single-table decision was right;
   - win64: the app runs under the Win64 compiler and the icon draws.
-- Found and fixed (1.0.0.4, not yet built):
+- Found and fixed (1.0.0.4; Shane built it and confirmed the fix in win32 and win64 the same evening):
   - Caption could not be cleared in the designer. It reverted to "Button" because "Button" was also the saved default, so an empty caption was not kept.
   - The saved default is now an empty string, and a newly dropped button still starts as "Button".
   - Side effect: a form saved before this change with the untouched caption "Button" will now load with an empty caption. No known form is affected.

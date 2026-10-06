@@ -1,6 +1,6 @@
 # UI3Button
 
-Status: S3 icons validated in package 1.0.0.3 (win32 and win64, 2026-10-06); 1.0.0.4 Caption fix not yet built.
+Status: S3 icons validated in package 1.0.0.3 (win32 and win64, 2026-10-06); 1.0.0.4 Caption fix validated in win32 and win64.
 
 ## WinUI family
 

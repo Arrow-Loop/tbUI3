@@ -8,7 +8,7 @@ Committed work is listed first. Exploratory ideas are marked as such.
 - S2 fix: the button doesn't repaint when the container's BackColor changes. `UserControl_AmbientChanged` is already handled, and commit f660d83 made its check case-insensitive, but the fix is unverified. The form theme spec also forces a redraw of all child controls after a theme change.
 - UI3Window baseline: win32 and win64 dark-mode runtime visuals passed; Click passed in win64. Light mode is deferred by user choice and remains unvalidated.
 - **Form theme baseline complete (2026-10-06):** 1.0.0.2 builds/imports cleanly; code-based Attach/Detach and drop-on `UI3FormTheme` both passed the runtime tests, including live accent and light/dark changes plus clean teardown in win32/win64.
-- S3: **1.0.0.3 implementation candidate is packed and awaiting BETA 997 validation.** It includes 197 semantic Symbol mappings with dual Fluent/MDL2 code points, UI3Button icon properties, 20-DIP SymbolIcon sizing, 8-DIP default icon/label spacing, and measured DirectWrite icon+text layout. First gate: package compile; then import into Shane's current designer-edited tbUI3Test and validate design/runtime rendering in win32 before win64.
+- S3: **1.0.0.3 implementation candidate is packed but fidelity review is required before validation.** The semantic Symbol mappings and 20-DIP SymbolIcon size are source-derived. `Icon`, `IconGlyph`, `IconFontName`, `IconPosition`, and `IconSpacing` are tbUI3 convenience abstractions over WinUI Button.Content; the current 8-DIP IconSpacing default is general Gallery guidance, not a Button XAML value. First gate is now a Button source-matrix review against the exact XAML/resources, then compile/import/runtime validation.
 - S4: windowless and transparent. In S2 the control is still windowed and clears to the container's BackColor. S4 must remove that and blend over whatever is behind the control.
 - S5: Mica, building on UI3Window. The title bar and the #202020/#F3F3F3 background are already in place.
 - S6: per-monitor DPI. S2 uses `GetDeviceCaps(LOGPIXELSX)` on the paint DC, which gives the system DPI, not the monitor's.
@@ -38,6 +38,8 @@ Committed work is listed first. Exploratory ideas are marked as such.
   - record the finding that the package template's Settings file uses LF line endings.
 
 ## Committed: full WinUI control surface
+
+- **Control fidelity policy:** `docs/CONTROL_FIDELITY_POLICY.md` is authoritative. Each control/variant must reproduce the exact microsoft-ui-xaml control-specific resources/template/visual states/behavior wherever Microsoft defines them. Generic Fluent guidance may only supply explicitly labeled tbUI3 convenience behavior when the target control leaves that value undefined.
 
 - Use `docs/CONTROL_INVENTORY.md` as the authoritative coverage map.
 - Target the complete practical WinUI 3 control/style surface represented by current Microsoft documentation and WinUI Gallery, including its hundreds of documented visual/behavior/sample variants.

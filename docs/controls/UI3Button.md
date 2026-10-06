@@ -17,6 +17,31 @@ Currently implemented and validated before S3:
 
 Current S3 candidate adds icon content; it is not yet validated.
 
+## Fidelity/source matrix
+
+`UI3Button` is governed by `../CONTROL_FIDELITY_POLICY.md`.
+
+| Area | WinUI source | Current tbUI3 status |
+| --- | --- | --- |
+| Button padding | `Button_themeresources.xaml` → `ButtonPadding = 11,5,11,6` | exact source-derived token |
+| Border thickness | `ButtonBorderThemeThickness = 1` | exact source-derived token |
+| Corner radius | Button template → `ControlCornerRadius` | exact referenced shared resource |
+| Font family | Button template → `ContentControlThemeFontFamily` | implemented through DirectWrite family selection |
+| Font size | Button template → `ControlContentThemeFontSize` | current 14-DIP implementation derived from WinUI resources |
+| Font weight | Button template → Normal | exact |
+| Background/foreground/border | Button-specific resource keys and theme dictionaries | source-derived rest-state implementation |
+| Accent style | `AccentButtonStyle` / Accent Button resources | source-derived rest-state implementation |
+| Subtle style | `SubtleButtonStyle` resources | planned, not implemented yet |
+| PointerOver/Pressed/Disabled | Button `CommonStates` VisualStateGroup | planned S7, not implemented yet |
+| Focus visual | `UseSystemFocusVisuals`, `FocusVisualMargin=-3` | planned S8 |
+| Semantic icon glyph mapping | microsoft-ui-xaml Symbol table | source-derived dual Fluent/MDL2 mapping |
+| Semantic SymbolIcon size | microsoft-ui-xaml IconElement/SymbolIcon core, 20 DIPs | source-derived |
+| `Icon` / `IconGlyph` / `IconFontName` | no Button-specific WinUI property; stands in for arbitrary `Button.Content` | **tbUI3 convenience API** |
+| `IconPosition` | no Button-specific WinUI property | **tbUI3 convenience API** |
+| `IconSpacing` | no Button-specific WinUI value | **tbUI3 convenience API**; current default 8 DIPs from general Gallery spacing guidance, not Button XAML |
+
+The convenience properties above must not be described as native WinUI Button properties/defaults. They exist only to make common XAML content composition practical from the twinBASIC property grid.
+
 ## Current properties
 
 - `Caption As String`
@@ -40,7 +65,7 @@ Font selection:
 
 The WinUI SymbolIcon/IconElement core default font size is 20 DIPs. tbUI3 uses that value.
 
-The default `IconSpacing` is 8 DIPs. WinUI Button content itself is arbitrary XAML, so there is no single Button-specific icon gap to clone; 8 DIPs comes from WinUI Gallery's spacing guidance for adjacent controls / control+label.
+The default `IconSpacing` is currently 8 DIPs. This is **not** a WinUI Button specification. WinUI Button content is arbitrary XAML and defines no single icon gap; 8 DIPs is a tbUI3 convenience default borrowed from general WinUI Gallery spacing guidance.
 
 ## S3 layout
 

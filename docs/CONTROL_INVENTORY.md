@@ -2,6 +2,14 @@
 
 Status: authoritative coverage plan. Last upstream inventory refresh: 2026-10-06.
 
+## Fidelity rule
+
+This inventory defines *what* tbUI3 plans to cover. `CONTROL_FIDELITY_POLICY.md` defines *how faithfully* each item must be implemented.
+
+Collapsing related Microsoft classes/styles into one toolbox family is an API organization choice only. It does not permit approximating the underlying WinUI control. Each mapped variant must follow the corresponding control/style's actual XAML resources, template, visual states and behavior.
+
+Any property added only because twinBASIC/VB cannot express arbitrary XAML content as conveniently must be labeled a tbUI3 convenience and kept distinct from the WinUI specification.
+
 ## Contract
 
 tbUI3 is intended to reproduce the practical WinUI 3 / Windows 11 control surface for ordinary twinBASIC forms without turning the twinBASIC toolbox into a copy of every individual WinUI class, style, sample and state.
@@ -283,7 +291,7 @@ For each family, completion means more than “one screenshot looks right.” Th
 - per-monitor DPI;
 - Windows 10 graceful degradation for Windows 11-only effects.
 
-The per-control docs under `docs/controls/` will eventually enumerate the exact Gallery samples/resources used to prove each family.
+The per-control docs under `docs/controls/` must enumerate the exact microsoft-ui-xaml templates/theme resources/implementation sources and Gallery samples used to prove each family. Generic Fluent guidance is not sufficient when a control-specific source exists.
 
 ## Scope boundary
 

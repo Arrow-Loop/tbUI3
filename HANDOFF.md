@@ -57,6 +57,15 @@ The canonical tbUI3 package now contains the S3 icon candidate. The repository t
 - Priority donors/references: WinRT (runtime activation, HSTRING, Composition, and its modern subclass helper), WinDevLib/WinDevLibImpl (Windows/COM declarations), VBCCR18 (modern subclassing and mature control behavior), TwinTimerLib, AutoCompleteLib, and OLEGuids. The audited WinRT 1.7.0.159 source does not contain UISettings/GetColorValue, and TBMANLIB 1.0.29.0's subclass helper is legacy 32-bit code, so neither should be assumed to solve those jobs. GdiPlus is comparison/reference only; tbUI3 remains Direct2D/DirectWrite-first.
 - For any adapted third-party code, verify the licence and record provenance. Minimize the copied surface and keep helpers private where practical.
 
+## Control fidelity rule
+
+- Read `docs/CONTROL_FIDELITY_POLICY.md` before control work.
+- This project is recreating WinUI 3 controls, not generic Fluent-looking controls.
+- Control-specific microsoft-ui-xaml templates/theme resources outrank Gallery/general Fluent guidance.
+- Follow exact resource chains and visual states where Microsoft defines them.
+- Any property/value that exists only for twinBASIC/VB convenience must be explicitly labeled as such and must never be presented as “the WinUI value.”
+- The S3 8-DIP `IconSpacing` default is currently one such convenience value; WinUI Button has arbitrary Content and defines no Button-specific icon-spacing property/resource.
+
 ## Full control-surface target
 
 - `docs/CONTROL_INVENTORY.md` is the authoritative control/variant coverage map.

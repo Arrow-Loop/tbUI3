@@ -17,6 +17,16 @@
   - After rebuilding tbUI3, re-import the `.twinpack` into tbUI3Test (Ctrl+T, then Available Packages). `tbUI3Test/src/Packages/tbUI3` is the embedded copy.
 - Never change the FormDesignerId, class, interface or event IDs of an existing control. Each public control's stable IDs are recorded in `tbUI3/UI3*-ids.json` (currently `UI3Button-ids.json` and `UI3FormTheme-ids.json`). Add a new record when a new public control is created; preserve it thereafter.
 
+## WinUI fidelity
+
+- Read `docs/CONTROL_FIDELITY_POLICY.md` before implementing or restyling any control.
+- tbUI3 reproduces WinUI 3 control-specific XAML/resources/behavior; do not substitute generic Fluent approximations when Microsoft defines a control-specific value or state.
+- Source priority is control-specific microsoft-ui-xaml theme resources/templates first, then implementation source, Gallery, official API docs, and only then general Fluent guidance for genuinely undefined convenience behavior.
+- When a control consumes a shared resource, follow the exact resource chain referenced by that control's XAML.
+- Any tbUI3-only convenience property must be documented as such and must not be described as a WinUI property/default.
+- Per-control docs under `docs/controls/` must identify exact upstream sources for every state/variant claimed as implemented.
+- If a value cannot be sourced, mark it unresolved or convenience-only; never invent a plausible value merely because it looks Fluent.
+
 ## Dependencies and reference packages
 
 - tbUI3 must remain self-contained apart from baseline twinBASIC/compiler references that every consumer project can reasonably be expected to have.

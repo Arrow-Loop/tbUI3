@@ -34,6 +34,10 @@ IDE first).
 - Live light/dark switching has been validated during runtime testing.
 - The active implementation milestone is S3 icon glyph support. Package version 1.0.0.3 contains the first packed candidate and awaits BETA 997 compile/runtime validation.
 
+## WinUI fidelity contract
+
+tbUI3 is source-driven, not “Fluent-inspired.” `docs/CONTROL_FIDELITY_POLICY.md` is authoritative: each control/variant must trace its values, resources, visual states and behavior to that control's actual WinUI XAML/theme resources/implementation wherever Microsoft defines them. Generic Fluent guidance may only fill a gap as an explicitly labeled tbUI3 convenience.
+
 ## Control coverage
 
 `docs/CONTROL_INVENTORY.md` is the authoritative coverage map. tbUI3 targets the broad practical WinUI 3 control/style surface, including the hundreds of documented variants represented across WinUI Gallery, while collapsing related Microsoft classes/styles into a much smaller set of VB-style toolbox families selected through properties such as `Style`, `Mode` and `Presentation`.
@@ -45,6 +49,7 @@ The current inventory is reconciled against WinUI Gallery main commit `b927a6253
 - `CHANGELOG.md` records what was done. `ROADMAP.md` records what comes next.
 - `THIRD-PARTY-NOTICES.md` records the exact open-source implementation/resource provenance adapted into the self-contained package.
 - `AGENTS.md` describes how to work on the repository.
+- `docs/CONTROL_FIDELITY_POLICY.md` defines the non-negotiable source-fidelity rule for every control and variant.
 - `docs/` holds the design notes, including the spike A plan in `docs/2026-10-06-spike-spec.md`.
 - `tools/` holds Node scripts that edit `.twinproj` files in place, keeping every entry they don't change byte-identical.
 

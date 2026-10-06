@@ -25,6 +25,8 @@ The S3 code is in good shape for a first build. The DirectWrite declarations lin
 
 ## To settle before 1.0.0.3 ships
 
+> **Both points applied on 2026-10-06** at Shane's request: `UI3Icon` values are now WinUI's Symbol values, and `UI3Icons.twin` holds one table copied from WinUI. The MDL2 check in point 1 is still to run on the PC.
+
 ### 1. The second "legacy" glyph table is probably unnecessary (inferred, check on the PC)
 
 - **What the spec assumed.** The S3 spec read Microsoft's symbol-enum design note as saying that Segoe MDL2 Assets needs the "legacy" code points (E10B for Accept, for example) and Segoe Fluent Icons needs the new ones (E8FB).

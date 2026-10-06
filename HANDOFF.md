@@ -37,7 +37,7 @@ The decisions are in `docs/2026-10-06-first-pass-report.md` and `docs/2026-10-06
 
 The canonical tbUI3 package now contains the S3 icon candidate. The repository tbUI3Test binary was deliberately left alone because Shane's local test form contains the validated designer-dropped UI3FormTheme.
 
-The source review that ROADMAP.md put before this step is done; it is in `docs/reviews/2026-10-06-s3-source-review.md`. It found the code ready to build, and raised two points to settle before 1.0.0.3 ships: the second "legacy" glyph table is probably unnecessary, and the `UI3Icon` numbers should become WinUI's fixed Symbol values so saved forms never shift. Building first is fine; settle both before any form saves an icon you want to keep.
+The source review that ROADMAP.md put before this step is done; it is in `docs/reviews/2026-10-06-s3-source-review.md`. It found the code ready to build. Both of its points are now applied: `UI3Icon` values are WinUI's own Symbol values (so saved forms never shift), and there is a single glyph table, as in WinUI.
 
 1. Pull the latest `tbui3-dev`.
 2. Open `tbUI3/tbUI3.twinproj` in BETA 997 and check Diagnostics/build.
@@ -82,7 +82,7 @@ The source review that ROADMAP.md put before this step is done; it is in `docs/r
 ## Prepared next milestone
 
 - `docs/2026-10-06-s3-icon-spec.md` is the S3 implementation specification, ready once the 1.0.0.2 form-theme checkpoint passes.
-- Important discovery: Microsoft's Symbol table maps many semantic icons to different Unicode points in Segoe Fluent Icons versus legacy Segoe MDL2 Assets. The implementation must use dual semantic mappings rather than changing only the font family.
+- Icon code points: a WinUI Symbol value (for example Accept = E10B) is the old Segoe UI Symbol code point. WinUI converts it to a modern code point (Accept = E8FB) before drawing. Segoe Fluent Icons and Segoe MDL2 Assets both use the modern code points, so tbUI3 keeps one table copied from WinUI's `icon.cpp`. This supersedes the S3 spec's original "dual mapping" rule.
 - Ordinary text remains Segoe UI Variable Text with Segoe UI fallback; system icons use Segoe Fluent Icons with Segoe MDL2 Assets fallback.
 - Current Gallery also exposes SubtleButtonStyle, now recorded as part of the UI3Button family target.
 

@@ -34,7 +34,7 @@ Current S3 candidate adds icon content; it is not yet validated.
 | Subtle style | `SubtleButtonStyle` resources | planned, not implemented yet |
 | PointerOver/Pressed/Disabled | Button `CommonStates` VisualStateGroup | planned S7, not implemented yet |
 | Focus visual | `UseSystemFocusVisuals`, `FocusVisualMargin=-3` | planned S8 |
-| Semantic icon glyph mapping | microsoft-ui-xaml `icon.cpp` `CSymbolIcon::ConvertSymbolValueToGlyph` | Fluent column matches WinUI for all 197 symbols (checked 2026-10-06). The second "legacy" MDL2 table is probably unnecessary; see `../reviews/2026-10-06-s3-source-review.md` |
+| Semantic icon glyph mapping | microsoft-ui-xaml `icon.cpp` `CSymbolIcon::ConvertSymbolValueToGlyph` | exact copy of WinUI's table, one table for both fonts (checked by script 2026-10-06; see `../reviews/2026-10-06-s3-source-review.md`) |
 | Icon font | `icon.cpp`: SymbolIcon uses Segoe Fluent Icons only | Segoe Fluent Icons; the Segoe MDL2 Assets fallback for Windows 10 is a **tbUI3 convenience** |
 | Semantic SymbolIcon size | microsoft-ui-xaml IconElement/SymbolIcon core, 20 DIPs | source-derived |
 | `Icon` / `IconGlyph` / `IconFontName` | no Button-specific WinUI property; stands in for arbitrary `Button.Content` | **tbUI3 convenience API** |
@@ -57,7 +57,7 @@ The convenience properties above must not be described as native WinUI Button pr
 
 ## S3 icon source
 
-The `UI3Icon` enum contains 197 semantic symbols generated from microsoft-ui-xaml's current Symbol table. Each semantic ID has both the legacy Segoe MDL2 Assets code point and the newer Segoe Fluent Icons code point.
+The `UI3Icon` enum contains WinUI's 197 Symbol values, copied from microsoft-ui-xaml `dxaml/xcp/core/core/elements/icon.cpp` (commit cd7c7c41). The values match WinUI's Symbol enum and never get renumbered. `UI3Icons.SemanticIconGlyph` converts each one to the modern glyph WinUI draws, using WinUI's own `ConvertSymbolValueToGlyph` table. Segoe Fluent Icons and Segoe MDL2 Assets share those code points, so one table serves both fonts.
 
 Font selection:
 

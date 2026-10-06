@@ -3,12 +3,12 @@
 [InterfaceId("04830CFD-8885-44BA-B656-3BE3DC1EB5B5")]
 [EventInterfaceId("9537C7F3-9248-4E57-A001-3F7866775C78")]
 [COMControl]
-[Description("tbUI3 button (WinUI equivalent: Button). Spike S1 placeholder rendering.")]
+[Description("tbUI3 button (WinUI equivalent: Button). Spike S2: drawn with Direct2D and DirectWrite.")]
 Public Class UI3Button
 
-    ' Spike S1: proves the package, toolbox, property sheet and persistence path.
-    ' Rendering is a deliberate flat placeholder using system colours only.
-    ' Direct2D/DirectWrite drawing replaces OnPaintPlaceholder in spike S2.
+    ' Spike S2: rest state of WinUI's DefaultButtonStyle and AccentButtonStyle
+    ' (Button_themeresources.xaml), drawn through an ID2D1DCRenderTarget bound to the
+    ' paint DC. Hover, pressed, disabled and focus states come in later spike steps.
 
     Public Event Click()
 
@@ -17,6 +17,7 @@ Public Class UI3Button
 
     Private m_Caption As String
     Private m_Style As UI3ButtonStyle
+    Private m_Target As ID2D1DCRenderTarget
 
     Public Property Get Caption() As String
         Caption = m_Caption
@@ -61,30 +62,156 @@ Public Class UI3Button
         RaiseEvent Click
     End Sub
 
-    Private Sub UserControl_Paint()
-        OnPaintPlaceholder
+    Private Sub UserControl_AmbientChanged(PropertyName As String)
+        If PropertyName = "BackColor" Then UserControl.Refresh
     End Sub
 
-    Private Sub OnPaintPlaceholder()
-        Dim fillColor As Long
-        Dim textColor As Long
+    Private Sub UserControl_Paint()
+        Dim hr As Long
+        hr = PaintWithDirect2D()
+        If hr <> 0 Then PaintFailure hr
+    End Sub
+
+    ' Returns 0, or the failing HRESULT / error number.
+    Private Function PaintWithDirect2D() As Long
+        Dim hdc As LongPtr
+        Dim client As UI3GdiRect
+        Dim dpi As Single
+        Dim w As Single
+        Dim h As Single
+        Dim drawing As Boolean
+
+        On Error GoTo Failed
+
+        hdc = UserControl.hDC
+        If hdc = 0 Then Exit Function
+        UI3GetClientRect UserControl.hWnd, client
+        If client.Right <= 0 Or client.Bottom <= 0 Then Exit Function
+
+        If m_Target Is Nothing Then Set m_Target = CreateDCTarget()
+        dpi = DpiOfDC(hdc)
+        m_Target.SetDpi dpi, dpi
+        m_Target.BindDC hdc, client
+        ' Work in device-independent pixels, as WinUI does.
+        w = client.Right * 96! / dpi
+        h = client.Bottom * 96! / dpi
+
+        m_Target.BeginDraw
+        drawing = True
+        DrawButton w, h
+        drawing = False
+        Dim hr As Long
+        hr = m_Target.EndDraw(0, 0)
+        ' D2DERR_RECREATE_TARGET or any other failure: rebuild the target on the next paint.
+        If hr < 0 Then
+            PaintWithDirect2D = hr
+            Set m_Target = Nothing
+        End If
+        Exit Function
+
+Failed:
+        PaintWithDirect2D = Err.Number
+        If PaintWithDirect2D = 0 Then PaintWithDirect2D = -1
+        If drawing Then m_Target.EndDraw 0, 0
+        Set m_Target = Nothing
+    End Function
+
+    Private Sub DrawButton(ByVal w As Single, ByVal h As Single)
+        Dim dark As Boolean
+        Dim fill As Long
+        Dim strokeDefault As Long
+        Dim strokeSecondary As Long
+        Dim foreground As Long
+        Dim borderAtBottom As Boolean
+        Dim fillInset As Single
+        Dim backdrop As D2D1_COLOR_F
+        Dim box As D2D1_ROUNDED_RECT
+        Dim r As Single
+        Dim t As Single
+
+        dark = IsDarkMode()
+        r = ControlCornerRadius
+        t = ButtonBorderThemeThickness
 
         If m_Style = ui3ButtonAccent Then
-            fillColor = vbHighlight
-            textColor = vbHighlightText
+            ' AccentButtonBackground = AccentFillColorDefaultBrush:
+            ' SystemAccentColorLight2 (dark), SystemAccentColorDark1 (light).
+            ' AccentButtonForeground = TextOnAccentFillColorPrimaryBrush.
+            ' AccentButtonBorderBrush = AccentControlElevationBorderBrush, flipped (ScaleY -1) in both themes.
+            ' AccentButtonStyle BackgroundSizing = OuterBorderEdge.
+            If dark Then
+                fill = AccentShade(ACCENT_LIGHT2)
+                foreground = DARK_TextOnAccentFillColorPrimary
+                strokeDefault = DARK_ControlStrokeColorOnAccentDefault
+                strokeSecondary = DARK_ControlStrokeColorOnAccentSecondary
+            Else
+                fill = AccentShade(ACCENT_DARK1)
+                foreground = LIGHT_TextOnAccentFillColorPrimary
+                strokeDefault = LIGHT_ControlStrokeColorOnAccentDefault
+                strokeSecondary = LIGHT_ControlStrokeColorOnAccentSecondary
+            End If
+            borderAtBottom = True
+            fillInset = 0
         Else
-            fillColor = vbButtonFace
-            textColor = vbButtonText
+            ' ButtonBackground = ControlFillColorDefaultBrush.
+            ' ButtonForeground = TextFillColorPrimaryBrush.
+            ' ButtonBorderBrush = ControlElevationBorderBrush: not flipped in the dark
+            ' dictionary (lighter edge at the top), flipped in light (darker edge at the bottom).
+            ' DefaultButtonStyle BackgroundSizing = InnerBorderEdge.
+            If dark Then
+                fill = DARK_ControlFillColorDefault
+                foreground = DARK_TextFillColorPrimary
+                strokeDefault = DARK_ControlStrokeColorDefault
+                strokeSecondary = DARK_ControlStrokeColorSecondary
+                borderAtBottom = False
+            Else
+                fill = LIGHT_ControlFillColorDefault
+                foreground = LIGHT_TextFillColorPrimary
+                strokeDefault = LIGHT_ControlStrokeColorDefault
+                strokeSecondary = LIGHT_ControlStrokeColorSecondary
+                borderAtBottom = True
+            End If
+            fillInset = t
         End If
 
+        ' The control is windowed for now, so paint the container's colour behind the
+        ' translucent WinUI fills and the rounded corners.
+        backdrop = ColorFromArgb(ArgbFromOleColor(ContainerBackColor()))
+        m_Target.Clear backdrop
+
+        box = RoundedRect(fillInset, fillInset, w - fillInset, h - fillInset, r - fillInset)
+        m_Target.FillRoundedRectangle box, SolidBrush(m_Target, fill)
+
+        Dim border As ID2D1LinearGradientBrush
+        If borderAtBottom Then
+            Set border = VerticalGradientBrush(m_Target, h, h - ElevationBorderGradientLength, _
+                ElevationBorderStop0, strokeSecondary, ElevationBorderStop1, strokeDefault)
+        Else
+            Set border = VerticalGradientBrush(m_Target, 0, ElevationBorderGradientLength, _
+                ElevationBorderStop0, strokeSecondary, ElevationBorderStop1, strokeDefault)
+        End If
+        box = RoundedRect(t / 2, t / 2, w - t / 2, h - t / 2, r - t / 2)
+        m_Target.DrawRoundedRectangle box, border, t, 0
+
+        DrawCenteredText m_Target, m_Caption, ButtonPaddingLeft, ButtonPaddingTop, _
+            w - ButtonPaddingRight, h - ButtonPaddingBottom, foreground
+    End Sub
+
+    Private Function ContainerBackColor() As Long
+        On Error Resume Next
+        ContainerBackColor = vbButtonFace
+        ContainerBackColor = UserControl.Ambient.BackColor
+    End Function
+
+    ' Visible evidence when Direct2D fails, so a spike run shows the error code.
+    Private Sub PaintFailure(ByVal hr As Long)
+        On Error Resume Next
         UserControl.ScaleMode = vbPixels
         UserControl.Cls
-        UserControl.Line (0, 0)-(UserControl.ScaleWidth - 1, UserControl.ScaleHeight - 1), fillColor, BF
-        UserControl.Line (0, 0)-(UserControl.ScaleWidth - 1, UserControl.ScaleHeight - 1), vbButtonShadow, B
-        UserControl.ForeColor = textColor
-        UserControl.CurrentX = (UserControl.ScaleWidth - UserControl.TextWidth(m_Caption)) / 2
-        UserControl.CurrentY = (UserControl.ScaleHeight - UserControl.TextHeight(m_Caption)) / 2
-        UserControl.Print m_Caption
+        UserControl.ForeColor = vbRed
+        UserControl.CurrentX = 2
+        UserControl.CurrentY = 2
+        UserControl.Print "D2D error &H" & Hex$(hr)
     End Sub
 
 End Class

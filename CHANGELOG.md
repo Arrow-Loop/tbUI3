@@ -4,6 +4,15 @@ All notable changes to tbUI3. Dates are when the change was made, not released. 
 
 ## Unreleased
 
+### 2026-10-06, spike S2 first run (win32)
+
+- Built tbUI3 in the IDE (BETA 997, win32) and re-imported the package into tbUI3Test. The saved test project and its `src/` export are committed.
+- Validated on Shane's PC (dark mode, accent #FF4343), win32 only:
+  - Design time: UI3Button1 draws with rounded corners and the accent fill, with black caption text, instead of the S1 grey placeholder.
+  - Runtime: the same rendering, and clicking the button still raises Click (the "Hello World" message box appeared).
+- Not yet checked: 64-bit, resizing the control, Standard style, and light mode.
+- Re-importing a package with the same name fails with "'tbUI3' conflicts with an existing imported package". Remove the old `[IMPORTED] tbUI3` reference first.
+
 ### 2026-10-06, repository set up
 
 - The project moved to its own private repository, Arrow-Loop/tbUI3. Shane's PC created it with the S1 projects and plain-text exports in `src/`.

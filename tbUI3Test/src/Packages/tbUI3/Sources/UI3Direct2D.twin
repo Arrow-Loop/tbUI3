@@ -142,6 +142,66 @@ Private Interface IDWriteTextFormat Extends stdole.IUnknown
     Sub SetTextAlignment(ByVal textAlignment As Long)
     Sub SetParagraphAlignment(ByVal paragraphAlignment As Long)
     Sub SetWordWrapping(ByVal wordWrapping As Long)
+    Sub Slot03_SetReadingDirection()
+    Sub Slot04_SetFlowDirection()
+    Sub Slot05_SetIncrementalTabStop()
+    Sub Slot06_SetTrimming()
+    Sub Slot07_SetLineSpacing()
+    Sub Slot08_GetTextAlignment()
+    Sub Slot09_GetParagraphAlignment()
+    Sub Slot10_GetWordWrapping()
+    Sub Slot11_GetReadingDirection()
+    Sub Slot12_GetFlowDirection()
+    Sub Slot13_GetIncrementalTabStop()
+    Sub Slot14_GetTrimming()
+    Sub Slot15_GetLineSpacing()
+    Sub Slot16_GetFontCollection()
+    Sub Slot17_GetFontFamilyNameLength()
+    Sub Slot18_GetFontFamilyName()
+    Sub Slot19_GetFontWeight()
+    Sub Slot20_GetFontStyle()
+    Sub Slot21_GetFontStretch()
+    Sub Slot22_GetFontSize()
+    Sub Slot23_GetLocaleNameLength()
+    Sub Slot24_GetLocaleName()
+End Interface
+
+[InterfaceId("53737037-6D14-410B-9BFE-0B182BB70961")]
+[OleAutomation(False)]
+Private Interface IDWriteTextLayout Extends IDWriteTextFormat
+    Sub LayoutSlot00_SetMaxWidth()
+    Sub LayoutSlot01_SetMaxHeight()
+    Sub LayoutSlot02_SetFontCollection()
+    Sub LayoutSlot03_SetFontFamilyName()
+    Sub LayoutSlot04_SetFontWeight()
+    Sub LayoutSlot05_SetFontStyle()
+    Sub LayoutSlot06_SetFontStretch()
+    Sub LayoutSlot07_SetFontSize()
+    Sub LayoutSlot08_SetUnderline()
+    Sub LayoutSlot09_SetStrikethrough()
+    Sub LayoutSlot10_SetDrawingEffect()
+    Sub LayoutSlot11_SetInlineObject()
+    Sub LayoutSlot12_SetTypography()
+    Sub LayoutSlot13_SetLocaleName()
+    Sub LayoutSlot14_GetMaxWidth()
+    Sub LayoutSlot15_GetMaxHeight()
+    Sub LayoutSlot16_GetFontCollection()
+    Sub LayoutSlot17_GetFontFamilyNameLength()
+    Sub LayoutSlot18_GetFontFamilyName()
+    Sub LayoutSlot19_GetFontWeight()
+    Sub LayoutSlot20_GetFontStyle()
+    Sub LayoutSlot21_GetFontStretch()
+    Sub LayoutSlot22_GetFontSize()
+    Sub LayoutSlot23_GetUnderline()
+    Sub LayoutSlot24_GetStrikethrough()
+    Sub LayoutSlot25_GetDrawingEffect()
+    Sub LayoutSlot26_GetInlineObject()
+    Sub LayoutSlot27_GetTypography()
+    Sub LayoutSlot28_GetLocaleNameLength()
+    Sub LayoutSlot29_GetLocaleName()
+    Sub LayoutSlot30_Draw()
+    Sub LayoutSlot31_GetLineMetrics()
+    Function GetMetrics() As DWRITE_TEXT_METRICS
 End Interface
 
 [InterfaceId("B859EE5A-D838-4B5B-A2E8-1ADC7D93DB48")]
@@ -160,6 +220,9 @@ Private Interface IDWriteFactory Extends stdole.IUnknown
     Sub Slot10_RegisterFontFileLoader()
     Sub Slot11_UnregisterFontFileLoader()
     Function CreateTextFormat(ByVal fontFamilyName As LongPtr, ByVal fontCollection As LongPtr, ByVal fontWeight As Long, ByVal fontStyle As Long, ByVal fontStretch As Long, ByVal fontSize As Single, ByVal localeName As LongPtr) As IDWriteTextFormat
+    Sub Slot13_CreateTypography()
+    Sub Slot14_GetGdiInterop()
+    Function CreateTextLayout(ByVal textString As LongPtr, ByVal stringLength As Long, ByVal textFormat As IDWriteTextFormat, ByVal maxWidth As Single, ByVal maxHeight As Single) As IDWriteTextLayout
 End Interface
 
 Private Module UI3D2D
@@ -227,6 +290,18 @@ Private Module UI3D2D
         minLevel As Long
     End Type
 
+    Public Type DWRITE_TEXT_METRICS
+        Left As Single
+        Top As Single
+        width As Single
+        widthIncludingTrailingWhitespace As Single
+        Height As Single
+        layoutWidth As Single
+        layoutHeight As Single
+        maxBidiReorderingDepth As Long
+        lineCount As Long
+    End Type
+
     Public Const D2D1_FACTORY_TYPE_SINGLE_THREADED As Long = 0
     Public Const D2D1_RENDER_TARGET_TYPE_DEFAULT As Long = 0
     Public Const DXGI_FORMAT_B8G8R8A8_UNORM As Long = 87
@@ -260,6 +335,9 @@ Private Module UI3D2D
     Private m_D2DFactory As ID2D1Factory
     Private m_DWriteFactory As IDWriteFactory
     Private m_ControlTextFormat As IDWriteTextFormat
+    Private m_IconTextFormat As IDWriteTextFormat
+    Private m_IconTextFormatFamily As String
+    Private m_IconTextFormatSize As Single
 
     Private Function GuidFromString(ByVal guidText As String) As UI3Guid
         Dim id As UI3Guid
@@ -330,14 +408,119 @@ Private Module UI3D2D
             Dim family As String
             family = "Segoe UI Variable Text"
             If Not FontFamilyExists(family) Then family = "Segoe UI"
-            Set m_ControlTextFormat = DWriteFactory().CreateTextFormat(StrPtr(family), 0, _
-                DWRITE_FONT_WEIGHT_NORMAL, DWRITE_FONT_STYLE_NORMAL, DWRITE_FONT_STRETCH_NORMAL, 14, StrPtr("en-us"))
-            m_ControlTextFormat.SetTextAlignment DWRITE_TEXT_ALIGNMENT_CENTER
-            m_ControlTextFormat.SetParagraphAlignment DWRITE_PARAGRAPH_ALIGNMENT_CENTER
-            m_ControlTextFormat.SetWordWrapping DWRITE_WORD_WRAPPING_NO_WRAP
+            Set m_ControlTextFormat = CreateCenteredTextFormat(family, 14)
         End If
         Set ControlTextFormat = m_ControlTextFormat
     End Function
+
+    Public Function IconTextFormat(ByVal family As String, ByVal fontSize As Single) As IDWriteTextFormat
+        If m_IconTextFormat Is Nothing Or StrComp(m_IconTextFormatFamily, family, vbTextCompare) <> 0 Or m_IconTextFormatSize <> fontSize Then
+            Set m_IconTextFormat = CreateCenteredTextFormat(family, fontSize)
+            m_IconTextFormatFamily = family
+            m_IconTextFormatSize = fontSize
+        End If
+        Set IconTextFormat = m_IconTextFormat
+    End Function
+
+    Private Function CreateCenteredTextFormat(ByVal family As String, ByVal fontSize As Single) As IDWriteTextFormat
+        Dim format As IDWriteTextFormat
+        Set format = DWriteFactory().CreateTextFormat(StrPtr(family), 0, _
+            DWRITE_FONT_WEIGHT_NORMAL, DWRITE_FONT_STYLE_NORMAL, DWRITE_FONT_STRETCH_NORMAL, fontSize, StrPtr("en-us"))
+        format.SetTextAlignment DWRITE_TEXT_ALIGNMENT_CENTER
+        format.SetParagraphAlignment DWRITE_PARAGRAPH_ALIGNMENT_CENTER
+        format.SetWordWrapping DWRITE_WORD_WRAPPING_NO_WRAP
+        Set CreateCenteredTextFormat = format
+    End Function
+
+    Private Sub MeasureTextWithFormat(ByVal text As String, ByVal format As IDWriteTextFormat, ByRef width As Single, ByRef height As Single)
+        width = 0
+        height = 0
+        If Len(text) = 0 Then Exit Sub
+
+        Dim layout As IDWriteTextLayout
+        Dim metrics As DWRITE_TEXT_METRICS
+        Set layout = DWriteFactory().CreateTextLayout(StrPtr(text), Len(text), format, 4096, 4096)
+        metrics = layout.GetMetrics()
+        width = metrics.widthIncludingTrailingWhitespace
+        height = metrics.Height
+    End Sub
+
+    Public Sub MeasureControlText(ByVal text As String, ByRef width As Single, ByRef height As Single)
+        MeasureTextWithFormat text, ControlTextFormat(), width, height
+    End Sub
+
+    Public Sub MeasureIconText(ByVal text As String, ByVal family As String, ByVal fontSize As Single, ByRef width As Single, ByRef height As Single)
+        MeasureTextWithFormat text, IconTextFormat(family, fontSize), width, height
+    End Sub
+
+    Private Sub DrawTextWithFormat(ByVal target As ID2D1RenderTarget, ByVal text As String, ByVal format As IDWriteTextFormat, _
+            ByVal x0 As Single, ByVal y0 As Single, ByVal x1 As Single, ByVal y1 As Single, ByVal argb As Long)
+        If Len(text) = 0 Then Exit Sub
+        Dim layout As D2D1_RECT_F
+        layout.Left = x0
+        layout.Top = y0
+        layout.Right = x1
+        layout.Bottom = y1
+        Dim brush As ID2D1SolidColorBrush
+        Set brush = SolidBrush(target, argb)
+        target.DrawText StrPtr(text), Len(text), format, layout, brush, D2D1_DRAW_TEXT_OPTIONS_CLIP, DWRITE_MEASURING_MODE_NATURAL
+    End Sub
+
+    Public Sub DrawButtonContent(ByVal target As ID2D1RenderTarget, ByVal caption As String, ByVal glyph As String, ByVal iconFamily As String, _
+            ByVal iconFontSize As Single, ByVal iconPosition As UI3IconPosition, ByVal iconSpacing As Single, _
+            ByVal x0 As Single, ByVal y0 As Single, ByVal x1 As Single, ByVal y1 As Single, ByVal argb As Long)
+        Dim hasText As Boolean
+        Dim hasIcon As Boolean
+        Dim textW As Single
+        Dim textH As Single
+        Dim iconW As Single
+        Dim iconH As Single
+        Dim startX As Single
+        Dim startY As Single
+        Dim totalW As Single
+        Dim totalH As Single
+
+        hasText = (Len(caption) <> 0)
+        hasIcon = (Len(glyph) <> 0)
+        If Not hasText And Not hasIcon Then Exit Sub
+
+        If hasText Then MeasureControlText caption, textW, textH
+        If hasIcon Then MeasureIconText glyph, iconFamily, iconFontSize, iconW, iconH
+
+        If hasText And Not hasIcon Then
+            DrawCenteredText target, caption, x0, y0, x1, y1, argb
+            Exit Sub
+        End If
+
+        If hasIcon And Not hasText Then
+            DrawTextWithFormat target, glyph, IconTextFormat(iconFamily, iconFontSize), x0, y0, x1, y1, argb
+            Exit Sub
+        End If
+
+        If iconSpacing < 0 Then iconSpacing = 0
+
+        If iconPosition = ui3IconTop Or iconPosition = ui3IconBottom Then
+            totalH = iconH + iconSpacing + textH
+            startY = y0 + ((y1 - y0) - totalH) / 2
+            If iconPosition = ui3IconTop Then
+                DrawTextWithFormat target, glyph, IconTextFormat(iconFamily, iconFontSize), x0, startY, x1, startY + iconH, argb
+                DrawTextWithFormat target, caption, ControlTextFormat(), x0, startY + iconH + iconSpacing, x1, startY + totalH, argb
+            Else
+                DrawTextWithFormat target, caption, ControlTextFormat(), x0, startY, x1, startY + textH, argb
+                DrawTextWithFormat target, glyph, IconTextFormat(iconFamily, iconFontSize), x0, startY + textH + iconSpacing, x1, startY + totalH, argb
+            End If
+        Else
+            totalW = iconW + iconSpacing + textW
+            startX = x0 + ((x1 - x0) - totalW) / 2
+            If iconPosition = ui3IconRight Then
+                DrawTextWithFormat target, caption, ControlTextFormat(), startX, y0, startX + textW, y1, argb
+                DrawTextWithFormat target, glyph, IconTextFormat(iconFamily, iconFontSize), startX + textW + iconSpacing, y0, startX + totalW, y1, argb
+            Else
+                DrawTextWithFormat target, glyph, IconTextFormat(iconFamily, iconFontSize), startX, y0, startX + iconW, y1, argb
+                DrawTextWithFormat target, caption, ControlTextFormat(), startX + iconW + iconSpacing, y0, startX + totalW, y1, argb
+            End If
+        End If
+    End Sub
 
     ' &HAARRGGBB (the XAML #AARRGGBB notation) to a straight-alpha Direct2D colour.
     Public Function ColorFromArgb(ByVal argb As Long) As D2D1_COLOR_F

@@ -1,6 +1,6 @@
 # Property-page picker: research notes
 
-Status: research only, 2026-10-06. Nothing has been built or run.
+Status: spike run on Shane's PC, 2026-10-06 (BETA 997). Results are below.
 
 ## Goal
 
@@ -37,3 +37,23 @@ What the result means:
 - **If a `...` appears:** build the real searchable picker (a grid of glyphs, with search by name, number or code), and reuse the pattern for other complex options.
 - **If only the right-click "Properties" page works:** the picker is still usable, just one click further away.
 - **If neither works:** fall back to a standalone "tbUI3 Icon Browser" tool that copies the chosen value.
+
+## Spike result (2026-10-06, BETA 997, Shane's PC)
+
+Shane added a PropertyPage named `UI3IconPage` to tbUI3 through Project Explorer → Add → Add Windows PropertyPage. It held a single label. He then linked it to UI3Button in two ways and rebuilt.
+
+- **Feature flag:** "PropertyPages support" was already on by default.
+- **Control-wide link works.** He selected the UserControl in `UI3Button.tbcontrol`, opened `PropertyPages`, and ticked `UI3IconPage` in the IDE's own "Select Property Pages" dialog. That list also offers StandardFont, StandardDataFormat, StandardColor and StandardPicture.
+  - In tbUI3Test, the Properties pane then showed a `(Custom)` row reading `{ PropertyPage }`, with a `...` button.
+  - Clicking `...` opened a "UI3Button1 Properties" dialog with the page and OK, Cancel and Apply buttons.
+- **Per-property link does not work.**
+  - `[PropertyPage("UI3IconPage")]` on `Icon` (an enum) left the normal dropdown.
+  - Moving it to `IconSpacing` (a Single, which has no editor of its own) showed no `...` either.
+  - So the data type is not the cause: the IDE does not act on the per-property mapping at all in this beta.
+
+## Decision direction
+
+- Keep typed entry as it is, through the Icon dropdown.
+- Put the visual catalog (a searchable glyph grid, searchable by name, number or code) on a tbUI3 PropertyPage reached through `(Custom)` → `...`.
+- Keep the `[PropertyPage]` attribute out of shipped code until the IDE honours it. Raise a feature request with twinBASIC so that the IDE honours `IPerPropertyBrowsing.MapPropertyToPage`.
+- The spike edits stayed on Shane's PC and were not committed.

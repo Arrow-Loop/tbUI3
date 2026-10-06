@@ -1,0 +1,234 @@
+' Semantic WinUI icon mapping.
+'
+' Copied from microsoft-ui-xaml main commit cd7c7c41,
+' dxaml/xcp/core/core/elements/icon.cpp, CSymbolIcon::ConvertSymbolValueToGlyph.
+' A UI3Icon value is WinUI's Symbol value (the old Segoe UI Symbol code point).
+' WinUI never draws that code point: it converts it to the modern glyph below and
+' draws that in Segoe Fluent Icons. Segoe MDL2 Assets, the Windows 10 icon font,
+' uses the same modern code points, so one table serves both fonts.
+
+Private Module UI3Icons
+
+    Private Const FLUENT_ICON_FONT As String = "Segoe Fluent Icons"
+    Private Const LEGACY_ICON_FONT As String = "Segoe MDL2 Assets"
+
+    Public Function SystemIconFontFamily() As String
+        If FontFamilyExists(FLUENT_ICON_FONT) Then
+            SystemIconFontFamily = FLUENT_ICON_FONT
+        Else
+            SystemIconFontFamily = LEGACY_ICON_FONT
+        End If
+    End Function
+
+    ' The glyph WinUI's SymbolIcon draws for a symbol. Symbols not in the table are drawn
+    ' as their own value, exactly as ConvertSymbolValueToGlyph does.
+    Public Function SemanticIconGlyph(ByVal Icon As UI3Icon) As String
+        Dim codePoint As Long
+
+        If Icon = ui3IconNone Then Exit Function
+
+        Select Case Icon
+            Case ui3IconAccept: codePoint = &HE8FB&
+            Case ui3IconAccount: codePoint = &HE910&
+            Case ui3IconAdd: codePoint = &HE710&
+            Case ui3IconAddFriend: codePoint = &HE8FA&
+            Case ui3IconAdmin: codePoint = &HE7EF&
+            Case ui3IconAlignCenter: codePoint = &HE8E3&
+            Case ui3IconAlignLeft: codePoint = &HE8E4&
+            Case ui3IconAlignRight: codePoint = &HE8E2&
+            Case ui3IconAllApps: codePoint = &HE71D&
+            Case ui3IconAttach: codePoint = &HE723&
+            Case ui3IconAttachCamera: codePoint = &HE8A2&
+            Case ui3IconAudio: codePoint = &HE8D6&
+            Case ui3IconBack: codePoint = &HE72B&
+            Case ui3IconBackToWindow: codePoint = &HE73F&
+            Case ui3IconBlockContact: codePoint = &HE8F8&
+            Case ui3IconBold: codePoint = &HE8DD&
+            Case ui3IconBookmarks: codePoint = &HE8A4&
+            Case ui3IconBrowsePhotos: codePoint = &HE7C5&
+            Case ui3IconBullets: codePoint = &HE8FD&
+            Case ui3IconCalculator: codePoint = &HE8EF&
+            Case ui3IconCalendar: codePoint = &HE787&
+            Case ui3IconCalendarDay: codePoint = &HE8BF&
+            Case ui3IconCalendarReply: codePoint = &HE8F5&
+            Case ui3IconCalendarWeek: codePoint = &HE8C0&
+            Case ui3IconCamera: codePoint = &HE722&
+            Case ui3IconCancel: codePoint = &HE711&
+            Case ui3IconCaption: codePoint = &HE8BA&
+            Case ui3IconCellPhone: codePoint = &HE8EA&
+            Case ui3IconCharacter: codePoint = &HE8C1&
+            Case ui3IconClear: codePoint = &HE894&
+            Case ui3IconClearSelection: codePoint = &HE8E6&
+            Case ui3IconClock: codePoint = &HE823&
+            Case ui3IconClosedCaption: codePoint = &HE7F0&
+            Case ui3IconClosePane: codePoint = &HE89F&
+            Case ui3IconComment: codePoint = &HE90A&
+            Case ui3IconContact: codePoint = &HE77B&
+            Case ui3IconContact2: codePoint = &HE8D4&
+            Case ui3IconContactInfo: codePoint = &HE779&
+            Case ui3IconContactPresence: codePoint = &HE8CF&
+            Case ui3IconCopy: codePoint = &HE8C8&
+            Case ui3IconCrop: codePoint = &HE7A8&
+            Case ui3IconCut: codePoint = &HE8C6&
+            Case ui3IconDelete: codePoint = &HE74D&
+            Case ui3IconDirections: codePoint = &HE8F0&
+            Case ui3IconDisableUpdates: codePoint = &HE8D8&
+            Case ui3IconDisconnectDrive: codePoint = &HE8CD&
+            Case ui3IconDislike: codePoint = &HE8E0&
+            Case ui3IconDockBottom: codePoint = &HE90E&
+            Case ui3IconDockLeft: codePoint = &HE90C&
+            Case ui3IconDockRight: codePoint = &HE90D&
+            Case ui3IconDocument: codePoint = &HE8A5&
+            Case ui3IconDownload: codePoint = &HE896&
+            Case ui3IconEdit: codePoint = &HE70F&
+            Case ui3IconEmoji: codePoint = &HE899&
+            Case ui3IconEmoji2: codePoint = &HE76E&
+            Case ui3IconFavorite: codePoint = &HE734&
+            Case ui3IconFilter: codePoint = &HE71C&
+            Case ui3IconFind: codePoint = &HE721&
+            Case ui3IconFlag: codePoint = &HE7C1&
+            Case ui3IconFolder: codePoint = &HE8B7&
+            Case ui3IconFont: codePoint = &HE8D2&
+            Case ui3IconFontColor: codePoint = &HE8D3&
+            Case ui3IconFontDecrease: codePoint = &HE8E7&
+            Case ui3IconFontIncrease: codePoint = &HE8E8&
+            Case ui3IconFontSize: codePoint = &HE8E9&
+            Case ui3IconForward: codePoint = &HE72A&
+            Case ui3IconFourBars: codePoint = &HE908&
+            Case ui3IconFullScreen: codePoint = &HE740&
+            Case ui3IconGlobalNavigationButton: codePoint = &HE700&
+            Case ui3IconGlobe: codePoint = &HE774&
+            Case ui3IconGo: codePoint = &HE8AD&
+            Case ui3IconGoToStart: codePoint = &HE8FC&
+            Case ui3IconGoToToday: codePoint = &HE8D1&
+            Case ui3IconHangUp: codePoint = &HE778&
+            Case ui3IconHelp: codePoint = &HE897&
+            Case ui3IconHideBcc: codePoint = &HE8C5&
+            Case ui3IconHighlight: codePoint = &HE7E6&
+            Case ui3IconHome: codePoint = &HE80F&
+            Case ui3IconImport: codePoint = &HE8B5&
+            Case ui3IconImportAll: codePoint = &HE8B6&
+            Case ui3IconImportant: codePoint = &HE8C9&
+            Case ui3IconItalic: codePoint = &HE8DB&
+            Case ui3IconKeyboard: codePoint = &HE765&
+            Case ui3IconLeaveChat: codePoint = &HE89B&
+            Case ui3IconLibrary: codePoint = &HE8F1&
+            Case ui3IconLike: codePoint = &HE8E1&
+            Case ui3IconLikeDislike: codePoint = &HE8DF&
+            Case ui3IconLink: codePoint = &HE71B&
+            Case ui3IconList: codePoint = &HEA37&
+            Case ui3IconMail: codePoint = &HE715&
+            Case ui3IconMailFilled: codePoint = &HE8A8&
+            Case ui3IconMailForward: codePoint = &HE89C&
+            Case ui3IconMailReply: codePoint = &HE8CA&
+            Case ui3IconMailReplyAll: codePoint = &HE8C2&
+            Case ui3IconManage: codePoint = &HE912&
+            Case ui3IconMap: codePoint = &HE707&
+            Case ui3IconMapDrive: codePoint = &HE8CE&
+            Case ui3IconMapPin: codePoint = &HE7B7&
+            Case ui3IconMemo: codePoint = &HE77C&
+            Case ui3IconMessage: codePoint = &HE8BD&
+            Case ui3IconMicrophone: codePoint = &HE720&
+            Case ui3IconMore: codePoint = &HE712&
+            Case ui3IconMoveToFolder: codePoint = &HE8DE&
+            Case ui3IconMusicInfo: codePoint = &HE90B&
+            Case ui3IconMute: codePoint = &HE74F&
+            Case ui3IconNewFolder: codePoint = &HE8F4&
+            Case ui3IconNewWindow: codePoint = &HE78B&
+            Case ui3IconNext: codePoint = &HE893&
+            Case ui3IconOneBar: codePoint = &HE905&
+            Case ui3IconOpenFile: codePoint = &HE8E5&
+            Case ui3IconOpenLocal: codePoint = &HE8DA&
+            Case ui3IconOpenPane: codePoint = &HE8A0&
+            Case ui3IconOpenWith: codePoint = &HE7AC&
+            Case ui3IconOrientation: codePoint = &HE8B4&
+            Case ui3IconOtherUser: codePoint = &HE7EE&
+            Case ui3IconOutlineStar: codePoint = &HE734&
+            Case ui3IconPage: codePoint = &HE729&
+            Case ui3IconPage2: codePoint = &HE7C3&
+            Case ui3IconPaste: codePoint = &HE77F&
+            Case ui3IconPause: codePoint = &HE769&
+            Case ui3IconPeople: codePoint = &HE716&
+            Case ui3IconPermissions: codePoint = &HE8D7&
+            Case ui3IconPhone: codePoint = &HE717&
+            Case ui3IconPhoneBook: codePoint = &HE780&
+            Case ui3IconPictures: codePoint = &HE8B9&
+            Case ui3IconPin: codePoint = &HE718&
+            Case ui3IconPlaceholder: codePoint = &HE18A&
+            Case ui3IconPlay: codePoint = &HE768&
+            Case ui3IconPostUpdate: codePoint = &HE8F3&
+            Case ui3IconPreview: codePoint = &HE8FF&
+            Case ui3IconPreviewLink: codePoint = &HE8A1&
+            Case ui3IconPrevious: codePoint = &HE892&
+            Case ui3IconPrint: codePoint = &HE749&
+            Case ui3IconPriority: codePoint = &HE8D0&
+            Case ui3IconProtectedDocument: codePoint = &HE8A6&
+            Case ui3IconRead: codePoint = &HE8C3&
+            Case ui3IconRedo: codePoint = &HE7A6&
+            Case ui3IconRefresh: codePoint = &HE72C&
+            Case ui3IconRemote: codePoint = &HE8AF&
+            Case ui3IconRemove: codePoint = &HE738&
+            Case ui3IconRename: codePoint = &HE8AC&
+            Case ui3IconRepair: codePoint = &HE90F&
+            Case ui3IconRepeatAll: codePoint = &HE8EE&
+            Case ui3IconRepeatOne: codePoint = &HE8ED&
+            Case ui3IconReportHacked: codePoint = &HE730&
+            Case ui3IconReShare: codePoint = &HE8EB&
+            Case ui3IconRotate: codePoint = &HE7AD&
+            Case ui3IconRotateCamera: codePoint = &HE89E&
+            Case ui3IconSave: codePoint = &HE74E&
+            Case ui3IconSaveLocal: codePoint = &HE78C&
+            Case ui3IconScan: codePoint = &HE8FE&
+            Case ui3IconSelectAll: codePoint = &HE8B3&
+            Case ui3IconSend: codePoint = &HE724&
+            Case ui3IconSetLockScreen: codePoint = &HE7B5&
+            Case ui3IconSetTile: codePoint = &HE97B&
+            Case ui3IconSetting: codePoint = &HE713&
+            Case ui3IconShare: codePoint = &HE72D&
+            Case ui3IconShop: codePoint = &HE719&
+            Case ui3IconShowBcc: codePoint = &HE8C4&
+            Case ui3IconShowResults: codePoint = &HE8BC&
+            Case ui3IconShuffle: codePoint = &HE8B1&
+            Case ui3IconSlideShow: codePoint = &HE786&
+            Case ui3IconSolidStar: codePoint = &HE735&
+            Case ui3IconSort: codePoint = &HE8CB&
+            Case ui3IconStop: codePoint = &HE71A&
+            Case ui3IconStopSlideShow: codePoint = &HE620&
+            Case ui3IconStreet: codePoint = &HE913&
+            Case ui3IconSwitch: codePoint = &HE8AB&
+            Case ui3IconSwitchApps: codePoint = &HE8F9&
+            Case ui3IconSync: codePoint = &HE895&
+            Case ui3IconSyncFolder: codePoint = &HE8F7&
+            Case ui3IconTag: codePoint = &HE8EC&
+            Case ui3IconTarget: codePoint = &HF5F0&
+            Case ui3IconThreeBars: codePoint = &HE907&
+            Case ui3IconTouchPointer: codePoint = &HE7C9&
+            Case ui3IconTrim: codePoint = &HE78A&
+            Case ui3IconTwoBars: codePoint = &HE906&
+            Case ui3IconTwoPage: codePoint = &HE89A&
+            Case ui3IconUnderline: codePoint = &HE8DC&
+            Case ui3IconUndo: codePoint = &HE7A7&
+            Case ui3IconUnFavorite: codePoint = &HE8D9&
+            Case ui3IconUnPin: codePoint = &HE77A&
+            Case ui3IconUnSyncFolder: codePoint = &HE8F6&
+            Case ui3IconUp: codePoint = &HE74A&
+            Case ui3IconUpload: codePoint = &HE898&
+            Case ui3IconVideo: codePoint = &HE714&
+            Case ui3IconVideoChat: codePoint = &HE8AA&
+            Case ui3IconView: codePoint = &HE890&
+            Case ui3IconViewAll: codePoint = &HE8A9&
+            Case ui3IconVolume: codePoint = &HE767&
+            Case ui3IconWebCam: codePoint = &HE8B8&
+            Case ui3IconWorld: codePoint = &HE909&
+            Case ui3IconXboxOneConsole: codePoint = &HE990&
+            Case ui3IconZeroBars: codePoint = &HE904&
+            Case ui3IconZoom: codePoint = &HE71E&
+            Case ui3IconZoomIn: codePoint = &HE8A3&
+            Case ui3IconZoomOut: codePoint = &HE71F&
+            Case Else: codePoint = Icon
+        End Select
+
+        SemanticIconGlyph = ChrW$(codePoint)
+    End Function
+
+End Module

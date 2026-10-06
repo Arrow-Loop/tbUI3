@@ -20,12 +20,11 @@ Committed work is listed first. Exploratory ideas are marked as such.
 
 - **Themed form canvas in the designer.** UI3FormTheme only themes the form at runtime, so in the designer the form stays light while UI3 controls draw in the IDE's dark theme. That makes the Standard style nearly invisible. Let UI3FormTheme also apply the WinUI window background at design time, when ManageBackColor is True. This needs a short check that the designer allows a component to set its parent form's BackColor.
 - **Designer accent refresh.** The designer reads the accent colour once, when the IDE starts; it updated only after an IDE restart. Runtime is fine. Refresh the theme cache at design time, for example on UI3 paint after a WM_SETTINGCHANGE, or with a cheap staleness check.
-- **Visual catalog pickers (`...` in the Properties pane).** For hard-to-guess options, starting with `Icon`: a searchable grid of glyphs (search by name, number or code), in the spirit of Word's Symbol dialog. Typing a value directly must keep working. twinBASIC's runtime has PropertyPage support with per-property mapping (`[PropertyPage("Name")]`), but it is unproven that the IDE shows a `...` for it. Spike first: `docs/research/2026-10-06-property-page-picker.md`. Fallback: a standalone tbUI3 Icon Browser tool.
+- **Visual catalog pickers (`...` in the Properties pane).** For hard-to-guess options, starting with `Icon`: a searchable grid of glyphs (search by name, number or code), in the spirit of Word's Symbol dialog. Typing a value directly must keep working. Spike done on 2026-10-06 (`docs/research/2026-10-06-property-page-picker.md`): a control-wide PropertyPage opens from `(Custom)` → `...` in the Properties pane, but the IDE ignores per-property links on any type. Route: build the catalog as a tbUI3 PropertyPage behind `(Custom)`, keep typed entry through the dropdown, and ask twinBASIC to honour per-property pages.
 - Property-pane previews inside the enum dropdown itself are not possible as far as is known: twinBASIC draws that list as plain text.
 
 ## Committed: housekeeping
 
-- Commit Shane's saved local tbUI3Test (with the dropped UI3FormTheme) and its `src/` export to `tbui3-dev`. The repository copy is older than his PC's.
 - Decide where `reference-packages/` lives. It adds about 112 MB of third-party package source to this repository; a separate repository (or keeping only the notes and a list of package versions) would keep tbUI3 small. Check each package's licence before it is published anywhere.
 
 ## Committed: reference-derived follow-ups

@@ -24,3 +24,10 @@ D:\twinBASIC\bin\twinBASIC_win64.exe import "tbUI3\tbUI3.twinproj" "tbUI3\src\" 
 
 Export after saving in the IDE; import after editing files under `src/` (close the project in the
 IDE first).
+
+## Project documents
+
+- `CHANGELOG.md` records what was done. `ROADMAP.md` records what comes next.
+- `AGENTS.md` describes how to work on the repository.
+- `docs/` holds the design notes, including the spike A plan in `docs/2026-10-06-spike-spec.md`.
+- `tools/` holds Node scripts that edit `.twinproj` files in place, keeping every entry they don't change byte-identical.

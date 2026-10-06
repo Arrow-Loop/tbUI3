@@ -1,0 +1,408 @@
+' tbUI3 private Direct2D / DirectWrite layer.
+'
+' The interface declarations below are a minimal private subset adapted from
+' fafalone's WinDevLib (https://github.com/fafalone/WinDevLib, wdDirectX.twin,
+' CC0 / public domain). Thanks to fafalone. Only the vtable slots tbUI3 calls are
+' declared with real signatures; every other slot is a numbered placeholder that
+' keeps the vtable order and must never be called. Slot order follows d2d1.h and
+' dwrite.h. Nothing in this file is visible outside the package.
+
+[InterfaceId("2CD90691-12E2-11DC-9FED-001143A055F9")]
+[OleAutomation(False)]
+Private Interface ID2D1Resource Extends stdole.IUnknown
+    Sub Slot00_GetFactory()
+End Interface
+
+[InterfaceId("2CD906A8-12E2-11DC-9FED-001143A055F9")]
+[OleAutomation(False)]
+Private Interface ID2D1Brush Extends ID2D1Resource
+    Sub Slot00_SetOpacity()
+    Sub Slot01_SetTransform()
+    Sub Slot02_GetOpacity()
+    Sub Slot03_GetTransform()
+End Interface
+
+[InterfaceId("2CD906A9-12E2-11DC-9FED-001143A055F9")]
+[OleAutomation(False)]
+Private Interface ID2D1SolidColorBrush Extends ID2D1Brush
+End Interface
+
+[InterfaceId("2CD906AB-12E2-11DC-9FED-001143A055F9")]
+[OleAutomation(False)]
+Private Interface ID2D1LinearGradientBrush Extends ID2D1Brush
+End Interface
+
+[InterfaceId("2CD906A7-12E2-11DC-9FED-001143A055F9")]
+[OleAutomation(False)]
+Private Interface ID2D1GradientStopCollection Extends ID2D1Resource
+End Interface
+
+[InterfaceId("2CD90694-12E2-11DC-9FED-001143A055F9")]
+[OleAutomation(False)]
+Private Interface ID2D1RenderTarget Extends ID2D1Resource
+    Sub Slot00_CreateBitmap()
+    Sub Slot01_CreateBitmapFromWicBitmap()
+    Sub Slot02_CreateSharedBitmap()
+    Sub Slot03_CreateBitmapBrush()
+    Function CreateSolidColorBrush(ByRef color As D2D1_COLOR_F, ByVal brushProperties As LongPtr) As ID2D1SolidColorBrush
+    Function CreateGradientStopCollection(ByRef gradientStops As D2D1_GRADIENT_STOP, ByVal gradientStopsCount As Long, ByVal colorInterpolationGamma As Long, ByVal extendMode As Long) As ID2D1GradientStopCollection
+    Function CreateLinearGradientBrush(ByRef linearGradientBrushProperties As D2D1_LINEAR_GRADIENT_BRUSH_PROPERTIES, ByVal brushProperties As LongPtr, ByVal gradientStopCollection As ID2D1GradientStopCollection) As ID2D1LinearGradientBrush
+    Sub Slot07_CreateRadialGradientBrush()
+    Sub Slot08_CreateCompatibleRenderTarget()
+    Sub Slot09_CreateLayer()
+    Sub Slot10_CreateMesh()
+    Sub Slot11_DrawLine()
+    Sub Slot12_DrawRectangle()
+    Sub Slot13_FillRectangle()
+    [PreserveSig]
+    Sub DrawRoundedRectangle(ByRef roundedRect As D2D1_ROUNDED_RECT, ByVal brush As ID2D1Brush, ByVal strokeWidth As Single, ByVal strokeStyle As LongPtr)
+    [PreserveSig]
+    Sub FillRoundedRectangle(ByRef roundedRect As D2D1_ROUNDED_RECT, ByVal brush As ID2D1Brush)
+    Sub Slot16_DrawEllipse()
+    Sub Slot17_FillEllipse()
+    Sub Slot18_DrawGeometry()
+    Sub Slot19_FillGeometry()
+    Sub Slot20_FillMesh()
+    Sub Slot21_FillOpacityMask()
+    Sub Slot22_DrawBitmap()
+    [PreserveSig]
+    Sub DrawText(ByVal textString As LongPtr, ByVal stringLength As Long, ByVal textFormat As IDWriteTextFormat, ByRef layoutRect As D2D1_RECT_F, ByVal defaultFillBrush As ID2D1Brush, ByVal options As Long, ByVal measuringMode As Long)
+    Sub Slot24_DrawTextLayout()
+    Sub Slot25_DrawGlyphRun()
+    Sub Slot26_SetTransform()
+    Sub Slot27_GetTransform()
+    Sub Slot28_SetAntialiasMode()
+    Sub Slot29_GetAntialiasMode()
+    [PreserveSig]
+    Sub SetTextAntialiasMode(ByVal textAntialiasMode As Long)
+    Sub Slot31_GetTextAntialiasMode()
+    Sub Slot32_SetTextRenderingParams()
+    Sub Slot33_GetTextRenderingParams()
+    Sub Slot34_SetTags()
+    Sub Slot35_GetTags()
+    Sub Slot36_PushLayer()
+    Sub Slot37_PopLayer()
+    Sub Slot38_Flush()
+    Sub Slot39_SaveDrawingState()
+    Sub Slot40_RestoreDrawingState()
+    Sub Slot41_PushAxisAlignedClip()
+    Sub Slot42_PopAxisAlignedClip()
+    [PreserveSig]
+    Sub Clear(ByRef clearColor As D2D1_COLOR_F)
+    [PreserveSig]
+    Sub BeginDraw()
+    [PreserveSig]
+    Function EndDraw(ByVal tag1 As LongPtr, ByVal tag2 As LongPtr) As Long
+    Sub Slot46_GetPixelFormat()
+    [PreserveSig]
+    Sub SetDpi(ByVal dpiX As Single, ByVal dpiY As Single)
+    Sub Slot48_GetDpi()
+    Sub Slot49_GetSize()
+    Sub Slot50_GetPixelSize()
+    Sub Slot51_GetMaximumBitmapSize()
+    Sub Slot52_IsSupported()
+End Interface
+
+[InterfaceId("1C51BC64-DE61-46FD-9899-63A5D8F03950")]
+[OleAutomation(False)]
+Private Interface ID2D1DCRenderTarget Extends ID2D1RenderTarget
+    Sub BindDC(ByVal hdc As LongPtr, ByRef pSubRect As UI3GdiRect)
+End Interface
+
+[InterfaceId("06152247-6F50-465A-9245-118BFD3B6007")]
+[OleAutomation(False)]
+Private Interface ID2D1Factory Extends stdole.IUnknown
+    Sub Slot00_ReloadSystemMetrics()
+    Sub Slot01_GetDesktopDpi()
+    Sub Slot02_CreateRectangleGeometry()
+    Sub Slot03_CreateRoundedRectangleGeometry()
+    Sub Slot04_CreateEllipseGeometry()
+    Sub Slot05_CreateGeometryGroup()
+    Sub Slot06_CreateTransformedGeometry()
+    Sub Slot07_CreatePathGeometry()
+    Sub Slot08_CreateStrokeStyle()
+    Sub Slot09_CreateDrawingStateBlock()
+    Sub Slot10_CreateWicBitmapRenderTarget()
+    Sub Slot11_CreateHwndRenderTarget()
+    Sub Slot12_CreateDxgiSurfaceRenderTarget()
+    Function CreateDCRenderTarget(ByRef renderTargetProperties As D2D1_RENDER_TARGET_PROPERTIES) As ID2D1DCRenderTarget
+End Interface
+
+[InterfaceId("A84CEE02-3EEA-4EEE-A827-87C1A02A0FCC")]
+[OleAutomation(False)]
+Private Interface IDWriteFontCollection Extends stdole.IUnknown
+    Sub Slot00_GetFontFamilyCount()
+    Sub Slot01_GetFontFamily()
+    Sub FindFamilyName(ByVal familyName As LongPtr, ByRef index As Long, ByRef exists As Long)
+End Interface
+
+[InterfaceId("9C906818-31D7-4FD3-A151-7C5E225DB55A")]
+[OleAutomation(False)]
+Private Interface IDWriteTextFormat Extends stdole.IUnknown
+    Sub SetTextAlignment(ByVal textAlignment As Long)
+    Sub SetParagraphAlignment(ByVal paragraphAlignment As Long)
+    Sub SetWordWrapping(ByVal wordWrapping As Long)
+End Interface
+
+[InterfaceId("B859EE5A-D838-4B5B-A2E8-1ADC7D93DB48")]
+[OleAutomation(False)]
+Private Interface IDWriteFactory Extends stdole.IUnknown
+    Sub GetSystemFontCollection(ByRef fontCollection As IDWriteFontCollection, ByVal checkForUpdates As Long)
+    Sub Slot01_CreateCustomFontCollection()
+    Sub Slot02_RegisterFontCollectionLoader()
+    Sub Slot03_UnregisterFontCollectionLoader()
+    Sub Slot04_CreateFontFileReference()
+    Sub Slot05_CreateCustomFontFileReference()
+    Sub Slot06_CreateFontFace()
+    Sub Slot07_CreateRenderingParams()
+    Sub Slot08_CreateMonitorRenderingParams()
+    Sub Slot09_CreateCustomRenderingParams()
+    Sub Slot10_RegisterFontFileLoader()
+    Sub Slot11_UnregisterFontFileLoader()
+    Function CreateTextFormat(ByVal fontFamilyName As LongPtr, ByVal fontCollection As LongPtr, ByVal fontWeight As Long, ByVal fontStyle As Long, ByVal fontStretch As Long, ByVal fontSize As Single, ByVal localeName As LongPtr) As IDWriteTextFormat
+End Interface
+
+Private Module UI3D2D
+
+    Public Type UI3Guid
+        Data1 As Long
+        Data2 As Integer
+        Data3 As Integer
+        Data4(0 To 7) As Byte
+    End Type
+
+    Public Type UI3GdiRect
+        Left As Long
+        Top As Long
+        Right As Long
+        Bottom As Long
+    End Type
+
+    Public Type D2D1_COLOR_F
+        r As Single
+        g As Single
+        b As Single
+        a As Single
+    End Type
+
+    Public Type D2D1_POINT_2F
+        x As Single
+        y As Single
+    End Type
+
+    Public Type D2D1_RECT_F
+        Left As Single
+        Top As Single
+        Right As Single
+        Bottom As Single
+    End Type
+
+    Public Type D2D1_ROUNDED_RECT
+        rect As D2D1_RECT_F
+        radiusX As Single
+        radiusY As Single
+    End Type
+
+    Public Type D2D1_GRADIENT_STOP
+        position As Single
+        color As D2D1_COLOR_F
+    End Type
+
+    Public Type D2D1_LINEAR_GRADIENT_BRUSH_PROPERTIES
+        startPoint As D2D1_POINT_2F
+        endPoint As D2D1_POINT_2F
+    End Type
+
+    Public Type D2D1_PIXEL_FORMAT
+        dxgiFormat As Long
+        alphaMode As Long
+    End Type
+
+    Public Type D2D1_RENDER_TARGET_PROPERTIES
+        targetType As Long
+        pixelFormat As D2D1_PIXEL_FORMAT
+        dpiX As Single
+        dpiY As Single
+        usage As Long
+        minLevel As Long
+    End Type
+
+    Public Const D2D1_FACTORY_TYPE_SINGLE_THREADED As Long = 0
+    Public Const D2D1_RENDER_TARGET_TYPE_DEFAULT As Long = 0
+    Public Const DXGI_FORMAT_B8G8R8A8_UNORM As Long = 87
+    Public Const D2D1_ALPHA_MODE_PREMULTIPLIED As Long = 1
+    Public Const D2D1_TEXT_ANTIALIAS_MODE_GRAYSCALE As Long = 2
+    Public Const D2D1_DRAW_TEXT_OPTIONS_CLIP As Long = 2
+    Public Const D2D1_GAMMA_2_2 As Long = 0
+    Public Const D2D1_EXTEND_MODE_CLAMP As Long = 0
+    Public Const D2DERR_RECREATE_TARGET As Long = &H8899000C
+    Public Const DWRITE_FACTORY_TYPE_SHARED As Long = 0
+    Public Const DWRITE_FONT_WEIGHT_NORMAL As Long = 400
+    Public Const DWRITE_FONT_STYLE_NORMAL As Long = 0
+    Public Const DWRITE_FONT_STRETCH_NORMAL As Long = 5
+    Public Const DWRITE_TEXT_ALIGNMENT_CENTER As Long = 2
+    Public Const DWRITE_PARAGRAPH_ALIGNMENT_CENTER As Long = 2
+    Public Const DWRITE_WORD_WRAPPING_NO_WRAP As Long = 1
+    Public Const DWRITE_MEASURING_MODE_NATURAL As Long = 0
+
+    Private Const IID_ID2D1Factory As String = "{06152247-6F50-465A-9245-118BFD3B6007}"
+    Private Const IID_IDWriteFactory As String = "{B859EE5A-D838-4B5B-A2E8-1ADC7D93DB48}"
+    Private Const LOGPIXELSX As Long = 88
+
+    Private Declare PtrSafe Function D2D1CreateFactory Lib "d2d1" (ByVal factoryType As Long, ByRef riid As UI3Guid, ByVal pFactoryOptions As LongPtr, ByRef ppIFactory As ID2D1Factory) As Long
+    Private Declare PtrSafe Function DWriteCreateFactory Lib "dwrite" (ByVal factoryType As Long, ByRef iid As UI3Guid, ByRef ppFactory As IDWriteFactory) As Long
+    Private Declare PtrSafe Function IIDFromString Lib "ole32" (ByVal lpsz As LongPtr, ByRef lpiid As UI3Guid) As Long
+    Private Declare PtrSafe Function GetDeviceCaps Lib "gdi32" (ByVal hdc As LongPtr, ByVal nIndex As Long) As Long
+    Private Declare PtrSafe Function OleTranslateColor Lib "oleaut32" (ByVal clr As Long, ByVal hpal As LongPtr, ByRef lpcolorref As Long) As Long
+    Public Declare PtrSafe Function UI3GetClientRect Lib "user32" Alias "GetClientRect" (ByVal hWnd As LongPtr, ByRef lpRect As UI3GdiRect) As Long
+
+    ' One factory of each kind per process, created on first use.
+    Private m_D2DFactory As ID2D1Factory
+    Private m_DWriteFactory As IDWriteFactory
+    Private m_ControlTextFormat As IDWriteTextFormat
+
+    Private Function GuidFromString(ByVal guidText As String) As UI3Guid
+        Dim id As UI3Guid
+        IIDFromString StrPtr(guidText), id
+        GuidFromString = id
+    End Function
+
+    Private Function D2DFactory() As ID2D1Factory
+        If m_D2DFactory Is Nothing Then
+            Dim hr As Long
+            Dim iid As UI3Guid
+            iid = GuidFromString(IID_ID2D1Factory)
+            hr = D2D1CreateFactory(D2D1_FACTORY_TYPE_SINGLE_THREADED, iid, 0, m_D2DFactory)
+            If hr < 0 Then Err.Raise hr, "tbUI3", "D2D1CreateFactory failed"
+        End If
+        Set D2DFactory = m_D2DFactory
+    End Function
+
+    Private Function DWriteFactory() As IDWriteFactory
+        If m_DWriteFactory Is Nothing Then
+            Dim hr As Long
+            Dim iid As UI3Guid
+            iid = GuidFromString(IID_IDWriteFactory)
+            hr = DWriteCreateFactory(DWRITE_FACTORY_TYPE_SHARED, iid, m_DWriteFactory)
+            If hr < 0 Then Err.Raise hr, "tbUI3", "DWriteCreateFactory failed"
+        End If
+        Set DWriteFactory = m_DWriteFactory
+    End Function
+
+    ' A render target that draws into a GDI device context (BindDC before each BeginDraw).
+    ' 32-bit BGRA with premultiplied alpha, as ID2D1DCRenderTarget requires.
+    Public Function CreateDCTarget() As ID2D1DCRenderTarget
+        Dim props As D2D1_RENDER_TARGET_PROPERTIES
+        props.targetType = D2D1_RENDER_TARGET_TYPE_DEFAULT
+        props.pixelFormat.dxgiFormat = DXGI_FORMAT_B8G8R8A8_UNORM
+        props.pixelFormat.alphaMode = D2D1_ALPHA_MODE_PREMULTIPLIED
+        props.dpiX = 96
+        props.dpiY = 96
+        Dim target As ID2D1DCRenderTarget
+        Set target = D2DFactory().CreateDCRenderTarget(props)
+        ' WinUI renders text with grayscale antialiasing; ClearType needs an opaque target anyway.
+        target.SetTextAntialiasMode D2D1_TEXT_ANTIALIAS_MODE_GRAYSCALE
+        Set CreateDCTarget = target
+    End Function
+
+    Public Function DpiOfDC(ByVal hdc As LongPtr) As Single
+        Dim dpi As Long
+        dpi = GetDeviceCaps(hdc, LOGPIXELSX)
+        If dpi <= 0 Then dpi = 96
+        DpiOfDC = dpi
+    End Function
+
+    Public Function FontFamilyExists(ByVal familyName As String) As Boolean
+        Dim fonts As IDWriteFontCollection
+        Dim index As Long
+        Dim exists As Long
+        DWriteFactory().GetSystemFontCollection fonts, 0
+        fonts.FindFamilyName StrPtr(familyName), index, exists
+        FontFamilyExists = (exists <> 0)
+    End Function
+
+    ' Text format for control content: ContentControlThemeFontFamily at ControlContentThemeFontSize
+    ' (14), FontWeight Normal (generic.xaml; DefaultButtonStyle in Button_themeresources.xaml).
+    ' WinUI's XamlAutoFontFamily resolves to Segoe UI Variable on Windows 11; Windows 10 lacks it,
+    ' so fall back to Segoe UI there.
+    Public Function ControlTextFormat() As IDWriteTextFormat
+        If m_ControlTextFormat Is Nothing Then
+            Dim family As String
+            family = "Segoe UI Variable Text"
+            If Not FontFamilyExists(family) Then family = "Segoe UI"
+            Set m_ControlTextFormat = DWriteFactory().CreateTextFormat(StrPtr(family), 0, _
+                DWRITE_FONT_WEIGHT_NORMAL, DWRITE_FONT_STYLE_NORMAL, DWRITE_FONT_STRETCH_NORMAL, 14, StrPtr("en-us"))
+            m_ControlTextFormat.SetTextAlignment DWRITE_TEXT_ALIGNMENT_CENTER
+            m_ControlTextFormat.SetParagraphAlignment DWRITE_PARAGRAPH_ALIGNMENT_CENTER
+            m_ControlTextFormat.SetWordWrapping DWRITE_WORD_WRAPPING_NO_WRAP
+        End If
+        Set ControlTextFormat = m_ControlTextFormat
+    End Function
+
+    ' &HAARRGGBB (the XAML #AARRGGBB notation) to a straight-alpha Direct2D colour.
+    Public Function ColorFromArgb(ByVal argb As Long) As D2D1_COLOR_F
+        Dim c As D2D1_COLOR_F
+        Dim alpha As Long
+        alpha = (argb And &H7F000000) \ &H1000000
+        If argb < 0 Then alpha = alpha Or &H80&
+        c.a = alpha / 255!
+        c.r = ((argb And &HFF0000) \ &H10000) / 255!
+        c.g = ((argb And &HFF00&) \ &H100&) / 255!
+        c.b = (argb And &HFF&) / 255!
+        ColorFromArgb = c
+    End Function
+
+    ' A VB OLE_COLOR (BGR, or a system colour such as vbButtonFace) to an opaque &HAARRGGBB value.
+    Public Function ArgbFromOleColor(ByVal oleColor As Long) As Long
+        Dim bgr As Long
+        If OleTranslateColor(oleColor, 0, bgr) < 0 Then bgr = 0
+        ArgbFromOleColor = &HFF000000 Or ((bgr And &HFF&) * &H10000) Or (bgr And &HFF00&) Or ((bgr And &HFF0000) \ &H10000)
+    End Function
+
+    Public Function SolidBrush(ByVal target As ID2D1RenderTarget, ByVal argb As Long) As ID2D1SolidColorBrush
+        Dim c As D2D1_COLOR_F
+        c = ColorFromArgb(argb)
+        Set SolidBrush = target.CreateSolidColorBrush(c, 0)
+    End Function
+
+    ' Two-stop vertical gradient in absolute coordinates, clamped beyond its ends.
+    Public Function VerticalGradientBrush(ByVal target As ID2D1RenderTarget, ByVal startY As Single, ByVal endY As Single, _
+            ByVal offset0 As Single, ByVal argb0 As Long, ByVal offset1 As Single, ByVal argb1 As Long) As ID2D1LinearGradientBrush
+        Dim stops(0 To 1) As D2D1_GRADIENT_STOP
+        stops(0).position = offset0
+        stops(0).color = ColorFromArgb(argb0)
+        stops(1).position = offset1
+        stops(1).color = ColorFromArgb(argb1)
+        Dim stopList As ID2D1GradientStopCollection
+        Set stopList = target.CreateGradientStopCollection(stops(0), 2, D2D1_GAMMA_2_2, D2D1_EXTEND_MODE_CLAMP)
+        Dim props As D2D1_LINEAR_GRADIENT_BRUSH_PROPERTIES
+        props.startPoint.y = startY
+        props.endPoint.y = endY
+        Set VerticalGradientBrush = target.CreateLinearGradientBrush(props, 0, stopList)
+    End Function
+
+    Public Function RoundedRect(ByVal x0 As Single, ByVal y0 As Single, ByVal x1 As Single, ByVal y1 As Single, ByVal radius As Single) As D2D1_ROUNDED_RECT
+        Dim rr As D2D1_ROUNDED_RECT
+        rr.rect.Left = x0
+        rr.rect.Top = y0
+        rr.rect.Right = x1
+        rr.rect.Bottom = y1
+        rr.radiusX = radius
+        rr.radiusY = radius
+        RoundedRect = rr
+    End Function
+
+    Public Sub DrawCenteredText(ByVal target As ID2D1RenderTarget, ByVal caption As String, ByVal x0 As Single, ByVal y0 As Single, _
+            ByVal x1 As Single, ByVal y1 As Single, ByVal argb As Long)
+        If Len(caption) = 0 Then Exit Sub
+        Dim layout As D2D1_RECT_F
+        layout.Left = x0
+        layout.Top = y0
+        layout.Right = x1
+        layout.Bottom = y1
+        Dim brush As ID2D1SolidColorBrush
+        Set brush = SolidBrush(target, argb)
+        target.DrawText StrPtr(caption), Len(caption), ControlTextFormat(), layout, brush, D2D1_DRAW_TEXT_OPTIONS_CLIP, DWRITE_MEASURING_MODE_NATURAL
+    End Sub
+
+End Module

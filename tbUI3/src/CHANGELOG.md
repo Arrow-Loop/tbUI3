@@ -2,6 +2,7 @@
 
 Pre-release spike builds. The full history is kept in the project repository CHANGELOG.md.
 
+- 2026-10-06 1.0.0.5 candidate: UI3IconPage, a searchable icon picker that opens from (Custom) in the Properties pane of a UI3Button. Not yet built.
 - 2026-10-06 1.0.0.4: UI3Button Caption can be cleared in the designer (icon-only buttons); a newly dropped button still starts as "Button".
 - 2026-10-06 1.0.0.3: S3 semantic icon API (UI3Icon values are WinUI's Symbol values; one glyph table, drawn in Segoe Fluent Icons or Segoe MDL2 Assets); measured icon/text composition for UI3Button. Built and validated in BETA 997, win32 and win64.
 - 2026-10-06 1.0.0.2: UI3FormTheme, UI3Window.Attach/Detach, cached theme/accent state and live theme notifications; validated in win32/win64 and via the drop-on component path.

@@ -86,10 +86,16 @@ Public Module UI3Window
 
         SetThemeMode Mode
         RefreshTheme
-        RegisterAttachment Form, hWnd, ManageBackColor
 
-        SetWindowSubclass hWnd, AddressOf UI3WindowSubclassProc, CLngPtr(UI3_THEME_SUBCLASS_ID), 0
-        ApplyAllAttached
+        ' Retain a Form reference only after the subclass is installed. If comctl32 rejects
+        ' the subclass for any reason, apply once but do not create a module-level reference
+        ' that would have no WM_NCDESTROY path to release it.
+        If SetWindowSubclass(hWnd, AddressOf UI3WindowSubclassProc, CLngPtr(UI3_THEME_SUBCLASS_ID), 0) <> 0 Then
+            RegisterAttachment Form, hWnd, ManageBackColor
+            ApplyAllAttached
+        Else
+            ApplyFormTheme Form, ManageBackColor
+        End If
     End Sub
 
     [Description("Removes live tbUI3 theme handling from a form.")]

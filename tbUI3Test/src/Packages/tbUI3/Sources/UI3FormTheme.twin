@@ -36,10 +36,6 @@ Public Class UI3FormTheme
         TryAttach
     End Property
 
-    Private Sub UserControl_Initialize()
-        TryAttach
-    End Sub
-
     Private Sub UserControl_InitProperties()
         m_ThemeMode = DEFAULT_THEME_MODE
         m_ManageBackColor = DEFAULT_MANAGE_BACKCOLOR
@@ -61,6 +57,22 @@ Public Class UI3FormTheme
         TryAttach
     End Sub
 
+    Private Sub UserControl_Show()
+        ' twinBASIC raises Show when the host switches the control into run view.
+        ' This is the preferred lifecycle retry for a nonvisual service control.
+        TryAttach
+    End Sub
+
+    Private Sub UserControl_AmbientChanged(PropertyName As String)
+        If StrComp(PropertyName, "UserMode", vbTextCompare) = 0 Then
+            If Ambient.UserMode Then
+                TryAttach
+            Else
+                DetachTheme
+            End If
+        End If
+    End Sub
+
     Private Sub UserControl_Terminate()
         DetachTheme
     End Sub
@@ -80,6 +92,7 @@ Public Class UI3FormTheme
 
 EH:
         ' Parent/Ambient can be unavailable during early designer/runtime lifecycle.
+        ' ReadProperties, Resize, Show and UserMode changes provide later retries.
     End Sub
 
     Private Sub DetachTheme()

@@ -38,7 +38,7 @@ These are the intended public designer/toolbox families. The exact public enum/p
 
 | tbUI3 toolbox control | WinUI classes/concepts represented | Variant strategy |
 | --- | --- | --- |
-| `UI3Button` | Button, ToggleButton, RepeatButton, HyperlinkButton, DropDownButton, SplitButton, ToggleSplitButton, AppBarButton, AppBarToggleButton | `Style` selects Standard, Accent, Toggle, Repeat, Hyperlink, DropDown, Split, ToggleSplit, Command and CommandToggle; icon/text/flyout/default behavior are properties |
+| `UI3Button` | Button, ToggleButton, RepeatButton, HyperlinkButton, DropDownButton, SplitButton, ToggleSplitButton, AppBarButton, AppBarToggleButton | `Style` selects Standard, Accent, Subtle, Toggle, Repeat, Hyperlink, DropDown, Split, ToggleSplit, Command and CommandToggle; icon/text/flyout/default behavior are properties |
 | `UI3CheckBox` | CheckBox | two-state / three-state, checked / unchecked / indeterminate, content and alignment properties |
 | `UI3OptionButton` | RadioButton | VB-compatible radio/option behavior with group/container semantics |
 | `UI3ToggleSwitch` | ToggleSwitch | on/off content, compact/content variants |
@@ -127,7 +127,7 @@ Every current non-special Gallery page is accounted for below. “Family/propert
 
 ### Basic input
 
-- Button → `UI3Button.Style=Standard/Accent`
+- Button → `UI3Button.Style=Standard/Accent/Subtle`
 - DropDownButton → `UI3Button.Style=DropDown`
 - HyperlinkButton → `UI3Button.Style=Hyperlink`
 - RepeatButton → `UI3Button.Style=Repeat`

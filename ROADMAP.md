@@ -35,6 +35,15 @@ Committed work is listed first. Exploratory ideas are marked as such.
   - add the patch tools;
   - record the finding that the package template's Settings file uses LF line endings.
 
+## Committed: full WinUI control surface
+
+- Use `docs/CONTROL_INVENTORY.md` as the authoritative coverage map.
+- Target the complete practical WinUI 3 control/style surface represented by current Microsoft documentation and WinUI Gallery, including its hundreds of documented visual/behavior/sample variants.
+- Keep the toolbox manageable by implementing coherent families rather than one toolbox entry per Microsoft class or sample. Variant access belongs in `Style`, `Mode`, `Presentation` and other focused properties.
+- Maintain a Gallery coverage ledger on upstream refreshes so new/removed Microsoft control pages are intentionally mapped rather than discovered ad hoc.
+- Build per-control documentation under `docs/controls/` with the WinUI equivalent, supported variants, resource/template sources and validation matrix.
+- Platform/service hosts such as WebView2, mapping, camera/media and shell APIs remain coverage items, but must not silently break the core package's dependency-free contract.
+
 ## Committed: later controls
 
 - UI3ContentDialog: a Windows 11 style message dialog, the tbUI3 equivalent of WinUI's ContentDialog. It is drawn by tbUI3 over the form: a dimmed backdrop, a centred card, and an accent primary button. It is not a system dialog, because Windows only exposes ContentDialog to real WinUI apps, and the classic MsgBox and Task Dialog are older Win32 pieces. Shane confirmed on 2026-10-06 that it should be recreated. Start it once buttons and text are solid.

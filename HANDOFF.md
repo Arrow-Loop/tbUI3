@@ -51,6 +51,15 @@ Commit 94b621b repaired tbUI3Test's imported tbUI3 1.0.0.1 reference, refreshed 
 - Priority donors/references: WinRT (runtime activation, HSTRING, Composition, and its modern subclass helper), WinDevLib/WinDevLibImpl (Windows/COM declarations), VBCCR18 (modern subclassing and mature control behavior), TwinTimerLib, AutoCompleteLib, and OLEGuids. The audited WinRT 1.7.0.159 source does not contain UISettings/GetColorValue, and TBMANLIB 1.0.29.0's subclass helper is legacy 32-bit code, so neither should be assumed to solve those jobs. GdiPlus is comparison/reference only; tbUI3 remains Direct2D/DirectWrite-first.
 - For any adapted third-party code, verify the licence and record provenance. Minimize the copied surface and keep helpers private where practical.
 
+## Full control-surface target
+
+- `docs/CONTROL_INVENTORY.md` is the authoritative control/variant coverage map.
+- The package goal is broad practical WinUI 3 coverage, including the hundreds of documented Gallery/style/behavior variants, **not** hundreds of toolbox entries.
+- Preserve Claude decision D6: one coherent `UI3...` control family exposes related Microsoft controls through `Style`, `Mode`, `Presentation` or other focused properties. Example: `UI3Button` covers Button, Accent, Toggle, Repeat, Hyperlink, DropDown, Split, ToggleSplit and command-bar button variants.
+- Current Microsoft Gallery snapshot used for the inventory: 2026-10-05 main commit `b927a6253d6b183be55b90287b8a04fde14d31a3`, 125 catalog pages.
+- Fundamentals/design/accessibility pages become package-wide requirements, while platform/service pages such as Clipboard, shell notifications or AppWindow are not misrepresented as draggable controls.
+- Do not add package dependencies merely to cover a Gallery host/service. Use private native implementations, optional adapters/companions or documented existing platform facilities as appropriate.
+
 ## Gotchas
 
 - **Re-importing the package into tbUI3Test.**

@@ -31,7 +31,7 @@ The decisions are in `docs/2026-10-06-first-pass-report.md` and `docs/2026-10-06
 | S2: light mode | Deferred by Shane; not validated |
 | S2: repaint when the form's BackColor changes | Bug. Cause still open (see ROADMAP) |
 | UI3Window (dark/light title bar, #202020/#F3F3F3 background) | dark mode passed in win32 and win64; light mode deferred |
-| Form theme spec: drop-on control, live switching, theme cache | 1.0.0.2 builds/imports cleanly; Attach-based harness runs with Click intact; live accent changes and live light→dark switching passed. Debugger-stop safety, win64 live-engine run/stop, and drop-on UI3FormTheme remain |
+| Form theme spec: drop-on control, live switching, theme cache | 1.0.0.2 builds/imports cleanly; Attach-based harness runs with Click intact; live accent changes, live light→dark switching, and win32 debugger-stop teardown passed. win64 live-engine run/stop and drop-on UI3FormTheme remain |
 
 ## First job for the next session: validate the 1.0.0.2 form-theme engine
 
@@ -43,7 +43,7 @@ The source/project candidate now contains UI3FormTheme, UI3Window.Attach/Detach,
 2. **Passed:** tbUI3Test runs through `UI3Window.Attach Me`; UI3Button Click still raises Hello World.
 3. **Passed:** changing the Windows accent while the app is open updates the Accent button live.
 4. **Passed:** changing Windows from light to dark while the app is open updates the app live.
-5. Stop the debugger while the form is open; the IDE must not crash.
+5. **Passed:** stopping the debugger while the subclassed win32 form is open returns cleanly to the IDE with no crash/hang.
 6. Repeat the run/stop checks in win64.
 7. Then drop UI3FormTheme from the toolbox onto frmMain, remove the code Attach/Detach calls, and confirm the drop-on path behaves identically.
 

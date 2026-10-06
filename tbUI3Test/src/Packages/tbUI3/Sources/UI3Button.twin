@@ -1,0 +1,90 @@
+[FormDesignerId("35E99E9A-8C48-48C2-B333-6809F44B6A8B")]
+[ClassId("32A0CE42-2A55-4FED-A85E-2FA3DAE02B62")]
+[InterfaceId("04830CFD-8885-44BA-B656-3BE3DC1EB5B5")]
+[EventInterfaceId("9537C7F3-9248-4E57-A001-3F7866775C78")]
+[COMControl]
+[Description("tbUI3 button (WinUI equivalent: Button). Spike S1 placeholder rendering.")]
+Public Class UI3Button
+
+    ' Spike S1: proves the package, toolbox, property sheet and persistence path.
+    ' Rendering is a deliberate flat placeholder using system colours only.
+    ' Direct2D/DirectWrite drawing replaces OnPaintPlaceholder in spike S2.
+
+    Public Event Click()
+
+    Private Const DEFAULT_CAPTION As String = "Button"
+    Private Const DEFAULT_STYLE As Long = 0
+
+    Private m_Caption As String
+    Private m_Style As UI3ButtonStyle
+
+    Public Property Get Caption() As String
+        Caption = m_Caption
+    End Property
+
+    Public Property Let Caption(ByVal Value As String)
+        m_Caption = Value
+        PropertyChanged "Caption"
+        UserControl.Refresh
+    End Property
+
+    Public Property Get Style() As UI3ButtonStyle
+        Style = m_Style
+    End Property
+
+    Public Property Let Style(ByVal Value As UI3ButtonStyle)
+        m_Style = Value
+        PropertyChanged "Style"
+        UserControl.Refresh
+    End Property
+
+    Private Sub UserControl_InitProperties()
+        m_Caption = DEFAULT_CAPTION
+        m_Style = DEFAULT_STYLE
+    End Sub
+
+    Private Sub UserControl_ReadProperties(PropBag As PropertyBag)
+        m_Caption = PropBag.ReadProperty("Caption", DEFAULT_CAPTION)
+        m_Style = PropBag.ReadProperty("Style", DEFAULT_STYLE)
+    End Sub
+
+    Private Sub UserControl_WriteProperties(PropBag As PropertyBag)
+        PropBag.WriteProperty "Caption", m_Caption, DEFAULT_CAPTION
+        PropBag.WriteProperty "Style", m_Style, DEFAULT_STYLE
+    End Sub
+
+    Private Sub UserControl_Resize()
+        UserControl.Refresh
+    End Sub
+
+    Private Sub UserControl_Click()
+        RaiseEvent Click
+    End Sub
+
+    Private Sub UserControl_Paint()
+        OnPaintPlaceholder
+    End Sub
+
+    Private Sub OnPaintPlaceholder()
+        Dim fillColor As Long
+        Dim textColor As Long
+
+        If m_Style = ui3ButtonAccent Then
+            fillColor = vbHighlight
+            textColor = vbHighlightText
+        Else
+            fillColor = vbButtonFace
+            textColor = vbButtonText
+        End If
+
+        UserControl.ScaleMode = vbPixels
+        UserControl.Cls
+        UserControl.Line (0, 0)-(UserControl.ScaleWidth - 1, UserControl.ScaleHeight - 1), fillColor, BF
+        UserControl.Line (0, 0)-(UserControl.ScaleWidth - 1, UserControl.ScaleHeight - 1), vbButtonShadow, B
+        UserControl.ForeColor = textColor
+        UserControl.CurrentX = (UserControl.ScaleWidth - UserControl.TextWidth(m_Caption)) / 2
+        UserControl.CurrentY = (UserControl.ScaleHeight - UserControl.TextHeight(m_Caption)) / 2
+        UserControl.Print m_Caption
+    End Sub
+
+End Class

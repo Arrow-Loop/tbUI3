@@ -4,6 +4,14 @@ All notable changes to tbUI3. Dates are when the change was made, not released. 
 
 ## Unreleased
 
+### 2026-10-06, win64 live-engine validation
+
+- Shane repeated the full 1.0.0.2 live-engine test set in win64.
+- The win64 harness runs normally, UI3Button Click remains functional, live Windows accent changes repaint correctly, live light-to-dark switching updates correctly, and debugger-stop teardown returns cleanly to the IDE.
+- The code-based `UI3Window.Attach/Detach` path is now validated in both win32 and win64 for the current form-theme milestone.
+- Remaining validation for the milestone: the drop-on nonvisual `UI3FormTheme` component path.
+
+
 ### 2026-10-06, debugger-stop teardown validation
 
 - Shane stopped the running win32 tbUI3Test session from inside the twinBASIC IDE while the subclassed form was still open.

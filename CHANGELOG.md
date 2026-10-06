@@ -4,6 +4,15 @@ All notable changes to tbUI3. Dates are when the change was made, not released. 
 
 ## Unreleased
 
+### 2026-10-06, UI3Window win32 dark-mode visual validation
+
+- Shane ran the current tbUI3Test harness in twinBASIC BETA 997, win32, with Windows in dark mode.
+- Runtime screenshot confirms the native title bar is dark and the form client background is exactly #202020.
+- The Accent UI3Button remains readable and renders with #FF8279 fill, matching the expected Accent Light2 shade for Shane's current Windows accent palette.
+- The screenshot also shows the Windows 11 rounded outer window corners.
+- This visual run validates the dark-mode UI3Window baseline in win32. It does not by itself revalidate Click behavior, live theme switching, light mode, or the running win64 window.
+
+
 ### 2026-10-06, reference package source audit conclusions
 
 - Audited the loose sources from the validated BETA 997 reference package laboratory and recycled the reusable findings into `Arrow-Loop/twinBASIC-Knowledge` commit `8c54824`.

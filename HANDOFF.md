@@ -30,18 +30,17 @@ The decisions are in `docs/2026-10-06-first-pass-report.md` and `docs/2026-10-06
 | S2: win64 | Designer draws correctly and a run starts cleanly. The running window was not inspected |
 | S2: light mode | Not tested |
 | S2: repaint when the form's BackColor changes | Bug. Cause still open (see ROADMAP) |
-| UI3Window (dark/light title bar, #202020/#F3F3F3 background) | Built. Not run |
+| UI3Window (dark/light title bar, #202020/#F3F3F3 background) | win32 dark mode visually passed: dark title bar, #202020 form, readable Accent button (#FF8279), rounded window corners. win64 runtime and light mode still open |
 | Form theme spec: drop-on control, live switching, theme cache | Not built |
 
 ## First job for the next session: validate UI3Window and continue the form-theme baseline
 
-Commit 94b621b repaired tbUI3Test's imported tbUI3 1.0.0.1 reference, refreshed the embedded package, and added `UI3ApplyWindowTheme Me` in Form_Load and Form_Activate. The source-level repair is in the repo, but Shane has not yet reported a visual/runtime run of that harness.
+Commit 94b621b repaired tbUI3Test's imported tbUI3 1.0.0.1 reference, refreshed the embedded package, and added `UI3ApplyWindowTheme Me` in Form_Load and Form_Activate. Shane visually validated the current harness in win32 dark mode on 2026-10-06: dark title bar, #202020 form, readable Accent button at #FF8279, and rounded outer window corners.
 
-1. Open the current tbUI3Test project in BETA 997 and run it in win32.
-2. Expect the title bar to follow Windows dark/light mode and the form background to be #202020 in dark mode or #F3F3F3 in light mode; both button styles should remain readable and Click should work.
-3. Repeat in win64 and inspect the running window, not only the designer.
-4. Test light mode separately when convenient.
-5. Then continue `docs/2026-10-06-form-theme-spec.md`: UI3FormTheme, live theme notifications/subclassing, and the cached theme.
+1. Switch the current tbUI3Test target to win64 and run it.
+2. Inspect the running window, not only the designer, and confirm the same title bar/form/button result.
+3. Test light mode separately when convenient.
+4. Then continue `docs/2026-10-06-form-theme-spec.md`: UI3FormTheme, live theme notifications/subclassing, and the cached theme.
 
 ## Reference package laboratory
 

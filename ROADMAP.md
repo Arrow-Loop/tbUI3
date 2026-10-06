@@ -4,9 +4,9 @@ Committed work is listed first. Exploratory ideas are marked as such.
 
 ## Committed: spike A (see 2026-10-06-spike-spec.md)
 
-- S2 run: validated on 2026-10-06 in win32 (design time and runtime) and win64 (design time; the run starts cleanly): accent and Standard styles, resizing, and Click. Still to check: light mode, and the running win64 window by eye.
+- S2 run: validated on 2026-10-06 in win32 (design time and runtime) and win64 (design time; the run starts cleanly): accent and Standard styles, resizing, and Click. UI3Window dark-mode visual baseline also passed in win32. Still to check: light mode, and the running win64 window by eye.
 - S2 fix: the button doesn't repaint when the container's BackColor changes. `UserControl_AmbientChanged` is already handled, and commit f660d83 made its check case-insensitive, but the fix is unverified. The form theme spec also forces a redraw of all child controls after a theme change.
-- Validate the repaired tbUI3Test from commit 94b621b: visually run the win32 and win64 harness with `UI3ApplyWindowTheme Me`, confirm the title bar/form background/button rendering, and then test light mode separately.
+- Validate the repaired tbUI3Test from commit 94b621b: **win32 dark-mode visual run passed on 2026-10-06** (dark title bar, #202020 form, readable Accent button at #FF8279, rounded window corners). Still to check: the running win64 window by eye and light mode separately.
 - Finish the form theme baseline (`docs/2026-10-06-form-theme-spec.md`): the drop-on `UI3FormTheme` control, live theme switching (subclass WM_SETTINGCHANGE "ImmersiveColorSet", WM_DWMCOLORIZATIONCOLORCHANGED and WM_THEMECHANGED), and the cached theme. Then check dark and light, win32 and win64, and that the IDE doesn't crash when the debugger stops.
 - S3: icon glyphs in Segoe Fluent Icons, falling back to Segoe MDL2 Assets, plus a test on a machine without Segoe UI Variable.
 - S4: windowless and transparent. In S2 the control is still windowed and clears to the container's BackColor. S4 must remove that and blend over whatever is behind the control.

@@ -4,6 +4,21 @@ All notable changes to tbUI3. Dates are when the change was made, not released. 
 
 ## Unreleased
 
+### 2026-10-06, form theme baseline (built, not yet run)
+
+- Added `docs/2026-10-06-form-theme-spec.md`. It specifies a dark or light title bar that follows Windows, the WinUI window background, live theme switching, a drop-on `UI3FormTheme` control, and `UI3Window.Attach`.
+- Added the public module `UI3Window` (commit f660d83), adapted from the Knowledge repo's `native-theme-reference.twin`:
+  - `UI3ApplyWindowTheme` sets the form's title bar to match Windows dark or light mode, without forcing caption colours, and sets the form background to #202020 (dark) or #F3F3F3 (light).
+  - Helpers `UI3IsDarkMode`, `UI3AccentColor` and `UI3WindowBackColor`, and a new `UI3AccentShade` enum.
+  - The package version is now 1.0.0.1. The package builds in the IDE. It has not been run.
+- Not yet built from the spec: the drop-on `UI3FormTheme` control, live switching through subclassing, and the cached theme.
+- UI3Button's AmbientChanged check is now case-insensitive for "BackColor". Whether this fixes the repaint bug from the S2 checks is untested.
+- tbUI3Test is left in a broken state:
+  - its committed `.twinproj` embeds the new package, but the `[IMPORTED] tbUI3` reference is missing, so UI3Button1 shows a warning triangle;
+  - frmMain does not call `UI3ApplyWindowTheme` yet;
+  - `tbUI3Test/src` is still the export from commit 6df11b7.
+  - See HANDOFF.md for the fix.
+
 ### 2026-10-06, spike S2 remaining checks
 
 - Checked on Shane's PC (dark mode), with a temporary second UI3Button and a temporary form BackColor of #202020. Both were discarded afterwards and not saved.
@@ -11,7 +26,7 @@ All notable changes to tbUI3. Dates are when the change was made, not released. 
 - Standard style on the dark #202020 backdrop: a subtle lighter fill with white caption text, as in WinUI DefaultButtonStyle. Judged by eye; pixel colours were not measured.
 - Standard style on the default light-grey form: the white caption is nearly invisible. This is expected: the dark-theme fills assume a dark backdrop, which is why S5 makes the test form dark.
 - win64: after switching the IDE target to win64, the designer (now hosted by the 64-bit compiler) draws both buttons correctly, and a 64-bit run starts with no errors in the debug console. The running 64-bit window itself was not inspected.
-- Bug found: after the form's BackColor changed, the win32 designer kept painting the controls over the old light-grey background until the compiler restarted. UI3Button does not handle `UserControl_AmbientChanged`, so it never repaints when the container's colours change.
+- Bug found: after the form's BackColor changed, the win32 designer kept painting the controls over the old light-grey background until the compiler restarted. (Correction: UI3Button does handle `UserControl_AmbientChanged`, so the cause is still open.)
 - Not checked: light mode (that needs Shane's Windows theme to be switched).
 
 ### 2026-10-06, spike S2 first run (win32)

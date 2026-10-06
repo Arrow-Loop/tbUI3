@@ -33,17 +33,24 @@ The decisions are in `docs/2026-10-06-first-pass-report.md` and `docs/2026-10-06
 | UI3Window (dark/light title bar, #202020/#F3F3F3 background) | Built. Not run |
 | Form theme spec: drop-on control, live switching, theme cache | Not built |
 
-## First job for the next session: repair tbUI3Test
+## First job for the next session: validate UI3Window and continue the form-theme baseline
 
-The tbUI3Test project file in the repo embeds the new 1.0.0.1 package. It is missing its `[IMPORTED] tbUI3` reference, so UI3Button1 shows a warning triangle. To fix it:
+Commit 94b621b repaired tbUI3Test's imported tbUI3 1.0.0.1 reference, refreshed the embedded package, and added `UI3ApplyWindowTheme Me` in Form_Load and Form_Activate. The source-level repair is in the repo, but Shane has not yet reported a visual/runtime run of that harness.
 
-1. Close tbUI3Test in the IDE, then back up `tbUI3Test\tbUI3Test.twinproj`.
-2. Run `twinBASIC_win64.exe export` on it into `tbUI3Test\src --overwrite`.
-3. Add the `[IMPORTED] tbUI3` entry to `src\Settings` under `project.references`. Copy it from `git show 6df11b7:tbUI3Test/src/Settings`. Set `versionRevision` to `"1"` to match package 1.0.0.1.
-4. Make `src\Packages\tbUI3\` an exact copy of `tbUI3\src\`.
-5. In `src\Sources\frmMain.twin`, call `UI3ApplyWindowTheme Me` in `Form_Load` and `Form_Activate`. Check the exact name in `tbUI3/src/Sources/UI3Window.twin`.
-6. Run `twinBASIC_win64.exe import` back into the `.twinproj`. Open it in the IDE and run it.
-7. Expect: a dark title bar, a #202020 form, both button styles readable, and Click working.
+1. Open the current tbUI3Test project in BETA 997 and run it in win32.
+2. Expect the title bar to follow Windows dark/light mode and the form background to be #202020 in dark mode or #F3F3F3 in light mode; both button styles should remain readable and Click should work.
+3. Repeat in win64 and inspect the running window, not only the designer.
+4. Test light mode separately when convenient.
+5. Then continue `docs/2026-10-06-form-theme-spec.md`: UI3FormTheme, live theme notifications/subclassing, and the cached theme.
+
+## Reference package laboratory
+
+- `reference-packages/ReferencePackages.twinproj` is the validated package-archeology project. Shane confirmed the repaired project runs in BETA 997.
+- It intentionally enables many packages so their actual source/API patterns can be inspected in one place. That does **not** authorize adding those packages as tbUI3 dependencies.
+- The loose `reference-packages/src/` mirror should be used for searches and diffs; the `.twinproj` remains the canonical snapshot.
+- The original diagnostic avalanche was caused by WinDevLibImpl's embedded `Packages/WinDevLib` folder being empty even though its Settings declared that local dependency. The repaired snapshot embeds the same WinDevLib 9.5.742 payload there. Do not “fix” those interfaces by duplicating hundreds of missing declarations.
+- Priority donors/references: WinRT (UISettings/theme/accent and later Composition), WinDevLib/WinDevLibImpl (Windows/COM declarations), TBMANLIB (subclassing and utility patterns), VBCCR18 (mature control behavior), TwinTimerLib, AutoCompleteLib, and OLEGuids. GdiPlus is comparison/reference only; tbUI3 remains Direct2D/DirectWrite-first.
+- For any adapted third-party code, verify the licence and record provenance. Minimize the copied surface and keep helpers private where practical.
 
 ## Gotchas
 

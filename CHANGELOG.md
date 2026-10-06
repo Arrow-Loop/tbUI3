@@ -4,6 +4,14 @@ All notable changes to tbUI3. Dates are when the change was made, not released. 
 
 ## Unreleased
 
+### 2026-10-06, reference package laboratory
+
+- Added `reference-packages/ReferencePackages.twinproj`, a dedicated package-archeology project containing the selected TWINSERV packages used to study implementation patterns without making them tbUI3 dependencies.
+- Repaired WinDevLibImpl's missing embedded WinDevLib dependency by placing the exact WinDevLib 9.5.742 payload under `Packages/WinDevLibImpl/Packages/WinDevLib`, matching WinDevLibImpl's own local-package reference.
+- Shane confirmed the repaired reference project runs in twinBASIC BETA 997.
+- The validated snapshot contains WinRT 1.7.0.159, WinDevLib 9.5.742.0, WinDevLibImpl 1.4.41.742, TBMANLIB and selected TBMAN companions, TwinTimerLib 1.0.0.7, VBCCR18 1.8.0.125, AutoCompleteLib 1.0.0.3, OLEGuids 1.0.0.10, and GdiPlus 0.9.0.45.
+- Documented the architectural rule that these packages are reference/source donors only. tbUI3 stays self-contained; permissively licensed implementation fragments may be selectively adapted and attributed rather than introducing package dependencies.
+
 ### 2026-10-06, form theme baseline (built, not yet run)
 
 - Added `docs/2026-10-06-form-theme-spec.md`. It specifies a dark or light title bar that follows Windows, the WinUI window background, live theme switching, a drop-on `UI3FormTheme` control, and `UI3Window.Attach`.
@@ -13,11 +21,7 @@ All notable changes to tbUI3. Dates are when the change was made, not released. 
   - The package version is now 1.0.0.1. The package builds in the IDE. It has not been run.
 - Not yet built from the spec: the drop-on `UI3FormTheme` control, live switching through subclassing, and the cached theme.
 - UI3Button's AmbientChanged check is now case-insensitive for "BackColor". Whether this fixes the repaint bug from the S2 checks is untested.
-- tbUI3Test is left in a broken state:
-  - its committed `.twinproj` embeds the new package, but the `[IMPORTED] tbUI3` reference is missing, so UI3Button1 shows a warning triangle;
-  - frmMain does not call `UI3ApplyWindowTheme` yet;
-  - `tbUI3Test/src` is still the export from commit 6df11b7.
-  - See HANDOFF.md for the fix.
+- Commit 94b621b repaired tbUI3Test's imported tbUI3 1.0.0.1 reference, refreshed its embedded package, and added `UI3ApplyWindowTheme Me` in Form_Load and Form_Activate. That repaired harness has not yet been visually/runtime validated by Shane, so UI3Window remains recorded as built but not run.
 
 ### 2026-10-06, spike S2 remaining checks
 

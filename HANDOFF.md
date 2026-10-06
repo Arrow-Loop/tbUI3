@@ -31,7 +31,7 @@ The decisions are in `docs/2026-10-06-first-pass-report.md` and `docs/2026-10-06
 | S2: light mode | Deferred by Shane; not validated |
 | S2: repaint when the form's BackColor changes | Bug. Cause still open (see ROADMAP) |
 | UI3Window (dark/light title bar, #202020/#F3F3F3 background) | dark mode passed in win32 and win64; light mode deferred |
-| Form theme spec: drop-on control, live switching, theme cache | 1.0.0.2 implementation candidate in source/project; IDE compile/runtime validation pending |
+| Form theme spec: drop-on control, live switching, theme cache | 1.0.0.2 builds/imports cleanly and the Attach-based test harness runs with Click intact. Live accent/theme notifications, debugger-stop safety, win64, and drop-on UI3FormTheme still need validation |
 
 ## First job for the next session: validate the 1.0.0.2 form-theme engine
 
@@ -39,14 +39,13 @@ The decisions are in `docs/2026-10-06-first-pass-report.md` and `docs/2026-10-06
 
 The source/project candidate now contains UI3FormTheme, UI3Window.Attach/Detach, cached theme/accent state and live subclass notifications.
 
-1. Pull the latest tbui3-dev and open tbUI3/tbUI3.twinproj in BETA 997.
-2. Confirm Diagnostics are clean and build the package for win32.
-3. Open tbUI3Test and run the updated harness. It now calls UI3Window.Attach Me rather than reapplying on Form_Activate.
-4. With the app open, change the Windows accent colour. The Accent button should repaint without reactivation/restart.
-5. Stop the debugger while the form is open; the IDE must not crash.
-6. Repeat the compile/run/stop checks in win64.
-7. Then drop UI3FormTheme from the toolbox onto frmMain, remove the code Attach/Detach calls, and confirm the drop-on path behaves identically.
-8. Light mode remains a later validation item when Shane is willing to switch Windows themes.
+1. **Passed:** tbUI3 builds cleanly in BETA 997 and imports into tbUI3Test.
+2. **Passed:** tbUI3Test runs through `UI3Window.Attach Me`; UI3Button Click still raises Hello World.
+3. With the app open, change the Windows accent colour. The Accent button should repaint without reactivation/restart.
+4. Stop the debugger while the form is open; the IDE must not crash.
+5. Repeat the run/stop checks in win64.
+6. Then drop UI3FormTheme from the toolbox onto frmMain, remove the code Attach/Detach calls, and confirm the drop-on path behaves identically.
+7. Light mode remains a later validation item when Shane is willing to switch Windows themes.
 
 
 ## Reference package laboratory

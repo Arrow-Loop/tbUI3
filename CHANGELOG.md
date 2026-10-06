@@ -4,6 +4,14 @@ All notable changes to tbUI3. Dates are when the change was made, not released. 
 
 ## Unreleased
 
+### 2026-10-06, 1.0.0.2 runtime baseline
+
+- Shane confirmed that the 1.0.0.2 tbUI3 package builds cleanly in twinBASIC BETA 997 and imports into tbUI3Test without issues.
+- Shane then ran the updated tbUI3Test harness successfully with the new `UI3Window.Attach Me` path active.
+- UI3Button Click still raises the Hello World message box under the new live-theme attachment path.
+- This validates the normal runtime baseline for the new form-theme engine. Live accent/theme message handling, debugger-stop safety, the drop-on UI3FormTheme path and light mode remain separate checks.
+
+
 ### 2026-10-06, repository handoff cleanup
 
 - Updated the README with the actual 1.0.0.2 development state, authoritative full-control inventory and prepared S3 icon specification.

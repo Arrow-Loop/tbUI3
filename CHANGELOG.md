@@ -4,6 +4,16 @@ All notable changes to tbUI3. Dates are when the change was made, not released. 
 
 ## Unreleased
 
+### 2026-10-06, spike S2 remaining checks
+
+- Checked on Shane's PC (dark mode), with a temporary second UI3Button and a temporary form BackColor of #202020. Both were discarded afterwards and not saved.
+- Resizing: a 260 x 80 px button keeps its 4 px corners, its border and a centred caption, at design time and at runtime.
+- Standard style on the dark #202020 backdrop: a subtle lighter fill with white caption text, as in WinUI DefaultButtonStyle. Judged by eye; pixel colours were not measured.
+- Standard style on the default light-grey form: the white caption is nearly invisible. This is expected: the dark-theme fills assume a dark backdrop, which is why S5 makes the test form dark.
+- win64: after switching the IDE target to win64, the designer (now hosted by the 64-bit compiler) draws both buttons correctly, and a 64-bit run starts with no errors in the debug console. The running 64-bit window itself was not inspected.
+- Bug found: after the form's BackColor changed, the win32 designer kept painting the controls over the old light-grey background until the compiler restarted. UI3Button does not handle `UserControl_AmbientChanged`, so it never repaints when the container's colours change.
+- Not checked: light mode (that needs Shane's Windows theme to be switched).
+
 ### 2026-10-06, spike S2 first run (win32)
 
 - Built tbUI3 in the IDE (BETA 997, win32) and re-imported the package into tbUI3Test. The saved test project and its `src/` export are committed.

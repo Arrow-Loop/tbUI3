@@ -4,7 +4,8 @@ Committed work is listed first. Exploratory ideas are marked as such.
 
 ## Committed: spike A (see 2026-10-06-spike-spec.md)
 
-- S2 run: win32 design time and runtime validated on 2026-10-06 (accent fill, rounded corners, Click). Still to check: resizing, Standard style, light mode, and 64-bit.
+- S2 run: validated on 2026-10-06 in win32 (design time and runtime) and win64 (design time; the run starts cleanly): accent and Standard styles, resizing, and Click. Still to check: light mode, and the running win64 window by eye.
+- S2 fix: repaint in `UserControl_AmbientChanged` so the button follows changes to the container's BackColor. Found during the S2 checks.
 - S3: icon glyphs in Segoe Fluent Icons, falling back to Segoe MDL2 Assets, plus a test on a machine without Segoe UI Variable.
 - S4: windowless and transparent. In S2 the control is still windowed and clears to the container's BackColor. S4 must remove that and blend over whatever is behind the control.
 - S5: Mica, through a form helper adapted from the Knowledge repo's `native-theme-reference.twin`. The test form should then be dark: WinUI's translucent fills assume a dark backdrop such as SolidBackgroundFillColorBase #202020 or Mica.

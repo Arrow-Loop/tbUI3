@@ -35,11 +35,12 @@ The decisions are in `docs/2026-10-06-first-pass-report.md` and `docs/2026-10-06
 | S3 icons (1.0.0.3): build, designer and runtime rendering, icon left and top, enlarged button, icon-only, MDL2 font check, win64 | Passed on Shane's PC, 2026-10-06 |
 | 1.0.0.4: Caption can be cleared in the designer | Passed on Shane's PC in win32 and win64, 2026-10-06 |
 
-## First job for the next session: sync tbUI3Test
+## First job for the next session
 
 S3 icons (1.0.0.3) and the 1.0.0.4 Caption fix both passed on Shane's PC on 2026-10-06, in win32 and win64 (see CHANGELOG).
 
-1. Commit Shane's saved local tbUI3Test (the `.twinproj` and its `src/` export) to `tbui3-dev`, so the repository matches his PC again. Do not overwrite his local copy with the older repository copy.
+1. Done 2026-10-06: Shane's tbUI3Test is synced (commit 7c20660) and `tbUI3Test/src` was regenerated from it. frmMain's `Form_Activate` still holds the two MDL2 test lines (`IconFontName`/`IconGlyph`); remove them when convenient.
+2. Next suggested work: theme the form canvas at design time (ROADMAP, designer experience).
 
 ## Reference package laboratory
 

@@ -25,7 +25,6 @@ Committed work is listed first. Exploratory ideas are marked as such.
 
 ## Committed: housekeeping
 
-- Commit Shane's saved local tbUI3Test (with the dropped UI3FormTheme) and its `src/` export to `tbui3-dev`. The repository copy is older than his PC's.
 - Decide where `reference-packages/` lives. It adds about 112 MB of third-party package source to this repository; a separate repository (or keeping only the notes and a list of package versions) would keep tbUI3 small. Check each package's licence before it is published anywhere.
 
 ## Committed: reference-derived follow-ups

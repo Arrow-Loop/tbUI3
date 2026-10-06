@@ -1,0 +1,106 @@
+' tbUI3 window theme: makes an ordinary twinBASIC Form follow the Windows light/dark mode,
+' and exposes the light/dark and accent checks to the host application.
+'
+' Adapted from the Arrow Loop twinBASIC-Knowledge reference
+' reference/packetpilot-winui/native-theme-reference.twin (PacketPilot, commit eb09d2e).
+' Differences from that reference, on purpose:
+'   - Only DWMWA_USE_IMMERSIVE_DARK_MODE is set; the caption and caption-text colours are reset
+'     to the system default instead of being forced to #202020 / #F3F3F3. That is what a WinUI 3
+'     app's system title bar does, and it keeps the "Show accent colour on title bars" setting working.
+'   - Dark mode is read with RegGetValueW (UI3Theme.IsDarkMode) rather than WScript.Shell.
+'   - DPI awareness and the Mica backdrop are not here yet: they are spike steps S6 and S5.
+'
+' Usage in a form:
+'     Private Sub Form_Load()
+'         UI3ApplyWindowTheme Me
+'     End Sub
+'     Private Sub Form_Activate()
+'         UI3ApplyWindowTheme Me   ' picks up a theme change made while the app was running
+'     End Sub
+
+Public Module UI3Window
+
+    ' SolidBackgroundFillColorBase (Common_themeresources_any.xaml, microsoft-ui-xaml 8318c5bf):
+    ' #202020 in the Default (dark) dictionary, #F3F3F3 in Light. OLE colours (&HBBGGRR).
+    Private Const DARK_WINDOW_BACKCOLOR As Long = &H202020
+    Private Const LIGHT_WINDOW_BACKCOLOR As Long = &HF3F3F3
+
+    Private Const DWMWA_USE_IMMERSIVE_DARK_MODE_BEFORE_20H1 As Long = 19
+    Private Const DWMWA_USE_IMMERSIVE_DARK_MODE As Long = 20
+    Private Const DWMWA_CAPTION_COLOR As Long = 35
+    Private Const DWMWA_TEXT_COLOR As Long = 36
+    Private Const DWMWA_COLOR_DEFAULT As Long = &HFFFFFFFF
+
+    Private Const SWP_NOSIZE As Long = &H1
+    Private Const SWP_NOMOVE As Long = &H2
+    Private Const SWP_NOZORDER As Long = &H4
+    Private Const SWP_NOACTIVATE As Long = &H10
+    Private Const SWP_FRAMECHANGED As Long = &H20
+
+    Private Declare PtrSafe Function DwmSetWindowAttribute Lib "dwmapi" (ByVal hWnd As LongPtr, ByVal dwAttribute As Long, _
+        ByRef pvAttribute As Any, ByVal cbAttribute As Long) As Long
+    Private Declare PtrSafe Function SetWindowPos Lib "user32" (ByVal hWnd As LongPtr, ByVal hWndInsertAfter As LongPtr, _
+        ByVal x As Long, ByVal y As Long, ByVal cx As Long, ByVal cy As Long, ByVal uFlags As Long) As Long
+
+    [Description("True when Windows apps are set to dark mode (Settings > Personalisation > Colours).")]
+    Public Function UI3IsDarkMode() As Boolean
+        UI3IsDarkMode = IsDarkMode()
+    End Function
+
+    [Description("One shade of the Windows accent colour, as an OLE colour usable for BackColor/ForeColor.")]
+    Public Function UI3AccentColor(Optional ByVal Shade As UI3AccentShade = ui3AccentBase) As Long
+        Dim argb As Long
+        argb = AccentShade(Shade)
+        ' &HAARRGGBB to &H00BBGGRR.
+        UI3AccentColor = ((argb And &HFF&) * &H10000) Or (argb And &HFF00&) Or ((argb And &HFF0000) \ &H10000)
+    End Function
+
+    [Description("The WinUI window background colour for the current mode (#202020 dark, #F3F3F3 light), as an OLE colour.")]
+    Public Function UI3WindowBackColor() As Long
+        If IsDarkMode() Then
+            UI3WindowBackColor = DARK_WINDOW_BACKCOLOR
+        Else
+            UI3WindowBackColor = LIGHT_WINDOW_BACKCOLOR
+        End If
+    End Function
+
+    [Description("Makes a form follow the Windows light/dark mode: title bar, and (by default) the form's BackColor.")]
+    Public Sub UI3ApplyWindowTheme(ByVal Form As Object, Optional ByVal SetBackColor As Boolean = True)
+        Dim hWnd As LongPtr
+        On Error Resume Next
+        hWnd = Form.hWnd
+        On Error GoTo 0
+        If hWnd = 0 Then Exit Sub
+
+        UI3ApplyTitleBarTheme hWnd
+
+        If SetBackColor Then
+            Dim wanted As Long
+            wanted = UI3WindowBackColor()
+            If Form.BackColor <> wanted Then Form.BackColor = wanted
+        End If
+    End Sub
+
+    [Description("Sets a window's title bar to dark or light to match the Windows app mode.")]
+    Public Sub UI3ApplyTitleBarTheme(ByVal hWnd As LongPtr)
+        If hWnd = 0 Then Exit Sub
+
+        Dim useDark As Long
+        If IsDarkMode() Then useDark = 1
+
+        ' Attribute 20 from Windows 10 20H1; 19 on earlier Windows 10 builds. Fails harmlessly on older Windows.
+        If DwmSetWindowAttribute(hWnd, DWMWA_USE_IMMERSIVE_DARK_MODE, useDark, 4) <> 0 Then
+            DwmSetWindowAttribute hWnd, DWMWA_USE_IMMERSIVE_DARK_MODE_BEFORE_20H1, useDark, 4
+        End If
+
+        ' Windows 11 only: undo any explicit caption colours so the system draws its own.
+        Dim systemDefault As Long
+        systemDefault = DWMWA_COLOR_DEFAULT
+        DwmSetWindowAttribute hWnd, DWMWA_CAPTION_COLOR, systemDefault, 4
+        DwmSetWindowAttribute hWnd, DWMWA_TEXT_COLOR, systemDefault, 4
+
+        ' Make the non-client area redraw now rather than on the next activation.
+        SetWindowPos hWnd, 0, 0, 0, 0, 0, SWP_NOMOVE Or SWP_NOSIZE Or SWP_NOZORDER Or SWP_NOACTIVATE Or SWP_FRAMECHANGED
+    End Sub
+
+End Module

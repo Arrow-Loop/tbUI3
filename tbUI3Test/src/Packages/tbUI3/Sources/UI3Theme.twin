@@ -1,4 +1,4 @@
-' tbUI3 theme: light/dark detection, the system accent palette, and WinUI colour tokens.
+' tbUI3 theme: cached light/dark state, the system accent palette, and WinUI colour tokens.
 '
 ' Token values are copied from microsoft-ui-xaml (main, commit 8318c5bf, 2026-10-05):
 '   controls/dev/CommonStyles/Common_themeresources_any.xaml   (Default = dark, Light)
@@ -9,7 +9,6 @@
 
 Private Module UI3Theme
 
-    ' --- Common_themeresources_any.xaml, Default (dark) dictionary ---
     Public Const DARK_TextFillColorPrimary As Long = &HFFFFFFFF
     Public Const DARK_TextOnAccentFillColorPrimary As Long = &HFF000000
     Public Const DARK_ControlFillColorDefault As Long = &H0FFFFFFF
@@ -17,8 +16,8 @@ Private Module UI3Theme
     Public Const DARK_ControlStrokeColorSecondary As Long = &H18FFFFFF
     Public Const DARK_ControlStrokeColorOnAccentDefault As Long = &H14FFFFFF
     Public Const DARK_ControlStrokeColorOnAccentSecondary As Long = &H23000000
+    Public Const DARK_SolidBackgroundFillColorBase As Long = &HFF202020
 
-    ' --- Common_themeresources_any.xaml, Light dictionary ---
     Public Const LIGHT_TextFillColorPrimary As Long = &HE4000000
     Public Const LIGHT_TextOnAccentFillColorPrimary As Long = &HFFFFFFFF
     Public Const LIGHT_ControlFillColorDefault As Long = &HB3FFFFFF
@@ -26,24 +25,18 @@ Private Module UI3Theme
     Public Const LIGHT_ControlStrokeColorSecondary As Long = &H29000000
     Public Const LIGHT_ControlStrokeColorOnAccentDefault As Long = &H14FFFFFF
     Public Const LIGHT_ControlStrokeColorOnAccentSecondary As Long = &H66000000
+    Public Const LIGHT_SolidBackgroundFillColorBase As Long = &HFFF3F3F3
 
-    ' ControlCornerRadius 4,4,4,4 (CornerRadius_themeresources.xaml).
     Public Const ControlCornerRadius As Single = 4
-    ' ButtonBorderThemeThickness 1 (Button_themeresources.xaml).
     Public Const ButtonBorderThemeThickness As Single = 1
-    ' ButtonPadding 11,5,11,6 (Button_themeresources.xaml).
     Public Const ButtonPaddingLeft As Single = 11
     Public Const ButtonPaddingTop As Single = 5
     Public Const ButtonPaddingRight As Single = 11
     Public Const ButtonPaddingBottom As Single = 6
-    ' ControlElevationBorderBrush / AccentControlElevationBorderBrush: LinearGradientBrush,
-    ' MappingMode Absolute, StartPoint 0,0, EndPoint 0,3, stops Secondary at 0.33, Default at 1.0.
     Public Const ElevationBorderGradientLength As Single = 3
     Public Const ElevationBorderStop0 As Single = 0.33
     Public Const ElevationBorderStop1 As Single = 1
 
-    ' AccentPalette entry order (8 RGBA entries, light to dark). This layout is how Windows
-    ' stores the palette; it is not formally documented, so treat it as observed behaviour.
     Public Const ACCENT_LIGHT3 As Long = 0
     Public Const ACCENT_LIGHT2 As Long = 1
     Public Const ACCENT_LIGHT1 As Long = 2
@@ -52,9 +45,7 @@ Private Module UI3Theme
     Public Const ACCENT_DARK2 As Long = 5
     Public Const ACCENT_DARK3 As Long = 6
 
-    ' Windows' default accent blue, used only when no accent can be read at all.
     Private Const FALLBACK_ACCENT As Long = &HFF0078D4
-
     Private Const HKEY_CURRENT_USER As Long = &H80000001
     Private Const RRF_RT_REG_DWORD As Long = &H10
     Private Const RRF_RT_REG_BINARY As Long = &H8
@@ -65,44 +56,88 @@ Private Module UI3Theme
         ByVal dwFlags As Long, ByRef pdwType As Long, ByRef pvData As Any, ByRef pcbData As Long) As Long
     Private Declare PtrSafe Function DwmGetColorizationColor Lib "dwmapi" (ByRef pcrColorization As Long, ByRef pfOpaqueBlend As Long) As Long
 
-    ' Apps use dark mode when HKCU\...\Themes\Personalize\AppsUseLightTheme is 0.
-    ' A missing value means light, which is the Windows default.
-    Public Function IsDarkMode() As Boolean
-        Dim value As Long
-        Dim valueType As Long
-        Dim size As Long
-        size = 4
-        If RegGetValueW(CLngPtr(HKEY_CURRENT_USER), StrPtr(PERSONALIZE_KEY), StrPtr("AppsUseLightTheme"), RRF_RT_REG_DWORD, valueType, value, size) = 0 Then
-            IsDarkMode = (value = 0)
-        End If
-    End Function
+    Private m_CacheValid As Boolean
+    Private m_SystemDark As Boolean
+    Private m_ThemeMode As UI3ThemeMode
+    Private m_Accent(0 To 6) As Long
 
-    ' One shade of the system accent palette as &HFFRRGGBB.
-    ' Order of preference: the AccentPalette registry value (what Windows itself derives the
-    ' SystemAccentColor shades from), then the DWM colorization colour for every shade, then blue.
-    ' The supported API for this is WinRT UISettings.GetColorValue; that route is on the roadmap.
-    Public Function AccentShade(ByVal shade As Long) As Long
+    Public Sub SetThemeMode(ByVal Value As UI3ThemeMode)
+        If Value < ui3ThemeSystem Or Value > ui3ThemeDark Then Err.Raise 380
+        m_ThemeMode = Value
+    End Sub
+
+    Public Sub RefreshTheme()
+        m_SystemDark = ReadSystemDarkMode()
+
         Dim palette(0 To 31) As Byte
         Dim valueType As Long
         Dim size As Long
-        size = 32
         Dim hr As Long
-        hr = RegGetValueW(CLngPtr(HKEY_CURRENT_USER), StrPtr(ACCENT_KEY), StrPtr("AccentPalette"), RRF_RT_REG_BINARY, valueType, palette(0), size)
-        If hr = 0 Then
-            If size >= (shade + 1) * 4 Then
-                AccentShade = &HFF000000 Or (CLng(palette(shade * 4)) * &H10000) Or (CLng(palette(shade * 4 + 1)) * &H100&) Or CLng(palette(shade * 4 + 2))
-                Exit Function
+        Dim i As Long
+
+        size = 32
+        hr = RegGetValueW(CLngPtr(HKEY_CURRENT_USER), StrPtr(ACCENT_KEY), StrPtr("AccentPalette"), _
+            RRF_RT_REG_BINARY, valueType, palette(0), size)
+
+        If hr = 0 And size >= 28 Then
+            For i = 0 To 6
+                m_Accent(i) = &HFF000000 Or (CLng(palette(i * 4)) * &H10000) Or _
+                    (CLng(palette(i * 4 + 1)) * &H100&) Or CLng(palette(i * 4 + 2))
+            Next i
+        Else
+            Dim colorization As Long
+            Dim opaque As Long
+            Dim fallback As Long
+
+            If DwmGetColorizationColor(colorization, opaque) = 0 Then
+                fallback = colorization Or &HFF000000
+            Else
+                fallback = FALLBACK_ACCENT
             End If
+
+            For i = 0 To 6
+                m_Accent(i) = fallback
+            Next i
         End If
 
-        Dim colorization As Long
-        Dim opaque As Long
-        If DwmGetColorizationColor(colorization, opaque) = 0 Then
-            AccentShade = colorization Or &HFF000000
-            Exit Function
-        End If
+        m_CacheValid = True
+    End Sub
 
-        AccentShade = FALLBACK_ACCENT
+    Public Function IsDarkMode() As Boolean
+        EnsureThemeCache
+
+        Select Case m_ThemeMode
+            Case ui3ThemeLight
+                IsDarkMode = False
+            Case ui3ThemeDark
+                IsDarkMode = True
+            Case Else
+                IsDarkMode = m_SystemDark
+        End Select
+    End Function
+
+    Public Function AccentShade(ByVal shade As Long) As Long
+        EnsureThemeCache
+        If shade < ACCENT_LIGHT3 Or shade > ACCENT_DARK3 Then shade = ACCENT_BASE
+        AccentShade = m_Accent(shade)
+    End Function
+
+    Private Sub EnsureThemeCache()
+        If Not m_CacheValid Then RefreshTheme
+    End Sub
+
+    Private Function ReadSystemDarkMode() As Boolean
+        Dim value As Long
+        Dim valueType As Long
+        Dim size As Long
+
+        size = 4
+        If RegGetValueW(CLngPtr(HKEY_CURRENT_USER), StrPtr(PERSONALIZE_KEY), StrPtr("AppsUseLightTheme"), _
+                RRF_RT_REG_DWORD, valueType, value, size) = 0 Then
+            ReadSystemDarkMode = (value = 0)
+        Else
+            ReadSystemDarkMode = False
+        End If
     End Function
 
 End Module

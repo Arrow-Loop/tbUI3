@@ -27,20 +27,25 @@ The decisions are in `docs/2026-10-06-first-pass-report.md` and `docs/2026-10-06
 | S1: the package's control appears in the toolbox, drops onto a form, its properties persist, Click works | Passed (win32) |
 | S2: Direct2D button, accent and Standard styles, 4 px corners, gradient border, Segoe UI Variable text | Passed in win32, at design time and runtime |
 | S2: resizing | Passed |
-| S2: win64 | Designer draws correctly and a run starts cleanly. The running window was not inspected |
-| S2: light mode | Not tested |
+| S2: win64 | Passed at runtime by eye; looks identical to win32, and Click raises the Hello World message box |
+| S2: light mode | Deferred by Shane; not validated |
 | S2: repaint when the form's BackColor changes | Bug. Cause still open (see ROADMAP) |
-| UI3Window (dark/light title bar, #202020/#F3F3F3 background) | win32 dark mode visually passed: dark title bar, #202020 form, readable Accent button (#FF8279), rounded window corners. win64 runtime and light mode still open |
-| Form theme spec: drop-on control, live switching, theme cache | Not built |
+| UI3Window (dark/light title bar, #202020/#F3F3F3 background) | dark mode passed in win32 and win64; light mode deferred |
+| Form theme spec: drop-on control, live switching, theme cache | 1.0.0.2 implementation candidate in source/project; IDE compile/runtime validation pending |
 
-## First job for the next session: validate UI3Window and continue the form-theme baseline
+## First job for the next session: validate the 1.0.0.2 form-theme engine
 
-Commit 94b621b repaired tbUI3Test's imported tbUI3 1.0.0.1 reference, refreshed the embedded package, and added `UI3ApplyWindowTheme Me` in Form_Load and Form_Activate. Shane visually validated the current harness in win32 dark mode on 2026-10-06: dark title bar, #202020 form, readable Accent button at #FF8279, and rounded outer window corners.
+The source/project candidate now contains UI3FormTheme, UI3Window.Attach/Detach, cached theme/accent state and live subclass notifications.
 
-1. Switch the current tbUI3Test target to win64 and run it.
-2. Inspect the running window, not only the designer, and confirm the same title bar/form/button result.
-3. Test light mode separately when convenient.
-4. Then continue `docs/2026-10-06-form-theme-spec.md`: UI3FormTheme, live theme notifications/subclassing, and the cached theme.
+1. Pull the latest tbui3-dev and open tbUI3/tbUI3.twinproj in BETA 997.
+2. Confirm Diagnostics are clean and build the package for win32.
+3. Open tbUI3Test and run the updated harness. It now calls UI3Window.Attach Me rather than reapplying on Form_Activate.
+4. With the app open, change the Windows accent colour. The Accent button should repaint without reactivation/restart.
+5. Stop the debugger while the form is open; the IDE must not crash.
+6. Repeat the compile/run/stop checks in win64.
+7. Then drop UI3FormTheme from the toolbox onto frmMain, remove the code Attach/Detach calls, and confirm the drop-on path behaves identically.
+8. Light mode remains a later validation item when Shane is willing to switch Windows themes.
+
 
 ## Reference package laboratory
 

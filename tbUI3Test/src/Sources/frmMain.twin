@@ -3,17 +3,17 @@
 [PredeclaredId]
 Class frmMain
 
-	Sub New()
-	End Sub
+    Sub New()
+    End Sub
 
     Private Sub Form_Load()
-        UI3ApplyWindowTheme Me
+        UI3Window.Attach Me
     End Sub
 
-    Private Sub Form_Activate()
-        UI3ApplyWindowTheme Me   ' picks up a theme change made while the app was running
+    Private Sub Form_Unload(Cancel As Integer)
+        UI3Window.Detach Me
     End Sub
-    
+
     Private Sub UI3Button1_Click()
         MsgBox("Hello World")
     End Sub

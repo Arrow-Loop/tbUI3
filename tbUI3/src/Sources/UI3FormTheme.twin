@@ -1,0 +1,98 @@
+[FormDesignerId("2ED6C4D1-0341-4C87-8310-27CC4FC688DD")]
+[ClassId("8903CB0F-05BC-46FD-816A-C650AFBB40DA")]
+[InterfaceId("8EA112C2-7404-4813-B532-70D9ACC6C931")]
+[EventInterfaceId("D739C1E8-E496-412F-AD93-90A2BC7B019B")]
+[COMControl]
+[Description("Nonvisual tbUI3 form-theme component. Drop it on a Form to follow Windows theme/accent changes.")]
+Public Class UI3FormTheme
+
+    Private Const DEFAULT_THEME_MODE As Long = 0
+    Private Const DEFAULT_MANAGE_BACKCOLOR As Boolean = True
+
+    Private m_ThemeMode As UI3ThemeMode
+    Private m_ManageBackColor As Boolean
+    Private m_Attached As Boolean
+
+    [Description("System follows Windows. Light and Dark force the package-wide tbUI3 theme.")]
+    Public Property Get ThemeMode() As UI3ThemeMode
+        ThemeMode = m_ThemeMode
+    End Property
+
+    Public Property Let ThemeMode(ByVal Value As UI3ThemeMode)
+        If Value < ui3ThemeSystem Or Value > ui3ThemeDark Then Err.Raise 380
+        m_ThemeMode = Value
+        PropertyChanged "ThemeMode"
+        TryAttach
+    End Property
+
+    [Description("When True, tbUI3 sets the parent Form BackColor to WinUI's SolidBackgroundFillColorBase.")]
+    Public Property Get ManageBackColor() As Boolean
+        ManageBackColor = m_ManageBackColor
+    End Property
+
+    Public Property Let ManageBackColor(ByVal Value As Boolean)
+        m_ManageBackColor = Value
+        PropertyChanged "ManageBackColor"
+        TryAttach
+    End Property
+
+    Private Sub UserControl_Initialize()
+        TryAttach
+    End Sub
+
+    Private Sub UserControl_InitProperties()
+        m_ThemeMode = DEFAULT_THEME_MODE
+        m_ManageBackColor = DEFAULT_MANAGE_BACKCOLOR
+        TryAttach
+    End Sub
+
+    Private Sub UserControl_ReadProperties(PropBag As PropertyBag)
+        m_ThemeMode = PropBag.ReadProperty("ThemeMode", DEFAULT_THEME_MODE)
+        m_ManageBackColor = PropBag.ReadProperty("ManageBackColor", DEFAULT_MANAGE_BACKCOLOR)
+        TryAttach
+    End Sub
+
+    Private Sub UserControl_WriteProperties(PropBag As PropertyBag)
+        PropBag.WriteProperty "ThemeMode", m_ThemeMode, DEFAULT_THEME_MODE
+        PropBag.WriteProperty "ManageBackColor", m_ManageBackColor, DEFAULT_MANAGE_BACKCOLOR
+    End Sub
+
+    Private Sub UserControl_Resize()
+        TryAttach
+    End Sub
+
+    Private Sub UserControl_Terminate()
+        DetachTheme
+    End Sub
+
+    Private Sub TryAttach()
+        Dim parentForm As Object
+
+        On Error GoTo EH
+        If Not Ambient.UserMode Then Exit Sub
+
+        Set parentForm = UserControl.Parent
+        If parentForm Is Nothing Then Exit Sub
+
+        UI3Window.Attach parentForm, m_ThemeMode, m_ManageBackColor
+        m_Attached = True
+        Exit Sub
+
+EH:
+        ' Parent/Ambient can be unavailable during early designer/runtime lifecycle.
+    End Sub
+
+    Private Sub DetachTheme()
+        Dim parentForm As Object
+
+        If Not m_Attached Then Exit Sub
+
+        On Error Resume Next
+        Set parentForm = UserControl.Parent
+        If Not parentForm Is Nothing Then UI3Window.Detach parentForm
+        On Error GoTo 0
+
+        m_Attached = False
+    End Sub
+
+End Class

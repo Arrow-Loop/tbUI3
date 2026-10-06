@@ -1,35 +1,18 @@
-' tbUI3 window theme: makes an ordinary twinBASIC Form follow the Windows light/dark mode,
-' and exposes the light/dark and accent checks to the host application.
+' tbUI3 form/window theming for ordinary twinBASIC Forms.
 '
-' Adapted from the Arrow Loop twinBASIC-Knowledge reference
-' reference/packetpilot-winui/native-theme-reference.twin (PacketPilot, commit eb09d2e).
-' Differences from that reference, on purpose:
-'   - Only DWMWA_USE_IMMERSIVE_DARK_MODE is set; the caption and caption-text colours are reset
-'     to the system default instead of being forced to #202020 / #F3F3F3. That is what a WinUI 3
-'     app's system title bar does, and it keeps the "Show accent colour on title bars" setting working.
-'   - Dark mode is read with RegGetValueW (UI3Theme.IsDarkMode) rather than WScript.Shell.
-'   - DPI awareness and the Mica backdrop are not here yet: they are spike steps S6 and S5.
-'
-' Usage in a form:
-'     Private Sub Form_Load()
-'         UI3ApplyWindowTheme Me
-'     End Sub
-'     Private Sub Form_Activate()
-'         UI3ApplyWindowTheme Me   ' picks up a theme change made while the app was running
-'     End Sub
+' Live subclassing is a minimal private adaptation of the pointer-width-safe comctl32 pattern
+' found independently in VanGoghGaming WinRT 1.7.0.159 (MIT, mdlSubclass.twin) and Krool
+' VBCCR18 1.8.0.125 (MIT, ComCtlsBase.bas). tbUI3 does not depend on either package.
 
 Public Module UI3Window
 
-    ' SolidBackgroundFillColorBase (Common_themeresources_any.xaml, microsoft-ui-xaml 8318c5bf):
-    ' #202020 in the Default (dark) dictionary, #F3F3F3 in Light. OLE colours (&HBBGGRR).
-    Private Const DARK_WINDOW_BACKCOLOR As Long = &H202020
-    Private Const LIGHT_WINDOW_BACKCOLOR As Long = &HF3F3F3
-
     Private Const DWMWA_USE_IMMERSIVE_DARK_MODE_BEFORE_20H1 As Long = 19
     Private Const DWMWA_USE_IMMERSIVE_DARK_MODE As Long = 20
+    Private Const DWMWA_WINDOW_CORNER_PREFERENCE As Long = 33
     Private Const DWMWA_CAPTION_COLOR As Long = 35
     Private Const DWMWA_TEXT_COLOR As Long = 36
     Private Const DWMWA_COLOR_DEFAULT As Long = &HFFFFFFFF
+    Private Const DWMWCP_ROUND As Long = 2
 
     Private Const SWP_NOSIZE As Long = &H1
     Private Const SWP_NOMOVE As Long = &H2
@@ -37,36 +20,218 @@ Public Module UI3Window
     Private Const SWP_NOACTIVATE As Long = &H10
     Private Const SWP_FRAMECHANGED As Long = &H20
 
+    Private Const RDW_INVALIDATE As Long = &H1
+    Private Const RDW_ERASE As Long = &H4
+    Private Const RDW_ALLCHILDREN As Long = &H80
+    Private Const RDW_FRAME As Long = &H400
+
+    Private Const WM_SETTINGCHANGE As Long = &H1A
+    Private Const WM_NCDESTROY As Long = &H82
+    Private Const WM_DWMCOLORIZATIONCOLORCHANGED As Long = &H320
+    Private Const WM_THEMECHANGED As Long = &H31A
+    Private Const UI3_THEME_SUBCLASS_ID As Long = &H55493354
+
     Private Declare PtrSafe Function DwmSetWindowAttribute Lib "dwmapi" (ByVal hWnd As LongPtr, ByVal dwAttribute As Long, _
         ByRef pvAttribute As Any, ByVal cbAttribute As Long) As Long
     Private Declare PtrSafe Function SetWindowPos Lib "user32" (ByVal hWnd As LongPtr, ByVal hWndInsertAfter As LongPtr, _
         ByVal x As Long, ByVal y As Long, ByVal cx As Long, ByVal cy As Long, ByVal uFlags As Long) As Long
+    Private Declare PtrSafe Function RedrawWindow Lib "user32" (ByVal hWnd As LongPtr, ByVal lprcUpdate As LongPtr, _
+        ByVal hrgnUpdate As LongPtr, ByVal flags As Long) As Long
+    Private Declare PtrSafe Function lstrcmpiW Lib "kernel32" (ByVal lpString1 As LongPtr, ByVal lpString2 As LongPtr) As Long
 
-    [Description("True when Windows apps are set to dark mode (Settings > Personalisation > Colours).")]
+    [UseGetLastError(False), DLLStackCheck(False)]
+    Private Declare PtrSafe Function SetWindowSubclass Lib "comctl32" Alias "#410" (ByVal hWnd As LongPtr, _
+        ByVal pfnSubclass As LongPtr, ByVal uIdSubclass As LongPtr, ByVal dwRefData As LongPtr) As Long
+    [UseGetLastError(False), DLLStackCheck(False)]
+    Private Declare PtrSafe Function RemoveWindowSubclass Lib "comctl32" Alias "#412" (ByVal hWnd As LongPtr, _
+        ByVal pfnSubclass As LongPtr, ByVal uIdSubclass As LongPtr) As Long
+    [UseGetLastError(False), DLLStackCheck(False)]
+    Private Declare PtrSafe Function DefSubclassProc Lib "comctl32" Alias "#413" (ByVal hWnd As LongPtr, _
+        ByVal uMsg As Long, ByVal wParam As LongPtr, ByVal lParam As LongPtr) As LongPtr
+
+    Private m_Forms As Collection
+    Private m_HWnds() As LongPtr
+    Private m_ManageBackColor() As Boolean
+    Private m_SlotCount As Long
+    Private m_Applying As Boolean
+
+    [Description("True when tbUI3's effective app theme is dark.")]
     Public Function UI3IsDarkMode() As Boolean
         UI3IsDarkMode = IsDarkMode()
     End Function
 
     [Description("One shade of the Windows accent colour, as an OLE colour usable for BackColor/ForeColor.")]
     Public Function UI3AccentColor(Optional ByVal Shade As UI3AccentShade = ui3AccentBase) As Long
-        Dim argb As Long
-        argb = AccentShade(Shade)
-        ' &HAARRGGBB to &H00BBGGRR.
-        UI3AccentColor = ((argb And &HFF&) * &H10000) Or (argb And &HFF00&) Or ((argb And &HFF0000) \ &H10000)
+        UI3AccentColor = OleFromArgb(AccentShade(Shade))
     End Function
 
-    [Description("The WinUI window background colour for the current mode (#202020 dark, #F3F3F3 light), as an OLE colour.")]
+    [Description("The WinUI window background colour for the effective mode (#202020 dark, #F3F3F3 light), as an OLE colour.")]
     Public Function UI3WindowBackColor() As Long
         If IsDarkMode() Then
-            UI3WindowBackColor = DARK_WINDOW_BACKCOLOR
+            UI3WindowBackColor = OleFromArgb(DARK_SolidBackgroundFillColorBase)
         Else
-            UI3WindowBackColor = LIGHT_WINDOW_BACKCOLOR
+            UI3WindowBackColor = OleFromArgb(LIGHT_SolidBackgroundFillColorBase)
         End If
     End Function
 
-    [Description("Makes a form follow the Windows light/dark mode: title bar, and (by default) the form's BackColor.")]
-    Public Sub UI3ApplyWindowTheme(ByVal Form As Object, Optional ByVal SetBackColor As Boolean = True)
+    [Description("Attaches live tbUI3 theme handling to a form. ThemeMode is package-wide; ManageBackColor applies to this form.")]
+    Public Sub Attach(ByVal Form As Object, Optional ByVal Mode As UI3ThemeMode = ui3ThemeSystem, _
+            Optional ByVal ManageBackColor As Boolean = True)
         Dim hWnd As LongPtr
+
+        On Error Resume Next
+        hWnd = Form.hWnd
+        On Error GoTo 0
+        If hWnd = 0 Then Exit Sub
+
+        SetThemeMode Mode
+        RefreshTheme
+        RegisterAttachment Form, hWnd, ManageBackColor
+
+        SetWindowSubclass hWnd, AddressOf UI3WindowSubclassProc, CLngPtr(UI3_THEME_SUBCLASS_ID), 0
+        ApplyAllAttached
+    End Sub
+
+    [Description("Removes live tbUI3 theme handling from a form.")]
+    Public Sub Detach(ByVal Form As Object)
+        Dim hWnd As LongPtr
+
+        On Error Resume Next
+        hWnd = Form.hWnd
+        On Error GoTo 0
+        If hWnd = 0 Then Exit Sub
+
+        RemoveWindowSubclass hWnd, AddressOf UI3WindowSubclassProc, CLngPtr(UI3_THEME_SUBCLASS_ID)
+        ClearAttachment hWnd
+    End Sub
+
+    [Description("One-shot form theme application. Prefer UI3Window.Attach or UI3FormTheme for live updates.")]
+    Public Sub UI3ApplyWindowTheme(ByVal Form As Object, Optional ByVal SetBackColor As Boolean = True)
+        RefreshTheme
+        ApplyFormTheme Form, SetBackColor
+    End Sub
+
+    [Description("Sets a window's title bar to dark or light to match tbUI3's effective app mode.")]
+    Public Sub UI3ApplyTitleBarTheme(ByVal hWnd As LongPtr)
+        If hWnd = 0 Then Exit Sub
+
+        Dim useDark As Long
+        If IsDarkMode() Then useDark = 1
+
+        If DwmSetWindowAttribute(hWnd, DWMWA_USE_IMMERSIVE_DARK_MODE, useDark, 4) <> 0 Then
+            DwmSetWindowAttribute hWnd, DWMWA_USE_IMMERSIVE_DARK_MODE_BEFORE_20H1, useDark, 4
+        End If
+
+        Dim systemDefault As Long
+        systemDefault = DWMWA_COLOR_DEFAULT
+        DwmSetWindowAttribute hWnd, DWMWA_CAPTION_COLOR, systemDefault, 4
+        DwmSetWindowAttribute hWnd, DWMWA_TEXT_COLOR, systemDefault, 4
+
+        Dim corners As Long
+        corners = DWMWCP_ROUND
+        DwmSetWindowAttribute hWnd, DWMWA_WINDOW_CORNER_PREFERENCE, corners, 4
+
+        SetWindowPos hWnd, 0, 0, 0, 0, 0, _
+            SWP_NOMOVE Or SWP_NOSIZE Or SWP_NOZORDER Or SWP_NOACTIVATE Or SWP_FRAMECHANGED
+    End Sub
+
+    Private Sub RegisterAttachment(ByVal Form As Object, ByVal hWnd As LongPtr, ByVal ManageBackColor As Boolean)
+        Dim slot As Long
+        Dim i As Long
+        Dim key As String
+
+        If m_Forms Is Nothing Then Set m_Forms = New Collection
+
+        slot = FindSlot(hWnd)
+        If slot = 0 Then
+            For i = 1 To m_SlotCount
+                If m_HWnds(i) = 0 Then
+                    slot = i
+                    Exit For
+                End If
+            Next i
+        End If
+
+        If slot = 0 Then
+            m_SlotCount = m_SlotCount + 1
+            ReDim Preserve m_HWnds(1 To m_SlotCount)
+            ReDim Preserve m_ManageBackColor(1 To m_SlotCount)
+            slot = m_SlotCount
+        End If
+
+        m_HWnds(slot) = hWnd
+        m_ManageBackColor(slot) = ManageBackColor
+
+        key = WindowKey(hWnd)
+        On Error Resume Next
+        m_Forms.Remove key
+        On Error GoTo 0
+        m_Forms.Add Form, key
+    End Sub
+
+    Private Sub ClearAttachment(ByVal hWnd As LongPtr)
+        Dim slot As Long
+        Dim key As String
+
+        slot = FindSlot(hWnd)
+        If slot <> 0 Then
+            m_HWnds(slot) = 0
+            m_ManageBackColor(slot) = False
+        End If
+
+        If Not m_Forms Is Nothing Then
+            key = WindowKey(hWnd)
+            On Error Resume Next
+            m_Forms.Remove key
+            On Error GoTo 0
+        End If
+    End Sub
+
+    Private Function FindSlot(ByVal hWnd As LongPtr) As Long
+        Dim i As Long
+        For i = 1 To m_SlotCount
+            If m_HWnds(i) = hWnd Then
+                FindSlot = i
+                Exit Function
+            End If
+        Next i
+    End Function
+
+    Private Function FormForWindow(ByVal hWnd As LongPtr) As Object
+        If m_Forms Is Nothing Then Exit Function
+        On Error Resume Next
+        Set FormForWindow = m_Forms(WindowKey(hWnd))
+        On Error GoTo 0
+    End Function
+
+    Private Function WindowKey(ByVal hWnd As LongPtr) As String
+        WindowKey = "W" & CStr(hWnd)
+    End Function
+
+    Private Sub ApplyAllAttached()
+        If m_Applying Then Exit Sub
+        m_Applying = True
+        On Error GoTo CleanUp
+
+        Dim i As Long
+        Dim Form As Object
+
+        For i = 1 To m_SlotCount
+            If m_HWnds(i) <> 0 Then
+                Set Form = FormForWindow(m_HWnds(i))
+                If Not Form Is Nothing Then ApplyFormTheme Form, m_ManageBackColor(i)
+                Set Form = Nothing
+            End If
+        Next i
+
+CleanUp:
+        m_Applying = False
+    End Sub
+
+    Private Sub ApplyFormTheme(ByVal Form As Object, ByVal ManageBackColor As Boolean)
+        Dim hWnd As LongPtr
+        Dim wanted As Long
+
         On Error Resume Next
         hWnd = Form.hWnd
         On Error GoTo 0
@@ -74,33 +239,43 @@ Public Module UI3Window
 
         UI3ApplyTitleBarTheme hWnd
 
-        If SetBackColor Then
-            Dim wanted As Long
+        If ManageBackColor Then
             wanted = UI3WindowBackColor()
+            On Error Resume Next
             If Form.BackColor <> wanted Then Form.BackColor = wanted
-        End If
-    End Sub
-
-    [Description("Sets a window's title bar to dark or light to match the Windows app mode.")]
-    Public Sub UI3ApplyTitleBarTheme(ByVal hWnd As LongPtr)
-        If hWnd = 0 Then Exit Sub
-
-        Dim useDark As Long
-        If IsDarkMode() Then useDark = 1
-
-        ' Attribute 20 from Windows 10 20H1; 19 on earlier Windows 10 builds. Fails harmlessly on older Windows.
-        If DwmSetWindowAttribute(hWnd, DWMWA_USE_IMMERSIVE_DARK_MODE, useDark, 4) <> 0 Then
-            DwmSetWindowAttribute hWnd, DWMWA_USE_IMMERSIVE_DARK_MODE_BEFORE_20H1, useDark, 4
+            On Error GoTo 0
         End If
 
-        ' Windows 11 only: undo any explicit caption colours so the system draws its own.
-        Dim systemDefault As Long
-        systemDefault = DWMWA_COLOR_DEFAULT
-        DwmSetWindowAttribute hWnd, DWMWA_CAPTION_COLOR, systemDefault, 4
-        DwmSetWindowAttribute hWnd, DWMWA_TEXT_COLOR, systemDefault, 4
-
-        ' Make the non-client area redraw now rather than on the next activation.
-        SetWindowPos hWnd, 0, 0, 0, 0, 0, SWP_NOMOVE Or SWP_NOSIZE Or SWP_NOZORDER Or SWP_NOACTIVATE Or SWP_FRAMECHANGED
+        RedrawWindow hWnd, 0, 0, RDW_INVALIDATE Or RDW_ERASE Or RDW_ALLCHILDREN Or RDW_FRAME
     End Sub
+
+    Private Function UI3WindowSubclassProc(ByVal hWnd As LongPtr, ByVal uMsg As Long, ByVal wParam As LongPtr, _
+            ByVal lParam As LongPtr, ByVal uIdSubclass As LongPtr, ByVal dwRefData As LongPtr) As LongPtr
+
+        Select Case uMsg
+            Case WM_NCDESTROY
+                RemoveWindowSubclass hWnd, AddressOf UI3WindowSubclassProc, uIdSubclass
+                ClearAttachment hWnd
+
+            Case WM_SETTINGCHANGE
+                If lParam <> 0 Then
+                    If lstrcmpiW(lParam, StrPtr("ImmersiveColorSet")) = 0 Then
+                        RefreshTheme
+                        ApplyAllAttached
+                    End If
+                End If
+
+            Case WM_DWMCOLORIZATIONCOLORCHANGED, WM_THEMECHANGED
+                RefreshTheme
+                ApplyAllAttached
+        End Select
+
+        UI3WindowSubclassProc = DefSubclassProc(hWnd, uMsg, wParam, lParam)
+    End Function
+
+    Private Function OleFromArgb(ByVal argb As Long) As Long
+        OleFromArgb = ((argb And &HFF&) * &H10000) Or (argb And &HFF00&) Or _
+            ((argb And &HFF0000) \ &H10000)
+    End Function
 
 End Module

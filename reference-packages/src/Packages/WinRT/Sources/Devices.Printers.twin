@@ -1,0 +1,514 @@
+[InterfaceId("A1F417AB-5251-5E30-81F6-C62B3EB8E259")]
+Interface IIterator_IIppAttributeValue Extends IInspectable
+    Property Get Current() As IIppAttributeValue
+    Property Get HasCurrent() As BooleanByte
+    Function MoveNext() As BooleanByte
+    Function GetMany(ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("2BD5BEDC-2312-564D-B685-68684F631E92")]
+Interface IIterable_IIppAttributeValue Extends IInspectable
+    Function First() As IIterator_IIppAttributeValue
+End Interface
+
+[InterfaceId("B47B6F27-EF3B-55C4-825F-A8766D13C725")]
+Interface IVectorView_IIppAttributeValue Extends IInspectable
+    Function GetAt(ByVal Index As Long) As IIppAttributeValue
+    Property Get Size() As Long
+    Function IndexOf(ByVal Value As IIppAttributeValue, Index As Long) As BooleanByte
+    Function GetMany(ByVal StartIndex As Long, ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("750FEDA1-9EEF-5C39-93E4-46149BBCEF27")]
+Interface IIppAttributeError Extends IInspectable
+    Property Get Reason() As IppAttributeErrorReason
+    Property Get ExtendedError() As HRESULT
+    Function GetUnsupportedValues() As IVectorView_IIppAttributeValue
+End Interface
+
+[InterfaceId("55F88707-EE5C-5616-941D-089B69F0B48E")]
+Interface IIterator_IIppIntegerRange Extends IInspectable
+    Property Get Current() As IIppIntegerRange
+    Property Get HasCurrent() As BooleanByte
+    Function MoveNext() As BooleanByte
+    Function GetMany(ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("C1AB4DF0-4E73-5BDD-80D1-E32E0264CE41")]
+Interface IIterable_IIppIntegerRange Extends IInspectable
+    Function First() As IIterator_IIppIntegerRange
+End Interface
+
+[InterfaceId("31E6C2E8-93B2-51D3-9FA2-56F181602B08")]
+Interface IVectorView_IIppIntegerRange Extends IInspectable
+    Function GetAt(ByVal Index As Long) As IIppIntegerRange
+    Property Get Size() As Long
+    Function IndexOf(ByVal Value As IIppIntegerRange, Index As Long) As BooleanByte
+    Function GetMany(ByVal StartIndex As Long, ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("C9CACF28-EF27-5753-8382-7D7DF136294D")]
+Interface IVector_IIppIntegerRange Extends IInspectable
+    Function GetAt(ByVal Index As Long) As IIppIntegerRange
+    Property Get Size() As Long
+    Function GetView() As IVectorView_IIppIntegerRange
+    Function IndexOf(ByVal Value As IIppIntegerRange, Index As Long) As BooleanByte
+    [PreserveSig]
+    Function SetAt(ByVal Index As Long, ByVal Value As IIppIntegerRange) As HRESULT
+    [PreserveSig]
+    Function InsertAt(ByVal Index As Long, ByVal Value As IIppIntegerRange) As HRESULT
+    [PreserveSig]
+    Function RemoveAt(ByVal Index As Long) As HRESULT
+    [PreserveSig]
+    Function Append(ByVal Value As IIppIntegerRange) As HRESULT
+    [PreserveSig]
+    Function RemoveAtEnd() As HRESULT
+    [PreserveSig]
+    Function Clear() As HRESULT
+    Function GetMany(ByVal StartIndex As Long, ByVal Length As Long, Items As Any) As Long
+    [PreserveSig]
+    Function ReplaceAll(ByVal Length As Long, Items As Any) As HRESULT
+End Interface
+
+[InterfaceId("704428E7-3E54-5A3C-9CE0-272B1E4A83C8")]
+Interface IIterator_IIppResolution Extends IInspectable
+    Property Get Current() As IIppResolution
+    Property Get HasCurrent() As BooleanByte
+    Function MoveNext() As BooleanByte
+    Function GetMany(ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("60CF8D08-474E-54FE-AF66-6893E8F92575")]
+Interface IIterable_IIppResolution Extends IInspectable
+    Function First() As IIterator_IIppResolution
+End Interface
+
+[InterfaceId("76871ADA-42F4-57D9-94A2-EA406598E705")]
+Interface IVectorView_IIppResolution Extends IInspectable
+    Function GetAt(ByVal Index As Long) As IIppResolution
+    Property Get Size() As Long
+    Function IndexOf(ByVal Value As IIppResolution, Index As Long) As BooleanByte
+    Function GetMany(ByVal StartIndex As Long, ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("992F8CA5-0E6C-5873-AF3D-B0927F275A69")]
+Interface IVector_IIppResolution Extends IInspectable
+    Function GetAt(ByVal Index As Long) As IIppResolution
+    Property Get Size() As Long
+    Function GetView() As IVectorView_IIppResolution
+    Function IndexOf(ByVal Value As IIppResolution, Index As Long) As BooleanByte
+    [PreserveSig]
+    Function SetAt(ByVal Index As Long, ByVal Value As IIppResolution) As HRESULT
+    [PreserveSig]
+    Function InsertAt(ByVal Index As Long, ByVal Value As IIppResolution) As HRESULT
+    [PreserveSig]
+    Function RemoveAt(ByVal Index As Long) As HRESULT
+    [PreserveSig]
+    Function Append(ByVal Value As IIppResolution) As HRESULT
+    [PreserveSig]
+    Function RemoveAtEnd() As HRESULT
+    [PreserveSig]
+    Function Clear() As HRESULT
+    Function GetMany(ByVal StartIndex As Long, ByVal Length As Long, Items As Any) As Long
+    [PreserveSig]
+    Function ReplaceAll(ByVal Length As Long, Items As Any) As HRESULT
+End Interface
+
+[InterfaceId("B5A11414-5B14-5EC3-AF62-944F74056613")]
+Interface IIterator_IIppTextWithLanguage Extends IInspectable
+    Property Get Current() As IIppTextWithLanguage
+    Property Get HasCurrent() As BooleanByte
+    Function MoveNext() As BooleanByte
+    Function GetMany(ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("DA3D8CB6-082A-5993-8640-AC246FD71244")]
+Interface IIterable_IIppTextWithLanguage Extends IInspectable
+    Function First() As IIterator_IIppTextWithLanguage
+End Interface
+
+[InterfaceId("84C1FB51-CA7A-5A23-8193-0C4A05B13653")]
+Interface IVectorView_IIppTextWithLanguage Extends IInspectable
+    Function GetAt(ByVal Index As Long) As IIppTextWithLanguage
+    Property Get Size() As Long
+    Function IndexOf(ByVal Value As IIppTextWithLanguage, Index As Long) As BooleanByte
+    Function GetMany(ByVal StartIndex As Long, ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("A2E47775-C458-53FD-A85B-0FC65F021EA6")]
+Interface IVector_IIppTextWithLanguage Extends IInspectable
+    Function GetAt(ByVal Index As Long) As IIppTextWithLanguage
+    Property Get Size() As Long
+    Function GetView() As IVectorView_IIppTextWithLanguage
+    Function IndexOf(ByVal Value As IIppTextWithLanguage, Index As Long) As BooleanByte
+    [PreserveSig]
+    Function SetAt(ByVal Index As Long, ByVal Value As IIppTextWithLanguage) As HRESULT
+    [PreserveSig]
+    Function InsertAt(ByVal Index As Long, ByVal Value As IIppTextWithLanguage) As HRESULT
+    [PreserveSig]
+    Function RemoveAt(ByVal Index As Long) As HRESULT
+    [PreserveSig]
+    Function Append(ByVal Value As IIppTextWithLanguage) As HRESULT
+    [PreserveSig]
+    Function RemoveAtEnd() As HRESULT
+    [PreserveSig]
+    Function Clear() As HRESULT
+    Function GetMany(ByVal StartIndex As Long, ByVal Length As Long, Items As Any) As Long
+    [PreserveSig]
+    Function ReplaceAll(ByVal Length As Long, Items As Any) As HRESULT
+End Interface
+
+[InterfaceId("8A501320-0647-58A4-8AF8-8D63936CE48A")]
+Interface IIterator_KVP_IIppAttributeValue Extends IInspectable
+    Property Get Current() As KVP_IIppAttributeValue
+    Property Get HasCurrent() As BooleanByte
+    Function MoveNext() As BooleanByte
+    Function GetMany(ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("5DCF9AB4-ED4E-5648-8BFB-F626D5D7C505")]
+Interface IIterable_KVP_IIppAttributeValue Extends IInspectable
+    Function First() As IIterator_KVP_IIppAttributeValue
+End Interface
+
+[InterfaceId("EC09EAD6-6117-5AE5-80E3-2D6BC7F9A955")]
+Interface KVP_IIppAttributeValue Extends IInspectable
+    Property Get Key() As LongPtr
+    Property Get Value() As IIppAttributeValue
+End Interface
+
+[InterfaceId("A2379F3E-0733-5491-98B8-08B3134AB23D")]
+Interface IMapView_IIppAttributeValue Extends IInspectable
+    Function Lookup(ByVal Key As LongPtr) As IIppAttributeValue
+    Property Get Size() As Long
+    Function HasKey(ByVal Key As LongPtr) As BooleanByte
+    Sub Split(First As IMapView_IIppAttributeValue, Second As IMapView_IIppAttributeValue)
+End Interface
+
+[InterfaceId("E7F72BA5-E881-550D-939B-F54CB31962E8")]
+Interface IMap_IIppAttributeValue Extends IInspectable
+    Function Lookup(ByVal Key As LongPtr) As IIppAttributeValue
+    Property Get Size() As Long
+    Function HasKey(ByVal Key As LongPtr) As BooleanByte
+    Function GetView() As IMapView_IIppAttributeValue
+    Function Insert(ByVal Key As LongPtr, ByVal Value As IIppAttributeValue) As BooleanByte
+    [PreserveSig]
+    Function Remove(ByVal Key As LongPtr) As HRESULT
+    [PreserveSig]
+    Function Clear() As HRESULT
+End Interface
+
+[InterfaceId("81A06AD8-F097-5782-9D7D-0D3D00AFAA82")]
+Interface IIterator_IIterable_KVP_IIppAttributeValue Extends IInspectable
+    Property Get Current() As IIterable_KVP_IIppAttributeValue
+    Property Get HasCurrent() As BooleanByte
+    Function MoveNext() As BooleanByte
+    Function GetMany(ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("E4A5D51B-0047-5C20-8A42-D265732E8117")]
+Interface IIterable_IIterable_KVP_IIppAttributeValue Extends IInspectable
+    Function First() As IIterator_IIterable_KVP_IIppAttributeValue
+End Interface
+
+[InterfaceId("D5F0C12F-599D-5E06-87E8-D9A83E3822CC")]
+Interface IIterator_IMapView_IIppAttributeValue Extends IInspectable
+    Property Get Current() As IMapView_IIppAttributeValue
+    Property Get HasCurrent() As BooleanByte
+    Function MoveNext() As BooleanByte
+    Function GetMany(ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("47558612-BA48-5DA9-9D10-6ED53B0CA405")]
+Interface IIterable_IMapView_IIppAttributeValue Extends IInspectable
+    Function First() As IIterator_IMapView_IIppAttributeValue
+End Interface
+
+[InterfaceId("166C0D36-4165-5A33-9D6D-6F42C5D73188")]
+Interface IVectorView_IMapView_IIppAttributeValue Extends IInspectable
+    Function GetAt(ByVal Index As Long) As IMapView_IIppAttributeValue
+    Property Get Size() As Long
+    Function IndexOf(ByVal Value As IMapView_IIppAttributeValue, Index As Long) As BooleanByte
+    Function GetMany(ByVal StartIndex As Long, ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("1EE3A40E-00E5-52ED-B2AA-FB70F99813B7")]
+Interface IVector_IMapView_IIppAttributeValue Extends IInspectable
+    Function GetAt(ByVal Index As Long) As IMapView_IIppAttributeValue
+    Property Get Size() As Long
+    Function GetView() As IVectorView_IMapView_IIppAttributeValue
+    Function IndexOf(ByVal Value As IMapView_IIppAttributeValue, Index As Long) As BooleanByte
+    [PreserveSig]
+    Function SetAt(ByVal Index As Long, ByVal Value As IMapView_IIppAttributeValue) As HRESULT
+    [PreserveSig]
+    Function InsertAt(ByVal Index As Long, ByVal Value As IMapView_IIppAttributeValue) As HRESULT
+    [PreserveSig]
+    Function RemoveAt(ByVal Index As Long) As HRESULT
+    [PreserveSig]
+    Function Append(ByVal Value As IMapView_IIppAttributeValue) As HRESULT
+    [PreserveSig]
+    Function RemoveAtEnd() As HRESULT
+    [PreserveSig]
+    Function Clear() As HRESULT
+    Function GetMany(ByVal StartIndex As Long, ByVal Length As Long, Items As Any) As Long
+    [PreserveSig]
+    Function ReplaceAll(ByVal Length As Long, Items As Any) As HRESULT
+End Interface
+
+[InterfaceId("99407FED-E2BB-59A3-988B-28A974052A26")]
+Interface IIppAttributeValue Extends IInspectable
+    Property Get Kind() As IppAttributeValueKind
+    Function GetIntegerArray() As IVector_Int32
+    Function GetBooleanArray() As IVector_Boolean
+    Function GetEnumArray() As IVector_Int32
+    Function GetOctetStringArray() As IVector_IBuffer
+    Function GetDateTimeArray() As IVector_DateTime
+    Function GetResolutionArray() As IVector_IIppResolution
+    Function GetRangeOfIntegerArray() As IVector_IIppIntegerRange
+    Function GetCollectionArray() As IVector_IMapView_IIppAttributeValue
+    Function GetTextWithLanguageArray() As IVector_IIppTextWithLanguage
+    Function GetNameWithLanguageArray() As IVector_IIppTextWithLanguage
+    Function GetTextWithoutLanguageArray() As IVector_HSTRING
+    Function GetNameWithoutLanguageArray() As IVector_HSTRING
+    Function GetKeywordArray() As IVector_HSTRING
+    Function GetUriArray() As IVector_IUri
+    Function GetUriSchemaArray() As IVector_HSTRING
+    Function GetCharsetArray() As IVector_HSTRING
+    Function GetNaturalLanguageArray() As IVector_HSTRING
+    Function GetMimeMediaTypeArray() As IVector_HSTRING
+End Interface
+
+[InterfaceId("10D43942-DD94-5998-B235-AFAFB6FA7935")]
+Interface IIppAttributeValueStatics Extends IInspectable
+    Function CreateUnsupported() As IIppAttributeValue
+    Function CreateUnknown() As IIppAttributeValue
+    Function CreateNoValue() As IIppAttributeValue
+    Function CreateInteger(ByVal Value As Long) As IIppAttributeValue
+    Function CreateIntegerArray(ByVal Values As IIterable_Int32) As IIppAttributeValue
+    Function CreateBoolean(ByVal Value As BooleanByte) As IIppAttributeValue
+    Function CreateBooleanArray(ByVal Values As IIterable_Boolean) As IIppAttributeValue
+    Function CreateEnum(ByVal Value As Long) As IIppAttributeValue
+    Function CreateEnumArray(ByVal Values As IIterable_Int32) As IIppAttributeValue
+    Function CreateOctetString(ByVal Value As IBuffer) As IIppAttributeValue
+    Function CreateOctetStringArray(ByVal Values As IIterable_IBuffer) As IIppAttributeValue
+    Function CreateDateTime(ByVal Value As DateTime) As IIppAttributeValue
+    Function CreateDateTimeArray(ByVal Values As IIterable_DateTime) As IIppAttributeValue
+    Function CreateResolution(ByVal Value As IIppResolution) As IIppAttributeValue
+    Function CreateResolutionArray(ByVal Values As IIterable_IIppResolution) As IIppAttributeValue
+    Function CreateRangeOfInteger(ByVal Value As IIppIntegerRange) As IIppAttributeValue
+    Function CreateRangeOfIntegerArray(ByVal Values As IIterable_IIppIntegerRange) As IIppAttributeValue
+    Function CreateCollection(ByVal MemberAttributes As IIterable_KVP_IIppAttributeValue) As IIppAttributeValue
+    Function CreateCollectionArray(ByVal MemberAttributesArray As IIterable_IIterable_KVP_IIppAttributeValue) As IIppAttributeValue
+    Function CreateTextWithLanguage(ByVal Value As IIppTextWithLanguage) As IIppAttributeValue
+    Function CreateTextWithLanguageArray(ByVal Values As IIterable_IIppTextWithLanguage) As IIppAttributeValue
+    Function CreateNameWithLanguage(ByVal Value As IIppTextWithLanguage) As IIppAttributeValue
+    Function CreateNameWithLanguageArray(ByVal Values As IIterable_IIppTextWithLanguage) As IIppAttributeValue
+    Function CreateTextWithoutLanguage(ByVal Value As LongPtr) As IIppAttributeValue
+    Function CreateTextWithoutLanguageArray(ByVal Values As IIterable_HSTRING) As IIppAttributeValue
+    Function CreateNameWithoutLanguage(ByVal Value As LongPtr) As IIppAttributeValue
+    Function CreateNameWithoutLanguageArray(ByVal Values As IIterable_HSTRING) As IIppAttributeValue
+    Function CreateKeyword(ByVal Value As LongPtr) As IIppAttributeValue
+    Function CreateKeywordArray(ByVal Values As IIterable_HSTRING) As IIppAttributeValue
+    Function CreateUri(ByVal Value As IUri) As IIppAttributeValue
+    Function CreateUriArray(ByVal Values As IIterable_IUri) As IIppAttributeValue
+    Function CreateUriSchema(ByVal Value As LongPtr) As IIppAttributeValue
+    Function CreateUriSchemaArray(ByVal Values As IIterable_HSTRING) As IIppAttributeValue
+    Function CreateCharset(ByVal Value As LongPtr) As IIppAttributeValue
+    Function CreateCharsetArray(ByVal Values As IIterable_HSTRING) As IIppAttributeValue
+    Function CreateNaturalLanguage(ByVal Value As LongPtr) As IIppAttributeValue
+    Function CreateNaturalLanguageArray(ByVal Values As IIterable_HSTRING) As IIppAttributeValue
+    Function CreateMimeMedia(ByVal Value As LongPtr) As IIppAttributeValue
+    Function CreateMimeMediaArray(ByVal Values As IIterable_HSTRING) As IIppAttributeValue
+End Interface
+
+[InterfaceId("92907346-C3EA-5ED6-BDB1-3752C62C6F7F")]
+Interface IIppIntegerRange Extends IInspectable
+    Property Get Start() As Long
+    Property Get End() As Long
+End Interface
+
+[InterfaceId("75D4ECAE-F87E-54AD-B5D0-465204DB7553")]
+Interface IIppIntegerRangeFactory Extends IInspectable
+    Function CreateInstance(ByVal Start As Long, ByVal End As Long) As IIppIntegerRange
+End Interface
+
+[InterfaceId("D748AC56-76F3-5DC6-AFD4-C2A8686B9359")]
+Interface IIppPrintDevice Extends IInspectable
+    Property Get PrinterName() As LongPtr
+    Property Get PrinterUri() As IUri
+    Function GetPrinterAttributesAsBuffer(ByVal AttributeNames As IIterable_HSTRING) As IBuffer
+    Function GetPrinterAttributes(ByVal AttributeNames As IIterable_HSTRING) As IMap_IIppAttributeValue
+    Function SetPrinterAttributesFromBuffer(ByVal PrinterAttributesBuffer As IBuffer) As IIppSetAttributesResult
+    Function SetPrinterAttributes(ByVal PrinterAttributes As IIterable_KVP_IIppAttributeValue) As IIppSetAttributesResult
+End Interface
+
+[InterfaceId("F7C844C9-9D21-5C63-AC20-3676915BE2D7")]
+Interface IIppPrintDevice2 Extends IInspectable
+    Function GetMaxSupportedPdfSize() As UInt64
+    Function GetMaxSupportedPdfVersion() As LongPtr
+    Function IsPdlPassthroughSupported(ByVal PdlContentType As LongPtr) As BooleanByte
+    Function GetPdlPassthroughProvider() As IPdlPassthroughProvider
+End Interface
+
+[InterfaceId("7DC19F08-7F20-52AB-94A7-894B83B2A17E")]
+Interface IIppPrintDeviceStatics Extends IInspectable
+    Function GetDeviceSelector() As LongPtr
+    Function FromId(ByVal DeviceId As LongPtr) As IIppPrintDevice
+    Function FromPrinterName(ByVal PrinterName As LongPtr) As IIppPrintDevice
+    Function IsIppPrinter(ByVal PrinterName As LongPtr) As BooleanByte
+End Interface
+
+[InterfaceId("CB493F86-6BF3-56F5-86CE-263D08AEAD63")]
+Interface IIppResolution Extends IInspectable
+    Property Get Width() As Long
+    Property Get Height() As Long
+    Property Get Unit() As IppResolutionUnit
+End Interface
+
+[InterfaceId("E481C2AE-251A-5326-B173-95543ED99A35")]
+Interface IIppResolutionFactory Extends IInspectable
+    Function CreateInstance(ByVal Width As Long, ByVal Height As Long, ByVal Unit As IppResolutionUnit) As IIppResolution
+End Interface
+
+[InterfaceId("5F234542-D5B2-5A78-8F40-CED5A3EBB28B")]
+Interface IIterator_KVP_IIppAttributeError Extends IInspectable
+    Property Get Current() As KVP_IIppAttributeError
+    Property Get HasCurrent() As BooleanByte
+    Function MoveNext() As BooleanByte
+    Function GetMany(ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("17F42EBF-08E9-5E26-96ED-513171D2AFF2")]
+Interface IIterable_KVP_IIppAttributeError Extends IInspectable
+    Function First() As IIterator_KVP_IIppAttributeError
+End Interface
+
+[InterfaceId("22992703-B6A5-57A6-B211-5BF6B8D8F7B1")]
+Interface KVP_IIppAttributeError Extends IInspectable
+    Property Get Key() As LongPtr
+    Property Get Value() As IIppAttributeError
+End Interface
+
+[InterfaceId("5F0D875E-7488-554F-9F68-0DC4952230F2")]
+Interface IMapView_IIppAttributeError Extends IInspectable
+    Function Lookup(ByVal Key As LongPtr) As IIppAttributeError
+    Property Get Size() As Long
+    Function HasKey(ByVal Key As LongPtr) As BooleanByte
+    Sub Split(First As IMapView_IIppAttributeError, Second As IMapView_IIppAttributeError)
+End Interface
+
+[InterfaceId("7D1C7F55-AA9D-58A3-90E9-17BDC5281F07")]
+Interface IIppSetAttributesResult Extends IInspectable
+    Property Get Succeeded() As BooleanByte
+    Property Get AttributeErrors() As IMapView_IIppAttributeError
+End Interface
+
+[InterfaceId("326447A6-5149-5936-90E8-0C736036BF77")]
+Interface IIppTextWithLanguage Extends IInspectable
+    Property Get Language() As LongPtr
+    Property Get Value() As LongPtr
+End Interface
+
+[InterfaceId("CA4A1E8D-2968-5775-997C-8A46F1A574ED")]
+Interface IIppTextWithLanguageFactory Extends IInspectable
+    Function CreateInstance(ByVal Language As LongPtr, ByVal Text As LongPtr) As IIppTextWithLanguage
+End Interface
+
+[InterfaceId("B6FC1E02-5331-54FF-95A0-1FCB76BB97A9")]
+Interface IPageConfigurationSettings Extends IInspectable
+    Property Get OrientationSource() As PageConfigurationSource
+    Property Let OrientationSource(ByVal Value As PageConfigurationSource)
+    Property Get SizeSource() As PageConfigurationSource
+    Property Let SizeSource(ByVal Value As PageConfigurationSource)
+End Interface
+
+[InterfaceId("23C71DD2-6117-553F-9378-180AF5849A49")]
+Interface IPdlPassthroughProvider Extends IInspectable
+    Property Get SupportedPdlContentTypes() As IVectorView_HSTRING
+    Function StartPrintJobWithTaskOptions(ByVal JobName As LongPtr, ByVal PdlContentType As LongPtr, ByVal TaskOptions As IPrintTaskOptions, ByVal PageConfigurationSettings As IPageConfigurationSettings) As IPdlPassthroughTarget
+    Function StartPrintJobWithPrintTicket(ByVal JobName As LongPtr, ByVal PdlContentType As LongPtr, ByVal PrintTicket As IInputStream, ByVal PageConfigurationSettings As IPageConfigurationSettings) As IPdlPassthroughTarget
+End Interface
+
+[InterfaceId("9840BE79-67F8-5385-A5B9-E8C96E0FCA76")]
+Interface IPdlPassthroughTarget Extends IInspectable
+    Property Get PrintJobId() As Long
+    Function GetOutputStream() As IOutputStream
+    [PreserveSig]
+    Function Submit() As HRESULT
+End Interface
+
+[InterfaceId("041C3D19-9713-42A2-9813-7DC3337428D3")]
+Interface IPrint3DDevice Extends IInspectable
+    Property Get PrintSchema() As IPrintSchema
+End Interface
+
+[InterfaceId("7CFC4A8F-5EB7-5AF7-BC9F-78A7E407CD2E")]
+Interface IAsyncOperationIPrint3DDevice Extends IInspectable
+    Property Set Completed(ByVal Handler As IAsyncOperationCompletedHandlerIPrint3DDevice)
+    Property Get Completed() As IAsyncOperationCompletedHandlerIPrint3DDevice
+    Function GetResults() As IPrint3DDevice
+End Interface
+
+[InterfaceId("8D4B123F-4343-5195-BBC9-B99E956E057F")]
+Interface IAsyncOperationCompletedHandlerIPrint3DDevice Extends IUnknown
+    Sub Invoke(ByVal AsyncOperation As IAsyncOperationIPrint3DDevice, ByVal AsyncStatus As AsyncStatus)
+End Interface
+
+[InterfaceId("FDE3620A-67CD-41B7-A344-5150A1FD75B5")]
+Interface IPrint3DDeviceStatics Extends IInspectable
+    Function FromIdAsync(ByVal DeviceId As LongPtr) As IAsyncOperationIPrint3DDevice
+    Function GetDeviceSelector() As LongPtr
+End Interface
+
+[InterfaceId("C2B98316-26B8-4BFB-8138-9F962C22A35B")]
+Interface IPrintSchema Extends IInspectable
+    Function GetDefaultPrintTicketAsync() As IAsyncOperationIRandomAccessStreamWithContentType
+    Function GetCapabilitiesAsync(ByVal ConstrainTicket As IRandomAccessStreamWithContentType) As IAsyncOperationIRandomAccessStreamWithContentType
+    Function MergeAndValidateWithDefaultPrintTicketAsync(ByVal DeltaTicket As IRandomAccessStreamWithContentType) As IAsyncOperationIRandomAccessStreamWithContentType
+End Interface
+
+Module mdlDevicesPrinters
+
+Public Enum IppAttributeErrorReason
+    IppAttributeErrorReason_RequestEntityTooLarge
+    IppAttributeErrorReason_AttributeNotSupported
+    IppAttributeErrorReason_AttributeValuesNotSupported
+    IppAttributeErrorReason_AttributeNotSettable
+    IppAttributeErrorReason_ConflictingAttributes
+End Enum
+
+Public Enum IppAttributeValueKind
+    IppAttributeValueKind_Unsupported
+    IppAttributeValueKind_Unknown
+    IppAttributeValueKind_NoValue
+    IppAttributeValueKind_Integer
+    IppAttributeValueKind_Boolean
+    IppAttributeValueKind_Enum
+    IppAttributeValueKind_OctetString
+    IppAttributeValueKind_DateTime
+    IppAttributeValueKind_Resolution
+    IppAttributeValueKind_RangeOfInteger
+    IppAttributeValueKind_Collection
+    IppAttributeValueKind_TextWithLanguage
+    IppAttributeValueKind_NameWithLanguage
+    IppAttributeValueKind_TextWithoutLanguage
+    IppAttributeValueKind_NameWithoutLanguage
+    IppAttributeValueKind_Keyword
+    IppAttributeValueKind_Uri
+    IppAttributeValueKind_UriSchema
+    IppAttributeValueKind_Charset
+    IppAttributeValueKind_NaturalLanguage
+    IppAttributeValueKind_MimeMediaType
+End Enum
+
+Public Enum IppResolutionUnit
+    DotsPerInch
+    DotsPerCentimeter
+End Enum
+
+Public Enum PageConfigurationSource
+    PageConfigurationSource_PrintJobConfiguration
+    PageConfigurationSource_PdlContent
+End Enum
+
+End Module

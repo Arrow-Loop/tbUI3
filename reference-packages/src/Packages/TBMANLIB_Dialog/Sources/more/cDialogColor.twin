@@ -1,0 +1,327 @@
+' =====================================================
+' cDialogColor.twin - Color Picker Dialog Class
+' cDialogColor.twin - 颜色选择对话框类
+' TBMANLIB Dialog Library
+' =====================================================
+' Function: Provides color picker dialog using Windows ChooseColor API
+' 功能：使用 Windows ChooseColor API 提供颜色选择对话框
+' Author: woeoo (邓伟)
+' Email: 215879458@qq.com
+' Site: https://vb6.pro
+' Date: 2026-03-11
+' Version: 1.0.0
+' =====================================================
+
+Option Explicit
+
+[COMCreatable(False)]
+Public Class cDialogColor
+
+    ' =====================================================
+    ' Windows API Declarations
+    ' =====================================================
+    Private Declare PtrSafe Function ChooseColor Lib "comdlg32.dll" Alias "ChooseColorW" (pChoosecolor As CHOOSECOLOR) As Long
+
+    ' =====================================================
+    ' Constants
+    ' =====================================================
+    Private Const CC_RGBINIT = &H1
+    Private Const CC_FULLOPEN = &H2
+    Private Const CC_PREVENTFULLOPEN = &H4
+    Private Const CC_SHOWHELP = &H8
+    Private Const CC_ENABLEHOOK = &H10
+    Private Const CC_ENABLETEMPLATE = &H20
+    Private Const CC_ENABLETEMPLATEHANDLE = &H40
+    Private Const CC_SOLIDCOLOR = &H80
+    Private Const CC_ANYCOLOR = &H100
+
+    ' CHOOSECOLOR struct size (hardcoded because LenB() is wrong on x64)
+    #If Win64 Then
+        Private Const CC_STRUCTSIZE As Long = 72     ' x64: 9 fields with 8-byte pointers
+    #Else
+        Private Const CC_STRUCTSIZE As Long = 36     ' x86: 9 fields with 4-byte pointers
+    #End If
+
+    ' =====================================================
+    ' Types
+    ' =====================================================
+    Private Type CHOOSECOLOR
+        lStructSize As Long
+        hwndOwner As LongPtr
+        hInstance As LongPtr
+        rgbResult As Long
+        lpCustColors As LongPtr
+        flags As Long
+        lCustData As LongPtr
+        lpfnHook As LongPtr
+        lpTemplateName As LongPtr
+    End Type
+
+    ' =====================================================
+    ' Class Data
+    ' =====================================================
+    Private Type cDialogColorData
+        mColor As Long
+        mFullOpen As Boolean
+        mPreventFullOpen As Boolean
+        mSolidColor As Boolean
+        mAnyColor As Boolean
+        mOwnerHwnd As LongPtr
+        mCustomColors(0 To 15) As Long
+    End Type
+
+    Private mData As cDialogColorData
+
+    ' =====================================================
+    ' Class Initialize/Terminate
+    ' =====================================================
+    Private Sub Class_Initialize()
+        ' Initialize with white color
+        mData.mColor = vbWhite
+        mData.mFullOpen = False
+        mData.mPreventFullOpen = False
+        mData.mSolidColor = False
+        mData.mAnyColor = True
+        mData.mOwnerHwnd = 0
+
+        ' Initialize custom colors with default palette
+        Dim i As Long
+        For i = 0 To 15
+            mData.mCustomColors(i) = QBColor(i)
+        Next i
+    End Sub
+
+    ' =====================================================
+    ' Property: Selected Color
+    ' =====================================================
+    Public Property Get Color() As Long
+        Color = mData.mColor
+    End Property
+
+    Public Property Let Color(ByVal value As Long)
+        mData.mColor = value
+    End Property
+
+    ' =====================================================
+    ' Property: Red Component
+    ' =====================================================
+    Public Property Get Red() As Long
+        Red = mData.mColor And &HFF
+    End Property
+
+    Public Property Let Red(ByVal value As Long)
+        If value < 0 Then value = 0
+        If value > 255 Then value = 255
+        mData.mColor = (mData.mColor And &HFFFF00) Or value
+    End Property
+
+    ' =====================================================
+    ' Property: Green Component
+    ' =====================================================
+    Public Property Get Green() As Long
+        Green = (mData.mColor \ 256) And &HFF
+    End Property
+
+    Public Property Let Green(ByVal value As Long)
+        If value < 0 Then value = 0
+        If value > 255 Then value = 255
+        mData.mColor = (mData.mColor And &HFF00FF) Or (value * 256)
+    End Property
+
+    ' =====================================================
+    ' Property: Blue Component
+    ' =====================================================
+    Public Property Get Blue() As Long
+        Blue = (mData.mColor \ 65536) And &HFF
+    End Property
+
+    Public Property Let Blue(ByVal value As Long)
+        If value < 0 Then value = 0
+        If value > 255 Then value = 255
+        mData.mColor = (mData.mColor And &HFFFF&) Or (value * 65536)
+    End Property
+
+    ' =====================================================
+    ' Property: Full Open (show full dialog)
+    ' =====================================================
+    Public Property Get FullOpen() As Boolean
+        FullOpen = mData.mFullOpen
+    End Property
+
+    Public Property Let FullOpen(ByVal value As Boolean)
+        mData.mFullOpen = value
+    End Property
+
+    ' =====================================================
+    ' Property: Prevent Full Open
+    ' =====================================================
+    Public Property Get PreventFullOpen() As Boolean
+        PreventFullOpen = mData.mPreventFullOpen
+    End Property
+
+    Public Property Let PreventFullOpen(ByVal value As Boolean)
+        mData.mPreventFullOpen = value
+    End Property
+
+    ' =====================================================
+    ' Property: Solid Color Only
+    ' =====================================================
+    Public Property Get SolidColor() As Boolean
+        SolidColor = mData.mSolidColor
+    End Property
+
+    Public Property Let SolidColor(ByVal value As Boolean)
+        mData.mSolidColor = value
+    End Property
+
+    ' =====================================================
+    ' Property: Any Color
+    ' =====================================================
+    Public Property Get AnyColor() As Boolean
+        AnyColor = mData.mAnyColor
+    End Property
+
+    Public Property Let AnyColor(ByVal value As Boolean)
+        mData.mAnyColor = value
+    End Property
+
+    ' =====================================================
+    ' Property: Owner Window Handle
+    ' =====================================================
+    Public Property Get OwnerHwnd() As LongPtr
+        OwnerHwnd = mData.mOwnerHwnd
+    End Property
+
+    Public Property Let OwnerHwnd(ByVal value As LongPtr)
+        mData.mOwnerHwnd = value
+    End Property
+
+    ' =====================================================
+    ' Method: Set Custom Color
+    ' =====================================================
+    Public Sub SetCustomColor(ByVal index As Long, ByVal color As Long)
+        If index >= 0 And index <= 15 Then
+            mData.mCustomColors(index) = color
+        End If
+    End Sub
+
+    ' =====================================================
+    ' Method: Get Custom Color
+    ' =====================================================
+    Public Function GetCustomColor(ByVal index As Long) As Long
+        If index >= 0 And index <= 15 Then
+            GetCustomColor = mData.mCustomColors(index)
+        Else
+            GetCustomColor = 0
+        End If
+    End Function
+
+    ' =====================================================
+    ' Method: Show the color dialog
+    ' =====================================================
+    Public Function ShowDialog() As Boolean
+        Dim cc As CHOOSECOLOR
+        Dim lngFlags As Long
+
+        ' Build flags
+        lngFlags = CC_RGBINIT
+        If mData.mFullOpen Then lngFlags = lngFlags Or CC_FULLOPEN
+        If mData.mPreventFullOpen Then lngFlags = lngFlags Or CC_PREVENTFULLOPEN
+        If mData.mSolidColor Then lngFlags = lngFlags Or CC_SOLIDCOLOR
+        If mData.mAnyColor Then lngFlags = lngFlags Or CC_ANYCOLOR
+
+        ' Fill CHOOSECOLOR structure
+        With cc
+            .lStructSize = CC_STRUCTSIZE
+            .hwndOwner = mData.mOwnerHwnd
+            .hInstance = 0
+            .rgbResult = mData.mColor
+            .lpCustColors = VarPtr(mData.mCustomColors(0))
+            .flags = lngFlags
+            .lCustData = 0
+            .lpfnHook = 0
+            .lpTemplateName = 0
+        End With
+
+        ' Show dialog
+        If ChooseColor(cc) <> 0 Then
+            ' User selected a color
+            mData.mColor = cc.rgbResult
+            ShowDialog = True
+        Else
+            ' User cancelled
+            ShowDialog = False
+        End If
+    End Function
+
+    ' =====================================================
+    ' Method: Get HTML color string
+    ' =====================================================
+    Public Function ToHtmlColor() As String
+        ' Returns color in #RRGGBB format
+        ToHtmlColor = "#" & Right$("0" & Hex$(Me.Red), 2) & _
+                            Right$("0" & Hex$(Me.Green), 2) & _
+                            Right$("0" & Hex$(Me.Blue), 2)
+    End Function
+
+    ' =====================================================
+    ' Method: Set color from HTML string
+    ' =====================================================
+    Public Sub FromHtmlColor(ByVal htmlColor As String)
+        On Error GoTo ErrorHandler
+
+        Dim strColor As String
+        strColor = Trim$(htmlColor)
+
+        ' Remove # prefix if present
+        If Left$(strColor, 1) = "#" Then
+            strColor = Mid$(strColor, 2)
+        End If
+
+        ' Parse hex color
+        If Len(strColor) = 6 Then
+            Me.Red = CLng("&H" & Mid$(strColor, 1, 2))
+            Me.Green = CLng("&H" & Mid$(strColor, 3, 2))
+            Me.Blue = CLng("&H" & Mid$(strColor, 5, 2))
+        End If
+        Exit Sub
+
+ErrorHandler:
+        ' Invalid format, ignore
+    End Sub
+
+    ' =====================================================
+    ' Method: Get RGB string
+    ' =====================================================
+    Public Function ToRgbString() As String
+        ToRgbString = "RGB(" & Me.Red & ", " & Me.Green & ", " & Me.Blue & ")"
+    End Function
+
+    ' =====================================================
+    ' Method: Set color from RGB values
+    ' =====================================================
+    Public Sub SetRgb(ByVal red As Long, ByVal green As Long, ByVal blue As Long)
+        Me.Red = red
+        Me.Green = green
+        Me.Blue = blue
+    End Sub
+
+    ' =====================================================
+    ' Method: Reset to default settings
+    ' =====================================================
+    Public Sub Reset()
+        mData.mColor = vbWhite
+        mData.mFullOpen = False
+        mData.mPreventFullOpen = False
+        mData.mSolidColor = False
+        mData.mAnyColor = True
+        mData.mOwnerHwnd = 0
+
+        ' Reset custom colors
+        Dim i As Long
+        For i = 0 To 15
+            mData.mCustomColors(i) = QBColor(i)
+        Next i
+    End Sub
+
+End Class

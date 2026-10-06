@@ -1,0 +1,115 @@
+[InterfaceId("12D40A27-AE8D-5FB0-8FED-00165D59C6AB")]
+Interface IIterator_IVoiceInformation Extends IInspectable
+    Property Get Current() As IVoiceInformation
+    Property Get HasCurrent() As BooleanByte
+    Function MoveNext() As BooleanByte
+    Function GetMany(ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("3C33BB52-BD98-5C8C-ADEE-EE8DA0628EFC")]
+Interface IIterable_IVoiceInformation Extends IInspectable
+    Function First() As IIterator_IVoiceInformation
+End Interface
+
+[InterfaceId("EE8D63CE-51AC-5984-891B-D232FA7F6453")]
+Interface IVectorView_IVoiceInformation Extends IInspectable
+    Function GetAt(ByVal Index As Long) As IVoiceInformation
+    Property Get Size() As Long
+    Function IndexOf(ByVal Value As IVoiceInformation, Index As Long) As BooleanByte
+    Function GetMany(ByVal StartIndex As Long, ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("7D526ECC-7533-4C3F-85BE-888C2BAEEBDC")]
+Interface IInstalledVoicesStatic Extends IInspectable
+    Property Get AllVoices() As IVectorView_IVoiceInformation
+    Property Get DefaultVoice() As IVoiceInformation
+End Interface
+
+[InterfaceId("64255F2E-358D-4058-BE9A-FD3FCB423530")]
+Interface IInstalledVoicesStatic2 Extends IInspectable
+    Function TrySetDefaultVoiceAsync(ByVal Voice As IVoiceInformation) As IAsyncOperationBoolean
+End Interface
+
+[InterfaceId("83E46E93-244C-4622-BA0B-6229C4D0D65D")]
+Interface ISpeechSynthesisStream Extends IInspectable ' requires IClosable
+    Property Get Markers() As IVectorView_IMediaMarker
+End Interface
+
+[InterfaceId("DF9D48AD-9CEA-560C-9EDC-CB8852CB55E3")]
+Interface IAsyncOperationISpeechSynthesisStream Extends IInspectable
+    Property Set Completed(ByVal Handler As IAsyncOperationCompletedHandlerISpeechSynthesisStream)
+    Property Get Completed() As IAsyncOperationCompletedHandlerISpeechSynthesisStream
+    Function GetResults() As ISpeechSynthesisStream
+End Interface
+
+[InterfaceId("C972B996-6165-50D4-AF60-A8C3DF51D092")]
+Interface IAsyncOperationCompletedHandlerISpeechSynthesisStream Extends IUnknown
+    Sub Invoke(ByVal AsyncOperation As IAsyncOperationISpeechSynthesisStream, ByVal AsyncStatus As AsyncStatus)
+End Interface
+
+[InterfaceId("CE9F7C76-97F4-4CED-AD68-D51C458E45C6")]
+Interface ISpeechSynthesizer Extends IInspectable
+    Function SynthesizeTextToStreamAsync(ByVal Text As LongPtr) As IAsyncOperationISpeechSynthesisStream
+    Function SynthesizeSsmlToStreamAsync(ByVal Ssml As LongPtr) As IAsyncOperationISpeechSynthesisStream
+    Property Set Voice(ByVal Value As IVoiceInformation)
+    Property Get Voice() As IVoiceInformation
+End Interface
+
+[InterfaceId("A7C5ECB2-4339-4D6A-BBF8-C7A4F1544C2E")]
+Interface ISpeechSynthesizer2 Extends IInspectable
+    Property Get Options() As ISpeechSynthesizerOptions
+End Interface
+
+[InterfaceId("A0E23871-CC3D-43C9-91B1-EE185324D83D")]
+Interface ISpeechSynthesizerOptions Extends IInspectable
+    Property Get IncludeWordBoundaryMetadata() As Byte
+    Property Let IncludeWordBoundaryMetadata(ByVal Value As Byte)
+    Property Get IncludeSentenceBoundaryMetadata() As Byte
+    Property Let IncludeSentenceBoundaryMetadata(ByVal Value As Byte)
+End Interface
+
+[InterfaceId("1CBEF60E-119C-4BED-B118-D250C3A25793")]
+Interface ISpeechSynthesizerOptions2 Extends IInspectable
+    Property Get AudioVolume() As Double
+    Property Let AudioVolume(ByVal Value As Double)
+    Property Get SpeakingRate() As Double
+    Property Let SpeakingRate(ByVal Value As Double)
+    Property Get AudioPitch() As Double
+    Property Let AudioPitch(ByVal Value As Double)
+End Interface
+
+[InterfaceId("401ED877-902C-4814-A582-A5D0C0769FA8")]
+Interface ISpeechSynthesizerOptions3 Extends IInspectable
+    Property Get AppendedSilence() As SpeechAppendedSilence
+    Property Let AppendedSilence(ByVal Value As SpeechAppendedSilence)
+    Property Get PunctuationSilence() As SpeechPunctuationSilence
+    Property Let PunctuationSilence(ByVal Value As SpeechPunctuationSilence)
+End Interface
+
+[InterfaceId("B127D6A4-1291-4604-AA9C-83134083352C")]
+Interface IVoiceInformation Extends IInspectable
+    Property Get DisplayName() As LongPtr
+    Property Get Id() As LongPtr
+    Property Get Language() As LongPtr
+    Property Get Description() As LongPtr
+    Property Get Gender() As VoiceGender
+End Interface
+
+Module mdlMediaSpeechsynthesis
+
+Public Enum SpeechAppendedSilence
+    SpeechAppendedSilence_Default
+    SpeechAppendedSilence_Min
+End Enum
+
+Public Enum SpeechPunctuationSilence
+    SpeechPunctuationSilence_Default
+    SpeechPunctuationSilence_Min
+End Enum
+
+Public Enum VoiceGender
+    VoiceGender_Male
+    VoiceGender_Female
+End Enum
+
+End Module

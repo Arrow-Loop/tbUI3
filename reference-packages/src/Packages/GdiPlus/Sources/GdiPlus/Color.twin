@@ -1,0 +1,562 @@
+' A part of the GDI+ Package for TwinBasic  https://github.com/kubao/GdiPlus
+' Licensed under the MIT license. (c) 2026 Sunderland Ober Consulting.
+' "Windows" is a trademark of the Microsoft Corporation.
+' Modeled after code and descriptions (c) Microsoft, taken from SDK headers and official documentation.
+' Certain flat API function and type declarations taken from WinDevLib by fafalone, with thanks.
+
+' GetHSL, SetHSL, and HueToColorValue functions only taken from:
+'     https://github.com/jackdp/IGDIPlusMod/tree/master/Demo/ColorWheel/Delphi_XE7
+'     You can do with my code whatever you want without any cost and without any limitations.
+'     https://github.com/jackdp/IGDIPlusMod/tree/master?tab=readme-ov-file#license-for-my-modifications
+
+Module GdipColor
+    '----------------------------------------------------------------------------
+    ' Color mode
+    '----------------------------------------------------------------------------
+    
+    Enum ColorMode
+        ColorModeARGB32 = 0
+        ColorModeARGB64 = 1
+    End Enum
+    
+    '----------------------------------------------------------------------------
+    ' Color Channel flags
+    '----------------------------------------------------------------------------
+    
+    Enum ColorChannelFlags
+        ColorChannelFlagsC = 0
+        ColorChannelFlagsM
+        ColorChannelFlagsY
+        ColorChannelFlagsK
+        ColorChannelFlagsLast
+    End Enum
+    
+    '----------------------------------------------------------------------------
+    ' Color
+    '----------------------------------------------------------------------------
+    
+    Private Const Black = &H000000
+    
+    [ConstantFoldable]
+    Public Function Color() As Color
+        Color.argb = Black
+    End Function
+    
+    [ConstantFoldable]
+    Public Function NoColor() As Color
+        NoColor.argb = 0
+    End Function
+    
+    ' Construct an opaque Color object with
+    ' the specified Red, Green, Blue values.
+    '
+    ' Color values are not premultiplied.
+    
+    Public Function Color(ByVal r&, ByVal g&, ByVal b&) As Color
+        Color.argb = MakeARGB(255, r, g, b)
+    End Function
+    
+    Public Function Color(ByVal a&, ByVal r&, ByVal g&, ByVal b&) As Color
+        Color.argb = MakeARGB(a, r, g, b)
+    End Function
+    
+    Public Function Color(ByVal argb As ARGB) As Color
+        Color.argb = argb
+    End Function
+       
+    [Description("A color representation with r,g,b,a values having 256 discrete values each.")]
+    Type Color
+        argb As ARGB
+        
+        Property Get Alpha() As Integer
+            Return RGBA_A(Me.argb)
+        End Property
+        
+        Property Get A() As Integer
+            Return Me.Alpha
+        End Property
+        
+        Property Get Red() As Integer
+            Return RGB_B(Me.argb)  ' Sic
+        End Property
+        
+        Property Get R() As Integer
+            Return Me.Red
+        End Property
+        
+        Property Get Green() As Integer
+            Return RGB_G(Me.argb)
+        End Property
+        
+        Property Get G() As Integer
+            Return Me.Green
+        End Property
+        
+        Property Get Blue() As Integer
+            Return RGB_R(Me.argb)  ' Sic
+        End Property
+        
+        Property Get B() As Integer
+            Return Me.Blue
+        End Property
+        
+        Property Get Value() As ARGB
+            Return Me.argb
+        End Property
+        
+        Property Let Alpha(ByVal a As Byte)
+            Me.argb = (Me.argb And (&HFFFF_FFFF Xor AlphaMask)) Or (CLng(a) << AlphaShift)
+        End Property
+        
+        Property Let A(ByVal a As Byte)
+            Me.Alpha = a
+        End Property
+        
+        Property Let Red(ByVal r As Byte)
+            Me.argb = (Me.argb And (&HFFFF_FFFF Xor RedMask)) Or (CLng(r) << RedShift)
+        End Property
+        
+        Property Let R(ByVal r As Byte)
+            Me.Red = r
+        End Property
+        
+        Property Let Green(ByVal g As Byte)
+            Me.argb = (Me.argb And (&HFFFF_FFFF Xor GreenMask)) Or (CLng(g) << GreenShift)
+        End Property
+        
+        Property Let G(ByVal g As Byte)
+            Me.Green = g
+        End Property
+        
+        Property Let Blue(ByVal b As Byte)
+            Me.argb = (Me.argb And (&HFFFF_FFFF Xor BlueMask)) Or (CLng(b) << BlueShift)
+        End Property
+        
+        Property Let B(ByVal b As Byte)
+            Me.Blue = b
+        End Property
+        
+        Property Get IsNull() As Boolean
+            Return Me.argb = 0
+        End Property
+        
+        Property Get IsTransparent() As Boolean
+            Return Me.argb = Transparent
+        End Property
+        
+        Property Let Value(ByVal argb As ARGB)
+            Me.argb = argb
+        End Property
+        
+        Sub SetFromCOLORREF(ByVal rgb As Long)
+            ' Yes, RGB_B..RGB_R are not named correctly for this ARGB format, but they do the job.
+            ' COLORREF: &h00bb_ggrr
+            ' ARGB: &haarr_ggbb <- RGB_ functions work on this format
+            Me.argb = MakeARGB(255, RGB_B(rgb), RGB_G(rgb), RGB_R(rgb))
+        End Sub
+        
+        Function AsCOLORREF() As Long
+            Return Me.argb And &h00FF_FFFF
+        End Function
+        
+        Property Get RGB() As Long
+            Return Me.argb And &h00FF_FFFF
+        End Property
+        
+        Property Get BGR() As Long
+            Return MakeARGB(0, Me.B, Me.G, Me.R)
+        End Property
+        
+        Property Let BGR(ByVal bgr&)
+            Me.argb = MakeARGB(255, RGB_R(bgr), RGB_G(bgr), RGB_B(bgr))
+        End Property
+        
+        [Description("Extracts the RGB components. The output range is [0, 255]")]
+        Sub GetRGBB(r As Byte, g As Byte, b As Byte)
+            r = CByte(Me.R)
+            g = CByte(Me.G)
+            b = CByte(Me.B)
+        End Sub
+        
+        [Description("Extracts the RGB components. The output range is [0, 255]")]
+        Sub GetRGBI(r%, g%, b%)
+            r = Me.R
+            g = Me.G
+            b = Me.B
+        End Sub
+        
+        [Description("Extracts the RGB components. The output range is [0, 255]")]
+        Sub GetRGBL(r&, g&, b&)
+            r = Me.R
+            g = Me.G
+            b = Me.B
+        End Sub
+        
+        [Description("Extracts the RGB components. The output range is [0, 100]")]
+        Sub GetRGBS(r!, g!, b!)
+            r = Me.R * (100! / 255!)
+            g = Me.G * (100! / 255!)
+            b = Me.B * (100! / 255!)
+        End Sub
+        
+        [Description("Extracts the RGB components. The output range is [0, 100]")]
+        Sub GetRGBD(r#, g#, b#)
+            r = Me.R * (100# / 255#)
+            g = Me.G * (100# / 255#)
+            b = Me.B * (100# / 255#)
+        End Sub
+                        
+        [Description("Sets the RGB components. The input range is [0, 255]")]
+        Sub SetRGB(ByVal r&, ByVal g&, ByVal b&)
+            Me.argb = MakeARGB(Me.A, _
+                GdipLimitL(0, r, 255), _
+                GdipLimitL(0, g, 255), _
+                GdipLimitL(0, b, 255))
+        End Sub
+
+        [Description("Sets the RGB components. The input range is [0.0, 100.0]")]
+        Sub SetRGBD(ByVal r#, ByVal g#, ByVal b#)
+            Me.argb = MakeARGB(Me.A, _
+                GdipLimitL(0, CLng(Round(r * 2.55)), 255), _
+                GdipLimitL(0, CLng(Round(g * 2.55)), 255), _
+                GdipLimitL(0, CLng(Round(b * 2.55)), 255))
+        End Sub
+        
+        [Description("Returns the color with its hue rotated/shifted a given number of degrees.")]
+        Function RotatedHue(ByVal by!) As Color
+            If by <> 0! Then
+                Dim h!, s!, l!
+                Me.GetHSL(h, s, l)
+                h = GdipModS(h + by, 360!)
+                If h < 0! Then h += 360!
+                RotatedHue.SetHSL(h, s, l)
+            Else
+                RotatedHue.argb = Me.argb
+            End If
+        End Function
+        
+        [Description("Rotates/shifts the color's hue by a given number of degrees.")]
+        Sub RotateHue(ByVal by!)
+            Me.argb = Me.RotatedHue(by).argb
+        End Sub
+        
+        [Description("Gets the inverse of the color, i.e. with hue rotated 180°")]
+        Property Get Inverse() As Color
+            Inverse.argb = Me.argb Xor &h00FF_FFFF
+        End Property
+        
+        [Description("Sets the color to an inverse of the given color.")]
+        Property Let Inverse(ByVal invColor As Color)
+            Me.argb = invColor.Inverse.argb
+        End Property
+        
+        [Description("Inverts the color, i.e. rotates the hue by 180°")]
+        Sub Invert()
+            Me.argb = Me.Inverse.argb
+        End Sub
+        
+        [Description("Gets the color as ""#rrggbb"", where r, g, and b are hexadecimal.")]
+        Function AsHexRGB() As String
+            Dim r$ = Hex$(Me.R), g$ = Hex$(Me.G), b$ = Hex$(Me.B)
+            If Len(r) < 2 Then r = "0" & r
+            If Len(g) < 2 Then g = "0" & g
+            If Len(b) < 2 Then b = "0" & b
+            Return "#" & r & g & b
+        End Function
+        
+        [Description("Gets the color as ""#rrggbbaa"", where r, g, b, and a are hexadecimal.")]
+        Function AsHexRGBA() As String
+            Dim a$ = Hex$(Me.A)
+            If Len(a) < 2 Then a = "0" & a
+            Return Me.AsHexRGB() & a
+        End Function
+        
+        [Description("Gets hue in [0.0°, 360.0°), and saturation and lightness in [0.0, 100.0].")]
+        Sub GetHSL(hOut!, sOut!, lOut!)
+            Dim R!, G!, B!, Δ!, Cmax!, Cmin!, H!, S!, L!
+            Me.GetRGBS(R, G, B)
+            R *= 1! / 100!
+            G *= 1! / 100!
+            B *= 1! / 100!
+
+            Cmax = GdipMax(R, G, B)
+            Cmin = GdipMin(R, G, B)
+            L = (Cmax + Cmin) / 2!
+            If Cmax <> Cmin Then
+                Δ = Cmax - Cmin
+                ' saturation
+                If L < 0.5! Then
+                    S = Δ / (Cmax + Cmin)
+                Else
+                    S = Δ / (2! - Cmax - Cmin)
+                End If
+                ' hue
+                If R = Cmax Then
+                    H = (G - B) / Δ
+                ElseIf G = Cmax Then
+                    H = 2! + (B - R) / Δ
+                Else
+                    H = 4! + (R - G) / Δ
+                End If
+                H = H * (1! / 6!)
+                If H < 0! Then H = H + 1!
+            End If
+            hOut = GdipLimitS(0!, H, 1!) * 360!
+            sOut = GdipLimitS(0!, S, 1!) * 100!
+            lOut = GdipLimitS(0!, L, 1!) * 100!
+        End Sub
+        
+        [Description("Gets hue in degrees i.e. [0.0°, 360.0°), and saturation, lightness and alpha in [0.0, 100.0].")]
+        Sub GetHSLA(hOut!, sOut!, lOut!, aOut!)
+            Me.GetHSL(hOut, sOut, lOut)
+            aOut = Me.A * (100! / 255!)
+        End Sub
+        
+        [Description("Sets hue from [0.0°, 360.0°), and saturation and lightness from [0.0, 100.0].")]
+        Sub SetHSL(ByVal H!, ByVal S!, ByVal L!)
+            Dim M1!, M2!
+            Dim R!, G!, B!
+            H = GdipLimitS(0!, H * (1! / 360!), 1!)
+            S = GdipLimitS(0!, S * 0.01!, 1!)
+            L = GdipLimitS(0!, L * 0.01!, 1!)
+            
+            If S = 0! Then   ' fully desaturated -> lightness only
+                R = L
+                G = L
+                B = L
+            Else
+                If L <= 0.5 Then
+                    M2 = L * (1 + S)
+                Else
+                    M2 = L + S - L * S
+                End If
+                M1 = 2 * L - M2
+                R = HueToValue(H + (1! / 3!), M1, M2)
+                G = HueToValue(H, M1, M2)
+                B = HueToValue(H - (1! / 3!), M1, M2)
+            End If
+            Me.SetRGBD(R * 100.0, G * 100.0, B * 100.0)
+        End Sub
+        
+        [Description("Sets hue from [0°, 360°), and saturation, lightness and alpha from [0, 100].")]
+        Sub SetHSLA(ByVal h!, ByVal s!, ByVal l!, ByVal a!)
+            Me.SetHSL(h, s, l)
+            Me.A = CByte(GdipLimitL(0, CLng(Round(a * 2.55)), 255))
+        End Sub
+    End Type
+    
+    [DebugOnly]
+    Private Sub CheckColor()
+        Dim a As Any = Color(&hFFEEDDCC)
+        Debug.Print a.Alpha ; " " ; &hFF
+        Debug.Print a.Red ; " " ; &hEE
+        Debug.Print a.Green ; " " ; &hDD
+        Debug.Print a.Blue ; " " ; &hCC
+    End Sub
+    
+    [DebugOnly]
+    Private Sub CheckHSL()
+        Dim c As Color, h!, s!, l!, a!
+        c.SetHSLA(170!, 40!, 50!, 60!)
+        Debug.Print c.R, c.G, c.B, c.A
+        c.GetHSLA(h, s, l, a)
+        Debug.Print 170 - h, 40 - s, 50 - l, 60 - a
+        c.Invert
+        c.GetHSLA(h, s, l, a)
+        Debug.Print (170 + 180 - h), 40 - s, 50 - l, 60 - a
+    End Sub
+    
+    Function FromCOLORREF(ByVal rgb As Long) As Color
+        FromCOLORREF.SetFromCOLORREF(rgb)
+    End Function
+    
+    Public Function MakeARGB(ByVal a&, ByVal r&, ByVal g&, ByVal b&) As Long
+        MakeARGB = ((b And &hFF) << BlueShift) Or _
+                ((g And &hFF) << GreenShift) Or _
+                ((r And &hFF) << RedShift) Or _
+                ((a And &hFF) << AlphaShift)
+    End Function
+    
+    Function HueToValue(ByVal hue!, ByVal M1!, ByVal M2!) As Single
+        If hue < 0! Then
+            hue += 1!
+        ElseIf hue > 1! Then
+            hue -= 1!
+        End If
+        If hue < (1! / 6!) Then
+            HueToValue = M1 + (M2 - M1) * hue * 6!
+        ElseIf hue < (1! / 2!) Then
+            HueToValue = M2
+        ElseIf hue < (2! / 3!) Then
+            HueToValue = M1 + (M2 - M1) * (2! / 3! - hue) * 6!
+        Else
+            HueToValue = M1
+        End If
+    End Function
+    
+    '----------------------------------------------------------------------------
+    ' Common color constants
+    '----------------------------------------------------------------------------
+    
+    Enum CColor
+        AliceBlue = &hFFF0F8FF
+        AntiqueWhite = &hFFFAEBD7
+        Aqua = &hFF00FFFF
+        Aquamarine = &hFF7FFFD4
+        Azure = &hFFF0FFFF
+        Beige = &hFFF5F5DC
+        Bisque = &hFFFFE4C4
+        Black = &hFF000000
+        BlanchedAlmond = &hFFFFEBCD
+        Blue = &hFF0000FF
+        BlueViolet = &hFF8A2BE2
+        Brown = &hFFA52A2A
+        BurlyWood = &hFFDEB887
+        CadetBlue = &hFF5F9EA0
+        Chartreuse = &hFF7FFF00
+        Chocolate = &hFFD2691E
+        Coral = &hFFFF7F50
+        CornflowerBlue = &hFF6495ED
+        Cornsilk = &hFFFFF8DC
+        Crimson = &hFFDC143C
+        Cyan = &hFF00FFFF
+        DarkBlue = &hFF00008B
+        DarkCyan = &hFF008B8B
+        DarkGoldenrod = &hFFB8860B
+        DarkGray = &hFFA9A9A9
+        DarkGreen = &hFF006400
+        DarkKhaki = &hFFBDB76B
+        DarkMagenta = &hFF8B008B
+        DarkOliveGreen = &hFF556B2F
+        DarkOrange = &hFFFF8C00
+        DarkOrchid = &hFF9932CC
+        DarkRed = &hFF8B0000
+        DarkSalmon = &hFFE9967A
+        DarkSeaGreen = &hFF8FBC8B
+        DarkSlateBlue = &hFF483D8B
+        DarkSlateGray = &hFF2F4F4F
+        DarkTurquoise = &hFF00CED1
+        DarkViolet = &hFF9400D3
+        DeepPink = &hFFFF1493
+        DeepSkyBlue = &hFF00BFFF
+        DimGray = &hFF696969
+        DodgerBlue = &hFF1E90FF
+        Firebrick = &hFFB22222
+        FloralWhite = &hFFFFFAF0
+        ForestGreen = &hFF228B22
+        Fuchsia = &hFFFF00FF
+        Gainsboro = &hFFDCDCDC
+        GhostWhite = &hFFF8F8FF
+        Gold = &hFFFFD700
+        Goldenrod = &hFFDAA520
+        Gray = &hFF808080
+        Green = &hFF008000
+        GreenYellow = &hFFADFF2F
+        Honeydew = &hFFF0FFF0
+        HotPink = &hFFFF69B4
+        IndianRed = &hFFCD5C5C
+        Indigo = &hFF4B0082
+        Ivory = &hFFFFFFF0
+        Khaki = &hFFF0E68C
+        Lavender = &hFFE6E6FA
+        LavenderBlush = &hFFFFF0F5
+        LawnGreen = &hFF7CFC00
+        LemonChiffon = &hFFFFFACD
+        LightBlue = &hFFADD8E6
+        LightCoral = &hFFF08080
+        LightCyan = &hFFE0FFFF
+        LightGoldenrodYellow = &hFFFAFAD2
+        LightGray = &hFFD3D3D3
+        LightGreen = &hFF90EE90
+        LightPink = &hFFFFB6C1
+        LightSalmon = &hFFFFA07A
+        LightSeaGreen = &hFF20B2AA
+        LightSkyBlue = &hFF87CEFA
+        LightSlateGray = &hFF778899
+        LightSteelBlue = &hFFB0C4DE
+        LightYellow = &hFFFFFFE0
+        Lime = &hFF00FF00
+        LimeGreen = &hFF32CD32
+        Linen = &hFFFAF0E6
+        Magenta = &hFFFF00FF
+        Maroon = &hFF800000
+        MediumAquamarine = &hFF66CDAA
+        MediumBlue = &hFF0000CD
+        MediumOrchid = &hFFBA55D3
+        MediumPurple = &hFF9370DB
+        MediumSeaGreen = &hFF3CB371
+        MediumSlateBlue = &hFF7B68EE
+        MediumSpringGreen = &hFF00FA9A
+        MediumTurquoise = &hFF48D1CC
+        MediumVioletRed = &hFFC71585
+        MidnightBlue = &hFF191970
+        MintCream = &hFFF5FFFA
+        MistyRose = &hFFFFE4E1
+        Moccasin = &hFFFFE4B5
+        NavajoWhite = &hFFFFDEAD
+        Navy = &hFF000080
+        OldLace = &hFFFDF5E6
+        Olive = &hFF808000
+        OliveDrab = &hFF6B8E23
+        Orange = &hFFFFA500
+        OrangeRed = &hFFFF4500
+        Orchid = &hFFDA70D6
+        PaleGoldenrod = &hFFEEE8AA
+        PaleGreen = &hFF98FB98
+        PaleTurquoise = &hFFAFEEEE
+        PaleVioletRed = &hFFDB7093
+        PapayaWhip = &hFFFFEFD5
+        PeachPuff = &hFFFFDAB9
+        Peru = &hFFCD853F
+        Pink = &hFFFFC0CB
+        Plum = &hFFDDA0DD
+        PowderBlue = &hFFB0E0E6
+        Purple = &hFF800080
+        Red = &hFFFF0000
+        RosyBrown = &hFFBC8F8F
+        RoyalBlue = &hFF4169E1
+        SaddleBrown = &hFF8B4513
+        Salmon = &hFFFA8072
+        SandyBrown = &hFFF4A460
+        SeaGreen = &hFF2E8B57
+        SeaShell = &hFFFFF5EE
+        Sienna = &hFFA0522D
+        Silver = &hFFC0C0C0
+        SkyBlue = &hFF87CEEB
+        SlateBlue = &hFF6A5ACD
+        SlateGray = &hFF708090
+        Snow = &hFFFFFAFA
+        SpringGreen = &hFF00FF7F
+        SteelBlue = &hFF4682B4
+        Tan = &hFFD2B48C
+        Teal = &hFF008080
+        Thistle = &hFFD8BFD8
+        Tomato = &hFFFF6347
+        Transparent = &h00FFFFFF
+        Turquoise = &hFF40E0D0
+        Violet = &hFFEE82EE
+        Wheat = &hFFF5DEB3
+        White = &hFFFFFFFF
+        WhiteSmoke = &hFFF5F5F5
+        Yellow = &hFFFFFF00
+        YellowGreen = &hFF9ACD32
+    End Enum
+    
+    '----------------------------------------------------------------------------
+    ' Shift count and bit mask for A, R, G, B components
+    '----------------------------------------------------------------------------
+    
+    Public Enum ColorShift
+        AlphaShift = 24
+        RedShift = 16
+        GreenShift = 8
+        BlueShift = 0
+    End Enum
+    
+    Public Enum ColorMask
+        AlphaMask = &Hff& << AlphaShift
+        RedMask = &Hff& << RedShift
+        GreenMask = &Hff& << GreenShift
+        BlueMask = &Hff& << BlueShift
+    End Enum
+End Module

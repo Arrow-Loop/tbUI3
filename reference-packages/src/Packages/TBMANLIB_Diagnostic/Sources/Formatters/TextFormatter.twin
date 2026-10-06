@@ -1,0 +1,81 @@
+' =====================================================
+' TextFormatter.twin - INI 格式化器
+' Twinbasic Diagnostic Tool
+' =====================================================
+
+' INI 格式化器
+' 输出干净的 INI 格式报告
+[ClassId("20A2B3C4-D5E6-F7A8-B9C0-D1E2F3A4B5C6")]
+[InterfaceId("20A2B3C4-D5E6-F7A8-B9C0-D1E2F3A4B5C7")]
+Public Class TextFormatter
+    Implements IOutputFormatter
+
+    Private m_Builder As StringBuilder
+    Private m_InCategory As Boolean
+    Private m_HasItems As Boolean
+
+    ' 构造函数
+    Public Sub New()
+        Set m_Builder = New StringBuilder
+        m_InCategory = False
+        m_HasItems = False
+    End Sub
+
+    ' === IOutputFormatter 实现 ===
+
+    Public Property Get IOutputFormatter_FileExtension() As String
+        Return ".txt"
+    End Property
+
+    Public Property Get IOutputFormatter_FormatterName() As String
+        Return "Text"
+    End Property
+
+    Public Sub IOutputFormatter_BeginFormat()
+        m_Builder.Clear
+        m_InCategory = False
+        m_HasItems = False
+
+        ' 输出标题
+        m_Builder.AppendLine "# Twinbasic Diagnostic Tool v1.0"
+        m_Builder.AppendLine
+    End Sub
+
+    Public Sub IOutputFormatter_FormatCategory(ByVal categoryName As String)
+        ' 如果已经在类别中，先结束
+        If m_InCategory Then
+            IOutputFormatter_EndCategory
+        End If
+
+        ' 输出新的类别标题
+        m_Builder.AppendLine "[" & categoryName & "]"
+        m_HasItems = False
+        m_InCategory = True
+    End Sub
+
+    Public Sub IOutputFormatter_FormatItem(ByVal key As String, ByVal value As String)
+        ' 格式化 key = value
+        m_Builder.AppendLine key & " = " & value
+        m_HasItems = True
+    End Sub
+
+    Public Sub IOutputFormatter_EndCategory()
+        If m_InCategory Then
+            ' 如果类别中有内容，添加空行分隔
+            If m_HasItems Then
+                m_Builder.AppendLine
+            End If
+            m_InCategory = False
+        End If
+    End Sub
+
+    Public Function IOutputFormatter_EndFormat() As String
+        ' 如果还在类别中，结束它
+        If m_InCategory Then
+            IOutputFormatter_EndCategory
+        End If
+
+        Return m_Builder.ToString()
+    End Function
+
+End Class

@@ -1,0 +1,527 @@
+' =====================================================
+' cDialogFont.twin - Font Selection Dialog Class
+' cDialogFont.twin - 字体选择对话框类
+' TBMANLIB Dialog Library
+' =====================================================
+' Function: Provides font selection dialog using Windows ChooseFont API
+' 功能：使用 Windows ChooseFont API 提供字体选择对话框
+' Author: woeoo (邓伟)
+' Email: 215879458@qq.com
+' Site: https://vb6.pro
+' Date: 2026-03-11
+' Version: 1.0.0
+' =====================================================
+
+Option Explicit
+
+[COMCreatable(False)]
+Public Class cDialogFont
+
+    ' =====================================================
+    ' Windows API Declarations
+    ' =====================================================
+    Private Declare PtrSafe Function ChooseFont Lib "comdlg32.dll" Alias "ChooseFontW" (pChoosefont As CHOOSEFONT) As Long
+
+    ' =====================================================
+    ' Constants
+    ' =====================================================
+    ' CHOOSEFONT flags
+    Private Const CF_SCREENFONTS = &H1
+    Private Const CF_PRINTERFONTS = &H2
+    Private Const CF_BOTH = (CF_SCREENFONTS Or CF_PRINTERFONTS)
+    Private Const CF_SHOWHELP = &H4
+    Private Const CF_ENABLEHOOK = &H8
+    Private Const CF_ENABLETEMPLATE = &H10
+    Private Const CF_ENABLETEMPLATEHANDLE = &H20
+    Private Const CF_INITTOLOGFONTSTRUCT = &H40
+    Private Const CF_USESTYLE = &H80
+    Private Const CF_EFFECTS = &H100
+    Private Const CF_APPLY = &H200
+    Private Const CF_ANSIONLY = &H400
+    Private Const CF_SCRIPTSONLY = CF_ANSIONLY
+    Private Const CF_NOVECTORFONTS = &H800
+    Private Const CF_NOOEMFONTS = CF_NOVECTORFONTS
+    Private Const CF_NOSIMULATIONS = &H1000
+    Private Const CF_LIMITSIZE = &H2000
+    Private Const CF_FIXEDPITCHONLY = &H4000
+    Private Const CF_WYSIWYG = &H8000
+    Private Const CF_FORCEFONTEXIST = &H10000
+    Private Const CF_SCALABLEONLY = &H20000
+    Private Const CF_TTONLY = &H40000
+    Private Const CF_NOFACESEL = &H80000
+
+    ' CHOOSEFONT struct size (hardcoded because LenB() is wrong on x64)
+    #If Win64 Then
+        Private Const CF_STRUCTSIZE As Long = 104    ' x64: 16 fields with 8-byte pointers
+    #Else
+        Private Const CF_STRUCTSIZE As Long = 60     ' x86: 16 fields with 4-byte pointers
+    #End If
+    Private Const CF_NOSTYLESEL = &H100000
+    Private Const CF_NOSIZESEL = &H200000
+    Private Const CF_SELECTSCRIPT = &H400000
+    Private Const CF_NOSCRIPTSEL = &H800000
+    Private Const CF_NOVERTFONTS = &H1000000
+
+    ' Font weight constants
+    Public Enum FontWeight
+        FW_DONTCARE = 0
+        FW_THIN = 100
+        FW_EXTRALIGHT = 200
+        FW_LIGHT = 300
+        FW_NORMAL = 400
+        FW_MEDIUM = 500
+        FW_SEMIBOLD = 600
+        FW_BOLD = 700
+        FW_EXTRABOLD = 800
+        FW_HEAVY = 900
+    End Enum
+
+    ' Font families
+    Public Enum FontFamily
+        FF_DONTCARE = 0
+        FF_ROMAN = 16
+        FF_SWISS = 32
+        FF_MODERN = 48
+        FF_SCRIPT = 64
+        FF_DECORATIVE = 80
+    End Enum
+
+    ' Font pitch
+    Public Enum FontPitch
+        DEFAULT_PITCH = 0
+        FIXED_PITCH = 1
+        VARIABLE_PITCH = 2
+    End Enum
+
+    ' =====================================================
+    ' Types
+    ' =====================================================
+    Private Type LOGFONT
+        lfHeight As Long
+        lfWidth As Long
+        lfEscapement As Long
+        lfOrientation As Long
+        lfWeight As Long
+        lfItalic As Byte
+        lfUnderline As Byte
+        lfStrikeOut As Byte
+        lfCharSet As Byte
+        lfOutPrecision As Byte
+        lfClipPrecision As Byte
+        lfQuality As Byte
+        lfPitchAndFamily As Byte
+        lfFaceName(0 To 63) As Byte  ' 32 unicode chars = 64 bytes
+    End Type
+
+    Private Type CHOOSEFONT
+        lStructSize As Long
+        hwndOwner As LongPtr
+        hDC As LongPtr
+        lpLogFont As LongPtr
+        iPointSize As Long
+        flags As Long
+        rgbColors As Long
+        lCustData As LongPtr
+        lpfnHook As LongPtr
+        lpTemplateName As LongPtr
+        hInstance As LongPtr
+        lpszStyle As LongPtr
+        nFontType As Integer
+        MISSING_ALIGNMENT As Integer
+        nSizeMin As Long
+        nSizeMax As Long
+    End Type
+
+    ' =====================================================
+    ' Font Style Enum
+    ' =====================================================
+    Public Enum FontStyle
+        StyleRegular = 0
+        StyleBold = 1
+        StyleItalic = 2
+        StyleBoldItalic = 3
+    End Enum
+
+    ' =====================================================
+    ' Class Data
+    ' =====================================================
+    Private Type cDialogFontData
+        mFaceName As String
+        mSize As Double
+        mStyle As FontStyle
+        mColor As Long
+        mUnderline As Boolean
+        mStrikeOut As Boolean
+        mOwnerHwnd As LongPtr
+        mMinSize As Long
+        mMaxSize As Long
+        mFixedPitchOnly As Boolean
+        mForceFontExist As Boolean
+        mShowEffects As Boolean
+        mScreenFontsOnly As Boolean
+    End Type
+
+    Private mData As cDialogFontData
+
+    ' =====================================================
+    ' Class Initialize/Terminate
+    ' =====================================================
+    Private Sub Class_Initialize()
+        ' Initialize with default font
+        mData.mFaceName = "Segoe UI"
+        mData.mSize = 9
+        mData.mStyle = FontStyle.StyleRegular
+        mData.mColor = vbBlack
+        mData.mUnderline = False
+        mData.mStrikeOut = False
+        mData.mOwnerHwnd = 0
+        mData.mMinSize = 0
+        mData.mMaxSize = 0
+        mData.mFixedPitchOnly = False
+        mData.mForceFontExist = True
+        mData.mShowEffects = True
+        mData.mScreenFontsOnly = True
+    End Sub
+
+    ' =====================================================
+    ' Property: Font Face Name
+    ' =====================================================
+    Public Property Get FaceName() As String
+        FaceName = mData.mFaceName
+    End Property
+
+    Public Property Let FaceName(ByVal value As String)
+        mData.mFaceName = value
+    End Property
+
+    ' =====================================================
+    ' Property: Font Size (in points)
+    ' =====================================================
+    Public Property Get Size() As Double
+        Size = mData.mSize
+    End Property
+
+    Public Property Let Size(ByVal value As Double)
+        If value > 0 Then
+            mData.mSize = value
+        End If
+    End Property
+
+    ' =====================================================
+    ' Property: Font Style
+    ' =====================================================
+    Public Property Get Style() As FontStyle
+        Style = mData.mStyle
+    End Property
+
+    Public Property Let Style(ByVal value As FontStyle)
+        mData.mStyle = value
+    End Property
+
+    ' =====================================================
+    ' Property: Bold
+    ' =====================================================
+    Public Property Get Bold() As Boolean
+        Bold = (mData.mStyle And 1) <> 0
+    End Property
+
+    Public Property Let Bold(ByVal value As Boolean)
+        If value Then
+            mData.mStyle = mData.mStyle Or 1
+        Else
+            mData.mStyle = mData.mStyle And Not 1
+        End If
+    End Property
+
+    ' =====================================================
+    ' Property: Italic
+    ' =====================================================
+    Public Property Get Italic() As Boolean
+        Italic = (mData.mStyle And 2) <> 0
+    End Property
+
+    Public Property Let Italic(ByVal value As Boolean)
+        If value Then
+            mData.mStyle = mData.mStyle Or 2
+        Else
+            mData.mStyle = mData.mStyle And Not 2
+        End If
+    End Property
+
+    ' =====================================================
+    ' Property: Underline
+    ' =====================================================
+    Public Property Get Underline() As Boolean
+        Underline = mData.mUnderline
+    End Property
+
+    Public Property Let Underline(ByVal value As Boolean)
+        mData.mUnderline = value
+    End Property
+
+    ' =====================================================
+    ' Property: Strike Out
+    ' =====================================================
+    Public Property Get StrikeOut() As Boolean
+        StrikeOut = mData.mStrikeOut
+    End Property
+
+    Public Property Let StrikeOut(ByVal value As Boolean)
+        mData.mStrikeOut = value
+    End Property
+
+    ' =====================================================
+    ' Property: Font Color
+    ' =====================================================
+    Public Property Get Color() As Long
+        Color = mData.mColor
+    End Property
+
+    Public Property Let Color(ByVal value As Long)
+        mData.mColor = value
+    End Property
+
+    ' =====================================================
+    ' Property: Owner Window Handle
+    ' =====================================================
+    Public Property Get OwnerHwnd() As LongPtr
+        OwnerHwnd = mData.mOwnerHwnd
+    End Property
+
+    Public Property Let OwnerHwnd(ByVal value As LongPtr)
+        mData.mOwnerHwnd = value
+    End Property
+
+    ' =====================================================
+    ' Property: Minimum Font Size
+    ' =====================================================
+    Public Property Get MinSize() As Long
+        MinSize = mData.mMinSize
+    End Property
+
+    Public Property Let MinSize(ByVal value As Long)
+        mData.mMinSize = value
+    End Property
+
+    ' =====================================================
+    ' Property: Maximum Font Size
+    ' =====================================================
+    Public Property Get MaxSize() As Long
+        MaxSize = mData.mMaxSize
+    End Property
+
+    Public Property Let MaxSize(ByVal value As Long)
+        mData.mMaxSize = value
+    End Property
+
+    ' =====================================================
+    ' Property: Fixed Pitch Only
+    ' =====================================================
+    Public Property Get FixedPitchOnly() As Boolean
+        FixedPitchOnly = mData.mFixedPitchOnly
+    End Property
+
+    Public Property Let FixedPitchOnly(ByVal value As Boolean)
+        mData.mFixedPitchOnly = value
+    End Property
+
+    ' =====================================================
+    ' Property: Force Font Exist
+    ' =====================================================
+    Public Property Get ForceFontExist() As Boolean
+        ForceFontExist = mData.mForceFontExist
+    End Property
+
+    Public Property Let ForceFontExist(ByVal value As Boolean)
+        mData.mForceFontExist = value
+    End Property
+
+    ' =====================================================
+    ' Property: Show Effects (Color, Underline, Strikeout)
+    ' =====================================================
+    Public Property Get ShowEffects() As Boolean
+        ShowEffects = mData.mShowEffects
+    End Property
+
+    Public Property Let ShowEffects(ByVal value As Boolean)
+        mData.mShowEffects = value
+    End Property
+
+    ' =====================================================
+    ' Property: Screen Fonts Only
+    ' =====================================================
+    Public Property Get ScreenFontsOnly() As Boolean
+        ScreenFontsOnly = mData.mScreenFontsOnly
+    End Property
+
+    Public Property Let ScreenFontsOnly(ByVal value As Boolean)
+        mData.mScreenFontsOnly = value
+    End Property
+
+    ' =====================================================
+    ' Method: Show the font dialog
+    ' =====================================================
+    Public Function ShowDialog() As Boolean
+        On Error GoTo ErrorHandler
+
+        Dim cf As CHOOSEFONT
+        Dim lf As LOGFONT
+        Dim lngFlags As Long
+
+        ' Initialize LOGFONT structure
+        lf.lfHeight = -CLng(mData.mSize * 96 / 72)  ' Convert points to pixels
+        lf.lfWidth = 0
+        lf.lfEscapement = 0
+        lf.lfOrientation = 0
+        lf.lfWeight = IIf(Me.Bold, FW_BOLD, FW_NORMAL)
+        lf.lfItalic = IIf(Me.Italic, 1, 0)
+        lf.lfUnderline = IIf(mData.mUnderline, 1, 0)
+        lf.lfStrikeOut = IIf(mData.mStrikeOut, 1, 0)
+        lf.lfCharSet = 1  ' DEFAULT_CHARSET
+        lf.lfOutPrecision = 0
+        lf.lfClipPrecision = 0
+        lf.lfQuality = 0
+        lf.lfPitchAndFamily = IIf(mData.mFixedPitchOnly, FIXED_PITCH, DEFAULT_PITCH)
+
+        ' Copy font name to lfFaceName
+        Dim strName As String
+        Dim i As Long
+        strName = mData.mFaceName
+        For i = 0 To Len(strName) - 1
+            If i > 31 Then Exit For
+            lf.lfFaceName(i * 2) = AscW(Mid$(strName, i + 1, 1)) And &HFF
+            lf.lfFaceName(i * 2 + 1) = (AscW(Mid$(strName, i + 1, 1)) \ 256) And &HFF
+        Next i
+
+        ' Build flags
+        lngFlags = CF_INITTOLOGFONTSTRUCT
+        If mData.mScreenFontsOnly Then lngFlags = lngFlags Or CF_SCREENFONTS
+        If mData.mShowEffects Then lngFlags = lngFlags Or CF_EFFECTS
+        If mData.mForceFontExist Then lngFlags = lngFlags Or CF_FORCEFONTEXIST
+        If mData.mFixedPitchOnly Then lngFlags = lngFlags Or CF_FIXEDPITCHONLY
+        If mData.mMinSize > 0 Or mData.mMaxSize > 0 Then
+            lngFlags = lngFlags Or CF_LIMITSIZE
+        End If
+
+        ' Fill CHOOSEFONT structure
+        With cf
+            .lStructSize = CF_STRUCTSIZE
+            .hwndOwner = mData.mOwnerHwnd
+            .hDC = 0
+            .lpLogFont = VarPtr(lf)
+            .iPointSize = CLng(mData.mSize * 10)
+            .flags = lngFlags
+            .rgbColors = mData.mColor
+            .lCustData = 0
+            .lpfnHook = 0
+            .lpTemplateName = 0
+            .hInstance = 0
+            .lpszStyle = 0
+            .nFontType = 0
+            .nSizeMin = mData.mMinSize
+            .nSizeMax = mData.mMaxSize
+        End With
+
+        ' Show dialog
+        If ChooseFont(cf) <> 0 Then
+            ' User selected a font
+            ' Extract font name
+            strName = ""
+            For i = 0 To 31
+                Dim ch As Integer
+                ch = lf.lfFaceName(i * 2) + lf.lfFaceName(i * 2 + 1) * 256
+                If ch = 0 Then Exit For
+                strName = strName & ChrW$(ch)
+            Next i
+            mData.mFaceName = strName
+
+            ' Extract font size (in tenths of a point)
+            mData.mSize = cf.iPointSize / 10
+
+            ' Extract style
+            If lf.lfWeight >= FW_BOLD Then
+                Me.Bold = True
+            Else
+                Me.Bold = False
+            End If
+            Me.Italic = (lf.lfItalic <> 0)
+
+            ' Extract effects
+            mData.mUnderline = (lf.lfUnderline <> 0)
+            mData.mStrikeOut = (lf.lfStrikeOut <> 0)
+            mData.mColor = cf.rgbColors
+
+            ShowDialog = True
+        Else
+            ' User cancelled
+            ShowDialog = False
+        End If
+
+        Exit Function
+
+ErrorHandler:
+        ShowDialog = False
+    End Function
+
+    ' =====================================================
+    ' Method: Get CSS font string
+    ' =====================================================
+    Public Function ToCssFont() As String
+        Dim strStyle As String
+        Dim strWeight As String
+
+        If Me.Italic Then
+            strStyle = "italic"
+        Else
+            strStyle = "normal"
+        End If
+
+        If Me.Bold Then
+            strWeight = "bold"
+        Else
+            strWeight = "normal"
+        End If
+
+        ToCssFont = "font-family: '" & mData.mFaceName & "'; " & _
+                    "font-size: " & mData.mSize & "pt; " & _
+                    "font-weight: " & strWeight & "; " & _
+                    "font-style: " & strStyle & "; " & _
+                    "text-decoration: " & IIf(mData.mUnderline, "underline", "none") & ";"
+    End Function
+
+    ' =====================================================
+    ' Method: Get font description string
+    ' =====================================================
+    Public Function ToDescription() As String
+        Dim strResult As String
+
+        strResult = mData.mFaceName & " " & mData.mSize & "pt"
+
+        If Me.Bold Then strResult = strResult & " Bold"
+        If Me.Italic Then strResult = strResult & " Italic"
+        If mData.mUnderline Then strResult = strResult & " Underline"
+        If mData.mStrikeOut Then strResult = strResult & " Strikeout"
+
+        ToDescription = strResult
+    End Function
+
+    ' =====================================================
+    ' Method: Reset to default settings
+    ' =====================================================
+    Public Sub Reset()
+        mData.mFaceName = "Segoe UI"
+        mData.mSize = 9
+        mData.mStyle = FontStyle.StyleRegular
+        mData.mColor = vbBlack
+        mData.mUnderline = False
+        mData.mStrikeOut = False
+        mData.mOwnerHwnd = 0
+        mData.mMinSize = 0
+        mData.mMaxSize = 0
+        mData.mFixedPitchOnly = False
+        mData.mForceFontExist = True
+        mData.mShowEffects = True
+        mData.mScreenFontsOnly = True
+    End Sub
+
+End Class

@@ -1,0 +1,1192 @@
+' =====================================================
+' cXml.twin - XML Parser and Manipulation Class
+' TwinBASIC Project - XML Library
+' =====================================================
+' Function: Provides complete XML parsing, manipulation, and serialization capabilities
+' 功能：提供完整的 XML 解析、操作和序列化功能
+' Author: woeoo (邓伟)
+' Email: 215879458@qq.com
+' Site: https://vb6.pro
+' Date: 2026-02-06
+' Version: 1.0.0
+' =====================================================
+
+[COMCreatable(False)]
+Public Class cXml
+
+    ' Reference to enumerations and constants from mXmlEnums module
+    ' XmlNodeType, ParseOption, and error constants are defined in mXmlEnums module
+
+    ' Private members
+    Private m_Document As cXmlNode
+    Private m_RootElement As cXmlNode
+    Private m_XmlString As String
+    Private m_Encoding As String
+    Private m_Version As String
+    Private m_Initialized As Boolean
+    Private m_ParserPosition As Long
+    Private m_ParserLength As Long
+
+    ' Constructor
+    Public Sub New()
+        Set m_Document = New cXmlNode
+        m_Document.NodeType = mXml.XmlNodeType.Document
+        m_Document.Name = "#document"
+        m_Version = mXml.DEFAULT_XML_VERSION
+        m_Encoding = mXml.DEFAULT_ENCODING
+        m_Initialized = False
+    End Sub
+
+    ' Property: Get XML string
+    Public Property Get XmlString() As String
+        XmlString = m_XmlString
+    End Property
+
+    ' Property: Set XML string and parse
+    Public Property Let XmlString(ByVal value As String)
+        m_XmlString = value
+        ParseInternal value
+    End Property
+
+    ' Property: Get encoding
+    Public Property Get Encoding() As String
+        Encoding = m_Encoding
+    End Property
+
+    ' Property: Set encoding
+    Public Property Let Encoding(ByVal value As String)
+        m_Encoding = value
+    End Property
+
+    ' Property: Get version
+    Public Property Get Version() As String
+        Version = m_Version
+    End Property
+
+    ' Property: Set version
+    Public Property Let Version(ByVal value As String)
+        m_Version = value
+    End Property
+
+    ' Property: Get root element
+    Public Property Get RootElement() As cXmlNode
+        Set RootElement = m_RootElement
+    End Property
+
+    ' Property: Get document node
+    Public Property Get Document() As cXmlNode
+        Set Document = m_Document
+    End Property
+
+    ' Property: Get initialization status
+    Public Property Get Initialized() As Boolean
+        Initialized = m_Initialized
+    End Property
+
+    ' Friend properties for internal use
+    Friend Property Let SetDocument(ByVal value As cXmlNode)
+        Set m_Document = value
+    End Property
+
+    Friend Property Let SetRootElement(ByVal value As cXmlNode)
+        Set m_RootElement = value
+    End Property
+
+    Friend Property Let SetInitialized(ByVal value As Boolean)
+        m_Initialized = value
+    End Property
+
+    ' Parse XML from string
+    Public Function Parse(ByVal xml As String) As Boolean
+        On Error GoTo ErrorHandler
+
+        If Len(xml) = 0 Then
+            Err.Raise ERR_EMPTY_DOCUMENT, "cXml.Parse", "XML string cannot be empty"
+        End If
+
+        ParseInternal xml
+        Return True
+        Exit Function
+
+ErrorHandler:
+        Debug.Print "Parse failed: " & Err.Description
+        Return False
+    End Function
+
+    ' Parse XML from file
+    Public Function LoadFromFile(ByVal filePath As String) As Boolean
+        On Error GoTo ErrorHandler
+
+        Dim fileNum As Long
+        fileNum = FreeFile()
+
+        Open filePath For Binary As #fileNum
+        Dim fileLength As Long
+        fileLength = LOF(fileNum)
+
+        Dim buffer() As Byte
+        ReDim buffer(0 To fileLength - 1)
+        Get #fileNum,, buffer()
+        Close #fileNum
+
+        ' Handle BOM if present
+        Dim startPos As Long
+        startPos = 0
+        If fileLength >= 3 And buffer(0) = &HEF And buffer(1) = &HBB And buffer(2) = &HBF Then
+            startPos = 3
+        End If
+
+        ' Convert to string (excluding BOM if present)
+        Dim xml As String
+        If startPos > 0 Then
+            ' Create new array without BOM
+            Dim xmlBytes() As Byte
+            ReDim xmlBytes(0 To fileLength - startPos - 1)
+            Dim i As Long
+            For i = 0 To fileLength - startPos - 1
+                xmlBytes(i) = buffer(startPos + i)
+            Next i
+            xml = mXml.UTF8BytesToString(xmlBytes)
+        Else
+            xml = mXml.UTF8BytesToString(buffer)
+        End If
+
+        Parse xml
+        Return True
+        Exit Function
+
+ErrorHandler:
+        If fileNum > 0 Then Close #fileNum
+        Debug.Print "LoadFromFile failed: " & Err.Description
+        Return False
+    End Function
+
+    ' Save XML to file
+    Public Function SaveToFile(ByVal filePath As String, _
+                               Optional ByVal withDeclaration As Boolean = True, _
+                               Optional ByVal prettyPrint As Boolean = False, _
+                               Optional ByVal indent As String = "  ") As Boolean
+        On Error GoTo ErrorHandler
+
+        ' Delete existing file to ensure clean write
+        If Dir(filePath) <> "" Then
+            Kill filePath
+        End If
+
+        Dim fileNum As Long
+        fileNum = FreeFile()
+
+        Open filePath For Binary As #fileNum
+
+        ' Write UTF-8 BOM
+        Dim bom(0 To 2) As Byte
+        bom(0) = &HEF
+        bom(1) = &HBB
+        bom(2) = &HBF
+        Put #fileNum,, bom()
+
+        ' Write XML content
+        Dim xml As String
+        xml = ToXmlString(withDeclaration, prettyPrint, indent)
+        Dim utf8Bytes() As Byte
+        utf8Bytes = mXml.StringToUTF8Bytes(xml)
+        Put #fileNum,, utf8Bytes
+
+        Close #fileNum
+        Return True
+        Exit Function
+
+ErrorHandler:
+        If fileNum > 0 Then Close #fileNum
+        Debug.Print "SaveToFile failed: " & Err.Description
+        Return False
+    End Function
+
+    ' Create new XML document
+    Public Sub CreateNew(ByVal rootElementName As String)
+        Set m_Document = New cXmlNode
+        m_Document.NodeType = mXml.XmlNodeType.Document
+        m_Document.Name = "#document"
+
+        Set m_RootElement = New cXmlNode
+        m_RootElement.Name = rootElementName
+        m_RootElement.NodeType = mXml.XmlNodeType.Element
+
+        m_Document.ChildNodes.Add m_RootElement
+        Set m_RootElement.Parent = m_Document
+
+        m_Initialized = True
+    End Sub
+
+    ' Get element by path (XPath-like syntax)
+    Public Function SelectElement(ByVal xpath As String) As cXmlNode
+        On Error GoTo ErrorHandler
+
+        If Not m_Initialized Then
+            Err.Raise ERR_EMPTY_DOCUMENT, "cXml.SelectElement", "Document not initialized"
+        End If
+
+        Dim pathParts() As String
+        pathParts = SplitPath(xpath)
+
+        Dim currentNode As cXmlNode
+        Set currentNode = m_Document
+
+        Dim i As Long
+        For i = 0 To UBound(pathParts)
+            Dim part As String
+            part = Trim$(pathParts(i))
+
+            If Len(part) > 0 Then
+                If StrComp(part, "/", vbTextCompare) = 0 Then
+                    ' Root selector
+                    If currentNode.NodeType <> mXml.XmlNodeType.Document Then
+                        Set currentNode = Nothing
+                        Exit For
+                    End If
+                Else
+                    Dim child As cXmlNode
+                    Set child = FindChildByName(currentNode, part)
+                    If child Is Nothing Then
+                        Set currentNode = Nothing
+                        Exit For
+                    End If
+                    Set currentNode = child
+                End If
+            End If
+        Next i
+
+        Set SelectElement = currentNode
+        Exit Function
+
+ErrorHandler:
+        Debug.Print "SelectElement failed: " & Err.Description
+        Set SelectElement = Nothing
+    End Function
+
+    ' Select all elements by tag name
+    Public Function SelectElements(ByVal tagName As String) As Collection
+        On Error GoTo ErrorHandler
+
+        Dim result As New Collection
+
+        If Not m_Initialized Or m_Document Is Nothing Then
+            Return result
+        End If
+
+        FindElementsByName m_Document, tagName, result
+        Return result
+        Exit Function
+
+ErrorHandler:
+        Debug.Print "SelectElements failed: " & Err.Description
+        Set result = Nothing
+    End Function
+
+    ' Get element text content
+    Public Function GetElementText(ByVal xpath As String) As String
+        Dim node As cXmlNode
+        Set node = SelectElement(xpath)
+        If Not node Is Nothing Then
+            Return GetNodeText(node)
+        End If
+        Return ""
+    End Function
+
+    ' Set element text content
+    Public Sub SetElementText(ByVal xpath As String, ByVal text As String)
+        Dim node As cXmlNode
+        Set node = SelectElement(xpath)
+        If Not node Is Nothing Then
+            SetNodeText node, text
+        End If
+    End Sub
+
+    ' Get attribute value by element path and attribute name
+    Public Function GetAttribute(ByVal xpath As String, ByVal attrName As String) As String
+        Dim node As cXmlNode
+        Set node = SelectElement(xpath)
+        If Not node Is Nothing Then
+            Return node.GetAttribute(attrName)
+        End If
+        Return ""
+    End Function
+
+    ' Set attribute value
+    Public Sub SetAttribute(ByVal xpath As String, ByVal attrName As String, ByVal attrValue As String)
+        Dim node As cXmlNode
+        Set node = SelectElement(xpath)
+        If Not node Is Nothing Then
+            node.SetAttribute attrName, attrValue
+        End If
+    End Sub
+
+    ' Remove attribute
+    Public Sub RemoveAttribute(ByVal xpath As String, ByVal attrName As String)
+        Dim node As cXmlNode
+        Set node = SelectElement(xpath)
+        If Not node Is Nothing Then
+            node.RemoveAttribute attrName
+        End If
+    End Sub
+
+    ' Add new child element
+    Public Function AddElement(ByVal parentXPath As String, ByVal elementName As String) As cXmlNode
+        On Error GoTo ErrorHandler
+
+        Dim parentNode As cXmlNode
+        Set parentNode = SelectElement(parentXPath)
+        If parentNode Is Nothing Then
+            Return Nothing
+        End If
+
+        Dim newElement As New cXmlNode
+        newElement.Name = elementName
+        newElement.NodeType = mXml.XmlNodeType.Element
+        Set newElement.Parent = parentNode
+
+        parentNode.ChildNodes.Add newElement
+        m_Initialized = True
+
+        Return newElement
+        Exit Function
+
+ErrorHandler:
+        Debug.Print "AddElement failed: " & Err.Description
+        Return Nothing
+    End Function
+
+    ' Remove element
+    Public Function RemoveElement(ByVal xpath As String) As Boolean
+        On Error GoTo ErrorHandler
+
+        Dim node As cXmlNode
+        Set node = SelectElement(xpath)
+        If node Is Nothing Or node.NodeType = mXml.XmlNodeType.Document Then
+            Return False
+        End If
+
+        Dim parentNode As cXmlNode
+        Set parentNode = node.Parent
+        If Not parentNode Is Nothing Then
+            Dim i As Long
+            For i = 1 To parentNode.ChildNodes.Count
+                If parentNode.ChildNodes(i) Is node Then
+                    parentNode.ChildNodes.Remove i
+                    Return True
+                End If
+            Next i
+        End If
+
+        Return False
+        Exit Function
+
+ErrorHandler:
+        Debug.Print "RemoveElement failed: " & Err.Description
+        Return False
+    End Function
+
+    ' Convert to XML string
+    Public Function ToXmlString(Optional ByVal withDeclaration As Boolean = True, _
+                               Optional ByVal prettyPrint As Boolean = False, _
+                               Optional ByVal indent As String = "  ") As String
+        Dim sb As New Collection
+
+        If withDeclaration Then
+            sb.Add "<?xml version=""" & m_Version & """ encoding=""" & m_Encoding & """?>"
+        End If
+
+        If prettyPrint Then
+            ' Add newline after declaration before root element
+            If withDeclaration Then
+                sb.Add vbCrLf
+            End If
+            SerializeNodePretty m_Document, sb, 0, indent
+        Else
+            SerializeNodeCompact m_Document, sb
+        End If
+
+        ' Build result string
+        Dim result As String
+        result = ""
+        Dim part As Variant
+        For Each part In sb
+            result = result & part
+        Next part
+
+        Return result
+    End Function
+
+    ' Clone this XML document
+    Public Function Clone() As cXml
+        Dim cloned As New cXml
+        cloned.Version = Me.Version
+        cloned.Encoding = Me.Encoding
+
+        If Not Me.Initialized Then
+            Return cloned
+        End If
+
+        ' Clone document and set via friend property
+        Dim clonedDoc As cXmlNode
+        Set clonedDoc = CloneNode(Me.m_Document)
+        cloned.SetDocument = clonedDoc
+        cloned.SetInitialized = True
+
+        ' Find root element and set via friend property
+        Dim node As cXmlNode
+        For Each node In cloned.Document.ChildNodes
+            If node.NodeType = mXml.XmlNodeType.Element Then
+                cloned.SetRootElement = node
+                Exit For
+            End If
+        Next node
+
+        Return cloned
+    End Function
+
+    ' Merge another XML document
+    Public Sub Merge(ByVal otherXml As cXml)
+        If otherXml Is Nothing Or Not otherXml.Initialized Then
+            Exit Sub
+        End If
+
+        If Not m_Initialized Then
+            Set m_Document = CloneNode(otherXml.Document)
+            m_Initialized = True
+        Else
+            ' Merge root element children
+            If Not m_RootElement Is Nothing And Not otherXml.RootElement Is Nothing Then
+                Dim child As cXmlNode
+                For Each child In otherXml.RootElement.ChildNodes
+                    m_RootElement.ChildNodes.Add CloneNode(child)
+                Next child
+            End If
+        End If
+    End Sub
+
+    ' Validate XML structure
+    Public Function Validate() As Boolean
+        On Error GoTo ErrorHandler
+
+        If Not m_Initialized Or m_Document Is Nothing Then
+            Return False
+        End If
+
+        Return ValidateNode(m_Document)
+        Exit Function
+
+ErrorHandler:
+        Debug.Print "Validate failed: " & Err.Description
+        Return False
+    End Function
+
+    ' ==================== Private Methods ====================
+
+    ' Parse XML internally
+    Private Sub ParseInternal(ByVal xml As String)
+        m_XmlString = xml
+        m_ParserPosition = 1
+        m_ParserLength = Len(xml)
+
+        ' Skip BOM if present (UTF-8 BOM is EF BB BF)
+        If m_ParserLength >= 3 Then
+            Dim first3Chars As String
+            first3Chars = Left$(xml, 3)
+            Dim bomBytes() As Byte
+            bomBytes = mXml.StringToUTF8Bytes(first3Chars)
+            If UBound(bomBytes) >= 2 And bomBytes(0) = &HEF And bomBytes(1) = &HBB And bomBytes(2) = &HBF Then
+                m_ParserPosition = 4 ' Skip BOM (3 bytes become 1-2 chars in UTF-8 string)
+            End If
+        End If
+
+        Set m_Document = New cXmlNode
+        m_Document.NodeType = mXml.XmlNodeType.Document
+        m_Document.Name = "#document"
+
+        ParseDeclaration
+        ParseContent m_Document
+
+        ' Find root element
+        Dim node As cXmlNode
+        For Each node In m_Document.ChildNodes
+            If node.NodeType = mXml.XmlNodeType.Element Then
+                Set m_RootElement = node
+                Exit For
+            End If
+        Next node
+
+        m_Initialized = True
+    End Sub
+
+    ' Parse XML declaration
+    Private Sub ParseDeclaration()
+        Dim currentPos As Long
+        currentPos = m_ParserPosition
+
+        ' Look for <?xml
+        Dim declStart As Long
+        declStart = InStr(m_ParserPosition, m_XmlString, "<?xml")
+
+        If declStart > 0 Then
+            Dim declEnd As Long
+            declEnd = InStr(declStart, m_XmlString, "?>")
+            If declEnd > 0 Then
+                m_ParserPosition = declEnd + 2
+                ' Extract version and encoding from declaration
+                Dim declaration As String
+                declaration = Mid$(m_XmlString, declStart + 5, declEnd - declStart - 5)
+
+                ' Parse version
+                Dim verStart As Long
+                verStart = InStr(declaration, "version=""")
+                If verStart > 0 Then
+                    Dim verEnd As Long
+                    verEnd = InStr(verStart + 9, declaration, """")
+                    If verEnd > 0 Then
+                        m_Version = Mid$(declaration, verStart + 9, verEnd - verStart - 9)
+                    End If
+                End If
+
+                ' Parse encoding
+                Dim encStart As Long
+                encStart = InStr(declaration, "encoding=""")
+                If encStart > 0 Then
+                    Dim encEnd As Long
+                    encEnd = InStr(encStart + 10, declaration, """")
+                    If encEnd > 0 Then
+                        m_Encoding = Mid$(declaration, encStart + 10, encEnd - encStart - 10)
+                    End If
+                End If
+            End If
+        End If
+    End Sub
+
+    ' Parse content (elements, text, comments, etc.)
+    Private Sub ParseContent(ByRef parent As cXmlNode)
+        Do While m_ParserPosition <= m_ParserLength
+            If m_ParserPosition > m_ParserLength Then
+                Exit Do
+            End If
+
+            Dim currentChar As String
+            currentChar = Mid$(m_XmlString, m_ParserPosition, 1)
+
+            If currentChar = "<" Then
+                ' Check for comment
+                If Mid$(m_XmlString, m_ParserPosition, 4) = "<!--" Then
+                    ParseComment parent
+                ElseIf Mid$(m_XmlString, m_ParserPosition, 9) = "<![CDATA[" Then
+                    ParseCData parent
+                Else
+                    ' Element or closing tag
+                    Dim nextChar As String
+                    nextChar = Mid$(m_XmlString, m_ParserPosition + 1, 1)
+
+                    If nextChar = "/" Then
+                        ' Closing tag
+                        m_ParserPosition = InStr(m_ParserPosition, m_XmlString, ">")
+                        If m_ParserPosition > 0 Then
+                            m_ParserPosition = m_ParserPosition + 1
+                        End If
+                        Exit Do
+                    ElseIf nextChar = "?" Or nextChar = "!" Then
+                        ' Processing instruction or other special node - skip
+                        m_ParserPosition = InStr(m_ParserPosition + 1, m_XmlString, "?>")
+                        If m_ParserPosition = 0 Then
+                            m_ParserPosition = InStr(m_ParserPosition + 1, m_XmlString, ">")
+                        End If
+                        If m_ParserPosition > 0 Then
+                            m_ParserPosition = m_ParserPosition + 1
+                        End If
+                    Else
+                        ' Element
+                        Dim element As cXmlNode
+                        Set element = ParseElement()
+                        If Not element Is Nothing Then
+                            Set element.Parent = parent
+                            parent.ChildNodes.Add element
+
+                            ' If self-closing, don't parse content
+                            If Left$(element.Name, 1) <> "/" Then
+                                ParseContent element
+                            End If
+                        End If
+                    End If
+                End If
+            Else
+                ' Text content
+                Dim text As String
+                text = ParseText()
+                ' Only add text node if it's not just whitespace
+                If Len(text) > 0 And Len(Trim$(text)) > 0 Then
+                    Dim textNode As cXmlNode
+                    Set textNode = New cXmlNode
+                    textNode.NodeType = mXml.XmlNodeType.Text
+                    textNode.Value = text
+                    textNode.Name = "#text"
+                    Set textNode.Parent = parent
+                    parent.ChildNodes.Add textNode
+                End If
+            End If
+        Loop
+    End Sub
+
+    ' Parse element
+    Private Function ParseElement() As cXmlNode
+        Dim element As New cXmlNode
+        element.NodeType = mXml.XmlNodeType.Element
+
+        ' Find element name start
+        Dim nameStart As Long
+        nameStart = m_ParserPosition + 1
+
+        ' Find element name end (space or > or /)
+        Dim nameEnd As Long
+        Dim i As Long
+        For i = nameStart To m_ParserLength
+            Dim ch As String
+            ch = Mid$(m_XmlString, i, 1)
+            If ch = " " Or ch = ">" Or ch = "/" Or ch = vbTab Or ch = vbCrLf Then
+                nameEnd = i
+                Exit For
+            End If
+        Next i
+
+        If nameEnd > nameStart Then
+            element.Name = Mid$(m_XmlString, nameStart, nameEnd - nameStart)
+        End If
+
+        ' Check if self-closing
+        Dim tagEnd As Long
+        tagEnd = InStr(nameEnd, m_XmlString, ">")
+
+        Dim tagContent As String
+        tagContent = Mid$(m_XmlString, nameEnd, tagEnd - nameEnd)
+
+        ' Check if it's a closing tag
+        If Left$(tagContent, 1) = "/" Then
+            element.Name = "/" & element.Name
+            m_ParserPosition = tagEnd + 1
+            Return element
+        End If
+
+        ' Parse attributes
+        ParseAttributes tagContent, element
+
+        ' Check for self-closing tag
+        If InStr(tagContent, "/") > 0 Then
+            m_ParserPosition = tagEnd + 1
+        Else
+            m_ParserPosition = tagEnd + 1
+        End If
+
+        Return element
+    End Function
+
+    ' Parse attributes
+    Private Sub ParseAttributes(ByVal tagContent As String, ByRef element As cXmlNode)
+        Dim pos As Long
+        pos = 1
+
+        Do While pos <= Len(tagContent)
+            ' Skip whitespace
+            Do While pos <= Len(tagContent)
+                Dim ch As String
+                ch = Mid$(tagContent, pos, 1)
+                If ch <> " " And ch <> vbTab And ch <> vbCrLf Then
+                    Exit Do
+                End If
+                pos = pos + 1
+            Loop
+
+            If pos > Len(tagContent) Then
+                Exit Do
+            End If
+
+            ' Check for self-closing slash
+            If Mid$(tagContent, pos, 1) = "/" Then
+                Exit Do
+            End If
+
+            ' Find attribute name end
+            Dim attrNameEnd As Long
+            attrNameEnd = pos
+            Do While attrNameEnd <= Len(tagContent)
+                Dim attrCh As String
+                attrCh = Mid$(tagContent, attrNameEnd, 1)
+                If attrCh = "=" Or attrCh = " " Or attrCh = vbTab Then
+                    Exit Do
+                End If
+                attrNameEnd = attrNameEnd + 1
+            Loop
+
+            Dim attrName As String
+            attrName = Mid$(tagContent, pos, attrNameEnd - pos)
+
+            ' Find attribute value
+            Dim valueStart As Long
+            valueStart = InStr(attrNameEnd, tagContent, """")
+            If valueStart = 0 Then
+                valueStart = InStr(attrNameEnd, tagContent, "'")
+            End If
+
+            If valueStart > 0 Then
+                Dim valueEnd As Long
+                valueEnd = InStr(valueStart + 1, tagContent, Mid$(tagContent, valueStart, 1))
+
+                If valueEnd > 0 Then
+                    Dim attrValue As String
+                    attrValue = Mid$(tagContent, valueStart + 1, valueEnd - valueStart - 1)
+
+                    ' Decode attribute value
+                    attrValue = DecodeXmlEntities(attrValue)
+
+                    element.SetAttribute attrName, attrValue
+                    pos = valueEnd + 1
+                Else
+                    Exit Do
+                End If
+            Else
+                Exit Do
+            End If
+        Loop
+    End Sub
+
+    ' Parse text content
+    Private Function ParseText() As String
+        Dim textStart As Long
+        textStart = m_ParserPosition
+
+        Dim textEnd As Long
+        textEnd = InStr(textStart, m_XmlString, "<")
+
+        If textEnd > 0 Then
+            ParseText = Mid$(m_XmlString, textStart, textEnd - textStart)
+            m_ParserPosition = textEnd
+        Else
+            ParseText = Mid$(m_XmlString, textStart)
+            m_ParserPosition = m_ParserLength + 1
+        End If
+    End Function
+
+    ' Parse comment
+    Private Sub ParseComment(ByRef parent As cXmlNode)
+        Dim commentStart As Long
+        commentStart = m_ParserPosition + 4
+
+        Dim commentEnd As Long
+        commentEnd = InStr(commentStart, m_XmlString, "-->")
+
+        If commentEnd > 0 Then
+            Dim commentNode As New cXmlNode
+            commentNode.NodeType = mXml.XmlNodeType.Comment
+            commentNode.Name = "#comment"
+            commentNode.Value = Mid$(m_XmlString, commentStart, commentEnd - commentStart)
+            Set commentNode.Parent = parent
+            parent.ChildNodes.Add commentNode
+
+            m_ParserPosition = commentEnd + 3
+        End If
+    End Sub
+
+    ' Parse CDATA
+    Private Sub ParseCData(ByRef parent As cXmlNode)
+        Dim cdataStart As Long
+        cdataStart = m_ParserPosition + 9
+
+        Dim cdataEnd As Long
+        cdataEnd = InStr(cdataStart, m_XmlString, "]]>")
+
+        If cdataEnd > 0 Then
+            Dim cdataNode As New cXmlNode
+            cdataNode.NodeType = mXml.XmlNodeType.CData
+            cdataNode.Name = "#cdata-section"
+            cdataNode.Value = Mid$(m_XmlString, cdataStart, cdataEnd - cdataStart)
+            Set cdataNode.Parent = parent
+            parent.ChildNodes.Add cdataNode
+
+            m_ParserPosition = cdataEnd + 3
+        End If
+    End Sub
+
+    ' Skip whitespace
+    Private Sub SkipWhitespace()
+        Do While m_ParserPosition <= m_ParserLength
+            Dim ch As String
+            ch = Mid$(m_XmlString, m_ParserPosition, 1)
+            If ch <> " " And ch <> vbTab And ch <> vbCrLf And ch <> vbCr And ch <> vbLf Then
+                Exit Do
+            End If
+            m_ParserPosition = m_ParserPosition + 1
+        Loop
+    End Sub
+
+    ' Decode XML entities
+    Private Function DecodeXmlEntities(ByVal text As String) As String
+        text = Replace$(text, "&lt;", "<")
+        text = Replace$(text, "&gt;", ">")
+        text = Replace$(text, "&amp;", "&")
+        text = Replace$(text, "&quot;", """")
+        text = Replace$(text, "&apos;", "'")
+        Return text
+    End Function
+
+    ' Encode XML entities
+    Private Function EncodeXmlEntities(ByVal text As String) As String
+        text = Replace$(text, "&", "&amp;")
+        text = Replace$(text, "<", "&lt;")
+        text = Replace$(text, ">", "&gt;")
+        text = Replace$(text, """", "&quot;")
+        text = Replace$(text, "'", "&apos;")
+        Return text
+    End Function
+
+    ' Split path by /
+    Private Function SplitPath(ByVal path As String) As String()
+        Dim parts() As String
+        Dim tempParts() As String
+
+        tempParts = Split(path, "/")
+
+        ' Filter empty parts
+        Dim count As Long
+        count = 0
+        Dim i As Long
+        For i = 0 To UBound(tempParts)
+            If Len(Trim$(tempParts(i))) > 0 Then
+                ReDim Preserve parts(0 To count)
+                parts(count) = Trim$(tempParts(i))
+                count = count + 1
+            End If
+        Next i
+
+        Return parts
+    End Function
+
+    ' Find child node by name
+    Private Function FindChildByName(ByRef parent As cXmlNode, ByVal name As String) As cXmlNode
+        Dim node As cXmlNode
+        For Each node In parent.ChildNodes
+            If StrComp(node.Name, name, vbTextCompare) = 0 Then
+                Return node
+            End If
+        Next node
+        Return Nothing
+    End Function
+
+    ' Find all elements by name recursively
+    Private Sub FindElementsByName(ByRef node As cXmlNode, ByVal name As String, ByRef result As Collection)
+        Dim child As cXmlNode
+        For Each child In node.ChildNodes
+            If StrComp(child.Name, name, vbTextCompare) = 0 Then
+                result.Add child
+            End If
+            ' Recursively search children
+            If child.ChildNodes.Count > 0 Then
+                FindElementsByName child, name, result
+            End If
+        Next child
+    End Sub
+
+    ' Get node text content
+    Private Function GetNodeText(ByRef node As cXmlNode) As String
+        If node.NodeType = mXml.XmlNodeType.Text Or node.NodeType = mXml.XmlNodeType.CData Then
+            Return node.Value
+        End If
+
+        Dim result As String
+        result = ""
+
+        Dim child As cXmlNode
+        For Each child In node.ChildNodes
+            If child.NodeType = mXml.XmlNodeType.Text Or child.NodeType = mXml.XmlNodeType.CData Then
+                result = result & child.Value
+            Else
+                result = result & GetNodeText(child)
+            End If
+        Next child
+
+        Return result
+    End Function
+
+    ' Set node text content
+    Private Sub SetNodeText(ByRef node As cXmlNode, ByVal text As String)
+        ' Remove all existing text nodes
+        Dim i As Long
+        For i = node.ChildNodes.Count To 1 Step -1
+            If node.ChildNodes(i).NodeType = mXml.XmlNodeType.Text Then
+                node.ChildNodes.Remove i
+            End If
+        Next i
+
+        ' Add new text node
+        Dim textNode As New cXmlNode
+        textNode.NodeType = mXml.XmlNodeType.Text
+        textNode.Value = text
+        textNode.Name = "#text"
+        Set textNode.Parent = node
+        node.ChildNodes.Add textNode
+    End Sub
+
+    ' Serialize node to string (compact)
+    Private Sub SerializeNodeCompact(ByRef node As cXmlNode, ByRef sb As Collection)
+        Dim child As cXmlNode
+
+        Select Case node.NodeType
+            Case mXml.XmlNodeType.Document
+                For Each child In node.ChildNodes
+                    SerializeNodeCompact child, sb
+                Next child
+
+            Case mXml.XmlNodeType.Element
+                sb.Add "<" & node.Name
+
+                ' Add attributes
+                Dim i As Long
+                For i = 1 To node.Attributes.Count Step 2
+                    sb.Add " " & node.Attributes(i) & "=""" & EncodeXmlEntities(node.Attributes(i + 1)) & """"
+                Next i
+
+                ' Check if has children
+                If node.ChildNodes.Count = 0 Then
+                    sb.Add "/>"
+                Else
+                    sb.Add ">"
+
+                    ' Serialize children
+                    For Each child In node.ChildNodes
+                        SerializeNodeCompact child, sb
+                    Next child
+
+                    sb.Add "</" & node.Name & ">"
+                End If
+
+            Case mXml.XmlNodeType.Text
+                sb.Add EncodeXmlEntities(node.Value)
+
+            Case mXml.XmlNodeType.Comment
+                sb.Add "<!--" & node.Value & "-->"
+
+            Case mXml.XmlNodeType.CData
+                sb.Add "<![CDATA[" & node.Value & "]]>"
+        End Select
+    End Sub
+
+    ' Serialize node to string (pretty printed)
+    Private Sub SerializeNodePretty(ByRef node As cXmlNode, ByRef sb As Collection, ByVal level As Long, ByVal indent As String)
+        Dim child As cXmlNode
+        Dim i As Long
+        Dim currentIndent As String
+
+        Select Case node.NodeType
+            Case mXml.XmlNodeType.Document
+                For Each child In node.ChildNodes
+                    SerializeNodePretty child, sb, level, indent
+                Next child
+
+            Case mXml.XmlNodeType.Element
+                ' Build indent string by repeating indent 'level' times
+                currentIndent = ""
+                For i = 1 To level
+                    currentIndent = currentIndent & indent
+                Next i
+
+                sb.Add currentIndent & "<" & node.Name
+
+                ' Add attributes
+                For i = 1 To node.Attributes.Count Step 2
+                    sb.Add " " & node.Attributes(i) & "=""" & EncodeXmlEntities(node.Attributes(i + 1)) & """"
+                Next i
+
+                ' Check if has children
+                If node.ChildNodes.Count = 0 Then
+                    sb.Add "/>" & vbCrLf
+                Else
+                    sb.Add ">" & vbCrLf
+
+                    ' Serialize children
+                    For Each child In node.ChildNodes
+                        SerializeNodePretty child, sb, level + 1, indent
+                    Next child
+
+                    sb.Add currentIndent & "</" & node.Name & ">" & vbCrLf
+                End If
+
+            Case mXml.XmlNodeType.Text
+                If Len(Trim$(node.Value)) > 0 Then
+                    currentIndent = ""
+                    For i = 1 To level
+                        currentIndent = currentIndent & indent
+                    Next i
+                    sb.Add currentIndent & EncodeXmlEntities(node.Value) & vbCrLf
+                End If
+
+            Case mXml.XmlNodeType.Comment
+                currentIndent = ""
+                For i = 1 To level
+                    currentIndent = currentIndent & indent
+                Next i
+                sb.Add currentIndent & "<!--" & node.Value & "-->" & vbCrLf
+
+            Case mXml.XmlNodeType.CData
+                currentIndent = ""
+                For i = 1 To level
+                    currentIndent = currentIndent & indent
+                Next i
+                sb.Add currentIndent & "<![CDATA[" & node.Value & "]]>" & vbCrLf
+        End Select
+    End Sub
+
+    ' Clone node recursively
+    Private Function CloneNode(ByRef node As cXmlNode) As cXmlNode
+        Dim cloned As New cXmlNode
+        cloned.Name = node.Name
+        cloned.NodeType = node.NodeType
+        cloned.Value = node.Value
+
+        ' Clone attributes
+        Dim i As Long
+        For i = 1 To node.Attributes.Count
+            cloned.Attributes.Add node.Attributes(i)
+        Next i
+
+        ' Clone children
+        Dim child As cXmlNode
+        For Each child In node.ChildNodes
+            cloned.ChildNodes.Add CloneNode(child)
+        Next child
+
+        Return cloned
+    End Function
+
+    ' Validate node
+    Private Function ValidateNode(ByRef node As cXmlNode) As Boolean
+        ' Check element names
+        If node.NodeType = mXml.XmlNodeType.Element Then
+            If Len(node.Name) = 0 Or Left$(node.Name, 1) = "/" Then
+                Return False
+            End If
+
+            ' Check attribute names
+            Dim i As Long
+            For i = 1 To node.Attributes.Count Step 2
+                If Len(node.Attributes(i)) = 0 Then
+                    Return False
+                End If
+            Next i
+        End If
+
+        ' Validate children
+        Dim child As cXmlNode
+        For Each child In node.ChildNodes
+            If Not ValidateNode(child) Then
+                Return False
+            End If
+        Next child
+
+        Return True
+    End Function
+
+    ' ==================== XPath Query Methods ====================
+
+    ' Execute XPath query and return all matching nodes
+    ' 执行 XPath 查询并返回所有匹配的节点
+    '
+    ' Supported XPath syntax (支持的XPath语法):
+    '   - Basic path: /root/child, root/child
+    '   - Descendant: //item (matches at any depth)
+    '   - Wildcard: /root/*, //*
+    '   - Index: /root/item[1], /root/item[last()]
+    '   - Attribute exists: /root/item[@id]
+    '   - Attribute equals: /root/item[@id='value']
+    '   - Attribute comparison: /root/item[@price>10]
+    '   - Text matching: /root/item[text()='value']
+    '   - Multiple predicates: /root/item[@id='1'][@name='test']
+    '   - Functions: contains(), starts-with(), not()
+    '   - Logical operators: and, or
+    '
+    ' Example usage:
+    '   Dim nodes As Collection
+    '   Set nodes = xml.XPath("//book[@category='fiction']")
+    '   Set nodes = xml.XPath("/catalog/book[1]")
+    '   Set nodes = xml.XPath("//item[contains(@name, 'test')]")
+    '
+    Public Function XPath(ByVal path As String) As Collection
+        On Error GoTo ErrorHandler
+
+        If Not m_Initialized Or m_Document Is Nothing Then
+            Return New Collection
+        End If
+
+        Return mXPath.SelectNodes(m_Document, path)
+        Exit Function
+
+ErrorHandler:
+        Debug.Print "XPath query failed: " & Err.Description
+        Return New Collection
+    End Function
+
+    ' Execute XPath query and return first matching node
+    ' 执行 XPath 查询并返回第一个匹配的节点
+    Public Function XPathSingle(ByVal xpath As String) As cXmlNode
+        On Error GoTo ErrorHandler
+
+        If Not m_Initialized Or m_Document Is Nothing Then
+            Return Nothing
+        End If
+
+        Return mXPath.SelectSingleNode(m_Document, xpath)
+        Exit Function
+
+ErrorHandler:
+        Debug.Print "XPathSingle query failed: " & Err.Description
+        Return Nothing
+    End Function
+
+    ' Execute XPath query starting from root element
+    ' 从根元素开始执行 XPath 查询
+    Public Function XPathFromRoot(ByVal xpath As String) As Collection
+        On Error GoTo ErrorHandler
+
+        If Not m_Initialized Or m_RootElement Is Nothing Then
+            Return New Collection
+        End If
+
+        Return mXPath.SelectNodes(m_RootElement, xpath)
+        Exit Function
+
+ErrorHandler:
+        Debug.Print "XPathFromRoot query failed: " & Err.Description
+        Return New Collection
+    End Function
+
+    ' Get element text using XPath
+    ' 使用 XPath 获取元素文本
+    Public Function XPathText(ByVal xpath As String) As String
+        Dim node As cXmlNode
+        Set node = XPathSingle(xpath)
+        If Not node Is Nothing Then
+            Return GetNodeText(node)
+        End If
+        Return ""
+    End Function
+
+    ' Get attribute value using XPath for element and attribute name
+    ' 使用 XPath 获取属性值
+    Public Function XPathAttribute(ByVal xpath As String, ByVal attrName As String) As String
+        Dim node As cXmlNode
+        Set node = XPathSingle(xpath)
+        If Not node Is Nothing Then
+            Return node.GetAttribute(attrName)
+        End If
+        Return ""
+    End Function
+
+    ' Destructor
+    Private Sub Class_Terminate()
+        Set m_Document = Nothing
+        Set m_RootElement = Nothing
+    End Sub
+
+End Class

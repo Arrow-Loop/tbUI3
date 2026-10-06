@@ -1,0 +1,1282 @@
+[InterfaceId("1512ED75-8C74-5520-AC88-134A1403F7AD")]
+Interface IIterator_IToastCollection Extends IInspectable
+    Property Get Current() As IToastCollection
+    Property Get HasCurrent() As BooleanByte
+    Function MoveNext() As BooleanByte
+    Function GetMany(ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("8928D527-DB5D-5A10-AE9B-430FA0906E74")]
+Interface IIterable_IToastCollection Extends IInspectable
+    Function First() As IIterator_IToastCollection
+End Interface
+
+[InterfaceId("E09D090A-12E2-569B-AD29-FB0DFB98A1DA")]
+Interface IVectorView_IToastCollection Extends IInspectable
+    Function GetAt(ByVal Index As Long) As IToastCollection
+    Property Get Size() As Long
+    Function IndexOf(ByVal Value As IToastCollection, Index As Long) As BooleanByte
+    Function GetMany(ByVal StartIndex As Long, ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("34D4FA14-252B-5CB4-A7DA-971EE5DAEC7C")]
+Interface IAsyncOperationIVectorView_IToastCollection Extends IInspectable
+    Property Set Completed(ByVal Handler As IAsyncOperationCompletedHandlerIVectorView_IToastCollection)
+    Property Get Completed() As IAsyncOperationCompletedHandlerIVectorView_IToastCollection
+    Function GetResults() As IVectorView_IToastCollection
+End Interface
+
+[InterfaceId("4650E069-3052-530E-BC38-93C411773B77")]
+Interface IAsyncOperationCompletedHandlerIVectorView_IToastCollection Extends IUnknown
+    Sub Invoke(ByVal AsyncOperation As IAsyncOperationIVectorView_IToastCollection, ByVal AsyncStatus As AsyncStatus)
+End Interface
+
+[InterfaceId("9310EC47-9F0A-5999-80C2-4B31E9F77E8E")]
+Interface IAsyncOperationIToastCollection Extends IInspectable
+    Property Set Completed(ByVal Handler As IAsyncOperationCompletedHandlerIToastCollection)
+    Property Get Completed() As IAsyncOperationCompletedHandlerIToastCollection
+    Function GetResults() As IToastCollection
+End Interface
+
+[InterfaceId("8D44CA1E-15D7-5BCB-B002-384C87171C74")]
+Interface IAsyncOperationCompletedHandlerIToastCollection Extends IUnknown
+    Sub Invoke(ByVal AsyncOperation As IAsyncOperationIToastCollection, ByVal AsyncStatus As AsyncStatus)
+End Interface
+
+[InterfaceId("2A22FECB-4B96-551F-B7B9-A7B5BEECAD05")]
+Interface IAsyncOperationIToastNotificationHistory Extends IInspectable
+    Property Set Completed(ByVal Handler As IAsyncOperationCompletedHandlerIToastNotificationHistory)
+    Property Get Completed() As IAsyncOperationCompletedHandlerIToastNotificationHistory
+    Function GetResults() As IToastNotificationHistory
+End Interface
+
+[InterfaceId("C661D5DA-6762-5D93-9138-E7DACD571056")]
+Interface IAsyncOperationCompletedHandlerIToastNotificationHistory Extends IUnknown
+    Sub Invoke(ByVal AsyncOperation As IAsyncOperationIToastNotificationHistory, ByVal AsyncStatus As AsyncStatus)
+End Interface
+
+[InterfaceId("2DDDC10E-38E6-5655-ADF3-820E8FB14DCC")]
+Interface IAsyncOperationIToastNotifier Extends IInspectable
+    Property Set Completed(ByVal Handler As IAsyncOperationCompletedHandlerIToastNotifier)
+    Property Get Completed() As IAsyncOperationCompletedHandlerIToastNotifier
+    Function GetResults() As IToastNotifier
+End Interface
+
+[InterfaceId("FDE26ED7-BC37-5A7C-B3DA-3E41AC97BBA4")]
+Interface IAsyncOperationCompletedHandlerIToastNotifier Extends IUnknown
+    Sub Invoke(ByVal AsyncOperation As IAsyncOperationIToastNotifier, ByVal AsyncStatus As AsyncStatus)
+End Interface
+
+[InterfaceId("18015DAA-CBC3-5A51-9F4B-3C069135B0E0")]
+Interface IIterator_IAdaptiveNotificationText Extends IInspectable
+    Property Get Current() As IAdaptiveNotificationText
+    Property Get HasCurrent() As BooleanByte
+    Function MoveNext() As BooleanByte
+    Function GetMany(ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("0343E8F2-CA4C-5F40-B8D1-3FF47047CE43")]
+Interface IIterable_IAdaptiveNotificationText Extends IInspectable
+    Function First() As IIterator_IAdaptiveNotificationText
+End Interface
+
+[InterfaceId("B60DE92B-4E12-55AF-B42F-AFE2D70BA278")]
+Interface IVectorView_IAdaptiveNotificationText Extends IInspectable
+    Function GetAt(ByVal Index As Long) As IAdaptiveNotificationText
+    Property Get Size() As Long
+    Function IndexOf(ByVal Value As IAdaptiveNotificationText, Index As Long) As BooleanByte
+    Function GetMany(ByVal StartIndex As Long, ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("66187F56-9EE1-5C48-82DA-6CB9DDF879E7")]
+Interface IIterator_INotificationBinding Extends IInspectable
+    Property Get Current() As INotificationBinding
+    Property Get HasCurrent() As BooleanByte
+    Function MoveNext() As BooleanByte
+    Function GetMany(ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("E8D9489C-635E-5153-8AB7-389F2EE9FACA")]
+Interface IIterable_INotificationBinding Extends IInspectable
+    Function First() As IIterator_INotificationBinding
+End Interface
+
+[InterfaceId("9E4D0240-6D5C-582A-A29D-734E84750738")]
+Interface IVectorView_INotificationBinding Extends IInspectable
+    Function GetAt(ByVal Index As Long) As INotificationBinding
+    Property Get Size() As Long
+    Function IndexOf(ByVal Value As INotificationBinding, Index As Long) As BooleanByte
+    Function GetMany(ByVal StartIndex As Long, ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("7F7D8AD7-B4D2-5A03-BE6F-2B89875FB32D")]
+Interface IVector_INotificationBinding Extends IInspectable
+    Function GetAt(ByVal Index As Long) As INotificationBinding
+    Property Get Size() As Long
+    Function GetView() As IVectorView_INotificationBinding
+    Function IndexOf(ByVal Value As INotificationBinding, Index As Long) As BooleanByte
+    [PreserveSig]
+    Function SetAt(ByVal Index As Long, ByVal Value As INotificationBinding) As HRESULT
+    [PreserveSig]
+    Function InsertAt(ByVal Index As Long, ByVal Value As INotificationBinding) As HRESULT
+    [PreserveSig]
+    Function RemoveAt(ByVal Index As Long) As HRESULT
+    [PreserveSig]
+    Function Append(ByVal Value As INotificationBinding) As HRESULT
+    [PreserveSig]
+    Function RemoveAtEnd() As HRESULT
+    [PreserveSig]
+    Function Clear() As HRESULT
+    Function GetMany(ByVal StartIndex As Long, ByVal Length As Long, Items As Any) As Long
+    [PreserveSig]
+    Function ReplaceAll(ByVal Length As Long, Items As Any) As HRESULT
+End Interface
+
+[InterfaceId("5665E491-6543-5036-935F-B5157950B359")]
+Interface IIterator_IScheduledTileNotification Extends IInspectable
+    Property Get Current() As IScheduledTileNotification
+    Property Get HasCurrent() As BooleanByte
+    Function MoveNext() As BooleanByte
+    Function GetMany(ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("4B60D1E5-52AE-5766-9720-BE4AD086F952")]
+Interface IIterable_IScheduledTileNotification Extends IInspectable
+    Function First() As IIterator_IScheduledTileNotification
+End Interface
+
+[InterfaceId("4F729C64-A213-52E9-AF8B-58ADCA3E597F")]
+Interface IVectorView_IScheduledTileNotification Extends IInspectable
+    Function GetAt(ByVal Index As Long) As IScheduledTileNotification
+    Property Get Size() As Long
+    Function IndexOf(ByVal Value As IScheduledTileNotification, Index As Long) As BooleanByte
+    Function GetMany(ByVal StartIndex As Long, ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("304238B6-888A-5DD2-96CD-BFCA8927483B")]
+Interface IIterator_IScheduledToastNotification Extends IInspectable
+    Property Get Current() As IScheduledToastNotification
+    Property Get HasCurrent() As BooleanByte
+    Function MoveNext() As BooleanByte
+    Function GetMany(ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("7A7B2A51-C182-5846-A861-4F9C036F24AD")]
+Interface IIterable_IScheduledToastNotification Extends IInspectable
+    Function First() As IIterator_IScheduledToastNotification
+End Interface
+
+[InterfaceId("BA0AFF1F-6A8A-5A7E-A9F7-505B6266A436")]
+Interface IVectorView_IScheduledToastNotification Extends IInspectable
+    Function GetAt(ByVal Index As Long) As IScheduledToastNotification
+    Property Get Size() As Long
+    Function IndexOf(ByVal Value As IScheduledToastNotification, Index As Long) As BooleanByte
+    Function GetMany(ByVal StartIndex As Long, ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("FE1E726A-3AA9-5D98-B19B-97E3E17EEC7B")]
+Interface IIterator_IToastNotification Extends IInspectable
+    Property Get Current() As IToastNotification
+    Property Get HasCurrent() As BooleanByte
+    Function MoveNext() As BooleanByte
+    Function GetMany(ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("52C9428B-D37A-554D-BF55-B8685D5F552D")]
+Interface IIterable_IToastNotification Extends IInspectable
+    Function First() As IIterator_IToastNotification
+End Interface
+
+[InterfaceId("A819F3DE-60AA-5159-8407-F0A7FB1F6832")]
+Interface IVectorView_IToastNotification Extends IInspectable
+    Function GetAt(ByVal Index As Long) As IToastNotification
+    Property Get Size() As Long
+    Function IndexOf(ByVal Value As IToastNotification, Index As Long) As BooleanByte
+    Function GetMany(ByVal StartIndex As Long, ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("EB0DBE66-7448-448D-9DB8-D78ACD2ABBA9")]
+Interface IAdaptiveNotificationContent Extends IInspectable
+    Property Get Kind() As AdaptiveNotificationContentKind
+    Property Get Hints() As IMap_HSTRING
+End Interface
+
+[InterfaceId("46D4A3BE-609A-4326-A40B-BFDE872034A3")]
+Interface IAdaptiveNotificationText Extends IInspectable
+    Property Get Text() As LongPtr
+    Property Let Text(ByVal Value As LongPtr)
+    Property Get Language() As LongPtr
+    Property Let Language(ByVal Value As LongPtr)
+End Interface
+
+[InterfaceId("075CB4CA-D08A-4E2F-9233-7E289C1F7722")]
+Interface IBadgeNotification Extends IInspectable
+    Property Get Content() As IXmlDocument
+    Property Set ExpirationTime(ByVal Value As IReference_DateTime)
+    Property Get ExpirationTime() As IReference_DateTime
+End Interface
+
+[InterfaceId("EDF255CE-0618-4D59-948A-5A61040C52F9")]
+Interface IBadgeNotificationFactory Extends IInspectable
+    Function CreateBadgeNotification(ByVal Content As IXmlDocument) As IBadgeNotification
+End Interface
+
+[InterfaceId("996B21BC-0386-44E5-BA8D-0C1077A62E92")]
+Interface IBadgeUpdateManagerForUser Extends IInspectable
+    Function CreateBadgeUpdaterForApplication() As IBadgeUpdater
+    Function CreateBadgeUpdaterForApplicationWithId(ByVal ApplicationId As LongPtr) As IBadgeUpdater
+    Function CreateBadgeUpdaterForSecondaryTile(ByVal TileId As LongPtr) As IBadgeUpdater
+    Property Get User() As IUser
+End Interface
+
+[InterfaceId("33400FAA-6DD5-4105-AEBC-9B50FCA492DA")]
+Interface IBadgeUpdateManagerStatics Extends IInspectable
+    Function CreateBadgeUpdaterForApplication() As IBadgeUpdater
+    Function CreateBadgeUpdaterForApplicationWithId(ByVal ApplicationId As LongPtr) As IBadgeUpdater
+    Function CreateBadgeUpdaterForSecondaryTile(ByVal TileId As LongPtr) As IBadgeUpdater
+    Function GetTemplateContent(ByVal Type As BadgeTemplateType) As IXmlDocument
+End Interface
+
+[InterfaceId("979A35CE-F940-48BF-94E8-CA244D400B41")]
+Interface IBadgeUpdateManagerStatics2 Extends IInspectable
+    Function GetForUser(ByVal User As IUser) As IBadgeUpdateManagerForUser
+End Interface
+        
+[InterfaceId("B5FA1FD4-7562-4F6C-BFA3-1B6ED2E57F2F")]
+Interface IBadgeUpdater Extends IInspectable
+    [PreserveSig]
+    Function Update(ByVal Notification As IBadgeNotification) As HRESULT
+    [PreserveSig]
+    Function Clear() As HRESULT
+    [PreserveSig]
+    Function StartPeriodicUpdate(ByVal BadgeContent As IUri, ByVal RequestedInterval As PeriodicUpdateRecurrence) As HRESULT
+    [PreserveSig]
+    Function StartPeriodicUpdateAtTime(ByVal BadgeContent As IUri, ByVal StartTime As DateTime, ByVal RequestedInterval As PeriodicUpdateRecurrence) As HRESULT
+    [PreserveSig]
+    Function StopPeriodicUpdate() As HRESULT
+End Interface
+
+[InterfaceId("06206598-D496-497D-8692-4F7D7C2770DF")]
+Interface IKnownAdaptiveNotificationHintsStatics Extends IInspectable
+    Property Get Style() As LongPtr
+    Property Get Wrap() As LongPtr
+    Property Get MaxLines() As LongPtr
+    Property Get MinLines() As LongPtr
+    Property Get TextStacking() As LongPtr
+    Property Get Align() As LongPtr
+End Interface
+
+[InterfaceId("202192D7-8996-45AA-8BA1-D461D72C2A1B")]
+Interface IKnownAdaptiveNotificationTextStylesStatics Extends IInspectable
+    Property Get Caption() As LongPtr
+    Property Get Body() As LongPtr
+    Property Get Base() As LongPtr
+    Property Get Subtitle() As LongPtr
+    Property Get Title() As LongPtr
+    Property Get Subheader() As LongPtr
+    Property Get Header() As LongPtr
+    Property Get TitleNumeral() As LongPtr
+    Property Get SubheaderNumeral() As LongPtr
+    Property Get HeaderNumeral() As LongPtr
+    Property Get CaptionSubtle() As LongPtr
+    Property Get BodySubtle() As LongPtr
+    Property Get BaseSubtle() As LongPtr
+    Property Get SubtitleSubtle() As LongPtr
+    Property Get TitleSubtle() As LongPtr
+    Property Get SubheaderSubtle() As LongPtr
+    Property Get SubheaderNumeralSubtle() As LongPtr
+    Property Get HeaderSubtle() As LongPtr
+    Property Get HeaderNumeralSubtle() As LongPtr
+End Interface
+
+[InterfaceId("79427BAE-A8B7-4D58-89EA-76A7B7BCCDED")]
+Interface IKnownNotificationBindingsStatics Extends IInspectable
+    Property Get ToastGeneric() As LongPtr
+End Interface
+
+[InterfaceId("108037FE-EB76-4F82-97BC-DA07530A2E20")]
+Interface INotification Extends IInspectable
+    Property Get ExpirationTime() As IReference_DateTime
+    Property Set ExpirationTime(ByVal Value As IReference_DateTime)
+    Property Get Visual() As INotificationVisual
+    Property Set Visual(ByVal Value As INotificationVisual)
+End Interface
+
+[InterfaceId("F29E4B85-0370-4AD3-B4EA-DA9E35E7EABF")]
+Interface INotificationBinding Extends IInspectable
+    Property Get Template() As LongPtr
+    Property Let Template(ByVal Value As LongPtr)
+    Property Get Language() As LongPtr
+    Property Let Language(ByVal Value As LongPtr)
+    Property Get Hints() As IMap_HSTRING
+    Function GetTextElements() As IVectorView_IAdaptiveNotificationText
+End Interface
+
+[InterfaceId("9FFD2312-9D6A-4AAF-B6AC-FF17F0C1F280")]
+Interface INotificationData Extends IInspectable
+    Property Get Values() As IMap_HSTRING
+    Property Get SequenceNumber() As Long
+    Property Let SequenceNumber(ByVal Value As Long)
+End Interface
+
+[InterfaceId("23C1E33A-1C10-46FB-8040-DEC384621CF8")]
+Interface INotificationDataFactory Extends IInspectable
+    Function CreateNotificationDataWithValuesAndSequenceNumber(ByVal InitialValues As IIterable_KVP_HSTRING, ByVal SequenceNumber As Long) As INotificationData
+    Function CreateNotificationDataWithValues(ByVal InitialValues As IIterable_KVP_HSTRING) As INotificationData
+End Interface
+
+[InterfaceId("68835B8E-AA56-4E11-86D3-5F9A6957BC5B")]
+Interface INotificationVisual Extends IInspectable
+    Property Get Language() As LongPtr
+    Property Let Language(ByVal Value As LongPtr)
+    Property Get Bindings() As INotificationBinding
+    Function GetBinding(ByVal TemplateName As LongPtr) As INotificationBinding
+End Interface
+
+[InterfaceId("0ABCA6D5-99DC-4C78-A11C-C9E7F86D7EF7")]
+Interface IScheduledTileNotification Extends IInspectable
+    Property Get Content() As IXmlDocument
+    Property Get DeliveryTime() As DateTime
+    Property Set ExpirationTime(ByVal Value As IReference_DateTime)
+    Property Get ExpirationTime() As IReference_DateTime
+    Property Let Tag(ByVal Value As LongPtr)
+    Property Get Tag() As LongPtr
+    Property Let Id(ByVal Value As LongPtr)
+    Property Get Id() As LongPtr
+End Interface
+
+[InterfaceId("3383138A-98C0-4C3B-BBD6-4A633C7CFC29")]
+Interface IScheduledTileNotificationFactory Extends IInspectable
+    Function CreateScheduledTileNotification(ByVal Content As IXmlDocument, ByVal DeliveryTime As DateTime) As IScheduledTileNotification
+End Interface
+
+[InterfaceId("79F577F8-0DE7-48CD-9740-9B370490C838")]
+Interface IScheduledToastNotification Extends IInspectable
+    Property Get Content() As IXmlDocument
+    Property Get DeliveryTime() As DateTime
+    Property Get SnoozeInterval() As IReference_TimeSpan
+    Property Get MaximumSnoozeCount() As Long
+    Property Let Id(ByVal Value As LongPtr)
+    Property Get Id() As LongPtr
+End Interface
+
+[InterfaceId("A66EA09C-31B4-43B0-B5DD-7A40E85363B1")]
+Interface IScheduledToastNotification2 Extends IInspectable
+    Property Let Tag(ByVal Value As LongPtr)
+    Property Get Tag() As LongPtr
+    Property Let Group(ByVal Value As LongPtr)
+    Property Get Group() As LongPtr
+    Property Let SuppressPopup(ByVal Value As BooleanByte)
+    Property Get SuppressPopup() As BooleanByte
+End Interface
+
+[InterfaceId("98429E8B-BD32-4A3B-9D15-22AEA49462A1")]
+Interface IScheduledToastNotification3 Extends IInspectable
+    Property Get NotificationMirroring() As NotificationMirroring
+    Property Let NotificationMirroring(ByVal Value As NotificationMirroring)
+    Property Get RemoteId() As LongPtr
+    Property Let RemoteId(ByVal Value As LongPtr)
+End Interface
+
+[InterfaceId("1D4761FD-BDEF-4E4A-96BE-0101369B58D2")]
+Interface IScheduledToastNotification4 Extends IInspectable
+    Property Get ExpirationTime() As IReference_DateTime
+    Property Set ExpirationTime(ByVal Value As IReference_DateTime)
+End Interface
+
+[InterfaceId("E7BED191-0BB9-4189-8394-31761B476FD7")]
+Interface IScheduledToastNotificationFactory Extends IInspectable
+    Function CreateScheduledToastNotification(ByVal Content As IXmlDocument, ByVal DeliveryTime As DateTime) As IScheduledToastNotification
+    Function CreateScheduledToastNotificationRecurring(ByVal Content As IXmlDocument, ByVal DeliveryTime As DateTime, ByVal SnoozeInterval As TimeSpan, ByVal MaximumSnoozeCount As Long) As IScheduledToastNotification
+End Interface
+
+[InterfaceId("6173F6B4-412A-5E2C-A6ED-A0209AEF9A09")]
+Interface IScheduledToastNotificationShowingEventArgs Extends IInspectable
+    Property Get Cancel() As BooleanByte
+    Property Let Cancel(ByVal Value As BooleanByte)
+    Property Get ScheduledToastNotification() As IScheduledToastNotification
+    Function GetDeferral() As IDeferral
+End Interface
+
+[InterfaceId("342D8988-5AF2-481A-A6A3-F2FDC78DE88E")]
+Interface IShownTileNotification Extends IInspectable
+    Property Get Arguments() As LongPtr
+End Interface
+
+[InterfaceId("9A53B261-C70C-42BE-B2F3-F42AA97D34E5")]
+Interface ITileFlyoutNotification Extends IInspectable
+    Property Get Content() As IXmlDocument
+    Property Set ExpirationTime(ByVal Value As IReference_DateTime)
+    Property Get ExpirationTime() As IReference_DateTime
+End Interface
+
+[InterfaceId("EF556FF5-5226-4F2B-B278-88A35DFE569F")]
+Interface ITileFlyoutNotificationFactory Extends IInspectable
+    Function CreateTileFlyoutNotification(ByVal Content As IXmlDocument) As ITileFlyoutNotification
+End Interface
+
+[InterfaceId("04363B0B-1AC0-4B99-88E7-ADA83E953D48")]
+Interface ITileFlyoutUpdateManagerStatics Extends IInspectable
+    Function CreateTileFlyoutUpdaterForApplication(ByVal Content As IXmlDocument) As ITileFlyoutUpdater
+    Function CreateTileFlyoutUpdaterForApplicationWithId(ByVal ApplicationId As LongPtr) As ITileFlyoutUpdater
+    Function CreateTileFlyoutUpdaterForSecondaryTile(ByVal TileId As LongPtr) As ITileFlyoutUpdater
+    Function GetTemplateContent(ByVal TemplateType As TileFlyoutTemplateType) As IXmlDocument
+End Interface
+
+[InterfaceId("8D40C76A-C465-4052-A740-5C2654C1A089")]
+Interface ITileFlyoutUpdater Extends IInspectable
+    [PreserveSig]
+    Function Update(ByVal Notification As ITileFlyoutNotification) As HRESULT
+    [PreserveSig]
+    Function Clear() As HRESULT
+    [PreserveSig]
+    Function StartPeriodicUpdate(ByVal TileFlyoutContent As IUri, ByVal RequestedInterval As PeriodicUpdateRecurrence) As HRESULT
+    [PreserveSig]
+    Function StartPeriodicUpdateAtTime(ByVal TileFlyoutContent As IUri, ByVal StartTime As DateTime, ByVal RequestedInterval As PeriodicUpdateRecurrence) As HRESULT
+    [PreserveSig]
+    Function StopPeriodicUpdate() As HRESULT
+    Property Get Setting() As NotificationSetting
+End Interface
+
+[InterfaceId("EBAEC8FA-50EC-4C18-B4D0-3AF02E5540AB")]
+Interface ITileNotification Extends IInspectable
+    Property Get Content() As IXmlDocument
+    Property Set ExpirationTime(ByVal Value As IReference_DateTime)
+    Property Get ExpirationTime() As IReference_DateTime
+    Property Let Tag(ByVal Value As LongPtr)
+    Property Get Tag() As LongPtr
+End Interface
+
+[InterfaceId("C6ABDD6E-4928-46C8-BDBF-81A047DEA0D4")]
+Interface ITileNotificationFactory Extends IInspectable
+    Function CreateTileNotification(ByVal Content As IXmlDocument) As ITileNotification
+End Interface
+
+[InterfaceId("55141348-2EE2-4E2D-9CC1-216A20DECC9F")]
+Interface ITileUpdateManagerForUser Extends IInspectable
+    Function CreateTileUpdaterForApplication() As ITileUpdater
+    Function CreateTileUpdaterForApplicationWithId(ByVal ApplicationId As LongPtr) As ITileUpdater
+    Function CreateTileUpdaterForSecondaryTile(ByVal TileId As LongPtr) As ITileUpdater
+    Property Get User() As IUser
+End Interface
+
+[InterfaceId("DA159E5D-3EA9-4986-8D84-B09D5E12276D")]
+Interface ITileUpdateManagerStatics Extends IInspectable
+    Function CreateTileUpdaterForApplication() As ITileUpdater
+    Function CreateTileUpdaterForApplicationWithId(ByVal ApplicationId As LongPtr) As ITileUpdater
+    Function CreateTileUpdaterForSecondaryTile(ByVal TileId As LongPtr) As ITileUpdater
+    Function GetTemplateContent(ByVal TemplateType As TileTemplateType) As IXmlDocument
+End Interface
+
+[InterfaceId("731C1DDC-8E14-4B7C-A34B-9D22DE76C84D")]
+Interface ITileUpdateManagerStatics2 Extends IInspectable
+    Function GetForUser(ByVal User As IUser) As ITileUpdateManagerForUser
+End Interface
+
+[InterfaceId("0942A48B-1D91-44EC-9243-C1E821C29A20")]
+Interface ITileUpdater Extends IInspectable
+    [PreserveSig]
+    Function Update(ByVal Notification As ITileNotification) As HRESULT
+    [PreserveSig]
+    Function Clear() As HRESULT
+    [PreserveSig]
+    Function EnableNotificationQueue(ByVal Enable As BooleanByte) As HRESULT
+    Property Get Setting() As NotificationSetting
+    [PreserveSig]
+    Function AddToSchedule(ByVal ScheduledTile As IScheduledTileNotification) As HRESULT
+    [PreserveSig]
+    Function RemoveFromSchedule(ByVal ScheduledTile As IScheduledTileNotification) As HRESULT
+    Function GetScheduledTileNotifications() As IVectorView_IScheduledTileNotification
+    [PreserveSig]
+    Function StartPeriodicUpdate(ByVal TileContent As IUri, ByVal RequestedInterval As PeriodicUpdateRecurrence) As HRESULT
+    [PreserveSig]
+    Function StartPeriodicUpdateAtTime(ByVal TileContent As IUri, ByVal StartTime As DateTime, ByVal RequestedInterval As PeriodicUpdateRecurrence) As HRESULT
+    [PreserveSig]
+    Function StopPeriodicUpdate() As HRESULT
+    [PreserveSig]
+    Function StartPeriodicUpdateBatch(ByVal TileContents As IIterable_IUri, ByVal RequestedInterval As PeriodicUpdateRecurrence) As HRESULT
+    [PreserveSig]
+    Function StartPeriodicUpdateBatchAtTime(ByVal TileContents As IIterable_IUri, ByVal StartTime As DateTime, ByVal RequestedInterval As PeriodicUpdateRecurrence) As HRESULT
+End Interface
+
+[InterfaceId("A2266E12-15EE-43ED-83F5-65B352BB1A84")]
+Interface ITileUpdater2 Extends IInspectable
+    [PreserveSig]
+    Function EnableNotificationQueueForSquare150x150(ByVal Enable As BooleanByte) As HRESULT
+    [PreserveSig]
+    Function EnableNotificationQueueForWide310x150(ByVal Enable As BooleanByte) As HRESULT
+    [PreserveSig]
+    Function EnableNotificationQueueForSquare310x310(ByVal Enable As BooleanByte) As HRESULT
+End Interface
+
+[InterfaceId("E3BF92F3-C197-436F-8265-0625824F8DAC")]
+Interface IToastActivatedEventArgs Extends IInspectable
+    Property Get Arguments() As LongPtr
+End Interface
+
+[InterfaceId("AB7DA512-CC61-568E-81BE-304AC31038FA")]
+Interface IToastActivatedEventArgs2 Extends IInspectable
+    Property Get UserInput() As IPropertySet
+End Interface
+
+[InterfaceId("0A8BC3B0-E0BE-4858-BC2A-89DFE0B32863")]
+Interface IToastCollection Extends IInspectable
+    Property Get Id() As LongPtr
+    Property Get DisplayName() As LongPtr
+    Property Let DisplayName(ByVal Value As LongPtr)
+    Property Get LaunchArgs() As LongPtr
+    Property Let LaunchArgs(ByVal Value As LongPtr)
+    Property Get Icon() As IUri
+    Property Set Icon(ByVal Value As IUri)
+End Interface
+
+[InterfaceId("164DD3D7-73C4-44F7-B4FF-FB6D4BF1F4C6")]
+Interface IToastCollectionFactory Extends IInspectable
+    Function CreateInstance(ByVal CollectionId As LongPtr, ByVal DisplayName As LongPtr, ByVal LaunchArgs As LongPtr, ByVal IconUri As IUri) As IToastCollection
+End Interface
+
+[InterfaceId("2A1821FE-179D-49BC-B79D-A527920D3665")]
+Interface IToastCollectionManager Extends IInspectable
+    Function SaveToastCollectionAsync(ByVal Collection As IToastCollection) As IAsyncAction
+    Function FindAllToastCollectionsAsync() As IAsyncOperationIVectorView_IToastCollection
+    Function GetToastCollectionAsync(ByVal CollectionId As LongPtr) As IAsyncOperationIToastCollection
+    Function RemoveToastCollectionAsync(ByVal CollectionId As LongPtr) As IAsyncAction
+    Function RemoveAllToastCollectionsAsync() As IAsyncAction
+    Property Get User() As IUser
+    Property Get AppId() As LongPtr
+End Interface
+
+[InterfaceId("3F89D935-D9CB-4538-A0F0-FFE7659938F8")]
+Interface IToastDismissedEventArgs Extends IInspectable
+    Property Get Reason() As ToastDismissalReason
+End Interface
+
+[InterfaceId("35176862-CFD4-44F8-AD64-F500FD896C3B")]
+Interface IToastFailedEventArgs Extends IInspectable
+    Property Get ErrorCode() As HRESULT
+End Interface
+
+[InterfaceId("61C2402F-0ED0-5A18-AB69-59F4AA99A368")]
+Interface ITypedEventHandlerToastNotificationDismissed Extends IUnknown
+    Sub Invoke(ByVal Sender As IToastNotification, ByVal Args As IToastDismissedEventArgs)
+End Interface
+
+[InterfaceId("AB54DE2D-97D9-5528-B6AD-105AFE156530")]
+Interface ITypedEventHandlerToastNotificationActivated Extends IUnknown
+    Sub Invoke(ByVal Sender As IToastNotification, ByVal Args As IInspectable)
+End Interface
+
+[InterfaceId("95E3E803-C969-5E3A-9753-EA2AD22A9A33")]
+Interface ITypedEventHandlerToastNotificationFailed Extends IUnknown
+    Sub Invoke(ByVal Sender As IToastNotification, ByVal Args As IToastFailedEventArgs)
+End Interface
+
+[InterfaceId("997E2675-059E-4E60-8B06-1760917C8B80")]
+Interface IToastNotification Extends IInspectable
+    Property Get Content() As IXmlDocument
+    Property Set ExpirationTime(ByVal Value As IReference_DateTime)
+    Property Get ExpirationTime() As IReference_DateTime
+    [PreserveSig]
+    Function AddDismissed(ByVal Handler As ITypedEventHandlerToastNotificationDismissed, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveDismissed(ByVal Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function AddActivated(ByVal Handler As ITypedEventHandlerToastNotificationActivated, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveActivated(ByVal Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function AddFailed(ByVal Handler As ITypedEventHandlerToastNotificationFailed, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveFailed(ByVal Token As EventRegistrationToken) As HRESULT
+End Interface
+
+[InterfaceId("9DFB9FD1-143A-490E-90BF-B9FBA7132DE7")]
+Interface IToastNotification2 Extends IInspectable
+    Property Let Tag(ByVal Value As LongPtr)
+    Property Get Tag() As LongPtr
+    Property Let Group(ByVal Value As LongPtr)
+    Property Get Group() As LongPtr
+    Property Let SuppressPopup(ByVal Value As BooleanByte)
+    Property Get SuppressPopup() As BooleanByte
+End Interface
+
+[InterfaceId("31E8AED8-8141-4F99-BC0A-C4ED21297D77")]
+Interface IToastNotification3 Extends IInspectable
+    Property Get NotificationMirroring() As NotificationMirroring
+    Property Let NotificationMirroring(ByVal Value As NotificationMirroring)
+    Property Get RemoteId() As LongPtr
+    Property Let RemoteId(ByVal Value As LongPtr)
+End Interface
+
+[InterfaceId("15154935-28EA-4727-88E9-C58680E2D118")]
+Interface IToastNotification4 Extends IInspectable
+    Property Get Data() As INotificationData
+    Property Set Data(ByVal Value As INotificationData)
+    Property Get Priority() As ToastNotificationPriority
+    Property Let Priority(ByVal Value As ToastNotificationPriority)
+End Interface
+
+[InterfaceId("43EBFE53-89AE-5C1E-A279-3AECFE9B6F54")]
+Interface IToastNotification6 Extends IInspectable
+    Property Get ExpiresOnReboot() As BooleanByte
+    Property Let ExpiresOnReboot(ByVal Value As BooleanByte)
+End Interface
+   
+[InterfaceId("9445135A-38F3-42F6-96AA-7955B0F03DA2")]
+Interface IToastNotificationActionTriggerDetail Extends IInspectable
+    Property Get Argument() As LongPtr
+    Property Get UserInput() As IPropertySet
+End Interface
+
+[InterfaceId("04124B20-82C6-4229-B109-FD9ED4662B53")]
+Interface IToastNotificationFactory Extends IInspectable
+    Function CreateToastNotification(ByVal Content As IXmlDocument) As IToastNotification
+End Interface
+
+[InterfaceId("5CADDC63-01D3-4C97-986F-0533483FEE14")]
+Interface IToastNotificationHistory Extends IInspectable
+    [PreserveSig]
+    Function RemoveGroup(ByVal Group As LongPtr) As HRESULT
+    [PreserveSig]
+    Function RemoveGroupWithId(ByVal Group As LongPtr, ByVal ApplicationId As LongPtr) As HRESULT
+    [PreserveSig]
+    Function RemoveGroupedTagWithId(ByVal Tag As LongPtr, ByVal Group As LongPtr, ByVal ApplicationId As LongPtr) As HRESULT
+    [PreserveSig]
+    Function RemoveGroupedTag(ByVal Tag As LongPtr, ByVal Group As LongPtr) As HRESULT
+    [PreserveSig]
+    Function Remove(ByVal Tag As LongPtr) As HRESULT
+    [PreserveSig]
+    Function Clear() As HRESULT
+    [PreserveSig]
+    Function ClearWithId(ByVal ApplicationId As LongPtr) As HRESULT
+End Interface
+
+[InterfaceId("3BC3D253-2F31-4092-9129-8AD5ABF067DA")]
+Interface IToastNotificationHistory2 Extends IInspectable
+    Function GetHistory() As IVectorView_IToastNotification
+    Function GetHistoryWithId(ByVal ApplicationId As LongPtr) As IVectorView_IToastNotification
+End Interface
+
+[InterfaceId("DB037FFA-0068-412C-9C83-267C37F65670")]
+Interface IToastNotificationHistoryChangedTriggerDetail Extends IInspectable
+    Property Get ChangeType() As ToastHistoryChangedType
+End Interface
+
+[InterfaceId("0B36E982-C871-49FB-BABB-25BDBC4CC45B")]
+Interface IToastNotificationHistoryChangedTriggerDetail2 Extends IInspectable
+    Property Get CollectionId() As LongPtr
+End Interface
+
+[InterfaceId("79AB57F6-43FE-487B-8A7F-99567200AE94")]
+Interface IToastNotificationManagerForUser Extends IInspectable
+    Function CreateToastNotifier() As IToastNotifier
+    Function CreateToastNotifierWithId(ByVal ApplicationId As LongPtr) As IToastNotifier
+    Property Get History() As IToastNotificationHistory
+    Property Get User() As IUser
+End Interface
+
+[InterfaceId("679C64B7-81AB-42C2-8819-C958767753F4")]
+Interface IToastNotificationManagerForUser2 Extends IInspectable
+    Function GetToastNotifierForToastCollectionIdAsync(ByVal CollectionId As LongPtr) As IAsyncOperationIToastNotifier
+    Function GetHistoryForToastCollectionIdAsync(ByVal CollectionId As LongPtr) As IAsyncOperationIToastNotificationHistory
+    Function GetToastCollectionManager() As IToastCollectionManager
+    Function GetToastCollectionManagerWithAppId(ByVal AppId As LongPtr) As IToastCollectionManager
+End Interface
+
+[InterfaceId("821BDF6B-029A-5299-93F3-3077B2EE5E33")]
+Interface ITypedEventHandlerToastNotificationManagerForUserNotificationModeChanged Extends IUnknown
+    Sub Invoke(ByVal Sender As IToastNotificationManagerForUser, ByVal Args As IInspectable)
+End Interface
+
+[InterfaceId("3EFCB176-6CC1-56DC-973B-251F7AACB1C5")]
+Interface IToastNotificationManagerForUser3 Extends IInspectable
+    Property Get NotificationMode() As ToastNotificationMode
+    [PreserveSig]
+    Function AddNotificationModeChanged(ByVal Handler As ITypedEventHandlerToastNotificationManagerForUserNotificationModeChanged, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveNotificationModeChanged(ByVal Token As EventRegistrationToken) As HRESULT
+End Interface
+    
+[InterfaceId("50AC103F-D235-4598-BBEF-98FE4D1A3AD4")]
+Interface IToastNotificationManagerStatics Extends IInspectable
+    Function CreateToastNotifier() As IToastNotifier
+    Function CreateToastNotifierWithId(ByVal ApplicationId As LongPtr) As IToastNotifier
+    Function GetTemplateContent(ByVal TemplateType As ToastTemplateType) As IXmlDocument
+End Interface
+
+[InterfaceId("7AB93C52-0E48-4750-BA9D-1A4113981847")]
+Interface IToastNotificationManagerStatics2 Extends IInspectable
+    Property Get History() As IToastNotificationHistory
+End Interface
+
+[InterfaceId("8F993FD3-E516-45FB-8130-398E93FA52C3")]
+Interface IToastNotificationManagerStatics4 Extends IInspectable
+    Function GetForUser(ByVal User As IUser) As IToastNotificationManagerForUser
+    [PreserveSig]
+    Function ConfigureNotificationMirroring(ByVal Value As NotificationMirroring) As HRESULT
+End Interface
+
+[InterfaceId("D6F5F569-D40D-407C-8989-88CAB42CFD14")]
+Interface IToastNotificationManagerStatics5 Extends IInspectable
+    Function GetDefault() As IToastNotificationManagerForUser
+End Interface
+
+[InterfaceId("75927B93-03F3-41EC-91D3-6E5BAC1B38E7")]
+Interface IToastNotifier Extends IInspectable
+    [PreserveSig]
+    Function Show(ByVal Notification As IToastNotification) As HRESULT
+    [PreserveSig]
+    Function Hide(ByVal Notification As IToastNotification) As HRESULT
+    Property Get Setting() As NotificationSetting
+    [PreserveSig]
+    Function AddToSchedule(ByVal ScheduledToast As IScheduledToastNotification) As HRESULT
+    [PreserveSig]
+    Function RemoveFromSchedule(ByVal ScheduledToast As IScheduledToastNotification) As HRESULT
+    Function GetScheduledToastNotifications() As IVectorView_IScheduledToastNotification
+End Interface
+
+[InterfaceId("354389C6-7C01-4BD5-9C20-604340CD2B74")]
+Interface IToastNotifier2 Extends IInspectable
+    Function UpdateWithTagAndGroup(ByVal Data As INotificationData, ByVal Tag As LongPtr, ByVal Group As LongPtr) As NotificationUpdateResult
+    Function UpdateWithTag(ByVal Data As INotificationData, ByVal Tag As LongPtr) As NotificationUpdateResult
+End Interface
+
+[InterfaceId("B1BB0CAB-F8B9-5909-A872-EF29E05A8C7A")]
+Interface ITypedEventHandlerToastNotifierScheduledToastNotificationShowing Extends IUnknown
+    Sub Invoke(ByVal Sender As IToastNotifier, ByVal Args As IScheduledToastNotificationShowingEventArgs)
+End Interface
+
+[InterfaceId("AE75A04A-3B0C-51AD-B7E8-B08AB6052549")]
+Interface IToastNotifier3 Extends IInspectable
+    [PreserveSig]
+    Function AddScheduledToastNotificationShowing(ByVal Handler As ITypedEventHandlerToastNotifierScheduledToastNotificationShowing, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveScheduledToastNotificationShowing(ByVal Token As EventRegistrationToken) As HRESULT
+End Interface
+
+[InterfaceId("ADF7E52F-4E53-42D5-9C33-EB5EA515B23E")]
+Interface IUserNotification Extends IInspectable
+    Property Get Notification() As INotification
+    Property Get AppInfo() As IAppInfo
+    Property Get Id() As Long
+    Property Get CreationTime() As DateTime
+End Interface
+
+[InterfaceId("B6BD6839-79CF-4B25-82C0-0CE1EEF81F8C")]
+Interface IUserNotificationChangedEventArgs Extends IInspectable
+    Property Get ChangeKind() As UserNotificationChangedKind
+    Property Get UserNotificationId() As Long
+End Interface
+
+' ----------------------------------------------------- Related Interfaces -----------------------------------------------------
+
+[InterfaceId("00000001-0000-0000-C000-000000000046")]
+Interface IClassFactory Extends IUnknown
+    Sub CreateInstance(ByVal pUnkOuter As IUnknown, rIID As Any, ppvObject As IUnknown)
+    Sub LockServer(ByVal fLock As BOOL)
+End Interface
+
+[InterfaceId("53E31837-6600-4A81-9395-75CFFE746F94")]
+Interface INotificationActivationCallback Extends IUnknown
+    Sub Activate(ByVal AppUserModelId As LongPtr, ByVal InvokedArgs As LongPtr, UserInputData As NOTIFICATION_USER_INPUT_DATA, ByVal Count As Long)
+End Interface
+
+[InterfaceId("0000010C-0000-0000-C000-000000000046")]
+Interface IPersist Extends IUnknown
+    [PreserveSig]
+    Function GetClassID(pClassID As Any) As HRESULT
+End Interface
+
+[InterfaceId("0000010B-0000-0000-C000-000000000046")]
+Interface IPersistFile Extends IPersist
+    [PreserveSig]
+    Function IsDirty() As HRESULT
+    [PreserveSig]
+    Function Load(ByVal pszFileName As LongPtr, ByVal dwMode As Long) As HRESULT
+    [PreserveSig]
+    Function Save(ByVal pszFileName As LongPtr, ByVal fRemember As BOOL) As HRESULT
+    [PreserveSig]
+    Function SaveCompleted(ByVal pszFileName As LongPtr) As HRESULT
+    Function GetCurFile() As LongPtr
+End Interface
+
+[InterfaceId("6F79D558-3E96-4549-A1D1-7D75D2288814")]
+Interface IPropertyDescription Extends IUnknown
+    Function GetPropertyKey() As PROPERTYKEY
+    Function GetCanonicalName() As LongPtr
+    Function GetPropertyType() As VARENUM
+    Function GetDisplayName() As LongPtr
+    Function GetEditInvitation() As LongPtr
+    Function GetTypeFlags(ByVal Mask As Long) As Long
+    Function GetViewFlags() As Long
+    Function GetDefaultColumnWidth() As Long
+    Function GetDisplayType() As Long
+    Function GetColumnState() As Long
+    Function GetGroupingRange() As Long
+    Function GetRelativeDescriptionType() As Long
+    [PreserveSig]
+    Function GetRelativeDescription(rPropVariant1 As Any, rPropVariant2 As Any, ppszDesc1 As LongPtr, ppszDesc2 As LongPtr) As HRESULT
+    Function GetSortDescription() As Long
+    Function GetSortDescriptionLabel(ByVal fDescending As BOOL) As LongPtr
+    Function GetAggregationType() As Long
+    [PreserveSig]
+    Function GetConditionType(pConditionType As Long, popDefault As Long) As HRESULT
+    [PreserveSig]
+    Function GetEnumTypeList(rIID As Any, ppvObject As Any) As HRESULT
+    [PreserveSig]
+    Function CoerceToCanonicalValue(rPropVariant As Any) As HRESULT
+    Function FormatForDisplay(rPropVariant As Any, ByVal pdfFlags As Long) As LongPtr
+    [PreserveSig]
+    Function IsValueCanonical(rPropVariant As Any) As HRESULT
+End Interface
+
+[InterfaceId("886D8EEB-8CF2-4446-8D02-CDBA1DBDCF99")]
+Interface IPropertyStore Extends IUnknown
+    Function GetCount() As Long
+    Function GetAt(ByVal iProp As Long) As PROPERTYKEY
+    Function GetValue(rPropertyKey As Any) As PROPVARIANT
+    [PreserveSig]
+    Function SetValue(rPropertyKey As Any, rPropVariant As Any) As HRESULT
+    [PreserveSig]
+    Function Commit() As HRESULT
+End Interface
+
+[InterfaceId("CA724E8A-C3E6-442B-88A4-6FB0DB8035A3")]
+Interface IPropertySystem Extends IUnknown
+    [PreserveSig]
+    Function GetPropertyDescription(rPropertyKey As Any, rIID As Any, ppvObject As Any) As HRESULT
+    Function GetPropertyDescriptionByName(ByVal pszCanonicalName As LongPtr, rIID As Any) As IPropertyDescription
+    [PreserveSig]
+    Function GetPropertyDescriptionListFromString(ByVal pszPropList As LongPtr, rIID As Any, ppvObject As Any) As HRESULT
+    [PreserveSig]
+    Function EnumeratePropertyDescriptions(ByVal filterOn As Long, rIID As Any, ppvObject As Any) As HRESULT
+    [PreserveSig]
+    Function FormatForDisplay(rPropertyKey As Any, rPropVariant As Any, ByVal pdff As Long, pszText As LongPtr, ByVal cchText As Long) As HRESULT
+    [PreserveSig]
+    Function FormatForDisplayAlloc(rPropertyKey As Any, rPropVariant As Any, ByVal pdff As Long, pszText As LongPtr) As HRESULT
+    [PreserveSig]
+    Function RegisterPropertySchema(ByVal pszPath As LongPtr) As HRESULT
+    [PreserveSig]
+    Function UnregisterPropertySchema(ByVal pszPath As LongPtr) As HRESULT
+    [PreserveSig]
+    Function RefreshPropertySchema() As HRESULT
+End Interface
+
+[InterfaceId("0C733A30-2A1C-11CE-ADE5-00AA0044773D")]
+Interface ISequentialStream Extends IUnknown
+    [PreserveSig]
+    Function Read(pBuffer As Any, ByVal cbRead As Long, Optional pcbRead As Long) As HRESULT
+    [PreserveSig]
+    Function Write(pBuffer As Any, ByVal cbWrite As Long, Optional pcbWritten As Long) As HRESULT
+End Interface
+
+[InterfaceId("000214F9-0000-0000-C000-000000000046")]
+Interface IShellLinkW Extends IUnknown
+    [PreserveSig]
+    Function GetPath(ByVal pszFile As LongPtr, ByVal cch As Long, pFD As Any, ByVal fFlags As Long) As HRESULT
+    Function GetIDList() As LongPtr
+    [PreserveSig]
+    Function SetIDList(ByVal pidl As LongPtr) As HRESULT
+    [PreserveSig]
+    Function GetDescription(ByVal pszName As LongPtr, ByVal cch As Long) As HRESULT
+    [PreserveSig]
+    Function SetDescription(ByVal pszName As LongPtr) As HRESULT
+    [PreserveSig]
+    Function GetWorkingDirectory(ByVal pszDir As LongPtr, ByVal cch As Long) As HRESULT
+    [PreserveSig]
+    Function SetWorkingDirectory(ByVal pszDir As LongPtr) As HRESULT
+    [PreserveSig]
+    Function GetArguments(ByVal pszArgs As LongPtr, ByVal cch As Long) As HRESULT
+    [PreserveSig]
+    Function SetArguments(ByVal pszArgs As LongPtr) As HRESULT
+    Function GetHotkey() As Integer
+    [PreserveSig]
+    Function SetHotkey(ByVal wHotkey As Integer) As HRESULT
+    Function GetShowCmd() As SHOWWINDOW_CONSTANTS
+    [PreserveSig]
+    Function SetShowCmd(ByVal iShowCmd As SHOWWINDOW_CONSTANTS) As HRESULT
+    [PreserveSig]
+    Function GetIconLocation(ByVal pszIconPath As LongPtr, ByVal cch As Long, piIcon As Long) As HRESULT
+    [PreserveSig]
+    Function SetIconLocation(ByVal pszIconPath As LongPtr, ByVal iIcon As Long) As HRESULT
+    [PreserveSig]
+    Function SetRelativePath(ByVal pszPathRel As LongPtr, ByVal dwReserved As Long) As HRESULT
+    [PreserveSig]
+    Function Resolve(ByVal hWnd As LongPtr, ByVal fFlags As Long) As HRESULT
+    [PreserveSig]
+    Function SetPath(ByVal pszFile As LongPtr) As HRESULT
+End Interface
+
+[InterfaceId("0000000C-0000-0000-C000-000000000046")]
+Interface IStream Extends ISequentialStream
+    [PreserveSig]
+    Function Seek(ByVal dlibMove As Currency, Optional ByVal dwOrigin As STREAM_SEEK, Optional plibNewPosition As Currency) As HRESULT
+    [PreserveSig]
+    Function SetSize(ByVal libNewSize As Currency) As HRESULT
+    [PreserveSig]
+    Function CopyTo(ByVal pStream As IStream, ByVal cb As Currency, Optional pcbRead As Currency, Optional pcbWritten As Currency) As HRESULT
+    [PreserveSig]
+    Function Commit(ByVal grfCommitFlags As STGC) As HRESULT
+    [PreserveSig]
+    Function Revert() As HRESULT
+    [PreserveSig]
+    Function LockRegion(ByVal libOffset As Currency, ByVal cb As Currency, ByVal dwLockType As LOCKTYPE) As HRESULT
+    [PreserveSig]
+    Function UnlockRegion(ByVal libOffset As Currency, ByVal cb As Currency, ByVal dwLockType As LOCKTYPE) As HRESULT
+    [PreserveSig]
+    Function Stat(pStatStg As STATSTG, Optional ByVal grfStatFlag As STATFLAG = STATFLAG_NONAME) As HRESULT
+    [PreserveSig]
+    Function Clone(ppStream As IStream) As HRESULT
+End Interface
+
+Module mdlUINotifications
+
+Public Type NOTIFICATION_USER_INPUT_DATA
+    Key As LongPtr
+    Value As LongPtr
+End Type
+
+Public Type PROPERTYKEY
+    FormatId As UUID
+    PropertyId As Long
+End Type
+
+Public Type PROPVARIANT
+    wVarType As Integer
+    wReserved1 As Integer
+    wReserved2 As Integer
+    wReserved3 As Integer
+    pVarData As LongPtr
+    #If Win64 Then
+    lPadding1 As Long
+    lPadding2 As Long
+    #Else
+    lPadding As Long
+    #End If
+End Type
+
+Public Type PROPVARIANTCA ' Counted Array
+    wVarType As Integer
+    wReserved1 As Integer
+    wReserved2 As Integer
+    wReserved3 As Integer
+    cElements As Long
+    #If Win64 Then
+    lPadding As Long
+    #End If
+    pElements As LongPtr
+End Type
+
+Public Type STATSTG
+    pwcsName As LongPtr
+    Type As STGTY
+    cbSize As Currency
+    ModificationTime As Currency
+    CreationTime As Currency
+    AccessTime As Currency
+    grfMode As STGM
+    grfLocksSupported As LOCKTYPE
+    CLSID As UUID
+    grfStateBits As Long
+    Reserved As Long
+End Type
+
+Public Enum AdaptiveNotificationContentKind
+    AdaptiveNotificationContentKind_Text
+End Enum
+
+Public Enum BadgeTemplateType
+    BadgeTemplateType_BadgeGlyph
+    BadgeTemplateType_BadgeNumber
+End Enum
+
+Public Enum LOCKTYPE
+    LOCK_WRITE = &H1
+    LOCK_EXCLUSIVE = &H2
+    LOCK_ONLYONCE = &H4
+End Enum
+
+Public Enum NotificationKinds
+    NotificationKinds_Unknown
+    NotificationKinds_Toast
+End Enum
+
+Public Enum NotificationMirroring
+    NotificationMirroring_Allowed
+    NotificationMirroring_Disabled
+End Enum
+    
+Public Enum NotificationSetting
+    NotificationSetting_Enabled
+    NotificationSetting_isabledForApplication
+    NotificationSetting_DisabledForUser
+    NotificationSetting_DisabledByGroupPolicy
+    NotificationSetting_DisabledByManifest
+End Enum
+
+Public Enum NotificationUpdateResult
+    NotificationUpdateResult_Succeeded
+    NotificationUpdateResult_Failed
+    NotificationUpdateResult_NotificationNotFound
+End Enum
+
+Public Enum PeriodicUpdateRecurrence
+    PeriodicUpdateRecurrence_HalfHour
+    PeriodicUpdateRecurrence_Hour
+    PeriodicUpdateRecurrence_SixHours
+    PeriodicUpdateRecurrence_TwelveHours
+    PeriodicUpdateRecurrence_Daily
+End Enum
+
+Public Enum SHOWWINDOW_CONSTANTS
+    SW_HIDE
+    SW_SHOWNORMAL
+    SW_SHOWMINIMIZED
+    SW_SHOWMAXIMIZED
+    SW_SHOWNOACTIVATE
+    SW_SHOW
+    SW_MINIMIZE
+    SW_SHOWMINNOACTIVE
+    SW_SHOWNA
+    SW_RESTORE
+    SW_SHOWDEFAULT
+    SW_FORCEMINIMIZE
+End Enum
+
+Public Enum STATFLAG
+    STATFLAG_DEFAULT
+    STATFLAG_NONAME
+    STATFLAG_NOOPEN
+End Enum
+
+Public Enum STGC
+    STGC_DEFAULT = &H0
+    STGC_OVERWRITE = &H1
+    STGC_ONLYIFCURRENT = &H2
+    STGC_DANGEROUSLYCOMMITMERELYTODISKCACHE = &H4
+    STGC_CONSOLIDATE = &H8
+End Enum
+
+Public Enum STGM
+    STGM_DIRECT = &H0
+    STGM_TRANSACTED = &H10000
+    STGM_SIMPLE = &H8000000
+    STGM_READ = &H0
+    STGM_WRITE = &H1
+    STGM_READWRITE = &H2
+    STGM_SHARE_DENY_NONE = &H40
+    STGM_SHARE_DENY_READ = &H30
+    STGM_SHARE_DENY_WRITE = &H20
+    STGM_SHARE_EXCLUSIVE = &H10
+    STGM_PRIORITY = &H40000
+    STGM_DELETEONRELEASE = &H4000000
+    STGM_NOSCRATCH = &H100000
+    STGM_CREATE = &H1000
+    STGM_CONVERT = &H20000
+    STGM_FAILIFTHERE = &H0
+    STGM_NOSNAPSHOT = &H200000
+    STGM_DIRECT_SWMR = &H400000
+    STGM_COLLECTION = &H2000
+    STGM_OUTPUT = &H8000&
+    STGM_OPEN = &H80000000
+    STGM_RECURSIVE = &H1000000
+    STGM_STRICTOPEN = &H40000000
+End Enum
+
+Public Enum STGTY
+    STGTY_STORAGE = 1
+    STGTY_STREAM
+    STGTY_LOCKBYTES
+    STGTY_PROPERTY
+    STGTY_REPEAT = 256
+End Enum
+
+Public Enum STREAM_SEEK
+    STREAM_SEEK_SET
+    STREAM_SEEK_CUR
+    STREAM_SEEK_END
+End Enum
+
+Public Enum TileTemplateType
+    TileSquare150x150Image
+    TileSquare150x150Block
+    TileSquare150x150Text01
+    TileSquare150x150Text02
+    TileSquare150x150Text03
+    TileSquare150x150Text04
+    TileSquare150x150PeekImageAndText01
+    TileSquare150x150PeekImageAndText02
+    TileSquare150x150PeekImageAndText03
+    TileSquare150x150PeekImageAndText04
+    TileWide310x150Image
+    TileWide310x150ImageCollection
+    TileWide310x150ImageAndText01
+    TileWide310x150ImageAndText02
+    TileWide310x150BlockAndText01
+    TileWide310x150BlockAndText02
+    TileWide310x150PeekImageCollection01
+    TileWide310x150PeekImageCollection02
+    TileWide310x150PeekImageCollection03
+    TileWide310x150PeekImageCollection04
+    TileWide310x150PeekImageCollection05
+    TileWide310x150PeekImageCollection06
+    TileWide310x150PeekImageAndText01
+    TileWide310x150PeekImageAndText02
+    TileWide310x150PeekImage01
+    TileWide310x150PeekImage02
+    TileWide310x150PeekImage03
+    TileWide310x150PeekImage04
+    TileWide310x150PeekImage05
+    TileWide310x150PeekImage06
+    TileWide310x150SmallImageAndText01
+    TileWide310x150SmallImageAndText02
+    TileWide310x150SmallImageAndText03
+    TileWide310x150SmallImageAndText04
+    TileWide310x150SmallImageAndText05
+    TileWide310x150Text01
+    TileWide310x150Text02
+    TileWide310x150Text03
+    TileWide310x150Text04
+    TileWide310x150Text05
+    TileWide310x150Text06
+    TileWide310x150Text07
+    TileWide310x150Text08
+    TileWide310x150Text09
+    TileWide310x150Text10
+    TileWide310x150Text11
+    TileSquare310x310BlockAndText01
+    TileSquare310x310BlockAndText02
+    TileSquare310x310Image
+    TileSquare310x310ImageAndText01
+    TileSquare310x310ImageAndText02
+    TileSquare310x310ImageAndTextOverlay01
+    TileSquare310x310ImageAndTextOverlay02
+    TileSquare310x310ImageAndTextOverlay03
+    TileSquare310x310ImageCollectionAndText01
+    TileSquare310x310ImageCollectionAndText02
+    TileSquare310x310ImageCollection
+    TileSquare310x310SmallImagesAndTextList01
+    TileSquare310x310SmallImagesAndTextList02
+    TileSquare310x310SmallImagesAndTextList03
+    TileSquare310x310SmallImagesAndTextList04
+    TileSquare310x310Text01
+    TileSquare310x310Text02
+    TileSquare310x310Text03
+    TileSquare310x310Text04
+    TileSquare310x310Text05
+    TileSquare310x310Text06
+    TileSquare310x310Text07
+    TileSquare310x310Text08
+    TileSquare310x310TextList01
+    TileSquare310x310TextList02
+    TileSquare310x310TextList03
+    TileSquare310x310SmallImageAndText01
+    TileSquare310x310SmallImagesAndTextList05
+    TileSquare310x310Text09
+    TileSquare71x71IconWithBadge
+    TileSquare150x150IconWithBadge
+    TileWide310x150IconWithBadgeAndText
+    TileSquare71x71Image
+    TileTall150x310Image
+End Enum
+
+Public Enum TileFlyoutTemplateType
+    TileFlyoutTemplateType_TileFlyoutTemplate01
+End Enum
+
+Public Enum ToastDismissalReason
+    ToastDismissalReason_UserCanceled
+    ToastDismissalReason_ApplicationHidden
+    ToastDismissalReason_TimedOut
+End Enum
+
+Public Enum ToastHistoryChangedType
+    ToastHistoryChangedType_Cleared
+    ToastHistoryChangedType_Removed
+    ToastHistoryChangedType_Expired
+    ToastHistoryChangedType_Added
+End Enum
+
+Public Enum ToastNotificationMode
+    ToastNotificationMode_Unrestricted
+    ToastNotificationMode_PriorityOnly
+    ToastNotificationMode_AlarmsOnly
+End Enum
+
+Public Enum ToastNotificationPriority
+    ToastNotificationPriority_Default
+    ToastNotificationPriority_High
+End Enum
+
+Public Enum ToastTemplateType
+    ToastTemplateType_ToastImageAndText01
+    ToastTemplateType_ToastImageAndText02
+    ToastTemplateType_ToastImageAndText03
+    ToastTemplateType_ToastImageAndText04
+    ToastTemplateType_ToastText01
+    ToastTemplateType_ToastText02
+    ToastTemplateType_ToastText03
+    ToastTemplateType_ToastText04
+End Enum
+
+Public Enum UserNotificationChangedKind
+    UserNotificationChangedKind_Added
+    UserNotificationChangedKind_Removed
+End Enum
+
+Public Enum VARENUM
+        VT_EMPTY = 0
+        VT_NULL = 1
+        VT_I2 = 2
+        VT_I4 = 3
+        VT_R4 = 4
+        VT_R8 = 5
+        VT_CY = 6
+        VT_DATE = 7
+        VT_BSTR = 8
+        VT_DISPATCH = 9
+        VT_ERROR = 10
+        VT_BOOL = 11
+        VT_VARIANT = 12
+        VT_UNKNOWN = 13
+        VT_DECIMAL = 14
+        VT_I1 = 16
+        VT_UI1 = 17
+        VT_UI2 = 18
+        VT_UI4 = 19
+        VT_I8 = 20
+        VT_UI8 = 21
+        VT_INT = 22
+        VT_UINT = 23
+        VT_VOID = 24
+        VT_HRESULT = 25
+        VT_PTR = 26
+        VT_SAFEARRAY = 27
+        VT_CARRAY = 28
+        VT_USERDEFINED = 29
+        VT_LPSTR = 30
+        VT_LPWSTR = 31
+        VT_RECORD = 36
+        VT_INT_PTR = 37
+        VT_UINT_PTR = 38
+        VT_FILETIME = 64
+        VT_BLOB = 65
+        VT_STREAM = 66
+        VT_STORAGE = 67
+        VT_STREAMED_OBJECT = 68
+        VT_STORED_OBJECT = 69
+        VT_BLOB_OBJECT = 70
+        VT_CF = 71
+        VT_CLSID = 72
+        VT_VERSIONED_STREAM = 73
+        VT_BSTR_BLOB = &HFFF
+        VT_VECTOR = &H1000
+        VT_ARRAY = &H2000
+        VT_BYREF = &H4000
+        VT_RESERVED = &H8000&
+        VT_ILLEGAL = &HFFFF&
+        VT_ILLEGALMASKED = &HFFF
+        VT_TYPEMASK = &HFFF
+End Enum
+ 
+End Module

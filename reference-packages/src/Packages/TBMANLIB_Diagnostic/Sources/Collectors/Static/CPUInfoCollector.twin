@@ -1,0 +1,140 @@
+' =====================================================
+' CPUInfoCollector.twin - CPU 信息收集器
+' Twinbasic Diagnostic Tool
+' =====================================================
+
+' CPU 信息收集器
+' 刷新模式：Static（只获取一次）
+' 使用 GetNativeSystemInfo 获取 CPU 架构和核心数
+[ ClassId ("02A2B3C4-D5E6-F7A8-B9C0-D1E2F3A4B5C6") ]
+[ InterfaceId ("02A2B3C4-D5E6-F7A8-B9C0-D1E2F3A4B5C7") ]
+Public Class CPUInfoCollector
+    Implements IDiagnosticCollector
+
+    ' === IDiagnosticCollector 实现 ===
+
+    Public Property Get IDiagnosticCollector_CategoryName() As String
+        Return "CPU Info"
+    End Property
+
+    Public Property Get IDiagnosticCollector_Description() As String
+        Return "CPU architecture and processor count"
+    End Property
+
+    Public Property Get IDiagnosticCollector_RefreshMode() As RefreshMode
+        Return RefreshMode.Static
+    End Property
+
+    Public Property Get IDiagnosticCollector_RequiresElevation() As Boolean
+        Return False
+    End Property
+
+    Public Property Get IDiagnosticCollector_SupportsSummary() As Boolean
+        Return False
+    End Property
+
+    Public Function IDiagnosticCollector_Collect() As DiagnosticResult(Of KeyValuePair(Of String, String))
+        Dim result As DiagnosticResult(Of KeyValuePair(Of String, String))
+        Set result = New DiagnosticResult(Of KeyValuePair(Of String, String))("CPU Info")
+
+        ' 获取系统信息
+        Dim sysInfo As SYSTEM_INFO
+        GetNativeSystemInfo sysInfo
+
+        ' 处理器架构
+        Dim arch As String
+        Select Case sysInfo.wProcessorArchitecture
+            Case PROCESSOR_ARCHITECTURE_AMD64
+                arch = "x64 (AMD64)"
+            Case PROCESSOR_ARCHITECTURE_ARM64
+                arch = "ARM64"
+            Case PROCESSOR_ARCHITECTURE_INTEL
+                arch = "x86 (Intel)"
+            Case PROCESSOR_ARCHITECTURE_ARM
+                arch = "ARM"
+            Case PROCESSOR_ARCHITECTURE_IA64
+                arch = "IA64 (Itanium)"
+            Case Else
+                arch = "Unknown (" & sysInfo.wProcessorArchitecture & ")"
+        End Select
+        result.AddItem New KeyValuePair(Of String, String)("Architecture", arch)
+
+        ' 处理器数量
+        result.AddItem New KeyValuePair(Of String, String)("Processor Count", _
+            CStr(sysInfo.dwNumberOfProcessors))
+
+        ' 处理器级别
+        result.AddItem New KeyValuePair(Of String, String)("Processor Level", _
+            CStr(sysInfo.wProcessorLevel))
+
+        ' 处理器修订版本
+        Dim revision As String = Hex$(sysInfo.wProcessorRevision)
+        result.AddItem New KeyValuePair(Of String, String)("Processor Revision", _
+            "0x" & revision)
+
+        ' 页面大小
+        result.AddItem New KeyValuePair(Of String, String)("Page Size", _
+            FormatHelper.FormatBytes(sysInfo.dwPageSize, 0))
+
+        ' 从注册表获取 CPU 名称
+        Dim cpuName As String = GetCPUNameFromRegistry()
+        If Len(cpuName) > 0 Then
+            result.AddItem New KeyValuePair(Of String, String)("Processor Name", cpuName)
+        End If
+
+        ' 从注册表获取 CPU 频率
+        Dim cpuMHz As String = GetCPUMHzFromRegistry()
+        If Len(cpuMHz) > 0 Then
+            result.AddItem New KeyValuePair(Of String, String)("Frequency", cpuMHz & " MHz")
+        End If
+
+        Return result
+    End Function
+
+    Public Function IDiagnosticCollector_CollectSummary() As DiagnosticResult(Of KeyValuePair(Of String, String))
+        Return IDiagnosticCollector_Collect()
+    End Function
+
+    ' === 私有方法 ===
+
+    Private Function GetCPUNameFromRegistry() As String
+        Dim hKey As LongPtr
+        Dim subKey As String = "HARDWARE\DESCRIPTION\System\CentralProcessor\0"
+        Dim result As String = ""
+
+        If RegOpenKeyExW(HKEY_LOCAL_MACHINE, StrPtr(subKey), 0, KEY_READ, hKey) = 0 Then
+            Dim buffer As String = Space$(256)
+            Dim bufSize As Long = 512
+            Dim regType As Long
+
+            If RegQueryValueExW(hKey, StrPtr("ProcessorNameString"), 0, regType, StrPtr(buffer), bufSize) = 0 Then
+                result = Trim$(Left$(buffer, bufSize \ 2 - 1))
+            End If
+
+            RegCloseKey hKey
+        End If
+
+        Return result
+    End Function
+
+    Private Function GetCPUMHzFromRegistry() As String
+        Dim hKey As LongPtr
+        Dim subKey As String = "HARDWARE\DESCRIPTION\System\CentralProcessor\0"
+        Dim result As String = ""
+
+        If RegOpenKeyExW(HKEY_LOCAL_MACHINE, StrPtr(subKey), 0, KEY_READ, hKey) = 0 Then
+            Dim mhzValue As Long
+            Dim bufSize As Long = 4
+            Dim regType As Long
+
+            If RegQueryValueExW(hKey, StrPtr("~MHz"), 0, regType, VarPtr(mhzValue), bufSize) = 0 Then
+                result = CStr(mhzValue)
+            End If
+
+            RegCloseKey hKey
+        End If
+
+        Return result
+    End Function
+
+End Class

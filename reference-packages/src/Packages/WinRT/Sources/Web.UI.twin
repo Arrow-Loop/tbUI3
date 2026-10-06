@@ -1,0 +1,325 @@
+[InterfaceId("277A80BD-3E2A-5FE8-95D2-CC86F723BF42")]
+Interface IIterator_IWebViewControlDeferredPermissionRequest Extends IInspectable
+    Property Get Current() As IWebViewControlDeferredPermissionRequest
+    Property Get HasCurrent() As BooleanByte
+    Function MoveNext() As BooleanByte
+    Function GetMany(ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("91805F3F-13CB-5483-B592-B9AE0E334F17")]
+Interface IIterable_IWebViewControlDeferredPermissionRequest Extends IInspectable
+    Function First() As IIterator_IWebViewControlDeferredPermissionRequest
+End Interface
+
+[InterfaceId("BFFD3DCF-1974-53A2-8D88-966D84BA98E0")]
+Interface IVectorView_IWebViewControlDeferredPermissionRequest Extends IInspectable
+    Function GetAt(ByVal Index As Long) As IWebViewControlDeferredPermissionRequest
+    Property Get Size() As Long
+    Function IndexOf(ByVal Value As IWebViewControlDeferredPermissionRequest, Index As Long) As BooleanByte
+    Function GetMany(ByVal StartIndex As Long, ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("B5089479-ABD8-5985-8A93-4C208A85E3A4")]
+Interface ITypedEventHandlerWebViewControlIInspectable Extends IUnknown
+    Sub Invoke(ByVal Sender As IWebViewControl, ByVal Args As IInspectable)
+End Interface
+
+[InterfaceId("357154FE-EC1A-5FCA-B860-62F03DECE49D")]
+Interface ITypedEventHandlerWebViewControlContentLoading Extends IUnknown
+    Sub Invoke(ByVal Sender As IWebViewControl, ByVal Args As IWebViewControlContentLoadingEventArgs)
+End Interface
+
+[InterfaceId("D7DC333E-B521-5B76-A7FF-48B454F597E5")]
+Interface ITypedEventHandlerWebViewControlDOMContentLoaded Extends IUnknown
+    Sub Invoke(ByVal Sender As IWebViewControl, ByVal Args As IWebViewControlDOMContentLoadedEventArgs)
+End Interface
+
+[InterfaceId("BD29249E-4112-533D-96A2-0A1C01519CAF")]
+Interface ITypedEventHandlerWebViewControlLongRunningScriptDetected Extends IUnknown
+    Sub Invoke(ByVal Sender As IWebViewControl, ByVal Args As IWebViewControlLongRunningScriptDetectedEventArgs)
+End Interface
+
+[InterfaceId("57A87C53-47A5-5864-9881-FD4C00F230A9")]
+Interface ITypedEventHandlerWebViewControlNavigationCompleted Extends IUnknown
+    Sub Invoke(ByVal Sender As IWebViewControl, ByVal Args As IWebViewControlNavigationCompletedEventArgs)
+End Interface
+
+[InterfaceId("E92E0BCC-9AE9-5B9B-A684-83DD8EE57775")]
+Interface ITypedEventHandlerWebViewControlNavigationStarting Extends IUnknown
+    Sub Invoke(ByVal Sender As IWebViewControl, ByVal Args As IWebViewControlNavigationStartingEventArgs)
+End Interface
+
+[InterfaceId("317111DF-10C6-559C-85A1-847EB0A1B2D5")]
+Interface ITypedEventHandlerWebViewControlNewWindowRequested Extends IUnknown
+    Sub Invoke(ByVal Sender As IWebViewControl, ByVal Args As IWebViewControlNewWindowRequestedEventArgs)
+End Interface
+
+[InterfaceId("E5CACC26-2A68-5E0A-B82B-B3D756E10A56")]
+Interface ITypedEventHandlerWebViewControlPermissionRequested Extends IUnknown
+    Sub Invoke(ByVal Sender As IWebViewControl, ByVal Args As IWebViewControlPermissionRequestedEventArgs)
+End Interface
+
+[InterfaceId("EE8B81D3-BBC2-55B0-877B-6BA86E3AD899")]
+Interface ITypedEventHandlerWebViewControlScriptNotify Extends IUnknown
+    Sub Invoke(ByVal Sender As IWebViewControl, ByVal Args As IWebViewControlScriptNotifyEventArgs)
+End Interface
+
+[InterfaceId("8658050C-5E47-5516-B25B-57FAE22C4B88")]
+Interface ITypedEventHandlerWebViewControlUnsupportedUriSchemeIdentified Extends IUnknown
+    Sub Invoke(ByVal Sender As IWebViewControl, ByVal Args As IWebViewControlUnsupportedUriSchemeIdentifiedEventArgs)
+End Interface
+
+[InterfaceId("571626E3-9780-5B37-BE8A-AB8E4E7898CF")]
+Interface ITypedEventHandlerWebViewControlUnviewableContentIdentified Extends IUnknown
+    Sub Invoke(ByVal Sender As IWebViewControl, ByVal Args As IWebViewControlUnviewableContentIdentifiedEventArgs)
+End Interface
+
+[InterfaceId("3A6ED2BC-032B-5EC7-A20A-C1EF49250C3C")]
+Interface ITypedEventHandlerWebViewControlWebResourceRequested Extends IUnknown
+    Sub Invoke(ByVal Sender As IWebViewControl, ByVal Args As IWebViewControlWebResourceRequestedEventArgs)
+End Interface
+
+[InterfaceId("3F921316-BC70-4BDA-9136-C94370899FAB")]
+Interface IWebViewControl Extends IInspectable
+    Property Get Source() As IUri
+    Property Set Source(ByVal Source As IUri)
+    Property Get DocumentTitle() As LongPtr
+    Property Get CanGoBack() As BooleanByte
+    Property Get CanGoForward() As BooleanByte
+    Property Let DefaultBackgroundColor(ByVal Value As Color)
+    Property Get DefaultBackgroundColor() As Color
+    Property Get ContainsFullScreenElement() As BooleanByte
+    Property Get Settings() As IWebViewControlSettings
+    Property Get DeferredPermissionRequests() As IVectorView_IWebViewControlDeferredPermissionRequest
+    [PreserveSig]
+    Function GoForward() As HRESULT
+    [PreserveSig]
+    Function GoBack() As HRESULT
+    [PreserveSig]
+    Function Refresh() As HRESULT
+    [PreserveSig]
+    Function Stop() As HRESULT
+    [PreserveSig]
+    Function Navigate(ByVal Source As IUri) As HRESULT
+    [PreserveSig]
+    Function NavigateToString(ByVal Text As LongPtr) As HRESULT
+    [PreserveSig]
+    Function NavigateToLocalStreamUri(ByVal Source As IUri, ByVal StreamResolver As IUriToStreamResolver) As HRESULT
+    [PreserveSig]
+    Function NavigateWithHttpRequestMessage(ByVal RequestMessage As IHttpRequestMessage) As HRESULT
+    Function InvokeScriptAsync(ByVal ScriptName As LongPtr, ByVal Arguments As IIterable_HSTRING) As IAsyncOperationHSTRING
+    Function CapturePreviewToStreamAsync(ByVal Stream As IRandomAccessStream) As IAsyncAction
+    Function CaptureSelectedContentToDataPackageAsync() As IAsyncOperationIDataPackage
+    Function BuildLocalStreamUri(ByVal ContentIdentifier As LongPtr, ByVal RelativePath As LongPtr) As IUri
+    [PreserveSig]
+    Function GetDeferredPermissionRequestById(ByVal Id As Long, Result As IWebViewControlDeferredPermissionRequest) As HRESULT
+    [PreserveSig]
+    Function AddNavigationStarting(ByVal Handler As ITypedEventHandlerWebViewControlNavigationStarting, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveNavigationStarting(ByVal Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function AddContentLoading(ByVal Handler As ITypedEventHandlerWebViewControlContentLoading, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveContentLoading(ByVal Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function AddDOMContentLoaded(ByVal Handler As ITypedEventHandlerWebViewControlDOMContentLoaded, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveDOMContentLoaded(ByVal Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function AddNavigationCompleted(ByVal Handler As ITypedEventHandlerWebViewControlNavigationCompleted, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveNavigationCompleted(ByVal Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function AddFrameNavigationStarting(ByVal Handler As ITypedEventHandlerWebViewControlNavigationStarting, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveFrameNavigationStarting(ByVal Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function AddFrameContentLoading(ByVal Handler As ITypedEventHandlerWebViewControlContentLoading, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveFrameContentLoading(ByVal Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function AddFrameDOMContentLoaded(ByVal Handler As ITypedEventHandlerWebViewControlDOMContentLoaded, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveFrameDOMContentLoaded(ByVal Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function AddFrameNavigationCompleted(ByVal Handler As ITypedEventHandlerWebViewControlNavigationCompleted, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveFrameNavigationCompleted(ByVal Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function AddScriptNotify(ByVal Handler As ITypedEventHandlerWebViewControlScriptNotify, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveScriptNotify(ByVal Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function AddLongRunningScriptDetected(ByVal Handler As ITypedEventHandlerWebViewControlLongRunningScriptDetected, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveLongRunningScriptDetected(ByVal Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function AddUnsafeContentWarningDisplaying(ByVal Handler As ITypedEventHandlerWebViewControlIInspectable, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveUnsafeContentWarningDisplaying(ByVal Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function AddUnviewableContentIdentified(ByVal Handler As ITypedEventHandlerWebViewControlUnviewableContentIdentified, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveUnviewableContentIdentified(ByVal Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function AddPermissionRequested(ByVal Handler As ITypedEventHandlerWebViewControlPermissionRequested, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemovePermissionRequested(ByVal Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function AddUnsupportedUriSchemeIdentified(ByVal Handler As ITypedEventHandlerWebViewControlUnsupportedUriSchemeIdentified, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveUnsupportedUriSchemeIdentified(ByVal Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function AddNewWindowRequested(ByVal Handler As ITypedEventHandlerWebViewControlNewWindowRequested, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveNewWindowRequested(ByVal Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function AddContainsFullScreenElementChanged(ByVal Handler As ITypedEventHandlerWebViewControlIInspectable, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveContainsFullScreenElementChanged(ByVal Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function AddWebResourceRequested(ByVal Handler As ITypedEventHandlerWebViewControlWebResourceRequested, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveWebResourceRequested(ByVal Token As EventRegistrationToken) As HRESULT
+End Interface
+
+[InterfaceId("4D3C06F9-C8DF-41CC-8BD5-2A947B204503")]
+Interface IWebViewControl2 Extends IInspectable
+    [PreserveSig]
+    Function AddInitializeScript(ByVal Script As LongPtr) As HRESULT
+End Interface
+
+[InterfaceId("9A3FCCB2-B9BB-404B-A22B-66DCCD1250C6")]
+Interface IWebViewControlContentLoadingEventArgs Extends IInspectable
+    Property Get Uri() As IUri
+End Interface
+
+[InterfaceId("BE8BC008-9541-4545-9FF2-2DF585B29F7D")]
+Interface IWebViewControlDOMContentLoadedEventArgs Extends IInspectable
+    Property Get Uri() As IUri
+End Interface
+
+[InterfaceId("2CE349E0-D759-445C-9926-8995298F152B")]
+Interface IWebViewControlDeferredPermissionRequest Extends IInspectable
+    Property Get Id() As Long
+    Property Get Uri() As IUri
+    Property Get PermissionType() As WebViewControlPermissionType
+    [PreserveSig]
+    Function Allow() As HRESULT
+    [PreserveSig]
+    Function Deny() As HRESULT
+End Interface
+
+[InterfaceId("2A6E5BBA-98B4-45BC-BBEB-0F69CE49C599")]
+Interface IWebViewControlLongRunningScriptDetectedEventArgs Extends IInspectable
+    Property Get ExecutionTime() As TimeSpan
+    Property Get StopPageScriptExecution() As BooleanByte
+    Property Let StopPageScriptExecution(ByVal Value As BooleanByte)
+End Interface
+
+[InterfaceId("20409918-4A15-4C46-A55D-F79EDB0BDE8B")]
+Interface IWebViewControlNavigationCompletedEventArgs Extends IInspectable
+    Property Get Uri() As IUri
+    Property Get IsSuccess() As BooleanByte
+    Property Get WebErrorStatus() As WebErrorStatus
+End Interface
+
+[InterfaceId("0C9057C5-0A08-41C7-863B-71E3A9549137")]
+Interface IWebViewControlNavigationStartingEventArgs Extends IInspectable
+    Property Get Uri() As IUri
+    Property Get Cancel() As BooleanByte
+    Property Let Cancel(ByVal Value As BooleanByte)
+End Interface
+
+[InterfaceId("3DF44BBB-A124-46D5-A083-D02CACDFF5AD")]
+Interface IWebViewControlNewWindowRequestedEventArgs Extends IInspectable
+    Property Get Uri() As IUri
+    Property Get Referrer() As IUri
+    Property Get Handled() As BooleanByte
+    Property Let Handled(ByVal Value As BooleanByte)
+End Interface
+
+[InterfaceId("B53C5CA6-2AAE-4BFC-92B9-C30E92B48098")]
+Interface IWebViewControlNewWindowRequestedEventArgs2 Extends IInspectable
+    Property Get NewWindow() As IWebViewControl
+    Property Set NewWindow(ByVal Value As IWebViewControl)
+    Function GetDeferral() As IDeferral
+End Interface
+
+[InterfaceId("E5BC836C-F22F-40E2-95B2-7729F840EB7F")]
+Interface IWebViewControlPermissionRequest Extends IInspectable
+    Property Get Id() As Long
+    Property Get Uri() As IUri
+    Property Get PermissionType() As WebViewControlPermissionType
+    Property Get State() As WebViewControlPermissionState
+    [PreserveSig]
+    Function Defer() As HRESULT
+    [PreserveSig]
+    Function Allow() As HRESULT
+    [PreserveSig]
+    Function Deny() As HRESULT
+End Interface
+
+[InterfaceId("27204D51-2488-4CC5-968E-0A771E59C147")]
+Interface IWebViewControlPermissionRequestedEventArgs Extends IInspectable
+    Property Get PermissionRequest() As IWebViewControlPermissionRequest
+End Interface
+
+[InterfaceId("491DE57B-6F49-41BB-B591-51B85B817037")]
+Interface IWebViewControlScriptNotifyEventArgs Extends IInspectable
+    Property Get Uri() As IUri
+    Property Get Value() As LongPtr
+End Interface
+
+[InterfaceId("C9967FBF-5E98-4CFD-8CCE-27B0911E3DE8")]
+Interface IWebViewControlSettings Extends IInspectable
+    Property Let IsJavaScriptEnabled(ByVal Value As BooleanByte)
+    Property Get IsJavaScriptEnabled() As BooleanByte
+    Property Let IsIndexedDBEnabled(ByVal Value As BooleanByte)
+    Property Get IsIndexedDBEnabled() As BooleanByte
+    Property Let IsScriptNotifyAllowed(ByVal Value As BooleanByte)
+    Property Get IsScriptNotifyAllowed() As BooleanByte
+End Interface
+
+[InterfaceId("E3B81944-E4FC-43DC-94CA-F980F30BC51D")]
+Interface IWebViewControlUnsupportedUriSchemeIdentifiedEventArgs Extends IInspectable
+    Property Get Uri() As IUri
+    Property Get Handled() As BooleanByte
+    Property Let Handled(ByVal Value As BooleanByte)
+End Interface
+
+[InterfaceId("4A9680DB-88F2-4E20-B693-B4E2DF4AA581")]
+Interface IWebViewControlUnviewableContentIdentifiedEventArgs Extends IInspectable
+    Property Get Uri() As IUri
+    Property Get Referrer() As IUri
+    Property Get MediaType() As LongPtr
+End Interface
+
+[InterfaceId("44D6524D-55A4-4D8B-891C-931D8E25D42E")]
+Interface IWebViewControlWebResourceRequestedEventArgs Extends IInspectable
+    Function GetDeferral() As IDeferral
+    Property Get Request() As IHttpRequestMessage
+    Property Set Response(ByVal Value As IHttpResponseMessage)
+    Property Get Response() As IHttpResponseMessage
+End Interface
+
+Module mdlWebUI
+
+Public Enum WebViewControlPermissionState
+	WebViewControlPermissionState_Unknown
+	WebViewControlPermissionState_Defer
+	WebViewControlPermissionState_Allow
+	WebViewControlPermissionState_Deny
+End Enum
+
+Public Enum WebViewControlPermissionType
+    WebViewControlPermissionType_Geolocation
+    WebViewControlPermissionType_UnlimitedIndexedDBQuota
+    WebViewControlPermissionType_Media
+    WebViewControlPermissionType_PointerLock
+    WebViewControlPermissionType_WebNotifications
+    WebViewControlPermissionType_Screen
+    WebViewControlPermissionType_ImmersiveView
+End Enum
+
+End Module

@@ -1,0 +1,108 @@
+[InterfaceId("AEBAF785-43FC-4E2C-95C3-97AE84EABC8E")]
+Interface ILoadCompletedEventHandler Extends IUnknown
+    Sub Invoke(ByVal Sender As IInspectable, ByVal Args As INavigationEventArgs)
+End Interface
+
+[InterfaceId("7BD1CF54-23CF-4CCE-B2F5-4CE78D96896E")]
+Interface INavigatedEventHandler Extends IUnknown
+    Sub Invoke(ByVal Sender As IInspectable, ByVal Args As INavigationEventArgs)
+End Interface
+
+[InterfaceId("75D6A78F-A302-4489-9898-24EA49182910")]
+Interface INavigatingCancelEventHandler Extends IUnknown
+    Sub Invoke(ByVal Sender As IInspectable, ByVal Args As INavigatingCancelEventArgs)
+End Interface
+
+[InterfaceId("4DAB4671-12B2-43C7-B892-9BE2DCD3E88D")]
+Interface INavigationFailedEventHandler Extends IUnknown
+    Sub Invoke(ByVal Sender As IInspectable, ByVal Args As INavigationFailedEventArgs)
+End Interface
+
+[InterfaceId("F0117DDB-12FA-4D8D-8B26-B383D09C2B3C")]
+Interface INavigationStoppedEventHandler Extends IUnknown
+    Sub Invoke(ByVal Sender As IInspectable, ByVal Args As INavigationEventArgs)
+End Interface
+
+[InterfaceId("B539AD2A-9FB7-520A-8F41-57A50C59CF92")]
+Interface IFrameNavigationOptions Extends IInspectable
+    Property Get IsNavigationStackEnabled() As BooleanByte
+    Property Let IsNavigationStackEnabled(ByVal Value As BooleanByte)
+    Property Get TransitionInfoOverride() As INavigationTransitionInfo
+    Property Set TransitionInfoOverride(ByVal Value As INavigationTransitionInfo)
+End Interface
+
+[InterfaceId("D4681E41-7E6D-5C7C-ACA0-478681CC6FCE")]
+Interface IFrameNavigationOptionsFactory Extends IInspectable
+    Function CreateInstance(Optional ByVal BaseInterface As IInspectable, Optional InnerInterface As IInspectable) As IFrameNavigationOptions
+End Interface
+
+[InterfaceId("FD1D67AE-EAFB-4079-BE80-6DC92A03AEDF")]
+Interface INavigatingCancelEventArgs Extends IInspectable
+    Property Get Cancel() As BooleanByte
+    Property Let Cancel(ByVal Value As BooleanByte)
+    Property Get NavigationMode() As NavigationMode
+    Property Get SourcePageType() As TypeName
+End Interface
+
+[InterfaceId("5407B704-8147-4343-838F-DD1EE908C137")]
+Interface INavigatingCancelEventArgs2 Extends IInspectable
+    Property Get Parameter() As IInspectable
+    Property Get NavigationTransitionInfo() As INavigationTransitionInfo
+End Interface
+
+[InterfaceId("B6AA9834-6691-44D1-BDF7-58820C27B0D0")]
+Interface INavigationEventArgs Extends IInspectable
+    Property Get Content() As IInspectable
+    Property Get Parameter() As IInspectable
+    Property Get SourcePageType() As TypeName
+    Property Get NavigationMode() As NavigationMode
+    Property Get Uri() As IUri
+    Property Set Uri(ByVal Value As IUri)
+End Interface
+
+[InterfaceId("DBFF71D9-979A-4B2E-A49B-3BB17FDEF574")]
+Interface INavigationEventArgs2 Extends IInspectable
+    Property Get NavigationTransitionInfo() As INavigationTransitionInfo
+End Interface
+
+[InterfaceId("11C1DFF7-36C2-4102-B2EF-0217A97289B3")]
+Interface INavigationFailedEventArgs Extends IInspectable
+    Property Get Exception() As HRESULT
+    Property Get Handled() As BooleanByte
+    Property Let Handled(ByVal Value As BooleanByte)
+    Property Get SourcePageType() As TypeName
+End Interface
+
+[InterfaceId("EF8814A6-9388-4ACA-8572-405194069080")]
+Interface IPageStackEntry Extends IInspectable
+    Property Get SourcePageType() As TypeName
+    Property Get Parameter() As IInspectable
+    Property Get NavigationTransitionInfo() As INavigationTransitionInfo
+End Interface
+
+[InterfaceId("4454048A-A8B9-4F78-9B84-1F51F58851FF")]
+Interface IPageStackEntryFactory Extends IInspectable
+    Function CreateInstance(ByVal SourcePageType As TypeName, ByVal Parameter As IInspectable, ByVal NavigationTransitionInfo As INavigationTransitionInfo) As IPageStackEntry
+End Interface
+
+[InterfaceId("ACEFF8E3-246C-4033-9F01-01CB0DA5254E")]
+Interface IPageStackEntryStatics Extends IInspectable
+    Property Get SourcePageTypeProperty() As IDependencyProperty
+End Interface
+
+Module mdlUIXamlNavigation
+
+Public Enum NavigationCacheMode
+    NavigationCacheMode_Disabled
+    NavigationCacheMode_Required
+    NavigationCacheMode_Enabled
+End Enum
+
+Public Enum NavigationMode
+    NavigationMode_New
+    NavigationMode_Back
+    NavigationMode_Forward
+    NavigationMode_Refresh
+End Enum
+
+End Module

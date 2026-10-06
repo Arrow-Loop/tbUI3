@@ -1,0 +1,719 @@
+[InterfaceId("8108E380-7F8A-44E4-92CD-03B6469B94A3")]
+Interface IKnownRemoteSystemCapabilitiesStatics Extends IInspectable
+    Property Get AppService() As LongPtr
+    Property Get LaunchUri() As LongPtr
+    Property Get RemoteSession() As LongPtr
+    Property Get SpatialEntity() As LongPtr
+End Interface
+
+[InterfaceId("ED5838CD-1E10-4A8C-B4A6-4E5FD6F97721")]
+Interface IRemoteSystem Extends IInspectable
+    Property Get DisplayName() As LongPtr
+    Property Get Id() As LongPtr
+    Property Get Kind() As LongPtr
+    Property Get Status() As RemoteSystemStatus
+    Property Get IsAvailableByProximity() As BooleanByte
+End Interface
+
+[InterfaceId("09DFE4EC-FB8B-4A08-A758-6876435D769E")]
+Interface IRemoteSystem2 Extends IInspectable
+    Property Get IsAvailableBySpatialProximity() As BooleanByte
+    Function GetCapabilitySupportedAsync(ByVal CapabilityName As LongPtr) As IAsyncOperationBoolean
+End Interface
+
+[InterfaceId("72B4B495-B7C6-40BE-831B-73562F12FFA8")]
+Interface IRemoteSystem3 Extends IInspectable
+    Property Get ManufacturerDisplayName() As LongPtr
+    Property Get ModelDisplayName() As LongPtr
+End Interface
+
+[InterfaceId("F164FFE5-B987-4CA5-9926-FA0438BE6273")]
+Interface IRemoteSystem4 Extends IInspectable
+    Property Get Platform() As RemoteSystemPlatform
+End Interface
+
+[InterfaceId("8AA2049C-EAA5-534E-A144-5217499C739C")]
+Interface IIterator_IRemoteSystemApp Extends IInspectable
+    Property Get Current() As IRemoteSystemApp
+    Property Get HasCurrent() As BooleanByte
+    Function MoveNext() As BooleanByte
+    Function GetMany(ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("4CFC1093-6DE6-5D4D-8073-30E64B4DFA15")]
+Interface IIterable_IRemoteSystemApp Extends IInspectable
+    Function First() As IIterator_IRemoteSystemApp
+End Interface
+
+[InterfaceId("40011F82-E7E8-5A96-B767-399C6A4BE101")]
+Interface IVectorView_IRemoteSystemApp Extends IInspectable
+    Function GetAt(ByVal Index As Long) As IRemoteSystemApp
+    Property Get Size() As Long
+    Function IndexOf(ByVal Value As IRemoteSystemApp, Index As Long) As BooleanByte
+    Function GetMany(ByVal StartIndex As Long, ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("EB2AD723-E5E2-4AE2-A7A7-A1097A098E90")]
+Interface IRemoteSystem5 Extends IInspectable
+    Property Get Apps() As IVectorView_IRemoteSystemApp
+End Interface
+
+[InterfaceId("D4CDA942-C027-533E-9384-3A19B4F7EEF3")]
+Interface IRemoteSystem6 Extends IInspectable
+    Property Get User() As IUser
+End Interface
+
+[InterfaceId("8F39560F-E534-4697-8836-7ABEA151516E")]
+Interface IRemoteSystemAddedEventArgs Extends IInspectable
+    Property Get RemoteSystem() As IRemoteSystem
+End Interface
+
+[InterfaceId("80E5BCBD-D54D-41B1-9B16-6810A871ED4F")]
+Interface IRemoteSystemApp Extends IInspectable
+    Property Get Id() As LongPtr
+    Property Get DisplayName() As LongPtr
+    Property Get IsAvailableByProximity() As BooleanByte
+    Property Get IsAvailableBySpatialProximity() As BooleanByte
+    Property Get Attributes() As IMapView_HSTRING
+End Interface
+
+[InterfaceId("6369BF15-0A96-577A-8FF6-C35904DFA8F3")]
+Interface IRemoteSystemApp2 Extends IInspectable
+    Property Get User() As IUser
+    Property Get ConnectionToken() As LongPtr
+End Interface
+
+[InterfaceId("B47947B5-7035-4A5A-B8DF-962D8F8431F4")]
+Interface IRemoteSystemAppRegistration Extends IInspectable
+    Property Get User() As IUser
+    Property Get Attributes() As IMap_HSTRING
+    Function SaveAsync() As IAsyncOperationBoolean
+End Interface
+
+[InterfaceId("01B99840-CFD2-453F-AE25-C2539F086AFD")]
+Interface IRemoteSystemAppRegistrationStatics Extends IInspectable
+    Function GetDefault() As IRemoteSystemAppRegistration
+    Function GetForUser(ByVal User As IUser) As IRemoteSystemAppRegistration
+End Interface
+
+[InterfaceId("6B0DDE8E-04D0-40F4-A27F-C2ACBBD6B734")]
+Interface IRemoteSystemAuthorizationKindFilter Extends IInspectable
+    Property Get RemoteSystemAuthorizationKind() As RemoteSystemAuthorizationKind
+End Interface
+
+[InterfaceId("AD65DF4D-B66A-45A4-8177-8CAED75D9E5A")]
+Interface IRemoteSystemAuthorizationKindFilterFactory Extends IInspectable
+    Function Create(ByVal RemoteSystemAuthorizationKind As RemoteSystemAuthorizationKind) As IRemoteSystemAuthorizationKindFilter
+End Interface
+
+[InterfaceId("23278BC3-0D09-52CB-9C6A-EED2940BEE43")]
+Interface IRemoteSystemConnectionInfo Extends IInspectable
+    Property Get IsProximal() As BooleanByte
+End Interface
+
+[InterfaceId("AC831E2D-66C5-56D7-A4CE-705D94925AD6")]
+Interface IRemoteSystemConnectionInfoStatics Extends IInspectable
+    Function TryCreateFromAppServiceConnection(ByVal Connection As IAppServiceConnection) As IRemoteSystemConnectionInfo
+End Interface
+
+[InterfaceId("84ED4104-8D5E-4D72-8238-7621576C7A67")]
+Interface IRemoteSystemConnectionRequest Extends IInspectable
+    Property Get RemoteSystem() As IRemoteSystem
+End Interface
+
+[InterfaceId("12DF6D6F-BFFC-483A-8ABE-D34A6C19F92B")]
+Interface IRemoteSystemConnectionRequest2 Extends IInspectable
+    Property Get RemoteSystemApp() As IRemoteSystemApp
+End Interface
+
+[InterfaceId("DE86C3E7-C9CC-5A50-B8D9-BA7B34BB8D0E")]
+Interface IRemoteSystemConnectionRequest3 Extends IInspectable
+    Property Get ConnectionToken() As LongPtr
+End Interface
+
+[InterfaceId("AA0A0A20-BAEB-4575-B530-810BB9786334")]
+Interface IRemoteSystemConnectionRequestFactory Extends IInspectable
+    Function Create(ByVal RemoteSystem As IRemoteSystem) As IRemoteSystemConnectionRequest
+End Interface
+
+[InterfaceId("86CA143D-8214-425C-8932-DB49032D1306")]
+Interface IRemoteSystemConnectionRequestStatics Extends IInspectable
+    Function CreateForApp(ByVal RemoteSystemApp As IRemoteSystemApp) As IRemoteSystemConnectionRequest
+End Interface
+
+[InterfaceId("460F1027-64EC-598E-A800-4F2EE58DEF19")]
+Interface IRemoteSystemConnectionRequestStatics2 Extends IInspectable
+    Function CreateFromConnectionToken(ByVal ConnectionToken As LongPtr) As IRemoteSystemConnectionRequest
+    Function CreateFromConnectionTokenForUser(ByVal User As IUser, ByVal ConnectionToken As LongPtr) As IRemoteSystemConnectionRequest
+End Interface
+
+[InterfaceId("42D9041F-EE5A-43DA-AC6A-6FEE25460741")]
+Interface IRemoteSystemDiscoveryTypeFilter Extends IInspectable
+    Property Get RemoteSystemDiscoveryType() As RemoteSystemDiscoveryType
+End Interface
+
+[InterfaceId("9F9EB993-C260-4161-92F2-9C021F23FE5D")]
+Interface IRemoteSystemDiscoveryTypeFilterFactory Extends IInspectable
+    Function Create(ByVal DiscoveryType As RemoteSystemDiscoveryType) As IRemoteSystemDiscoveryTypeFilter
+End Interface
+
+[InterfaceId("C6E83D5F-4030-4354-A060-14F1B22C545D")]
+Interface IRemoteSystemEnumerationCompletedEventArgs Extends IInspectable
+
+End Interface
+
+[InterfaceId("4A3BA9E4-99EB-45EB-BA16-0367728FF374")]
+Interface IRemoteSystemFilter Extends IInspectable
+
+End Interface
+
+[InterfaceId("38E1C9EC-22C3-4EF6-901A-BBB1C7AAD4ED")]
+Interface IRemoteSystemKindFilter Extends IInspectable
+    Property Get RemoteSystemKinds() As IVectorView_HSTRING
+End Interface
+
+[InterfaceId("A1FB18EE-99EA-40BC-9A39-C670AA804A28")]
+Interface IRemoteSystemKindFilterFactory Extends IInspectable
+    Function Create(ByVal RemoteSystemKinds As IIterable_HSTRING) As IRemoteSystemKindFilter
+End Interface
+
+[InterfaceId("F6317633-AB14-41D0-9553-796AADB882DB")]
+Interface IRemoteSystemKindStatics Extends IInspectable
+    Property Get Phone() As LongPtr
+    Property Get Hub() As LongPtr
+    Property Get Holographic() As LongPtr
+    Property Get Desktop() As LongPtr
+    Property Get Xbox() As LongPtr
+End Interface
+
+[InterfaceId("B9E3A3D0-0466-4749-91E8-65F9D19A96A5")]
+Interface IRemoteSystemKindStatics2 Extends IInspectable
+    Property Get Iot() As LongPtr
+    Property Get Tablet() As LongPtr
+    Property Get Laptop() As LongPtr
+End Interface
+
+[InterfaceId("8B3D16BB-7306-49EA-B7DF-67D5714CB013")]
+Interface IRemoteSystemRemovedEventArgs Extends IInspectable
+    Property Get RemoteSystemId() As LongPtr
+End Interface
+
+[InterfaceId("FBA14773-5038-511A-95A3-4BA45349100A")]
+Interface ITypedEventHandlerRemoteSystemSessionDisconnected Extends IUnknown
+    Sub Invoke(ByVal Sender As IRemoteSystemSession, ByVal Args As IRemoteSystemSessionDisconnectedEventArgs)
+End Interface
+
+[InterfaceId("69476A01-9ADA-490F-9549-D31CB14C9E95")]
+Interface IRemoteSystemSession Extends IInspectable
+    Property Get Id() As LongPtr
+    Property Get DisplayName() As LongPtr
+    Property Get ControllerDisplayName() As LongPtr
+    [PreserveSig]
+    Function AddDisconnected(ByVal Handler As ITypedEventHandlerRemoteSystemSessionDisconnected, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveDisconnected(ByVal Token As EventRegistrationToken) As HRESULT
+    Function CreateParticipantWatcher() As IRemoteSystemSessionParticipantWatcher
+    Function SendInvitationAsync(ByVal Invitee As IRemoteSystem) As IAsyncOperationBoolean
+End Interface
+
+[InterfaceId("D585D754-BC97-4C39-99B4-BECA76E04C3F")]
+Interface IRemoteSystemSessionAddedEventArgs Extends IInspectable
+    Property Get SessionInfo() As IRemoteSystemSessionInfo
+End Interface
+
+[InterfaceId("90364BF5-D084-5F50-9729-82025326ABEF")]
+Interface IAsyncOperationIRemoteSystemSessionCreationResult Extends IInspectable
+    Property Set Completed(ByVal Handler As IAsyncOperationCompletedHandlerIRemoteSystemSessionCreationResult)
+    Property Get Completed() As IAsyncOperationCompletedHandlerIRemoteSystemSessionCreationResult
+    Function GetResults() As IRemoteSystemSessionCreationResult
+End Interface
+
+[InterfaceId("6E72C549-73AA-5168-8560-C7236493B504")]
+Interface IAsyncOperationCompletedHandlerIRemoteSystemSessionCreationResult Extends IUnknown
+    Sub Invoke(ByVal AsyncOperation As IAsyncOperationIRemoteSystemSessionCreationResult, ByVal AsyncStatus As AsyncStatus)
+End Interface
+
+[InterfaceId("D8E04916-B452-5322-AEC9-E3D4D581C772")]
+Interface ITypedEventHandlerRemoteSystemSessionControllerJoinRequested Extends IUnknown
+    Sub Invoke(ByVal Sender As IRemoteSystemSessionController, ByVal Args As IRemoteSystemSessionJoinRequestedEventArgs)
+End Interface
+
+[InterfaceId("E48B2DD2-6820-4867-B425-D89C0A3EF7BA")]
+Interface IRemoteSystemSessionController Extends IInspectable
+    [PreserveSig]
+    Function AddJoinRequested(ByVal Handler As ITypedEventHandlerRemoteSystemSessionControllerJoinRequested, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveJoinRequested(ByVal Token As EventRegistrationToken) As HRESULT
+    Function RemoveParticipantAsync(ByVal Participant As IRemoteSystemSessionParticipant) As IAsyncOperationBoolean
+    Function CreateSessionAsync() As IAsyncOperationIRemoteSystemSessionCreationResult
+End Interface
+
+[InterfaceId("BFCC2F6B-AC3D-4199-82CD-6670A773EF2E")]
+Interface IRemoteSystemSessionControllerFactory Extends IInspectable
+    Function CreateController(ByVal DisplayName As LongPtr) As IRemoteSystemSessionController
+    Function CreateControllerWithSessionOptions(ByVal DisplayName As LongPtr, ByVal Options As IRemoteSystemSessionOptions) As IRemoteSystemSessionController
+End Interface
+
+[InterfaceId("A79812C2-37DE-448C-8B83-A30AA3C4EAD6")]
+Interface IRemoteSystemSessionCreationResult Extends IInspectable
+    Property Get Status() As RemoteSystemSessionCreationStatus
+    Property Get Session() As IRemoteSystemSession
+End Interface
+
+[InterfaceId("DE0BC69B-77C5-461C-8209-7C6C5D3111AB")]
+Interface IRemoteSystemSessionDisconnectedEventArgs Extends IInspectable
+    Property Get Reason() As RemoteSystemSessionDisconnectedReason
+End Interface
+
+[InterfaceId("C58DBD1E-E300-55A8-ADA5-E25AAAA86667")]
+Interface IAsyncOperationIRemoteSystemSessionJoinResult Extends IInspectable
+    Property Set Completed(ByVal Handler As IAsyncOperationCompletedHandlerIRemoteSystemSessionJoinResult)
+    Property Get Completed() As IAsyncOperationCompletedHandlerIRemoteSystemSessionJoinResult
+    Function GetResults() As IRemoteSystemSessionJoinResult
+End Interface
+
+[InterfaceId("379ADF35-4CB4-522F-91BE-913B5690568F")]
+Interface IAsyncOperationCompletedHandlerIRemoteSystemSessionJoinResult Extends IUnknown
+    Sub Invoke(ByVal AsyncOperation As IAsyncOperationIRemoteSystemSessionJoinResult, ByVal AsyncStatus As AsyncStatus)
+End Interface
+
+[InterfaceId("FF4DF648-8B0A-4E9A-9905-69E4B841C588")]
+Interface IRemoteSystemSessionInfo Extends IInspectable
+    Property Get DisplayName() As LongPtr
+    Property Get ControllerDisplayName() As LongPtr
+    Function JoinAsync() As IAsyncOperationIRemoteSystemSessionJoinResult
+End Interface
+
+[InterfaceId("3E32CC91-51D7-4766-A121-25516C3B8294")]
+Interface IRemoteSystemSessionInvitation Extends IInspectable
+    Property Get Sender() As IRemoteSystem
+    Property Get SessionInfo() As IRemoteSystemSessionInfo
+End Interface
+
+[InterfaceId("18A242BB-D338-56C4-9559-568D5C2C3E93")]
+Interface ITypedEventHandlerRemoteSystemSessionInvitationListenerInvitationReceived Extends IUnknown
+    Sub Invoke(ByVal Sender As IRemoteSystemSessionInvitationListener, ByVal Args As IRemoteSystemSessionInvitationReceivedEventArgs)
+End Interface
+
+[InterfaceId("08F4003F-BC71-49E1-874A-31DDFF9A27B9")]
+Interface IRemoteSystemSessionInvitationListener Extends IInspectable
+    [PreserveSig]
+    Function AddInvitationReceived(ByVal Handler As ITypedEventHandlerRemoteSystemSessionInvitationListenerInvitationReceived, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveInvitationReceived(ByVal Token As EventRegistrationToken) As HRESULT
+End Interface
+
+[InterfaceId("5E964A2D-A10D-4EDB-8DEA-54D20AC19543")]
+Interface IRemoteSystemSessionInvitationReceivedEventArgs Extends IInspectable
+    Property Get Invitation() As IRemoteSystemSessionInvitation
+End Interface
+
+[InterfaceId("20600068-7994-4331-86D1-D89D882585EE")]
+Interface IRemoteSystemSessionJoinRequest Extends IInspectable
+    Property Get Participant() As IRemoteSystemSessionParticipant
+    [PreserveSig]
+    Function Accept() As HRESULT
+End Interface
+
+[InterfaceId("DBCA4FC3-82B9-4816-9C24-E40E61774BD8")]
+Interface IRemoteSystemSessionJoinRequestedEventArgs Extends IInspectable
+    Property Get JoinRequest() As IRemoteSystemSessionJoinRequest
+    Function GetDeferral() As IDeferral
+End Interface
+
+[InterfaceId("CE7B1F04-A03E-41A4-900B-1E79328C1267")]
+Interface IRemoteSystemSessionJoinResult Extends IInspectable
+    Property Get Status() As RemoteSystemSessionJoinStatus
+    Property Get Session() As IRemoteSystemSession
+End Interface
+
+[InterfaceId("05FEC44B-3DD9-5CF1-A100-BEDC9233292D")]
+Interface IIterator_IRemoteSystemSessionParticipant Extends IInspectable
+    Property Get Current() As IRemoteSystemSessionParticipant
+    Property Get HasCurrent() As BooleanByte
+    Function MoveNext() As BooleanByte
+    Function GetMany(ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("00189D10-16EC-5D1A-8369-4870C69E52B3")]
+Interface IIterable_IRemoteSystemSessionParticipant Extends IInspectable
+    Function First() As IIterator_IRemoteSystemSessionParticipant
+End Interface
+
+[InterfaceId("C476232D-8C76-5BA6-99F5-14557484C20D")]
+Interface ITypedEventHandlerRemoteSystemSessionMessageChannelValueSetReceived Extends IUnknown
+    Sub Invoke(ByVal Sender As IRemoteSystemSessionMessageChannel, ByVal Args As IRemoteSystemSessionValueSetReceivedEventArgs)
+End Interface
+
+[InterfaceId("9524D12A-73D9-4C10-B751-C26784437127")]
+Interface IRemoteSystemSessionMessageChannel Extends IInspectable
+    Property Get Session() As IRemoteSystemSession
+    Function BroadcastValueSetAsync(ByVal MessageData As IPropertySet) As IAsyncOperationBoolean
+    Function SendValueSetAsync(ByVal MessageData As IPropertySet, ByVal Participant As IRemoteSystemSessionParticipant) As IAsyncOperationBoolean
+    Function SendValueSetToParticipantsAsync(ByVal MessageData As IPropertySet, ByVal Participants As IIterable_IRemoteSystemSessionParticipant) As IAsyncOperationBoolean
+    [PreserveSig]
+    Function AddValueSetReceived(ByVal Handler As ITypedEventHandlerRemoteSystemSessionMessageChannelValueSetReceived, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveValueSetReceived(ByVal Token As EventRegistrationToken) As HRESULT
+End Interface
+
+[InterfaceId("295E1C4A-BD16-4298-B7CE-415482B0E11D")]
+Interface IRemoteSystemSessionMessageChannelFactory Extends IInspectable
+    Function Create(ByVal Session As IRemoteSystemSession, ByVal ChannelName As LongPtr) As IRemoteSystemSessionMessageChannel
+    Function CreateWithReliability(ByVal Session As IRemoteSystemSession, ByVal ChannelName As LongPtr, ByVal Reliability As RemoteSystemSessionMessageChannelReliability) As IRemoteSystemSessionMessageChannel
+End Interface
+
+[InterfaceId("740ED755-8418-4F01-9353-E21C9ECC6CFC")]
+Interface IRemoteSystemSessionOptions Extends IInspectable
+    Property Get IsInviteOnly() As BooleanByte
+    Property Let IsInviteOnly(ByVal Value As BooleanByte)
+End Interface
+
+[InterfaceId("7E90058C-ACF9-4729-8A17-44E7BAED5DCC")]
+Interface IRemoteSystemSessionParticipant Extends IInspectable
+    Property Get RemoteSystem() As IRemoteSystem
+    Function GetHostNames() As IVectorView_IHostName
+End Interface
+
+[InterfaceId("D35A57D8-C9A1-4BB7-B6B0-79BB91ADF93D")]
+Interface IRemoteSystemSessionParticipantAddedEventArgs Extends IInspectable
+    Property Get Participant() As IRemoteSystemSessionParticipant
+End Interface
+
+[InterfaceId("866EF088-DE68-4ABF-88A1-F90D16274192")]
+Interface IRemoteSystemSessionParticipantRemovedEventArgs Extends IInspectable
+    Property Get Participant() As IRemoteSystemSessionParticipant
+End Interface
+
+[InterfaceId("D4CF5BDA-CC7A-52EF-A256-C4B36163BEEC")]
+Interface ITypedEventHandlerRemoteSystemSessionParticipantWatcherEnumerationCompleted Extends IUnknown
+    Sub Invoke(ByVal Sender As IRemoteSystemSessionParticipantWatcher, ByVal Args As IInspectable)
+End Interface
+
+[InterfaceId("7D42FFF3-FD21-5E15-B21A-75E1BBCD13C7")]
+Interface ITypedEventHandlerRemoteSystemSessionParticipantWatcherAdded Extends IUnknown
+    Sub Invoke(ByVal Sender As IRemoteSystemSessionParticipantWatcher, ByVal Args As IRemoteSystemSessionParticipantAddedEventArgs)
+End Interface
+
+[InterfaceId("73D7E8B3-7D44-50C8-AFAD-450DE59FD0AE")]
+Interface ITypedEventHandlerRemoteSystemSessionParticipantWatcherRemoved Extends IUnknown
+    Sub Invoke(ByVal Sender As IRemoteSystemSessionParticipantWatcher, ByVal Args As IRemoteSystemSessionParticipantRemovedEventArgs)
+End Interface
+
+[InterfaceId("DCDD02CC-AA87-4D79-B6CC-4459B3E92075")]
+Interface IRemoteSystemSessionParticipantWatcher Extends IInspectable
+    [PreserveSig]
+    Function Start() As HRESULT
+    [PreserveSig]
+    Function Stop() As HRESULT
+    Property Get Status() As RemoteSystemSessionParticipantWatcherStatus
+    [PreserveSig]
+    Function AddAdded(ByVal Handler As ITypedEventHandlerRemoteSystemSessionParticipantWatcherAdded, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveAdded(ByVal Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function AddRemoved(ByVal Handler As ITypedEventHandlerRemoteSystemSessionParticipantWatcherRemoved, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveRemoved(ByVal Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function AddEnumerationCompleted(ByVal Handler As ITypedEventHandlerRemoteSystemSessionParticipantWatcherEnumerationCompleted, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveEnumerationCompleted(ByVal Token As EventRegistrationToken) As HRESULT
+End Interface
+
+[InterfaceId("AF82914E-39A1-4DEA-9D63-43798D5BBBD0")]
+Interface IRemoteSystemSessionRemovedEventArgs Extends IInspectable
+    Property Get SessionInfo() As IRemoteSystemSessionInfo
+End Interface
+
+[InterfaceId("8524899F-FD20-44E3-9565-E75A3B14C66E")]
+Interface IRemoteSystemSessionStatics Extends IInspectable
+    Function CreateWatcher() As IRemoteSystemSessionWatcher
+End Interface
+
+[InterfaceId("16875069-231E-4C91-8EC8-B3A39D9E55A3")]
+Interface IRemoteSystemSessionUpdatedEventArgs Extends IInspectable
+    Property Get SessionInfo() As IRemoteSystemSessionInfo
+End Interface
+
+[InterfaceId("06F31785-2DA5-4E58-A78F-9E8D0784EE25")]
+Interface IRemoteSystemSessionValueSetReceivedEventArgs Extends IInspectable
+    Property Get Sender() As IRemoteSystemSessionParticipant
+    Property Get Message() As IPropertySet
+End Interface
+
+[InterfaceId("1B036C4F-6B8F-55D6-B6DF-45E46A823B1D")]
+Interface ITypedEventHandlerRemoteSystemSessionWatcherAdded Extends IUnknown
+    Sub Invoke(ByVal Sender As IRemoteSystemSessionWatcher, ByVal Args As IRemoteSystemSessionAddedEventArgs)
+End Interface
+
+[InterfaceId("1CBC54F0-0C9D-59CC-8055-5E017A317812")]
+Interface ITypedEventHandlerRemoteSystemSessionWatcherRemoved Extends IUnknown
+    Sub Invoke(ByVal Sender As IRemoteSystemSessionWatcher, ByVal Args As IRemoteSystemSessionRemovedEventArgs)
+End Interface
+
+[InterfaceId("040F48B7-0D41-5AA2-85E8-6311666F0324")]
+Interface ITypedEventHandlerRemoteSystemSessionWatcherUpdated Extends IUnknown
+    Sub Invoke(ByVal Sender As IRemoteSystemSessionWatcher, ByVal Args As IRemoteSystemSessionUpdatedEventArgs)
+End Interface
+
+[InterfaceId("8003E340-0C41-4A62-B6D7-BDBE2B19BE2D")]
+Interface IRemoteSystemSessionWatcher Extends IInspectable
+    [PreserveSig]
+    Function Start() As HRESULT
+    [PreserveSig]
+    Function Stop() As HRESULT
+    Property Get Status() As RemoteSystemSessionWatcherStatus
+    [PreserveSig]
+    Function AddAdded(ByVal Handler As ITypedEventHandlerRemoteSystemSessionWatcherAdded, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveAdded(ByVal Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function AddUpdated(ByVal Handler As ITypedEventHandlerRemoteSystemSessionWatcherUpdated, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveUpdated(ByVal Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function AddRemoved(ByVal Handler As ITypedEventHandlerRemoteSystemSessionWatcherRemoved, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveRemoved(ByVal Token As EventRegistrationToken) As HRESULT
+End Interface
+
+[InterfaceId("0D39F546-0ECA-5236-A5CA-7E3660658462")]
+Interface IAsyncOperationIRemoteSystem Extends IInspectable
+    Property Set Completed(ByVal Handler As IAsyncOperationCompletedHandlerIRemoteSystem)
+    Property Get Completed() As IAsyncOperationCompletedHandlerIRemoteSystem
+    Function GetResults() As IRemoteSystem
+End Interface
+
+[InterfaceId("3A0B522D-98D0-5D34-ACE6-2C7346613F1D")]
+Interface IAsyncOperationCompletedHandlerIRemoteSystem Extends IUnknown
+    Sub Invoke(ByVal AsyncOperation As IAsyncOperationIRemoteSystem, ByVal AsyncStatus As AsyncStatus)
+End Interface
+
+[InterfaceId("D76DA678-DD76-5460-8745-915B4410C905")]
+Interface IAsyncOperationRemoteSystemAccessStatus Extends IInspectable
+    Property Set Completed(ByVal Handler As IAsyncOperationCompletedHandlerRemoteSystemAccessStatus)
+    Property Get Completed() As IAsyncOperationCompletedHandlerRemoteSystemAccessStatus
+    Function GetResults() As RemoteSystemAccessStatus
+End Interface
+
+[InterfaceId("543A221D-EF39-57F5-9741-B052DBC29249")]
+Interface IAsyncOperationCompletedHandlerRemoteSystemAccessStatus Extends IUnknown
+    Sub Invoke(ByVal AsyncOperation As IAsyncOperationRemoteSystemAccessStatus, ByVal AsyncStatus As AsyncStatus)
+End Interface
+
+[InterfaceId("6A2C5AEF-9F30-58AE-A6CB-9AC9C8092A41")]
+Interface IIterator_IRemoteSystemFilter Extends IInspectable
+    Property Get Current() As IRemoteSystemFilter
+    Property Get HasCurrent() As BooleanByte
+    Function MoveNext() As BooleanByte
+    Function GetMany(ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("13966C92-A8DE-50C0-B16B-00C2C48F5F37")]
+Interface IIterable_IRemoteSystemFilter Extends IInspectable
+    Function First() As IRemoteSystemFilter
+End Interface
+
+[InterfaceId("A485B392-FF2B-4B47-BE62-743F2F140F30")]
+Interface IRemoteSystemStatics Extends IInspectable
+    Function FindByHostNameAsync(ByVal HostName As IHostName) As IAsyncOperationIRemoteSystem
+    Function CreateWatcher() As IRemoteSystemWatcher
+    Function CreateWatcherWithFilters(ByVal Filters As IIterable_IRemoteSystemFilter) As IRemoteSystemWatcher
+    Function RequestAccessAsync() As IAsyncOperationRemoteSystemAccessStatus
+End Interface
+
+[InterfaceId("0C98EDCA-6F99-4C52-A272-EA4F36471744")]
+Interface IRemoteSystemStatics2 Extends IInspectable
+    Function IsAuthorizationKindEnabled(ByVal Kind As RemoteSystemAuthorizationKind) As BooleanByte
+End Interface
+
+[InterfaceId("9995F16F-0B3C-5AC5-B325-CC73F437DFCD")]
+Interface IRemoteSystemStatics3 Extends IInspectable
+    Function CreateWatcherForUser(ByVal User As IUser) As IRemoteSystemWatcher
+    Function CreateWatcherWithFiltersForUser(ByVal User As IUser, ByVal Filters As IIterable_IRemoteSystemFilter) As IRemoteSystemWatcher
+End Interface
+
+[InterfaceId("0C39514E-CBB6-4777-8534-2E0C521AFFA2")]
+Interface IRemoteSystemStatusTypeFilter Extends IInspectable
+    Property Get RemoteSystemStatusType() As RemoteSystemStatusType
+End Interface
+
+[InterfaceId("33CF78FA-D724-4125-AC7A-8D281E44C949")]
+Interface IRemoteSystemStatusTypeFilterFactory Extends IInspectable
+    Function Create(ByVal RemoteSystemStatusType As RemoteSystemStatusType) As IRemoteSystemStatusTypeFilter
+End Interface
+
+[InterfaceId("7502FF0E-DBCB-4155-B4CA-B30A04F27627")]
+Interface IRemoteSystemUpdatedEventArgs Extends IInspectable
+    Property Get RemoteSystem() As IRemoteSystem
+End Interface
+
+[InterfaceId("A9B98F4A-B63D-5D07-92BB-E2ACB39455D1")]
+Interface ITypedEventHandlerRemoteSystemWatcherRemoteSystemAdded Extends IUnknown
+    Sub Invoke(ByVal Sender As IRemoteSystemWatcher, ByVal Args As IRemoteSystemAddedEventArgs)
+End Interface
+
+[InterfaceId("C290FB5A-3ED0-5858-AF19-F85553CB96B8")]
+Interface ITypedEventHandlerRemoteSystemWatcherRemoteSystemRemoved Extends IUnknown
+    Sub Invoke(ByVal Sender As IRemoteSystemWatcher, ByVal Args As IRemoteSystemRemovedEventArgs)
+End Interface
+
+[InterfaceId("88F9D23F-8946-5A1E-8DA1-82C66982A6D2")]
+Interface ITypedEventHandlerRemoteSystemWatcherRemoteSystemUpdated Extends IUnknown
+    Sub Invoke(ByVal Sender As IRemoteSystemWatcher, ByVal Args As IRemoteSystemUpdatedEventArgs)
+End Interface
+
+[InterfaceId("5D600C7E-2C07-48C5-889C-455D2B099771")]
+Interface IRemoteSystemWatcher Extends IInspectable
+    [PreserveSig]
+    Function Start() As HRESULT
+    [PreserveSig]
+    Function Stop() As HRESULT
+    [PreserveSig]
+    Function AddRemoteSystemAdded(ByVal Handler As ITypedEventHandlerRemoteSystemWatcherRemoteSystemAdded, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveRemoteSystemAdded(ByVal Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function AddRemoteSystemUpdated(ByVal Handler As ITypedEventHandlerRemoteSystemWatcherRemoteSystemUpdated, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveRemoteSystemUpdated(ByVal Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function AddRemoteSystemRemoved(ByVal Handler As ITypedEventHandlerRemoteSystemWatcherRemoteSystemRemoved, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveRemoteSystemRemoved(ByVal Token As EventRegistrationToken) As HRESULT
+End Interface
+
+[InterfaceId("42AE9D52-FD0D-5411-8C8C-D676A09767E9")]
+Interface ITypedEventHandlerRemoteSystemWatcherEnumerationCompleted Extends IUnknown
+    Sub Invoke(ByVal Sender As IRemoteSystemWatcher, ByVal Args As IRemoteSystemEnumerationCompletedEventArgs)
+End Interface
+
+[InterfaceId("A4A023B4-567B-5D4B-A4C8-5CA4F886D3A3")]
+Interface ITypedEventHandlerRemoteSystemWatcherErrorOccurred Extends IUnknown
+    Sub Invoke(ByVal Sender As IRemoteSystemWatcher, ByVal Args As IRemoteSystemWatcherErrorOccurredEventArgs)
+End Interface
+
+[InterfaceId("73436700-19CA-48F9-A4CD-780F7AD58C71")]
+Interface IRemoteSystemWatcher2 Extends IInspectable
+    [PreserveSig]
+    Function AddEnumerationCompleted(ByVal Handler As ITypedEventHandlerRemoteSystemWatcherEnumerationCompleted, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveEnumerationCompleted(ByVal Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function AddErrorOccurred(ByVal Handler As ITypedEventHandlerRemoteSystemWatcherErrorOccurred, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveErrorOccurred(ByVal Token As EventRegistrationToken) As HRESULT
+End Interface
+
+[InterfaceId("F79C0FCF-A913-55D3-8413-418FCF15BA54")]
+Interface IRemoteSystemWatcher3 Extends IInspectable
+    Property Get User() As IUser
+End Interface
+
+[InterfaceId("74C5C6AF-5114-4426-9216-20D81F8519AE")]
+Interface IRemoteSystemWatcherErrorOccurredEventArgs Extends IInspectable
+    Property Get Error() As RemoteSystemWatcherError
+End Interface
+
+[InterfaceId("3FB75873-87C8-5D8F-977E-F69F96D67238")]
+Interface IRemoteSystemWebAccountFilter Extends IInspectable
+    Property Get Account() As IWebAccount
+End Interface
+
+[InterfaceId("348A2709-5F4D-5127-B4A7-BF99D5252B1B")]
+Interface IRemoteSystemWebAccountFilterFactory Extends IInspectable
+    Function Create(ByVal Account As IWebAccount) As IRemoteSystemWebAccountFilter
+End Interface
+
+Module mdlSystemRemoteSystems
+
+Public Enum RemoteSystemAccessStatus
+    RemoteSystemAccessStatus_Unspecified
+    RemoteSystemAccessStatus_Allowed
+    RemoteSystemAccessStatus_DeniedByUser
+    RemoteSystemAccessStatus_DeniedBySystem
+End Enum
+
+Public Enum RemoteSystemAuthorizationKind
+    RemoteSystemAuthorizationKind_SameUser
+    RemoteSystemAuthorizationKind_Anonymous
+End Enum
+
+Public Enum RemoteSystemDiscoveryType
+    RemoteSystemDiscoveryType_Any
+    RemoteSystemDiscoveryType_Proximal
+    RemoteSystemDiscoveryType_Cloud
+    RemoteSystemDiscoveryType_SpatiallyProximal
+End Enum
+
+Public Enum RemoteSystemPlatform
+    RemoteSystemPlatform_Unknown
+    RemoteSystemPlatform_Windows
+    RemoteSystemPlatform_Android
+    RemoteSystemPlatform_Ios
+    RemoteSystemPlatform_Linux
+End Enum
+
+Public Enum RemoteSystemSessionCreationStatus
+    RemoteSystemSessionCreationStatus_Success
+    RemoteSystemSessionCreationStatus_SessionLimitsExceeded
+    RemoteSystemSessionCreationStatus_OperationAborted
+End Enum
+
+Public Enum RemoteSystemSessionDisconnectedReason
+    RemoteSystemSessionDisconnectedReason_SessionUnavailable
+    RemoteSystemSessionDisconnectedReason_RemovedByController
+    RemoteSystemSessionDisconnectedReason_SessionClosed
+End Enum
+
+Public Enum RemoteSystemSessionJoinStatus
+    RemoteSystemSessionJoinStatus_Success
+    RemoteSystemSessionJoinStatus_SessionLimitsExceeded
+    RemoteSystemSessionJoinStatus_OperationAborted
+    RemoteSystemSessionJoinStatus_SessionUnavailable
+    RemoteSystemSessionJoinStatus_RejectedByController
+End Enum
+
+Public Enum RemoteSystemSessionMessageChannelReliability
+    RemoteSystemSessionMessageChannelReliability_Reliable
+    RemoteSystemSessionMessageChannelReliability_Unreliable
+End Enum
+
+Public Enum RemoteSystemSessionParticipantWatcherStatus
+    RemoteSystemSessionParticipantWatcherStatus_Created
+    RemoteSystemSessionParticipantWatcherStatus_Started
+    RemoteSystemSessionParticipantWatcherStatus_EnumerationCompleted
+    RemoteSystemSessionParticipantWatcherStatus_Stopping
+    RemoteSystemSessionParticipantWatcherStatus_Stopped
+    RemoteSystemSessionParticipantWatcherStatus_Aborted
+End Enum
+
+Public Enum RemoteSystemSessionWatcherStatus
+    RemoteSystemSessionWatcherStatus_Created
+    RemoteSystemSessionWatcherStatus_Started
+    RemoteSystemSessionWatcherStatus_EnumerationCompleted
+    RemoteSystemSessionWatcherStatus_Stopping
+    RemoteSystemSessionWatcherStatus_Stopped
+    RemoteSystemSessionWatcherStatus_Aborted
+End Enum
+
+Public Enum RemoteSystemStatus
+    RemoteSystemStatus_Unavailable
+    RemoteSystemStatus_DiscoveringAvailability
+    RemoteSystemStatus_Available
+    RemoteSystemStatus_Unknown
+End Enum
+
+Public Enum RemoteSystemStatusType
+    RemoteSystemStatusType_Any
+    RemoteSystemStatusType_Available
+End Enum
+
+Public Enum RemoteSystemWatcherError
+    RemoteSystemWatcherError_Unknown
+    RemoteSystemWatcherError_InternetNotAvailable
+    RemoteSystemWatcherError_AuthenticationError
+End Enum
+
+End Module

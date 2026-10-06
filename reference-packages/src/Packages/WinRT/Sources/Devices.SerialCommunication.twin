@@ -1,0 +1,121 @@
+[InterfaceId("FCC6BF59-1283-4D8A-BFDF-566B33DDB28F")]
+Interface IErrorReceivedEventArgs Extends IInspectable
+    Property Get Error() As SerialError
+End Interface
+
+[InterfaceId("A2BF1DB0-FC9C-4607-93D0-FA5E8343EE22")]
+Interface IPinChangedEventArgs Extends IInspectable
+    Property Get PinChange() As SerialPinChange
+End Interface
+
+[InterfaceId("D92EA323-B7BF-5E02-B9FB-C61F97D080E9")]
+Interface ITypedEventHandlerSerialDeviceErrorReceived Extends IUnknown
+    Sub Invoke(ByVal Sender As ISerialDevice, ByVal Args As IErrorReceivedEventArgs)
+End Interface
+
+[InterfaceId("E496C3EF-5802-5AC4-AC2E-96BC23FA9447")]
+Interface ITypedEventHandlerSerialDevicePinChanged Extends IUnknown
+    Sub Invoke(ByVal Sender As ISerialDevice, ByVal Args As IPinChangedEventArgs)
+End Interface
+
+[InterfaceId("E187CCC6-2210-414F-B65A-F5553A03372A")]
+Interface ISerialDevice Extends IInspectable ' requires IClosable
+    Property Get BaudRate() As Long
+    Property Let BaudRate(ByVal Value As Long)
+    Property Get BreakSignalState() As BooleanByte
+    Property Let BreakSignalState(ByVal Value As BooleanByte)
+    Property Get BytesReceived() As Long
+    Property Get CarrierDetectState() As BooleanByte
+    Property Get ClearToSendState() As BooleanByte
+    Property Get DataBits() As Integer
+    Property Let DataBits(ByVal Value As Integer)
+    Property Get DataSetReadyState() As BooleanByte
+    Property Get Handshake() As SerialHandshake
+    Property Let Handshake(ByVal Value As SerialHandshake)
+    Property Get IsDataTerminalReadyEnabled() As BooleanByte
+    Property Let IsDataTerminalReadyEnabled(ByVal Value As BooleanByte)
+    Property Get IsRequestToSendEnabled() As BooleanByte
+    Property Let IsRequestToSendEnabled(ByVal Value As BooleanByte)
+    Property Get Parity() As SerialParity
+    Property Let Parity(ByVal Value As SerialParity)
+    Property Get PortName() As LongPtr
+    Property Get ReadTimeout() As TimeSpan
+    Property Let ReadTimeout(ByVal Value As TimeSpan)
+    Property Get StopBits() As SerialStopBitCount
+    Property Let StopBits(ByVal Value As SerialStopBitCount)
+    Property Get UsbVendorId() As Integer
+    Property Get UsbProductId() As Integer
+    Property Get WriteTimeout() As TimeSpan
+    Property Let WriteTimeout(ByVal Value As TimeSpan)
+    Property Get InputStream() As IInputStream
+    Property Get OutputStream() As IOutputStream
+    [PreserveSig]
+    Function AddErrorReceived(ByVal Handler As ITypedEventHandlerSerialDeviceErrorReceived, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveErrorReceived(ByVal Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function AddPinChanged(ByVal Handler As ITypedEventHandlerSerialDevicePinChanged, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemovePinChanged(ByVal Token As EventRegistrationToken) As HRESULT
+End Interface
+
+[InterfaceId("44EF26ED-C1FF-546A-A46B-6A37DE9187FB")]
+Interface IAsyncOperationISerialDevice Extends IInspectable
+    Property Set Completed(ByVal Handler As IAsyncOperationCompletedHandlerISerialDevice)
+    Property Get Completed() As IAsyncOperationCompletedHandlerISerialDevice
+    Function GetResults() As ISerialDevice
+End Interface
+
+[InterfaceId("84A34B33-06FC-5E63-8EE2-EAB4FF69ACB7")]
+Interface IAsyncOperationCompletedHandlerISerialDevice Extends IUnknown
+    Sub Invoke(ByVal AsyncOperation As IAsyncOperationISerialDevice, ByVal AsyncStatus As AsyncStatus)
+End Interface
+
+[InterfaceId("058C4A70-0836-4993-AE1A-B61AE3BE056B")]
+Interface ISerialDeviceStatics Extends IInspectable
+    Function GetDeviceSelector() As LongPtr
+    Function GetDeviceSelectorFromPortName(ByVal PortName As LongPtr) As LongPtr
+    Function GetDeviceSelectorFromUsbVidPid(ByVal VendorId As Integer, ByVal ProductId As Integer) As LongPtr
+    Function FromIdAsync(ByVal DeviceId As LongPtr) As IAsyncOperationISerialDevice
+End Interface
+
+Module mdlDevicesSerialCommunication
+
+Public Enum SerialError
+    SerialError_Frame
+    SerialError_BufferOverrun
+    SerialError_ReceiveFull
+    SerialError_ReceiveParity
+    SerialError_TransmitFull
+End Enum
+
+Public Enum SerialHandshake
+    SerialHandshake_None
+    SerialHandshake_RequestToSend
+    SerialHandshake_XOnXOff
+    SerialHandshake_RequestToSendXOnXOff
+End Enum
+
+Public Enum SerialParity
+    SerialParity_None
+    SerialParity_Odd
+    SerialParity_Even
+    SerialParity_Mark
+    SerialParity_Space
+End Enum
+
+Public Enum SerialPinChange
+    SerialPinChange_BreakSignal
+    SerialPinChange_CarrierDetect
+    SerialPinChange_ClearToSend
+    SerialPinChange_DataSetReady
+    SerialPinChange_RingIndicator
+End Enum
+
+Public Enum SerialStopBitCount
+    SerialStopBitCount_One
+    SerialStopBitCount_OnePointFive
+    SerialStopBitCount_Two
+End Enum
+
+End Module

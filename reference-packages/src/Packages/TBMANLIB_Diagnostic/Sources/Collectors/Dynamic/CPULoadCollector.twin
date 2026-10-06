@@ -1,0 +1,112 @@
+' =====================================================
+' CPULoadCollector.twin - CPU 使用率收集器
+' Twinbasic Diagnostic Tool
+' =====================================================
+
+' CPU 使用率收集器
+' 刷新模式：Dynamic（每次刷新都获取）
+' 使用 GetSystemTimes 计算 CPU 使用率
+[ ClassId ("06A2B3C4-D5E6-F7A8-B9C0-D1E2F3A4B5C6") ]
+[ InterfaceId ("06A2B3C4-D5E6-F7A8-B9C0-D1E2F3A4B5C7") ]
+Public Class CPULoadCollector
+    Implements IDiagnosticCollector
+
+    ' 保存上次的时间值用于计算差值
+    Private m_LastIdle As LongLong
+    Private m_LastKernel As LongLong
+    Private m_LastUser As LongLong
+    Private m_Initialized As Boolean
+
+    ' 构造函数
+    Public Sub New()
+        m_Initialized = False
+        m_LastIdle = 0
+        m_LastKernel = 0
+        m_LastUser = 0
+    End Sub
+
+    ' === IDiagnosticCollector 实现 ===
+
+    Public Property Get IDiagnosticCollector_CategoryName() As String
+        Return "CPU Load"
+    End Property
+
+    Public Property Get IDiagnosticCollector_Description() As String
+        Return "Current CPU usage percentage"
+    End Property
+
+    Public Property Get IDiagnosticCollector_RefreshMode() As RefreshMode
+        Return RefreshMode.Dynamic
+    End Property
+
+    Public Property Get IDiagnosticCollector_RequiresElevation() As Boolean
+        Return False
+    End Property
+
+    Public Property Get IDiagnosticCollector_SupportsSummary() As Boolean
+        Return False
+    End Property
+
+    Public Function IDiagnosticCollector_Collect() As DiagnosticResult(Of KeyValuePair(Of String, String))
+        Dim result As DiagnosticResult(Of KeyValuePair(Of String, String))
+        Set result = New DiagnosticResult(Of KeyValuePair(Of String, String))("CPU Load")
+
+        ' 获取当前系统时间
+        Dim idleTime As FILETIME
+        Dim kernelTime As FILETIME
+        Dim userTime As FILETIME
+
+        If GetSystemTimes(idleTime, kernelTime, userTime) = 0 Then
+            result.SetError "Failed to get system times"
+            Return result
+        End If
+
+        ' 转换为 LongLong
+        Dim currentIdle As LongLong = FileTimeToLongLong(idleTime)
+        Dim currentKernel As LongLong = FileTimeToLongLong(kernelTime)
+        Dim currentUser As LongLong = FileTimeToLongLong(userTime)
+
+        Dim cpuPercent As Double = 0
+
+        If m_Initialized Then
+            ' 计算差值
+            Dim idleDelta As LongLong = currentIdle - m_LastIdle
+            Dim kernelDelta As LongLong = currentKernel - m_LastKernel
+            Dim userDelta As LongLong = currentUser - m_LastUser
+            Dim totalDelta As LongLong = kernelDelta + userDelta
+
+            ' 计算 CPU 使用率
+            ' CPU% = (1 - IdleDelta / TotalDelta) × 100
+            If totalDelta > 0 Then
+                cpuPercent = (1.0 - CDbl(idleDelta) / CDbl(totalDelta)) * 100.0
+                If cpuPercent < 0 Then cpuPercent = 0
+                If cpuPercent > 100 Then cpuPercent = 100
+            End If
+        End If
+
+        ' 保存当前值用于下次计算
+        m_LastIdle = currentIdle
+        m_LastKernel = currentKernel
+        m_LastUser = currentUser
+        m_Initialized = True
+
+        ' 添加结果
+        result.AddItem New KeyValuePair(Of String, String)("Usage", _
+            FormatHelper.FormatPercentValue(cpuPercent, 1))
+
+        result.AddItem New KeyValuePair(Of String, String)("Usage Value", _
+            Format$(cpuPercent, "0.0"))
+
+        Return result
+    End Function
+
+    Public Function IDiagnosticCollector_CollectSummary() As DiagnosticResult(Of KeyValuePair(Of String, String))
+        Return IDiagnosticCollector_Collect()
+    End Function
+
+    ' 重置测量（用于首次调用后获取准确值）
+    Public Sub Reset()
+        m_Initialized = False
+    End Sub
+
+End Class

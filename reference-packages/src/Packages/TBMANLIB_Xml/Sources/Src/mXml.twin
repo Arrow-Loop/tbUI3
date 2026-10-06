@@ -1,0 +1,127 @@
+' =====================================================
+' mXml.twin - XML Library Enumerations and Constants
+' TwinBASIC Project - XML Library
+' =====================================================
+' Function: Public enumerations and constants used by XML library
+' 功能：XML 库使用的公共枚举和常量
+' Author: woeoo (邓伟)
+' Email: 215879458@qq.com
+' Site: https://vb6.pro
+' Date: 2026-02-07
+' Version: 1.0.0
+' =====================================================
+
+Public Module mXml
+
+    ' Windows API declarations for UTF-8 conversion
+    Private Declare PtrSafe Function WideCharToMultiByte Lib "kernel32" ( _
+        ByVal CodePage As Long, _
+        ByVal dwFlags As Long, _
+        ByVal lpWideCharStr As LongPtr, _
+        ByVal cchWideChar As Long, _
+        ByVal lpMultiByteStr As LongPtr, _
+        ByVal cbMultiByte As Long, _
+        ByVal lpDefaultChar As LongPtr, _
+        ByVal lpUsedDefaultChar As LongPtr) As Long
+
+    Private Declare PtrSafe Function MultiByteToWideChar Lib "kernel32" ( _
+        ByVal CodePage As Long, _
+        ByVal dwFlags As Long, _
+        ByVal lpMultiByteStr As LongPtr, _
+        ByVal cbMultiByte As Long, _
+        ByVal lpWideCharStr As LongPtr, _
+        ByVal cchWideChar As Long) As Long
+
+    ' UTF-8 code page constant
+    Private Const CP_UTF8 As Long = 65001
+
+    ' XML Node type enumeration
+    Public Enum XmlNodeType
+        None = 0
+        Element = 1
+        Attribute = 2
+        Text = 3
+        CData = 4
+        Comment = 8
+        Document = 9
+        DocumentFragment = 11
+        Notation = 12
+    End Enum
+
+    ' Parse option enumeration
+    Public Enum ParseOption
+        None = 0
+        PreserveWhitespace = 1
+        IgnoreComments = 2
+        IgnoreProcessingInstructions = 4
+        ValidateOnParse = 8
+    End Enum
+
+    ' Error constants
+    Public Const ERR_BASE As Long = vbObjectError + 5000
+    Public Const ERR_INVALID_XML As Long = ERR_BASE + 1
+    Public Const ERR_INVALID_NODE As Long = ERR_BASE + 2
+    Public Const ERR_NODE_NOT_FOUND As Long = ERR_BASE + 3
+    Public Const ERR_ATTRIBUTE_NOT_FOUND As Long = ERR_BASE + 4
+    Public Const ERR_EMPTY_DOCUMENT As Long = ERR_BASE + 5
+    Public Const ERR_INVALID_OPERATION As Long = ERR_BASE + 6
+
+    ' Default configuration constants
+    Public Const DEFAULT_XML_VERSION As String = "1.0"
+    Public Const DEFAULT_ENCODING As String = "UTF-8"
+    Public Const DEFAULT_INDENT As String = "  "
+
+    ' Convert Unicode string to UTF-8 byte array
+    Public Function StringToUTF8Bytes(ByVal str As String) As Byte()
+        Dim utf8Bytes() As Byte
+
+        If Len(str) = 0 Then
+            ReDim utf8Bytes(0 To 0)
+            utf8Bytes(0) = 0
+            Return utf8Bytes
+        End If
+
+        ' Get required buffer size
+        Dim bufferSize As Long
+        bufferSize = WideCharToMultiByte(CP_UTF8, 0, StrPtr(str), Len(str), 0, 0, 0, 0)
+
+        If bufferSize > 0 Then
+            ReDim utf8Bytes(0 To bufferSize - 1)
+            WideCharToMultiByte CP_UTF8, 0, StrPtr(str), Len(str), VarPtr(utf8Bytes(0)), bufferSize, 0, 0
+        Else
+            ReDim utf8Bytes(0 To 0)
+            utf8Bytes(0) = 0
+        End If
+
+        Return utf8Bytes
+    End Function
+
+    ' Convert UTF-8 byte array to Unicode string
+    Public Function UTF8BytesToString(ByRef utf8Bytes() As Byte) As String
+        Dim result As String
+
+        Dim byteCount As Long
+        On Error Resume Next
+        byteCount = UBound(utf8Bytes) - LBound(utf8Bytes) + 1
+        If Err.Number <> 0 Then
+            Return ""
+        End If
+        On Error GoTo 0
+
+        If byteCount = 0 Then
+            Return ""
+        End If
+
+        ' Get required buffer size (in characters)
+        Dim charCount As Long
+        charCount = MultiByteToWideChar(CP_UTF8, 0, VarPtr(utf8Bytes(LBound(utf8Bytes))), byteCount, 0, 0)
+
+        If charCount > 0 Then
+            result = String$(charCount, vbNullChar)
+            MultiByteToWideChar CP_UTF8, 0, VarPtr(utf8Bytes(LBound(utf8Bytes))), byteCount, StrPtr(result), charCount
+        End If
+
+        Return result
+    End Function
+
+End Module

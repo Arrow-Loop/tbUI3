@@ -1,0 +1,28 @@
+[InterfaceId("91BB5E52-95D1-4F8B-9A5A-6408B24B8C6A")]
+Interface ISceneLightingEffect Extends IInspectable
+    Property Get AmbientAmount() As Single
+    Property Let AmbientAmount(ByVal Value As Single)
+    Property Get DiffuseAmount() As Single
+    Property Let DiffuseAmount(ByVal Value As Single)
+    Property Get NormalMapSource() As IGraphicsEffectSource
+    Property Set NormalMapSource(ByVal Value As IGraphicsEffectSource)
+    Property Get SpecularAmount() As Single
+    Property Let SpecularAmount(ByVal Value As Single)
+    Property Get SpecularShine() As Single
+    Property Let SpecularShine(ByVal Value As Single)
+End Interface
+
+[InterfaceId("9E270E81-72F0-4C5C-95F8-8A6E0024F409")]
+Interface ISceneLightingEffect2 Extends IInspectable
+    Property Get ReflectanceModel() As SceneLightingEffectReflectanceModel
+    Property Let ReflectanceModel(ByVal Value As SceneLightingEffectReflectanceModel)
+End Interface
+
+Module mdlUICompositionEffects
+
+Public Enum SceneLightingEffectReflectanceModel
+	SceneLightingEffectReflectanceModel_BlinnPhong
+	SceneLightingEffectReflectanceModel_PhysicallyBasedBlinnPhong
+End Enum
+
+End Module

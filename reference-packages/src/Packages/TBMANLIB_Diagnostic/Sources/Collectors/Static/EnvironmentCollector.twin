@@ -1,0 +1,100 @@
+' =====================================================
+' EnvironmentCollector.twin - 环境变量收集器
+' Twinbasic Diagnostic Tool
+' =====================================================
+
+' 环境变量收集器
+' 刷新模式：Static（只获取一次）
+' 支持摘要：是
+[ ClassId ("04A2B3C4-D5E6-F7A8-B9C0-D1E2F3A4B5C6") ]
+[ InterfaceId ("04A2B3C4-D5E6-F7A8-B9C0-D1E2F3A4B5C7") ]
+Public Class EnvironmentCollector
+    Implements IDiagnosticCollector
+
+    ' 要收集的关键环境变量
+    Private Const KEY_VARS As String = "PATH,TEMP,TMP,USERPROFILE,APPDATA,LOCALAPPDATA," & _
+        "PROGRAMFILES,PROGRAMFILES(X86),WINDIR,SYSTEMROOT,COMPUTERNAME,USERNAME," & _
+        "HOMEDRIVE,HOMEPATH,PATHEXT,COMSPEC"
+
+    ' 摘要变量（前3个最重要的）
+    Private Const SUMMARY_VARS As String = "PATH,TEMP,USERPROFILE"
+
+    ' === IDiagnosticCollector 实现 ===
+
+    Public Property Get IDiagnosticCollector_CategoryName() As String
+        Return "Environment"
+    End Property
+
+    Public Property Get IDiagnosticCollector_Description() As String
+        Return "System and user environment variables"
+    End Property
+
+    Public Property Get IDiagnosticCollector_RefreshMode() As RefreshMode
+        Return RefreshMode.Static
+    End Property
+
+    Public Property Get IDiagnosticCollector_RequiresElevation() As Boolean
+        Return False
+    End Property
+
+    Public Property Get IDiagnosticCollector_SupportsSummary() As Boolean
+        Return True
+    End Property
+
+    Public Function IDiagnosticCollector_Collect() As DiagnosticResult(Of KeyValuePair(Of String, String))
+        Dim result As DiagnosticResult(Of KeyValuePair(Of String, String))
+        Set result = New DiagnosticResult(Of KeyValuePair(Of String, String))("Environment")
+
+        ' 收集关键环境变量
+        Dim vars() As String = Split(KEY_VARS, ",")
+        Dim i As Long
+        Dim varName As String
+        Dim varValue As String
+
+        For i = LBound(vars) To UBound(vars)
+            varName = Trim$(vars(i))
+            varValue = Environ$(varName)
+
+            If Len(varValue) > 0 Then
+                ' 对于 PATH，截断显示
+                If UCase$(varName) = "PATH" Then
+                    If Len(varValue) > 200 Then
+                        varValue = Left$(varValue, 200) & "..."
+                    End If
+                End If
+                result.AddItem New KeyValuePair(Of String, String)(varName, varValue)
+            End If
+        Next i
+
+        Return result
+    End Function
+
+    Public Function IDiagnosticCollector_CollectSummary() As DiagnosticResult(Of KeyValuePair(Of String, String))
+        Dim result As DiagnosticResult(Of KeyValuePair(Of String, String))
+        Set result = New DiagnosticResult(Of KeyValuePair(Of String, String))("Environment")
+        result.IsSummary = True
+
+        ' 只收集摘要变量
+        Dim vars() As String = Split(SUMMARY_VARS, ",")
+        Dim i As Long
+        Dim varName As String
+        Dim varValue As String
+
+        For i = LBound(vars) To UBound(vars)
+            varName = Trim$(vars(i))
+            varValue = Environ$(varName)
+
+            If Len(varValue) > 0 Then
+                ' 对于 PATH，只显示条目数
+                If UCase$(varName) = "PATH" Then
+                    Dim pathCount As Long = UBound(Split(varValue, ";")) + 1
+                    varValue = "(" & pathCount & " entries)"
+                End If
+                result.AddItem New KeyValuePair(Of String, String)(varName, varValue)
+            End If
+        Next i
+
+        Return result
+    End Function
+
+End Class

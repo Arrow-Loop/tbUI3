@@ -1,0 +1,528 @@
+' =====================================================
+' cDialogPageSetup.twin - Page Setup Dialog Class
+' cDialogPageSetup.twin - 页面设置对话框类
+' TBMANLIB Dialog Library
+' =====================================================
+' Function: Provides page setup dialog using Windows PageSetupDlg API
+' 功能：使用 Windows PageSetupDlg API 提供页面设置对话框
+' Author: woeoo (邓伟)
+' Email: 215879458@qq.com
+' Site: https://vb6.pro
+' Date: 2026-03-11
+' Version: 1.0.0
+' =====================================================
+
+Option Explicit
+
+[COMCreatable(False)]
+Public Class cDialogPageSetup
+
+    ' =====================================================
+    ' Windows API Declarations
+    ' =====================================================
+    Private Declare PtrSafe Function PageSetupDlg Lib "comdlg32.dll" Alias "PageSetupDlgW" (pPagesetupdlg As PAGESETUPDLG) As Long
+    Private Declare PtrSafe Function GlobalLock Lib "kernel32" (ByVal hMem As LongPtr) As LongPtr
+    Private Declare PtrSafe Function GlobalUnlock Lib "kernel32" (ByVal hMem As LongPtr) As Long
+    Private Declare PtrSafe Function GlobalFree Lib "kernel32" (ByVal hMem As LongPtr) As LongPtr
+    Private Declare PtrSafe Function MulDiv Lib "kernel32" (ByVal nNumber As Long, ByVal nNumerator As Long, ByVal nDenominator As Long) As Long
+
+    ' =====================================================
+    ' Constants
+    ' =====================================================
+    ' PAGESETUPDLG flags
+    Private Const PSD_DEFAULTMINMARGINS = &H0
+    Private Const PSD_INWININIINTLMEASURE = &H0
+    Private Const PSD_MINMARGINS = &H1
+    Private Const PSD_MARGINS = &H2
+    Private Const PSD_INTHOUSANDTHSOFINCHES = &H4
+    Private Const PSD_INHUNDREDTHSOFMILLIMETERS = &H8
+    Private Const PSD_DISABLEMARGINS = &H10
+    Private Const PSD_DISABLEPRINTER = &H20
+    Private Const PSD_NOWARNING = &H80
+    Private Const PSD_DISABLEORIENTATION = &H100
+    Private Const PSD_RETURNDEFAULT = &H400
+    Private Const PSD_DISABLEPAPER = &H200
+    Private Const PSD_SHOWHELP = &H800
+    Private Const PSD_ENABLEPAGESETUPHOOK = &H2000
+    Private Const PSD_ENABLEPAGESETUPTEMPLATE = &H8000
+    Private Const PSD_ENABLEPAGESETUPTEMPLATEHANDLE = &H20000
+    Private Const PSD_ENABLEPAGEPAINTHOOK = &H40000
+    Private Const PSD_DISABLEPAGEPAINTING = &H80000
+
+    ' PAGESETUPDLG struct size (hardcoded because LenB() is wrong on x64)
+    #If Win64 Then
+        Private Const PSD_STRUCTSIZE As Long = 128   ' x64: 14 fields with 8-byte pointers
+    #Else
+        Private Const PSD_STRUCTSIZE As Long = 84    ' x86: 14 fields with 4-byte pointers
+    #End If
+    Private Const PSD_NONETWORKBUTTON = &H200000
+
+    ' Unit conversion
+    Private Const MM_PER_INCH = 25.4
+    Private Const TWIPS_PER_INCH = 1440
+
+    ' =====================================================
+    ' Types
+    ' =====================================================
+    Private Type POINTL
+        X As Long
+        Y As Long
+    End Type
+
+    Private Type RECT
+        Left As Long
+        Top As Long
+        Right As Long
+        Bottom As Long
+    End Type
+
+    Private Type PAGESETUPDLG
+        lStructSize As Long
+        hwndOwner As LongPtr
+        hDevMode As LongPtr
+        hDevNames As LongPtr
+        flags As Long
+        ptPaperSize As POINTL
+        rtMinMargin As RECT
+        rtMargin As RECT
+        hInstance As LongPtr
+        lCustData As LongPtr
+        lpfnPageSetupHook As LongPtr
+        lpfnPagePaintHook As LongPtr
+        lpPageSetupTemplateName As LongPtr
+        hPageSetupTemplate As LongPtr
+    End Type
+
+    ' =====================================================
+    ' Paper Orientation Enum
+    ' =====================================================
+    Public Enum PaperOrientation
+        Portrait = 1
+        Landscape = 2
+    End Enum
+
+    ' =====================================================
+    ' Measurement Unit Enum
+    ' =====================================================
+    Public Enum MeasurementUnit
+        Inches = 0       ' Thousandths of inches
+        Millimeters = 1  ' Hundredths of millimeters
+    End Enum
+
+    ' =====================================================
+    ' Class Data
+    ' =====================================================
+    Private Type cDialogPageSetupData
+        mOwnerHwnd As LongPtr
+        mOrientation As PaperOrientation
+        mPaperWidth As Double    ' in inches
+        mPaperHeight As Double   ' in inches
+        mMarginLeft As Double    ' in inches
+        mMarginRight As Double   ' in inches
+        mMarginTop As Double     ' in inches
+        mMarginBottom As Double  ' in inches
+        mMinMarginLeft As Double
+        mMinMarginRight As Double
+        mMinMarginTop As Double
+        mMinMarginBottom As Double
+        mUnit As MeasurementUnit
+        mAllowMargins As Boolean
+        mAllowOrientation As Boolean
+        mAllowPaper As Boolean
+        mDefaultMinMargins As Boolean
+    End Type
+
+    Private mData As cDialogPageSetupData
+
+    ' =====================================================
+    ' Class Initialize/Terminate
+    ' =====================================================
+    Private Sub Class_Initialize()
+        mData.mOwnerHwnd = 0
+        mData.mOrientation = PaperOrientation.Portrait
+        mData.mPaperWidth = 8.5     ' Letter size
+        mData.mPaperHeight = 11
+        mData.mMarginLeft = 1       ' 1 inch margins
+        mData.mMarginRight = 1
+        mData.mMarginTop = 1
+        mData.mMarginBottom = 1
+        mData.mMinMarginLeft = 0.25
+        mData.mMinMarginRight = 0.25
+        mData.mMinMarginTop = 0.25
+        mData.mMinMarginBottom = 0.25
+        mData.mUnit = MeasurementUnit.Inches
+        mData.mAllowMargins = True
+        mData.mAllowOrientation = True
+        mData.mAllowPaper = True
+        mData.mDefaultMinMargins = True
+    End Sub
+
+    ' =====================================================
+    ' Property: Owner Window Handle
+    ' =====================================================
+    Public Property Get OwnerHwnd() As LongPtr
+        OwnerHwnd = mData.mOwnerHwnd
+    End Property
+
+    Public Property Let OwnerHwnd(ByVal value As LongPtr)
+        mData.mOwnerHwnd = value
+    End Property
+
+    ' =====================================================
+    ' Property: Paper Orientation
+    ' =====================================================
+    Public Property Get Orientation() As PaperOrientation
+        Orientation = mData.mOrientation
+    End Property
+
+    Public Property Let Orientation(ByVal value As PaperOrientation)
+        mData.mOrientation = value
+    End Property
+
+    ' =====================================================
+    ' Property: Paper Width (in inches)
+    ' =====================================================
+    Public Property Get PaperWidth() As Double
+        PaperWidth = mData.mPaperWidth
+    End Property
+
+    Public Property Let PaperWidth(ByVal value As Double)
+        mData.mPaperWidth = value
+    End Property
+
+    ' =====================================================
+    ' Property: Paper Height (in inches)
+    ' =====================================================
+    Public Property Get PaperHeight() As Double
+        PaperHeight = mData.mPaperHeight
+    End Property
+
+    Public Property Let PaperHeight(ByVal value As Double)
+        mData.mPaperHeight = value
+    End Property
+
+    ' =====================================================
+    ' Property: Left Margin (in inches)
+    ' =====================================================
+    Public Property Get MarginLeft() As Double
+        MarginLeft = mData.mMarginLeft
+    End Property
+
+    Public Property Let MarginLeft(ByVal value As Double)
+        mData.mMarginLeft = value
+    End Property
+
+    ' =====================================================
+    ' Property: Right Margin (in inches)
+    ' =====================================================
+    Public Property Get MarginRight() As Double
+        MarginRight = mData.mMarginRight
+    End Property
+
+    Public Property Let MarginRight(ByVal value As Double)
+        mData.mMarginRight = value
+    End Property
+
+    ' =====================================================
+    ' Property: Top Margin (in inches)
+    ' =====================================================
+    Public Property Get MarginTop() As Double
+        MarginTop = mData.mMarginTop
+    End Property
+
+    Public Property Let MarginTop(ByVal value As Double)
+        mData.mMarginTop = value
+    End Property
+
+    ' =====================================================
+    ' Property: Bottom Margin (in inches)
+    ' =====================================================
+    Public Property Get MarginBottom() As Double
+        MarginBottom = mData.mMarginBottom
+    End Property
+
+    Public Property Let MarginBottom(ByVal value As Double)
+        mData.mMarginBottom = value
+    End Property
+
+    ' =====================================================
+    ' Property: Measurement Unit
+    ' =====================================================
+    Public Property Get Unit() As MeasurementUnit
+        Unit = mData.mUnit
+    End Property
+
+    Public Property Let Unit(ByVal value As MeasurementUnit)
+        mData.mUnit = value
+    End Property
+
+    ' =====================================================
+    ' Property: Allow Margins
+    ' =====================================================
+    Public Property Get AllowMargins() As Boolean
+        AllowMargins = mData.mAllowMargins
+    End Property
+
+    Public Property Let AllowMargins(ByVal value As Boolean)
+        mData.mAllowMargins = value
+    End Property
+
+    ' =====================================================
+    ' Property: Allow Orientation
+    ' =====================================================
+    Public Property Get AllowOrientation() As Boolean
+        AllowOrientation = mData.mAllowOrientation
+    End Property
+
+    Public Property Let AllowOrientation(ByVal value As Boolean)
+        mData.mAllowOrientation = value
+    End Property
+
+    ' =====================================================
+    ' Property: Allow Paper Size Selection
+    ' =====================================================
+    Public Property Get AllowPaper() As Boolean
+        AllowPaper = mData.mAllowPaper
+    End Property
+
+    Public Property Let AllowPaper(ByVal value As Boolean)
+        mData.mAllowPaper = value
+    End Property
+
+    ' =====================================================
+    ' Property: Use Default Minimum Margins
+    ' =====================================================
+    Public Property Get DefaultMinMargins() As Boolean
+        DefaultMinMargins = mData.mDefaultMinMargins
+    End Property
+
+    Public Property Let DefaultMinMargins(ByVal value As Boolean)
+        mData.mDefaultMinMargins = value
+    End Property
+
+    ' =====================================================
+    ' Helper: Convert inches to thousandths
+    ' =====================================================
+    Private Function InchesToThousandths(ByVal inches As Double) As Long
+        InchesToThousandths = CLng(inches * 1000)
+    End Function
+
+    ' =====================================================
+    ' Helper: Convert thousandths to inches
+    ' =====================================================
+    Private Function ThousandthsToInches(ByVal thousandths As Long) As Double
+        ThousandthsToInches = thousandths / 1000
+    End Function
+
+    ' =====================================================
+    ' Helper: Convert inches to hundredths of millimeters
+    ' =====================================================
+    Private Function InchesToHundredthsMM(ByVal inches As Double) As Long
+        InchesToHundredthsMM = CLng(inches * MM_PER_INCH * 100)
+    End Function
+
+    ' =====================================================
+    ' Helper: Convert hundredths of millimeters to inches
+    ' =====================================================
+    Private Function HundredthsMMToInches(ByVal hundredthsMM As Long) As Double
+        HundredthsMMToInches = hundredthsMM / 100 / MM_PER_INCH
+    End Function
+
+    ' =====================================================
+    ' Method: Show the page setup dialog
+    ' =====================================================
+    Public Function ShowDialog() As Boolean
+        Dim psd As PAGESETUPDLG
+        Dim lngFlags As Long
+
+        ' Build flags
+        lngFlags = 0
+        If mData.mDefaultMinMargins Then lngFlags = lngFlags Or PSD_DEFAULTMINMARGINS
+
+        ' Set measurement unit
+        If mData.mUnit = MeasurementUnit.Inches Then
+            lngFlags = lngFlags Or PSD_INTHOUSANDTHSOFINCHES
+        Else
+            lngFlags = lngFlags Or PSD_INHUNDREDTHSOFMILLIMETERS
+        End If
+
+        ' Set margins
+        lngFlags = lngFlags Or PSD_MARGINS
+
+        ' Disable controls if needed
+        If Not mData.mAllowMargins Then lngFlags = lngFlags Or PSD_DISABLEMARGINS
+        If Not mData.mAllowOrientation Then lngFlags = lngFlags Or PSD_DISABLEORIENTATION
+        If Not mData.mAllowPaper Then lngFlags = lngFlags Or PSD_DISABLEPAPER
+
+        ' Fill PAGESETUPDLG structure
+        With psd
+            .lStructSize = PSD_STRUCTSIZE
+            .hwndOwner = mData.mOwnerHwnd
+            .hDevMode = 0
+            .hDevNames = 0
+            .flags = lngFlags
+
+            ' Paper size (in thousandths of inches or hundredths of mm)
+            If mData.mUnit = MeasurementUnit.Inches Then
+                .ptPaperSize.X = InchesToThousandths(mData.mPaperWidth)
+                .ptPaperSize.Y = InchesToThousandths(mData.mPaperHeight)
+                .rtMargin.Left = InchesToThousandths(mData.mMarginLeft)
+                .rtMargin.Right = InchesToThousandths(mData.mMarginRight)
+                .rtMargin.Top = InchesToThousandths(mData.mMarginTop)
+                .rtMargin.Bottom = InchesToThousandths(mData.mMarginBottom)
+            Else
+                .ptPaperSize.X = InchesToHundredthsMM(mData.mPaperWidth)
+                .ptPaperSize.Y = InchesToHundredthsMM(mData.mPaperHeight)
+                .rtMargin.Left = InchesToHundredthsMM(mData.mMarginLeft)
+                .rtMargin.Right = InchesToHundredthsMM(mData.mMarginRight)
+                .rtMargin.Top = InchesToHundredthsMM(mData.mMarginTop)
+                .rtMargin.Bottom = InchesToHundredthsMM(mData.mMarginBottom)
+            End If
+
+            .hInstance = 0
+            .lCustData = 0
+            .lpfnPageSetupHook = 0
+            .lpfnPagePaintHook = 0
+            .lpPageSetupTemplateName = 0
+            .hPageSetupTemplate = 0
+        End With
+
+        ' Show dialog
+        If PageSetupDlg(psd) <> 0 Then
+            ' User clicked OK
+            ' Extract values
+            If mData.mUnit = MeasurementUnit.Inches Then
+                mData.mPaperWidth = ThousandthsToInches(psd.ptPaperSize.X)
+                mData.mPaperHeight = ThousandthsToInches(psd.ptPaperSize.Y)
+                mData.mMarginLeft = ThousandthsToInches(psd.rtMargin.Left)
+                mData.mMarginRight = ThousandthsToInches(psd.rtMargin.Right)
+                mData.mMarginTop = ThousandthsToInches(psd.rtMargin.Top)
+                mData.mMarginBottom = ThousandthsToInches(psd.rtMargin.Bottom)
+            Else
+                mData.mPaperWidth = HundredthsMMToInches(psd.ptPaperSize.X)
+                mData.mPaperHeight = HundredthsMMToInches(psd.ptPaperSize.Y)
+                mData.mMarginLeft = HundredthsMMToInches(psd.rtMargin.Left)
+                mData.mMarginRight = HundredthsMMToInches(psd.rtMargin.Right)
+                mData.mMarginTop = HundredthsMMToInches(psd.rtMargin.Top)
+                mData.mMarginBottom = HundredthsMMToInches(psd.rtMargin.Bottom)
+            End If
+
+            ' Free device mode and names memory
+            If psd.hDevMode <> 0 Then GlobalFree psd.hDevMode
+            If psd.hDevNames <> 0 Then GlobalFree psd.hDevNames
+
+            ShowDialog = True
+        Else
+            ' User cancelled
+            ShowDialog = False
+        End If
+    End Function
+
+    ' =====================================================
+    ' Method: Get printable area width (in inches)
+    ' =====================================================
+    Public Function GetPrintableWidth() As Double
+        GetPrintableWidth = mData.mPaperWidth - mData.mMarginLeft - mData.mMarginRight
+    End Function
+
+    ' =====================================================
+    ' Method: Get printable area height (in inches)
+    ' =====================================================
+    Public Function GetPrintableHeight() As Double
+        GetPrintableHeight = mData.mPaperHeight - mData.mMarginTop - mData.mMarginBottom
+    End Function
+
+    ' =====================================================
+    ' Method: Get page settings description
+    ' =====================================================
+    Public Function ToDescription() As String
+        Dim strOrientation As String
+        Dim strUnit As String
+
+        If mData.mOrientation = PaperOrientation.Portrait Then
+            strOrientation = "Portrait"
+        Else
+            strOrientation = "Landscape"
+        End If
+
+        If mData.mUnit = MeasurementUnit.Inches Then
+            strUnit = "in"
+        Else
+            strUnit = "mm"
+        End If
+
+        ToDescription = "Paper: " & Format$(mData.mPaperWidth, "0.00") & " x " & Format$(mData.mPaperHeight, "0.00") & " " & strUnit & _
+                       ", " & strOrientation & _
+                       ", Margins: " & Format$(mData.mMarginLeft, "0.00") & "/" & _
+                                     Format$(mData.mMarginRight, "0.00") & "/" & _
+                                     Format$(mData.mMarginTop, "0.00") & "/" & _
+                                     Format$(mData.mMarginBottom, "0.00") & " " & strUnit
+    End Function
+
+    ' =====================================================
+    ' Method: Set Letter size (8.5 x 11 inches)
+    ' =====================================================
+    Public Sub SetLetterSize()
+        mData.mPaperWidth = 8.5
+        mData.mPaperHeight = 11
+    End Sub
+
+    ' =====================================================
+    ' Method: Set A4 size (210 x 297 mm)
+    ' =====================================================
+    Public Sub SetA4Size()
+        mData.mPaperWidth = 210 / MM_PER_INCH
+        mData.mPaperHeight = 297 / MM_PER_INCH
+    End Sub
+
+    ' =====================================================
+    ' Method: Set Legal size (8.5 x 14 inches)
+    ' =====================================================
+    Public Sub SetLegalSize()
+        mData.mPaperWidth = 8.5
+        mData.mPaperHeight = 14
+    End Sub
+
+    ' =====================================================
+    ' Method: Set 1 inch margins
+    ' =====================================================
+    Public Sub SetDefaultMargins()
+        mData.mMarginLeft = 1
+        mData.mMarginRight = 1
+        mData.mMarginTop = 1
+        mData.mMarginBottom = 1
+    End Sub
+
+    ' =====================================================
+    ' Method: Set narrow margins (0.5 inch)
+    ' =====================================================
+    Public Sub SetNarrowMargins()
+        mData.mMarginLeft = 0.5
+        mData.mMarginRight = 0.5
+        mData.mMarginTop = 0.5
+        mData.mMarginBottom = 0.5
+    End Sub
+
+    ' =====================================================
+    ' Method: Reset to default settings
+    ' =====================================================
+    Public Sub Reset()
+        mData.mOrientation = PaperOrientation.Portrait
+        mData.mPaperWidth = 8.5
+        mData.mPaperHeight = 11
+        mData.mMarginLeft = 1
+        mData.mMarginRight = 1
+        mData.mMarginTop = 1
+        mData.mMarginBottom = 1
+        mData.mMinMarginLeft = 0.25
+        mData.mMinMarginRight = 0.25
+        mData.mMinMarginTop = 0.25
+        mData.mMinMarginBottom = 0.25
+        mData.mUnit = MeasurementUnit.Inches
+        mData.mAllowMargins = True
+        mData.mAllowOrientation = True
+        mData.mAllowPaper = True
+        mData.mDefaultMinMargins = True
+    End Sub
+
+End Class

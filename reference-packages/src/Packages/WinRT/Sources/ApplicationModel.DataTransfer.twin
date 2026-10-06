@@ -1,0 +1,659 @@
+[InterfaceId("E7ECD720-F2F4-4A2D-920E-170A2F482A27")]
+Interface IDataProviderHandler Extends IUnknown
+    Sub Invoke(ByVal Request As IDataProviderRequest)
+End Interface
+
+[InterfaceId("E7F9D9BA-E1BA-4E4D-BD65-D43845D3212F")]
+Interface IShareProviderHandler Extends IUnknown
+    Sub Invoke(ByVal Operation As IShareProviderOperation)
+End Interface
+
+[InterfaceId("E888A98C-AD4B-5447-A056-AB3556276D2B")]
+Interface IClipboardContentOptions Extends IInspectable
+    Property Get IsRoamable() As BooleanByte
+    Property Let IsRoamable(ByVal Value As BooleanByte)
+    Property Get IsAllowedInHistory() As BooleanByte
+    Property Let IsAllowedInHistory(ByVal Value As BooleanByte)
+    Property Get RoamingFormats() As IVector_HSTRING
+    Property Get HistoryFormats() As IVector_HSTRING
+End Interface
+
+[InterfaceId("C0BE453F-8EA2-53CE-9ABA-8D2212573452")]
+Interface IClipboardHistoryChangedEventArgs Extends IInspectable
+
+End Interface
+
+[InterfaceId("0173BD8A-AFFF-5C50-AB92-3D19F481EC58")]
+Interface IClipboardHistoryItem Extends IInspectable
+    Property Get Id() As LongPtr
+    Property Get Timestamp() As DateTime
+    Property Get Content() As IDataPackageView
+End Interface
+
+[InterfaceId("63FAC521-1395-5C95-AAFF-9736378A4F2F")]
+Interface IIterator_IClipboardHistoryItem Extends IInspectable
+    Property Get Current() As IClipboardHistoryItem
+    Property Get HasCurrent() As BooleanByte
+    Function MoveNext() As BooleanByte
+    Function GetMany(ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("5C3705F4-8E46-5AE5-97BF-88220CCCFFD9")]
+Interface IIterable_IClipboardHistoryItem Extends IInspectable
+    Function First() As IIterator_IClipboardHistoryItem
+End Interface
+
+[InterfaceId("C91DE16D-13FF-55B0-897D-18A131D57AC9")]
+Interface IVectorView_IClipboardHistoryItem Extends IInspectable
+    Function GetAt(ByVal Index As Long) As IClipboardHistoryItem
+    Property Get Size() As Long
+    Function IndexOf(ByVal Value As IClipboardHistoryItem, Index As Long) As BooleanByte
+    Function GetMany(ByVal StartIndex As Long, ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("E6DFDEE6-0EE2-52E3-852B-F295DB65939A")]
+Interface IClipboardHistoryItemsResult Extends IInspectable
+    Property Get Status() As ClipboardHistoryItemsResultStatus
+    Property Get Items() As IVectorView_IClipboardHistoryItem
+End Interface
+
+[InterfaceId("C627E291-34E2-4963-8EED-93CBB0EA3D70")]
+Interface IClipboardStatics Extends IInspectable
+    Function GetContent() As IDataPackageView
+    [PreserveSig]
+    Function SetContent(ByVal Content As IDataPackage) As HRESULT
+    [PreserveSig]
+    Function Flush() As HRESULT
+    [PreserveSig]
+    Function Clear() As HRESULT
+    [PreserveSig]
+    Function AddContentChanged(ByVal Handler As IEventHandlerIInspectable, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveContentChanged(ByVal Token As EventRegistrationToken) As HRESULT
+End Interface
+
+[InterfaceId("677B06B8-0134-5692-B487-4C8E2408CA01")]
+Interface IAsyncOperationIClipboardHistoryItemsResult Extends IInspectable
+    Property Set Completed(ByVal Handler As IAsyncOperationCompletedHandlerIClipboardHistoryItemsResult)
+    Property Get Completed() As IAsyncOperationCompletedHandlerIClipboardHistoryItemsResult
+    Function GetResults() As IClipboardHistoryItemsResult
+End Interface
+
+[InterfaceId("841DA82D-A32C-5997-8450-F54AF1D5477E")]
+Interface IAsyncOperationCompletedHandlerIClipboardHistoryItemsResult Extends IUnknown
+    Sub Invoke(ByVal AsyncOperation As IAsyncOperationIClipboardHistoryItemsResult, ByVal AsyncStatus As AsyncStatus)
+End Interface
+
+[InterfaceId("DF4AAC23-4002-5D4C-A237-2526E344978D")]
+Interface IEventHandlerClipboardHistoryChanged Extends IUnknown
+    Sub Invoke(ByVal Sender As IInspectable, ByVal Args As IClipboardHistoryChangedEventArgs)
+End Interface
+
+[InterfaceId("D2AC1B6A-D29F-554B-B303-F0452345FE02")]
+Interface IClipboardStatics2 Extends IInspectable
+    Function GetHistoryItemsAsync() As IAsyncOperationIClipboardHistoryItemsResult
+    Function ClearHistory() As BooleanByte
+    Function DeleteItemFromHistory(ByVal Item As IClipboardHistoryItem) As BooleanByte
+    Function SetHistoryItemAsContent(ByVal Item As IClipboardHistoryItem) As SetHistoryItemAsContentStatus
+    Function IsHistoryEnabled() As BooleanByte
+    Function IsRoamingEnabled() As BooleanByte
+    Function SetContentWithOptions(ByVal Content As IDataPackage, ByVal Options As IClipboardContentOptions) As BooleanByte
+    [PreserveSig]
+    Function AddHistoryChanged(ByVal Handler As IEventHandlerClipboardHistoryChanged, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveHistoryChanged(ByVal Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function AddRoamingEnabledChanged(ByVal Handler As IEventHandlerIInspectable, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveRoamingEnabledChanged(ByVal Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function AddHistoryEnabledChanged(ByVal Handler As IEventHandlerIInspectable, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveHistoryEnabledChanged(ByVal Token As EventRegistrationToken) As HRESULT
+End Interface
+
+[InterfaceId("9419AF53-ACB8-5328-8853-70BA87EB6AD5")]
+Interface IIterator_KVP_IRandomAccessStreamReference Extends IInspectable
+    Property Get Current() As KVP_IRandomAccessStreamReference
+    Property Get HasCurrent() As BooleanByte
+    Function MoveNext() As BooleanByte
+    Function GetMany(ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("C9729BA7-5E20-569D-A3D1-97A4E653E5BB")]
+Interface IIterable_KVP_IRandomAccessStreamReference Extends IInspectable
+    Function First() As IIterator_KVP_IRandomAccessStreamReference
+End Interface
+
+[InterfaceId("E5195792-AEAB-56E8-BD30-1372C4340BF6")]
+Interface KVP_IRandomAccessStreamReference Extends IInspectable
+    Property Get Key() As LongPtr
+    Property Get Value() As IRandomAccessStreamReference
+End Interface
+
+[InterfaceId("0A4CE7A5-DFE0-5796-A438-EFFDFAA31F1B")]
+Interface IMapView_IRandomAccessStreamReference Extends IInspectable
+    Function Lookup(ByVal Key As LongPtr) As IRandomAccessStreamReference
+    Property Get Size() As Long
+    Function HasKey(ByVal Key As LongPtr) As BooleanByte
+    Sub Split(First As IMapView_IRandomAccessStreamReference, Second As IMapView_IRandomAccessStreamReference)
+End Interface
+
+[InterfaceId("E5D2CCFC-825A-5A8E-82AA-095ED5DBD5D1")]
+Interface IMap_IRandomAccessStreamReference Extends IInspectable
+    Function Lookup(ByVal Key As LongPtr) As IRandomAccessStreamReference
+    Property Get Size() As Long
+    Function HasKey(ByVal Key As LongPtr) As BooleanByte
+    Function GetView() As IMapView_IRandomAccessStreamReference
+    Function Insert(ByVal Key As LongPtr, ByVal Value As IRandomAccessStreamReference) As BooleanByte
+    [PreserveSig]
+    Function Remove(ByVal Key As LongPtr) As HRESULT
+    [PreserveSig]
+    Function Clear() As HRESULT
+End Interface
+
+[InterfaceId("FC012D44-2DCF-5162-BE9A-7668675AA590")]
+Interface IAsyncOperationIMapView_IRandomAccessStreamReference Extends IInspectable
+    Property Set Completed(ByVal Handler As IAsyncOperationCompletedHandlerIMapView_IRandomAccessStreamReference)
+    Property Get Completed() As IAsyncOperationCompletedHandlerIMapView_IRandomAccessStreamReference
+    Function GetResults() As IMapView_IRandomAccessStreamReference
+End Interface
+
+[InterfaceId("D4CB6B80-821A-5A7B-898D-D58917B31A36")]
+Interface IAsyncOperationCompletedHandlerIMapView_IRandomAccessStreamReference Extends IUnknown
+    Sub Invoke(ByVal AsyncOperation As IAsyncOperationIMapView_IRandomAccessStreamReference, ByVal AsyncStatus As AsyncStatus)
+End Interface
+
+[InterfaceId("C156B0C3-1CBC-5CA4-901C-62C5A8CA5CB5")]
+Interface ITypedEventHandlerDataPackageIInspectable Extends IUnknown
+    Sub Invoke(ByVal Sender As IDataPackage, ByVal Args As IInspectable)
+End Interface
+
+[InterfaceId("DD48AF6C-EF9A-59CB-B326-57D9E2411F21")]
+Interface ITypedEventHandlerDataPackageOperationCompleted Extends IUnknown
+    Sub Invoke(ByVal Sender As IDataPackage, ByVal Args As IOperationCompletedEventArgs)
+End Interface
+
+[InterfaceId("61EBF5C7-EFEA-4346-9554-981D7E198FFE")]
+Interface IDataPackage Extends IInspectable
+    Function GetView() As IDataPackageView
+    Property Get Properties() As IDataPackagePropertySet
+    Property Get RequestedOperation() As DataPackageOperation
+    Property Let RequestedOperation(ByVal Value As DataPackageOperation)
+    [PreserveSig]
+    Function AddOperationCompleted(ByVal Handler As ITypedEventHandlerDataPackageOperationCompleted, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveOperationCompleted(ByVal Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function AddDestroyed(ByVal Handler As ITypedEventHandlerDataPackageIInspectable, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveDestroyed(ByVal Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function SetData(ByVal FormatId As LongPtr, ByVal Value As IInspectable) As HRESULT
+    [PreserveSig]
+    Function SetDataProvider(ByVal FormatId As LongPtr, ByVal DelayRenderer As IDataProviderHandler) As HRESULT
+    [PreserveSig]
+    Function SetText(ByVal Value As LongPtr) As HRESULT
+    [PreserveSig]
+    Function SetUri(ByVal Value As IUri) As HRESULT
+    [PreserveSig]
+    Function SetHtmlFormat(ByVal Value As LongPtr) As HRESULT
+    Property Get ResourceMap() As IMap_IRandomAccessStreamReference
+    [PreserveSig]
+    Function SetRtf(ByVal Value As LongPtr) As HRESULT
+    [PreserveSig]
+    Function SetBitmap(ByVal Value As IRandomAccessStreamReference) As HRESULT
+    [PreserveSig]
+    Function SetStorageItemsReadOnly(ByVal Value As IIterable_IStorageItem) As HRESULT
+    [PreserveSig]
+    Function SetStorageItems(ByVal Value As IIterable_IStorageItem, ByVal ReadOnly As BooleanByte) As HRESULT
+End Interface
+
+[InterfaceId("041C1FE9-2409-45E1-A538-4C53EEEE04A7")]
+Interface IDataPackage2 Extends IInspectable
+    [PreserveSig]
+    Function SetApplicationLink(ByVal Value As IUri) As HRESULT
+    [PreserveSig]
+    Function SetWebLink(ByVal Value As IUri) As HRESULT
+End Interface
+
+[InterfaceId("F8F7E24A-56FE-58DF-BC15-2365AEC03966")]
+Interface ITypedEventHandlerDataPackageShareCompleted Extends IUnknown
+    Sub Invoke(ByVal Sender As IDataPackage, ByVal Args As IShareCompletedEventArgs)
+End Interface
+
+[InterfaceId("88F31F5D-787B-4D32-965A-A9838105A056")]
+Interface IDataPackage3 Extends IInspectable
+    [PreserveSig]
+    Function AddShareCompleted(ByVal Handler As ITypedEventHandlerDataPackageShareCompleted, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveShareCompleted(ByVal Token As EventRegistrationToken) As HRESULT
+End Interface
+
+[InterfaceId("13A24EC8-9382-536F-852A-3045E1B29A3B")]
+Interface IDataPackage4 Extends IInspectable
+    [PreserveSig]
+    Function AddShareCanceled(ByVal Handler As ITypedEventHandlerDataPackageIInspectable, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveShareCanceled(ByVal Token As EventRegistrationToken) As HRESULT
+End Interface
+
+[InterfaceId("CD1C93EB-4C4C-443A-A8D3-F5C241E91689")]
+Interface IDataPackagePropertySet Extends IInspectable ' requires IMap<HSTRING, IInspectable*>
+    Property Get Title() As LongPtr
+    Property Let Title(ByVal Value As LongPtr)
+    Property Get Description() As LongPtr
+    Property Let Description(ByVal Value As LongPtr)
+    Property Get Thumbnail() As IRandomAccessStreamReference
+    Property Set Thumbnail(ByVal Value As IRandomAccessStreamReference)
+    Property Get FileTypes() As IVector_HSTRING
+    Property Get ApplicationName() As LongPtr
+    Property Let ApplicationName(ByVal Value As LongPtr)
+    Property Get ApplicationListingUri() As IUri
+    Property Set ApplicationListingUri(ByVal Value As IUri)
+End Interface
+
+[InterfaceId("EB505D4A-9800-46AA-B181-7B6F0F2B919A")]
+Interface IDataPackagePropertySet2 Extends IInspectable
+    Property Get ContentSourceWebLink() As IUri
+    Property Set ContentSourceWebLink(ByVal Value As IUri)
+    Property Get ContentSourceApplicationLink() As IUri
+    Property Set ContentSourceApplicationLink(ByVal Value As IUri)
+    Property Get PackageFamilyName() As LongPtr
+    Property Let PackageFamilyName(ByVal Value As LongPtr)
+    Property Get Square30x30Logo() As IRandomAccessStreamReference
+    Property Set Square30x30Logo(ByVal Value As IRandomAccessStreamReference)
+    Property Get LogoBackgroundColor() As Color
+    Property Let LogoBackgroundColor(ByVal Value As Color)
+End Interface
+
+[InterfaceId("9E87FD9B-5205-401B-874A-455653BD39E8")]
+Interface IDataPackagePropertySet3 Extends IInspectable
+    Property Get EnterpriseId() As LongPtr
+    Property Let EnterpriseId(ByVal Value As LongPtr)
+End Interface
+
+[InterfaceId("6390EBF5-1739-4C74-B22F-865FAB5E8545")]
+Interface IDataPackagePropertySet4 Extends IInspectable
+    Property Get ContentSourceUserActivityJson() As LongPtr
+    Property Let ContentSourceUserActivityJson(ByVal Value As LongPtr)
+End Interface
+
+[InterfaceId("B94CEC01-0C1A-4C57-BE55-75D01289735D")]
+Interface IDataPackagePropertySetView Extends IInspectable
+    Property Get Title() As LongPtr
+    Property Get Description() As LongPtr
+    Property Get Thumbnail() As IRandomAccessStreamReference
+    Property Get FileTypes() As IVectorView_HSTRING
+    Property Get ApplicationName() As LongPtr
+    Property Get ApplicationListingUri() As IUri
+End Interface
+
+[InterfaceId("6054509B-8EBE-4FEB-9C1E-75E69DE54B84")]
+Interface IDataPackagePropertySetView2 Extends IInspectable
+    Property Get PackageFamilyName() As LongPtr
+    Property Get ContentSourceWebLink() As IUri
+    Property Get ContentSourceApplicationLink() As IUri
+    Property Get Square30x30Logo() As IRandomAccessStreamReference
+    Property Get LogoBackgroundColor() As Color
+End Interface
+
+[InterfaceId("DB764CE5-D174-495C-84FC-1A51F6AB45D7")]
+Interface IDataPackagePropertySetView3 Extends IInspectable
+    Property Get EnterpriseId() As LongPtr
+End Interface
+
+[InterfaceId("4474C80D-D16F-40AE-9580-6F8562B94235")]
+Interface IDataPackagePropertySetView4 Extends IInspectable
+    Property Get ContentSourceUserActivityJson() As LongPtr
+End Interface
+
+[InterfaceId("6F0A9445-3760-50BB-8523-C4202DED7D78")]
+Interface IDataPackagePropertySetView5 Extends IInspectable
+    Property Get IsFromRoamingClipboard() As BooleanByte
+End Interface
+
+[InterfaceId("641CB9DD-A28D-59E2-B8DB-A227EDA6CF2E")]
+Interface IAsyncOperationIUri Extends IInspectable
+    Property Set Completed(ByVal Handler As IAsyncOperationCompletedHandlerIUri)
+    Property Get Completed() As IAsyncOperationCompletedHandlerIUri
+    Function GetResults() As IUri
+End Interface
+
+[InterfaceId("AD46F1CC-2BB0-585C-9885-03C2780D4D58")]
+Interface IAsyncOperationCompletedHandlerIUri Extends IUnknown
+    Sub Invoke(ByVal AsyncOperation As IAsyncOperationIUri, ByVal AsyncStatus As AsyncStatus)
+End Interface
+
+[InterfaceId("D90442CA-543C-504B-9EB9-294BCAD8A283")]
+Interface IAsyncOperationRandomAccessStreamReference Extends IInspectable
+    Property Set Completed(ByVal Handler As IAsyncOperationCompletedHandlerRandomAccessStreamReference)
+    Property Get Completed() As IAsyncOperationCompletedHandlerRandomAccessStreamReference
+    Function GetResults() As IRandomAccessStreamReference
+End Interface
+
+[InterfaceId("3D203732-DED7-5D32-87E6-C179781F791F")]
+Interface IAsyncOperationCompletedHandlerRandomAccessStreamReference Extends IUnknown
+    Sub Invoke(ByVal AsyncOperation As IAsyncOperationRandomAccessStreamReference, ByVal AsyncStatus As AsyncStatus)
+End Interface
+
+[InterfaceId("7B840471-5900-4D85-A90B-10CB85FE3552")]
+Interface IDataPackageView Extends IInspectable
+    Property Get Properties() As IDataPackagePropertySetView
+    Property Get RequestedOperation() As DataPackageOperation
+    [PreserveSig]
+    Function ReportOperationCompleted(ByVal Value As DataPackageOperation) As HRESULT
+    Property Get AvailableFormats() As IVectorView_HSTRING
+    Function Contains(ByVal FormatId As LongPtr) As BooleanByte
+    Function GetDataAsync(ByVal FormatId As LongPtr) As IAsyncOperationIInspectable
+    Function GetTextAsync() As IAsyncOperationHSTRING
+    Function GetCustomTextAsync(ByVal FormatId As LongPtr) As IAsyncOperationHSTRING
+    Function GetUriAsync() As IAsyncOperationIUri
+    Function GetHtmlFormatAsync() As IAsyncOperationHSTRING
+    Function GetResourceMapAsync() As IAsyncOperationIMapView_IRandomAccessStreamReference
+    Function GetRtfAsync() As IAsyncOperationHSTRING
+    Function GetBitmapAsync() As IAsyncOperationRandomAccessStreamReference
+    Function GetStorageItemsAsync() As IAsyncOperationIVectorView_IStorageItem
+End Interface
+
+[InterfaceId("40ECBA95-2450-4C1D-B6B4-ED45463DEE9C")]
+Interface IDataPackageView2 Extends IInspectable
+    Function GetApplicationLinkAsync() As IAsyncOperationIUri
+    Function GetWebLinkAsync() As IAsyncOperationIUri
+End Interface
+
+[InterfaceId("E8D81715-C56C-5A6B-B738-5DF6C2775B7B")]
+Interface IAsyncOperationProtectionPolicyEvaluationResult Extends IInspectable
+    Property Set Completed(ByVal Handler As IAsyncOperationCompletedHandlerProtectionPolicyEvaluationResult)
+    Property Get Completed() As IAsyncOperationCompletedHandlerProtectionPolicyEvaluationResult
+    Function GetResults() As ProtectionPolicyEvaluationResult
+End Interface
+
+[InterfaceId("2833BA54-A4E1-5C2D-8A7A-136E8510C78B")]
+Interface IAsyncOperationCompletedHandlerProtectionPolicyEvaluationResult Extends IUnknown
+    Sub Invoke(ByVal AsyncOperation As IAsyncOperationProtectionPolicyEvaluationResult, ByVal AsyncStatus As AsyncStatus)
+End Interface
+
+[InterfaceId("D37771A8-DDAD-4288-8428-D1CAE394128B")]
+Interface IDataPackageView3 Extends IInspectable
+    Function RequestAccessAsync() As IAsyncOperationProtectionPolicyEvaluationResult
+    Function RequestAccessWithEnterpriseIdAsync(ByVal EnterpriseId As LongPtr) As IAsyncOperationProtectionPolicyEvaluationResult
+    Function UnlockAndAssumeEnterpriseIdentity() As ProtectionPolicyEvaluationResult
+End Interface
+
+[InterfaceId("DFE96F1F-E042-4433-A09F-26D6FFDA8B85")]
+Interface IDataPackageView4 Extends IInspectable
+    [PreserveSig]
+    Function SetAcceptedFormatId(ByVal FormatId As LongPtr) As HRESULT
+End Interface
+
+[InterfaceId("C2CF2373-2D26-43D9-B69D-DCB86D03F6DA")]
+Interface IDataProviderDeferral Extends IInspectable
+    [PreserveSig]
+    Function Complete() As HRESULT
+End Interface
+
+[InterfaceId("EBBC7157-D3C8-47DA-ACDE-F82388D5F716")]
+Interface IDataProviderRequest Extends IInspectable
+    Property Get FormatId() As LongPtr
+    Property Get Deadline() As DateTime
+    Function GetDeferral() As IDataProviderDeferral
+    [PreserveSig]
+    Function SetData(ByVal Value As IInspectable) As HRESULT
+End Interface
+
+[InterfaceId("4341AE3B-FC12-4E53-8C02-AC714C415A27")]
+Interface IDataRequest Extends IInspectable
+    Property Get Data() As IDataPackage
+    Property Set Data(ByVal Value As IDataPackage)
+    Property Get Deadline() As DateTime
+    [PreserveSig]
+    Function FailWithDisplayText(ByVal Value As LongPtr) As HRESULT
+    Function GetDeferral() As IDataRequestDeferral
+End Interface
+
+[InterfaceId("6DC4B89F-0386-4263-87C1-ED7DCE30890E")]
+Interface IDataRequestDeferral Extends IInspectable
+    [PreserveSig]
+    Function Complete() As HRESULT
+End Interface
+
+[InterfaceId("CB8BA807-6AC5-43C9-8AC5-9BA232163182")]
+Interface IDataRequestedEventArgs Extends IInspectable
+    Property Get Request() As IDataRequest
+End Interface
+
+[InterfaceId("EC6F9CC8-46D0-5E0E-B4D2-7D7773AE37A0")]
+Interface ITypedEventHandlerDataTransferManagerDataRequested Extends IUnknown
+    Sub Invoke(ByVal Sender As IDataTransferManager, ByVal Args As IDataRequestedEventArgs)
+End Interface
+
+[InterfaceId("147E2860-7397-582F-80DB-B8685383A937")]
+Interface ITypedEventHandlerDataTransferManagerShareProvidersRequested Extends IUnknown
+    Sub Invoke(ByVal Sender As IDataTransferManager, ByVal Args As IShareProvidersRequestedEventArgs)
+End Interface
+
+[InterfaceId("C4AC1BA2-7851-5A44-BC8D-3D7C713F1F41")]
+Interface ITypedEventHandlerDataTransferManagerTargetApplicationChosen Extends IUnknown
+    Sub Invoke(ByVal Sender As IDataTransferManager, ByVal Args As ITargetApplicationChosenEventArgs)
+End Interface
+
+[InterfaceId("A5CAEE9B-8708-49D1-8D36-67D25A8DA00C")]
+Interface IDataTransferManager Extends IInspectable
+    [PreserveSig]
+    Function AddDataRequested(ByVal Handler As ITypedEventHandlerDataTransferManagerDataRequested, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveDataRequested(ByVal Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function AddTargetApplicationChosen(ByVal Handler As ITypedEventHandlerDataTransferManagerTargetApplicationChosen, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveTargetApplicationChosen(ByVal Token As EventRegistrationToken) As HRESULT
+End Interface
+
+[InterfaceId("30AE7D71-8BA8-4C02-8E3F-DDB23B388715")]
+Interface IDataTransferManager2 Extends IInspectable
+    Function AddShareProvidersRequested(ByVal Handler As ITypedEventHandlerDataTransferManagerShareProvidersRequested, Optional Token As EventRegistrationToken) As HRESULT
+    Function RemoveShareProvidersRequested(ByVal Token As EventRegistrationToken) As HRESULT
+End Interface
+
+[InterfaceId("A9DA01AA-E00E-4CFE-AA44-2DD932DCA3D8")]
+Interface IDataTransferManagerStatics Extends IInspectable
+    [PreserveSig]
+    Function ShowShareUI() As HRESULT
+    Function GetForCurrentView() As IDataTransferManager
+End Interface
+
+[InterfaceId("C54EC2EC-9F97-4D63-9868-395E271AD8F5")]
+Interface IDataTransferManagerStatics2 Extends IInspectable
+    Function IsSupported() As BooleanByte
+End Interface
+
+[InterfaceId("05845473-6C82-4F5C-AC23-62E458361FAC")]
+Interface IDataTransferManagerStatics3 Extends IInspectable
+    [PreserveSig]
+    Function ShowShareUIWithOptions(ByVal Options As IShareUIOptions) As HRESULT
+End Interface
+
+[InterfaceId("3A3DCD6C-3EAB-43DC-BCDE-45671CE800C8")]
+Interface IDataTransferManagerInterop Extends IUnknown
+    Function GetForWindow(ByVal AppWindow As LongPtr, rIID As Any) As IDataTransferManager
+    [PreserveSig]
+    Function ShowShareUIForWindow(ByVal AppWindow As LongPtr) As HRESULT
+End Interface
+
+[InterfaceId("E22E7749-DD70-446F-AEFC-61CEE59F655E")]
+Interface IHtmlFormatHelperStatics Extends IInspectable
+    Function GetStaticFragment(ByVal HtmlFormat As LongPtr) As LongPtr
+    Function CreateHtmlFormat(ByVal HtmlFragment As LongPtr) As LongPtr
+End Interface
+
+[InterfaceId("E7AF329D-051D-4FAB-B1A9-47FD77F70A41")]
+Interface IOperationCompletedEventArgs Extends IInspectable
+    Property Get Operation() As DataPackageOperation
+End Interface
+
+[InterfaceId("858FA073-1E19-4105-B2F7-C8478808D562")]
+Interface IOperationCompletedEventArgs2 Extends IInspectable
+    Property Get AcceptedFormatId() As LongPtr
+End Interface
+
+[InterfaceId("4574C442-F913-4F60-9DF7-CC4060AB1916")]
+Interface IShareCompletedEventArgs Extends IInspectable
+    Property Get ShareTarget() As IShareTargetInfo
+End Interface
+
+[InterfaceId("2FABE026-443E-4CDA-AF25-8D81070EFD80")]
+Interface IShareProvider Extends IInspectable
+    Property Get Title() As LongPtr
+    Property Get DisplayIcon() As IRandomAccessStreamReference
+    Property Get BackgroundColor() As Color
+    Property Get Tag() As IInspectable
+    Property Set Tag(ByVal Value As IInspectable)
+End Interface
+
+[InterfaceId("172A174C-E79E-4F6D-B07D-128F469E0296")]
+Interface IShareProviderFactory Extends IInspectable
+    Function Create(ByVal Title As LongPtr, ByVal DisplayIcon As IRandomAccessStreamReference, ByVal BackgroundColor As Color, ByVal Handler As IShareProviderHandler) As IShareProvider
+End Interface
+
+[InterfaceId("19CEF937-D435-4179-B6AF-14E0492B69F6")]
+Interface IShareProviderOperation Extends IInspectable
+    Property Get Data() As IDataPackageView
+    Property Get Provider() As IShareProvider
+    [PreserveSig]
+    Function ReportCompleted() As HRESULT
+End Interface
+
+[InterfaceId("886F5642-E9F9-573B-9213-5840B5062B40")]
+Interface IIterator_IShareProvider Extends IInspectable
+    Property Get Current() As IShareProvider
+    Property Get HasCurrent() As BooleanByte
+    Function MoveNext() As BooleanByte
+    Function GetMany(ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("0903B218-5CAD-53E6-9A21-6F4B31C4A409")]
+Interface IIterable_IShareProvider Extends IInspectable
+    Function First() As IIterator_IShareProvider
+End Interface
+
+[InterfaceId("946537A2-932C-5B77-AB36-B70650F0BCD5")]
+Interface IVectorView_IShareProvider Extends IInspectable
+    Function GetAt(ByVal Index As Long) As IShareProvider
+    Property Get Size() As Long
+    Function IndexOf(ByVal Value As IShareProvider, Index As Long) As BooleanByte
+    Function GetMany(ByVal StartIndex As Long, ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("A1687865-31E2-5536-97EC-292269A78046")]
+Interface IVector_IShareProvider Extends IInspectable
+    Function GetAt(ByVal Index As Long) As IShareProvider
+    Property Get Size() As Long
+    Function GetView() As IVectorView_IShareProvider
+    Function IndexOf(ByVal Value As IShareProvider, Index As Long) As BooleanByte
+    [PreserveSig]
+    Function SetAt(ByVal Index As Long, ByVal Value As IShareProvider) As HRESULT
+    [PreserveSig]
+    Function InsertAt(ByVal Index As Long, ByVal Value As IShareProvider) As HRESULT
+    [PreserveSig]
+    Function RemoveAt(ByVal Index As Long) As HRESULT
+    [PreserveSig]
+    Function Append(ByVal Value As IShareProvider) As HRESULT
+    [PreserveSig]
+    Function RemoveAtEnd() As HRESULT
+    [PreserveSig]
+    Function Clear() As HRESULT
+    Function GetMany(ByVal StartIndex As Long, ByVal Length As Long, Items As Any) As Long
+    [PreserveSig]
+    Function ReplaceAll(ByVal Length As Long, Items As Any) As HRESULT
+End Interface
+
+[InterfaceId("F888F356-A3F8-4FCE-85E4-8826E63BE799")]
+Interface IShareProvidersRequestedEventArgs Extends IInspectable
+    Property Get Providers() As IVector_IShareProvider
+    Property Get Data() As IDataPackageView
+    Function GetDeferral() As IDeferral
+End Interface
+
+[InterfaceId("385BE607-C6E8-4114-B294-28F3BB6F9904")]
+Interface IShareTargetInfo Extends IInspectable
+    Property Get AppUserModelId() As LongPtr
+    Property Get ShareProvider() As IShareProvider
+End Interface
+
+[InterfaceId("72FA8A80-342F-4D90-9551-2AE04E37680C")]
+Interface IShareUIOptions Extends IInspectable
+    Property Get Theme() As ShareUITheme
+    Property Let Theme(ByVal Value As ShareUITheme)
+    Property Get SelectionRect() As IReference_Rect
+    Property Set SelectionRect(ByVal Value As IReference_Rect)
+End Interface
+
+[InterfaceId("C6132ADA-34B1-4849-BD5F-D09FEE3158C5")]
+Interface ISharedStorageAccessManagerStatics Extends IInspectable
+    Function AddFile(ByVal File As IStorageFile) As LongPtr
+    Function RedeemTokenForFileAsync(ByVal Token As LongPtr) As IAsyncOperationIStorageFile
+    [PreserveSig]
+    Function RemoveFile(ByVal Token As LongPtr) As HRESULT
+End Interface
+
+[InterfaceId("7ED681A1-A880-40C9-B4ED-0BEE1E15F549")]
+Interface IStandardDataFormatsStatics Extends IInspectable
+    Property Get Text() As LongPtr
+    Property Get Uri() As LongPtr
+    Property Get Html() As LongPtr
+    Property Get Rtf() As LongPtr
+    Property Get Bitmap() As LongPtr
+    Property Get StorageItems() As LongPtr
+End Interface
+
+[InterfaceId("42A254F4-9D76-42E8-861B-47C25DD0CF71")]
+Interface IStandardDataFormatsStatics2 Extends IInspectable
+    Property Get WebLink() As LongPtr
+    Property Get ApplicationLink() As LongPtr
+End Interface
+
+[InterfaceId("3B57B069-01D4-474C-8B5F-BC8E27F38B21")]
+Interface IStandardDataFormatsStatics3 Extends IInspectable
+    Property Get UserActivityJsonArray() As LongPtr
+End Interface
+
+[InterfaceId("CA6FB8AC-2987-4EE3-9C54-D8AFBCB86C1D")]
+Interface ITargetApplicationChosenEventArgs Extends IInspectable
+    Property Get ApplicationName() As LongPtr
+End Interface
+
+Module mdlApplicationModelDataTransfer
+
+Public Enum ClipboardHistoryItemsResultStatus
+    ClipboardHistoryItemsResultStatus_Success
+    ClipboardHistoryItemsResultStatus_AccessDenied
+    ClipboardHistoryItemsResultStatus_ClipboardHistoryDisabled
+End Enum
+
+Public Enum DataPackageOperation
+    DataPackageOperation_None = &H0
+    DataPackageOperation_Copy = &H1
+    DataPackageOperation_Move = &H2
+    DataPackageOperation_Link = &H4
+End Enum
+
+Public Enum ProtectionPolicyEvaluationResult
+    ProtectionPolicyEvaluationResult_Allowed
+    ProtectionPolicyEvaluationResult_Blocked
+    ProtectionPolicyEvaluationResult_ConsentRequired
+End Enum
+
+Public Enum SetHistoryItemAsContentStatus
+    SetHistoryItemAsContentStatus_Success
+    SetHistoryItemAsContentStatus_AccessDenied
+    SetHistoryItemAsContentStatus_ItemDeleted
+End Enum
+
+Public Enum ShareUITheme
+    ShareUITheme_Default
+    ShareUITheme_Light
+    ShareUITheme_Dark
+End Enum
+
+End Module

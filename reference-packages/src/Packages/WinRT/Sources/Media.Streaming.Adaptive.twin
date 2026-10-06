@@ -1,0 +1,353 @@
+[InterfaceId("F06A2739-9443-5EF0-B284-DC5AFF3E7D10")]
+Interface IIterator_UInt32 Extends IInspectable
+    Property Get Current() As UInt32
+    Property Get HasCurrent() As BooleanByte
+    Function MoveNext() As BooleanByte
+    Function GetMany(ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("421D4B91-B13B-5F37-AE54-B5249BD80539")]
+Interface IIterable_UInt32 Extends IInspectable
+    Function First() As IIterator_UInt32
+End Interface
+
+[InterfaceId("E5CE1A07-8D33-5007-BA64-7D2508CCF85C")]
+Interface IVectorView_UInt32 Extends IInspectable
+    Function GetAt(ByVal Index As Long) As UInt32
+    Property Get Size() As Long
+    Function IndexOf(ByVal Value As UInt32, Index As Long) As BooleanByte
+    Function GetMany(ByVal StartIndex As Long, ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("AD268CAF-7DA0-5AD4-8585-CEEB903DBD50")]
+Interface ITypedEventHandlerAdaptiveMediaSourceDownloadBitrateChanged Extends IUnknown
+    Sub Invoke(ByVal Sender As IAdaptiveMediaSource, ByVal Args As IAdaptiveMediaSourceDownloadBitrateChangedEventArgs)
+End Interface
+
+[InterfaceId("CEF775DD-25B2-5588-8D51-DACDEA660A7D")]
+Interface ITypedEventHandlerAdaptiveMediaSourceDownloadCompleted Extends IUnknown
+    Sub Invoke(ByVal Sender As IAdaptiveMediaSource, ByVal Args As IAdaptiveMediaSourceDownloadCompletedEventArgs)
+End Interface
+
+[InterfaceId("6EE5CC44-49AD-5138-AB47-F5C075A2BC34")]
+Interface ITypedEventHandlerAdaptiveMediaSourceDownloadFailed Extends IUnknown
+    Sub Invoke(ByVal Sender As IAdaptiveMediaSource, ByVal Args As IAdaptiveMediaSourceDownloadFailedEventArgs)
+End Interface
+
+[InterfaceId("D3B7DBF1-FD8E-589E-9C7F-BA67397E50CD")]
+Interface ITypedEventHandlerAdaptiveMediaSourceDownloadRequested Extends IUnknown
+    Sub Invoke(ByVal Sender As IAdaptiveMediaSource, ByVal Args As IAdaptiveMediaSourceDownloadRequestedEventArgs)
+End Interface
+
+[InterfaceId("DF4F4E89-6173-539B-94D8-69B7CB7578A7")]
+Interface ITypedEventHandlerAdaptiveMediaSourcePlaybackBitrateChanged Extends IUnknown
+    Sub Invoke(ByVal Sender As IAdaptiveMediaSource, ByVal Args As IAdaptiveMediaSourcePlaybackBitrateChangedEventArgs)
+End Interface
+
+[InterfaceId("4C7332EF-D39F-4396-B4D9-043957A7C964")]
+Interface IAdaptiveMediaSource Extends IInspectable
+    Property Get IsLive() As BooleanByte
+    Property Get DesiredLiveOffset() As TimeSpan
+    Property Let DesiredLiveOffset(ByVal Value As TimeSpan)
+    Property Get InitialBitrate() As Long
+    Property Let InitialBitrate(ByVal Value As Long)
+    Property Get CurrentDownloadBitrate() As Long
+    Property Get CurrentPlaybackBitrate() As Long
+    Property Get AvailableBitrates() As IVectorView_UInt32
+    Property Get DesiredMinBitrate() As IReference_UInt32
+    Property Set DesiredMinBitrate(ByVal Value As IReference_UInt32)
+    Property Get DesiredMaxBitrate() As IReference_UInt32
+    Property Set DesiredMaxBitrate(ByVal Value As IReference_UInt32)
+    Property Get AudioOnlyPlayback() As BooleanByte
+    Property Get InboundBitsPerSecond() As UInt64
+    Property Get InboundBitsPerSecondWindow() As TimeSpan
+    Property Let InboundBitsPerSecondWindow(ByVal Value As TimeSpan)
+    [PreserveSig]
+    Function AddDownloadBitrateChanged(ByVal Handler As ITypedEventHandlerAdaptiveMediaSourceDownloadBitrateChanged, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveDownloadBitrateChanged(ByVal Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function AddPlaybackBitrateChanged(ByVal Handler As ITypedEventHandlerAdaptiveMediaSourcePlaybackBitrateChanged, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemovePlaybackBitrateChanged(ByVal Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function AddDownloadRequested(ByVal Handler As ITypedEventHandlerAdaptiveMediaSourceDownloadRequested, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveDownloadRequested(ByVal Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function AddDownloadCompleted(ByVal Handler As ITypedEventHandlerAdaptiveMediaSourceDownloadCompleted, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveDownloadCompleted(ByVal Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function AddDownloadFailed(ByVal Handler As ITypedEventHandlerAdaptiveMediaSourceDownloadFailed, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveDownloadFailed(ByVal Token As EventRegistrationToken) As HRESULT
+End Interface
+
+[InterfaceId("17890342-6760-4BB9-A58A-F7AA98B08C0E")]
+Interface IAdaptiveMediaSource2 Extends IInspectable
+    Property Get AdvancedSettings() As IAdaptiveMediaSourceAdvancedSettings
+End Interface
+
+[InterfaceId("BA7023FD-C334-461B-A36E-C99F54F7174A")]
+Interface IAdaptiveMediaSource3 Extends IInspectable
+    Property Get MinLiveOffset() As IReference_TimeSpan
+    Property Get MaxSeekableWindowSize() As IReference_TimeSpan
+    Property Get DesiredSeekableWindowSize() As IReference_TimeSpan
+    Property Set DesiredSeekableWindowSize(ByVal Value As IReference_TimeSpan)
+    Property Get Diagnostics() As IAdaptiveMediaSourceDiagnostics
+    Function GetCorrelatedTimes() As IAdaptiveMediaSourceCorrelatedTimes
+End Interface
+
+[InterfaceId("55DB1680-1AEB-47DC-AA08-9A11610BA45A")]
+Interface IAdaptiveMediaSourceAdvancedSettings Extends IInspectable
+    Property Get AllSegmentsIndependent() As BooleanByte
+    Property Let AllSegmentsIndependent(ByVal Value As BooleanByte)
+    Property Get DesiredBitrateHeadroomRatio() As IReference_Double
+    Property Set DesiredBitrateHeadroomRatio(ByVal Value As IReference_Double)
+    Property Get BitrateDowngradeTriggerRatio() As IReference_Double
+    Property Set BitrateDowngradeTriggerRatio(ByVal Value As IReference_Double)
+End Interface
+
+[InterfaceId("05108787-E032-48E1-AB8D-002B0B3051DF")]
+Interface IAdaptiveMediaSourceCorrelatedTimes Extends IInspectable
+    Property Get Position() As IReference_TimeSpan
+    Property Get PresentationTimeStamp() As IReference_TimeSpan
+    Property Get ProgramDateTime() As IReference_DateTime
+End Interface
+
+[InterfaceId("4686B6B2-800F-4E31-9093-76D4782013E7")]
+Interface IAdaptiveMediaSourceCreationResult Extends IInspectable
+    Property Get Status() As AdaptiveMediaSourceCreationStatus
+    Property Get MediaSource() As IAdaptiveMediaSource
+    Property Get HttpResponseMessage() As IHttpResponseMessage
+End Interface
+
+[InterfaceId("1C3243BF-1C44-404B-A201-DF45AC7898E8")]
+Interface IAdaptiveMediaSourceCreationResult2 Extends IInspectable
+    Property Get ExtendedError() As HRESULT
+End Interface
+
+[InterfaceId("3AF64F06-6D9C-494A-B7A9-B3A5DEE6AD68")]
+Interface IAdaptiveMediaSourceDiagnosticAvailableEventArgs Extends IInspectable
+    Property Get DiagnosticType() As AdaptiveMediaSourceDiagnosticType
+    Property Get RequestId() As IReference_Int32
+    Property Get Position() As IReference_TimeSpan
+    Property Get SegmentId() As IReference_UInt64
+    Property Get ResourceType() As IReference_AdaptiveMediaSourceResourceType
+    Property Get ResourceUri() As IUri
+    Property Get ResourceByteRangeOffset() As IReference_UInt64
+    Property Get ResourceByteRangeLength() As IReference_UInt64
+    Property Get Bitrate() As IReference_UInt32
+End Interface
+
+[InterfaceId("8C6DD857-16A5-4D9F-810E-00BD901B3EF9")]
+Interface IAdaptiveMediaSourceDiagnosticAvailableEventArgs2 Extends IInspectable
+    Property Get ExtendedError() As HRESULT
+End Interface
+
+[InterfaceId("C3650CD5-DAEB-4103-84DA-68769AD513FF")]
+Interface IAdaptiveMediaSourceDiagnosticAvailableEventArgs3 Extends IInspectable
+    Property Get ResourceDuration() As IReference_TimeSpan
+    Property Get ResourceContentType() As LongPtr
+End Interface
+
+[InterfaceId("FD4CE6B5-7C3B-58F4-9EFC-1D9EE6A09D21")]
+Interface ITypedEventHandlerAdaptiveMediaSourceDiagnosticsDiagnosticAvailable Extends IUnknown
+    Sub Invoke(ByVal Sender As IAdaptiveMediaSourceDiagnostics, ByVal Args As IAdaptiveMediaSourceDiagnosticAvailableEventArgs)
+End Interface
+
+[InterfaceId("9B24EE68-962E-448C-AEBF-B29B56098E23")]
+Interface IAdaptiveMediaSourceDiagnostics Extends IInspectable
+    [PreserveSig]
+    Function AddDiagnosticAvailable(ByVal Handler As ITypedEventHandlerAdaptiveMediaSourceDiagnosticsDiagnosticAvailable, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveDiagnosticAvailable(ByVal Token As EventRegistrationToken) As HRESULT
+End Interface
+
+[InterfaceId("670C0A44-E04E-4EFF-816A-17399F78F4BA")]
+Interface IAdaptiveMediaSourceDownloadBitrateChangedEventArgs Extends IInspectable
+    Property Get OldValue() As Long
+    Property Get NewValue() As Long
+End Interface
+
+[InterfaceId("F3F1F444-96AE-4DE0-B540-2B3246E6968C")]
+Interface IAdaptiveMediaSourceDownloadBitrateChangedEventArgs2 Extends IInspectable
+    Property Get Reason() As AdaptiveMediaSourceDownloadBitrateChangedReason
+End Interface
+
+[InterfaceId("19240DC3-5B37-4A1A-8970-D621CB6CA83B")]
+Interface IAdaptiveMediaSourceDownloadCompletedEventArgs Extends IInspectable
+    Property Get ResourceType() As AdaptiveMediaSourceResourceType
+    Property Get ResourceUri() As IUri
+    Property Get ResourceByteRangeOffset() As IReference_UInt64
+    Property Get ResourceByteRangeLength() As IReference_UInt64
+    Property Get HttpResponseMessage() As IHttpResponseMessage
+End Interface
+
+[InterfaceId("704744C4-964A-40E4-AF95-9177DD6DFA00")]
+Interface IAdaptiveMediaSourceDownloadCompletedEventArgs2 Extends IInspectable
+    Property Get RequestId() As Long
+    Property Get Statistics() As IAdaptiveMediaSourceDownloadStatistics
+    Property Get Position() As IReference_TimeSpan
+End Interface
+
+[InterfaceId("0F8A8BD1-93B2-47C6-BADC-8BE2C8F7F6E8")]
+Interface IAdaptiveMediaSourceDownloadCompletedEventArgs3 Extends IInspectable
+    Property Get ResourceDuration() As IReference_TimeSpan
+    Property Get ResourceContentType() As LongPtr
+End Interface
+
+[InterfaceId("37739048-F4AB-40A4-B135-C6DFD8BD7FF1")]
+Interface IAdaptiveMediaSourceDownloadFailedEventArgs Extends IInspectable
+    Property Get ResourceType() As AdaptiveMediaSourceResourceType
+    Property Get ResourceUri() As IUri
+    Property Get ResourceByteRangeOffset() As IReference_UInt64
+    Property Get ResourceByteRangeLength() As IReference_UInt64
+    Property Get HttpResponseMessage() As IHttpResponseMessage
+End Interface
+
+[InterfaceId("70919568-967C-4986-90C5-C6FC4B31E2D8")]
+Interface IAdaptiveMediaSourceDownloadFailedEventArgs2 Extends IInspectable
+    Property Get RequestId() As Long
+    Property Get ExtendedError() As HRESULT
+    Property Get Statistics() As IAdaptiveMediaSourceDownloadStatistics
+    Property Get Position() As IReference_TimeSpan
+End Interface
+
+[InterfaceId("D0354549-1132-4A10-915A-C2211B5B9409")]
+Interface IAdaptiveMediaSourceDownloadFailedEventArgs3 Extends IInspectable
+    Property Get ResourceDuration() As IReference_TimeSpan
+    Property Get ResourceContentType() As LongPtr
+End Interface
+
+[InterfaceId("05C68F64-FA20-4DBD-9821-4BF4C9BF77AB")]
+Interface IAdaptiveMediaSourceDownloadRequestedDeferral Extends IInspectable
+    [PreserveSig]
+    Function Complete() As HRESULT
+End Interface
+
+[InterfaceId("C83FDFFD-44A9-47A2-BF96-03398B4BFAAF")]
+Interface IAdaptiveMediaSourceDownloadRequestedEventArgs Extends IInspectable
+    Property Get ResourceType() As AdaptiveMediaSourceResourceType
+    Property Get ResourceUri() As IUri
+    Property Get ResourceByteRangeOffset() As IReference_UInt64
+    Property Get ResourceByteRangeLength() As IReference_UInt64
+    Property Get Result() As IAdaptiveMediaSourceDownloadResult
+    Function GetDeferral() As IAdaptiveMediaSourceDownloadRequestedDeferral
+End Interface
+
+[InterfaceId("B37D8BFE-AA44-4D82-825B-611DE3BCFECB")]
+Interface IAdaptiveMediaSourceDownloadRequestedEventArgs2 Extends IInspectable
+    Property Get RequestId() As Long
+    Property Get Position() As IReference_TimeSpan
+End Interface
+
+[InterfaceId("333C50FD-4F62-4481-AB44-1E47B0574225")]
+Interface IAdaptiveMediaSourceDownloadRequestedEventArgs3 Extends IInspectable
+    Property Get ResourceDuration() As IReference_TimeSpan
+    Property Get ResourceContentType() As LongPtr
+End Interface
+
+[InterfaceId("F4AFDC73-BCEE-4A6A-9F0A-FEC41E2339B0")]
+Interface IAdaptiveMediaSourceDownloadResult Extends IInspectable
+    Property Get ResourceUri() As IUri
+    Property Set ResourceUri(ByVal Value As IUri)
+    Property Get InputStream() As IInputStream
+    Property Set InputStream(ByVal Value As IInputStream)
+    Property Get Buffer() As IBuffer
+    Property Set Buffer(ByVal Value As IBuffer)
+    Property Get ContentType() As LongPtr
+    Property Let ContentType(ByVal Value As LongPtr)
+    Property Get ExtendedStatus() As Long
+    Property Let ExtendedStatus(ByVal Value As Long)
+End Interface
+
+[InterfaceId("15552CB7-7B80-4AC4-8660-A4B97F7C70F0")]
+Interface IAdaptiveMediaSourceDownloadResult2 Extends IInspectable
+    Property Get ResourceByteRangeOffset() As IReference_UInt64
+    Property Set ResourceByteRangeOffset(ByVal Value As IReference_UInt64)
+    Property Get ResourceByteRangeLength() As IReference_UInt64
+    Property Set ResourceByteRangeLength(ByVal Value As IReference_UInt64)
+End Interface
+
+[InterfaceId("A306CEFB-E96A-4DFF-A9B8-1AE08C01AE98")]
+Interface IAdaptiveMediaSourceDownloadStatistics Extends IInspectable
+    Property Get ContentBytesReceivedCount() As UInt64
+    Property Get TimeToHeadersReceived() As IReference_TimeSpan
+    Property Get TimeToFirstByteReceived() As IReference_TimeSpan
+    Property Get TimeToLastByteReceived() As IReference_TimeSpan
+End Interface
+
+[InterfaceId("23A29F6D-7DDA-4A51-87A9-6FA8C5B292BE")]
+Interface IAdaptiveMediaSourcePlaybackBitrateChangedEventArgs Extends IInspectable
+    Property Get OldValue() As Long
+    Property Get NewValue() As Long
+    Property Get AudioOnly() As BooleanByte
+End Interface
+
+[InterfaceId("BE0BCC1D-D606-59D2-B2F9-FF204543DA12")]
+Interface IAsyncOperationIAdaptiveMediaSourceCreationResult Extends IInspectable
+    Property Set Completed(ByVal Handler As IAsyncOperationCompletedHandlerIAdaptiveMediaSourceCreationResult)
+    Property Get Completed() As IAsyncOperationCompletedHandlerIAdaptiveMediaSourceCreationResult
+    Function GetResults() As IAdaptiveMediaSourceCreationResult
+End Interface
+
+[InterfaceId("BD68CC00-724C-5A76-A437-1464EBDDA4AC")]
+Interface IAsyncOperationCompletedHandlerIAdaptiveMediaSourceCreationResult Extends IUnknown
+    Sub Invoke(ByVal AsyncOperation As IAsyncOperationIAdaptiveMediaSourceCreationResult, ByVal AsyncStatus As AsyncStatus)
+End Interface
+
+[InterfaceId("50A6BD5D-66EF-4CD3-9579-9E660507DC3F")]
+Interface IAdaptiveMediaSourceStatics Extends IInspectable
+    Function IsContentTypeSupported(ByVal ContentType As LongPtr) As BooleanByte
+    Function CreateFromUriAsync(ByVal Uri As IUri) As IAsyncOperationIAdaptiveMediaSourceCreationResult
+    Function CreateFromUriWithDownloaderAsync(ByVal Uri As IUri, ByVal HttpClient As IHttpClient) As IAsyncOperationIAdaptiveMediaSourceCreationResult
+    Function CreateFromStreamAsync(ByVal Stream As IInputStream, ByVal Uri As IUri, ByVal ContentType As LongPtr) As IAsyncOperationIAdaptiveMediaSourceCreationResult
+    Function CreateFromStreamWithDownloaderAsync(ByVal Stream As IInputStream, ByVal Uri As IUri, ByVal ContentType As LongPtr, ByVal HttpClient As IHttpClient) As IAsyncOperationIAdaptiveMediaSourceCreationResult
+End Interface
+
+Module mdlMediaStreamingAdaptive
+
+Public Enum AdaptiveMediaSourceCreationStatus
+    AdaptiveMediaSourceCreationStatus_Success
+    AdaptiveMediaSourceCreationStatus_ManifestDownloadFailure
+    AdaptiveMediaSourceCreationStatus_ManifestParseFailure
+    AdaptiveMediaSourceCreationStatus_UnsupportedManifestContentType
+    AdaptiveMediaSourceCreationStatus_UnsupportedManifestVersion
+    AdaptiveMediaSourceCreationStatus_UnsupportedManifestProfile
+    AdaptiveMediaSourceCreationStatus_UnknownFailure
+End Enum
+
+Public Enum AdaptiveMediaSourceDiagnosticType
+    AdaptiveMediaSourceDiagnosticType_ManifestUnchangedUponReload
+    AdaptiveMediaSourceDiagnosticType_ManifestMismatchUponReload
+    AdaptiveMediaSourceDiagnosticType_ManifestSignaledEndOfLiveEventUponReload
+    AdaptiveMediaSourceDiagnosticType_MediaSegmentSkipped
+    AdaptiveMediaSourceDiagnosticType_ResourceNotFound
+    AdaptiveMediaSourceDiagnosticType_ResourceTimedOut
+    AdaptiveMediaSourceDiagnosticType_ResourceParsingError
+    AdaptiveMediaSourceDiagnosticType_BitrateDisabled
+    AdaptiveMediaSourceDiagnosticType_FatalMediaSourceError
+End Enum
+
+Public Enum AdaptiveMediaSourceDownloadBitrateChangedReason
+    AdaptiveMediaSourceDownloadBitrateChangedReason_SufficientInboundBitsPerSecond
+    AdaptiveMediaSourceDownloadBitrateChangedReason_InsufficientInboundBitsPerSecond
+    AdaptiveMediaSourceDownloadBitrateChangedReason_LowBufferLevel
+    AdaptiveMediaSourceDownloadBitrateChangedReason_PositionChanged
+    AdaptiveMediaSourceDownloadBitrateChangedReason_TrackSelectionChanged
+    AdaptiveMediaSourceDownloadBitrateChangedReason_DesiredBitratesChanged
+    AdaptiveMediaSourceDownloadBitrateChangedReason_ErrorInPreviousBitrate
+End Enum
+
+Public Enum AdaptiveMediaSourceResourceType
+    AdaptiveMediaSourceResourceType_Manifest
+    AdaptiveMediaSourceResourceType_InitializationSegment
+    AdaptiveMediaSourceResourceType_MediaSegment
+    AdaptiveMediaSourceResourceType_Key
+    AdaptiveMediaSourceResourceType_InitializationVector
+    AdaptiveMediaSourceResourceType_MediaSegmentIndex
+End Enum
+
+End Module

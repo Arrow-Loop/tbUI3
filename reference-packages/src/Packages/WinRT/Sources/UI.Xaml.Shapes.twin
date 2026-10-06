@@ -1,0 +1,182 @@
+[InterfaceId("70E05AC4-D38D-4BAB-831F-4A22EF52AC86")]
+Interface IEllipse Extends IInspectable
+
+End Interface
+
+[InterfaceId("46A5433D-4FFB-48DF-8732-4E15C834816B")]
+Interface ILine Extends IInspectable
+    Property Get X1() As Double
+    Property Let X1(ByVal Value As Double)
+    Property Get Y1() As Double
+    Property Let Y1(ByVal Value As Double)
+    Property Get X2() As Double
+    Property Let X2(ByVal Value As Double)
+    Property Get Y2() As Double
+    Property Let Y2(ByVal Value As Double)
+End Interface
+
+[InterfaceId("267C123D-6EA4-4C50-8B1D-50207AFF1E8A")]
+Interface ILineStatics Extends IInspectable
+    Property Get X1Property() As IDependencyProperty
+    Property Get Y1Property() As IDependencyProperty
+    Property Get X2Property() As IDependencyProperty
+    Property Get Y2Property() As IDependencyProperty
+End Interface
+
+[InterfaceId("78883609-3D57-4F3C-B8A5-6CABCAC9711F")]
+Interface IPath Extends IInspectable
+    Property Get Data() As IGeometry
+    Property Set Data(ByVal Value As IGeometry)
+End Interface
+
+[InterfaceId("2340A4E3-5A86-4FC6-9A50-CBB93B828766")]
+Interface IPathFactory Extends IInspectable
+    Function CreateInstance(Optional ByVal BaseInterface As IInspectable, Optional InnerInterface As IInspectable) As IPath
+End Interface
+
+[InterfaceId("F627E59D-87DC-4142-81F1-97FC7FF8641C")]
+Interface IPathStatics Extends IInspectable
+    Property Get DataProperty() As IDependencyProperty
+End Interface
+
+[InterfaceId("E3755C19-2E4D-4BCC-8D34-86871957FA01")]
+Interface IPolygon Extends IInspectable
+    Property Get FillRule() As FillRule
+    Property Let FillRule(ByVal Value As FillRule)
+    Property Get Points() As IVector_POINTF
+    Property Set Points(ByVal Value As IVector_POINTF)
+End Interface
+
+[InterfaceId("362A8AAB-D463-4366-9E1A-BEBA72810FB7")]
+Interface IPolygonStatics Extends IInspectable
+    Property Get FillRuleProperty() As IDependencyProperty
+    Property Get PointsProperty() As IDependencyProperty
+End Interface
+
+[InterfaceId("91DC62F8-42B3-47F3-8476-C55124A7C4C6")]
+Interface IPolyline Extends IInspectable
+    Property Get FillRule() As FillRule
+    Property Let FillRule(ByVal Value As FillRule)
+    Property Get Points() As IVector_POINTF
+    Property Set Points(ByVal Value As IVector_POINTF)
+End Interface
+
+[InterfaceId("C7AA2CD1-A26C-43B0-AAA5-822FA64A11B9")]
+Interface IPolylineStatics Extends IInspectable
+    Property Get FillRuleProperty() As IDependencyProperty
+    Property Get PointsProperty() As IDependencyProperty
+End Interface
+
+[InterfaceId("855BC230-8A11-4E18-A136-4BC21C7827B0")]
+Interface IRectangle Extends IInspectable
+    Property Get RadiusX() As Double
+    Property Let RadiusX(ByVal Value As Double)
+    Property Get RadiusY() As Double
+    Property Let RadiusY(ByVal Value As Double)
+End Interface
+
+[InterfaceId("9F25AA53-BB3A-4C3C-89DB-6FBC0D1FA0CC")]
+Interface IRectangleStatics Extends IInspectable
+    Property Get RadiusXProperty() As IDependencyProperty
+    Property Get RadiusYProperty() As IDependencyProperty
+End Interface
+
+[InterfaceId("638A2CF4-F474-5318-9055-141CB909AC4B")]
+Interface IIterator_Double Extends IInspectable
+    Property Get Current() As Double
+    Property Get HasCurrent() As BooleanByte
+    Function MoveNext() As BooleanByte
+    Function GetMany(ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("C738964E-9C64-5BCE-B5CE-61E9A282EC4A")]
+Interface IIterable_Double Extends IInspectable
+    Function First() As IIterator_Double
+End Interface
+
+[InterfaceId("AF7586A8-6B21-5F61-BFF1-1B682293AD96")]
+Interface IVectorView_Double Extends IInspectable
+    Function GetAt(ByVal Index As Long) As Double
+    Property Get Size() As Long
+    Function IndexOf(ByVal Value As Double, Index As Long) As BooleanByte
+    Function GetMany(ByVal StartIndex As Long, ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("F452D23C-BF05-5F3E-88E7-D17A6716B911")]
+Interface IVector_Double Extends IInspectable
+    Function GetAt(ByVal Index As Long) As Double
+    Property Get Size() As Long
+    Function GetView() As IVectorView_Double
+    Function IndexOf(ByVal Value As Double, Index As Long) As BooleanByte
+    [PreserveSig]
+    Function SetAt(ByVal Index As Long, ByVal Value As Double) As HRESULT
+    [PreserveSig]
+    Function InsertAt(ByVal Index As Long, ByVal Value As Double) As HRESULT
+    [PreserveSig]
+    Function RemoveAt(ByVal Index As Long) As HRESULT
+    [PreserveSig]
+    Function Append(ByVal Value As Double) As HRESULT
+    [PreserveSig]
+    Function RemoveAtEnd() As HRESULT
+    [PreserveSig]
+    Function Clear() As HRESULT
+    Function GetMany(ByVal StartIndex As Long, ByVal Length As Long, Items As Any) As Long
+    [PreserveSig]
+    Function ReplaceAll(ByVal Length As Long, Items As Any) As HRESULT
+End Interface
+
+[InterfaceId("786F2B75-9AA0-454D-AE06-A2466E37C832")]
+Interface IShape Extends IInspectable
+    Property Get Fill() As IBrush
+    Property Set Fill(ByVal Value As IBrush)
+    Property Get Stroke() As IBrush
+    Property Set Stroke(ByVal Value As IBrush)
+    Property Get StrokeMiterLimit() As Double
+    Property Let StrokeMiterLimit(ByVal Value As Double)
+    Property Get StrokeThickness() As Double
+    Property Let StrokeThickness(ByVal Value As Double)
+    Property Get StrokeStartLineCap() As PenLineCap
+    Property Let StrokeStartLineCap(ByVal Value As PenLineCap)
+    Property Get StrokeEndLineCap() As PenLineCap
+    Property Let StrokeEndLineCap(ByVal Value As PenLineCap)
+    Property Get StrokeLineJoin() As PenLineJoin
+    Property Let StrokeLineJoin(ByVal Value As PenLineJoin)
+    Property Get StrokeDashOffset() As Double
+    Property Let StrokeDashOffset(ByVal Value As Double)
+    Property Get StrokeDashCap() As PenLineCap
+    Property Let StrokeDashCap(ByVal Value As PenLineCap)
+    Property Get StrokeDashArray() As IVector_Double
+    Property Set StrokeDashArray(ByVal Value As IVector_Double)
+    Property Get Stretch() As Stretch
+    Property Let Stretch(ByVal Value As Stretch)
+    Property Get GeometryTransform() As ITransform
+End Interface
+
+[InterfaceId("97248DBA-49F2-49A4-A5DD-164DF824DB14")]
+Interface IShape2 Extends IInspectable
+    Function GetAlphaMask() As ICompositionBrush
+End Interface
+
+[InterfaceId("4B717613-F6AA-48D5-9588-E1D188EACBC9")]
+Interface IShapeFactory Extends IInspectable
+    Function CreateInstance(Optional ByVal BaseInterface As IInspectable, Optional InnerInterface As IInspectable) As IShape
+End Interface
+
+[InterfaceId("1D7B4C55-9DF3-48DC-9194-9D306FAA6089")]
+Interface IShapeStatics Extends IInspectable
+    Property Get FillProperty() As IDependencyProperty
+    Property Get StrokeProperty() As IDependencyProperty
+    Property Get StrokeMiterLimitProperty() As IDependencyProperty
+    Property Get StrokeThicknessProperty() As IDependencyProperty
+    Property Get StrokeStartLineCapProperty() As IDependencyProperty
+    Property Get StrokeEndLineCapProperty() As IDependencyProperty
+    Property Get StrokeLineJoinProperty() As IDependencyProperty
+    Property Get StrokeDashOffsetProperty() As IDependencyProperty
+    Property Get StrokeDashCapProperty() As IDependencyProperty
+    Property Get StrokeDashArrayProperty() As IDependencyProperty
+    Property Get StretchProperty() As IDependencyProperty
+End Interface
+
+Module mdlUIXamlShapes
+
+End Module

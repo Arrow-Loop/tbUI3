@@ -1,0 +1,211 @@
+[InterfaceId("25C821BC-DEB8-5850-8AF2-D3AC35426BD2")]
+Interface IAsyncOperationCastingConnectionErrorStatus Extends IInspectable
+    Property Set Completed(ByVal Handler As IAsyncOperationCompletedHandlerCastingConnectionErrorStatus)
+    Property Get Completed() As IAsyncOperationCompletedHandlerCastingConnectionErrorStatus
+    Function GetResults() As CastingConnectionErrorStatus
+End Interface
+
+[InterfaceId("7216A94A-A10A-5763-8E96-BF33C582ED92")]
+Interface IAsyncOperationCompletedHandlerCastingConnectionErrorStatus Extends IUnknown
+    Sub Invoke(ByVal AsyncOperation As IAsyncOperationCastingConnectionErrorStatus, ByVal AsyncStatus As AsyncStatus)
+End Interface
+
+[InterfaceId("F1576170-9B08-5A9B-87D2-C1AC47BC6681")]
+Interface ITypedEventHandlerCastingConnectionStateChanged Extends IUnknown
+    Sub Invoke(ByVal Sender As ICastingConnection, ByVal Args As IInspectable)
+End Interface
+
+[InterfaceId("78AFBBD0-9811-5F0E-9566-47C3E8CDD929")]
+Interface ITypedEventHandlerCastingConnectionErrorOccurred Extends IUnknown
+    Sub Invoke(ByVal Sender As ICastingConnection, ByVal Args As ICastingConnectionErrorOccurredEventArgs)
+End Interface
+
+[InterfaceId("CD951653-C2F1-4498-8B78-5FB4CD3640DD")]
+Interface ICastingConnection Extends IInspectable ' requires IClosable
+    Property Get State() As CastingConnectionState
+    Property Get Device() As ICastingDevice
+    Property Get Source() As ICastingSource
+    Property Set Source(ByVal Value As ICastingSource)
+    [PreserveSig]
+    Function AddStateChanged(ByVal Handler As ITypedEventHandlerCastingConnectionStateChanged, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveStateChanged(ByVal Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function AddErrorOccurred(ByVal Handler As ITypedEventHandlerCastingConnectionErrorOccurred, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveErrorOccurred(ByVal Token As EventRegistrationToken) As HRESULT
+    Function RequestStartCastingAsync(ByVal Value As ICastingSource) As IAsyncOperationCastingConnectionErrorStatus
+    Function DisconnectAsync() As IAsyncOperationCastingConnectionErrorStatus
+End Interface
+
+[InterfaceId("A7FB3C69-8719-4F00-81FB-961863C79A32")]
+Interface ICastingConnectionErrorOccurredEventArgs Extends IInspectable
+    Property Get ErrorStatus() As CastingConnectionErrorStatus
+    Property Get Message() As LongPtr
+End Interface
+
+[InterfaceId("DFF10E53-4C5E-5DBA-9269-CD61881BB8B3")]
+Interface IAsyncOperationCastingPlaybackTypes Extends IInspectable
+    Property Set Completed(ByVal Handler As IAsyncOperationCompletedHandlerCastingPlaybackTypes)
+    Property Get Completed() As IAsyncOperationCompletedHandlerCastingPlaybackTypes
+    Function GetResults() As CastingPlaybackTypes
+End Interface
+
+[InterfaceId("B55E550C-DFA8-50BE-BE8F-5D42C9DAC120")]
+Interface IAsyncOperationCompletedHandlerCastingPlaybackTypes Extends IUnknown
+    Sub Invoke(ByVal AsyncOperation As IAsyncOperationCastingPlaybackTypes, ByVal AsyncStatus As AsyncStatus)
+End Interface
+
+[InterfaceId("DE721C83-4A43-4AD1-A6D2-2492A796C3F2")]
+Interface ICastingDevice Extends IInspectable
+    Property Get Id() As LongPtr
+    Property Get FriendlyName() As LongPtr
+    Property Get Icon() As IRandomAccessStreamWithContentType
+    Function GetSupportedCastingPlaybackTypesAsync() As IAsyncOperationCastingPlaybackTypes
+    Function CreateCastingConnection() As ICastingConnection
+End Interface
+
+[InterfaceId("A64B972B-AA63-5C61-9CDE-CD6FFEA8A247")]
+Interface ITypedEventHandlerCastingDevicePickerDismissed Extends IUnknown
+    Sub Invoke(ByVal Sender As ICastingDevicePicker, ByVal Args As IInspectable)
+End Interface
+
+[InterfaceId("B3655B33-C4AD-5F4C-A187-B2E4C770A16B")]
+Interface ITypedEventHandlerCastingDevicePickerCastingDeviceSelected Extends IUnknown
+    Sub Invoke(ByVal Sender As ICastingDevicePicker, ByVal Args As ICastingDeviceSelectedEventArgs)
+End Interface
+
+[InterfaceId("DCD39924-0591-49BE-AACB-4B82EE756A95")]
+Interface ICastingDevicePicker Extends IInspectable
+    Property Get Filter() As ICastingDevicePickerFilter
+    Property Get Appearance() As IDevicePickerAppearance
+    [PreserveSig]
+    Function AddCastingDeviceSelected(ByVal Handler As ITypedEventHandlerCastingDevicePickerCastingDeviceSelected, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveCastingDeviceSelected(ByVal Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function AddCastingDevicePickerDismissed(ByVal Handler As ITypedEventHandlerCastingDevicePickerDismissed, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveCastingDevicePickerDismissed(ByVal Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function Show(ByVal Selection As RECTF) As HRESULT
+    [PreserveSig]
+    Function ShowWithPlacement(ByVal Selection As RECTF, ByVal PreferredPlacement As Placement) As HRESULT
+    [PreserveSig]
+    Function Hide() As HRESULT
+End Interface
+
+[InterfaceId("3F6C93E9-CC77-5EF4-B2B7-25CFCFC09720")]
+Interface IIterator_ICastingSource Extends IInspectable
+    Property Get Current() As ICastingSource
+    Property Get HasCurrent() As BooleanByte
+    Function MoveNext() As BooleanByte
+    Function GetMany(ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("1ABB2CC9-46A2-58B1-91AA-28699D66D1AB")]
+Interface IIterable_ICastingSource Extends IInspectable
+    Function First() As IIterator_ICastingSource
+End Interface
+
+[InterfaceId("7828DA61-DEA4-5485-B27A-8F78E0472402")]
+Interface IVectorView_ICastingSource Extends IInspectable
+    Function GetAt(ByVal Index As Long) As ICastingSource
+    Property Get Size() As Long
+    Function IndexOf(ByVal Value As ICastingSource, Index As Long) As BooleanByte
+    Function GetMany(ByVal StartIndex As Long, ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("C2E3DEA8-92E0-50AF-9C93-83B3E86B73B4")]
+Interface IVector_ICastingSource Extends IInspectable
+    Function GetAt(ByVal Index As Long) As ICastingSource
+    Property Get Size() As Long
+    Function GetView() As IVectorView_ICastingSource
+    Function IndexOf(ByVal Value As ICastingSource, Index As Long) As BooleanByte
+    [PreserveSig]
+    Function SetAt(ByVal Index As Long, ByVal Value As ICastingSource) As HRESULT
+    [PreserveSig]
+    Function InsertAt(ByVal Index As Long, ByVal Value As ICastingSource) As HRESULT
+    [PreserveSig]
+    Function RemoveAt(ByVal Index As Long) As HRESULT
+    [PreserveSig]
+    Function Append(ByVal Value As ICastingSource) As HRESULT
+    [PreserveSig]
+    Function RemoveAtEnd() As HRESULT
+    [PreserveSig]
+    Function Clear() As HRESULT
+    Function GetMany(ByVal StartIndex As Long, ByVal Length As Long, Items As Any) As Long
+    [PreserveSig]
+    Function ReplaceAll(ByVal Length As Long, Items As Any) As HRESULT
+End Interface
+
+[InterfaceId("BE8C619C-B563-4354-AE33-9FDAAD8C6291")]
+Interface ICastingDevicePickerFilter Extends IInspectable
+    Property Get SupportsAudio() As BooleanByte
+    Property Let SupportsAudio(ByVal Value As BooleanByte)
+    Property Get SupportsVideo() As BooleanByte
+    Property Let SupportsVideo(ByVal Value As BooleanByte)
+    Property Get SupportsPictures() As BooleanByte
+    Property Let SupportsPictures(ByVal Value As BooleanByte)
+    Property Get SupportedCastingSources() As IVector_ICastingSource
+End Interface
+
+[InterfaceId("DC439E86-DD57-4D0D-9400-AF45E4FB3663")]
+Interface ICastingDeviceSelectedEventArgs Extends IInspectable
+    Property Get SelectedCastingDevice() As ICastingDevice
+End Interface
+
+[InterfaceId("1B4EE058-4C69-5E70-8834-C1D171CC1B22")]
+Interface IAsyncOperationICastingDevice Extends IInspectable
+    Property Set Completed(ByVal Handler As IAsyncOperationCompletedHandlerICastingDevice)
+    Property Get Completed() As IAsyncOperationCompletedHandlerICastingDevice
+    Function GetResults() As ICastingDevice
+End Interface
+
+[InterfaceId("F0C69B9E-14CB-510A-8EF0-7E86D771BAAF")]
+Interface IAsyncOperationCompletedHandlerICastingDevice Extends IUnknown
+    Sub Invoke(ByVal AsyncOperation As IAsyncOperationICastingDevice, ByVal AsyncStatus As AsyncStatus)
+End Interface
+
+[InterfaceId("E7D958D7-4D13-4237-A365-4C4F6A4CFD2F")]
+Interface ICastingDeviceStatics Extends IInspectable
+    Function GetDeviceSelector(ByVal Type As CastingPlaybackTypes) As LongPtr
+    Function GetDeviceSelectorFromCastingSourceAsync(ByVal CastingSource As ICastingSource) As IAsyncOperationHSTRING
+    Function FromIdAsync(ByVal Value As LongPtr) As IAsyncOperationICastingDevice
+    Function DeviceInfoSupportsCastingAsync(ByVal Device As IDeviceInformation) As IAsyncOperationBoolean
+End Interface
+
+[InterfaceId("F429EA72-3467-47E6-A027-522923E9D727")]
+Interface ICastingSource Extends IInspectable
+    Property Get PreferredSourceUri() As IUri
+    Property Set PreferredSourceUri(ByVal Value As IUri)
+End Interface
+
+Module mdlMediaCasting
+
+Public Enum CastingConnectionErrorStatus
+    CastingConnectionErrorStatus_Succeeded
+    CastingConnectionErrorStatus_DeviceDidNotRespond
+    CastingConnectionErrorStatus_DeviceError
+    CastingConnectionErrorStatus_DeviceLocked
+    CastingConnectionErrorStatus_ProtectedPlaybackFailed
+    CastingConnectionErrorStatus_InvalidCastingSource
+    CastingConnectionErrorStatus_Unknown
+End Enum
+
+Public Enum CastingConnectionState
+    CastingConnectionState_Disconnected
+    CastingConnectionState_Connected
+    CastingConnectionState_Rendering
+    CastingConnectionState_Disconnecting
+    CastingConnectionState_Connecting
+End Enum
+
+Public Enum CastingPlaybackTypes
+    CastingPlaybackTypes_None = &H0
+    CastingPlaybackTypes_Audio = &H1
+    CastingPlaybackTypes_Video = &H2
+    CastingPlaybackTypes_Picture = &H4
+End Enum
+
+End Module

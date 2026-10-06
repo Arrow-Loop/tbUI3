@@ -1,0 +1,20 @@
+[InterfaceId("E60C8424-3154-566E-9AA2-EEC49FCE004A")]
+Interface ITypedEventHandlerCompositorControllerCommitNeeded Extends IUnknown
+    Sub Invoke(ByVal Sender As ICompositorController, ByVal Args As IInspectable)
+End Interface
+
+[InterfaceId("2D75F35A-70A7-4395-BA2D-CEF0B18399F9")]
+Interface ICompositorController Extends IInspectable
+    Property Get Compositor() As ICompositor
+    [PreserveSig]
+    Function Commit() As HRESULT
+    Function EnsurePreviousCommitCompletedAsync() As IAsyncAction
+    [PreserveSig]
+    Function AddCommitNeeded(ByVal Handler As ITypedEventHandlerCompositorControllerCommitNeeded, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveCommitNeeded(ByVal Token As EventRegistrationToken) As HRESULT
+End Interface
+
+Module mdlUICompositionCore
+
+End Module

@@ -1,0 +1,25 @@
+' =====================================================
+' mConsoleDelegates.twin - Console Event Delegates
+' Modern Console Library for TwinBASIC
+' =====================================================
+
+
+Public Module mConsoleDelegates
+    ' Delegate for console resize events
+    Public Delegate Sub ConsoleResizeHandler (ByVal newWidth As Long, ByVal newHeight As Long)
+
+    ' Delegate for console key events
+    Public Delegate Sub ConsoleKeyHandler (ByRef keyInfo As ConsoleKeyInfo, ByRef handled As Boolean)
+
+    ' Delegate for console mouse events
+    Public Delegate Sub ConsoleMouseHandler (ByRef mouseInfo As ConsoleMouseInfo, ByRef handled As Boolean)
+
+    ' Delegate for console control events (Ctrl+C, close, etc.)
+    Public Delegate Function ConsoleCtrlHandler (ByVal ctrlType As Long) As Long
+
+    ' Delegate for timer callback
+    Public Delegate Sub ConsoleTimerCallback ()
+
+    ' Delegate for custom render callback in full-screen mode
+    Public Delegate Sub ConsoleRenderCallback (ByVal buffer As cConsoleBuffer)
+End Module

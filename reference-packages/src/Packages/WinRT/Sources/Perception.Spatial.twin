@@ -1,0 +1,123 @@
+' ToDo: Missing Interfaces
+
+
+
+
+[InterfaceId("FA43F9E4-3558-59C8-9A77-6E8B765ADCC8")]
+Interface ITypedEventHandlerSpatialAnchorRawCoordinateSystemAdjusted Extends IUnknown
+    Sub Invoke(ByVal Sender As ISpatialAnchor, ByVal Args As ISpatialAnchorRawCoordinateSystemAdjustedEventArgs)
+End Interface
+
+[InterfaceId("0529E5CE-1D34-3702-BCEC-EABFF578A869")]
+Interface ISpatialAnchor Extends IInspectable
+    Property Get CoordinateSystem() As ISpatialCoordinateSystem
+    Property Get RawCoordinateSystem() As ISpatialCoordinateSystem
+    [PreserveSig]
+    Function AddRawCoordinateSystemAdjusted(ByVal Handler As ITypedEventHandlerSpatialAnchorRawCoordinateSystemAdjusted, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveRawCoordinateSystemAdjusted(ByVal Token As EventRegistrationToken) As HRESULT
+End Interface
+
+[InterfaceId("ED17C908-A695-4CF6-92FD-97263BA71047")]
+Interface ISpatialAnchor2 Extends IInspectable
+    Property Get RemovedByUser() As BooleanByte
+End Interface
+
+[InterfaceId("77C25B2B-3409-4088-B91B-FDFD05D1648F")]
+Interface ISpatialAnchorExportSufficiency Extends IInspectable
+    Property Get IsMinimallySufficient() As BooleanByte
+    Property Get SufficiencyLevel() As Double
+    Property Get RecommendedSufficiencyLevel() As Double
+End Interface
+
+
+
+
+
+[InterfaceId("A1E81EB8-56C7-3117-A2E4-81E0FCF28E00")]
+Interface ISpatialAnchorRawCoordinateSystemAdjustedEventArgs Extends IInspectable
+    Property Get OldRawCoordinateSystemToNewRawCoordinateSystemTransform() As Matrix4x4
+End Interface
+
+
+
+
+
+
+[InterfaceId("69EBCA4B-60A3-3586-A653-59A7BD676D07")]
+Interface ISpatialCoordinateSystem Extends IInspectable
+    Function TryGetTransformTo(ByVal Target As ISpatialCoordinateSystem) As IReference_Matrix4x4
+End Interface
+
+Module mdlPerceptionSpatial
+
+Public Enum SpatialAnchorExportPurpose
+    SpatialAnchorExportPurpose_Relocalization
+    SpatialAnchorExportPurpose_Sharing
+End Enum
+
+Public Enum SpatialEntityWatcherStatus
+    SpatialEntityWatcherStatus_Created
+    SpatialEntityWatcherStatus_Started
+    SpatialEntityWatcherStatus_EnumerationCompleted
+    SpatialEntityWatcherStatus_Stopping
+    SpatialEntityWatcherStatus_Stopped
+    SpatialEntityWatcherStatus_Aborted
+End Enum
+
+Public Enum SpatialLocatability
+    SpatialLocatability_Unavailable
+    SpatialLocatability_OrientationOnly
+    SpatialLocatability_PositionalTrackingActivating
+    SpatialLocatability_PositionalTrackingActive
+    SpatialLocatability_PositionalTrackingInhibited
+End Enum
+
+Public Enum SpatialLookDirectionRange
+    SpatialLookDirectionRange_ForwardOnly
+    SpatialLookDirectionRange_Omnidirectional
+End Enum
+
+Public Enum SpatialMovementRange
+    SpatialMovementRange_NoMovement
+    SpatialMovementRange_Bounded
+End Enum
+
+Public Enum SpatialPerceptionAccessStatus
+    SpatialPerceptionAccessStatus_Unspecified
+    SpatialPerceptionAccessStatus_Allowed
+    SpatialPerceptionAccessStatus_DeniedByUser
+    SpatialPerceptionAccessStatus_DeniedBySystem
+End Enum
+
+Public Type SpatialBoundingBox
+    Center As Vector3
+    Extents As Vector3
+End Type
+
+Public Type SpatialBoundingFrustum
+    Near As Plane
+    Far As Plane
+    Right As Plane
+    Left As Plane
+    Top As Plane
+    Bottom As Plane
+End Type
+
+Public Type SpatialBoundingOrientedBox
+    Center As Vector3
+    Extents As Vector3
+    Orientation As Quaternion
+End Type
+
+Public Type SpatialBoundingSphere
+    Center As Vector3
+    Radius As Single
+End Type
+
+Public Type SpatialRay
+    Origin As Vector3
+    Direction As Vector3
+End Type
+
+End Module

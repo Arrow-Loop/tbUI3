@@ -1,0 +1,151 @@
+[InterfaceId("77A2A53E-7C74-437D-A290-3AC0D8CD5655")]
+Interface IWebViewControlAcceleratorKeyPressedEventArgs Extends IInspectable
+    Property Get EventType() As CoreAcceleratorKeyEventType
+    Property Get VirtualKey() As VirtualKey
+    Property Get KeyStatus() As CorePhysicalKeyStatus
+    Property Get RoutingStage() As WebViewControlAcceleratorKeyRoutingStage
+    Property Get Handled() As BooleanByte
+    Property Let Handled(ByVal Value As BooleanByte)
+End Interface
+
+[InterfaceId("6B2A340D-4BD0-405E-B7C1-1E72A492F446")]
+Interface IWebViewControlMoveFocusRequestedEventArgs Extends IInspectable
+    Property Get Reason() As WebViewControlMoveFocusReason
+End Interface
+
+[InterfaceId("AC3D28AC-8362-51C6-B2CC-16F3672758F1")]
+Interface IAsyncOperationIWebViewControl Extends IInspectable
+    Property Set Completed(ByVal Handler As IAsyncOperationCompletedHandlerIWebViewControl)
+    Property Get Completed() As IAsyncOperationCompletedHandlerIWebViewControl
+    Function GetResults() As IWebViewControl
+End Interface
+
+[InterfaceId("D61963D6-806D-50A8-A81C-75D9356AD5D7")]
+Interface IAsyncOperationCompletedHandlerIWebViewControl Extends IUnknown
+    Sub Invoke(ByVal AsyncOperation As IAsyncOperationIWebViewControl, ByVal AsyncStatus As AsyncStatus)
+End Interface
+
+[InterfaceId("3E183BE4-37D8-5239-B1F0-C06C76296A16")]
+Interface IIterator_IWebViewControl Extends IInspectable
+    Property Get Current() As IWebViewControl
+    Property Get HasCurrent() As BooleanByte
+    Function MoveNext() As BooleanByte
+    Function GetMany(ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("F1028969-D7AA-59D8-8826-4E02A8064515")]
+Interface IIterable_IWebViewControl Extends IInspectable
+    Function First() As IIterator_IWebViewControl
+End Interface
+
+[InterfaceId("5ECBD5C0-8282-5FE1-AD39-374CDE70E0CD")]
+Interface IVectorView_IWebViewControl Extends IInspectable
+    Function GetAt(ByVal Index As Long) As IWebViewControl
+    Property Get Size() As Long
+    Function IndexOf(ByVal Value As IWebViewControl, Index As Long) As BooleanByte
+    Function GetMany(ByVal StartIndex As Long, ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("0C4182F4-CC4C-55F3-B421-D4E749EB80A1")]
+Interface ITypedEventHandlerWebViewControlProcessProcessExited Extends IUnknown
+    Sub Invoke(ByVal Sender As IWebViewControlProcess, ByVal Args As IInspectable)
+End Interface
+
+[InterfaceId("02C723EC-98D6-424A-B63E-C6136C36A0F2")]
+Interface IWebViewControlProcess Extends IInspectable
+    Property Get ProcessId() As Long
+    Property Get EnterpriseId() As LongPtr
+    Property Get IsPrivateNetworkClientServerCapabilityEnabled() As BooleanByte
+    Function CreateWebViewControlAsync(ByVal HostWindowHandle As LongLong, ByVal Bounds As RECTF) As IAsyncOperationIWebViewControl
+    Function GetWebViewControls() As IVectorView_IWebViewControl
+    [PreserveSig]
+    Function Terminate() As HRESULT
+    [PreserveSig]
+    Function AddProcessExited(ByVal Handler As ITypedEventHandlerWebViewControlProcessProcessExited, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveProcessExited(ByVal Token As EventRegistrationToken) As HRESULT
+End Interface
+
+[InterfaceId("47B65CF9-A2D2-453C-B097-F6779D4B8E02")]
+Interface IWebViewControlProcessFactory Extends IInspectable
+    Function CreateWithOptions(ByVal ProcessOptions As IWebViewControlProcessOptions) As IWebViewControlProcess
+End Interface
+
+[InterfaceId("1CCA72A7-3BD6-4826-8261-6C8189505D89")]
+Interface IWebViewControlProcessOptions Extends IInspectable
+    Property Let EnterpriseId(ByVal Value As LongPtr)
+    Property Get EnterpriseId() As LongPtr
+    Property Let PrivateNetworkClientServerCapability(ByVal Value As WebViewControlProcessCapabilityState)
+    Property Get PrivateNetworkClientServerCapability() As WebViewControlProcessCapabilityState
+End Interface
+
+[InterfaceId("B24E7B5B-B804-5346-97B5-02E6D9B6CBA8")]
+Interface ITypedEventHandlerWebViewControlSiteAcceleratorKeyPressed Extends IUnknown
+    Sub Invoke(ByVal Sender As IWebViewControl, ByVal Args As IWebViewControlAcceleratorKeyPressedEventArgs)
+End Interface
+
+[InterfaceId("234D40C0-2C51-5128-B919-003F1C0A8A26")]
+Interface ITypedEventHandlerWebViewControlSiteMoveFocusRequested Extends IUnknown
+    Sub Invoke(ByVal Sender As IWebViewControl, ByVal Args As IWebViewControlMoveFocusRequestedEventArgs)
+End Interface
+
+[InterfaceId("133F47C6-12DC-4898-BD47-04967DE648BA")]
+Interface IWebViewControlSite Extends IInspectable
+    Property Get Process() As IWebViewControlProcess
+    Property Let Scale(ByVal Value As Double)
+    Property Get Scale() As Double
+    Property Let Bounds(ByVal Value As RECTF)
+    Property Get Bounds() As RECTF
+    Property Let IsVisible(ByVal Value As BooleanByte)
+    Property Get IsVisible() As BooleanByte
+    [PreserveSig]
+    Function Close() As HRESULT
+    [PreserveSig]
+    Function MoveFocus(ByVal Reason As WebViewControlMoveFocusReason) As HRESULT
+    [PreserveSig]
+    Function AddMoveFocusRequested(ByVal Handler As ITypedEventHandlerWebViewControlSiteMoveFocusRequested, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveMoveFocusRequested(ByVal Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function AddAcceleratorKeyPressed(ByVal Handler As ITypedEventHandlerWebViewControlSiteAcceleratorKeyPressed, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveAcceleratorKeyPressed(ByVal Token As EventRegistrationToken) As HRESULT
+End Interface
+
+[InterfaceId("34A6446F-5467-5063-BDC0-7FB0657510D1")]
+Interface ITypedEventHandlerWebViewControlSiteIInspectable Extends IUnknown
+    Sub Invoke(ByVal Sender As IWebViewControl, ByVal Args As IInspectable)
+End Interface
+
+[InterfaceId("D13B2E3F-48EE-4730-8243-D2ED0C05606A")]
+Interface IWebViewControlSite2 Extends IInspectable
+    [PreserveSig]
+    Function AddGotFocus(ByVal Handler As ITypedEventHandlerWebViewControlSiteIInspectable, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveGotFocus(ByVal Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function AddLostFocus(ByVal Handler As ITypedEventHandlerWebViewControlSiteIInspectable, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveLostFocus(ByVal Token As EventRegistrationToken) As HRESULT
+End Interface
+
+Module mdlWebUIInterop
+
+Public Enum WebViewControlAcceleratorKeyRoutingStage
+    WebViewControlAcceleratorKeyRoutingStage_Tunneling
+    WebViewControlAcceleratorKeyRoutingStage_Bubbling
+End Enum
+
+Public Enum WebViewControlMoveFocusReason
+    WebViewControlMoveFocusReason_Programmatic
+    WebViewControlMoveFocusReason_Next
+    WebViewControlMoveFocusReason_Previous
+End Enum
+
+Public Enum WebViewControlProcessCapabilityState
+    WebViewControlProcessCapabilityState_Default
+    WebViewControlProcessCapabilityState_Disabled
+    WebViewControlProcessCapabilityState_Enabled
+End Enum
+
+End Module

@@ -1,0 +1,56 @@
+[InterfaceId("34ED19FA-8384-4EB9-8209-FB5094EEEC35")]
+Interface ITimerDestroyedHandler Extends IUnknown
+    Sub Invoke(ByVal ThreadPoolTimer As IThreadPoolTimer)
+End Interface
+
+[InterfaceId("FAAEA667-FBEB-49CB-ADB2-71184C556E43")]
+Interface ITimerElapsedHandler Extends IUnknown
+    Sub Invoke(ByVal ThreadPoolTimer As IThreadPoolTimer)
+End Interface
+
+[InterfaceId("1D1A8B8B-FA66-414F-9CBD-B65FC99D17FA")]
+Interface IWorkItemHandler Extends IUnknown
+    Sub Invoke(ByVal Operation As IAsyncAction)
+End Interface
+
+[InterfaceId("B6BF67DD-84BD-44F8-AC1C-93EBCB9DBA91")]
+Interface IThreadPoolStatics Extends IInspectable
+    Function RunAsync(ByVal Handler As IWorkItemHandler) As IAsyncAction
+    Function RunWithPriorityAsync(ByVal Handler As IWorkItemHandler, ByVal Priority As WorkItemPriority) As IAsyncAction
+    Function RunWithPriorityAndOptionsAsync(ByVal Handler As IWorkItemHandler, ByVal Priority As WorkItemPriority, ByVal Options As WorkItemOptions) As IAsyncAction
+End Interface
+
+[InterfaceId("594EBE78-55EA-4A88-A50D-3402AE1F9CF2")]
+Interface IThreadPoolTimer Extends IInspectable
+    Property Get Period() As TimeSpan
+    Property Get Delay() As TimeSpan
+    [PreserveSig]
+    Function Cancel() As HRESULT
+End Interface
+
+[InterfaceId("1A8A9D02-E482-461B-B8C7-8EFAD1CCE590")]
+Interface IThreadPoolTimerStatics Extends IInspectable
+    [PreserveSig]
+    Function CreatePeriodicTimer(ByVal Handler As ITimerElapsedHandler, ByVal Period As TimeSpan, Timer As IThreadPoolTimer) As HRESULT
+    [PreserveSig]
+    Function CreateTimer(ByVal Handler As ITimerElapsedHandler, ByVal Delay As TimeSpan, Timer As IThreadPoolTimer) As HRESULT
+    [PreserveSig]
+    Function CreatePeriodicTimerWithCompletion(ByVal Handler As ITimerElapsedHandler, ByVal Period As TimeSpan, ByVal Destroyed As ITimerDestroyedHandler, Timer As IThreadPoolTimer) As HRESULT
+    [PreserveSig]
+    Function CreateTimerWithCompletion(ByVal Handler As ITimerElapsedHandler, ByVal Delay As TimeSpan, ByVal Destroyed As ITimerDestroyedHandler, Timer As IThreadPoolTimer) As HRESULT
+End Interface
+
+Module mdlSystemThreading
+
+Public Enum WorkItemOptions
+    WorkItemOptions_None
+    WorkItemOptions_TimeSliced
+End Enum
+
+Public Enum WorkItemPriority
+    WorkItemPriority_Low = -1
+    WorkItemPriority_Normal
+    WorkItemPriority_High
+End Enum
+
+End Module

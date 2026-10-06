@@ -1,0 +1,114 @@
+[InterfaceId("8977CB01-AF8D-4AF5-B084-C08EB9704ABE")]
+Interface ICompositeTransform3D Extends IInspectable
+    Property Get CenterX() As Double
+    Property Let CenterX(ByVal Value As Double)
+    Property Get CenterY() As Double
+    Property Let CenterY(ByVal Value As Double)
+    Property Get CenterZ() As Double
+    Property Let CenterZ(ByVal Value As Double)
+    Property Get RotationX() As Double
+    Property Let RotationX(ByVal Value As Double)
+    Property Get RotationY() As Double
+    Property Let RotationY(ByVal Value As Double)
+    Property Get RotationZ() As Double
+    Property Let RotationZ(ByVal Value As Double)
+    Property Get ScaleX() As Double
+    Property Let ScaleX(ByVal Value As Double)
+    Property Get ScaleY() As Double
+    Property Let ScaleY(ByVal Value As Double)
+    Property Get ScaleZ() As Double
+    Property Let ScaleZ(ByVal Value As Double)
+    Property Get TranslateX() As Double
+    Property Let TranslateX(ByVal Value As Double)
+    Property Get TranslateY() As Double
+    Property Let TranslateY(ByVal Value As Double)
+    Property Get TranslateZ() As Double
+    Property Let TranslateZ(ByVal Value As Double)
+End Interface
+
+[InterfaceId("DDBF4D67-2A25-48F3-9808-C51EC3D55BEC")]
+Interface ICompositeTransform3DStatics Extends IInspectable
+    Property Get CenterXProperty() As IDependencyProperty
+    Property Get CenterYProperty() As IDependencyProperty
+    Property Get CenterZProperty() As IDependencyProperty
+    Property Get RotationXProperty() As IDependencyProperty
+    Property Get RotationYProperty() As IDependencyProperty
+    Property Get RotationZProperty() As IDependencyProperty
+    Property Get ScaleXProperty() As IDependencyProperty
+    Property Get ScaleYProperty() As IDependencyProperty
+    Property Get ScaleZProperty() As IDependencyProperty
+    Property Get TranslateXProperty() As IDependencyProperty
+    Property Get TranslateYProperty() As IDependencyProperty
+    Property Get TranslateZProperty() As IDependencyProperty
+End Interface
+
+[InterfaceId("E48C10EF-9927-4C9B-8213-07775512BA04")]
+Interface IMatrix3DHelper Extends IInspectable
+
+End Interface
+
+[InterfaceId("9264545E-E158-4E74-8899-689160BD2F8C")]
+Interface IMatrix3DHelperStatics Extends IInspectable
+    Property Get Identity() As Matrix3D
+    Function Multiply(ByVal Matrix1 As Matrix3D, ByVal Matrix2 As Matrix3D) As Matrix3D
+    Function FromElements(ByVal M11 As Double, ByVal M12 As Double, ByVal M13 As Double, ByVal M14 As Double, ByVal M21 As Double, ByVal M22 As Double, ByVal M23 As Double, ByVal M24 As Double, ByVal M31 As Double, ByVal M32 As Double, ByVal M33 As Double, ByVal M34 As Double, ByVal OffsetX As Double, ByVal OffsetY As Double, ByVal OffsetZ As Double, ByVal M44 As Double) As Matrix3D
+    Function GetHasInverse(ByVal Target As Matrix3D) As BooleanByte
+    Function GetIsIdentity(ByVal Target As Matrix3D) As BooleanByte
+    Function Invert(ByVal Target As Matrix3D) As Matrix3D
+End Interface
+
+[InterfaceId("9A7B532A-30F9-40A1-96C9-C59D87F95AC3")]
+Interface IPerspectiveTransform3D Extends IInspectable
+    Property Get Depth() As Double
+    Property Let Depth(ByVal Value As Double)
+    Property Get OffsetX() As Double
+    Property Let OffsetX(ByVal Value As Double)
+    Property Get OffsetY() As Double
+    Property Let OffsetY(ByVal Value As Double)
+End Interface
+
+[InterfaceId("8E6F6400-620C-48C7-844D-3F0984DA5B17")]
+Interface IPerspectiveTransform3DStatics Extends IInspectable
+    Property Get DepthProperty() As IDependencyProperty
+    Property Get OffsetXProperty() As IDependencyProperty
+    Property Get OffsetYProperty() As IDependencyProperty
+End Interface
+
+[InterfaceId("AE3ED43A-A9FC-4C31-86CD-56D9CA251A69")]
+Interface ITransform3D Extends IInspectable
+
+End Interface
+
+[InterfaceId("052C1F7A-8D73-48CD-BBB8-D00434CAAE5D")]
+Interface ITransform3DFactory Extends IInspectable
+    Function CreateInstance(Optional ByVal BaseInterface As IInspectable, Optional InnerInterface As IInspectable) As ITransform3D
+End Interface
+
+Module mdlUIXamlMediaMedia3D
+
+Public Type Matrix3D
+    M11 As Double
+    M12  As Double
+    M13 As Double
+    M14  As Double
+    M21 As Double
+    M22 As Double
+    M23 As Double
+    M24 As Double
+    M31 As Double
+    M32 As Double
+    M33 As Double
+    M34 As Double
+    OffsetX As Double
+    OffsetY As Double
+    OffsetZ As Double
+    M44 As Double
+    Function Identity() As Matrix3D: Identity = Matrix3DHelperStatics.Identity: Me = Identity: End Function
+    Function Multiply(ByVal Target As Matrix3D) As Matrix3D: Multiply = Matrix3DHelperStatics.Multiply(Me, Target): End Function
+    Function FromElements(ByVal M11 As Double, ByVal M12 As Double, ByVal M13 As Double, ByVal M14 As Double, ByVal M21 As Double, ByVal M22 As Double, ByVal M23 As Double, ByVal M24 As Double, ByVal M31 As Double, ByVal M32 As Double, ByVal M33 As Double, ByVal M34 As Double, ByVal OffsetX As Double, ByVal OffsetY As Double, ByVal OffsetZ As Double, ByVal M44 As Double) As Matrix3D: FromElements = Matrix3DHelperStatics.FromElements(M11, M12, M13, M14, M21, M22, M23, M24, M31, M32, M33, M34, OffsetX, OffsetY, OffsetZ, M44): Me = FromElements: End Function
+    Function HasInverse() As Boolean: HasInverse = Matrix3DHelperStatics.GetHasInverse(Me) = APITRUE: End Function
+    Function IsIdentity() As Boolean: IsIdentity = Matrix3DHelperStatics.GetIsIdentity(Me) = APITRUE: End Function
+    Function Invert() As Matrix3D: Invert = Matrix3DHelperStatics.Invert(Me): End Function
+End Type
+
+End Module

@@ -1,0 +1,97 @@
+Class cRes
+
+	Private m_Bytes() As Byte
+
+	Public Enum Base64Prefix
+		Base64Prefix_None
+		Base64Prefix_ImagePNG
+		Base64Prefix_ImageJPEG
+		Base64Prefix_ImageGIF
+		Base64Prefix_ImageBMP
+		Base64Prefix_ImageICO
+		Base64Prefix_ImageWebP
+		Base64Prefix_VideoMP4
+		Base64Prefix_VideoWebM
+		Base64Prefix_VideoOGG
+		Base64Prefix_AudioMP3
+		Base64Prefix_AudioWAV
+		Base64Prefix_AudioOGG
+	End Enum
+
+	Public Function Read(ByVal id As Variant, ByVal Type As Variant) As cRes
+		m_Bytes = LoadResData(id, Type)
+		Set Read = Me
+	End Function
+
+	Public Function ReturnBytes() As Byte()
+		ReturnBytes = m_Bytes
+	End Function
+
+	Public Function ReturnString(Optional ByVal Conversion As VbStrConv = vbUnicode) As String
+		ReturnString = StrConv(m_Bytes, Conversion)
+	End Function
+
+	Public Function ReturnHex(Optional ByVal Separator As String = "", Optional ByVal LineBreak As Long = 0) As String
+		Dim i As Long
+		Dim sHex As String
+		Dim count As Long
+		count = 0
+		For i = LBound(m_Bytes) To UBound(m_Bytes)
+			sHex = sHex & Right("0" & Hex(m_Bytes(i)), 2)
+			count = count + 1
+			If i < UBound(m_Bytes) Then
+				If LineBreak > 0 And count >= LineBreak Then
+					sHex = sHex & vbCrLf
+					count = 0
+				ElseIf Separator <> "" Then
+					sHex = sHex & Separator
+				End If
+			End If
+		Next i
+		ReturnHex = sHex
+	End Function
+
+	Public Function ReturnBase64(Optional ByVal Prefix As Base64Prefix = Base64Prefix_None) As String
+		Dim obj As Object
+		Set obj = CreateObject("MSXML2.DOMDocument")
+		Dim node As Object
+		Set node = obj.createElement("b64")
+		node.DataType = "bin.base64"
+		node.nodeTypedValue = m_Bytes
+		Dim b64 As String
+		b64 = node.Text
+		Select Case Prefix
+			Case Base64Prefix_None
+				ReturnBase64 = b64
+			Case Base64Prefix_ImagePNG
+				ReturnBase64 = "data:image/png;base64," & b64
+			Case Base64Prefix_ImageJPEG
+				ReturnBase64 = "data:image/jpeg;base64," & b64
+			Case Base64Prefix_ImageGIF
+				ReturnBase64 = "data:image/gif;base64," & b64
+			Case Base64Prefix_ImageBMP
+				ReturnBase64 = "data:image/bmp;base64," & b64
+			Case Base64Prefix_ImageICO
+				ReturnBase64 = "data:image/x-icon;base64," & b64
+			Case Base64Prefix_ImageWebP
+				ReturnBase64 = "data:image/webp;base64," & b64
+			Case Base64Prefix_VideoMP4
+				ReturnBase64 = "data:video/mp4;base64," & b64
+			Case Base64Prefix_VideoWebM
+				ReturnBase64 = "data:video/webm;base64," & b64
+			Case Base64Prefix_VideoOGG
+				ReturnBase64 = "data:video/ogg;base64," & b64
+			Case Base64Prefix_AudioMP3
+				ReturnBase64 = "data:audio/mpeg;base64," & b64
+			Case Base64Prefix_AudioWAV
+				ReturnBase64 = "data:audio/wav;base64," & b64
+			Case Base64Prefix_AudioOGG
+				ReturnBase64 = "data:audio/ogg;base64," & b64
+		End Select
+	End Function
+
+	Public Function ReturnPicture() As IPictureDisp
+		Set ReturnPicture = Global.LoadPicture(m_Bytes)
+	End Function
+
+End Class

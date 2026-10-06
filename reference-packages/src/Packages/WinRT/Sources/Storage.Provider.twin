@@ -1,0 +1,165 @@
+[InterfaceId("9FC90920-7BCF-4888-A81E-102D7034D7CE")]
+Interface ICachedFileUpdaterStatics Extends IInspectable
+    [PreserveSig]
+    Function SetUpdateInformation(ByVal File As IStorageFile, ByVal ContentId As LongPtr, ByVal ReadMode As ReadActivationMode, ByVal WriteMode As WriteActivationMode, ByVal Options As CachedFileOptions) As HRESULT
+End Interface
+
+[InterfaceId("45FDD443-C0B9-57B0-A84F-7D876EDC3149")]
+Interface ITypedEventHandlerCachedFileUpdaterUIUIRequested Extends IUnknown
+    Sub Invoke(ByVal Sender As ICachedFileUpdaterUI, ByVal Args As IInspectable)
+End Interface
+
+[InterfaceId("ED56AB72-EBD3-52C8-B0AC-987D30090351")]
+Interface ITypedEventHandlerCachedFileUpdaterUIFileUpdateRequested Extends IUnknown
+    Sub Invoke(ByVal Sender As ICachedFileUpdaterUI, ByVal Args As IFileUpdateRequestedEventArgs)
+End Interface
+
+[InterfaceId("9E6F41E6-BAF2-4A97-B600-9333F5DF80FD")]
+Interface ICachedFileUpdaterUI Extends IInspectable
+    Property Get Title() As LongPtr
+    Property Let Title(ByVal Value As LongPtr)
+    Property Get UpdateTarget() As CachedFileTarget
+    [PreserveSig]
+    Function AddFileUpdateRequested(ByVal Handler As ITypedEventHandlerCachedFileUpdaterUIFileUpdateRequested, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveFileUpdateRequested(ByVal Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function AddUIRequested(ByVal Handler As ITypedEventHandlerCachedFileUpdaterUIUIRequested, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveUIRequested(ByVal Token As EventRegistrationToken) As HRESULT
+    Property Get UIStatus() As UIStatus
+End Interface
+
+[InterfaceId("8856A21C-8699-4340-9F49-F7CAD7FE8991")]
+Interface ICachedFileUpdaterUI2 Extends IInspectable
+    Property Get UpdateRequest() As IFileUpdateRequest
+    Function GetDeferral() As IFileUpdateRequestDeferral
+End Interface
+
+[InterfaceId("40C82536-C1FE-4D93-A792-1E736BC70837")]
+Interface IFileUpdateRequest Extends IInspectable
+    Property Get ContentId() As LongPtr
+    Property Get File() As IStorageFile
+    Property Get Status() As FileUpdateStatus
+    Property Let Status(ByVal Value As FileUpdateStatus)
+    Function GetDeferral() As IFileUpdateRequestDeferral
+    [PreserveSig]
+    Function UpdateLocalFile(ByVal Value As IStorageFile) As HRESULT
+End Interface
+
+[InterfaceId("82484648-BDBE-447B-A2EE-7AFE6A032A94")]
+Interface IFileUpdateRequest2 Extends IInspectable
+    Property Get UserInputNeededMessage() As LongPtr
+    Property Let UserInputNeededMessage(ByVal Value As LongPtr)
+End Interface
+
+[InterfaceId("FFCEDB2B-8ADE-44A5-BB00-164C4E72F13A")]
+Interface IFileUpdateRequestDeferral Extends IInspectable
+    [PreserveSig]
+    Function Complete() As HRESULT
+End Interface
+
+[InterfaceId("7B0A9342-3905-438D-AAEF-78AE265F8DD2")]
+Interface IFileUpdateRequestedEventArgs Extends IInspectable
+    Property Get Request() As IFileUpdateRequest
+End Interface
+
+Module mdlStorageProvider
+
+Public Enum CachedFileOptions
+    CachedFileOptions_None = &H0
+    CachedFileOptions_RequireUpdateOnAccess = &H1
+    CachedFileOptions_UseCachedFileWhenOffline = &H2
+    CachedFileOptions_DenyAccessWhenOffline = &H4
+End Enum
+
+Public Enum CachedFileTarget
+    CachedFileTarget_Local
+    CachedFileTarget_Remote
+End Enum
+
+Public Enum ReadActivationMode
+    ReadActivationMode_NotNeeded
+    ReadActivationMode_BeforeAccess
+End Enum
+
+Public Enum StorageProviderHardlinkPolicy
+    StorageProviderHardlinkPolicy_None
+    StorageProviderHardlinkPolicy_Allowed
+End Enum
+
+Public Enum StorageProviderHydrationPolicy
+    StorageProviderHydrationPolicy_Partial
+    StorageProviderHydrationPolicy_Progressive
+    StorageProviderHydrationPolicy_Full
+    StorageProviderHydrationPolicy_AlwaysFull
+End Enum
+
+Public Enum StorageProviderHydrationPolicyModifier
+    StorageProviderHydrationPolicyModifier_None = &H0
+    StorageProviderHydrationPolicyModifier_ValidationRequired = &H1
+    StorageProviderHydrationPolicyModifier_StreamingAllowed = &H2
+    StorageProviderHydrationPolicyModifier_AutoDehydrationAllowed = &H4
+    StorageProviderHydrationPolicyModifier_AllowFullRestartHydration = &H8
+End Enum
+
+Public Enum StorageProviderInSyncPolicy
+    StorageProviderInSyncPolicy_Default = &H0
+    StorageProviderInSyncPolicy_FileCreationTime = &H1
+    StorageProviderInSyncPolicy_FileReadOnlyAttribute = &H2
+    StorageProviderInSyncPolicy_FileHiddenAttribute = &H4
+    StorageProviderInSyncPolicy_FileSystemAttribute = &H8
+    StorageProviderInSyncPolicy_DirectoryCreationTime = &H10
+    StorageProviderInSyncPolicy_DirectoryReadOnlyAttribute = &H20
+    StorageProviderInSyncPolicy_DirectoryHiddenAttribute = &H40
+    StorageProviderInSyncPolicy_DirectorySystemAttribute = &H80
+    StorageProviderInSyncPolicy_FileLastWriteTime = &H100
+    StorageProviderInSyncPolicy_DirectoryLastWriteTime = &H200
+    StorageProviderInSyncPolicy_PreserveInsyncForSyncEngine = &H80000000
+End Enum
+
+Public Enum StorageProviderPopulationPolicy
+    StorageProviderPopulationPolicy_Full
+    StorageProviderPopulationPolicy_AlwaysFull
+End Enum
+
+Public Enum StorageProviderProtectionMode
+    StorageProviderProtectionMode_Unknown
+    StorageProviderProtectionMode_Personal
+End Enum
+
+Public Enum StorageProviderState
+    StorageProviderState_InSync
+    StorageProviderState_Syncing
+    StorageProviderState_Paused
+    StorageProviderState_Error
+    StorageProviderState_Warning
+    StorageProviderState_Offline
+End Enum
+
+Public Enum StorageProviderUICommandState
+    StorageProviderUICommandState_Enabled
+    StorageProviderUICommandState_Disabled
+    StorageProviderUICommandState_Hidden
+End Enum
+
+Public Enum StorageProviderUriSourceStatus
+    StorageProviderUriSourceStatus_Success
+    StorageProviderUriSourceStatus_NoSyncRoot
+    StorageProviderUriSourceStatus_FileNotFound
+End Enum
+
+Public Enum UIStatus
+    UIStatus_Unavailable
+    UIStatus_Hidden
+    UIStatus_Visible
+    UIStatus_Complete
+End Enum
+
+Public Enum WriteActivationMode
+    WriteActivationMode_ReadOnly
+    WriteActivationMode_NotNeeded
+    WriteActivationMode_AfterWrite
+End Enum
+
+End Module

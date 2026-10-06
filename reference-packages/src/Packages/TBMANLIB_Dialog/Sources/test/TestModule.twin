@@ -1,0 +1,922 @@
+' =====================================================
+' TestModule.twin - Dialog Classes Test Module
+' TestModule.twin - 对话框类测试模块
+' TBMANLIB Dialog Library
+' =====================================================
+' Function: Tests all dialog classes in the library
+' 功能：测试库中所有对话框类
+' Author: woeoo (邓伟)
+' Email: 215879458@qq.com
+' Site: https://vb6.pro
+' Date: 2026-03-11
+' Version: 1.1.0
+' =====================================================
+
+Option Explicit
+
+Public Module TestModule
+
+' =====================================================
+' API Declarations (for test helpers)
+' =====================================================
+Private Declare PtrSafe Function GetForegroundWindow Lib "user32" () As LongPtr
+
+' =====================================================
+
+' =====================================================
+' cDialog (Classic) Tests
+' =====================================================
+
+' Test 1.1: cDialog - Folder Browse (SHBrowseForFolder)
+Public Sub TestClassicFolderBrowse()
+    Dim dlg As New cDialog
+    
+    With dlg
+        .DialogTitle = "Select a folder (cDialog - SHBrowseForFolder)"
+        .NewDialogStyle = True
+    End With
+    
+    Dim strFolder As String
+    strFolder = dlg.ShowBrowseForFolder()
+    
+    If strFolder <> "" Then
+        MsgBox "Selected folder: " & strFolder & vbCrLf & vbCrLf & _
+               "Folder name: " & dlg.GetFileName(strFolder) & vbCrLf & _
+               "Parent path: " & dlg.GetFilePath(strFolder), _
+               vbInformation, "cDialog Folder Browse Result"
+    Else
+        MsgBox "Folder selection cancelled.", vbInformation, "cDialog Folder Browse"
+    End If
+End Sub
+' Color Dialog Tests
+' =====================================================
+
+' Test 1: Color Picker Dialog
+Public Sub TestColorDialog()
+    Dim dlg As New cDialogColor
+
+    With dlg
+        .Color = vbBlue
+        .FullOpen = True
+    End With
+
+    If dlg.ShowDialog() Then
+        MsgBox "Selected Color:" & vbCrLf & _
+               "RGB: " & dlg.Red & ", " & dlg.Green & ", " & dlg.Blue & vbCrLf & _
+               "HTML: " & dlg.ToHtmlColor() & vbCrLf & _
+               "Description: " & dlg.ToRgbString(), _
+               vbInformation, "Color Dialog Test"
+    Else
+        MsgBox "User cancelled", vbInformation, "Color Dialog Test"
+    End If
+End Sub
+
+' Test 2: Color Dialog with HTML parsing
+Public Sub TestColorDialogHtml()
+    Dim dlg As New cDialogColor
+
+    ' Set color from HTML string
+    dlg.FromHtmlColor "#FF6600"
+
+    If dlg.ShowDialog() Then
+        MsgBox "Selected Color:" & vbCrLf & _
+               "HTML: " & dlg.ToHtmlColor() & vbCrLf & _
+               "RGB: " & dlg.ToRgbString(), _
+               vbInformation, "HTML Color Test"
+    Else
+        MsgBox "User cancelled", vbInformation, "HTML Color Test"
+    End If
+End Sub
+
+' =====================================================
+' Font Dialog Tests
+' =====================================================
+
+' Test 3: Font Selection Dialog
+Public Sub TestFontDialog()
+    Dim dlg As New cDialogFont
+
+    With dlg
+        .FaceName = "Arial"
+        .Size = 12
+        .Bold = True
+        .ShowEffects = True
+    End With
+
+    If dlg.ShowDialog() Then
+        MsgBox "Selected Font:" & vbCrLf & _
+               dlg.ToDescription() & vbCrLf & vbCrLf & _
+               "CSS: " & dlg.ToCssFont(), _
+               vbInformation, "Font Dialog Test"
+    Else
+        MsgBox "User cancelled", vbInformation, "Font Dialog Test"
+    End If
+End Sub
+
+' Test 4: Font Dialog with size limits
+Public Sub TestFontDialogWithLimits()
+    Dim dlg As New cDialogFont
+
+    With dlg
+        .FaceName = "Courier New"
+        .Size = 10
+        .MinSize = 8
+        .MaxSize = 24
+        .FixedPitchOnly = True
+    End With
+
+    If dlg.ShowDialog() Then
+        MsgBox "Selected Font:" & vbCrLf & _
+               dlg.ToDescription(), _
+               vbInformation, "Font Dialog with Limits"
+    Else
+        MsgBox "User cancelled", vbInformation, "Font Dialog with Limits"
+    End If
+End Sub
+
+' =====================================================
+' Print Dialog Tests
+' =====================================================
+
+' Test 5: Print Dialog
+Public Sub TestPrintDialog()
+    Dim dlg As New cDialogPrint
+
+    With dlg
+        .MinPage = 1
+        .MaxPage = 100
+        .Copies = 1
+        .AllowSelection = True
+        .AllowPageRange = True
+    End With
+
+    If dlg.ShowDialog() Then
+        MsgBox "Print Settings:" & vbCrLf & _
+               dlg.ToDescription(), _
+               vbInformation, "Print Dialog Test"
+    Else
+        If dlg.Cancelled Then
+            MsgBox "User cancelled", vbInformation, "Print Dialog Test"
+        Else
+            MsgBox "Error occurred! CommDlgExtendedError = " & dlg.LastError & vbCrLf & _
+                   "Hex: 0x" & Hex(dlg.LastError), vbExclamation, "Print Dialog Error"
+        End If
+    End If
+End Sub
+
+' Test 6: Print Dialog with page range
+Public Sub TestPrintDialogPageRange()
+    Dim dlg As New cDialogPrint
+
+    With dlg
+        .MinPage = 1
+        .MaxPage = 50
+        .FromPage = 5
+        .ToPage = 10
+        .PrintRangeMode = 2  ' PageRange
+        .AllowSelection = False
+    End With
+
+    If dlg.ShowDialog() Then
+        MsgBox "Print Settings:" & vbCrLf & _
+               "Range: " & dlg.FromPage & " - " & dlg.ToPage & vbCrLf & _
+               "Copies: " & dlg.Copies & vbCrLf & _
+               "Collate: " & dlg.Collate, _
+               vbInformation, "Print Dialog Page Range"
+    Else
+        MsgBox "User cancelled", vbInformation, "Print Dialog Page Range"
+    End If
+End Sub
+
+' =====================================================
+' Page Setup Dialog Tests
+' =====================================================
+
+' Test 7: Page Setup Dialog
+Public Sub TestPageSetupDialog()
+    Dim dlg As New cDialogPageSetup
+
+    With dlg
+        .SetLetterSize
+        .SetDefaultMargins
+        .Orientation = 1  ' Portrait
+    End With
+
+    If dlg.ShowDialog() Then
+        MsgBox "Page Settings:" & vbCrLf & _
+               dlg.ToDescription() & vbCrLf & vbCrLf & _
+               "Printable Area: " & _
+               Format$(dlg.GetPrintableWidth(), "0.00") & " x " & _
+               Format$(dlg.GetPrintableHeight(), "0.00") & " inches", _
+               vbInformation, "Page Setup Dialog Test"
+    Else
+        MsgBox "User cancelled", vbInformation, "Page Setup Dialog Test"
+    End If
+End Sub
+
+' Test 8: Page Setup Dialog with A4
+Public Sub TestPageSetupDialogA4()
+    Dim dlg As New cDialogPageSetup
+
+    With dlg
+        .SetA4Size
+        .SetNarrowMargins
+        .Unit = 1  ' Millimeters
+    End With
+
+    If dlg.ShowDialog() Then
+        MsgBox "Page Settings:" & vbCrLf & _
+               dlg.ToDescription(), _
+               vbInformation, "Page Setup A4 Test"
+    Else
+        MsgBox "User cancelled", vbInformation, "Page Setup A4 Test"
+    End If
+End Sub
+
+' =====================================================
+' Find/Replace Dialog Tests
+' =====================================================
+
+' Test 9: Find Dialog (modeless)
+' 注意：无模式对话框依赖 Owner 窗口的消息泵处理 FINDMSGSTRING 回调。
+' IDE 直接运行时 GetForegroundWindow 返回 IDE 窗口，会导致 IDE 崩溃重启。
+' 正确用法：在自有窗体中传入 Me.hWnd，并在窗口过程中处理 dlg.MessageId 消息。
+Public Sub TestFindDialog()
+    If MsgBox("Find/Replace 是无模式对话框，依赖 Owner 窗口的消息循环。" & vbCrLf & vbCrLf & _
+           "在 IDE 中直接运行会获取 IDE 窗口句柄，导致消息回调异常使 IDE 崩溃。" & vbCrLf & _
+           "正确用法：在自有窗体中设置 .OwnerHwnd = Me.hWnd，" & vbCrLf & _
+           "并在窗口过程中处理 FINDMSGSTRING 注册消息（ID = dlg.MessageId）。" & vbCrLf & vbCrLf & _
+           "是否继续运行测试？（可能导致 IDE 重启，请先保存！）", _
+           vbYesNo Or vbExclamation, "Modeless Dialog Warning") <> vbYes Then Exit Sub
+
+    Dim dlg As New cDialogFindReplace
+
+    With dlg
+        .OwnerHwnd = GetForegroundWindow()  ' IDE 中为 IDE 窗口句柄，生产代码应传 Me.hWnd
+        .FindWhat = "test"
+        .MatchCase = False
+        .WholeWord = True
+    End With
+
+    If dlg.ShowFind() Then
+        MsgBox "Find dialog is now visible." & vbCrLf & _
+               "Message ID for notification: " & dlg.MessageId & vbCrLf & vbCrLf & _
+               "Note: This is a modeless dialog." & vbCrLf & _
+               "Handle the registered message ""commdlg_FindReplace"" in your window procedure.", _
+               vbInformation, "Find Dialog Test"
+    Else
+        MsgBox "Failed to show find dialog" & vbCrLf & _
+               "CommDlgExtendedError = " & dlg.LastError & vbCrLf & _
+               "Hex: 0x" & Hex$(dlg.LastError), vbExclamation, "Find Dialog Test"
+    End If
+End Sub
+
+' Test 10: Replace Dialog (modeless)
+' 同 Test9 警告：不要在 IDE 中直接运行，请在自有窗体中使用 Me.hWnd
+Public Sub TestReplaceDialog()
+    If MsgBox("Replace 是无模式对话框，同 Test9 警告。" & vbCrLf & _
+           "在自有窗体中设置 .OwnerHwnd = Me.hWnd，" & vbCrLf & _
+           "并处理 FINDMSGSTRING 回调消息。" & vbCrLf & vbCrLf & _
+           "是否继续运行测试？（可能导致 IDE 重启，请先保存！）", _
+           vbYesNo Or vbExclamation, "Modeless Dialog Warning") <> vbYes Then Exit Sub
+
+    Dim dlg As New cDialogFindReplace
+
+    With dlg
+        .OwnerHwnd = GetForegroundWindow()  ' IDE 中为 IDE 窗口句柄，生产代码应传 Me.hWnd
+        .FindWhat = "old"
+        .ReplaceWith = "new"
+        .MatchCase = True
+    End With
+
+    If dlg.ShowReplace() Then
+        MsgBox "Replace dialog is now visible." & vbCrLf & _
+               "Message ID for notification: " & dlg.MessageId & vbCrLf & vbCrLf & _
+               "Find: " & dlg.FindWhat & vbCrLf & _
+               "Replace: " & dlg.ReplaceWith, _
+               vbInformation, "Replace Dialog Test"
+    Else
+        MsgBox "Failed to show replace dialog", vbExclamation, "Replace Dialog Test"
+    End If
+End Sub
+
+' =====================================================
+' File Dialog Tests (cDialogEx)
+' =====================================================
+
+' Test 11: File Open Dialog (single select)
+Public Sub TestFileOpen()
+    Dim dlg As New cDialogEx
+
+    With dlg
+        .DialogTitle = "Select a file"
+        .Filter = .GetPresetFilter("images")
+        .InitialDir = "D:\"
+        .FileMustExist = True
+        .PathMustExist = True
+    End With
+
+    Dim filePath As String
+    filePath = dlg.ShowOpen()
+
+    If Len(filePath) > 0 Then
+        MsgBox "Selected file:" & vbCrLf & filePath, vbInformation, "File Open Test"
+    Else
+        MsgBox "User cancelled", vbInformation, "File Open Test"
+    End If
+End Sub
+
+' Test 12: File Save Dialog
+Public Sub TestFileSave()
+    Dim dlg As New cDialogEx
+
+    With dlg
+        .DialogTitle = "Save file"
+        .Filter = "Text Files|*.txt|All Files|*.*"
+        .DefaultExt = "txt"
+        .FileName = "newfile.txt"
+        .OverwritePrompt = True
+        .PathMustExist = True
+    End With
+
+    Dim filePath As String
+    filePath = dlg.ShowSave()
+
+    If Len(filePath) > 0 Then
+        MsgBox "Save path:" & vbCrLf & filePath, vbInformation, "File Save Test"
+    Else
+        MsgBox "User cancelled", vbInformation, "File Save Test"
+    End If
+End Sub
+
+' Test 13: Folder Browse Dialog
+Public Sub TestFolderBrowse()
+    Dim dlg As New cDialogEx
+
+    With dlg
+        .DialogTitle = "Select folder"
+        .InitialDir = "C:\"
+        .PickFolders = True
+    End With
+
+    Dim folderPath As String
+    folderPath = dlg.ShowBrowseForFolder()
+
+    If Len(folderPath) > 0 Then
+        MsgBox "Selected folder:" & vbCrLf & folderPath, vbInformation, "Folder Browse Test"
+    Else
+        MsgBox "User cancelled", vbInformation, "Folder Browse Test"
+    End If
+End Sub
+
+' Test 14: File Open Dialog (multi-select)
+Public Sub TestFileOpenMultiSelect()
+    Dim dlg As New cDialogEx
+
+    With dlg
+        .DialogTitle = "Select multiple files"
+        .Filter = .GetPresetFilter("text")
+        .InitialDir = "C:\"
+        .MultiSelect = True
+        .FileMustExist = True
+    End With
+
+    Dim result As Variant
+    result = dlg.ShowOpen()
+
+    If IsArray(result) Then
+        Dim i As Long
+        Dim msg As String
+        msg = "Selected " & CStr(UBound(result) - LBound(result) + 1) & " files:" & vbCrLf
+        For i = LBound(result) To UBound(result)
+            msg = msg & vbCrLf & result(i)
+        Next i
+        MsgBox msg, vbInformation, "Multi-Select File Open Test"
+    ElseIf VarType(result) = vbString And Len(result) > 0 Then
+        MsgBox "Single file selected (MultiSelect was True but only 1 chosen):" & vbCrLf & CStr(result), _
+               vbInformation, "Multi-Select File Open Test"
+    Else
+        MsgBox "User cancelled", vbInformation, "Multi-Select File Open Test"
+    End If
+End Sub
+
+' Test 15: SelectFiles Collection
+Public Sub TestSelectFiles()
+    Dim dlg As New cDialogEx
+
+    With dlg
+        .DialogTitle = "Select files (Collection mode)"
+        .Filter = .GetPresetFilter("documents")
+        .InitialDir = "C:\"
+        .MultiSelect = True
+    End With
+
+    Dim files As Collection
+    Set files = dlg.SelectFiles()
+
+    If files.Count > 0 Then
+        Dim msg As String
+        Dim i As Long
+        msg = "Selected " & CStr(files.Count) & " file(s):" & vbCrLf
+        For i = 1 To files.Count
+            msg = msg & vbCrLf & "(" & CStr(i) & ") " & files(i)
+        Next i
+        MsgBox msg, vbInformation, "SelectFiles Test"
+    Else
+        MsgBox "User cancelled or no files selected", vbInformation, "SelectFiles Test"
+    End If
+End Sub
+
+' Test 16: GetPresetFilter variants
+Public Sub TestGetPresetFilter()
+    Dim dlg As New cDialogEx
+    Dim msg As String
+
+    msg = "Available preset filters:" & vbCrLf & vbCrLf & _
+          "all -> " & dlg.GetPresetFilter("all") & vbCrLf & _
+          "text -> " & dlg.GetPresetFilter("text") & vbCrLf & _
+          "images -> " & dlg.GetPresetFilter("images") & vbCrLf & _
+          "documents -> " & dlg.GetPresetFilter("documents") & vbCrLf & _
+          "executables -> " & dlg.GetPresetFilter("executables")
+
+    MsgBox msg, vbInformation, "GetPresetFilter Test"
+
+    ' Now test with a dialog using documents filter
+    With dlg
+        .DialogTitle = "Open a document"
+        .Filter = .GetPresetFilter("documents")
+        .FileMustExist = True
+    End With
+
+    Dim filePath As String
+    filePath = dlg.ShowOpen()
+
+    If Len(filePath) > 0 Then
+        MsgBox "Selected document:" & vbCrLf & filePath, vbInformation, "GetPresetFilter Dialog Test"
+    Else
+        MsgBox "User cancelled", vbInformation, "GetPresetFilter Dialog Test"
+    End If
+End Sub
+
+
+' Test 16.1: Custom Icon Dialog
+Public Sub TestIconDialog()
+    Dim dlg As New cDialogEx
+
+    ' ---- 测试1：资源图标（LoadResPicture 加载嵌入资源 .ico） ----
+    Dim picIcon As StdPicture
+    Set picIcon = LoadResPicture("twinbasic.ico", vbResIcon)
+
+    If picIcon Is Nothing Then
+        MsgBox "Failed to load icon resource 'twinbasic.ico'." & vbCrLf & _
+               "Make sure the resource file includes: twinbasic.ico / ICON", _
+               vbExclamation, "Icon Dialog Test"
+        Exit Sub
+    End If
+
+    dlg.SetCustomIcon picIcon.Handle
+
+    With dlg
+        .DialogTitle = "Custom Icon Test - Resource Icon"
+        .Filter = "All Files|*.*"
+        .FileMustExist = True
+    End With
+
+    Dim filePath As String
+    filePath = dlg.ShowOpen()
+
+    If Len(filePath) > 0 Then
+        MsgBox "Selected with resource icon:" & vbCrLf & filePath, vbInformation, "Icon Dialog Test"
+    Else
+        MsgBox "User cancelled (resource icon test)", vbInformation, "Icon Dialog Test"
+    End If
+
+    ' 清除自定义图标（picIcon 由运行时管理，无需手动释放）
+    dlg.ClearIcon
+
+    ' ---- 测试2：系统图标（SHGetStockIconInfo） ----
+    dlg.SetSystemIcon SIID_DRIVEFIXED
+
+    With dlg
+        .DialogTitle = "Custom Icon Test - System Icon (Fixed Drive)"
+        .Filter = .GetPresetFilter("all")
+    End With
+
+    filePath = dlg.ShowOpen()
+
+    If Len(filePath) > 0 Then
+        MsgBox "Selected with system icon:" & vbCrLf & filePath, vbInformation, "Icon Dialog Test"
+    Else
+        MsgBox "User cancelled (system icon test)", vbInformation, "Icon Dialog Test"
+    End If
+
+    dlg.ClearIcon
+
+    ' ---- 测试3：Save 对话框 + 图标 ----
+    dlg.SetCustomIcon picIcon.Handle
+
+    With dlg
+        .DialogTitle = "Custom Icon Test - Save Dialog"
+        .Filter = "Text Files|*.txt|All Files|*.*"
+        .DefaultExt = "txt"
+        .OverwritePrompt = True
+    End With
+
+    filePath = dlg.ShowSave()
+
+    If Len(filePath) > 0 Then
+        MsgBox "Save path with icon:" & vbCrLf & filePath, vbInformation, "Icon Dialog Test"
+    Else
+        MsgBox "User cancelled (save icon test)", vbInformation, "Icon Dialog Test"
+    End If
+
+    dlg.ClearIcon
+
+    ' ---- 测试4：Folder Browse + 图标 ----
+    dlg.SetSystemIcon SIID_FOLDER
+
+    With dlg
+        .DialogTitle = "Custom Icon Test - Folder Browse"
+        .PickFolders = True
+    End With
+
+    Dim folderPath As String
+    folderPath = dlg.ShowBrowseForFolder()
+
+    If Len(folderPath) > 0 Then
+        MsgBox "Selected folder with icon:" & vbCrLf & folderPath, vbInformation, "Icon Dialog Test"
+    Else
+        MsgBox "User cancelled (folder icon test)", vbInformation, "Icon Dialog Test"
+    End If
+
+    dlg.ClearIcon
+End Sub
+
+' =====================================================
+' Password Dialog Tests
+' =====================================================
+
+' Test 17: Password Input Dialog
+Public Sub TestPasswordDialog()
+    Dim dlg As New cDialogPassword
+
+    With dlg
+        .Title = "Enter Password"
+        .Prompt = "Please enter your password:"
+        .MinLength = 8
+        .RequireUppercase = True
+        .RequireLowercase = True
+        .RequireNumber = True
+        .RequireSpecial = False
+        .ShowStrength = True
+    End With
+
+    If dlg.ShowDialog() Then
+        Dim strength As cDialogPassword.PasswordStrength
+        strength = dlg.GetStrength(dlg.Password)
+
+        MsgBox "Password accepted!" & vbCrLf & vbCrLf & _
+               "Strength: " & dlg.GetStrengthDescription(strength) & vbCrLf & _
+               "Cancelled: " & CStr(dlg.Cancelled) & vbCrLf & vbCrLf & _
+               "Password length: " & Len(dlg.Password) & " characters", _
+               vbInformation, "Password Dialog Test"
+    Else
+        MsgBox "Password entry cancelled or failed" & vbCrLf & _
+               "Cancelled property: " & CStr(dlg.Cancelled), _
+               vbInformation, "Password Dialog Test"
+    End If
+End Sub
+
+' Test 18: Password with Confirmation
+Public Sub TestPasswordDialogWithConfirm()
+    Dim dlg As New cDialogPassword
+
+    With dlg
+        .Title = "Create Password"
+        .Prompt = "Create a new password:"
+        .RequireConfirm = True
+        .MinLength = 8
+        .RequireUppercase = True
+        .RequireLowercase = True
+        .RequireNumber = True
+        .RequireSpecial = True
+        .MaxAttempts = 5
+    End With
+
+    If dlg.ShowDialog() Then
+        MsgBox "Password created successfully!" & vbCrLf & vbCrLf & _
+               dlg.GetRequirementsDescription(), _
+               vbInformation, "Password Created"
+    Else
+        MsgBox "Password creation cancelled" & vbCrLf & _
+               "Cancelled: " & CStr(dlg.Cancelled), _
+               vbInformation, "Password Dialog"
+    End If
+End Sub
+
+' Test 19: Password Change Dialog
+Public Sub TestPasswordChangeDialog()
+    Dim dlg As New cDialogPassword
+
+    With dlg
+        .Title = "Change Password"
+        .Prompt = "Enter your new password:"
+        .MinLength = 6
+        .RequireUppercase = True
+        .RequireNumber = True
+        .ShowStrength = True
+    End With
+
+    Dim oldPassword As String
+    oldPassword = ""
+
+    If dlg.ShowChangeDialog(oldPassword) Then
+        MsgBox "Password changed successfully!" & vbCrLf & vbCrLf & _
+               "New password strength: " & dlg.GetStrengthDescription(dlg.GetStrength(dlg.Password)) & vbCrLf & _
+               "Cancelled: " & CStr(dlg.Cancelled), _
+               vbInformation, "Password Change Test"
+    Else
+        MsgBox "Password change cancelled or failed" & vbCrLf & _
+               "Cancelled: " & CStr(dlg.Cancelled), _
+               vbInformation, "Password Change Test"
+    End If
+End Sub
+
+' =====================================================
+' Countdown Message Box Tests
+' =====================================================
+
+' Test 20: Countdown Info Message
+Public Sub TestCountdownMsgBox()
+    Dim msg As New cDialogCountdownMsgBox
+
+    msg.ShowInfo "This message will auto-close in 5 seconds.", "Auto-Close Test", 5
+
+    If msg.IsTimedOut() Then
+        MsgBox "The message box was closed automatically due to timeout.", vbInformation, "Result"
+    Else
+        MsgBox "User clicked: " & msg.GetResultDescription(), vbInformation, "Result"
+    End If
+End Sub
+
+' Test 21: Countdown Warning
+Public Sub TestCountdownWarning()
+    Dim msg As New cDialogCountdownMsgBox
+
+    msg.ShowWarning "Warning! This operation will proceed automatically in 10 seconds unless cancelled.", "Warning", 10
+
+    MsgBox "Result: " & msg.GetResultDescription(), vbInformation, "Warning Result"
+End Sub
+
+' Test 22: Countdown Question
+Public Sub TestCountdownQuestion()
+    Dim msg As New cDialogCountdownMsgBox
+
+    With msg
+        .Message = "Do you want to save changes before closing?"
+        .Title = "Save Changes"
+        .CountdownSeconds = 15
+        .Buttons = MessageBoxButtons.MB_YESNOCANCEL
+        .Icon = MessageBoxIcons.MB_ICONQUESTION
+    End With
+
+    msg.ShowDialog()
+
+    MsgBox "User action: " & msg.GetResultDescription(), vbInformation, "Question Result"
+End Sub
+
+' =====================================================
+' Input Box Tests
+' =====================================================
+
+' Test 23: Simple Input
+Public Sub TestInputBoxSimple()
+    Dim input As New cDialogInputBox
+
+    Dim result As String
+    result = input.ShowSimple("Enter your name:", "Name Input", "John Doe")
+
+    If Not input.Cancelled Then
+        MsgBox "You entered: " & result, vbInformation, "Input Result"
+    Else
+        MsgBox "Input was cancelled", vbInformation, "Input Result"
+    End If
+End Sub
+
+' Test 24: Numeric Input
+Public Sub TestInputBoxNumeric()
+    Dim input As New cDialogInputBox
+
+    Dim result As Double
+    result = input.ShowNumeric("Enter a number:", "Numeric Input", "0")
+
+    If Not input.Cancelled Then
+        MsgBox "You entered: " & result, vbInformation, "Numeric Result"
+    Else
+        MsgBox "Input was cancelled", vbInformation, "Numeric Result"
+    End If
+End Sub
+
+' Test 25: Email Input
+Public Sub TestInputBoxEmail()
+    Dim input As New cDialogInputBox
+
+    Dim result As String
+    result = input.ShowEmail("Enter your email address:")
+
+    If Not input.Cancelled Then
+        MsgBox "Email entered: " & result, vbInformation, "Email Result"
+    Else
+        MsgBox "Input was cancelled", vbInformation, "Email Result"
+    End If
+End Sub
+
+' Test 26: Phone Input
+Public Sub TestInputBoxPhone()
+    Dim input As New cDialogInputBox
+
+    Dim result As String
+    result = input.ShowPhone("Enter your phone number:")
+
+    If Not input.Cancelled Then
+        MsgBox "Phone entered: " & result, vbInformation, "Phone Result"
+    Else
+        MsgBox "Input was cancelled", vbInformation, "Phone Result"
+    End If
+End Sub
+
+' Test 27: URL Input
+Public Sub TestInputBoxURL()
+    Dim input As New cDialogInputBox
+
+    Dim result As String
+    result = input.ShowURL("Enter a website URL:")
+
+    If Not input.Cancelled Then
+        MsgBox "URL entered: " & result, vbInformation, "URL Result"
+    Else
+        MsgBox "Input was cancelled", vbInformation, "URL Result"
+    End If
+End Sub
+
+' Test 28: Input with Length Limits
+Public Sub TestInputBoxWithLimits()
+    Dim input As New cDialogInputBox
+
+    With input
+        .Prompt = "Enter a short description (10-50 characters):"
+        .Title = "Description Input"
+        .MinLength = 10
+        .MaxLength = 50
+        .AllowEmpty = False
+    End With
+
+    If input.ShowDialog() Then
+        MsgBox "You entered (" & Len(input.Value) & " chars): " & vbCrLf & input.Value, vbInformation, "Input Result"
+    Else
+        MsgBox "Input was cancelled", vbInformation, "Input Result"
+    End If
+End Sub
+
+' =====================================================
+' Progress Dialog Tests
+' =====================================================
+
+' Test 29: Progress Dialog Simulation
+Public Sub TestProgressDialog()
+    Dim progress As New cDialogProgress
+
+    With progress
+        .Title = "Processing"
+        .Message = "Processing files..."
+        .Min = 0
+        .Max = 100
+        .ShowElapsedTime = True
+        .ShowRemainingTime = True
+    End With
+
+    ' Simulate progress
+    progress.Start()
+
+    MsgBox "Progress started. Check Debug output for progress updates." & vbCrLf & vbCrLf & _
+           "Note: In a real application, this would be integrated with a UI form.", _
+           vbInformation, "Progress Dialog Test"
+
+    ' This would normally be called during actual work
+    progress.SimulateProgress 50
+End Sub
+
+' =====================================================
+' Date/Time Dialog Tests
+' =====================================================
+
+' Test 30: Date Picker
+Public Sub TestDatePicker()
+    Dim dt As New cDialogDateTime
+
+    If dt.ShowDatePicker("Select Appointment Date") Then
+        MsgBox "Selected date:" & vbCrLf & _
+               dt.FormatDate() & vbCrLf & _
+               dt.GetDayOfWeekName() & vbCrLf & vbCrLf & _
+               "Date value: " & dt.DateValue, _
+               vbInformation, "Date Selected"
+    Else
+        MsgBox "Date selection cancelled", vbInformation, "Date Picker"
+    End If
+End Sub
+
+' Test 31: Time Picker
+Public Sub TestTimePicker()
+    Dim dt As New cDialogDateTime
+
+    dt.Is24HourFormat = False
+    dt.ShowSeconds = True
+
+    If dt.ShowTimePicker("Select Meeting Time") Then
+        MsgBox "Selected time:" & vbCrLf & _
+               dt.FormatTime() & vbCrLf & vbCrLf & _
+               "Time value: " & dt.TimeValue, _
+               vbInformation, "Time Selected"
+    Else
+        MsgBox "Time selection cancelled", vbInformation, "Time Picker"
+    End If
+End Sub
+
+' Test 32: DateTime Picker
+Public Sub TestDateTimePicker()
+    Dim dt As New cDialogDateTime
+
+    With dt
+        .Title = "Select Event Date and Time"
+        .Prompt = "Choose when the event will occur:"
+        .MinYear = 2020
+        .MaxYear = 2030
+        .Is24HourFormat = True
+        .ShowSeconds = False
+    End With
+
+    If dt.ShowDialog() Then
+        MsgBox "Selected:" & vbCrLf & _
+               dt.FormatDateTime() & vbCrLf & _
+               dt.GetDayOfWeekName() & vbCrLf & vbCrLf & _
+               "DateTime value: " & dt.DateTimeValue, _
+               vbInformation, "DateTime Selected"
+    Else
+        MsgBox "Selection cancelled", vbInformation, "DateTime Picker"
+    End If
+End Sub
+
+' Test 33: DateTime with Custom Format
+Public Sub TestDateTimeCustomFormat()
+    Dim dt As New cDialogDateTime
+
+    dt.CustomFormat = "YYYY-MM-DD (DDD)"
+
+    If dt.ShowDialog() Then
+        MsgBox "Formatted date:" & vbCrLf & _
+               dt.FormatDate(2) & vbCrLf & vbCrLf & _
+               "Day of week: " & dt.GetDayOfWeekName() & vbCrLf & _
+               "Month: " & dt.GetMonthName(), _
+               vbInformation, "Custom Format"
+    Else
+        MsgBox "Selection cancelled", vbInformation, "Custom Format"
+    End If
+End Sub
+
+' =====================================================
+' Utility Function Tests
+' =====================================================
+
+' Test 34: mDialog Utility Functions
+Public Sub TestUtilityFunctions()
+    Dim r As Long, g As Long, b As Long
+
+    ' Test HTML color conversion
+    mDialog.HtmlToRGB "#FF8000", r, g, b
+
+    MsgBox "Utility Functions Test:" & vbCrLf & vbCrLf & _
+           "HTML #FF8000 to RGB:" & vbCrLf & _
+           "R=" & r & ", G=" & g & ", B=" & b & vbCrLf & vbCrLf & _
+           "RGB back to HTML: " & mDialog.RGBToHtml(r, g, b) & vbCrLf & vbCrLf & _
+           "Paper sizes:" & vbCrLf & _
+           "Letter: " & mDialog.PAPER_LETTER_WIDTH & " x " & mDialog.PAPER_LETTER_HEIGHT & " inches" & vbCrLf & _
+           "A4: " & Format$(mDialog.MMToInches(210), "0.00") & " x " & Format$(mDialog.MMToInches(297), "0.00") & " inches", _
+           vbInformation, "Utility Functions Test"
+End Sub
+
+
+' Quick test: Password Dialog with Cancelled check
+Public Sub QuickTest()
+    Dim dlg As New cDialogPassword
+
+    dlg.Title = "Quick Password Test"
+
+    If dlg.ShowDialog() Then
+        MsgBox "Password accepted! Strength: " & dlg.GetStrengthDescription(dlg.GetStrength(dlg.Password)) & vbCrLf & _
+               "Cancelled: " & CStr(dlg.Cancelled), vbInformation, "Quick Test"
+    Else
+        MsgBox "Cancelled property: " & CStr(dlg.Cancelled), vbInformation, "Quick Test"
+    End If
+End Sub
+
+End Module

@@ -1,0 +1,421 @@
+[InterfaceId("5DCBEE48-9965-51DA-A461-177C885BE7E5")]
+Interface IAsyncOperationIMapView_IInspectable Extends IInspectable
+    Property Set Completed(ByVal Handler As IAsyncOperationCompletedHandlerIMapViewIInspectable)
+    Property Get Completed() As IAsyncOperationCompletedHandlerIMapViewIInspectable
+    Function GetResults() As IMapView_IInspectable
+End Interface
+
+[InterfaceId("89981889-1207-5AE6-9B28-CCC58F3AAC6E")]
+Interface IAsyncOperationCompletedHandlerIMapViewIInspectable Extends IUnknown
+    Sub Invoke(ByVal AsyncOperation As IAsyncOperationIMapView_IInspectable, ByVal AsyncStatus As AsyncStatus)
+End Interface
+
+[InterfaceId("B1767F8D-F698-4982-B05F-3A6E8CAB01A2")]
+Interface IContentIndexer Extends IInspectable
+    Function AddAsync(ByVal IndexableContent As IIndexableContent) As IAsyncAction
+    Function UpdateAsync(ByVal IndexableContent As IIndexableContent) As IAsyncAction
+    Function DeleteAsync(ByVal ContentId As LongPtr) As IAsyncAction
+    Function DeleteMultipleAsync(ByVal ContentIds As IIterable_HSTRING) As IAsyncAction
+    Function DeleteAllAsync() As IAsyncAction
+    Function RetrievePropertiesAsync(ByVal ContentId As LongPtr, ByVal PropertiesToRetrieve As IIterable_HSTRING) As IAsyncOperationIMapView_IInspectable
+    Property Get Revision() As UInt64
+End Interface
+
+[InterfaceId("53A2E825-9BF1-5083-8A7B-9D94F312DADE")]
+Interface IIterator_IMapView_IInspectable Extends IInspectable
+    Property Get Current() As IMapView_IInspectable
+    Property Get HasCurrent() As BooleanByte
+    Function MoveNext() As BooleanByte
+    Function GetMany(ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("E1670FAE-49CD-5C47-A8C8-F6FA2C650C6C")]
+Interface IIterable_IMapView_IInspectable Extends IInspectable
+    Function First() As IIterator_IMapView_IInspectable
+End Interface
+
+[InterfaceId("172A655B-B3B8-5EAE-BC2E-A6A1F1708B4B")]
+Interface IVectorView_IMapView_IInspectable Extends IInspectable
+    Function GetAt(ByVal Index As Long) As IMapView_IInspectable
+    Property Get Size() As Long
+    Function IndexOf(ByVal Value As IMapView_IInspectable, Index As Long) As BooleanByte
+    Function GetMany(ByVal StartIndex As Long, ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("FC227365-219D-5D59-8B5B-58EB0A91CA0A")]
+Interface IAsyncOperationIVectorView_IMapViewIInspectable Extends IInspectable
+    Property Set Completed(ByVal Handler As IAsyncOperationCompletedHandlerIVectorView_IMapViewIInspectable)
+    Property Get Completed() As IAsyncOperationCompletedHandlerIVectorView_IMapViewIInspectable
+    Function GetResults() As IVectorView_IMapView_IInspectable
+End Interface
+
+[InterfaceId("A782A13A-16A0-5326-B985-C4CA49E54E77")]
+Interface IAsyncOperationCompletedHandlerIVectorView_IMapViewIInspectable Extends IUnknown
+    Sub Invoke(ByVal AsyncOperation As IAsyncOperationIVectorView_IMapViewIInspectable, ByVal AsyncStatus As AsyncStatus)
+End Interface
+
+[InterfaceId("6CDB32BA-2361-57A8-A39D-BE1DF041BDB8")]
+Interface IIterator_IIndexableContent Extends IInspectable
+    Property Get Current() As IIndexableContent
+    Property Get HasCurrent() As BooleanByte
+    Function MoveNext() As BooleanByte
+    Function GetMany(ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("4A6EDBFE-0C41-5042-AC58-A885A8FC7928")]
+Interface IIterable_IIndexableContent Extends IInspectable
+    Function First() As IIterator_IIndexableContent
+End Interface
+
+[InterfaceId("F4512416-6BB8-5C6F-B83A-BF8A2788CE9F")]
+Interface IVectorView_IIndexableContent Extends IInspectable
+    Function GetAt(ByVal Index As Long) As IIndexableContent
+    Property Get Size() As Long
+    Function IndexOf(ByVal Value As IIndexableContent, Index As Long) As BooleanByte
+    Function GetMany(ByVal StartIndex As Long, ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("919850E1-084B-5F9B-A0A0-50DB0CD5DA91")]
+Interface IAsyncOperationIVectorView_IIndexableContent Extends IInspectable
+    Property Set Completed(ByVal Handler As IAsyncOperationCompletedHandlerIVectorView_IIndexableContent)
+    Property Get Completed() As IAsyncOperationCompletedHandlerIVectorView_IIndexableContent
+    Function GetResults() As IVectorView_IIndexableContent
+End Interface
+
+[InterfaceId("6A29F493-EFB7-5FDB-A13E-F2C28B4DAB58")]
+Interface IAsyncOperationCompletedHandlerIVectorView_IIndexableContent Extends IUnknown
+    Sub Invoke(ByVal AsyncOperation As IAsyncOperationIVectorView_IIndexableContent, ByVal AsyncStatus As AsyncStatus)
+End Interface
+
+[InterfaceId("70E3B0F8-4BFC-428A-8889-CC51DA9A7B9D")]
+Interface IContentIndexerQuery Extends IInspectable
+    Function GetCountAsync() As IAsyncOperationUInt32
+    Function GetPropertiesAsync() As IAsyncOperationIVectorView_IMapViewIInspectable
+    Function GetPropertiesRangeAsync(ByVal StartIndex As Long, ByVal MaxItems As Long) As IAsyncOperationIVectorView_IMapViewIInspectable
+    Function GetAsync() As IAsyncOperationIVectorView_IIndexableContent
+    Function GetRangeAsync(ByVal StartIndex As Long, ByVal MaxItems As Long) As IAsyncOperationIVectorView_IIndexableContent
+    Property Get QueryFolder() As IStorageFolder
+End Interface
+
+[InterfaceId("645A39B4-F001-5272-9015-FB4A327179AE")]
+Interface IIterator_TextSegment Extends IInspectable
+    Property Get Current() As TextSegment
+    Property Get HasCurrent() As BooleanByte
+    Function MoveNext() As BooleanByte
+    Function GetMany(ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("5498F4F3-CEE4-5B72-9729-815C4AD7B9DC")]
+Interface IIterable_TextSegment Extends IInspectable
+    Function First() As IIterator_TextSegment
+End Interface
+
+[InterfaceId("2F245F9D-EB5F-5641-9DCC-6AB1946CC7E6")]
+Interface IVectorView_TextSegment Extends IInspectable
+    Function GetAt(ByVal Index As Long) As TextSegment
+    Property Get Size() As Long
+    Function IndexOf(ByVal TextSegment As TextSegment, Index As Long) As BooleanByte
+    Function GetMany(ByVal StartIndex As Long, ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("00078AA3-8676-5F06-ADF5-FFE5D661D670")]
+Interface IIterator_KVP_IVectorView_TextSegment Extends IInspectable
+    Property Get Current() As KVP_IVectorView_TextSegment
+    Property Get HasCurrent() As BooleanByte
+    Function MoveNext() As BooleanByte
+    Function GetMany(ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("F819A276-B3F5-54D4-B8FD-C9ADB7F700E3")]
+Interface IIterable_KVP_IVectorView_TextSegment Extends IInspectable
+    Function First() As IIterator_KVP_IVectorView_TextSegment
+End Interface
+
+[InterfaceId("77B4DAF4-4F4F-5568-90EE-1A32CF0CAAEA")]
+Interface KVP_IVectorView_TextSegment Extends IInspectable
+    Property Get Key() As LongPtr
+    Property Get Value() As IVectorView_TextSegment
+End Interface
+
+[InterfaceId("91D443D6-3777-5102-B0BC-3D4183A26FF9")]
+Interface IMapView_IVectorView_TextSegment Extends IInspectable
+    Function Lookup(ByVal Key As LongPtr) As IVectorView_TextSegment
+    Property Get Size() As Long
+    Function HasKey(ByVal Key As LongPtr) As BooleanByte
+    Sub Split(First As IMapView_IVectorView_TextSegment, Second As IMapView_IVectorView_TextSegment)
+End Interface
+
+[InterfaceId("A31B6540-B2B1-536D-818F-8ADE7051C3B3")]
+Interface IMap_IVectorView_TextSegment Extends IInspectable
+    Function Lookup(ByVal Key As LongPtr) As IVectorView_TextSegment
+    Property Get Size() As Long
+    Function HasKey(ByVal Key As LongPtr) As BooleanByte
+    Function GetView() As IMapView_IVectorView_TextSegment
+    Function Insert(ByVal Key As LongPtr, ByVal Value As IVectorView_TextSegment) As BooleanByte
+    [PreserveSig]
+    Function Remove(ByVal Key As LongPtr) As HRESULT
+    [PreserveSig]
+    Function Clear() As HRESULT
+End Interface
+
+[InterfaceId("520434A2-ACF7-58C9-B47A-2741F2FAC2C2")]
+Interface IIterator_SortEntry Extends IInspectable
+    Property Get Current() As SortEntry
+    Property Get HasCurrent() As BooleanByte
+    Function MoveNext() As BooleanByte
+    Function GetMany(ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("35AFF6F9-EF75-5280-BB84-A2BF8317CF35")]
+Interface IIterable_SortEntry Extends IInspectable
+    Function First() As IIterator_SortEntry
+End Interface
+
+[InterfaceId("823C7604-B37B-5465-A169-29497893CDB9")]
+Interface IVectorView_SortEntry Extends IInspectable
+    Function GetAt(ByVal Index As Long) As SortEntry
+    Property Get Size() As Long
+    Function IndexOf(ByVal Value As SortEntry, Index As Long) As BooleanByte
+    Function GetMany(ByVal StartIndex As Long, ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("D8EA401B-47B3-5254-84F4-EEA10C4CF068")]
+Interface IVector_SortEntry Extends IInspectable
+    Function GetAt(ByVal Index As Long) As SortEntry
+    Property Get Size() As Long
+    Function GetView() As IVectorView_SortEntry
+    Function IndexOf(ByVal Value As SortEntry, Index As Long) As BooleanByte
+    [PreserveSig]
+    Function SetAt(ByVal Index As Long, ByVal Value As SortEntry) As HRESULT
+    [PreserveSig]
+    Function InsertAt(ByVal Index As Long, ByVal Value As SortEntry) As HRESULT
+    [PreserveSig]
+    Function RemoveAt(ByVal Index As Long) As HRESULT
+    [PreserveSig]
+    Function Append(ByVal Value As SortEntry) As HRESULT
+    [PreserveSig]
+    Function RemoveAtEnd() As HRESULT
+    [PreserveSig]
+    Function Clear() As HRESULT
+    Function GetMany(ByVal StartIndex As Long, ByVal Length As Long, Items As Any) As Long
+    [PreserveSig]
+    Function ReplaceAll(ByVal Length As Long, Items As Any) As HRESULT
+End Interface
+
+[InterfaceId("28823E10-4786-42F1-9730-792B3566B150")]
+Interface IContentIndexerQueryOperations Extends IInspectable
+    Function CreateQueryWithSortOrderAndLanguage(ByVal SearchFilter As LongPtr, ByVal PropertiesToRetrieve As IIterable_HSTRING, ByVal SortOrder As IIterable_SortEntry, ByVal SearchFilterLanguage As LongPtr) As IContentIndexerQuery
+    Function CreateQueryWithSortOrder(ByVal SearchFilter As LongPtr, ByVal PropertiesToRetrieve As IIterable_HSTRING, ByVal SortOrder As IIterable_SortEntry) As IContentIndexerQuery
+    Function CreateQuery(ByVal SearchFilter As LongPtr, ByVal PropertiesToRetrieve As IIterable_HSTRING) As IContentIndexerQuery
+End Interface
+
+[InterfaceId("8C488375-B37E-4C60-9BA8-B760FDA3E59D")]
+Interface IContentIndexerStatics Extends IInspectable
+    Function GetIndexerWithName(ByVal IndexName As LongPtr) As IContentIndexer
+    Function GetIndexer() As IContentIndexer
+End Interface
+
+[InterfaceId("CCF1A05F-D4B5-483A-B06E-E0DB1EC420E4")]
+Interface IIndexableContent Extends IInspectable
+    Property Get Id() As LongPtr
+    Property Let Id(ByVal Value As LongPtr)
+    Property Get Properties() As IMap_IInspectable
+    Property Get Stream() As IRandomAccessStream
+    Property Set Stream(ByVal Value As IRandomAccessStream)
+    Property Get StreamContentType() As LongPtr
+    Property Let StreamContentType(ByVal Value As LongPtr)
+End Interface
+
+[InterfaceId("1E5E46EE-0F45-4838-A8E9-D0479D446C30")]
+Interface IQueryOptions Extends IInspectable
+    Property Get FileTypeFilter() As IVector_HSTRING
+    Property Get FolderDepth() As FolderDepth
+    Property Let FolderDepth(ByVal Value As FolderDepth)
+    Property Get ApplicationSearchFilter() As LongPtr
+    Property Let ApplicationSearchFilter(ByVal Value As LongPtr)
+    Property Get UserSearchFilter() As LongPtr
+    Property Let UserSearchFilter(ByVal Value As LongPtr)
+    Property Get Language() As LongPtr
+    Property Let Language(ByVal Value As LongPtr)
+    Property Get IndexerOption() As IndexerOption
+    Property Let IndexerOption(ByVal Value As IndexerOption)
+    Property Get SortOrder() As IVector_SortEntry
+    Property Get GroupPropertyName() As LongPtr
+    Property Get DateStackOption() As DateStackOption
+    Function SaveToString() As LongPtr
+    [PreserveSig]
+    Function LoadFromString(ByVal Value As LongPtr) As HRESULT
+    [PreserveSig]
+    Function SetThumbnailPrefetch(ByVal Mode As ThumbnailMode, ByVal RequestedSize As Long, ByVal Options As ThumbnailOptions) As HRESULT
+    [PreserveSig]
+    Function SetPropertyPrefetch(ByVal Options As PropertyPrefetchOptions, ByVal PropertiesToRetrieve As IIterable_HSTRING) As HRESULT
+End Interface
+
+[InterfaceId("032E1F8C-A9C1-4E71-8011-0DEE9D4811A3")]
+Interface IQueryOptionsFactory Extends IInspectable
+    Function CreateCommonFileQuery(ByVal Query As CommonFileQuery, ByVal FileTypeFilter As IIterable_HSTRING) As IQueryOptions
+    Function CreateCommonFolderQuery(ByVal Query As CommonFolderQuery) As IQueryOptions
+End Interface
+
+[InterfaceId("5B9D1026-15C4-44DD-B89A-47A59B7D7C4F")]
+Interface IQueryOptionsWithProviderFilter Extends IInspectable
+    Property Get StorageProviderIdFilter() As IVector_HSTRING
+End Interface
+
+[InterfaceId("52FDA447-2BAA-412C-B29F-D4B1778EFA1E")]
+Interface IStorageFileQueryResult Extends IInspectable
+    Function GetFilesAsync(ByVal StartIndex As Long, ByVal MaxNumberOfItems As Long) As IAsyncOperationIVectorView_IStorageFile
+    Function GetFilesAsyncDefaultStartAndCount() As IAsyncOperationIVectorView_IStorageFile
+End Interface
+
+[InterfaceId("4E5DB9DD-7141-46C4-8BE3-E9DC9E27275C")]
+Interface IStorageFileQueryResult2 Extends IInspectable
+    Function GetMatchingPropertiesWithRanges(ByVal File As IStorageFile) As IMap_IVectorView_TextSegment
+End Interface
+
+[InterfaceId("88694B1F-F380-574D-8A05-4F67BD52CD11")]
+Interface IAsyncOperationIndexedState Extends IInspectable
+    Property Set Completed(ByVal Handler As IAsyncOperationCompletedHandlerIndexedState)
+    Property Get Completed() As IAsyncOperationCompletedHandlerIndexedState
+    Function GetResults() As IndexedState
+End Interface
+
+[InterfaceId("B67A3CBA-F5F7-5E51-968A-385126D1F918")]
+Interface IAsyncOperationCompletedHandlerIndexedState Extends IUnknown
+    Sub Invoke(ByVal AsyncOperation As IAsyncOperationIndexedState, ByVal AsyncStatus As AsyncStatus)
+End Interface
+
+[InterfaceId("CB43CCC9-446B-4A4F-BE97-757771BE5203")]
+Interface IStorageFolderQueryOperations Extends IInspectable
+    Function GetIndexedStateAsync() As IAsyncOperationIndexedState
+    Function CreateFileQueryOverloadDefault() As IStorageFileQueryResult
+    Function CreateFileQuery(ByVal Query As CommonFileQuery) As IStorageFileQueryResult
+    Function CreateFileQueryWithOptions(ByVal QueryOptions As IQueryOptions) As IStorageFileQueryResult
+    Function CreateFolderQueryOverloadDefault() As IStorageFolderQueryResult
+    Function CreateFolderQuery(ByVal Query As CommonFolderQuery) As IStorageFolderQueryResult
+    Function CreateFolderQueryWithOptions(ByVal QueryOptions As IQueryOptions) As IStorageFolderQueryResult
+    Function CreateItemQuery() As IStorageItemQueryResult
+    Function CreateItemQueryWithOptions(ByVal QueryOptions As IQueryOptions) As IStorageItemQueryResult
+    Function GetFilesAsync(ByVal Query As CommonFileQuery, ByVal StartIndex As Long, ByVal MaxItemsToRetrieve As Long) As IAsyncOperationIVectorView_IStorageFile
+    Function GetFilesAsyncOverloadDefaultStartAndCount(ByVal Query As CommonFileQuery) As IAsyncOperationIVectorView_IStorageFile
+    Function GetFoldersAsync(ByVal Query As CommonFolderQuery, ByVal StartIndex As Long, ByVal MaxItemsToRetrieve As Long) As IAsyncOperationIVectorView_IStorageFolder
+    Function GetFoldersAsyncOverloadDefaultStartAndCount(ByVal Query As CommonFolderQuery) As IAsyncOperationIVectorView_IStorageFolder
+    Function GetItemsAsync(ByVal StartIndex As Long, ByVal MaxItemsToRetrieve As Long) As IAsyncOperationIVectorView_IStorageItem
+    Function AreQueryOptionsSupported(ByVal QueryOptions As IQueryOptions) As BooleanByte
+    Function IsCommonFolderQuerySupported(ByVal Query As CommonFolderQuery) As BooleanByte
+    Function IsCommonFileQuerySupported(ByVal Query As CommonFileQuery) As BooleanByte
+End Interface
+
+[InterfaceId("6654C911-7D66-46FA-AECF-E4A4BAA93AB8")]
+Interface IStorageFolderQueryResult Extends IInspectable
+    Function GetFoldersAsync(ByVal StartIndex As Long, ByVal MaxNumberOfItems As Long) As IAsyncOperationIVectorView_IStorageFolder
+    Function GetFoldersAsyncDefaultStartAndCount() As IAsyncOperationIVectorView_IStorageFolder
+End Interface
+
+[InterfaceId("E8948079-9D58-47B8-B2B2-41B07F4795F9")]
+Interface IStorageItemQueryResult Extends IInspectable
+    Function GetItemsAsync(ByVal StartIndex As Long, ByVal MaxNumberOfItems As Long) As IAsyncOperationIVectorView_IStorageItem
+    Function GetItemsAsyncDefaultStartAndCount() As IAsyncOperationIVectorView_IStorageItem
+End Interface
+
+[InterfaceId("1DC7A369-B7A3-4DF2-9D61-EBA85A0343D2")]
+Interface IStorageLibraryChangeTrackerTriggerDetails Extends IInspectable
+    Property Get Folder() As IStorageFolder
+    Property Get ChangeTracker() As IStorageLibraryChangeTracker
+End Interface
+
+[InterfaceId("2A371977-ABBF-4E1D-8AA5-6385D8884799")]
+Interface IStorageLibraryContentChangedTriggerDetails Extends IInspectable
+    Property Get Folder() As IStorageFolder
+    Function CreateModifiedSinceQuery(ByVal LastQueryTime As DateTime) As IStorageItemQueryResult
+End Interface
+
+[InterfaceId("4BA22861-00C4-597F-B6BF-3AF516F3B870")]
+Interface ITypedEventHandlerStorageQueryResultBaseIInspectable Extends IUnknown
+    Sub Invoke(ByVal Sender As IStorageQueryResultBase, ByVal Args As IInspectable)
+End Interface
+
+[InterfaceId("C297D70D-7353-47AB-BA58-8C61425DC54B")]
+Interface IStorageQueryResultBase Extends IInspectable
+    Function GetItemCountAsync() As IAsyncOperationUInt32
+    Property Get Folder() As IStorageFolder
+    [PreserveSig]
+    Function AddContentsChanged(ByVal Handler As ITypedEventHandlerStorageQueryResultBaseIInspectable, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveContentsChanged(ByVal Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function AddOptionsChanged(ByVal Handler As ITypedEventHandlerStorageQueryResultBaseIInspectable, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveOptionsChanged(ByVal Token As EventRegistrationToken) As HRESULT
+    Function FindStartIndexAsync(ByVal Value As IInspectable) As IAsyncOperationUInt32
+    Function GetCurrentQueryOptions() As IQueryOptions
+    [PreserveSig]
+    Function ApplyNewQueryOptions(ByVal NewQueryOptions As IQueryOptions) As HRESULT
+End Interface
+
+[InterfaceId("B9914881-A1EE-4BC4-92A5-466968E30436")]
+Interface IValueAndLanguage Extends IInspectable
+    Property Get Language() As LongPtr
+    Property Let Language(ByVal Value As LongPtr)
+    Property Get Value() As IInspectable
+    Property Set Value(ByVal Value As IInspectable)
+End Interface
+
+Module mdlStorageSearch
+
+Public Enum CommonFileQuery
+    CommonFileQuery_DefaultQuery
+    CommonFileQuery_OrderByName
+    CommonFileQuery_OrderByTitle
+    CommonFileQuery_OrderByMusicProperties
+    CommonFileQuery_OrderBySearchRank
+    CommonFileQuery_OrderByDate
+End Enum
+
+Public Enum CommonFolderQuery
+    CommonFolderQuery_DefaultQuery
+    CommonFolderQuery_GroupByYear = 100
+    CommonFolderQuery_GroupByMonth
+    CommonFolderQuery_GroupByArtist
+    CommonFolderQuery_GroupByAlbum
+    CommonFolderQuery_GroupByAlbumArtist
+    CommonFolderQuery_GroupByComposer
+    CommonFolderQuery_GroupByGenre
+    CommonFolderQuery_GroupByPublishedYear
+    CommonFolderQuery_GroupByRating
+    CommonFolderQuery_GroupByTag
+    CommonFolderQuery_GroupByAuthor
+    CommonFolderQuery_GroupByType
+End Enum
+
+Public Enum DateStackOption
+    DateStackOption_None
+    DateStackOption_Year
+    DateStackOption_Month
+End Enum
+
+Public Enum FolderDepth
+    FolderDepth_Shallow
+    FolderDepth_Deep
+End Enum
+
+Public Enum IndexedState
+    IndexedState_Unknown
+    IndexedState_NotIndexed
+    IndexedState_PartiallyIndexed
+    IndexedState_FullyIndexed
+End Enum
+
+Public Enum IndexerOption
+    IndexerOption_UseIndexerWhenAvailable
+    IndexerOption_OnlyUseIndexer
+    IndexerOption_DoNotUseIndexer
+    IndexerOption_OnlyUseIndexerAndOptimizeForIndexedProperties
+End Enum
+
+Public Type SortEntry
+    PropertyName As LongPtr
+    AscendingOrder As BooleanByte
+End Type
+
+End Module

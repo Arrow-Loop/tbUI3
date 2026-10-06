@@ -1,0 +1,85 @@
+[InterfaceId("F5F07C13-3047-5BAB-8EB7-6E5D7D14AFAE")]
+Interface IAsyncOperationIPrepareTranscodeResult Extends IInspectable
+    Property Set Completed(ByVal Handler As IAsyncOperationCompletedHandlerIPrepareTranscodeResult)
+    Property Get Completed() As IAsyncOperationCompletedHandlerIPrepareTranscodeResult
+    Function GetResults() As IPrepareTranscodeResult
+End Interface
+
+[InterfaceId("A44D7D07-8F74-52EE-9F02-C2B244B4FF2A")]
+Interface IAsyncOperationCompletedHandlerIPrepareTranscodeResult Extends IUnknown
+    Sub Invoke(ByVal AsyncOperation As IAsyncOperationIPrepareTranscodeResult, ByVal AsyncStatus As AsyncStatus)
+End Interface
+
+[InterfaceId("190C99D2-A0AA-4D34-86BC-EED1B12C2F5B")]
+Interface IMediaTranscoder Extends IInspectable
+    Property Let TrimStartTime(ByVal Value As TimeSpan)
+    Property Get TrimStartTime() As TimeSpan
+    Property Let TrimStopTime(ByVal Value As TimeSpan)
+    Property Get TrimStopTime() As TimeSpan
+    Property Let AlwaysReencode(ByVal Value As BooleanByte)
+    Property Get AlwaysReencode() As BooleanByte
+    Property Let HardwareAccelerationEnabled(ByVal Value As BooleanByte)
+    Property Get HardwareAccelerationEnabled() As BooleanByte
+    [PreserveSig]
+    Function AddAudioEffect(ByVal ActivatableClassId As LongPtr) As HRESULT
+    [PreserveSig]
+    Function AddAudioEffectWithSettings(ByVal ActivatableClassId As LongPtr, ByVal EffectRequired As BooleanByte, ByVal Configuration As IPropertySet) As HRESULT
+    [PreserveSig]
+    Function AddVideoEffect(ByVal ActivatableClassId As LongPtr) As HRESULT
+    [PreserveSig]
+    Function AddVideoEffectWithSettings(ByVal ActivatableClassId As LongPtr, ByVal EffectRequired As BooleanByte, ByVal Configuration As IPropertySet) As HRESULT
+    [PreserveSig]
+    Function ClearEffects() As HRESULT
+    Function PrepareFileTranscodeAsync(ByVal Source As IStorageFile, ByVal Destination As IStorageFile, ByVal Profile As IMediaEncodingProfile) As IAsyncOperationIPrepareTranscodeResult
+    Function PrepareStreamTranscodeAsync(ByVal Source As IRandomAccessStream, ByVal Destination As IRandomAccessStream, ByVal Profile As IMediaEncodingProfile) As IAsyncOperationIPrepareTranscodeResult
+End Interface
+
+[InterfaceId("40531D74-35E0-4F04-8574-CA8BC4E5A082")]
+Interface IMediaTranscoder2 Extends IInspectable
+    Function PrepareMediaStreamSourceTranscodeAsync(ByVal Source As IMediaSource, ByVal Destination As IRandomAccessStream, ByVal Profile As IMediaEncodingProfile) As IAsyncOperationIPrepareTranscodeResult
+    Property Let VideoProcessingAlgorithm(ByVal Value As MediaVideoProcessingAlgorithm)
+    Property Get VideoProcessingAlgorithm() As MediaVideoProcessingAlgorithm
+End Interface
+
+[InterfaceId("4F1430A6-A825-56CA-B047-1A9BAD52BA67")]
+Interface IAsyncActionWithProgressDouble Extends IInspectable ' requires IAsyncInfo
+    Property Set Progress(ByVal Handler As IAsyncActionProgressHandlerDouble)
+    Property Get Progress() As IAsyncActionProgressHandlerDouble
+    Property Set Completed(ByVal Handler As IAsyncActionWithProgressCompletedHandlerDouble)
+    Property Get Completed() As IAsyncActionWithProgressCompletedHandlerDouble
+    [PreserveSig]
+    Function GetResults() As HRESULT
+End Interface
+
+[InterfaceId("44825C7C-0DA9-5691-B2B4-914F231EECED")]
+Interface IAsyncActionProgressHandlerDouble Extends IUnknown
+    Sub Invoke(ByVal AsyncAction As IAsyncActionWithProgressDouble, ByVal ProgressInfo As Double)
+End Interface
+
+[InterfaceId("94D64AC6-4491-53EF-8BE8-36481F3FF1E8")]
+Interface IAsyncActionWithProgressCompletedHandlerDouble Extends IUnknown
+    Sub Invoke(ByVal AsyncAction As IAsyncActionWithProgressDouble, ByVal AsyncStatus As AsyncStatus)
+End Interface
+
+[InterfaceId("05F25DCE-994F-4A34-9D68-97CCCE1730D6")]
+Interface IPrepareTranscodeResult Extends IInspectable
+    Property Get CanTranscode() As BooleanByte
+    Property Get FailureReason() As TranscodeFailureReason
+    Function TranscodeAsync() As IAsyncActionWithProgressDouble
+End Interface
+
+Module mdlMediaTranscoding
+
+Public Enum MediaVideoProcessingAlgorithm
+    MediaVideoProcessingAlgorithm_Default
+    MediaVideoProcessingAlgorithm_MrfCrf444
+End Enum
+
+Public Enum TranscodeFailureReason
+    TranscodeFailureReason_None
+    TranscodeFailureReason_Unknown
+    TranscodeFailureReason_InvalidProfile
+    TranscodeFailureReason_CodecNotFound
+End Enum
+
+End Module

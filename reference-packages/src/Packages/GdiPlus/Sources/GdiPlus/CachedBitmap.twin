@@ -1,0 +1,46 @@
+' A part of the GDI+ Package for TwinBasic  https://github.com/kubao/GdiPlus
+' Licensed under the MIT license. (c) 2026 Sunderland Ober Consulting.
+' "Windows" is a trademark of the Microsoft Corporation.
+' Modeled after code and descriptions (c) Microsoft, taken from SDK headers and official documentation.
+' Certain flat API function and type declarations taken from WinDevLib by fafalone, with thanks.
+
+[COMCreatable(False)]
+Class CachedBitmap
+    Inherits GdiPlusBase
+    Public cb As GpCachedBitmap
+
+    Sub New(bitmap As Bitmap, gr As Graphics)
+        SetStatus(cb.CreateInto(GetNative(bitmap), GetNative(gr), cb))
+    End Sub
+    
+    Sub Class_Terminate()
+        cb.Delete
+    End Sub
+    
+    Protected Property Get Native() As GpCachedBitmap
+        Return cb
+    End Property
+End Class
+
+Module GdipCachedBitmap
+    Function CachedBitmap(bitmap As Bitmap, gr As Graphics) As CachedBitmap
+        Return New CachedBitmap(bitmap, gr)
+    End Function
+    
+    Type GpCachedBitmap
+        Native As LongPtr
+        
+        Function Create(ByVal bitmap As GpBitmap, ByVal graphics As GpGraphics) As GpStatus
+            Return Me.CreateInto(bitmap, graphics, Me)
+        End Function
+        
+        [UseGetLastError(False)]
+        Public Declare PtrSafe Function CreateInto Lib "gdiplus" Alias "GdipCreateCachedBitmap" (ByVal bitmap As GpBitmap, ByVal Graphics As GpGraphics, cachedBitmap As GpCachedBitmap) As GpStatus
+        [UseGetLastError(False)]
+        Public Declare PtrSafe Function Delete Lib "gdiplus" Alias "GdipDeleteCachedBitmap" (ByVal Me As GpCachedBitmap) As GpStatus
+    End Type
+    
+    Function GpCachedBitmap() As GpCachedBitmap
+        GpCachedBitmap.Native = 0
+    End Function
+End Module

@@ -1,0 +1,183 @@
+[InterfaceId("2CA8278A-12C5-4C5F-8977-94547793C241")]
+Interface IFileOpenPicker Extends IInspectable
+    Property Get ViewMode() As PickerViewMode
+    Property Let ViewMode(ByVal Value As PickerViewMode)
+    Property Get SettingsIdentifier() As LongPtr
+    Property Let SettingsIdentifier(ByVal Value As LongPtr)
+    Property Get SuggestedStartLocation() As PickerLocationId
+    Property Let SuggestedStartLocation(ByVal Value As PickerLocationId)
+    Property Get CommitButtonText() As LongPtr
+    Property Let CommitButtonText(ByVal Value As LongPtr)
+    Property Get FileTypeFilter() As IVector_HSTRING
+    Function PickSingleFileAsync() As IAsyncOperationIStorageFile
+    Function PickMultipleFilesAsync() As IAsyncOperationIVectorView_IStorageFile
+End Interface
+
+[InterfaceId("8CEB6CD2-B446-46F7-B265-90F8E55AD650")]
+Interface IFileOpenPicker2 Extends IInspectable ' deprecated
+    Property Get ContinuationData() As IPropertySet
+    [PreserveSig]
+    Function PickSingleFileAndContinue() As HRESULT
+    [PreserveSig]
+    Function PickMultipleFilesAndContinue() As HRESULT
+End Interface
+
+[InterfaceId("D9A5C5B3-C5DC-5B98-BD80-A8D0CA0584D8")]
+Interface IFileOpenPicker3 Extends IInspectable
+    Property Get User() As IUser
+End Interface
+
+[InterfaceId("6821573B-2F02-4833-96D4-ABBFAD72B67B")]
+Interface IFileOpenPickerStatics Extends IInspectable ' deprecated
+    Function ResumePickSingleFileAsync() As IAsyncOperationIStorageFile
+End Interface
+
+[InterfaceId("E8917415-EDDD-5C98-B6F3-366FDFCAD392")]
+Interface IFileOpenPickerStatics2 Extends IInspectable
+    Function CreateForUser(ByVal User As IUser) As IFileOpenPicker
+End Interface
+
+[InterfaceId("3F57B569-2522-4CA5-AA73-A15509F1FCBF")]
+Interface IFileOpenPickerWithOperationId Extends IInspectable
+    Function PickSingleFileAsync(ByVal PickerOperationId As LongPtr) As IAsyncOperationIStorageFile
+End Interface
+
+[InterfaceId("3286FFCB-617F-4CC5-AF6A-B3FDF29AD145")]
+Interface IFileSavePicker Extends IInspectable
+    Property Get SettingsIdentifier() As LongPtr
+    Property Let SettingsIdentifier(ByVal Value As LongPtr)
+    Property Get SuggestedStartLocation() As PickerLocationId
+    Property Let SuggestedStartLocation(ByVal Value As PickerLocationId)
+    Property Get CommitButtonText() As LongPtr
+    Property Let CommitButtonText(ByVal Value As LongPtr)
+    Property Get FileTypeChoices() As IMap_IVector_HSTRING
+    Property Get DefaultFileExtension() As LongPtr
+    Property Let DefaultFileExtension(ByVal Value As LongPtr)
+    Property Get SuggestedSaveFile() As IStorageFile
+    Property Set SuggestedSaveFile(ByVal Value As IStorageFile)
+    Property Get SuggestedFileName() As LongPtr
+    Property Let SuggestedFileName(ByVal Value As LongPtr)
+    Function PickSaveFileAsync() As IAsyncOperationIStorageFile
+End Interface
+
+[InterfaceId("0EC313A2-D24B-449A-8197-E89104FD42CC")]
+Interface IFileSavePicker2 Extends IInspectable ' deprecated
+    Property Get ContinuationData() As IPropertySet
+    [PreserveSig]
+    Function PickSaveFileAndContinue() As HRESULT
+End Interface
+
+[InterfaceId("698AEC69-BA3C-4E51-BD90-4ABCBBF4CFAF")]
+Interface IFileSavePicker3 Extends IInspectable
+    Property Get EnterpriseId() As LongPtr
+    Property Let EnterpriseId(ByVal Value As LongPtr)
+End Interface
+    
+[InterfaceId("E7D83A5A-DDFA-5DE0-8B70-C842C21988EC")]
+Interface IFileSavePicker4 Extends IInspectable
+    Property Get User() As IUser
+End Interface
+
+[InterfaceId("28E3CF9E-961C-5E2C-AED7-E64737F4CE37")]
+Interface IFileSavePickerStatics Extends IInspectable
+    Function CreateForUser(ByVal User As IUser) As IFileSavePicker
+End Interface
+
+[InterfaceId("084F7799-F3FB-400A-99B1-7B4A772FD60D")]
+Interface IFolderPicker Extends IInspectable
+    Property Get ViewMode() As PickerViewMode
+    Property Let ViewMode(ByVal Value As PickerViewMode)
+    Property Get SettingsIdentifier() As LongPtr
+    Property Let SettingsIdentifier(ByVal Value As LongPtr)
+    Property Get SuggestedStartLocation() As PickerLocationId
+    Property Let SuggestedStartLocation(ByVal Value As PickerLocationId)
+    Property Get CommitButtonText() As LongPtr
+    Property Let CommitButtonText(ByVal Value As LongPtr)
+    Property Get FileTypeFilter() As IVector_HSTRING
+    Function PickSingleFolderAsync() As IAsyncOperationIStorageFolder
+End Interface
+
+[InterfaceId("8EB3BA97-DC85-4616-BE94-9660881F2F5D")]
+Interface IFolderPicker2 Extends IInspectable ' deprecated
+    Property Get ContinuationData() As IPropertySet
+    [PreserveSig]
+    Function PickFolderAndContinue() As HRESULT
+End Interface
+
+[InterfaceId("673B1E29-D326-53C0-BD24-A25C714CEE36")]
+Interface IFolderPicker3 Extends IInspectable
+    Property Get User() As IUser
+End Interface
+
+[InterfaceId("9BE34740-7CA1-5942-A3C8-46F2551ECFF3")]
+Interface IFolderPickerStatics Extends IInspectable
+    Function CreateForUser(ByVal User As IUser) As IFolderPicker
+End Interface
+
+[InterfaceId("174F26C7-79EA-5F7C-BD70-AC4457F2CAC8")]
+Interface KVP_IVector_HSTRING Extends IInspectable
+    Property Get Key() As LongPtr
+    Property Get Value() As IVector_HSTRING
+End Interface
+
+[InterfaceId("A11824C9-E458-502A-AFD8-CE3CE0ABD6FE")]
+Interface IIterator_KVP_IVector_HSTRING Extends IInspectable
+    Property Get Current() As KVP_IVector_HSTRING
+    Property Get HasCurrent() As BooleanByte
+    Function MoveNext() As BooleanByte
+    Function GetMany(ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("4FED2669-D0D3-59F6-91D9-95902D728D6A")]
+Interface IIterable_KVP_IVector_HSTRING Extends IInspectable
+    Function First() As IIterator_KVP_IVector_HSTRING
+End Interface
+
+[InterfaceId("153F9C9C-D22A-5C9E-9C74-8B85C908B000")]
+Interface IMapView_IVector_HSTRING Extends IInspectable
+    Function Lookup(ByVal Key As LongPtr) As IVector_HSTRING
+    Property Get Size() As Long
+    Function HasKey(ByVal Key As LongPtr) As BooleanByte
+    Sub Split(First As IMapView_IVector_HSTRING, Second As IMapView_IVector_HSTRING)
+End Interface
+
+[InterfaceId("E475CA9D-6AFB-5992-993E-53E6EF7A9ECD")]
+Interface IMap_IVector_HSTRING Extends IInspectable
+    Function Lookup(ByVal Key As LongPtr) As IVector_HSTRING
+    Property Get Size() As Long
+    Function HasKey(ByVal Key As LongPtr) As BooleanByte
+    Function GetView() As IMapView_IVector_HSTRING
+    Function Insert(ByVal Key As LongPtr, ByVal Value As IVector_HSTRING) As BooleanByte
+    [PreserveSig]
+    Function Remove(ByVal Key As LongPtr) As HRESULT
+    [PreserveSig]
+    Function Clear() As HRESULT
+End Interface
+
+[InterfaceId("3E68D4BD-7135-4D10-8018-9FB6D9F33FA1")]
+Interface IInitializeWithWindow Extends IUnknown
+    [PreserveSig]
+    Function Initialize(ByVal hWnd As LongPtr) As HRESULT
+End Interface
+
+Module mdlStoragePickers
+
+    Public Enum PickerLocationId
+        PickerLocationId_DocumentsLibrary
+        PickerLocationId_ComputerFolder
+        PickerLocationId_Desktop
+        PickerLocationId_Downloads
+        PickerLocationId_HomeGroup
+        PickerLocationId_MusicLibrary
+        PickerLocationId_PicturesLibrary
+        PickerLocationId_VideosLibrary
+        PickerLocationId_Objects3D
+        PickerLocationId_Unspecified
+    End Enum
+
+    Public Enum PickerViewMode
+        PickerViewMode_List
+        PickerViewMode_Thumbnail
+    End Enum
+    
+End Module

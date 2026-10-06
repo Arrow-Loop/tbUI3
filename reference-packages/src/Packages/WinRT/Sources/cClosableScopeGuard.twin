@@ -1,0 +1,28 @@
+Class cClosableScopeGuard
+
+Private m_ClosableObjects() As IClosable, m_Index As Long
+
+Friend Function Add(Of T)(ClosableObject As T) As T
+    If Not ClosableObject Is Nothing Then
+        If m_Index > UBound(m_ClosableObjects) Then ReDim Preserve m_ClosableObjects(0 To m_Index * 1.5)
+        Set m_ClosableObjects(m_Index) = ClosableObject: m_Index = m_Index + 1: Set Add = ClosableObject
+    End If
+End Function
+
+Friend Function Add(ClosableObject As IUnknown) As IUnknown
+    If Not ClosableObject Is Nothing Then
+        If m_Index > UBound(m_ClosableObjects) Then ReDim Preserve m_ClosableObjects(0 To m_Index * 1.5)
+        Set m_ClosableObjects(m_Index) = ClosableObject: m_Index = m_Index + 1: Set Add = ClosableObject
+    End If
+End Function
+
+Private Sub Class_Initialize()
+    ReDim m_ClosableObjects(0 To 9)
+End Sub
+
+Private Sub Class_Terminate()
+Dim i As Long
+    For i = m_Index - 1 To 0 Step -1: Dispose m_ClosableObjects(i): Next i
+End Sub
+
+End Class

@@ -1,0 +1,370 @@
+[InterfaceId("39B4528D-2370-57FA-B5D4-B5A2079A7CEA")]
+Interface IIterator_ICoreTextCompositionSegment Extends IInspectable
+    Property Get Current() As ICoreTextCompositionSegment
+    Property Get HasCurrent() As BooleanByte
+    Function MoveNext() As BooleanByte
+    Function GetMany(ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("38372BD2-D3FE-5AD2-9D39-D166B68E78E7")]
+Interface IIterable_ICoreTextCompositionSegment Extends IInspectable
+    Function First() As IIterator_ICoreTextCompositionSegment
+End Interface
+
+[InterfaceId("214B64FF-CF4D-5DD4-932A-7BC66E69036E")]
+Interface IVectorView_ICoreTextCompositionSegment Extends IInspectable
+    Function GetAt(ByVal Index As Long) As ICoreTextCompositionSegment
+    Property Get Size() As Long
+    Function IndexOf(ByVal Value As ICoreTextCompositionSegment, Index As Long) As BooleanByte
+    Function GetMany(ByVal StartIndex As Long, ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("1F34EBB6-B79F-4121-A5E7-FDA9B8616E30")]
+Interface ICoreTextCompositionCompletedEventArgs Extends IInspectable
+    Property Get IsCanceled() As BooleanByte
+    Property Get CompositionSegments() As IVectorView_ICoreTextCompositionSegment
+    Function GetDeferral() As IDeferral
+End Interface
+
+[InterfaceId("776C6BD9-4EAD-4DA7-8F47-3A88B523CC34")]
+Interface ICoreTextCompositionSegment Extends IInspectable
+    Property Get PreconversionString() As LongPtr
+    Property Get Range() As CoreTextRange
+End Interface
+
+[InterfaceId("276B16A9-64E7-4AB0-BC4B-A02D73835BFB")]
+Interface ICoreTextCompositionStartedEventArgs Extends IInspectable
+    Property Get IsCanceled() As BooleanByte
+    Function GetDeferral() As IDeferral
+End Interface
+
+[InterfaceId("EF53B467-C472-5B59-A827-38ADC3A9D326")]
+Interface ITypedEventHandlerCoreTextEditContextFocus Extends IUnknown
+    Sub Invoke(ByVal Sender As ICoreTextEditContext, ByVal Args As IInspectable)
+End Interface
+
+[InterfaceId("A2D7059E-68ED-5260-8D8E-1DCF3D25D663")]
+Interface ITypedEventHandlerCoreTextEditContextCompositionCompleted Extends IUnknown
+    Sub Invoke(ByVal Sender As ICoreTextEditContext, ByVal Args As ICoreTextCompositionCompletedEventArgs)
+End Interface
+
+[InterfaceId("E671D625-5B59-57E6-A92E-40009507853A")]
+Interface ITypedEventHandlerCoreTextEditContextCompositionStarted Extends IUnknown
+    Sub Invoke(ByVal Sender As ICoreTextEditContext, ByVal Args As ICoreTextCompositionStartedEventArgs)
+End Interface
+
+[InterfaceId("3E4EF599-4CC2-5248-BF2D-13F17613B0A6")]
+Interface ITypedEventHandlerCoreTextEditContextFormatUpdating Extends IUnknown
+    Sub Invoke(ByVal Sender As ICoreTextEditContext, ByVal Args As ICoreTextFormatUpdatingEventArgs)
+End Interface
+
+[InterfaceId("1A5F5596-561C-57F6-A4FF-CB85013C6544")]
+Interface ITypedEventHandlerCoreTextEditContextLayoutRequested Extends IUnknown
+    Sub Invoke(ByVal Sender As ICoreTextEditContext, ByVal Args As ICoreTextLayoutRequestedEventArgs)
+End Interface
+
+[InterfaceId("882E51E1-F4A3-57E5-9392-6A8C38579181")]
+Interface ITypedEventHandlerCoreTextEditContextSelectionRequested Extends IUnknown
+    Sub Invoke(ByVal Sender As ICoreTextEditContext, ByVal Args As ICoreTextSelectionRequestedEventArgs)
+End Interface
+
+[InterfaceId("6B140A40-D461-555A-B6EB-5DBB8E2101E5")]
+Interface ITypedEventHandlerCoreTextEditContextSelectionUpdating Extends IUnknown
+    Sub Invoke(ByVal Sender As ICoreTextEditContext, ByVal Args As ICoreTextSelectionUpdatingEventArgs)
+End Interface
+
+[InterfaceId("C7E08176-4134-50B7-BC73-729E9F9AD22A")]
+Interface ITypedEventHandlerCoreTextEditContextTextRequested Extends IUnknown
+    Sub Invoke(ByVal Sender As ICoreTextEditContext, ByVal Args As ICoreTextTextRequestedEventArgs)
+End Interface
+
+[InterfaceId("FD896A84-DF7C-50D5-9167-58F616BDDB6E")]
+Interface ITypedEventHandlerCoreTextEditContextTextUpdating Extends IUnknown
+    Sub Invoke(ByVal Sender As ICoreTextEditContext, ByVal Args As ICoreTextTextUpdatingEventArgs)
+End Interface
+
+[InterfaceId("BF6608AF-4041-47C3-B263-A918EB5EAEF2")]
+Interface ICoreTextEditContext Extends IInspectable
+    Property Get Name() As LongPtr
+    Property Let Name(ByVal Value As LongPtr)
+    Property Get InputScope() As CoreTextInputScope
+    Property Let InputScope(ByVal Value As CoreTextInputScope)
+    Property Get IsReadOnly() As BooleanByte
+    Property Let IsReadOnly(ByVal Value As BooleanByte)
+    Property Get InputPaneDisplayPolicy() As CoreTextInputPaneDisplayPolicy
+    Property Let InputPaneDisplayPolicy(ByVal Value As CoreTextInputPaneDisplayPolicy)
+    [PreserveSig]
+    Function AddTextRequested(ByVal Handler As ITypedEventHandlerCoreTextEditContextTextRequested, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveTextRequested(ByVal Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function AddSelectionRequested(ByVal Handler As ITypedEventHandlerCoreTextEditContextSelectionRequested, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveSelectionRequested(ByVal Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function AddLayoutRequested(ByVal Handler As ITypedEventHandlerCoreTextEditContextLayoutRequested, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveLayoutRequested(ByVal Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function AddTextUpdating(ByVal Handler As ITypedEventHandlerCoreTextEditContextTextUpdating, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveTextUpdating(ByVal Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function AddSelectionUpdating(ByVal Handler As ITypedEventHandlerCoreTextEditContextSelectionUpdating, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveSelectionUpdating(ByVal Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function AddFormatUpdating(ByVal Handler As ITypedEventHandlerCoreTextEditContextFormatUpdating, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveFormatUpdating(ByVal Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function AddCompositionStarted(ByVal Handler As ITypedEventHandlerCoreTextEditContextCompositionStarted, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveCompositionStarted(ByVal Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function AddCompositionCompleted(ByVal Handler As ITypedEventHandlerCoreTextEditContextCompositionCompleted, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveCompositionCompleted(ByVal Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function AddFocusRemoved(ByVal Handler As ITypedEventHandlerCoreTextEditContextFocus, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveFocusRemoved(ByVal Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function NotifyFocusEnter() As HRESULT
+    [PreserveSig]
+    Function NotifyFocusLeave() As HRESULT
+    [PreserveSig]
+    Function NotifyTextChanged(ByVal ModifiedRange As CoreTextRange, ByVal NewLength As Long, ByVal NewSelection As CoreTextRange) As HRESULT
+    [PreserveSig]
+    Function NotifySelectionChanged(ByVal Selection As CoreTextRange) As HRESULT
+    [PreserveSig]
+    Function NotifyLayoutChanged() As HRESULT
+End Interface
+
+[InterfaceId("B1867DBB-083B-49E1-B281-2B35D62BF466")]
+Interface ICoreTextEditContext2 Extends IInspectable
+    [PreserveSig]
+    Function AddNotifyFocusLeaveCompleted(ByVal Handler As ITypedEventHandlerCoreTextEditContextFocus, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveNotifyFocusLeaveCompleted(ByVal Token As EventRegistrationToken) As HRESULT
+End Interface
+
+[InterfaceId("7310BD33-B4A8-43B1-B37B-0724D4ACA7AB")]
+Interface ICoreTextFormatUpdatingEventArgs Extends IInspectable
+    Property Get Range() As CoreTextRange
+    Property Get TextColor() As IReference_UIElementType
+    Property Get BackgroundColor() As IReference_UIElementType
+    Property Get UnderlineColor() As IReference_UIElementType
+    Property Get UnderlineType() As IReference_UnderlineType
+    Property Get Reason() As CoreTextFormatUpdatingReason
+    Property Get Result() As CoreTextFormatUpdatingResult
+    Property Let Result(ByVal Value As CoreTextFormatUpdatingResult)
+    Property Get IsCanceled() As BooleanByte
+    Function GetDeferral() As IDeferral
+End Interface
+
+[InterfaceId("E972C974-4436-4917-80D0-A525E4CA6780")]
+Interface ICoreTextLayoutBounds Extends IInspectable
+    Property Get TextBounds() As RECTF
+    Property Let TextBounds(ByVal Value As RECTF)
+    Property Get ControlBounds() As RECTF
+    Property Let ControlBounds(ByVal Value As RECTF)
+End Interface
+
+[InterfaceId("2555A8CC-51FD-4F03-98BF-AC78174D68E0")]
+Interface ICoreTextLayoutRequest Extends IInspectable
+    Property Get Range() As CoreTextRange
+    Property Get LayoutBounds() As ICoreTextLayoutBounds
+    Property Get IsCanceled() As BooleanByte
+    Function GetDeferral() As IDeferral
+End Interface
+
+[InterfaceId("676DE624-CD3D-4BCD-BF01-7F7110954511")]
+Interface ICoreTextLayoutRequest2 Extends IInspectable
+    Property Get LayoutBoundsVisualPixels() As ICoreTextLayoutBounds
+End Interface
+
+[InterfaceId("B1DC6AE0-9A7B-4E9E-A566-4A6B5F8AD676")]
+Interface ICoreTextLayoutRequestedEventArgs Extends IInspectable
+    Property Get Request() As ICoreTextLayoutRequest
+End Interface
+
+[InterfaceId("F0A70403-208B-4301-883C-74CA7485FD8D")]
+Interface ICoreTextSelectionRequest Extends IInspectable
+    Property Get Selection() As CoreTextRange
+    Property Let Selection(ByVal Value As CoreTextRange)
+    Property Get IsCanceled() As BooleanByte
+    Function GetDeferral() As IDeferral
+End Interface
+
+[InterfaceId("13C6682B-F614-421A-8F4B-9EC8A5A37FCD")]
+Interface ICoreTextSelectionRequestedEventArgs Extends IInspectable
+    Property Get Request() As ICoreTextSelectionRequest
+End Interface
+
+[InterfaceId("D445839F-FE7F-4BD5-8A26-0922C1B3E639")]
+Interface ICoreTextSelectionUpdatingEventArgs Extends IInspectable
+    Property Get Selection() As CoreTextRange
+    Property Get Result() As CoreTextSelectionUpdatingResult
+    Property Let Result(ByVal Value As CoreTextSelectionUpdatingResult)
+    Property Get IsCanceled() As BooleanByte
+    Function GetDeferral() As IDeferral
+End Interface
+
+[InterfaceId("112FB01D-260A-51C6-9198-5DB3E6E9EF3D")]
+Interface ITypedEventHandlerCoreTextServicesManagerInputLanguageChanged Extends IUnknown
+    Sub Invoke(ByVal Sender As ICoreTextServicesManager, ByVal Args As IInspectable)
+End Interface
+
+[InterfaceId("C2507D83-6E0A-4A8A-BDF8-1948874854BA")]
+Interface ICoreTextServicesManager Extends IInspectable
+    Property Get InputLanguage() As ILanguage
+    [PreserveSig]
+    Function AddInputLanguageChanged(ByVal Handler As ITypedEventHandlerCoreTextServicesManagerInputLanguageChanged, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveInputLanguageChanged(ByVal Token As EventRegistrationToken) As HRESULT
+    Function CreateEditContext() As ICoreTextEditContext
+End Interface
+
+[InterfaceId("1520A388-E2CF-4D65-AEB9-B32D86FE39B9")]
+Interface ICoreTextServicesManagerStatics Extends IInspectable
+    Function GetForCurrentView() As ICoreTextServicesManager
+End Interface
+
+[InterfaceId("91859A46-ECCF-47A4-8AE7-098A9C6FBB15")]
+Interface ICoreTextServicesStatics Extends IInspectable
+    Property Get HiddenCharacter() As Integer
+End Interface
+
+[InterfaceId("50D950A9-F51E-4CC1-8CA1-E6346D1A61BE")]
+Interface ICoreTextTextRequest Extends IInspectable
+    Property Get Range() As CoreTextRange
+    Property Get Text() As LongPtr
+    Property Let Text(ByVal Value As LongPtr)
+    Property Get IsCanceled() As BooleanByte
+    Function GetDeferral() As IDeferral
+End Interface
+
+[InterfaceId("F096A2D0-41C6-4C02-8B1A-D953B00CABB3")]
+Interface ICoreTextTextRequestedEventArgs Extends IInspectable
+    Property Get Request() As ICoreTextTextRequest
+End Interface
+
+[InterfaceId("EEA7918D-CC2B-4F03-8FF6-02FD217DB450")]
+Interface ICoreTextTextUpdatingEventArgs Extends IInspectable
+    Property Get Range() As CoreTextRange
+    Property Get Text() As LongPtr
+    Property Get NewSelection() As CoreTextRange
+    Property Get InputLanguage() As ILanguage
+    Property Get Result() As CoreTextTextUpdatingResult
+    Property Let Result(ByVal Value As CoreTextTextUpdatingResult)
+    Property Get IsCanceled() As BooleanByte
+    Function GetDeferral() As IDeferral
+End Interface
+
+Module mdlUITextCore
+
+Public Enum CoreTextFormatUpdatingReason
+    CoreTextFormatUpdatingReason_None
+    CoreTextFormatUpdatingReason_CompositionUnconverted
+    CoreTextFormatUpdatingReason_CompositionConverted
+    CoreTextFormatUpdatingReason_CompositionTargetUnconverted
+    CoreTextFormatUpdatingReason_CompositionTargetConverted
+End Enum
+
+Public Enum CoreTextFormatUpdatingResult
+    CoreTextFormatUpdatingResult_Succeeded
+    CoreTextFormatUpdatingResult_Failed
+End Enum
+
+Public Enum CoreTextInputPaneDisplayPolicy
+    CoreTextInputPaneDisplayPolicy_Automatic
+    CoreTextInputPaneDisplayPolicy_Manual
+End Enum
+
+Public Enum CoreTextInputScope
+    CoreTextInputScope_Default
+    CoreTextInputScope_Url
+    CoreTextInputScope_FilePath
+    CoreTextInputScope_FileName
+    CoreTextInputScope_EmailUserName
+    CoreTextInputScope_EmailAddress
+    CoreTextInputScope_UserName
+    CoreTextInputScope_PersonalFullName
+    CoreTextInputScope_PersonalNamePrefix
+    CoreTextInputScope_PersonalGivenName
+    CoreTextInputScope_PersonalMiddleName
+    CoreTextInputScope_PersonalSurname
+    CoreTextInputScope_PersonalNameSuffix
+    CoreTextInputScope_Address
+    CoreTextInputScope_AddressPostalCode
+    CoreTextInputScope_AddressStreet
+    CoreTextInputScope_AddressStateOrProvince
+    CoreTextInputScope_AddressCity
+    CoreTextInputScope_AddressCountryName
+    CoreTextInputScope_AddressCountryShortName
+    CoreTextInputScope_CurrencyAmountAndSymbol
+    CoreTextInputScope_CurrencyAmount
+    CoreTextInputScope_Date
+    CoreTextInputScope_DateMonth
+    CoreTextInputScope_DateDay
+    CoreTextInputScope_DateYear
+    CoreTextInputScope_DateMonthName
+    CoreTextInputScope_DateDayName
+    CoreTextInputScope_Number = 29
+    CoreTextInputScope_SingleCharacter
+    CoreTextInputScope_Password
+    CoreTextInputScope_TelephoneNumber
+    CoreTextInputScope_TelephoneCountryCode
+    CoreTextInputScope_TelephoneAreaCode
+    CoreTextInputScope_TelephoneLocalNumber
+    CoreTextInputScope_Time
+    CoreTextInputScope_TimeHour
+    CoreTextInputScope_TimeMinuteOrSecond
+    CoreTextInputScope_NumberFullWidth
+    CoreTextInputScope_AlphanumericHalfWidth
+    CoreTextInputScope_AlphanumericFullWidth
+    CoreTextInputScope_CurrencyChinese
+    CoreTextInputScope_Bopomofo
+    CoreTextInputScope_Hiragana
+    CoreTextInputScope_KatakanaHalfWidth
+    CoreTextInputScope_KatakanaFullWidth
+    CoreTextInputScope_Hanja
+    CoreTextInputScope_HangulHalfWidth
+    CoreTextInputScope_HangulFullWidth
+    CoreTextInputScope_Search
+    CoreTextInputScope_Formula
+    CoreTextInputScope_SearchIncremental
+    CoreTextInputScope_ChineseHalfWidth
+    CoreTextInputScope_ChineseFullWidth
+    CoreTextInputScope_NativeScript
+    CoreTextInputScope_Text = 57
+    CoreTextInputScope_Chat
+    CoreTextInputScope_NameOrPhoneNumber
+    CoreTextInputScope_EmailUserNameOrAddress
+    CoreTextInputScope_Private
+    CoreTextInputScope_Maps
+    CoreTextInputScope_PasswordNumeric
+    CoreTextInputScope_FormulaNumber = 67
+    CoreTextInputScope_ChatWithoutEmoji
+    CoreTextInputScope_Digits = 28
+    CoreTextInputScope_PinNumeric = 64
+    CoreTextInputScope_PinAlphanumeric
+End Enum
+
+Public Enum CoreTextSelectionUpdatingResult
+    CoreTextSelectionUpdatingResult_Succeeded
+    CoreTextSelectionUpdatingResult_Failed
+End Enum
+
+Public Enum CoreTextTextUpdatingResult
+    CoreTextTextUpdatingResult_Succeeded
+    CoreTextTextUpdatingResult_Failed
+End Enum
+
+Public Type CoreTextRange
+    StartCaretPosition As Long
+    EndCaretPosition As Long
+End Type
+
+End Module

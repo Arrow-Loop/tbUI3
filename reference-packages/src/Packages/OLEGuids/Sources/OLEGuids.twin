@@ -1,0 +1,349 @@
+/*
+OLEGuids.tlb implementation is focused on compatibility with the version of VBCCRxx.OCX and VBFLXGRDxx.OCX.
+This package substitutes the OLEGuids.tlb in projects with 64-bit versions, though it can be used in 32-bit as well.
+*/
+
+[InterfaceId("00000000-0000-0000-C000-000000000046")]
+[OleAutomation(False)]
+Interface IUnknownUnrestricted Extends Nothing
+    [PreserveSig]
+    Function QueryInterface(ByVal priid As LongPtr, ByRef ppvObject As LongPtr) As Long
+    [PreserveSig]
+    Function AddRef() As Long
+    [PreserveSig]
+    Function Release() As Long
+End Interface
+
+[InterfaceId("00000114-0000-0000-C000-000000000046")]
+[OleAutomation(False)]
+Interface IOleWindow Extends stdole.IUnknown
+    Function GetWindow() As LongPtr
+    Sub ContextSensitiveHelp(ByVal fEnterMode As Long)
+End Interface
+
+[Description("Stub: Use tbShellLib for full version")]
+[InterfaceId("00000118-0000-0000-C000-000000000046")]
+[OleAutomation(False)]
+Interface IOleClientSite Extends stdole.IUnknown
+End Interface
+
+[InterfaceId("00000112-0000-0000-C000-000000000046")]
+[OleAutomation(False)]
+Interface IOleObject Extends stdole.IUnknown
+    Sub SetClientSite(ByVal pClientSite As OLEGuids.IOleClientSite)
+    Function GetClientSite() As OLEGuids.IOleClientSite
+    Sub SetHostNames(ByVal lpszContainerApp As LongPtr, ByVal lpszContainerObj As LongPtr)
+    Sub Close(ByVal dwSaveOption As Long)
+    Sub SetMoniker(ByVal dwWhichMoniker As Long, ByVal lpmk As LongPtr)
+    Function GetMoniker(ByVal dwAssign As Long, ByVal dwWhichMoniker As Long) As LongPtr
+    Sub InitFromData(ByVal lpDataObject As LongPtr, ByVal fCreation As Long, ByVal dwReserved As Long)
+    Function GetClipboardData(ByVal dwReserved As Long) As LongPtr
+    [PreserveSig]
+    Function DoVerb(ByVal iVerb As Long, ByVal lpMsg As LongPtr, ByVal pActiveSite As OLEGuids.IOleClientSite, ByVal Index As Long, ByVal hWndParent As LongPtr, ByVal lprcPosRect As LongPtr) As Long
+End Interface
+
+[InterfaceId("00000113-0000-0000-C000-000000000046")]
+[OleAutomation(False)]
+Interface IOleInPlaceObject Extends OLEGuids.IOleWindow
+    Sub InPlaceDeactivate()
+    Sub UIDeactivate()
+    Sub SetObjectRects(ByVal lprcPosRect As LongPtr, ByVal lprcClipRect As LongPtr)
+    Sub ReactivateAndUndo()
+End Interface
+
+[InterfaceId("1C2056CC-5EF4-101B-8BC8-00AA003E3B29")]
+[OleAutomation(False)]
+Interface IOleInPlaceObjectWindowless Extends OLEGuids.IOleInPlaceObject
+    [PreserveSig]
+    Function OnWindowMessage(ByVal wMsg As Long, ByVal wParam As LongPtr, ByVal lParam As LongPtr, ByRef Result As LongPtr) As Long
+    [PreserveSig]
+    Function GetDropTarget(ByRef lppDropTarget As LongPtr) As Long
+End Interface
+
+[InterfaceId("B196B288-BAB4-101A-B69C-00AA00341D07")]
+[OleAutomation(False)]
+Interface IOleControl Extends stdole.IUnknown
+    [PreserveSig]
+    Function GetControlInfo(ByRef pCI As OLECONTROLINFO) As Long
+    [PreserveSig]
+    Function OnMnemonic(ByRef pMsg As OLEACCELMSG) As Long
+    Sub OnAmbientPropertyChange(ByVal DispId As Long)
+    Sub FreezeEvents(ByVal bFreeze As Long)
+End Interface
+
+[InterfaceId("B196B289-BAB4-101A-B69C-00AA00341D07")]
+[OleAutomation(False)]
+Interface IOleControlSite Extends stdole.IUnknown
+    Sub OnControlInfoChanged()
+    Sub LockInPlaceActive(ByVal fLock As Long)
+    Function GetExtendedControl() As stdole.IDispatch
+    Sub TransformCoords(ByVal pPtlHimetric As LongPtr, ByVal pPtfContainer As LongPtr, ByVal dwFlags As Long)
+    [PreserveSig]
+    Function TranslateAccelerator(ByVal lpMsg As LongPtr, ByVal grfModifiers As Long) As Long
+    Sub OnFocus(ByVal fGotFocus As Long)
+    Sub ShowPropertyFrame()
+End Interface
+
+[InterfaceId("00000117-0000-0000-C000-000000000046")]
+[OleAutomation(False)]
+Interface IOleInPlaceActiveObject Extends OLEGuids.IUnknownUnrestricted
+    [PreserveSig]
+    Function GetWindow(ByRef phWnd As LongPtr) As Long
+    [PreserveSig]
+    Function ContextSensitiveHelp(ByVal fEnterMode As Long) As Long
+    [PreserveSig]
+    Function TranslateAccelerator(ByVal lpMsg As LongPtr) As Long
+    [PreserveSig]
+    Function OnFrameWindowActivate(ByVal fActivate As Long) As Long
+    [PreserveSig]
+    Function OnDocWindowActivate(ByVal fActivate As Long) As Long
+    [PreserveSig]
+    Function ResizeBorder(ByVal prcBorder As LongPtr, ByVal pUIWindow As OLEGuids.IOleInPlaceUIWindow, ByVal fFrameWindow As Long) As Long
+    [PreserveSig]
+    Function EnableModeless(ByVal fEnable As Long) As Long
+End Interface
+
+[InterfaceId("00000115-0000-0000-C000-000000000046")]
+[OleAutomation(False)]
+Interface IOleInPlaceUIWindow Extends OLEGuids.IOleWindow
+    Sub GetBorder(ByVal lpRectBorder As LongPtr)
+    Sub RequestBorderSpace(ByVal pBorderWidths As LongPtr)
+    Sub SetBorderSpace(ByVal pBorderWidths As LongPtr)
+    Sub SetActiveObject(ByVal pActiveObject As OLEGuids.IOleInPlaceActiveObject, ByVal lpszObjName As LongPtr)
+End Interface
+
+[Description("Stub: Use tbShellLib for full version")]
+[InterfaceId("00000116-0000-0000-C000-000000000046")]
+[OleAutomation(False)]
+Interface IOleInPlaceFrame Extends OLEGuids.IOleInPlaceUIWindow
+End Interface
+
+[InterfaceId("00000119-0000-0000-C000-000000000046")]
+[OleAutomation(False)]
+Interface IOleInPlaceSite Extends OLEGuids.IOleWindow
+    [PreserveSig]
+    Function CanInPlaceActivate() As Long
+    Sub OnInPlaceActivate()
+    Sub OnUIActivate()
+    Sub GetWindowContext(ByRef ppFrame As OLEGuids.IOleInPlaceFrame, ByRef ppDoc As OLEGuids.IOleInPlaceUIWindow, ByVal lprcPosRect As LongPtr, ByVal lprcClipRect As LongPtr, ByVal lpFrameInfo As LongPtr)
+    Sub Scroll(ByVal ScrollExtant As Currency)
+    Sub OnUIDeactivate(ByVal fUndoable As Long)
+    Sub OnInPlaceDeactivate()
+    Sub DiscardUndoState()
+    Sub DeactivateAndUndo()
+    Sub OnPosRectChange(ByVal lprcPosRect As LongPtr)
+End Interface
+
+[InterfaceId("00020400-0000-0000-C000-000000000046")]
+[OleAutomation(False)]
+Interface IDispatchUnrestricted Extends stdole.IUnknown
+    Sub GetTypeInfoCount(ByRef pctInfo As Long)
+    Sub GetTypeInfo(ByVal itinfo As Long, ByVal lcid As Long, ByRef pptinfo As LongPtr)
+    Sub GetIDsOfNames(ByRef riid As OLEGuids.OLECLSID, ByRef rgszNames As LongPtr, ByVal cNames As Long, ByVal lcid As Long, ByRef rgDispId As Long)
+    Sub Invoke(ByVal DispId As Long, ByRef riid As OLEGuids.OLECLSID, ByVal lcid As Long, ByVal wFlags As Integer, ByVal lpdispparams As LongPtr, ByVal lpvarResult As LongPtr, ByVal lpexcepinfo As LongPtr, ByRef puArgErr As Long)
+End Interface
+
+[InterfaceId("376BD3AA-3845-101B-84ED-08002B2EC713")]
+[OleAutomation(False)]
+Interface IPerPropertyBrowsing Extends stdole.IUnknown
+    [PreserveSig]
+    Function GetDisplayString(ByVal DispId As Long, ByRef lpDisplayName As LongPtr) As Long
+    [PreserveSig]
+    Function MapPropertyToPage(ByVal DispId As Long, ByRef pCLSID As OLEGuids.OLECLSID) As Long
+    [PreserveSig]
+    Function GetPredefinedStrings(ByVal DispId As Long, ByRef pCaStringsOut As OLEGuids.OLECALPOLESTR, ByRef pCaCookiesOut As OLEGuids.OLECADWORD) As Long
+    [PreserveSig]
+    Function GetPredefinedValue(ByVal DispId As Long, ByVal dwCookie As Long, ByRef pVarOut As Variant) As Long
+End Interface
+
+[InterfaceId("B196B28B-BAB4-101A-B69C-00AA00341D07")]
+[OleAutomation(False)]
+Interface ISpecifyPropertyPages Extends stdole.IUnknown
+    Sub GetPages(ByRef pPages As OLEGuids.OLECAUUID)
+End Interface
+
+[InterfaceId("00020404-0000-0000-C000-000000000046")]
+[OleAutomation(False)]
+Interface IEnumVARIANTUnrestricted Extends stdole.IDispatch
+    Sub Next(ByVal cElt As Long, ByRef rgVar As Variant, ByVal lpcEltFetched As LongPtr)
+    Sub Skip(ByVal cElt As Long)
+    Sub Reset()
+    Sub Clone(ByRef ppEnum As stdole.IEnumVARIANT)
+End Interface
+
+[Description("Stub: Use tbShellLib for full version")]
+[InterfaceId("0000000B-0000-0000-C000-000000000046")]
+[OleAutomation(False)]
+Interface IStorage Extends stdole.IUnknown
+End Interface
+
+[Description("Stub: Use tbShellLib for full version")]
+[InterfaceId("0000010E-0000-0000-C000-000000000046")]
+[OleAutomation(False)]
+Interface IDataObject Extends stdole.IUnknown
+End Interface
+
+[InterfaceId("CB5BDC81-93C1-11CF-8F20-00805F2CD064")]
+[OleAutomation(False)]
+Interface IObjectSafety Extends stdole.IUnknown
+    Sub GetInterfaceSafetyOptions(ByRef riid As OLEGuids.OLECLSID, ByRef pdwSupportedOptions As Long, ByRef pdwEnabledOptions As Long)
+    Sub SetInterfaceSafetyOptions(ByRef riid As OLEGuids.OLECLSID, ByVal dwOptionSetMask As Long, ByVal dwEnabledOptions As Long)
+End Interface
+
+[InterfaceId("38584260-0CFB-45E7-8FBB-5D20B311F5B8")]
+' [ DualInterface, DispInterface ]
+Interface IOleInPlaceActiveObjectVB Extends stdole.IDispatch
+    Sub TranslateAccelerator(ByRef Handled As Boolean, ByRef RetVal As Long, ByVal hWnd As LongPtr, ByVal wMsg As Long, ByVal wParam As LongPtr, ByVal lParam As LongPtr, ByVal Shift As Long)
+End Interface
+
+[InterfaceId("C895C8F9-6564-4123-8760-529F72AB9322")]
+' [ DualInterface, DispInterface ]
+Interface IOleControlVB Extends stdole.IDispatch
+    [DispId(1)]
+    Sub GetControlInfo(ByRef Handled As Boolean, ByRef AccelCount As Integer, ByRef AccelTable As LongPtr, ByRef Flags As Long)
+    [DispId(2)]
+    Sub OnMnemonic(ByRef Handled As Boolean, ByVal hWnd As LongPtr, ByVal wMsg As Long, ByVal wParam As LongPtr, ByVal lParam As LongPtr, ByVal Shift As Long)
+End Interface
+
+[InterfaceId("D5D3BBE3-DB60-4522-AF5B-D767FE736DDB")]
+' [ DualInterface, DispInterface ]
+Interface IPerPropertyBrowsingVB Extends stdole.IDispatch
+    [DispId(1)]
+    Sub GetDisplayString(ByRef Handled As Boolean, ByVal DispId As Long, ByRef DisplayName As String)
+    [DispId(2)]
+    Sub GetPredefinedStrings(ByRef Handled As Boolean, ByVal DispId As Long, ByRef StringsOut As String(), ByRef CookiesOut As Long())
+    [DispId(3)]
+    Sub GetPredefinedValue(ByRef Handled As Boolean, ByVal DispId As Long, ByVal Cookie As Long, ByRef Value As Variant)
+End Interface
+
+[InterfaceId("061D3A2F-A213-4016-9756-B89140604819")]
+' [ DualInterface, DispInterface ]
+Interface IOleInPlaceObjectWindowlessVB Extends stdole.IDispatch
+    [DispId(1)]
+    Sub OnWindowMessage(ByRef Handled As Boolean, ByVal wMsg As Long, ByVal wParam As LongPtr, ByVal lParam As LongPtr, ByRef Result As LongPtr)
+End Interface
+
+[InterfaceId("00020D00-0000-0000-C000-000000000046")]
+[OleAutomation(False)]
+Interface IRichEditOle Extends stdole.IUnknown
+    Function GetClientSite() As OLEGuids.IOleClientSite
+    [PreserveSig]
+    Function GetObjectCount() As Long
+    [PreserveSig]
+    Function GetLinkCount() As Long
+    [PreserveSig]
+    Function GetObject(ByVal iob As Long, ByRef pREOBJECT As Any, ByVal dwFlags As Long) As Long
+    [PreserveSig]
+    Function InsertObject(ByRef pREOBJECT As Any) As Long
+    [PreserveSig]
+    Function ConvertObject(ByVal iob As Long, ByRef pCLSIDNew As OLEGuids.OLECLSID, ByVal lpstrUserTypeNew As LongPtr /* ANSI */) As Long
+    [PreserveSig]
+    Function ActivateAs(ByRef pCLSID As OLEGuids.OLECLSID, ByRef pCLSIDAs As OLEGuids.OLECLSID) As Long
+    [PreserveSig]
+    Function SetHostNames(ByVal lpstrContainerApp As LongPtr /* ANSI */, ByVal lpstrContainerObj As LongPtr /* ANSI */) As Long
+    [PreserveSig]
+    Function SetLinkAvailable(ByVal iob As Long, ByVal fAvailable As Long) As Long
+    [PreserveSig]
+    Function SetDvaspect(ByVal iob As Long, ByVal dvAspect As Long) As Long
+    [PreserveSig]
+    Function HandsOffStorage(ByVal iob As Long) As Long
+    [PreserveSig]
+    Function SaveCompleted(ByVal iob As Long, ByVal pStorage As OLEGuids.IStorage) As Long
+    [PreserveSig]
+    Function InPlaceDeactivate() As Long
+    [PreserveSig]
+    Function ContextSensitiveHelp(ByVal fEnterMode As Long) As Long
+    [PreserveSig]
+    Function GetClipboardData(ByVal lpCharRange As LongPtr, ByVal RECO As Long, ByRef ppDataObject As OLEGuids.IDataObject) As Long
+    [PreserveSig]
+    Function ImportDataObject(ByVal pDataObject As OLEGuids.IDataObject, ByVal CF As Integer, ByVal hMetaPict As LongPtr) As Long
+End Interface
+
+[InterfaceId("00020D03-0000-0000-C000-000000000046")]
+[OleAutomation(False)]
+Interface IRichEditOleCallback Extends stdole.IUnknown
+    Sub GetNewStorage(ByRef ppStorage As OLEGuids.IStorage)
+    Sub GetInPlaceContext(ByRef ppFrame As OLEGuids.IOleInPlaceFrame, ByRef ppDoc As OLEGuids.IOleInPlaceUIWindow, ByRef pFrameInfo As OLEGuids.OLEINPLACEFRAMEINFO)
+    Sub ShowContainerUI(ByVal fShow As Long)
+    Sub QueryInsertObject(ByRef pCLSID As OLEGuids.OLECLSID, ByVal pStorage As OLEGuids.IStorage, ByVal CharPos As Long)
+    Sub DeleteObject(ByVal LpOleObject As LongPtr)
+    Sub QueryAcceptData(ByVal pDataObject As OLEGuids.IDataObject, ByRef CF As Integer, ByVal RECO As Long, ByVal fReally As Long, ByVal hMetaPict As LongPtr)
+    Sub ContextSensitiveHelp(ByVal fEnterMode As Long)
+    Sub GetClipboardData(ByVal lpCharRange As LongPtr, ByVal RECO As Long, ByRef ppDataObject As OLEGuids.IDataObject)
+    Sub GetDragDropEffect(ByVal fDrag As Long, ByVal KeyState As Long, ByRef dwEffect As Long)
+    Sub GetContextMenu(ByVal SelType As Integer, ByVal LpOleObject As LongPtr, ByVal lpCharRange As LongPtr, ByRef hMenu As LongPtr)
+End Interface
+
+Module OLEGuids
+
+Public Type OLERECT
+	Left As Long
+	Top As Long
+	Right As Long
+	Bottom As Long
+End Type
+
+Public Type OLEPOINT
+    X As Long
+    Y As Long
+End Type
+
+Public Type OLEACCELMSG
+    hWnd As LongPtr
+    Message As Long
+    wParam As LongPtr
+    lParam As LongPtr
+    Time As Long
+    PT As OLEPOINT
+End Type
+    
+Public Type OLESIZE
+	CX As Long
+    CY As Long
+End Type
+
+Public Type OLEINPLACEFRAMEINFO
+	cb As Long
+	fMDIApp As Long
+	hWndFrame As LongPtr
+	hAccel As LongPtr
+	cAccelEntries As Long
+End Type
+
+Public Type OLECONTROLINFO
+    cb As Long
+    hAccel As LongPtr
+    cAccel As Integer
+    dwFlags As Long
+End Type
+
+Public Type OLECLSID
+	Data1 As Long
+	Data2 As Integer
+	Data3 As Integer
+	Data4(0 To 7) As Byte
+End Type
+
+Public Type OLEDISPPARAMS
+    rgvarg As LongPtr
+    rgdispidNamedArgs As LongPtr
+    cArgs As Long
+    cNamedArgs As Long
+End Type
+
+Public Type OLECAUUID
+    cElems As Long
+    pElems As LongPtr
+End Type
+
+Public Type OLECALPOLESTR
+    cElems As Long
+    pElems As LongPtr
+End Type
+
+Public Type OLECADWORD
+    cElems As Long
+    pElems As LongPtr
+End Type
+
+End Module

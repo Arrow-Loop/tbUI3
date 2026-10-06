@@ -1,0 +1,161 @@
+[InterfaceId("A295FA0C-C99F-5109-8AB9-91534BB48C9B")]
+Interface IIterator_KVP_UInt32_IBuffer Extends IInspectable
+    Property Get Current() As KVP_UInt32_IBuffer
+    Property Get HasCurrent() As BooleanByte
+    Function MoveNext() As BooleanByte
+    Function GetMany(ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("4FE7FE23-22B1-528C-881D-A4ECEAEF0F11")]
+Interface IIterable_KVP_UInt32_IBuffer Extends IInspectable
+    Function First() As IIterator_KVP_UInt32_IBuffer
+End Interface
+
+[InterfaceId("82A3A3B7-E04A-5395-8487-7F94F1508CE7")]
+Interface KVP_UInt32_IBuffer Extends IInspectable
+    Property Get Key() As UInt32
+    Property Get Value() As IBuffer
+End Interface
+
+[InterfaceId("57DC41E6-8B4D-5910-9703-D7C668436852")]
+Interface IMapView_UInt32_IBuffer Extends IInspectable
+    Function Lookup(ByVal Key As UInt32) As IBuffer
+    Property Get Size() As Long
+    Function HasKey(ByVal Key As UInt32) As BooleanByte
+    Sub Split(First As IMapView_UInt32_IBuffer, Second As IMapView_UInt32_IBuffer)
+End Interface
+
+[InterfaceId("5D2591DF-48C5-5734-9EF1-BD639B032007")]
+Interface IMap_UInt32_IBuffer Extends IInspectable
+    Function Lookup(ByVal Key As UInt32) As IBuffer
+    Property Get Size() As Long
+    Function HasKey(ByVal Key As UInt32) As BooleanByte
+    Function GetView() As IMapView_UInt32_IBuffer
+    Function Insert(ByVal Key As UInt32, ByVal Value As IBuffer) As BooleanByte
+    [PreserveSig]
+    Function Remove(ByVal Key As UInt32) As HRESULT
+    [PreserveSig]
+    Function Clear() As HRESULT
+End Interface
+
+[InterfaceId("D4904DED-BC1D-5933-AECF-E42C5D465BFF")]
+Interface IAsyncOperationIMapView_UInt32_IBuffer Extends IInspectable
+    Property Set Completed(ByVal Handler As IAsyncOperationCompletedHandlerIMapView_UInt32_IBuffer)
+    Property Get Completed() As IAsyncOperationCompletedHandlerIMapView_UInt32_IBuffer
+    Function GetResults() As IMapView_UInt32_IBuffer
+End Interface
+
+[InterfaceId("92C2E4D0-7C25-596B-9135-10D1472E6968")]
+Interface IAsyncOperationCompletedHandlerIMapView_UInt32_IBuffer Extends IUnknown
+    Sub Invoke(ByVal AsyncOperation As IAsyncOperationIMapView_UInt32_IBuffer, ByVal AsyncStatus As AsyncStatus)
+End Interface
+
+[InterfaceId("AE81FF1F-C5A1-4C40-8C28-F3EFD69062F3")]
+Interface IRfcommDeviceService Extends IInspectable ' requires IClosable
+    Property Get ConnectionHostName() As IHostName
+    Property Get ConnectionServiceName() As LongPtr
+    Property Get ServiceId() As IRfcommServiceId
+    Property Get ProtectionLevel() As SocketProtectionLevel
+    Property Get MaxProtectionLevel() As SocketProtectionLevel
+    Function GetSdpRawAttributesAsync() As IAsyncOperationIMapView_UInt32_IBuffer
+    Function GetSdpRawAttributesWithCacheModeAsync(ByVal CacheMode As BluetoothCacheMode) As IAsyncOperationIMapView_UInt32_IBuffer
+End Interface
+
+[InterfaceId("536CED14-EBCD-49FE-BF9F-40EFC689B20D")]
+Interface IRfcommDeviceService2 Extends IInspectable
+    Property Get Device() As IBluetoothDevice
+End Interface
+
+[InterfaceId("1C22ACE6-DD44-4D23-866D-8F3486EE6490")]
+Interface IRfcommDeviceService3 Extends IInspectable
+    Property Get DeviceAccessInformation() As IDeviceAccessInformation
+    Function RequestAccessAsync() As IAsyncOperationDeviceAccessStatus
+End Interface
+
+[InterfaceId("0DF56BD7-C8F6-5C32-9644-AA0BCF28D78C")]
+Interface IAsyncOperationIRfcommDeviceService Extends IInspectable
+    Property Set Completed(ByVal Handler As IAsyncOperationCompletedHandlerIRfcommDeviceService)
+    Property Get Completed() As IAsyncOperationCompletedHandlerIRfcommDeviceService
+    Function GetResults() As IRfcommDeviceService
+End Interface
+
+[InterfaceId("5C772518-442F-58ED-80CB-538D34B88295")]
+Interface IAsyncOperationCompletedHandlerIRfcommDeviceService Extends IUnknown
+    Sub Invoke(ByVal AsyncOperation As IAsyncOperationIRfcommDeviceService, ByVal AsyncStatus As AsyncStatus)
+End Interface
+
+[InterfaceId("A4A149EF-626D-41AC-B253-87AC5C27E28A")]
+Interface IRfcommDeviceServiceStatics Extends IInspectable
+    Function FromIdAsync(ByVal DeviceId As LongPtr) As IAsyncOperationIRfcommDeviceService
+    Function GetDeviceSelector(ByVal ServiceId As IRfcommServiceId) As LongPtr
+End Interface
+
+[InterfaceId("AA8CB1C9-E78D-4BE4-8076-0A3D87A0A05F")]
+Interface IRfcommDeviceServiceStatics2 Extends IInspectable
+    Function GetDeviceSelectorForBluetoothDevice(ByVal BluetoothDevice As IBluetoothDevice) As LongPtr
+    Function GetDeviceSelectorForBluetoothDeviceWithCacheMode(ByVal BluetoothDevice As IBluetoothDevice, ByVal CacheMode As BluetoothCacheMode) As LongPtr
+    Function GetDeviceSelectorForBluetoothDeviceAndServiceId(ByVal BluetoothDevice As IBluetoothDevice, ByVal ServiceId As IRfcommServiceId) As LongPtr
+    Function GetDeviceSelectorForBluetoothDeviceAndServiceIdWithCacheMode(ByVal BluetoothDevice As IBluetoothDevice, ByVal ServiceId As IRfcommServiceId, ByVal CacheMode As BluetoothCacheMode) As LongPtr
+End Interface
+
+[InterfaceId("3B48388C-7CCF-488E-9625-D259A5732D55")]
+Interface IRfcommDeviceServicesResult Extends IInspectable
+    Property Get Error() As BluetoothError
+    Property Get Services() As IVectorView_IRfcommDeviceService
+End Interface
+
+[InterfaceId("22629204-7E02-4017-8136-DA1B6A1B9BBF")]
+Interface IRfcommServiceId Extends IInspectable
+    Property Get Uuid() As UUID
+    Function AsShortId() As Long
+    Function AsString() As LongPtr
+End Interface
+
+[InterfaceId("2A179EBA-A975-46E3-B56B-08FFD783A5FE")]
+Interface IRfcommServiceIdStatics Extends IInspectable
+    Function FromUuid(ByVal Uuid As UUID) As IRfcommServiceId
+    Function FromShortId(ByVal ShortId As Long) As IRfcommServiceId
+    Property Get SerialPort() As IRfcommServiceId
+    Property Get ObexObjectPush() As IRfcommServiceId
+    Property Get ObexFileTransfer() As IRfcommServiceId
+    Property Get PhoneBookAccessPce() As IRfcommServiceId
+    Property Get PhoneBookAccessPse() As IRfcommServiceId
+    Property Get GenericFileTransfer() As IRfcommServiceId
+End Interface
+
+[InterfaceId("EADBFDC4-B1F6-44FF-9F7C-E7A82AB86821")]
+Interface IRfcommServiceProvider Extends IInspectable
+    Property Get ServiceId() As IRfcommServiceId
+    Property Get SdpRawAttributes() As IMap_UInt32_IBuffer
+    [PreserveSig]
+    Function StartAdvertising(ByVal Listener As IStreamSocketListener) As HRESULT
+    [PreserveSig]
+    Function StopAdvertising() As HRESULT
+End Interface
+
+[InterfaceId("736BDFC6-3C81-4D1E-BAF2-DDBB81284512")]
+Interface IRfcommServiceProvider2 Extends IInspectable
+    [PreserveSig]
+    Function StartAdvertisingWithRadioDiscoverability(ByVal Listener As IStreamSocketListener, ByVal RadioDiscoverable As BooleanByte) As HRESULT
+End Interface
+
+[InterfaceId("FED44828-E232-554D-85D1-2F04D1322E69")]
+Interface IAsyncOperationIRfcommServiceProvider Extends IInspectable
+    Property Set Completed(ByVal Handler As IAsyncOperationCompletedHandlerIRfcommServiceProvider)
+    Property Get Completed() As IAsyncOperationCompletedHandlerIRfcommServiceProvider
+    Function GetResults() As IRfcommServiceProvider
+End Interface
+
+[InterfaceId("446A7F50-8F2E-51F0-AEBB-1BC3D192905F")]
+Interface IAsyncOperationCompletedHandlerIRfcommServiceProvider Extends IUnknown
+    Sub Invoke(ByVal AsyncOperation As IAsyncOperationIRfcommServiceProvider, ByVal AsyncStatus As AsyncStatus)
+End Interface
+
+[InterfaceId("98888303-69CA-413A-84F7-4344C7292997")]
+Interface IRfcommServiceProviderStatics Extends IInspectable
+    Function CreateAsync(ByVal ServiceId As IRfcommServiceId) As IAsyncOperationIRfcommServiceProvider
+End Interface
+
+Module mdlDevicesBluetoothRfcomm
+
+End Module

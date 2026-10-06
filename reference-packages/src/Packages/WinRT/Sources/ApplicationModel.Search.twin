@@ -1,0 +1,182 @@
+[InterfaceId("EEAEB062-743D-456E-84A3-23F06F2D15D7")]
+Interface ILocalContentSuggestionSettings Extends IInspectable
+    Property Let Enabled(ByVal Value As BooleanByte)
+    Property Get Enabled() As BooleanByte
+    Property Get Locations() As IVector_IStorageFolder
+    Property Let AqsFilter(ByVal Value As LongPtr)
+    Property Get AqsFilter() As LongPtr
+    Property Get PropertiesToMatch() As IVector_HSTRING
+End Interface
+
+[InterfaceId("7CCD7DA1-8767-5EEF-972D-31D09F1BF308")]
+Interface ITypedEventHandlerSearchPaneQueryChanged Extends IUnknown
+    Sub Invoke(ByVal Sender As ISearchPane, ByVal Args As ISearchPaneQueryChangedEventArgs)
+End Interface
+
+[InterfaceId("5F05121B-61A6-5F6B-B007-20816DFE7009")]
+Interface ITypedEventHandlerSearchPaneQuerySubmitted Extends IUnknown
+    Sub Invoke(ByVal Sender As ISearchPane, ByVal Args As ISearchPaneQuerySubmittedEventArgs)
+End Interface
+
+[InterfaceId("EC31E5D4-3B8C-5757-96BF-14096BE946CD")]
+Interface ITypedEventHandlerSearchPaneSuggestionChosen Extends IUnknown
+    Sub Invoke(ByVal Sender As ISearchPane, ByVal Args As ISearchPaneResultSuggestionChosenEventArgs)
+End Interface
+
+[InterfaceId("95088DC0-6C14-55B8-8A8F-9DF1CA44D1D4")]
+Interface ITypedEventHandlerSearchPaneSuggestionsRequested Extends IUnknown
+    Sub Invoke(ByVal Sender As ISearchPane, ByVal Args As ISearchPaneSuggestionsRequestedEventArgs)
+End Interface
+
+[InterfaceId("3975FF72-971B-54B6-9B5F-CC442E2A87F0")]
+Interface ITypedEventHandlerSearchPaneVisibilityChanged Extends IUnknown
+    Sub Invoke(ByVal Sender As ISearchPane, ByVal Args As ISearchPaneVisibilityChangedEventArgs)
+End Interface
+
+[InterfaceId("FDACEC38-3700-4D73-91A1-2F998674238A")]
+Interface ISearchPane Extends IInspectable
+    Property Let SearchHistoryEnabled(ByVal Value As BooleanByte)
+    Property Get SearchHistoryEnabled() As BooleanByte
+    Property Let SearchHistoryContext(ByVal Value As LongPtr)
+    Property Get SearchHistoryContext() As LongPtr
+    Property Let PlaceholderText(ByVal Value As LongPtr)
+    Property Get PlaceholderText() As LongPtr
+    Property Get QueryText() As LongPtr
+    Property Get Language() As LongPtr
+    Property Get Visible() As BooleanByte
+    [PreserveSig]
+    Function AddVisibilityChanged(ByVal Handler As ITypedEventHandlerSearchPaneVisibilityChanged, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveVisibilityChanged(ByVal Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function AddQueryChanged(ByVal Handler As ITypedEventHandlerSearchPaneQueryChanged, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveQueryChanged(ByVal Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function AddSuggestionsRequested(ByVal Handler As ITypedEventHandlerSearchPaneSuggestionsRequested, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveSuggestionsRequested(ByVal Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function AddQuerySubmitted(ByVal Handler As ITypedEventHandlerSearchPaneQuerySubmitted, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveQuerySubmitted(ByVal Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function AddResultSuggestionChosen(ByVal Handler As ITypedEventHandlerSearchPaneSuggestionChosen, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveResultSuggestionChosen(ByVal Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function SetLocalContentSuggestionSettings(ByVal Settings As ILocalContentSuggestionSettings) As HRESULT
+    [PreserveSig]
+    Function ShowOverloadDefault() As HRESULT
+    [PreserveSig]
+    Function ShowOverloadWithQuery(ByVal Query As LongPtr) As HRESULT
+    Property Let ShowOnKeyboardInput(ByVal Value As BooleanByte)
+    Property Get ShowOnKeyboardInput() As BooleanByte
+    Function TrySetQueryText(ByVal Query As LongPtr) As BooleanByte
+End Interface
+
+[InterfaceId("3C064FE9-2351-4248-A529-7110F464A785")]
+Interface ISearchPaneQueryChangedEventArgs Extends IInspectable
+    Property Get QueryText() As LongPtr
+    Property Get Language() As LongPtr
+    Property Get LinguisticDetails() As ISearchPaneQueryLinguisticDetails
+End Interface
+
+[InterfaceId("82FB460E-0940-4B6D-B8D0-642B30989E15")]
+Interface ISearchPaneQueryLinguisticDetails Extends IInspectable
+    Property Get QueryTextAlternatives() As IVectorView_HSTRING
+    Property Get QueryTextCompositionStart() As Long
+    Property Get QueryTextCompositionLength() As Long
+End Interface
+
+[InterfaceId("143BA4FC-E9C5-4736-91B2-E8EB9CB88356")]
+Interface ISearchPaneQuerySubmittedEventArgs Extends IInspectable
+    Property Get QueryText() As LongPtr
+    Property Get Language() As LongPtr
+End Interface
+
+[InterfaceId("460C92E5-4C32-4538-A4D4-B6B4400D140F")]
+Interface ISearchPaneQuerySubmittedEventArgsWithLinguisticDetails Extends IInspectable
+    Property Get LinguisticDetails() As ISearchPaneQueryLinguisticDetails
+End Interface
+
+[InterfaceId("C8316CC0-AED2-41E0-BCE0-C26CA74F85EC")]
+Interface ISearchPaneResultSuggestionChosenEventArgs Extends IInspectable
+    Property Get Tag() As LongPtr
+End Interface
+
+[InterfaceId("9572ADF1-8F1D-481F-A15B-C61655F16A0E")]
+Interface ISearchPaneStatics Extends IInspectable
+    Function GetForCurrentView() As ISearchPane
+End Interface
+
+[InterfaceId("00732830-50F1-4D03-99AC-C6644C8ED8B5")]
+Interface ISearchPaneStaticsWithHideThisApplication Extends IInspectable
+    [PreserveSig]
+    Function HideThisApplication() As HRESULT
+End Interface
+
+[InterfaceId("81B10B1C-E561-4093-9B4D-2AD482794A53")]
+Interface ISearchPaneSuggestionsRequest Extends IInspectable
+    Property Get IsCanceled() As BooleanByte
+    Property Get SearchSuggestionCollection() As ISearchSuggestionCollection
+    Function GetDeferral() As ISearchPaneSuggestionsRequestDeferral
+End Interface
+
+[InterfaceId("A0D009F7-8748-4EE2-AD44-AFA6BE997C51")]
+Interface ISearchPaneSuggestionsRequestDeferral Extends IInspectable
+    [PreserveSig]
+    Function Complete() As HRESULT
+End Interface
+
+[InterfaceId("C89B8A2F-AC56-4460-8D2F-80023BEC4FC5")]
+Interface ISearchPaneSuggestionsRequestedEventArgs Extends IInspectable
+    Property Get Request() As ISearchPaneSuggestionsRequest
+End Interface
+
+[InterfaceId("3C4D3046-AC4B-49F2-97D6-020E6182CB9C")]
+Interface ISearchPaneVisibilityChangedEventArgs Extends IInspectable
+    Property Get Visible() As BooleanByte
+End Interface
+
+[InterfaceId("46A1205B-69C9-4745-B72F-A8A4FC8F24AE")]
+Interface ISearchQueryLinguisticDetails Extends IInspectable
+    Property Get QueryTextAlternatives() As IVectorView_HSTRING
+    Property Get QueryTextCompositionStart() As Long
+    Property Get QueryTextCompositionLength() As Long
+End Interface
+
+[InterfaceId("CAC6C3B8-3C64-4DFD-AD9F-479E4D4065A4")]
+Interface ISearchQueryLinguisticDetailsFactory Extends IInspectable
+    Function CreateInstance(ByVal QueryTextAlternatives As IIterable_HSTRING, ByVal QueryTextCompositionStart As Long, ByVal QueryTextCompositionLength As Long) As ISearchQueryLinguisticDetails
+End Interface
+
+[InterfaceId("323A8A4B-FBEA-4446-ABBC-3DA7915FDD3A")]
+Interface ISearchSuggestionCollection Extends IInspectable
+    Property Get Size() As Long
+    [PreserveSig]
+    Function AppendQuerySuggestion(ByVal Text As LongPtr) As HRESULT
+    [PreserveSig]
+    Function AppendQuerySuggestions(ByVal Suggestions As IIterable_HSTRING) As HRESULT
+    [PreserveSig]
+    Function AppendResultSuggestion(ByVal Text As LongPtr, ByVal DetailText As LongPtr, ByVal Tag As LongPtr, ByVal Image As IRandomAccessStreamReference, ByVal ImageAlternateText As LongPtr) As HRESULT
+    [PreserveSig]
+    Function AppendSearchSeparator(ByVal Label As LongPtr) As HRESULT
+End Interface
+
+[InterfaceId("4E4E26A7-44E5-4039-9099-6000EAD1F0C6")]
+Interface ISearchSuggestionsRequest Extends IInspectable
+    Property Get IsCanceled() As BooleanByte
+    Property Get SearchSuggestionCollection() As ISearchSuggestionCollection
+    Function GetDeferral() As ISearchSuggestionsRequestDeferral
+End Interface
+
+[InterfaceId("B71598A9-C065-456D-A845-1ECCEC5DC28B")]
+Interface ISearchSuggestionsRequestDeferral Extends IInspectable
+    [PreserveSig]
+    Function Complete() As HRESULT
+End Interface
+
+Module mdlApplicationModelSearch
+
+End Module

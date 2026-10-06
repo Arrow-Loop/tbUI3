@@ -1,0 +1,363 @@
+[InterfaceId("5D8FFC70-C618-4083-8251-9962593114AA")]
+Interface ISceneBoundingBox Extends IInspectable
+    Property Get Center() As Vector3
+    Property Get Extents() As Vector3
+    Property Get Max() As Vector3
+    Property Get Min() As Vector3
+    Property Get Size() As Vector3
+End Interface
+
+[InterfaceId("AE20FC96-226C-44BD-95CB-DD5ED9EBE9A5")]
+Interface ISceneComponent Extends IInspectable
+    Property Get ComponentType() As SceneComponentType
+End Interface
+
+[InterfaceId("C819527F-80B2-5B44-A3A2-368C1D359F8F")]
+Interface IIterator_ISceneComponent Extends IInspectable
+    Property Get Current() As ISceneComponent
+    Property Get HasCurrent() As BooleanByte
+    Function MoveNext() As BooleanByte
+    Function GetMany(ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("9C5148DB-05A5-505A-BB14-A0E5DFBB2CD4")]
+Interface IIterable_ISceneComponent Extends IInspectable
+    Function First() As IIterator_ISceneComponent
+End Interface
+
+[InterfaceId("17CCEAC1-FE0A-535D-91D3-A53431E03ED2")]
+Interface IVectorView_ISceneComponent Extends IInspectable
+    Function GetAt(ByVal Index As Long) As ISceneComponent
+    Property Get Size() As Long
+    Function IndexOf(ByVal Value As ISceneComponent, Index As Long) As BooleanByte
+    Function GetMany(ByVal StartIndex As Long, ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("DAAD0F31-C450-5060-9732-F02C885E9B3F")]
+Interface IVector_ISceneComponent Extends IInspectable
+    Function GetAt(ByVal Index As Long) As ISceneComponent
+    Property Get Size() As Long
+    Function GetView() As IVectorView_ISceneComponent
+    Function IndexOf(ByVal Value As ISceneComponent, Index As Long) As BooleanByte
+    [PreserveSig]
+    Function SetAt(ByVal Index As Long, ByVal Value As ISceneComponent) As HRESULT
+    [PreserveSig]
+    Function InsertAt(ByVal Index As Long, ByVal Value As ISceneComponent) As HRESULT
+    [PreserveSig]
+    Function RemoveAt(ByVal Index As Long) As HRESULT
+    [PreserveSig]
+    Function Append(ByVal Value As ISceneComponent) As HRESULT
+    [PreserveSig]
+    Function RemoveAtEnd() As HRESULT
+    [PreserveSig]
+    Function Clear() As HRESULT
+    Function GetMany(ByVal StartIndex As Long, ByVal Length As Long, Items As Any) As Long
+    [PreserveSig]
+    Function ReplaceAll(ByVal Length As Long, Items As Any) As HRESULT
+End Interface
+
+[InterfaceId("C483791C-5F46-45E4-B666-A3D2259F9B2E")]
+Interface ISceneComponentCollection Extends IInspectable
+
+End Interface
+
+[InterfaceId("5FBC5574-DDD8-5889-AB5B-D8FA716E7C9E")]
+Interface ISceneComponentFactory Extends IInspectable
+
+End Interface
+
+[InterfaceId("8CA74B7C-30DF-4E07-9490-37875AF1A123")]
+Interface ISceneMaterial Extends IInspectable
+
+End Interface
+
+[InterfaceId("67536C19-A707-5254-A495-7FDC799893B9")]
+Interface ISceneMaterialFactory Extends IInspectable
+
+End Interface
+
+[InterfaceId("422A1642-1EF1-485C-97E9-AE6F95AD812F")]
+Interface ISceneMaterialInput Extends IInspectable
+
+End Interface
+
+[InterfaceId("A88FEB74-7D0A-5E4C-A748-1015AF9CA74F")]
+Interface ISceneMaterialInputFactory Extends IInspectable
+
+End Interface
+
+[InterfaceId("EE9A1530-1155-4C0C-92BD-40020CF78347")]
+Interface ISceneMesh Extends IInspectable
+    Property Get Bounds() As ISceneBoundingBox
+    Property Get PrimitiveTopology() As DirectXPrimitiveTopology
+    Property Let PrimitiveTopology(ByVal Value As DirectXPrimitiveTopology)
+    [PreserveSig]
+    Function FillMeshAttribute(ByVal Semantic As SceneAttributeSemantic, ByVal Format As DirectXPixelFormat, ByVal Memory As IMemoryBuffer) As HRESULT
+End Interface
+
+[InterfaceId("6E8C9202-4878-50AE-878E-48A303CAF1F8")]
+Interface IIterator_KVP_SceneAttributeSemantic Extends IInspectable
+    Property Get Current() As KVP_SceneAttributeSemantic
+    Property Get HasCurrent() As BooleanByte
+    Function MoveNext() As BooleanByte
+    Function GetMany(ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("A3E30221-7CA2-5A3C-A54A-378FEE7369CC")]
+Interface IIterable_KVP_SceneAttributeSemantic Extends IInspectable
+    Function First() As IIterator_KVP_SceneAttributeSemantic
+End Interface
+
+[InterfaceId("55EF41A2-86B4-5D95-9D2C-747F340779A9")]
+Interface KVP_SceneAttributeSemantic Extends IInspectable
+    Property Get Key() As LongPtr
+    Property Get Value() As SceneAttributeSemantic
+End Interface
+
+[InterfaceId("10693BB4-D94C-5B35-8AEA-F43DF6603800")]
+Interface IMapView_SceneAttributeSemantic Extends IInspectable
+    Function Lookup(ByVal Key As LongPtr) As SceneAttributeSemantic
+    Property Get Size() As Long
+    Function HasKey(ByVal Key As LongPtr) As BooleanByte
+    Sub Split(First As IMapView_SceneAttributeSemantic, Second As IMapView_SceneAttributeSemantic)
+End Interface
+
+[InterfaceId("41F50F14-9A3C-5240-B042-1BFF02E57028")]
+Interface IMap_SceneAttributeSemantic Extends IInspectable
+    Function Lookup(ByVal Key As LongPtr) As SceneAttributeSemantic
+    Property Get Size() As Long
+    Function HasKey(ByVal Key As LongPtr) As BooleanByte
+    Function GetView() As IMapView_SceneAttributeSemantic
+    Function Insert(ByVal Key As LongPtr, ByVal Value As SceneAttributeSemantic) As BooleanByte
+    [PreserveSig]
+    Function Remove(ByVal Key As LongPtr) As HRESULT
+    [PreserveSig]
+    Function Clear() As HRESULT
+End Interface
+
+[InterfaceId("CE843171-3D43-4855-AA69-31FF988D049D")]
+Interface ISceneMeshMaterialAttributeMap Extends IInspectable
+
+End Interface
+
+[InterfaceId("9929F7E3-6364-477E-98FE-74ED9FD4C2DE")]
+Interface ISceneMeshRendererComponent Extends IInspectable
+    Property Get Material() As ISceneMaterial
+    Property Set Material(ByVal Value As ISceneMaterial)
+    Property Get Mesh() As ISceneMesh
+    Property Set Mesh(ByVal Value As ISceneMesh)
+    Property Get UVMappings() As ISceneMeshMaterialAttributeMap
+End Interface
+
+[InterfaceId("4954F37A-4459-4521-BD6E-2B38B8D711EA")]
+Interface ISceneMeshRendererComponentStatics Extends IInspectable
+    Function Create(ByVal Compositor As ICompositor) As ISceneMeshRendererComponent
+End Interface
+
+[InterfaceId("8412316C-7B57-473F-966B-81DC277B1751")]
+Interface ISceneMeshStatics Extends IInspectable
+    Function Create(ByVal Compositor As ICompositor) As ISceneMesh
+End Interface
+
+[InterfaceId("C1D91446-799C-429E-A4E4-5DA645F18E61")]
+Interface ISceneMetallicRoughnessMaterial Extends IInspectable
+    Property Get BaseColorInput() As ISceneMaterialInput
+    Property Set BaseColorInput(ByVal Value As ISceneMaterialInput)
+    Property Get BaseColorFactor() As Vector4
+    Property Let BaseColorFactor(ByVal Value As Vector4)
+    Property Get MetallicFactor() As Single
+    Property Let MetallicFactor(ByVal Value As Single)
+    Property Get MetallicRoughnessInput() As ISceneMaterialInput
+    Property Set MetallicRoughnessInput(ByVal Value As ISceneMaterialInput)
+    Property Get RoughnessFactor() As Single
+    Property Let RoughnessFactor(ByVal Value As Single)
+End Interface
+
+[InterfaceId("3BDDCA50-6D9D-4531-8DC4-B27E3E49B7AB")]
+Interface ISceneMetallicRoughnessMaterialStatics Extends IInspectable
+    Function Create(ByVal Compositor As ICompositor) As ISceneMetallicRoughnessMaterial
+End Interface
+
+[InterfaceId("C05576C2-32B1-4269-980D-B98537100AE4")]
+Interface ISceneModelTransform Extends IInspectable
+    Property Get Orientation() As Quaternion
+    Property Let Orientation(ByVal Value As Quaternion)
+    Property Get RotationAngle() As Single
+    Property Let RotationAngle(ByVal Value As Single)
+    Property Get RotationAngleInDegrees() As Single
+    Property Let RotationAngleInDegrees(ByVal Value As Single)
+    Property Get RotationAxis() As Vector3
+    Property Let RotationAxis(ByVal Value As Vector3)
+    Property Get Scale() As Vector3
+    Property Let Scale(ByVal Value As Vector3)
+    Property Get Translation() As Vector3
+    Property Let Translation(ByVal Value As Vector3)
+End Interface
+
+[InterfaceId("ACF2C247-F307-4581-9C41-AF2E29C3B016")]
+Interface ISceneNode Extends IInspectable
+    Property Get Children() As ISceneNodeCollection
+    Property Get Components() As ISceneComponentCollection
+    Property Get Parent() As ISceneNode
+    Property Get Transform() As ISceneModelTransform
+    Function FindFirstComponentOfType(ByVal Value As SceneComponentType) As ISceneComponent
+End Interface
+
+[InterfaceId("B6D9261D-6A3A-5CA4-BF99-9B7EFE4D0F88")]
+Interface IIterator_ISceneNode Extends IInspectable
+    Property Get Current() As ISceneNode
+    Property Get HasCurrent() As BooleanByte
+    Function MoveNext() As BooleanByte
+    Function GetMany(ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("DB4730E4-F364-576B-878E-59A7C459A752")]
+Interface IIterable_ISceneNode Extends IInspectable
+    Function First() As IIterator_ISceneNode
+End Interface
+
+[InterfaceId("B5871458-C28C-50C9-ACD8-76E7871937FB")]
+Interface IVectorView_ISceneNode Extends IInspectable
+    Function GetAt(ByVal Index As Long) As ISceneNode
+    Property Get Size() As Long
+    Function IndexOf(ByVal Value As ISceneNode, Index As Long) As BooleanByte
+    Function GetMany(ByVal StartIndex As Long, ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("732596A0-6D36-5A59-8A0B-8FF16142B893")]
+Interface IVector_ISceneNode Extends IInspectable
+    Function GetAt(ByVal Index As Long) As ISceneNode
+    Property Get Size() As Long
+    Function GetView() As IVectorView_ISceneNode
+    Function IndexOf(ByVal Value As ISceneNode, Index As Long) As BooleanByte
+    [PreserveSig]
+    Function SetAt(ByVal Index As Long, ByVal Value As ISceneNode) As HRESULT
+    [PreserveSig]
+    Function InsertAt(ByVal Index As Long, ByVal Value As ISceneNode) As HRESULT
+    [PreserveSig]
+    Function RemoveAt(ByVal Index As Long) As HRESULT
+    [PreserveSig]
+    Function Append(ByVal Value As ISceneNode) As HRESULT
+    [PreserveSig]
+    Function RemoveAtEnd() As HRESULT
+    [PreserveSig]
+    Function Clear() As HRESULT
+    Function GetMany(ByVal StartIndex As Long, ByVal Length As Long, Items As Any) As Long
+    [PreserveSig]
+    Function ReplaceAll(ByVal Length As Long, Items As Any) As HRESULT
+End Interface
+
+[InterfaceId("29ADA101-2DD9-4332-BE63-60D2CF4269F2")]
+Interface ISceneNodeCollection Extends IInspectable
+
+End Interface
+
+[InterfaceId("579A0FAA-BE9D-4210-908C-93D15FEED0B7")]
+Interface ISceneNodeStatics Extends IInspectable
+    Function Create(ByVal Compositor As ICompositor) As ISceneNode
+End Interface
+
+[InterfaceId("1E94249B-0F1B-49EB-A819-877D8450005B")]
+Interface ISceneObject Extends IInspectable
+
+End Interface
+
+[InterfaceId("14FE799A-33E4-52EF-956C-44229D21F2C1")]
+Interface ISceneObjectFactory Extends IInspectable
+
+End Interface
+
+[InterfaceId("AAB6EBBE-D680-46DF-8294-B6800A9F95E7")]
+Interface IScenePbrMaterial Extends IInspectable
+    Property Get AlphaCutoff() As Single
+    Property Let AlphaCutoff(ByVal Value As Single)
+    Property Get AlphaMode() As SceneAlphaMode
+    Property Let AlphaMode(ByVal Value As SceneAlphaMode)
+    Property Get EmissiveInput() As ISceneMaterialInput
+    Property Set EmissiveInput(ByVal Value As ISceneMaterialInput)
+    Property Get EmissiveFactor() As Vector3
+    Property Let EmissiveFactor(ByVal Value As Vector3)
+    Property Get IsDoubleSided() As BooleanByte
+    Property Let IsDoubleSided(ByVal Value As BooleanByte)
+    Property Get NormalInput() As ISceneMaterialInput
+    Property Set NormalInput(ByVal Value As ISceneMaterialInput)
+    Property Get NormalScale() As Single
+    Property Let NormalScale(ByVal Value As Single)
+    Property Get OcclusionInput() As ISceneMaterialInput
+    Property Set OcclusionInput(ByVal Value As ISceneMaterialInput)
+    Property Get OcclusionStrength() As Single
+    Property Let OcclusionStrength(ByVal Value As Single)
+End Interface
+
+[InterfaceId("2E3F3DFE-0B85-5727-B5BE-B7D3CBAC37FA")]
+Interface IScenePbrMaterialFactory Extends IInspectable
+
+End Interface
+
+[InterfaceId("F1ACB857-CF4F-4025-9B25-A2D1944CF507")]
+Interface ISceneRendererComponent Extends IInspectable
+
+End Interface
+
+[InterfaceId("1DB6ED6C-AA2C-5967-9035-56352DC69658")]
+Interface ISceneRendererComponentFactory Extends IInspectable
+
+End Interface
+
+[InterfaceId("9937DA5C-A9CA-4CFC-B3AA-088356518742")]
+Interface ISceneSurfaceMaterialInput Extends IInspectable
+    Property Get BitmapInterpolationMode() As CompositionBitmapInterpolationMode
+    Property Let BitmapInterpolationMode(ByVal Value As CompositionBitmapInterpolationMode)
+    Property Get Surface() As ICompositionSurface
+    Property Let Surface(ByVal Value As ICompositionSurface)
+    Property Get WrappingUMode() As SceneWrappingMode
+    Property Let WrappingUMode(ByVal Value As SceneWrappingMode)
+    Property Get WrappingVMode() As SceneWrappingMode
+    Property Let WrappingVMode(ByVal Value As SceneWrappingMode)
+End Interface
+
+[InterfaceId("5A2394D3-6429-4589-BBCF-B84F4F3CFBFE")]
+Interface ISceneSurfaceMaterialInputStatics Extends IInspectable
+    Function Create(ByVal Compositor As ICompositor) As ISceneSurfaceMaterialInput
+End Interface
+
+[InterfaceId("8E672C1E-D734-47B1-BE14-3D694FFA4301")]
+Interface ISceneVisual Extends IInspectable
+    Property Get Root() As ISceneNode
+    Property Set Root(ByVal Value As ISceneNode)
+End Interface
+
+[InterfaceId("B8347E9A-50AA-4527-8D34-DE4CB8EA88B4")]
+Interface ISceneVisualStatics Extends IInspectable
+    Function Create(ByVal Compositor As ICompositor) As ISceneVisual
+End Interface
+
+Module mdlUICompositionScenes
+
+Public Enum SceneAlphaMode
+	SceneAlphaMode_Opaque
+	SceneAlphaMode_AlphaTest
+	SceneAlphaMode_Blend
+End Enum
+    
+Public Enum SceneAttributeSemantic
+    SceneAttributeSemantic_Index
+    SceneAttributeSemantic_Vertex
+    SceneAttributeSemantic_Normal
+    SceneAttributeSemantic_TexCoord0
+    SceneAttributeSemantic_TexCoord1
+    SceneAttributeSemantic_Color
+    SceneAttributeSemantic_Tangent
+End Enum
+
+Public Enum SceneComponentType
+    SceneComponentType_MeshRendererComponent
+End Enum
+
+Public Enum SceneWrappingMode
+    SceneWrappingMode_ClampToEdge
+    SceneWrappingMode_MirroredRepeat
+    SceneWrappingMode_Repeat
+End Enum
+
+End Module

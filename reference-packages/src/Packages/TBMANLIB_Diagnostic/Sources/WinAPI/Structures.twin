@@ -1,0 +1,203 @@
+' =====================================================
+' Structures.twin - WinAPI 结构体定义
+' Twinbasic Diagnostic Tool
+' =====================================================
+
+Public Module WinAPIStructures
+
+' OSVERSIONINFOEXW - 操作系统版本信息
+Public Type OSVERSIONINFOEXW
+    dwOSVersionInfoSize As Long
+    dwMajorVersion As Long
+    dwMinorVersion As Long
+    dwBuildNumber As Long
+    dwPlatformId As Long
+    szCSDVersion(0 To 127) As Integer  ' 128 WCHARs
+    wServicePackMajor As Integer
+    wServicePackMinor As Integer
+    wSuiteMask As Integer
+    wProductType As Byte
+    wReserved As Byte
+End Type
+
+' SYSTEM_INFO - 系统信息
+Public Type SYSTEM_INFO
+    wProcessorArchitecture As Integer
+    wReserved As Integer
+    dwPageSize As Long
+    lpMinimumApplicationAddress As LongPtr
+    lpMaximumApplicationAddress As LongPtr
+    dwActiveProcessorMask As LongPtr
+    dwNumberOfProcessors As Long
+    dwProcessorType As Long
+    dwAllocationGranularity As Long
+    wProcessorLevel As Integer
+    wProcessorRevision As Integer
+End Type
+
+' MEMORYSTATUSEX - 内存状态信息
+Public Type MEMORYSTATUSEX
+    dwLength As Long
+    dwMemoryLoad As Long
+    ullTotalPhys As LongLong
+    ullAvailPhys As LongLong
+    ullTotalPageFile As LongLong
+    ullAvailPageFile As LongLong
+    ullTotalVirtual As LongLong
+    ullAvailVirtual As LongLong
+    ullAvailExtendedVirtual As LongLong
+End Type
+
+' FILETIME - 文件时间（用于 GetSystemTimes）
+Public Type FILETIME
+    dwLowDateTime As Long
+    dwHighDateTime As Long
+End Type
+
+' PROCESSENTRY32W - 进程信息
+Public Type PROCESSENTRY32W
+    dwSize As Long
+    cntUsage As Long
+    th32ProcessID As Long
+    th32DefaultHeapID As LongPtr
+    th32ModuleID As Long
+    cntThreads As Long
+    th32ParentProcessID As Long
+    pcPriClassBase As Long
+    dwFlags As Long
+    szExeFile(0 To 259) As Integer  ' 260 WCHARs (MAX_PATH)
+End Type
+
+' IP_ADDR_STRING - IP 地址链表
+Public Type IP_ADDR_STRING
+    pNext As LongPtr
+    IpAddress(0 To 15) As Byte     ' 16 bytes
+    IpMask(0 To 15) As Byte        ' 16 bytes
+    Context As Long
+End Type
+
+' IP_ADAPTER_INFO - 网络适配器信息
+Public Type IP_ADAPTER_INFO
+    pNext As LongPtr
+    ComboIndex As Long
+    AdapterName(0 To 259) As Byte       ' 260 bytes
+    Description(0 To 131) As Byte       ' 132 bytes
+    AddressLength As Long
+    Address(0 To 7) As Byte             ' 8 bytes (MAC)
+    Index As Long
+    dwType As Long
+    DhcpEnabled As Long
+    CurrentIpAddress As LongPtr
+    IpAddressList As IP_ADDR_STRING
+    GatewayList As IP_ADDR_STRING
+    DhcpServer As IP_ADDR_STRING
+    HaveWins As Long
+    PrimaryWinsServer As IP_ADDR_STRING
+    SecondaryWinsServer As IP_ADDR_STRING
+    LeaseObtained As Long
+    LeaseExpires As Long
+End Type
+
+' TIME_ZONE_INFORMATION - 时区信息
+Public Type TIME_ZONE_INFORMATION
+    Bias As Long
+    StandardName(0 To 31) As Integer    ' 32 WCHARs
+    StandardDate As SYSTEMTIME
+    StandardBias As Long
+    DaylightName(0 To 31) As Integer    ' 32 WCHARs
+    DaylightDate As SYSTEMTIME
+    DaylightBias As Long
+End Type
+
+' SYSTEMTIME - 系统时间
+Public Type SYSTEMTIME
+    wYear As Integer
+    wMonth As Integer
+    wDayOfWeek As Integer
+    wDay As Integer
+    wHour As Integer
+    wMinute As Integer
+    wSecond As Integer
+    wMilliseconds As Integer
+End Type
+
+' COORD - 控制台坐标
+Public Type COORD
+    X As Integer
+    Y As Integer
+End Type
+
+' SMALL_RECT - 小矩形
+Public Type SMALL_RECT
+    Left As Integer
+    Top As Integer
+    Right As Integer
+    Bottom As Integer
+End Type
+
+' CONSOLE_SCREEN_BUFFER_INFO - 控制台屏幕缓冲区信息
+Public Type CONSOLE_SCREEN_BUFFER_INFO
+    dwSize As COORD
+    dwCursorPosition As COORD
+    wAttributes As Integer
+    srWindow As SMALL_RECT
+    dwMaximumWindowSize As COORD
+End Type
+
+' === 常量定义 ===
+
+' 处理器架构
+Public Const PROCESSOR_ARCHITECTURE_AMD64 As Integer = 9
+Public Const PROCESSOR_ARCHITECTURE_ARM As Integer = 5
+Public Const PROCESSOR_ARCHITECTURE_ARM64 As Integer = 12
+Public Const PROCESSOR_ARCHITECTURE_IA64 As Integer = 6
+Public Const PROCESSOR_ARCHITECTURE_INTEL As Integer = 0
+Public Const PROCESSOR_ARCHITECTURE_UNKNOWN As Integer = &HFFFF
+
+' 驱动器类型
+Public Const DRIVE_UNKNOWN As Long = 0
+Public Const DRIVE_NO_ROOT_DIR As Long = 1
+Public Const DRIVE_REMOVABLE As Long = 2
+Public Const DRIVE_FIXED As Long = 3
+Public Const DRIVE_REMOTE As Long = 4
+Public Const DRIVE_CDROM As Long = 5
+Public Const DRIVE_RAMDISK As Long = 6
+
+' 进程快照标志
+Public Const TH32CS_SNAPPROCESS As Long = &H2
+
+' 控制台颜色
+Public Const FOREGROUND_BLUE As Integer = &H1
+Public Const FOREGROUND_GREEN As Integer = &H2
+Public Const FOREGROUND_RED As Integer = &H4
+Public Const FOREGROUND_INTENSITY As Integer = &H8
+Public Const BACKGROUND_BLUE As Integer = &H10
+Public Const BACKGROUND_GREEN As Integer = &H20
+Public Const BACKGROUND_RED As Integer = &H40
+Public Const BACKGROUND_INTENSITY As Integer = &H80
+
+' 标准句柄
+Public Const STD_INPUT_HANDLE As Long = -10
+Public Const STD_OUTPUT_HANDLE As Long = -11
+Public Const STD_ERROR_HANDLE As Long = -12
+
+' 注册表键
+Public Const HKEY_LOCAL_MACHINE As LongPtr = &H80000002
+Public Const HKEY_CURRENT_USER As LongPtr = &H80000001
+Public Const KEY_READ As Long = &H20019
+Public Const KEY_WOW64_64KEY As Long = &H100
+Public Const KEY_WOW64_32KEY As Long = &H200
+
+' 注册表值类型
+Public Const REG_SZ As Long = 1
+Public Const REG_EXPAND_SZ As Long = 2
+Public Const REG_DWORD As Long = 4
+Public Const REG_QWORD As Long = 11
+
+' 区域设置常量
+Public Const LOCALE_SISO639LANGNAME As Long = &H59
+Public Const LOCALE_SISO3166CTRYNAME As Long = &H5A
+Public Const LOCALE_SENGLISHLANGUAGENAME As Long = &H1001
+Public Const LOCALE_SENGLISHCOUNTRYNAME As Long = &H1002
+
+End Module

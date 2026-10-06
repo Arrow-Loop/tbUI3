@@ -1,0 +1,480 @@
+[InterfaceId("4B91B3BD-9E21-4266-A9C2-67DD011A2357")]
+Interface IBackgroundAudioTrack Extends IInspectable
+    Property Get TrimTimeFromStart() As TimeSpan
+    Property Let TrimTimeFromStart(ByVal Value As TimeSpan)
+    Property Get TrimTimeFromEnd() As TimeSpan
+    Property Let TrimTimeFromEnd(ByVal Value As TimeSpan)
+    Property Get OriginalDuration() As TimeSpan
+    Property Get TrimmedDuration() As TimeSpan
+    Property Get UserData() As IMap_HSTRING
+    Property Let Delay(ByVal Value As TimeSpan)
+    Property Get Delay() As TimeSpan
+    Property Let Volume(ByVal Value As Double)
+    Property Get Volume() As Double
+    Function Clone() As IBackgroundAudioTrack
+    Function GetAudioEncodingProperties() As IAudioEncodingProperties
+    Property Get AudioEffectDefinitions() As IVector_IAudioEffectDefinition
+End Interface
+
+[InterfaceId("493DC898-6076-55F5-AB84-CCF973AC0397")]
+Interface IAsyncOperationIBackgroundAudioTrack Extends IInspectable
+    Property Set Completed(ByVal Handler As IAsyncOperationCompletedHandlerIBackgroundAudioTrack)
+    Property Get Completed() As IAsyncOperationCompletedHandlerIBackgroundAudioTrack
+    Function GetResults() As IBackgroundAudioTrack
+End Interface
+
+[InterfaceId("B8830BC7-188B-5C25-A3BB-959052BCB740")]
+Interface IAsyncOperationCompletedHandlerIBackgroundAudioTrack Extends IUnknown
+    Sub Invoke(ByVal AsyncOperation As IAsyncOperationIBackgroundAudioTrack, ByVal AsyncStatus As AsyncStatus)
+End Interface
+
+[InterfaceId("D9B1C0D7-D018-42A8-A559-CB4D9E97E664")]
+Interface IBackgroundAudioTrackStatics Extends IInspectable
+    Function CreateFromEmbeddedAudioTrack(ByVal EmbeddedAudioTrack As IEmbeddedAudioTrack) As IBackgroundAudioTrack
+    Function CreateFromFileAsync(ByVal File As IStorageFile) As IAsyncOperationIBackgroundAudioTrack
+End Interface
+
+[InterfaceId("55EE5A7A-2D30-3FBA-A190-4F1A6454F88F")]
+Interface IEmbeddedAudioTrack Extends IInspectable
+    Function GetAudioEncodingProperties() As IAudioEncodingProperties
+End Interface
+
+[InterfaceId("C9FA7F51-B52C-578E-99F9-012CD5641247")]
+Interface IIterator_IEmbeddedAudioTrack Extends IInspectable
+    Property Get Current() As IEmbeddedAudioTrack
+    Property Get HasCurrent() As BooleanByte
+    Function MoveNext() As BooleanByte
+    Function GetMany(ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("32FABED0-E1E6-578E-86E5-B4E6ABEB22D6")]
+Interface IIterable_IEmbeddedAudioTrack Extends IInspectable
+    Function First() As IIterator_IEmbeddedAudioTrack
+End Interface
+
+[InterfaceId("63D85BD5-4365-5E56-9E40-E7CD3051AEBF")]
+Interface IVectorView_IEmbeddedAudioTrack Extends IInspectable
+    Function GetAt(ByVal Index As Long) As IEmbeddedAudioTrack
+    Property Get Size() As Long
+    Function IndexOf(ByVal Value As IEmbeddedAudioTrack, Index As Long) As BooleanByte
+    Function GetMany(ByVal StartIndex As Long, ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("9D82379D-4958-558E-A155-3A809BB16C04")]
+Interface IIterator_IVideoEffectDefinition Extends IInspectable
+    Property Get Current() As IVideoEffectDefinition
+    Property Get HasCurrent() As BooleanByte
+    Function MoveNext() As BooleanByte
+    Function GetMany(ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("EB567F6F-B014-513D-99CD-F16C226C3C41")]
+Interface IIterable_IVideoEffectDefinition Extends IInspectable
+    Function First() As IIterator_IVideoEffectDefinition
+End Interface
+
+[InterfaceId("A44B4F8E-7CA3-53B1-B68B-098BAF45C73E")]
+Interface IVectorView_IVideoEffectDefinition Extends IInspectable
+    Function GetAt(ByVal Index As Long) As IVideoEffectDefinition
+    Property Get Size() As Long
+    Function IndexOf(ByVal Value As IVideoEffectDefinition, Index As Long) As BooleanByte
+    Function GetMany(ByVal StartIndex As Long, ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("7CA161ED-E201-5615-AACC-25348564F0B3")]
+Interface IVector_IVideoEffectDefinition Extends IInspectable
+    Function GetAt(ByVal Index As Long) As IVideoEffectDefinition
+    Property Get Size() As Long
+    Function GetView() As IVectorView_IVideoEffectDefinition
+    Function IndexOf(ByVal Value As IVideoEffectDefinition, Index As Long) As BooleanByte
+    [PreserveSig]
+    Function SetAt(ByVal Index As Long, ByVal Value As IVideoEffectDefinition) As HRESULT
+    [PreserveSig]
+    Function InsertAt(ByVal Index As Long, ByVal Value As IVideoEffectDefinition) As HRESULT
+    [PreserveSig]
+    Function RemoveAt(ByVal Index As Long) As HRESULT
+    [PreserveSig]
+    Function Append(ByVal Value As IVideoEffectDefinition) As HRESULT
+    [PreserveSig]
+    Function RemoveAtEnd() As HRESULT
+    [PreserveSig]
+    Function Clear() As HRESULT
+    Function GetMany(ByVal StartIndex As Long, ByVal Length As Long, Items As Any) As Long
+    [PreserveSig]
+    Function ReplaceAll(ByVal Length As Long, Items As Any) As HRESULT
+End Interface
+
+[InterfaceId("53F25366-5FBA-3EA4-8693-24761811140A")]
+Interface IMediaClip Extends IInspectable
+    Property Get TrimTimeFromStart() As TimeSpan
+    Property Let TrimTimeFromStart(ByVal Value As TimeSpan)
+    Property Get TrimTimeFromEnd() As TimeSpan
+    Property Let TrimTimeFromEnd(ByVal Value As TimeSpan)
+    Property Get OriginalDuration() As TimeSpan
+    Property Get TrimmedDuration() As TimeSpan
+    Property Get UserData() As IMap_HSTRING
+    Function Clone() As IMediaClip
+    Property Get StartTimeInComposition() As TimeSpan
+    Property Get EndTimeInComposition() As TimeSpan
+    Property Get EmbeddedAudioTracks() As IVectorView_IEmbeddedAudioTrack
+    Property Get SelectedEmbeddedAudioTrackIndex() As Long
+    Property Let SelectedEmbeddedAudioTrackIndex(ByVal Value As Long)
+    Property Let Volume(ByVal Value As Double)
+    Property Get Volume() As Double
+    Function GetVideoEncodingProperties() As IVideoEncodingProperties
+    Property Get AudioEffectDefinitions() As IVector_IAudioEffectDefinition
+    Property Get VideoEffectDefinitions() As IVector_IVideoEffectDefinition
+End Interface
+
+[InterfaceId("B5E699DD-B6F1-51C0-B752-E02FA0068D79")]
+Interface IAsyncOperationIMediaClip Extends IInspectable
+    Property Set Completed(ByVal Handler As IAsyncOperationCompletedHandlerIMediaClip)
+    Property Get Completed() As IAsyncOperationCompletedHandlerIMediaClip
+    Function GetResults() As IMediaClip
+End Interface
+
+[InterfaceId("60CDE3BC-119F-50A8-9CCB-9EA57EA96BFD")]
+Interface IAsyncOperationCompletedHandlerIMediaClip Extends IUnknown
+    Sub Invoke(ByVal AsyncOperation As IAsyncOperationIMediaClip, ByVal AsyncStatus As AsyncStatus)
+End Interface
+
+[InterfaceId("FA402B68-928F-43C4-BC6E-783A1A359656")]
+Interface IMediaClipStatics Extends IInspectable
+    Function CreateFromColor(ByVal Color As Color, ByVal OriginalDuration As TimeSpan) As IMediaClip
+    Function CreateFromFileAsync(ByVal File As IStorageFile) As IAsyncOperationIMediaClip
+    Function CreateFromImageFileAsync(ByVal File As IStorageFile, ByVal OriginalDuration As TimeSpan) As IAsyncOperationIMediaClip
+End Interface
+
+[InterfaceId("5B1DD7B3-854E-4D9B-877D-4774A556CD12")]
+Interface IMediaClipStatics2 Extends IInspectable
+    Function CreateFromSurface(ByVal Surface As IDirect3DSurface, ByVal OriginalDuration As TimeSpan) As IMediaClip
+End Interface
+
+[InterfaceId("4A10752D-6B1A-5FEC-A59C-70389BF162A2")]
+Interface IIterator_IImageStream Extends IInspectable
+    Property Get Current() As IRandomAccessStreamWithContentType
+    Property Get HasCurrent() As BooleanByte
+    Function MoveNext() As BooleanByte
+    Function GetMany(ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("034EA0C4-C20E-5C0C-BA31-64212F28E650")]
+Interface IIterable_IImageStream Extends IInspectable
+    Function First() As IIterator_IImageStream
+End Interface
+
+[InterfaceId("AB10F3E5-2A3E-5F81-B5E8-8DDDDC23CCA2")]
+Interface IVectorView_IImageStream Extends IInspectable
+    Function GetAt(ByVal Index As Long) As IRandomAccessStreamWithContentType
+    Property Get Size() As Long
+    Function IndexOf(ByVal Value As IRandomAccessStreamWithContentType, Index As Long) As BooleanByte
+    Function GetMany(ByVal StartIndex As Long, ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("A58D867E-BEEF-5F17-B7CF-E4C87BE22EE4")]
+Interface IAsyncOperationIVectorView_IImageStream Extends IInspectable
+    Property Set Completed(ByVal Handler As IAsyncOperationCompletedHandlerIVectorView_IImageStream)
+    Property Get Completed() As IAsyncOperationCompletedHandlerIVectorView_IImageStream
+    Function GetResults() As IVectorView_IImageStream
+End Interface
+
+[InterfaceId("6683D49C-9FD5-5B08-899F-E2D7DC5CF9C4")]
+Interface IAsyncOperationCompletedHandlerIVectorView_IImageStream Extends IUnknown
+    Sub Invoke(ByVal AsyncOperation As IAsyncOperationIVectorView_IImageStream, ByVal AsyncStatus As AsyncStatus)
+End Interface
+
+[InterfaceId("272EEC20-4B64-5D53-A644-F9917B3D19D8")]
+Interface IAsyncOperationWithProgressTranscodeFailureReasonDouble Extends IInspectable
+    Property Set Progress(ByVal Handler As IAsyncOperationProgressHandlerTranscodeFailureReasonDouble)
+    Property Get Progress() As IAsyncOperationProgressHandlerTranscodeFailureReasonDouble
+    Property Set Completed(ByVal Handler As IAsyncOperationWithProgressCompletedHandlerTranscodeFailureReasonDouble)
+    Property Get Completed() As IAsyncOperationWithProgressCompletedHandlerTranscodeFailureReasonDouble
+    Function GetResults() As TranscodeFailureReason
+End Interface
+
+[InterfaceId("009C6245-0E59-53B0-9FD2-D250E45A00A3")]
+Interface IAsyncOperationProgressHandlerTranscodeFailureReasonDouble Extends IUnknown
+    Sub Invoke(ByVal AsyncOperation As IAsyncOperationWithProgressTranscodeFailureReasonDouble, ByVal ProgressInfo As Double)
+End Interface
+
+[InterfaceId("080F1890-4FCA-5165-A989-4B07DA8E0B53")]
+Interface IAsyncOperationWithProgressCompletedHandlerTranscodeFailureReasonDouble Extends IUnknown
+    Sub Invoke(ByVal AsyncOperation As IAsyncOperationWithProgressTranscodeFailureReasonDouble, ByVal AsyncStatus As AsyncStatus)
+End Interface
+
+[InterfaceId("67E9EADB-324B-5661-A405-DED8445B1EEA")]
+Interface IIterator_TimeSpan Extends IInspectable
+    Property Get Current() As TimeSpan
+    Property Get HasCurrent() As BooleanByte
+    Function MoveNext() As BooleanByte
+    Function GetMany(ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("E9F78726-829A-5F67-8D19-95EF154B7742")]
+Interface IIterable_TimeSpan Extends IInspectable
+    Function First() As IIterator_TimeSpan
+End Interface
+
+[InterfaceId("18B0F692-8635-577A-9EFA-CB904770D6E5")]
+Interface IIterator_IBackgroundAudioTrack Extends IInspectable
+    Property Get Current() As IBackgroundAudioTrack
+    Property Get HasCurrent() As BooleanByte
+    Function MoveNext() As BooleanByte
+    Function GetMany(ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("3FC05BA2-30F6-5219-9047-1197FFAE8DBA")]
+Interface IIterable_IBackgroundAudioTrack Extends IInspectable
+    Function First() As IIterator_IBackgroundAudioTrack
+End Interface
+
+[InterfaceId("7FE52E32-867C-52A3-B3B7-D4DD4D573794")]
+Interface IVectorView_IBackgroundAudioTrack Extends IInspectable
+    Function GetAt(ByVal Index As Long) As IBackgroundAudioTrack
+    Property Get Size() As Long
+    Function IndexOf(ByVal Value As IBackgroundAudioTrack, Index As Long) As BooleanByte
+    Function GetMany(ByVal StartIndex As Long, ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("56D62145-6978-5EBA-83C9-FC4AD6D443BF")]
+Interface IVector_IBackgroundAudioTrack Extends IInspectable
+    Function GetAt(ByVal Index As Long) As IBackgroundAudioTrack
+    Property Get Size() As Long
+    Function GetView() As IVectorView_IBackgroundAudioTrack
+    Function IndexOf(ByVal Value As IBackgroundAudioTrack, Index As Long) As BooleanByte
+    [PreserveSig]
+    Function SetAt(ByVal Index As Long, ByVal Value As IBackgroundAudioTrack) As HRESULT
+    [PreserveSig]
+    Function InsertAt(ByVal Index As Long, ByVal Value As IBackgroundAudioTrack) As HRESULT
+    [PreserveSig]
+    Function RemoveAt(ByVal Index As Long) As HRESULT
+    [PreserveSig]
+    Function Append(ByVal Value As IBackgroundAudioTrack) As HRESULT
+    [PreserveSig]
+    Function RemoveAtEnd() As HRESULT
+    [PreserveSig]
+    Function Clear() As HRESULT
+    Function GetMany(ByVal StartIndex As Long, ByVal Length As Long, Items As Any) As Long
+    [PreserveSig]
+    Function ReplaceAll(ByVal Length As Long, Items As Any) As HRESULT
+End Interface
+
+[InterfaceId("2DFD20B2-06D8-577D-AB06-771E0414FC00")]
+Interface IIterator_IMediaClip Extends IInspectable
+    Property Get Current() As IMediaClip
+    Property Get HasCurrent() As BooleanByte
+    Function MoveNext() As BooleanByte
+    Function GetMany(ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("FF2E9B5C-26D0-575D-A3EB-7D938BD16F17")]
+Interface IIterable_IMediaClip Extends IInspectable
+    Function First() As IIterator_IMediaClip
+End Interface
+
+[InterfaceId("EABF18A6-F438-53B0-BE3C-AF21E67BC8C7")]
+Interface IVectorView_IMediaClip Extends IInspectable
+    Function GetAt(ByVal Index As Long) As IMediaClip
+    Property Get Size() As Long
+    Function IndexOf(ByVal Value As IMediaClip, Index As Long) As BooleanByte
+    Function GetMany(ByVal StartIndex As Long, ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("E805688E-3508-57F3-BF95-617F2D7A6F1A")]
+Interface IVector_IMediaClip Extends IInspectable
+    Function GetAt(ByVal Index As Long) As IMediaClip
+    Property Get Size() As Long
+    Function GetView() As IVectorView_IMediaClip
+    Function IndexOf(ByVal Value As IMediaClip, Index As Long) As BooleanByte
+    [PreserveSig]
+    Function SetAt(ByVal Index As Long, ByVal Value As IMediaClip) As HRESULT
+    [PreserveSig]
+    Function InsertAt(ByVal Index As Long, ByVal Value As IMediaClip) As HRESULT
+    [PreserveSig]
+    Function RemoveAt(ByVal Index As Long) As HRESULT
+    [PreserveSig]
+    Function Append(ByVal Value As IMediaClip) As HRESULT
+    [PreserveSig]
+    Function RemoveAtEnd() As HRESULT
+    [PreserveSig]
+    Function Clear() As HRESULT
+    Function GetMany(ByVal StartIndex As Long, ByVal Length As Long, Items As Any) As Long
+    [PreserveSig]
+    Function ReplaceAll(ByVal Length As Long, Items As Any) As HRESULT
+End Interface
+
+[InterfaceId("2E06E605-DC71-41D6-B837-2D2BC14A2947")]
+Interface IMediaComposition Extends IInspectable
+    Property Get Duration() As TimeSpan
+    Property Get Clips() As IVector_IMediaClip
+    Property Get BackgroundAudioTracks() As IVector_IBackgroundAudioTrack
+    [PreserveSig]
+    Property Get UserData() As IMap_HSTRING
+    Function Clone() As IMediaComposition
+    Function SaveAsync(ByVal File As IStorageFile) As IAsyncAction
+    Function GetThumbnailAsync(ByVal TimeFromStart As TimeSpan, ByVal ScaledWidth As Long, ByVal ScaledHeight As Long, ByVal FramePrecision As VideoFramePrecision) As IAsyncOperationIImageStream
+    Function GetThumbnailsAsync(ByVal TimesFromStart As IIterable_TimeSpan, ByVal ScaledWidth As Long, ByVal ScaledHeight As Long, ByVal FramePrecision As VideoFramePrecision) As IAsyncOperationIVectorView_IImageStream
+    Function RenderToFileAsync(ByVal Destination As IStorageFile) As IAsyncOperationWithProgressTranscodeFailureReasonDouble
+    Function RenderToFileWithTrimmingPreferenceAsync(ByVal Destination As IStorageFile, ByVal TrimmingPreference As MediaTrimmingPreference) As IAsyncOperationWithProgressTranscodeFailureReasonDouble
+    Function RenderToFileWithProfileAsync(ByVal Destination As IStorageFile, ByVal TrimmingPreference As MediaTrimmingPreference, ByVal EncodingProfile As IMediaEncodingProfile) As IAsyncOperationWithProgressTranscodeFailureReasonDouble
+    Function CreateDefaultEncodingProfile() As IMediaEncodingProfile
+    Function GenerateMediaStreamSource() As IMediaStreamSource
+    Function GenerateMediaStreamSourceWithProfile(ByVal EncodingProfile As IMediaEncodingProfile) As IMediaStreamSource
+    Function GeneratePreviewMediaStreamSource(ByVal ScaledWidth As Long, ByVal ScaledHeight As Long) As IMediaStreamSource
+End Interface
+
+[InterfaceId("CA401ED8-63D2-525A-80BB-E494900C4CE6")]
+Interface IIterator_IMediaOverlayLayer Extends IInspectable
+    Property Get Current() As IMediaOverlayLayer
+    Property Get HasCurrent() As BooleanByte
+    Function MoveNext() As BooleanByte
+    Function GetMany(ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("7D2312D0-F3A2-5091-8A5E-41832E632C08")]
+Interface IIterable_IMediaOverlayLayer Extends IInspectable
+    Function First() As IIterator_IMediaOverlayLayer
+End Interface
+
+[InterfaceId("8BCC3FF4-6139-52C1-9669-53DA5033185E")]
+Interface IVectorView_IMediaOverlayLayer Extends IInspectable
+    Function GetAt(ByVal Index As Long) As IMediaOverlayLayer
+    Property Get Size() As Long
+    Function IndexOf(ByVal Value As IMediaOverlayLayer, Index As Long) As BooleanByte
+    Function GetMany(ByVal StartIndex As Long, ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("6564EB2C-2210-5DFC-A84C-266C4349C2C6")]
+Interface IVector_IMediaOverlayLayer Extends IInspectable
+    Function GetAt(ByVal Index As Long) As IMediaOverlayLayer
+    Property Get Size() As Long
+    Function GetView() As IVectorView_IMediaOverlayLayer
+    Function IndexOf(ByVal Value As IMediaOverlayLayer, Index As Long) As BooleanByte
+    [PreserveSig]
+    Function SetAt(ByVal Index As Long, ByVal Value As IMediaOverlayLayer) As HRESULT
+    [PreserveSig]
+    Function InsertAt(ByVal Index As Long, ByVal Value As IMediaOverlayLayer) As HRESULT
+    [PreserveSig]
+    Function RemoveAt(ByVal Index As Long) As HRESULT
+    [PreserveSig]
+    Function Append(ByVal Value As IMediaOverlayLayer) As HRESULT
+    [PreserveSig]
+    Function RemoveAtEnd() As HRESULT
+    [PreserveSig]
+    Function Clear() As HRESULT
+    Function GetMany(ByVal StartIndex As Long, ByVal Length As Long, Items As Any) As Long
+    [PreserveSig]
+    Function ReplaceAll(ByVal Length As Long, Items As Any) As HRESULT
+End Interface
+
+[InterfaceId("A59E5372-2366-492C-BEC8-E6DFBA6D0281")]
+Interface IMediaComposition2 Extends IInspectable
+    Property Get OverlayLayers() As IVector_IMediaOverlayLayer
+End Interface
+
+[InterfaceId("E170E898-D11F-5054-AB13-1080A4807636")]
+Interface IAsyncOperationIMediaComposition Extends IInspectable
+    Property Set Completed(ByVal Handler As IAsyncOperationCompletedHandlerIMediaComposition)
+    Property Get Completed() As IAsyncOperationCompletedHandlerIMediaComposition
+    Function GetResults() As IMediaComposition
+End Interface
+
+[InterfaceId("EDD253F8-4EBD-56E5-9592-3C09375EBDC4")]
+Interface IAsyncOperationCompletedHandlerIMediaComposition Extends IUnknown
+    Sub Invoke(ByVal AsyncOperation As IAsyncOperationIMediaComposition, ByVal AsyncStatus As AsyncStatus)
+End Interface
+
+[InterfaceId("87A08F04-E32A-45CE-8F66-A30DF0766224")]
+Interface IMediaCompositionStatics Extends IInspectable
+    Function LoadAsync(ByVal File As IStorageFile) As IAsyncOperationIMediaComposition
+End Interface
+
+[InterfaceId("A902AE5D-7869-4830-8AB1-94DC01C05FA4")]
+Interface IMediaOverlay Extends IInspectable
+    Property Get Position() As RECTF
+    Property Let Position(ByVal Value As RECTF)
+    Property Let Delay(ByVal Value As TimeSpan)
+    Property Get Delay() As TimeSpan
+    Property Get Opacity() As Double
+    Property Let Opacity(ByVal Value As Double)
+    Function Clone() As IMediaOverlay
+    Property Get Clip() As IMediaClip
+    Property Get AudioEnabled() As BooleanByte
+    Property Let AudioEnabled(ByVal Value As BooleanByte)
+End Interface
+
+[InterfaceId("B584828A-6188-4F8F-A2E0-AA552D598E18")]
+Interface IMediaOverlayFactory Extends IInspectable
+    Function Create(ByVal Clip As IMediaClip) As IMediaOverlay
+    Function CreateWithPositionAndOpacity(ByVal Clip As IMediaClip, ByVal Position As RECTF, ByVal Opacity As Double) As IMediaOverlay
+End Interface
+
+[InterfaceId("351F6F24-4A92-56D6-A187-FAEAE748E0C7")]
+Interface IIterator_IMediaOverlay Extends IInspectable
+    Property Get Current() As IMediaOverlay
+    Property Get HasCurrent() As BooleanByte
+    Function MoveNext() As BooleanByte
+    Function GetMany(ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("EFCDA247-A1FB-51DC-A776-E3E06695FB36")]
+Interface IIterable_IMediaOverlay Extends IInspectable
+    Function First() As IIterator_IMediaOverlay
+End Interface
+
+[InterfaceId("6BBA8A56-2F18-5A68-83CD-9AA9D7F8F757")]
+Interface IVectorView_IMediaOverlay Extends IInspectable
+    Function GetAt(ByVal Index As Long) As IMediaOverlay
+    Property Get Size() As Long
+    Function IndexOf(ByVal Value As IMediaOverlay, Index As Long) As BooleanByte
+    Function GetMany(ByVal StartIndex As Long, ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("5B913EC8-ED52-5B2C-A710-52C6E7AB3CB2")]
+Interface IVector_IMediaOverlay Extends IInspectable
+    Function GetAt(ByVal Index As Long) As IMediaOverlay
+    Property Get Size() As Long
+    Function GetView() As IVectorView_IMediaOverlay
+    Function IndexOf(ByVal Value As IMediaOverlay, Index As Long) As BooleanByte
+    [PreserveSig]
+    Function SetAt(ByVal Index As Long, ByVal Value As IMediaOverlay) As HRESULT
+    [PreserveSig]
+    Function InsertAt(ByVal Index As Long, ByVal Value As IMediaOverlay) As HRESULT
+    [PreserveSig]
+    Function RemoveAt(ByVal Index As Long) As HRESULT
+    [PreserveSig]
+    Function Append(ByVal Value As IMediaOverlay) As HRESULT
+    [PreserveSig]
+    Function RemoveAtEnd() As HRESULT
+    [PreserveSig]
+    Function Clear() As HRESULT
+    Function GetMany(ByVal StartIndex As Long, ByVal Length As Long, Items As Any) As Long
+    [PreserveSig]
+    Function ReplaceAll(ByVal Length As Long, Items As Any) As HRESULT
+End Interface
+
+[InterfaceId("A6D9BA57-EEDA-46C6-BBE5-E398C84168AC")]
+Interface IMediaOverlayLayer Extends IInspectable
+    Function Clone() As IMediaOverlayLayer
+    Property Get Overlays() As IVector_IMediaOverlay
+    Property Get CustomCompositorDefinition() As IVideoCompositorDefinition
+End Interface
+
+[InterfaceId("947CB473-A39E-4362-ABBF-9F8B5070A062")]
+Interface IMediaOverlayLayerFactory Extends IInspectable
+    Function CreateWithCompositorDefinition(ByVal CompositorDefinition As IVideoCompositorDefinition) As IMediaOverlayLayer
+End Interface
+
+Module mdlMediaEditing
+
+Public Enum MediaTrimmingPreference
+    MediaTrimmingPreference_Fast
+    MediaTrimmingPreference_Precise
+End Enum
+
+Public Enum VideoFramePrecision
+    VideoFramePrecision_NearestFrame
+    VideoFramePrecision_NearestKeyFrame
+End Enum
+
+End Module

@@ -1,0 +1,171 @@
+[InterfaceId("C265A296-E73B-4097-B28F-3442F03DD831")]
+Interface IDiagnosticActionResult Extends IInspectable
+    Property Get ExtendedError() As HRESULT
+    Property Get Results() As IPropertySet
+End Interface
+
+[InterfaceId("BB5D493E-74E9-57A1-8C4C-923E0DC4565B")]
+Interface IAsyncOperationWithProgressIDiagnosticActionResultDiagnosticActionState Extends IInspectable
+    Property Set Progress(ByVal Handler As IAsyncOperationProgressHandlerIDiagnosticActionResultDiagnosticActionState)
+    Property Get Progress() As IAsyncOperationProgressHandlerIDiagnosticActionResultDiagnosticActionState
+    Property Set Completed(ByVal Handler As IAsyncOperationWithProgressCompletedHandlerIDiagnosticActionResultDiagnosticActionState)
+    Property Get Completed() As IAsyncOperationWithProgressCompletedHandlerIDiagnosticActionResultDiagnosticActionState
+    Function GetResults() As IDiagnosticActionResult
+End Interface
+
+[InterfaceId("A0422898-B50A-52E3-B461-53989308BE12")]
+Interface IAsyncOperationProgressHandlerIDiagnosticActionResultDiagnosticActionState Extends IUnknown
+    Sub Invoke(ByVal AsyncOperation As IAsyncOperationWithProgressIDiagnosticActionResultDiagnosticActionState, ByVal ProgressInfo As DiagnosticActionState)
+End Interface
+
+[InterfaceId("390B0091-CAF7-5B64-839D-4990AE7F753C")]
+Interface IAsyncOperationWithProgressCompletedHandlerIDiagnosticActionResultDiagnosticActionState Extends IUnknown
+    Sub Invoke(ByVal AsyncOperation As IAsyncOperationWithProgressIDiagnosticActionResultDiagnosticActionState, ByVal AsyncStatus As AsyncStatus)
+End Interface
+
+[InterfaceId("187B270A-02E3-4F86-84FC-FDD892B5940F")]
+Interface IDiagnosticInvoker Extends IInspectable
+    Function RunDiagnosticActionAsync(ByVal Context As IJsonObject) As IAsyncOperationWithProgressIDiagnosticActionResultDiagnosticActionState
+End Interface
+
+[InterfaceId("E3BF945C-155A-4B52-A8EC-070C44F95000")]
+Interface IDiagnosticInvoker2 Extends IInspectable
+    Function RunDiagnosticActionFromStringAsync(ByVal Context As LongPtr) As IAsyncOperationWithProgressIDiagnosticActionResultDiagnosticActionState
+End Interface
+
+[InterfaceId("5CFAD8DE-F15C-4554-A813-C113C3881B09")]
+Interface IDiagnosticInvokerStatics Extends IInspectable
+    Function GetDefault() As IDiagnosticInvoker
+    Function GetForUser(ByVal User As IUser) As IDiagnosticInvoker
+    Property Get IsSupported() As BooleanByte
+End Interface
+
+[InterfaceId("0BBB2472-C8BF-423A-A810-B559AE4354E2")]
+Interface IProcessCpuUsage Extends IInspectable
+    Function GetReport() As IProcessCpuUsageReport
+End Interface
+
+[InterfaceId("8A6D9CAC-3987-4E2F-A119-6B5FA214F1B4")]
+Interface IProcessCpuUsageReport Extends IInspectable
+    Property Get KernelTime() As TimeSpan
+    Property Get UserTime() As TimeSpan
+End Interface
+
+[InterfaceId("E830B04B-300E-4EE6-A0AB-5B5F5231B434")]
+Interface IProcessDiagnosticInfo Extends IInspectable
+    Property Get ProcessId() As Long
+    Property Get ExecutableFileName() As LongPtr
+    Property Get Parent() As IProcessDiagnosticInfo
+    Property Get ProcessStartTime() As DateTime
+    Property Get DiskUsage() As IProcessDiskUsage
+    Property Get MemoryUsage() As IProcessMemoryUsage
+    Property Get CpuUsage() As IProcessCpuUsage
+End Interface
+
+[InterfaceId("9558CB1A-3D0B-49EC-AB70-4F7A112805DE")]
+Interface IProcessDiagnosticInfo2 Extends IInspectable
+    Function GetAppDiagnosticInfos() As IVector_IAppDiagnosticInfo
+    Property Get IsPackaged() As BooleanByte
+End Interface
+
+[InterfaceId("2F41B260-B49F-428C-AA0E-84744F49CA95")]
+Interface IProcessDiagnosticInfoStatics Extends IInspectable
+    Function GetForProcesses() As IVectorView_IProcessDiagnosticInfo
+    Function GetForCurrentProcess() As IProcessDiagnosticInfo
+End Interface
+
+[InterfaceId("4A869897-9899-4A44-A29B-091663BE09B6")]
+Interface IProcessDiagnosticInfoStatics2 Extends IInspectable
+    Function TryGetForProcessId(ByVal ProcessId As Long) As IProcessDiagnosticInfo
+End Interface
+
+[InterfaceId("5AD78BFD-7E51-4E53-BFAA-5A6EE1AABBF8")]
+Interface IProcessDiskUsage Extends IInspectable
+    Function GetReport() As IProcessDiskUsageReport
+End Interface
+
+[InterfaceId("401627FD-535D-4C1F-81B8-DA54E1BE635E")]
+Interface IProcessDiskUsageReport Extends IInspectable
+    Property Get ReadOperationCount() As Int64
+    Property Get WriteOperationCount() As Int64
+    Property Get OtherOperationCount() As Int64
+    Property Get BytesReadCount() As Int64
+    Property Get BytesWrittenCount() As Int64
+    Property Get OtherBytesCount() As Int64
+End Interface
+
+[InterfaceId("F50B229B-827C-42B7-B07C-0E32627E6B3E")]
+Interface IProcessMemoryUsage Extends IInspectable
+    Function GetReport() As IProcessMemoryUsageReport
+End Interface
+
+[InterfaceId("C2C77CBA-1951-4685-8532-7E749ECF8EEB")]
+Interface IProcessMemoryUsageReport Extends IInspectable
+    Property Get NonPagedPoolSizeInBytes() As UInt64
+    Property Get PageFaultCount() As Long
+    Property Get PageFileSizeInBytes() As UInt64
+    Property Get PagedPoolSizeInBytes() As UInt64
+    Property Get PeakNonPagedPoolSizeInBytes() As UInt64
+    Property Get PeakPageFileSizeInBytes() As UInt64
+    Property Get PeakPagedPoolSizeInBytes() As UInt64
+    Property Get PeakVirtualMemorySizeInBytes() As UInt64
+    Property Get PeakWorkingSetSizeInBytes() As UInt64
+    Property Get PrivatePageCount() As UInt64
+    Property Get VirtualMemorySizeInBytes() As UInt64
+    Property Get WorkingSetSizeInBytes() As UInt64
+End Interface
+
+[InterfaceId("6037B3AC-02D6-4234-8362-7FE3ADC81F5F")]
+Interface ISystemCpuUsage Extends IInspectable
+    Function GetReport() As ISystemCpuUsageReport
+End Interface
+
+[InterfaceId("2C26D0B2-9483-4F62-AB57-82B29D9719B8")]
+Interface ISystemCpuUsageReport Extends IInspectable
+    Property Get KernelTime() As TimeSpan
+    Property Get UserTime() As TimeSpan
+    Property Get IdleTime() As TimeSpan
+End Interface
+
+[InterfaceId("A290FE05-DFF3-407F-9A1B-0B2B317CA800")]
+Interface ISystemDiagnosticInfo Extends IInspectable
+    Property Get MemoryUsage() As ISystemMemoryUsage
+    Property Get CpuUsage() As ISystemCpuUsage
+End Interface
+
+[InterfaceId("D404AC21-FC7D-45F0-9A3F-39203AED9F7E")]
+Interface ISystemDiagnosticInfoStatics Extends IInspectable
+    Function GetForCurrentSystem() As ISystemDiagnosticInfo
+End Interface
+
+[InterfaceId("79DED189-6AF9-4DA9-A422-15F73255B3EB")]
+Interface ISystemDiagnosticInfoStatics2 Extends IInspectable
+    Function IsArchitectureSupported(ByVal Type As ProcessorArchitecture) As BooleanByte
+    Property Get PreferredArchitecture() As ProcessorArchitecture
+End Interface
+
+[InterfaceId("17FFC595-1702-49CF-AA27-2F0A32591404")]
+Interface ISystemMemoryUsage Extends IInspectable
+    Function GetReport() As ISystemMemoryUsageReport
+End Interface
+
+[InterfaceId("38663C87-2A9F-403A-BD19-2CF3E8169500")]
+Interface ISystemMemoryUsageReport Extends IInspectable
+    Property Get TotalPhysicalSizeInBytes() As UInt64
+    Property Get AvailableSizeInBytes() As UInt64
+    Property Get CommittedSizeInBytes() As UInt64
+End Interface
+
+Module mdlSystemDiagnostics
+
+Public Enum DiagnosticActionState
+    DiagnosticActionState_Initializing
+    DiagnosticActionState_Downloading
+    DiagnosticActionState_VerifyingTrust
+    DiagnosticActionState_Detecting
+    DiagnosticActionState_Resolving
+    DiagnosticActionState_VerifyingResolution
+    DiagnosticActionState_Executing
+End Enum
+
+End Module

@@ -1,0 +1,560 @@
+' =====================================================
+' cDialogInputBox.twin - Enhanced Input Dialog Class
+' cDialogInputBox.twin - 增强版输入对话框类
+' TBMANLIB Dialog Library
+' =====================================================
+' Function: Provides enhanced input dialog with multiline, validation, placeholder
+' 功能：提供增强版输入对话框，支持多行、验证、占位符
+' Author: woeoo (邓伟)
+' Email: 215879458@qq.com
+' Site: https://vb6.pro
+' Date: 2026-03-11
+' Version: 1.0.0
+' =====================================================
+
+Option Explicit
+
+[COMCreatable(False)]
+Public Class cDialogInputBox
+
+    ' =====================================================
+    ' Input Validation Enum
+    ' =====================================================
+    Public Enum InputValidation
+        None = 0
+        Numeric = 1
+        Integer = 2
+        Alpha = 3
+        AlphaNumeric = 4
+        Email = 5
+        Phone = 6
+        URL = 7
+        Custom = 99
+    End Enum
+
+    ' =====================================================
+    ' Class Data
+    ' =====================================================
+    Private Type cDialogInputBoxData
+        mTitle As String
+        mPrompt As String
+        mDefaultValue As String
+        mPlaceholder As String
+        mValue As String
+        mMultiline As Boolean
+        mMaxLength As Long
+        mMinLength As Long
+        mValidation As InputValidation
+        mCustomPattern As String
+        mAllowEmpty As Boolean
+        mPasswordChar As String
+        mOwnerHwnd As LongPtr
+        mCancelled As Boolean
+    End Type
+
+    Private mData As cDialogInputBoxData
+
+    ' =====================================================
+    ' Class Initialize
+    ' =====================================================
+    Private Sub Class_Initialize()
+        mData.mTitle = "Input"
+        mData.mPrompt = "Please enter a value:"
+        mData.mDefaultValue = ""
+        mData.mPlaceholder = ""
+        mData.mValue = ""
+        mData.mMultiline = False
+        mData.mMaxLength = 0  ' Unlimited
+        mData.mMinLength = 0
+        mData.mValidation = InputValidation.None
+        mData.mCustomPattern = ""
+        mData.mAllowEmpty = True
+        mData.mPasswordChar = ""
+        mData.mOwnerHwnd = 0
+        mData.mCancelled = False
+    End Sub
+
+    ' =====================================================
+    ' Property: Dialog Title
+    ' =====================================================
+    Public Property Get Title() As String
+        Title = mData.mTitle
+    End Property
+
+    Public Property Let Title(ByVal value As String)
+        mData.mTitle = value
+    End Property
+
+    ' =====================================================
+    ' Property: Prompt Text
+    ' =====================================================
+    Public Property Get Prompt() As String
+        Prompt = mData.mPrompt
+    End Property
+
+    Public Property Let Prompt(ByVal value As String)
+        mData.mPrompt = value
+    End Property
+
+    ' =====================================================
+    ' Property: Default Value
+    ' =====================================================
+    Public Property Get DefaultValue() As String
+        DefaultValue = mData.mDefaultValue
+    End Property
+
+    Public Property Let DefaultValue(ByVal value As String)
+        mData.mDefaultValue = value
+    End Property
+
+    ' =====================================================
+    ' Property: Placeholder Text
+    ' =====================================================
+    Public Property Get Placeholder() As String
+        Placeholder = mData.mPlaceholder
+    End Property
+
+    Public Property Let Placeholder(ByVal value As String)
+        mData.mPlaceholder = value
+    End Property
+
+    ' =====================================================
+    ' Property: Input Value (read-only after Show)
+    ' =====================================================
+    Public Property Get Value() As String
+        Value = mData.mValue
+    End Property
+
+    ' =====================================================
+    ' Property: Multiline Input
+    ' =====================================================
+    Public Property Get Multiline() As Boolean
+        Multiline = mData.mMultiline
+    End Property
+
+    Public Property Let Multiline(ByVal value As Boolean)
+        mData.mMultiline = value
+    End Property
+
+    ' =====================================================
+    ' Property: Maximum Length
+    ' =====================================================
+    Public Property Get MaxLength() As Long
+        MaxLength = mData.mMaxLength
+    End Property
+
+    Public Property Let MaxLength(ByVal value As Long)
+        mData.mMaxLength = value
+    End Property
+
+    ' =====================================================
+    ' Property: Minimum Length
+    ' =====================================================
+    Public Property Get MinLength() As Long
+        MinLength = mData.mMinLength
+    End Property
+
+    Public Property Let MinLength(ByVal value As Long)
+        mData.mMinLength = value
+    End Property
+
+    ' =====================================================
+    ' Property: Validation Type
+    ' =====================================================
+    Public Property Get Validation() As InputValidation
+        Validation = mData.mValidation
+    End Property
+
+    Public Property Let Validation(ByVal value As InputValidation)
+        mData.mValidation = value
+    End Property
+
+    ' =====================================================
+    ' Property: Custom Validation Pattern
+    ' =====================================================
+    Public Property Get CustomPattern() As String
+        CustomPattern = mData.mCustomPattern
+    End Property
+
+    Public Property Let CustomPattern(ByVal value As String)
+        mData.mCustomPattern = value
+    End Property
+
+    ' =====================================================
+    ' Property: Allow Empty Input
+    ' =====================================================
+    Public Property Get AllowEmpty() As Boolean
+        AllowEmpty = mData.mAllowEmpty
+    End Property
+
+    Public Property Let AllowEmpty(ByVal value As Boolean)
+        mData.mAllowEmpty = value
+    End Property
+
+    ' =====================================================
+    ' Property: Password Character (for password input)
+    ' =====================================================
+    Public Property Get PasswordChar() As String
+        PasswordChar = mData.mPasswordChar
+    End Property
+
+    Public Property Let PasswordChar(ByVal value As String)
+        mData.mPasswordChar = value
+    End Property
+
+    ' =====================================================
+    ' Property: Owner Window Handle
+    ' =====================================================
+    Public Property Get OwnerHwnd() As LongPtr
+        OwnerHwnd = mData.mOwnerHwnd
+    End Property
+
+    Public Property Let OwnerHwnd(ByVal value As LongPtr)
+        mData.mOwnerHwnd = value
+    End Property
+
+    ' =====================================================
+    ' Property: Was Cancelled (read-only)
+    ' =====================================================
+    Public Property Get Cancelled() As Boolean
+        Cancelled = mData.mCancelled
+    End Property
+
+    ' =====================================================
+    ' Method: Validate Input
+    ' =====================================================
+    Public Function ValidateInput(ByVal input As String) As String
+        ' Returns empty if valid, error message otherwise
+        Dim i As Long
+        Dim ch As String
+
+        ' Check minimum length
+        If Len(input) < mData.mMinLength Then
+            ValidateInput = "Input must be at least " & mData.mMinLength & " characters"
+            Exit Function
+        End If
+
+        ' Check maximum length
+        If mData.mMaxLength > 0 And Len(input) > mData.mMaxLength Then
+            ValidateInput = "Input must not exceed " & mData.mMaxLength & " characters"
+            Exit Function
+        End If
+
+        ' Check empty
+        If Not mData.mAllowEmpty And Len(input) = 0 Then
+            ValidateInput = "Input cannot be empty"
+            Exit Function
+        End If
+
+        ' Validate by type
+        Select Case mData.mValidation
+            Case InputValidation.Numeric
+                If Len(input) > 0 Then
+                    If Not IsNumeric(input) Then
+                        ValidateInput = "Input must be a valid number"
+                        Exit Function
+                    End If
+                End If
+
+            Case InputValidation.Integer
+                If Len(input) > 0 Then
+                    If Not IsNumeric(input) Then
+                        ValidateInput = "Input must be a valid integer"
+                        Exit Function
+                    End If
+                    If InStr(input, ".") > 0 Or InStr(input, ",") > 0 Then
+                        ValidateInput = "Input must be a valid integer"
+                        Exit Function
+                    End If
+                End If
+
+            Case InputValidation.Alpha
+                If Len(input) > 0 Then
+                    For i = 1 To Len(input)
+                        ch = Mid$(input, i, 1)
+                        If Not ((ch >= "A" And ch <= "Z") Or (ch >= "a" And ch <= "z") Or ch = " ") Then
+                            ValidateInput = "Input must contain only letters"
+                            Exit Function
+                        End If
+                    Next i
+                End If
+
+            Case InputValidation.AlphaNumeric
+                If Len(input) > 0 Then
+                    For i = 1 To Len(input)
+                        ch = Mid$(input, i, 1)
+                        If Not ((ch >= "A" And ch <= "Z") Or (ch >= "a" And ch <= "z") Or _
+                               (ch >= "0" And ch <= "9") Or ch = " " Or ch = "_") Then
+                            ValidateInput = "Input must contain only letters and numbers"
+                            Exit Function
+                        End If
+                    Next i
+                End If
+
+            Case InputValidation.Email
+                If Len(input) > 0 Then
+                    If InStr(input, "@") = 0 Or InStr(input, ".") = 0 Then
+                        ValidateInput = "Input must be a valid email address"
+                        Exit Function
+                    End If
+                    If InStr(input, "@") <> InStrRev(input, "@") Then
+                        ValidateInput = "Input must be a valid email address"
+                        Exit Function
+                    End If
+                End If
+
+            Case InputValidation.Phone
+                If Len(input) > 0 Then
+                    ' Simple phone validation - allow digits, spaces, dashes, parentheses, plus
+                    For i = 1 To Len(input)
+                        ch = Mid$(input, i, 1)
+                        If Not ((ch >= "0" And ch <= "9") Or ch = " " Or ch = "-" Or _
+                               ch = "(" Or ch = ")" Or ch = "+" Or ch = ".") Then
+                            ValidateInput = "Input must be a valid phone number"
+                            Exit Function
+                        End If
+                    Next i
+                End If
+
+            Case InputValidation.URL
+                If Len(input) > 0 Then
+                    If InStr(input, "://") = 0 Then
+                        ValidateInput = "Input must be a valid URL (e.g., https://example.com)"
+                        Exit Function
+                    End If
+                End If
+
+            Case InputValidation.Custom
+                ' Custom validation would require regex support
+                ' For now, just check if not empty if pattern is set
+                If Len(mData.mCustomPattern) > 0 And Len(input) = 0 Then
+                    ValidateInput = "Input does not match required format"
+                    Exit Function
+                End If
+        End Select
+
+        ValidateInput = ""
+    End Function
+
+    ' =====================================================
+    ' Method: Show Input Dialog
+    ' =====================================================
+    Public Function ShowDialog() As Boolean
+        Dim strInput As String
+        Dim strError As String
+        Dim strPrompt As String
+        Dim attempts As Long
+
+        attempts = 0
+        mData.mCancelled = False
+
+        ' Build prompt with validation hints
+        strPrompt = mData.mPrompt
+
+        If mData.mPlaceholder <> "" Then
+            strPrompt = strPrompt & vbCrLf & vbCrLf & "(Hint: " & mData.mPlaceholder & ")"
+        End If
+
+        If mData.mMinLength > 0 Or mData.mMaxLength > 0 Then
+            strPrompt = strPrompt & vbCrLf & vbCrLf & "Length: "
+            If mData.mMinLength > 0 And mData.mMaxLength > 0 Then
+                strPrompt = strPrompt & mData.mMinLength & " to " & mData.mMaxLength & " characters"
+            ElseIf mData.mMinLength > 0 Then
+                strPrompt = strPrompt & "At least " & mData.mMinLength & " characters"
+            Else
+                strPrompt = strPrompt & "Maximum " & mData.mMaxLength & " characters"
+            End If
+        End If
+
+        Do While attempts < 3
+            ' Show input box
+            strInput = InputBox(strPrompt, mData.mTitle, mData.mDefaultValue)
+
+            ' Check if cancelled
+            If StrPtr(strInput) = 0 Then
+                mData.mCancelled = True
+                mData.mValue = ""
+                ShowDialog = False
+                Exit Function
+            End If
+
+            ' Validate input
+            strError = ValidateInput(strInput)
+            If strError = "" Then
+                mData.mValue = strInput
+                ShowDialog = True
+                Exit Function
+            Else
+                attempts = attempts + 1
+                If attempts < 3 Then
+                    MsgBox strError, vbExclamation, mData.mTitle
+                Else
+                    MsgBox strError & vbCrLf & vbCrLf & "Maximum attempts reached.", vbExclamation, mData.mTitle
+                    mData.mCancelled = True
+                    ShowDialog = False
+                    Exit Function
+                End If
+            End If
+        Loop
+
+        ShowDialog = False
+    End Function
+
+    ' =====================================================
+    ' Method: Show Simple Input (quick method)
+    ' =====================================================
+    Public Function ShowSimple(ByVal prompt As String, Optional ByVal title As String = "Input", Optional ByVal defaultValue As String = "") As String
+        mData.mPrompt = prompt
+        mData.mTitle = title
+        mData.mDefaultValue = defaultValue
+        mData.mValidation = InputValidation.None
+        mData.mAllowEmpty = True
+        mData.mMinLength = 0
+        mData.mMaxLength = 0
+
+        If ShowDialog() Then
+            ShowSimple = mData.mValue
+        Else
+            ShowSimple = ""
+        End If
+    End Function
+
+    ' =====================================================
+    ' Method: Show Numeric Input
+    ' =====================================================
+    Public Function ShowNumeric(ByVal prompt As String, Optional ByVal title As String = "Enter Number", Optional ByVal defaultValue As String = "") As Double
+        mData.mPrompt = prompt
+        mData.mTitle = title
+        mData.mDefaultValue = defaultValue
+        mData.mValidation = InputValidation.Numeric
+        mData.mAllowEmpty = False
+
+        If ShowDialog() Then
+            If IsNumeric(mData.mValue) Then
+                ShowNumeric = CDbl(mData.mValue)
+            Else
+                ShowNumeric = 0
+            End If
+        Else
+            ShowNumeric = 0
+        End If
+    End Function
+
+    ' =====================================================
+    ' Method: Show Integer Input
+    ' =====================================================
+    Public Function ShowInteger(ByVal prompt As String, Optional ByVal title As String = "Enter Integer", Optional ByVal defaultValue As String = "") As Long
+        mData.mPrompt = prompt
+        mData.mTitle = title
+        mData.mDefaultValue = defaultValue
+        mData.mValidation = InputValidation.Integer
+        mData.mAllowEmpty = False
+
+        If ShowDialog() Then
+            If IsNumeric(mData.mValue) Then
+                ShowInteger = CLng(mData.mValue)
+            Else
+                ShowInteger = 0
+            End If
+        Else
+            ShowInteger = 0
+        End If
+    End Function
+
+    ' =====================================================
+    ' Method: Show Email Input
+    ' =====================================================
+    Public Function ShowEmail(ByVal prompt As String, Optional ByVal title As String = "Enter Email") As String
+        mData.mPrompt = prompt
+        mData.mTitle = title
+        mData.mDefaultValue = ""
+        mData.mValidation = InputValidation.Email
+        mData.mAllowEmpty = False
+        mData.mPlaceholder = "example@domain.com"
+
+        If ShowDialog() Then
+            ShowEmail = mData.mValue
+        Else
+            ShowEmail = ""
+        End If
+    End Function
+
+    ' =====================================================
+    ' Method: Show Phone Input
+    ' =====================================================
+    Public Function ShowPhone(ByVal prompt As String, Optional ByVal title As String = "Enter Phone") As String
+        mData.mPrompt = prompt
+        mData.mTitle = title
+        mData.mDefaultValue = ""
+        mData.mValidation = InputValidation.Phone
+        mData.mAllowEmpty = False
+        mData.mPlaceholder = "+1 (555) 123-4567"
+
+        If ShowDialog() Then
+            ShowPhone = mData.mValue
+        Else
+            ShowPhone = ""
+        End If
+    End Function
+
+    ' =====================================================
+    ' Method: Show URL Input
+    ' =====================================================
+    Public Function ShowURL(ByVal prompt As String, Optional ByVal title As String = "Enter URL") As String
+        mData.mPrompt = prompt
+        mData.mTitle = title
+        mData.mDefaultValue = "https://"
+        mData.mValidation = InputValidation.URL
+        mData.mAllowEmpty = False
+        mData.mPlaceholder = "https://example.com"
+
+        If ShowDialog() Then
+            ShowURL = mData.mValue
+        Else
+            ShowURL = ""
+        End If
+    End Function
+
+    ' =====================================================
+    ' Method: Get Value as Number
+    ' =====================================================
+    Public Function GetValueAsNumber() As Double
+        If IsNumeric(mData.mValue) Then
+            GetValueAsNumber = CDbl(mData.mValue)
+        Else
+            GetValueAsNumber = 0
+        End If
+    End Function
+
+    ' =====================================================
+    ' Method: Get Value as Integer
+    ' =====================================================
+    Public Function GetValueAsInteger() As Long
+        If IsNumeric(mData.mValue) Then
+            GetValueAsInteger = CLng(mData.mValue)
+        Else
+            GetValueAsInteger = 0
+        End If
+    End Function
+
+    ' =====================================================
+    ' Method: Reset to default settings
+    ' =====================================================
+    Public Sub Reset()
+        mData.mTitle = "Input"
+        mData.mPrompt = "Please enter a value:"
+        mData.mDefaultValue = ""
+        mData.mPlaceholder = ""
+        mData.mValue = ""
+        mData.mMultiline = False
+        mData.mMaxLength = 0
+        mData.mMinLength = 0
+        mData.mValidation = InputValidation.None
+        mData.mCustomPattern = ""
+        mData.mAllowEmpty = True
+        mData.mPasswordChar = ""
+        mData.mOwnerHwnd = 0
+        mData.mCancelled = False
+    End Sub
+
+End Class

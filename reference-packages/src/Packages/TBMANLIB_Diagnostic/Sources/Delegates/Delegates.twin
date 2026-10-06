@@ -1,0 +1,42 @@
+' =====================================================
+' Delegates.twin - 委托类型定义
+' Twinbasic Diagnostic Tool
+' =====================================================
+
+' 注意：twinBASIC 委托不支持泛型参数 (Of T)
+' 泛型委托如 Action(Of T) 已移除
+
+Public Module DelegatesModule
+
+' === 诊断引擎委托 ===
+
+' 收集器完成时的回调
+' @param category 类别名称
+' @param success 是否成功
+' @param itemCount 收集的项目数
+Public Delegate Sub DiagnosticCompleteHandler( _
+    ByVal category As String, _
+    ByVal success As Boolean, _
+    ByVal itemCount As Long)
+
+' 进度更新回调
+' @param percent 完成百分比 (0-100)
+' @param message 进度消息
+Public Delegate Sub DiagnosticProgressHandler( _
+    ByVal percent As Long, _
+    ByVal message As String)
+
+' 错误处理回调
+' @param category 发生错误的类别
+' @param errorMessage 错误消息
+Public Delegate Sub DiagnosticErrorHandler( _
+    ByVal category As String, _
+    ByVal errorMessage As String)
+
+' === 格式化器工厂委托 ===
+' 注意：重命名为 FormatterFactoryDelegate 避免与模块名冲突
+
+' 创建格式化器的工厂方法
+Public Delegate Function FormatterFactoryDelegate() As IOutputFormatter
+
+End Module

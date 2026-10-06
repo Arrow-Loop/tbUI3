@@ -1,0 +1,200 @@
+Class cBindableVector
+
+Implements IInspectableUnrestricted, IBindableIterable, IBindableIterator, IBindableVectorView, IBindableVector, IBindableVectorChangedEventHandler, IBindableObservableVector, IVectorChangedEventArgs
+
+Private m_CurrentIndex As Long, m_CollectionChange As CollectionChange, m_Index As Long, m_bChangeFromCode As Boolean, m_Callback As cBindableVector, m_HandlerId As Variant, _
+    m_Items As Collection, m_ItemsView As Collection, m_VectorChangedEventHandlers As Collection, m_VectorChangedToken As Long
+
+Friend Sub AddItems(ParamArray ParamsArray() As Variant)
+Dim vItem As Variant, vArrayItem As Variant
+    For Each vItem In ParamsArray
+        If Not IsArray(vItem) Then
+            m_Items.Add Box(vItem)
+        Else
+            For Each vArrayItem In vItem: AddItems vArrayItem: Next vArrayItem
+        End If
+    Next vItem
+End Sub
+
+Friend Sub AddVectorChangedEventHandler(Optional ByVal Callback As cBindableVector, Optional ByVal HandlerId As Variant, Optional Token As EventRegistrationToken)
+    AsBindableObservableVector.AddVectorChanged Me, Token
+    If Not Callback Is Nothing Then Set m_Callback = Callback
+    If Not IsMissing(HandlerId) Then m_HandlerId = HandlerId
+End Sub
+
+Friend Function AsBindableVector() As IBindableVector
+    Set AsBindableVector = Me
+End Function
+
+Friend Function AsBindableObservableVector() As IBindableObservableVector
+    Set AsBindableObservableVector = Me
+End Function
+
+Friend Property Get ChangeFromCode() As Boolean
+    ChangeFromCode = m_bChangeFromCode
+End Property
+
+Friend Property Let ChangeFromCode(ByVal bChangeFromCode As Boolean)
+    m_bChangeFromCode = bChangeFromCode
+End Property
+
+Friend Property Get Callback() As cBindableVector
+     Set Callback = m_Callback
+End Property
+
+Friend Property Set Callback(Callback As cBindableVector)
+    Set m_Callback = Callback
+End Property
+
+Friend Sub ClearVectorChangedEventHandlers()
+    Set m_Callback = Nothing: m_HandlerId = Empty: Set m_VectorChangedEventHandlers = Nothing
+End Sub
+
+Friend Property Get HandlerId() As Variant
+    HandlerId = m_HandlerId
+End Property
+
+Friend Property Let HandlerId(HandlerId As Variant)
+    m_HandlerId = HandlerId
+End Property
+
+Friend Function This(ParamArray ParamsArray() As Variant) As cBindableVector
+    If Not IsMissing(ParamsArray) Then AddItems ParamsArray
+    Set This = Me
+End Function
+
+Public Sub VectorChangedEventHandler(ByVal Sender As cBindableVector, ByVal Args As IVectorChangedEventArgs)
+
+End Sub
+
+Private Function IBindableIterable_First() As IBindableIterator
+    m_CurrentIndex = 0: Set IBindableIterable_First = Me
+End Function
+
+Private Property Get IBindableIterator_Current() As IInspectable
+    Set IBindableIterator_Current = m_Items(m_CurrentIndex + 1)
+End Property
+
+Private Property Get IBindableIterator_HasCurrent() As BooleanByte
+    If m_CurrentIndex < m_Items.Count Then IBindableIterator_HasCurrent = APITRUE Else IBindableIterator_HasCurrent = APIFALSE
+End Property
+
+Private Function IBindableIterator_MoveNext() As BooleanByte
+    m_CurrentIndex = m_CurrentIndex + 1: IBindableIterator_MoveNext = IBindableIterator_HasCurrent
+End Function
+
+Private Sub IBindableVectorChangedEventHandler_Invoke(ByVal Sender As IBindableObservableVector, ByVal Args As IInspectable)
+    If Not m_Callback Is Nothing Then m_Callback.VectorChangedEventHandler Sender, Args
+End Sub
+
+Private Function IBindableVectorView_GetAt(ByVal Index As Long) As IInspectable
+    Select Case Index
+        Case 0 To m_ItemsView.Count - 1: Set IBindableVectorView_GetAt = m_ItemsView(Index + 1)
+    End Select
+End Function
+
+Private Function IBindableVectorView_IndexOf(ByVal Value As IInspectable, Index As Long) As BooleanByte
+    For Index = 0 To m_ItemsView.Count - 1
+        If Value Is m_ItemsView(Index + 1) Then IBindableVectorView_IndexOf = APITRUE: Exit Function
+    Next Index
+End Function
+
+Private Property Get IBindableVectorView_Size() As Long
+    IBindableVectorView_Size = m_ItemsView.Count
+End Property
+
+Private Sub IBindableVector_Append(ByVal Value As IInspectable)
+    m_Items.Add Value: NotifyVectorChanged CollectionChange_ItemInserted, m_Items.Count - 1
+End Sub
+
+Private Sub IBindableVector_Clear()
+    Set m_Items = New Collection: NotifyVectorChanged CollectionChange_Reset
+End Sub
+
+Private Function IBindableVector_GetAt(ByVal Index As Long) As IInspectable
+    Select Case Index
+        Case 0 To m_Items.Count - 1: Set IBindableVector_GetAt = m_Items(Index + 1)
+    End Select
+End Function
+
+Private Function IBindableVector_GetView() As IBindableVectorView
+Dim i As Long
+    Set m_ItemsView = New Collection: For i = 1 To m_Items.Count: m_ItemsView.Add m_Items(i): Next i
+    Set IBindableVector_GetView = Me
+End Function
+
+Private Function IBindableVector_IndexOf(ByVal Value As IInspectable, Index As Long) As BooleanByte
+    For Index = 0 To m_Items.Count - 1
+        If Value Is m_Items(Index + 1) Then IBindableVector_IndexOf = APITRUE: Exit Function
+    Next Index
+End Function
+
+Private Sub IBindableVector_InsertAt(ByVal Index As Long, ByVal Value As IInspectable)
+    Select Case Index
+        Case 0 To m_Items.Count - 1: m_Items.Add Value, Before:=Index + 1: NotifyVectorChanged CollectionChange_ItemInserted, Index
+    End Select
+End Sub
+
+Private Sub IBindableVector_RemoveAt(ByVal Index As Long)
+    Select Case Index
+        Case 0 To m_Items.Count - 1: m_Items.Remove Index + 1: NotifyVectorChanged CollectionChange_ItemRemoved, Index
+    End Select
+End Sub
+
+Private Sub IBindableVector_RemoveAtEnd()
+    If m_Items.Count Then m_Items.Remove m_Items.Count: NotifyVectorChanged CollectionChange_ItemRemoved, m_Items.Count
+End Sub
+
+Private Sub IBindableVector_SetAt(ByVal Index As Long, ByVal Value As IInspectable)
+    Select Case Index
+        Case 0 To m_Items.Count - 1: m_Items.Add Value, Before:=Index + 1: m_Items.Remove Index + 2: NotifyVectorChanged CollectionChange_ItemChanged, Index
+    End Select
+End Sub
+
+Private Property Get IBindableVector_Size() As Long
+    IBindableVector_Size = m_Items.Count
+End Property
+
+Private Sub IBindableObservableVector_AddVectorChanged(ByVal Handler As IBindableVectorChangedEventHandler, Optional Token As EventRegistrationToken)
+    Token = m_VectorChangedToken: m_VectorChangedToken = m_VectorChangedToken + 1
+    If m_VectorChangedEventHandlers Is Nothing Then Set m_VectorChangedEventHandlers = New Collection
+    m_VectorChangedEventHandlers.Add Handler, CStr(Token)
+End Sub
+
+Private Sub IBindableObservableVector_RemoveVectorChanged(ByVal Token As EventRegistrationToken)
+    If Not m_VectorChangedEventHandlers Is Nothing Then m_VectorChangedEventHandlers.Remove CStr(Token)
+End Sub
+
+Private Property Get IVectorChangedEventArgs_ChangeType() As CollectionChange
+    IVectorChangedEventArgs_ChangeType = m_CollectionChange
+End Property
+
+Private Property Get IVectorChangedEventArgs_Index() As Long
+    IVectorChangedEventArgs_Index = m_Index
+End Property
+
+Private Sub NotifyVectorChanged(ByVal CollectionChange As CollectionChange, Optional ByVal Index As Long)
+Dim VectorChangedEventHandler As IBindableVectorChangedEventHandler
+    m_CollectionChange = CollectionChange: m_Index = Index
+    For Index = 1 To m_VectorChangedEventHandlers.Count
+        Set VectorChangedEventHandler = m_VectorChangedEventHandlers(Index): VectorChangedEventHandler.Invoke Me, Me
+    Next Index
+End Sub
+
+Private Sub Class_Initialize()
+    Set m_Items = New Collection: Set m_VectorChangedEventHandlers = New Collection
+End Sub
+
+Private Sub IInspectableUnrestricted_GetIIDs(iidCount As Long, iidPtr As LongPtr)
+    
+End Sub
+
+Private Function IInspectableUnrestricted_GetRuntimeClassName() As LongPtr
+    
+End Function
+
+Private Function IInspectableUnrestricted_GetTrustLevel() As TrustLevel
+    
+End Function
+
+End Class

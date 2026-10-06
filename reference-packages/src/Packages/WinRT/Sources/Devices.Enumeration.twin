@@ -1,0 +1,586 @@
+[InterfaceId("DEDA0BCC-4F9D-4F58-9DBA-A9BC800408D5")]
+Interface IDeviceAccessChangedEventArgs Extends IInspectable
+    Property Get Status() As DeviceAccessStatus
+End Interface
+
+[InterfaceId("82523262-934B-4B30-A178-ADC39F2F2BE3")]
+Interface IDeviceAccessChangedEventArgs2 Extends IInspectable
+    Property Get Id() As LongPtr
+End Interface
+
+[InterfaceId("4C71D028-B793-5BCE-AE59-FA77F45A40D8")]
+Interface ITypedEventHandlerDeviceAccessInformationAccessChanged Extends IUnknown
+    Sub Invoke(ByVal Sender As IDeviceAccessInformation, ByVal Args As IDeviceAccessChangedEventArgs)
+End Interface
+
+[InterfaceId("0BAA9A73-6DE5-4915-8DDD-9A0554A6F545")]
+Interface IDeviceAccessInformation Extends IInspectable
+    [PreserveSig]
+    Function AddAccessChanged(ByVal Handler As ITypedEventHandlerDeviceAccessInformationAccessChanged, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveAccessChanged(ByVal Token As EventRegistrationToken) As HRESULT
+    Property Get CurrentStatus() As DeviceAccessStatus
+End Interface
+
+[InterfaceId("574BD3D3-5F30-45CD-8A94-724FE5973084")]
+Interface IDeviceAccessInformationStatics Extends IInspectable
+    Function CreateFromId(ByVal DeviceId As LongPtr) As IDeviceAccessInformation
+    Function CreateFromDeviceClassId(ByVal DeviceClassId As UUID) As IDeviceAccessInformation
+    Function CreateFromDeviceClass(ByVal DeviceClass As DeviceClass) As IDeviceAccessInformation
+End Interface
+
+[InterfaceId("B8578C0C-BBC1-484B-BFFA-7B31DCC200B2")]
+Interface IDeviceConnectionChangeTriggerDetails Extends IInspectable
+    Property Get DeviceId() As LongPtr
+End Interface
+
+[InterfaceId("8E44B56D-F902-4A00-B536-F37992E6A2A7")]
+Interface IDeviceDisconnectButtonClickedEventArgs Extends IInspectable
+    Property Get Device() As IDeviceInformation
+End Interface
+
+[InterfaceId("BAC083A3-3A19-5072-9D90-133323A049BA")]
+Interface IAsyncOperationDeviceThumbnail Extends IInspectable
+    Property Set Completed(ByVal Handler As IAsyncOperationCompletedHandlerDeviceThumbnail)
+    Property Get Completed() As IAsyncOperationCompletedHandlerDeviceThumbnail
+    Function GetResults() As IRandomAccessStreamWithContentType ' requires IClosable, IContentTypeProvider, IRandomAccessStream, IOutputStream, IInputStream
+End Interface
+
+[InterfaceId("86D455B2-D795-554C-9C31-BF6539349C19")]
+Interface IAsyncOperationCompletedHandlerDeviceThumbnail Extends IUnknown
+    Sub Invoke(ByVal AsyncOperation As IAsyncOperationDeviceThumbnail, ByVal AsyncStatus As AsyncStatus)
+End Interface
+
+[InterfaceId("ABA0FB95-4398-489D-8E44-E6130927011F")]
+Interface IDeviceInformation Extends IInspectable
+    Property Get Id() As LongPtr
+    Property Get Name() As LongPtr
+    Property Get IsEnabled() As BooleanByte
+    Property Get IsDefault() As BooleanByte
+    Property Get EnclosureLocation() As IEnclosureLocation
+    Property Get Properties() As IMapView_IInspectable
+    [PreserveSig]
+    Function Update(ByVal UpdateInfo As IDeviceInformationUpdate) As HRESULT
+    Function GetThumbnailAsync() As IAsyncOperationDeviceThumbnail
+    Function GetGlyphThumbnailAsync() As IAsyncOperationDeviceThumbnail
+End Interface
+
+[InterfaceId("F156A638-7997-48D9-A10C-269D46533F48")]
+Interface IDeviceInformation2 Extends IInspectable
+    Property Get Kind() As DeviceInformationKind
+    Property Get Pairing() As IDeviceInformationPairing
+End Interface
+
+[InterfaceId("1002DB74-8948-591E-815D-E40B667599A3")]
+Interface IAsyncOperationIDevicePairingResult Extends IInspectable
+    Property Set Completed(ByVal Handler As IAsyncOperationCompletedHandlerIDevicePairingResult)
+    Property Get Completed() As IAsyncOperationCompletedHandlerIDevicePairingResult
+    Function GetResults() As IDevicePairingResult
+End Interface
+
+[InterfaceId("7EE0247F-5F57-5CB2-B40E-18B5A211D6C3")]
+Interface IAsyncOperationCompletedHandlerIDevicePairingResult Extends IUnknown
+    Sub Invoke(ByVal AsyncOperation As IAsyncOperationIDevicePairingResult, ByVal AsyncStatus As AsyncStatus)
+End Interface
+
+[InterfaceId("FA65231F-4178-5DE1-B2CC-03E22D7702B4")]
+Interface ITypedEventHandlerDeviceInformationCustomPairingPairingRequested Extends IUnknown
+    Sub Invoke(ByVal Sender As IDeviceInformationCustomPairing, ByVal Args As IDevicePairingRequestedEventArgs)
+End Interface
+
+[InterfaceId("85138C02-4EE6-4914-8370-107A39144C0E")]
+Interface IDeviceInformationCustomPairing Extends IInspectable
+    Function PairAsync(ByVal PairingKindsSupported As DevicePairingKinds) As IAsyncOperationIDevicePairingResult
+    Function PairWithProtectionLevelAsync(ByVal PairingKindsSupported As DevicePairingKinds, ByVal MinProtectionLevel As DevicePairingProtectionLevel) As IAsyncOperationIDevicePairingResult
+    Function PairWithProtectionLevelAndSettingsAsync(ByVal PairingKindsSupported As DevicePairingKinds, ByVal MinProtectionLevel As DevicePairingProtectionLevel, ByVal DevicePairingSettings As IDevicePairingSettings) As IAsyncOperationIDevicePairingResult
+    [PreserveSig]
+    Function AddPairingRequested(ByVal Handler As ITypedEventHandlerDeviceInformationCustomPairingPairingRequested, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemovePairingRequested(ByVal Token As EventRegistrationToken) As HRESULT
+End Interface
+
+[InterfaceId("2C4769F5-F684-40D5-8469-E8DBAAB70485")]
+Interface IDeviceInformationPairing Extends IInspectable
+    Property Get IsPaired() As BooleanByte
+    Property Get CanPair() As BooleanByte
+    Function PairAsync() As IAsyncOperationIDevicePairingResult
+    Function PairWithProtectionLevelAsync(ByVal MinProtectionLevel As DevicePairingProtectionLevel) As IAsyncOperationIDevicePairingResult
+End Interface
+
+[InterfaceId("2BB4DF3D-BD7E-5FE0-9020-56DC0D30B935")]
+Interface IAsyncOperationIDeviceUnpairingResult Extends IInspectable
+    Property Set Completed(ByVal Handler As IAsyncOperationCompletedHandlerIDeviceUnpairingResult)
+    Property Get Completed() As IAsyncOperationCompletedHandlerIDeviceUnpairingResult
+    Function GetResults() As IDeviceUnpairingResult
+End Interface
+
+[InterfaceId("9BBE6EB9-DB2D-5160-A20C-F0C265F20D8E")]
+Interface IAsyncOperationCompletedHandlerIDeviceUnpairingResult Extends IUnknown
+    Sub Invoke(ByVal AsyncOperation As IAsyncOperationIDeviceUnpairingResult, ByVal AsyncStatus As AsyncStatus)
+End Interface
+
+[InterfaceId("F68612FD-0AEE-4328-85CC-1C742BB1790D")]
+Interface IDeviceInformationPairing2 Extends IInspectable
+    Property Get ProtectionLevel() As DevicePairingProtectionLevel
+    Property Get Custom() As IDeviceInformationCustomPairing
+    Function PairWithProtectionLevelAndSettingsAsync(ByVal MinProtectionLevel As DevicePairingProtectionLevel, ByVal DevicePairingSettings As IDevicePairingSettings) As IAsyncOperationIDevicePairingResult
+    Function UnpairAsync() As IAsyncOperationIDeviceUnpairingResult
+End Interface
+
+[InterfaceId("E915C408-36D4-49A1-BF13-514173799B6B")]
+Interface IDeviceInformationPairingStatics Extends IInspectable
+    Function TryRegisterForAllInboundPairingRequests(ByVal PairingKindsSupported As DevicePairingKinds) As BooleanByte
+End Interface
+
+[InterfaceId("04DE5372-B7B7-476B-A74F-C5836A704D98")]
+Interface IDeviceInformationPairingStatics2 Extends IInspectable
+    Function TryRegisterForAllInboundPairingRequestsWithProtectionLevel(ByVal PairingKindsSupported As DevicePairingKinds, ByVal MinProtectionLevel As DevicePairingProtectionLevel) As BooleanByte
+End Interface
+
+[InterfaceId("07FAA053-EB2F-5CBA-B25B-D9D57BE6715F")]
+Interface IAsyncOperationIDeviceInformation Extends IInspectable
+    Property Set Completed(ByVal Handler As IAsyncOperationCompletedHandlerIDeviceInformation)
+    Property Get Completed() As IAsyncOperationCompletedHandlerIDeviceInformation
+    Function GetResults() As IDeviceInformation
+End Interface
+
+[InterfaceId("BB483DF2-7BB6-5923-A28D-8342EC30046B")]
+Interface IAsyncOperationCompletedHandlerIDeviceInformation Extends IUnknown
+    Sub Invoke(ByVal AsyncOperation As IAsyncOperationIDeviceInformation, ByVal AsyncStatus As AsyncStatus)
+End Interface
+
+[InterfaceId("6F85D843-E8AB-5B46-85D7-327C58D18712")]
+Interface IIterator_IDeviceInformation Extends IInspectable
+    Property Get Current() As IDeviceInformation
+    Property Get HasCurrent() As BooleanByte
+    Function MoveNext() As BooleanByte
+    Function GetMany(ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("DD9F8A5D-EC98-5F4B-A3EA-9C8B5AD53C4B")]
+Interface IIterable_IDeviceInformation Extends IInspectable
+    Function First() As IIterator_IDeviceInformation
+End Interface
+
+[InterfaceId("E170688F-3495-5BF6-AAB5-9CAC17E0F10F")]
+Interface IVectorView_IDeviceInformation Extends IInspectable
+    Function GetAt(ByVal Index As Long) As IDeviceInformation
+    Property Get Size() As Long
+    Function IndexOf(ByVal Value As IDeviceInformation, Index As Long) As BooleanByte
+    Function GetMany(ByVal StartIndex As Long, ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("45180254-082E-5274-B2E7-AC0517F44D07")]
+Interface IAsyncOperationIVectorView_IDeviceInformation Extends IInspectable
+    Property Set Completed(ByVal Handler As IAsyncOperationCompletedHandlerIVectorView_IDeviceInformation)
+    Property Get Completed() As IAsyncOperationCompletedHandlerIVectorView_IDeviceInformation
+    Function GetResults() As IVectorView_IDeviceInformation
+End Interface
+
+[InterfaceId("4A458732-527E-5C73-9A68-A73DA370F782")]
+Interface IAsyncOperationCompletedHandlerIVectorView_IDeviceInformation Extends IUnknown
+    Sub Invoke(ByVal AsyncOperation As IAsyncOperationIVectorView_IDeviceInformation, ByVal AsyncStatus As AsyncStatus)
+End Interface
+
+[InterfaceId("C17F100E-3A46-4A78-8013-769DC9B97390")]
+Interface IDeviceInformationStatics Extends IInspectable
+    Function CreateFromIdAsync(ByVal DeviceId As LongPtr) As IAsyncOperationIDeviceInformation
+    Function CreateFromIdAsyncAdditionalProperties(ByVal DeviceId As LongPtr, ByVal AdditionalProperties As IIterable_HSTRING) As IAsyncOperationIDeviceInformation
+    Function FindAllAsync() As IAsyncOperationIVectorView_IDeviceInformation
+    Function FindAllAsyncDeviceClass(ByVal DeviceClass As DeviceClass) As IAsyncOperationIVectorView_IDeviceInformation
+    Function FindAllAsyncAqsFilter(ByVal AqsFilter As LongPtr) As IAsyncOperationIVectorView_IDeviceInformation
+    Function FindAllAsyncAqsFilterAndAdditionalProperties(ByVal AqsFilter As LongPtr, ByVal AdditionalProperties As IIterable_HSTRING) As IAsyncOperationIVectorView_IDeviceInformation
+    Function CreateWatcher() As IDeviceWatcher
+    Function CreateWatcherDeviceClass(ByVal DeviceClass As DeviceClass) As IDeviceWatcher
+    Function CreateWatcherAqsFilter(ByVal AqsFilter As LongPtr) As IDeviceWatcher
+    Function CreateWatcherAqsFilterAndAdditionalProperties(ByVal AqsFilter As LongPtr, ByVal AdditionalProperties As IIterable_HSTRING) As IDeviceWatcher
+End Interface
+
+[InterfaceId("493B4F34-A84F-45FD-9167-15D1CB1BD1F9")]
+Interface IDeviceInformationStatics2 Extends IInspectable
+    Function GetAqsFilterFromDeviceClass(ByVal DeviceClass As DeviceClass) As LongPtr
+    Function CreateFromIdAsyncWithKindAndAdditionalProperties(ByVal DeviceId As LongPtr, ByVal AdditionalProperties As IIterable_HSTRING, ByVal Kind As DeviceInformationKind) As IAsyncOperationIDeviceInformation
+    Function FindAllAsyncWithKindAqsFilterAndAdditionalProperties(ByVal AqsFilter As LongPtr, ByVal AdditionalProperties As IIterable_HSTRING, ByVal Kind As DeviceInformationKind) As IAsyncOperationIVectorView_IDeviceInformation
+    Function CreateWatcherWithKindAqsFilterAndAdditionalProperties(ByVal AqsFilter As LongPtr, ByVal AdditionalProperties As IIterable_HSTRING, ByVal Kind As DeviceInformationKind) As IDeviceWatcher
+End Interface
+
+[InterfaceId("8F315305-D972-44B7-A37E-9E822C78213B")]
+Interface IDeviceInformationUpdate Extends IInspectable
+    Property Get Id() As LongPtr
+    Property Get Properties() As IMapView_IInspectable
+End Interface
+
+[InterfaceId("5D9D148C-A873-485E-BAA6-AA620788E3CC")]
+Interface IDeviceInformationUpdate2 Extends IInspectable
+    Property Get Kind() As DeviceInformationKind
+End Interface
+
+[InterfaceId("F717FC56-DE6B-487F-8376-0180ACA69963")]
+Interface IDevicePairingRequestedEventArgs Extends IInspectable
+    Property Get DeviceInformation() As IDeviceInformation
+    Property Get PairingKind() As DevicePairingKinds
+    Property Get Pin() As LongPtr
+    [PreserveSig]
+    Function Accept() As HRESULT
+    [PreserveSig]
+    Function AcceptWithPin(ByVal Pin As LongPtr) As HRESULT
+    Function GetDeferral() As IDeferral
+End Interface
+
+[InterfaceId("C83752D9-E4D3-4DB0-A360-A105E437DBDC")]
+Interface IDevicePairingRequestedEventArgs2 Extends IInspectable
+    [PreserveSig]
+    Function AcceptWithPasswordCredential(ByVal PasswordCredential As IPasswordCredential) As HRESULT
+End Interface
+
+[InterfaceId("072B02BF-DD95-4025-9B37-DE51ADBA37B7")]
+Interface IDevicePairingResult Extends IInspectable
+    Property Get Status() As DevicePairingResultStatus
+    Property Get ProtectionLevelUsed() As DevicePairingProtectionLevel
+End Interface
+
+[InterfaceId("482CB27C-83BB-420E-BE51-6602B222DE54")]
+Interface IDevicePairingSettings Extends IInspectable
+
+End Interface
+
+[InterfaceId("62C6D98C-57EE-5BB8-A41C-958D20C3F3E8")]
+Interface ITypedEventHandlerDevicePickerDevicePickerDismissed Extends IUnknown
+    Sub Invoke(ByVal Sender As IDevicePicker, ByVal Args As IInspectable)
+End Interface
+
+[InterfaceId("35DD0319-5723-506C-8896-1A28B82BE798")]
+Interface ITypedEventHandlerDevicePickerDisconnectButtonClicked Extends IUnknown
+    Sub Invoke(ByVal Sender As IDevicePicker, ByVal Args As IDeviceDisconnectButtonClickedEventArgs)
+End Interface
+
+[InterfaceId("47E48C88-1C56-5B58-96A2-8E813D25077A")]
+Interface ITypedEventHandlerDevicePickerDeviceSelected Extends IUnknown
+    Sub Invoke(ByVal Sender As IDevicePicker, ByVal Args As IDeviceSelectedEventArgs)
+End Interface
+
+[InterfaceId("84997AA2-034A-4440-8813-7D0BD479BF5A")]
+Interface IDevicePicker Extends IInspectable
+    Property Get Filter() As IDevicePickerFilter
+    Property Get Appearance() As IDevicePickerAppearance
+    Property Get RequestedProperties() As IVector_HSTRING
+    [PreserveSig]
+    Function AddDeviceSelected(ByVal Handler As ITypedEventHandlerDevicePickerDeviceSelected, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveDeviceSelected(ByVal Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function AddDisconnectButtonClicked(ByVal Handler As ITypedEventHandlerDevicePickerDisconnectButtonClicked, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveDisconnectButtonClicked(ByVal Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function AddDevicePickerDismissed(ByVal Handler As ITypedEventHandlerDevicePickerDevicePickerDismissed, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveDevicePickerDismissed(ByVal Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function Show(ByVal Selection As RECTF) As HRESULT
+    [PreserveSig]
+    Function ShowWithPlacement(ByVal Selection As RECTF, ByVal Placement As Placement) As HRESULT
+    Function PickSingleDeviceAsync(ByVal Selection As RECTF) As IAsyncOperationIDeviceInformation
+    Function PickSingleDeviceAsyncWithPlacement(ByVal Selection As RECTF, ByVal Placement As Placement) As IAsyncOperationIDeviceInformation
+    [PreserveSig]
+    Function Hide() As HRESULT
+    [PreserveSig]
+    Function SetDisplayStatus(ByVal Device As IDeviceInformation, ByVal Status As LongPtr, ByVal Options As DevicePickerDisplayStatusOptions) As HRESULT
+End Interface
+
+[InterfaceId("E69A12C6-E627-4ED8-9B6C-460AF445E56D")]
+Interface IDevicePickerAppearance Extends IInspectable
+    Property Get Title() As LongPtr
+    Property Let Title(ByVal Value As LongPtr)
+    Property Get ForegroundColor() As Color
+    Property Let ForegroundColor(ByVal Value As Color)
+    Property Get BackgroundColor() As Color
+    Property Let BackgroundColor(ByVal Value As Color)
+    Property Get AccentColor() As Color
+    Property Let AccentColor(ByVal Value As Color)
+    Property Get SelectedForegroundColor() As Color
+    Property Let SelectedForegroundColor(ByVal Value As Color)
+    Property Get SelectedBackgroundColor() As Color
+    Property Let SelectedBackgroundColor(ByVal Value As Color)
+    Property Get SelectedAccentColor() As Color
+    Property Let SelectedAccentColor(ByVal Value As Color)
+End Interface
+
+[InterfaceId("C3807283-1416-593C-955C-0B4A286FF7BB")]
+Interface IIterator_DeviceClass Extends IInspectable
+    Property Get Current() As DeviceClass
+    Property Get HasCurrent() As BooleanByte
+    Function MoveNext() As BooleanByte
+    Function GetMany(ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("47D4BE05-58F1-522E-81C6-975EB4131BB9")]
+Interface IIterable_DeviceClass Extends IInspectable
+    Function First() As IIterator_DeviceClass
+End Interface
+
+[InterfaceId("01A80A97-BD87-5C8A-97FD-D449C98BDAC6")]
+Interface IVectorView_DeviceClass Extends IInspectable
+    Function GetAt(ByVal Index As Long) As DeviceClass
+    Property Get Size() As Long
+    Function IndexOf(ByVal Value As DeviceClass, Index As Long) As BooleanByte
+    Function GetMany(ByVal StartIndex As Long, ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("EE662D37-B0EB-5729-9832-156FD2889D48")]
+Interface IVector_DeviceClass Extends IInspectable
+    Function GetAt(ByVal Index As Long) As DeviceClass
+    Property Get Size() As Long
+    Function GetView() As IVectorView_DeviceClass
+    Function IndexOf(ByVal Value As DeviceClass, Index As Long) As BooleanByte
+    [PreserveSig]
+    Function SetAt(ByVal Index As Long, ByVal Value As DeviceClass) As HRESULT
+    [PreserveSig]
+    Function InsertAt(ByVal Index As Long, ByVal Value As DeviceClass) As HRESULT
+    [PreserveSig]
+    Function RemoveAt(ByVal Index As Long) As HRESULT
+    [PreserveSig]
+    Function Append(ByVal Value As DeviceClass) As HRESULT
+    [PreserveSig]
+    Function RemoveAtEnd() As HRESULT
+    [PreserveSig]
+    Function Clear() As HRESULT
+    Function GetMany(ByVal StartIndex As Long, ByVal Length As Long, Items As Any) As Long
+    [PreserveSig]
+    Function ReplaceAll(ByVal Length As Long, Items As Any) As HRESULT
+End Interface
+
+[InterfaceId("91DB92A2-57CB-48F1-9B59-A59B7A1F02A2")]
+Interface IDevicePickerFilter Extends IInspectable
+    Property Get SupportedDeviceClasses() As IVector_DeviceClass
+    Property Get SupportedDeviceSelectors() As IVector_HSTRING
+End Interface
+
+[InterfaceId("269EDADE-1D2F-4940-8402-4156B81D3C77")]
+Interface IDeviceSelectedEventArgs Extends IInspectable
+    Property Get SelectedDevice() As IDeviceInformation
+End Interface
+
+[InterfaceId("66F44AD3-79D9-444B-92CF-A92EF72571C7")]
+Interface IDeviceUnpairingResult Extends IInspectable
+    Property Get Status() As DeviceUnpairingResultStatus
+End Interface
+
+[InterfaceId("9234630F-1FF4-54F6-9E3F-AC20369B7725")]
+Interface ITypedEventHandlerDeviceWatcherIInspectable Extends IUnknown
+    Sub Invoke(ByVal Sender As IDeviceWatcher, ByVal Args As IInspectable)
+End Interface
+
+[InterfaceId("03C5A07B-990C-5D09-B0B8-5734EAA38222")]
+Interface ITypedEventHandlerDeviceWatcherAdded Extends IUnknown
+    Sub Invoke(ByVal Sender As IDeviceWatcher, ByVal Args As IDeviceInformation)
+End Interface
+
+[InterfaceId("906F1254-79AD-54FC-93C4-CDB99B437899")]
+Interface ITypedEventHandlerDeviceWatcherDeviceInformationUpdate Extends IUnknown
+    Sub Invoke(ByVal Sender As IDeviceWatcher, ByVal Args As IDeviceInformationUpdate)
+End Interface
+
+[InterfaceId("C9EAB97D-8F6B-4F96-A9F4-ABC814E22271")]
+Interface IDeviceWatcher Extends IInspectable
+    [PreserveSig]
+    Function AddAdded(ByVal Handler As ITypedEventHandlerDeviceWatcherAdded, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveAdded(ByVal Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function AddUpdated(ByVal Handler As ITypedEventHandlerDeviceWatcherDeviceInformationUpdate, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveUpdated(ByVal Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function AddRemoved(ByVal Handler As ITypedEventHandlerDeviceWatcherDeviceInformationUpdate, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveRemoved(ByVal Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function AddEnumerationCompleted(ByVal Handler As ITypedEventHandlerDeviceWatcherIInspectable, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveEnumerationCompleted(ByVal Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function AddStopped(ByVal Handler As ITypedEventHandlerDeviceWatcherIInspectable, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveStopped(ByVal Token As EventRegistrationToken) As HRESULT
+    Property Get Status() As DeviceWatcherStatus
+    [PreserveSig]
+    Function Start() As HRESULT
+    [PreserveSig]
+    Function Stop() As HRESULT
+End Interface
+
+[InterfaceId("CB5CA9DB-CCD6-5103-A93D-C925C908838D")]
+Interface IIterator_DeviceWatcherEventKind Extends IInspectable
+    Property Get Current() As DeviceWatcherEventKind
+    Property Get HasCurrent() As BooleanByte
+    Function MoveNext() As BooleanByte
+    Function GetMany(ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("F04365AB-D3F3-5F85-A7DA-DC19CFF73D86")]
+Interface IIterable_DeviceWatcherEventKind Extends IInspectable
+    Function First() As IIterator_DeviceWatcherEventKind
+End Interface
+
+[InterfaceId("FF08456E-ED14-49E9-9A69-8117C54AE971")]
+Interface IDeviceWatcher2 Extends IInspectable
+    Function GetBackgroundTrigger(ByVal RequestedEventKinds As IIterable_DeviceWatcherEventKind) As IDeviceWatcherTrigger
+End Interface
+
+[InterfaceId("74AA9C0B-1DBD-47FD-B635-3CC556D0FF8B")]
+Interface IDeviceWatcherEvent Extends IInspectable
+    Property Get Kind() As DeviceWatcherEventKind
+    Property Get DeviceInformation() As IDeviceInformation
+    Property Get DeviceInformationUpdate() As IDeviceInformationUpdate
+End Interface
+
+[InterfaceId("74F7D6CC-9C20-5BB9-BACE-B2FFA38687F9")]
+Interface IIterator_IDeviceWatcherEvent Extends IInspectable
+    Property Get Current() As IDeviceWatcherEvent
+    Property Get HasCurrent() As BooleanByte
+    Function MoveNext() As BooleanByte
+    Function GetMany(ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("B48FD051-EAFA-523F-A66E-9D4151C5D522")]
+Interface IIterable_IDeviceWatcherEvent Extends IInspectable
+    Function First() As IIterator_IDeviceWatcherEvent
+End Interface
+
+[InterfaceId("8F994D37-8FAB-51C6-A1E0-C93F68A20EF0")]
+Interface IVectorView_IDeviceWatcherEvent Extends IInspectable
+    Function GetAt(ByVal Index As Long) As IDeviceWatcherEvent
+    Property Get Size() As Long
+    Function IndexOf(ByVal Value As IDeviceWatcherEvent, Index As Long) As BooleanByte
+    Function GetMany(ByVal StartIndex As Long, ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("38808119-4CB7-4E57-A56D-776D07CBFEF9")]
+Interface IDeviceWatcherTriggerDetails Extends IInspectable
+    Property Get DeviceWatcherEvents() As IVectorView_IDeviceWatcherEvent
+End Interface
+
+[InterfaceId("42340A27-5810-459C-AABB-C65E1F813ECF")]
+Interface IEnclosureLocation Extends IInspectable
+    Property Get InDock() As BooleanByte
+    Property Get InLid() As BooleanByte
+    Property Get Panel() As Panel
+End Interface
+
+[InterfaceId("2885995B-E07D-485D-8A9E-BDF29AEF4F66")]
+Interface IEnclosureLocation2 Extends IInspectable
+    Property Get RotationAngleInDegreesClockwise() As Long
+End Interface
+
+Module mdlDevicesEnumeration
+
+Public Enum DeviceAccessStatus
+    DeviceAccessStatus_Unspecified
+    DeviceAccessStatus_Allowed
+    DeviceAccessStatus_DeniedByUser
+    DeviceAccessStatus_DeniedBySystem
+End Enum
+
+Public Enum DeviceClass
+    DeviceClass_All
+    DeviceClass_AudioCapture
+    DeviceClass_AudioRender
+    DeviceClass_PortableStorageDevice
+    DeviceClass_VideoCapture
+    DeviceClass_ImageScanner
+    DeviceClass_Location
+End Enum
+
+Public Enum DeviceInformationKind
+    DeviceInformationKind_Unknown
+    DeviceInformationKind_DeviceInterface
+    DeviceInformationKind_DeviceContainer
+    DeviceInformationKind_Device
+    DeviceInformationKind_DeviceInterfaceClass
+    DeviceInformationKind_AssociationEndpoint
+    DeviceInformationKind_AssociationEndpointContainer
+    DeviceInformationKind_AssociationEndpointService
+    DeviceInformationKind_DevicePanel
+End Enum
+
+Public Enum DevicePairingKinds
+    DevicePairingKinds_None = &H0
+    DevicePairingKinds_ConfirmOnly = &H1
+    DevicePairingKinds_DisplayPin = &H2
+    DevicePairingKinds_ProvidePin = &H4
+    DevicePairingKinds_ConfirmPinMatch = &H8
+    DevicePairingKinds_ProvidePasswordCredential = &H10
+End Enum
+
+Public Enum DevicePairingProtectionLevel
+    DevicePairingProtectionLevel_Default
+    DevicePairingProtectionLevel_None
+    DevicePairingProtectionLevel_Encryption
+    DevicePairingProtectionLevel_EncryptionAndAuthentication
+End Enum
+
+Public Enum DevicePairingResultStatus
+    DevicePairingResultStatus_Paired
+    DevicePairingResultStatus_NotReadyToPair
+    DevicePairingResultStatus_NotPaired
+    DevicePairingResultStatus_AlreadyPaired
+    DevicePairingResultStatus_ConnectionRejected
+    DevicePairingResultStatus_TooManyConnections
+    DevicePairingResultStatus_HardwareFailure
+    DevicePairingResultStatus_AuthenticationTimeout
+    DevicePairingResultStatus_AuthenticationNotAllowed
+    DevicePairingResultStatus_AuthenticationFailure
+    DevicePairingResultStatus_NoSupportedProfiles
+    DevicePairingResultStatus_ProtectionLevelCouldNotBeMet
+    DevicePairingResultStatus_AccessDenied
+    DevicePairingResultStatus_InvalidCeremonyData
+    DevicePairingResultStatus_PairingCanceled
+    DevicePairingResultStatus_OperationAlreadyInProgress
+    DevicePairingResultStatus_RequiredHandlerNotRegistered
+    DevicePairingResultStatus_RejectedByHandler
+    DevicePairingResultStatus_RemoteDeviceHasAssociation
+    DevicePairingResultStatus_Failed
+End Enum
+
+Public Enum DevicePickerDisplayStatusOptions
+    DevicePickerDisplayStatusOptions_None = &H0
+    DevicePickerDisplayStatusOptions_ShowProgress = &H1
+    DevicePickerDisplayStatusOptions_ShowDisconnectButton = &H2
+    DevicePickerDisplayStatusOptions_ShowRetryButton = &H4
+End Enum
+
+Public Enum DeviceUnpairingResultStatus
+    DeviceUnpairingResultStatus_Unpaired
+    DeviceUnpairingResultStatus_AlreadyUnpaired
+    DeviceUnpairingResultStatus_OperationAlreadyInProgress
+    DeviceUnpairingResultStatus_AccessDenied
+    DeviceUnpairingResultStatus_Failed
+End Enum
+
+Public Enum DeviceWatcherEventKind
+    DeviceWatcherEventKind_Add
+    DeviceWatcherEventKind_Update
+    DeviceWatcherEventKind_Remove
+End Enum
+
+Public Enum DeviceWatcherStatus
+    DeviceWatcherStatus_Created
+    DeviceWatcherStatus_Started
+    DeviceWatcherStatus_EnumerationCompleted
+    DeviceWatcherStatus_Stopping
+    DeviceWatcherStatus_Stopped
+    DeviceWatcherStatus_Aborted
+End Enum
+
+Public Enum Panel
+    Panel_Unknown
+    Panel_Front
+    Panel_Back
+    Panel_Top
+    Panel_Bottom
+    Panel_Left
+    Panel_Right
+End Enum
+
+End Module

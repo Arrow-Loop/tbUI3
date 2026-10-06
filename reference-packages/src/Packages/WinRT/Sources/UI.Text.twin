@@ -1,0 +1,681 @@
+[InterfaceId("1ED52525-1C5F-48CB-B335-78B50A2EE642")]
+Interface IContentLinkInfo Extends IInspectable
+    Property Get Id() As Long
+    Property Let Id(ByVal Value As Long)
+    Property Get DisplayText() As LongPtr
+    Property Let DisplayText(ByVal Value As LongPtr)
+    Property Get SecondaryText() As LongPtr
+    Property Let SecondaryText(ByVal Value As LongPtr)
+    Property Get Uri() As IUri
+    Property Set Uri(ByVal Value As IUri)
+    Property Get LinkContentKind() As LongPtr
+    Property Let LinkContentKind(ByVal Value As LongPtr)
+End Interface
+
+[InterfaceId("7880A444-01AB-4997-8517-DF822A0C45F1")]
+Interface IFontWeights Extends IInspectable
+
+End Interface
+
+[InterfaceId("B3B579D5-1BA9-48EB-9DAD-C095E8C23BA3")]
+Interface IFontWeightsStatics Extends IInspectable
+    Property Get Black() As FontWeight
+    Property Get Bold() As FontWeight
+    Property Get ExtraBlack() As FontWeight
+    Property Get ExtraBold() As FontWeight
+    Property Get ExtraLight() As FontWeight
+    Property Get Light() As FontWeight
+    Property Get Medium() As FontWeight
+    Property Get Normal() As FontWeight
+    Property Get SemiBold() As FontWeight
+    Property Get SemiLight() As FontWeight
+    Property Get Thin() As FontWeight
+End Interface
+
+[InterfaceId("374E3515-BA8A-4A6E-8C59-0DDE3D0CF5CD")]
+Interface IRichEditTextRange Extends IInspectable
+    Property Get ContentLinkInfo() As IContentLinkInfo
+    Property Set ContentLinkInfo(ByVal Value As IContentLinkInfo)
+End Interface
+
+[InterfaceId("5ADEF3DB-05FB-442D-8065-642AFEA02CED")]
+Interface ITextCharacterFormat Extends IInspectable
+    Property Get AllCaps() As FormatEffect
+    Property Let AllCaps(ByVal Value As FormatEffect)
+    Property Get BackgroundColor() As Color
+    Property Let BackgroundColor(ByVal Value As Color)
+    Property Get Bold() As FormatEffect
+    Property Let Bold(ByVal Value As FormatEffect)
+    Property Get FontStretch() As FontStretch
+    Property Let FontStretch(ByVal Value As FontStretch)
+    Property Get FontStyle() As FontStyle
+    Property Let FontStyle(ByVal Value As FontStyle)
+    Property Get ForegroundColor() As Color
+    Property Let ForegroundColor(ByVal Value As Color)
+    Property Get Hidden() As FormatEffect
+    Property Let Hidden(ByVal Value As FormatEffect)
+    Property Get Italic() As FormatEffect
+    Property Let Italic(ByVal Value As FormatEffect)
+    Property Get Kerning() As Single
+    Property Let Kerning(ByVal Value As Single)
+    Property Get LanguageTag() As LongPtr
+    Property Let LanguageTag(ByVal Value As LongPtr)
+    Property Get LinkType() As LinkType
+    Property Get Name() As LongPtr
+    Property Let Name(ByVal Value As LongPtr)
+    Property Get Outline() As FormatEffect
+    Property Let Outline(ByVal Value As FormatEffect)
+    Property Get Position() As Single
+    Property Let Position(ByVal Value As Single)
+    Property Get ProtectedText() As FormatEffect
+    Property Let ProtectedText(ByVal Value As FormatEffect)
+    Property Get Size() As Single
+    Property Let Size(ByVal Value As Single)
+    Property Get SmallCaps() As FormatEffect
+    Property Let SmallCaps(ByVal Value As FormatEffect)
+    Property Get Spacing() As Single
+    Property Let Spacing(ByVal Value As Single)
+    Property Get Strikethrough() As FormatEffect
+    Property Let Strikethrough(ByVal Value As FormatEffect)
+    Property Get Subscript() As FormatEffect
+    Property Let Subscript(ByVal Value As FormatEffect)
+    Property Get Superscript() As FormatEffect
+    Property Let Superscript(ByVal Value As FormatEffect)
+    Property Get TextScript() As TextScript
+    Property Let TextScript(ByVal Value As TextScript)
+    Property Get Underline() As UnderlineType
+    Property Let Underline(ByVal Value As UnderlineType)
+    Property Get Weight() As Long
+    Property Let Weight(ByVal Value As Long)
+    [PreserveSig]
+    Function SetClone(ByVal Value As ITextCharacterFormat) As HRESULT
+    Function GetClone() As ITextCharacterFormat
+    Function IsEqual(ByVal Format As ITextCharacterFormat) As BooleanByte
+End Interface
+
+[InterfaceId("779E7C33-189D-4BFA-97C8-10DB135D976E")]
+Interface ITextConstantsStatics Extends IInspectable
+    Property Get AutoColor() As Color
+    Property Get MinUnitCount() As Long
+    Property Get MaxUnitCount() As Long
+    Property Get UndefinedColor() As Color
+    Property Get UndefinedFloatValue() As Single
+    Property Get UndefinedInt32Value() As Long
+    Property Get UndefinedFontStretch() As FontStretch
+    Property Get UndefinedFontStyle() As FontStyle
+End Interface
+
+[InterfaceId("BEEE4DDB-90B2-408C-A2F6-0A0AC31E33E4")]
+Interface ITextDocument Extends IInspectable
+    Property Get CaretType() As CaretType
+    Property Let CaretType(ByVal Value As CaretType)
+    Property Get DefaultTabStop() As Single
+    Property Let DefaultTabStop(ByVal Value As Single)
+    Property Get Selection() As ITextSelection
+    Property Get UndoLimit() As Long
+    Property Let UndoLimit(ByVal Value As Long)
+    Function CanCopy() As BooleanByte
+    Function CanPaste() As BooleanByte
+    Function CanRedo() As BooleanByte
+    Function CanUndo() As BooleanByte
+    Function ApplyDisplayUpdates() As Long
+    Function BatchDisplayUpdates() As Long
+    [PreserveSig]
+    Function BeginUndoGroup() As HRESULT
+    [PreserveSig]
+    Function EndUndoGroup() As HRESULT
+    Function GetDefaultCharacterFormat() As ITextCharacterFormat
+    Function GetDefaultParagraphFormat() As ITextParagraphFormat
+    Function GetRange(ByVal StartPosition As Long, ByVal EndPosition As Long) As ITextRange
+    Function GetRangeFromPoint(ByVal Point As POINTF, ByVal Options As PointOptions) As ITextRange
+    Function GetText(ByVal Options As TextGetOptions) As LongPtr
+    [PreserveSig]
+    Function LoadFromStream(ByVal Options As TextSetOptions, ByVal Value As IRandomAccessStream) As HRESULT
+    [PreserveSig]
+    Function Redo() As HRESULT
+    [PreserveSig]
+    Function SaveToStream(ByVal Options As TextGetOptions, ByVal Value As IRandomAccessStream) As HRESULT
+    [PreserveSig]
+    Function SetDefaultCharacterFormat(ByVal Value As ITextCharacterFormat) As HRESULT
+    [PreserveSig]
+    Function SetDefaultParagraphFormat(ByVal Value As ITextParagraphFormat) As HRESULT
+    [PreserveSig]
+    Function SetText(ByVal Options As TextSetOptions, ByVal Value As LongPtr) As HRESULT
+    [PreserveSig]
+    Function Undo() As HRESULT
+End Interface
+
+[InterfaceId("F2311112-8C89-49C9-9118-F057CBB814EE")]
+Interface ITextDocument2 Extends IInspectable
+    Property Get AlignmentIncludesTrailingWhitespace() As BooleanByte
+    Property Let AlignmentIncludesTrailingWhitespace(ByVal Value As BooleanByte)
+    Property Get IgnoreTrailingCharacterSpacing() As BooleanByte
+    Property Let IgnoreTrailingCharacterSpacing(ByVal Value As BooleanByte)
+End Interface
+
+[InterfaceId("75AB03A1-A6F8-441D-AA18-0A851D6E5E3C")]
+Interface ITextDocument3 Extends IInspectable
+    [PreserveSig]
+    Function ClearUndoRedoHistory() As HRESULT
+End Interface
+
+[InterfaceId("619C20F2-CB3B-4521-981F-2865B1B93F04")]
+Interface ITextDocument4 Extends IInspectable
+    [PreserveSig]
+    Function SetMath(ByVal Value As LongPtr) As HRESULT
+    Function GetMath() As LongPtr
+    [PreserveSig]
+    Function SetMathMode(ByVal Mode As RichEditMathMode) As HRESULT
+End Interface
+
+[InterfaceId("2CF8CFA6-4676-498A-93F5-BBDBFC0BD883")]
+Interface ITextParagraphFormat Extends IInspectable
+    Property Get Alignment() As ParagraphAlignment
+    Property Let Alignment(ByVal Value As ParagraphAlignment)
+    Property Get FirstLineIndent() As Single
+    Property Get KeepTogether() As FormatEffect
+    Property Let KeepTogether(ByVal Value As FormatEffect)
+    Property Get KeepWithNext() As FormatEffect
+    Property Let KeepWithNext(ByVal Value As FormatEffect)
+    Property Get LeftIndent() As Single
+    Property Get LineSpacing() As Single
+    Property Get LineSpacingRule() As LineSpacingRule
+    Property Get ListAlignment() As MarkerAlignment
+    Property Let ListAlignment(ByVal Value As MarkerAlignment)
+    Property Get ListLevelIndex() As Long
+    Property Let ListLevelIndex(ByVal Value As Long)
+    Property Get ListStart() As Long
+    Property Let ListStart(ByVal Value As Long)
+    Property Get ListStyle() As MarkerStyle
+    Property Let ListStyle(ByVal Value As MarkerStyle)
+    Property Get ListTab() As Single
+    Property Let ListTab(ByVal Value As Single)
+    Property Get ListType() As MarkerType
+    Property Let ListType(ByVal Value As MarkerType)
+    Property Get NoLineNumber() As FormatEffect
+    Property Let NoLineNumber(ByVal Value As FormatEffect)
+    Property Get PageBreakBefore() As FormatEffect
+    Property Let PageBreakBefore(ByVal Value As FormatEffect)
+    Property Get RightIndent() As Single
+    Property Let RightIndent(ByVal Value As Single)
+    Property Get RightToLeft() As FormatEffect
+    Property Let RightToLeft(ByVal Value As FormatEffect)
+    Property Get Style() As ParagraphStyle
+    Property Let Style(ByVal Value As ParagraphStyle)
+    Property Get SpaceAfter() As Single
+    Property Let SpaceAfter(ByVal Value As Single)
+    Property Get SpaceBefore() As Single
+    Property Let SpaceBefore(ByVal Value As Single)
+    Property Get WidowControl() As FormatEffect
+    Property Let WidowControl(ByVal Value As FormatEffect)
+    Property Get TabCount() As Long
+    [PreserveSig]
+    Function AddTab(ByVal Position As Single, ByVal Align As TabAlignment, ByVal Leader As TabLeader) As HRESULT
+    [PreserveSig]
+    Function ClearAllTabs() As HRESULT
+    [PreserveSig]
+    Function DeleteTab(ByVal Position As Single) As HRESULT
+    Function GetClone() As ITextParagraphFormat
+    [PreserveSig]
+    Function GetTab(ByVal Index As Long, Position As Single, Align As TabAlignment, Leader As TabLeader) As HRESULT
+    Function IsEqual(ByVal Format As ITextParagraphFormat) As BooleanByte
+    [PreserveSig]
+    Function SetClone(ByVal Format As ITextParagraphFormat) As HRESULT
+    [PreserveSig]
+    Function SetIndents(ByVal Start As Single, ByVal Left As Single, ByVal Right As Single) As HRESULT
+    [PreserveSig]
+    Function SetLineSpacing(ByVal Rule As LineSpacingRule, ByVal Spacing As Single) As HRESULT
+End Interface
+
+[InterfaceId("5B9E4E57-C072-42A0-8945-AF503EE54768")]
+Interface ITextRange Extends IInspectable
+    Property Get Character() As Integer
+    Property Let Character(ByVal Value As Integer)
+    Property Get CharacterFormat() As ITextCharacterFormat
+    Property Set CharacterFormat(ByVal Value As ITextCharacterFormat)
+    Property Get FormattedText() As ITextRange
+    Property Set FormattedText(ByVal Value As ITextRange)
+    Property Get EndPosition() As Long
+    Property Let EndPosition(ByVal Value As Long)
+    Property Get Gravity() As RangeGravity
+    Property Let Gravity(ByVal Value As RangeGravity)
+    Property Get Length() As Long
+    Property Get Link() As LongPtr
+    Property Let Link(ByVal Value As LongPtr)
+    Property Get ParagraphFormat() As ITextParagraphFormat
+    Property Set ParagraphFormat(ByVal Value As ITextParagraphFormat)
+    Property Get StartPosition() As Long
+    Property Let StartPosition(ByVal Value As Long)
+    Property Get StoryLength() As Long
+    Property Get Text() As LongPtr
+    Property Let Text(ByVal Value As LongPtr)
+    Function CanPaste(ByVal Format As Long) As BooleanByte
+    [PreserveSig]
+    Function ChangeCase(ByVal Value As LetterCase) As HRESULT
+    [PreserveSig]
+    Function Collapse(ByVal Value As BooleanByte) As HRESULT
+    [PreserveSig]
+    Function Copy() As HRESULT
+    [PreserveSig]
+    Function Cut() As HRESULT
+    Function Delete(ByVal Unit As TextRangeUnit, ByVal Count As Long) As Long
+    Function EndOf(ByVal Unit As TextRangeUnit, ByVal Extend As BooleanByte) As Long
+    Function Expand(ByVal Unit As TextRangeUnit) As Long
+    Function FindText(ByVal Value As LongPtr, ByVal ScanLength As Long, ByVal Options As FindOptions) As Long
+    [PreserveSig]
+    Function GetCharacterUtf32(Value As Long, ByVal Offset As Long) As HRESULT
+    Function GetClone() As ITextRange
+    Function GetIndex(ByVal Unit As TextRangeUnit) As Long
+    Function GetPoint(ByVal HorizontalAlign As HorizontalCharacterAlignment, ByVal VerticalAlign As VerticalCharacterAlignment, ByVal Options As PointOptions) As POINTF
+    [PreserveSig]
+    Function GetRect(ByVal Options As PointOptions, Rect As RECTF, Hit As Long) As HRESULT
+    Function GetText(ByVal Options As TextGetOptions) As LongPtr
+    [PreserveSig]
+    Function GetTextViaStream(ByVal Options As TextGetOptions, ByVal Value As IRandomAccessStream) As HRESULT
+    Function InRange(ByVal Range As ITextRange) As BooleanByte
+    [PreserveSig]
+    Function InsertImage(ByVal Width As Long, ByVal Height As Long, ByVal Ascent As Long, ByVal VerticalAlign As VerticalCharacterAlignment, ByVal AlternateText As LongPtr, ByVal Value As IRandomAccessStream) As HRESULT
+    Function InStory(ByVal Range As ITextRange) As BooleanByte
+    Function IsEqual(ByVal Range As ITextRange) As BooleanByte
+    Function Move(ByVal Unit As TextRangeUnit, ByVal Count As Long) As Long
+    Function MoveEnd(ByVal Unit As TextRangeUnit, ByVal Count As Long) As Long
+    Function MoveStart(ByVal Unit As TextRangeUnit, ByVal Count As Long) As Long
+    [PreserveSig]
+    Function Paste(ByVal Format As Long) As HRESULT
+    [PreserveSig]
+    Function ScrollIntoView(ByVal Value As PointOptions) As HRESULT
+    [PreserveSig]
+    Function MatchSelection() As HRESULT
+    [PreserveSig]
+    Function SetIndex(ByVal Unit As TextRangeUnit, ByVal Index As Long, ByVal Extend As BooleanByte) As HRESULT
+    [PreserveSig]
+    Function SetPoint(ByVal Point As POINTF, ByVal Options As PointOptions, ByVal Extend As BooleanByte) As HRESULT
+    [PreserveSig]
+    Function SetRange(ByVal StartPosition As Long, ByVal EndPosition As Long) As HRESULT
+    [PreserveSig]
+    Function SetText(ByVal Options As TextSetOptions, ByVal Value As LongPtr) As HRESULT
+    [PreserveSig]
+    Function SetTextViaStream(ByVal Options As TextSetOptions, ByVal Value As IRandomAccessStream) As HRESULT
+    Function StartOf(ByVal Unit As TextRangeUnit, ByVal Extend As BooleanByte) As Long
+End Interface
+
+[InterfaceId("A6D36724-F28F-430A-B2CF-C343671EC0E9")]
+Interface ITextSelection Extends IInspectable
+    Property Get Options() As SelectionOptions
+    Property Let Options(ByVal Value As SelectionOptions)
+    Property Get Type() As SelectionType
+    Function EndKey(ByVal Unit As TextRangeUnit, ByVal Extend As BooleanByte) As Long
+    Function HomeKey(ByVal Unit As TextRangeUnit, ByVal Extend As BooleanByte) As Long
+    Function MoveDown(ByVal Unit As TextRangeUnit, ByVal Count As Long, ByVal Extend As BooleanByte) As Long
+    Function MoveLeft(ByVal Unit As TextRangeUnit, ByVal Count As Long, ByVal Extend As BooleanByte) As Long
+    Function MoveRight(ByVal Unit As TextRangeUnit, ByVal Count As Long, ByVal Extend As BooleanByte) As Long
+    Function MoveUp(ByVal Unit As TextRangeUnit, ByVal Count As Long, ByVal Extend As BooleanByte) As Long
+    [PreserveSig]
+    Function TypeText(ByVal Value As LongPtr) As HRESULT
+End Interface
+
+Module mdlUIText
+
+Public Enum CaretType
+    CaretType_Normal
+    CaretType_Null
+End Enum
+
+Public Enum FindOptions
+    FindOptions_None = &H0
+    FindOptions_Word = &H2
+    FindOptions_Case = &H4
+End Enum
+
+Public Enum FontStretch
+    FontStretch_Undefined
+    FontStretch_UltraCondensed
+    FontStretch_ExtraCondensed
+    FontStretch_Condensed
+    FontStretch_SemiCondensed
+    FontStretch_Normal
+    FontStretch_SemiExpanded
+    FontStretch_Expanded
+    FontStretch_ExtraExpanded
+    FontStretch_UltraExpanded
+End Enum
+
+Public Enum FontStyle
+    FontStyle_Normal
+    FontStyle_Oblique
+    FontStyle_Italic
+End Enum
+
+Public Enum FormatEffect
+    FormatEffect_Off
+    FormatEffect_On
+    FormatEffect_Toggle
+    FormatEffect_Undefined
+End Enum
+
+Public Enum HorizontalCharacterAlignment
+    HorizontalCharacterAlignment_Left
+    HorizontalCharacterAlignment_Right
+    HorizontalCharacterAlignment_Center
+End Enum
+
+Public Enum LetterCase
+    LetterCase_Lower
+    LetterCase_Upper
+End Enum
+
+Public Enum LineSpacingRule
+    LineSpacingRule_Undefined
+    LineSpacingRule_Single
+    LineSpacingRule_OneAndHalf
+    LineSpacingRule_Double
+    LineSpacingRule_AtLeast
+    LineSpacingRule_Exactly
+    LineSpacingRule_Multiple
+    LineSpacingRule_Percent
+End Enum
+
+Public Enum LinkType
+    LinkType_Undefined
+    LinkType_NotALink
+    LinkType_ClientLink
+    LinkType_FriendlyLinkName
+    LinkType_FriendlyLinkAddress
+    LinkType_AutoLink
+    LinkType_AutoLinkEmail
+    LinkType_AutoLinkPhone
+    LinkType_AutoLinkPath
+End Enum
+
+Public Enum MarkerAlignment
+    MarkerAlignment_Undefined
+    MarkerAlignment_Left
+    MarkerAlignment_Center
+    MarkerAlignment_Right
+End Enum
+
+Public Enum MarkerStyle
+    MarkerStyle_Undefined
+    MarkerStyle_Parenthesis
+    MarkerStyle_Parentheses
+    MarkerStyle_Period
+    MarkerStyle_Plain
+    MarkerStyle_Minus
+    MarkerStyle_NoNumber
+End Enum
+
+Public Enum MarkerType
+    MarkerType_Undefined
+    MarkerType_None
+    MarkerType_Bullet
+    MarkerType_Arabic
+    MarkerType_LowercaseEnglishLetter
+    MarkerType_UppercaseEnglishLetter
+    MarkerType_LowercaseRoman
+    MarkerType_UppercaseRoman
+    MarkerType_UnicodeSequence
+    MarkerType_CircledNumber
+    MarkerType_BlackCircleWingding
+    MarkerType_WhiteCircleWingding
+    MarkerType_ArabicWide
+    MarkerType_SimplifiedChinese
+    MarkerType_TraditionalChinese
+    MarkerType_JapanSimplifiedChinese
+    MarkerType_JapanKorea
+    MarkerType_ArabicDictionary
+    MarkerType_ArabicAbjad
+    MarkerType_Hebrew
+    MarkerType_ThaiAlphabetic
+    MarkerType_ThaiNumeric
+    MarkerType_DevanagariVowel
+    MarkerType_DevanagariConsonant
+    MarkerType_DevanagariNumeric
+End Enum
+
+Public Enum ParagraphAlignment
+    ParagraphAlignment_Undefined
+    ParagraphAlignment_Left
+    ParagraphAlignment_Center
+    ParagraphAlignment_Right
+    ParagraphAlignment_Justify
+End Enum
+
+Public Enum ParagraphStyle
+    ParagraphStyle_Undefined
+    ParagraphStyle_None
+    ParagraphStyle_Normal
+    ParagraphStyle_Heading1
+    ParagraphStyle_Heading2
+    ParagraphStyle_Heading3
+    ParagraphStyle_Heading4
+    ParagraphStyle_Heading5
+    ParagraphStyle_Heading6
+    ParagraphStyle_Heading7
+    ParagraphStyle_Heading8
+    ParagraphStyle_Heading9
+End Enum
+
+Public Enum PointOptions
+    PointOptions_None = &H0
+    PointOptions_IncludeInset = &H1
+    PointOptions_Start = &H20
+    PointOptions_ClientCoordinates = &H100
+    PointOptions_AllowOffClient = &H200
+    PointOptions_Transform = &H400
+    PointOptions_NoHorizontalScroll = &H10000
+    PointOptions_NoVerticalScroll = &H40000
+End Enum
+
+Public Enum RangeGravity
+    RangeGravity_UIBehavior
+    RangeGravity_Backward
+    RangeGravity_Forward
+    RangeGravity_Inward
+    RangeGravity_Outward
+End Enum
+
+Public Enum RichEditMathMode
+    RichEditMathMode_NoMath
+    RichEditMathMode_MathOnly
+End Enum
+
+Public Enum SelectionOptions
+    SelectionOptions_StartActive = &H1
+    SelectionOptions_AtEndOfLine = &H2
+    SelectionOptions_Overtype = &H4
+    SelectionOptions_Active = &H8
+    SelectionOptions_Replace = &H10
+End Enum
+
+Public Enum SelectionType
+    SelectionType_None
+    SelectionType_InsertionPoint
+    SelectionType_Normal
+    SelectionType_InlineShape = 7
+    SelectionType_Shape
+End Enum
+
+Public Enum TabAlignment
+    TabAlignment_Left
+    TabAlignment_Center
+    TabAlignment_Right
+    TabAlignment_Decimal
+    TabAlignment_Bar
+End Enum
+
+Public Enum TabLeader
+    TabLeader_Spaces
+    TabLeader_Dots
+    TabLeader_Dashes
+    TabLeader_Lines
+    TabLeader_ThickLines
+    TabLeader_Equals
+End Enum
+
+Public Enum TextDecorations
+    TextDecorations_None
+    TextDecorations_Underline
+    TextDecorations_Strikethrough
+End Enum
+
+Public Enum TextGetOptions
+    TextGetOptions_None = &H0
+    TextGetOptions_AdjustCrlf = &H1
+    TextGetOptions_UseCrlf = &H2
+    TextGetOptions_UseObjectText = &H4
+    TextGetOptions_AllowFinalEop = &H8
+    TextGetOptions_NoHidden = &H20
+    TextGetOptions_IncludeNumbering = &H40
+    TextGetOptions_FormatRtf = &H2000
+    TextGetOptions_UseLf = &H1000000
+End Enum
+
+Public Enum TextRangeUnit
+    TextRangeUnit_Character
+    TextRangeUnit_Word
+    TextRangeUnit_Sentence
+    TextRangeUnit_Paragraph
+    TextRangeUnit_Line
+    TextRangeUnit_Story
+    TextRangeUnit_Screen
+    TextRangeUnit_Section
+    TextRangeUnit_Window
+    TextRangeUnit_CharacterFormat
+    TextRangeUnit_ParagraphFormat
+    TextRangeUnit_Object
+    TextRangeUnit_HardParagraph
+    TextRangeUnit_Cluster
+    TextRangeUnit_Bold
+    TextRangeUnit_Italic
+    TextRangeUnit_Underline
+    TextRangeUnit_Strikethrough
+    TextRangeUnit_ProtectedText
+    TextRangeUnit_Link
+    TextRangeUnit_SmallCaps
+    TextRangeUnit_AllCaps
+    TextRangeUnit_Hidden
+    TextRangeUnit_Outline
+    TextRangeUnit_Shadow
+    TextRangeUnit_Imprint
+    TextRangeUnit_Disabled
+    TextRangeUnit_Revised
+    TextRangeUnit_Subscript
+    TextRangeUnit_Superscript
+    TextRangeUnit_FontBound
+    TextRangeUnit_LinkProtected
+    TextRangeUnit_ContentLink
+End Enum
+
+Public Enum TextScript
+    TextScript_Undefined
+    TextScript_Ansi
+    TextScript_EastEurope
+    TextScript_Cyrillic
+    TextScript_Greek
+    TextScript_Turkish
+    TextScript_Hebrew
+    TextScript_Arabic
+    TextScript_Baltic
+    TextScript_Vietnamese
+    TextScript_Default
+    TextScript_Symbol
+    TextScript_Thai
+    TextScript_ShiftJis
+    TextScript_GB2312
+    TextScript_Hangul
+    TextScript_Big5
+    TextScript_PC437
+    TextScript_Oem
+    TextScript_Mac
+    TextScript_Armenian
+    TextScript_Syriac
+    TextScript_Thaana
+    TextScript_Devanagari
+    TextScript_Bengali
+    TextScript_Gurmukhi
+    TextScript_Gujarati
+    TextScript_Oriya
+    TextScript_Tamil
+    TextScript_Telugu
+    TextScript_Kannada
+    TextScript_Malayalam
+    TextScript_Sinhala
+    TextScript_Lao
+    TextScript_Tibetan
+    TextScript_Myanmar
+    TextScript_Georgian
+    TextScript_Jamo
+    TextScript_Ethiopic
+    TextScript_Cherokee
+    TextScript_Aboriginal
+    TextScript_Ogham
+    TextScript_Runic
+    TextScript_Khmer
+    TextScript_Mongolian
+    TextScript_Braille
+    TextScript_Yi
+    TextScript_Limbu
+    TextScript_TaiLe
+    TextScript_NewTaiLue
+    TextScript_SylotiNagri
+    TextScript_Kharoshthi
+    TextScript_Kayahli
+    TextScript_UnicodeSymbol
+    TextScript_Emoji
+    TextScript_Glagolitic
+    TextScript_Lisu
+    TextScript_Vai
+    TextScript_NKo
+    TextScript_Osmanya
+    TextScript_PhagsPa
+    TextScript_Gothic
+    TextScript_Deseret
+    TextScript_Tifinagh
+End Enum
+
+Public Enum TextSetOptions
+    TextSetOptions_None = &H0
+    TextSetOptions_UnicodeBidi = &H1
+    TextSetOptions_Unlink = &H8
+    TextSetOptions_Unhide = &H10
+    TextSetOptions_CheckTextLimit = &H20
+    TextSetOptions_FormatRtf = &H2000
+    TextSetOptions_ApplyRtfDocumentDefaults = &H4000
+End Enum
+
+Public Enum UnderlineType
+    UnderlineType_Undefined
+    UnderlineType_None
+    UnderlineType_Single
+    UnderlineType_Words
+    UnderlineType_Double
+    UnderlineType_Dotted
+    UnderlineType_Dash
+    UnderlineType_DashDot
+    UnderlineType_DashDotDot
+    UnderlineType_Wave
+    UnderlineType_Thick
+    UnderlineType_Thin
+    UnderlineType_DoubleWave
+    UnderlineType_HeavyWave
+    UnderlineType_LongDash
+    UnderlineType_ThickDash
+    UnderlineType_ThickDashDot
+    UnderlineType_ThickDashDotDot
+    UnderlineType_ThickDotted
+    UnderlineType_ThickLongDash
+End Enum
+
+Public Enum VerticalCharacterAlignment
+    VerticalCharacterAlignment_Top
+    VerticalCharacterAlignment_Baseline
+    VerticalCharacterAlignment_Bottom
+End Enum
+
+Public Type FontWeight
+    Weight As Integer
+    Private Sub Type_Assignment(ByVal RHS As Integer): Me.Weight = RHS: End Sub
+    Private Function Type_Conversion() As Integer: Type_Conversion = Me.Weight: End Function
+End Type
+
+End Module

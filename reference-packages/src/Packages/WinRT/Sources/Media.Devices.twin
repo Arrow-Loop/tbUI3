@@ -1,0 +1,1207 @@
+[InterfaceId("596F759F-50DF-4454-BC63-4D3D01B61958")]
+Interface ICallControlEventHandler Extends IUnknown
+    Sub Invoke(ByVal Sender As ICallControl)
+End Interface
+
+[InterfaceId("5ABBFFDB-C21F-4BC4-891B-257E28C1B1A4")]
+Interface IDialRequestedEventHandler Extends IUnknown
+    Sub Invoke(ByVal Sender As ICallControl, ByVal Args As IDialRequestedEventArgs)
+End Interface
+
+[InterfaceId("E637A454-C527-422C-8926-C9AF83B559A0")]
+Interface IKeypadPressedEventHandler Extends IUnknown
+    Sub Invoke(ByVal Sender As ICallControl, ByVal Args As IKeypadPressedEventArgs)
+End Interface
+
+[InterfaceId("BAF257D1-4EBD-4B84-9F47-6EC43D75D8B1")]
+Interface IRedialRequestedEventHandler Extends IUnknown
+    Sub Invoke(ByVal Sender As ICallControl, ByVal Args As IRedialRequestedEventArgs)
+End Interface
+
+[InterfaceId("08F3863A-0018-445B-93D2-646D1C5ED05C")]
+Interface IAdvancedPhotoCaptureSettings Extends IInspectable
+    Property Get Mode() As AdvancedPhotoMode
+    Property Let Mode(ByVal Value As AdvancedPhotoMode)
+End Interface
+
+[InterfaceId("E6D0BC9D-E1CB-5ED0-8EDE-7D037BCC2E07")]
+Interface IIterator_AdvancedPhotoMode Extends IInspectable
+    Property Get Current() As AdvancedPhotoMode
+    Property Get HasCurrent() As BooleanByte
+    Function MoveNext() As BooleanByte
+    Function GetMany(ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("7D090784-70A9-570C-BE82-0D0890318975")]
+Interface IIterable_AdvancedPhotoMode Extends IInspectable
+    Function First() As IIterator_AdvancedPhotoMode
+End Interface
+
+[InterfaceId("D05843B6-03C8-523E-B6FB-1FCB03218A54")]
+Interface IVectorView_AdvancedPhotoMode Extends IInspectable
+    Function GetAt(ByVal Index As Long) As AdvancedPhotoMode
+    Property Get Size() As Long
+    Function IndexOf(ByVal Value As AdvancedPhotoMode, Index As Long) As BooleanByte
+    Function GetMany(ByVal StartIndex As Long, ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("C5B15486-9001-4682-9309-68EAE0080EEC")]
+Interface IAdvancedPhotoControl Extends IInspectable
+    Property Get Supported() As BooleanByte
+    Property Get SupportedModes() As IVectorView_AdvancedPhotoMode
+    Property Get Mode() As AdvancedPhotoMode
+    [PreserveSig]
+    Function Configure(ByVal Settings As IAdvancedPhotoCaptureSettings) As HRESULT
+End Interface
+
+[InterfaceId("DE6FF4D3-2B96-4583-80AB-B5B01DC6A8D7")]
+Interface IAdvancedVideoCaptureDeviceController Extends IInspectable
+    [PreserveSig]
+    Function SetDeviceProperty(ByVal PropertyId As LongPtr, ByVal PropertyValue As IInspectable) As HRESULT
+    Function GetDeviceProperty(ByVal PropertyId As LongPtr) As IInspectable
+End Interface
+
+[InterfaceId("C621B82D-D6F0-5C1B-A388-A6E938407146")]
+Interface IAdvancedVideoCaptureDeviceController10 Extends IInspectable
+    Property Get CameraOcclusionInfo() As ICameraOcclusionInfo
+End Interface
+
+[InterfaceId("D5B65AE2-3772-580C-A630-E75DE9106904")]
+Interface IAdvancedVideoCaptureDeviceController11 Extends IInspectable
+    Function TryAcquireExclusiveControl(ByVal DeviceId As LongPtr, ByVal Mode As MediaCaptureDeviceExclusiveControlReleaseMode) As BooleanByte
+End Interface
+
+[InterfaceId("8BB94F8F-F11A-43DB-B402-11930B80AE56")]
+Interface IAdvancedVideoCaptureDeviceController2 Extends IInspectable
+    Property Get LowLagPhotoSequence() As ILowLagPhotoSequenceControl
+    Property Get LowLagPhoto() As ILowLagPhotoControl
+    Property Get SceneModeControl() As ISceneModeControl
+    Property Get TorchControl() As ITorchControl
+    Property Get FlashControl() As IFlashControl
+    Property Get WhiteBalanceControl() As IWhiteBalanceControl
+    Property Get ExposureControl() As IExposureControl
+    Property Get FocusControl() As IFocusControl
+    Property Get ExposureCompensationControl() As IExposureCompensationControl
+    Property Get IsoSpeedControl() As IIsoSpeedControl
+    Property Get RegionsOfInterestControl() As IRegionsOfInterestControl
+    Property Get PrimaryUse() As CaptureUse
+    Property Set PrimaryUse(ByVal Value As CaptureUse)
+End Interface
+
+[InterfaceId("A98B8F34-EE0D-470C-B9F0-4229C4BBD089")]
+Interface IAdvancedVideoCaptureDeviceController3 Extends IInspectable
+    Property Get VariablePhotoSequenceController() As IVariablePhotoSequenceController
+    Property Get PhotoConfirmationControl() As IPhotoConfirmationControl
+    Property Get ZoomControl() As IZoomControl
+End Interface
+
+[InterfaceId("EA9FBFAF-D371-41C3-9A17-824A87EBDFD2")]
+Interface IAdvancedVideoCaptureDeviceController4 Extends IInspectable
+    Property Get ExposurePriorityVideoControl() As IExposurePriorityVideoControl
+    Property Get DesiredOptimization() As MediaCaptureOptimization
+    Property Let DesiredOptimization(ByVal Value As MediaCaptureOptimization)
+    Property Get HdrVideoControl() As IHdrVideoControl
+    Property Get OpticalImageStabilizationControl() As IOpticalImageStabilizationControl
+    Property Get AdvancedPhotoControl() As IAdvancedPhotoControl
+End Interface
+
+[InterfaceId("33512B17-B9CB-4A23-B875-F9EAAB535492")]
+Interface IAdvancedVideoCaptureDeviceController5 Extends IInspectable
+    Property Get Id() As LongPtr
+    Function GetDevicePropertyById(ByVal PropertyId As LongPtr, ByVal MaxPropertyValueSize As IReference_UInt32) As IVideoDeviceControllerGetDevicePropertyResult
+    Function SetDevicePropertyById(ByVal PropertyId As LongPtr, ByVal PropertyValue As IInspectable) As VideoDeviceControllerSetDevicePropertyStatus
+    Function GetDevicePropertyByExtendedId(ByVal ExtendedPropertyIdSize As Long, ExtendedPropertyId As Any, ByVal MaxPropertyValueSize As IReference_UInt32) As IVideoDeviceControllerGetDevicePropertyResult
+    Function SetDevicePropertyByExtendedId(ByVal ExtendedPropertyIdSize As Long, ExtendedPropertyId As Any, ByVal PropertyValueSize As Long, PropertyValue As Any) As VideoDeviceControllerSetDevicePropertyStatus
+End Interface
+
+[InterfaceId("B6563A53-68A1-44B7-9F89-B5FA97AC0CBE")]
+Interface IAdvancedVideoCaptureDeviceController6 Extends IInspectable
+    Property Get VideoTemporalDenoisingControl() As IVideoTemporalDenoisingControl
+End Interface
+
+[InterfaceId("8D2927F0-A054-50E7-B7DF-7C04234D10F0")]
+Interface IAdvancedVideoCaptureDeviceController7 Extends IInspectable
+    Property Get InfraredTorchControl() As IInfraredTorchControl
+End Interface
+
+[InterfaceId("D843F010-E7FB-595B-9A78-0E54C4532B43")]
+Interface IAdvancedVideoCaptureDeviceController8 Extends IInspectable
+    Property Get PanelBasedOptimizationControl() As IPanelBasedOptimizationControl
+End Interface
+
+[InterfaceId("8BDCA95D-0255-51BC-A10D-5A169EC1625A")]
+Interface IAdvancedVideoCaptureDeviceController9 Extends IInspectable
+    Property Get DigitalWindowControl() As IDigitalWindowControl
+End Interface
+
+[InterfaceId("EDD4A388-79C7-4F7C-90E8-EF934B21580A")]
+Interface IAudioDeviceController Extends IInspectable ' requires IMediaDeviceController
+    Property Let Muted(ByVal Value As BooleanByte)
+    Property Get Muted() As BooleanByte
+    Property Let VolumePercent(ByVal Value As Single)
+    Property Get VolumePercent() As Single
+End Interface
+
+[InterfaceId("2E1F3D72-A58D-5B0A-B42D-3660C04CFEEB")]
+Interface IAsyncOperationIModuleCommandResult Extends IInspectable
+    Property Set Completed(ByVal Handler As IAsyncOperationCompletedHandlerIModuleCommandResult)
+    Property Get Completed() As IAsyncOperationCompletedHandlerIModuleCommandResult
+    Function GetResults() As IModuleCommandResult
+End Interface
+
+[InterfaceId("CB786404-F2E8-5E0B-BF12-39E31483CFAE")]
+Interface IAsyncOperationCompletedHandlerIModuleCommandResult Extends IUnknown
+    Sub Invoke(ByVal AsyncOperation As IAsyncOperationIModuleCommandResult, ByVal AsyncStatus As AsyncStatus)
+End Interface
+
+[InterfaceId("86CFAC36-47C1-4B33-9852-8773EC4BE123")]
+Interface IAudioDeviceModule Extends IInspectable
+    Property Get ClassId() As LongPtr
+    Property Get DisplayName() As LongPtr
+    Property Get InstanceId() As Long
+    Property Get MajorVersion() As Long
+    Property Get MinorVersion() As Long
+    Function SendCommandAsync(ByVal Command As IBuffer) As IAsyncOperationIModuleCommandResult
+End Interface
+
+[InterfaceId("E3E3CCAF-224C-48BE-956B-9A13134E96E8")]
+Interface IAudioDeviceModuleNotificationEventArgs Extends IInspectable
+    Property Get Module() As IAudioDeviceModule
+    Property Get NotificationData() As IBuffer
+End Interface
+
+[InterfaceId("B4CBBFB7-9851-56C9-839D-A10A8B1BB234")]
+Interface IIterator_IAudioDeviceModule Extends IInspectable
+    Property Get Current() As IAudioDeviceModule
+    Property Get HasCurrent() As BooleanByte
+    Function MoveNext() As BooleanByte
+    Function GetMany(ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("7EEB51C3-D70E-548A-85C2-3CF71B4A124C")]
+Interface IIterable_IAudioDeviceModule Extends IInspectable
+    Function First() As IIterator_IAudioDeviceModule
+End Interface
+
+[InterfaceId("B9F55617-48EC-5AD7-95CA-33395284F28B")]
+Interface IVectorView_IAudioDeviceModule Extends IInspectable
+    Function GetAt(ByVal Index As Long) As IAudioDeviceModule
+    Property Get Size() As Long
+    Function IndexOf(ByVal Value As IAudioDeviceModule, Index As Long) As BooleanByte
+    Function GetMany(ByVal StartIndex As Long, ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("B2F6B1FD-7092-5724-B2CE-91B1176E80E1")]
+Interface ITypedEventHandlerAudioDeviceModulesManagerModuleNotificationReceived Extends IUnknown
+    Sub Invoke(ByVal Sender As IAudioDeviceModulesManager, ByVal Args As IAudioDeviceModuleNotificationEventArgs)
+End Interface
+
+[InterfaceId("6AA40C4D-960A-4D1C-B318-0022604547ED")]
+Interface IAudioDeviceModulesManager Extends IInspectable
+    [PreserveSig]
+    Function AddModuleNotificationReceived(ByVal Handler As ITypedEventHandlerAudioDeviceModulesManagerModuleNotificationReceived, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveModuleNotificationReceived(ByVal Token As EventRegistrationToken) As HRESULT
+    Function FindAllById(ByVal ModuleId As LongPtr) As IVectorView_IAudioDeviceModule
+    Function FindAll() As IVectorView_IAudioDeviceModule
+End Interface
+
+[InterfaceId("8DB03670-E64D-4773-96C0-BC7EBF0E063F")]
+Interface IAudioDeviceModulesManagerFactory Extends IInspectable
+    Function Create(ByVal DeviceId As LongPtr) As IAudioDeviceModulesManager
+End Interface
+
+[InterfaceId("A520D0D6-AE8D-45DB-8011-CA49D3B3E578")]
+Interface ICallControl Extends IInspectable
+    Function IndicateNewIncomingCall(ByVal EnableRinger As BooleanByte, ByVal CallerId As LongPtr) As UInt64
+    Function IndicateNewOutgoingCall() As UInt64
+    [PreserveSig]
+    Function IndicateActiveCall(ByVal CallToken As UInt64) As HRESULT
+    [PreserveSig]
+    Function EndCall(ByVal CallToken As UInt64) As HRESULT
+    Property Get HasRinger() As BooleanByte
+    [PreserveSig]
+    Function AddAnswerRequested(ByVal Handler As ICallControlEventHandler, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveAnswerRequested(ByVal Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function AddHangUpRequested(ByVal Handler As ICallControlEventHandler, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveHangUpRequested(ByVal Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function AddDialRequested(ByVal Handler As IDialRequestedEventHandler, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveDialRequested(ByVal Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function AddRedialRequested(ByVal Handler As IRedialRequestedEventHandler, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveRedialRequested(ByVal Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function AddKeypadPressed(ByVal Handler As IKeypadPressedEventHandler, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveKeypadPressed(ByVal Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function AddAudioTransferRequested(ByVal Handler As ICallControlEventHandler, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveAudioTransferRequested(ByVal Token As EventRegistrationToken) As HRESULT
+End Interface
+
+[InterfaceId("03945AD5-85AB-40E1-AF19-56C94303B019")]
+Interface ICallControlStatics Extends IInspectable
+    Function GetDefault() As ICallControl
+    Function FromId(ByVal DeviceId As LongPtr) As ICallControl
+End Interface
+
+[InterfaceId("71561417-E06E-54E7-B25E-39213C4E65D6")]
+Interface ITypedEventHandlerCameraOcclusionInfoStateChanged Extends IUnknown
+    Sub Invoke(ByVal Sender As ICameraOcclusionInfo, ByVal Args As ICameraOcclusionStateChangedEventArgs)
+End Interface
+
+[InterfaceId("AF6C4AD0-A84D-5DB6-BE58-A5DA21CFE011")]
+Interface ICameraOcclusionInfo Extends IInspectable
+    Function GetState() As ICameraOcclusionState
+    Function IsOcclusionKindSupported(ByVal OcclusionKind As CameraOcclusionKind) As BooleanByte
+    [PreserveSig]
+    Function AddStateChanged(ByVal Handler As ITypedEventHandlerCameraOcclusionInfoStateChanged, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveStateChanged(ByVal Token As EventRegistrationToken) As HRESULT
+End Interface
+
+[InterfaceId("430ADEB8-6842-5E55-9BDE-04B4EF3A8A57")]
+Interface ICameraOcclusionState Extends IInspectable
+    Property Get IsOccluded() As BooleanByte
+    Function IsOcclusionKind(ByVal OcclusionKind As CameraOcclusionKind) As BooleanByte
+End Interface
+
+[InterfaceId("8512D848-C0DE-57CA-A1CA-FB2C3D23DF55")]
+Interface ICameraOcclusionStateChangedEventArgs Extends IInspectable
+    Property Get State() As ICameraOcclusionState
+End Interface
+
+[InterfaceId("110F882F-1C05-4657-A18E-47C9B69F07AB")]
+Interface IDefaultAudioDeviceChangedEventArgs Extends IInspectable
+    Property Get Id() As LongPtr
+    Property Get Role() As AudioDeviceRole
+End Interface
+
+[InterfaceId("037B929E-953C-4286-8866-4F0F376C855A")]
+Interface IDialRequestedEventArgs Extends IInspectable
+    [PreserveSig]
+    Function Handled() As HRESULT
+    Property Get Contact() As IInspectable
+End Interface
+
+[InterfaceId("DD4F21DD-D173-5C6B-8C25-BDD26D5122B1")]
+Interface IDigitalWindowBounds Extends IInspectable
+    Property Get NormalizedOriginTop() As Double
+    Property Let NormalizedOriginTop(ByVal Value As Double)
+    Property Get NormalizedOriginLeft() As Double
+    Property Let NormalizedOriginLeft(ByVal Value As Double)
+    Property Get Scale() As Double
+    Property Let Scale(ByVal Value As Double)
+End Interface
+
+[InterfaceId("D78BAD2C-F721-5244-A196-B56CCBEC606C")]
+Interface IDigitalWindowCapability Extends IInspectable
+    Property Get Width() As Long
+    Property Get Height() As Long
+    Property Get MinScaleValue() As Double
+    Property Get MaxScaleValue() As Double
+    Property Get MinScaleValueWithoutUpsampling() As Double
+    Property Get NormalizedFieldOfViewLimit() As RECTF
+End Interface
+
+[InterfaceId("D1780C06-073E-5075-99E2-E12649268C03")]
+Interface IIterator_IDigitalWindowCapability Extends IInspectable
+    Property Get Current() As IDigitalWindowCapability
+    Property Get HasCurrent() As BooleanByte
+    Function MoveNext() As BooleanByte
+    Function GetMany(ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("A4F28D49-FB50-5C0D-BA48-6695E4612500")]
+Interface IIterable_IDigitalWindowCapability Extends IInspectable
+    Function First() As IIterator_IDigitalWindowCapability
+End Interface
+
+[InterfaceId("18CB0C91-2753-542F-A33A-E4F9410F923B")]
+Interface IVectorView_IDigitalWindowCapability Extends IInspectable
+    Function GetAt(ByVal Index As Long) As IDigitalWindowCapability
+    Property Get Size() As Long
+    Function IndexOf(ByVal Value As IDigitalWindowCapability, Index As Long) As BooleanByte
+    Function GetMany(ByVal StartIndex As Long, ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("23B69EFF-65D2-53EA-8780-DE582B48B544")]
+Interface IDigitalWindowControl Extends IInspectable
+    Property Get IsSupported() As BooleanByte
+    [PreserveSig]
+    Property Get SupportedModes(ValueSize As Long, ValueDigitalWindowModePtr As Any) As HRESULT
+    Property Get CurrentMode() As DigitalWindowMode
+    Function GetBounds() As IDigitalWindowBounds
+    [PreserveSig]
+    Function Configure(ByVal DigitalWindowMode As DigitalWindowMode) As HRESULT
+    [PreserveSig]
+    Function ConfigureWithBounds(ByVal DigitalWindowMode As DigitalWindowMode, ByVal DigitalWindowBounds As IDigitalWindowBounds) As HRESULT
+    Property Get SupportedCapabilities() As IVectorView_IDigitalWindowCapability
+    Function GetCapabilityForSize(ByVal Width As Long, ByVal Height As Long) As IDigitalWindowCapability
+End Interface
+
+[InterfaceId("81C8E834-DCEC-4011-A610-1F3847E64ACA")]
+Interface IExposureCompensationControl Extends IInspectable
+    Property Get Supported() As BooleanByte
+    Property Get Min() As Single
+    Property Get Max() As Single
+    Property Get Step() As Single
+    Property Get Value() As Single
+    Function SetValueAsync(ByVal Value As Single) As IAsyncAction
+End Interface
+
+[InterfaceId("09E8CBE2-AD96-4F28-A0E0-96ED7E1B5FD2")]
+Interface IExposureControl Extends IInspectable
+    Property Get Supported() As BooleanByte
+    Property Get Auto() As BooleanByte
+    Function SetAutoAsync(ByVal Value As BooleanByte) As IAsyncAction
+    Property Get Min() As TimeSpan
+    Property Get Max() As TimeSpan
+    Property Get Step() As TimeSpan
+    Property Get Value() As TimeSpan
+    Function SetValueAsync(ByVal ShutterDuration As TimeSpan) As IAsyncAction
+End Interface
+
+[InterfaceId("2CB240A3-5168-4271-9EA5-47621A98A352")]
+Interface IExposurePriorityVideoControl Extends IInspectable
+    Property Get Supported() As BooleanByte
+    Property Get Enabled() As BooleanByte
+    Property Let Enabled(ByVal Value As BooleanByte)
+End Interface
+
+[InterfaceId("DEF41DBE-7D68-45E3-8C0F-BE7BB32837D0")]
+Interface IFlashControl Extends IInspectable
+    Property Get Supported() As BooleanByte
+    Property Get PowerSupported() As BooleanByte
+    Property Get RedEyeReductionSupported() As BooleanByte
+    Property Get Enabled() As BooleanByte
+    Property Let Enabled(ByVal Value As BooleanByte)
+    Property Get Auto() As BooleanByte
+    Property Let Auto(ByVal Value As BooleanByte)
+    Property Get RedEyeReduction() As BooleanByte
+    Property Let RedEyeReduction(ByVal Value As BooleanByte)
+    Property Get PowerPercent() As Single
+    Property Let PowerPercent(ByVal Value As Single)
+End Interface
+
+[InterfaceId("7D29CC9E-75E1-4AF7-BD7D-4E38E1C06CD6")]
+Interface IFlashControl2 Extends IInspectable
+    Property Get AssistantLightSupported() As BooleanByte
+    Property Get AssistantLightEnabled() As BooleanByte
+    Property Let AssistantLightEnabled(ByVal Value As BooleanByte)
+End Interface
+
+[InterfaceId("F9A43CD4-B300-541F-AF79-3DE3400E16AF")]
+Interface IIterator_FocusPreset Extends IInspectable
+    Property Get Current() As FocusPreset
+    Property Get HasCurrent() As BooleanByte
+    Function MoveNext() As BooleanByte
+    Function GetMany(ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("561BC21F-4AE2-580A-A216-0AD48F373A4C")]
+Interface IIterable_FocusPreset Extends IInspectable
+    Function First() As IIterator_FocusPreset
+End Interface
+
+[InterfaceId("D8A495E3-D7D4-5E9F-A9C2-6B250655A2E0")]
+Interface IVectorView_FocusPreset Extends IInspectable
+    Function GetAt(ByVal Index As Long) As FocusPreset
+    Property Get Size() As Long
+    Function IndexOf(ByVal Value As FocusPreset, Index As Long) As BooleanByte
+    Function GetMany(ByVal StartIndex As Long, ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("C0D889F6-5228-4453-B153-85606592B238")]
+Interface IFocusControl Extends IInspectable
+    Property Get Supported() As BooleanByte
+    Property Get SupportedPresets() As IVectorView_FocusPreset
+    Property Get Preset() As FocusPreset
+    Function SetPresetAsync(ByVal Preset As FocusPreset) As IAsyncAction
+    Function SetPresetWithCompletionOptionAsync(ByVal Preset As FocusPreset, ByVal CompleteBeforeFocus As BooleanByte) As IAsyncAction
+    Property Get Min() As Long
+    Property Get Max() As Long
+    Property Get Step() As Long
+    Property Get Value() As Long
+    Function SetValueAsync(ByVal Focus As Long) As IAsyncAction
+    Function FocusAsync() As IAsyncAction
+End Interface
+
+[InterfaceId("07489AC5-3C71-59C6-B7DC-7F21341C2F71")]
+Interface IIterator_AutoFocusRange Extends IInspectable
+    Property Get Current() As AutoFocusRange
+    Property Get HasCurrent() As BooleanByte
+    Function MoveNext() As BooleanByte
+    Function GetMany(ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("751664C6-F8D6-50A3-AB80-137C6D908C55")]
+Interface IIterable_AutoFocusRange Extends IInspectable
+    Function First() As IIterator_AutoFocusRange
+End Interface
+
+[InterfaceId("5DF64825-C9E1-525F-9AEB-3C0F5F805F26")]
+Interface IVectorView_AutoFocusRange Extends IInspectable
+    Function GetAt(ByVal Index As Long) As AutoFocusRange
+    Property Get Size() As Long
+    Function IndexOf(ByVal Value As AutoFocusRange, Index As Long) As BooleanByte
+    Function GetMany(ByVal StartIndex As Long, ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("B02944E1-F649-511E-80DD-2E2B20379DEB")]
+Interface IIterator_ManualFocusDistance Extends IInspectable
+    Property Get Current() As ManualFocusDistance
+    Property Get HasCurrent() As BooleanByte
+    Function MoveNext() As BooleanByte
+    Function GetMany(ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("CF8CBEB1-2A4C-522D-962F-84C31A598D68")]
+Interface IIterable_ManualFocusDistance Extends IInspectable
+    Function First() As IIterator_ManualFocusDistance
+End Interface
+
+[InterfaceId("85F7663B-5467-5736-8D34-34395AA6D123")]
+Interface IVectorView_ManualFocusDistance Extends IInspectable
+    Function GetAt(ByVal Index As Long) As ManualFocusDistance
+    Property Get Size() As Long
+    Function IndexOf(ByVal Value As ManualFocusDistance, Index As Long) As BooleanByte
+    Function GetMany(ByVal StartIndex As Long, ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("F9A43CD4-B300-541F-AF79-3DE3400E16AF")]
+Interface IIterator_FocusMode Extends IInspectable
+    Property Get Current() As FocusMode
+    Property Get HasCurrent() As BooleanByte
+    Function MoveNext() As BooleanByte
+    Function GetMany(ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("561BC21F-4AE2-580A-A216-0AD48F373A4C")]
+Interface IIterable_FocusMode Extends IInspectable
+    Function First() As IIterator_FocusMode
+End Interface
+
+[InterfaceId("C877975C-F3C3-5B3D-93E4-5787BE9B7F58")]
+Interface IVectorView_FocusMode Extends IInspectable
+    Function GetAt(ByVal Index As Long) As FocusMode
+    Property Get Size() As Long
+    Function IndexOf(ByVal Value As FocusMode, Index As Long) As BooleanByte
+    Function GetMany(ByVal StartIndex As Long, ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("3F7CFF48-C534-4E9E-94C3-52EF2AFD5D07")]
+Interface IFocusControl2 Extends IInspectable
+    Property Get FocusChangedSupported() As BooleanByte
+    Property Get WaitForFocusSupported() As BooleanByte
+    Property Get SupportedFocusModes() As IVectorView_FocusMode
+    Property Get SupportedFocusDistances() As IVectorView_ManualFocusDistance
+    Property Get SupportedFocusRanges() As IVectorView_AutoFocusRange
+    Property Get Mode() As FocusMode
+    Property Get FocusState() As MediaCaptureFocusState
+    Function UnlockAsync() As IAsyncAction
+    Function LockAsync() As IAsyncAction
+    [PreserveSig]
+    Function Configure(ByVal Settings As IFocusSettings) As HRESULT
+End Interface
+
+[InterfaceId("79958F6B-3263-4275-85D6-AEAE891C96EE")]
+Interface IFocusSettings Extends IInspectable
+    Property Get Mode() As FocusMode
+    Property Let Mode(ByVal Value As FocusMode)
+    Property Get AutoFocusRange() As AutoFocusRange
+    Property Let AutoFocusRange(ByVal Value As AutoFocusRange)
+    Property Get Value() As IReference_UInt32
+    Property Set Value(ByVal Value As IReference_UInt32)
+    Property Get Distance() As IReference_ManualFocusDistance
+    Property Set Distance(ByVal Value As IReference_ManualFocusDistance)
+    Property Get WaitForFocus() As BooleanByte
+    Property Let WaitForFocus(ByVal Value As BooleanByte)
+    Property Get DisableDriverFallback() As BooleanByte
+    Property Let DisableDriverFallback(ByVal Value As BooleanByte)
+End Interface
+
+[InterfaceId("3DB61D13-0F30-5D2D-99CB-30C7B9009878")]
+Interface IIterator_HdrVideoMode Extends IInspectable
+    Property Get Current() As HdrVideoMode
+    Property Get HasCurrent() As BooleanByte
+    Function MoveNext() As BooleanByte
+    Function GetMany(ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("1D9679A7-2D06-5294-AC67-F9CD3561DCB8")]
+Interface IIterable_HdrVideoMode Extends IInspectable
+    Function First() As IIterator_HdrVideoMode
+End Interface
+
+[InterfaceId("AD0A4BBD-7630-53A4-AA9B-35A8C7D4958C")]
+Interface IVectorView_HdrVideoMode Extends IInspectable
+    Function GetAt(ByVal Index As Long) As HdrVideoMode
+    Property Get Size() As Long
+    Function IndexOf(ByVal Value As HdrVideoMode, Index As Long) As BooleanByte
+    Function GetMany(ByVal StartIndex As Long, ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("55D8E2D0-30C0-43BF-9B9A-9799D70CED94")]
+Interface IHdrVideoControl Extends IInspectable
+    Property Get Supported() As BooleanByte
+    Property Get SupportedModes() As IVectorView_HdrVideoMode
+    Property Get Mode() As HdrVideoMode
+    Property Let Mode(ByVal Value As HdrVideoMode)
+End Interface
+
+[InterfaceId("42A9E83E-1786-57F4-906E-2F9B6F9F849A")]
+Interface IIterator_InfraredTorchMode Extends IInspectable
+    Property Get Current() As InfraredTorchMode
+    Property Get HasCurrent() As BooleanByte
+    Function MoveNext() As BooleanByte
+    Function GetMany(ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("58A4B7B6-36C3-5541-B383-3690D7293C10")]
+Interface IIterable_InfraredTorchMode Extends IInspectable
+    Function First() As IIterator_InfraredTorchMode
+End Interface
+
+[InterfaceId("B5AF65DE-BDF4-5155-B2B6-3139978E9C24")]
+Interface IVectorView_InfraredTorchMode Extends IInspectable
+    Function GetAt(ByVal Index As Long) As InfraredTorchMode
+    Property Get Size() As Long
+    Function IndexOf(ByVal Value As InfraredTorchMode, Index As Long) As BooleanByte
+    Function GetMany(ByVal StartIndex As Long, ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("1CBA2C83-6CB6-5A04-A6FC-3BE7B33FF056")]
+Interface IInfraredTorchControl Extends IInspectable
+    Property Get IsSupported() As BooleanByte
+    Property Get SupportedModes() As IVectorView_InfraredTorchMode
+    Property Get CurrentMode() As InfraredTorchMode
+    Property Let CurrentMode(ByVal Value As InfraredTorchMode)
+    Property Get MinPower() As Long
+    Property Get MaxPower() As Long
+    Property Get PowerStep() As Long
+    Property Get Power() As Long
+    Property Let Power(ByVal Value As Long)
+End Interface
+
+[InterfaceId("1B33AF76-980B-5348-916A-793F61B555A0")]
+Interface IIterator_IsoSpeedPreset Extends IInspectable
+    Property Get Current() As IsoSpeedPreset
+    Property Get HasCurrent() As BooleanByte
+    Function MoveNext() As BooleanByte
+    Function GetMany(ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("94839ABE-9712-545A-A94D-A567A3E8DFB7")]
+Interface IIterable_IsoSpeedPreset Extends IInspectable
+    Function First() As IIterator_IsoSpeedPreset
+End Interface
+
+[InterfaceId("EF6C9FE3-06F9-5EFF-98A8-917D9644C946")]
+Interface IVectorView_IsoSpeedPreset Extends IInspectable
+    Function GetAt(ByVal Index As Long) As IsoSpeedPreset
+    Property Get Size() As Long
+    Function IndexOf(ByVal Value As IsoSpeedPreset, Index As Long) As BooleanByte
+    Function GetMany(ByVal StartIndex As Long, ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("27B6C322-25AD-4F1B-AAAB-524AB376CA33")]
+Interface IIsoSpeedControl Extends IInspectable
+    Property Get Supported() As BooleanByte
+    Property Get SupportedPresets() As IVectorView_IsoSpeedPreset
+    Property Get Preset() As IsoSpeedPreset
+    Function SetPresetAsync(ByVal Preset As IsoSpeedPreset) As IAsyncAction
+End Interface
+
+[InterfaceId("6F1578F2-6D77-4F8A-8C2F-6130B6395053")]
+Interface IIsoSpeedControl2 Extends IInspectable
+    Property Get Min() As Long
+    Property Get Max() As Long
+    Property Get Step() As Long
+    Property Get Value() As Long
+    Function SetValueAsync(ByVal IsoSpeed As Long) As IAsyncAction
+    Property Get Auto() As BooleanByte
+    Function SetAutoAsync() As IAsyncAction
+End Interface
+
+[InterfaceId("D3A43900-B4FA-49CD-9442-89AF6568F601")]
+Interface IKeypadPressedEventArgs Extends IInspectable
+    Property Get TelephonyKey() As TelephonyKey
+End Interface
+
+[InterfaceId("6D5C4DD0-FADF-415D-AEE6-3BAA529300C9")]
+Interface ILowLagPhotoControl Extends IInspectable
+    Function GetHighestConcurrentFrameRate(ByVal CaptureProperties As IMediaEncodingProperties) As IMediaRatio
+    Function GetCurrentFrameRate() As IMediaRatio
+    Property Get ThumbnailEnabled() As BooleanByte
+    Property Let ThumbnailEnabled(ByVal Value As BooleanByte)
+    Property Get ThumbnailFormat() As MediaThumbnailFormat
+    Property Let ThumbnailFormat(ByVal Value As MediaThumbnailFormat)
+    Property Get DesiredThumbnailSize() As Long
+    Property Let DesiredThumbnailSize(ByVal Value As Long)
+    Property Get HardwareAcceleratedThumbnailSupported() As Long
+End Interface
+
+[InterfaceId("3DCF909D-6D16-409C-BAFE-B9A594C6FDE6")]
+Interface ILowLagPhotoSequenceControl Extends IInspectable
+    Property Get Supported() As BooleanByte
+    Property Get MaxPastPhotos() As Long
+    Property Get MaxPhotosPerSecond() As Single
+    Property Get PastPhotoLimit() As Long
+    Property Let PastPhotoLimit(ByVal Value As Long)
+    Property Get PhotosPerSecondLimit() As Single
+    Property Let PhotosPerSecondLimit(ByVal Value As Single)
+    Function GetHighestConcurrentFrameRate(ByVal CaptureProperties As IMediaEncodingProperties) As IMediaRatio
+    Function GetCurrentFrameRate() As IMediaRatio
+    Property Get ThumbnailEnabled() As BooleanByte
+    Property Let ThumbnailEnabled(ByVal Value As BooleanByte)
+    Property Get ThumbnailFormat() As MediaThumbnailFormat
+    Property Let ThumbnailFormat(ByVal Value As MediaThumbnailFormat)
+    Property Get DesiredThumbnailSize() As Long
+    Property Let DesiredThumbnailSize(ByVal Value As Long)
+    Property Get HardwareAcceleratedThumbnailSupported() As Long
+End Interface
+
+[InterfaceId("EFA8DFA9-6F75-4863-BA0B-583F3036B4DE")]
+Interface IMediaDeviceControl Extends IInspectable
+    Property Get Capabilities() As IMediaDeviceControlCapabilities
+    Function TryGetValue(Value As Double) As BooleanByte
+    Function TrySetValue(ByVal Value As Double) As BooleanByte
+    Function TryGetAuto(Value As BooleanByte) As BooleanByte
+    Function TrySetAuto(ByVal Value As BooleanByte) As BooleanByte
+End Interface
+
+[InterfaceId("23005816-EB85-43E2-B92B-8240D5EE70EC")]
+Interface IMediaDeviceControlCapabilities Extends IInspectable
+    Property Get Supported() As BooleanByte
+    Property Get Min() As Double
+    Property Get Max() As Double
+    Property Get Step() As Double
+    Property Get Default() As Double
+    Property Get AutoModeSupported() As BooleanByte
+End Interface
+
+[InterfaceId("7C094AEC-C8F3-5F49-99C7-B66D8414200E")]
+Interface IIterator_IMediaEncodingProperties Extends IInspectable
+    Property Get Current() As IDependencyObject
+    Property Get HasCurrent() As BooleanByte
+    Function MoveNext() As BooleanByte
+    Function GetMany(ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("D7FC75D5-3492-5BBB-9B34-DAC3E24E79D0")]
+Interface IIterable_IMediaEncodingProperties Extends IInspectable
+    Function First() As IIterator_IMediaEncodingProperties
+End Interface
+
+[InterfaceId("0F6C3B8B-5818-5CBF-BF26-6616BFC308C4")]
+Interface IVectorView_IMediaEncodingProperties Extends IInspectable
+    Function GetAt(ByVal Index As Long) As IMediaEncodingProperties
+    Property Get Size() As Long
+    Function IndexOf(ByVal Value As IMediaEncodingProperties, Index As Long) As BooleanByte
+    Function GetMany(ByVal StartIndex As Long, ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("F6F8F5CE-209A-48FB-86FC-D44578F317E6")]
+Interface IMediaDeviceController Extends IInspectable
+    Function GetAvailableMediaStreamProperties(ByVal MediaStreamType As MediaStreamType) As IVectorView_IMediaEncodingProperties
+    Function GetMediaStreamProperties(ByVal MediaStreamType As MediaStreamType) As IMediaEncodingProperties
+    Function SetMediaStreamPropertiesAsync(ByVal MediaStreamType As MediaStreamType, ByVal MediaEncodingProperties As IMediaEncodingProperties) As IAsyncAction
+End Interface
+
+[InterfaceId("97D07327-2C78-57BC-98E6-A24CD024CF5B")]
+Interface ITypedEventHandlerMediaDeviceStaticsDefaultAudioCaptureDeviceChanged Extends IUnknown
+    Sub Invoke(ByVal Sender As IInspectable, ByVal Args As IDefaultAudioDeviceChangedEventArgs)
+End Interface
+
+[InterfaceId("FD732ACA-DAFC-5B7D-BF72-B560B78D260C")]
+Interface ITypedEventHandlerMediaDeviceStaticsDefaultAudioRenderDeviceChanged Extends IUnknown
+    Sub Invoke(ByVal Sender As IInspectable, ByVal Args As IDefaultAudioDeviceChangedEventArgs)
+End Interface
+
+[InterfaceId("AA2D9A40-909F-4BBA-BF8B-0C0D296F14F0")]
+Interface IMediaDeviceStatics Extends IInspectable
+    Function GetAudioCaptureSelector() As LongPtr
+    Function GetAudioRenderSelector() As LongPtr
+    Function GetVideoCaptureSelector() As LongPtr
+    Function GetDefaultAudioCaptureId(ByVal Role As AudioDeviceRole) As LongPtr
+    Function GetDefaultAudioRenderId(ByVal Role As AudioDeviceRole) As LongPtr
+    [PreserveSig]
+    Function AddDefaultAudioCaptureDeviceChanged(ByVal Handler As ITypedEventHandlerMediaDeviceStaticsDefaultAudioCaptureDeviceChanged, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveDefaultAudioCaptureDeviceChanged(ByVal Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function AddDefaultAudioRenderDeviceChanged(ByVal Handler As ITypedEventHandlerMediaDeviceStaticsDefaultAudioRenderDeviceChanged, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveDefaultAudioRenderDeviceChanged(ByVal Token As EventRegistrationToken) As HRESULT
+End Interface
+
+[InterfaceId("520D1EB4-1374-4C7D-B1E4-39DCDF3EAE4E")]
+Interface IModuleCommandResult Extends IInspectable
+    Property Get Status() As SendCommandStatus
+    Property Get Result() As IBuffer
+End Interface
+
+[InterfaceId("4A165D46-CF19-5A03-BB54-63FC2B4ED39B")]
+Interface IIterator_OpticalImageStabilizationMode Extends IInspectable
+    Property Get Current() As OpticalImageStabilizationMode
+    Property Get HasCurrent() As BooleanByte
+    Function MoveNext() As BooleanByte
+    Function GetMany(ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("323D7734-94C2-544D-A560-56560FE68819")]
+Interface IIterable_OpticalImageStabilizationMode Extends IInspectable
+    Function First() As IIterator_OpticalImageStabilizationMode
+End Interface
+
+[InterfaceId("8C2658D8-ACAA-5A80-B259-1BA0697C6138")]
+Interface IVectorView_OpticalImageStabilizationMode Extends IInspectable
+    Function GetAt(ByVal Index As Long) As OpticalImageStabilizationMode
+    Property Get Size() As Long
+    Function IndexOf(ByVal Value As OpticalImageStabilizationMode, Index As Long) As BooleanByte
+    Function GetMany(ByVal StartIndex As Long, ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("BFAD9C1D-00BC-423B-8EB2-A0178CA94247")]
+Interface IOpticalImageStabilizationControl Extends IInspectable
+    Property Get Supported() As BooleanByte
+    Property Get SupportedModes() As IVectorView_OpticalImageStabilizationMode
+    Property Get Mode() As OpticalImageStabilizationMode
+    Property Let Mode(ByVal Value As OpticalImageStabilizationMode)
+End Interface
+
+[InterfaceId("33323223-6247-5419-A5A4-3D808645D917")]
+Interface IPanelBasedOptimizationControl Extends IInspectable
+    Property Get IsSupported() As BooleanByte
+    Property Get Panel() As Panel
+    Property Let Panel(ByVal Value As Panel)
+End Interface
+
+[InterfaceId("C8F3F363-FF5E-4582-A9A8-0550F85A4A76")]
+Interface IPhotoConfirmationControl Extends IInspectable
+    Property Get Supported() As BooleanByte
+    Property Get Enabled() As BooleanByte
+    Property Let Enabled(ByVal Value As BooleanByte)
+    Property Get PixelFormat() As MediaPixelFormat
+    Property Let PixelFormat(ByVal Format As MediaPixelFormat)
+End Interface
+
+[InterfaceId("7EB55209-76AB-4C31-B40E-4B58379D580C")]
+Interface IRedialRequestedEventArgs Extends IInspectable
+    [PreserveSig]
+    Function Handled() As HRESULT
+End Interface
+
+[InterfaceId("E5ECC834-CE66-4E05-A78F-CF391A5EC2D1")]
+Interface IRegionOfInterest Extends IInspectable
+    Property Get AutoFocusEnabled() As BooleanByte
+    Property Let AutoFocusEnabled(ByVal Value As BooleanByte)
+    Property Get AutoWhiteBalanceEnabled() As BooleanByte
+    Property Let AutoWhiteBalanceEnabled(ByVal Value As BooleanByte)
+    Property Get AutoExposureEnabled() As BooleanByte
+    Property Let AutoExposureEnabled(ByVal Value As BooleanByte)
+    Property Get Bounds() As RECTF
+    Property Let Bounds(ByVal Value As RECTF)
+End Interface
+
+[InterfaceId("19FE2A91-73AA-4D51-8A9D-56CCF7DB7F54")]
+Interface IRegionOfInterest2 Extends IInspectable
+    Property Get Type() As RegionOfInterestType
+    Property Let Type(ByVal Value As RegionOfInterestType)
+    Property Get BoundsNormalized() As BooleanByte
+    Property Let BoundsNormalized(ByVal Value As BooleanByte)
+    Property Get Weight() As Long
+    Property Let Weight(ByVal Value As Long)
+End Interface
+
+[InterfaceId("8EB80E4E-9691-594F-8B3D-F52ECC0F7837")]
+Interface IIterator_IRegionOfInterest Extends IInspectable
+    Property Get Current() As IRegionOfInterest
+    Property Get HasCurrent() As BooleanByte
+    Function MoveNext() As BooleanByte
+    Function GetMany(ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("D73144C7-9D75-5DFB-8040-626202DCF454")]
+Interface IIterable_IRegionOfInterest Extends IInspectable
+    Function First() As IIterator_IRegionOfInterest
+End Interface
+
+[InterfaceId("C323F527-AB0B-4558-8B5B-DF5693DB0378")]
+Interface IRegionsOfInterestControl Extends IInspectable
+    Property Get MaxRegions() As Long
+    Function SetRegionsAsync(ByVal Regions As IIterable_IRegionOfInterest) As IAsyncAction
+    Function SetRegionsWithLockAsync(ByVal Regions As IIterable_IRegionOfInterest, ByVal LockValues As BooleanByte) As IAsyncAction
+    Function ClearRegionsAsync() As IAsyncAction
+    Property Get AutoFocusSupported() As BooleanByte
+    Property Get AutoWhiteBalanceSupported() As BooleanByte
+    Property Get AutoExposureSupported() As BooleanByte
+End Interface
+
+[InterfaceId("AAFA6D7A-2F7F-5DD7-AA0A-265731A2B3B3")]
+Interface IIterator_CaptureSceneMode Extends IInspectable
+    Property Get Current() As CaptureSceneMode
+    Property Get HasCurrent() As BooleanByte
+    Function MoveNext() As BooleanByte
+    Function GetMany(ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("16D26B98-2CBC-52F0-AB64-1723714418E9")]
+Interface IIterable_CaptureSceneMode Extends IInspectable
+    Function First() As IIterator_CaptureSceneMode
+End Interface
+
+[InterfaceId("9B915D69-E718-5B48-BB94-54BDF3737EA5")]
+Interface IVectorView_CaptureSceneMode Extends IInspectable
+    Function GetAt(ByVal Index As Long) As CaptureSceneMode
+    Property Get Size() As Long
+    Function IndexOf(ByVal Value As CaptureSceneMode, Index As Long) As BooleanByte
+    Function GetMany(ByVal StartIndex As Long, ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("D48E5AF7-8D59-4854-8C62-12C70BA89B7C")]
+Interface ISceneModeControl Extends IInspectable
+    Property Get SupportedModes() As IVectorView_CaptureSceneMode
+    Property Get Value() As CaptureSceneMode
+    Function SetValueAsync(ByVal SceneMode As CaptureSceneMode) As IAsyncAction
+End Interface
+
+[InterfaceId("A6053665-8250-416C-919A-724296AFA306")]
+Interface ITorchControl Extends IInspectable
+    Property Get Supported() As BooleanByte
+    Property Get PowerSupported() As BooleanByte
+    Property Get Enabled() As BooleanByte
+    Property Let Enabled(ByVal Value As BooleanByte)
+    Property Get PowerPercent() As Single
+    Property Let PowerPercent(ByVal Value As Single)
+End Interface
+
+[InterfaceId("99555575-2E2E-40B8-B6C7-F82D10013210")]
+Interface IVideoDeviceController Extends IInspectable ' requires IMediaDeviceController
+    Property Get Brightness() As IMediaDeviceControl
+    Property Get Contrast() As IMediaDeviceControl
+    Property Get Hue() As IMediaDeviceControl
+    Property Get WhiteBalance() As IMediaDeviceControl
+    Property Get BacklightCompensation() As IMediaDeviceControl
+    Property Get Pan() As IMediaDeviceControl
+    Property Get Tilt() As IMediaDeviceControl
+    Property Get Zoom() As IMediaDeviceControl
+    Property Get Roll() As IMediaDeviceControl
+    Property Get Exposure() As IMediaDeviceControl
+    Property Get Focus() As IMediaDeviceControl
+    Function TrySetPowerlineFrequency(ByVal Value As PowerlineFrequency) As BooleanByte
+    Function TryGetPowerlineFrequency(Value As PowerlineFrequency) As BooleanByte
+End Interface
+
+[InterfaceId("C5D88395-6ED5-4790-8B5D-0EF13935D0F8")]
+Interface IVideoDeviceControllerGetDevicePropertyResult Extends IInspectable
+    Property Get Status() As VideoDeviceControllerGetDevicePropertyStatus
+    Property Get Value() As IInspectable
+End Interface
+
+[InterfaceId("9B062552-E75C-515E-A2A4-1B081B640614")]
+Interface IIterator_VideoTemporalDenoisingMode Extends IInspectable
+    Property Get Current() As VideoTemporalDenoisingMode
+    Property Get HasCurrent() As BooleanByte
+    Function MoveNext() As BooleanByte
+    Function GetMany(ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("CAF26629-EE84-5D4C-AE37-9DC4B26978EB")]
+Interface IIterable_VideoTemporalDenoisingMode Extends IInspectable
+    Function First() As IIterator_VideoTemporalDenoisingMode
+End Interface
+
+[InterfaceId("094D5DA9-91CC-55D8-B7B7-52E597156987")]
+Interface IVectorView_VideoTemporalDenoisingMode Extends IInspectable
+    Function GetAt(ByVal Index As Long) As VideoTemporalDenoisingMode
+    Property Get Size() As Long
+    Function IndexOf(ByVal Value As VideoTemporalDenoisingMode, Index As Long) As BooleanByte
+    Function GetMany(ByVal StartIndex As Long, ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("7AB34735-3E2A-4A32-BAFF-4358C4FBDD57")]
+Interface IVideoTemporalDenoisingControl Extends IInspectable
+    Property Get Supported() As BooleanByte
+    Property Get SupportedModes() As IVectorView_VideoTemporalDenoisingMode
+    Property Get Mode() As VideoTemporalDenoisingMode
+    Property Let Mode(ByVal Value As VideoTemporalDenoisingMode)
+End Interface
+
+[InterfaceId("781F047E-7162-49C8-A8F9-9481C565363E")]
+Interface IWhiteBalanceControl Extends IInspectable
+    Property Get Supported() As BooleanByte
+    Property Get Preset() As ColorTemperaturePreset
+    Function SetPresetAsync(ByVal Preset As ColorTemperaturePreset) As IAsyncAction
+    Property Get Min() As Long
+    Property Get Max() As Long
+    Property Get Step() As Long
+    Property Get Value() As Long
+    Function SetValueAsync(ByVal Temperature As Long) As IAsyncAction
+End Interface
+
+[InterfaceId("3A1E0B12-32DA-4C17-BFD7-8D0C73C8F5A5")]
+Interface IZoomControl Extends IInspectable
+    Property Get Supported() As BooleanByte
+    Property Get Min() As Single
+    Property Get Max() As Single
+    Property Get Step() As Single
+    Property Get Value() As Single
+    Property Let Value(ByVal Value As Single)
+End Interface
+
+[InterfaceId("80EB468A-FDC4-5C89-99B8-8D476264E211")]
+Interface IIterator_ZoomTransitionMode Extends IInspectable
+    Property Get Current() As ZoomTransitionMode
+    Property Get HasCurrent() As BooleanByte
+    Function MoveNext() As BooleanByte
+    Function GetMany(ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("DB656915-8FAC-5FB2-98E0-0E97421656C5")]
+Interface IIterable_ZoomTransitionMode Extends IInspectable
+    Function First() As IIterator_ZoomTransitionMode
+End Interface
+
+[InterfaceId("4D556155-D021-5A46-9A1C-F401D61B8529")]
+Interface IVectorView_ZoomTransitionMode Extends IInspectable
+    Function GetAt(ByVal Index As Long) As ZoomTransitionMode
+    Property Get Size() As Long
+    Function IndexOf(ByVal Value As ZoomTransitionMode, Index As Long) As BooleanByte
+    Function GetMany(ByVal StartIndex As Long, ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("69843DB0-2E99-4641-8529-184F319D1671")]
+Interface IZoomControl2 Extends IInspectable
+    Property Get SupportedModes() As IVectorView_ZoomTransitionMode
+    Property Get Mode() As ZoomTransitionMode
+    [PreserveSig]
+    Function Configure(ByVal Settings As IZoomSettings) As HRESULT
+End Interface
+
+[InterfaceId("6AD66B24-14B4-4BFD-B18F-88FE24463B52")]
+Interface IZoomSettings Extends IInspectable
+    Property Get Mode() As ZoomTransitionMode
+    Property Let Mode(ByVal Value As ZoomTransitionMode)
+    Property Get Value() As Single
+    Property Let Value(ByVal Value As Single)
+End Interface
+
+Module mdlMediaDevices
+
+Public Enum AdvancedPhotoMode
+    AdvancedPhotoMode_Auto
+    AdvancedPhotoMode_Standard
+    AdvancedPhotoMode_Hdr
+    AdvancedPhotoMode_LowLight
+End Enum
+
+Public Enum AudioDeviceRole
+    AudioDeviceRole_Default
+    AudioDeviceRole_Communications
+End Enum
+
+Public Enum AutoFocusRange
+    AutoFocusRange_FullRange
+    AutoFocusRange_Macro
+    AutoFocusRange_Normal
+End Enum
+
+Public Enum CameraOcclusionKind
+    CameraOcclusionKind_Lid
+    CameraOcclusionKind_CameraHardware
+End Enum
+
+Public Enum CameraStreamState
+    CameraStreamState_NotStreaming
+    CameraStreamState_Streaming
+    CameraStreamState_BlockedForPrivacy
+    CameraStreamState_Shutdown
+End Enum
+
+Public Enum CaptureSceneMode
+    CaptureSceneMode_Auto
+    CaptureSceneMode_Manual
+    CaptureSceneMode_Macro
+    CaptureSceneMode_Portrait
+    CaptureSceneMode_Sport
+    CaptureSceneMode_Snow
+    CaptureSceneMode_Night
+    CaptureSceneMode_Beach
+    CaptureSceneMode_Sunset
+    CaptureSceneMode_Candlelight
+    CaptureSceneMode_Landscape
+    CaptureSceneMode_NightPortrait
+    CaptureSceneMode_Backlit
+End Enum
+
+Public Enum CaptureUse
+    CaptureUse_None
+    CaptureUse_Photo
+    CaptureUse_Video
+End Enum
+
+Public Enum ColorTemperaturePreset
+    ColorTemperaturePreset_Auto
+    ColorTemperaturePreset_Manual
+    ColorTemperaturePreset_Cloudy
+    ColorTemperaturePreset_Daylight
+    ColorTemperaturePreset_Flash
+    ColorTemperaturePreset_Fluorescent
+    ColorTemperaturePreset_Tungsten
+    ColorTemperaturePreset_Candlelight
+End Enum
+
+Public Enum DigitalWindowMode
+    DigitalWindowMode_Off
+    DigitalWindowMode_On
+    DigitalWindowMode_Auto
+End Enum
+
+Public Enum FocusMode
+    FocusMode_Auto
+    FocusMode_Single
+    FocusMode_Continuous
+    FocusMode_Manual
+End Enum
+
+Public Enum FocusPreset
+    FocusPreset_Auto
+    FocusPreset_Manual
+    FocusPreset_AutoMacro
+    FocusPreset_AutoNormal
+    FocusPreset_AutoInfinity
+    FocusPreset_AutoHyperfocal
+End Enum
+
+Public Enum HdrVideoMode
+    HdrVideoMode_Off
+    HdrVideoMode_On
+    HdrVideoMode_Auto
+End Enum
+
+Public Enum InfraredTorchMode
+    InfraredTorchMode_Off
+    InfraredTorchMode_On
+    InfraredTorchMode_AlternatingFrameIllumination
+End Enum
+
+Public Enum IsoSpeedPreset
+    IsoSpeedPreset_Auto
+    IsoSpeedPreset_Iso50
+    IsoSpeedPreset_Iso80
+    IsoSpeedPreset_Iso100
+    IsoSpeedPreset_Iso200
+    IsoSpeedPreset_Iso400
+    IsoSpeedPreset_Iso800
+    IsoSpeedPreset_Iso1600
+    IsoSpeedPreset_Iso3200
+    IsoSpeedPreset_Iso6400
+    IsoSpeedPreset_Iso12800
+    IsoSpeedPreset_Iso25600
+End Enum
+
+Public Enum ManualFocusDistance
+    ManualFocusDistance_Infinity
+    ManualFocusDistance_Hyperfocal
+    ManualFocusDistance_Nearest
+End Enum
+
+Public Enum MediaCaptureFocusState
+    MediaCaptureFocusState_Uninitialized
+    MediaCaptureFocusState_Lost
+    MediaCaptureFocusState_Searching
+    MediaCaptureFocusState_Focused
+    MediaCaptureFocusState_Failed
+End Enum
+
+Public Enum MediaCaptureOptimization
+    MediaCaptureOptimization_Default
+    MediaCaptureOptimization_Quality
+    MediaCaptureOptimization_Latency
+    MediaCaptureOptimization_Power
+    MediaCaptureOptimization_LatencyThenQuality
+    MediaCaptureOptimization_LatencyThenPower
+    MediaCaptureOptimization_PowerAndQuality
+End Enum
+
+Public Enum MediaCapturePauseBehavior
+    MediaCapturePauseBehavior_RetainHardwareResources
+    MediaCapturePauseBehavior_ReleaseHardwareResources
+End Enum
+
+Public Enum OpticalImageStabilizationMode
+    OpticalImageStabilizationMode_Off
+    OpticalImageStabilizationMode_On
+    OpticalImageStabilizationMode_Auto
+End Enum
+
+Public Enum RegionOfInterestType
+    RegionOfInterestType_Unknown
+    RegionOfInterestType_Face
+End Enum
+
+Public Enum SendCommandStatus
+    SendCommandStatus_Success
+    SendCommandStatus_DeviceNotAvailable
+End Enum
+
+Public Enum TelephonyKey
+    TelephonyKey_D0
+    TelephonyKey_D1
+    TelephonyKey_D2
+    TelephonyKey_D3
+    TelephonyKey_D4
+    TelephonyKey_D5
+    TelephonyKey_D6
+    TelephonyKey_D7
+    TelephonyKey_D8
+    TelephonyKey_D9
+    TelephonyKey_Star
+    TelephonyKey_Pound
+    TelephonyKey_A
+    TelephonyKey_B
+    TelephonyKey_C
+    TelephonyKey_D
+End Enum
+
+Public Enum VideoDeviceControllerGetDevicePropertyStatus
+    VideoDeviceControllerGetDevicePropertyStatus_Success
+    VideoDeviceControllerGetDevicePropertyStatus_UnknownFailure
+    VideoDeviceControllerGetDevicePropertyStatus_BufferTooSmall
+    VideoDeviceControllerGetDevicePropertyStatus_NotSupported
+    VideoDeviceControllerGetDevicePropertyStatus_DeviceNotAvailable
+    VideoDeviceControllerGetDevicePropertyStatus_MaxPropertyValueSizeTooSmall
+    VideoDeviceControllerGetDevicePropertyStatus_MaxPropertyValueSizeRequired
+End Enum
+
+Public Enum VideoDeviceControllerSetDevicePropertyStatus
+    VideoDeviceControllerSetDevicePropertyStatus_Success
+    VideoDeviceControllerSetDevicePropertyStatus_UnknownFailure
+    VideoDeviceControllerSetDevicePropertyStatus_NotSupported
+    VideoDeviceControllerSetDevicePropertyStatus_InvalidValue
+    VideoDeviceControllerSetDevicePropertyStatus_DeviceNotAvailable
+    VideoDeviceControllerSetDevicePropertyStatus_NotInControl
+End Enum
+
+Public Enum VideoTemporalDenoisingMode
+    VideoTemporalDenoisingMode_Off
+    VideoTemporalDenoisingMode_On
+    VideoTemporalDenoisingMode_Auto
+End Enum
+
+Public Enum ZoomTransitionMode
+    ZoomTransitionMode_Auto
+    ZoomTransitionMode_Direct
+    ZoomTransitionMode_Smooth
+End Enum
+
+End Module

@@ -1,0 +1,38 @@
+' =====================================================
+' IDiagnosticCollector.twin - 收集器接口
+' Twinbasic Diagnostic Tool
+' =====================================================
+
+' 诊断收集器接口
+' 所有收集器必须实现此接口
+[ InterfaceId ("C3D4E5F6-A7B8-C9D0-E1F2-A3B4C5D6E7F8") ]
+Public Interface IDiagnosticCollector
+
+    ' === 基本属性 ===
+
+    ' 获取类别名称
+    Property Get CategoryName() As String
+
+    ' 获取类别描述
+    Property Get Description() As String
+
+    ' 获取刷新模式
+    Property Get RefreshMode() As RefreshMode
+
+    ' 是否需要管理员权限
+    Property Get RequiresElevation() As Boolean
+
+    ' 是否支持摘要数据
+    Property Get SupportsSummary() As Boolean
+
+    ' === 数据收集方法 ===
+
+    ' 收集完整数据
+    ' @return 包含键值对的诊断结果
+    Function Collect() As DiagnosticResult(Of KeyValuePair(Of String, String))
+
+    ' 收集摘要数据（仅支持摘要的收集器实现）
+    ' @return 包含关键键值对的诊断结果
+    Function CollectSummary() As DiagnosticResult(Of KeyValuePair(Of String, String))
+
+End Interface

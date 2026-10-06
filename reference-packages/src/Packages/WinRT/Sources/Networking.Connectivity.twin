@@ -1,0 +1,779 @@
+[InterfaceId("71BA143F-598E-49D0-84EB-8FEBAEDCC195")]
+Interface INetworkStatusChangedEventHandler Extends IUnknown
+    Sub Invoke(ByVal Sender As IInspectable)
+End Interface
+
+[InterfaceId("F769B039-ECA2-45EB-ADE1-B0368B756C49")]
+Interface IAttributedNetworkUsage Extends IInspectable
+    Property Get BytesSent() As UInt64
+    Property Get BytesReceived() As UInt64
+    Property Get AttributionId() As LongPtr
+    Property Get AttributionName() As LongPtr
+    Property Get AttributionThumbnail() As IRandomAccessStreamReference
+End Interface
+
+[InterfaceId("6FA529F4-EFFD-4542-9AB2-705BBF94943A")]
+Interface ICellularApnContext Extends IInspectable
+    Property Get ProviderId() As LongPtr
+    Property Let ProviderId(ByVal Value As LongPtr)
+    Property Get AccessPointName() As LongPtr
+    Property Let AccessPointName(ByVal Value As LongPtr)
+    Property Get UserName() As LongPtr
+    Property Let UserName(ByVal Value As LongPtr)
+    Property Get Password() As LongPtr
+    Property Let Password(ByVal Value As LongPtr)
+    Property Get IsCompressionEnabled() As BooleanByte
+    Property Let IsCompressionEnabled(ByVal Value As BooleanByte)
+    Property Get AuthenticationType() As CellularApnAuthenticationType
+    Property Let AuthenticationType(ByVal Value As CellularApnAuthenticationType)
+End Interface
+
+[InterfaceId("76B0EB1A-AC49-4350-B1E5-DC4763BC69C7")]
+Interface ICellularApnContext2 Extends IInspectable
+    Property Get ProfileName() As LongPtr
+    Property Let ProfileName(ByVal Value As LongPtr)
+End Interface
+
+[InterfaceId("BAD7D829-3416-4B10-A202-BAC0B075BDAE")]
+Interface IConnectionCost Extends IInspectable
+    Property Get NetworkCostType() As NetworkCostType
+    Property Get Roaming() As BooleanByte
+    Property Get OverDataLimit() As BooleanByte
+    Property Get ApproachingDataLimit() As BooleanByte
+End Interface
+
+[InterfaceId("8E113A05-E209-4549-BB25-5E0DB691CB05")]
+Interface IConnectionCost2 Extends IInspectable
+    Property Get BackgroundDataUsageRestricted() As BooleanByte
+End Interface
+
+[InterfaceId("71BA143C-598E-49D0-84EB-8FEBAEDCC195")]
+Interface IConnectionProfile Extends IInspectable
+    Property Get ProfileName() As LongPtr
+    Function GetNetworkConnectivityLevel() As NetworkConnectivityLevel
+    Function GetNetworkNames() As IVectorView_HSTRING
+    Function GetConnectionCost() As IConnectionCost
+    Function GetDataPlanStatus() As IDataPlanStatus
+    Property Get NetworkAdapter() As INetworkAdapter
+    Function GetLocalUsage(ByVal StartTime As DateTime, ByVal EndTime As DateTime) As IDataUsage
+    Function GetLocalUsagePerRoamingStates(ByVal StartTime As DateTime, ByVal EndTime As DateTime, ByVal States As RoamingStates) As IDataUsage
+    Property Get NetworkSecuritySettings() As INetworkSecuritySettings
+End Interface
+
+[InterfaceId("4070C40F-AB2F-56F2-B54C-8232AE86AACD")]
+Interface IIterator_IAttributedNetworkUsage Extends IInspectable
+    Property Get Current() As IAttributedNetworkUsage
+    Property Get HasCurrent() As BooleanByte
+    Function MoveNext() As BooleanByte
+    Function GetMany(ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("D061DCB9-6854-5EF9-8E03-008A7A704C48")]
+Interface IIterable_IAttributedNetworkUsage Extends IInspectable
+    Function First() As IIterator_IAttributedNetworkUsage
+End Interface
+
+[InterfaceId("6E7C44AD-7753-5437-9F79-970D391FF7C4")]
+Interface IVectorView_IAttributedNetworkUsage Extends IInspectable
+    Function GetAt(ByVal Index As Long) As IAttributedNetworkUsage
+    Property Get Size() As Long
+    Function IndexOf(ByVal Value As IAttributedNetworkUsage, Index As Long) As BooleanByte
+    Function GetMany(ByVal StartIndex As Long, ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("9D8A4113-E7F3-552D-9A8C-1C25E2137253")]
+Interface IAsyncOperationIVectorView_IAttributedNetworkUsage Extends IInspectable
+    Property Set Completed(ByVal Handler As IAsyncOperationCompletedHandlerIVectorView_IAttributedNetworkUsage)
+    Property Get Completed() As IAsyncOperationCompletedHandlerIVectorView_IAttributedNetworkUsage
+    Function GetResults() As IVectorView_IAttributedNetworkUsage
+End Interface
+
+[InterfaceId("96AF15CC-F060-5667-9223-E054D14239EC")]
+Interface IAsyncOperationCompletedHandlerIVectorView_IAttributedNetworkUsage Extends IUnknown
+    Sub Invoke(ByVal AsyncOperation As IAsyncOperationIVectorView_IAttributedNetworkUsage, ByVal AsyncStatus As AsyncStatus)
+End Interface
+
+[InterfaceId("741CEA48-651C-5FD9-931E-4F91B521E182")]
+Interface IIterator_IConnectivityInterval Extends IInspectable
+    Property Get Current() As IConnectivityInterval
+    Property Get HasCurrent() As BooleanByte
+    Function MoveNext() As BooleanByte
+    Function GetMany(ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("58051A8B-B259-5414-9B9A-CAA0789E833E")]
+Interface IIterable_IConnectivityInterval Extends IInspectable
+    Function First() As IIterator_IConnectivityInterval
+End Interface
+
+[InterfaceId("A3D0D117-9E21-5919-B7A0-C8190BD55AC5")]
+Interface IVectorView_IConnectivityInterval Extends IInspectable
+    Function GetAt(ByVal Index As Long) As IConnectivityInterval
+    Property Get Size() As Long
+    Function IndexOf(ByVal Value As IConnectivityInterval, Index As Long) As BooleanByte
+    Function GetMany(ByVal StartIndex As Long, ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("AF96D70B-41C7-5DC6-9895-EA043A885D8D")]
+Interface IAsyncOperationIVectorView_IConnectivityInterval Extends IInspectable
+    Property Set Completed(ByVal Handler As IAsyncOperationCompletedHandlerIVectorView_IConnectivityInterval)
+    Property Get Completed() As IAsyncOperationCompletedHandlerIVectorView_IConnectivityInterval
+    Function GetResults() As IVectorView_IConnectivityInterval
+End Interface
+
+[InterfaceId("B475014C-95F1-5310-B5D1-C2309D944440")]
+Interface IAsyncOperationCompletedHandlerIVectorView_IConnectivityInterval Extends IUnknown
+    Sub Invoke(ByVal AsyncOperation As IAsyncOperationIVectorView_IConnectivityInterval, ByVal AsyncStatus As AsyncStatus)
+End Interface
+
+[InterfaceId("5FAFB57B-9C82-50A1-9970-69F9CB069695")]
+Interface IIterator_INetworkUsage Extends IInspectable
+    Property Get Current() As INetworkUsage
+    Property Get HasCurrent() As BooleanByte
+    Function MoveNext() As BooleanByte
+    Function GetMany(ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("DD2656B1-8360-5772-B272-C47F7F0FC7A6")]
+Interface IIterable_INetworkUsage Extends IInspectable
+    Function First() As IIterator_INetworkUsage
+End Interface
+
+[InterfaceId("B3853391-40B6-5CF5-8F46-4882691D1FF7")]
+Interface IVectorView_INetworkUsage Extends IInspectable
+    Function GetAt(ByVal Index As Long) As INetworkUsage
+    Property Get Size() As Long
+    Function IndexOf(ByVal Value As INetworkUsage, Index As Long) As BooleanByte
+    Function GetMany(ByVal StartIndex As Long, ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("05C9E081-6229-5049-8EEA-A498407C00D5")]
+Interface IAsyncOperationIVectorView_INetworkUsage Extends IInspectable
+    Property Set Completed(ByVal Handler As IAsyncOperationCompletedHandlerIVectorView_INetworkUsage)
+    Property Get Completed() As IAsyncOperationCompletedHandlerIVectorView_INetworkUsage
+    Function GetResults() As IVectorView_INetworkUsage
+End Interface
+
+[InterfaceId("E31D7E7E-4173-5C71-B04B-A09658002590")]
+Interface IAsyncOperationCompletedHandlerIVectorView_INetworkUsage Extends IUnknown
+    Sub Invoke(ByVal AsyncOperation As IAsyncOperationIVectorView_INetworkUsage, ByVal AsyncStatus As AsyncStatus)
+End Interface
+
+[InterfaceId("E2045145-4C9F-400C-9150-7EC7D6E2888A")]
+Interface IConnectionProfile2 Extends IInspectable
+    Property Get IsWwanConnectionProfile() As BooleanByte
+    Property Get IsWlanConnectionProfile() As BooleanByte
+    Property Get WwanConnectionProfileDetails() As IWwanConnectionProfileDetails
+    Property Get WlanConnectionProfileDetails() As IWlanConnectionProfileDetails
+    Property Get ServiceProviderGuid() As IReference_GUID
+    Function GetSignalBars() As IReference_Byte
+    Function GetDomainConnectivityLevel() As DomainConnectivityLevel
+    Function GetNetworkUsageAsync(ByVal StartTime As DateTime, ByVal EndTime As DateTime, ByVal Granularity As DataUsageGranularity, ByVal States As NetworkUsageStates) As IAsyncOperationIVectorView_INetworkUsage
+    Function GetConnectivityIntervalsAsync(ByVal StartTime As DateTime, ByVal EndTime As DateTime, ByVal States As NetworkUsageStates) As IAsyncOperationIVectorView_IConnectivityInterval
+End Interface
+
+[InterfaceId("578C2528-4CD9-4161-8045-201CFD5B115C")]
+Interface IConnectionProfile3 Extends IInspectable
+    Function GetAttributedNetworkUsageAsync(ByVal StartTime As DateTime, ByVal EndTime As DateTime, ByVal States As NetworkUsageStates) As IAsyncOperationIVectorView_IAttributedNetworkUsage
+End Interface
+
+[InterfaceId("D7090752-AB5F-506F-8F15-56B37552FBEA")]
+Interface IIterator_IProviderNetworkUsage Extends IInspectable
+    Property Get Current() As IProviderNetworkUsage
+    Property Get HasCurrent() As BooleanByte
+    Function MoveNext() As BooleanByte
+    Function GetMany(ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("F79BC7BA-01DF-51EC-BFAF-FD883F698E07")]
+Interface IIterable_IProviderNetworkUsage Extends IInspectable
+    Function First() As IIterator_IProviderNetworkUsage
+End Interface
+
+[InterfaceId("E66AD09C-EB37-54C7-9B2D-734E0E939305")]
+Interface IVectorView_IProviderNetworkUsage Extends IInspectable
+    Function GetAt(ByVal Index As Long) As IProviderNetworkUsage
+    Property Get Size() As Long
+    Function IndexOf(ByVal Value As IProviderNetworkUsage, Index As Long) As BooleanByte
+    Function GetMany(ByVal StartIndex As Long, ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("7EBA5A8F-E4FD-5201-A4F4-9567596F213C")]
+Interface IAsyncOperationIVectorView_IProviderNetworkUsage Extends IInspectable
+    Property Set Completed(ByVal Handler As IAsyncOperationCompletedHandlerIVectorView_IProviderNetworkUsage)
+    Property Get Completed() As IAsyncOperationCompletedHandlerIVectorView_IProviderNetworkUsage
+    Function GetResults() As IVectorView_IProviderNetworkUsage
+End Interface
+
+[InterfaceId("C310276B-3932-5DA9-9A3B-C5C423586B42")]
+Interface IAsyncOperationCompletedHandlerIVectorView_IProviderNetworkUsage Extends IUnknown
+    Sub Invoke(ByVal AsyncOperation As IAsyncOperationIVectorView_IProviderNetworkUsage, ByVal AsyncStatus As AsyncStatus)
+End Interface
+
+[InterfaceId("7A2D42CD-81E0-4AE6-ABED-AB9CA13EB714")]
+Interface IConnectionProfile4 Extends IInspectable
+    Function GetProviderNetworkUsageAsync(ByVal StartTime As DateTime, ByVal EndTime As DateTime, ByVal States As NetworkUsageStates) As IAsyncOperationIVectorView_IProviderNetworkUsage
+End Interface
+
+[InterfaceId("2FFEBC9E-4BED-5F3D-8E55-5ABC2598E144")]
+Interface IAsyncOperationConnectionProfileDeleteStatus Extends IInspectable
+    Property Set Completed(ByVal Handler As IAsyncOperationCompletedHandlerConnectionProfileDeleteStatus)
+    Property Get Completed() As IAsyncOperationCompletedHandlerConnectionProfileDeleteStatus
+    Function GetResults() As ConnectionProfileDeleteStatus
+End Interface
+
+[InterfaceId("3A0FB210-36C4-5DF2-9707-5F325369A9B0")]
+Interface IAsyncOperationCompletedHandlerConnectionProfileDeleteStatus Extends IUnknown
+    Sub Invoke(ByVal AsyncOperation As IAsyncOperationConnectionProfileDeleteStatus, ByVal AsyncStatus As AsyncStatus)
+End Interface
+
+[InterfaceId("85361EC7-9C73-4BE0-8F14-578EEC71EE0E")]
+Interface IConnectionProfile5 Extends IInspectable
+    Property Get CanDelete() As BooleanByte
+    Function TryDeleteAsync() As IAsyncOperationConnectionProfileDeleteStatus
+End Interface
+
+[InterfaceId("DC27DFE2-7A6F-5D0E-9589-2FE2E5B6F9AA")]
+Interface IConnectionProfile6 Extends IInspectable
+    Function IsDomainAuthenticatedBy(ByVal Kind As DomainAuthenticationKind) As BooleanByte
+End Interface
+
+[InterfaceId("204C7CC8-BD2D-4E8D-A4B3-455EC337388A")]
+Interface IConnectionProfileFilter Extends IInspectable
+    Property Let IsConnected(ByVal Value As BooleanByte)
+    Property Get IsConnected() As BooleanByte
+    Property Let IsWwanConnectionProfile(ByVal Value As BooleanByte)
+    Property Get IsWwanConnectionProfile() As BooleanByte
+    Property Let IsWlanConnectionProfile(ByVal Value As BooleanByte)
+    Property Get IsWlanConnectionProfile() As BooleanByte
+    Property Let NetworkCostType(ByVal Value As NetworkCostType)
+    Property Get NetworkCostType() As NetworkCostType
+    Property Set ServiceProviderGuid(ByVal Value As IReference_GUID)
+    Property Get ServiceProviderGuid() As IReference_GUID
+End Interface
+
+[InterfaceId("CD068EE1-C3FC-4FAD-9DDC-593FAA4B7885")]
+Interface IConnectionProfileFilter2 Extends IInspectable
+    Property Set IsRoaming(ByVal Value As IReference_Boolean)
+    Property Get IsRoaming() As IReference_Boolean
+    Property Set IsOverDataLimit(ByVal Value As IReference_Boolean)
+    Property Get IsOverDataLimit() As IReference_Boolean
+    Property Set IsBackgroundDataUsageRestricted(ByVal Value As IReference_Boolean)
+    Property Get IsBackgroundDataUsageRestricted() As IReference_Boolean
+    Property Get RawData() As IBuffer
+End Interface
+
+[InterfaceId("0AAA09C0-5014-447C-8809-AEE4CB0AF94A")]
+Interface IConnectionProfileFilter3 Extends IInspectable
+    Property Set PurposeGuid(ByVal Value As IReference_GUID)
+    Property Get PurposeGuid() As IReference_GUID
+End Interface
+
+[InterfaceId("FF905D4C-F83B-41B0-8A0C-1462D9C56B73")]
+Interface IConnectionSession Extends IInspectable ' requires IClosable
+    Property Get ConnectionProfile() As IConnectionProfile
+End Interface
+
+[InterfaceId("4FAA3FFF-6746-4824-A964-EED8E87F8709")]
+Interface IConnectivityInterval Extends IInspectable
+    Property Get StartTime() As DateTime
+    Property Get ConnectionDuration() As TimeSpan
+End Interface
+
+[InterfaceId("94FC6211-4702-5D24-81BF-170CA7818995")]
+Interface IAsyncOperationIConnectionSession Extends IInspectable
+    Property Set Completed(ByVal Handler As IAsyncOperationCompletedHandlerIConnectionSession)
+    Property Get Completed() As IAsyncOperationCompletedHandlerIConnectionSession
+    Function GetResults() As IConnectionSession
+End Interface
+
+[InterfaceId("3BC680D8-9E83-5086-8F49-7A29BFB1C7E1")]
+Interface IAsyncOperationCompletedHandlerIConnectionSession Extends IUnknown
+    Sub Invoke(ByVal AsyncOperation As IAsyncOperationIConnectionSession, ByVal AsyncStatus As AsyncStatus)
+End Interface
+
+[InterfaceId("5120D4B1-4FB1-48B0-AFC9-42E0092A8164")]
+Interface IConnectivityManagerStatics Extends IInspectable
+    Function AcquireConnectionAsync(ByVal CellularApnContext As ICellularApnContext) As IAsyncOperationIConnectionSession
+    [PreserveSig]
+    Function AddHttpRoutePolicy(ByVal RoutePolicy As IRoutePolicy) As HRESULT
+    [PreserveSig]
+    Function RemoveHttpRoutePolicy(ByVal RoutePolicy As IRoutePolicy) As HRESULT
+End Interface
+
+[InterfaceId("977A8B8C-3885-40F3-8851-42CD2BD568BB")]
+Interface IDataPlanStatus Extends IInspectable
+    Property Get DataPlanUsage() As IDataPlanUsage
+    Property Get DataLimitInMegabytes() As IReference_UInt32
+    Property Get InboundBitsPerSecond() As IReference_UInt64
+    Property Get OutboundBitsPerSecond() As IReference_UInt64
+    Property Get NextBillingCycle() As IReference_DateTime
+    Property Get MaxTransferSizeInMegabytes() As IReference_UInt32
+End Interface
+
+[InterfaceId("B921492D-3B44-47FF-B361-BE59E69ED1B0")]
+Interface IDataPlanUsage Extends IInspectable
+    Property Get MegabytesUsed() As Long
+    Property Get LastSyncTime() As DateTime
+End Interface
+
+[InterfaceId("C1431DD3-B146-4D39-B959-0C69B096C512")]
+Interface IDataUsage Extends IInspectable
+    Property Get BytesSent() As UInt64
+    Property Get BytesReceived() As UInt64
+End Interface
+
+[InterfaceId("D85145E0-138F-47D7-9B3A-36BB488CEF33")]
+Interface IIPInformation Extends IInspectable
+    Property Get NetworkAdapter() As INetworkAdapter
+    Property Get PrefixLength() As IReference_Byte
+End Interface
+
+[InterfaceId("48AA53AA-1108-4546-A6CB-9A74DA4B7BA0")]
+Interface ILanIdentifier Extends IInspectable
+    Property Get InfrastructureId() As ILanIdentifierData
+    Property Get PortId() As ILanIdentifierData
+    Property Get NetworkAdapterId() As UUID
+End Interface
+
+[InterfaceId("40556131-A2A1-5FAB-AAEE-5F35268CA26B")]
+Interface IIterator_Byte Extends IInspectable
+    Property Get Current() As Byte
+    Property Get HasCurrent() As BooleanByte
+    Function MoveNext() As BooleanByte
+    Function GetMany(ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("88318266-F3FD-50FC-8F08-B823A41B60C1")]
+Interface IIterable_Byte Extends IInspectable
+    Function First() As IIterator_Byte
+End Interface
+
+[InterfaceId("6D05FB29-7885-544E-9382-A1AD391A3FA4")]
+Interface IVectorView_Byte Extends IInspectable
+    Function GetAt(ByVal Index As Long) As Byte
+    Property Get Size() As Long
+    Function IndexOf(ByVal Value As Byte, Index As Long) As BooleanByte
+    Function GetMany(ByVal StartIndex As Long, ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("A74E83C3-D639-45BE-A36A-C4E4AEAF6D9B")]
+Interface ILanIdentifierData Extends IInspectable
+    Property Get Type() As Long
+    Property Get Value() As IVectorView_Byte
+End Interface
+
+[InterfaceId("5BF519CA-8ADB-5AB5-ABB8-FF1BBE5D2DE8")]
+Interface IAsyncOperationIConnectionProfile Extends IInspectable
+    Property Set Completed(ByVal Handler As IAsyncOperationCompletedHandlerIConnectionProfile)
+    Property Get Completed() As IAsyncOperationCompletedHandlerIConnectionProfile
+    Function GetResults() As IConnectionProfile
+End Interface
+
+[InterfaceId("E4F0C96A-0571-59F4-A9A9-AFAC3E61CAA0")]
+Interface IAsyncOperationCompletedHandlerIConnectionProfile Extends IUnknown
+    Sub Invoke(ByVal AsyncOperation As IAsyncOperationIConnectionProfile, ByVal AsyncStatus As AsyncStatus)
+End Interface
+
+[InterfaceId("3B542E03-5388-496C-A8A3-AFFD39AEC2E6")]
+Interface INetworkAdapter Extends IInspectable
+    Property Get OutboundMaxBitsPerSecond() As UInt64
+    Property Get InboundMaxBitsPerSecond() As UInt64
+    Property Get IanaInterfaceType() As Long
+    Property Get NetworkItem() As INetworkItem
+    Property Get NetworkAdapterId() As UUID
+    Function GetConnectedProfileAsync() As IAsyncOperationIConnectionProfile
+End Interface
+
+[InterfaceId("89913732-A08B-5CB2-AF16-BBBB2223839E")]
+Interface IIterator_IConnectionProfile Extends IInspectable
+    Property Get Current() As IConnectionProfile
+    Property Get HasCurrent() As BooleanByte
+    Function MoveNext() As BooleanByte
+    Function GetMany(ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("34DABEF9-87D0-5B1C-A7AC-9D290ADEB0C8")]
+Interface IIterable_IConnectionProfile Extends IInspectable
+    Function First() As IIterator_IConnectionProfile
+End Interface
+
+[InterfaceId("6DB1B492-3852-5DF8-A29D-6944002F58D4")]
+Interface IVectorView_IConnectionProfile Extends IInspectable
+    Function GetAt(ByVal Index As Long) As IConnectionProfile
+    Property Get Size() As Long
+    Function IndexOf(ByVal Value As IConnectionProfile, Index As Long) As BooleanByte
+    Function GetMany(ByVal StartIndex As Long, ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("C0023294-C2CB-52F0-A9F4-21916032F69D")]
+Interface IAsyncOperationIVectorView_IConnectionProfile Extends IInspectable
+    Property Set Completed(ByVal Handler As IAsyncOperationCompletedHandlerIVectorView_IConnectionProfile)
+    Property Get Completed() As IAsyncOperationCompletedHandlerIVectorView_IConnectionProfile
+    Function GetResults() As IVectorView_IConnectionProfile
+End Interface
+
+[InterfaceId("C523D9DD-4EA6-5115-80E9-4E7AD4769798")]
+Interface IAsyncOperationCompletedHandlerIVectorView_IConnectionProfile Extends IUnknown
+    Sub Invoke(ByVal AsyncOperation As IAsyncOperationIVectorView_IConnectionProfile, ByVal AsyncStatus As AsyncStatus)
+End Interface
+
+[InterfaceId("1E7651F6-6562-59C7-9AF3-8756636EEEE2")]
+Interface IAsyncOperationIProxyConfiguration Extends IInspectable
+    Property Set Completed(ByVal Handler As IAsyncOperationCompletedHandlerIProxyConfiguration)
+    Property Get Completed() As IAsyncOperationCompletedHandlerIProxyConfiguration
+    Function GetResults() As IProxyConfiguration
+End Interface
+
+[InterfaceId("035B2567-EFB9-5BC3-B609-F9A8C20B7001")]
+Interface IAsyncOperationCompletedHandlerIProxyConfiguration Extends IUnknown
+    Sub Invoke(ByVal AsyncOperation As IAsyncOperationIProxyConfiguration, ByVal AsyncStatus As AsyncStatus)
+End Interface
+
+[InterfaceId("2C5D2F7E-CE9C-5253-A0F4-01E5BDC11988")]
+Interface IIterator_ILanIdentifier Extends IInspectable
+    Property Get Current() As ILanIdentifier
+    Property Get HasCurrent() As BooleanByte
+    Function MoveNext() As BooleanByte
+    Function GetMany(ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("ACCEF3CD-5D92-5C01-8AC4-79FE74CD733E")]
+Interface IIterable_ILanIdentifier Extends IInspectable
+    Function First() As IIterator_ILanIdentifier
+End Interface
+
+[InterfaceId("41286159-B91D-5736-AD8B-E16FCF8ACED0")]
+Interface IVectorView_ILanIdentifier Extends IInspectable
+    Function GetAt(ByVal Index As Long) As ILanIdentifier
+    Property Get Size() As Long
+    Function IndexOf(ByVal Value As ILanIdentifier, Index As Long) As BooleanByte
+    Function GetMany(ByVal StartIndex As Long, ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("C899FF9F-E6F5-5673-810C-04E2FF98704F")]
+Interface IIterator_IEndpointPair Extends IInspectable
+    Property Get Current() As IEndpointPair
+    Property Get HasCurrent() As BooleanByte
+    Function MoveNext() As BooleanByte
+    Function GetMany(ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("D7EC83C4-A17B-51BF-8997-AA33B9102DC9")]
+Interface IIterable_IEndpointPair Extends IInspectable
+    Function First() As IIterator_IEndpointPair
+End Interface
+
+[InterfaceId("8780A851-6D48-5006-9288-81F3D7045A96")]
+Interface IVectorView_IEndpointPair Extends IInspectable
+    Function GetAt(ByVal Index As Long) As IEndpointPair
+    Property Get Size() As Long
+    Function IndexOf(ByVal Value As IEndpointPair, Index As Long) As BooleanByte
+    Function GetMany(ByVal StartIndex As Long, ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("557BF83C-A428-5DBD-A0FE-05F6EE543D45")]
+Interface IIterator_IHostName Extends IInspectable
+    Property Get Current() As IHostName
+    Property Get HasCurrent() As BooleanByte
+    Function MoveNext() As BooleanByte
+    Function GetMany(ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("9E5F3ED0-CF1C-5D38-832C-ACEA6164BF5C")]
+Interface IIterable_IHostName Extends IInspectable
+    Function First() As IIterator_IHostName
+End Interface
+
+[InterfaceId("F4706AB1-55A3-5270-AFB2-732988FE8227")]
+Interface IVectorView_IHostName Extends IInspectable
+    Function GetAt(ByVal Index As Long) As IHostName
+    Property Get Size() As Long
+    Function IndexOf(ByVal Value As IHostName, Index As Long) As BooleanByte
+    Function GetMany(ByVal StartIndex As Long, ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("5074F851-950D-4165-9C15-365619481EEA")]
+Interface INetworkInformationStatics Extends IInspectable
+    Function GetConnectionProfiles() As IVectorView_IConnectionProfile
+    Function GetInternetConnectionProfile() As IConnectionProfile
+    Function GetLanIdentifiers() As IVectorView_ILanIdentifier
+    Function GetHostNames() As IVectorView_IHostName
+    Function GetProxyConfigurationAsync(ByVal Uri As IUri) As IAsyncOperationIProxyConfiguration
+    Function GetSortedEndpointPairs(ByVal DestinationList As IIterable_IEndpointPair, ByVal SortOptions As HostNameSortOptions) As IVectorView_IEndpointPair
+    [PreserveSig]
+    Function AddNetworkStatusChanged(ByVal NetworkStatusHandler As INetworkStatusChangedEventHandler, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveNetworkStatusChanged(ByVal Token As EventRegistrationToken) As HRESULT
+End Interface
+
+[InterfaceId("459CED14-2832-49B6-BA6E-E265F04786A8")]
+Interface INetworkInformationStatics2 Extends IInspectable
+    Function FindConnectionProfilesAsync(ByVal ProfileFilter As IConnectionProfileFilter) As IAsyncOperationIVectorView_IConnectionProfile
+End Interface
+
+[InterfaceId("01BC4D39-F5E0-4567-A28C-42080C831B2B")]
+Interface INetworkItem Extends IInspectable
+    Property Get NetworkId() As UUID
+    Function GetNetworkTypes() As NetworkTypes
+End Interface
+
+[InterfaceId("7CA07E8D-917B-4B5F-B84D-28F7A5AC5402")]
+Interface INetworkSecuritySettings Extends IInspectable
+    Property Get NetworkAuthenticationType() As NetworkAuthenticationType
+    Property Get NetworkEncryptionType() As NetworkEncryptionType
+End Interface
+
+[InterfaceId("1F0CF333-D7A6-44DD-A4E9-687C476B903D")]
+Interface INetworkStateChangeEventDetails Extends IInspectable
+    Property Get HasNewInternetConnectionProfile() As BooleanByte
+    Property Get HasNewConnectionCost() As BooleanByte
+    Property Get HasNewNetworkConnectivityLevel() As BooleanByte
+    Property Get HasNewDomainConnectivityLevel() As BooleanByte
+    Property Get HasNewHostNameList() As BooleanByte
+    Property Get HasNewWwanRegistrationState() As BooleanByte
+End Interface
+
+[InterfaceId("D643C0E8-30D3-4F6A-AD47-6A1873CEB3C1")]
+Interface INetworkStateChangeEventDetails2 Extends IInspectable
+    Property Get HasNewTetheringOperationalState() As BooleanByte
+    Property Get HasNewTetheringClientCount() As BooleanByte
+End Interface
+
+[InterfaceId("49DA8FCE-9985-4927-BF5B-072B5C65F8D9")]
+Interface INetworkUsage Extends IInspectable
+    Property Get BytesSent() As UInt64
+    Property Get BytesReceived() As UInt64
+    Property Get ConnectionDuration() As TimeSpan
+End Interface
+
+[InterfaceId("5EC69E04-7931-48C8-B8F3-46300FA42728")]
+Interface IProviderNetworkUsage Extends IInspectable
+    Property Get BytesSent() As UInt64
+    Property Get BytesReceived() As UInt64
+    Property Get ProviderId() As LongPtr
+End Interface
+
+[InterfaceId("EF3A60B4-9004-4DD6-B7D8-B3E502F4AAD0")]
+Interface IProxyConfiguration Extends IInspectable
+    Property Get ProxyUris() As IVectorView_IUri
+    Property Get CanConnectDirectly() As BooleanByte
+End Interface
+
+[InterfaceId("11ABC4AC-0FC7-42E4-8742-569923B1CA11")]
+Interface IRoutePolicy Extends IInspectable
+    Property Get ConnectionProfile() As IConnectionProfile
+    Property Get HostName() As IHostName
+    Property Get HostNameType() As DomainNameType
+End Interface
+
+[InterfaceId("36027933-A18E-4DB5-A697-F58FA7364E44")]
+Interface IRoutePolicyFactory Extends IInspectable
+    Function CreateRoutePolicy(ByVal ConnectionProfile As IConnectionProfile, ByVal HostName As IHostName, ByVal Type As DomainNameType) As IRoutePolicy
+End Interface
+
+[InterfaceId("562098CB-B35A-4BF1-A884-B7557E88FF86")]
+Interface IWlanConnectionProfileDetails Extends IInspectable
+    Function GetConnectedSsid() As LongPtr
+End Interface
+
+[InterfaceId("0E4DA8FE-835F-4DF3-82FD-DF556EBC09EF")]
+Interface IWwanConnectionProfileDetails Extends IInspectable
+    Property Get HomeProviderId() As LongPtr
+    Property Get AccessPointName() As LongPtr
+    Function GetNetworkRegistrationState() As WwanNetworkRegistrationState
+    Function GetCurrentDataClass() As WwanDataClass
+End Interface
+
+[InterfaceId("D3D64048-82B3-53C7-9285-B0BE18368482")]
+Interface IIterator_UUID Extends IInspectable
+    Property Get Current() As UUID
+    Property Get HasCurrent() As BooleanByte
+    Function MoveNext() As BooleanByte
+    Function GetMany(ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("F4CA3045-5DD7-54BE-982E-D88D8CA0876E")]
+Interface IIterable_UUID Extends IInspectable
+    Function First() As IIterator_UUID
+End Interface
+
+[InterfaceId("9520E64B-15B2-52A6-98ED-3191FA6CF68A")]
+Interface IVectorView_UUID Extends IInspectable
+    Function GetAt(ByVal Index As Long) As UUID
+    Property Get Size() As Long
+    Function IndexOf(ByVal Value As UUID, Index As Long) As BooleanByte
+    Function GetMany(ByVal StartIndex As Long, ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("482E676D-B913-5EC1-AFA8-5F96922E94AE")]
+Interface IVector_UUID Extends IInspectable
+    Function GetAt(ByVal Index As Long) As UUID
+    Property Get Size() As Long
+    Function GetView() As IVectorView_UUID
+    Function IndexOf(ByVal Value As UUID, Index As Long) As BooleanByte
+    [PreserveSig]
+    Function SetAt(ByVal Index As Long, ByVal Value As UUID) As HRESULT
+    [PreserveSig]
+    Function InsertAt(ByVal Index As Long, ByVal Value As UUID) As HRESULT
+    [PreserveSig]
+    Function RemoveAt(ByVal Index As Long) As HRESULT
+    [PreserveSig]
+    Function Append(ByVal Value As UUID) As HRESULT
+    [PreserveSig]
+    Function RemoveAtEnd() As HRESULT
+    [PreserveSig]
+    Function Clear() As HRESULT
+    Function GetMany(ByVal StartIndex As Long, ByVal Length As Long, Items As Any) As Long
+    [PreserveSig]
+    Function ReplaceAll(ByVal Length As Long, Items As Any) As HRESULT
+End Interface
+
+[InterfaceId("7A754EDE-A1ED-48B2-8E92-B460033D52E2")]
+Interface IWwanConnectionProfileDetails2 Extends IInspectable
+    Property Get IPKind() As WwanNetworkIPKind
+    Property Get PurposeGuids() As IVectorView_UUID
+End Interface
+
+Module mdlNetworkingConnectivity
+
+Public Enum CellularApnAuthenticationType
+    CellularApnAuthenticationType_None
+    CellularApnAuthenticationType_Pap
+    CellularApnAuthenticationType_Chap
+    CellularApnAuthenticationType_Mschapv2
+End Enum
+
+Public Enum ConnectionProfileDeleteStatus
+    ConnectionProfileDeleteStatus_Success
+    ConnectionProfileDeleteStatus_DeniedByUser
+    ConnectionProfileDeleteStatus_DeniedBySystem
+    ConnectionProfileDeleteStatus_UnknownError
+End Enum
+
+Public Enum DataUsageGranularity
+    DataUsageGranularity_PerMinute
+    DataUsageGranularity_PerHour
+    DataUsageGranularity_PerDay
+    DataUsageGranularity_Total
+End Enum
+
+Public Enum DomainAuthenticationKind
+    DomainAuthenticationKind_None
+    DomainAuthenticationKind_Ldap
+    DomainAuthenticationKind_Tls
+End Enum
+
+Public Enum DomainConnectivityLevel
+    DomainConnectivityLevel_None
+    DomainConnectivityLevel_Unauthenticated
+    DomainConnectivityLevel_Authenticated
+End Enum
+
+Public Enum NetworkAuthenticationType
+    NetworkAuthenticationType_None
+    NetworkAuthenticationType_Unknown
+    NetworkAuthenticationType_Open80211
+    NetworkAuthenticationType_SharedKey80211
+    NetworkAuthenticationType_Wpa
+    NetworkAuthenticationType_WpaPsk
+    NetworkAuthenticationType_WpaNone
+    NetworkAuthenticationType_Rsna
+    NetworkAuthenticationType_RsnaPsk
+    NetworkAuthenticationType_Ihv
+    NetworkAuthenticationType_Wpa3
+    NetworkAuthenticationType_Wpa3Enterprise192Bits = 10
+    NetworkAuthenticationType_Wpa3Sae
+    NetworkAuthenticationType_Owe
+    NetworkAuthenticationType_Wpa3Enterprise
+End Enum
+
+Public Enum NetworkConnectivityLevel
+    NetworkConnectivityLevel_None
+    NetworkConnectivityLevel_LocalAccess
+    NetworkConnectivityLevel_ConstrainedInternetAccess
+    NetworkConnectivityLevel_InternetAccess
+End Enum
+
+Public Enum NetworkCostType
+    NetworkCostType_Unknown
+    NetworkCostType_Unrestricted
+    NetworkCostType_Fixed
+    NetworkCostType_Variable
+End Enum
+
+Public Enum NetworkEncryptionType
+    NetworkEncryptionType_None
+    NetworkEncryptionType_Unknown
+    NetworkEncryptionType_Wep
+    NetworkEncryptionType_Wep40
+    NetworkEncryptionType_Wep104
+    NetworkEncryptionType_Tkip
+    NetworkEncryptionType_Ccmp
+    NetworkEncryptionType_WpaUseGroup
+    NetworkEncryptionType_RsnUseGroup
+    NetworkEncryptionType_Ihv
+    NetworkEncryptionType_Gcmp
+    NetworkEncryptionType_Gcmp256
+End Enum
+
+Public Enum NetworkTypes
+    NetworkTypes_None
+    NetworkTypes_Internet
+    NetworkTypes_PrivateNetwork
+End Enum
+
+Public Enum RoamingStates
+    RoamingStates_None
+    RoamingStates_NotRoaming
+    RoamingStates_Roaming
+End Enum
+
+Public Enum TriStates
+    TriStates_DoNotCare
+    TriStates_No
+    TriStates_Yes
+End Enum
+
+Public Enum WwanDataClass
+    WwanDataClass_None = &H0
+    WwanDataClass_Gprs = &H1
+    WwanDataClass_Edge = &H2
+    WwanDataClass_Umts = &H4
+    WwanDataClass_Hsdpa = &H8
+    WwanDataClass_Hsupa = &H10
+    WwanDataClass_LteAdvanced = &H20
+    WwanDataClass_Cdma1xRtt = &H10000
+    WwanDataClass_Cdma1xEvdo = &H20000
+    WwanDataClass_Cdma1xEvdoRevA = &H40000
+    WwanDataClass_Cdma1xEvdv = &H80000
+    WwanDataClass_Cdma3xRtt = &H100000
+    WwanDataClass_Cdma1xEvdoRevB = &H200000
+    WwanDataClass_CdmaUmb = &H400000
+    WwanDataClass_Custom = &H80000000
+End Enum
+
+Public Enum WwanNetworkIPKind
+    WwanNetworkIPKind_None
+    WwanNetworkIPKind_Ipv4
+    WwanNetworkIPKind_Ipv6
+    WwanNetworkIPKind_Ipv4v6
+    WwanNetworkIPKind_Ipv4v6v4Xlat
+End Enum
+
+Public Enum WwanNetworkRegistrationState
+    WwanNetworkRegistrationState_None
+    WwanNetworkRegistrationState_Deregistered
+    WwanNetworkRegistrationState_Searching
+    WwanNetworkRegistrationState_Home
+    WwanNetworkRegistrationState_Roaming
+    WwanNetworkRegistrationState_Partner
+    WwanNetworkRegistrationState_Denied
+End Enum
+
+Public Type NetworkUsageStates
+    Roaming As TriStates
+    Shared As TriStates
+End Type
+
+End Module

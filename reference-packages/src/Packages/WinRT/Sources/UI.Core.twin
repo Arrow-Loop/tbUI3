@@ -1,0 +1,794 @@
+[InterfaceId("D1F276C4-98D8-4636-BF49-EB79507548E9")]
+Interface IDispatchedHandler Extends IUnknown
+    Sub Invoke()
+End Interface
+
+[InterfaceId("A42B0C24-7F21-4ABC-99C1-8F01007F0880")]
+Interface IIdleDispatchedHandler Extends IUnknown
+    Sub Invoke(ByVal Args As IIdleDispatchedHandlerArgs)
+End Interface
+
+[InterfaceId("FF1C4C4A-9287-470B-836E-9086E3126ADE")]
+Interface IAcceleratorKeyEventArgs Extends IInspectable ' requires ICoreWindowEventArgs
+    Property Get EventType() As CoreAcceleratorKeyEventType
+    Property Get VirtualKey() As VirtualKey
+    Property Get KeyStatus() As CorePhysicalKeyStatus
+End Interface
+
+[InterfaceId("D300A9F6-2F7E-4873-A555-166E596EE1C5")]
+Interface IAcceleratorKeyEventArgs2 Extends IInspectable ' requires ICoreWindowEventArgs
+    Property Get DeviceId() As LongPtr
+End Interface
+
+[InterfaceId("961FF258-21BF-4B42-A298-FA479D4C52E2")]
+Interface IAutomationProviderRequestedEventArgs Extends IInspectable ' requires ICoreWindowEventArgs
+    Property Get AutomationProvider() As IInspectable
+    Property Set AutomationProvider(ByVal Value As IInspectable)
+End Interface
+
+[InterfaceId("D603D28A-E411-4A4E-BA41-6A327A8675BC")]
+Interface IBackRequestedEventArgs Extends IInspectable
+    Property Get Handled() As BooleanByte
+    Property Let Handled(ByVal Value As BooleanByte)
+End Interface
+
+[InterfaceId("C584659F-99B2-4BCC-BD33-04E63F42902E")]
+Interface ICharacterReceivedEventArgs Extends IInspectable ' requires ICoreWindowEventArgs
+    Property Get KeyCode() As Long
+    Property Get KeyStatus() As CorePhysicalKeyStatus
+End Interface
+
+[InterfaceId("347C11D7-F6F8-40E3-B29F-AE50D3E86486")]
+Interface IClosestInteractiveBoundsRequestedEventArgs Extends IInspectable
+    Property Get PointerPosition() As POINTF
+    Property Get SearchBounds() As RECTF
+    Property Get ClosestInteractiveBounds() As RECTF
+    Property Let ClosestInteractiveBounds(ByVal Value As RECTF)
+End Interface
+
+[InterfaceId("136DFF0D-F7E8-5153-B31C-86390C701880")]
+Interface ITypedEventHandlerCoreDispatcherAcceleratorKeyActivated Extends IUnknown
+    Sub Invoke(ByVal Sender As ICoreDispatcher, ByVal Args As IAcceleratorKeyEventArgs)
+End Interface
+
+[InterfaceId("9FFDF7F5-B8C9-4EF0-B7D2-1DE626561FC8")]
+Interface ICoreAcceleratorKeys Extends IInspectable
+    [PreserveSig]
+    Function AddAcceleratorKeyActivated(ByVal Handler As ITypedEventHandlerCoreDispatcherAcceleratorKeyActivated, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveAcceleratorKeyActivated(ByVal Token As EventRegistrationToken) As HRESULT
+End Interface
+
+[InterfaceId("E2C62D42-0577-5112-9E59-EAE159BF39E9")]
+Interface ITypedEventHandlerCoreComponentInputSourceClosestInteractiveBoundsRequested Extends IUnknown
+    Sub Invoke(ByVal Sender As ICoreInputSourceBase, ByVal Args As IClosestInteractiveBoundsRequestedEventArgs)
+End Interface
+
+[InterfaceId("F303043A-E8BF-4E8E-AE69-C9DADD57A114")]
+Interface ICoreClosestInteractiveBoundsRequested Extends IInspectable
+    [PreserveSig]
+    Function AddClosestInteractiveBoundsRequested(ByVal Handler As ITypedEventHandlerCoreComponentInputSourceClosestInteractiveBoundsRequested, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveClosestInteractiveBoundsRequested(ByVal Token As EventRegistrationToken) As HRESULT
+End Interface
+
+[InterfaceId("1A8AC270-A777-50F7-88A1-E34E56C09449")]
+Interface ITypedEventHandlerInspectableCoreComponentFocusable Extends IUnknown
+    Sub Invoke(ByVal Sender As IInspectable, ByVal Args As ICoreWindowEventArgs)
+End Interface
+
+[InterfaceId("52F96FA3-8742-4411-AE69-79A85F29AC8B")]
+Interface ICoreComponentFocusable Extends IInspectable
+    Property Get HasFocus() As BooleanByte
+    [PreserveSig]
+    Function AddGotFocus(ByVal Handler As ITypedEventHandlerInspectableCoreComponentFocusable, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveGotFocus(ByVal Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function AddLostFocus(ByVal Handler As ITypedEventHandlerInspectableCoreComponentFocusable, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveLostFocus(ByVal Token As EventRegistrationToken) As HRESULT
+End Interface
+
+[InterfaceId("96893ACF-111D-442C-8A77-B87992F8E2D6")]
+Interface ICoreCursor Extends IInspectable
+    Property Get Id() As Long
+    Property Get Type() As CoreCursorType
+End Interface
+
+[InterfaceId("F6359621-A79D-4ED3-8C32-A9EF9D6B76A4")]
+Interface ICoreCursorFactory Extends IInspectable
+    Function CreateCursor(ByVal Type As CoreCursorType, ByVal Id As Long) As ICoreCursor
+End Interface
+
+[InterfaceId("60DB2FA8-B705-4FDE-A7D6-EBBB1891D39E")]
+Interface ICoreDispatcher Extends IInspectable ' requires ICoreWindowEventArgs
+    Property Get HasThreadAccess() As BooleanByte
+    [PreserveSig]
+    Function ProcessEvents(ByVal Options As CoreProcessEventsOption) As HRESULT
+    Function RunAsync(ByVal Priority As CoreDispatcherPriority, ByVal AgileCallback As IDispatchedHandler) As IAsyncAction
+    Function RunIdleAsync(ByVal AgileCallback As IIdleDispatchedHandler) As IAsyncAction
+End Interface
+
+[InterfaceId("6F5E63C7-E3AA-4EAE-B0E0-DCF321CA4B2F")]
+Interface ICoreDispatcher2 Extends IInspectable
+    Function TryRunAsync(ByVal Priority As CoreDispatcherPriority, ByVal AgileCallback As IDispatchedHandler) As IAsyncOperationBoolean
+    Function TryRunIdleAsync(ByVal AgileCallback As IIdleDispatchedHandler) As IAsyncOperationBoolean
+End Interface
+
+[InterfaceId("BAFAECAD-484D-41BE-BA80-1D58C65263EA")]
+Interface ICoreDispatcherWithTaskPriority Extends IInspectable
+    Property Get CurrentPriority() As CoreDispatcherPriority
+    Property Let CurrentPriority(ByVal Value As CoreDispatcherPriority)
+    Function ShouldYield() As BooleanByte
+    Function ShouldYieldToPriority(ByVal Priority As CoreDispatcherPriority) As BooleanByte
+    [PreserveSig]
+    Function StopProcessEvents() As HRESULT
+End Interface
+
+[InterfaceId("0963261C-84FE-578A-83CA-6425309CCDE4")]
+Interface ICoreIndependentInputSourceController Extends IInspectable
+    Property Get IsTransparentForUncontrolledInput() As BooleanByte
+    Property Let IsTransparentForUncontrolledInput(ByVal Value As BooleanByte)
+    Property Get IsPalmRejectionEnabled() As BooleanByte
+    Property Let IsPalmRejectionEnabled(ByVal Value As BooleanByte)
+    Property Get Source() As ICoreInputSourceBase
+    [PreserveSig]
+    Function SetControlledInput(ByVal InputTypes As CoreInputDeviceTypes) As HRESULT
+    [PreserveSig]
+    Function SetControlledInputWithFilters(ByVal InputTypes As CoreInputDeviceTypes, ByVal Required As CoreIndependentInputFilters, ByVal Excluded As CoreIndependentInputFilters) As HRESULT
+End Interface
+
+[InterfaceId("3EDC4E20-9A8A-5691-8586-FCA4CB57526D")]
+Interface ICoreIndependentInputSourceControllerStatics Extends IInspectable
+    Function CreateForVisual(ByVal Visual As IVisual) As ICoreIndependentInputSourceController
+    Function CreateForIVisualElement(ByVal VisualElement As IVisualElement) As ICoreIndependentInputSourceController
+End Interface
+
+[InterfaceId("C9965F1C-3641-51B6-B823-048EC3628FB0")]
+Interface ITypedEventHandlerInspectableInputEnabled Extends IUnknown
+    Sub Invoke(ByVal Sender As IInspectable, ByVal Args As IInputEnabledEventArgs)
+End Interface
+
+[InterfaceId("9F488807-4580-4BE8-BE68-92A9311713BB")]
+Interface ICoreInputSourceBase Extends IInspectable
+    Property Get Dispatcher() As ICoreDispatcher
+    Property Get IsInputEnabled() As BooleanByte
+    Property Let IsInputEnabled(ByVal Value As BooleanByte)
+    [PreserveSig]
+    Function AddInputEnabled(ByVal Handler As ITypedEventHandlerInspectableInputEnabled, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveInputEnabled(ByVal Token As EventRegistrationToken) As HRESULT
+End Interface
+
+[InterfaceId("5AA4A848-86B2-506B-89AB-5EB5786420C6")]
+Interface ITypedEventHandlerInspectableCharacterReceived Extends IUnknown
+    Sub Invoke(ByVal Sender As IInspectable, ByVal Args As ICharacterReceivedEventArgs)
+End Interface
+
+[InterfaceId("EADFFDF7-D70E-5688-906C-C2B1229EA16D")]
+Interface ITypedEventHandlerInspectableCoreKeyboardInputSource Extends IUnknown
+    Sub Invoke(ByVal Sender As IInspectable, ByVal Args As IKeyEventArgs)
+End Interface
+
+[InterfaceId("231C9088-E469-4DF1-B208-6E490D71CB90")]
+Interface ICoreKeyboardInputSource Extends IInspectable
+    Function GetCurrentKeyState(ByVal VirtualKey As VirtualKey) As CoreVirtualKeyStates
+    [PreserveSig]
+    Function AddCharacterReceived(ByVal Handler As ITypedEventHandlerInspectableCharacterReceived, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveCharacterReceived(ByVal Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function AddKeyDown(ByVal Handler As ITypedEventHandlerInspectableCoreKeyboardInputSource, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveKeyDown(ByVal Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function AddKeyUp(ByVal Handler As ITypedEventHandlerInspectableCoreKeyboardInputSource, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveKeyUp(ByVal Token As EventRegistrationToken) As HRESULT
+End Interface
+
+[InterfaceId("FA24CB94-F963-47A5-8778-207C482B0AFD")]
+Interface ICoreKeyboardInputSource2 Extends IInspectable
+    Function GetCurrentKeyEventDeviceId() As LongPtr
+End Interface
+
+[InterfaceId("26AABF41-A0FD-5E66-B188-6C74182D00CD")]
+Interface ITypedEventHandlerInspectableCorePointerInputSource Extends IUnknown
+    Sub Invoke(ByVal Sender As IInspectable, ByVal Args As IPointerEventArgs)
+End Interface
+
+[InterfaceId("BBF1BB18-E47A-48EB-8807-F8F8D3EA4551")]
+Interface ICorePointerInputSource Extends IInspectable
+    [PreserveSig]
+    Function ReleasePointerCapture() As HRESULT
+    [PreserveSig]
+    Function SetPointerCapture() As HRESULT
+    Property Get HasCapture() As BooleanByte
+    Property Get PointerPosition() As POINTF
+    Property Get PointerCursor() As ICoreCursor
+    Property Set PointerCursor(ByVal Value As ICoreCursor)
+    [PreserveSig]
+    Function AddPointerCaptureLost(ByVal Handler As ITypedEventHandlerInspectableCorePointerInputSource, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemovePointerCaptureLost(ByVal Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function AddPointerEntered(ByVal Handler As ITypedEventHandlerInspectableCorePointerInputSource, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemovePointerEntered(ByVal Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function AddPointerExited(ByVal Handler As ITypedEventHandlerInspectableCorePointerInputSource, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemovePointerExited(ByVal Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function AddPointerMoved(ByVal Handler As ITypedEventHandlerInspectableCorePointerInputSource, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemovePointerMoved(ByVal Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function AddPointerPressed(ByVal Handler As ITypedEventHandlerInspectableCorePointerInputSource, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemovePointerPressed(ByVal Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function AddPointerReleased(ByVal Handler As ITypedEventHandlerInspectableCorePointerInputSource, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemovePointerReleased(ByVal Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function AddPointerWheelChanged(ByVal Handler As ITypedEventHandlerInspectableCorePointerInputSource, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemovePointerWheelChanged(ByVal Token As EventRegistrationToken) As HRESULT
+End Interface
+
+[InterfaceId("D703708A-4516-4786-B1E5-2751D563F997")]
+Interface ICorePointerInputSource2 Extends IInspectable ' requires ICorePointerInputSource
+    Property Get DispatcherQueue() As IDispatcherQueue
+End Interface
+
+[InterfaceId("29742D27-177D-54C3-B974-616FC45A2B0C")]
+Interface ITypedEventHandlerCorePointerRedirector Extends IUnknown
+    Sub Invoke(ByVal Sender As ICorePointerRedirector, ByVal Args As IPointerEventArgs)
+End Interface
+
+[InterfaceId("8F9D0C94-5688-4B0C-A9F1-F931F7FA3DC3")]
+Interface ICorePointerRedirector Extends IInspectable
+    [PreserveSig]
+    Function AddPointerRoutedAway(ByVal Handler As ITypedEventHandlerCorePointerRedirector, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemovePointerRoutedAway(ByVal Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function AddPointerRoutedTo(ByVal Handler As ITypedEventHandlerCorePointerRedirector, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemovePointerRoutedTo(ByVal Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function AddPointerRoutedReleased(ByVal Handler As ITypedEventHandlerCorePointerRedirector, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemovePointerRoutedReleased(ByVal Token As EventRegistrationToken) As HRESULT
+End Interface
+
+[InterfaceId("C76E9D25-6A96-58FD-874F-AE52BD603AF8")]
+Interface ITypedEventHandlerInspectableCoreTouchHitTesting Extends IUnknown
+    Sub Invoke(ByVal Sender As IInspectable, ByVal Args As ITouchHitTestingEventArgs)
+End Interface
+
+[InterfaceId("B1D8A289-3ACF-4124-9FA3-EA8ABA353C21")]
+Interface ICoreTouchHitTesting Extends IInspectable
+    [PreserveSig]
+    Function AddTouchHitTesting(ByVal Handler As ITypedEventHandlerInspectableCoreTouchHitTesting, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveTouchHitTesting(ByVal Token As EventRegistrationToken) As HRESULT
+End Interface
+
+[InterfaceId("54DB5C04-81F7-5F46-9FB8-E49BEEC70A24")]
+Interface ITypedEventHandlerCoreWindowAutomationProviderRequested Extends IUnknown
+    Sub Invoke(ByVal Sender As ICoreWindow, ByVal Args As IAutomationProviderRequestedEventArgs)
+End Interface
+
+[InterfaceId("73F846A8-0AF6-5872-8FB8-AE2F56D8553E")]
+Interface ITypedEventHandlerCoreWindowCharacterReceived Extends IUnknown
+    Sub Invoke(ByVal Sender As ICoreWindow, ByVal Args As ICharacterReceivedEventArgs)
+End Interface
+
+[InterfaceId("D08E4F66-3457-57F2-BA0C-CB347133BD15")]
+Interface ITypedEventHandlerCoreWindowClosed Extends IUnknown
+    Sub Invoke(ByVal Sender As ICoreWindow, ByVal Args As ICoreWindowEventArgs)
+End Interface
+
+[InterfaceId("E230A64A-506A-59C3-BB61-5559FF995663")]
+Interface ITypedEventHandlerCoreWindowInputEnabled Extends IUnknown
+    Sub Invoke(ByVal Sender As ICoreWindow, ByVal Args As IInputEnabledEventArgs)
+End Interface
+
+[InterfaceId("A3EC0774-55AC-5D61-8232-B35C5D35C93C")]
+Interface ITypedEventHandlerCoreWindowKey Extends IUnknown
+    Sub Invoke(ByVal Sender As ICoreWindow, ByVal Args As IKeyEventArgs)
+End Interface
+
+[InterfaceId("420E1BB6-E99D-5E64-8E25-07467E3CAE9E")]
+Interface ITypedEventHandlerCoreWindowPointer Extends IUnknown
+    Sub Invoke(ByVal Sender As ICoreWindow, ByVal Args As IPointerEventArgs)
+End Interface
+
+[InterfaceId("197654C9-0C47-502B-9AA1-0DEB03ED9702")]
+Interface ITypedEventHandlerCoreWindowTouchHitTesting Extends IUnknown
+    Sub Invoke(ByVal Sender As ICoreWindow, ByVal Args As ITouchHitTestingEventArgs)
+End Interface
+
+[InterfaceId("14B7F692-5583-52A1-AA42-FC1843C0F748")]
+Interface ITypedEventHandlerCoreWindowVisibilityChanged Extends IUnknown
+    Sub Invoke(ByVal Sender As ICoreWindow, ByVal Args As IVisibilityChangedEventArgs)
+End Interface
+
+[InterfaceId("26A73B35-A7F9-52DB-88D6-15726DEB2523")]
+Interface ITypedEventHandlerCoreWindowWindowActivated Extends IUnknown
+    Sub Invoke(ByVal Sender As ICoreWindow, ByVal Args As IWindowActivatedEventArgs)
+End Interface
+
+[InterfaceId("318DBB67-4089-5690-9040-1D454FB2F686")]
+Interface ITypedEventHandlerCoreWindowWindowSizeChanged Extends IUnknown
+    Sub Invoke(ByVal Sender As ICoreWindow, ByVal Args As IWindowSizeChangedEventArgs)
+End Interface
+
+[InterfaceId("79B9D5F2-879E-4B89-B798-79E47598030C")]
+Interface ICoreWindow Extends IInspectable
+    Property Get AutomationHostProvider() As IInspectable
+    Property Get Bounds() As RECTF
+    Property Get CustomProperties() As IPropertySet
+    Property Get Dispatcher() As ICoreDispatcher
+    Property Get FlowDirection() As CoreWindowFlowDirection
+    Property Let FlowDirection(ByVal Value As CoreWindowFlowDirection)
+    Property Get IsInputEnabled() As BooleanByte
+    Property Let IsInputEnabled(ByVal Value As BooleanByte)
+    Property Get PointerCursor() As ICoreCursor
+    Property Set PointerCursor(ByVal Value As ICoreCursor)
+    Property Get PointerPosition() As POINTF
+    Property Get Visible() As BooleanByte
+    [PreserveSig]
+    Function Activate() As HRESULT
+    [PreserveSig]
+    Function Close() As HRESULT
+    Function GetAsyncKeyState(ByVal VirtualKey As VirtualKey) As CoreVirtualKeyStates
+    Function GetKeyState(ByVal VirtualKey As VirtualKey) As CoreVirtualKeyStates
+    [PreserveSig]
+    Function ReleasePointerCapture() As HRESULT
+    [PreserveSig]
+    Function SetPointerCapture() As HRESULT
+    [PreserveSig]
+    Function AddActivated(ByVal Handler As ITypedEventHandlerCoreWindowWindowActivated, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveActivated(ByVal Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function AddAutomationProviderRequested(ByVal Handler As ITypedEventHandlerCoreWindowAutomationProviderRequested, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveAutomationProviderRequested(ByVal Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function AddCharacterReceived(ByVal Handler As ITypedEventHandlerCoreWindowCharacterReceived, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveCharacterReceived(ByVal Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function AddClosed(ByVal Handler As ITypedEventHandlerCoreWindowClosed, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveClosed(ByVal Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function AddInputEnabled(ByVal Handler As ITypedEventHandlerCoreWindowInputEnabled, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveInputEnabled(ByVal Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function AddKeyDown(ByVal Handler As ITypedEventHandlerCoreWindowKey, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveKeyDown(ByVal Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function AddKeyUp(ByVal Handler As ITypedEventHandlerCoreWindowKey, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveKeyUp(ByVal Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function AddPointerCaptureLost(ByVal Handler As ITypedEventHandlerCoreWindowPointer, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemovePointerCaptureLost(ByVal Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function AddPointerEntered(ByVal Handler As ITypedEventHandlerCoreWindowPointer, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemovePointerEntered(ByVal Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function AddPointerExited(ByVal Handler As ITypedEventHandlerCoreWindowPointer, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemovePointerExited(ByVal Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function AddPointerMoved(ByVal Handler As ITypedEventHandlerCoreWindowPointer, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function PointerMoved(ByVal Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function AddPointerPressed(ByVal Handler As ITypedEventHandlerCoreWindowPointer, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemovePointerPressed(ByVal Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function AddPointerReleased(ByVal Handler As ITypedEventHandlerCoreWindowPointer, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemovePointerReleased(ByVal Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function AddTouchHitTesting(ByVal Handler As ITypedEventHandlerCoreWindowTouchHitTesting, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveTouchHitTesting(ByVal Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function AddPointerWheelChanged(ByVal Handler As ITypedEventHandlerCoreWindowPointer, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemovePointerWheelChanged(ByVal Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function AddSizeChanged(ByVal Handler As ITypedEventHandlerCoreWindowWindowSizeChanged, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveSizeChanged(ByVal Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function AddVisibilityChanged(ByVal Handler As ITypedEventHandlerCoreWindowVisibilityChanged, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveVisibilityChanged(ByVal Token As EventRegistrationToken) As HRESULT
+End Interface
+
+[InterfaceId("7C2B1B85-6917-4361-9C02-0D9E3A420B95")]
+Interface ICoreWindow2 Extends IInspectable
+    Property Let PointerPosition(ByVal Value As POINTF)
+End Interface
+
+[InterfaceId("21A652D2-BFE2-5B2E-A2AB-CA45253BE8B0")]
+Interface ITypedEventHandlerCoreWindowClosestInteractiveBoundsRequested Extends IUnknown
+    Sub Invoke(ByVal Sender As ICoreWindow, ByVal Args As IClosestInteractiveBoundsRequestedEventArgs)
+End Interface
+
+[InterfaceId("32C20DD8-FAEF-4375-A2AB-32640E4815C7")]
+Interface ICoreWindow3 Extends IInspectable
+    [PreserveSig]
+    Function AddClosestInteractiveBoundsRequested(ByVal Handler As ITypedEventHandlerCoreWindowClosestInteractiveBoundsRequested, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveClosestInteractiveBoundsRequested(ByVal Token As EventRegistrationToken) As HRESULT
+    Function GetCurrentKeyEventDeviceId() As LongPtr
+End Interface
+
+[InterfaceId("6368AE3D-52D4-5290-B936-717A9ACF5BEA")]
+Interface ITypedEventHandlerCoreWindowIInspectable Extends IUnknown
+    Sub Invoke(ByVal Sender As ICoreWindow, ByVal Args As IInspectable)
+End Interface
+
+[InterfaceId("35CAF0D0-47F0-436C-AF97-0DD88F6F5F02")]
+Interface ICoreWindow4 Extends IInspectable
+    [PreserveSig]
+    Function AddResizeStarted(ByVal Handler As ITypedEventHandlerCoreWindowIInspectable, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveResizeStarted(ByVal Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function AddResizeCompleted(ByVal Handler As ITypedEventHandlerCoreWindowIInspectable, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveResizeCompleted(ByVal Token As EventRegistrationToken) As HRESULT
+End Interface
+
+[InterfaceId("4B4AE1E1-2E6D-4EAA-BDA1-1C5CC1BEE141")]
+Interface ICoreWindow5 Extends IInspectable
+    Property Get DispatcherQueue() As IDispatcherQueue
+    Property Get ActivationMode() As CoreWindowActivationMode
+End Interface
+
+[InterfaceId("B32D6422-78B2-5E00-84A8-6E3167AAABDE")]
+Interface ITypedEventHandlerCoreWindowCoreWindowPopupShowing Extends IUnknown
+    Sub Invoke(ByVal Sender As ICoreWindow, ByVal Args As ICoreWindowPopupShowingEventArgs)
+End Interface
+
+[InterfaceId("E7392CE0-C78D-427E-8B2C-01FF420C69D5")]
+Interface ICoreWindowDialog Extends IInspectable
+    [PreserveSig]
+    Function AddShowing(ByVal Handler As ITypedEventHandlerCoreWindowCoreWindowPopupShowing, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveShowing(ByVal Token As EventRegistrationToken) As HRESULT
+    Property Get MaxSize() As SIZEF
+    Property Get MinSize() As SIZEF
+    Property Get Title() As LongPtr
+    Property Let Title(ByVal Value As LongPtr)
+    Property Get IsInteractionDelayed() As Long
+    Property Let IsInteractionDelayed(ByVal Value As Long)
+    Property Get Commands() As IVector_IUICommand
+    Property Get DefaultCommandIndex() As Long
+    Property Let DefaultCommandIndex(ByVal Value As Long)
+    Property Get CancelCommandIndex() As Long
+    Property Let CancelCommandIndex(ByVal Value As Long)
+    Property Get BackButtonCommand() As IUICommandInvokedHandler
+    Property Set BackButtonCommand(ByVal Value As IUICommandInvokedHandler)
+    Function ShowAsync() As IAsyncOperationIUICommand
+End Interface
+
+[InterfaceId("CFB2A855-1C59-4B13-B1E5-16E29805F7C4")]
+Interface ICoreWindowDialogFactory Extends IInspectable
+    Function CreateWithTitle(ByVal Title As LongPtr) As ICoreWindowDialog
+End Interface
+
+[InterfaceId("272B1EF3-C633-4DA5-A26C-C6D0F56B29DA")]
+Interface ICoreWindowEventArgs Extends IInspectable
+    Property Get Handled() As BooleanByte
+    Property Let Handled(ByVal Value As BooleanByte)
+End Interface
+
+[InterfaceId("E89D854D-2050-40BB-B344-F6F355EEB314")]
+Interface ICoreWindowFlyout Extends IInspectable
+    [PreserveSig]
+    Function AddShowing(ByVal Handler As ITypedEventHandlerCoreWindowCoreWindowPopupShowing, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveShowing(ByVal Token As EventRegistrationToken) As HRESULT
+    Property Get MaxSize() As SIZEF
+    Property Get MinSize() As SIZEF
+    Property Get Title() As LongPtr
+    Property Let Title(ByVal Value As LongPtr)
+    Property Get IsInteractionDelayed() As Long
+    Property Let IsInteractionDelayed(ByVal Value As Long)
+    Property Get Commands() As IVector_IUICommand
+    Property Get DefaultCommandIndex() As Long
+    Property Let DefaultCommandIndex(ByVal Value As Long)
+    Property Get BackButtonCommand() As IUICommandInvokedHandler
+    Property Set BackButtonCommand(ByVal Value As IUICommandInvokedHandler)
+    Function ShowAsync() As IAsyncOperationIUICommand
+End Interface
+
+[InterfaceId("DEC4C6C4-93E8-4F7C-BE27-CEFAA1AF68A7")]
+Interface ICoreWindowFlyoutFactory Extends IInspectable
+    Function Create(ByVal Position As POINTF) As ICoreWindowFlyout
+    Function CreateWithTitle(ByVal Position As POINTF, ByVal Title As LongPtr) As ICoreWindowFlyout
+End Interface
+
+[InterfaceId("26155FA2-5BA5-4EA4-A3B4-2DC7D63C8E26")]
+Interface ICoreWindowPopupShowingEventArgs Extends IInspectable
+    [PreserveSig]
+    Function SetDesiredSize(ByVal Value As SIZEF) As HRESULT
+End Interface
+
+[InterfaceId("B8F0B925-B350-48B3-A198-5C1A84700243")]
+Interface ICoreWindowResizeManager Extends IInspectable
+    [PreserveSig]
+    Function NotifyLayoutCompleted() As HRESULT
+End Interface
+
+[InterfaceId("BB74F27B-A544-4301-80E6-0AE033EF4536")]
+Interface ICoreWindowResizeManagerLayoutCapability Extends IInspectable
+    Property Let ShouldWaitForLayoutCompletion(ByVal Value As BooleanByte)
+    Property Get ShouldWaitForLayoutCompletion() As BooleanByte
+End Interface
+
+[InterfaceId("AE4A9045-6D70-49DB-8E68-46FFBD17D38D")]
+Interface ICoreWindowResizeManagerStatics Extends IInspectable
+    Function GetForCurrentView() As ICoreWindowResizeManager
+End Interface
+
+[InterfaceId("4D239005-3C2A-41B1-9022-536BB9CF93B1")]
+Interface ICoreWindowStatic Extends IInspectable
+    Function GetForCurrentThread() As ICoreWindow
+End Interface
+
+[InterfaceId("9AC40241-3575-4C3B-AF66-E8C529D4D06C")]
+Interface ICoreWindowWithContext Extends IInspectable
+    Property Get UIContext() As IUIContext
+End Interface
+
+[InterfaceId("98BB6A24-DC1C-43CB-B4ED-D1C0EB2391F3")]
+Interface IIdleDispatchedHandlerArgs Extends IInspectable
+    Property Get IsDispatcherIdle() As BooleanByte
+End Interface
+
+[InterfaceId("188F20D6-9873-464A-ACE5-57E010F465E6")]
+Interface IInitializeWithCoreWindow Extends IInspectable
+    [PreserveSig]
+    Function Initialize(ByVal Window As ICoreWindow) As HRESULT
+End Interface
+
+[InterfaceId("80371D4F-2FD8-4C24-AA86-3163A87B4E5A")]
+Interface IInputEnabledEventArgs Extends IInspectable ' requires ICoreWindowEventArgs
+    Property Get InputEnabled() As BooleanByte
+End Interface
+
+[InterfaceId("5FF5E930-2544-4A17-BD78-1F2FDEBB106B")]
+Interface IKeyEventArgs Extends IInspectable ' requires ICoreWindowEventArgs
+    Property Get VirtualKey() As VirtualKey
+    Property Get KeyStatus() As CorePhysicalKeyStatus
+End Interface
+
+[InterfaceId("583ADD98-0790-4571-9B12-645EF9D79E42")]
+Interface IKeyEventArgs2 Extends IInspectable ' requires ICoreWindowEventArgs
+    Property Get DeviceId() As LongPtr
+End Interface
+
+[InterfaceId("920D9CB1-A5FC-4A21-8C09-49DFE6FFE25F")]
+Interface IPointerEventArgs Extends IInspectable
+    Property Get CurrentPoint() As IPointerPoint
+    Property Get KeyModifiers() As VirtualKeyModifiers
+    Function GetIntermediatePoints() As IVector_IPointerPoint
+End Interface
+
+[InterfaceId("CA821060-002B-526D-8122-982630D7CDBE")]
+Interface IEventHandlerBackRequested Extends IUnknown
+    Sub Invoke(ByVal Sender As IInspectable, ByVal Args As IBackRequestedEventArgs)
+End Interface
+
+[InterfaceId("93023118-CF50-42A6-9706-69107FA122E1")]
+Interface ISystemNavigationManager Extends IInspectable
+    [PreserveSig]
+    Function AddBackRequested(ByVal Handler As IEventHandlerBackRequested, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveBackRequested(ByVal Token As EventRegistrationToken) As HRESULT
+End Interface
+
+[InterfaceId("8C510401-67BE-49AE-9509-671C1E54A389")]
+Interface ISystemNavigationManager2 Extends IInspectable
+    Property Get AppViewBackButtonVisibility() As AppViewBackButtonVisibility
+    Property Let AppViewBackButtonVisibility(ByVal Value As AppViewBackButtonVisibility)
+End Interface
+
+[InterfaceId("DC52B5CE-BEE0-4305-8C54-68228ED683B5")]
+Interface ISystemNavigationManagerStatics Extends IInspectable
+    Function GetForCurrentView() As ISystemNavigationManager
+End Interface
+
+[InterfaceId("22F3B823-0B7C-424E-9DF7-33D4F962931B")]
+Interface ITouchHitTestingEventArgs Extends IInspectable ' requires ICoreWindowEventArgs
+    Property Get ProximityEvaluation() As CoreProximityEvaluation
+    Property Let ProximityEvaluation(ByVal Value As CoreProximityEvaluation)
+    Property Get Point() As POINTF
+    Property Get BoundingBox() As RECTF
+    Function EvaluateProximityToRect(ByVal ControlBoundingBox As RECTF) As CoreProximityEvaluation
+    Function EvaluateProximityToPolygon(ByVal ControlVerticesSize As Long, ByVal ControlVerticesPtr As LongPtr) As CoreProximityEvaluation
+End Interface
+
+[InterfaceId("BF9918EA-D801-4564-A495-B1E84F8AD085")]
+Interface IVisibilityChangedEventArgs Extends IInspectable ' requires ICoreWindowEventArgs
+    Property Get Visible() As BooleanByte
+End Interface
+
+[InterfaceId("179D65E7-4658-4CB6-AA13-41D094EA255E")]
+Interface IWindowActivatedEventArgs Extends IInspectable ' requires ICoreWindowEventArgs
+    Property Get WindowActivationState() As CoreWindowActivationState
+End Interface
+
+[InterfaceId("5A200EC7-0426-47DC-B86C-6F475915E451")]
+Interface IWindowSizeChangedEventArgs Extends IInspectable ' requires ICoreWindowEventArgs
+    Property Get Size() As SIZEF
+End Interface
+
+' ----------------------------------------------------- Related Interfaces -----------------------------------------------------
+
+[InterfaceId("45D64A29-A63E-4CB6-B498-5781D298CB4F")]
+Interface ICoreWindowInterop Extends IUnknown
+    Property Get WindowHandle() As LongPtr
+    Property Let MessageHandled(ByVal Value As BooleanByte)
+End Interface
+
+[InterfaceId("40BFE3E3-B75A-4479-AC96-475365749BB8")]
+Interface ICoreInputInterop Extends IUnknown
+    [PreserveSig]
+    Function SetInputSource(ByVal InputSource As IUnknown) As HRESULT
+    Property Let MessageHandled(ByVal Value As BooleanByte)
+End Interface
+
+[InterfaceId("0576AB31-A310-4C40-BA31-FD37E0298DFA")]
+Interface ICoreWindowComponentInterop Extends IUnknown
+    [PreserveSig]
+    Function ConfigureComponentInput(ByVal HostViewInstanceId As Long, ByVal hWndHost As LongPtr, ByVal InputSourceVisual As IUnknown) As HRESULT
+    [PreserveSig]
+    Function GetViewInstanceId(ComponentViewInstanceId As Long) As HRESULT
+End Interface
+
+[InterfaceId("7A5B6FD1-CD73-4B6C-9CF4-2E869EAF470A")]
+Interface ICoreWindowAdapterInterop Extends IUnknown
+    Property Get AppActivationClientAdapter() As IUnknown
+    Property Get ApplicationViewClientAdapter() As IUnknown
+    Property Get CoreApplicationViewClientAdapter() As IUnknown
+    Property Get HoloViewClientAdapter() As IUnknown
+    Property Get PositionerClientAdapter() As IUnknown
+    Property Get SystemNavigationClientAdapter() As IUnknown
+    Property Get TitleBarClientAdapter() As IUnknown
+    [PreserveSig]
+    Function SetWindowClientAdapter(ByVal WindowClientAdapter As IUnknown) As HRESULT
+End Interface
+
+Module mdlUICore
+
+Public Enum AppViewBackButtonVisibility
+    AppViewBackButtonVisibility_Visible
+    AppViewBackButtonVisibility_Collapsed
+    AppViewBackButtonVisibility_Disabled
+End Enum
+
+Public Enum CoreAcceleratorKeyEventType
+    CoreAcceleratorKeyEventType_Character = 2
+    CoreAcceleratorKeyEventType_DeadCharacter = 3
+    CoreAcceleratorKeyEventType_KeyDown = 0
+    CoreAcceleratorKeyEventType_KeyUp = 1
+    CoreAcceleratorKeyEventType_SystemCharacter = 6
+    CoreAcceleratorKeyEventType_SystemDeadCharacter = 7
+    CoreAcceleratorKeyEventType_SystemKeyDown = 4
+    CoreAcceleratorKeyEventType_SystemKeyUp = 5
+    CoreAcceleratorKeyEventType_UnicodeCharacter = 8
+End Enum
+
+Public Enum CoreCursorType
+    CoreCursorType_Arrow
+    CoreCursorType_Cross
+    CoreCursorType_Custom
+    CoreCursorType_Hand
+    CoreCursorType_Help
+    CoreCursorType_IBeam
+    CoreCursorType_SizeAll
+    CoreCursorType_SizeNortheastSouthwest
+    CoreCursorType_SizeNorthSouth
+    CoreCursorType_SizeNorthwestSoutheast
+    CoreCursorType_SizeWestEast
+    CoreCursorType_UniversalNo
+    CoreCursorType_UpArrow
+    CoreCursorType_Wait
+    CoreCursorType_Pin
+    CoreCursorType_Person
+End Enum
+
+Public Enum CoreDispatcherPriority
+    CoreDispatcherPriority_Idle = -2
+    CoreDispatcherPriority_Low = -1
+    CoreDispatcherPriority_Normal
+    CoreDispatcherPriority_High
+End Enum
+
+Public Enum CoreIndependentInputFilters
+    CoreIndependentInputFilters_None = &H0
+    CoreIndependentInputFilters_MouseButton = &H1
+    CoreIndependentInputFilters_MouseWheel = &H2
+    CoreIndependentInputFilters_MouseHover = &H4
+    CoreIndependentInputFilters_PenWithBarre = &H8
+    CoreIndependentInputFilters_PenInverted = &H10
+End Enum
+
+Public Enum CoreInputDeviceTypes
+    CoreInputDeviceTypes_None = &H0
+    CoreInputDeviceTypes_Touch = &H1
+    CoreInputDeviceTypes_Pen = &H2
+    CoreInputDeviceTypes_Mouse = &H4
+End Enum
+
+Public Enum CoreProcessEventsOption
+    CoreProcessEventsOption_ProcessOneAndAllPending
+    CoreProcessEventsOption_ProcessOneIfPresent
+    CoreProcessEventsOption_ProcessUntilQuit
+    CoreProcessEventsOption_ProcessAllIfPresent
+End Enum
+
+Public Enum CoreProximityEvaluationScore
+    CoreProximityEvaluationScore_Closest
+    CoreProximityEvaluationScore_Farthest = 2147483647
+End Enum
+
+Public Enum CoreVirtualKeyStates
+    CoreVirtualKeyStates_None
+    CoreVirtualKeyStates_Down
+    CoreVirtualKeyStates_Locked
+End Enum
+
+Public Enum CoreWindowActivationMode
+    CoreWindowActivationMode_None
+    CoreWindowActivationMode_Deactivated
+    CoreWindowActivationMode_ActivatedNotForeground
+    CoreWindowActivationMode_ActivatedInForeground
+End Enum
+
+Public Enum CoreWindowActivationState
+    CoreWindowActivationState_CodeActivated
+    CoreWindowActivationState_Deactivated
+    CoreWindowActivationState_PointerActivated
+End Enum
+
+Public Enum CoreWindowFlowDirection
+    CoreWindowFlowDirection_LeftToRight
+    CoreWindowFlowDirection_RightToLeft
+End Enum
+
+Public Type CorePhysicalKeyStatus
+    RepeatCount As Long
+    ScanCode As Long
+    IsExtendedKey As BooleanByte
+    IsMenuKeyDown As BooleanByte
+    WasKeyDown As BooleanByte
+    IsKeyReleased As BooleanByte
+End Type
+
+Public Type CoreProximityEvaluation
+    Score As Long
+    AdjustedPoint As POINTF
+End Type
+
+End Module

@@ -1,0 +1,447 @@
+[InterfaceId("E3D069BB-E30C-5E18-424B-7FBE81F8FBD0")]
+Interface ISpeechContinuousRecognitionCompletedEventArgs Extends IInspectable
+    Property Get Status() As SpeechRecognitionResultStatus
+End Interface
+
+[InterfaceId("19091E1E-6E7E-5A46-40FB-76594F786504")]
+Interface ISpeechContinuousRecognitionResultGeneratedEventArgs Extends IInspectable
+    Property Get Result() As ISpeechRecognitionResult
+End Interface
+
+[InterfaceId("8103C018-7952-59F9-9F41-23B17D6E452D")]
+Interface ITypedEventHandlerSpeechContinuousRecognitionSessionCompleted Extends IUnknown
+    Sub Invoke(ByVal Sender As ISpeechContinuousRecognitionSession, ByVal Args As ISpeechContinuousRecognitionCompletedEventArgs)
+End Interface
+
+[InterfaceId("26192073-A2C9-527D-9BD3-911C05E0011E")]
+Interface ITypedEventHandlerSpeechContinuousRecognitionSessionResultGenerated Extends IUnknown
+    Sub Invoke(ByVal Sender As ISpeechContinuousRecognitionSession, ByVal Args As ISpeechContinuousRecognitionResultGeneratedEventArgs)
+End Interface
+
+[InterfaceId("6A213C04-6614-49F8-99A2-B5E9B3A085C8")]
+Interface ISpeechContinuousRecognitionSession Extends IInspectable
+    Property Get AutoStopSilenceTimeout() As TimeSpan
+    Property Let AutoStopSilenceTimeout(ByVal Value As TimeSpan)
+    Function StartAsync() As IAsyncAction
+    Function StartWithModeAsync(ByVal Mode As SpeechContinuousRecognitionMode) As IAsyncAction
+    Function StopAsync() As IAsyncAction
+    Function CancelAsync() As IAsyncAction
+    Function PauseAsync() As IAsyncAction
+    [PreserveSig]
+    Function Resume() As HRESULT
+    [PreserveSig]
+    Function AddCompleted(ByVal Value As ITypedEventHandlerSpeechContinuousRecognitionSessionCompleted, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveCompleted(ByVal Value As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function AddResultGenerated(ByVal Value As ITypedEventHandlerSpeechContinuousRecognitionSessionResultGenerated, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveResultGenerated(ByVal Token As EventRegistrationToken) As HRESULT
+End Interface
+
+[InterfaceId("407E6C5D-6AC7-4DA4-9CC1-2FCE32CF7489")]
+Interface ISpeechRecognitionCompilationResult Extends IInspectable
+    Property Get Status() As SpeechRecognitionResultStatus
+End Interface
+
+[InterfaceId("79AC1628-4D68-43C4-8911-40DC4101B55B")]
+Interface ISpeechRecognitionConstraint Extends IInspectable
+    Property Get IsEnabled() As BooleanByte
+    Property Let IsEnabled(ByVal Value As BooleanByte)
+    Property Get Tag() As LongPtr
+    Property Let Tag(ByVal Value As LongPtr)
+    Property Get Type() As SpeechRecognitionConstraintType
+    Property Get Probability() As SpeechRecognitionConstraintProbability
+    Property Let Probability(ByVal Value As SpeechRecognitionConstraintProbability)
+End Interface
+
+[InterfaceId("B5031A8F-85CA-4FA4-B11A-474FC41B3835")]
+Interface ISpeechRecognitionGrammarFileConstraint Extends IInspectable ' requires ISpeechRecognitionConstraint
+    Property Get GrammarFile() As IStorageFile
+End Interface
+
+[InterfaceId("3DA770EB-C479-4C27-9F19-89974EF392D1")]
+Interface ISpeechRecognitionGrammarFileConstraintFactory Extends IInspectable
+    Function Create(ByVal File As IStorageFile) As ISpeechRecognitionGrammarFileConstraint
+    Function CreateWithTag(ByVal File As IStorageFile, ByVal Tag As LongPtr) As ISpeechRecognitionGrammarFileConstraint
+End Interface
+
+[InterfaceId("7A7B25B0-99C5-4F7D-BF84-10AA1302B634")]
+Interface ISpeechRecognitionHypothesis Extends IInspectable
+    Property Get Text() As LongPtr
+End Interface
+
+[InterfaceId("55161A7A-8023-5866-411D-1213BB271476")]
+Interface ISpeechRecognitionHypothesisGeneratedEventArgs Extends IInspectable
+    Property Get Hypothesis() As ISpeechRecognitionHypothesis
+End Interface
+
+[InterfaceId("09C487E9-E4AD-4526-81F2-4946FB481D98")]
+Interface ISpeechRecognitionListConstraint Extends IInspectable ' requires ISpeechRecognitionConstraint
+    Property Get Commands() As IVector_HSTRING
+End Interface
+
+[InterfaceId("40F3CDC7-562A-426A-9F3B-3B4E282BE1D5")]
+Interface ISpeechRecognitionListConstraintFactory Extends IInspectable
+    Function Create(ByVal Commands As IIterable_HSTRING) As ISpeechRecognitionListConstraint
+    Function CreateWithTag(ByVal Commands As IIterable_HSTRING, ByVal Tag As LongPtr) As ISpeechRecognitionListConstraint
+End Interface
+
+[InterfaceId("4FE24105-8C3A-4C7E-8D0A-5BD4F5B14AD8")]
+Interface ISpeechRecognitionQualityDegradingEventArgs Extends IInspectable
+    Property Get Problem() As SpeechRecognitionAudioProblem
+End Interface
+
+[InterfaceId("20756DD2-6D3F-5409-846A-0F0F01D7BF9A")]
+Interface IIterator_ISpeechRecognitionResult Extends IInspectable
+    Property Get Current() As ISpeechRecognitionResult
+    Property Get HasCurrent() As BooleanByte
+    Function MoveNext() As BooleanByte
+    Function GetMany(ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("0D9B7B48-98A1-5B22-9A66-6F812F5947AA")]
+Interface IIterable_ISpeechRecognitionResult Extends IInspectable
+    Function First() As IIterator_ISpeechRecognitionResult
+End Interface
+
+[InterfaceId("0E37810F-1DE6-5199-833F-5A6B0BD91E23")]
+Interface IVectorView_ISpeechRecognitionResult Extends IInspectable
+    Function GetAt(ByVal Index As Long) As ISpeechRecognitionResult
+    Property Get Size() As Long
+    Function IndexOf(ByVal Value As ISpeechRecognitionResult, Index As Long) As BooleanByte
+    Function GetMany(ByVal StartIndex As Long, ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("4E303157-034E-4652-857E-D0454CC4BEEC")]
+Interface ISpeechRecognitionResult Extends IInspectable
+    Property Get Status() As SpeechRecognitionResultStatus
+    Property Get Text() As LongPtr
+    Property Get Confidence() As SpeechRecognitionConfidence
+    Property Get SemanticInterpretation() As ISpeechRecognitionSemanticInterpretation
+    Function GetAlternates(ByVal MaxAlternates As Long) As IVectorView_ISpeechRecognitionResult
+    Property Get Constraint() As ISpeechRecognitionConstraint
+    Property Get RulePath() As IVectorView_HSTRING
+    Property Get RawConfidence() As Double
+End Interface
+
+[InterfaceId("AF7ED1BA-451B-4166-A0C1-1FFE84032D03")]
+Interface ISpeechRecognitionResult2 Extends IInspectable
+    Property Get PhraseStartTime() As DateTime
+    Property Get PhraseDuration() As TimeSpan
+End Interface
+
+[InterfaceId("BCDE03AD-EA71-5077-A961-1C0ECFF57202")]
+Interface KVP_IVectorView_HSTRING Extends IInspectable
+    Property Get Key() As LongPtr
+    Property Get Value() As IVectorView_HSTRING
+End Interface
+
+[InterfaceId("643B6D83-457E-5A43-800F-B0449F91D96B")]
+Interface IIterator_KVP_IVectorView_HSTRING Extends IInspectable
+    Property Get Current() As KVP_IVectorView_HSTRING
+    Property Get HasCurrent() As BooleanByte
+    Function MoveNext() As BooleanByte
+    Function GetMany(ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("A4CD6151-2CC1-56F1-9014-DF6BA3410BEB")]
+Interface IIterable_KVP_IVectorView_HSTRING Extends IInspectable
+    Function First() As IIterator_KVP_IVectorView_HSTRING
+End Interface
+
+[InterfaceId("2843D34F-D3E5-5FCA-9FDC-B568DD5C1E64")]
+Interface IMapView_IVectorView_HSTRING Extends IInspectable
+    Function Lookup(ByVal Key As LongPtr) As IVectorView_HSTRING
+    Property Get Size() As Long
+    Function HasKey(ByVal Key As LongPtr) As BooleanByte
+    Sub Split(First As IMapView_IVectorView_HSTRING, Second As IMapView_IVectorView_HSTRING)
+End Interface
+
+[InterfaceId("AAE1DA9B-7E32-4C1F-89FE-0C65F486F52E")]
+Interface ISpeechRecognitionSemanticInterpretation Extends IInspectable
+    Property Get Properties() As IMapView_IVectorView_HSTRING
+End Interface
+
+[InterfaceId("BF6FDF19-825D-4E69-A681-36E48CF1C93E")]
+Interface ISpeechRecognitionTopicConstraint Extends IInspectable ' requires ISpeechRecognitionConstraint
+    Property Get Scenario() As SpeechRecognitionScenario
+    Property Get TopicHint() As LongPtr
+End Interface
+
+[InterfaceId("6E6863DF-EC05-47D7-A5DF-56A3431E58D2")]
+Interface ISpeechRecognitionTopicConstraintFactory Extends IInspectable
+    Function Create(ByVal Scenario As SpeechRecognitionScenario, ByVal TopicHint As LongPtr) As ISpeechRecognitionTopicConstraint
+    Function CreateWithTag(ByVal Scenario As SpeechRecognitionScenario, ByVal TopicHint As LongPtr, ByVal Tag As LongPtr) As ISpeechRecognitionTopicConstraint
+End Interface
+
+[InterfaceId("F2791C2B-1EF4-4AE7-9D77-B6FF10B8A3C2")]
+Interface ISpeechRecognitionVoiceCommandDefinitionConstraint Extends IInspectable ' requires ISpeechRecognitionConstraint
+
+End Interface
+
+[InterfaceId("A392249A-E28A-564A-9E73-1DDA63CA643C")]
+Interface IAsyncOperationISpeechRecognitionCompilationResult Extends IInspectable
+    Property Set Completed(ByVal Handler As IAsyncOperationCompletedHandlerISpeechRecognitionCompilationResult)
+    Property Get Completed() As IAsyncOperationCompletedHandlerISpeechRecognitionCompilationResult
+    Function GetResults() As ISpeechRecognitionCompilationResult
+End Interface
+
+[InterfaceId("78C859BD-14D4-5C40-ABFF-490616D5E92D")]
+Interface IAsyncOperationCompletedHandlerISpeechRecognitionCompilationResult Extends IUnknown
+    Sub Invoke(ByVal AsyncOperation As IAsyncOperationISpeechRecognitionCompilationResult, ByVal AsyncStatus As AsyncStatus)
+End Interface
+
+[InterfaceId("BA3EEBE8-8D7C-51F2-9ED4-EBAFE3674DB4")]
+Interface IAsyncOperationISpeechRecognitionResult Extends IInspectable
+    Property Set Completed(ByVal Handler As IAsyncOperationCompletedHandlerISpeechRecognitionResult)
+    Property Get Completed() As IAsyncOperationCompletedHandlerISpeechRecognitionResult
+    Function GetResults() As ISpeechRecognitionResult
+End Interface
+
+[InterfaceId("C2195C7D-DCC2-5C6D-9162-C8DF66528762")]
+Interface IAsyncOperationCompletedHandlerISpeechRecognitionResult Extends IUnknown
+    Sub Invoke(ByVal AsyncOperation As IAsyncOperationISpeechRecognitionResult, ByVal AsyncStatus As AsyncStatus)
+End Interface
+
+[InterfaceId("738F00B1-E18C-5140-A53A-F1788D10C93D")]
+Interface IIterator_ISpeechRecognitionConstraint Extends IInspectable
+    Property Get Current() As ISpeechRecognitionConstraint
+    Property Get HasCurrent() As BooleanByte
+    Function MoveNext() As BooleanByte
+    Function GetMany(ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("88E6436C-3253-520B-9ED8-A63B178C44A2")]
+Interface IIterable_ISpeechRecognitionConstraint Extends IInspectable
+    Function First() As IIterator_ISpeechRecognitionConstraint
+End Interface
+
+[InterfaceId("341DEE1D-6AC2-5D06-9026-B30ADA205665")]
+Interface IVectorView_ISpeechRecognitionConstraint Extends IInspectable
+    Function GetAt(ByVal Index As Long) As ISpeechRecognitionConstraint
+    Property Get Size() As Long
+    Function IndexOf(ByVal Value As ISpeechRecognitionConstraint, Index As Long) As BooleanByte
+    Function GetMany(ByVal StartIndex As Long, ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("2691D763-561E-5060-BBC9-7B07361ACC95")]
+Interface IVector_ISpeechRecognitionConstraint Extends IInspectable
+    Function GetAt(ByVal Index As Long) As ISpeechRecognitionConstraint
+    Property Get Size() As Long
+    Function GetView() As IVectorView_ISpeechRecognitionConstraint
+    Function IndexOf(ByVal Value As ISpeechRecognitionConstraint, Index As Long) As BooleanByte
+    [PreserveSig]
+    Function SetAt(ByVal Index As Long, ByVal Value As ISpeechRecognitionConstraint) As HRESULT
+    [PreserveSig]
+    Function InsertAt(ByVal Index As Long, ByVal Value As ISpeechRecognitionConstraint) As HRESULT
+    [PreserveSig]
+    Function RemoveAt(ByVal Index As Long) As HRESULT
+    [PreserveSig]
+    Function Append(ByVal Value As ISpeechRecognitionConstraint) As HRESULT
+    [PreserveSig]
+    Function RemoveAtEnd() As HRESULT
+    [PreserveSig]
+    Function Clear() As HRESULT
+    Function GetMany(ByVal StartIndex As Long, ByVal Length As Long, Items As Any) As Long
+    [PreserveSig]
+    Function ReplaceAll(ByVal Length As Long, Items As Any) As HRESULT
+End Interface
+
+[InterfaceId("15CA7918-61D2-57B2-B933-44063E8BB662")]
+Interface ITypedEventHandlerSpeechRecognizerRecognitionQualityDegrading Extends IUnknown
+    Sub Invoke(ByVal Sender As ISpeechRecognizer, ByVal Args As ISpeechRecognitionQualityDegradingEventArgs)
+End Interface
+
+[InterfaceId("D1185E92-5C30-5561-B3E2-E82DDBD872C3")]
+Interface ITypedEventHandlerSpeechRecognizerStateChanged Extends IUnknown
+    Sub Invoke(ByVal Sender As ISpeechRecognizer, ByVal Args As ISpeechRecognizerStateChangedEventArgs)
+End Interface
+
+[InterfaceId("0BC3C9CB-C26A-40F2-AEB5-8096B2E48073")]
+Interface ISpeechRecognizer Extends IInspectable ' requires IClosable
+    Property Get CurrentLanguage() As ILanguage
+    Property Get Constraints() As IVector_ISpeechRecognitionConstraint
+    Property Get Timeouts() As ISpeechRecognizerTimeouts
+    Property Get UIOptions() As ISpeechRecognizerUIOptions
+    Function CompileConstraintsAsync() As IAsyncOperationISpeechRecognitionCompilationResult
+    Function RecognizeAsync() As IAsyncOperationISpeechRecognitionResult
+    Function RecognizeWithUIAsync() As IAsyncOperationISpeechRecognitionResult
+    [PreserveSig]
+    Function AddRecognitionQualityDegrading(ByVal SpeechRecognitionQualityDegradingHandler As ITypedEventHandlerSpeechRecognizerRecognitionQualityDegrading, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveRecognitionQualityDegrading(ByVal Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function AddStateChanged(ByVal StateChangedHandler As ITypedEventHandlerSpeechRecognizerStateChanged, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveStateChanged(ByVal Token As EventRegistrationToken) As HRESULT
+End Interface
+
+[InterfaceId("4CB45ABA-7573-545A-B29A-E9BE35BD4682")]
+Interface ITypedEventHandlerSpeechRecognizerHypothesisGenerated Extends IUnknown
+    Sub Invoke(ByVal Sender As ISpeechRecognizer, ByVal Args As ISpeechRecognitionHypothesisGeneratedEventArgs)
+End Interface
+
+[InterfaceId("63C9BAF1-91E3-4EA4-86A1-7C3867D084A6")]
+Interface ISpeechRecognizer2 Extends IInspectable
+    Property Get ContinuousRecognitionSession() As ISpeechContinuousRecognitionSession
+    Property Get State() As SpeechRecognizerState
+    Function StopRecognitionAsync() As IAsyncAction
+    [PreserveSig]
+    Function AddHypothesisGenerated(ByVal Value As ITypedEventHandlerSpeechRecognizerHypothesisGenerated, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveHypothesisGenerated(ByVal Token As EventRegistrationToken) As HRESULT
+End Interface
+
+[InterfaceId("60C488DD-7FB8-4033-AC70-D046F64818E1")]
+Interface ISpeechRecognizerFactory Extends IInspectable
+    Function Create(ByVal Language As ILanguage) As ISpeechRecognizer
+End Interface
+
+[InterfaceId("563D4F09-BA03-4BAD-AD81-DDC6C4DAB0C3")]
+Interface ISpeechRecognizerStateChangedEventArgs Extends IInspectable
+    Property Get State() As SpeechRecognizerState
+End Interface
+
+[InterfaceId("87A35EAC-A7DC-4B0B-BCC9-24F47C0B7EBF")]
+Interface ISpeechRecognizerStatics Extends IInspectable
+    Property Get SystemSpeechLanguage() As ILanguage
+    Property Get SupportedTopicLanguages() As IVectorView_ILanguage
+    Property Get SupportedGrammarLanguages() As IVectorView_ILanguage
+End Interface
+
+[InterfaceId("1D1B0D95-7565-4EF9-A2F3-BA15162A96CF")]
+Interface ISpeechRecognizerStatics2 Extends IInspectable
+    Function TrySetSystemSpeechLanguageAsync(ByVal SpeechLanguage As ILanguage) As IAsyncOperationBoolean
+End Interface
+
+[InterfaceId("2EF76FCA-6A3C-4DCA-A153-DF1BC88A79AF")]
+Interface ISpeechRecognizerTimeouts Extends IInspectable
+    Property Get InitialSilenceTimeout() As TimeSpan
+    Property Let InitialSilenceTimeout(ByVal Value As TimeSpan)
+    Property Get EndSilenceTimeout() As TimeSpan
+    Property Let EndSilenceTimeout(ByVal Value As TimeSpan)
+    Property Get BabbleTimeout() As TimeSpan
+    Property Let BabbleTimeout(ByVal Value As TimeSpan)
+End Interface
+
+[InterfaceId("7888D641-B92B-44BA-A25F-D1864630641F")]
+Interface ISpeechRecognizerUIOptions Extends IInspectable
+    Property Get ExampleText() As LongPtr
+    Property Let ExampleText(ByVal Value As LongPtr)
+    Property Get AudiblePrompt() As LongPtr
+    Property Let AudiblePrompt(ByVal Value As LongPtr)
+    Property Get IsReadBackEnabled() As BooleanByte
+    Property Let IsReadBackEnabled(ByVal Value As BooleanByte)
+    Property Get ShowConfirmation() As BooleanByte
+    Property Let ShowConfirmation(ByVal Value As BooleanByte)
+End Interface
+
+[InterfaceId("2BDA6840-C39E-5534-8099-22004AB33FC2")]
+Interface KVP_IVoiceCommandSet Extends IInspectable
+    Property Get Key() As LongPtr
+    Property Get Value() As IVoiceCommandSet
+End Interface
+
+[InterfaceId("D19B13F3-9058-53BD-8D53-3EE1EA84389B")]
+Interface IIterator_KVP_IVoiceCommandSet Extends IInspectable
+    Property Get Current() As KVP_IVoiceCommandSet
+    Property Get HasCurrent() As BooleanByte
+    Function MoveNext() As BooleanByte
+    Function GetMany(ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("86E4878A-45DE-5203-BE77-81C04C9B44E6")]
+Interface IIterable_KVP_IVoiceCommandSet Extends IInspectable
+    Function First() As IIterator_KVP_IVoiceCommandSet
+End Interface
+
+[InterfaceId("121115FD-3858-5888-8626-B69DED969BD6")]
+Interface IMapView_IVoiceCommandSet Extends IInspectable
+    Function Lookup(ByVal Key As LongPtr) As IVoiceCommandSet
+    Property Get Size() As Long
+    Function HasKey(ByVal Key As LongPtr) As BooleanByte
+    Sub Split(First As IMapView_IVoiceCommandSet, Second As IMapView_IVoiceCommandSet)
+End Interface
+
+[InterfaceId("AA3A8DD5-B6E7-4EE2-BAA9-DD6BACED0A2B")]
+Interface IVoiceCommandManager Extends IInspectable
+    Function InstallCommandSetsFromStorageFileAsync(ByVal File As IStorageFile) As IAsyncAction
+    Property Get InstalledCommandSets() As IMapView_IVoiceCommandSet
+End Interface
+
+[InterfaceId("0BEDDA75-46E6-4B11-A088-5C68632899B5")]
+Interface IVoiceCommandSet Extends IInspectable
+    Property Get Language() As LongPtr
+    Property Get Name() As LongPtr
+    Function SetPhraseListAsync(ByVal PhraseListName As LongPtr, ByVal PhraseList As IIterable_HSTRING) As IAsyncAction
+End Interface
+
+Module mdlMediaSpeechRecognition
+
+Public Enum SpeechContinuousRecognitionMode
+    SpeechContinuousRecognitionMode_Default
+    SpeechContinuousRecognitionMode_PauseOnRecognition
+End Enum
+
+Public Enum SpeechRecognitionAudioProblem
+    SpeechRecognitionAudioProblem_None
+    SpeechRecognitionAudioProblem_TooNoisy
+    SpeechRecognitionAudioProblem_NoSignal
+    SpeechRecognitionAudioProblem_TooLoud
+    SpeechRecognitionAudioProblem_TooQuiet
+    SpeechRecognitionAudioProblem_TooFast
+    SpeechRecognitionAudioProblem_TooSlow
+End Enum
+
+Public Enum SpeechRecognitionConfidence
+    SpeechRecognitionConfidence_High
+    SpeechRecognitionConfidence_Medium
+    SpeechRecognitionConfidence_Low
+    SpeechRecognitionConfidence_Rejected
+End Enum
+
+Public Enum SpeechRecognitionConstraintProbability
+    SpeechRecognitionConstraintProbability_Default
+    SpeechRecognitionConstraintProbability_Min
+    SpeechRecognitionConstraintProbability_Max
+End Enum
+
+Public Enum SpeechRecognitionConstraintType
+    SpeechRecognitionConstraintType_Topic
+    SpeechRecognitionConstraintType_List
+    SpeechRecognitionConstraintType_Grammar
+    SpeechRecognitionConstraintType_VoiceCommandDefinition
+End Enum
+
+Public Enum SpeechRecognitionResultStatus
+    SpeechRecognitionResultStatus_Success
+    SpeechRecognitionResultStatus_TopicLanguageNotSupported
+    SpeechRecognitionResultStatus_GrammarLanguageMismatch
+    SpeechRecognitionResultStatus_GrammarCompilationFailure
+    SpeechRecognitionResultStatus_AudioQualityFailure
+    SpeechRecognitionResultStatus_UserCanceled
+    SpeechRecognitionResultStatus_Unknown
+    SpeechRecognitionResultStatus_TimeoutExceeded
+    SpeechRecognitionResultStatus_PauseLimitExceeded
+    SpeechRecognitionResultStatus_NetworkFailure
+    SpeechRecognitionResultStatus_MicrophoneUnavailable
+End Enum
+
+Public Enum SpeechRecognitionScenario
+    SpeechRecognitionScenario_WebSearch
+    SpeechRecognitionScenario_Dictation
+    SpeechRecognitionScenario_FormFilling
+End Enum
+
+Public Enum SpeechRecognizerState
+    SpeechRecognizerState_Idle
+    SpeechRecognizerState_Capturing
+    SpeechRecognizerState_Processing
+    SpeechRecognizerState_SoundStarted
+    SpeechRecognizerState_SoundEnded
+    SpeechRecognizerState_SpeechDetected
+    SpeechRecognizerState_Paused
+End Enum
+
+End Module

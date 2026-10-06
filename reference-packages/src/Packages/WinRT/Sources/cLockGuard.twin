@@ -1,0 +1,54 @@
+[PredeclaredId]
+Class cLockGuard
+
+Private Type CRITICAL_SECTION
+    DebugInfo As LongPtr
+    LockCount As Long
+    RecursionCount As Long
+    OwningThread As LongPtr
+    LockSemaphore As LongPtr
+    SpinCount As LongPtr
+End Type
+
+[UseGetLastError(False), DLLStackCheck(False)]
+Private Declare PtrSafe Sub DeleteCriticalSection Lib "kernel32" (CriticalSection As CRITICAL_SECTION)
+[UseGetLastError(False), DLLStackCheck(False)]
+Private Declare PtrSafe Sub EnterCriticalSection Lib "kernel32" (ByVal pCriticalSection As LongPtr)
+[UseGetLastError(False), DLLStackCheck(False)]
+Private Declare PtrSafe Function InitializeCriticalSectionAndSpinCount Lib "kernel32" (CriticalSection As CRITICAL_SECTION, Optional ByVal dwSpinCount As Long = 4000) As BOOL
+[UseGetLastError(False), DLLStackCheck(False)]
+Private Declare PtrSafe Sub LeaveCriticalSection Lib "kernel32" (ByVal pCriticalSection As LongPtr)
+[UseGetLastError(False), DLLStackCheck(False)]
+Private Declare PtrSafe Function ReleaseMutex Lib "kernel32" (ByVal hMutex As LongPtr) As BOOL
+[UseGetLastError(False), DLLStackCheck(False)]
+Private Declare PtrSafe Function WaitForSingleObject Lib "kernel32" (ByVal hHandle As LongPtr, Optional ByVal dwMilliseconds As Long = INFINITE) As WAIT_CONSTANTS
+
+Private m_CriticalSection As CRITICAL_SECTION, m_pCriticalSection As LongPtr, m_hMutex As LongPtr
+
+Private Sub New(CriticalSection As CRITICAL_SECTION)
+    m_pCriticalSection = VarPtr(CriticalSection): EnterCriticalSection m_pCriticalSection
+End Sub
+
+Private Sub New(ByVal hMutex As LongPtr)
+    m_hMutex = hMutex: WaitForSingleObject m_hMutex
+End Sub
+
+Friend Function Lock(Optional ByVal hMutex As LongPtr) As cLockGuard
+    If hMutex = vbNullPtr Then Set Lock = New cLockGuard(m_CriticalSection) Else Set Lock = New cLockGuard(hMutex)
+End Function
+
+Private Sub Class_Initialize()
+    InitializeCriticalSectionAndSpinCount m_CriticalSection
+End Sub
+
+Private Sub Class_Terminate()
+    If m_pCriticalSection <> vbNullPtr Then
+        LeaveCriticalSection m_pCriticalSection
+    ElseIf m_hMutex <> vbNullPtr Then
+        ReleaseMutex m_hMutex
+    Else
+        DeleteCriticalSection m_CriticalSection
+    End If
+End Sub
+    
+End Class

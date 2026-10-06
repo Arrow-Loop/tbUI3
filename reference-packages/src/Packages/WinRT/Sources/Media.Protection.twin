@@ -1,0 +1,243 @@
+[InterfaceId("95DA643C-6DB9-424B-86CA-091AF432081C")]
+Interface IComponentLoadFailedEventHandler Extends IUnknown
+    Sub Invoke(ByVal Sender As IMediaProtectionManager, ByVal Args As IComponentLoadFailedEventArgs)
+End Interface
+
+[InterfaceId("64E12A45-973B-4A3A-B260-91898A49A82C")]
+Interface IRebootNeededEventHandler Extends IUnknown
+    Sub Invoke(ByVal Sender As IMediaProtectionManager)
+End Interface
+
+[InterfaceId("D2D690BA-CAC9-48E1-95C0-D38495A84055")]
+Interface IServiceRequestedEventHandler Extends IUnknown
+    Sub Invoke(ByVal Sender As IMediaProtectionManager, ByVal Args As IServiceRequestedEventArgs)
+End Interface
+
+[InterfaceId("95972E93-7746-417E-8495-F031BBC5862C")]
+Interface IComponentLoadFailedEventArgs Extends IInspectable
+    Property Get Information() As IRevocationAndRenewalInformation
+    Property Get Completion() As IMediaProtectionServiceCompletion
+End Interface
+
+[InterfaceId("595DCC09-9AD3-5094-800A-0883CCE1EF01")]
+Interface IAsyncOperationWithProgressRenewalStatusUInt32 Extends IInspectable
+    Property Set Progress(ByVal Handler As IAsyncOperationProgressHandlerRenewalStatusUInt32)
+    Property Get Progress() As IAsyncOperationProgressHandlerRenewalStatusUInt32
+    Property Set Completed(ByVal Handler As IAsyncOperationWithProgressCompletedHandlerRenewalStatusUInt32)
+    Property Get Completed() As IAsyncOperationWithProgressCompletedHandlerRenewalStatusUInt32
+    Function GetResults() As RenewalStatus
+End Interface
+
+[InterfaceId("B9DA4AA0-26E0-5D69-A0C8-05716A406235")]
+Interface IAsyncOperationProgressHandlerRenewalStatusUInt32 Extends IUnknown
+    Sub Invoke(ByVal AsyncOperation As IAsyncOperationWithProgressRenewalStatusUInt32, ByVal ProgressInfo As Long)
+End Interface
+
+[InterfaceId("EC067827-67D9-59A6-A57B-3E7CA12B89C1")]
+Interface IAsyncOperationWithProgressCompletedHandlerRenewalStatusUInt32 Extends IUnknown
+    Sub Invoke(ByVal AsyncOperation As IAsyncOperationWithProgressRenewalStatusUInt32, ByVal AsyncStatus As AsyncStatus)
+End Interface
+
+[InterfaceId("6FFBCD67-B795-48C5-8B7B-A7C4EFE202E3")]
+Interface IComponentRenewalStatics Extends IInspectable
+    Function RenewSystemComponentsAsync(ByVal Information As IRevocationAndRenewalInformation) As IAsyncOperationWithProgressRenewalStatusUInt32
+End Interface
+
+[InterfaceId("5061EE0F-899A-569C-A0A3-C2566EB88142")]
+Interface IAsyncOperationHdcpSetProtectionResult Extends IInspectable
+    Property Set Completed(ByVal Handler As IAsyncOperationCompletedHandlerHdcpSetProtectionResult)
+    Property Get Completed() As IAsyncOperationCompletedHandlerHdcpSetProtectionResult
+    Function GetResults() As HdcpSetProtectionResult
+End Interface
+
+[InterfaceId("19344A58-A5C1-5168-803E-632771628143")]
+Interface IAsyncOperationCompletedHandlerHdcpSetProtectionResult Extends IUnknown
+    Sub Invoke(ByVal AsyncOperation As IAsyncOperationHdcpSetProtectionResult, ByVal AsyncStatus As AsyncStatus)
+End Interface
+
+[InterfaceId("F82AE043-54FB-5366-A607-19B68E6BAB8C")]
+Interface ITypedEventHandlerHdcpSessionProtectionChanged Extends IUnknown
+    Sub Invoke(ByVal Sender As IHdcpSession, ByVal Args As IInspectable)
+End Interface
+
+[InterfaceId("718845E9-64D7-426D-809B-1BE461941A2A")]
+Interface IHdcpSession Extends IInspectable ' requires IClosable
+    Function IsEffectiveProtectionAtLeast(ByVal Protection As HdcpProtection) As BooleanByte
+    Function GetEffectiveProtection() As IReference_HdcpProtection
+    Function SetDesiredMinProtectionAsync(ByVal Protection As HdcpProtection) As IAsyncOperationHdcpSetProtectionResult
+    [PreserveSig]
+    Function AddProtectionChanged(ByVal Handler As ITypedEventHandlerHdcpSessionProtectionChanged, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveProtectionChanged(ByVal Token As EventRegistrationToken) As HRESULT
+End Interface
+
+[InterfaceId("45694947-C741-434B-A79E-474C12D93D2F")]
+Interface IMediaProtectionManager Extends IInspectable
+    [PreserveSig]
+    Function AddServiceRequested(ByVal Handler As IServiceRequestedEventHandler, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveServiceRequested(ByVal Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function AddRebootNeeded(ByVal Handler As IRebootNeededEventHandler, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveRebootNeeded(ByVal Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function AddComponentLoadFailed(ByVal Handler As IComponentLoadFailedEventHandler, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveComponentLoadFailed(ByVal Token As EventRegistrationToken) As HRESULT
+    Property Get Properties() As IPropertySet
+End Interface
+
+[InterfaceId("0C111226-7B26-4D31-95BB-9C1B08EF7FC0")]
+Interface IMediaProtectionPMPServer Extends IInspectable
+    Property Get Properties() As IPropertySet
+End Interface
+
+[InterfaceId("602C8E5E-F7D2-487E-AF91-DBC4252B2182")]
+Interface IMediaProtectionPMPServerFactory Extends IInspectable
+    Function CreatePMPServer(ByVal PProperties As IPropertySet) As IMediaProtectionPMPServer
+End Interface
+
+[InterfaceId("8B5CCA18-CFD5-44EE-A2ED-DF76010C14B5")]
+Interface IMediaProtectionServiceCompletion Extends IInspectable
+    [PreserveSig]
+    Function Complete(ByVal Success As BooleanByte) As HRESULT
+End Interface
+
+[InterfaceId("B1DE0EA6-2094-478D-87A4-8B95200F85C6")]
+Interface IMediaProtectionServiceRequest Extends IInspectable
+    Property Get ProtectionSystem() As UUID
+    Property Get Type() As UUID
+End Interface
+
+[InterfaceId("C7AC5D7E-7480-4D29-A464-7BCD913DD8E4")]
+Interface IProtectionCapabilities Extends IInspectable
+    Function IsTypeSupported(ByVal Type As LongPtr, ByVal KeySystem As LongPtr) As ProtectionCapabilityResult
+End Interface
+
+[InterfaceId("DFB9655C-8B22-511F-8EAF-3AEA7521802B")]
+Interface IIterator_IRevocationAndRenewalItem Extends IInspectable
+    Property Get Current() As IRevocationAndRenewalItem
+    Property Get HasCurrent() As BooleanByte
+    Function MoveNext() As BooleanByte
+    Function GetMany(ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("07015868-578C-556B-8A35-4039A35D1D92")]
+Interface IIterable_IRevocationAndRenewalItem Extends IInspectable
+    Function First() As IIterator_IRevocationAndRenewalItem
+End Interface
+
+[InterfaceId("4A8793E2-33B8-5850-9943-6A94375CAA89")]
+Interface IVectorView_IRevocationAndRenewalItem Extends IInspectable
+    Function GetAt(ByVal Index As Long) As IRevocationAndRenewalItem
+    Property Get Size() As Long
+    Function IndexOf(ByVal Value As IRevocationAndRenewalItem, Index As Long) As BooleanByte
+    Function GetMany(ByVal StartIndex As Long, ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("3623CC0C-C765-57FB-967D-C7CB6097BD78")]
+Interface IVector_IRevocationAndRenewalItem Extends IInspectable
+    Function GetAt(ByVal Index As Long) As IRevocationAndRenewalItem
+    Property Get Size() As Long
+    Function GetView() As IVectorView_IRevocationAndRenewalItem
+    Function IndexOf(ByVal Value As IRevocationAndRenewalItem, Index As Long) As BooleanByte
+    [PreserveSig]
+    Function SetAt(ByVal Index As Long, ByVal Value As IRevocationAndRenewalItem) As HRESULT
+    [PreserveSig]
+    Function InsertAt(ByVal Index As Long, ByVal Value As IRevocationAndRenewalItem) As HRESULT
+    [PreserveSig]
+    Function RemoveAt(ByVal Index As Long) As HRESULT
+    [PreserveSig]
+    Function Append(ByVal Value As IRevocationAndRenewalItem) As HRESULT
+    [PreserveSig]
+    Function RemoveAtEnd() As HRESULT
+    [PreserveSig]
+    Function Clear() As HRESULT
+    Function GetMany(ByVal StartIndex As Long, ByVal Length As Long, Items As Any) As Long
+    [PreserveSig]
+    Function ReplaceAll(ByVal Length As Long, Items As Any) As HRESULT
+End Interface
+
+[InterfaceId("F3A1937B-2501-439E-A6E7-6FC95E175FCF")]
+Interface IRevocationAndRenewalInformation Extends IInspectable
+    Property Get Items() As IVector_IRevocationAndRenewalItem
+End Interface
+
+[InterfaceId("3099C20C-3CF0-49EA-902D-CAF32D2DDE2C")]
+Interface IRevocationAndRenewalItem Extends IInspectable
+    Property Get Reasons() As RevocationAndRenewalReasons
+    Property Get HeaderHash() As LongPtr
+    Property Get PublicKeyHash() As LongPtr
+    Property Get Name() As LongPtr
+    Property Get RenewalId() As LongPtr
+End Interface
+
+[InterfaceId("34283BAF-ABB4-4FC1-BD89-93F106573A49")]
+Interface IServiceRequestedEventArgs Extends IInspectable
+    Property Get Request() As IMediaProtectionServiceRequest
+    Property Get Completion() As IMediaProtectionServiceCompletion
+End Interface
+
+[InterfaceId("553C69D6-FAFE-4128-8DFA-130E398A13A7")]
+Interface IServiceRequestedEventArgs2 Extends IInspectable
+    Property Get MediaPlaybackItem() As IMediaPlaybackItem
+End Interface
+
+Module mdlMediaProtection
+
+Public Enum GraphicsTrustStatus
+    GraphicsTrustStatus_TrustNotRequired
+    GraphicsTrustStatus_TrustEstablished
+    GraphicsTrustStatus_EnvironmentNotSupported
+    GraphicsTrustStatus_DriverNotSupported
+    GraphicsTrustStatus_DriverSigningFailure
+    GraphicsTrustStatus_UnknownFailure
+End Enum
+
+Public Enum HdcpProtection
+    HdcpProtection_Off
+    HdcpProtection_On
+    HdcpProtection_OnWithTypeEnforcement
+End Enum
+
+Public Enum HdcpSetProtectionResult
+    HdcpSetProtectionResult_Success
+    HdcpSetProtectionResult_TimedOut
+    HdcpSetProtectionResult_NotSupported
+    HdcpSetProtectionResult_UnknownFailure
+End Enum
+
+Public Enum ProtectionCapabilityResult
+    ProtectionCapabilityResult_NotSupported
+    ProtectionCapabilityResult_Maybe
+    ProtectionCapabilityResult_Probably
+End Enum
+
+Public Enum RenewalStatus
+    RenewalStatus_NotStarted
+    RenewalStatus_UpdatesInProgress
+    RenewalStatus_UserCancelled
+    RenewalStatus_AppComponentsMayNeedUpdating
+    RenewalStatus_NoComponentsFound
+End Enum
+
+Public Enum RevocationAndRenewalReasons
+    RevocationAndRenewalReasons_UserModeComponentLoad = &H0
+    RevocationAndRenewalReasons_KernelModeComponentLoad = &H1
+    RevocationAndRenewalReasons_AppComponent = &H4
+    RevocationAndRenewalReasons_GlobalRevocationListLoadFailed = &H10
+    RevocationAndRenewalReasons_InvalidGlobalRevocationListSignature = &H20
+    RevocationAndRenewalReasons_GlobalRevocationListAbsent = &H1000
+    RevocationAndRenewalReasons_ComponentRevoked = &H2000
+    RevocationAndRenewalReasons_InvalidComponentCertificateExtendedKeyUse = &H4000
+    RevocationAndRenewalReasons_ComponentCertificateRevoked = &H8000&
+    RevocationAndRenewalReasons_InvalidComponentCertificateRoot = &H8000&
+    RevocationAndRenewalReasons_ComponentHighSecurityCertificateRevoked = &H20000
+    RevocationAndRenewalReasons_ComponentLowSecurityCertificateRevoked = &H40000
+    RevocationAndRenewalReasons_BootDriverVerificationFailed = &H100000
+    RevocationAndRenewalReasons_ComponentSignedWithTestCertificate = &H1000000
+    RevocationAndRenewalReasons_EncryptionFailure = &H10000000
+End Enum
+
+End Module

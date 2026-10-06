@@ -1,0 +1,127 @@
+' =====================================================
+' ProcessInfoCollector.twin - 进程信息收集器
+' Twinbasic Diagnostic Tool
+' =====================================================
+
+' 进程信息收集器
+' 刷新模式：Dynamic（每次刷新都获取）
+' 支持摘要：是
+' 使用 CreateToolhelp32Snapshot 枚举进程
+[ClassId("09A2B3C4-D5E6-F7A8-B9C0-D1E2F3A4B5C6")]
+[InterfaceId("09A2B3C4-D5E6-F7A8-B9C0-D1E2F3A4B5C7")]
+Public Class ProcessInfoCollector
+    Implements IDiagnosticCollector
+
+    ' === IDiagnosticCollector 实现 ===
+
+    Public Property Get IDiagnosticCollector_CategoryName() As String
+        Return "Processes"
+    End Property
+
+    Public Property Get IDiagnosticCollector_Description() As String
+        Return "Running processes information"
+    End Property
+
+    Public Property Get IDiagnosticCollector_RefreshMode() As RefreshMode
+        Return RefreshMode.Dynamic
+    End Property
+
+    Public Property Get IDiagnosticCollector_RequiresElevation() As Boolean
+        Return False
+    End Property
+
+    Public Property Get IDiagnosticCollector_SupportsSummary() As Boolean
+        Return True
+    End Property
+
+    Public Function IDiagnosticCollector_Collect() As DiagnosticResult(Of KeyValuePair(Of String, String))
+        Dim result As DiagnosticResult(Of KeyValuePair(Of String, String))
+        Set result = New DiagnosticResult(Of KeyValuePair(Of String, String))("Processes")
+
+        ' 创建进程快照
+        Dim hSnapshot As LongPtr = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0)
+
+        If hSnapshot = -1 Then
+            result.SetError "Failed to create process snapshot"
+            Return result
+        End If
+
+        ' 枚举进程
+        Dim pe As PROCESSENTRY32W
+        pe.dwSize = LenB(pe)
+
+        Dim processCount As Long = 0
+        Dim currentPID As Long = GetCurrentProcessId()
+        
+        ' 临时存储进程信息
+        Dim processItems As List(Of KeyValuePair(Of String, String))
+        Set processItems = New List(Of KeyValuePair(Of String, String))
+
+        If Process32FirstW(hSnapshot, pe) <> 0 Then
+            Do
+                processCount = processCount + 1
+
+                ' 获取进程名
+                Dim processName As String = WinAPI.GetStringFromBuffer(pe.szExeFile)
+
+                ' 添加进程信息到临时列表
+                processItems.Add New KeyValuePair(Of String, String)( _
+                    "PID " & pe.th32ProcessID, _
+                    processName & " (Threads: " & pe.cntThreads & ")")
+
+            Loop While Process32NextW(hSnapshot, pe) <> 0
+        End If
+
+        CloseHandle hSnapshot
+
+        ' 先添加汇总信息
+        result.AddItem New KeyValuePair(Of String, String)("Total Processes", CStr(processCount))
+        result.AddItem New KeyValuePair(Of String, String)("Current PID", CStr(currentPID))
+        
+        ' 然后添加所有进程信息
+        Dim i As Long
+        For i = 0 To processItems.Count - 1
+            result.AddItem processItems.Item(i)
+        Next i
+
+        Return result
+    End Function
+
+    Public Function IDiagnosticCollector_CollectSummary() As DiagnosticResult(Of KeyValuePair(Of String, String))
+        Dim result As DiagnosticResult(Of KeyValuePair(Of String, String))
+        Set result = New DiagnosticResult(Of KeyValuePair(Of String, String))("Processes")
+        result.IsSummary = True
+
+        ' 创建进程快照
+        Dim hSnapshot As LongPtr = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0)
+
+        If hSnapshot = -1 Then
+            result.SetError "Failed to create process snapshot"
+            Return result
+        End If
+
+        ' 计数并统计线程总数
+        Dim pe As PROCESSENTRY32W
+        pe.dwSize = LenB(pe)
+
+        Dim processCount As Long = 0
+        Dim totalThreads As Long = 0
+
+        If Process32FirstW(hSnapshot, pe) <> 0 Then
+            Do
+                processCount = processCount + 1
+                totalThreads = totalThreads + pe.cntThreads
+            Loop While Process32NextW(hSnapshot, pe) <> 0
+        End If
+
+        CloseHandle hSnapshot
+
+        ' 摘要信息
+        result.AddItem New KeyValuePair(Of String, String)("Total Processes", CStr(processCount))
+        result.AddItem New KeyValuePair(Of String, String)("Total Threads", CStr(totalThreads))
+        result.AddItem New KeyValuePair(Of String, String)("Current PID", CStr(GetCurrentProcessId()))
+
+        Return result
+    End Function
+
+End Class

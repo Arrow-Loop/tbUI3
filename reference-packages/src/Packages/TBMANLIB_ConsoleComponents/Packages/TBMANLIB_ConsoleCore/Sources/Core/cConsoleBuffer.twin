@@ -1,0 +1,489 @@
+' =====================================================
+' cConsoleBuffer.twin - Console Screen Buffer Management
+' Modern Console Library for TwinBASIC
+' =====================================================
+
+' Screen buffer for double-buffering and full-screen mode
+[COMCreatable(False)]
+Public Class cConsoleBuffer
+
+    Private m_Width As Long
+    Private m_Height As Long
+    Private m_Buffer() As CHAR_INFO
+    Private m_DirtyRect As ConsoleRect
+    Private m_IsDirty As Boolean
+    Private m_BatchMode As Integer  ' 批量更新深度计数
+
+    ' Constructor
+    Public Sub New(ByVal width As Long, ByVal height As Long)
+        Resize width, height
+    End Sub
+
+    ' Resize the buffer
+    Public Sub Resize(ByVal width As Long, ByVal height As Long)
+        m_Width = width
+        m_Height = height
+        ReDim m_Buffer(0 To (width * height) - 1)
+        Clear
+    End Sub
+
+    ' Clear the buffer
+    Public Sub Clear(Optional ByVal fore As ConsoleColor = ConsoleColor.Gray, _
+                     Optional ByVal back As ConsoleColor = ConsoleColor.Black, _
+                     Optional ByVal fillChar As String = " ")
+        Dim attr As Integer = mConsoleAPI.ColorAttribute(fore, back)
+        Dim ch As Integer = AscW(fillChar)
+        Dim i As Long
+
+        For i = 0 To UBound(m_Buffer)
+            m_Buffer(i).UnicodeChar = ch
+            m_Buffer(i).Attributes = attr
+        Next i
+
+        ' Mark entire buffer as dirty
+        m_DirtyRect.Left = 0
+        m_DirtyRect.Top = 0
+        m_DirtyRect.Right = m_Width - 1
+        m_DirtyRect.Bottom = m_Height - 1
+        m_IsDirty = True
+    End Sub
+
+    ' Set a character at position
+    Public Sub SetChar(ByVal col As Long, ByVal row As Long, _
+                       ByVal char As String, _
+                       Optional ByVal fore As ConsoleColor = ConsoleColor.Gray, _
+                       Optional ByVal back As ConsoleColor = ConsoleColor.Black)
+        If col < 0 OrElse col >= m_Width Then Exit Sub
+        If row < 0 OrElse row >= m_Height Then Exit Sub
+
+        Dim idx As Long = row * m_Width + col
+        m_Buffer(idx).UnicodeChar = AscW(Left$(char, 1))
+        m_Buffer(idx).Attributes = mConsoleAPI.ColorAttribute(fore, back)
+
+        ExpandDirtyRect col, row
+    End Sub
+
+    ' Get a character at position
+    Public Function GetChar(ByVal col As Long, ByVal row As Long) As ConsoleCharInfo
+        Dim result As ConsoleCharInfo
+
+        If col < 0 OrElse col >= m_Width Then Return result
+        If row < 0 OrElse row >= m_Height Then Return result
+
+        Dim idx As Long = row * m_Width + col
+        result.Char = ChrW$(m_Buffer(idx).UnicodeChar)
+        result.ForeColor = CType(Of ConsoleColor)(m_Buffer(idx).Attributes And &HF)
+        result.BackColor = CType(Of ConsoleColor)((m_Buffer(idx).Attributes >> 4) And &HF)
+        Return result
+    End Function
+
+    ' Write text at position
+    Public Sub WriteAt(ByVal col As Long, ByVal row As Long, ByVal text As String, _
+                       Optional ByVal fore As ConsoleColor = ConsoleColor.Gray, _
+                       Optional ByVal back As ConsoleColor = ConsoleColor.Black)
+        Dim i As Long
+        Dim attr As Integer = mConsoleAPI.ColorAttribute(fore, back)
+        Dim c As Long = col
+
+        For i = 1 To Len(text)
+            If c >= m_Width Then Exit For
+            If c >= 0 AndAlso row >= 0 AndAlso row < m_Height Then
+                Dim idx As Long = row * m_Width + c
+                m_Buffer(idx).UnicodeChar = AscW(Mid$(text, i, 1))
+                m_Buffer(idx).Attributes = attr
+            End If
+            c += 1
+        Next i
+
+        ExpandDirtyRect col, row
+        ExpandDirtyRect c - 1, row
+    End Sub
+
+    ' Fill a rectangular area
+    Public Sub FillRect(ByVal left As Long, ByVal top As Long, _
+                        ByVal right As Long, ByVal bottom As Long, _
+                        Optional ByVal char As String = " ", _
+                        Optional ByVal fore As ConsoleColor = ConsoleColor.Gray, _
+                        Optional ByVal back As ConsoleColor = ConsoleColor.Black)
+        Dim row As Long, col As Long
+        Dim attr As Integer = mConsoleAPI.ColorAttribute(fore, back)
+        Dim ch As Integer = AscW(char)
+
+        ' Clamp values
+        If left < 0 Then left = 0
+        If top < 0 Then top = 0
+        If right >= m_Width Then right = m_Width - 1
+        If bottom >= m_Height Then bottom = m_Height - 1
+
+        For row = top To bottom
+            For col = left To right
+                Dim idx As Long = row * m_Width + col
+                m_Buffer(idx).UnicodeChar = ch
+                m_Buffer(idx).Attributes = attr
+            Next col
+        Next row
+
+        ExpandDirtyRect left, top
+        ExpandDirtyRect right, bottom
+    End Sub
+
+    ' Draw a box
+    Public Sub DrawBox(ByVal left As Long, ByVal top As Long, _
+                       ByVal right As Long, ByVal bottom As Long, _
+                       Optional ByVal fore As ConsoleColor = ConsoleColor.Gray, _
+                       Optional ByVal back As ConsoleColor = ConsoleColor.Black, _
+                       Optional ByVal doubleLine As Boolean = False)
+        ' Box drawing characters
+        Dim topLeft As String, topRight As String
+        Dim bottomLeft As String, bottomRight As String
+        Dim horizontal As String, vertical As String
+
+        If doubleLine Then
+            topLeft = ChrW$(&H2554)      ' ╔
+            topRight = ChrW$(&H2557)     ' ╗
+            bottomLeft = ChrW$(&H255A)   ' ╚
+            bottomRight = ChrW$(&H255D)  ' ╝
+            horizontal = ChrW$(&H2550)   ' ═
+            vertical = ChrW$(&H2551)     ' ║
+        Else
+            topLeft = ChrW$(&H250C)      ' ┌
+            topRight = ChrW$(&H2510)     ' ┐
+            bottomLeft = ChrW$(&H2514)   ' └
+            bottomRight = ChrW$(&H2518)  ' ┘
+            horizontal = ChrW$(&H2500)   ' ─
+            vertical = ChrW$(&H2502)     ' │
+        End If
+
+        ' Draw corners
+        SetChar left, top, topLeft, fore, back
+        SetChar right, top, topRight, fore, back
+        SetChar left, bottom, bottomLeft, fore, back
+        SetChar right, bottom, bottomRight, fore, back
+
+        ' Draw horizontal lines
+        Dim col As Long
+        For col = left + 1 To right - 1
+            SetChar col, top, horizontal, fore, back
+            SetChar col, bottom, horizontal, fore, back
+        Next col
+
+        ' Draw vertical lines
+        Dim row As Long
+        For row = top + 1 To bottom - 1
+            SetChar left, row, vertical, fore, back
+            SetChar right, row, vertical, fore, back
+        Next row
+    End Sub
+
+    ' Draw a horizontal line
+    Public Sub DrawHLine(ByVal col As Long, ByVal row As Long, ByVal length As Long, _
+                         Optional ByVal fore As ConsoleColor = ConsoleColor.Gray, _
+                         Optional ByVal back As ConsoleColor = ConsoleColor.Black, _
+                         Optional ByVal doubleLine As Boolean = False)
+        Dim ch As String
+        If doubleLine Then
+            ch = ChrW$(&H2550)  ' ═
+        Else
+            ch = ChrW$(&H2500)  ' ─
+        End If
+
+        Dim i As Long
+        For i = 0 To length - 1
+            SetChar col + i, row, ch, fore, back
+        Next i
+    End Sub
+
+    ' Draw a vertical line
+    Public Sub DrawVLine(ByVal col As Long, ByVal row As Long, ByVal length As Long, _
+                         Optional ByVal fore As ConsoleColor = ConsoleColor.Gray, _
+                         Optional ByVal back As ConsoleColor = ConsoleColor.Black, _
+                         Optional ByVal doubleLine As Boolean = False)
+        Dim ch As String
+        If doubleLine Then
+            ch = ChrW$(&H2551)  ' ║
+        Else
+            ch = ChrW$(&H2502)  ' │
+        End If
+
+        Dim i As Long
+        For i = 0 To length - 1
+            SetChar col, row + i, ch, fore, back
+        Next i
+    End Sub
+
+    ' Flush buffer to console output
+    Public Sub Flush(ByVal hOutput As LongPtr, Optional ByVal forceAll As Boolean = False)
+        If Not m_IsDirty AndAlso Not forceAll Then Exit Sub
+
+        Dim writeRect As SMALL_RECT
+        Dim bufSize As Long
+        Dim bufCoord As Long
+
+        If forceAll Then
+            writeRect.Left = 0
+            writeRect.Top = 0
+            writeRect.Right = CInt(m_Width - 1)
+            writeRect.Bottom = CInt(m_Height - 1)
+        Else
+            writeRect.Left = CInt(m_DirtyRect.Left)
+            writeRect.Top = CInt(m_DirtyRect.Top)
+            writeRect.Right = CInt(m_DirtyRect.Right)
+            writeRect.Bottom = CInt(m_DirtyRect.Bottom)
+        End If
+
+        bufSize = mConsoleAPI.MakeDWORD(CInt(m_Width), CInt(m_Height))
+        bufCoord = mConsoleAPI.MakeDWORD(writeRect.Left, writeRect.Top)
+
+        mConsoleAPI.WriteConsoleOutputW hOutput, VarPtr(m_Buffer(0)), bufSize, bufCoord, writeRect
+
+        m_IsDirty = False
+        m_DirtyRect.Left = m_Width
+        m_DirtyRect.Top = m_Height
+        m_DirtyRect.Right = 0
+        m_DirtyRect.Bottom = 0
+    End Sub
+
+    ' Properties
+    Public Property Get Width() As Long
+        Return m_Width
+    End Property
+
+    Public Property Get Height() As Long
+        Return m_Height
+    End Property
+
+    Public Property Get IsDirty() As Boolean
+        Return m_IsDirty
+    End Property
+
+    ' Get raw buffer pointer (for advanced use)
+    Public Property Get BufferPtr() As LongPtr
+        Return VarPtr(m_Buffer(0))
+    End Property
+
+    ' ========== Batch Update Methods (Performance Optimization) ==========
+
+    ' Begin batch update (suspends dirty rect calculation)
+    Public Sub BeginBatchUpdate()
+        m_BatchMode += 1
+    End Sub
+
+    ' End batch update (resumes dirty rect calculation and marks all as dirty)
+    Public Sub EndBatchUpdate()
+        If m_BatchMode > 0 Then
+            m_BatchMode -= 1
+            If m_BatchMode = 0 Then
+                ' Mark entire buffer as dirty when exiting batch mode
+                m_DirtyRect.Left = 0
+                m_DirtyRect.Top = 0
+                m_DirtyRect.Right = m_Width - 1
+                m_DirtyRect.Bottom = m_Height - 1
+                m_IsDirty = True
+            End If
+        End If
+    End Sub
+
+    ' Check if in batch mode
+    Public Property Get IsInBatchMode() As Boolean
+        Return m_BatchMode > 0
+    End Property
+
+    ' ========== Region Operation Methods ==========
+
+    ' Copy a region to another position
+    Public Sub CopyRegion(ByVal srcLeft As Long, ByVal srcTop As Long, _
+                          ByVal srcRight As Long, ByVal srcBottom As Long, _
+                          ByVal dstLeft As Long, ByVal dstTop As Long)
+        ' Clamp source region
+        If srcLeft < 0 Then srcLeft = 0
+        If srcTop < 0 Then srcTop = 0
+        If srcRight >= m_Width Then srcRight = m_Width - 1
+        If srcBottom >= m_Height Then srcBottom = m_Height - 1
+
+        Dim srcW As Long = srcRight - srcLeft + 1
+        Dim srcH As Long = srcBottom - srcTop + 1
+
+        Dim dstRight As Long = dstLeft + srcW - 1
+        Dim dstBottom As Long = dstTop + srcH - 1
+
+        ' Handle overlapping regions - copy in the correct direction
+        Dim srcRow As Long, dstRow As Long, rowStep As Long
+        Dim srcCol As Long, dstCol As Long, colStep As Long
+
+        If dstTop <= srcTop Then
+            srcRow = srcTop
+            dstRow = dstTop
+            rowStep = 1
+        Else
+            srcRow = srcBottom
+            dstRow = dstBottom
+            rowStep = -1
+        End If
+
+        Dim i As Long, j As Long
+        Dim lineStep As Long
+        If dstLeft <= srcLeft Then
+            lineStep = 1
+        Else
+            lineStep = -1
+        End If
+
+        For i = 0 To srcH - 1
+            If dstRow < 0 OrElse dstRow >= m_Height Then
+                srcRow += rowStep
+                dstRow += rowStep
+                Continue For
+            End If
+
+            If dstLeft <= srcLeft Then
+                srcCol = srcLeft
+                dstCol = dstLeft
+            Else
+                srcCol = srcRight
+                dstCol = dstRight
+            End If
+
+            For j = 0 To srcW - 1
+                If dstCol < 0 OrElse dstCol >= m_Width Then
+                    srcCol += lineStep
+                    dstCol += lineStep
+                    Continue For
+                End If
+
+                If srcCol >= 0 AndAlso srcCol < m_Width Then
+                    Dim srcIdx As Long = srcRow * m_Width + srcCol
+                    Dim dstIdx As Long = dstRow * m_Width + dstCol
+                    m_Buffer(dstIdx) = m_Buffer(srcIdx)
+                End If
+
+                srcCol += lineStep
+                dstCol += lineStep
+            Next j
+
+            srcRow += rowStep
+            dstRow += rowStep
+        Next i
+
+        ' Mark dirty regions
+        ExpandDirtyRect dstLeft, dstTop
+        ExpandDirtyRect dstRight, dstBottom
+        If Not m_BatchMode > 0 Then
+            ExpandDirtyRect srcLeft, srcTop
+            ExpandDirtyRect srcRight, srcBottom
+        End If
+    End Sub
+
+    ' Scroll a region by delta rows/columns
+    Public Sub ScrollRegion(ByVal left As Long, ByVal top As Long, _
+                            ByVal right As Long, ByVal bottom As Long, _
+                            ByVal deltaRow As Long, ByVal deltaCol As Long)
+        If deltaRow = 0 AndAlso deltaCol = 0 Then Exit Sub
+
+        ' Clamp region
+        If left < 0 Then left = 0
+        If top < 0 Then top = 0
+        If right >= m_Width Then right = m_Width - 1
+        If bottom >= m_Height Then bottom = m_Height - 1
+
+        Dim srcLeft As Long, srcTop As Long
+        Dim srcRight As Long, srcBottom As Long
+
+        srcLeft = left - deltaCol
+        srcTop = top - deltaRow
+        srcRight = right - deltaCol
+        srcBottom = bottom - deltaRow
+
+        CopyRegion srcLeft, srcTop, srcRight, srcBottom, left, top
+
+        ' Clear the newly exposed areas
+        If deltaRow > 0 Then
+            ' Scrolled down - clear top rows
+            FillRect left, top, right, top + deltaRow - 1, " ", ConsoleColor.Gray, ConsoleColor.Black
+        ElseIf deltaRow < 0 Then
+            ' Scrolled up - clear bottom rows
+            FillRect left, bottom + deltaRow + 1, right, bottom, " ", ConsoleColor.Gray, ConsoleColor.Black
+        End If
+
+        If deltaCol > 0 Then
+            ' Scrolled right - clear left columns
+            FillRect left, top, left + deltaCol - 1, bottom, " ", ConsoleColor.Gray, ConsoleColor.Black
+        ElseIf deltaCol < 0 Then
+            ' Scrolled left - clear right columns
+            FillRect right + deltaCol + 1, top, right, bottom, " ", ConsoleColor.Gray, ConsoleColor.Black
+        End If
+    End Sub
+
+    ' Flush a specific region only (partial refresh)
+    Public Sub FlushRegion(ByVal hOutput As LongPtr, _
+                           ByVal left As Long, ByVal top As Long, _
+                           ByVal right As Long, ByVal bottom As Long)
+        If left < 0 Then left = 0
+        If top < 0 Then top = 0
+        If right >= m_Width Then right = m_Width - 1
+        If bottom >= m_Height Then bottom = m_Height - 1
+
+        Dim writeRect As SMALL_RECT
+        Dim bufSize As Long
+        Dim bufCoord As Long
+
+        writeRect.Left = CInt(left)
+        writeRect.Top = CInt(top)
+        writeRect.Right = CInt(right)
+        writeRect.Bottom = CInt(bottom)
+
+        bufSize = mConsoleAPI.MakeDWORD(CInt(m_Width), CInt(m_Height))
+        bufCoord = mConsoleAPI.MakeDWORD(left, top)
+
+        mConsoleAPI.WriteConsoleOutputW hOutput, VarPtr(m_Buffer(0)), bufSize, bufCoord, writeRect
+    End Sub
+
+    ' Get the current dirty rectangle
+    Public Function GetDirtyRect() As ConsoleRect
+        Return m_DirtyRect
+    End Function
+
+    ' Clear the dirty flag (manual control)
+    Public Sub ClearDirty()
+        m_IsDirty = False
+        m_DirtyRect.Left = m_Width
+        m_DirtyRect.Top = m_Height
+        m_DirtyRect.Right = 0
+        m_DirtyRect.Bottom = 0
+    End Sub
+
+    ' Write text with truncation support
+    Public Sub WriteTextEx(ByVal text As String, _
+                          ByVal col As Long, ByVal row As Long, _
+                          ByVal fore As ConsoleColor, _
+                          ByVal back As ConsoleColor, _
+                          ByVal maxWidth As Long, _
+                          Optional ByVal ellipsis As String = "…")
+        If maxWidth <= 0 Then Exit Sub
+
+        Dim textToWrite As String
+        If Len(text) > maxWidth Then
+            If Len(ellipsis) >= maxWidth Then
+                textToWrite = Left$(ellipsis, maxWidth)
+            Else
+                textToWrite = Left$(text, maxWidth - Len(ellipsis)) & ellipsis
+            End If
+        Else
+            textToWrite = text
+        End If
+
+        WriteAt col, row, textToWrite, fore, back
+    End Sub
+
+    ' Private helpers
+    Private Sub ExpandDirtyRect(ByVal col As Long, ByVal row As Long)
+        ' Skip dirty rect expansion in batch mode
+        If m_BatchMode > 0 Then Exit Sub
+
+        If col < m_DirtyRect.Left Then m_DirtyRect.Left = col
+        If col > m_DirtyRect.Right Then m_DirtyRect.Right = col
+        If row < m_DirtyRect.Top Then m_DirtyRect.Top = row
+        If row > m_DirtyRect.Bottom Then m_DirtyRect.Bottom = row
+        m_IsDirty = True
+    End Sub
+
+End Class

@@ -1,0 +1,313 @@
+' A part of the GDI+ Package for TwinBasic  https://github.com/kubao/GdiPlus
+' Licensed under the MIT license. (c) 2026 Sunderland Ober Consulting.
+' "Windows" is a trademark of the Microsoft Corporation.
+' Certain descriptive text (c) Microsoft, taken from SDK headers and official documentation.
+' Certain flat API function and type declarations taken from WinDevLib by fafalone, with thanks.
+
+' There are 5 possible sets of color adjustments:
+'          ColorAdjustDefault,
+'          ColorAdjustBitmap,
+'          ColorAdjustBrush,
+'          ColorAdjustPen,
+'          ColorAdjustText,
+'
+' Bitmaps, Brushes, Pens, and Text will all use any color adjustments
+' that have been set into the default ImageAttributes until their own
+' color adjustments have been set.  So as soon as any "Set" method is
+' called for Bitmaps, Brushes, Pens, or Text, then they start from
+' scratch with only the color adjustments that have been set for them.
+' Calling Reset removes any individual color adjustments for a type
+' and makes it revert back to using all the default color adjustments
+' (if any).  The SetToIdentity method is a way to force a type to
+' have no color adjustments at all, regardless of what previous adjustments
+' have been set for the defaults or for that type.
+
+[COMCreatable(False)]
+Class ImageAttributes
+    Inherits GdiPlusBase
+    Dim ia As GpImageAttributes
+    
+    Sub New()
+        SetStatus(ia.CreateInto(ia))
+    End Sub
+    
+    Function Clone() As ImageAttributes
+        Return CloneImpl(Of ImageAttributes)(ia)
+    End Function
+    
+    Sub Class_Terminate()
+        ia.Dispose
+    End Sub
+        
+    Function SetToIdentity(ByVal type As ColorAdjustType = coloradjusttypedefault) As GpStatus
+        Return SetStatus(ia.SetToIdentity(type))
+    End Function
+    
+    Function Reset(ByVal type As ColorAdjustType = coloradjusttypedefault) As GpStatus
+        Return SetStatus(ia.Reset(type))
+    End Function
+
+    Function SetColorMatrix(colorMatrix As ColorMatrix, _
+            ByVal mode As ColorMatrixFlags = colormatrixflagsdefault, _
+            ByVal type As ColorAdjustType = ColorAdjustTypeDefault) As GpStatus
+        Return SetStatus(ia.SetColorMatrix(colorMatrix, mode, type))
+    End Function
+    
+    Function ClearColorMatrix(ByVal type As ColorAdjustType = ColorAdjustTypeDefault) As GpStatus
+        Return SetStatus(ia.ClearColorMatrix(type))
+    End Function
+    
+    Function SetColorMatrices(colorMatrix As ColorMatrix, grayMatrix As ColorMatrix, _
+            ByVal mode As ColorMatrixFlags = ColorMatrixFlagsDefault, _
+            ByVal type As ColorAdjustType = ColorAdjustTypeDefault) As GpStatus
+        Return SetStatus(ia.SetColorMatrices(colorMatrix, grayMatrix, mode, type))
+    End Function
+
+    Function ClearColorMatrices(ByVal type As ColorAdjustType = ColorAdjustTypeDefault) As GpStatus
+        Return SetStatus(ia.ClearColorMatrices(type))
+    End Function
+    
+    Function SetThreshold(ByVal threshold!, ByVal type As ColorAdjustType = ColorAdjustTypeDefault) As GpStatus
+        Return SetStatus(ia.SetThreshold(threshold, type))
+    End Function
+
+    Function ClearThreshold(ByVal type As ColorAdjustType = ColorAdjustTypeDefault) As GpStatus
+        Return SetStatus(ia.ClearThreshold(type))
+    End Function
+    
+    Function SetGamma(ByVal gamma!, ByVal type As ColorAdjustType = ColorAdjustTypeDefault) As GpStatus
+        Return SetStatus(ia.SetGamma(gamma, type))
+    End Function
+
+    Function ClearGamma(ByVal type As ColorAdjustType = ColorAdjustTypeDefault) As GpStatus
+        Return SetStatus(ia.ClearGamma(type))
+    End Function
+    
+    Function SetNoOp(ByVal type As ColorAdjustType = ColorAdjustTypeDefault) As GpStatus
+        Return SetStatus(ia.SetNoOp(type))
+    End Function
+
+    Function ClearNoOp(ByVal type As ColorAdjustType = ColorAdjustTypeDefault) As GpStatus
+        Return SetStatus(ia.ClearNoOp(type))
+    End Function
+
+    Function SetColorKey(ByVal rgbLow&, ByVal rgbHigh&, ByVal type As ColorAdjustType = ColorAdjustTypeDefault) As GpStatus
+        Return SetStatus(ia.SetColorKeyRGB(rgbLow, rgbHigh, type))
+    End Function
+    
+    Function SetColorKey(ByVal colorLow As Color, ByVal colorHigh As Color, ByVal type As ColorAdjustType = ColorAdjustTypeDefault) As GpStatus
+        Return SetStatus(ia.SetColorKeys(type, GDIP_CTRUE, colorLow, colorHigh))
+    End Function
+
+    Function ClearColorKey(ByVal type As ColorAdjustType = ColorAdjustTypeDefault) As GpStatus
+        Return SetStatus(ia.ClearColorKey(type))
+    End Function
+
+    Function SetOutputChannel(ByVal channelFlags As ColorChannelFlags, ByVal type As ColorAdjustType = ColorAdjustTypeDefault) As GpStatus
+        Return SetStatus(ia.SetOutputChannel(type, True, channelFlags))
+    End Function
+
+    Function ClearOutputChannel(ByVal type As ColorAdjustType = ColorAdjustTypeDefault) As GpStatus
+        Return SetStatus(ia.ClearOutputChannel(type))
+    End Function
+    
+    Function SetOutputChannelColorProfile(ByVal colorProfileFilename$, ByVal type As ColorAdjustType = ColorAdjustTypeDefault) As GpStatus
+        Return SetStatus(ia.SetOutputChannelColorProfile(colorProfileFilename, type))
+    End Function
+
+    Function ClearOutputChannelColorProfile(ByVal type As ColorAdjustType = ColorAdjustTypeDefault) As GpStatus
+        Return SetStatus(ia.ClearOutputChannelColorProfile(type))
+    End Function
+
+    Function SetRemapTable(map() As ColorMap, ByVal type As ColorAdjustType = ColorAdjustTypeDefault) As GpStatus
+        Return SetStatus(ia.SetRemapTable(map, type))
+    End Function
+
+    Function ClearRemapTable(ByVal type As ColorAdjustType = ColorAdjustTypeDefault) As GpStatus
+        Return SetStatus(ia.ClearRemapTable(type))
+    End Function
+    
+    Function SetBrushRemapTable(map() As ColorMap) As GpStatus
+        Return SetStatus(ia.SetBrushRemapTable(map))
+    End Function
+
+    Function ClearBrushRemapTable() As GpStatus
+        Return SetStatus(ia.ClearBrushRemapTable())
+    End Function
+    
+    Function SetWrapMode(ByVal wrap As GpWrapMode, ByVal rgb&, ByVal clamp As Boolean = False) As GpStatus
+        Return SetStatus(ia.SetWrapModeRGB(wrap, rgb, clamp))
+    End Function
+    
+    Function SetWrapMode(ByVal wrap As GpWrapMode, ByVal color As Color, ByVal clamp As Boolean = False) As GpStatus
+        Return SetStatus(ia.SetWrapMode(wrap, color, clamp))
+    End Function
+    
+    Function SetCachedBackground(ByVal enabled As Boolean) As GpStatus
+        Return SetStatus(ia.SetCachedBackground(enabled))
+    End Function
+    
+    ' The flags of the palette are ignored.
+    Function GetAdjustedPalette(colorPalette As ColorPalette, ByVal colorAdjustType As ColorAdjustType) As GpStatus
+        Return SetStatus(ia.GetAdjustedPalette(colorPalette, colorAdjustType))
+    End Function
+       
+    Sub New(ByVal imageAttr As GpImageAttributes, ByVal status As GpStatus = ok)
+        SetStatus(status)
+        ia = imageAttr
+    End Sub
+    
+    Protected Property Get Native() As GpImageAttributes
+        Return ia
+    End Property
+End Class
+
+Module GdipImageAttributes
+    Function ImageAttributes() As ImageAttributes
+        Return New ImageAttributes
+    End Function
+    
+    Type GpImageAttributes
+        Native As LongPtr
+        
+        [UseGetLastError(False)]
+        Declare PtrSafe Function CreateInto Lib "gdiplus" Alias "GdipCreateImageAttributes" (imageattr As GpImageAttributes) As GpStatus
+        [UseGetLastError(False)]
+        Declare PtrSafe Function Clone Lib "gdiplus" Alias "GdipCloneImageAttributes" (ByVal Me As GpImageAttributes, cloneImageattr As GpImageAttributes) As GpStatus
+        [UseGetLastError(False)]
+        Declare PtrSafe Function Dispose Lib "gdiplus" Alias "GdipDisposeImageAttributes" (ByVal Me As GpImageAttributes) As GpStatus
+        [UseGetLastError(False)]
+        Declare PtrSafe Function Delete Lib "gdiplus" Alias "GdipDisposeImageAttributes" (ByVal Me As GpImageAttributes) As GpStatus
+        [UseGetLastError(False)]
+        Declare PtrSafe Function SetToIdentity Lib "gdiplus" Alias "GdipSetImageAttributesToIdentity" (ByVal Me As GpImageAttributes, ByVal type As ColorAdjustType) As GpStatus
+        
+        Function SetColorMatrix(colorMatrix As ColorMatrix, _
+                ByVal mode As ColorMatrixFlags = colormatrixflagsdefault, _
+                ByVal type As ColorAdjustType = ColorAdjustTypeDefault) As GpStatus
+            Dim nullMatrix As ColorMatrix ' should be a null reference
+            Return Me.SetColorMatrixX(type, GDIP_CTRUE, colorMatrix, nullMatrix, mode)
+        End Function
+        
+        Function ClearColorMatrix(ByVal type As ColorAdjustType = ColorAdjustTypeDefault) As GpStatus
+            Dim nullMatrix As ColorMatrix ' should be a null reference
+            Return Me.SetColorMatrixX(type, GDIP_CFALSE, nullMatrix, nullMatrix, ColorMatrixFlagsDefault)
+        End Function
+        
+        Function SetColorMatrices(colorMatrix As ColorMatrix, grayMatrix As ColorMatrix, _
+                ByVal mode As ColorMatrixFlags = ColorMatrixFlagsDefault, _
+                ByVal type As ColorAdjustType = ColorAdjustTypeDefault) As GpStatus
+            Return Me.SetColorMatrixX(type, GDIP_CTRUE, colorMatrix, grayMatrix, mode)
+        End Function
+
+        Function ClearColorMatrices(ByVal type As ColorAdjustType = ColorAdjustTypeDefault) As GpStatus
+            Dim nullMatrix As ColorMatrix ' should be a null reference
+            Return Me.SetColorMatrixX(type, GDIP_CFALSE, nullMatrix, nullMatrix, ColorMatrixFlagsDefault)
+        End Function
+        
+        Function SetThreshold(ByVal threshold!, ByVal type As ColorAdjustType = ColorAdjustTypeDefault) As GpStatus
+            Return Me.SetThresholdX(type, GDIP_CTRUE, threshold)
+        End Function
+
+        Function ClearThreshold(ByVal type As ColorAdjustType = ColorAdjustTypeDefault) As GpStatus
+            Return Me.SetThresholdX(type, GDIP_CFALSE, 0.0!)
+        End Function
+                
+        Function SetGamma(ByVal gamma!, ByVal type As ColorAdjustType = ColorAdjustTypeDefault) As GpStatus
+            Return Me.SetGammaX(type, GDIP_CTRUE, gamma)
+        End Function
+
+        Function ClearGamma(ByVal type As ColorAdjustType = ColorAdjustTypeDefault) As GpStatus
+            Return Me.SetGammaX(type, GDIP_CFALSE, 0.0!)
+        End Function
+        
+        Function SetNoOp(ByVal type As ColorAdjustType = ColorAdjustTypeDefault) As GpStatus
+            Return Me.SetNoOpX(type, GDIP_CTRUE)
+        End Function
+
+        Function ClearNoOp(ByVal type As ColorAdjustType = ColorAdjustTypeDefault) As GpStatus
+            Return Me.SetNoOpX(type, GDIP_CFALSE)
+        End Function
+        
+        Function SetColorKeyRGB(ByVal rgbLow&, ByVal rgbHigh&, ByVal type As ColorAdjustType = ColorAdjustTypeDefault) As GpStatus
+            Return Me.SetColorKeys(type, GDIP_CTRUE, FromCOLORREF(rgbLow), FromCOLORREF(rgbHigh))
+        End Function
+        
+        Function SetColorKey(ByVal colorLow As Color, ByVal colorHigh As Color, ByVal type As ColorAdjustType = ColorAdjustTypeDefault) As GpStatus
+            Return Me.SetColorKeys(type, GDIP_CTRUE, colorLow, colorHigh)
+        End Function
+        
+        Function ClearColorKey(ByVal type As ColorAdjustType = ColorAdjustTypeDefault) As GpStatus
+            Return Me.SetColorKeys(type, GDIP_CFALSE, Color(), Color())
+        End Function
+        
+        [UseGetLastError(False)]
+        Declare PtrSafe Function SetColorKeys Lib "gdiplus" Alias "GdipSetImageAttributesColorKeys" (ByVal Me As GpImageAttributes, ByVal type As ColorAdjustType, ByVal enableFlag As GDIP_BOOL, ByVal colorLow As Color, ByVal colorHigh As Color) As GpStatus
+                
+        Function ClearOutputChannel(ByVal type As ColorAdjustType = ColorAdjustTypeDefault) As GpStatus
+            Return Me.SetOutputChannel(type, GDIP_CFALSE, ColorChannelFlagsLast)
+        End Function
+                
+        [UseGetLastError(False)]
+        Declare PtrSafe Function SetOutputChannel Lib "gdiplus" Alias "GdipSetImageAttributesOutputChannel" (ByVal Me As GpImageAttributes, ByVal type As ColorAdjustType, ByVal enableFlag As GDIP_BOOL, ByVal channelFlags As ColorChannelFlags) As GpStatus
+        
+        Function SetOutputChannelColorProfile(ByVal colorProfileFilename$, ByVal type As ColorAdjustType = ColorAdjustTypeDefault) As GpStatus
+            Return Me.SetOutputChannelColorProfileX(type, GDIP_CTRUE, colorProfileFilename)
+        End Function
+
+        Function ClearOutputChannelColorProfile(ByVal type As ColorAdjustType = ColorAdjustTypeDefault) As GpStatus
+            Return Me.SetOutputChannelColorProfileX(type, GDIP_CFALSE, vbNullString)
+        End Function
+                
+        Function SetRemapTable(map() As ColorMap, ByVal type As ColorAdjustType = ColorAdjustTypeDefault) As GpStatus
+            Return Me.SetRemapTableX(type, GDIP_CTRUE, ArrayLen(map), ByVal ArrayPtr(map))
+        End Function
+        
+        Function ClearRemapTable(ByVal type As ColorAdjustType = ColorAdjustTypeDefault) As GpStatus
+            Return Me.SetRemapTableX(type, GDIP_CFALSE, 0, ByVal vbNullPtr)
+        End Function
+        
+        Function SetBrushRemapTable(map() As ColorMap) As GpStatus
+            Return Me.SetRemapTableX(ColorAdjustTypeBrush, GDIP_CTRUE, ArrayLen(map), ByVal ArrayPtr(map))
+        End Function
+
+        Function ClearBrushRemapTable() As GpStatus
+            Return Me.SetRemapTableX(ColorAdjustTypeBrush, GDIP_CFALSE, 0, ByVal vbNullPtr)
+        End Function
+        
+        Function SetWrapModeRGB(ByVal wrap As GpWrapMode, ByVal rgb&, ByVal clamp As Boolean = False) As GpStatus
+            Return Me.SetWrapMode(wrap, FromCOLORREF(rgb), CType(Of GDIP_BOOL)(clamp))
+        End Function
+        
+        Function SetCachedBackground(ByVal enabled As Boolean) As GpStatus
+            Return Me.SetCachedBackgroundX(If(enabled, GDIP_CTRUE, GDIP_CFALSE))
+        End Function
+        
+        [UseGetLastError(False)]
+        Declare PtrSafe Function SetWrapMode Lib "gdiplus" Alias "GdipSetImageAttributesWrapMode" (ByVal Me As GpImageAttributes, ByVal wrap As GpWrapMode, ByVal color As Color, ByVal clamp As GDIP_BOOL) As GpStatus
+        [UseGetLastError(False)]
+        Declare PtrSafe Function SetICMMode Lib "gdiplus" Alias "GdipSetImageAttributesICMMode" (ByVal Me As GpImageAttributes, ByVal on As GDIP_BOOL) As GpStatus
+        [UseGetLastError(False)]
+        Declare PtrSafe Function GetAdjustedPalette Lib "gdiplus" Alias "GdipGetImageAttributesAdjustedPalette" (ByVal Me As GpImageAttributes, colorPalette As ColorPalette, ByVal colorAdjustType As ColorAdjustType) As GpStatus
+        [UseGetLastError(False)]
+        Declare PtrSafe Function Reset Lib "gdiplus" Alias "GdipResetImageAttributes" (ByVal Me As GpImageAttributes, ByVal type As ColorAdjustType) As GpStatus
+        
+        [UseGetLastError(False)]
+        DeclareWide PtrSafe Function SetOutputChannelColorProfileX Lib "gdiplus" Alias "GdipSetImageAttributesOutputChannelColorProfile" (ByVal Me As GpImageAttributes, ByVal type As ColorAdjustType, ByVal enableFlag As GDIP_BOOL, ByVal colorProfileFilename$) As GpStatus
+        [UseGetLastError(False)]
+        Declare PtrSafe Function SetNoOpX Lib "gdiplus" Alias "GdipSetImageAttributesNoOp" (ByVal Me As GpImageAttributes, ByVal type As ColorAdjustType, ByVal enableFlag As GDIP_BOOL) As GpStatus
+        [UseGetLastError(False)]
+        Declare PtrSafe Function SetColorMatrixX Lib "gdiplus" Alias "GdipSetImageAttributesColorMatrix" (ByVal Me As GpImageAttributes, ByVal type As ColorAdjustType, ByVal enableFlag As GDIP_BOOL, colourMatrix As ColorMatrix, grayMatrix As ColorMatrix, ByVal flags As ColorMatrixFlags) As GpStatus
+        [UseGetLastError(False)]
+        Declare PtrSafe Function SetThresholdX Lib "gdiplus" Alias "GdipSetImageAttributesThreshold" (ByVal Me As GpImageAttributes, ByVal type As ColorAdjustType, ByVal enableFlag As GDIP_BOOL, ByVal threshold As Single) As GpStatus
+        [UseGetLastError(False)]
+        Declare PtrSafe Function SetGammaX Lib "gdiplus" Alias "GdipSetImageAttributesGamma" (ByVal Me As GpImageAttributes, ByVal type As ColorAdjustType, ByVal enableFlag As GDIP_BOOL, ByVal gamma As Single) As GpStatus
+        [UseGetLastError(False)]
+        Declare PtrSafe Function SetRemapTableX Lib "gdiplus" Alias "GdipSetImageAttributesRemapTable" (ByVal Me As GpImageAttributes, ByVal type As ColorAdjustType, ByVal enableFlag As GDIP_BOOL, ByVal mapSize As Long, map As ColorMap) As GpStatus
+        [UseGetLastError(False)]
+        Public Declare PtrSafe Function SetCachedBackgroundX Lib "gdiplus" Alias "GdipSetImageAttributesCachedBackground" (ByVal Me As GpImageAttributes, ByVal enableFlag As GDIP_BOOL) As GpStatus
+    End Type
+    
+    Function GpImageAttributes() As GpImageAttributes
+        GpImageAttributes.Native = 0
+    End Function
+End Module

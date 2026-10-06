@@ -1,0 +1,244 @@
+[InterfaceId("7763C956-CBC4-41F9-9C43-585D782CD054")]
+Interface ISafeArray Extends IUnknown
+    Sub BindToArray(ByVal pSA As LongPtr, Optional ByVal cbElements As Long)
+    Property Get SafeArray() As SAFE_ARRAY
+    Function ToByteString(Optional ByVal bReverse As Boolean) As String
+    Function ToHexString(Optional ByVal bReverse As Boolean) As String
+    Property Get Length() As Long
+    Property Get pvData() As LongPtr
+    Property Let pvData(ByVal Value As LongPtr)
+    Property Get cbElements() As Long
+    Property Let cbElements(ByVal Value As Long)
+    Property Get cElements1(Optional LBound1 As Long) As Long
+    Property Let cElements1(Optional LBound1 As Long, ByVal Value As Long)
+    Property Get cElements2(Optional LBound2 As Long) As Long
+    Property Let cElements2(Optional LBound2 As Long, ByVal Value As Long)
+End Interface
+
+Module mdlSafeArray
+
+Public Enum COMPRESSION_FORMATS
+    STANDARD_LZNT1 = 2
+    STANDARD_XPRESS
+    STANDARD_XPRESS_HUFF
+    MAXIMUM_LZNT1 = STANDARD_LZNT1 Or &H100
+    MAXIMUM_XPRESS = STANDARD_XPRESS Or &H100
+    MAXIMUM_XPRESS_HUFF = STANDARD_XPRESS_HUFF Or &H100
+End Enum
+
+Public Enum SAFE_ARRAY_FEATURES
+    FADF_AUTO = &H1
+    FADF_STATIC = &H2
+    FADF_EMBEDDED = &H4
+    FADF_FIXEDSIZE = &H10
+    FADF_RECORD = &H20
+    FADF_HAVEIID = &H40
+    FADF_HAVEVARTYPE = &H80
+    FADF_BSTR = &H100
+    FADF_UNKNOWN = &H200
+    FADF_DISPATCH = &H400
+    FADF_VARIANT = &H800
+    FADF_RESERVED = &HF008&
+End Enum
+
+Public Type COMPRESSED_FILE_HEADER
+    ElementType As Byte
+    ElementSize As Byte
+    CompressionFormat As Integer
+    OriginalSize As Long
+End Type
+
+Public Type SAFE_ARRAY
+    Guid As UUID
+    cDims As Integer
+    fFeatures As Integer
+    cbElements As Long
+    cLocks As Long
+    pvData As LongPtr
+    cElements1 As Long
+    lLBound1 As Long
+    cElements2 As Long
+    lLBound2 As Long
+End Type
+
+Private Type SAFE_ARRAY_OBJECT
+    pVTable As LongPtr
+    cRefs As Long
+    bFreeData As Boolean
+    bUnbindArray As Boolean
+    pSA As LongPtr
+    SafeArray As SAFE_ARRAY
+End Type
+
+Private m_VTableSafeArray As VTable, m_IID_IUnknown As UUID, m_IID_ISafeArray As UUID
+
+Public Function NewSA(Optional ByVal pSA As LongPtr, Optional ByVal cbElements As Long = 1, Optional ByVal pvData As LongPtr, Optional ByVal cElements1 As Long = 1, Optional ByVal cElements2 As Long, Optional ByVal lLBound1 As Long, Optional ByVal lLBound2 As Long, Optional ByVal bFreeData As Boolean, Optional ByVal bUnbindArray As Boolean = True) As ISafeArray
+Dim This As SAFE_ARRAY_OBJECT, pMemAlloc As LongPtr
+    pMemAlloc = CoTaskMemAlloc(LenB(This))
+    With This
+        With .SafeArray
+            .fFeatures = FADF_AUTO Or FADF_FIXEDSIZE: .cLocks = 1: If cElements2 = 0 Then .cDims = 1 Else .cDims = 2
+            .pvData = pvData: .cbElements = cbElements: .cElements1 = cElements1: .cElements2 = cElements2: .lLBound1 = lLBound1: .lLBound2 = lLBound2
+            If pSA Then PutMemPtr ByVal pSA, pMemAlloc + (VarPtr(.cDims) - VarPtr(This))
+        End With
+        .pVTable = m_VTableSafeArray.pVTable: .cRefs = 1: .pSA = pSA: .bFreeData = bFreeData: .bUnbindArray = bUnbindArray
+        If .pVTable = vbNullPtr Then
+            If m_IID_IUnknown.IsEmpty Then m_IID_IUnknown = MakeUUID(, , &HC0, &H46000000)()
+            m_IID_ISafeArray = MakeUUID(&H7763C956, &H41F9CBC4, &H5D58439C, &H54D02C78)
+            .pVTable = GetVTablePointer(m_VTableSafeArray, AddressOf QueryInterfaceSafeArray, AddressOf AddRefSafeArray, AddressOf ReleaseSafeArray, AddressOf BindToArray, AddressOf SafeArrayGet, _
+                       AddressOf ToByteString, AddressOf ToHexString, AddressOf LengthGet, AddressOf pvDataGet, AddressOf pvDataLet, AddressOf cbElementsGet, AddressOf cbElementsLet, _
+                       AddressOf cElements1Get, AddressOf cElements1Let, AddressOf cElements2Get, AddressOf cElements2Let)
+        End If
+        PutMemPtr ByVal VarPtr(NewSA), vbaCopyBytes(LenB(This), ByVal pMemAlloc, ByVal VarPtr(.pVTable))
+    End With
+End Function
+
+Public Sub InitSA(ByVal pSA As LongPtr, tSA As SAFE_ARRAY, Optional ByVal cbElements As Long = 1, Optional ByVal pvData As LongPtr, Optional ByVal cElements1 As Long = 1, Optional ByVal cElements2 As Long, Optional ByVal lLBound1 As Long, Optional ByVal lLBound2 As Long)
+    With tSA
+        If .fFeatures = 0 Then PutMemPtr ByVal pSA, VarPtr(.cDims): .fFeatures = FADF_AUTO Or FADF_FIXEDSIZE: .cLocks = 1: If cElements2 = 0 Then .cDims = 1 Else .cDims = 2
+        .pvData = pvData: .cbElements = cbElements: .cElements1 = cElements1: .lLBound1 = lLBound1: .cElements2 = cElements2: .lLBound2 = lLBound2
+    End With
+End Sub
+
+Public Property Get SafeArray(ByVal pSA As LongPtr) As SAFE_ARRAY
+    GetMemPtr ByVal pSA, pSA
+    If pSA Then
+        pSA = pSA - LenB(SafeArray.Guid): vbaCopyBytes LenB(SafeArray) - 8, ByVal VarPtr(SafeArray), ByVal pSA
+        If SafeArray.cDims = 2 Then vbaCopyBytes LenB(SafeArray), ByVal VarPtr(SafeArray), ByVal pSA
+    End If
+End Property
+
+Private Function QueryInterfaceSafeArray(This As SAFE_ARRAY_OBJECT, Guid As UUID, ppvObj As LongPtr) As HRESULT
+    With This
+        If Guid.IsEqual(m_IID_ISafeArray) Then
+            .cRefs = .cRefs + 1: ppvObj = VarPtr(.pVTable)
+        ElseIf Guid.IsEqual(m_IID_IUnknown) Then
+            .cRefs = .cRefs + 1: ppvObj = VarPtr(.pVTable)
+        Else
+            ppvObj = vbNullPtr: QueryInterfaceSafeArray = E_NOINTERFACE
+        End If
+    End With
+End Function
+
+Private Function AddRefSafeArray(This As SAFE_ARRAY_OBJECT) As Long
+    AddRefSafeArray = This.cRefs + 1: This.cRefs = AddRefSafeArray
+End Function
+
+Private Function ReleaseSafeArray(This As SAFE_ARRAY_OBJECT) As Long
+    With This
+        ReleaseSafeArray = .cRefs - 1: .cRefs = ReleaseSafeArray
+        If .cRefs = 0 Then
+            If .pSA Then If .bUnbindArray Then PutMemPtr ByVal .pSA, vbNullPtr
+            If .bFreeData Then If .SafeArray.pvData Then CoTaskMemFree .SafeArray.pvData
+            CoTaskMemFree VarPtr(.pVTable)
+        End If
+    End With
+End Function
+
+Private Function BindToArray(This As SAFE_ARRAY_OBJECT, ByVal pSA As LongPtr, ByVal cbElements As Long) As HRESULT
+    If pSA Then
+        With This
+            If .pSA Then If .bUnbindArray Then PutMemPtr ByVal .pSA, vbNullPtr
+            If cbElements > 0 Then .SafeArray.cbElements = cbElements
+            .pSA = pSA: PutMemPtr ByVal pSA, VarPtr(.SafeArray.cDims)
+        End With
+    End If
+End Function
+
+Private Function SafeArrayGet(This As SAFE_ARRAY_OBJECT, SafeArray As SAFE_ARRAY) As HRESULT
+    SafeArray = This.SafeArray
+End Function
+
+[ArrayBoundsChecks(False), IntegerOverflowChecks(False)]
+Private Function ToByteString(This As SAFE_ARRAY_OBJECT, ByVal bReverse As Boolean, sToByteString As String) As HRESULT
+Dim i As Long, cBytes As Long, baData() As Byte, tSA As SAFE_ARRAY, CurrentPos As Long
+    With This.SafeArray
+        If .pvData Then
+            LengthGet This, cBytes: cBytes = cBytes * .cbElements: InitSA VarPtr(baData), tSA, pvData:=.pvData, cElements1:=cBytes: sToByteString = Space$(cBytes * 4 - 1)
+            If Not bReverse Then
+                For i = 0 To cBytes - 1
+                    If i > 0 Then CurrentPos = CurrentPos + Len(CStr(baData(i - 1))) + 1
+                    Mid$(sToByteString, CurrentPos + 1) = CStr(baData(i))
+                Next i
+            Else
+                For i = cBytes - 1 To 0 Step -1
+                    If i < cBytes - 1 Then CurrentPos = CurrentPos + Len(CStr(baData(i + 1))) + 1
+                    Mid$(sToByteString, CurrentPos + 1) = CStr(baData(i))
+                Next i
+            End If
+            sToByteString = RTrim$(sToByteString)
+        End If
+    End With
+End Function
+
+[ArrayBoundsChecks(False), IntegerOverflowChecks(False)]
+Private Function ToHexString(This As SAFE_ARRAY_OBJECT, ByVal bReverse As Boolean, sToHexString As String) As HRESULT
+Dim i As Long, cBytes As Long, baData() As Byte, tSA As SAFE_ARRAY
+    With This.SafeArray
+        If .pvData Then
+            LengthGet This, cBytes: cBytes = cBytes * .cbElements: InitSA VarPtr(baData), tSA, pvData:=.pvData, cElements1:=cBytes: sToHexString = Space$(cBytes * 3 - 1)
+            If Not bReverse Then
+                For i = 0 To cBytes - 1
+                    If baData(i) > &HF Then Mid$(sToHexString, i * 3 + 1) = Hex$(baData(i)) Else Mid$(sToHexString, i * 3 + 1) = "0" & Hex$(baData(i))
+                Next i
+            Else
+                For i = cBytes - 1 To 0 Step -1
+                    If baData(i) > &HF Then Mid$(sToHexString, (cBytes - i - 1) * 3 + 1) = Hex$(baData(i)) Else Mid$(sToHexString, (cBytes - i - 1) * 3 + 1) = "0" & Hex$(baData(i))
+                Next i
+            End If
+        End If
+    End With
+End Function
+
+Private Function LengthGet(This As SAFE_ARRAY_OBJECT, lLength As Long) As HRESULT
+    With This.SafeArray
+        lLength = .cElements1: If .cElements2 Then lLength = lLength * .cElements2
+    End With
+End Function
+
+Private Function pvDataGet(This As SAFE_ARRAY_OBJECT, pvData As LongPtr) As HRESULT
+    pvData = This.SafeArray.pvData
+End Function
+
+Private Function pvDataLet(This As SAFE_ARRAY_OBJECT, ByVal pvData As LongPtr) As HRESULT
+    This.SafeArray.pvData = pvData
+End Function
+
+Private Function cbElementsGet(This As SAFE_ARRAY_OBJECT, cbElements As Long) As HRESULT
+    cbElements = This.SafeArray.cbElements
+End Function
+
+Private Function cbElementsLet(This As SAFE_ARRAY_OBJECT, ByVal cbElements As Long) As HRESULT
+    This.SafeArray.cbElements = cbElements
+End Function
+
+Private Function cElements1Get(This As SAFE_ARRAY_OBJECT, lLBound1 As Long, cElements1 As Long) As HRESULT
+    With This.SafeArray
+        lLBound1 = .lLBound1: cElements1 = .cElements1
+    End With
+End Function
+
+Private Function cElements1Let(This As SAFE_ARRAY_OBJECT, lLBound1 As Long, ByVal cElements1 As Long) As HRESULT
+    With This.SafeArray
+        .lLBound1 = lLBound1: .cElements1 = cElements1: If .cDims = 1 Then .cDims = 2
+    End With
+End Function
+
+Private Function cElements2Get(This As SAFE_ARRAY_OBJECT, lLBound2 As Long, cElements2 As Long) As HRESULT
+    With This.SafeArray
+        lLBound2 = .lLBound2: cElements2 = .cElements2
+    End With
+End Function
+
+Private Function cElements2Let(This As SAFE_ARRAY_OBJECT, lLBound2 As Long, ByVal cElements2 As Long) As HRESULT
+    With This.SafeArray
+        .lLBound2 = lLBound2: .cElements2 = cElements2
+        If cElements2 > 0 Then
+            If .cDims = 1 Then .cDims = 2
+        Else
+            If .cDims = 2 Then .cDims = 1
+        End If
+    End With
+End Function
+
+End Module

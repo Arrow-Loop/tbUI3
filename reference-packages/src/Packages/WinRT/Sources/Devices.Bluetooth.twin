@@ -1,0 +1,609 @@
+[InterfaceId("EAC62C40-8DBC-5854-8BA0-B7B9940E7389")]
+Interface IAsyncOperationIRadio Extends IInspectable
+    Property Set Completed(ByVal Handler As IAsyncOperationCompletedHandlerIRadio)
+    Property Get Completed() As IAsyncOperationCompletedHandlerIRadio
+    Function GetResults() As IRadio
+End Interface
+
+[InterfaceId("8A5C7E3A-80E2-585B-8630-7A8E777F0354")]
+Interface IAsyncOperationCompletedHandlerIRadio Extends IUnknown
+    Sub Invoke(ByVal AsyncOperation As IAsyncOperationIRadio, ByVal AsyncStatus As AsyncStatus)
+End Interface
+
+[InterfaceId("7974F04C-5F7A-4A34-9225-A855F84B1A8B")]
+Interface IBluetoothAdapter Extends IInspectable
+    Property Get DeviceId() As LongPtr
+    Property Get BluetoothAddress() As UInt64
+    Property Get IsClassicSupported() As BooleanByte
+    Property Get IsLowEnergySupported() As BooleanByte
+    Property Get IsPeripheralRoleSupported() As BooleanByte
+    Property Get IsCentralRoleSupported() As BooleanByte
+    Property Get IsAdvertisementOffloadSupported() As BooleanByte
+    Function GetRadioAsync() As IAsyncOperationIRadio
+End Interface
+
+[InterfaceId("AC94CECC-24D5-41B3-916D-1097C50B102B")]
+Interface IBluetoothAdapter2 Extends IInspectable
+    Property Get AreClassicSecureConnectionsSupported() As BooleanByte
+    Property Get AreLowEnergySecureConnectionsSupported() As BooleanByte
+End Interface
+
+[InterfaceId("8F8624E0-CBA9-5211-9F89-3AAC62B4C6B8")]
+Interface IBluetoothAdapter3 Extends IInspectable
+    Property Get IsExtendedAdvertisingSupported() As BooleanByte
+    Property Get MaxAdvertisementDataLength() As Long
+End Interface
+
+[InterfaceId("46FCE70C-6C07-5A3A-B775-26F99402553F")]
+Interface IAsyncOperationIBluetoothAdapter Extends IInspectable
+    Property Set Completed(ByVal Handler As IAsyncOperationCompletedHandlerIBluetoothAdapter)
+    Property Get Completed() As IAsyncOperationCompletedHandlerIBluetoothAdapter
+    Function GetResults() As IBluetoothAdapter
+End Interface
+
+[InterfaceId("10A10A88-90E0-511A-9A08-D75FEB52A19F")]
+Interface IAsyncOperationCompletedHandlerIBluetoothAdapter Extends IUnknown
+    Sub Invoke(ByVal AsyncOperation As IAsyncOperationIBluetoothAdapter, ByVal AsyncStatus As AsyncStatus)
+End Interface
+
+[InterfaceId("8B02FB6A-AC4C-4741-8661-8EAB7D17EA9F")]
+Interface IBluetoothAdapterStatics Extends IInspectable
+    Function GetDeviceSelector() As LongPtr
+    Function FromIdAsync(ByVal DeviceId As LongPtr) As IAsyncOperationIBluetoothAdapter
+    Function GetDefaultAsync() As IAsyncOperationIBluetoothAdapter
+End Interface
+
+[InterfaceId("D640227E-D7D7-4661-9454-65039CA17A2B")]
+Interface IBluetoothClassOfDevice Extends IInspectable
+    Property Get RawValue() As Long
+    Property Get MajorClass() As BluetoothMajorClass
+    Property Get MinorClass() As BluetoothMinorClass
+    Property Get ServiceCapabilities() As BluetoothServiceCapabilities
+End Interface
+
+[InterfaceId("E46135BD-0FA2-416C-91B4-C1E48CA061C1")]
+Interface IBluetoothClassOfDeviceStatics Extends IInspectable
+    Function FromRawValue(ByVal RawValue As Long) As IBluetoothClassOfDevice
+    Function FromParts(ByVal MajorClass As BluetoothMajorClass, ByVal MinorClass As BluetoothMinorClass, ByVal ServiceCapabilities As BluetoothServiceCapabilities) As IBluetoothClassOfDevice
+End Interface
+
+[InterfaceId("64AB0132-C64C-5A87-8113-613EF356924C")]
+Interface IIterator_IRfcommDeviceService Extends IInspectable
+    Property Get Current() As IRfcommDeviceService
+    Property Get HasCurrent() As BooleanByte
+    Function MoveNext() As BooleanByte
+    Function GetMany(ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("3378E9A6-F6E2-50EA-BFEE-B8109631FECA")]
+Interface IIterable_IRfcommDeviceService Extends IInspectable
+    Function First() As IIterator_IRfcommDeviceService
+End Interface
+
+[InterfaceId("97DF6B82-D15C-597E-BA69-492207A1C108")]
+Interface IVectorView_IRfcommDeviceService Extends IInspectable
+    Function GetAt(ByVal Index As Long) As IRfcommDeviceService
+    Property Get Size() As Long
+    Function IndexOf(ByVal Value As IRfcommDeviceService, Index As Long) As BooleanByte
+    Function GetMany(ByVal StartIndex As Long, ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("DB56CE1C-5E9F-5138-9227-B1A66D60BC1B")]
+Interface ITypedEventHandlerBluetoothDeviceIInspectable Extends IUnknown
+    Sub Invoke(ByVal Sender As IBluetoothDevice, ByVal Args As IInspectable)
+End Interface
+
+[InterfaceId("2335B156-90D2-4A04-AEF5-0E20B9E6B707")]
+Interface IBluetoothDevice Extends IInspectable ' requires IClosable
+    Property Get DeviceId() As LongPtr
+    Property Get HostName() As IHostName
+    Property Get Name() As LongPtr
+    Property Get ClassOfDevice() As IBluetoothClassOfDevice
+    Property Get SdpRecords() As IVectorView_IBuffer
+    Property Get RfcommServices() As IVectorView_IRfcommDeviceService
+    Property Get ConnectionStatus() As BluetoothConnectionStatus
+    Property Get BluetoothAddress() As UInt64
+    [PreserveSig]
+    Function AddNameChanged(ByVal Handler As ITypedEventHandlerBluetoothDeviceIInspectable, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveNameChanged(ByVal Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function AddSdpRecordsChanged(ByVal Handler As ITypedEventHandlerBluetoothDeviceIInspectable, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveSdpRecordsChanged(ByVal Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function AddConnectionStatusChanged(ByVal Handler As ITypedEventHandlerBluetoothDeviceIInspectable, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveConnectionStatusChanged(ByVal Token As EventRegistrationToken) As HRESULT
+End Interface
+
+[InterfaceId("0133F954-B156-4DD0-B1F5-C11BC31A5163")]
+Interface IBluetoothDevice2 Extends IInspectable
+    Property Get DeviceInformation() As IDeviceInformation
+End Interface
+
+[InterfaceId("B7F2F74D-BF9C-5721-BF6E-03F1B4409588")]
+Interface IAsyncOperationIRfcommDeviceServicesResult Extends IInspectable
+    Property Set Completed(ByVal Handler As IAsyncOperationCompletedHandlerIRfcommDeviceServicesResult)
+    Property Get Completed() As IAsyncOperationCompletedHandlerIRfcommDeviceServicesResult
+    Function GetResults() As IRfcommDeviceServicesResult
+End Interface
+
+[InterfaceId("522C25D1-866B-5DE4-BD8E-1FEB5AE60D47")]
+Interface IAsyncOperationCompletedHandlerIRfcommDeviceServicesResult Extends IUnknown
+    Sub Invoke(ByVal AsyncOperation As IAsyncOperationIRfcommDeviceServicesResult, ByVal AsyncStatus As AsyncStatus)
+End Interface
+
+[InterfaceId("C00BC2F2-A7F8-5F3F-80D1-2808EF6BCA10")]
+Interface IAsyncOperationDeviceAccessStatus Extends IInspectable
+    Property Set Completed(ByVal Handler As IAsyncOperationCompletedHandlerDeviceAccessStatus)
+    Property Get Completed() As IAsyncOperationCompletedHandlerDeviceAccessStatus
+    Function GetResults() As DeviceAccessStatus
+End Interface
+
+[InterfaceId("EE154D83-805B-53E8-8469-90715036D013")]
+Interface IAsyncOperationCompletedHandlerDeviceAccessStatus Extends IUnknown
+    Sub Invoke(ByVal AsyncOperation As IAsyncOperationDeviceAccessStatus, ByVal AsyncStatus As AsyncStatus)
+End Interface
+
+[InterfaceId("57FFF78B-651A-4454-B90F-EB21EF0B0D71")]
+Interface IBluetoothDevice3 Extends IInspectable
+    Property Get DeviceAccessInformation() As IDeviceAccessInformation
+    Function RequestAccessAsync() As IAsyncOperationDeviceAccessStatus
+    Function GetRfcommServicesAsync() As IAsyncOperationIRfcommDeviceServicesResult
+    Function GetRfcommServicesWithCacheModeAsync(ByVal CacheMode As BluetoothCacheMode) As IAsyncOperationIRfcommDeviceServicesResult
+    Function GetRfcommServicesForIdAsync(ByVal ServiceId As IRfcommServiceId) As IAsyncOperationIRfcommDeviceServicesResult
+    Function GetRfcommServicesForIdWithCacheModeAsync(ByVal ServiceId As IRfcommServiceId, ByVal CacheMode As BluetoothCacheMode) As IAsyncOperationIRfcommDeviceServicesResult
+End Interface
+
+[InterfaceId("817C34AD-0E9C-42B2-A8DC-3E8094940D12")]
+Interface IBluetoothDevice4 Extends IInspectable
+    Property Get BluetoothDeviceId() As IBluetoothDeviceId
+End Interface
+
+[InterfaceId("B5E0B385-5E85-4559-A10D-1C7281379F96")]
+Interface IBluetoothDevice5 Extends IInspectable
+    Property Get WasSecureConnectionUsedForPairing() As BooleanByte
+End Interface
+
+[InterfaceId("C17949AF-57C1-4642-BCCE-E6C06B20AE76")]
+Interface IBluetoothDeviceId Extends IInspectable
+    Property Get Id() As LongPtr
+    Property Get IsClassicDevice() As BooleanByte
+    Property Get IsLowEnergyDevice() As BooleanByte
+End Interface
+
+[InterfaceId("A7884E67-3EFB-4F31-BBC2-810E09977404")]
+Interface IBluetoothDeviceIdStatics Extends IInspectable
+    Function FromId(ByVal DeviceId As LongPtr) As IBluetoothDeviceId
+End Interface
+
+[InterfaceId("B58D8D19-44BD-5AC0-A0D6-1B50800F3181")]
+Interface IAsyncOperationIBluetoothDevice Extends IInspectable
+    Property Set Completed(ByVal Handler As IAsyncOperationCompletedHandlerIBluetoothDevice)
+    Property Get Completed() As IAsyncOperationCompletedHandlerIBluetoothDevice
+    Function GetResults() As IBluetoothDevice
+End Interface
+
+[InterfaceId("B2E8CDD1-66AA-5892-85A3-8F0B165E43FC")]
+Interface IAsyncOperationCompletedHandlerIBluetoothDevice Extends IUnknown
+    Sub Invoke(ByVal AsyncOperation As IAsyncOperationIBluetoothDevice, ByVal AsyncStatus As AsyncStatus)
+End Interface
+
+[InterfaceId("0991DF51-57DB-4725-BBD7-84F64327EC2C")]
+Interface IBluetoothDeviceStatics Extends IInspectable
+    Function FromIdAsync(ByVal DeviceId As LongPtr) As IAsyncOperationIBluetoothDevice
+    Function FromHostNameAsync(ByVal HostName As IHostName) As IAsyncOperationIBluetoothDevice
+    Function FromBluetoothAddressAsync(ByVal Address As UInt64) As IAsyncOperationIBluetoothDevice
+    Function GetDeviceSelector() As LongPtr
+End Interface
+
+[InterfaceId("C29E8E2F-4E14-4477-AA1B-B8B47E5B7ECE")]
+Interface IBluetoothDeviceStatics2 Extends IInspectable
+    Function GetDeviceSelectorFromPairingState(ByVal PairingState As BooleanByte) As LongPtr
+    Function GetDeviceSelectorFromConnectionStatus(ByVal ConnectionStatus As BluetoothConnectionStatus) As LongPtr
+    Function GetDeviceSelectorFromDeviceName(ByVal DeviceName As LongPtr) As LongPtr
+    Function GetDeviceSelectorFromBluetoothAddress(ByVal BluetoothAddress As UInt64) As LongPtr
+    Function GetDeviceSelectorFromClassOfDevice(ByVal ClassOfDevice As IBluetoothClassOfDevice) As LongPtr
+End Interface
+
+[InterfaceId("5D2079F2-66A8-4258-985E-02B4D9509F18")]
+Interface IBluetoothLEAppearance Extends IInspectable
+    Property Get RawValue() As Integer
+    Property Get Category() As Integer
+    Property Get SubCategory() As Integer
+End Interface
+
+[InterfaceId("6D4D54FE-046A-4185-AAB6-824CF0610861")]
+Interface IBluetoothLEAppearanceCategoriesStatics Extends IInspectable
+    Property Get Uncategorized() As Integer
+    Property Get Phone() As Integer
+    Property Get Computer() As Integer
+    Property Get Watch() As Integer
+    Property Get Clock() As Integer
+    Property Get Display() As Integer
+    Property Get RemoteControl() As Integer
+    Property Get EyeGlasses() As Integer
+    Property Get Tag() As Integer
+    Property Get Keyring() As Integer
+    Property Get MediaPlayer() As Integer
+    Property Get BarcodeScanner() As Integer
+    Property Get Thermometer() As Integer
+    Property Get HeartRate() As Integer
+    Property Get BloodPressure() As Integer
+    Property Get HumanInterfaceDevice() As Integer
+    Property Get GlucoseMeter() As Integer
+    Property Get RunningWalking() As Integer
+    Property Get Cycling() As Integer
+    Property Get PulseOximeter() As Integer
+    Property Get WeightScale() As Integer
+    Property Get OutdoorSportActivity() As Integer
+End Interface
+
+[InterfaceId("A193C0C7-4504-4F4A-9BA5-CD1054E5E065")]
+Interface IBluetoothLEAppearanceStatics Extends IInspectable
+    Function FromRawValue(ByVal RawValue As Integer) As IBluetoothLEAppearance
+    Function FromParts(ByVal AppearanceCategory As Integer, ByVal AppearanceSubCategory As Integer) As IBluetoothLEAppearance
+End Interface
+
+[InterfaceId("E57BA606-2144-415A-8312-71CCF291F8D1")]
+Interface IBluetoothLEAppearanceSubcategoriesStatics Extends IInspectable
+    Property Get Generic() As Integer
+    Property Get SportsWatch() As Integer
+    Property Get ThermometerEar() As Integer
+    Property Get HeartRateBelt() As Integer
+    Property Get BloodPressureArm() As Integer
+    Property Get BloodPressureWrist() As Integer
+    Property Get Keyboard() As Integer
+    Property Get Mouse() As Integer
+    Property Get Joystick() As Integer
+    Property Get Gamepad() As Integer
+    Property Get DigitizerTablet() As Integer
+    Property Get CardReader() As Integer
+    Property Get DigitalPen() As Integer
+    Property Get BarcodeScanner() As Integer
+    Property Get RunningWalkingInShoe() As Integer
+    Property Get RunningWalkingOnShoe() As Integer
+    Property Get RunningWalkingOnHip() As Integer
+    Property Get CyclingComputer() As Integer
+    Property Get CyclingSpeedSensor() As Integer
+    Property Get CyclingCadenceSensor() As Integer
+    Property Get CyclingPowerSensor() As Integer
+    Property Get CyclingSpeedCadenceSensor() As Integer
+    Property Get OximeterFingertip() As Integer
+    Property Get OximeterWristWorn() As Integer
+    Property Get LocationDisplay() As Integer
+    Property Get LocationNavigationDisplay() As Integer
+    Property Get LocationPod() As Integer
+    Property Get LocationNavigationPod() As Integer
+End Interface
+
+[InterfaceId("33CB0771-8DA9-508F-A366-1CA388C929AB")]
+Interface IBluetoothLEConnectionParameters Extends IInspectable
+    Property Get LinkTimeout() As Integer
+    Property Get ConnectionLatency() As Integer
+    Property Get ConnectionInterval() As Integer
+End Interface
+
+[InterfaceId("781E5E48-621E-5A7E-8BE6-1B9561FF63C9")]
+Interface IBluetoothLEConnectionPhy Extends IInspectable
+    Property Get TransmitInfo() As IBluetoothLEConnectionPhyInfo
+    Property Get ReceiveInfo() As IBluetoothLEConnectionPhyInfo
+End Interface
+
+[InterfaceId("9A100BDD-602E-5C27-A1AE-B230015A6394")]
+Interface IBluetoothLEConnectionPhyInfo Extends IInspectable
+    Property Get IsUncoded1MPhy() As BooleanByte
+    Property Get IsUncoded2MPhy() As BooleanByte
+    Property Get IsCodedPhy() As BooleanByte
+End Interface
+
+[InterfaceId("8BEB3A26-73CA-50F3-A1D3-418C60A9F3B2")]
+Interface IIterator_IGattDeviceService Extends IInspectable
+    Property Get Current() As IGattDeviceService
+    Property Get HasCurrent() As BooleanByte
+    Function MoveNext() As BooleanByte
+    Function GetMany(ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("4B192E23-4893-56B2-8EFF-439C3AB7FD1F")]
+Interface IIterable_IGattDeviceService Extends IInspectable
+    Function First() As IIterator_IGattDeviceService
+End Interface
+
+[InterfaceId("7C8E7FDD-A1A1-528A-81D1-296769227A08")]
+Interface IVectorView_IGattDeviceService Extends IInspectable
+    Function GetAt(ByVal Index As Long) As IGattDeviceService
+    Property Get Size() As Long
+    Function IndexOf(ByVal Value As IGattDeviceService, Index As Long) As BooleanByte
+    Function GetMany(ByVal StartIndex As Long, ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("A90661E2-372E-5D1E-BBBB-B8A2CE0E7C4D")]
+Interface ITypedEventHandlerBluetoothLEDeviceIInspectable Extends IUnknown
+    Sub Invoke(ByVal Sender As IBluetoothLEDevice, ByVal Args As IInspectable)
+End Interface
+
+[InterfaceId("B5EE2F7B-4AD8-4642-AC48-80A0B500E887")]
+Interface IBluetoothLEDevice Extends IInspectable ' requires IClosable
+    Property Get DeviceId() As LongPtr
+    Property Get Name() As LongPtr
+    Property Get GattServices() As IVectorView_IGattDeviceService
+    Property Get ConnectionStatus() As BluetoothConnectionStatus
+    Property Get BluetoothAddress() As UInt64
+    Function GetGattService(ByVal ServiceUuid As UUID) As IGattDeviceService
+    [PreserveSig]
+    Function AddNameChanged(ByVal Handler As ITypedEventHandlerBluetoothLEDeviceIInspectable, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveNameChanged(ByVal Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function AddGattServicesChanged(ByVal Handler As ITypedEventHandlerBluetoothLEDeviceIInspectable, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveGattServicesChanged(ByVal Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function AddConnectionStatusChanged(ByVal Handler As ITypedEventHandlerBluetoothLEDeviceIInspectable, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveConnectionStatusChanged(ByVal Token As EventRegistrationToken) As HRESULT
+End Interface
+
+[InterfaceId("26F062B3-7AEE-4D31-BABA-B1B9775F5916")]
+Interface IBluetoothLEDevice2 Extends IInspectable
+    Property Get DeviceInformation() As IDeviceInformation
+    Property Get Appearance() As IBluetoothLEAppearance
+    Property Get BluetoothAddressType() As BluetoothAddressType
+End Interface
+
+[InterfaceId("E7C667F6-E874-500F-86FF-760CA6F07A58")]
+Interface IAsyncOperationIGattDeviceServicesResult Extends IInspectable
+    Property Set Completed(ByVal Handler As IAsyncOperationCompletedHandlerIGattDeviceServicesResult)
+    Property Get Completed() As IAsyncOperationCompletedHandlerIGattDeviceServicesResult
+    Function GetResults() As IGattDeviceServicesResult
+End Interface
+
+[InterfaceId("74AB0892-A631-5D6C-B1B4-BD2E1A741A9B")]
+Interface IAsyncOperationCompletedHandlerIGattDeviceServicesResult Extends IUnknown
+    Sub Invoke(ByVal AsyncOperation As IAsyncOperationIGattDeviceServicesResult, ByVal AsyncStatus As AsyncStatus)
+End Interface
+
+[InterfaceId("AEE9E493-44AC-40DC-AF33-B2C13C01CA46")]
+Interface IBluetoothLEDevice3 Extends IInspectable
+    Property Get DeviceAccessInformation() As IDeviceAccessInformation
+    Function RequestAccessAsync() As IAsyncOperationDeviceAccessStatus
+    Function GetGattServicesAsync() As IAsyncOperationIGattDeviceServicesResult
+    Function GetGattServicesWithCacheModeAsync(ByVal CacheMode As BluetoothCacheMode) As IAsyncOperationIGattDeviceServicesResult
+    Function GetGattServicesForUuidAsync(ByVal ServiceUuid As UUID) As IAsyncOperationIGattDeviceServicesResult
+    Function GetGattServicesForUuidWithCacheModeAsync(ByVal ServiceUuid As UUID, ByVal CacheMode As BluetoothCacheMode) As IAsyncOperationIGattDeviceServicesResult
+End Interface
+
+[InterfaceId("2B605031-2248-4B2F-ACF0-7CEE36FC5870")]
+Interface IBluetoothLEDevice4 Extends IInspectable
+    Property Get BluetoothDeviceId() As IBluetoothDeviceId
+End Interface
+
+[InterfaceId("9D6A1260-5287-458E-95BA-17C8B7BB326E")]
+Interface IBluetoothLEDevice5 Extends IInspectable
+    Property Get WasSecureConnectionUsedForPairing() As BooleanByte
+End Interface
+
+[InterfaceId("CA7190EF-0CAE-573C-A1CA-E1FC5BFC39E2")]
+Interface IBluetoothLEDevice6 Extends IInspectable
+    Function GetConnectionParameters() As IBluetoothLEConnectionParameters
+    Function GetConnectionPhy() As IBluetoothLEConnectionPhy
+    Function RequestPreferredConnectionParameters(ByVal PreferredConnectionParameters As IBluetoothLEPreferredConnectionParameters) As IBluetoothLEPreferredConnectionParametersRequest
+    [PreserveSig]
+    Function AddConnectionParametersChanged(ByVal Handler As ITypedEventHandlerBluetoothLEDeviceIInspectable, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveConnectionParametersChanged(ByVal Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function AddConnectionPhyChanged(ByVal Handler As ITypedEventHandlerBluetoothLEDeviceIInspectable, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveConnectionPhyChanged(ByVal Token As EventRegistrationToken) As HRESULT
+End Interface
+
+[InterfaceId("375F9D67-74A2-5F91-A11D-169093718D41")]
+Interface IAsyncOperationIBluetoothLEDevice Extends IInspectable
+    Property Set Completed(ByVal Handler As IAsyncOperationCompletedHandlerIBluetoothLEDevice)
+    Property Get Completed() As IAsyncOperationCompletedHandlerIBluetoothLEDevice
+    Function GetResults() As IBluetoothLEDevice
+End Interface
+
+[InterfaceId("9156B79F-C54A-5277-8F8B-D2CC43C7E004")]
+Interface IAsyncOperationCompletedHandlerIBluetoothLEDevice Extends IUnknown
+    Sub Invoke(ByVal AsyncOperation As IAsyncOperationIBluetoothLEDevice, ByVal AsyncStatus As AsyncStatus)
+End Interface
+
+[InterfaceId("C8CF1A19-F0B6-4BF0-8689-41303DE2D9F4")]
+Interface IBluetoothLEDeviceStatics Extends IInspectable
+    Function FromIdAsync(ByVal DeviceId As LongPtr) As IAsyncOperationIBluetoothLEDevice
+    Function FromBluetoothAddressAsync(ByVal BluetoothAddress As UInt64) As IAsyncOperationIBluetoothLEDevice
+    Function GetDeviceSelector() As LongPtr
+End Interface
+
+[InterfaceId("5F12C06B-3BAC-43E8-AD16-563271BD41C2")]
+Interface IBluetoothLEDeviceStatics2 Extends IInspectable
+    Function GetDeviceSelectorFromPairingState(ByVal PairingState As BooleanByte) As LongPtr
+    Function GetDeviceSelectorFromConnectionStatus(ByVal ConnectionStatus As BluetoothConnectionStatus) As LongPtr
+    Function GetDeviceSelectorFromDeviceName(ByVal DeviceName As LongPtr) As LongPtr
+    Function GetDeviceSelectorFromBluetoothAddress(ByVal BluetoothAddress As UInt64) As LongPtr
+    Function GetDeviceSelectorFromBluetoothAddressWithBluetoothAddressType(ByVal BluetoothAddress As UInt64, ByVal BluetoothAddressType As BluetoothAddressType) As LongPtr
+    Function GetDeviceSelectorFromAppearance(ByVal Appearance As IBluetoothLEAppearance) As LongPtr
+    Function FromBluetoothAddressWithBluetoothAddressTypeAsync(ByVal BluetoothAddress As UInt64, ByVal BluetoothAddressType As BluetoothAddressType) As IAsyncOperationIBluetoothLEDevice
+End Interface
+
+[InterfaceId("F2F44344-7372-5F7B-9B34-29C944F5A715")]
+Interface IBluetoothLEPreferredConnectionParameters Extends IInspectable
+    Property Get LinkTimeout() As Integer
+    Property Get ConnectionLatency() As Integer
+    Property Get MinConnectionInterval() As Integer
+    Property Get MaxConnectionInterval() As Integer
+End Interface
+
+[InterfaceId("8A375276-A528-5266-B661-CCE6A5FF9739")]
+Interface IBluetoothLEPreferredConnectionParametersRequest Extends IInspectable ' requires IClosable
+    Property Get Status() As BluetoothLEPreferredConnectionParametersRequestStatus
+End Interface
+
+[InterfaceId("0E3E8EDC-2751-55AA-A838-8FAEEE818D72")]
+Interface IBluetoothLEPreferredConnectionParametersStatics Extends IInspectable
+    Property Get Balanced() As IBluetoothLEPreferredConnectionParameters
+    Property Get ThroughputOptimized() As IBluetoothLEPreferredConnectionParameters
+    Property Get PowerOptimized() As IBluetoothLEPreferredConnectionParameters
+End Interface
+
+[InterfaceId("DF7B7391-6BB5-4CFE-90B1-5D7324EDCF7F")]
+Interface IBluetoothSignalStrengthFilter Extends IInspectable
+    Property Get InRangeThresholdInDBm() As IReference_Int16
+    Property Set InRangeThresholdInDBm(ByVal Value As IReference_Int16)
+    Property Get OutOfRangeThresholdInDBm() As IReference_Int16
+    Property Set OutOfRangeThresholdInDBm(ByVal Value As IReference_Int16)
+    Property Get OutOfRangeTimeout() As IReference_TimeSpan
+    Property Set OutOfRangeTimeout(ByVal Value As IReference_TimeSpan)
+    Property Get SamplingInterval() As IReference_TimeSpan
+    Property Set SamplingInterval(ByVal Value As IReference_TimeSpan)
+End Interface
+
+[InterfaceId("17DF0CD8-CF74-4B21-AFE6-F57A11BCDEA0")]
+Interface IBluetoothUuidHelperStatics Extends IInspectable
+    Function FromShortId(ByVal ShortId As Long) As UUID
+    Function TryGetShortId(ByVal Uuid As UUID) As IReference_UInt32
+End Interface
+
+Module mdlDevicesBluetooth
+
+Public Enum BluetoothAddressType
+    BluetoothAddressType_Public
+    BluetoothAddressType_Random
+    BluetoothAddressType_Unspecified
+End Enum
+
+Public Enum BluetoothCacheMode
+    BluetoothCacheMode_Cached
+    BluetoothCacheMode_Uncached
+End Enum
+
+Public Enum BluetoothConnectionStatus
+    BluetoothConnectionStatus_Disconnected
+    BluetoothConnectionStatus_Connected
+End Enum
+
+Public Enum BluetoothError
+    BluetoothError_Success
+    BluetoothError_RadioNotAvailable
+    BluetoothError_ResourceInUse
+    BluetoothError_DeviceNotConnected
+    BluetoothError_OtherError
+    BluetoothError_DisabledByPolicy
+    BluetoothError_NotSupported
+    BluetoothError_DisabledByUser
+    BluetoothError_ConsentRequired
+    BluetoothError_TransportNotSupported
+End Enum
+
+Public Enum BluetoothLEPreferredConnectionParametersRequestStatus
+    BluetoothLEPreferredConnectionParametersRequestStatus_Unspecified
+    BluetoothLEPreferredConnectionParametersRequestStatus_Success
+    BluetoothLEPreferredConnectionParametersRequestStatus_DeviceNotAvailable
+    BluetoothLEPreferredConnectionParametersRequestStatus_AccessDenied
+End Enum
+
+Public Enum BluetoothMajorClass
+    BluetoothMajorClass_Miscellaneous
+    BluetoothMajorClass_Computer
+    BluetoothMajorClass_Phone
+    BluetoothMajorClass_NetworkAccessPoint
+    BluetoothMajorClass_AudioVideo
+    BluetoothMajorClass_Peripheral
+    BluetoothMajorClass_Imaging
+    BluetoothMajorClass_Wearable
+    BluetoothMajorClass_Toy
+    BluetoothMajorClass_Health
+End Enum
+
+Public Enum BluetoothMinorClass
+    BluetoothMinorClass_Uncategorized
+    BluetoothMinorClass_ComputerDesktop
+    BluetoothMinorClass_ComputerServer
+    BluetoothMinorClass_ComputerLaptop
+    BluetoothMinorClass_ComputerHandheld
+    BluetoothMinorClass_ComputerPalmSize
+    BluetoothMinorClass_ComputerWearable
+    BluetoothMinorClass_ComputerTablet
+    BluetoothMinorClass_PhoneCellular = 1
+    BluetoothMinorClass_PhoneCordless
+    BluetoothMinorClass_PhoneSmartPhone
+    BluetoothMinorClass_PhoneWired
+    BluetoothMinorClass_PhoneIsdn
+    BluetoothMinorClass_NetworkFullyAvailable = 0
+    BluetoothMinorClass_NetworkUsed01To17Percent = 8
+    BluetoothMinorClass_NetworkUsed17To33Percent = 16
+    BluetoothMinorClass_NetworkUsed33To50Percent = 24
+    BluetoothMinorClass_NetworkUsed50To67Percent = 32
+    BluetoothMinorClass_NetworkUsed67To83Percent = 40
+    BluetoothMinorClass_NetworkUsed83To99Percent = 48
+    BluetoothMinorClass_NetworkNoServiceAvailable = 56
+    BluetoothMinorClass_AudioVideoWearableHeadset = 1
+    BluetoothMinorClass_AudioVideoHandsFree = 2
+    BluetoothMinorClass_AudioVideoMicrophone = 4
+    BluetoothMinorClass_AudioVideoLoudspeaker
+    BluetoothMinorClass_AudioVideoHeadphones
+    BluetoothMinorClass_AudioVideoPortableAudio
+    BluetoothMinorClass_AudioVideoCarAudio
+    BluetoothMinorClass_AudioVideoSetTopBox
+    BluetoothMinorClass_AudioVideoHifiAudioDevice
+    BluetoothMinorClass_AudioVideoVcr
+    BluetoothMinorClass_AudioVideoVideoCamera
+    BluetoothMinorClass_AudioVideoCamcorder
+    BluetoothMinorClass_AudioVideoVideoMonitor
+    BluetoothMinorClass_AudioVideoVideoDisplayAndLoudspeaker
+    BluetoothMinorClass_AudioVideoVideoConferencing
+    BluetoothMinorClass_AudioVideoGamingOrToy = 18
+    BluetoothMinorClass_PeripheralJoystick = 1
+    BluetoothMinorClass_PeripheralGamepad
+    BluetoothMinorClass_PeripheralRemoteControl
+    BluetoothMinorClass_PeripheralSensing
+    BluetoothMinorClass_PeripheralDigitizerTablet
+    BluetoothMinorClass_PeripheralCardReader
+    BluetoothMinorClass_PeripheralDigitalPen
+    BluetoothMinorClass_PeripheralHandheldScanner
+    BluetoothMinorClass_PeripheralHandheldGesture
+    BluetoothMinorClass_WearableWristwatch = 1
+    BluetoothMinorClass_WearablePager
+    BluetoothMinorClass_WearableJacket
+    BluetoothMinorClass_WearableHelmet
+    BluetoothMinorClass_WearableGlasses
+    BluetoothMinorClass_ToyRobot = 1
+    BluetoothMinorClass_ToyVehicle
+    BluetoothMinorClass_ToyDoll
+    BluetoothMinorClass_ToyController
+    BluetoothMinorClass_ToyGame
+    BluetoothMinorClass_HealthBloodPressureMonitor = 1
+    BluetoothMinorClass_HealthThermometer
+    BluetoothMinorClass_HealthWeighingScale
+    BluetoothMinorClass_HealthGlucoseMeter
+    BluetoothMinorClass_HealthPulseOximeter
+    BluetoothMinorClass_HealthHeartRateMonitor
+    BluetoothMinorClass_HealthHealthDataDisplay
+    BluetoothMinorClass_HealthStepCounter
+    BluetoothMinorClass_HealthBodyCompositionAnalyzer
+    BluetoothMinorClass_HealthPeakFlowMonitor
+    BluetoothMinorClass_HealthMedicationMonitor
+    BluetoothMinorClass_HealthKneeProsthesis
+    BluetoothMinorClass_HealthAnkleProsthesis
+    BluetoothMinorClass_HealthGenericHealthManager
+    BluetoothMinorClass_HealthPersonalMobilityDevice
+End Enum
+
+Public Enum BluetoothServiceCapabilities
+    BluetoothServiceCapabilities_None = &H0
+    BluetoothServiceCapabilities_LimitedDiscoverableMode = &H1
+    BluetoothServiceCapabilities_PositioningService = &H8
+    BluetoothServiceCapabilities_NetworkingService = &H10
+    BluetoothServiceCapabilities_RenderingService = &H20
+    BluetoothServiceCapabilities_CapturingService = &H40
+    BluetoothServiceCapabilities_ObjectTransferService = &H80
+    BluetoothServiceCapabilities_AudioService = &H100
+    BluetoothServiceCapabilities_TelephoneService = &H200
+    BluetoothServiceCapabilities_InformationService = &H400
+End Enum
+
+End Module

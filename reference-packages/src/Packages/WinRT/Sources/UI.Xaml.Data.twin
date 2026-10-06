@@ -1,0 +1,303 @@
+[InterfaceId("F3888DB8-139F-4DCE-8DC9-F7F1444D1185")]
+Interface ICurrentChangingEventHandler Extends IUnknown
+    Sub Invoke(ByVal Sender As IInspectable, ByVal Args As ICurrentChangingEventArgs)
+End Interface
+
+[InterfaceId("50F19C16-0A22-4D8E-A089-1EA9951657D2")]
+Interface IPropertyChangedEventHandler Extends IUnknown
+    Sub Invoke(ByVal Sender As IInspectable, ByVal Args As IPropertyChangedEventArgs)
+End Interface
+
+[InterfaceId("3F7A0C6B-D00F-4730-8C1D-48E16C46F9CA")]
+Interface IBinding Extends IInspectable
+    Property Get Path() As IPropertyPath
+    Property Set Path(ByVal Value As IPropertyPath)
+    Property Get Mode() As BindingMode
+    Property Let Mode(ByVal Value As BindingMode)
+    Property Get Source() As IInspectable
+    Property Set Source(ByVal Value As IInspectable)
+    Property Get RelativeSource() As IRelativeSource
+    Property Set RelativeSource(ByVal Value As IRelativeSource)
+    Property Get ElementName() As LongPtr
+    Property Let ElementName(ByVal Value As LongPtr)
+    Property Get Converter() As IValueConverter
+    Property Set Converter(ByVal Value As IValueConverter)
+    Property Get ConverterParameter() As IInspectable
+    Property Set ConverterParameter(ByVal Value As IInspectable)
+    Property Get ConverterLanguage() As LongPtr
+    Property Let ConverterLanguage(ByVal Value As LongPtr)
+End Interface
+
+[InterfaceId("34F96FCB-0406-48B3-9E82-F333EC4C6910")]
+Interface IBinding2 Extends IInspectable
+    Property Get FallbackValue() As IInspectable
+    Property Set FallbackValue(ByVal Value As IInspectable)
+    Property Get TargetNullValue() As IInspectable
+    Property Set TargetNullValue(ByVal Value As IInspectable)
+    Property Get UpdateSourceTrigger() As UpdateSourceTrigger
+    Property Let UpdateSourceTrigger(ByVal Value As UpdateSourceTrigger)
+End Interface
+
+[InterfaceId("1589A2AB-3D15-49BC-A447-8A5448E58870")]
+Interface IBindingBase Extends IInspectable
+
+End Interface
+
+[InterfaceId("22DAFC3A-7701-4666-A1BA-9859BDCFEC34")]
+Interface IBindingBaseFactory Extends IInspectable
+    Function CreateInstance(Optional ByVal BaseInterface As IInspectable, Optional InnerInterface As IInspectable) As IBindingBase
+End Interface
+
+[InterfaceId("516A19A5-C2FD-4A9E-9FD3-9AA42F995A3C")]
+Interface IBindingExpression Extends IInspectable
+    Property Get DataItem() As IInspectable
+    Property Get ParentBinding() As IBinding
+    [PreserveSig]
+    Function UpdateSource() As HRESULT
+End Interface
+
+[InterfaceId("FDED3154-E954-4F67-8FB6-6ED79B3A1CB3")]
+Interface IBindingExpressionBase Extends IInspectable
+
+End Interface
+
+[InterfaceId("EA7116A7-C2D9-4375-B471-66B9C48C7930")]
+Interface IBindingExpressionBaseFactory Extends IInspectable
+
+End Interface
+
+[InterfaceId("1CB55CD9-DB72-40B3-A2B5-24EE6EA5C328")]
+Interface IBindingExpressionFactory Extends IInspectable
+
+End Interface
+
+[InterfaceId("FF42BB08-C39E-4F7E-8434-A1569083883C")]
+Interface IBindingFactory Extends IInspectable
+    Function CreateInstance(Optional ByVal BaseInterface As IInspectable, Optional InnerInterface As IInspectable) As IBinding
+End Interface
+
+[InterfaceId("6FFFD738-9839-419C-A17A-4B3604E1524E")]
+Interface IBindingOperations Extends IInspectable
+
+End Interface
+
+[InterfaceId("E155EF73-95A0-4AAB-8C7D-2A47DA073C79")]
+Interface IBindingOperationsStatics Extends IInspectable
+    [PreserveSig]
+    Function SetBinding(ByVal Target As IDependencyObject, ByVal Dp As IDependencyProperty, ByVal Binding As IBindingBase) As HRESULT
+End Interface
+
+[InterfaceId("C788089D-37AB-5BA2-B865-5A309ACDFC4D")]
+Interface IAsyncOperationLoadMoreItemsResult Extends IInspectable
+    Property Set Completed(ByVal Handler As IAsyncOperationCompletedHandlerLoadMoreItemsResult)
+    Property Get Completed() As IAsyncOperationCompletedHandlerLoadMoreItemsResult
+    Function GetResults() As LoadMoreItemsResult
+End Interface
+
+[InterfaceId("10FB738B-A63B-506E-9ED7-2EAB37915221")]
+Interface IAsyncOperationCompletedHandlerLoadMoreItemsResult Extends IUnknown
+    Sub Invoke(ByVal AsyncOperation As IAsyncOperationLoadMoreItemsResult, ByVal AsyncStatus As AsyncStatus)
+End Interface
+
+[InterfaceId("8BE8BFE4-DBEF-44DF-8126-A31A89121DDC")]
+Interface ICollectionView Extends IInspectable
+    Property Get CurrentItem() As IInspectable
+    Property Get CurrentPosition() As Long
+    Property Get IsCurrentAfterLast() As BooleanByte
+    Property Get IsCurrentBeforeFirst() As BooleanByte
+    Property Get CollectionGroups() As IObservableVector_IInspectable
+    Property Get HasMoreItems() As BooleanByte
+    [PreserveSig]
+    Function AddCurrentChanged(ByVal Handler As IEventHandlerIInspectable, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveCurrentChanged(ByVal Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function AddCurrentChanging(ByVal Handler As ICurrentChangingEventHandler, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveCurrentChanging(ByVal Token As EventRegistrationToken) As HRESULT
+    Function MoveCurrentTo(ByVal Item As IInspectable) As BooleanByte
+    Function MoveCurrentToPosition(ByVal Index As Long) As BooleanByte
+    Function MoveCurrentToFirst() As BooleanByte
+    Function MoveCurrentToLast() As BooleanByte
+    Function MoveCurrentToNext() As BooleanByte
+    Function MoveCurrentToPrevious() As BooleanByte
+    Function LoadMoreItemsAsync(ByVal Count As Long) As IAsyncOperationLoadMoreItemsResult
+End Interface
+
+[InterfaceId("34D4AAF4-8E72-4950-9192-ECD07D399D0A")]
+Interface ICollectionViewFactory Extends IInspectable
+    Function CreateView() As ICollectionView
+End Interface
+
+[InterfaceId("7E01B9D8-D7B5-48B6-B31C-5BB5BDF5F09B")]
+Interface ICollectionViewGroup Extends IInspectable
+    Property Get Group() As IInspectable
+    Property Get GroupItems() As IObservableVector_IInspectable
+End Interface
+
+[InterfaceId("A66A1146-D2FB-4EAD-BE9F-3578A466DCFE")]
+Interface ICollectionViewSource Extends IInspectable
+    Property Get Source() As IInspectable
+    Property Set Source(ByVal Value As IInspectable)
+    Property Get View() As ICollectionView
+    Property Get IsSourceGrouped() As BooleanByte
+    Property Let IsSourceGrouped(ByVal Value As BooleanByte)
+    Property Get ItemsPath() As IPropertyPath
+    Property Set ItemsPath(ByVal Value As IPropertyPath)
+End Interface
+
+[InterfaceId("173A0710-46AF-4C0C-818B-21B6EF81BF65")]
+Interface ICollectionViewSourceStatics Extends IInspectable
+    Property Get SourceProperty() As IDependencyProperty
+    Property Get ViewProperty() As IDependencyProperty
+    Property Get IsSourceGroupedProperty() As IDependencyProperty
+    Property Get ItemsPathProperty() As IDependencyProperty
+End Interface
+
+[InterfaceId("F9891E29-51CC-47DD-A5B9-35DC4914AF69")]
+Interface ICurrentChangingEventArgs Extends IInspectable
+    Property Get Cancel() As BooleanByte
+    Property Let Cancel(ByVal Value As BooleanByte)
+    Property Get IsCancelable() As BooleanByte
+End Interface
+
+[InterfaceId("153BBEEE-62F3-48CF-8183-8BE26DE3A66E")]
+Interface ICurrentChangingEventArgsFactory Extends IInspectable
+    Function CreateInstance(Optional ByVal BaseInterface As IInspectable, Optional InnerInterface As IInspectable) As ICurrentChangingEventArgs
+    Function CreateWithCancelableParameter(ByVal IsCancelable As BooleanByte, Optional ByVal BaseInterface As IInspectable, Optional InnerInterface As IInspectable) As ICurrentChangingEventArgs
+End Interface
+
+[InterfaceId("30DA92C0-23E8-42A0-AE7C-734A0E5D2782")]
+Interface ICustomProperty Extends IInspectable
+    Property Get Type() As TypeName
+    Property Get Name() As LongPtr
+    Function GetValue(ByVal Target As IInspectable) As IInspectable
+    Sub SetValue(ByVal Target As IInspectable, ByVal Value As IInspectable)
+    Function GetIndexedValue(ByVal Target As IInspectable, ByVal Index As IInspectable) As IInspectable
+    Sub SetIndexedValue(ByVal Target As IInspectable, ByVal Value As IInspectable, ByVal Index As IInspectable)
+    Property Get CanWrite() As BooleanByte
+    Property Get CanRead() As BooleanByte
+End Interface
+
+[InterfaceId("7C925755-3E48-42B4-8677-76372267033F")]
+Interface ICustomPropertyProvider Extends IInspectable
+    Function GetCustomProperty(ByVal PropertyName As LongPtr) As ICustomProperty
+    Function GetIndexedProperty(ByVal PropertyName As LongPtr, ByVal Type As TypeName) As ICustomProperty
+    Function GetStringRepresentation() As LongPtr
+    Property Get Type() As TypeName
+End Interface
+
+[InterfaceId("83B834BE-0583-4A26-9B64-8BF4A2F65704")]
+Interface IItemIndexRange Extends IInspectable
+    Property Get FirstIndex() As Long
+    Property Get Length() As Long
+    Property Get LastIndex() As Long
+End Interface
+
+[InterfaceId("86E2C440-2E7A-4C7D-A664-E8ABF07BFC7E")]
+Interface IItemIndexRangeFactory Extends IInspectable
+    Function CreateInstance(ByVal FirstIndex As Long, ByVal Length As Long, Optional ByVal BaseInterface As IInspectable, Optional InnerInterface As IInspectable) As IItemIndexRange
+End Interface
+
+[InterfaceId("9C223A26-0C81-59F6-A909-BA4966B4CF24")]
+Interface IIterator_IItemIndexRange Extends IInspectable
+    Property Get Current() As IItemIndexRange
+    Property Get HasCurrent() As BooleanByte
+    Function MoveNext() As BooleanByte
+    Function GetMany(ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("273B8073-8C16-59C2-A616-0A534483C612")]
+Interface IIterable_IItemIndexRange Extends IInspectable
+    Function First() As IIterator_IItemIndexRange
+End Interface
+
+[InterfaceId("D0B26B06-16E8-5767-A60B-EE3E32E43DFB")]
+Interface IVectorView_IItemIndexRange Extends IInspectable
+    Function GetAt(ByVal Index As Long) As IItemIndexRange
+    Property Get Size() As Long
+    Function IndexOf(ByVal Value As IItemIndexRange, Index As Long) As BooleanByte
+    Function GetMany(ByVal StartIndex As Long, ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("F05F5665-71FD-45A2-BE13-A081D294A68D")]
+Interface IItemsRangeInfo Extends IInspectable
+    [PreserveSig]
+    Function RangesChanged(ByVal VisibleRange As IItemIndexRange, ByVal TrackedItems As IVectorView_IItemIndexRange) As HRESULT
+End Interface
+
+[InterfaceId("CF75D69C-F2F4-486B-B302-BB4C09BAEBFA")]
+Interface INotifyPropertyChanged Extends IInspectable
+    Sub AddPropertyChanged(ByVal Handler As IPropertyChangedEventHandler, Optional Token As EventRegistrationToken)
+    Sub RemovePropertyChanged(ByVal Token As EventRegistrationToken)
+End Interface
+
+[InterfaceId("4F33A9A0-5CF4-47A4-B16F-D7FAAF17457E")]
+Interface IPropertyChangedEventArgs Extends IInspectable
+    Property Get PropertyName() As LongPtr
+End Interface
+
+[InterfaceId("6DCC9C03-E0C7-4EEE-8EA9-37E3406EEB1C")]
+Interface IPropertyChangedEventArgsFactory Extends IInspectable
+    Function CreateInstance(ByVal Name As LongPtr, Optional ByVal BaseInterface As IInspectable, Optional InnerInterface As IInspectable) As IPropertyChangedEventArgs
+End Interface
+
+[InterfaceId("2397CE84-2822-483A-B499-D0F031E06C6B")]
+Interface IRelativeSource Extends IInspectable
+    Property Get Mode() As RelativeSourceMode
+    Property Let Mode(ByVal Value As RelativeSourceMode)
+End Interface
+
+[InterfaceId("EF8392CD-446E-4F93-AACB-9B1255577460")]
+Interface IRelativeSourceFactory Extends IInspectable
+    Function CreateInstance(Optional ByVal BaseInterface As IInspectable, Optional InnerInterface As IInspectable) As IRelativeSource
+End Interface
+
+[InterfaceId("2E12CA86-E1ED-4245-BE49-207E42AEC524")]
+Interface ISelectionInfo Extends IInspectable
+    [PreserveSig]
+    Function SelectRange(ByVal ItemIndexRange As IItemIndexRange) As HRESULT
+    [PreserveSig]
+    Function DeselectRange(ByVal ItemIndexRange As IItemIndexRange) As HRESULT
+    Function IsSelected(ByVal Index As Long) As BooleanByte
+    Function GetSelectedRanges() As IVectorView_IItemIndexRange
+End Interface
+
+[InterfaceId("7F5EE992-7694-4E6C-A51B-E34BF43DE743")]
+Interface ISupportIncrementalLoading Extends IInspectable
+    Function LoadMoreItemsAsync(ByVal Count As Long) As IAsyncOperationLoadMoreItemsResult
+    Property Get HasMoreItems() As BooleanByte
+End Interface
+
+[InterfaceId("E6F2FEF0-0712-487F-B313-F300B8D79AA1")]
+Interface IValueConverter Extends IInspectable
+    Function Convert(ByVal Value As IInspectable, ByVal TargetType As TypeName, ByVal Parameter As IInspectable, ByVal Language As LongPtr) As IInspectable
+    Function ConvertBack(ByVal Value As IInspectable, ByVal TargetType As TypeName, ByVal Parameter As IInspectable, ByVal Language As LongPtr) As IInspectable
+End Interface
+
+Module mdlUIXamlData
+
+Public Enum BindingMode
+    BindingMode_OneWay = 1
+    BindingMode_OneTime
+    BindingMode_TwoWay
+End Enum
+
+Public Enum RelativeSourceMode
+    RelativeSourceMode_None
+    RelativeSourceMode_TemplatedParent
+    RelativeSourceMode_Self
+End Enum
+
+Public Enum UpdateSourceTrigger
+    UpdateSourceTrigger_Default
+    UpdateSourceTrigger_PropertyChanged
+    UpdateSourceTrigger_Explicit
+    UpdateSourceTrigger_LostFocus
+End Enum
+
+Public Type LoadMoreItemsResult
+    Count As Long
+End Type
+
+End Module

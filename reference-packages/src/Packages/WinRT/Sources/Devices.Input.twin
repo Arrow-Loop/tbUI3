@@ -1,0 +1,131 @@
+[InterfaceId("3A3F9B56-6798-4BBC-833E-0F34B17C65FF")]
+Interface IKeyboardCapabilities Extends IInspectable
+    Property Get KeyboardPresent() As Long
+End Interface
+
+[InterfaceId("BCA5E023-7DD9-4B6B-9A92-55D43CB38F73")]
+Interface IMouseCapabilities Extends IInspectable
+    Property Get MousePresent() As Long
+    Property Get VerticalWheelPresent() As Long
+    Property Get HorizontalWheelPresent() As Long
+    Property Get SwapButtons() As Long
+    Property Get NumberOfButtons() As Long
+End Interface
+
+[InterfaceId("5D72E594-28E4-5895-A34B-EA910F70FDBB")]
+Interface ITypedEventHandlerMouseDeviceMouseMoved Extends IUnknown
+    Sub Invoke(ByVal Sender As IMouseDevice, ByVal Args As IMouseEventArgs)
+End Interface
+
+[InterfaceId("88EDF458-F2C8-49F4-BE1F-C256B388BC11")]
+Interface IMouseDevice Extends IInspectable
+    [PreserveSig]
+    Function AddMouseMoved(ByVal Handler As ITypedEventHandlerMouseDeviceMouseMoved, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveMouseMoved(ByVal Token As EventRegistrationToken) As HRESULT
+End Interface
+
+[InterfaceId("484A9045-6D70-49DB-8E68-46FFBD17D38D")]
+Interface IMouseDeviceStatics Extends IInspectable
+    Function GetForCurrentView() As IMouseDevice
+End Interface
+
+[InterfaceId("F625AA5D-2354-4CC7-9230-96941C969FDE")]
+Interface IMouseEventArgs Extends IInspectable
+    Property Get MouseDelta() As MouseDelta
+End Interface
+
+[InterfaceId("9AB2160D-11EF-5ECA-8DD9-3E13AA4E5F99")]
+Interface IIterator_PointerDeviceUsage Extends IInspectable
+    Property Get Current() As PointerDeviceUsage
+    Property Get HasCurrent() As BooleanByte
+    Function MoveNext() As BooleanByte
+    Function GetMany(ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("592D6618-EAAB-5A79-A47A-C7FC0B749A4E")]
+Interface IIterable_PointerDeviceUsage Extends IInspectable
+    Function First() As IIterator_PointerDeviceUsage
+End Interface
+
+[InterfaceId("8E5A2C7E-3830-50D5-92BA-3163C89CBBD0")]
+Interface IVectorView_PointerDeviceUsage Extends IInspectable
+    Function GetAt(ByVal Index As Long) As PointerDeviceUsage
+    Property Get Size() As Long
+    Function IndexOf(ByVal Value As PointerDeviceUsage, Index As Long) As BooleanByte
+    Function GetMany(ByVal StartIndex As Long, ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("93C9BAFC-EBCB-467E-82C6-276FEAE36B5A")]
+Interface IPointerDevice Extends IInspectable
+    Property Get PointerDeviceType() As PointerDeviceType
+    Property Get IsIntegrated() As BooleanByte
+    Property Get MaxContacts() As Long
+    Property Get PhysicalDeviceRect() As RECTF
+    Property Get ScreenRect() As RECTF
+    Property Get SupportedUsages() As IVectorView_PointerDeviceUsage
+End Interface
+
+[InterfaceId("F8A6D2A0-C484-489F-AE3E-30D2EE1FFD3E")]
+Interface IPointerDevice2 Extends IInspectable
+    Property Get MaxPointersWithZDistance() As Long
+End Interface
+
+[InterfaceId("CF5674F1-9808-5A2B-80B8-5684ED0EA816")]
+Interface IIterator_IPointerDevice Extends IInspectable
+    Property Get Current() As IPointerDevice
+    Property Get HasCurrent() As BooleanByte
+    Function MoveNext() As BooleanByte
+    Function GetMany(ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("AD26662C-845B-5C6D-AEAA-406F48C21AE9")]
+Interface IIterable_IPointerDevice Extends IInspectable
+    Function First() As IIterator_IPointerDevice
+End Interface
+
+[InterfaceId("F0F57411-7786-5174-8752-4C5E834B6DA2")]
+Interface IVectorView_IPointerDevice Extends IInspectable
+    Function GetAt(ByVal Index As Long) As IPointerDevice
+    Property Get Size() As Long
+    Function IndexOf(ByVal Value As IPointerDevice, Index As Long) As BooleanByte
+    Function GetMany(ByVal StartIndex As Long, ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("D8B89AA1-D1C6-416E-BD8D-5790914DC563")]
+Interface IPointerDeviceStatics Extends IInspectable
+    Function GetPointerDevice(ByVal PointerId As Long) As IPointerDevice
+    Function GetPointerDevices() As IVectorView_IPointerDevice
+End Interface
+
+[InterfaceId("20DD55F9-13F1-46C8-9285-2C05FA3EDA6F")]
+Interface ITouchCapabilities Extends IInspectable
+    Property Get TouchPresent() As Long
+    Property Get Contacts() As Long
+End Interface
+
+Module mdlDevicesInput
+
+Public Enum PointerDeviceType
+    PointerDeviceType_Touch
+    PointerDeviceType_Pen
+    PointerDeviceType_Mouse
+End Enum
+
+Public Type MouseDelta
+    X As Long
+    Y As Long
+End Type
+
+Public Type PointerDeviceUsage
+    UsagePage As Long
+    Usage As Long
+    MinLogical As Long
+    MaxLogical As Long
+    MinPhysical As Long
+    MaxPhysical As Long
+    Unit As Long
+    PhysicalMultiplier As Single
+End Type
+
+End Module

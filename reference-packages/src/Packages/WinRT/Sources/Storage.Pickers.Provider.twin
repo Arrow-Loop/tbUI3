@@ -1,0 +1,122 @@
+[InterfaceId("F1FB2939-695B-5F56-841A-A52A7D148572")]
+Interface ITypedEventHandlerFileOpenPickerUIFileRemoved Extends IUnknown
+    Sub Invoke(ByVal Sender As IFileOpenPickerUI, ByVal Args As IFileRemovedEventArgs)
+End Interface
+
+[InterfaceId("2B06BDAC-983B-5552-B5C9-B0990A2DB3A1")]
+Interface ITypedEventHandlerFileOpenPickerUIClosing Extends IUnknown
+    Sub Invoke(ByVal Sender As IFileOpenPickerUI, ByVal Args As IPickerClosingEventArgs)
+End Interface
+
+[InterfaceId("DDA45A10-F9D4-40C4-8AF5-C5B6B5A61D1D")]
+Interface IFileOpenPickerUI Extends IInspectable
+    Function AddFile(ByVal Id As LongPtr, ByVal File As IStorageFile) As AddFileResult
+    [PreserveSig]
+    Function RemoveFile(ByVal Id As LongPtr) As HRESULT
+    Function ContainsFile(ByVal Id As LongPtr) As BooleanByte
+    Function CanAddFile(ByVal File As IStorageFile) As BooleanByte
+    Property Get AllowedFileTypes() As IVectorView_HSTRING
+    Property Get SelectionMode() As FileSelectionMode
+    Property Get SettingsIdentifier() As LongPtr
+    Property Get Title() As LongPtr
+    Property Let Title(ByVal Value As LongPtr)
+    [PreserveSig]
+    Function AddFileRemoved(ByVal Handler As ITypedEventHandlerFileOpenPickerUIFileRemoved, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveFileRemoved(ByVal Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function AddClosing(ByVal Handler As ITypedEventHandlerFileOpenPickerUIClosing, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveClosing(ByVal Token As EventRegistrationToken) As HRESULT
+End Interface
+
+[InterfaceId("13043DA7-7FCA-4C2B-9ECA-6890F9F00185")]
+Interface IFileRemovedEventArgs Extends IInspectable
+    Property Get Id() As LongPtr
+End Interface
+
+[InterfaceId("F1E6A632-F97F-54D9-9E1B-A714EDC3FF06")]
+Interface ITypedEventHandlerFileSavePickerUIFileNameChanged Extends IUnknown
+    Sub Invoke(ByVal Sender As IFileSavePickerUI, ByVal Args As IInspectable)
+End Interface
+
+[InterfaceId("D3E1F8C7-45C5-5249-B336-A111BFAA985B")]
+Interface ITypedEventHandlerFileSavePickerUITargetFileRequested Extends IUnknown
+    Sub Invoke(ByVal Sender As IFileSavePickerUI, ByVal Args As ITargetFileRequestedEventArgs)
+End Interface
+
+[InterfaceId("9656C1E7-3E56-43CC-8A39-33C73D9D542B")]
+Interface IFileSavePickerUI Extends IInspectable
+    Property Get Title() As LongPtr
+    Property Let Title(ByVal Value As LongPtr)
+    Property Get AllowedFileTypes() As IVectorView_HSTRING
+    Property Get SettingsIdentifier() As LongPtr
+    Property Get FileName() As LongPtr
+    Function TrySetFileName(ByVal Value As LongPtr) As SetFileNameResult
+    [PreserveSig]
+    Function AddFileNameChanged(ByVal Handler As ITypedEventHandlerFileSavePickerUIFileNameChanged, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveFileNameChanged(ByVal Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function AddTargetFileRequested(ByVal Handler As ITypedEventHandlerFileSavePickerUITargetFileRequested, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveTargetFileRequested(ByVal Token As EventRegistrationToken) As HRESULT
+End Interface
+
+[InterfaceId("7AF7F71E-1A67-4A31-AE80-E907708A619B")]
+Interface IPickerClosingDeferral Extends IInspectable
+    [PreserveSig]
+    Function Complete() As HRESULT
+End Interface
+
+[InterfaceId("7E59F224-B332-4F12-8B9F-A8C2F06B32CD")]
+Interface IPickerClosingEventArgs Extends IInspectable
+    Property Get ClosingOperation() As IPickerClosingOperation
+    Property Get IsCanceled() As BooleanByte
+End Interface
+
+[InterfaceId("4CE9FB84-BEEE-4E39-A773-FC5F0EAE328D")]
+Interface IPickerClosingOperation Extends IInspectable
+    Function GetDeferral() As IPickerClosingDeferral
+    Property Get Deadline() As DateTime
+End Interface
+
+[InterfaceId("42BD3355-7F88-478B-8E81-690B20340678")]
+Interface ITargetFileRequest Extends IInspectable
+    Property Get TargetFile() As IStorageFile
+    Property Set TargetFile(ByVal Value As IStorageFile)
+    Function GetDeferral() As ITargetFileRequestDeferral
+End Interface
+
+[InterfaceId("4AEE9D91-BF15-4DA9-95F6-F6B7D558225B")]
+Interface ITargetFileRequestDeferral Extends IInspectable
+    [PreserveSig]
+    Function Complete() As HRESULT
+End Interface
+
+[InterfaceId("B163DBC1-1B51-4C89-A591-0FD40B3C57C9")]
+Interface ITargetFileRequestedEventArgs Extends IInspectable
+    Property Get Request() As ITargetFileRequest
+End Interface
+
+Module mdlStoragePickersProvider
+
+Public Enum AddFileResult
+    AddFileResult_Added
+    AddFileResult_AlreadyAdded
+    AddFileResult_NotAllowed
+    AddFileResult_Unavailable
+End Enum
+
+Public Enum FileSelectionMode
+    FileSelectionMode_Single
+    FileSelectionMode_Multiple
+End Enum
+
+Public Enum SetFileNameResult
+    SetFileNameResult_Succeeded
+    SetFileNameResult_NotAllowed
+    SetFileNameResult_Unavailable
+End Enum
+
+End Module

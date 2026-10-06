@@ -1,0 +1,127 @@
+' =====================================================
+' OSInfoCollector.twin - 操作系统信息收集器
+' Twinbasic Diagnostic Tool
+' =====================================================
+
+' 操作系统信息收集器
+' 刷新模式：Static（只获取一次）
+' 使用 RtlGetVersion 获取真实版本（绕过兼容性层）
+[ ClassId ("01A2B3C4-D5E6-F7A8-B9C0-D1E2F3A4B5C6") ]
+[ InterfaceId ("01A2B3C4-D5E6-F7A8-B9C0-D1E2F3A4B5C7") ]
+Public Class OSInfoCollector
+    Implements IDiagnosticCollector
+
+    ' === IDiagnosticCollector 实现 ===
+
+    Public Property Get IDiagnosticCollector_CategoryName() As String
+        Return "Operating System"
+    End Property
+
+    Public Property Get IDiagnosticCollector_Description() As String
+        Return "Windows operating system version and build information"
+    End Property
+
+    Public Property Get IDiagnosticCollector_RefreshMode() As RefreshMode
+        Return RefreshMode.Static
+    End Property
+
+    Public Property Get IDiagnosticCollector_RequiresElevation() As Boolean
+        Return False
+    End Property
+
+    Public Property Get IDiagnosticCollector_SupportsSummary() As Boolean
+        Return False
+    End Property
+
+    Public Function IDiagnosticCollector_Collect() As DiagnosticResult(Of KeyValuePair(Of String, String))
+        Dim result As DiagnosticResult(Of KeyValuePair(Of String, String))
+        Set result = New DiagnosticResult(Of KeyValuePair(Of String, String))("Operating System")
+
+        ' 获取 OS 版本
+        Dim osvi As OSVERSIONINFOEXW
+        osvi.dwOSVersionInfoSize = LenB(osvi)
+
+        If RtlGetVersion(osvi) = 0 Then
+            result.AddItem New KeyValuePair(Of String, String)("Version", _
+                osvi.dwMajorVersion & "." & osvi.dwMinorVersion)
+            result.AddItem New KeyValuePair(Of String, String)("Build", _
+                CStr(osvi.dwBuildNumber))
+
+            ' 获取 Windows 版本名称
+            Dim winName As String = GetWindowsVersionName(osvi.dwMajorVersion, osvi.dwMinorVersion, osvi.dwBuildNumber)
+            result.AddItem New KeyValuePair(Of String, String)("Name", winName)
+        Else
+            result.AddItem New KeyValuePair(Of String, String)("Version", "Unknown")
+        End If
+
+        ' 获取架构
+        Dim sysInfo As SYSTEM_INFO
+        GetNativeSystemInfo sysInfo
+
+        Dim arch As String
+        Select Case sysInfo.wProcessorArchitecture
+            Case PROCESSOR_ARCHITECTURE_AMD64
+                arch = "x64"
+            Case PROCESSOR_ARCHITECTURE_ARM64
+                arch = "ARM64"
+            Case PROCESSOR_ARCHITECTURE_INTEL
+                arch = "x86"
+            Case PROCESSOR_ARCHITECTURE_ARM
+                arch = "ARM"
+            Case Else
+                arch = "Unknown"
+        End Select
+        result.AddItem New KeyValuePair(Of String, String)("Architecture", arch)
+
+        ' 获取计算机名
+        Dim computerName As String = Space$(256)
+        Dim nameLen As Long = 256
+        If GetComputerNameW(StrPtr(computerName), nameLen) <> 0 Then
+            computerName = Left$(computerName, nameLen)
+            result.AddItem New KeyValuePair(Of String, String)("Computer Name", computerName)
+        End If
+
+        ' 获取用户名
+        Dim userName As String = Space$(256)
+        Dim userLen As Long = 256
+        If GetUserNameW(StrPtr(userName), userLen) <> 0 Then
+            userName = Left$(userName, userLen - 1)
+            result.AddItem New KeyValuePair(Of String, String)("User Name", userName)
+        End If
+
+        Return result
+    End Function
+
+    Public Function IDiagnosticCollector_CollectSummary() As DiagnosticResult(Of KeyValuePair(Of String, String))
+        ' 不支持摘要，返回完整数据
+        Return IDiagnosticCollector_Collect()
+    End Function
+
+    ' === 私有方法 ===
+
+    Private Function GetWindowsVersionName(ByVal major As Long, ByVal minor As Long, ByVal build As Long) As String
+        Select Case major
+            Case 10
+                If build >= 22000 Then
+                    Return "Windows 11"
+                Else
+                    Return "Windows 10"
+                End If
+            Case 6
+                Select Case minor
+                    Case 3: Return "Windows 8.1"
+                    Case 2: Return "Windows 8"
+                    Case 1: Return "Windows 7"
+                    Case 0: Return "Windows Vista"
+                End Select
+            Case 5
+                Select Case minor
+                    Case 2: Return "Windows XP x64 / Server 2003"
+                    Case 1: Return "Windows XP"
+                    Case 0: Return "Windows 2000"
+                End Select
+        End Select
+        Return "Windows"
+    End Function
+
+End Class

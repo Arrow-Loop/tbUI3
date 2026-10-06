@@ -1,0 +1,732 @@
+' =====================================================
+' cDialogDateTime.twin - Date and Time Picker Dialog Class
+' cDialogDateTime.twin - 日期时间选择对话框类
+' TBMANLIB Dialog Library
+' =====================================================
+' Function: Provides date and time selection dialog
+' 功能：提供日期时间选择对话框
+' Author: woeoo (邓伟)
+' Email: 215879458@qq.com
+' Site: https://vb6.pro
+' Date: 2026-03-11
+' Version: 1.0.0
+' =====================================================
+
+Option Explicit
+
+[COMCreatable(False)]
+Public Class cDialogDateTime
+
+    ' =====================================================
+    ' Windows API Declarations
+    ' =====================================================
+    Private Declare PtrSafe Function GetLocalTime Lib "kernel32" (lpSystemTime As SYSTEMTIME) As Long
+    Private Declare PtrSafe Function SetLocalTime Lib "kernel32" (lpSystemTime As SYSTEMTIME) As Long
+    Private Declare PtrSafe Function SystemTimeToFileTime Lib "kernel32" (lpSystemTime As SYSTEMTIME, lpFileTime As FILETIME) As Long
+    Private Declare PtrSafe Function FileTimeToSystemTime Lib "kernel32" (lpFileTime As FILETIME, lpSystemTime As SYSTEMTIME) As Long
+
+    ' =====================================================
+    ' Constants
+    ' =====================================================
+    Private Const MAX_DATE_LENGTH = 80
+
+    ' =====================================================
+    ' Types
+    ' =====================================================
+    Private Type SYSTEMTIME
+        wYear As Integer
+        wMonth As Integer
+        wDayOfWeek As Integer
+        wDay As Integer
+        wHour As Integer
+        wMinute As Integer
+        wSecond As Integer
+        wMilliseconds As Integer
+    End Type
+
+    Private Type FILETIME
+        dwLowDateTime As Long
+        dwHighDateTime As Long
+    End Type
+
+    ' =====================================================
+    ' Picker Mode Enum
+    ' =====================================================
+    Public Enum PickerMode
+        DateTime = 0      ' Date and time
+        DateOnly = 1      ' Date only
+        TimeOnly = 2      ' Time only
+    End Enum
+
+    ' =====================================================
+    ' Date Format Enum
+    ' =====================================================
+    Public Enum DateFormat
+        ShortDate = 0     ' MM/DD/YYYY
+        LongDate = 1      ' Monday, January 01, 2026
+        Custom = 2        ' Custom format
+    End Enum
+
+    ' =====================================================
+    ' Month Names
+    ' =====================================================
+    Private mMonthNames() As String
+    Private mDayNames() As String
+
+    ' =====================================================
+    ' Class Data
+    ' =====================================================
+    Private Type cDialogDateTimeData
+        mTitle As String
+        mPrompt As String
+        mYear As Long
+        mMonth As Long
+        mDay As Long
+        mHour As Long
+        mMinute As Long
+        mSecond As Long
+        mMode As PickerMode
+        mMinYear As Long
+        mMaxYear As Long
+        mShowSeconds As Boolean
+        mShowMilliseconds As Boolean
+        m24HourFormat As Boolean
+        mCustomFormat As String
+        mOwnerHwnd As LongPtr
+        mCancelled As Boolean
+    End Type
+
+    Private mData As cDialogDateTimeData
+
+    ' =====================================================
+    ' Class Initialize
+    ' =====================================================
+    Private Sub Class_Initialize()
+        ' Initialize month and day names
+        InitNames()
+
+        ' Set current date/time as default
+        Dim st As SYSTEMTIME
+        GetLocalTime st
+
+        mData.mTitle = "Select Date and Time"
+        mData.mPrompt = "Please select a date and time:"
+        mData.mYear = st.wYear
+        mData.mMonth = st.wMonth
+        mData.mDay = st.wDay
+        mData.mHour = st.wHour
+        mData.mMinute = st.wMinute
+        mData.mSecond = st.wSecond
+        mData.mMode = PickerMode.DateTime
+        mData.mMinYear = 1900
+        mData.mMaxYear = 2100
+        mData.mShowSeconds = False
+        mData.mShowMilliseconds = False
+        mData.m24HourFormat = True
+        mData.mCustomFormat = ""
+        mData.mOwnerHwnd = 0
+        mData.mCancelled = False
+    End Sub
+
+    ' =====================================================
+    ' Initialize Month and Day Names
+    ' =====================================================
+    Private Sub InitNames()
+        ReDim mMonthNames(1 To 12)
+        mMonthNames(1) = "January"
+        mMonthNames(2) = "February"
+        mMonthNames(3) = "March"
+        mMonthNames(4) = "April"
+        mMonthNames(5) = "May"
+        mMonthNames(6) = "June"
+        mMonthNames(7) = "July"
+        mMonthNames(8) = "August"
+        mMonthNames(9) = "September"
+        mMonthNames(10) = "October"
+        mMonthNames(11) = "November"
+        mMonthNames(12) = "December"
+
+        ReDim mDayNames(0 To 6)
+        mDayNames(0) = "Sunday"
+        mDayNames(1) = "Monday"
+        mDayNames(2) = "Tuesday"
+        mDayNames(3) = "Wednesday"
+        mDayNames(4) = "Thursday"
+        mDayNames(5) = "Friday"
+        mDayNames(6) = "Saturday"
+    End Sub
+
+    ' =====================================================
+    ' Property: Dialog Title
+    ' =====================================================
+    Public Property Get Title() As String
+        Title = mData.mTitle
+    End Property
+
+    Public Property Let Title(ByVal value As String)
+        mData.mTitle = value
+    End Property
+
+    ' =====================================================
+    ' Property: Prompt Text
+    ' =====================================================
+    Public Property Get Prompt() As String
+        Prompt = mData.mPrompt
+    End Property
+
+    Public Property Let Prompt(ByVal value As String)
+        mData.mPrompt = value
+    End Property
+
+    ' =====================================================
+    ' Property: Year
+    ' =====================================================
+    Public Property Get Year() As Long
+        Year = mData.mYear
+    End Property
+
+    Public Property Let Year(ByVal value As Long)
+        If value >= mData.mMinYear And value <= mData.mMaxYear Then
+            mData.mYear = value
+        End If
+    End Property
+
+    ' =====================================================
+    ' Property: Month (1-12)
+    ' =====================================================
+    Public Property Get Month() As Long
+        Month = mData.mMonth
+    End Property
+
+    Public Property Let Month(ByVal value As Long)
+        If value >= 1 And value <= 12 Then
+            mData.mMonth = value
+            ' Adjust day if needed
+            mData.mDay = Min(mData.mDay, GetDaysInMonth(mData.mYear, mData.mMonth))
+        End If
+    End Property
+
+    ' =====================================================
+    ' Property: Day
+    ' =====================================================
+    Public Property Get Day() As Long
+        Day = mData.mDay
+    End Property
+
+    Public Property Let Day(ByVal value As Long)
+        If value >= 1 And value <= GetDaysInMonth(mData.mYear, mData.mMonth) Then
+            mData.mDay = value
+        End If
+    End Property
+
+    ' =====================================================
+    ' Property: Hour (0-23)
+    ' =====================================================
+    Public Property Get Hour() As Long
+        Hour = mData.mHour
+    End Property
+
+    Public Property Let Hour(ByVal value As Long)
+        If value >= 0 And value <= 23 Then
+            mData.mHour = value
+        End If
+    End Property
+
+    ' =====================================================
+    ' Property: Minute (0-59)
+    ' =====================================================
+    Public Property Get Minute() As Long
+        Minute = mData.mMinute
+    End Property
+
+    Public Property Let Minute(ByVal value As Long)
+        If value >= 0 And value <= 59 Then
+            mData.mMinute = value
+        End If
+    End Property
+
+    ' =====================================================
+    ' Property: Second (0-59)
+    ' =====================================================
+    Public Property Get Second() As Long
+        Second = mData.mSecond
+    End Property
+
+    Public Property Let Second(ByVal value As Long)
+        If value >= 0 And value <= 59 Then
+            mData.mSecond = value
+        End If
+    End Property
+
+    ' =====================================================
+    ' Property: Picker Mode
+    ' =====================================================
+    Public Property Get Mode() As PickerMode
+        Mode = mData.mMode
+    End Property
+
+    Public Property Let Mode(ByVal value As PickerMode)
+        mData.mMode = value
+    End Property
+
+    ' =====================================================
+    ' Property: Minimum Year
+    ' =====================================================
+    Public Property Get MinYear() As Long
+        MinYear = mData.mMinYear
+    End Property
+
+    Public Property Let MinYear(ByVal value As Long)
+        mData.mMinYear = value
+    End Property
+
+    ' =====================================================
+    ' Property: Maximum Year
+    ' =====================================================
+    Public Property Get MaxYear() As Long
+        MaxYear = mData.mMaxYear
+    End Property
+
+    Public Property Let MaxYear(ByVal value As Long)
+        mData.mMaxYear = value
+    End Property
+
+    ' =====================================================
+    ' Property: Show Seconds
+    ' =====================================================
+    Public Property Get ShowSeconds() As Boolean
+        ShowSeconds = mData.mShowSeconds
+    End Property
+
+    Public Property Let ShowSeconds(ByVal value As Boolean)
+        mData.mShowSeconds = value
+    End Property
+
+    ' =====================================================
+    ' Property: 24 Hour Format
+    ' =====================================================
+    Public Property Get Is24HourFormat() As Boolean
+        Is24HourFormat = mData.m24HourFormat
+    End Property
+
+    Public Property Let Is24HourFormat(ByVal value As Boolean)
+        mData.m24HourFormat = value
+    End Property
+
+    ' =====================================================
+    ' Property: Custom Format
+    ' =====================================================
+    Public Property Get CustomFormat() As String
+        CustomFormat = mData.mCustomFormat
+    End Property
+
+    Public Property Let CustomFormat(ByVal value As String)
+        mData.mCustomFormat = value
+    End Property
+
+    ' =====================================================
+    ' Property: Owner Window Handle
+    ' =====================================================
+    Public Property Get OwnerHwnd() As LongPtr
+        OwnerHwnd = mData.mOwnerHwnd
+    End Property
+
+    Public Property Let OwnerHwnd(ByVal value As LongPtr)
+        mData.mOwnerHwnd = value
+    End Property
+
+    ' =====================================================
+    ' Property: Was Cancelled
+    ' =====================================================
+    Public Property Get Cancelled() As Boolean
+        Cancelled = mData.mCancelled
+    End Property
+
+    ' =====================================================
+    ' Property: Date Value
+    ' =====================================================
+    Public Property Get DateValue() As Date
+        DateValue = DateSerial(mData.mYear, mData.mMonth, mData.mDay)
+    End Property
+
+    Public Property Let DateValue(ByVal value As Date)
+        mData.mYear = DatePart("yyyy", value)
+        mData.mMonth = DatePart("m", value)
+        mData.mDay = DatePart("d", value)
+    End Property
+
+    ' =====================================================
+    ' Property: Time Value
+    ' =====================================================
+    Public Property Get TimeValue() As Date
+        TimeValue = TimeSerial(mData.mHour, mData.mMinute, mData.mSecond)
+    End Property
+
+    Public Property Let TimeValue(ByVal value As Date)
+        mData.mHour = DatePart("h", value)
+        mData.mMinute = DatePart("n", value)
+        mData.mSecond = DatePart("s", value)
+    End Property
+
+    ' =====================================================
+    ' Property: DateTime Value
+    ' =====================================================
+    Public Property Get DateTimeValue() As Date
+        DateTimeValue = DateValue + TimeValue
+    End Property
+
+    Public Property Let DateTimeValue(ByVal value As Date)
+        DateValue = value
+        TimeValue = value
+    End Property
+
+    ' =====================================================
+    ' Helper: Min function
+    ' =====================================================
+    Private Function Min(ByVal a As Long, ByVal b As Long) As Long
+        If a < b Then Min = a Else Min = b
+    End Function
+
+    ' =====================================================
+    ' Helper: Get Days in Month
+    ' =====================================================
+    Public Function GetDaysInMonth(ByVal year As Long, ByVal month As Long) As Long
+        Select Case month
+            Case 1, 3, 5, 7, 8, 10, 12
+                GetDaysInMonth = 31
+            Case 4, 6, 9, 11
+                GetDaysInMonth = 30
+            Case 2
+                ' Leap year check
+                If (year Mod 4 = 0 And year Mod 100 <> 0) Or (year Mod 400 = 0) Then
+                    GetDaysInMonth = 29
+                Else
+                    GetDaysInMonth = 28
+                End If
+        End Select
+    End Function
+
+    ' =====================================================
+    ' Helper: Get Day of Week (0=Sunday, 6=Saturday)
+    ' =====================================================
+    Public Function GetDayOfWeek() As Long
+        Dim dt As Date
+        dt = DateSerial(mData.mYear, mData.mMonth, mData.mDay)
+        GetDayOfWeek = Weekday(dt, vbSunday) - 1
+    End Function
+
+    ' =====================================================
+    ' Helper: Get Day of Week Name
+    ' =====================================================
+    Public Function GetDayOfWeekName() As String
+        GetDayOfWeekName = mDayNames(GetDayOfWeek())
+    End Function
+
+    ' =====================================================
+    ' Helper: Get Month Name
+    ' =====================================================
+    Public Function GetMonthName(Optional ByVal month As Long = 0) As String
+        If month = 0 Then month = mData.mMonth
+        If month >= 1 And month <= 12 Then
+            GetMonthName = mMonthNames(month)
+        Else
+            GetMonthName = ""
+        End If
+    End Function
+
+    ' =====================================================
+    ' Method: Format Date
+    ' =====================================================
+    Public Function FormatDate(Optional ByVal formatType As DateFormat = DateFormat.ShortDate) As String
+        If mData.mCustomFormat <> "" And formatType = DateFormat.Custom Then
+            ' Parse custom format
+            Dim result As String
+            result = mData.mCustomFormat
+            result = Replace(result, "YYYY", Format(mData.mYear, "0000"))
+            result = Replace(result, "YY", Right(Format(mData.mYear, "0000"), 2))
+            result = Replace(result, "MMMM", GetMonthName())
+            result = Replace(result, "MMM", Left(GetMonthName(), 3))
+            result = Replace(result, "MM", Format(mData.mMonth, "00"))
+            result = Replace(result, "M", CStr(mData.mMonth))
+            result = Replace(result, "DD", Format(mData.mDay, "00"))
+            result = Replace(result, "D", CStr(mData.mDay))
+            FormatDate = result
+        ElseIf formatType = DateFormat.LongDate Then
+            FormatDate = GetDayOfWeekName() & ", " & GetMonthName() & " " & mData.mDay & ", " & mData.mYear
+        Else
+            FormatDate = Format(mData.mMonth, "00") & "/" & Format(mData.mDay, "00") & "/" & mData.mYear
+        End If
+    End Function
+
+    ' =====================================================
+    ' Method: Format Time
+    ' =====================================================
+    Public Function FormatTime() As String
+        If mData.m24HourFormat Then
+            If mData.mShowSeconds Then
+                FormatTime = Format(mData.mHour, "00") & ":" & Format(mData.mMinute, "00") & ":" & Format(mData.mSecond, "00")
+            Else
+                FormatTime = Format(mData.mHour, "00") & ":" & Format(mData.mMinute, "00")
+            End If
+        Else
+            Dim h As Long
+            Dim ampm As String
+            If mData.mHour >= 12 Then
+                ampm = "PM"
+                If mData.mHour > 12 Then h = mData.mHour - 12 Else h = mData.mHour
+            Else
+                ampm = "AM"
+                If mData.mHour = 0 Then h = 12 Else h = mData.mHour
+            End If
+
+            If mData.mShowSeconds Then
+                FormatTime = Format(h, "00") & ":" & Format(mData.mMinute, "00") & ":" & Format(mData.mSecond, "00") & " " & ampm
+            Else
+                FormatTime = Format(h, "00") & ":" & Format(mData.mMinute, "00") & " " & ampm
+            End If
+        End If
+    End Function
+
+    ' =====================================================
+    ' Method: Format DateTime
+    ' =====================================================
+    Public Function FormatDateTime() As String
+        Select Case mData.mMode
+            Case PickerMode.DateOnly
+                FormatDateTime = FormatDate()
+            Case PickerMode.TimeOnly
+                FormatDateTime = FormatTime()
+            Case Else
+                FormatDateTime = FormatDate() & " " & FormatTime()
+        End Select
+    End Function
+
+    ' =====================================================
+    ' Method: Set to Current Date/Time
+    ' =====================================================
+    Public Sub SetNow()
+        Dim st As SYSTEMTIME
+        GetLocalTime st
+        mData.mYear = st.wYear
+        mData.mMonth = st.wMonth
+        mData.mDay = st.wDay
+        mData.mHour = st.wHour
+        mData.mMinute = st.wMinute
+        mData.mSecond = st.wSecond
+    End Sub
+
+    ' =====================================================
+    ' Method: Set to Today (midnight)
+    ' =====================================================
+    Public Sub SetToday()
+        SetNow()
+        mData.mHour = 0
+        mData.mMinute = 0
+        mData.mSecond = 0
+    End Sub
+
+    ' =====================================================
+    ' Method: Show Date Picker Dialog
+    ' =====================================================
+    Public Function ShowDialog() As Boolean
+        Dim inputStr As String
+        Dim defaultValue As String
+        Dim prompt As String
+
+        defaultValue = FormatDateTime()
+
+        ' Build prompt based on mode
+        prompt = mData.mPrompt & vbCrLf & vbCrLf
+
+        Select Case mData.mMode
+            Case PickerMode.DateOnly
+                prompt = prompt & "Enter date (MM/DD/YYYY):"
+            Case PickerMode.TimeOnly
+                prompt = prompt & "Enter time (" & IIf(mData.m24HourFormat, "HH:MM", "HH:MM AM/PM") & "):"
+            Case Else
+                prompt = prompt & "Enter date and time:"
+        End Select
+
+        prompt = prompt & vbCrLf & vbCrLf
+        prompt = prompt & "Year range: " & mData.mMinYear & " - " & mData.mMaxYear
+
+        ' Get input
+        inputStr = InputBox(prompt, mData.mTitle, defaultValue)
+
+        If StrPtr(inputStr) = 0 Then
+            ' User cancelled
+            mData.mCancelled = True
+            ShowDialog = False
+            Exit Function
+        End If
+
+        ' Parse input
+        If ParseDateTime(inputStr) Then
+            mData.mCancelled = False
+            ShowDialog = True
+        Else
+            MsgBox "Invalid date/time format. Please use: " & defaultValue, vbExclamation, mData.mTitle
+            mData.mCancelled = True
+            ShowDialog = False
+        End If
+    End Function
+
+    ' =====================================================
+    ' Method: Parse Date/Time String
+    ' =====================================================
+    Private Function ParseDateTime(ByVal inputStr As String) As Boolean
+        On Error GoTo ErrorHandler
+
+        Dim parts() As String
+        Dim datePart As String
+        Dim timePart As String
+        Dim spacePos As Long
+
+        inputStr = Trim(inputStr)
+
+        ' Check if it has both date and time
+        spacePos = InStr(inputStr, " ")
+        If spacePos > 0 Then
+            datePart = Left(inputStr, spacePos - 1)
+            timePart = Mid(inputStr, spacePos + 1)
+        ElseIf mData.mMode = PickerMode.TimeOnly Then
+            timePart = inputStr
+        ElseIf mData.mMode = PickerMode.DateOnly Then
+            datePart = inputStr
+        Else
+            ' Try to detect if it's a date or time
+            If InStr(inputStr, "/") > 0 Or InStr(inputStr, "-") > 0 Then
+                datePart = inputStr
+            Else
+                timePart = inputStr
+            End If
+        End If
+
+        ' Parse date part
+        If datePart <> "" Then
+            parts = Split(datePart, "/")
+            If UBound(parts) <> 2 Then
+                parts = Split(datePart, "-")
+            End If
+
+            If UBound(parts) = 2 Then
+                mData.mMonth = CLng(parts(0))
+                mData.mDay = CLng(parts(1))
+                mData.mYear = CLng(parts(2))
+
+                ' Validate
+                If mData.mMonth < 1 Or mData.mMonth > 12 Then Exit Function
+                If mData.mDay < 1 Or mData.mDay > GetDaysInMonth(mData.mYear, mData.mMonth) Then Exit Function
+                If mData.mYear < mData.mMinYear Or mData.mYear > mData.mMaxYear Then Exit Function
+            End If
+        End If
+
+        ' Parse time part
+        If timePart <> "" Then
+            ' Remove AM/PM if present
+            Dim ampm As String
+            timePart = UCase(timePart)
+            If Right(timePart, 2) = "AM" Or Right(timePart, 2) = "PM" Then
+                ampm = Right(timePart, 2)
+                timePart = Left(timePart, Len(timePart) - 3)
+            End If
+
+            parts = Split(timePart, ":")
+            If UBound(parts) >= 1 Then
+                mData.mHour = CLng(parts(0))
+                mData.mMinute = CLng(parts(1))
+                If UBound(parts) >= 2 Then
+                    mData.mSecond = CLng(parts(2))
+                End If
+
+                ' Handle AM/PM
+                If ampm = "PM" And mData.mHour < 12 Then
+                    mData.mHour = mData.mHour + 12
+                ElseIf ampm = "AM" And mData.mHour = 12 Then
+                    mData.mHour = 0
+                End If
+
+                ' Validate
+                If mData.mHour < 0 Or mData.mHour > 23 Then Exit Function
+                If mData.mMinute < 0 Or mData.mMinute > 59 Then Exit Function
+                If mData.mSecond < 0 Or mData.mSecond > 59 Then Exit Function
+            End If
+        End If
+
+        ParseDateTime = True
+        Exit Function
+
+ErrorHandler:
+        ParseDateTime = False
+    End Function
+
+    ' =====================================================
+    ' Method: Show Date Picker Only
+    ' =====================================================
+    Public Function ShowDatePicker(Optional ByVal title As String = "Select Date") As Boolean
+        mData.mTitle = title
+        mData.mMode = PickerMode.DateOnly
+        ShowDatePicker = ShowDialog()
+    End Function
+
+    ' =====================================================
+    ' Method: Show Time Picker Only
+    ' =====================================================
+    Public Function ShowTimePicker(Optional ByVal title As String = "Select Time") As Boolean
+        mData.mTitle = title
+        mData.mMode = PickerMode.TimeOnly
+        ShowTimePicker = ShowDialog()
+    End Function
+
+    ' =====================================================
+    ' Method: Add Days
+    ' =====================================================
+    Public Sub AddDays(ByVal days As Long)
+        Dim dt As Date
+        dt = DateSerial(mData.mYear, mData.mMonth, mData.mDay) + days
+        mData.mYear = DatePart("yyyy", dt)
+        mData.mMonth = DatePart("m", dt)
+        mData.mDay = DatePart("d", dt)
+    End Sub
+
+    ' =====================================================
+    ' Method: Add Hours
+    ' =====================================================
+    Public Sub AddHours(ByVal hours As Long)
+        Dim totalSeconds As Long
+        totalSeconds = mData.mHour * 3600 + mData.mMinute * 60 + mData.mSecond
+        totalSeconds = totalSeconds + hours * 3600
+
+        ' Handle day overflow
+        Do While totalSeconds >= 86400
+            totalSeconds = totalSeconds - 86400
+            AddDays 1
+        Loop
+        Do While totalSeconds < 0
+            totalSeconds = totalSeconds + 86400
+            AddDays -1
+        Loop
+
+        mData.mHour = totalSeconds \ 3600
+        mData.mMinute = (totalSeconds Mod 3600) \ 60
+        mData.mSecond = totalSeconds Mod 60
+    End Sub
+
+    ' =====================================================
+    ' Method: Reset to default settings
+    ' =====================================================
+    Public Sub Reset()
+        SetNow()
+        mData.mTitle = "Select Date and Time"
+        mData.mPrompt = "Please select a date and time:"
+        mData.mMode = PickerMode.DateTime
+        mData.mMinYear = 1900
+        mData.mMaxYear = 2100
+        mData.mShowSeconds = False
+        mData.mShowMilliseconds = False
+        mData.m24HourFormat = True
+        mData.mCustomFormat = ""
+        mData.mCancelled = False
+    End Sub
+
+End Class

@@ -1,0 +1,109 @@
+' =====================================================
+' Dictionary.twin - 泛型字典
+' Twinbasic Diagnostic Tool
+' =====================================================
+
+' 泛型字典类
+' 提供键值对存储，支持快速查找
+[ COMCreatable (False) ]
+[ ClassId ("A1B2C3D4-E5F6-A7B8-C9D0-E1F2A3B4C5D6") ]
+[ InterfaceId ("A1B2C3D4-E5F6-A7B8-C9D0-E1F2A3B4C5D7") ]
+Public Class Dictionary(Of TKey, TValue)
+
+    Private m_Keys As List(Of TKey)
+    Private m_Values As List(Of TValue)
+
+    ' 构造函数
+    Public Sub New()
+        m_Keys = New List(Of TKey)
+        m_Values = New List(Of TValue)
+    End Sub
+
+    ' 添加键值对
+    Public Sub Add(ByVal key As TKey, ByVal value As TValue)
+        If ContainsKey(key) Then
+            Err.Raise 457, "Dictionary(Of TKey, TValue).Add", "Key already exists: " & CStr(key)
+        End If
+        m_Keys.Add key
+        m_Values.Add value
+    End Sub
+
+    ' 设置或添加键值对
+    Public Sub SetItem(ByVal key As TKey, ByVal value As TValue)
+        Dim index As Long = FindKeyIndex(key)
+        If index >= 0 Then
+            m_Values.SetItem index, value
+        Else
+            m_Keys.Add key
+            m_Values.Add value
+        End If
+    End Sub
+
+    ' 获取值
+    Public Function Item(ByVal key As TKey) As TValue
+        Dim index As Long = FindKeyIndex(key)
+        If index < 0 Then
+            Err.Raise 5, "Dictionary(Of TKey, TValue).Item", "Key not found: " & CStr(key)
+        End If
+        Return m_Values.Item(index)
+    End Function
+
+    ' 尝试获取值
+    Public Function TryGetValue(ByVal key As TKey, ByRef value As TValue) As Boolean
+        Dim index As Long = FindKeyIndex(key)
+        If index >= 0 Then
+            value = m_Values.Item(index)
+            Return True
+        End If
+        Return False
+    End Function
+
+    ' 检查是否包含键
+    Public Function ContainsKey(ByVal key As TKey) As Boolean
+        Return FindKeyIndex(key) >= 0
+    End Function
+
+    ' 获取元素数量
+    Public Property Get Count() As Long
+        Return m_Keys.Count
+    End Property
+
+    ' 获取所有键
+    Public Property Get Keys() As List(Of TKey)
+        Return m_Keys
+    End Property
+
+    ' 获取所有值
+    Public Property Get Values() As List(Of TValue)
+        Return m_Values
+    End Property
+
+    ' 移除键值对
+    Public Function Remove(ByVal key As TKey) As Boolean
+        Dim index As Long = FindKeyIndex(key)
+        If index >= 0 Then
+            m_Keys.RemoveAt index
+            m_Values.RemoveAt index
+            Return True
+        End If
+        Return False
+    End Function
+
+    ' 清空字典
+    Public Sub Clear()
+        m_Keys.Clear
+        m_Values.Clear
+    End Sub
+
+    ' 查找键的索引
+    Private Function FindKeyIndex(ByVal key As TKey) As Long
+        Dim i As Long
+        For i = 0 To m_Keys.Count - 1
+            If m_Keys.Item(i) = key Then
+                Return i
+            End If
+        Next i
+        Return -1
+    End Function
+
+End Class

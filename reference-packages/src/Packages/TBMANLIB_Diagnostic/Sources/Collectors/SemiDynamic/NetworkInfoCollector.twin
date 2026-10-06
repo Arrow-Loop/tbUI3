@@ -1,0 +1,244 @@
+' =====================================================
+' NetworkInfoCollector.twin - 网络信息收集器
+' Twinbasic Diagnostic Tool
+' =====================================================
+
+' 网络信息收集器
+' 刷新模式：SemiDynamic（可选刷新，变化较慢）
+' 支持摘要：是
+' 使用 GetAdaptersInfo 获取网络适配器信息
+[ClassId("11A2B3C4-D5E6-F7A8-B9C0-D1E2F3A4B5C6")]
+[InterfaceId("11A2B3C4-D5E6-F7A8-B9C0-D1E2F3A4B5C7")]
+Public Class NetworkInfoCollector
+    Implements IDiagnosticCollector
+
+    ' === IDiagnosticCollector 实现 ===
+
+    Public Property Get IDiagnosticCollector_CategoryName() As String
+        Return "Network"
+    End Property
+
+    Public Property Get IDiagnosticCollector_Description() As String
+        Return "Network adapters and configuration"
+    End Property
+
+    Public Property Get IDiagnosticCollector_RefreshMode() As RefreshMode
+        Return RefreshMode.SemiDynamic
+    End Property
+
+    Public Property Get IDiagnosticCollector_RequiresElevation() As Boolean
+        Return False
+    End Property
+
+    Public Property Get IDiagnosticCollector_SupportsSummary() As Boolean
+        Return True
+    End Property
+
+    Public Function IDiagnosticCollector_Collect() As DiagnosticResult(Of KeyValuePair(Of String, String))
+        Dim result As DiagnosticResult(Of KeyValuePair(Of String, String))
+        Set result = New DiagnosticResult(Of KeyValuePair(Of String, String))("Network")
+
+        ' 获取主机名
+        Dim hostName As String = GetHostNameValue()
+        If Len(hostName) > 0 Then
+            result.AddItem New KeyValuePair(Of String, String)("Host Name", hostName)
+        End If
+
+        ' 获取网络适配器信息
+        Dim bufferSize As Long = 0
+
+        ' 首次调用获取所需缓冲区大小
+        GetAdaptersInfo 0, bufferSize
+
+        If bufferSize > 0 Then
+            ' 分配缓冲区
+            Dim buffer() As Byte
+            ReDim buffer(0 To bufferSize - 1)
+
+            ' 获取适配器信息
+            If GetAdaptersInfo(VarPtr(buffer(0)), bufferSize) = 0 Then
+                ' 解析适配器信息
+                Dim offset As Long = 0
+                Dim adapterCount As Long = 0
+
+                Do While offset < bufferSize - 100
+                    ' 使用用户定义类型直接访问结构
+                    Dim adapterInfo As IP_ADAPTER_INFO
+                    CopyMemory VarPtr(adapterInfo), VarPtr(buffer(offset)), LenB(adapterInfo)
+
+                    ' 直接从结构中获取 Description
+                    Dim description As String = GetStringFromByteArray(adapterInfo.Description(), 0, 132)
+
+                    ' 直接从结构中获取 IP 地址
+                    Dim ipString As String = GetStringFromByteArray(adapterInfo.IpAddressList.IpAddress(), 0, 16)
+
+                    If Len(description) > 0 Then
+                        result.AddItem New KeyValuePair(Of String, String)( _
+                            "Adapter " & adapterCount, description)
+
+                        If Len(ipString) > 0 And ipString <> "0.0.0.0" Then
+                            result.AddItem New KeyValuePair(Of String, String)( _
+                                "IPAddress" & adapterCount, ipString)
+                        End If
+                    End If
+
+                    ' 移动到下一个适配器
+                    If adapterInfo.pNext = 0 Then Exit Do
+                    offset = offset + GetAdapterInfoSize()
+                    adapterCount = adapterCount + 1
+                Loop
+            End If
+        End If
+
+        Return result
+    End Function
+
+    Public Function IDiagnosticCollector_CollectSummary() As DiagnosticResult(Of KeyValuePair(Of String, String))
+        Dim result As DiagnosticResult(Of KeyValuePair(Of String, String))
+        Set result = New DiagnosticResult(Of KeyValuePair(Of String, String))("Network")
+        result.IsSummary = True
+
+        ' 摘要只显示主机名和主要 IP
+        Dim hostName As String = GetHostNameValue()
+        If Len(hostName) > 0 Then
+            result.AddItem New KeyValuePair(Of String, String)("Host Name", hostName)
+        End If
+
+        ' 获取第一个有效 IP
+        Dim primaryIP As String = GetPrimaryIPAddress()
+        If Len(primaryIP) > 0 Then
+            result.AddItem New KeyValuePair(Of String, String)("Primary IP", primaryIP)
+        End If
+
+        Return result
+    End Function
+
+    ' === 私有方法 ===
+
+    Private Function GetHostNameValue() As String
+        ' 初始化 Winsock
+        Dim wsaData(0 To 399) As Byte
+        If WSAStartup(&H202, VarPtr(wsaData(0))) <> 0 Then
+            Return ""
+        End If
+
+        ' 获取主机名
+        Dim buffer(0 To 255) As Byte
+        If gethostname(VarPtr(buffer(0)), 256) = 0 Then
+            ' gethostname 返回的是 ANSI 编码的字节数组
+            ' 需要转换为 Unicode 以正确处理中文
+            WSACleanup
+
+            ' 找到字符串结束位置
+            Dim len As Long
+            Dim i As Long
+            For i = 0 To 255
+                If buffer(i) = 0 Then
+                    len = i
+                    Exit For
+                End If
+            Next i
+
+            ' 如果找到结束符，只转换有效的部分
+            If len > 0 Then
+                Dim tempBuffer() As Byte
+                ReDim tempBuffer(0 To len - 1)
+                CopyMemory VarPtr(tempBuffer(0)), VarPtr(buffer(0)), len
+                Return StrConv(tempBuffer(), vbUnicode)
+            Else
+                Return ""
+            End If
+        End If
+
+        WSACleanup
+        Return ""
+    End Function
+
+    Private Function GetPrimaryIPAddress() As String
+        Dim bufferSize As Long = 0
+        GetAdaptersInfo 0, bufferSize
+
+        If bufferSize > 0 Then
+            Dim buffer() As Byte
+            ReDim buffer(0 To bufferSize - 1)
+
+            If GetAdaptersInfo(VarPtr(buffer(0)), bufferSize) = 0 Then
+                ' 遍历所有适配器，找到第一个有有效 IP 的适配器
+                Dim offset As Long = 0
+
+                Do While offset < bufferSize - 100
+                    ' 使用用户定义类型直接访问结构
+                    Dim adapterInfo As IP_ADAPTER_INFO
+                    CopyMemory VarPtr(adapterInfo), VarPtr(buffer(offset)), LenB(adapterInfo)
+
+                    ' 直接从结构中获取 Description
+                    Dim description As String = GetStringFromByteArray(adapterInfo.Description(), 0, 132)
+
+                    ' 跳过虚拟适配器、回环适配器等
+                    ' 类型 71: 以太网, 6: IEEE 802.11 无线网络
+                    Dim isPhysical As Boolean = (adapterInfo.dwType = 71 Or adapterInfo.dwType = 6)
+                    Dim skipAdapter As Boolean = False
+
+                    ' 跳过 VirtualBox, VMware, Hyper-V 等虚拟适配器
+                    If InStr(1, LCase$(description), "virtual") > 0 Or _
+                       InStr(1, LCase$(description), "vmware") > 0 Or _
+                       InStr(1, LCase$(description), "hyper-v") > 0 Or _
+                       InStr(1, LCase$(description), "bluetooth") > 0 Or _
+                       InStr(1, LCase$(description), "software") > 0 Then
+                        skipAdapter = True
+                    End If
+
+                    ' 直接从结构中获取 IP 地址
+                    If isPhysical And Not skipAdapter Then
+                        Dim ipString As String = GetStringFromByteArray(adapterInfo.IpAddressList.IpAddress(), 0, 16)
+
+                        If Len(ipString) > 0 And ipString <> "0.0.0.0" And ipString <> "127.0.0.1" Then
+                            Return ipString
+                        End If
+                    End If
+
+                    ' 移动到下一个适配器
+                    If adapterInfo.pNext = 0 Then Exit Do
+                    offset = offset + GetAdapterInfoSize()
+                Loop
+            End If
+        End If
+
+        Return ""
+    End Function
+
+    Private Function GetStringFromByteArray(ByRef buffer() As Byte, ByVal offset As Long, ByVal maxLen As Long) As String
+        ' GetAdaptersInfo 返回的是 ANSI 编码的字节数组
+        ' 需要转换为 Unicode 以正确处理中文
+        Dim len As Long
+        Dim i As Long
+
+        ' 找到字符串结束位置
+        For i = 0 To maxLen - 1
+            If offset + i > UBound(buffer) Then Exit For
+            If buffer(offset + i) = 0 Then
+                len = i
+                Exit For
+            End If
+        Next i
+
+        ' 如果找到结束符，转换有效的部分
+        If len > 0 Then
+            Dim tempBuffer() As Byte
+            ReDim tempBuffer(0 To len - 1)
+            CopyMemory VarPtr(tempBuffer(0)), VarPtr(buffer(offset)), len
+            Return Trim$(StrConv(tempBuffer(), vbUnicode))
+        Else
+            Return ""
+        End If
+    End Function
+
+    Private Function GetAdapterInfoSize() As Long
+        ' IP_ADAPTER_INFO 结构大小（近似值）
+        Return 640
+    End Function
+
+    Private Declare PtrSafe Sub CopyMemory Lib "kernel32.dll" Alias "RtlMoveMemory" ( _
+        ByVal dest As LongPtr, ByVal src As LongPtr, ByVal length As LongPtr)
+
+End Class

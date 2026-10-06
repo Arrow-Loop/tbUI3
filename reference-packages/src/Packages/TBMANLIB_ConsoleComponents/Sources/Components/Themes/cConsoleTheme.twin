@@ -1,0 +1,66 @@
+' =====================================================
+' cConsoleTheme.twin - Console Theme System
+' Modern Console Library for TwinBASIC - Components
+' =====================================================
+
+[COMCreatable(False)]
+Public Class cConsoleTheme
+
+    ' Color properties
+    Public Primary As ConsoleColor
+    Public Secondary As ConsoleColor
+    Public Success As ConsoleColor
+    Public Warning As ConsoleColor
+    Public Error As ConsoleColor
+    Public Info As ConsoleColor
+    Public Muted As ConsoleColor
+    Public Background As ConsoleColor
+    Public Foreground As ConsoleColor
+    Public Border As ConsoleColor
+    Public HeaderBackground As ConsoleColor
+    Public HeaderForeground As ConsoleColor
+    Public SelectedBackground As ConsoleColor
+    Public SelectedForeground As ConsoleColor
+
+    ' Get theme color by type
+    Public Function GetColor(ByVal colorType As ThemeColorType) As ConsoleColor
+        Select Case colorType
+            Case tcPrimary: Return Primary
+            Case tcSecondary: Return Secondary
+            Case tcSuccess: Return Success
+            Case tcWarning: Return Warning
+            Case tcError: Return Error
+            Case tcInfo: Return Info
+            Case tcMuted: Return Muted
+            Case tcBackground: Return Background
+            Case tcForeground: Return Foreground
+            Case tcBorder: Return Border
+            Case tcHeaderBackground: Return HeaderBackground
+            Case tcHeaderForeground: Return HeaderForeground
+            Case tcSelectedBackground: Return SelectedBackground
+            Case tcSelectedForeground: Return SelectedForeground
+            Case Else: Return Foreground
+        End Select
+    End Function
+
+    ' Clone theme
+    Public Function Clone() As cConsoleTheme
+        Dim theme As New cConsoleTheme
+        theme.Primary = Primary
+        theme.Secondary = Secondary
+        theme.Success = Success
+        theme.Warning = Warning
+        theme.Error = Error
+        theme.Info = Info
+        theme.Muted = Muted
+        theme.Background = Background
+        theme.Foreground = Foreground
+        theme.Border = Border
+        theme.HeaderBackground = HeaderBackground
+        theme.HeaderForeground = HeaderForeground
+        theme.SelectedBackground = SelectedBackground
+        theme.SelectedForeground = SelectedForeground
+        Return theme
+    End Function
+
+End Class

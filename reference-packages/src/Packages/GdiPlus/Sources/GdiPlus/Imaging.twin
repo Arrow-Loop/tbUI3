@@ -1,0 +1,1076 @@
+' A part of the GDI+ Package for TwinBasic  https://github.com/kubao/GdiPlus
+' Licensed under the MIT license. (c) 2026 Sunderland Ober Consulting.
+' "Windows" is a trademark of the Microsoft Corporation.
+' Modeled after code and descriptions (c) Microsoft, taken from SDK headers and official documentation.
+' Certain flat API function and type declarations taken from WinDevLib by fafalone, with thanks.
+
+[InterfaceId("025D1823-6C7D-447B-BBDB-A3CBC3DFA2FC")]
+Interface IImageBytes Extends IUnknown
+    ' Return total number of bytes in the IStream
+    Sub CountBytes(pcb As UINT)
+    
+    ' Locks "cb" bytes, starting from "ulOffset" in the stream, and returns the
+    ' pointer to the beginning of the locked memory chunk in "ppvBytes"
+    Sub LockBytes(ByVal cb As UINT, ByVal ulOffset As ULONG, ppvBytes As any)
+
+    ' Unlocks "cb" bytes, pointed by "pvBytes", starting from "ulOffset" in the
+    ' stream
+    Sub UnlockBytes(pvBytes As any, ByVal cb As UINT, ByVal ulOffset As ULONG)
+End Interface
+
+Module GdipImaging
+    '---------------------------------------------------------------------------
+    ' Image file format identifiers
+    '---------------------------------------------------------------------------
+    
+    Public Function ImageFormatUndefined() As GDIP_UUID
+        Static iid As GDIP_UUID
+        If iid.Data1 = 0 Then GDIPDEF_UUID(iid, "{B96B3CA9-0728-11D3-9D7B-0000F81EF32E}")
+        ImageFormatUndefined = iid
+    End Function
+    
+    Public Function ImageFormatMemoryBMP() As GDIP_UUID
+        Static iid As GDIP_UUID
+        If iid.Data1 = 0 Then GDIPDEF_UUID(iid, "{B96B3CAA-0728-11D3-9D7B-0000F81EF32E}")
+        ImageFormatMemoryBMP = iid
+    End Function
+    
+    Public Function ImageFormatBMP() As GDIP_UUID
+        Static iid As GDIP_UUID
+        If iid.Data1 = 0 Then GDIPDEF_UUID(iid, "{B96B3CAB-0728-11D3-9D7B-0000F81EF32E}")
+        ImageFormatBMP = iid
+    End Function
+
+    Public Function ImageFormatEMF() As GDIP_UUID
+        Static iid As GDIP_UUID
+        If iid.Data1 = 0 Then GDIPDEF_UUID(iid, "{B96B3CAC-0728-11D3-9D7B-0000F81EF32E}")
+        ImageFormatEMF = iid
+    End Function
+    
+    Public Function ImageFormatWMF() As GDIP_UUID
+        Static iid As GDIP_UUID
+        If iid.Data1 = 0 Then GDIPDEF_UUID(iid, "{B96B3CAD-0728-11D3-9D7B-0000F81EF32E}")
+        ImageFormatWMF = iid
+    End Function
+    
+    Public Function ImageFormatJPEG() As GDIP_UUID
+        Static iid As GDIP_UUID
+        If iid.Data1 = 0 Then GDIPDEF_UUID(iid, "{B96B3CAE-0728-11D3-9D7B-0000F81EF32E}")
+        ImageFormatJPEG = iid
+    End Function
+
+    Public Function ImageFormatPNG() As GDIP_UUID
+        Static iid As GDIP_UUID
+        If iid.Data1 = 0 Then GDIPDEF_UUID(iid, "{B96B3CAF-0728-11D3-9D7B-0000F81EF32E}")
+        ImageFormatPNG = iid
+    End Function
+    
+    Public Function ImageFormatGIF() As GDIP_UUID
+        Static iid As GDIP_UUID
+        If iid.Data1 = 0 Then GDIPDEF_UUID(iid, "{B96B3CB0-0728-11D3-9D7B-0000F81EF32E}")
+        ImageFormatGIF = iid
+    End Function
+        
+    Public Function ImageFormatTIFF() As GDIP_UUID
+        Static iid As GDIP_UUID
+        If iid.Data1 = 0 Then GDIPDEF_UUID(iid, "{B96B3CB1-0728-11D3-9D7B-0000F81EF32E}")
+        ImageFormatTIFF = iid
+    End Function
+
+    Public Function ImageFormatEXIF() As GDIP_UUID
+        Static iid As GDIP_UUID
+        If iid.Data1 = 0 Then GDIPDEF_UUID(iid, "{B96B3CB2-0728-11D3-9D7B-0000F81EF32E}")
+        ImageFormatEXIF = iid
+    End Function
+    
+    Public Function ImageFormatIcon() As GDIP_UUID
+        Static iid As GDIP_UUID
+        If iid.Data1 = 0 Then GDIPDEF_UUID(iid, "{B96B3CB5-0728-11D3-9D7B-0000F81EF32E}")
+        ImageFormatIcon = iid
+    End Function
+    
+    Public Function ImageFormatHEIF() As GDIP_UUID
+        Static iid As GDIP_UUID
+        If iid.Data1 = 0 Then GDIPDEF_UUID(iid, "{B96B3CB6-0728-11D3-9D7B-0000F81EF32E}")
+        ImageFormatHEIF = iid
+    End Function
+    
+    Public Function ImageFormatWEBP() As GDIP_UUID
+        Static iid As GDIP_UUID
+        If iid.Data1 = 0 Then GDIPDEF_UUID(iid, "{B96B3CB7-0728-11D3-9D7B-0000F81EF32E}")
+        ImageFormatWEBP = iid
+    End Function
+
+    '---------------------------------------------------------------------------
+    ' Predefined multi-frame dimension IDs
+    '---------------------------------------------------------------------------
+    
+    Public Function FrameDimensionTime() As GDIP_UUID
+        Static iid As GDIP_UUID
+        If iid.Data1 = 0 Then GDIPDEF_UUID(iid, "{6AEDBD6D-3FB5-418A-83A6-7F45229DC872}")
+        FrameDimensionTime = iid
+    End Function
+    
+    Public Function FrameDimensionResolution() As GDIP_UUID
+        Static iid As GDIP_UUID
+        If iid.Data1 = 0 Then GDIPDEF_UUID(iid, "{84236F7B-3BD3-428F-8DAB-4EA1439CA315}")
+        FrameDimensionResolution = iid
+    End Function
+    
+    
+    Public Function FrameDimensionPage() As GDIP_UUID
+        Static iid As GDIP_UUID
+        If iid.Data1 = 0 Then GDIPDEF_UUID(iid, "{7462DC86-6180-4C7E-8E3F-EE7333A7A483}")
+        FrameDimensionPage = iid
+    End Function
+    
+    '---------------------------------------------------------------------------
+    ' Property sets
+    '---------------------------------------------------------------------------
+    
+    Public Function FormatIDImageInformation() As GDIP_UUID
+        Static iid As GDIP_UUID
+        If iid.Data1 = 0 Then GDIPDEF_UUID(iid, "{E5836CBE-5EEF-4F1D-ACDE-AE4C43B608CE}")
+        FormatIDImageInformation = iid
+    End Function
+    
+    Public Function FormatIDJpegAppHeaders() As GDIP_UUID
+        Static iid As GDIP_UUID
+        If iid.Data1 = 0 Then GDIPDEF_UUID(iid, "{1C4AFDCD-6177-43CF-ABC7-5F51AF39EE85}")
+        FormatIDJpegAppHeaders = iid
+    End Function
+
+    '---------------------------------------------------------------------------
+    ' Encoder parameter sets
+    '---------------------------------------------------------------------------
+    
+    Public Function EncoderCompression() As GDIP_UUID
+        Static iid As GDIP_UUID
+        If iid.Data1 = 0 Then GDIPDEF_UUID(iid, "{E09D739D-CCD4-44EE-8EBA-3FBF8BE4FC58}")
+        EncoderCompression = iid
+    End Function
+    
+    Public Function EncoderColorDepth() As GDIP_UUID
+        Static iid As GDIP_UUID
+        If iid.Data1 = 0 Then GDIPDEF_UUID(iid, "{66087055-AD66-4C7C-9A18-38A2310B8337}")
+        EncoderColorDepth = iid
+    End Function
+    
+    Public Function EncoderScanMethod() As GDIP_UUID
+        Static iid As GDIP_UUID
+        If iid.Data1 = 0 Then GDIPDEF_UUID(iid, "{3A4E2661-3109-4E56-8536-42C156E7DCFA}")
+        EncoderScanMethod = iid
+    End Function
+
+    Public Function EncoderVersion() As GDIP_UUID
+        Static iid As GDIP_UUID
+        If iid.Data1 = 0 Then GDIPDEF_UUID(iid, "{24D18C76-814A-41A4-BF53-1C219CCCF797}")
+        EncoderVersion = iid
+    End Function
+    
+    Public Function EncoderRenderMethod() As GDIP_UUID
+        Static iid As GDIP_UUID
+        If iid.Data1 = 0 Then GDIPDEF_UUID(iid, "{6D42C53A-229A-4825-8BB7-5C99E2B9A8B8}")
+        EncoderRenderMethod = iid
+    End Function
+    
+    Public Function EncoderQuality() As GDIP_UUID
+        Static iid As GDIP_UUID
+        If iid.Data1 = 0 Then GDIPDEF_UUID(iid, "{1D5BE4B5-FA4A-452D-9CDD-5DB35105E7EB}")
+        EncoderQuality = iid
+    End Function
+    
+    Public Function EncoderTransformation() As GDIP_UUID
+        Static iid As GDIP_UUID
+        If iid.Data1 = 0 Then GDIPDEF_UUID(iid, "{8D0EB2D1-A58E-4EA8-AA14-108074B7B6F9}")
+        EncoderTransformation = iid
+    End Function
+
+    Public Function EncoderLuminanceTable() As GDIP_UUID
+        Static iid As GDIP_UUID
+        If iid.Data1 = 0 Then GDIPDEF_UUID(iid, "{EDB33BCE-0266-4A77-B904-27216099E717}")
+        EncoderLuminanceTable = iid
+    End Function
+    
+    Public Function EncoderChrominanceTable() As GDIP_UUID
+        Static iid As GDIP_UUID
+        If iid.Data1 = 0 Then GDIPDEF_UUID(iid, "{F2E455DC-09B3-4316-8260-676ADA32481C}")
+        EncoderChrominanceTable = iid
+    End Function
+    
+    Public Function EncoderSaveFlag() As GDIP_UUID
+        Static iid As GDIP_UUID
+        If iid.Data1 = 0 Then GDIPDEF_UUID(iid, "{292266FC-AC40-47BF-8CFC-A85B89A655DE}")
+        EncoderSaveFlag = iid
+    End Function
+    
+    ' #if (GDIPVER >= &h0110)
+    Public Function EncoderColorSpace() As GDIP_UUID
+        Static iid As GDIP_UUID
+        If iid.Data1 = 0 Then GDIPDEF_UUID(iid, "{AE7A62A0-EE2C-49D8-9D07-1BA8A927596E}")
+        EncoderColorSpace = iid
+    End Function
+    
+    Public Function EncoderImageItems() As GDIP_UUID
+        Static iid As GDIP_UUID
+        If iid.Data1 = 0 Then GDIPDEF_UUID(iid, "{63875E13-1F1D-45AB-9195-A29B6066A650}")
+        EncoderImageItems = iid
+    End Function
+    
+    Public Function EncoderSaveAsCMYK() As GDIP_UUID
+        Static iid As GDIP_UUID
+        If iid.Data1 = 0 Then GDIPDEF_UUID(iid, "{A219BBC9-0A9D-4005-A3EE-3A421B8BB06C}")
+        EncoderSaveAsCMYK = iid
+    End Function
+    '#endif '(GDIPVER >= &h0110)
+    
+    Public Function CodecIImageBytes() As GDIP_UUID
+        Static iid As GDIP_UUID
+        If iid.Data1 = 0 Then GDIPDEF_UUID(iid, "{025D1823-6C7D-447B-BBDB-A3CBC3DFA2FC}")
+        CodecIImageBytes = iid
+    End Function
+    
+    '---------------------------------------------------------------------------
+    ' Image codecs
+    '---------------------------------------------------------------------------
+
+    Public Function ImageCodecBMP() As GDIP_UUID
+        Static iid As GDIP_UUID
+        If iid.Data1 = 0 Then GDIPDEF_UUID(iid, "{557CF400-1A04-11D3-9A73-0000F81EF32E}")
+        ImageCodecBMP = iid
+    End Function
+
+    Public Function ImageCodecJPG() As GDIP_UUID
+        Static iid As GDIP_UUID
+        If iid.Data1 = 0 Then GDIPDEF_UUID(iid, "{557CF401-1A04-11D3-9A73-0000F81EF32E}")
+        ImageCodecJPG = iid
+    End Function
+    
+    Public Function ImageCodecGIF() As GDIP_UUID
+        Static iid As GDIP_UUID
+        If iid.Data1 = 0 Then GDIPDEF_UUID(iid, "{557CF402-1A04-11D3-9A73-0000F81EF32E}")
+        ImageCodecGIF = iid
+    End Function
+
+    Public Function ImageCodecTIF() As GDIP_UUID
+        Static iid As GDIP_UUID
+        If iid.Data1 = 0 Then GDIPDEF_UUID(iid, "{557CF405-1A04-11D3-9A73-0000F81EF32E}")
+        ImageCodecTIF = iid
+    End Function
+    
+    Public Function ImageCodecPNG() As GDIP_UUID
+        Static iid As GDIP_UUID
+        If iid.Data1 = 0 Then GDIPDEF_UUID(iid, "{557CF406-1A04-11D3-9A73-0000F81EF32E}")
+        ImageCodecPNG = iid
+    End Function
+    
+    Public Function ImageCodecICO() As GDIP_UUID
+        Static iid As GDIP_UUID
+        If iid.Data1 = 0 Then GDIPDEF_UUID(iid, "{557CF407-1A04-11D3-9A73-0000F81EF32E}")
+        ImageCodecICO = iid
+    End Function
+    
+    '--------------------------------------------------------------------------
+    ' GpImageCodecInfo structure
+    '--------------------------------------------------------------------------
+
+    Public Type GpImageCodecInfo
+        Clsid As GDIP_UUID
+        FormatID As GDIP_UUID
+        _codecName As LongPtr
+        _dllName As LongPtr
+        _formatDescription As LongPtr
+        _filenameExtension As LongPtr
+        _mimeType As LongPtr
+        Flags As GpImageCodecFlags
+        Version As Long
+        _sigCount As Long
+        _sigSize As Long
+        _sigPattern As LongPtr
+        _sigMask As LongPtr
+        
+        Property Get CodecName() As String
+            Return WCharToString(Me._codecName)
+        End Property
+        
+        Property Get DllName() As String
+            Return WCharToString(Me._dllName)
+        End Property
+        
+        Property Get FormatDescription() As String
+            Return WCharToString(Me._formatDescription)
+        End Property
+        
+        Property Get FilenameExtension() As String
+            Return WCharToString(Me._filenameExtension)
+        End Property
+        
+        Property Get MimeType() As String
+            Return WCharToString(Me._mimeType)
+        End Property
+        
+        Property Get IsEncoder() As Boolean
+            Return Me.Flags And ImageCodecFlagsEncoder
+        End Property
+        
+        Property Get IsDecoder() As Boolean
+            Return Me.Flags And ImageCodecFlagsDecoder
+        End Property
+
+        Property Get IsSupportBitmap() As Boolean
+            Return Me.Flags And ImageCodecFlagsSupportBitmap
+        End Property
+
+        Property Get IsSupportVector() As Boolean
+            Return Me.Flags And ImageCodecFlagsSupportVector
+        End Property
+
+        Property Get IsSeekableEncode() As Boolean
+            Return Me.Flags And ImageCodecFlagsSeekableEncode
+        End Property
+
+        Property Get IsBlockingDecode() As Boolean
+            Return Me.Flags And ImageCodecFlagsBlockingDecode
+        End Property
+
+        Property Get IsBuiltin() As Boolean
+            Return Me.Flags And ImageCodecFlagsBuiltin
+        End Property
+
+        Property Get IsSystem() As Boolean
+            Return Me.Flags And ImageCodecFlagsSystem
+        End Property
+        
+        Property Get IsUser() As Boolean
+            Return Me.Flags And ImageCodecFlagsUser
+        End Property
+                
+        Property Get SigPattern(ByVal index&) As Byte()
+            Return StaticSA(Of Byte)(Me._sigPattern + (index - 1) * Me._sigSize, Me._sigSize)
+        End Property
+        
+        Property Get SigMask(ByVal index&) As Byte()
+            Return StaticSA(Of Byte)(Me._sigMask + (index - 1) * Me._sigSize, Me._sigSize)
+        End Property
+    End Type
+    
+    '--------------------------------------------------------------------------
+    ' Information flags about image codecs
+    '--------------------------------------------------------------------------
+    
+    [Flags]
+    Public Enum GpImageCodecFlags
+        ImageCodecFlagsEncoder = &H00000001
+        ImageCodecFlagsDecoder = &H00000002
+        ImageCodecFlagsSupportBitmap = &H00000004
+        ImageCodecFlagsSupportVector = &H00000008
+        ImageCodecFlagsSeekableEncode = &H00000010
+        ImageCodecFlagsBlockingDecode = &H00000020
+        ImageCodecFlagsBuiltin = &H00010000
+        ImageCodecFlagsSystem = &H00020000
+        ImageCodecFlagsUser = &H00040000
+    End Enum
+    
+    '---------------------------------------------------------------------------
+    ' Access modes used when calling Image::LockBits
+    '---------------------------------------------------------------------------
+    
+    [Flags]
+    Public Enum ImageLockMode
+        ImageLockModeRead = &H0001
+        ImageLockModeWrite = &H0002
+        ImageLockModeUserInputBuf = &H0004
+    End Enum
+
+    '---------------------------------------------------------------------------
+    ' Information about image pixel data
+    '---------------------------------------------------------------------------
+    
+    Public Type BitmapData
+        Width As Long
+        Height As Long
+        Stride As Long
+        PixelFormat As PixelFormat
+        Scan0 As LongPtr
+        Reserved As LongPtr
+    End Type
+
+    '---------------------------------------------------------------------------
+    ' Image flags
+    '---------------------------------------------------------------------------
+    
+    Public Enum ImageFlags
+        ImageFlagsNone = 0
+        
+        '  Low-word: shared with SINKFLAG_x
+        ImageFlagsScalable = &H0001
+        ImageFlagsHasAlpha = &H0002
+        ImageFlagsHasTranslucent = &H0004
+        ImageFlagsPartiallyScalable = &H0008
+        
+        '  Low-word: color space definition
+        ImageFlagsColorSpaceRGB = &H0010
+        ImageFlagsColorSpaceCMYK = &H0020
+        ImageFlagsColorSpaceGRAY = &H0040
+        ImageFlagsColorSpaceYCBCR = &H0080
+        ImageFlagsColorSpaceYCCK = &H0100
+        
+        '  Low-word: image size info
+        ImageFlagsHasRealDPI = &H1000
+        ImageFlagsHasRealPixelSize = &H2000
+        
+        '  High-word
+        ImageFlagsReadOnly = &H00010000
+        ImageFlagsCaching = &H00020000
+    End Enum
+    
+    Public Enum RotateFlipType
+        RotateNoneFlipNone = 0
+        Rotate90FlipNone = 1
+        Rotate180FlipNone = 2
+        Rotate270FlipNone = 3
+        RotateNoneFlipX = 4
+        Rotate90FlipX = 5
+        Rotate180FlipX = 6
+        Rotate270FlipX = 7
+        RotateNoneFlipY = Rotate180FlipX
+        Rotate90FlipY = Rotate270FlipX
+        Rotate180FlipY = RotateNoneFlipX
+        Rotate270FlipY = Rotate90FlipX
+        RotateNoneFlipXY = Rotate180FlipNone
+        Rotate90FlipXY = Rotate270FlipNone
+        Rotate180FlipXY = RotateNoneFlipNone
+        Rotate270FlipXY = Rotate90FlipNone
+    End Enum
+    
+    '---------------------------------------------------------------------------
+    ' Encoder Parameter structure
+    '---------------------------------------------------------------------------
+    
+    Public Type GpEncoderParameter
+        Guid As GDIP_UUID                    ' GUID of the parameter
+        _count As Long                       ' Number of the parameter values
+        _type As GpEncoderParameterValueType ' Value type, like ValueTypeLONG  etc.
+        _address As LongPtr                  ' A pointer to the parameter values
+        
+        Property Get Type() As GpEncoderParameterValueType
+            Return CType(Of GpEncoderParameterValueType)(Me._type)
+        End Property
+        
+        Property Get Count() As Long
+            Return Me._count
+        End Property
+        
+        '---------------------------------------------------------------'
+        
+        Property Get IsASCII() As Boolean
+            Return Me.Type = EncoderParameterValueTypeASCII
+        End Property
+        
+        Property Get IsByte() As Boolean
+            Return Me.Type = EncoderParameterValueTypeByte
+        End Property
+        Property Get IsShort() As Boolean
+            Return Me.Type = EncoderParameterValueTypeShort
+        End Property
+        Property Get IsLong() As Boolean
+            Return Me.Type = EncoderParameterValueTypeLong
+        End Property
+        Property Get IsRational() As Boolean
+            Return Me.Type = EncoderParameterValueTypeRational
+        End Property
+        Property Get IsLongRange() As Boolean
+            Return Me.Type = EncoderParameterValueTypeLongRange
+        End Property
+        Property Get IsRationalRange() As Boolean
+            Return Me.Type = EncoderParameterValueTypeRationalRange
+        End Property
+        Property Get IsBinary() As Boolean
+            Return Me.Type = EncoderParameterValueTypePointer
+        End Property
+        
+        Property Get IsUndefined() As Boolean
+            Return Me._type < MinEncoderParameterValueType OrElse _
+                Me.Type = EncoderParameterValueTypeUndefined OrElse _
+                Me.Type > MaxEncoderParameterValueType
+        End Property
+        
+        '---------------------------------------------------------------'
+        
+        Property Get ASCII(ByVal index&) As String
+            If Me.IsASCII And index <= Me._count Then
+                Dim str As LongPtr
+                GetMemPtr(Me._address + (index - 1) * LenB(Of LongPtr), str)
+                Return ASCIIToString(str)
+            End If
+        End Property
+        
+        Property Get Byte(ByVal index&) As Integer  ' unsigned
+            If Me.IsByte Then TGetMem1(Me._address + (index - 1) * 1, Byte)
+        End Property
+        
+        Property Get Short(ByVal index&) As Long     ' unsigned
+            If Me.IsShort Then TGetMem2(Me._address + (index - 1) * 2, Short)
+        End Property
+        
+        Property Get Long(ByVal index&) As LongLong  ' unsigned
+            If Me.IsLong Then TGetMem4(Me._address + (index - 1) * 4, Long)
+        End Property
+        
+        Property Get Rational(ByVal index&) As Double
+            If Me.IsRational Then
+                Dim address As LongPtr = Me._address + (index - 1) * 8
+                Dim num As LongLong, denom As LongLong
+                TGetMem4(address + 0, num)
+                TGetMem4(address + 4, denom)
+                Return CDbl(num) / CDbl(denom)
+            End If
+        End Property
+
+        Property Get LongRange(ByVal index&) As LongLong()
+            If Me.IsLongRange Then
+                Return GetLongRange_Impl(Me, index)
+            End If
+        End Property
+        
+        Property Get RationalRange(ByVal index&) As Double()
+            If Me.IsRationalRange Then
+                Return GetRationalRange_Impl(Me, index)
+            End If
+        End Property
+        
+        Property Get Binary(ByVal index&) As LongPtr
+            If Me.IsBinary Then
+                Dim address As LongPtr = Me._address + (index - 1) * LenB(Of LongPtr)
+                GetMemPtr(address, Binary)
+            End If
+        End Property
+                
+        Property Get AsDouble(ByVal index&) As Double
+            If Me.IsByte Then Return Me.Byte(index)
+            If Me.IsShort Then Return Me.Short(index)
+            If Me.IsLong Then Return CDbl(Me.Long(index))
+            If Me.IsRational Then Return Me.Rational(index)
+        End Property
+        
+        '---------------------------------------------------------------'
+
+        Sub GetRational(ByVal index&, num As LongLong, denom As LongLong)
+            If Me.IsRational Then
+                ' this zero-expands into num and denom, since they are *unsigned* longs
+                Dim address As LongPtr = Me._address + (index - 1) * 8
+                TGetMem4(address + 0, num)
+                TGetMem4(address + 4, denom)
+            End If
+        End Sub
+        
+        Sub GetLongRange(ByVal index&, from As LongLong, to As LongLong)
+            If Me.IsLongRange Then
+                Dim address As LongPtr = Me._address + (index - 1) * 8
+                ' this zero-expands into from and to, since they are *unsigned* longs
+                TGetMem4(address + 0, from)
+                TGetMem4(address + 4, to)
+            End If
+        End Sub
+        
+        Sub GetRationalRange(ByVal index&, numdenoms() As LongLong)
+            If Me.IsRationalRange Then
+                Dim address As LongPtr = Me._address + (index - 1) * 16
+                ReDim numdenoms(1 To 4)
+                ' this zero-expands into num and denom, since they are *unsigned* longs
+                TGetMem4(address + 0, numdenoms(1))
+                TGetMem4(address + 4, numdenoms(2))
+                TGetMem4(address + 8, numdenoms(3))
+                TGetMem4(address + 12, numdenoms(4))
+            End If
+        End Sub
+    End Type
+    
+    '---------------------------------------------------------------------------
+    ' Encoder Parameters structure
+    '---------------------------------------------------------------------------
+
+    ' This is a fixed-size struct used to measure relative positions of the fields.
+    Public Type GpEncoderParametersHeader
+        Count As Long                       ' Number of parameters in this structure
+        Parameter(1) As GpEncoderParameter    ' Parameter values
+    End Type
+
+    '#if (GDIPVER >= &h0110)
+    Public Enum ItemDataPosition
+        ItemDataPositionAfterHeader = &H0
+        ItemDataPositionAfterPalette = &H1
+        ItemDataPositionAfterBits = &H2
+    End Enum
+        
+    '---------------------------------------------------------------------------
+    ' External Data Item
+    '---------------------------------------------------------------------------
+        
+    Public Type GpImageItemData
+        Size As Long        ' size of the structure 
+        Position As Long    ' flags describing how the data is to be used.
+        Desc As LongPtr     ' description on how the data is to be saved.
+                            ' it is different for every codec type.
+        DescSize As Long    ' size memory pointed by Desc
+        Data As LongPtr     ' pointer to the data that is to be saved in the
+                            ' file, could be anything saved directly.
+        DataSize As Long    ' size memory pointed by Data
+        Cookie As Long      ' opaque for the apps data member used during
+                            ' enumeration of image data items.
+    End Type
+    '#endif '(GDIPVER >= &h0110)
+    
+    '---------------------------------------------------------------------------
+    ' EXIF Property Item
+    '---------------------------------------------------------------------------
+    
+    Public Type GpPropertyItem
+        Id As PROPID        ' ID of this property
+        _length As Long     ' Length of the property value, in bytes
+        _type As Integer    ' Type of the value, as one of PropertyTagTypeXxx
+                            ' defined below
+        _address As LongPtr ' Pointer to property value (or?)
+        
+        Property Get Type() As GpPropertyTagType
+            Return CType(Of GpPropertyTagType)(Me._type)
+        End Property
+        
+        '---------------------------------------------------------------'
+        
+        Property Get IsASCII() As Boolean
+            Return Me.Type = PropertyTagTypeASCII
+        End Property
+        
+        Property Get IsByte() As Boolean
+            Return Me.Type = PropertyTagTypeByte
+        End Property
+        Property Get IsShort() As Boolean
+            Return Me.Type = PropertyTagTypeShort
+        End Property
+        Property Get IsLong() As Boolean
+            Return Me.Type = PropertyTagTypeLong
+        End Property
+        Property Get IsRational() As Boolean
+            Return Me.Type = PropertyTagTypeRational
+        End Property
+        
+        Property Get IsSByte() As Boolean
+            Return Me.Type = PropertyTagTypeSByte
+        End Property
+        Property Get IsSShort() As Boolean
+            Return Me.Type = PropertyTagTypeSShort
+        End Property
+        Property Get IsSLong() As Boolean
+            Return Me.Type = PropertyTagTypeSLong
+        End Property
+        Property Get IsSRational() As Boolean
+            Return Me.Type = PropertyTagTypeSRational
+        End Property
+        
+        Property Get IsSingle() As Boolean
+            Return Me.Type = PropertyTagTypeSingle
+        End Property
+        Property Get IsDouble() As Boolean
+            Return Me.Type = PropertyTagTypeDouble
+        End Property
+        
+        Property Get IsUndefined() As Boolean
+            Return Me._type < MinPropertyTagType OrElse _
+                Me.Type = PropertyTagTypeUndefined OrElse _
+                Me.Type > MaxPropertyTagType
+        End Property
+        
+        '---------------------------------------------------------------'
+        
+        Property Get TheASCII() As String
+            If Me.IsASCII Then Return ASCIIToString(Me._address, Me._length)
+        End Property
+        
+        Property Get TheByte() As Integer  ' unsigned
+            If Me.IsByte Then TGetMem1(Me._address, TheByte)
+        End Property
+        
+        Property Get TheSByte() As Byte
+            If Me.IsByte Then GetMem1(Me._address, TheSByte)
+        End Property
+        
+        Property Get TheShort() As Long	   ' unsigned
+            If Me.IsShort Then TGetMem2(Me._address, TheShort)
+        End Property
+        
+        Property Get TheSShort() As Integer
+            If Me.IsShort Then GetMem2(Me._address, TheSShort)
+        End Property
+        
+        Property Get TheLong() As LongLong  ' unsigned
+            If Me.IsLong Then TGetMem4(Me._address, TheLong)
+        End Property
+        
+        Property Get TheSLong() As Long     ' signed
+            If Me.IsShort Then GetMem4(Me._address, TheSLong)
+        End Property
+        
+        Property Get TheRational() As Double
+            If Me.IsRational Then
+                Dim num As LongLong, denom As LongLong
+                TGetMem4(Me._address, num)
+                TGetMem4(Me._address+ 4, denom)
+                Return CDbl(num) / CDbl(denom)
+            End If
+        End Property
+        
+        Property Get TheSRational() As Double
+            If Me.IsSRational Then
+                Dim num As Long, denom As Long
+                GetMem4(Me._address, num)
+                GetMem4(Me._address+ 4, denom)
+                Return CDbl(num) / CDbl(denom)
+            End If
+        End Property
+        
+        Property Get TheSingle() As Single
+            If Me.IsSingle Then
+                TGetMem4(Me._address, TheSingle)
+            End If
+        End Property
+        
+        Property Get TheDouble() As Double
+            If Me.IsSingle Then
+                TGetMem8(Me._address, TheDouble)
+            End If
+        End Property
+        
+        Property Get AsDouble() As Double
+            If Me.IsByte Then Return Me.TheByte
+            If Me.IsSByte Then Return Me.TheSByte
+            If Me.IsShort Then Return Me.TheShort
+            If Me.IsSShort Then Return Me.TheSShort
+            If Me.IsLong Then Return CDbl(Me.TheLong)
+            If Me.IsSLong Then Return Me.TheSLong
+            If Me.IsSingle Then Return Me.TheSingle
+            If Me.IsDouble Then Return Me.TheDouble
+        End Property
+        
+        '---------------------------------------------------------------'
+        
+        Sub GetRational(num As LongLong, denom As LongLong)
+            If Me.IsRational Then
+                ' this zero-expands into num and denom, since they are *unsigned* longs
+                TGetMem4(Me._address, num)
+                TGetMem4(Me._address+ 4, denom)
+            End If
+        End Sub
+        
+        Sub GetSRational(num As Long, denom As Long)
+            If Me.IsRational Then
+                TGetMem4(Me._address, num)
+                TGetMem4(Me._address+ 4, denom)
+            End If
+        End Sub
+    End Type
+        
+    '---------------------------------------------------------------------------
+    ' Image property types 
+    '---------------------------------------------------------------------------
+    
+    Enum GpPropertyTagType
+        MinPropertyTagType = PropertyTagTypeByte
+        PropertyTagTypeByte = 1
+        PropertyTagTypeASCII = 2
+        PropertyTagTypeShort = 3
+        PropertyTagTypeLong = 4
+        PropertyTagTypeRational = 5
+        PropertyTagTypeSByte = 6
+        PropertyTagTypeUndefined = 7
+        PropertyTagTypeSShort = 8
+        PropertyTagTypeSLong = 9
+        PropertyTagTypeSRational = 10
+        PropertyTagTypeSingle = 11
+        PropertyTagTypeDouble = 12
+        MaxPropertyTagType = PropertyTagTypeDouble
+    End Enum
+
+    '---------------------------------------------------------------------------
+    ' Image property ID tags
+    '---------------------------------------------------------------------------
+    Public Const PropertyTagExifIFD  = &H8769
+    Public Const PropertyTagGpsIFD  = &H8825
+    Public Const PropertyTagNewSubfileType  = &H00FE
+    Public Const PropertyTagSubfileType  = &H00FF
+    Public Const PropertyTagImageWidth  = &H0100
+    Public Const PropertyTagImageHeight  = &H0101
+    Public Const PropertyTagBitsPerSample  = &H0102
+    Public Const PropertyTagCompression  = &H0103
+    Public Const PropertyTagPhotometricInterp  = &H0106
+    Public Const PropertyTagThreshHolding  = &H0107
+    Public Const PropertyTagCellWidth  = &H0108
+    Public Const PropertyTagCellHeight  = &H0109
+    Public Const PropertyTagFillOrder  = &H010A
+    Public Const PropertyTagDocumentName  = &H010D
+    Public Const PropertyTagImageDescription  = &H010E
+    Public Const PropertyTagEquipMake  = &H010F
+    Public Const PropertyTagEquipModel  = &H0110
+    Public Const PropertyTagStripOffsets  = &H0111
+    Public Const PropertyTagOrientation  = &H0112
+    Public Const PropertyTagSamplesPerPixel  = &H0115
+    Public Const PropertyTagRowsPerStrip  = &H0116
+    Public Const PropertyTagStripBytesCount  = &H0117
+    Public Const PropertyTagMinSampleValue  = &H0118
+    Public Const PropertyTagMaxSampleValue  = &H0119
+    Public Const PropertyTagXResolution  = &H011A  ' Image resolution in width direction
+    Public Const PropertyTagYResolution  = &H011B  ' Image resolution in height direction
+    Public Const PropertyTagPlanarConfig  = &H011C  ' Image data arrangement
+    Public Const PropertyTagPageName  = &H011D
+    Public Const PropertyTagXPosition  = &H011E
+    Public Const PropertyTagYPosition  = &H011F
+    Public Const PropertyTagFreeOffset  = &H0120
+    Public Const PropertyTagFreeByteCounts  = &H0121
+    Public Const PropertyTagGrayResponseUnit  = &H0122
+    Public Const PropertyTagGrayResponseCurve  = &H0123
+    Public Const PropertyTagT4Option  = &H0124
+    Public Const PropertyTagT6Option  = &H0125
+    Public Const PropertyTagResolutionUnit  = &H0128  ' Unit of X and Y resolution
+    Public Const PropertyTagPageNumber  = &H0129
+    Public Const PropertyTagTransferFuncition  = &H012D
+    Public Const PropertyTagSoftwareUsed  = &H0131
+    Public Const PropertyTagDateTime  = &H0132
+    Public Const PropertyTagArtist  = &H013B
+    Public Const PropertyTagHostComputer  = &H013C
+    Public Const PropertyTagPredictor  = &H013D
+    Public Const PropertyTagWhitePoint  = &H013E
+    Public Const PropertyTagPrimaryChromaticities  = &H013F
+    Public Const PropertyTagColorMap  = &H0140
+    Public Const PropertyTagHalftoneHints  = &H0141
+    Public Const PropertyTagTileWidth  = &H0142
+    Public Const PropertyTagTileLength  = &H0143
+    Public Const PropertyTagTileOffset  = &H0144
+    Public Const PropertyTagTileByteCounts  = &H0145
+    Public Const PropertyTagInkSet  = &H014C
+    Public Const PropertyTagInkNames  = &H014D
+    Public Const PropertyTagNumberOfInks  = &H014E
+    Public Const PropertyTagDotRange  = &H0150
+    Public Const PropertyTagTargetPrinter  = &H0151
+    Public Const PropertyTagExtraSamples  = &H0152
+    Public Const PropertyTagSampleFormat  = &H0153
+    Public Const PropertyTagSMinSampleValue  = &H0154
+    Public Const PropertyTagSMaxSampleValue  = &H0155
+    Public Const PropertyTagTransferRange  = &H0156
+    Public Const PropertyTagJPEGProc  = &H0200
+    Public Const PropertyTagJPEGInterFormat  = &H0201
+    Public Const PropertyTagJPEGInterLength  = &H0202
+    Public Const PropertyTagJPEGRestartInterval  = &H0203
+    Public Const PropertyTagJPEGLosslessPredictors  = &H0205
+    Public Const PropertyTagJPEGPointTransforms  = &H0206
+    Public Const PropertyTagJPEGQTables  = &H0207
+    Public Const PropertyTagJPEGDCTables  = &H0208
+    Public Const PropertyTagJPEGACTables  = &H0209
+    Public Const PropertyTagYCbCrCoefficients  = &H0211
+    Public Const PropertyTagYCbCrSubsampling  = &H0212
+    Public Const PropertyTagYCbCrPositioning  = &H0213
+    Public Const PropertyTagREFBlackWhite  = &H0214
+    Public Const PropertyTagICCProfile  = &H8773    ' This TAG is defined by ICC
+                                                    '  for embedded ICC in TIFF
+    Public Const PropertyTagGamma  = &H0301
+    Public Const PropertyTagICCProfileDescriptor  = &H0302
+    Public Const PropertyTagSRGBRenderingIntent  = &H0303
+    Public Const PropertyTagImageTitle  = &H0320
+    Public Const PropertyTagCopyright  = &H8298
+    
+    '  Extra TAGs (Like Adobe Image Information tags etc.)
+    Public Const PropertyTagResolutionXUnit  = &H5001
+    Public Const PropertyTagResolutionYUnit  = &H5002
+    Public Const PropertyTagResolutionXLengthUnit  = &H5003
+    Public Const PropertyTagResolutionYLengthUnit  = &H5004
+    Public Const PropertyTagPrintFlags  = &H5005
+    Public Const PropertyTagPrintFlagsVersion  = &H5006
+    Public Const PropertyTagPrintFlagsCrop  = &H5007
+    Public Const PropertyTagPrintFlagsBleedWidth  = &H5008
+    Public Const PropertyTagPrintFlagsBleedWidthScale  = &H5009
+    Public Const PropertyTagHalftoneLPI  = &H500A
+    Public Const PropertyTagHalftoneLPIUnit  = &H500B
+    Public Const PropertyTagHalftoneDegree  = &H500C
+    Public Const PropertyTagHalftoneShape  = &H500D
+    Public Const PropertyTagHalftoneMisc  = &H500E
+    Public Const PropertyTagHalftoneScreen  = &H500F
+    Public Const PropertyTagJPEGQuality  = &H5010
+    Public Const PropertyTagGridSize  = &H5011
+    Public Const PropertyTagThumbnailFormat  = &H5012  ' 1 = JPEG, 0 = RAW RGB
+    Public Const PropertyTagThumbnailWidth  = &H5013
+    Public Const PropertyTagThumbnailHeight  = &H5014
+    Public Const PropertyTagThumbnailColorDepth  = &H5015
+    Public Const PropertyTagThumbnailPlanes  = &H5016
+    Public Const PropertyTagThumbnailRawBytes  = &H5017
+    Public Const PropertyTagThumbnailSize  = &H5018
+    Public Const PropertyTagThumbnailCompressedSize  = &H5019
+    Public Const PropertyTagColorTransferFunction  = &H501A
+    Public Const PropertyTagThumbnailData  = &H501B ' RAW thumbnail bits in
+                                                    '  JPEG format or RGB format
+                                                    '  depends on
+                                                    '  PropertyTagThumbnailFormat
+    '  Thumbnail related TAGs
+    Public Const PropertyTagThumbnailImageWidth  = &H5020       ' Thumbnail width
+    Public Const PropertyTagThumbnailImageHeight  = &H5021      ' Thumbnail height
+    Public Const PropertyTagThumbnailBitsPerSample  = &H5022    ' Number of bits per
+                                                                '  component
+    Public Const PropertyTagThumbnailCompression  = &H5023      ' Compression Scheme
+    Public Const PropertyTagThumbnailPhotometricInterp  = &H5024' Pixel composition
+    Public Const PropertyTagThumbnailImageDescription  = &H5025 ' Image Tile
+    Public Const PropertyTagThumbnailEquipMake  = &H5026        ' Manufacturer of Image
+                                                                '  Input equipment
+    Public Const PropertyTagThumbnailEquipModel  = &H5027       ' Model of Image input
+                                                                '  equipment
+    Public Const PropertyTagThumbnailStripOffsets  = &H5028     ' Image data location
+    Public Const PropertyTagThumbnailOrientation  = &H5029      ' Orientation of image
+    Public Const PropertyTagThumbnailSamplesPerPixel  = &H502A  ' Number of components
+    Public Const PropertyTagThumbnailRowsPerStrip  = &H502B     ' Number of rows per strip
+    Public Const PropertyTagThumbnailStripBytesCount  = &H502C  ' Bytes per compressed
+                                                                '  strip
+    Public Const PropertyTagThumbnailResolutionX  = &H502D      ' Resolution in width
+                                                                '  direction
+    Public Const PropertyTagThumbnailResolutionY  = &H502E      ' Resolution in height
+                                                                ' direction
+    Public Const PropertyTagThumbnailPlanarConfig  = &H502F     ' Image data arrangement
+    Public Const PropertyTagThumbnailResolutionUnit  = &H5030   ' Unit of X and Y
+                                                                '  Resolution
+    Public Const PropertyTagThumbnailTransferFunction  = &H5031 ' Transfer function
+    Public Const PropertyTagThumbnailSoftwareUsed  = &H5032     ' Software used
+    Public Const PropertyTagThumbnailDateTime  = &H5033         ' File change date and
+                                                                '  time
+    Public Const PropertyTagThumbnailArtist  = &H5034           ' Person who created the
+                                                                '  image
+    Public Const PropertyTagThumbnailWhitePoint  = &H5035       ' White point chromaticity
+    Public Const PropertyTagThumbnailPrimaryChromaticities  = &H5036
+                                                                '  Chromaticities of
+                                                                '  primaries
+    Public Const PropertyTagThumbnailYCbCrCoefficients  = &H5037' Color space transforma-
+                                                                '  tion coefficients
+    Public Const PropertyTagThumbnailYCbCrSubsampling  = &H5038 ' Subsampling ratio of Y
+                                                                '  to C
+    Public Const PropertyTagThumbnailYCbCrPositioning  = &H5039 ' Y and C position
+    Public Const PropertyTagThumbnailRefBlackWhite  = &H503A    ' Pair of black and white
+                                                                '  reference values
+    Public Const PropertyTagThumbnailCopyRight  = &H503B        ' CopyRight holder
+    Public Const PropertyTagLuminanceTable  = &H5090
+    Public Const PropertyTagChrominanceTable  = &H5091
+    Public Const PropertyTagFrameDelay  = &H5100
+    Public Const PropertyTagLoopCount  = &H5101
+
+    Public Const PropertyTagGlobalPalette  = &H5102
+    Public Const PropertyTagIndexBackground  = &H5103
+    Public Const PropertyTagIndexTransparent  = &H5104
+
+    Public Const PropertyTagPixelUnit  = &H5110  ' Unit specifier for pixel/unit
+    Public Const PropertyTagPixelPerUnitX  = &H5111  ' Pixels per unit in X
+    Public Const PropertyTagPixelPerUnitY  = &H5112  ' Pixels per unit in Y
+    Public Const PropertyTagPaletteHistogram  = &H5113  ' Palette histogram
+    
+    '  EXIF specific tags
+    Public Const PropertyTagExifExposureTime  = &H829A
+    Public Const PropertyTagExifFNumber  = &H829D
+    Public Const PropertyTagExifExposureProg  = &H8822
+    Public Const PropertyTagExifSpectralSense  = &H8824
+    Public Const PropertyTagExifISOSpeed  = &H8827
+    Public Const PropertyTagExifOECF  = &H8828
+    Public Const PropertyTagExifVer  = &H9000
+    Public Const PropertyTagExifDTOrig  = &H9003        ' Date & time of original
+    Public Const PropertyTagExifDTDigitized  = &H9004   ' Date & time of digital data generation
+    Public Const PropertyTagExifCompConfig  = &H9101
+    Public Const PropertyTagExifCompBPP  = &H9102
+    Public Const PropertyTagExifShutterSpeed  = &H9201
+    Public Const PropertyTagExifAperture  = &H9202
+    Public Const PropertyTagExifBrightness  = &H9203
+    Public Const PropertyTagExifExposureBias  = &H9204
+    Public Const PropertyTagExifMaxAperture  = &H9205
+    Public Const PropertyTagExifSubjectDist  = &H9206
+    Public Const PropertyTagExifMeteringMode  = &H9207
+    Public Const PropertyTagExifLightSource  = &H9208
+    Public Const PropertyTagExifFlash  = &H9209
+    Public Const PropertyTagExifFocalLength  = &H920A
+    Public Const PropertyTagExifSubjectArea  = &H9214   ' exif 2.2 Subject Area
+    Public Const PropertyTagExifMakerNote  = &H927C
+    Public Const PropertyTagExifUserComment  = &H9286
+    Public Const PropertyTagExifDTSubsec  = &H9290      ' Date & Time subseconds
+    Public Const PropertyTagExifDTOrigSS  = &H9291      ' Date & Time original subseconds
+    Public Const PropertyTagExifDTDigSS  = &H9292       ' Date & TIme digitized subseconds
+    Public Const PropertyTagExifFPXVer  = &HA000
+    Public Const PropertyTagExifColorSpace  = &HA001
+    Public Const PropertyTagExifPixXDim  = &HA002
+    Public Const PropertyTagExifPixYDim  = &HA003
+    Public Const PropertyTagExifRelatedWav  = &HA004    ' related sound file
+    Public Const PropertyTagExifInterop  = &HA005
+    Public Const PropertyTagExifFlashEnergy  = &HA20B
+    Public Const PropertyTagExifSpatialFR  = &HA20C     ' Spatial Frequency Response
+    Public Const PropertyTagExifFocalXRes  = &HA20E     ' Focal Plane X Resolution
+    Public Const PropertyTagExifFocalYRes  = &HA20F     ' Focal Plane Y Resolution
+    Public Const PropertyTagExifFocalResUnit  = &HA210  ' Focal Plane Resolution Unit
+    Public Const PropertyTagExifSubjectLoc  = &HA214
+    Public Const PropertyTagExifExposureIndex  = &HA215
+    Public Const PropertyTagExifSensingMethod  = &HA217
+    Public Const PropertyTagExifFileSource  = &HA300
+    Public Const PropertyTagExifSceneType  = &HA301
+    Public Const PropertyTagExifCfaPattern  = &HA302
+    
+    '  New EXIF 2.2 properties
+    Public Const PropertyTagExifCustomRendered  = &HA401
+    Public Const PropertyTagExifExposureMode  = &HA402
+    Public Const PropertyTagExifWhiteBalance  = &HA403
+    Public Const PropertyTagExifDigitalZoomRatio  = &HA404
+    Public Const PropertyTagExifFocalLengthIn35mmFilm  = &HA405
+    Public Const PropertyTagExifSceneCaptureType  = &HA406
+    Public Const PropertyTagExifGainControl  = &HA407
+    Public Const PropertyTagExifContrast  = &HA408
+    Public Const PropertyTagExifSaturation  = &HA409
+    Public Const PropertyTagExifSharpness  = &HA40A
+    Public Const PropertyTagExifDeviceSettingDesc  = &HA40B
+    Public Const PropertyTagExifSubjectDistanceRange  = &HA40C
+    Public Const PropertyTagExifUniqueImageID  = &HA420
+    Public Const PropertyTagGpsVer  = &H0000
+    Public Const PropertyTagGpsLatitudeRef  = &H0001
+    Public Const PropertyTagGpsLatitude  = &H0002
+    Public Const PropertyTagGpsLongitudeRef  = &H0003
+    Public Const PropertyTagGpsLongitude  = &H0004
+    Public Const PropertyTagGpsAltitudeRef  = &H0005
+    Public Const PropertyTagGpsAltitude  = &H0006
+    Public Const PropertyTagGpsGpsTime  = &H0007
+    Public Const PropertyTagGpsGpsSatellites  = &H0008
+    Public Const PropertyTagGpsGpsStatus  = &H0009
+    Public Const PropertyTagGpsGpsMeasureMode  = &H00A
+    Public Const PropertyTagGpsGpsDop  = &H000B         ' Measurement precision
+    Public Const PropertyTagGpsSpeedRef  = &H000C
+    Public Const PropertyTagGpsSpeed  = &H000D
+    Public Const PropertyTagGpsTrackRef  = &H000E
+    Public Const PropertyTagGpsTrack  = &H000F
+    Public Const PropertyTagGpsImgDirRef  = &H0010
+    Public Const PropertyTagGpsImgDir  = &H0011
+    Public Const PropertyTagGpsMapDatum  = &H0012
+    Public Const PropertyTagGpsDestLatRef  = &H0013
+    Public Const PropertyTagGpsDestLat  = &H0014
+    Public Const PropertyTagGpsDestLongRef  = &H0015
+    Public Const PropertyTagGpsDestLong  = &H0016
+    Public Const PropertyTagGpsDestBearRef  = &H0017
+    Public Const PropertyTagGpsDestBear  = &H0018
+    Public Const PropertyTagGpsDestDistRef  = &H0019
+    Public Const PropertyTagGpsDestDist  = &H001A
+    Public Const PropertyTagGpsProcessingMethod  = &H001B
+    Public Const PropertyTagGpsAreaInformation  = &H001C
+    Public Const PropertyTagGpsDate  = &H001D
+    Public Const PropertyTagGpsDifferential  = &H001E
+    
+    Private Function GetLongRange_Impl(Me As GpEncoderParameter, ByVal index&) As LongLong()
+        Dim result(1 To 2) As LongLong
+        TGetMem4(Me._address + (index - 1) * 8 + 0, result(1))
+        TGetMem4(Me._address + (index - 1) * 8 + 4, result(2))
+    End Function
+    
+    Private Function GetRationalRange_Impl(Me As GpEncoderParameter, ByVal index&) As Double()
+        Dim result(1 To 2) As Double
+        Dim num As LongLong, denom As LongLong
+        TGetMem4(Me._address + (index - 1) * 16 + 0, num)
+        TGetMem4(Me._address + (index - 1) * 16 + 4, denom)
+        result(1) = CDbl(num) / CDbl(denom)
+        TGetMem4(Me._address + (index - 1) * 16 + 8, num)
+        TGetMem4(Me._address + (index - 1) * 16 + 12, denom)
+        result(2) = CDbl(num) / CDbl(denom)
+    End Function
+End Module

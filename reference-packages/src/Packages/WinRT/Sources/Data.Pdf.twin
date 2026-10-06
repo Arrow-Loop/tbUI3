@@ -1,0 +1,74 @@
+[InterfaceId("D6B166EC-099A-5EE2-AD2E-F4C88614AABB")]
+Interface IAsyncOperationIPdfDocument Extends IInspectable
+    Property Set Completed(ByVal Handler As IAsyncOperationCompletedHandlerIPdfDocument)
+    Property Get Completed() As IAsyncOperationCompletedHandlerIPdfDocument
+    Function GetResults() As IPdfDocument
+End Interface
+
+[InterfaceId("8D4950B3-629D-5D7D-84CC-04C0DCF7942B")]
+Interface IAsyncOperationCompletedHandlerIPdfDocument Extends IUnknown
+    Sub Invoke(ByVal AsyncOperation As IAsyncOperationIPdfDocument, ByVal AsyncStatus As AsyncStatus)
+End Interface
+
+[InterfaceId("AC7EBEDD-80FA-4089-846E-81B77FF5A86C")]
+Interface IPdfDocument Extends IInspectable
+    Function GetPage(ByVal PageIndex As Long) As IPdfPage
+    Property Get PageCount() As Long
+    Property Get IsPasswordProtected() As BooleanByte
+End Interface
+
+[InterfaceId("433A0B5F-C007-4788-90F2-08143D922599")]
+Interface IPdfDocumentStatics Extends IInspectable
+    Function LoadFromFileAsync(ByVal StorageFile As IStorageFile) As IAsyncOperationIPdfDocument
+    Function LoadFromFileWithPasswordAsync(ByVal StorageFile As IStorageFile, ByVal Password As LongPtr) As IAsyncOperationIPdfDocument
+    Function LoadFromStreamAsync(ByVal RandomAccessStream As IRandomAccessStream) As IAsyncOperationIPdfDocument
+    Function LoadFromStreamWithPasswordAsync(ByVal RandomAccessStream As IRandomAccessStream, ByVal Password As LongPtr) As IAsyncOperationIPdfDocument
+End Interface
+
+[InterfaceId("9DB4B0C8-5320-4CFC-AD76-493FDAD0E594")]
+Interface IPdfPage Extends IInspectable ' requires IClosable
+    Function RenderToStreamAsync(ByVal RandomAccessStream As IRandomAccessStream) As IAsyncAction
+    Function RenderWithOptionsToStreamAsync(ByVal RandomAccessStream As IRandomAccessStream, ByVal PdfPageRenderOptions As IPdfPageRenderOptions) As IAsyncAction
+    Function PreparePageAsync() As IAsyncAction
+    Property Get Index() As Long
+    Property Get Size() As SIZEF
+    Property Get Dimensions() As IPdfPageDimensions
+    Property Get Rotation() As PdfPageRotation
+    Property Get PreferredZoom() As Single
+End Interface
+
+[InterfaceId("22170471-313E-44E8-835D-63A3E7624A10")]
+Interface IPdfPageDimensions Extends IInspectable
+    Property Get MediaBox() As RECTF
+    Property Get CropBox() As RECTF
+    Property Get BleedBox() As RECTF
+    Property Get TrimBox() As RECTF
+    Property Get ArtBox() As RECTF
+End Interface
+
+[InterfaceId("3C98056F-B7CF-4C29-9A04-52D90267F425")]
+Interface IPdfPageRenderOptions Extends IInspectable
+    Property Get SourceRect() As RECTF
+    Property Let SourceRect(ByVal SourceRect As RECTF)
+    Property Get DestinationWidth() As Long
+    Property Let DestinationWidth(ByVal Value As Long)
+    Property Get DestinationHeight() As Long
+    Property Let DestinationHeight(ByVal Value As Long)
+    Property Get BackgroundColor() As Color
+    Property Let BackgroundColor(ByVal Value As Color)
+    Property Get IsIgnoringHighContrast() As BooleanByte
+    Property Let IsIgnoringHighContrast(ByVal Value As BooleanByte)
+    Property Get BitmapEncoderId() As UUID
+    Property Let BitmapEncoderId(ByVal BitmapEncoderId As UUID)
+End Interface
+
+Module mdlDataPdf
+
+Public Enum PdfPageRotation
+    PdfPageRotation_Normal
+    PdfPageRotation_Rotate90
+    PdfPageRotation_Rotate180
+    PdfPageRotation_Rotate270
+End Enum
+    
+End Module

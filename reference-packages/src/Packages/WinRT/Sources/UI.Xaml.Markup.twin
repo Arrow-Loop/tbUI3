@@ -1,0 +1,232 @@
+[InterfaceId("F6790987-E6E5-47F2-92C6-ECCCE4BA159A")]
+Interface IComponentConnector Extends IInspectable
+    [PreserveSig]
+    Function Connect(ByVal ConnectionId As Long, ByVal Target As IInspectable) As HRESULT
+End Interface
+
+[InterfaceId("DC8F368B-ECCC-498E-B139-91142254D7AE")]
+Interface IComponentConnector2 Extends IInspectable
+    Function GetBindingConnector(ByVal ConnectionId As Long, ByVal Target As IInspectable) As IComponentConnector
+End Interface
+
+[InterfaceId("08429DC8-8AB0-4747-AA9A-FEADFC8DA8E1")]
+Interface IDataTemplateComponent Extends IInspectable
+    [PreserveSig]
+    Function Recycle() As HRESULT
+    Function ProcessBindings(ByVal Item As IInspectable, ByVal ItemIndex As Long, ByVal Phase As Long) As Long
+End Interface
+
+[InterfaceId("1EE3416D-562B-486E-9EE5-0F0CBCC8048C")]
+Interface IMarkupExtension Extends IInspectable
+
+End Interface
+
+[InterfaceId("65329C05-FB5A-4567-9D55-5CDFBADA2739")]
+Interface IMarkupExtensionFactory Extends IInspectable
+    Function CreateInstance(Optional ByVal BaseInterface As IInspectable, Optional InnerInterface As IInspectable) As IMarkupExtension
+End Interface
+
+[InterfaceId("393779BF-B9C0-4FFB-A57F-58E7356E425F")]
+Interface IMarkupExtensionOverrides Extends IInspectable
+    Function ProvideValue() As IInspectable
+End Interface
+
+[InterfaceId("829D2AD3-620A-46F6-845D-436A05927100")]
+Interface IXamlBinaryWriter Extends IInspectable
+
+End Interface
+
+[InterfaceId("C875446A-587F-58DA-897E-3BBE5EC7C30B")]
+Interface IIterator_IRandomAccessStream Extends IInspectable
+    Property Get Current() As IRandomAccessStream
+    Property Get HasCurrent() As BooleanByte
+    Function MoveNext() As BooleanByte
+    Function GetMany(ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("BA666A00-1555-5DF4-81A5-07D23F7FFCEB")]
+Interface IIterable_IRandomAccessStream Extends IInspectable
+    Function First() As IIterator_IRandomAccessStream
+End Interface
+
+[InterfaceId("92CD0A46-2266-5CD6-9293-E111299F2793")]
+Interface IVectorView_IRandomAccessStream Extends IInspectable
+    Function GetAt(ByVal Index As Long) As IRandomAccessStream
+    Property Get Size() As Long
+    Function IndexOf(ByVal Value As IRandomAccessStream, Index As Long) As BooleanByte
+    Function GetMany(ByVal StartIndex As Long, ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("2736B66B-DAA3-5E0C-9842-6A0F44B5440B")]
+Interface IVector_IRandomAccessStream Extends IInspectable
+    Function GetAt(ByVal Index As Long) As IRandomAccessStream
+    Property Get Size() As Long
+    Function GetView() As IVectorView_IRandomAccessStream
+    Function IndexOf(ByVal Value As IRandomAccessStream, Index As Long) As BooleanByte
+    [PreserveSig]
+    Function SetAt(ByVal Index As Long, ByVal Value As IRandomAccessStream) As HRESULT
+    [PreserveSig]
+    Function InsertAt(ByVal Index As Long, ByVal Value As IRandomAccessStream) As HRESULT
+    [PreserveSig]
+    Function RemoveAt(ByVal Index As Long) As HRESULT
+    [PreserveSig]
+    Function Append(ByVal Value As IRandomAccessStream) As HRESULT
+    [PreserveSig]
+    Function RemoveAtEnd() As HRESULT
+    [PreserveSig]
+    Function Clear() As HRESULT
+    Function GetMany(ByVal StartIndex As Long, ByVal Length As Long, Items As Any) As Long
+    [PreserveSig]
+    Function ReplaceAll(ByVal Length As Long, Items As Any) As HRESULT
+End Interface
+
+[InterfaceId("0D8ED07A-9B82-4AA8-B68B-026F2DE1CC86")]
+Interface IXamlBinaryWriterStatics Extends IInspectable
+    Function Write(ByVal InputStreams As IVector_IRandomAccessStream, ByVal OutputStreams As IVector_IRandomAccessStream, ByVal XamlMetadataProvider As IXamlMetadataProvider) As XamlBinaryWriterErrorInformation
+End Interface
+
+[InterfaceId("F264A29D-BDED-43AA-A5B0-26AC21A81EB8")]
+Interface IXamlBindScopeDiagnostics Extends IInspectable
+    [PreserveSig]
+    Function Disable(ByVal LineNumber As Long, ByVal ColumnNumber As Long) As HRESULT
+End Interface
+
+[InterfaceId("FAA6FB06-8AB9-4EF7-8AE7-FBD30BBFD06D")]
+Interface IXamlBindingHelper Extends IInspectable
+
+End Interface
+
+[InterfaceId("F65CFB71-C80C-4FFA-86EE-558754EE336D")]
+Interface IXamlBindingHelperStatics Extends IInspectable
+    Property Get DataTemplateComponentProperty() As IDependencyProperty
+    Function GetDataTemplateComponent(ByVal Element As IDependencyObject) As IDataTemplateComponent
+    [PreserveSig]
+    Function SetDataTemplateComponent(ByVal Element As IDependencyObject, ByVal Value As IDataTemplateComponent) As HRESULT
+    [PreserveSig]
+    Function SuspendRendering(ByVal Target As IUIElement) As HRESULT
+    [PreserveSig]
+    Function ResumeRendering(ByVal Target As IUIElement) As HRESULT
+    Function ConvertValue(ByVal Type As TypeName, ByVal Value As IInspectable) As IInspectable
+    [PreserveSig]
+    Function SetPropertyFromString(ByVal DependencyObject As IInspectable, ByVal PropertyToSet As IDependencyProperty, ByVal Value As LongPtr) As HRESULT
+    [PreserveSig]
+    Function SetPropertyFromBoolean(ByVal DependencyObject As IInspectable, ByVal PropertyToSet As IDependencyProperty, ByVal Value As BooleanByte) As HRESULT
+    [PreserveSig]
+    Function SetPropertyFromChar16(ByVal DependencyObject As IInspectable, ByVal PropertyToSet As IDependencyProperty, ByVal Value As Char16) As HRESULT
+    [PreserveSig]
+    Function SetPropertyFromDateTime(ByVal DependencyObject As IInspectable, ByVal PropertyToSet As IDependencyProperty, ByVal Value As DateTime) As HRESULT
+    [PreserveSig]
+    Function SetPropertyFromDouble(ByVal DependencyObject As IInspectable, ByVal PropertyToSet As IDependencyProperty, ByVal Value As Double) As HRESULT
+    [PreserveSig]
+    Function SetPropertyFromInt32(ByVal DependencyObject As IInspectable, ByVal PropertyToSet As IDependencyProperty, ByVal Value As Int32) As HRESULT
+    [PreserveSig]
+    Function SetPropertyFromUInt32(ByVal DependencyObject As IInspectable, ByVal PropertyToSet As IDependencyProperty, ByVal Value As UInt32) As HRESULT
+    [PreserveSig]
+    Function SetPropertyFromInt64(ByVal DependencyObject As IInspectable, ByVal PropertyToSet As IDependencyProperty, ByVal Value As Int64) As HRESULT
+    [PreserveSig]
+    Function SetPropertyFromUInt64(ByVal DependencyObject As IInspectable, ByVal PropertyToSet As IDependencyProperty, ByVal Value As UInt64) As HRESULT
+    [PreserveSig]
+    Function SetPropertyFromSingle(ByVal DependencyObject As IInspectable, ByVal PropertyToSet As IDependencyProperty, ByVal Value As Single) As HRESULT
+    [PreserveSig]
+    Function SetPropertyFromPoint(ByVal DependencyObject As IInspectable, ByVal PropertyToSet As IDependencyProperty, ByVal Value As POINTF) As HRESULT
+    [PreserveSig]
+    Function SetPropertyFromRect(ByVal DependencyObject As IInspectable, ByVal PropertyToSet As IDependencyProperty, ByVal Value As RECTF) As HRESULT
+    [PreserveSig]
+    Function SetPropertyFromSize(ByVal DependencyObject As IInspectable, ByVal PropertyToSet As IDependencyProperty, ByVal Value As SIZEF) As HRESULT
+    [PreserveSig]
+    Function SetPropertyFromTimeSpan(ByVal DependencyObject As IInspectable, ByVal PropertyToSet As IDependencyProperty, ByVal Value As TimeSpan) As HRESULT
+    [PreserveSig]
+    Function SetPropertyFromByte(ByVal DependencyObject As IInspectable, ByVal PropertyToSet As IDependencyProperty, ByVal Value As Byte) As HRESULT
+    [PreserveSig]
+    Function SetPropertyFromUri(ByVal DependencyObject As IInspectable, ByVal PropertyToSet As IDependencyProperty, ByVal Value As IUri) As HRESULT
+    [PreserveSig]
+    Function SetPropertyFromObject(ByVal DependencyObject As IInspectable, ByVal PropertyToSet As IDependencyProperty, ByVal Value As IInspectable) As HRESULT
+End Interface
+
+[InterfaceId("D0E6673C-5342-44EF-85A7-ED327A739D9A")]
+Interface IXamlMarkupHelper Extends IInspectable
+
+End Interface
+
+[InterfaceId("C9BC3725-F34F-445C-81A2-6B72A5E8F072")]
+Interface IXamlMarkupHelperStatics Extends IInspectable
+    [PreserveSig]
+    Function UnloadObject(ByVal Element As IDependencyObject) As HRESULT
+End Interface
+
+[InterfaceId("C541F58C-43A9-4216-B718-E0B11B14E93E")]
+Interface IXamlMember Extends IInspectable
+    Property Get IsAttachable() As BooleanByte
+    Property Get IsDependencyProperty() As BooleanByte
+    Property Get IsReadOnly() As BooleanByte
+    Property Get Name() As LongPtr
+    Property Get TargetType() As IXamlType
+    Property Get Type() As IXamlType
+    Function GetValue(ByVal Instance As IInspectable) As IInspectable
+    [PreserveSig]
+    Function SetValue(ByVal Instance As IInspectable, ByVal Value As IInspectable) As HRESULT
+End Interface
+
+[InterfaceId("B3765D69-68A5-4B32-8861-FDB90C1F5836")]
+Interface IXamlMetadataProvider Extends IInspectable
+    Function GetXamlType(ByVal Type As TypeName) As IXamlType
+    Function GetXamlTypeByFullName(ByVal FullName As LongPtr) As IXamlType
+    [PreserveSig]
+    Function GetXmlnsDefinitions(ResultSize As Long, XmlnsDefinitionPtr As LongPtr) As HRESULT ' Use CoTaskMemFree on XmlnsDefinitionPtr
+End Interface
+
+[InterfaceId("24374CF1-CCEB-48BF-A514-41B0186F84C2")]
+Interface IXamlReader Extends IInspectable
+
+End Interface
+
+[InterfaceId("9891C6BD-534F-4955-B85A-8A8DC0DCA602")]
+Interface IXamlReaderStatics Extends IInspectable
+    Function Load(ByVal Xaml As LongPtr) As IInspectable
+    Function LoadWithInitialTemplateValidation(ByVal Xaml As LongPtr) As IInspectable
+End Interface
+
+[InterfaceId("7920EAB1-A2E5-479A-BD50-6CEF3C0B4970")]
+Interface IXamlType Extends IInspectable
+    Property Get BaseType() As IXamlType
+    Property Get ContentProperty() As IXamlMember
+    Property Get FullName() As LongPtr
+    Property Get IsArray() As BooleanByte
+    Property Get IsCollection() As BooleanByte
+    Property Get IsConstructible() As BooleanByte
+    Property Get IsDictionary() As BooleanByte
+    Property Get IsMarkupExtension() As BooleanByte
+    Property Get IsBindable() As BooleanByte
+    Property Get ItemType() As IXamlType
+    Property Get KeyType() As IXamlType
+    Property Get UnderlyingType() As TypeName
+    Function ActivateInstance() As IInspectable
+    Function CreateFromString(ByVal Value As LongPtr) As IInspectable
+    Function GetMember(ByVal Name As LongPtr) As IXamlMember
+    [PreserveSig]
+    Function AddToVector(ByVal Instance As IInspectable, ByVal Value As IInspectable) As HRESULT
+    [PreserveSig]
+    Function AddToMap(ByVal Instance As IInspectable, ByVal Key As IInspectable, ByVal Value As IInspectable) As HRESULT
+    [PreserveSig]
+    Function RunInitializer() As HRESULT
+End Interface
+
+[InterfaceId("9F0C6E3B-433B-56AD-8F69-78A4DD3E64F9")]
+Interface IXamlType2 Extends IInspectable
+    Property Get BoxedType() As IXamlType
+End Interface
+
+Module UIXamlMarkup
+
+Public Type XamlBinaryWriterErrorInformation
+    InputStreamIndex As Long
+    LineNumber As Long
+    LinePosition As Long
+End Type
+
+Public Type XmlnsDefinition
+    XmlNamespace As LongPtr
+    Namespace As LongPtr
+End Type
+
+End Module

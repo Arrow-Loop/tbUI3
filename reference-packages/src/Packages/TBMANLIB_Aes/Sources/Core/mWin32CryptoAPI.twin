@@ -1,0 +1,403 @@
+' =====================================================
+' mWin32CryptoAPI.twin - Windows CryptoAPI Declarations for AES
+' TwinBASIC Project - Crypto Module - AES
+' =====================================================
+' Function: Declare Windows CryptoAPI functions for AES encryption
+' 功能：声明AES加密所需的Windows CryptoAPI函数
+' Author: woeoo (邓伟)
+' Email: 215879458@qq.com
+' Site: https://vb6.pro
+' Date: 2026-02-04
+' Version: 1.0.0
+' =====================================================
+
+Option Explicit
+
+Public Module mWin32CryptoAPI
+
+    ' =====================================================
+    ' CryptoAPI Function Declarations
+    ' =====================================================
+
+    ' Acquire cryptographic context
+    ' 获取加密服务提供者
+    Private Declare PtrSafe Function CryptAcquireContext Lib "advapi32.dll" Alias "CryptAcquireContextW" ( _
+        ByRef phProv As LongPtr, _
+        ByVal pszContainer As LongPtr, _
+        ByVal pszProvider As LongPtr, _
+        ByVal dwProvType As Long, _
+        ByVal dwFlags As Long _
+    ) As Long
+
+    ' Release cryptographic context
+    ' 释放加密服务提供者
+    Private Declare PtrSafe Function CryptReleaseContext Lib "advapi32.dll" ( _
+        ByVal hProv As LongPtr, _
+        ByVal dwFlags As Long _
+    ) As Long
+
+    ' Generate cryptographic key
+    ' 生成密钥
+    Private Declare PtrSafe Function CryptGenKey Lib "advapi32.dll" ( _
+        ByVal hProv As LongPtr, _
+        ByVal Algid As Long, _
+        ByVal dwFlags As Long, _
+        ByRef phKey As LongPtr _
+    ) As Long
+
+    ' Destroy cryptographic key
+    ' 销毁密钥
+    Private Declare PtrSafe Function CryptDestroyKey Lib "advapi32.dll" ( _
+        ByVal hKey As LongPtr _
+    ) As Long
+
+    ' Encrypt data
+    ' 加密数据
+    Private Declare PtrSafe Function CryptEncrypt Lib "advapi32.dll" ( _
+        ByVal hKey As LongPtr, _
+        ByVal hHash As LongPtr, _
+        ByVal Final As Long, _
+        ByVal dwFlags As Long, _
+        ByVal pbData As LongPtr, _
+        ByRef pdwDataLen As Long, _
+        ByVal dwBufLen As Long _
+    ) As Long
+
+    ' Decrypt data
+    ' 解密数据
+    Private Declare PtrSafe Function CryptDecrypt Lib "advapi32.dll" ( _
+        ByVal hKey As LongPtr, _
+        ByVal hHash As LongPtr, _
+        ByVal Final As Long, _
+        ByVal dwFlags As Long, _
+        ByVal pbData As LongPtr, _
+        ByRef pdwDataLen As Long _
+    ) As Long
+
+    ' Create hash object
+    ' 创建哈希对象
+    Private Declare PtrSafe Function CryptCreateHash Lib "advapi32.dll" ( _
+        ByVal hProv As LongPtr, _
+        ByVal Algid As Long, _
+        ByVal hKey As LongPtr, _
+        ByVal dwFlags As Long, _
+        ByRef phHash As LongPtr _
+    ) As Long
+
+    ' Destroy hash object
+    ' 销毁哈希对象
+    Private Declare PtrSafe Function CryptDestroyHash Lib "advapi32.dll" ( _
+        ByVal hHash As LongPtr _
+    ) As Long
+
+    ' Hash data
+    ' 哈希数据
+    Private Declare PtrSafe Function CryptHashData Lib "advapi32.dll" ( _
+        ByVal hHash As LongPtr, _
+        ByVal pbData As LongPtr, _
+        ByVal dwDataLen As Long, _
+        ByVal dwFlags As Long _
+    ) As Long
+
+    ' Get hash parameter
+    ' 获取哈希参数
+    Private Declare PtrSafe Function CryptGetHashParam Lib "advapi32.dll" ( _
+        ByVal hHash As LongPtr, _
+        ByVal dwParam As Long, _
+        ByVal pbData As LongPtr, _
+        ByRef pdwDataLen As Long, _
+        ByVal dwFlags As Long _
+    ) As Long
+
+    ' Derive key from hash
+    ' 从哈希派生密钥
+    Private Declare PtrSafe Function CryptDeriveKey Lib "advapi32.dll" ( _
+        ByVal hProv As LongPtr, _
+        ByVal Algid As Long, _
+        ByVal hBaseData As LongPtr, _
+        ByVal dwFlags As Long, _
+        ByRef phKey As LongPtr _
+    ) As Long
+
+    ' Set key parameter
+    ' 设置密钥参数
+    Private Declare PtrSafe Function CryptSetKeyParam Lib "advapi32.dll" ( _
+        ByVal hKey As LongPtr, _
+        ByVal dwParam As Long, _
+        ByVal pbData As LongPtr, _
+        ByVal dwFlags As Long _
+    ) As Long
+
+    ' Get key parameter
+    ' 获取密钥参数
+    Private Declare PtrSafe Function CryptGetKeyParam Lib "advapi32.dll" ( _
+        ByVal hKey As LongPtr, _
+        ByVal dwParam As Long, _
+        ByVal pbData As LongPtr, _
+        ByRef pdwDataLen As Long, _
+        ByVal dwFlags As Long _
+    ) As Long
+
+    ' Base64 encode
+    ' Base64编码
+    Private Declare PtrSafe Function CryptBinaryToString Lib "crypt32.dll" Alias "CryptBinaryToStringW" ( _
+        ByVal pbBinary As LongPtr, _
+        ByVal cbBinary As Long, _
+        ByVal dwFlags As Long, _
+        ByVal pszString As LongPtr, _
+        ByRef pcchString As Long _
+    ) As Long
+
+    ' Base64 decode
+    ' Base64解码
+    Private Declare PtrSafe Function CryptStringToBinary Lib "crypt32.dll" Alias "CryptStringToBinaryW" ( _
+        ByVal pszString As LongPtr, _
+        ByVal cchString As Long, _
+        ByVal dwFlags As Long, _
+        ByVal pbBinary As LongPtr, _
+        ByRef pcbBinary As Long, _
+        ByRef pdwSkip As Long, _
+        ByRef pdwFlags As Long _
+    ) As Long
+
+    ' Memory copy
+    ' 内存复制
+    Private Declare PtrSafe Sub CopyMemory Lib "kernel32" Alias "RtlMoveMemory" ( _
+        ByVal Destination As LongPtr, _
+        ByVal Source As LongPtr, _
+        ByVal Length As Long _
+    )
+
+    ' Memory zero
+    ' 内存清零
+    Private Declare PtrSafe Sub ZeroMemory Lib "kernel32" Alias "RtlZeroMemory" ( _
+        ByVal Destination As LongPtr, _
+        ByVal Length As Long _
+    )
+
+    ' =====================================================
+    ' Public Wrapper Functions
+    ' =====================================================
+
+    ' Wrapper for CryptAcquireContext
+    Public Function AES_CryptAcquireContext(ByRef phProv As LongPtr, _
+                                          ByVal pszContainer As LongPtr, _
+                                          ByVal pszProvider As LongPtr, _
+                                          ByVal dwProvType As Long, _
+                                          ByVal dwFlags As Long) As Long
+        AES_CryptAcquireContext = CryptAcquireContext(phProv, pszContainer, pszProvider, dwProvType, dwFlags)
+    End Function
+
+    ' Wrapper for CryptReleaseContext
+    Public Function AES_CryptReleaseContext(ByVal hProv As LongPtr, ByVal dwFlags As Long) As Long
+        AES_CryptReleaseContext = CryptReleaseContext(hProv, dwFlags)
+    End Function
+
+    ' Wrapper for CryptCreateHash
+    Public Function AES_CryptCreateHash(ByVal hProv As LongPtr, _
+                                      ByVal Algid As Long, _
+                                      ByVal hKey As LongPtr, _
+                                      ByVal dwFlags As Long, _
+                                      ByRef phHash As LongPtr) As Long
+        AES_CryptCreateHash = CryptCreateHash(hProv, Algid, hKey, dwFlags, phHash)
+    End Function
+
+    ' Wrapper for CryptDestroyHash
+    Public Function AES_CryptDestroyHash(ByVal hHash As LongPtr) As Long
+        AES_CryptDestroyHash = CryptDestroyHash(hHash)
+    End Function
+
+    ' Wrapper for CryptHashData
+    Public Function AES_CryptHashData(ByVal hHash As LongPtr, _
+                                    ByVal pbData As LongPtr, _
+                                    ByVal dwDataLen As Long, _
+                                    ByVal dwFlags As Long) As Long
+        AES_CryptHashData = CryptHashData(hHash, pbData, dwDataLen, dwFlags)
+    End Function
+
+    ' Wrapper for CryptGetHashParam
+    Public Function AES_CryptGetHashParam(ByVal hHash As LongPtr, _
+                                        ByVal dwParam As Long, _
+                                        ByVal pbData As LongPtr, _
+                                        ByRef pdwDataLen As Long, _
+                                        ByVal dwFlags As Long) As Long
+        AES_CryptGetHashParam = CryptGetHashParam(hHash, dwParam, pbData, pdwDataLen, dwFlags)
+    End Function
+
+    ' Wrapper for CryptDeriveKey
+    Public Function AES_CryptDeriveKey(ByVal hProv As LongPtr, _
+                                     ByVal Algid As Long, _
+                                     ByVal hBaseData As LongPtr, _
+                                     ByVal dwFlags As Long, _
+                                     ByRef phKey As LongPtr) As Long
+        AES_CryptDeriveKey = CryptDeriveKey(hProv, Algid, hBaseData, dwFlags, phKey)
+    End Function
+
+    ' Wrapper for CryptDestroyKey
+    Public Function AES_CryptDestroyKey(ByVal hKey As LongPtr) As Long
+        AES_CryptDestroyKey = CryptDestroyKey(hKey)
+    End Function
+
+    ' Wrapper for CryptSetKeyParam
+    Public Function AES_CryptSetKeyParam(ByVal hKey As LongPtr, _
+                                      ByVal dwParam As Long, _
+                                      ByVal pbData As LongPtr, _
+                                      ByVal dwFlags As Long) As Long
+        AES_CryptSetKeyParam = CryptSetKeyParam(hKey, dwParam, pbData, dwFlags)
+    End Function
+
+    ' Wrapper for CryptGetKeyParam
+    Public Function AES_CryptGetKeyParam(ByVal hKey As LongPtr, _
+                                      ByVal dwParam As Long, _
+                                      ByVal pbData As LongPtr, _
+                                      ByRef pdwDataLen As Long, _
+                                      ByVal dwFlags As Long) As Long
+        AES_CryptGetKeyParam = CryptGetKeyParam(hKey, dwParam, pbData, pdwDataLen, dwFlags)
+    End Function
+
+    ' Wrapper for CryptEncrypt
+    Public Function AES_CryptEncrypt(ByVal hKey As LongPtr, _
+                                   ByVal hHash As LongPtr, _
+                                   ByVal Final As Long, _
+                                   ByVal dwFlags As Long, _
+                                   ByVal pbData As LongPtr, _
+                                   ByRef pdwDataLen As Long, _
+                                   ByVal dwBufLen As Long) As Long
+        AES_CryptEncrypt = CryptEncrypt(hKey, hHash, Final, dwFlags, pbData, pdwDataLen, dwBufLen)
+    End Function
+
+    ' Wrapper for CryptDecrypt
+    Public Function AES_CryptDecrypt(ByVal hKey As LongPtr, _
+                                   ByVal hHash As LongPtr, _
+                                   ByVal Final As Long, _
+                                   ByVal dwFlags As Long, _
+                                   ByVal pbData As LongPtr, _
+                                   ByRef pdwDataLen As Long) As Long
+        AES_CryptDecrypt = CryptDecrypt(hKey, hHash, Final, dwFlags, pbData, pdwDataLen)
+    End Function
+
+    ' Wrapper for CryptBinaryToString (Base64 encode)
+    Public Function AES_CryptBinaryToString(ByVal pbBinary As LongPtr, _
+                                          ByVal cbBinary As Long, _
+                                          ByVal dwFlags As Long, _
+                                          ByVal pszString As LongPtr, _
+                                          ByRef pcchString As Long) As Long
+        AES_CryptBinaryToString = CryptBinaryToString(pbBinary, cbBinary, dwFlags, pszString, pcchString)
+    End Function
+
+    ' Wrapper for CryptStringToBinary (Base64 decode)
+    Public Function AES_CryptStringToBinary(ByVal pszString As LongPtr, _
+                                         ByVal cchString As Long, _
+                                         ByVal dwFlags As Long, _
+                                         ByVal pbBinary As LongPtr, _
+                                         ByRef pcbBinary As Long, _
+                                         ByRef pdwSkip As Long, _
+                                         ByRef pdwFlags As Long) As Long
+        AES_CryptStringToBinary = CryptStringToBinary(pszString, cchString, dwFlags, pbBinary, pcbBinary, pdwSkip, pdwFlags)
+    End Function
+
+    ' Wrapper for CopyMemory
+    Public Sub AES_CopyMemory(ByVal Destination As LongPtr, ByVal Source As LongPtr, ByVal Length As Long)
+        CopyMemory Destination, Source, Length
+    End Sub
+
+    ' Wrapper for ZeroMemory
+    Public Sub AES_ZeroMemory(ByVal Destination As LongPtr, ByVal Length As Long)
+        ZeroMemory Destination, Length
+    End Sub
+
+    ' =====================================================
+    ' UTF-8 Conversion Functions
+    ' =====================================================
+
+    ' Unicode to UTF-8 conversion
+    ' 将 Unicode 字符串转换为 UTF-8 字节数组
+    Private Declare PtrSafe Function WideCharToMultiByte Lib "kernel32.dll" ( _
+        ByVal CodePage As Long, _
+        ByVal dwFlags As Long, _
+        ByVal lpWideCharStr As LongPtr, _
+        ByVal cchWideChar As Long, _
+        ByVal lpMultiByteStr As LongPtr, _
+        ByVal cbMultiByte As Long, _
+        ByVal lpDefaultChar As LongPtr, _
+        ByVal lpUsedDefaultChar As LongPtr _
+    ) As Long
+
+    ' UTF-8 to Unicode conversion
+    ' 将 UTF-8 字节数组转换为 Unicode 字符串
+    Private Declare PtrSafe Function MultiByteToWideChar Lib "kernel32.dll" ( _
+        ByVal CodePage As Long, _
+        ByVal dwFlags As Long, _
+        ByVal lpMultiByteStr As LongPtr, _
+        ByVal cbMultiByte As Long, _
+        ByVal lpWideCharStr As LongPtr, _
+        ByVal cchWideChar As Long _
+    ) As Long
+
+    ' UTF-8 Code Page
+    Public Const CP_UTF8 As Long = 65001
+
+    ' Convert Unicode string to UTF-8 byte array
+    ' 将 Unicode 字符串转换为 UTF-8 字节数组
+    Public Function WideStringToUtf8Bytes(ByVal str As String) As Byte()
+        If Len(str) = 0 Then
+            WideStringToUtf8Bytes = Nothing
+            Exit Function
+        End If
+
+        Dim requiredLen As Long
+        requiredLen = WideCharToMultiByte(CP_UTF8, 0, StrPtr(str), Len(str), 0, 0, 0, 0)
+
+        If requiredLen = 0 Then
+            WideStringToUtf8Bytes = Nothing
+            Exit Function
+        End If
+
+        Dim bytes() As Byte
+        ReDim bytes(requiredLen - 1)
+
+        Dim actualLen As Long
+        actualLen = WideCharToMultiByte(CP_UTF8, 0, StrPtr(str), Len(str), VarPtr(bytes(0)), requiredLen, 0, 0)
+
+        If actualLen = 0 Then
+            WideStringToUtf8Bytes = Nothing
+            Exit Function
+        End If
+
+        WideStringToUtf8Bytes = bytes
+    End Function
+
+    ' Convert UTF-8 byte array to Unicode string
+    ' 将 UTF-8 字节数组转换为 Unicode 字符串
+    Public Function Utf8BytesToWideString(ByRef bytes() As Byte) As String
+        If UBound(bytes) < LBound(bytes) Then
+            Utf8BytesToWideString = ""
+            Exit Function
+        End If
+
+        Dim dataLen As Long
+        dataLen = UBound(bytes) - LBound(bytes) + 1
+
+        Dim requiredLen As Long
+        requiredLen = MultiByteToWideChar(CP_UTF8, 0, VarPtr(bytes(0)), dataLen, 0, 0)
+
+        If requiredLen = 0 Then
+            Utf8BytesToWideString = ""
+            Exit Function
+        End If
+
+        Dim result As String
+        result = Space$(requiredLen)
+
+        Dim actualLen As Long
+        actualLen = MultiByteToWideChar(CP_UTF8, 0, VarPtr(bytes(0)), dataLen, StrPtr(result), requiredLen)
+
+        If actualLen = 0 Then
+            Utf8BytesToWideString = ""
+            Exit Function
+        End If
+
+        Utf8BytesToWideString = Left$(result, actualLen)
+    End Function
+
+End Module

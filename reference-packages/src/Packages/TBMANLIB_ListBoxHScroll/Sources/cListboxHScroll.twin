@@ -1,0 +1,393 @@
+Class cListboxHScroll
+
+    'Author: woeoio@qq.com
+    
+    Dim Ctl As ListBox
+    
+    Public Sub Show(ByRef ListBoxInst As Object)
+        
+        Set Ctl = ListBoxInst
+        ' 显示水平滚动条
+        ShowHorizontalScrollbar Ctl
+
+        ' 自动计算并设置水平滚动范围和滚动条信息
+        AutoSetHorizontalExtent Ctl
+
+        ' 初始化子类化以处理滚动消息
+        InitListBoxSubclass Ctl
+    End Sub
+    
+    Public Sub UnShow()
+        RemoveListBoxSubclass Ctl
+    End Sub
+    
+    ' SendMessage API
+    Private Declare PtrSafe Function SendMessage Lib "user32" Alias "SendMessageW" ( _
+        ByVal hWnd As LongPtr, _
+        ByVal wMsg As Long, _
+        ByVal wParam As LongPtr, _
+        ByVal lParam As LongPtr _
+    ) As LongPtr
+
+    ' GDI API - 用于计算文本宽度
+    Private Declare PtrSafe Function GetDC Lib "user32" (ByVal hWnd As LongPtr) As LongPtr
+    Private Declare PtrSafe Function ReleaseDC Lib "user32" (ByVal hWnd As LongPtr, ByVal hDC As LongPtr) As Long
+    Private Declare PtrSafe Function SelectObject Lib "gdi32" (ByVal hDC As LongPtr, ByVal hObject As LongPtr) As LongPtr
+    Private Declare PtrSafe Function GetTextExtentPoint32 Lib "gdi32" Alias "GetTextExtentPoint32W" ( _
+        ByVal hDC As LongPtr, _
+        ByVal lpString As LongPtr, _
+        ByVal cbString As Long, _
+        ByRef lpSize As SIZE _
+    ) As Long
+
+    ' 滚动条信息 API
+    Private Declare PtrSafe Function SetScrollInfo Lib "user32" ( _
+        ByVal hWnd As LongPtr, _
+        ByVal nBar As Long, _
+        ByRef lpScrollInfo As SCROLLINFO, _
+        ByVal bRedraw As Long _
+    ) As Long
+
+    Private Declare PtrSafe Function GetScrollInfo Lib "user32" ( _
+        ByVal hWnd As LongPtr, _
+        ByVal nBar As Long, _
+        ByRef lpScrollInfo As SCROLLINFO _
+    ) As Long
+
+    Private Declare PtrSafe Function GetClientRect Lib "user32" ( _
+        ByVal hWnd As LongPtr, _
+        ByRef lpRect As RECT _
+    ) As Long
+
+    Private Declare PtrSafe Function SetScrollPos Lib "user32" ( _
+        ByVal hWnd As LongPtr, _
+        ByVal nBar As Long, _
+        ByVal nPos As Long, _
+        ByVal bRedraw As Long _
+    ) As Long
+
+    Private Declare PtrSafe Function GetScrollPos Lib "user32" ( _
+        ByVal hWnd As LongPtr, _
+        ByVal nBar As Long _
+    ) As Long
+
+    ' 窗口子类化 API
+    Private Declare PtrSafe Function SetWindowSubclass Lib "comctl32" ( _
+        ByVal hWnd As LongPtr, _
+        ByVal pfnSubclass As LongPtr, _
+        ByVal uIdSubclass As LongPtr, _
+        ByVal dwRefData As LongPtr _
+    ) As Long
+
+    Private Declare PtrSafe Function RemoveWindowSubclass Lib "comctl32" ( _
+        ByVal hWnd As LongPtr, _
+        ByVal pfnSubclass As LongPtr, _
+        ByVal uIdSubclass As LongPtr _
+    ) As Long
+
+    Private Declare PtrSafe Function DefSubclassProc Lib "comctl32" ( _
+        ByVal hWnd As LongPtr, _
+        ByVal uMsg As Long, _
+        ByVal wParam As LongPtr, _
+        ByVal lParam As LongPtr _
+    ) As LongPtr
+
+    ' SIZE 结构
+    Private Type SIZE
+        cx As Long
+        cy As Long
+    End Type
+
+    ' RECT 结构
+    Private Type RECT
+        Left As Long
+        Top As Long
+        Right As Long
+        Bottom As Long
+    End Type
+
+    ' SCROLLINFO 结构
+    Private Type SCROLLINFO
+        cbSize As Long
+        fMask As Long
+        nMin As Long
+        nMax As Long
+        nPage As Long
+        nPos As Long
+        nTrackPos As Long
+    End Type
+
+    ' SCROLLINFO 掩码常量
+    Private Const SIF_RANGE As Long = &H1
+    Private Const SIF_PAGE As Long = &H2
+    Private Const SIF_POS As Long = &H4
+    Private Const SIF_TRACKPOS As Long = &H10
+    Private Const SIF_ALL As Long = SIF_RANGE Or SIF_PAGE Or SIF_POS Or SIF_TRACKPOS
+
+    ' Windows 消息常量
+    Private Const WM_HSCROLL As Long = &H114
+    Private Const WM_GETFONT As Long = &H31
+    Private Const WM_DESTROY As Long = &H2
+    Private Const SB_LINERIGHT As Long = 1
+    Private Const SB_LINELEFT As Long = 0
+    Private Const SB_PAGERIGHT As Long = 3
+    Private Const SB_PAGELEFT As Long = 2
+    Private Const SB_THUMBPOSITION As Long = 4
+    Private Const SB_THUMBTRACK As Long = 5
+    Private Const SB_LEFT As Long = 6
+    Private Const SB_RIGHT As Long = 7
+    Private Const SB_ENDSCROLL As Long = 8
+
+    ' ListBox 消息常量
+    Private Const LB_SETHORIZONTALEXTENT As Long = &H194
+    Private Const LB_GETHORIZONTALEXTENT As Long = &H193
+    Private Const LB_GETCOUNT As Long = &H18B
+    Private Const LB_GETTEXT As Long = &H189
+    Private Const LB_GETTEXTLEN As Long = &H18A
+
+    ' ScrollBar API
+    Private Declare PtrSafe Function ShowScrollBar Lib "user32" ( _
+        ByVal hWnd As LongPtr, _
+        ByVal wBar As Long, _
+        ByVal bShow As Long _
+    ) As Long
+
+    ' 滚动条常量
+    Private Const SB_HORZ As Long = 0
+    Private Const SB_VERT As Long = 1
+    Private Const SB_BOTH As Long = 3
+    Private Const SB_CTL As Long = 2
+
+    ' 子类化 ID
+    Private Const SUBCLASS_ID As LongPtr = 1
+
+    ' 保存最大宽度和控件句柄
+    Private m_MaxContentWidth As Long
+    Private m_ListBoxHwnd As LongPtr
+    Private m_VisibleWidth As Long
+
+    ' 子类化窗口过程
+    Private Function ListBoxSubclassProc(ByVal hWnd As LongPtr, ByVal uMsg As Long, _
+                                          ByVal wParam As LongPtr, ByVal lParam As LongPtr, _
+                                          ByVal uIdSubclass As LongPtr, ByVal dwRefData As LongPtr) As LongPtr
+        Select Case uMsg
+            Case WM_HSCROLL
+                ' 获取滚动类型
+                Dim scrollCode As Long
+                scrollCode = CLng(wParam And &HFFFF&)
+
+                Dim si As SCROLLINFO
+                si.cbSize = LenB(si)
+                si.fMask = SIF_ALL
+                GetScrollInfo hWnd, SB_HORZ, si
+
+                Dim newPos As Long
+                newPos = si.nPos
+
+                Select Case scrollCode
+                    Case SB_LINELEFT
+                        newPos = newPos - 20
+                    Case SB_LINERIGHT
+                        newPos = newPos + 20
+                    Case SB_PAGELEFT
+                        newPos = newPos - si.nPage
+                    Case SB_PAGERIGHT
+                        newPos = newPos + si.nPage
+                    Case SB_THUMBTRACK, SB_THUMBPOSITION
+                        ' 从 wParam 高位获取位置
+                        newPos = CLng((wParam \ &H10000) And &HFFFF&)
+                    Case SB_LEFT
+                        newPos = si.nMin
+                    Case SB_RIGHT
+                        newPos = si.nMax
+                    Case SB_ENDSCROLL
+                        ' 滚动结束，不做任何事
+                        ListBoxSubclassProc = DefSubclassProc(hWnd, uMsg, wParam, lParam)
+                        Exit Function
+                End Select
+
+                ' 限制范围
+                If newPos < si.nMin Then newPos = si.nMin
+                If newPos > si.nMax - CLng(si.nPage) Then newPos = si.nMax - CLng(si.nPage)
+                If newPos < 0 Then newPos = 0
+
+                ' 更新滚动条位置
+                si.fMask = SIF_POS
+                si.nPos = newPos
+                SetScrollInfo hWnd, SB_HORZ, si, 1
+
+                ' 让默认处理程序处理实际的内容滚动
+                ListBoxSubclassProc = DefSubclassProc(hWnd, uMsg, wParam, lParam)
+                Exit Function
+
+            Case WM_DESTROY
+                ' 移除子类化
+                RemoveWindowSubclass hWnd, AddressOf ListBoxSubclassProc, uIdSubclass
+        End Select
+
+        ListBoxSubclassProc = DefSubclassProc(hWnd, uMsg, wParam, lParam)
+    End Function
+
+    ' 设置 ListBox 水平滚动范围（关键函数）
+    Private Sub SetListBoxHorizontalExtent(ByVal ctrl As Object, ByVal extent As Long)
+        Dim hWnd As LongPtr
+        hWnd = GetControlHandle(ctrl)
+        If hWnd <> 0 Then
+            SendMessage hWnd, LB_SETHORIZONTALEXTENT, extent, 0
+        End If
+    End Sub
+
+    ' 设置滚动条范围信息
+    Private Sub SetScrollBarInfo(ByVal ctrl As Object, ByVal contentWidth As Long)
+        Dim hWnd As LongPtr
+        Dim si As SCROLLINFO
+        Dim rc As RECT
+
+        hWnd = GetControlHandle(ctrl)
+        If hWnd = 0 Then Exit Sub
+
+        ' 获取控件客户区宽度
+        GetClientRect hWnd, rc
+        m_VisibleWidth = rc.Right - rc.Left
+
+        ' 设置滚动条信息
+        si.cbSize = LenB(si)
+        si.fMask = SIF_RANGE Or SIF_PAGE Or SIF_POS
+        si.nMin = 0
+        si.nMax = contentWidth
+        si.nPage = m_VisibleWidth
+        si.nPos = 0
+
+        SetScrollInfo hWnd, SB_HORZ, si, 1
+    End Sub
+
+    ' 初始化 ListBox 子类化
+    Private Sub InitListBoxSubclass(ByVal ctrl As Object)
+        Dim hWnd As LongPtr
+        hWnd = GetControlHandle(ctrl)
+        If hWnd <> 0 Then
+            m_ListBoxHwnd = hWnd
+            SetWindowSubclass hWnd, AddressOf ListBoxSubclassProc, SUBCLASS_ID, 0
+        End If
+    End Sub
+
+    ' 移除 ListBox 子类化
+    Private Sub RemoveListBoxSubclass(ByVal ctrl As Object)
+        Dim hWnd As LongPtr
+        hWnd = GetControlHandle(ctrl)
+        If hWnd <> 0 Then
+            RemoveWindowSubclass hWnd, AddressOf ListBoxSubclassProc, SUBCLASS_ID
+        End If
+    End Sub
+
+    ' 自动计算并设置 ListBox 水平滚动范围
+    Private Sub AutoSetHorizontalExtent(ByVal ctrl As Object)
+        Dim hWnd As LongPtr
+        Dim hDC As LongPtr
+        Dim hFont As LongPtr
+        Dim hOldFont As LongPtr
+        Dim maxWidth As Long
+        Dim textSize As SIZE
+        Dim i As Long
+        Dim itemCount As Long
+        Dim textLen As Long
+        Dim itemText As String
+
+        hWnd = GetControlHandle(ctrl)
+        If hWnd = 0 Then Exit Sub
+
+        ' 获取 ListBox 的 DC
+        hDC = GetDC(hWnd)
+        If hDC = 0 Then Exit Sub
+
+        ' 获取 ListBox 使用的字体
+        hFont = SendMessage(hWnd, WM_GETFONT, 0, 0)
+        If hFont <> 0 Then
+            hOldFont = SelectObject(hDC, hFont)
+        End If
+
+        ' 获取项目数量
+        itemCount = CLng(SendMessage(hWnd, LB_GETCOUNT, 0, 0))
+        maxWidth = 0
+
+        ' 遍历所有项目，计算最大宽度
+        For i = 0 To itemCount - 1
+            ' 获取文本长度
+            textLen = CLng(SendMessage(hWnd, LB_GETTEXTLEN, i, 0))
+            If textLen > 0 Then
+                ' 分配字符串空间
+                itemText = String$(textLen + 1, vbNullChar)
+                ' 获取文本内容
+                SendMessage hWnd, LB_GETTEXT, i, StrPtr(itemText)
+                ' 计算文本宽度
+                GetTextExtentPoint32 hDC, StrPtr(itemText), textLen, textSize
+                If textSize.cx > maxWidth Then
+                    maxWidth = textSize.cx
+                End If
+            End If
+        Next i
+
+        ' 恢复原来的字体
+        If hOldFont <> 0 Then
+            SelectObject hDC, hOldFont
+        End If
+
+        ' 释放 DC
+        ReleaseDC hWnd, hDC
+
+        ' 设置水平滚动范围（加一点边距）
+        If maxWidth > 0 Then
+            m_MaxContentWidth = maxWidth + 10
+            SetListBoxHorizontalExtent ctrl, m_MaxContentWidth
+            ' 设置滚动条范围信息
+            SetScrollBarInfo ctrl, m_MaxContentWidth
+        End If
+    End Sub
+
+    ' 显示水平滚动条
+    Private Sub ShowHorizontalScrollbar(ByVal ctrl As Object)
+        Dim hWnd As LongPtr
+        hWnd = GetControlHandle(ctrl)
+        If hWnd <> 0 Then
+            ShowScrollBar hWnd, SB_HORZ, 1
+        End If
+    End Sub
+
+    ' 隐藏水平滚动条
+    Private Sub HideHorizontalScrollbar(ByVal ctrl As Object)
+        Dim hWnd As LongPtr
+        hWnd = GetControlHandle(ctrl)
+        If hWnd <> 0 Then
+            ShowScrollBar hWnd, SB_HORZ, 0
+        End If
+    End Sub
+
+    ' 发送水平滚动消息
+    Private Sub SendHorizontalScroll(ByVal ctrl As Object, ByVal scrollType As Long)
+        Dim hWnd As LongPtr
+        hWnd = GetControlHandle(ctrl)
+        If hWnd <> 0 Then
+            SendMessage hWnd, WM_HSCROLL, scrollType, 0
+        End If
+    End Sub
+
+    ' 获取控件句柄
+    Private Function GetControlHandle(ByVal ctrl As Object) As LongPtr
+        On Error GoTo ErrorHandler
+        GetControlHandle = ctrl.hWnd
+        Exit Function
+    ErrorHandler:
+        GetControlHandle = 0
+    End Function
+    
+    Private Sub Class_Initialize()
+        
+    End Sub
+    
+    Private Sub Class_Terminate()
+        ' 移除子类化
+        RemoveListBoxSubclass Ctl
+    End Sub
+
+
+End Class

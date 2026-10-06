@@ -1,0 +1,57 @@
+[InterfaceId("33A0AA36-F8FA-4B30-B856-76517C3BD06D")]
+Interface IEndpointPair Extends IInspectable
+    Property Get LocalHostName() As IHostName
+    Property Set LocalHostName(ByVal Value As IHostName)
+    Property Get LocalServiceName() As LongPtr
+    Property Let LocalServiceName(ByVal Value As LongPtr)
+    Property Get RemoteHostName() As IHostName
+    Property Set RemoteHostName(ByVal Value As IHostName)
+    Property Get RemoteServiceName() As LongPtr
+    Property Let RemoteServiceName(ByVal Value As LongPtr)
+End Interface
+
+[InterfaceId("B609D971-64E0-442B-AA6F-CC8C8F181F78")]
+Interface IEndpointPairFactory Extends IInspectable
+    Function CreateEndpointPair(ByVal LocalHostName As IHostName, ByVal LocalServiceName As LongPtr, ByVal RemoteHostName As IHostName, ByVal RemoteServiceName As LongPtr) As IEndpointPair
+End Interface
+
+[InterfaceId("BF8ECAAD-ED96-49A7-9084-D416CAE88DCB")]
+Interface IHostName Extends IInspectable
+    Property Get IPInformation() As IIPInformation
+    Property Get RawName() As LongPtr
+    Property Get DisplayName() As LongPtr
+    Property Get CanonicalName() As LongPtr
+    Property Get Type() As HostNameType
+    Function IsEqual(ByVal HostName As IHostName) As BooleanByte
+End Interface
+
+[InterfaceId("458C23ED-712F-4576-ADF1-C20B2C643558")]
+Interface IHostNameFactory Extends IInspectable
+    Function CreateHostName(ByVal HostName As LongPtr) As IHostName
+End Interface
+
+[InterfaceId("F68CD4BF-A388-4E8B-91EA-54DD6DD901C0")]
+Interface IHostNameStatics Extends IInspectable
+    Function Compare(ByVal Value1 As LongPtr, ByVal Value2 As LongPtr) As Long
+End Interface
+
+Module mdlNetworking
+
+Public Enum DomainNameType
+    DomainNameType_Suffix
+    DomainNameType_FullyQualified
+End Enum
+
+Public Enum HostNameSortOptions
+    HostNameSortOptions_None = &H0
+    HostNameSortOptions_OptimizeForLongConnections = &H2
+End Enum
+
+Public Enum HostNameType
+    HostNameType_DomainName
+    HostNameType_Ipv4
+    HostNameType_Ipv6
+    HostNameType_Bluetooth
+End Enum
+
+End Module

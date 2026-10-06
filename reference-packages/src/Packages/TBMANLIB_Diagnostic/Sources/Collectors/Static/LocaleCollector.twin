@@ -1,0 +1,129 @@
+' =====================================================
+' LocaleCollector.twin - 区域设置收集器
+' Twinbasic Diagnostic Tool
+' =====================================================
+
+' 区域设置收集器
+' 刷新模式：Static（只获取一次）
+' 获取区域设置、代码页、时区等信息
+[ ClassId ("03A2B3C4-D5E6-F7A8-B9C0-D1E2F3A4B5C6") ]
+[ InterfaceId ("03A2B3C4-D5E6-F7A8-B9C0-D1E2F3A4B5C7") ]
+Public Class LocaleCollector
+    Implements IDiagnosticCollector
+
+    ' === IDiagnosticCollector 实现 ===
+
+    Public Property Get IDiagnosticCollector_CategoryName() As String
+        Return "Locale"
+    End Property
+
+    Public Property Get IDiagnosticCollector_Description() As String
+        Return "Regional settings, code pages, and timezone"
+    End Property
+
+    Public Property Get IDiagnosticCollector_RefreshMode() As RefreshMode
+        Return RefreshMode.Static
+    End Property
+
+    Public Property Get IDiagnosticCollector_RequiresElevation() As Boolean
+        Return False
+    End Property
+
+    Public Property Get IDiagnosticCollector_SupportsSummary() As Boolean
+        Return False
+    End Property
+
+    Public Function IDiagnosticCollector_Collect() As DiagnosticResult(Of KeyValuePair(Of String, String))
+        Dim result As DiagnosticResult(Of KeyValuePair(Of String, String))
+        Set result = New DiagnosticResult(Of KeyValuePair(Of String, String))("Locale")
+
+        ' 获取用户区域设置 ID
+        Dim lcid As Long = GetUserDefaultLCID()
+        result.AddItem New KeyValuePair(Of String, String)("LCID", CStr(lcid))
+
+        ' 获取语言代码 (如 "zh")
+        Dim langCode As String = GetLocaleString(lcid, LOCALE_SISO639LANGNAME)
+        If Len(langCode) > 0 Then
+            result.AddItem New KeyValuePair(Of String, String)("Language Code", langCode)
+        End If
+
+        ' 获取国家/地区代码 (如 "CN")
+        Dim countryCode As String = GetLocaleString(lcid, LOCALE_SISO3166CTRYNAME)
+        If Len(countryCode) > 0 Then
+            result.AddItem New KeyValuePair(Of String, String)("Country Code", countryCode)
+        End If
+
+        ' 组合区域设置标识符 (如 "zh-CN")
+        If Len(langCode) > 0 And Len(countryCode) > 0 Then
+            result.AddItem New KeyValuePair(Of String, String)("Locale", langCode & "-" & countryCode)
+        End If
+
+        ' 获取语言名称 (如 "Chinese")
+        Dim langName As String = GetLocaleString(lcid, LOCALE_SENGLISHLANGUAGENAME)
+        If Len(langName) > 0 Then
+            result.AddItem New KeyValuePair(Of String, String)("Language", langName)
+        End If
+
+        ' 获取国家/地区名称 (如 "China")
+        Dim countryName As String = GetLocaleString(lcid, LOCALE_SENGLISHCOUNTRYNAME)
+        If Len(countryName) > 0 Then
+            result.AddItem New KeyValuePair(Of String, String)("Country", countryName)
+        End If
+
+        ' 获取 ANSI 代码页
+        Dim acp As Long = GetACP()
+        result.AddItem New KeyValuePair(Of String, String)("ANSI Code Page", "CP" & acp)
+
+        ' 获取 OEM 代码页
+        Dim oemcp As Long = GetOEMCP()
+        result.AddItem New KeyValuePair(Of String, String)("OEM Code Page", "CP" & oemcp)
+
+        ' 获取时区信息
+        Dim tzi As TIME_ZONE_INFORMATION
+        Dim tzResult As Long = GetTimeZoneInformation(tzi)
+
+        ' 计算 UTC 偏移
+        Dim utcOffset As Long = -tzi.Bias  ' Bias 是负的分钟数
+        Dim offsetHours As Long = utcOffset \ 60
+        Dim offsetMins As Long = Abs(utcOffset Mod 60)
+        Dim offsetStr As String
+
+        If utcOffset >= 0 Then
+            offsetStr = "UTC+" & offsetHours
+        Else
+            offsetStr = "UTC" & offsetHours
+        End If
+        If offsetMins > 0 Then
+            offsetStr = offsetStr & ":" & Format$(offsetMins, "00")
+        End If
+
+        result.AddItem New KeyValuePair(Of String, String)("Timezone", offsetStr)
+
+        ' 获取时区名称
+        Dim tzName As String = WinAPI.GetStringFromBuffer(tzi.StandardName)
+        If Len(tzName) > 0 Then
+            result.AddItem New KeyValuePair(Of String, String)("Timezone Name", tzName)
+        End If
+
+        Return result
+    End Function
+
+    Public Function IDiagnosticCollector_CollectSummary() As DiagnosticResult(Of KeyValuePair(Of String, String))
+        Return IDiagnosticCollector_Collect()
+    End Function
+
+    ' === 私有方法 ===
+
+    Private Function GetLocaleString(ByVal lcid As Long, ByVal lcType As Long) As String
+        Dim buffer As String = Space$(256)
+        Dim length As Long
+
+        length = GetLocaleInfoW(lcid, lcType, StrPtr(buffer), 256)
+        If length > 0 Then
+            Return Left$(buffer, length - 1)
+        End If
+
+        Return ""
+    End Function
+
+End Class

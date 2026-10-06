@@ -1,0 +1,136 @@
+' =====================================================
+' JsonFormatter.twin - JSON 格式化器
+' Twinbasic Diagnostic Tool
+' =====================================================
+
+' JSON 格式化器
+' 输出结构化的 JSON 报告
+[ClassId("21A2B3C4-D5E6-F7A8-B9C0-D1E2F3A4B5C6")]
+[InterfaceId("21A2B3C4-D5E6-F7A8-B9C0-D1E2F3A4B5C7")]
+Public Class JsonFormatter
+    Implements IOutputFormatter
+
+    Private m_Builder As StringBuilder
+    Private m_InCategory As Boolean
+    Private m_FirstCategory As Boolean
+    Private m_FirstItem As Boolean
+    Private m_CurrentCategory As String
+
+    ' 构造函数
+    Public Sub New()
+        Set m_Builder = New StringBuilder
+        m_InCategory = False
+        m_FirstCategory = True
+        m_FirstItem = True
+    End Sub
+
+    ' === IOutputFormatter 实现 ===
+
+    Public Property Get IOutputFormatter_FileExtension() As String
+        Return ".json"
+    End Property
+
+    Public Property Get IOutputFormatter_FormatterName() As String
+        Return "JSON"
+    End Property
+
+    Public Sub IOutputFormatter_BeginFormat()
+        m_Builder.Clear
+        m_InCategory = False
+        m_FirstCategory = True
+        m_FirstItem = True
+
+        ' JSON 开始
+        m_Builder.AppendLine "{"
+        m_Builder.AppendLine "  ""diagnosticReport"": {"
+        m_Builder.AppendLine "    ""generatedAt"": """ & FormatHelper.FormatDateTimeISO(Now) & ""","
+        m_Builder.AppendLine "    ""toolVersion"": ""1.0"","
+        m_Builder.AppendLine "    ""categories"": {"
+    End Sub
+
+    Public Sub IOutputFormatter_FormatCategory(ByVal categoryName As String)
+        ' 如果已经在类别中，先结束
+        If m_InCategory Then
+            IOutputFormatter_EndCategory
+        End If
+
+        ' 类别之间的逗号
+        If Not m_FirstCategory Then
+            m_Builder.AppendLine ","
+        End If
+        m_FirstCategory = False
+
+        ' 转换类别名为 camelCase
+        m_CurrentCategory = ToCamelCase(categoryName)
+
+        m_Builder.Append "      """ & FormatHelper.EscapeJson(m_CurrentCategory) & """: {"
+        m_InCategory = True
+        m_FirstItem = True
+    End Sub
+
+    Public Sub IOutputFormatter_FormatItem(ByVal key As String, ByVal value As String)
+        ' 项之间的逗号
+        If Not m_FirstItem Then
+            m_Builder.Append ","
+        End If
+        m_FirstItem = False
+
+        m_Builder.AppendLine
+        m_Builder.Append "        """ & FormatHelper.EscapeJson(ToCamelCase(key)) & """: "
+        m_Builder.Append """" & FormatHelper.EscapeJson(value) & """"
+    End Sub
+
+    Public Sub IOutputFormatter_EndCategory()
+        If m_InCategory Then
+            m_Builder.AppendLine
+            m_Builder.Append "      }"
+            m_InCategory = False
+        End If
+    End Sub
+
+    Public Function IOutputFormatter_EndFormat() As String
+        ' 如果还在类别中，结束它
+        If m_InCategory Then
+            IOutputFormatter_EndCategory
+        End If
+
+        ' 结束 JSON
+        m_Builder.AppendLine
+        m_Builder.AppendLine "    }"
+        m_Builder.AppendLine "  }"
+        m_Builder.AppendLine "}"
+
+        Return m_Builder.ToString()
+    End Function
+
+    ' === 私有方法 ===
+
+    ' 转换为 camelCase
+    Private Function ToCamelCase(ByVal text As String) As String
+        Dim result As String = ""
+        Dim capitalizeNext As Boolean = False
+        Dim i As Long
+        Dim c As String
+
+        ' 第一个字符小写
+        If Len(text) > 0 Then
+            result = LCase$(Left$(text, 1))
+        End If
+
+        For i = 2 To Len(text)
+            c = Mid$(text, i, 1)
+
+            If c = " " Or c = "_" Or c = "-" Or c = ":" Then
+                capitalizeNext = True
+            ElseIf capitalizeNext Then
+                result = result & UCase$(c)
+                capitalizeNext = False
+            Else
+                result = result & c
+            End If
+        Next i
+
+        Return result
+    End Function
+
+End Class

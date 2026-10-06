@@ -1,0 +1,1127 @@
+' =====================================================
+' mXmlTests.twin - XML Library Unit Tests
+' TwinBASIC Project - XML Library Tests
+' =====================================================
+' Function: Comprehensive unit tests for cXml class
+' 功能：cXml 类的全面单元测试
+' Author: woeoo (邓伟)
+' Email: 215879458@qq.com
+' Site: https://vb6.pro
+' Date: 2026-02-06
+' Version: 1.0.0
+' =====================================================
+
+Public Module mXmlTests
+
+    ' Test result tracking
+    Private m_TestsRun As Long
+    Private m_TestsPassed As Long
+    Private m_TestsFailed As Long
+
+    ' Run all tests
+    Public Sub RunAllTests()
+        Debug.Print "========================================"
+        Debug.Print "XML Library Unit Tests"
+        Debug.Print "========================================"
+
+        m_TestsRun = 0
+        m_TestsPassed = 0
+        m_TestsFailed = 0
+
+        ' Core functionality tests
+        TestCreateNew
+        TestParseSimple
+        TestParseWithAttributes
+        TestParseNestedElements
+        TestParseWithComments
+        TestParseWithCData
+
+        ' Element manipulation tests
+        TestAddElement
+        TestRemoveElement
+        TestSelectElement
+        TestSelectElements
+
+        ' Attribute tests
+        TestGetAttribute
+        TestSetAttribute
+        TestRemoveAttribute
+
+        ' Text content tests
+        TestGetElementText
+        TestSetElementText
+
+        ' Serialization tests
+        TestToStringCompact
+        TestToStringPretty
+        TestToStringWithDeclaration
+
+        ' File I/O tests
+        TestSaveToFile
+        TestLoadFromFile
+
+        ' Advanced features tests
+        TestClone
+        TestMerge
+        TestValidate
+
+        ' Edge cases tests
+        TestEmptyDocument
+        TestSpecialCharacters
+        TestSelfClosingTags
+        TestNamespaces
+
+        ' XPath tests
+        TestXPathBasic
+        TestXPathIndex
+        TestXPathAttribute
+        TestXPathDescendant
+        TestXPathWildcard
+        TestXPathFunctions
+        TestXPathLogical
+        TestXPathNodeMethod
+
+        ' Print summary
+        PrintSummary
+    End Sub
+
+    ' ==================== Core Functionality Tests ====================
+
+    Public Sub TestCreateNew()
+        PrintTestHeader "TestCreateNew"
+
+        Dim xml As cXml
+        Set xml = New cXml
+        xml.CreateNew "root"
+
+        Assert Not xml Is Nothing, "xml object should not be Nothing"
+        AssertEqual xml.RootElement.Name, "root", "Root element name should be 'root'"
+        Assert xml.RootElement.ChildNodes.Count = 0, "Root element should have no children"
+        AssertEqual xml.Encoding, "UTF-8", "Default encoding should be UTF-8"
+        AssertEqual xml.Version, "1.0", "Default version should be 1.0"
+
+        PrintTestFooter
+    End Sub
+
+    Public Sub TestParseSimple()
+        PrintTestHeader "TestParseSimple"
+
+        Dim xml As cXml
+        Set xml = New cXml
+
+        Dim xmlStr As String
+        xmlStr = "<?xml version=""1.0"" encoding=""UTF-8""?><root><child>text</child></root>"
+
+        Dim result As Boolean
+        result = xml.Parse(xmlStr)
+
+        Assert result, "Parse should succeed"
+        Assert Not xml.RootElement Is Nothing, "RootElement should not be Nothing"
+        AssertEqual xml.RootElement.Name, "root", "Root element name should be 'root'"
+        AssertEqual xml.GetElementText("/root/child"), "text", "Child element text should be 'text'"
+
+        PrintTestFooter
+    End Sub
+
+    Public Sub TestParseWithAttributes()
+        PrintTestHeader "TestParseWithAttributes"
+
+        Dim xml As cXml
+        Set xml = New cXml
+
+        Dim xmlStr As String
+        xmlStr = "<?xml version=""1.0""?><root id=""1"" name=""test"" value=""100""/>"
+
+        Dim result As Boolean
+        result = xml.Parse(xmlStr)
+
+        Assert result = True, "Parse should succeed"
+        AssertEqual xml.GetAttribute("/root", "id"), "1", "Attribute 'id' should be '1'"
+        AssertEqual xml.GetAttribute("/root", "name"), "test", "Attribute 'name' should be 'test'"
+        AssertEqual xml.GetAttribute("/root", "value"), "100", "Attribute 'value' should be '100'"
+
+        PrintTestFooter
+    End Sub
+
+    Public Sub TestParseNestedElements()
+        PrintTestHeader "TestParseNestedElements"
+
+        Dim xml As cXml
+        Set xml = New cXml
+
+        Dim xmlStr As String
+        xmlStr = "<?xml version=""1.0""?><root><level1><level2><level3>deep</level3></level2></level1></root>"
+
+        Dim result As Boolean
+        result = xml.Parse(xmlStr)
+
+        Assert result, "Parse should succeed"
+        AssertEqual xml.GetElementText("/root/level1/level2/level3"), "deep", "Nested element text should be 'deep'"
+
+        Dim node As cXmlNode
+        Set node = xml.SelectElement("/root/level1/level2/level3")
+        AssertEqual (Not node Is Nothing), True, "Deep nested element should be found"
+
+        PrintTestFooter
+    End Sub
+
+    Public Sub TestParseWithComments()
+        PrintTestHeader "TestParseWithComments"
+
+        Dim xml As cXml
+        Set xml = New cXml
+
+        Dim xmlStr As String
+        xmlStr = "<?xml version=""1.0""?><root><!--This is a comment--><child>text</child></root>"
+
+        Dim result As Boolean
+        result = xml.Parse(xmlStr)
+
+        Assert result = True, "Parse should succeed"
+        AssertEqual xml.GetElementText("/root/child"), "text", "Element text should be 'text'"
+
+        PrintTestFooter
+    End Sub
+
+    Public Sub TestParseWithCData()
+        PrintTestHeader "TestParseWithCData"
+
+        Dim xml As cXml
+        Set xml = New cXml
+
+        Dim xmlStr As String
+        xmlStr = "<?xml version=""1.0""?><root><data><![CDATA[<special>&characters;]]></data></root>"
+
+        Dim result As Boolean
+        result = xml.Parse(xmlStr)
+
+        Assert result = True, "Parse should succeed"
+        Dim text As String
+        text = xml.GetElementText("/root/data")
+        AssertEqual text, "<special>&characters;", "CDATA content should be preserved"
+
+        PrintTestFooter
+    End Sub
+
+    ' ==================== Element Manipulation Tests ====================
+
+    Public Sub TestAddElement()
+        PrintTestHeader "TestAddElement"
+
+        Dim xml As cXml
+        Set xml = New cXml
+        xml.CreateNew "root"
+
+        Dim child1 As cXmlNode
+        Set child1 = xml.AddElement("/root", "child1")
+        AssertEqual (Not child1 Is Nothing), True, "Added child1 should not be Nothing"
+        AssertEqual child1.Name, "child1", "Child name should be 'child1'"
+
+        Dim child2 As cXmlNode
+        Set child2 = xml.AddElement("/root", "child2")
+        AssertEqual (Not child2 Is Nothing), True, "Added child2 should not be Nothing"
+        AssertEqual child2.Name, "child2", "Child name should be 'child2'"
+
+        AssertEqual xml.RootElement.ChildNodes.Count, 2, "Root should have 2 children"
+
+        ' Add nested element
+        Dim grandchild As cXmlNode
+        Set grandchild = xml.AddElement("/root/child1", "grandchild")
+        AssertEqual (Not grandchild Is Nothing), True, "Added grandchild should not be Nothing"
+        AssertEqual grandchild.Name, "grandchild", "Grandchild name should be 'grandchild'"
+
+        PrintTestFooter
+    End Sub
+
+    Public Sub TestRemoveElement()
+        PrintTestHeader "TestRemoveElement"
+
+        Dim xml As cXml
+        Set xml = New cXml
+        xml.CreateNew "root"
+
+        xml.AddElement "/root", "child1"
+        xml.AddElement "/root", "child2"
+        xml.AddElement "/root", "child3"
+
+        AssertEqual xml.RootElement.ChildNodes.Count, 3, "Root should have 3 children"
+
+        Dim result As Boolean
+        result = xml.RemoveElement("/root/child2")
+        AssertEqual result, True, "Remove element should succeed"
+        AssertEqual xml.RootElement.ChildNodes.Count, 2, "Root should have 2 children after removal"
+
+        result = xml.RemoveElement("/root/nonexistent")
+        AssertEqual result, False, "Removing non-existent element should return False"
+
+        PrintTestFooter
+    End Sub
+
+    Public Sub TestSelectElement()
+        PrintTestHeader "TestSelectElement"
+
+        Dim xml As cXml
+        Set xml = New cXml
+
+        Dim xmlStr As String
+        xmlStr = "<?xml version=""1.0""?><root><child id=""1""/><child id=""2""/></root>"
+        xml.Parse xmlStr
+
+        Dim node As cXmlNode
+        Set node = xml.SelectElement("/root")
+        AssertEqual (Not node Is Nothing), True, "Root element should be found"
+
+        Set node = xml.SelectElement("/root/child")
+        AssertEqual (Not node Is Nothing), True, "First child element should be found"
+        AssertEqual node.GetAttribute("id"), "1", "First child id should be '1'"
+
+        Set node = xml.SelectElement("/root/nonexistent")
+        AssertEqual (node Is Nothing), True, "Non-existent element should return Nothing"
+
+        PrintTestFooter
+    End Sub
+
+    Public Sub TestSelectElements()
+        PrintTestHeader "TestSelectElements"
+
+        Dim xml As cXml
+        Set xml = New cXml
+
+        Dim xmlStr As String
+        xmlStr = "<?xml version=""1.0""?><root><item>1</item><item>2</item><item>3</item><other>4</other></root>"
+        xml.Parse xmlStr
+
+        Dim items As Collection
+        Set items = xml.SelectElements("item")
+        AssertEqual (Not items Is Nothing), True, "Items collection should not be Nothing"
+
+        Dim others As Collection
+        Set others = xml.SelectElements("other")
+        AssertEqual (Not others Is Nothing), True, "Others collection should not be Nothing"
+
+        PrintTestFooter
+    End Sub
+
+    ' ==================== Attribute Tests ====================
+
+    Public Sub TestGetAttribute()
+        PrintTestHeader "TestGetAttribute"
+
+        Dim xml As cXml
+        Set xml = New cXml
+
+        Dim xmlStr As String
+        xmlStr = "<?xml version=""1.0""?><root id=""1"" name=""test"" value=""100""/>"
+        xml.Parse xmlStr
+
+        AssertEqual xml.GetAttribute("/root", "id"), "1", "Attribute 'id' should be '1'"
+        AssertEqual xml.GetAttribute("/root", "name"), "test", "Attribute 'name' should be 'test'"
+        AssertEqual xml.GetAttribute("/root", "value"), "100", "Attribute 'value' should be '100'"
+
+        Dim missing As String
+        missing = xml.GetAttribute("/root", "nonexistent")
+        AssertEqual missing, "", "Missing attribute should return empty string"
+
+        PrintTestFooter
+    End Sub
+
+    Public Sub TestSetAttribute()
+        PrintTestHeader "TestSetAttribute"
+
+        Dim xml As cXml
+        Set xml = New cXml
+        xml.CreateNew "root"
+
+        xml.SetAttribute "/root", "id", "1"
+        AssertEqual xml.GetAttribute("/root", "id"), "1", "Set attribute 'id' should be '1'"
+
+        xml.SetAttribute "/root", "name", "test"
+        AssertEqual xml.GetAttribute("/root", "name"), "test", "Set attribute 'name' should be 'test'"
+
+        ' Update existing attribute
+        xml.SetAttribute "/root", "id", "2"
+        AssertEqual xml.GetAttribute("/root", "id"), "2", "Updated attribute 'id' should be '2'"
+
+        PrintTestFooter
+    End Sub
+
+    Public Sub TestRemoveAttribute()
+        PrintTestHeader "TestRemoveAttribute"
+
+        Dim xml As cXml
+        Set xml = New cXml
+
+        Dim xmlStr As String
+        xmlStr = "<?xml version=""1.0""?><root id=""1"" name=""test"" value=""100""/>"
+        xml.Parse xmlStr
+
+        xml.RemoveAttribute "/root", "name"
+        AssertEqual xml.GetAttribute("/root", "name"), "", "Removed attribute should return empty string"
+        AssertEqual xml.GetAttribute("/root", "id"), "1", "Other attributes should remain"
+
+        PrintTestFooter
+    End Sub
+
+    ' ==================== Text Content Tests ====================
+
+    Public Sub TestGetElementText()
+        PrintTestHeader "TestGetElementText"
+
+        Dim xml As cXml
+        Set xml = New cXml
+
+        Dim xmlStr As String
+        xmlStr = "<?xml version=""1.0""?><root><parent>Hello <child>World</child>!</parent></root>"
+        xml.Parse xmlStr
+
+        Dim text As String
+        text = xml.GetElementText("/root/parent")
+        AssertEqual text, "Hello World!", "Element text should concatenate children"
+
+        text = xml.GetElementText("/root/parent/child")
+        AssertEqual text, "World", "Child element text should be 'World'"
+
+        PrintTestFooter
+    End Sub
+
+    Public Sub TestSetElementText()
+        PrintTestHeader "TestSetElementText"
+
+        Dim xml As cXml
+        Set xml = New cXml
+        xml.CreateNew "root"
+
+        xml.AddElement "/root", "child"
+        xml.SetElementText "/root/child", "Hello World"
+
+        Dim text As String
+        text = xml.GetElementText("/root/child")
+        AssertEqual text, "Hello World", "Element text should be 'Hello World'"
+
+        ' Update text
+        xml.SetElementText "/root/child", "New Text"
+        text = xml.GetElementText("/root/child")
+        AssertEqual text, "New Text", "Updated element text should be 'New Text'"
+
+        PrintTestFooter
+    End Sub
+
+    ' ==================== Serialization Tests ====================
+
+    Public Sub TestToStringCompact()
+        PrintTestHeader "TestToStringCompact"
+
+        Dim xml As cXml
+        Set xml = New cXml
+        xml.CreateNew "root"
+
+        xml.AddElement "/root", "child"
+        xml.SetElementText "/root/child", "text"
+        xml.SetAttribute "/root/child", "id", "1"
+
+        Dim output As String
+        output = xml.ToXmlString(False)
+
+        AssertInStr output, "<root>", "Output should contain root start tag"
+        AssertInStr output, "<child id=""1"">text</child>", "Output should contain child element"
+        AssertInStr output, "</root>", "Output should contain root end tag"
+
+        PrintTestFooter
+    End Sub
+
+    Public Sub TestToStringPretty()
+        PrintTestHeader "TestToStringPretty"
+
+        Dim xml As cXml
+        Set xml = New cXml
+        xml.CreateNew "root"
+
+        xml.AddElement "/root", "child"
+        xml.SetElementText "/root/child", "text"
+
+        Dim output As String
+        output = xml.ToXmlString(False, True)
+
+        AssertInStr output, vbCrLf, "Pretty print should contain line breaks"
+        AssertInStr output, "  ", "Pretty print should contain indentation"
+
+        PrintTestFooter
+    End Sub
+
+    Public Sub TestToStringWithDeclaration()
+        PrintTestHeader "TestToStringWithDeclaration"
+
+        Dim xml As cXml
+        Set xml = New cXml
+        xml.CreateNew "root"
+
+        Dim output As String
+        output = xml.ToXmlString(True)
+
+        AssertInStr output, "<?xml version=""1.0"" encoding=""UTF-8""?>", "Output should contain XML declaration"
+
+        output = xml.ToXmlString(False)
+        AssertEqual InStr(output, "<?xml") = 0, True, "Output without declaration should not contain XML declaration"
+
+        PrintTestFooter
+    End Sub
+
+    ' ==================== File I/O Tests ====================
+
+    Public Sub TestSaveToFile()
+        PrintTestHeader "TestSaveToFile"
+
+        Dim xml As cXml
+        Set xml = New cXml
+        xml.CreateNew "root"
+
+        ' Add multiple children with attributes using returned node references
+        Dim child1 As cXmlNode
+        Set child1 = xml.AddElement("/root", "child")
+        child1.SetAttribute "id", "1"
+        child1.SetAttribute "name", "first"
+        ' Add text content as child text node
+        Dim textNode1 As New cXmlNode
+        textNode1.NodeType = mXml.XmlNodeType.Text
+        textNode1.Value = "test"
+        textNode1.Name = "#text"
+        Set textNode1.Parent = child1
+        child1.ChildNodes.Add textNode1
+
+        Dim child2 As cXmlNode
+        Set child2 = xml.AddElement("/root", "child")
+        child2.SetAttribute "id", "2"
+        child2.SetAttribute "name", "second"
+        ' Add text content as child text node
+        Dim textNode2 As New cXmlNode
+        textNode2.NodeType = mXml.XmlNodeType.Text
+        textNode2.Value = "test2"
+        textNode2.Name = "#text"
+        Set textNode2.Parent = child2
+        child2.ChildNodes.Add textNode2
+
+        ' Add nested element to child2 using the direct reference
+        Dim nested As cXmlNode
+        Set nested = New cXmlNode
+        nested.Name = "nested"
+        nested.NodeType = mXml.XmlNodeType.Element
+        nested.SetAttribute "type", "inner"
+        Set nested.Parent = child2
+        child2.ChildNodes.Add nested
+        ' Add text content to nested element
+        Dim nestedText As New cXmlNode
+        nestedText.NodeType = mXml.XmlNodeType.Text
+        nestedText.Value = "nested value"
+        nestedText.Name = "#text"
+        Set nestedText.Parent = nested
+        nested.ChildNodes.Add nestedText
+
+        ' Add another top-level element
+        Dim metadata As cXmlNode
+        Set metadata = xml.AddElement("/root", "metadata")
+        metadata.SetAttribute "created", "today"
+        metadata.SetAttribute "version", "1.0"
+        ' Add text content
+        Dim metaText As New cXmlNode
+        metaText.NodeType = mXml.XmlNodeType.Text
+        metaText.Value = "2026-02-07"
+        metaText.Name = "#text"
+        Set metaText.Parent = metadata
+        metadata.ChildNodes.Add metaText
+
+        Dim testFilePath As String
+        testFilePath = "test_output.xml"
+
+        Dim result As Boolean
+        result = xml.SaveToFile(testFilePath, True)
+
+        AssertEqual result, True, "Save to file should succeed"
+
+        ' Test pretty print output
+        Dim prettyFilePath As String
+        prettyFilePath = "test_output_pretty.xml"
+
+        result = xml.SaveToFile(prettyFilePath, True, True)
+        AssertEqual result, True, "Save to file with pretty print should succeed"
+
+        ' Verify file exists
+        ' Note: File existence check would need Dir() function
+
+        ' Load and verify
+        Dim loaded As cXml
+        Set loaded = New cXml
+        result = loaded.LoadFromFile(testFilePath)
+
+        AssertEqual result, True, "Load from saved file should succeed"
+
+        ' Get all child elements
+        Dim children As Collection
+        Set children = loaded.SelectElements("child")
+
+        ' Verify first child
+        AssertEqual children(1).ChildNodes(1).Value, "test", "First child text should be preserved"
+        AssertEqual children(1).GetAttribute("id"), "1", "First child id attribute should be preserved"
+        AssertEqual children(1).GetAttribute("name"), "first", "First child name attribute should be preserved"
+
+        ' Verify second child
+        AssertEqual children(2).ChildNodes(1).Value, "test2", "Second child text should be preserved"
+        AssertEqual children(2).GetAttribute("id"), "2", "Second child id attribute should be preserved"
+        AssertEqual children(2).GetAttribute("name"), "second", "Second child name attribute should be preserved"
+
+        ' Verify nested element in second child
+        If children(2).ChildNodes.Count > 1 Then
+            Dim nestedNode As cXmlNode
+            Set nestedNode = children(2).ChildNodes(2)
+            AssertEqual nestedNode.Name, "nested", "Nested element name should be 'nested'"
+            AssertEqual nestedNode.GetAttribute("type"), "inner", "Nested element attribute should be preserved"
+            If nestedNode.ChildNodes.Count > 0 Then
+                AssertEqual nestedNode.ChildNodes(1).Value, "nested value", "Nested element text should be preserved"
+            End If
+        End If
+
+        ' Verify metadata element
+        Dim metadataElements As Collection
+        Set metadataElements = loaded.SelectElements("metadata")
+        If metadataElements.Count > 0 Then
+            AssertEqual metadataElements(1).ChildNodes(1).Value, "2026-02-07", "Metadata text should be preserved"
+            AssertEqual metadataElements(1).GetAttribute("created"), "today", "Metadata created attribute should be preserved"
+            AssertEqual metadataElements(1).GetAttribute("version"), "1.0", "Metadata version attribute should be preserved"
+        End If
+
+        PrintTestFooter
+    End Sub
+
+    Public Sub TestLoadFromFile()
+        PrintTestHeader "TestLoadFromFile"
+
+        Dim xml As cXml
+        Set xml = New cXml
+
+        Dim result As Boolean
+        result = xml.LoadFromFile("test_output.xml")
+
+        AssertEqual result, True, "Load from file should succeed"
+        AssertEqual xml.GetElementText("/root/child"), "test", "Loaded XML should have correct text"
+
+        PrintTestFooter
+    End Sub
+
+    ' ==================== Advanced Features Tests ====================
+
+    Public Sub TestClone()
+        PrintTestHeader "TestClone"
+
+        Dim xml As cXml
+        Set xml = New cXml
+        xml.CreateNew "root"
+
+        xml.AddElement "/root", "child"
+        xml.SetElementText "/root/child", "original"
+        xml.SetAttribute "/root/child", "id", "1"
+
+        Dim cloned As cXml
+        Set cloned = xml.Clone()
+
+        AssertEqual (Not cloned Is Nothing), True, "Cloned XML should not be Nothing"
+        AssertEqual (Not cloned.RootElement Is Nothing), True, "Cloned XML should have root element"
+
+        PrintTestFooter
+    End Sub
+
+    Public Sub TestMerge()
+        PrintTestHeader "TestMerge"
+
+        Dim xml1 As cXml
+        Set xml1 = New cXml
+        xml1.CreateNew "root"
+        xml1.AddElement "/root", "item1"
+        xml1.SetElementText "/root/item1", "first"
+
+        Dim xml2 As cXml
+        Set xml2 = New cXml
+        xml2.CreateNew "root"
+        xml2.AddElement "/root", "item2"
+        xml2.SetElementText "/root/item2", "second"
+
+        xml1.Merge xml2
+
+        AssertEqual xml1.GetElementText("/root/item1"), "first", "Original content should be preserved"
+        AssertEqual xml1.GetElementText("/root/item2"), "second", "Merged content should be added"
+
+        PrintTestFooter
+    End Sub
+
+    Public Sub TestValidate()
+        PrintTestHeader "TestValidate"
+
+        Dim xml As cXml
+        Set xml = New cXml
+        xml.CreateNew "root"
+
+        Dim valid As Boolean
+        valid = xml.Validate()
+        AssertEqual valid, True, "Valid XML should pass validation"
+
+        xml.AddElement "/root", "child"
+        xml.SetElementText "/root/child", "text"
+        valid = xml.Validate()
+        AssertEqual valid, True, "XML with children should pass validation"
+
+        PrintTestFooter
+    End Sub
+
+    ' ==================== Edge Cases Tests ====================
+
+    Public Sub TestEmptyDocument()
+        PrintTestHeader "TestEmptyDocument"
+
+        Dim xml As cXml
+        Set xml = New cXml
+
+        Dim result As Boolean
+        result = xml.Parse("")
+
+        AssertEqual result, False, "Parsing empty string should fail"
+
+        PrintTestFooter
+    End Sub
+
+    Public Sub TestSpecialCharacters()
+        PrintTestHeader "TestSpecialCharacters"
+
+        Dim xml As cXml
+        Set xml = New cXml
+        xml.CreateNew "root"
+
+        xml.AddElement "/root", "child"
+        xml.SetElementText "/root/child", "Text with < > & ' "" characters"
+
+        Dim text As String
+        text = xml.GetElementText("/root/child")
+        AssertEqual text, "Text with < > & ' "" characters", "Special characters should be preserved"
+
+        Dim output As String
+        output = xml.ToXmlString(False, False)
+        AssertInStr output, "&lt;", "Output should encode < as &lt;"
+        AssertInStr output, "&gt;", "Output should encode > as &gt;"
+        AssertInStr output, "&amp;", "Output should encode & as &amp;"
+
+        PrintTestFooter
+    End Sub
+
+    Public Sub TestSelfClosingTags()
+        PrintTestHeader "TestSelfClosingTags"
+
+        Dim xml As cXml
+        Set xml = New cXml
+
+        Dim xmlStr As String
+        xmlStr = "<?xml version=""1.0""?><root><item id=""1""/><item id=""2""/></root>"
+        xml.Parse xmlStr
+
+        Dim output As String
+        output = xml.ToXmlString(False, False)
+        AssertInStr output, "/>", "Output should contain self-closing tags"
+
+        PrintTestFooter
+    End Sub
+
+    Public Sub TestNamespaces()
+        PrintTestHeader "TestNamespaces"
+
+        Dim xml As cXml
+        Set xml = New cXml
+
+        Dim xmlStr As String
+        xmlStr = "<?xml version=""1.0""?><root xmlns:ns=""http://example.com""><ns:child>text</ns:child></root>"
+
+        Dim result As Boolean
+        result = xml.Parse(xmlStr)
+        AssertEqual result, True, "Parse with namespace should succeed"
+
+        PrintTestFooter
+    End Sub
+
+    ' ==================== Test Helper Methods ====================
+
+    ' Print test header
+    Private Sub PrintTestHeader(ByVal testName As String)
+        Debug.Print ""
+        Debug.Print "--- " & testName & " ---"
+    End Sub
+
+    ' Print test footer
+    Private Sub PrintTestFooter()
+        Debug.Print "--- Test Complete ---"
+    End Sub
+
+    ' Assert condition is true
+    Private Sub Assert(ByVal condition As Boolean, ByVal message As String)
+        m_TestsRun = m_TestsRun + 1
+
+        If condition Then
+            m_TestsPassed = m_TestsPassed + 1
+            Debug.Print "[PASS] " & message
+        Else
+            m_TestsFailed = m_TestsFailed + 1
+            Debug.Print "[FAIL] " & message
+        End If
+    End Sub
+
+    ' Assert equal
+    Private Sub AssertEqual(ByVal actual As Variant, ByVal expected As Variant, ByVal message As String)
+        m_TestsRun = m_TestsRun + 1
+
+        If actual = expected Then
+            m_TestsPassed = m_TestsPassed + 1
+            Debug.Print "[PASS] " & message & " (Actual: " & actual & ")"
+        Else
+            m_TestsFailed = m_TestsFailed + 1
+            Debug.Print "[FAIL] " & message & " (Expected: " & expected & ", Actual: " & actual & ")"
+        End If
+    End Sub
+
+    ' Assert not nothing
+    Private Sub AssertNotNothing(ByVal obj As Variant, ByVal message As String)
+        m_TestsRun = m_TestsRun + 1
+
+        Dim isNotNothing As Boolean
+        isNotNothing = Not obj Is Nothing
+
+        If isNotNothing Then
+            m_TestsPassed = m_TestsPassed + 1
+            Debug.Print "[PASS] " & message
+        Else
+            m_TestsFailed = m_TestsFailed + 1
+            Debug.Print "[FAIL] " & message
+        End If
+    End Sub
+
+    ' Assert string contains substring
+    Private Sub AssertInStr(ByVal text As String, ByVal substring As String, ByVal message As String)
+        m_TestsRun = m_TestsRun + 1
+
+        If InStr(text, substring) > 0 Then
+            m_TestsPassed = m_TestsPassed + 1
+            Debug.Print "[PASS] " & message
+        Else
+            m_TestsFailed = m_TestsFailed + 1
+            Debug.Print "[FAIL] " & message & " (Substring not found: " & substring & ")"
+        End If
+    End Sub
+
+    ' Print test summary
+    Private Sub PrintSummary()
+        Debug.Print ""
+        Debug.Print "========================================"
+        Debug.Print "Test Summary"
+        Debug.Print "========================================"
+        Debug.Print "Total Tests: " & m_TestsRun
+        Debug.Print "Passed: " & m_TestsPassed
+        Debug.Print "Failed: " & m_TestsFailed
+
+        Dim passRate As Double
+        If m_TestsRun > 0 Then
+            passRate = (m_TestsPassed / m_TestsRun) * 100
+            Debug.Print "Pass Rate: " & Format$(passRate, "0.00") & "%"
+        End If
+
+        Debug.Print "========================================"
+
+        If m_TestsFailed = 0 Then
+            Debug.Print "All tests passed!"
+        Else
+            Debug.Print "Some tests failed. Please review output above."
+        End If
+    End Sub
+
+    ' ==================== XPath Tests ====================
+
+    Public Sub TestXPathBasic()
+        PrintTestHeader "TestXPathBasic"
+
+        Dim xml As cXml
+        Set xml = New cXml
+
+        Dim xmlStr As String
+        xmlStr = "<?xml version=""1.0""?>" & _
+                 "<catalog>" & _
+                 "  <book id=""1""><title>Book One</title><author>Author A</author></book>" & _
+                 "  <book id=""2""><title>Book Two</title><author>Author B</author></book>" & _
+                 "  <book id=""3""><title>Book Three</title><author>Author A</author></book>" & _
+                 "</catalog>"
+        xml.Parse xmlStr
+
+        ' Test basic path
+        Dim node As cXmlNode
+        Set node = xml.XPathSingle("/catalog/book/title")
+        AssertEqual (Not node Is Nothing), True, "XPath /catalog/book/title should find element"
+        AssertEqual node.Text, "Book One", "First title should be 'Book One'"
+
+        ' Test XPathText
+        Dim text As String
+        text = xml.XPathText("/catalog/book/author")
+        AssertEqual text, "Author A", "XPathText should return 'Author A'"
+
+        ' Test multiple results
+        Dim books As Collection
+        Set books = xml.XPath("/catalog/book")
+        AssertEqual books.Count, 3, "XPath /catalog/book should find 3 books"
+
+        PrintTestFooter
+    End Sub
+
+    Public Sub TestXPathIndex()
+        PrintTestHeader "TestXPathIndex"
+
+        Dim xml As cXml
+        Set xml = New cXml
+
+        Dim xmlStr As String
+        xmlStr = "<?xml version=""1.0""?>" & _
+                 "<root>" & _
+                 "  <item>First</item>" & _
+                 "  <item>Second</item>" & _
+                 "  <item>Third</item>" & _
+                 "</root>"
+        xml.Parse xmlStr
+
+        ' Test index selection
+        Dim node As cXmlNode
+        Set node = xml.XPathSingle("/root/item[1]")
+        AssertEqual (Not node Is Nothing), True, "XPath /root/item[1] should find element"
+        AssertEqual node.Text, "First", "item[1] should be 'First'"
+
+        Set node = xml.XPathSingle("/root/item[2]")
+        AssertEqual node.Text, "Second", "item[2] should be 'Second'"
+
+        Set node = xml.XPathSingle("/root/item[3]")
+        AssertEqual node.Text, "Third", "item[3] should be 'Third'"
+
+        ' Test last() function
+        Set node = xml.XPathSingle("/root/item[last()]")
+        AssertEqual node.Text, "Third", "item[last()] should be 'Third'"
+
+        PrintTestFooter
+    End Sub
+
+    Public Sub TestXPathAttribute()
+        PrintTestHeader "TestXPathAttribute"
+
+        Dim xml As cXml
+        Set xml = New cXml
+
+        Dim xmlStr As String
+        xmlStr = "<?xml version=""1.0""?>" & _
+                 "<store>" & _
+                 "  <product id=""1"" category=""books"" price=""29.99"">Book</product>" & _
+                 "  <product id=""2"" category=""electronics"" price=""199.99"">Phone</product>" & _
+                 "  <product id=""3"" category=""books"" price=""19.99"">Magazine</product>" & _
+                 "</store>"
+        xml.Parse xmlStr
+
+        ' Test attribute exists
+        Dim products As Collection
+        Set products = xml.XPath("/store/product[@id]")
+        AssertEqual products.Count, 3, "All products should have id attribute"
+
+        ' Test attribute equals
+        Set products = xml.XPath("/store/product[@category='books']")
+        AssertEqual products.Count, 2, "Should find 2 products in books category"
+
+        ' Test attribute not equals
+        Set products = xml.XPath("/store/product[@category!='books']")
+        AssertEqual products.Count, 1, "Should find 1 product not in books category"
+
+        ' Test numeric comparison
+        Set products = xml.XPath("/store/product[@price>100]")
+        AssertEqual products.Count, 1, "Should find 1 product with price > 100"
+
+        Set products = xml.XPath("/store/product[@price<30]")
+        AssertEqual products.Count, 2, "Should find 2 products with price < 30"
+
+        ' Test XPathAttribute method
+        Dim attrVal As String
+        attrVal = xml.XPathAttribute("/store/product[@id='2']", "category")
+        AssertEqual attrVal, "electronics", "Product 2 category should be 'electronics'"
+
+        PrintTestFooter
+    End Sub
+
+    Public Sub TestXPathDescendant()
+        PrintTestHeader "TestXPathDescendant"
+
+        Dim xml As cXml
+        Set xml = New cXml
+
+        Dim xmlStr As String
+        xmlStr = "<?xml version=""1.0""?>" & _
+                 "<root>" & _
+                 "  <level1>" & _
+                 "    <item>L1 Item</item>" & _
+                 "    <level2>" & _
+                 "      <item>L2 Item</item>" & _
+                 "      <level3>" & _
+                 "        <item>L3 Item</item>" & _
+                 "      </level3>" & _
+                 "    </level2>" & _
+                 "  </level1>" & _
+                 "  <item>Root Item</item>" & _
+                 "</root>"
+        xml.Parse xmlStr
+
+        ' Test descendant selector //
+        Dim items As Collection
+        Set items = xml.XPath("//item")
+        AssertEqual items.Count, 4, "//item should find all 4 items at any depth"
+
+        ' Test descendant from specific path
+        Set items = xml.XPath("/root/level1//item")
+        AssertEqual items.Count, 3, "/root/level1//item should find 3 items under level1"
+
+        PrintTestFooter
+    End Sub
+
+    Public Sub TestXPathWildcard()
+        PrintTestHeader "TestXPathWildcard"
+
+        Dim xml As cXml
+        Set xml = New cXml
+
+        Dim xmlStr As String
+        xmlStr = "<?xml version=""1.0""?>" & _
+                 "<root>" & _
+                 "  <child1>One</child1>" & _
+                 "  <child2>Two</child2>" & _
+                 "  <child3>Three</child3>" & _
+                 "</root>"
+        xml.Parse xmlStr
+
+        ' Test wildcard *
+        Dim children As Collection
+        Set children = xml.XPath("/root/*")
+        AssertEqual children.Count, 3, "/root/* should find all 3 children"
+
+        ' Test wildcard in descendant
+        Set children = xml.XPath("//*")
+        Assert children.Count >= 4, "//* should find all elements (at least 4)"
+
+        PrintTestFooter
+    End Sub
+
+    Public Sub TestXPathFunctions()
+        PrintTestHeader "TestXPathFunctions"
+
+        Dim xml As cXml
+        Set xml = New cXml
+
+        Dim xmlStr As String
+        xmlStr = "<?xml version=""1.0""?>" & _
+                 "<users>" & _
+                 "  <user name=""john_doe"" email=""john@example.com"">John Doe</user>" & _
+                 "  <user name=""jane_smith"" email=""jane@test.com"">Jane Smith</user>" & _
+                 "  <user name=""bob_jones"" email=""bob@example.com"">Bob Jones</user>" & _
+                 "</users>"
+        xml.Parse xmlStr
+
+        ' Test contains() function
+        Dim users As Collection
+        Set users = xml.XPath("//user[contains(@email, 'example.com')]")
+        AssertEqual users.Count, 2, "Should find 2 users with example.com email"
+
+        ' Test starts-with() function
+        Set users = xml.XPath("//user[starts-with(@name, 'john')]")
+        AssertEqual users.Count, 1, "Should find 1 user starting with 'john'"
+
+        ' Test text() predicate
+        Set users = xml.XPath("//user[text()='Jane Smith']")
+        AssertEqual users.Count, 1, "Should find 1 user with text 'Jane Smith'"
+
+        ' Test not() function
+        Set users = xml.XPath("//user[not(contains(@email, 'example.com'))]")
+        AssertEqual users.Count, 1, "Should find 1 user without example.com email"
+
+        PrintTestFooter
+    End Sub
+
+    Public Sub TestXPathLogical()
+        PrintTestHeader "TestXPathLogical"
+
+        Dim xml As cXml
+        Set xml = New cXml
+
+        Dim xmlStr As String
+        xmlStr = "<?xml version=""1.0""?>" & _
+                 "<products>" & _
+                 "  <item type=""A"" status=""active"" price=""10"">Item 1</item>" & _
+                 "  <item type=""B"" status=""inactive"" price=""20"">Item 2</item>" & _
+                 "  <item type=""A"" status=""inactive"" price=""30"">Item 3</item>" & _
+                 "  <item type=""B"" status=""active"" price=""40"">Item 4</item>" & _
+                 "</products>"
+        xml.Parse xmlStr
+
+        ' Test 'and' operator
+        Dim items As Collection
+        Set items = xml.XPath("//item[@type='A' and @status='active']")
+        AssertEqual items.Count, 1, "Should find 1 item with type=A AND status=active"
+
+        ' Test 'or' operator
+        Set items = xml.XPath("//item[@type='A' or @status='active']")
+        AssertEqual items.Count, 3, "Should find 3 items with type=A OR status=active"
+
+        ' Test multiple predicates (equivalent to 'and')
+        Set items = xml.XPath("//item[@type='B'][@price>30]")
+        AssertEqual items.Count, 1, "Should find 1 item with type=B and price>30"
+
+        PrintTestFooter
+    End Sub
+
+    Public Sub TestXPathNodeMethod()
+        PrintTestHeader "TestXPathNodeMethod"
+
+        Dim xml As cXml
+        Set xml = New cXml
+
+        Dim xmlStr As String
+        xmlStr = "<?xml version=""1.0""?>" & _
+                 "<root>" & _
+                 "  <parent id=""1"">" & _
+                 "    <child type=""a"">Child A</child>" & _
+                 "    <child type=""b"">Child B</child>" & _
+                 "  </parent>" & _
+                 "  <parent id=""2"">" & _
+                 "    <child type=""c"">Child C</child>" & _
+                 "  </parent>" & _
+                 "</root>"
+        xml.Parse xmlStr
+
+        ' Get a parent node first
+        Dim parentNode As cXmlNode
+        Set parentNode = xml.XPathSingle("/root/parent[@id='1']")
+        AssertEqual (Not parentNode Is Nothing), True, "Should find parent with id=1"
+
+        ' Test XPath from node
+        Dim children As Collection
+        Set children = parentNode.XPath("./child")
+        AssertEqual children.Count, 2, "Parent 1 should have 2 children via node.XPath"
+
+        ' Test XPathSingle from node
+        Dim childNode As cXmlNode
+        Set childNode = parentNode.XPathSingle("./child[@type='b']")
+        AssertEqual (Not childNode Is Nothing), True, "Should find child with type=b"
+        AssertEqual childNode.Text, "Child B", "Child text should be 'Child B'"
+
+        ' Test XPathText from node
+        Dim text As String
+        text = parentNode.XPathText("./child[@type='a']")
+        AssertEqual text, "Child A", "XPathText should return 'Child A'"
+
+        ' Test XPathAttribute from node
+        Dim attrVal As String
+        attrVal = parentNode.XPathAttribute("./child[1]", "type")
+        AssertEqual attrVal, "a", "First child type attribute should be 'a'"
+
+        PrintTestFooter
+    End Sub
+
+End Module

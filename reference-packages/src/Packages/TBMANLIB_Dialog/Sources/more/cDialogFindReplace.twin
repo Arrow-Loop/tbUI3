@@ -1,0 +1,486 @@
+' =====================================================
+' cDialogFindReplace.twin - Find and Replace Dialog Class
+' cDialogFindReplace.twin - 查找替换对话框类
+' TBMANLIB Dialog Library
+' =====================================================
+' Function: Provides find and replace dialog using Windows FindText/ReplaceText API
+' 功能：使用 Windows FindText/ReplaceText API 提供查找替换对话框
+' Author: woeoo (邓伟)
+' Email: 215879458@qq.com
+' Site: https://vb6.pro
+' Date: 2026-03-11
+' Version: 1.0.0
+' =====================================================
+' Note: This is a modeless dialog. The dialog remains visible until closed.
+' You should handle the FINDMSGSTRING registered message to get user actions.
+' =====================================================
+
+Option Explicit
+
+[COMCreatable(False)]
+Public Class cDialogFindReplace
+
+    ' =====================================================
+    ' Windows API Declarations
+    ' =====================================================
+    Private Declare PtrSafe Function FindText Lib "comdlg32.dll" Alias "FindTextW" (pFindreplace As FINDREPLACE) As LongPtr
+    Private Declare PtrSafe Function ReplaceText Lib "comdlg32.dll" Alias "ReplaceTextW" (pFindreplace As FINDREPLACE) As LongPtr
+    Private Declare PtrSafe Function RegisterWindowMessage Lib "user32" Alias "RegisterWindowMessageW" (ByVal lpString As LongPtr) As Long
+    Private Declare PtrSafe Function CommDlgExtendedError Lib "comdlg32.dll" () As Long
+
+    ' =====================================================
+    ' Constants
+    ' =====================================================
+    ' FINDREPLACE flags
+    Private Const FR_DOWN = &H1
+    Private Const FR_WHOLEWORD = &H2
+    Private Const FR_MATCHCASE = &H4
+    Private Const FR_FINDNEXT = &H8
+    Private Const FR_DIALOGTERM = &H40
+    Private Const FR_SHOWHELP = &H80
+    Private Const FR_ENABLEHOOK = &H100
+    Private Const FR_ENABLETEMPLATE = &H200
+    Private Const FR_NOUPDOWN = &H400
+    Private Const FR_NOMATCHCASE = &H800
+    Private Const FR_NOWHOLEWORD = &H1000
+    Private Const FR_ENABLETEMPLATEHANDLE = &H2000
+    Private Const FR_HIDEUPDOWN = &H4000
+    Private Const FR_HIDEMATCHCASE = &H8000
+    Private Const FR_HIDEWHOLEWORD = &H10000
+    Private Const FR_REPLACE = &H10
+    Private Const FR_REPLACEALL = &H20
+    Private Const FR_NOWRAPAROUND = &H10000
+
+    ' Max string length
+    Private Const MAX_FIND_LEN = 256
+
+    ' FINDREPLACE struct size (hardcoded because LenB() is wrong on x64)
+    #If Win64 Then
+        Private Const FR_STRUCTSIZE As Long = 80    ' x64: 10 fields with 8-byte pointers
+    #Else
+        Private Const FR_STRUCTSIZE As Long = 40    ' x86: 10 fields with 4-byte pointers
+    #End If
+
+    ' =====================================================
+    ' Types
+    ' =====================================================
+    Private Type FINDREPLACE
+        lStructSize As Long
+        hwndOwner As LongPtr
+        hInstance As LongPtr
+        flags As Long
+        lpstrFindWhat As LongPtr
+        lpstrReplaceWith As LongPtr
+        wFindWhatLen As Integer
+        wReplaceWithLen As Integer
+        lCustData As LongPtr
+        lpfnHook As LongPtr
+        lpTemplateName As LongPtr
+    End Type
+
+    ' =====================================================
+    ' Dialog Mode Enum
+    ' =====================================================
+    Public Enum DialogMode
+        FindMode = 0
+        ReplaceMode = 1
+    End Enum
+
+    ' =====================================================
+    ' Search Direction Enum
+    ' =====================================================
+    Public Enum SearchDirection
+        Up = 0
+        Down = 1
+    End Enum
+
+    ' =====================================================
+    ' Find Action Enum
+    ' =====================================================
+    Public Enum FindAction
+        None = 0
+        FindNext = 1
+        Replace = 2
+        ReplaceAll = 3
+        DialogClosed = 4
+    End Enum
+
+    ' =====================================================
+    ' Class Data
+    ' =====================================================
+    Private Type cDialogFindReplaceData
+        mOwnerHwnd As LongPtr
+        mFindWhat As String
+        mReplaceWith As String
+        mMatchCase As Boolean
+        mWholeWord As Boolean
+        mDirection As SearchDirection
+        mMode As DialogMode
+        mAllowUpDown As Boolean
+        mAllowMatchCase As Boolean
+        mAllowWholeWord As Boolean
+        mhWnd As LongPtr
+        mLastError As Long
+        mLastAction As FindAction
+        mMessageId As Long
+    End Type
+
+    Private mData As cDialogFindReplaceData
+    Private mFindBuffer As String
+    Private mReplaceBuffer As String
+
+    ' =====================================================
+    ' Class Initialize/Terminate
+    ' =====================================================
+    Private Sub Class_Initialize()
+        mData.mOwnerHwnd = 0
+        mData.mFindWhat = ""
+        mData.mReplaceWith = ""
+        mData.mMatchCase = False
+        mData.mWholeWord = False
+        mData.mDirection = SearchDirection.Down
+        mData.mMode = DialogMode.FindMode
+        mData.mAllowUpDown = True
+        mData.mAllowMatchCase = True
+        mData.mAllowWholeWord = True
+        mData.mhWnd = 0
+        mData.mLastAction = FindAction.None
+        mData.mLastError = 0
+
+        ' Register the FINDMSGSTRING message
+        mData.mMessageId = RegisterWindowMessage(StrPtr("commdlg_FindReplace"))
+
+        ' Initialize buffers
+        mFindBuffer = String$(MAX_FIND_LEN, 0)
+        mReplaceBuffer = String$(MAX_FIND_LEN, 0)
+    End Sub
+
+    ' =====================================================
+    ' Property: Owner Window Handle
+    ' =====================================================
+    Public Property Get OwnerHwnd() As LongPtr
+        OwnerHwnd = mData.mOwnerHwnd
+    End Property
+
+    Public Property Let OwnerHwnd(ByVal value As LongPtr)
+        mData.mOwnerHwnd = value
+    End Property
+
+    ' =====================================================
+    ' Property: Find What Text
+    ' =====================================================
+    Public Property Get FindWhat() As String
+        FindWhat = mData.mFindWhat
+    End Property
+
+    Public Property Let FindWhat(ByVal value As String)
+        mData.mFindWhat = value
+    End Property
+
+    ' =====================================================
+    ' Property: Replace With Text
+    ' =====================================================
+    Public Property Get ReplaceWith() As String
+        ReplaceWith = mData.mReplaceWith
+    End Property
+
+    Public Property Let ReplaceWith(ByVal value As String)
+        mData.mReplaceWith = value
+    End Property
+
+    ' =====================================================
+    ' Property: Match Case
+    ' =====================================================
+    Public Property Get MatchCase() As Boolean
+        MatchCase = mData.mMatchCase
+    End Property
+
+    Public Property Let MatchCase(ByVal value As Boolean)
+        mData.mMatchCase = value
+    End Property
+
+    ' =====================================================
+    ' Property: Whole Word
+    ' =====================================================
+    Public Property Get WholeWord() As Boolean
+        WholeWord = mData.mWholeWord
+    End Property
+
+    Public Property Let WholeWord(ByVal value As Boolean)
+        mData.mWholeWord = value
+    End Property
+
+    ' =====================================================
+    ' Property: Search Direction
+    ' =====================================================
+    Public Property Get Direction() As SearchDirection
+        Direction = mData.mDirection
+    End Property
+
+    Public Property Let Direction(ByVal value As SearchDirection)
+        mData.mDirection = value
+    End Property
+
+    ' =====================================================
+    ' Property: Dialog Mode
+    ' =====================================================
+    Public Property Get Mode() As DialogMode
+        Mode = mData.mMode
+    End Property
+
+    Public Property Let Mode(ByVal value As DialogMode)
+        mData.mMode = value
+    End Property
+
+    ' =====================================================
+    ' Property: Allow Up/Down Direction
+    ' =====================================================
+    Public Property Get AllowUpDown() As Boolean
+        AllowUpDown = mData.mAllowUpDown
+    End Property
+
+    Public Property Let AllowUpDown(ByVal value As Boolean)
+        mData.mAllowUpDown = value
+    End Property
+
+    ' =====================================================
+    ' Property: Allow Match Case
+    ' =====================================================
+    Public Property Get AllowMatchCase() As Boolean
+        AllowMatchCase = mData.mAllowMatchCase
+    End Property
+
+    Public Property Let AllowMatchCase(ByVal value As Boolean)
+        mData.mAllowMatchCase = value
+    End Property
+
+    ' =====================================================
+    ' Property: Allow Whole Word
+    ' =====================================================
+    Public Property Get AllowWholeWord() As Boolean
+        AllowWholeWord = mData.mAllowWholeWord
+    End Property
+
+    Public Property Let AllowWholeWord(ByVal value As Boolean)
+        mData.mAllowWholeWord = value
+    End Property
+
+    ' =====================================================
+    ' Property: Dialog Window Handle (read-only)
+    ' =====================================================
+    Public Property Get hWnd() As LongPtr
+        hWnd = mData.mhWnd
+    End Property
+
+    ' =====================================================
+    ' Property: Last Action (read-only)
+    ' =====================================================
+    Public Property Get LastAction() As FindAction
+        LastAction = mData.mLastAction
+    End Property
+
+    ' =====================================================
+    ' Property: Registered Message ID (read-only)
+    ' =====================================================
+    Public Property Get MessageId() As Long
+        MessageId = mData.mMessageId
+    End Property
+
+    ' =====================================================
+    ' Property: Last Error (read-only)
+    ' =====================================================
+    Public Property Get LastError() As Long
+        LastError = mData.mLastError
+    End Property
+
+    ' =====================================================
+    ' Method: Show Find Dialog
+    ' =====================================================
+    Public Function ShowFind() As Boolean
+        Dim fr As FINDREPLACE
+        Dim lngFlags As Long
+
+        ' Build flags
+        lngFlags = 0
+        If mData.mDirection = SearchDirection.Down Then lngFlags = lngFlags Or FR_DOWN
+        If mData.mMatchCase Then lngFlags = lngFlags Or FR_MATCHCASE
+        If mData.mWholeWord Then lngFlags = lngFlags Or FR_WHOLEWORD
+        If Not mData.mAllowUpDown Then lngFlags = lngFlags Or FR_NOUPDOWN
+        If Not mData.mAllowMatchCase Then lngFlags = lngFlags Or FR_NOMATCHCASE
+        If Not mData.mAllowWholeWord Then lngFlags = lngFlags Or FR_NOWHOLEWORD
+
+        ' Prepare find buffer
+        mFindBuffer = mData.mFindWhat & String$(MAX_FIND_LEN - Len(mData.mFindWhat), 0)
+
+        ' Fill FINDREPLACE structure
+        ' Note: FR_STRUCTSIZE is hardcoded at class level because LenB() is wrong on x64
+        With fr
+            .lStructSize = FR_STRUCTSIZE
+            .hwndOwner = mData.mOwnerHwnd
+            .hInstance = 0
+            .flags = lngFlags
+            .lpstrFindWhat = StrPtr(mFindBuffer)
+            .lpstrReplaceWith = 0
+            .wFindWhatLen = MAX_FIND_LEN
+            .wReplaceWithLen = 0
+            .lCustData = 0
+            .lpfnHook = 0
+            .lpTemplateName = 0
+        End With
+
+        ' Show dialog (modeless)
+        mData.mhWnd = FindText(fr)
+        mData.mMode = DialogMode.FindMode
+
+        If mData.mhWnd = 0 Then
+            mData.mLastError = CommDlgExtendedError()
+        Else
+            mData.mLastError = 0
+        End If
+
+        ShowFind = (mData.mhWnd <> 0)
+    End Function
+
+    ' =====================================================
+    ' Method: Show Replace Dialog
+    ' =====================================================
+    Public Function ShowReplace() As Boolean
+        Dim fr As FINDREPLACE
+        Dim lngFlags As Long
+
+        ' Build flags
+        lngFlags = 0
+        If mData.mDirection = SearchDirection.Down Then lngFlags = lngFlags Or FR_DOWN
+        If mData.mMatchCase Then lngFlags = lngFlags Or FR_MATCHCASE
+        If mData.mWholeWord Then lngFlags = lngFlags Or FR_WHOLEWORD
+        If Not mData.mAllowUpDown Then lngFlags = lngFlags Or FR_NOUPDOWN
+        If Not mData.mAllowMatchCase Then lngFlags = lngFlags Or FR_NOMATCHCASE
+        If Not mData.mAllowWholeWord Then lngFlags = lngFlags Or FR_NOWHOLEWORD
+
+        ' Prepare buffers
+        mFindBuffer = mData.mFindWhat & String$(MAX_FIND_LEN - Len(mData.mFindWhat), 0)
+        mReplaceBuffer = mData.mReplaceWith & String$(MAX_FIND_LEN - Len(mData.mReplaceWith), 0)
+
+        ' Fill FINDREPLACE structure
+        ' Note: Using class-level FR_STRUCTSIZE (hardcoded for x64 compatibility)
+        With fr
+            .lStructSize = FR_STRUCTSIZE
+            .hwndOwner = mData.mOwnerHwnd
+            .hInstance = 0
+            .flags = lngFlags
+            .lpstrFindWhat = StrPtr(mFindBuffer)
+            .lpstrReplaceWith = StrPtr(mReplaceBuffer)
+            .wFindWhatLen = MAX_FIND_LEN
+            .wReplaceWithLen = MAX_FIND_LEN
+            .lCustData = 0
+            .lpfnHook = 0
+            .lpTemplateName = 0
+        End With
+
+        ' Show dialog (modeless)
+        mData.mhWnd = ReplaceText(fr)
+        mData.mMode = DialogMode.ReplaceMode
+
+        If mData.mhWnd = 0 Then
+            mData.mLastError = CommDlgExtendedError()
+        Else
+            mData.mLastError = 0
+        End If
+
+        ShowReplace = (mData.mhWnd <> 0)
+    End Function
+
+    ' =====================================================
+    ' Method: Update state from flags (call this when receiving FINDMSGSTRING message)
+    ' =====================================================
+    Public Sub UpdateFromFlags(ByVal flags As Long)
+        ' Update match case
+        mData.mMatchCase = (flags And FR_MATCHCASE) <> 0
+
+        ' Update whole word
+        mData.mWholeWord = (flags And FR_WHOLEWORD) <> 0
+
+        ' Update direction
+        mData.mDirection = IIf((flags And FR_DOWN) <> 0, SearchDirection.Down, SearchDirection.Up)
+
+        ' Update last action
+        If (flags And FR_DIALOGTERM) <> 0 Then
+            mData.mLastAction = FindAction.DialogClosed
+            mData.mhWnd = 0
+        ElseIf (flags And FR_FINDNEXT) <> 0 Then
+            mData.mLastAction = FindAction.FindNext
+        ElseIf (flags And FR_REPLACE) <> 0 Then
+            mData.mLastAction = FindAction.Replace
+        ElseIf (flags And FR_REPLACEALL) <> 0 Then
+            mData.mLastAction = FindAction.ReplaceAll
+        Else
+            mData.mLastAction = FindAction.None
+        End If
+
+        ' Update find what text from buffer
+        Dim nPos As Long
+        nPos = InStr(mFindBuffer, vbNullChar)
+        If nPos > 1 Then
+            mData.mFindWhat = Left$(mFindBuffer, nPos - 1)
+        ElseIf nPos = 1 Then
+            mData.mFindWhat = ""
+        Else
+            mData.mFindWhat = mFindBuffer
+        End If
+
+        ' Update replace with text from buffer
+        nPos = InStr(mReplaceBuffer, vbNullChar)
+        If nPos > 1 Then
+            mData.mReplaceWith = Left$(mReplaceBuffer, nPos - 1)
+        ElseIf nPos = 1 Then
+            mData.mReplaceWith = ""
+        Else
+            mData.mReplaceWith = mReplaceBuffer
+        End If
+    End Sub
+
+    ' =====================================================
+    ' Method: Check if dialog is visible
+    ' =====================================================
+    Public Function IsVisible() As Boolean
+        IsVisible = (mData.mhWnd <> 0)
+    End Function
+
+    ' =====================================================
+    ' Method: Get search description
+    ' =====================================================
+    Public Function ToDescription() As String
+        Dim strResult As String
+
+        strResult = "Find: """ & mData.mFindWhat & """"
+
+        If mData.mMode = DialogMode.ReplaceMode Then
+            strResult = strResult & ", Replace: """ & mData.mReplaceWith & """"
+        End If
+
+        If mData.mMatchCase Then strResult = strResult & ", Match Case"
+        If mData.mWholeWord Then strResult = strResult & ", Whole Word"
+        strResult = strResult & ", " & IIf(mData.mDirection = SearchDirection.Down, "Down", "Up")
+
+        ToDescription = strResult
+    End Function
+
+    ' =====================================================
+    ' Method: Reset to default settings
+    ' =====================================================
+    Public Sub Reset()
+        mData.mFindWhat = ""
+        mData.mReplaceWith = ""
+        mData.mMatchCase = False
+        mData.mWholeWord = False
+        mData.mDirection = SearchDirection.Down
+        mData.mMode = DialogMode.FindMode
+        mData.mAllowUpDown = True
+        mData.mAllowMatchCase = True
+        mData.mAllowWholeWord = True
+        mData.mhWnd = 0
+        mData.mLastAction = FindAction.None
+        mData.mLastError = 0
+    End Sub
+
+End Class

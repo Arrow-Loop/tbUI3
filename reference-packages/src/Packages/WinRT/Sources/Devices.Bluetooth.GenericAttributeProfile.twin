@@ -1,0 +1,1119 @@
+[InterfaceId("3FF69516-1BFB-52E9-9EE6-E5CDB78E1683")]
+Interface IAsyncOperationGattCommunicationStatus Extends IInspectable
+    Property Set Completed(ByVal Handler As IAsyncOperationCompletedHandlerGattCommunicationStatus)
+    Property Get Completed() As IAsyncOperationCompletedHandlerGattCommunicationStatus
+    Function GetResults() As GattCommunicationStatus
+End Interface
+
+[InterfaceId("2154117A-978D-59DB-99CF-6B690CB3389B")]
+Interface IAsyncOperationCompletedHandlerGattCommunicationStatus Extends IUnknown
+    Sub Invoke(ByVal AsyncOperation As IAsyncOperationGattCommunicationStatus, ByVal AsyncStatus As AsyncStatus)
+End Interface
+
+[InterfaceId("CF4444CC-4077-5719-8366-46E86B983685")]
+Interface IAsyncOperationIGattReadClientCharacteristicConfigurationDescriptorResult Extends IInspectable
+    Property Set Completed(ByVal Handler As IAsyncOperationCompletedHandlerIGattReadClientCharacteristicConfigurationDescriptorResult)
+    Property Get Completed() As IAsyncOperationCompletedHandlerIGattReadClientCharacteristicConfigurationDescriptorResult
+    Function GetResults() As IGattReadClientCharacteristicConfigurationDescriptorResult
+End Interface
+
+[InterfaceId("98F9A6F3-4D29-5351-8B12-751DC977A331")]
+Interface IAsyncOperationCompletedHandlerIGattReadClientCharacteristicConfigurationDescriptorResult Extends IUnknown
+    Sub Invoke(ByVal AsyncOperation As IAsyncOperationIGattReadClientCharacteristicConfigurationDescriptorResult, ByVal AsyncStatus As AsyncStatus)
+End Interface
+
+[InterfaceId("D40432A8-1E14-51D0-B49B-AE2CE1AA05E5")]
+Interface IAsyncOperationIGattReadResult Extends IInspectable
+    Property Set Completed(ByVal Handler As IAsyncOperationCompletedHandlerIGattReadResult)
+    Property Get Completed() As IAsyncOperationCompletedHandlerIGattReadResult
+    Function GetResults() As IGattReadResult
+End Interface
+
+[InterfaceId("D8992AA0-EAC2-55B7-92C5-894886BEB0CA")]
+Interface IAsyncOperationCompletedHandlerIGattReadResult Extends IUnknown
+    Sub Invoke(ByVal AsyncOperation As IAsyncOperationIGattReadResult, ByVal AsyncStatus As AsyncStatus)
+End Interface
+
+[InterfaceId("3D8DF436-CEFB-5FFB-858C-4882CE1DA079")]
+Interface IIterator_IGattDescriptor Extends IInspectable
+    Property Get Current() As IGattDescriptor
+    Property Get HasCurrent() As BooleanByte
+    Function MoveNext() As BooleanByte
+    Function GetMany(ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("30E2FFC4-3AA3-5219-9A18-CA2D0B6562E8")]
+Interface IIterable_IGattDescriptor Extends IInspectable
+    Function First() As IIterator_IGattDescriptor
+End Interface
+
+[InterfaceId("19605EA8-73D6-5760-849B-FE5F8A2BD05C")]
+Interface IVectorView_IGattDescriptor Extends IInspectable
+    Function GetAt(ByVal Index As Long) As IGattDescriptor
+    Property Get Size() As Long
+    Function IndexOf(ByVal Value As IGattDescriptor, Index As Long) As BooleanByte
+    Function GetMany(ByVal StartIndex As Long, ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("C1F420F6-6292-5760-A2C9-9DDF98683CFC")]
+Interface ITypedEventHandlerGattCharacteristicValueChanged Extends IUnknown
+    Sub Invoke(ByVal Sender As IGattCharacteristic, ByVal Args As IGattValueChangedEventArgs)
+End Interface
+
+[InterfaceId("59CB50C1-5934-4F68-A198-EB864FA44E6B")]
+Interface IGattCharacteristic Extends IInspectable
+    Function GetDescriptors(ByVal DescriptorUuid As UUID) As IVectorView_IGattDescriptor
+    Property Get CharacteristicProperties() As GattCharacteristicProperties
+    Property Get ProtectionLevel() As GattProtectionLevel
+    Property Let ProtectionLevel(ByVal Value As GattProtectionLevel)
+    Property Get UserDescription() As LongPtr
+    Property Get Uuid() As UUID
+    Property Get AttributeHandle() As Integer
+    Property Get PresentationFormats() As IVectorView_IGattPresentationFormat
+    Function ReadValueAsync() As IAsyncOperationIGattReadResult
+    Function ReadValueWithCacheModeAsync(ByVal CacheMode As BluetoothCacheMode) As IAsyncOperationIGattReadResult
+    Function WriteValueAsync(ByVal Value As IBuffer) As IAsyncOperationGattCommunicationStatus
+    Function WriteValueWithOptionAsync(ByVal Value As IBuffer, ByVal WriteOption As GattWriteOption) As IAsyncOperationGattCommunicationStatus
+    Function ReadClientCharacteristicConfigurationDescriptorAsync() As IAsyncOperationIGattReadClientCharacteristicConfigurationDescriptorResult
+    Function WriteClientCharacteristicConfigurationDescriptorAsync(ByVal ClientCharacteristicConfigurationDescriptorValue As GattClientCharacteristicConfigurationDescriptorValue) As IAsyncOperationGattCommunicationStatus
+    [PreserveSig]
+    Function AddValueChanged(ByVal ValueChangedHandler As ITypedEventHandlerGattCharacteristicValueChanged, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveValueChanged(ByVal Token As EventRegistrationToken) As HRESULT
+End Interface
+
+[InterfaceId("AE1AB578-EC06-4764-B780-9835A1D35D6E")]
+Interface IGattCharacteristic2 Extends IInspectable
+    Property Get Service() As IGattDeviceService
+    Function GetAllDescriptors() As IVectorView_IGattDescriptor
+End Interface
+
+[InterfaceId("CEAF40C7-BE37-52A5-9A1B-63398513E597")]
+Interface IAsyncOperationIGattDescriptorsResult Extends IInspectable
+    Property Set Completed(ByVal Handler As IAsyncOperationCompletedHandlerIGattDescriptorsResult)
+    Property Get Completed() As IAsyncOperationCompletedHandlerIGattDescriptorsResult
+    Function GetResults() As IGattDescriptorsResult
+End Interface
+
+[InterfaceId("DF09AE77-F606-53E4-8BA6-799F5992C85E")]
+Interface IAsyncOperationCompletedHandlerIGattDescriptorsResult Extends IUnknown
+    Sub Invoke(ByVal AsyncOperation As IAsyncOperationIGattDescriptorsResult, ByVal AsyncStatus As AsyncStatus)
+End Interface
+
+[InterfaceId("E83B4534-BD14-5A9B-A53B-17CC02A2A8A8")]
+Interface IAsyncOperationIGattWriteResult Extends IInspectable
+    Property Set Completed(ByVal Handler As IAsyncOperationCompletedHandlerIGattWriteResult)
+    Property Get Completed() As IAsyncOperationCompletedHandlerIGattWriteResult
+    Function GetResults() As IGattWriteResult
+End Interface
+
+[InterfaceId("6FA8C9C3-FF7E-5FA1-A2F3-2714CF04B899")]
+Interface IAsyncOperationCompletedHandlerIGattWriteResult Extends IUnknown
+    Sub Invoke(ByVal AsyncOperation As IAsyncOperationIGattWriteResult, ByVal AsyncStatus As AsyncStatus)
+End Interface
+
+[InterfaceId("3F3C663E-93D4-406B-B817-DB81F8ED53B3")]
+Interface IGattCharacteristic3 Extends IInspectable
+    Function GetDescriptorsAsync() As IAsyncOperationIGattDescriptorsResult
+    Function GetDescriptorsWithCacheModeAsync(ByVal CacheMode As BluetoothCacheMode) As IAsyncOperationIGattDescriptorsResult
+    Function GetDescriptorsForUuidAsync(ByVal DescriptorUuid As UUID) As IAsyncOperationIGattDescriptorsResult
+    Function GetDescriptorsForUuidWithCacheModeAsync(ByVal DescriptorUuid As UUID, ByVal CacheMode As BluetoothCacheMode) As IAsyncOperationIGattDescriptorsResult
+    Function WriteValueWithResultAsync(ByVal Value As IBuffer) As IAsyncOperationIGattWriteResult
+    Function WriteValueWithResultAndOptionAsync(ByVal Value As IBuffer, ByVal WriteOption As GattWriteOption) As IAsyncOperationIGattWriteResult
+    Function WriteClientCharacteristicConfigurationDescriptorWithResultAsync(ByVal ClientCharacteristicConfigurationDescriptorValue As GattClientCharacteristicConfigurationDescriptorValue) As IAsyncOperationIGattWriteResult
+End Interface
+
+[InterfaceId("59CB50C3-5934-4F68-A198-EB864FA44E6B")]
+Interface IGattCharacteristicStatics Extends IInspectable
+    Function ConvertShortIdToUuid(ByVal ShortId As Integer) As UUID
+End Interface
+
+[InterfaceId("58FA4586-B1DE-470C-B7DE-0D11FF44F4B7")]
+Interface IGattCharacteristicUuidsStatics Extends IInspectable
+    Property Get BatteryLevel() As UUID
+    Property Get BloodPressureFeature() As UUID
+    Property Get BloodPressureMeasurement() As UUID
+    Property Get BodySensorLocation() As UUID
+    Property Get CscFeature() As UUID
+    Property Get CscMeasurement() As UUID
+    Property Get GlucoseFeature() As UUID
+    Property Get GlucoseMeasurement() As UUID
+    Property Get GlucoseMeasurementContext() As UUID
+    Property Get HeartRateControlPoint() As UUID
+    Property Get HeartRateMeasurement() As UUID
+    Property Get IntermediateCuffPressure() As UUID
+    Property Get IntermediateTemperature() As UUID
+    Property Get MeasurementInterval() As UUID
+    Property Get RecordAccessControlPoint() As UUID
+    Property Get RscFeature() As UUID
+    Property Get RscMeasurement() As UUID
+    Property Get SCControlPoint() As UUID
+    Property Get SensorLocation() As UUID
+    Property Get TemperatureMeasurement() As UUID
+    Property Get TemperatureType() As UUID
+End Interface
+
+[InterfaceId("1855B425-D46E-4A2C-9C3F-ED6DEA29E7BE")]
+Interface IGattCharacteristicUuidsStatics2 Extends IInspectable
+    Property Get AlertCategoryId() As UUID
+    Property Get AlertCategoryIdBitMask() As UUID
+    Property Get AlertLevel() As UUID
+    Property Get AlertNotificationControlPoint() As UUID
+    Property Get AlertStatus() As UUID
+    Property Get GapAppearance() As UUID
+    Property Get BootKeyboardInputReport() As UUID
+    Property Get BootKeyboardOutputReport() As UUID
+    Property Get BootMouseInputReport() As UUID
+    Property Get CurrentTime() As UUID
+    Property Get CyclingPowerControlPoint() As UUID
+    Property Get CyclingPowerFeature() As UUID
+    Property Get CyclingPowerMeasurement() As UUID
+    Property Get CyclingPowerVector() As UUID
+    Property Get DateTime() As UUID
+    Property Get DayDateTime() As UUID
+    Property Get DayOfWeek() As UUID
+    Property Get GapDeviceName() As UUID
+    Property Get DstOffset() As UUID
+    Property Get ExactTime256() As UUID
+    Property Get FirmwareRevisionString() As UUID
+    Property Get HardwareRevisionString() As UUID
+    Property Get HidControlPoint() As UUID
+    Property Get HidInformation() As UUID
+    Property Get Ieee1107320601RegulatoryCertificationDataList() As UUID
+    Property Get LnControlPoint() As UUID
+    Property Get LnFeature() As UUID
+    Property Get LocalTimeInformation() As UUID
+    Property Get LocationAndSpeed() As UUID
+    Property Get ManufacturerNameString() As UUID
+    Property Get ModelNumberString() As UUID
+    Property Get Navigation() As UUID
+    Property Get NewAlert() As UUID
+    Property Get GapPeripheralPreferredConnectionParameters() As UUID
+    Property Get GapPeripheralPrivacyFlag() As UUID
+    Property Get PnpId() As UUID
+    Property Get PositionQuality() As UUID
+    Property Get ProtocolMode() As UUID
+    Property Get GapReconnectionAddress() As UUID
+    Property Get ReferenceTimeInformation() As UUID
+    Property Get Report() As UUID
+    Property Get ReportMap() As UUID
+    Property Get RingerControlPoint() As UUID
+    Property Get RingerSetting() As UUID
+    Property Get ScanIntervalWindow() As UUID
+    Property Get ScanRefresh() As UUID
+    Property Get SerialNumberString() As UUID
+    Property Get GattServiceChanged() As UUID
+    Property Get SoftwareRevisionString() As UUID
+    Property Get SupportedNewAlertCategory() As UUID
+    Property Get SupportUnreadAlertCategory() As UUID
+    Property Get SystemId() As UUID
+    Property Get TimeAccuracy() As UUID
+    Property Get TimeSource() As UUID
+    Property Get TimeUpdateControlPoint() As UUID
+    Property Get TimeUpdateState() As UUID
+    Property Get TimeWithDst() As UUID
+    Property Get TimeZone() As UUID
+    Property Get TxPowerLevel() As UUID
+    Property Get UnreadAlertStatus() As UUID
+End Interface
+
+[InterfaceId("1FFC4777-4346-5564-B7A5-59EAE385F4F6")]
+Interface IIterator_IGattCharacteristic Extends IInspectable
+    Property Get Current() As IGattCharacteristic
+    Property Get HasCurrent() As BooleanByte
+    Function MoveNext() As BooleanByte
+    Function GetMany(ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("E3C56728-7F2D-5A0D-AD38-030D39C60F9F")]
+Interface IIterable_IGattCharacteristic Extends IInspectable
+    Function First() As IIterator_IGattCharacteristic
+End Interface
+
+[InterfaceId("CB3AB3AE-B561-504F-A808-599DECEB2DF4")]
+Interface IVectorView_IGattCharacteristic Extends IInspectable
+    Function GetAt(ByVal Index As Long) As IGattCharacteristic
+    Property Get Size() As Long
+    Function IndexOf(ByVal Value As IGattCharacteristic, Index As Long) As BooleanByte
+    Function GetMany(ByVal StartIndex As Long, ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("1194945C-B257-4F3E-9DB7-F68BC9A9AEF2")]
+Interface IGattCharacteristicsResult Extends IInspectable
+    Property Get Status() As GattCommunicationStatus
+    Property Get ProtocolError() As IReference_Byte
+    Property Get Characteristics() As IVectorView_IGattCharacteristic
+End Interface
+
+[InterfaceId("506D5599-0112-419A-8E3B-AE21AFABD2C2")]
+Interface IGattClientNotificationResult Extends IInspectable
+    Property Get SubscribedClient() As IGattSubscribedClient
+    Property Get Status() As GattCommunicationStatus
+    Property Get ProtocolError() As IReference_Byte
+End Interface
+
+[InterfaceId("8FAEC497-45E0-497E-9582-29A1FE281AD5")]
+Interface IGattClientNotificationResult2 Extends IInspectable
+    Property Get BytesSent() As Integer
+End Interface
+
+[InterfaceId("92055F2B-8084-4344-B4C2-284DE19A8506")]
+Interface IGattDescriptor Extends IInspectable
+    Property Get ProtectionLevel() As GattProtectionLevel
+    Property Set ProtectionLevel(ByVal Value As GattProtectionLevel)
+    Property Get Uuid() As UUID
+    Property Get AttributeHandle() As Integer
+    Function ReadValueAsync() As IAsyncOperationIGattReadResult
+    Function ReadValueWithCacheModeAsync(ByVal CacheMode As BluetoothCacheMode) As IAsyncOperationIGattReadResult
+    Function WriteValueAsync(ByVal Value As IBuffer) As IAsyncOperationGattCommunicationStatus
+End Interface
+
+[InterfaceId("8F563D39-D630-406C-BA11-10CDD16B0E5E")]
+Interface IGattDescriptor2 Extends IInspectable
+    Function WriteValueWithResultAsync(ByVal Value As IBuffer) As IAsyncOperationIGattWriteResult
+End Interface
+
+[InterfaceId("92055F2D-8084-4344-B4C2-284DE19A8506")]
+Interface IGattDescriptorStatics Extends IInspectable
+    Function ConvertShortIdToUuid(ByVal ShortId As Integer) As UUID
+End Interface
+
+[InterfaceId("A6F862CE-9CFC-42F1-9185-FF37B75181D3")]
+Interface IGattDescriptorUuidsStatics Extends IInspectable
+    Property Get CharacteristicAggregateFormat() As UUID
+    Property Get CharacteristicExtendedProperties() As UUID
+    Property Get CharacteristicPresentationFormat() As UUID
+    Property Get CharacteristicUserDescription() As UUID
+    Property Get ClientCharacteristicConfiguration() As UUID
+    Property Get ServerCharacteristicConfiguration() As UUID
+End Interface
+
+[InterfaceId("9BC091F3-95E7-4489-8D25-FF81955A57B9")]
+Interface IGattDescriptorsResult Extends IInspectable
+    Property Get Status() As GattCommunicationStatus
+    Property Get ProtocolError() As IReference_Byte
+    Property Get Descriptors() As IVectorView_IGattDescriptor
+End Interface
+
+[InterfaceId("AC7B7C05-B33C-47CF-990F-6B8F5577DF71")]
+Interface IGattDeviceService Extends IInspectable ' requires IClosable
+    Function GetCharacteristics(ByVal CharacteristicUuid As UUID) As IVectorView_IGattCharacteristic
+    Function GetIncludedServices(ByVal ServiceUuid As UUID) As IVectorView_IGattDeviceService
+    Property Get DeviceId() As LongPtr
+    Property Get Uuid() As UUID
+    Property Get AttributeHandle() As Integer
+End Interface
+
+[InterfaceId("FC54520B-0B0D-4708-BAE0-9FFD9489BC59")]
+Interface IGattDeviceService2 Extends IInspectable
+    Property Get Device() As IBluetoothLEDevice
+    Property Get ParentServices() As IVectorView_IGattDeviceService
+    Function GetAllCharacteristics() As IVectorView_IGattCharacteristic
+    Function GetAllIncludedServices() As IVectorView_IGattDeviceService
+End Interface
+
+[InterfaceId("0972194A-AC1C-5536-9886-27E58A18F273")]
+Interface IAsyncOperationIGattCharacteristicsResult Extends IInspectable
+    Property Set Completed(ByVal Handler As IAsyncOperationCompletedHandlerIGattCharacteristicsResult)
+    Property Get Completed() As IAsyncOperationCompletedHandlerIGattCharacteristicsResult
+    Function GetResults() As IGattCharacteristicsResult
+End Interface
+
+[InterfaceId("D6A15475-1E72-5C56-98E8-88F4BC3E0313")]
+Interface IAsyncOperationCompletedHandlerIGattCharacteristicsResult Extends IUnknown
+    Sub Invoke(ByVal AsyncOperation As IAsyncOperationIGattCharacteristicsResult, ByVal AsyncStatus As AsyncStatus)
+End Interface
+
+[InterfaceId("983201AC-8777-53E8-86E0-63FA684BE1BD")]
+Interface IAsyncOperationGattOpenStatus Extends IInspectable
+    Property Set Completed(ByVal Handler As IAsyncOperationCompletedHandlerGattOpenStatus)
+    Property Get Completed() As IAsyncOperationCompletedHandlerGattOpenStatus
+    Function GetResults() As GattOpenStatus
+End Interface
+
+[InterfaceId("548B3CD0-DCE8-5D3D-98AB-6948DD7F90B8")]
+Interface IAsyncOperationCompletedHandlerGattOpenStatus Extends IUnknown
+    Sub Invoke(ByVal AsyncOperation As IAsyncOperationGattOpenStatus, ByVal AsyncStatus As AsyncStatus)
+End Interface
+
+[InterfaceId("B293A950-0C53-437C-A9B3-5C3210C6E569")]
+Interface IGattDeviceService3 Extends IInspectable
+    Property Get DeviceAccessInformation() As IDeviceAccessInformation
+    Property Get Session() As IGattSession
+    Property Get SharingMode() As GattSharingMode
+    Function RequestAccessAsync() As IAsyncOperationDeviceAccessStatus
+    Function OpenAsync(ByVal SharingMode As GattSharingMode) As IAsyncOperationGattOpenStatus
+    Function GetCharacteristicsAsync() As IAsyncOperationIGattCharacteristicsResult
+    Function GetCharacteristicsWithCacheModeAsync(ByVal CacheMode As BluetoothCacheMode) As IAsyncOperationIGattCharacteristicsResult
+    Function GetCharacteristicsForUuidAsync(ByVal CharacteristicUuid As UUID) As IAsyncOperationIGattCharacteristicsResult
+    Function GetCharacteristicsForUuidWithCacheModeAsync(ByVal CharacteristicUuid As UUID, ByVal CacheMode As BluetoothCacheMode) As IAsyncOperationIGattCharacteristicsResult
+    Function GetIncludedServicesAsync() As IAsyncOperationIGattDeviceServicesResult
+    Function GetIncludedServicesWithCacheModeAsync(ByVal CacheMode As BluetoothCacheMode) As IAsyncOperationIGattDeviceServicesResult
+    Function GetIncludedServicesForUuidAsync(ByVal ServiceUuid As UUID) As IAsyncOperationIGattDeviceServicesResult
+    Function GetIncludedServicesForUuidWithCacheModeAsync(ByVal ServiceUuid As UUID, ByVal CacheMode As BluetoothCacheMode) As IAsyncOperationIGattDeviceServicesResult
+End Interface
+
+[InterfaceId("E5E90272-408F-5055-9BD3-88408982D301")]
+Interface IAsyncOperationIGattDeviceService Extends IInspectable
+    Property Set Completed(ByVal Handler As IAsyncOperationCompletedHandlerIGattDeviceService)
+    Property Get Completed() As IAsyncOperationCompletedHandlerIGattDeviceService
+    Function GetResults() As IGattDeviceService
+End Interface
+
+[InterfaceId("2DBCF64A-262B-5708-ADB1-C3B8750BD680")]
+Interface IAsyncOperationCompletedHandlerIGattDeviceService Extends IUnknown
+    Sub Invoke(ByVal AsyncOperation As IAsyncOperationIGattDeviceService, ByVal AsyncStatus As AsyncStatus)
+End Interface
+
+[InterfaceId("196D0022-FAAD-45DC-AE5B-2AC3184E84DB")]
+Interface IGattDeviceServiceStatics Extends IInspectable
+    Function FromIdAsync(ByVal DeviceId As LongPtr) As IAsyncOperationIGattDeviceService
+    Function GetDeviceSelectorFromUuid(ByVal ServiceUuid As UUID) As LongPtr
+    Function GetDeviceSelectorFromShortId(ByVal ServiceShortId As Integer) As LongPtr
+    Function ConvertShortIdToUuid(ByVal ShortId As Integer) As UUID
+End Interface
+
+[InterfaceId("0604186E-24A6-4B0D-A2F2-30CC01545D25")]
+Interface IGattDeviceServiceStatics2 Extends IInspectable
+    Function FromIdWithSharingModeAsync(ByVal DeviceId As LongPtr, ByVal SharingMode As GattSharingMode) As IAsyncOperationIGattDeviceService
+    Function GetDeviceSelectorForBluetoothDeviceId(ByVal BluetoothDeviceId As IBluetoothDeviceId) As LongPtr
+    Function GetDeviceSelectorForBluetoothDeviceIdWithCacheMode(ByVal BluetoothDeviceId As IBluetoothDeviceId, ByVal CacheMode As BluetoothCacheMode) As LongPtr
+    Function GetDeviceSelectorForBluetoothDeviceIdAndUuid(ByVal BluetoothDeviceId As IBluetoothDeviceId, ByVal ServiceUuid As UUID) As LongPtr
+    Function GetDeviceSelectorForBluetoothDeviceIdAndUuidWithCacheMode(ByVal BluetoothDeviceId As IBluetoothDeviceId, ByVal ServiceUuid As UUID, ByVal CacheMode As BluetoothCacheMode) As LongPtr
+End Interface
+
+[InterfaceId("171DD3EE-016D-419D-838A-576CF475A3D8")]
+Interface IGattDeviceServicesResult Extends IInspectable
+    Property Get Status() As GattCommunicationStatus
+    Property Get ProtocolError() As IReference_Byte
+    Property Get Services() As IVectorView_IGattDeviceService
+End Interface
+
+[InterfaceId("DE27C5CF-6227-5829-B997-88E575AD0680")]
+Interface IAsyncOperationIGattClientNotificationResult Extends IInspectable
+    Property Set Completed(ByVal Handler As IAsyncOperationCompletedHandlerIGattClientNotificationResult)
+    Property Get Completed() As IAsyncOperationCompletedHandlerIGattClientNotificationResult
+    Function GetResults() As IGattClientNotificationResult
+End Interface
+
+[InterfaceId("9783FEF1-1B62-5418-9898-933138C2BD14")]
+Interface IAsyncOperationCompletedHandlerIGattClientNotificationResult Extends IUnknown
+    Sub Invoke(ByVal AsyncOperation As IAsyncOperationIGattClientNotificationResult, ByVal AsyncStatus As AsyncStatus)
+End Interface
+
+[InterfaceId("3EF6D808-754F-5040-97AC-0703309C574F")]
+Interface IAsyncOperationIGattLocalDescriptorResult Extends IInspectable
+    Property Set Completed(ByVal Handler As IAsyncOperationCompletedHandlerIGattLocalDescriptorResult)
+    Property Get Completed() As IAsyncOperationCompletedHandlerIGattLocalDescriptorResult
+    Function GetResults() As IGattLocalDescriptorResult
+End Interface
+
+[InterfaceId("F2927EEC-47D9-5338-9BA5-5BE8461AD410")]
+Interface IAsyncOperationCompletedHandlerIGattLocalDescriptorResult Extends IUnknown
+    Sub Invoke(ByVal AsyncOperation As IAsyncOperationIGattLocalDescriptorResult, ByVal AsyncStatus As AsyncStatus)
+End Interface
+
+[InterfaceId("FCA87386-A3AB-55E2-A83E-21F5BFAB4049")]
+Interface IIterator_IGattClientNotificationResult Extends IInspectable
+    Property Get Current() As IGattClientNotificationResult
+    Property Get HasCurrent() As BooleanByte
+    Function MoveNext() As BooleanByte
+    Function GetMany(ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("D3F4B8AD-251F-5BBB-ADA2-EA47434E74D6")]
+Interface IIterable_IGattClientNotificationResult Extends IInspectable
+    Function First() As IIterator_IGattClientNotificationResult
+End Interface
+
+[InterfaceId("C886EB62-EC71-586B-A158-66DC62A378B7")]
+Interface IVectorView_IGattClientNotificationResult Extends IInspectable
+    Function GetAt(ByVal Index As Long) As IGattClientNotificationResult
+    Property Get Size() As Long
+    Function IndexOf(ByVal Value As IGattClientNotificationResult, Index As Long) As BooleanByte
+    Function GetMany(ByVal StartIndex As Long, ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("B6FA5848-ACCD-536B-A37E-2444D86F2C1F")]
+Interface IAsyncOperationIVectorView_IGattClientNotificationResult Extends IInspectable
+    Property Set Completed(ByVal Handler As IAsyncOperationCompletedHandlerIVectorView_IGattClientNotificationResult)
+    Property Get Completed() As IAsyncOperationCompletedHandlerIVectorView_IGattClientNotificationResult
+    Function GetResults() As IVectorView_IGattClientNotificationResult
+End Interface
+
+[InterfaceId("2F6C4343-667F-5D74-8EE7-B39DE335A960")]
+Interface IAsyncOperationCompletedHandlerIVectorView_IGattClientNotificationResult Extends IUnknown
+    Sub Invoke(ByVal AsyncOperation As IAsyncOperationIVectorView_IGattClientNotificationResult, ByVal AsyncStatus As AsyncStatus)
+End Interface
+
+[InterfaceId("08023045-5F5C-59CC-ABD3-BBCFE6FA7030")]
+Interface IIterator_IGattLocalDescriptor Extends IInspectable
+    Property Get Current() As IGattLocalDescriptor
+    Property Get HasCurrent() As BooleanByte
+    Function MoveNext() As BooleanByte
+    Function GetMany(ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("9016E9A2-C9F7-5D09-B0AE-552FA67796AE")]
+Interface IIterable_IGattLocalDescriptor Extends IInspectable
+    Function First() As IIterator_IGattLocalDescriptor
+End Interface
+
+[InterfaceId("7F4688CC-0BBC-5070-8974-19FCB1ACBF6C")]
+Interface IVectorView_IGattLocalDescriptor Extends IInspectable
+    Function GetAt(ByVal Index As Long) As IGattLocalDescriptor
+    Property Get Size() As Long
+    Function IndexOf(ByVal Value As IGattLocalDescriptor, Index As Long) As BooleanByte
+    Function GetMany(ByVal StartIndex As Long, ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("20006C53-5DDA-5319-91B1-C6F28FE65933")]
+Interface IIterator_IGattPresentationFormat Extends IInspectable
+    Property Get Current() As IGattPresentationFormat
+    Property Get HasCurrent() As BooleanByte
+    Function MoveNext() As BooleanByte
+    Function GetMany(ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("D75FCEF1-C10E-5B7B-B130-F5A00314D35D")]
+Interface IIterable_IGattPresentationFormat Extends IInspectable
+    Function First() As IIterator_IGattPresentationFormat
+End Interface
+
+[InterfaceId("0EA2C154-22B8-5C8E-925D-D47E1AAD31BB")]
+Interface IVectorView_IGattPresentationFormat Extends IInspectable
+    Function GetAt(ByVal Index As Long) As IGattPresentationFormat
+    Property Get Size() As Long
+    Function IndexOf(ByVal Value As IGattPresentationFormat, Index As Long) As BooleanByte
+    Function GetMany(ByVal StartIndex As Long, ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("CBA635EF-1C70-5412-8EDE-7316276B9EE4")]
+Interface IVector_IGattPresentationFormat Extends IInspectable
+    Function GetAt(ByVal Index As Long) As IGattPresentationFormat
+    Property Get Size() As Long
+    Function GetView() As IVectorView_IGattPresentationFormat
+    Function IndexOf(ByVal Value As IGattPresentationFormat, Index As Long) As BooleanByte
+    [PreserveSig]
+    Function SetAt(ByVal Index As Long, ByVal Value As IGattPresentationFormat) As HRESULT
+    [PreserveSig]
+    Function InsertAt(ByVal Index As Long, ByVal Value As IGattPresentationFormat) As HRESULT
+    [PreserveSig]
+    Function RemoveAt(ByVal Index As Long) As HRESULT
+    [PreserveSig]
+    Function Append(ByVal Value As IGattPresentationFormat) As HRESULT
+    [PreserveSig]
+    Function RemoveAtEnd() As HRESULT
+    [PreserveSig]
+    Function Clear() As HRESULT
+    Function GetMany(ByVal StartIndex As Long, ByVal Length As Long, Items As Any) As Long
+    [PreserveSig]
+    Function ReplaceAll(ByVal Length As Long, Items As Any) As HRESULT
+End Interface
+
+[InterfaceId("DF039115-A5FF-5D5A-B07B-20B42E078765")]
+Interface IIterator_IGattSubscribedClient Extends IInspectable
+    Property Get Current() As IGattSubscribedClient
+    Property Get HasCurrent() As BooleanByte
+    Function MoveNext() As BooleanByte
+    Function GetMany(ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("B19864E4-F2B1-50DE-8C11-FFF9ECA934E9")]
+Interface IIterable_IGattSubscribedClient Extends IInspectable
+    Function First() As IIterator_IGattSubscribedClient
+End Interface
+
+[InterfaceId("63391D79-4BA7-5F45-9681-3A683089353B")]
+Interface IVectorView_IGattSubscribedClient Extends IInspectable
+    Function GetAt(ByVal Index As Long) As IGattSubscribedClient
+    Property Get Size() As Long
+    Function IndexOf(ByVal Value As IGattSubscribedClient, Index As Long) As BooleanByte
+    Function GetMany(ByVal StartIndex As Long, ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("8087ACD6-AED7-53EB-9B23-4808BB910C17")]
+Interface ITypedEventHandlerGattLocalCharacteristicSubscribedClientsChanged Extends IUnknown
+    Sub Invoke(ByVal Sender As IGattLocalCharacteristic, ByVal Args As IInspectable)
+End Interface
+
+[InterfaceId("218A3E4A-AA9D-500E-BCA7-047751BB10A3")]
+Interface ITypedEventHandlerGattLocalCharacteristicReadRequested Extends IUnknown
+    Sub Invoke(ByVal Sender As IGattLocalCharacteristic, ByVal Args As IGattReadRequestedEventArgs)
+End Interface
+
+[InterfaceId("ED61A2FB-7D2A-5BA3-8EBF-8AD878E539A9")]
+Interface ITypedEventHandlerGattLocalCharacteristicWriteRequested Extends IUnknown
+    Sub Invoke(ByVal Sender As IGattLocalCharacteristic, ByVal Args As IGattWriteRequestedEventArgs)
+End Interface
+
+[InterfaceId("AEDE376D-5412-4D74-92A8-8DEB8526829C")]
+Interface IGattLocalCharacteristic Extends IInspectable
+    Property Get Uuid() As UUID
+    Property Get StaticValue() As IBuffer
+    Property Get CharacteristicProperties() As GattCharacteristicProperties
+    Property Get ReadProtectionLevel() As GattProtectionLevel
+    Property Get WriteProtectionLevel() As GattProtectionLevel
+    Function CreateDescriptorAsync(ByVal DescriptorUuid As UUID, ByVal Parameters As IGattLocalDescriptorParameters) As IAsyncOperationIGattLocalDescriptorResult
+    Property Get Descriptors() As IVectorView_IGattLocalDescriptor
+    Property Get UserDescription() As LongPtr
+    Property Get PresentationFormats() As IVectorView_IGattPresentationFormat
+    Property Get SubscribedClients() As IVectorView_IGattSubscribedClient
+    [PreserveSig]
+    Function AddSubscribedClientsChanged(ByVal Handler As ITypedEventHandlerGattLocalCharacteristicSubscribedClientsChanged, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveSubscribedClientsChanged(ByVal Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function AddReadRequested(ByVal Handler As ITypedEventHandlerGattLocalCharacteristicReadRequested, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveReadRequested(ByVal Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function AddWriteRequested(ByVal Handler As ITypedEventHandlerGattLocalCharacteristicWriteRequested, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveWriteRequested(ByVal Token As EventRegistrationToken) As HRESULT
+    Function NotifyValueAsync(ByVal Value As IBuffer) As IAsyncOperationIVectorView_IGattClientNotificationResult
+    Function NotifyValueForSubscribedClientAsync(ByVal Value As IBuffer, ByVal SubscribedClient As IGattSubscribedClient) As IAsyncOperationIGattClientNotificationResult
+End Interface
+
+[InterfaceId("FAF73DB4-4CFF-44C7-8445-040E6EAD0063")]
+Interface IGattLocalCharacteristicParameters Extends IInspectable
+    Property Set StaticValue(ByVal Value As IBuffer)
+    Property Get StaticValue() As IBuffer
+    Property Let CharacteristicProperties(ByVal Value As GattCharacteristicProperties)
+    Property Get CharacteristicProperties() As GattCharacteristicProperties
+    Property Let ReadProtectionLevel(ByVal Value As GattProtectionLevel)
+    Property Get ReadProtectionLevel() As GattProtectionLevel
+    Property Let WriteProtectionLevel(ByVal Value As GattProtectionLevel)
+    Property Get WriteProtectionLevel() As GattProtectionLevel
+    Property Let UserDescription(ByVal Value As LongPtr)
+    Property Get UserDescription() As LongPtr
+    Property Get PresentationFormats() As IVector_IGattPresentationFormat
+End Interface
+
+[InterfaceId("7975DE9B-0170-4397-9666-92F863F12EE6")]
+Interface IGattLocalCharacteristicResult Extends IInspectable
+    Property Get Characteristic() As IGattLocalCharacteristic
+    Property Get Error() As BluetoothError
+End Interface
+
+[InterfaceId("252DCA5C-86E7-5BE1-AEED-F78C6ED466AB")]
+Interface ITypedEventHandlerGattLocalDescriptorReadRequested Extends IUnknown
+    Sub Invoke(ByVal Sender As IGattLocalDescriptor, ByVal Args As IGattReadRequestedEventArgs)
+End Interface
+
+[InterfaceId("6CF5B169-3731-591B-AE7C-D939FAAA8A71")]
+Interface ITypedEventHandlerGattLocalDescriptorWriteRequested Extends IUnknown
+    Sub Invoke(ByVal Sender As IGattLocalDescriptor, ByVal Args As IGattWriteRequestedEventArgs)
+End Interface
+
+[InterfaceId("F48EBE06-789D-4A4B-8652-BD017B5D2FC6")]
+Interface IGattLocalDescriptor Extends IInspectable
+    Property Get Uuid() As UUID
+    Property Get StaticValue() As IBuffer
+    Property Get ReadProtectionLevel() As GattProtectionLevel
+    Property Get WriteProtectionLevel() As GattProtectionLevel
+    [PreserveSig]
+    Function AddReadRequested(ByVal Handler As ITypedEventHandlerGattLocalDescriptorReadRequested, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveReadRequested(ByVal Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function AddWriteRequested(ByVal Handler As ITypedEventHandlerGattLocalDescriptorWriteRequested, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveWriteRequested(ByVal Token As EventRegistrationToken) As HRESULT
+End Interface
+
+[InterfaceId("5FDEDE6A-F3C1-4B66-8C4B-E3D2293B40E9")]
+Interface IGattLocalDescriptorParameters Extends IInspectable
+    Property Set StaticValue(ByVal Value As IBuffer)
+    Property Get StaticValue() As IBuffer
+    Property Let ReadProtectionLevel(ByVal Value As GattProtectionLevel)
+    Property Get ReadProtectionLevel() As GattProtectionLevel
+    Property Let WriteProtectionLevel(ByVal Value As GattProtectionLevel)
+    Property Get WriteProtectionLevel() As GattProtectionLevel
+End Interface
+
+[InterfaceId("375791BE-321F-4366-BFC1-3BC6B82C79F8")]
+Interface IGattLocalDescriptorResult Extends IInspectable
+    Property Get Descriptor() As IGattLocalDescriptor
+    Property Get Error() As BluetoothError
+End Interface
+
+[InterfaceId("1F97164E-88D5-567D-90F9-75D4F6455274")]
+Interface IAsyncOperationIGattLocalCharacteristicResult Extends IInspectable
+    Property Set Completed(ByVal Handler As IAsyncOperationCompletedHandlerIGattLocalCharacteristicResult)
+    Property Get Completed() As IAsyncOperationCompletedHandlerIGattLocalCharacteristicResult
+    Function GetResults() As IGattLocalCharacteristicResult
+End Interface
+
+[InterfaceId("85C70EDD-D815-5284-8C84-58A8F769E388")]
+Interface IAsyncOperationCompletedHandlerIGattLocalCharacteristicResult Extends IUnknown
+    Sub Invoke(ByVal AsyncOperation As IAsyncOperationIGattLocalCharacteristicResult, ByVal AsyncStatus As AsyncStatus)
+End Interface
+
+[InterfaceId("EDD74875-8E85-546F-83B8-1E00AA896419")]
+Interface IIterator_IGattLocalCharacteristic Extends IInspectable
+    Property Get Current() As IGattLocalCharacteristic
+    Property Get HasCurrent() As BooleanByte
+    Function MoveNext() As BooleanByte
+    Function GetMany(ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("7082ED53-37F6-5262-8D09-939BEA9EDBD5")]
+Interface IIterable_IGattLocalCharacteristic Extends IInspectable
+    Function First() As IIterator_IGattLocalCharacteristic
+End Interface
+
+[InterfaceId("E4865EBA-6DE3-5A99-9A75-7EFD8E3CB096")]
+Interface IVectorView_IGattLocalCharacteristic Extends IInspectable
+    Function GetAt(ByVal Index As Long) As IGattLocalCharacteristic
+    Property Get Size() As Long
+    Function IndexOf(ByVal Value As IGattLocalCharacteristic, Index As Long) As BooleanByte
+    Function GetMany(ByVal StartIndex As Long, ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("F513E258-F7F7-4902-B803-57FCC7D6FE83")]
+Interface IGattLocalService Extends IInspectable
+    Property Get Uuid() As UUID
+    Function CreateCharacteristicAsync(ByVal CharacteristicUuid As UUID, ByVal Parameters As IGattLocalCharacteristicParameters) As IAsyncOperationIGattLocalCharacteristicResult
+    Property Get Characteristics() As IVectorView_IGattLocalCharacteristic
+End Interface
+
+[InterfaceId("196D0021-FAAD-45DC-AE5B-2AC3184E84DB")]
+Interface IGattPresentationFormat Extends IInspectable
+    Property Get FormatType() As Byte
+    Property Get Exponent() As Long
+    Property Get Unit() As Integer
+    Property Get Namespace() As Byte
+    Property Get Description() As Integer
+End Interface
+
+[InterfaceId("196D0020-FAAD-45DC-AE5B-2AC3184E84DB")]
+Interface IGattPresentationFormatStatics Extends IInspectable
+    Property Get BluetoothSigAssignedNumbers() As Byte
+End Interface
+
+[InterfaceId("A9C21713-B82F-435E-B634-21FD85A43C07")]
+Interface IGattPresentationFormatStatics2 Extends IInspectable
+    Function FromParts(ByVal FormatType As Byte, ByVal Exponent As Long, ByVal Unit As Integer, ByVal NamespaceId As Byte, ByVal Description As Integer) As IGattPresentationFormat
+End Interface
+
+[InterfaceId("FAF1BA0A-30BA-409C-BEF7-CFFB6D03B8FB")]
+Interface IGattPresentationFormatTypesStatics Extends IInspectable
+    Property Get Boolean() As Byte
+    Property Get Bit2() As Byte
+    Property Get Nibble() As Byte
+    Property Get UInt8() As Byte
+    Property Get UInt12() As Byte
+    Property Get UInt16() As Byte
+    Property Get UInt24() As Byte
+    Property Get UInt32() As Byte
+    Property Get UInt48() As Byte
+    Property Get UInt64() As Byte
+    Property Get UInt128() As Byte
+    Property Get SInt8() As Byte
+    Property Get SInt12() As Byte
+    Property Get SInt16() As Byte
+    Property Get SInt24() As Byte
+    Property Get SInt32() As Byte
+    Property Get SInt48() As Byte
+    Property Get SInt64() As Byte
+    Property Get SInt128() As Byte
+    Property Get Float32() As Byte
+    Property Get Float64() As Byte
+    Property Get SFloat() As Byte
+    Property Get Float() As Byte
+    Property Get DUInt16() As Byte
+    Property Get Utf8() As Byte
+    Property Get Utf16() As Byte
+    Property Get Struct() As Byte
+End Interface
+
+[InterfaceId("CA46C5C5-0ECC-4809-BEA3-CF79BC991E37")]
+Interface IGattProtocolErrorStatics Extends IInspectable
+    Property Get InvalidHandle() As Byte
+    Property Get ReadNotPermitted() As Byte
+    Property Get WriteNotPermitted() As Byte
+    Property Get InvalidPdu() As Byte
+    Property Get InsufficientAuthentication() As Byte
+    Property Get RequestNotSupported() As Byte
+    Property Get InvalidOffset() As Byte
+    Property Get InsufficientAuthorization() As Byte
+    Property Get PrepareQueueFull() As Byte
+    Property Get AttributeNotFound() As Byte
+    Property Get AttributeNotLong() As Byte
+    Property Get InsufficientEncryptionKeySize() As Byte
+    Property Get InvalidAttributeValueLength() As Byte
+    Property Get UnlikelyError() As Byte
+    Property Get InsufficientEncryption() As Byte
+    Property Get UnsupportedGroupType() As Byte
+    Property Get InsufficientResources() As Byte
+End Interface
+
+[InterfaceId("63A66F09-1AEA-4C4C-A50F-97BAE474B348")]
+Interface IGattReadClientCharacteristicConfigurationDescriptorResult Extends IInspectable
+    Property Get Status() As GattCommunicationStatus
+    Property Get ClientCharacteristicConfigurationDescriptor() As GattClientCharacteristicConfigurationDescriptorValue
+End Interface
+
+[InterfaceId("1BF1A59D-BA4D-4622-8651-F4EE150D0A5D")]
+Interface IGattReadClientCharacteristicConfigurationDescriptorResult2 Extends IInspectable
+    Property Get ProtocolError() As IReference_Byte
+End Interface
+
+[InterfaceId("0246E199-5199-5BDB-919D-8544CE30FD71")]
+Interface ITypedEventHandlerGattReadRequestStateChanged Extends IUnknown
+    Sub Invoke(ByVal Sender As IGattReadRequest, ByVal Args As IGattRequestStateChangedEventArgs)
+End Interface
+
+[InterfaceId("F1DD6535-6ACD-42A6-A4BB-D789DAE0043E")]
+Interface IGattReadRequest Extends IInspectable
+    Property Get Offset() As Long
+    Property Get Length() As Long
+    Property Get State() As GattRequestState
+    [PreserveSig]
+    Function AddStateChanged(ByVal Handler As ITypedEventHandlerGattReadRequestStateChanged, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveStateChanged(ByVal Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RespondWithValue(ByVal Value As IBuffer) As HRESULT
+    [PreserveSig]
+    Function RespondWithProtocolError(ByVal ProtocolError As Byte) As HRESULT
+End Interface
+
+[InterfaceId("4732CEC2-D943-5CEB-8281-8D54A21B9A45")]
+Interface IAsyncOperationIGattReadRequest Extends IInspectable
+    Property Set Completed(ByVal Handler As IAsyncOperationCompletedHandlerIGattReadRequest)
+    Property Get Completed() As IAsyncOperationCompletedHandlerIGattReadRequest
+    Function GetResults() As IGattReadRequest
+End Interface
+
+[InterfaceId("31823848-3AB2-547A-8303-964DCC377C9C")]
+Interface IAsyncOperationCompletedHandlerIGattReadRequest Extends IUnknown
+    Sub Invoke(ByVal AsyncOperation As IAsyncOperationIGattReadRequest, ByVal AsyncStatus As AsyncStatus)
+End Interface
+
+[InterfaceId("93497243-F39C-484B-8AB6-996BA486CFA3")]
+Interface IGattReadRequestedEventArgs Extends IInspectable
+    Property Get Session() As IGattSession
+    Function GetDeferral() As IDeferral
+    Function GetRequestAsync() As IAsyncOperationIGattReadRequest
+End Interface
+
+[InterfaceId("63A66F08-1AEA-4C4C-A50F-97BAE474B348")]
+Interface IGattReadResult Extends IInspectable
+    Property Get Status() As GattCommunicationStatus
+    Property Get Value() As IBuffer
+End Interface
+
+[InterfaceId("A10F50A0-FB43-48AF-BAAA-638A5C6329FE")]
+Interface IGattReadResult2 Extends IInspectable
+    Property Get ProtocolError() As IReference_Byte
+End Interface
+
+[InterfaceId("63A66F07-1AEA-4C4C-A50F-97BAE474B348")]
+Interface IGattReliableWriteTransaction Extends IInspectable
+    [PreserveSig]
+    Function WriteValue(ByVal Characteristic As IGattCharacteristic, ByVal Value As IBuffer) As HRESULT
+    Function CommitAsync() As IAsyncOperationGattCommunicationStatus
+End Interface
+
+[InterfaceId("51113987-EF12-462F-9FB2-A1A43A679416")]
+Interface IGattReliableWriteTransaction2 Extends IInspectable
+    Function CommitWithResultAsync() As IAsyncOperationIGattWriteResult
+End Interface
+
+[InterfaceId("E834D92C-27BE-44B3-9D0D-4FC6E808DD3F")]
+Interface IGattRequestStateChangedEventArgs Extends IInspectable
+    Property Get State() As GattRequestState
+    Property Get Error() As BluetoothError
+End Interface
+
+[InterfaceId("56CE41B0-2570-50D3-A1B1-7E4167E1FDE7")]
+Interface ITypedEventHandlerGattServiceProviderAdvertisementStatusChanged Extends IUnknown
+    Sub Invoke(ByVal Sender As IGattServiceProvider, ByVal Args As IGattServiceProviderAdvertisementStatusChangedEventArgs)
+End Interface
+
+[InterfaceId("7822B3CD-2889-4F86-A051-3F0AED1C2760")]
+Interface IGattServiceProvider Extends IInspectable
+    Property Get Service() As IGattLocalService
+    Property Get AdvertisementStatus() As GattServiceProviderAdvertisementStatus
+    [PreserveSig]
+    Function AddAdvertisementStatusChanged(ByVal Handler As ITypedEventHandlerGattServiceProviderAdvertisementStatusChanged, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveAdvertisementStatusChanged(ByVal Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function StartAdvertising() As HRESULT
+    [PreserveSig]
+    Function StartAdvertisingWithParameters(ByVal Parameters As IGattServiceProviderAdvertisingParameters) As HRESULT
+    [PreserveSig]
+    Function StopAdvertising() As HRESULT
+End Interface
+
+[InterfaceId("59A5AA65-FA21-4FFC-B155-04D928012686")]
+Interface IGattServiceProviderAdvertisementStatusChangedEventArgs Extends IInspectable
+    Property Get Error() As BluetoothError
+    Property Get Status() As GattServiceProviderAdvertisementStatus
+End Interface
+
+[InterfaceId("E2CE31AB-6315-4C22-9BD7-781DBC3D8D82")]
+Interface IGattServiceProviderAdvertisingParameters Extends IInspectable
+    Property Let IsConnectable(ByVal Value As BooleanByte)
+    Property Get IsConnectable() As BooleanByte
+    Property Let IsDiscoverable(ByVal Value As BooleanByte)
+    Property Get IsDiscoverable() As BooleanByte
+End Interface
+
+[InterfaceId("FF68468D-CA92-4434-9743-0E90988AD879")]
+Interface IGattServiceProviderAdvertisingParameters2 Extends IInspectable
+    Property Set ServiceData(ByVal Value As IBuffer)
+    Property Get ServiceData() As IBuffer
+End Interface
+
+[InterfaceId("764696D8-C53E-428C-8A48-67AFE02C3AE6")]
+Interface IGattServiceProviderResult Extends IInspectable
+    Property Get Error() As BluetoothError
+    Property Get ServiceProvider() As IGattServiceProvider
+End Interface
+
+[InterfaceId("21781028-F5A2-5D99-A5AB-BCE6554FBC02")]
+Interface IAsyncOperationIGattServiceProviderResult Extends IInspectable
+    Property Set Completed(ByVal Handler As IAsyncOperationCompletedHandlerIGattServiceProviderResult)
+    Property Get Completed() As IAsyncOperationCompletedHandlerIGattServiceProviderResult
+    Function GetResults() As IGattServiceProviderResult
+End Interface
+
+[InterfaceId("F992789A-E981-597A-9197-1FBD986F74C7")]
+Interface IAsyncOperationCompletedHandlerIGattServiceProviderResult Extends IUnknown
+    Sub Invoke(ByVal AsyncOperation As IAsyncOperationIGattServiceProviderResult, ByVal AsyncStatus As AsyncStatus)
+End Interface
+
+[InterfaceId("31794063-5256-4054-A4F4-7BBE7755A57E")]
+Interface IGattServiceProviderStatics Extends IInspectable
+    Function CreateAsync(ByVal ServiceUuid As UUID) As IAsyncOperationIGattServiceProviderResult
+End Interface
+
+[InterfaceId("6DC57058-9ABA-4417-B8F2-DCE016D34EE2")]
+Interface IGattServiceUuidsStatics Extends IInspectable
+    Property Get Battery() As UUID
+    Property Get BloodPressure() As UUID
+    Property Get CyclingSpeedAndCadence() As UUID
+    Property Get GenericAccess() As UUID
+    Property Get GenericAttribute() As UUID
+    Property Get Glucose() As UUID
+    Property Get HealthThermometer() As UUID
+    Property Get HeartRate() As UUID
+    Property Get RunningSpeedAndCadence() As UUID
+End Interface
+
+[InterfaceId("D2AE94F5-3D15-4F79-9C0C-EAAFA675155C")]
+Interface IGattServiceUuidsStatics2 Extends IInspectable
+    Property Get AlertNotification() As UUID
+    Property Get CurrentTime() As UUID
+    Property Get CyclingPower() As UUID
+    Property Get DeviceInformation() As UUID
+    Property Get HumanInterfaceDevice() As UUID
+    Property Get ImmediateAlert() As UUID
+    Property Get LinkLoss() As UUID
+    Property Get LocationAndNavigation() As UUID
+    Property Get NextDstChange() As UUID
+    Property Get PhoneAlertStatus() As UUID
+    Property Get ReferenceTimeUpdate() As UUID
+    Property Get ScanParameters() As UUID
+    Property Get TxPower() As UUID
+End Interface
+
+[InterfaceId("6C7EC2EC-9F00-5EA0-9A08-60E5070BCF03")]
+Interface ITypedEventHandlerGattSessionMaxPduSizeChanged Extends IUnknown
+    Sub Invoke(ByVal Sender As IGattSession, ByVal Args As IInspectable)
+End Interface
+
+[InterfaceId("0E1210F2-7B6F-543E-8ADB-A61D34AB535D")]
+Interface ITypedEventHandlerGattSessionStatusChanged Extends IUnknown
+    Sub Invoke(ByVal Sender As IGattSession, ByVal Args As IGattSessionStatusChangedEventArgs)
+End Interface
+
+[InterfaceId("D23B5143-E04E-4C24-999C-9C256F9856B1")]
+Interface IGattSession Extends IInspectable ' requires IClosable
+    Property Get DeviceId() As IBluetoothDeviceId
+    Property Get CanMaintainConnection() As BooleanByte
+    Property Let MaintainConnection(ByVal Value As BooleanByte)
+    Property Get MaintainConnection() As BooleanByte
+    Property Get MaxPduSize() As Integer
+    Property Get SessionStatus() As GattSessionStatus
+    [PreserveSig]
+    Function AddMaxPduSizeChanged(ByVal Handler As ITypedEventHandlerGattSessionMaxPduSizeChanged, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveMaxPduSizeChanged(ByVal Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function AddSessionStatusChanged(ByVal Handler As ITypedEventHandlerGattSessionStatusChanged, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveSessionStatusChanged(ByVal Token As EventRegistrationToken) As HRESULT
+End Interface
+
+[InterfaceId("6D40B467-46B9-516F-8208-DB23B786EA48")]
+Interface IAsyncOperationIGattSession Extends IInspectable
+    Property Set Completed(ByVal Handler As IAsyncOperationCompletedHandlerIGattSession)
+    Property Get Completed() As IAsyncOperationCompletedHandlerIGattSession
+    Function GetResults() As IGattSession
+End Interface
+
+[InterfaceId("CAE01A28-FD33-542E-A5AD-3D878F73DB90")]
+Interface IAsyncOperationCompletedHandlerIGattSession Extends IUnknown
+    Sub Invoke(ByVal AsyncOperation As IAsyncOperationIGattSession, ByVal AsyncStatus As AsyncStatus)
+End Interface
+
+[InterfaceId("2E65B95C-539F-4DB7-82A8-73BDBBF73EBF")]
+Interface IGattSessionStatics Extends IInspectable
+    Function FromDeviceIdAsync(ByVal DeviceId As IBluetoothDeviceId) As IAsyncOperationIGattSession
+End Interface
+
+[InterfaceId("7605B72E-837F-404C-AB34-3163F39DDF32")]
+Interface IGattSessionStatusChangedEventArgs Extends IInspectable
+    Property Get Error() As BluetoothError
+    Property Get Status() As GattSessionStatus
+End Interface
+
+[InterfaceId("9C17A110-806D-594B-B33D-ED280BBF27E5")]
+Interface ITypedEventHandlerGattSubscribedClientMaxNotificationSizeChanged Extends IUnknown
+    Sub Invoke(ByVal Sender As IGattSubscribedClient, ByVal Args As IInspectable)
+End Interface
+
+[InterfaceId("736E9001-15A4-4EC2-9248-E3F20D463BE9")]
+Interface IGattSubscribedClient Extends IInspectable
+    Property Get Session() As IGattSession
+    Property Get MaxNotificationSize() As Integer
+    [PreserveSig]
+    Function AddMaxNotificationSizeChanged(ByVal Handler As ITypedEventHandlerGattSubscribedClientMaxNotificationSizeChanged, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveMaxNotificationSizeChanged(ByVal Token As EventRegistrationToken) As HRESULT
+End Interface
+
+[InterfaceId("D21BDB54-06E3-4ED8-A263-ACFAC8BA7313")]
+Interface IGattValueChangedEventArgs Extends IInspectable
+    Property Get CharacteristicValue() As IBuffer
+    Property Get Timestamp() As DateTime
+End Interface
+
+[InterfaceId("7744C6BC-CDCD-5283-9E4F-2E21B49A2EF2")]
+Interface ITypedEventHandlerGattWriteRequestStateChanged Extends IUnknown
+    Sub Invoke(ByVal Sender As IGattWriteRequest, ByVal Args As IGattRequestStateChangedEventArgs)
+End Interface
+
+[InterfaceId("AEB6A9ED-DE2F-4FC2-A9A8-94EA7844F13D")]
+Interface IGattWriteRequest Extends IInspectable
+    Property Get Value() As IBuffer
+    Property Get Offset() As Long
+    Property Get Option() As GattWriteOption
+    Property Get State() As GattRequestState
+    [PreserveSig]
+    Function AddStateChanged(ByVal Handler As ITypedEventHandlerGattWriteRequestStateChanged, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveStateChanged(ByVal Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function Respond() As HRESULT
+    [PreserveSig]
+    Function RespondWithProtocolError(ByVal ProtocolError As Byte) As HRESULT
+End Interface
+
+[InterfaceId("FB8B3C18-2F60-5B43-B773-146045816E03")]
+Interface IAsyncOperationIGattWriteRequest Extends IInspectable
+    Property Set Completed(ByVal Handler As IAsyncOperationCompletedHandlerIGattWriteRequest)
+    Property Get Completed() As IAsyncOperationCompletedHandlerIGattWriteRequest
+    Function GetResults() As IGattWriteRequest
+End Interface
+
+[InterfaceId("25B737F6-30FF-558E-BA16-B564C45FDC06")]
+Interface IAsyncOperationCompletedHandlerIGattWriteRequest Extends IUnknown
+    Sub Invoke(ByVal AsyncOperation As IAsyncOperationIGattWriteRequest, ByVal AsyncStatus As AsyncStatus)
+End Interface
+
+[InterfaceId("2DEC8BBE-A73A-471A-94D5-037DEADD0806")]
+Interface IGattWriteRequestedEventArgs Extends IInspectable
+    Property Get Session() As IGattSession
+    Function GetDeferral() As IDeferral
+    Function GetRequestAsync() As IAsyncOperationIGattWriteRequest
+End Interface
+
+[InterfaceId("4991DDB1-CB2B-44F7-99FC-D29A2871DC9B")]
+Interface IGattWriteResult Extends IInspectable
+    Property Get Status() As GattCommunicationStatus
+    Property Get ProtocolError() As IReference_Byte
+End Interface
+
+Module mdlDevicesBluetoothGenericAttributeProfile
+
+Public Enum GattCharacteristicProperties
+    GattCharacteristicProperties_None = &H0
+    GattCharacteristicProperties_Broadcast = &H1
+    GattCharacteristicProperties_Read = &H2
+    GattCharacteristicProperties_WriteWithoutResponse = &H4
+    GattCharacteristicProperties_Write = &H8
+    GattCharacteristicProperties_Notify = &H10
+    GattCharacteristicProperties_Indicate = &H20
+    GattCharacteristicProperties_AuthenticatedSignedWrites = &H40
+    GattCharacteristicProperties_ExtendedProperties = &H80
+    GattCharacteristicProperties_ReliableWrites = &H100
+    GattCharacteristicProperties_WritableAuxiliaries = &H200
+End Enum
+
+Public Enum GattClientCharacteristicConfigurationDescriptorValue
+    GattClientCharacteristicConfigurationDescriptorValue_None
+    GattClientCharacteristicConfigurationDescriptorValue_Notify
+    GattClientCharacteristicConfigurationDescriptorValue_Indicate
+End Enum
+
+Public Enum GattCommunicationStatus
+    GattCommunicationStatus_Success
+    GattCommunicationStatus_Unreachable
+    GattCommunicationStatus_ProtocolError
+    GattCommunicationStatus_AccessDenied
+End Enum
+
+Public Enum GattOpenStatus
+    GattOpenStatus_Unspecified
+    GattOpenStatus_Success
+    GattOpenStatus_AlreadyOpened
+    GattOpenStatus_NotFound
+    GattOpenStatus_SharingViolation
+    GattOpenStatus_AccessDenied
+End Enum
+
+Public Enum GattProtectionLevel
+    GattProtectionLevel_Plain
+    GattProtectionLevel_AuthenticationRequired
+    GattProtectionLevel_EncryptionRequired
+    GattProtectionLevel_EncryptionAndAuthenticationRequired
+End Enum
+
+Public Enum GattRequestState
+    GattRequestState_Pending
+    GattRequestState_Completed
+    GattRequestState_Canceled
+End Enum
+
+Public Enum GattServiceProviderAdvertisementStatus
+    GattServiceProviderAdvertisementStatus_Created
+    GattServiceProviderAdvertisementStatus_Stopped
+    GattServiceProviderAdvertisementStatus_Started
+    GattServiceProviderAdvertisementStatus_Aborted
+    GattServiceProviderAdvertisementStatus_StartedWithoutAllAdvertisementData
+End Enum
+
+Public Enum GattSessionStatus
+    GattSessionStatus_Closed
+    GattSessionStatus_Active
+End Enum
+
+Public Enum GattSharingMode
+    GattSharingMode_Unspecified
+    GattSharingMode_Exclusive
+    GattSharingMode_SharedReadOnly
+    GattSharingMode_SharedReadAndWrite
+End Enum
+
+Public Enum GattWriteOption
+    GattWriteOption_WriteWithResponse
+    GattWriteOption_WriteWithoutResponse
+End Enum
+
+End Module

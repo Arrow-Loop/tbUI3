@@ -1,0 +1,1247 @@
+Alias BooleanByte As Byte
+Alias Char16 As Integer
+Alias EventRegistrationToken As Currency
+Alias Int16 As Integer
+Alias Int32 As Long
+Alias Int64 As Currency
+Alias POINTL As PointInt32
+Alias SIZEL As SizeInt32
+Alias UInt8 As Byte
+Alias UInt16 As Integer
+Alias UInt32 As Long
+Alias UInt64 As Currency
+
+Module mdlHelpers
+
+Public Enum CALLCONV_CONSTANTS
+    CC_FASTCALL
+    CC_CDECL
+    CC_PASCAL
+    CC_MACPASCAL
+    CC_STDCALL
+    CC_FPFASTCALL
+    CC_SYSCALL
+    CC_MPWCDECL
+    CC_MPWPASCAL
+    CC_MAX
+End Enum
+
+Private Enum GETWINDOWLONG_CONSTANTS
+    GWL_EXSTYLE = -20
+    GWLP_HINSTANCE = -6
+    GWLP_HWNDPARENT = -8
+    GWLP_ID = -12
+    GWL_STYLE = -16
+    GWLP_USERDATA = -21
+    GWLP_WNDPROC = -4
+End Enum
+
+Private Enum FORMATMESSAGE_FLAGS
+    FORMAT_MESSAGE_MAX_WIDTH_MASK = &HFF
+    FORMAT_MESSAGE_ALLOCATE_BUFFER = &H100
+    FORMAT_MESSAGE_ARGUMENT_ARRAY = &H2000
+    FORMAT_MESSAGE_FROM_HMODULE = &H800
+    FORMAT_MESSAGE_FROM_STRING = &H400
+    FORMAT_MESSAGE_FROM_SYSTEM = &H1000
+    FORMAT_MESSAGE_IGNORE_INSERTS = &H200
+End Enum
+
+Public Enum SETWINDOWPOS_CONSTANTS
+    HWND_NOTOPMOST = -2
+    HWND_TOPMOST
+    HWND_TOP
+    HWND_BOTTOM
+    SWP_NOSIZE = &H1
+    SWP_NOMOVE = &H2
+    SWP_NOZORDER = &H4
+    SWP_NOREDRAW = &H8
+    SWP_NOACTIVATE = &H10
+    SWP_DRAWFRAME = &H20
+    SWP_FRAMECHANGED = &H20
+    SWP_SHOWWINDOW = &H40
+    SWP_HIDEWINDOW = &H80
+    SWP_NOCOPYBITS = &H100
+    SWP_NOOWNERZORDER = &H200
+    SWP_NOREPOSITION = &H200
+    SWP_NOSENDCHANGING = &H400
+    SWP_DEFERERASE = &H2000
+    SWP_ASYNCWINDOWPOS = &H4000
+End Enum
+
+Private Enum WINDOWEXTENDEDSTYLE_FLAGS
+    WS_EX_LEFT = &H0
+    WS_EX_LTRREADING = &H0
+    WS_EX_RIGHTSCROLLBAR = &H0
+    WS_EX_DLGMODALFRAME = &H1
+    WS_EX_NOPARENTNOTIFY = &H4
+    WS_EX_TOPMOST = &H8
+    WS_EX_ACCEPTFILES = &H10
+    WS_EX_TRANSPARENT = &H20
+    WS_EX_MDICHILD = &H40
+    WS_EX_TOOLWINDOW = &H80
+    WS_EX_WINDOWEDGE = &H100
+    WS_EX_CLIENTEDGE = &H200
+    WS_EX_CONTEXTHELP = &H400
+    WS_EX_RIGHT = &H1000
+    WS_EX_RTLREADING = &H2000
+    WS_EX_LEFTSCROLLBAR = &H4000
+    WS_EX_CONTROLPARENT = &H10000
+    WS_EX_STATICEDGE = &H20000
+    WS_EX_APPWINDOW = &H40000
+    WS_EX_LAYERED = &H80000
+    WS_EX_NOINHERITLAYOUT = &H100000
+    WS_EX_NOREDIRECTIONBITMAP = &H200000
+    WS_EX_LAYOUTRTL = &H400000
+    WS_EX_COMPOSITED = &H2000000
+    WS_EX_NOACTIVATE = &H8000000
+    WS_EX_OVERLAPPEDWINDOW = WS_EX_WINDOWEDGE Or WS_EX_CLIENTEDGE
+    WS_EX_PALETTEWINDOW = WS_EX_WINDOWEDGE Or WS_EX_TOOLWINDOW Or WS_EX_TOPMOST
+End Enum
+
+Public Type DateTime
+    Value As Currency
+    Private Sub Type_Assignment(ByVal RHS As Currency): Me.Value = RHS: End Sub
+    Private Function Type_Conversion() As Currency: Type_Conversion = Me.Value: End Function
+    Private Function Type_DebugView() As String: Type_DebugView = "UTC: " & Me.DateTime & " Local: " & Me.DateTime(True): End Function
+    Property Get DateTime(Optional ByVal bUniversalTimeToLocalTime As Boolean) As Date: DateTime = ToDate(Me.Value, bUniversalTimeToLocalTime): End Property
+    Property Let DateTime(Optional ByVal bLocalTimeToUniversalTime As Boolean, ByVal RHS As Date): Me.Value = FromDate(RHS, bLocalTimeToUniversalTime): End Property
+End Type
+
+Public Type LOOKUP_TABLES
+    bInit As Boolean
+    Pow(0 To 31) As Long
+    Base32(0 To 31) As Byte
+End Type
+
+Public Type RGBQUAD
+    rgbBlue As Byte
+    rgbGreen As Byte
+    rgbRed As Byte
+    rgbReserved As Byte
+    Private Sub Type_Assignment(ByVal RHS As Long): With CType(Of RGBQUAD)(VarPtr(RHS)): Me.rgbBlue = .rgbBlue: Me.rgbGreen = .rgbGreen: Me.rgbRed = .rgbRed: Me.rgbReserved = .rgbReserved: End With: End Sub
+    Private Function Type_Conversion() As Long: Type_Conversion = CType(Of UDTWrap(Of Long))(VarPtr(Me)).Value: End Function
+    Private Function Type_DebugView() As String: Type_DebugView = "ARGB = " & Right$("00" & Hex$(Me.rgbReserved), 2) & Right$("00" & Hex$(Me.rgbRed), 2) & Right$("00" & Hex$(Me.rgbGreen), 2) & Right$("00" & Hex$(Me.rgbBlue), 2): End Function
+    Function FromARGB(Optional ByVal A As Byte = &HFF, Optional ByVal R As Byte, Optional ByVal G As Byte, Optional ByVal B As Byte) As Long: Me.rgbReserved = A: Me.rgbRed = R: Me.rgbGreen = G: Me.rgbBlue = B: FromARGB = Me: End Function
+End Type
+
+Private Type SYSTEMTIME
+    wYear As Integer
+    wMonth As Integer
+    wDayOfWeek As Integer
+    wDay As Integer
+    wHour As Integer
+    wMinute As Integer
+    wSecond As Integer
+    wMilliseconds As Integer
+End Type
+
+Public Type TimeSpan
+    Duration As Currency
+    Private Sub Type_Assignment(ByVal RHS As Currency): Me.Duration = RHS: End Sub
+    Private Function Type_Conversion() As Currency: Type_Conversion = Me.Duration: End Function
+    Function FromDays(ByVal Days As Long) As Currency: Me = Days * 86400000@: FromDays = Me.Duration: End Function
+    Function FromHours(ByVal Hours As Long) As Currency: Me = Hours * 3600000@: FromHours = Me.Duration: End Function
+    Function FromMinutes(ByVal Minutes As Currency) As Currency: Me = Minutes * 60000@: FromMinutes = Me.Duration: End Function
+    Function FromSeconds(ByVal Seconds As Currency) As Currency: Me = Seconds * 1000@: FromSeconds = Me.Duration: End Function
+    Function FromMilliseconds(ByVal Milliseconds As Currency) As Currency: Me = Milliseconds: FromMilliseconds = Me.Duration: End Function
+    Function TotalDays() As Double: TotalDays = Me.Duration / 86400000: End Function
+    Function TotalHours() As Double: TotalHours = Me.Duration / 3600000: End Function
+    Function TotalMinutes() As Double: TotalMinutes = Me.Duration / 60000: End Function
+    Function TotalSeconds() As Double: TotalSeconds = Me.Duration / 1000: End Function
+    Function TotalMilliseconds() As Currency: TotalMilliseconds = Me.Duration: End Function
+End Type
+
+Public Type UDTWrap(Of T)
+    Value As T
+End Type
+
+Public Type UUID
+    Data1 As Long
+    Data2 As Long
+    Data3 As Long
+    Data4 As Long
+    [UseGetLastError(False), DLLStackCheck(False)]
+    Private Declare PtrSafe Function IsEqualGUID Lib "ole32" (Me As UUID, rTargetGuid As UUID) As BOOL
+    [UseGetLastError(False), DLLStackCheck(False)]
+    Private Declare PtrSafe Function CLSIDFromProgID Lib "combase" (ByVal pSZ As LongPtr, rCLSID As UUID) As HRESULT
+    [UseGetLastError(False), DLLStackCheck(False)]
+    Private Declare PtrSafe Function CoCreateGuid Lib "combase" (Me As UUID) As HRESULT
+    [UseGetLastError(False), DLLStackCheck(False)]
+    Private Declare PtrSafe Function IIDFromString Lib "combase" (ByVal pSZ As LongPtr, rCLSID As UUID) As HRESULT
+    [UseGetLastError(False), DLLStackCheck(False)]
+    Private Declare PtrSafe Function ProgIDFromCLSID Lib "combase" (Me As UUID, pSZ As LongPtr) As HRESULT
+    [UseGetLastError(False), DLLStackCheck(False)]
+    Private Declare PtrSafe Function StringFromIID Lib "combase" (Me As UUID, pSZ As LongPtr) As HRESULT
+    Private Function Type_DebugView() As String: Dim sProgID As String
+        sProgID = Me.ProgID: Type_DebugView = Me.GuidString & If(Len(sProgID), " ProgID: " & sProgID, vbNullString)
+    End Function
+    Function CreateFromHash(sStringToHash As String, Optional ByVal UnicodeEncoding As UnicodeEncoding = UnicodeEncoding_UTF8, Optional ByVal bSHA1 As Boolean = True) As UUID: CreateFromHash = GuidFromHash(sStringToHash, UnicodeEncoding, bSHA1): Me = CreateFromHash: End Function
+    Function CreateFromPointer(ByVal pGuid As LongPtr) As UUID: CreateFromPointer = CType(Of UUID)(pGuid): Me = CreateFromPointer: End Function
+    Function CreateNew() As UUID: Me.CoCreateGuid: CreateNew = CType(Of UUID)(VarPtr(Me)): End Function
+    Function Empty() As UUID: Me = GUID_NULL: Return GUID_NULL: End Function
+    Property Get GuidString(Optional ByVal bLowerCase As Boolean) As String: Dim pSZ As LongPtr
+        If Me.StringFromIID(pSZ) = S_OK Then SysReAllocString VarPtr(GuidString), pSZ: CoTaskMemFree pSZ: If bLowerCase Then GuidString = LCase$(GuidString)
+    End Property
+    Property Let GuidString(Optional ByVal bLowerCase As Boolean, RHS As String): Me.IIDFromString StrPtr(RHS), Me: End Property
+    Function IsEmpty() As Boolean: IsEmpty = Me.IsEqualGUID(GUID_NULL) = APITRUE: End Function
+    Function IsEqual(rTargetGuid As UUID) As Boolean: IsEqual = Me.IsEqualGUID(rTargetGuid) = APITRUE: End Function
+    Property Get ProgID() As String: Dim pSZ As LongPtr
+        If Me.ProgIDFromCLSID(pSZ) = S_OK Then SysReAllocString VarPtr(ProgID), pSZ: CoTaskMemFree pSZ
+    End Property
+    Property Let ProgID(RHS As String): Me.CLSIDFromProgID StrPtr(RHS), Me: End Property
+End Type
+
+#If Win64 Then
+    Public Const PTR_SIZE As Long = 8
+#Else
+    Public Const PTR_SIZE As Long = 4
+#End If
+
+[UseGetLastError(False), DLLStackCheck(False)]
+Private Declare PtrSafe Function FileTimeToSystemTime Lib "kernel32" (lpFileTime As Any, lpSystemTime As Any) As BOOL
+[UseGetLastError(False), DLLStackCheck(False)]
+Private Declare PtrSafe Function FormatMessageW Lib "kernel32" (ByVal dwFlags As FORMATMESSAGE_FLAGS, ByVal lpSource As LongPtr, ByVal dwMessageId As Long, ByVal dwLanguageId As Long, lpBuffer As LongPtr, ByVal nSize As Long, Optional ByVal Arguments As LongPtr) As Long
+[UseGetLastError(False), DLLStackCheck(False)]
+Private Declare PtrSafe Function GetCurrentProcessId Lib "kernel32" () As Long
+[UseGetLastError(False), DLLStackCheck(False)]
+Private Declare PtrSafe Function LocalFree Lib "kernel32" (ByVal hMem As LongPtr) As LongPtr
+[UseGetLastError(False), DLLStackCheck(False)]
+Private Declare PtrSafe Function QueryPerformanceCounter Lib "kernel32" (PerformanceCount As Currency) As BOOL
+[UseGetLastError(False), DLLStackCheck(False)]
+Private Declare PtrSafe Function QueryPerformanceFrequency Lib "kernel32" (Frequency As Currency) As BOOL
+[UseGetLastError(False), DLLStackCheck(False)]
+Private Declare PtrSafe Function SystemTimeToFileTime Lib "kernel32" (lpSystemTime As Any, lpFileTime As Any) As BOOL
+[UseGetLastError(False), DLLStackCheck(False)]
+Private Declare PtrSafe Function SystemTimeToTzSpecificLocalTimeEx Lib "kernel32" (lpTimeZoneInformation As Any, lpUniversalTime As Any, lpLocalTime As Any) As BOOL
+[UseGetLastError(False), DLLStackCheck(False)]
+Private Declare PtrSafe Function TzSpecificLocalTimeToSystemTimeEx Lib "kernel32" (lpTimeZoneInformation As Any, lpLocalTime As Any, lpUniversalTime As Any) As BOOL
+[UseGetLastError(False), DLLStackCheck(False)]
+Public Declare PtrSafe Function ArrPtrVar Lib "msvbvm60" Alias "__vbaRefVarAry" (vArray As Variant) As LongPtr
+[UseGetLastError(False), DLLStackCheck(False)]
+Public Declare PtrSafe Function ArrPtr Lib "msvbvm60" Alias "VarPtr" (Array() As Any) As LongPtr
+[UseGetLastError(False), DLLStackCheck(False)]
+Public Declare PtrSafe Function RtlCompressBuffer Lib "ntdll" (ByVal CompressionFormatAndEngine As COMPRESSION_FORMATS, ByVal pUncompressedBuffer As LongPtr, ByVal UncompressedBufferSize As Long, ByVal pCompressedBuffer As LongPtr, ByVal CompressedBufferSize As Long, ByVal UncompressedChunkSize As Long, FinalCompressedSize As Long, ByVal pWorkSpace As LongPtr) As Long
+[UseGetLastError(False), DLLStackCheck(False)]
+Public Declare PtrSafe Function RtlDecompressBuffer Lib "ntdll" (ByVal CompressionFormat As COMPRESSION_FORMATS, ByVal pUncompressedBuffer As LongPtr, ByVal UncompressedBufferSize As Long, ByVal pCompressedBuffer As LongPtr, ByVal CompressedBufferSize As Long, FinalUncompressedSize As Long) As Long
+[UseGetLastError(False), DLLStackCheck(False)]
+Public Declare PtrSafe Function RtlDecompressBufferEx Lib "ntdll" (ByVal CompressionFormat As COMPRESSION_FORMATS, ByVal pUncompressedBuffer As LongPtr, ByVal UncompressedBufferSize As Long, ByVal pCompressedBuffer As LongPtr, ByVal CompressedBufferSize As Long, FinalUncompressedSize As Long, ByVal pWorkSpace As LongPtr) As Long
+[UseGetLastError(False), DLLStackCheck(False)]
+Public Declare PtrSafe Function RtlGetCompressionWorkSpaceSize Lib "ntdll" (ByVal CompressionFormatAndEngine As COMPRESSION_FORMATS, CompressBufferWorkSpaceSize As Any, CompressFragmentWorkSpaceSize As Any) As Long
+[UseGetLastError(False), DLLStackCheck(False)]
+Public Declare PtrSafe Function DispCallFunc Lib "oleaut32" Alias "#146" (ByVal pvInstance As LongPtr, ByVal oVft As LongPtr, ByVal cc As CALLCONV_CONSTANTS, ByVal vtReturn As VbVarType, ByVal cActuals As Long, prgvt As Any, prgpvarg As Any, pvargResult As Variant) As HRESULT
+[UseGetLastError(False), DLLStackCheck(False)]
+Public Declare PtrSafe Function SafeArrayAllocData Lib "oleaut32" Alias "#37" (ByVal pSA As LongPtr) As HRESULT
+[UseGetLastError(False), DLLStackCheck(False)]
+Public Declare PtrSafe Function SafeArrayAllocDescriptor Lib "oleaut32" Alias "#36" (ByVal cDims As Long, ppSA As LongPtr) As HRESULT
+[UseGetLastError(False), DLLStackCheck(False)]
+Public Declare PtrSafe Function SafeArrayAllocDescriptorEx Lib "oleaut32" Alias "#41" (ByVal vt As VbVarType, ByVal cDims As Long, ppSA As LongPtr) As HRESULT
+[UseGetLastError(False), DLLStackCheck(False)]
+Public Declare PtrSafe Function SafeArrayCopy Lib "oleaut32" Alias "#27" (ByVal pSA As LongPtr, ppSA As LongPtr) As HRESULT
+[UseGetLastError(False), DLLStackCheck(False)]
+Public Declare PtrSafe Function SafeArrayCopyData Lib "oleaut32" Alias "#412" (ByVal pSASource As LongPtr, ByVal pSATarget As LongPtr) As HRESULT
+[UseGetLastError(False), DLLStackCheck(False)]
+Public Declare PtrSafe Function SafeArrayCreate Lib "oleaut32" Alias "#15" (ByVal vt As VbVarType, ByVal cDims As Long, ByVal rgSABound As LongPtr) As LongPtr
+[UseGetLastError(False), DLLStackCheck(False)]
+Public Declare PtrSafe Function SafeArrayCreateEx Lib "oleaut32" Alias "#42" (ByVal vt As VbVarType, ByVal cDims As Long, ByVal rgSABound As LongPtr, ByVal pvExtra As LongPtr) As LongPtr
+[UseGetLastError(False), DLLStackCheck(False)]
+Public Declare PtrSafe Function SafeArrayCreateVector Lib "oleaut32" Alias "#411" (ByVal vt As VbVarType, ByVal lLbound As Long, ByVal cElements As Long) As LongPtr
+[UseGetLastError(False), DLLStackCheck(False)]
+Public Declare PtrSafe Function SafeArrayCreateVectorEx Lib "oleaut32" Alias "#43" (ByVal vt As VbVarType, ByVal lLbound As Long, ByVal cElements As Long, ByVal pvExtra As LongPtr) As LongPtr
+[UseGetLastError(False), DLLStackCheck(False)]
+Public Declare PtrSafe Function SafeArrayDestroy Lib "oleaut32" Alias "#16" (ByVal pSA As LongPtr) As HRESULT
+[UseGetLastError(False), DLLStackCheck(False)]
+Public Declare PtrSafe Function SafeArrayDestroyData Lib "oleaut32" Alias "#39" (ByVal pSA As LongPtr) As HRESULT
+[UseGetLastError(False), DLLStackCheck(False)]
+Public Declare PtrSafe Function SafeArrayDestroyDescriptor Lib "oleaut32" Alias "#38" (ByVal pSA As LongPtr) As HRESULT
+[UseGetLastError(False), DLLStackCheck(False)]
+Public Declare PtrSafe Function SafeArrayGetDim Lib "oleaut32" Alias "#17" (ByVal pSA As LongPtr) As Long
+[UseGetLastError(False), DLLStackCheck(False)]
+Public Declare PtrSafe Function SafeArrayGetElemsize Lib "oleaut32" Alias "#18" (ByVal pSA As LongPtr) As Long
+[UseGetLastError(False), DLLStackCheck(False)]
+Public Declare PtrSafe Function SafeArrayGetIID Lib "oleaut32" Alias "#67" (ByVal pSA As LongPtr, rIID As Any) As HRESULT
+[UseGetLastError(False), DLLStackCheck(False)]
+Public Declare PtrSafe Function SafeArrayGetLBound Lib "oleaut32" Alias "#20" (ByVal pSA As LongPtr, ByVal nDim As Long, plLbound As Long) As HRESULT
+[UseGetLastError(False), DLLStackCheck(False)]
+Public Declare PtrSafe Function SafeArrayGetUBound Lib "oleaut32" Alias "#19" (ByVal pSA As LongPtr, ByVal nDim As Long, plUbound As Long) As HRESULT
+[UseGetLastError(False), DLLStackCheck(False)]
+Public Declare PtrSafe Function SafeArrayGetVartype Lib "oleaut32" Alias "#77" (ByVal pSA As LongPtr, pVT As VbVarType) As HRESULT
+[UseGetLastError(False), DLLStackCheck(False)]
+Public Declare PtrSafe Function SysAllocString Lib "oleaut32" Alias "#2" (ByVal pSZ As LongPtr) As LongPtr
+[UseGetLastError(False), DLLStackCheck(False)]
+Public Declare PtrSafe Function SysReAllocString Lib "oleaut32" Alias "#3" (ByVal pBSTR As LongPtr, ByVal pStr As LongPtr) As BOOL
+[UseGetLastError(False), DLLStackCheck(False)]
+Private Declare PtrSafe Function SystemTimeToVariantTime Lib "oleaut32" Alias "#184" (lpUniversalTime As Any, pvVariantTime As Any) As BOOL
+[UseGetLastError(False), DLLStackCheck(False)]
+Private Declare PtrSafe Function VariantTimeToSystemTime Lib "oleaut32" Alias "#185" (ByVal VariantTime As Date, lpUniversalTime As Any) As BOOL
+[UseGetLastError(False), DLLStackCheck(False)]
+Private Declare PtrSafe Function FindWindowExW Lib "user32" (ByVal hWndParent As LongPtr, ByVal hWndChildAfter As LongPtr, ByVal pszClass As LongPtr, ByVal pszWindow As LongPtr) As LongPtr
+[UseGetLastError(False), DLLStackCheck(False)]
+Public Declare PtrSafe Function GetClientRect Lib "user32" (ByVal hWnd As LongPtr, pRect As Any) As BOOL
+[UseGetLastError(False), DLLStackCheck(False)]
+#If Win64 Then
+Private Declare PtrSafe Function GetWindowLongPtr Lib "user32" Alias "GetWindowLongPtrW" (ByVal hWnd As LongPtr, ByVal nIndex As GETWINDOWLONG_CONSTANTS) As LongPtr
+#Else
+Private Declare PtrSafe Function GetWindowLongPtr Lib "user32" Alias "GetWindowLongW" (ByVal hWnd As LongPtr, ByVal nIndex As GETWINDOWLONG_CONSTANTS) As LongPtr
+#End If
+[UseGetLastError(False), DLLStackCheck(False)]
+Private Declare PtrSafe Function GetWindowThreadProcessId Lib "user32" (ByVal hWnd As LongPtr, Optional pdwProcessId As Long) As Long
+[UseGetLastError(False), DLLStackCheck(False)]
+Public Declare PtrSafe Function PostMessageW Lib "user32" (ByVal hWnd As LongPtr, ByVal uMsg As WINDOWS_MESSAGES, Optional ByVal wParam As LongPtr, Optional ByVal lParam As LongPtr) As LongPtr
+[UseGetLastError(False), DLLStackCheck(False)]
+Public Declare PtrSafe Function SendMessageW Lib "user32" (ByVal hWnd As LongPtr, ByVal uMsg As WINDOWS_MESSAGES, Optional ByVal wParam As LongPtr, Optional ByVal lParam As LongPtr) As LongPtr
+[UseGetLastError(False), DLLStackCheck(False)]
+Public Declare PtrSafe Function SetForegroundWindow Lib "user32" (ByVal hWnd As LongPtr) As BOOL
+[UseGetLastError(False), DLLStackCheck(False)]
+#If Win64 Then
+Private Declare PtrSafe Function SetWindowLongPtr Lib "user32" Alias "SetWindowLongPtrW" (ByVal hWnd As LongPtr, ByVal nIndex As GETWINDOWLONG_CONSTANTS, ByVal dwNewLong As LongPtr) As LongPtr
+#Else
+Private Declare PtrSafe Function SetWindowLongPtr Lib "user32" Alias "SetWindowLongW" (ByVal hWnd As LongPtr, ByVal nIndex As GETWINDOWLONG_CONSTANTS, ByVal dwNewLong As LongPtr) As LongPtr
+#End If
+[UseGetLastError(False), DLLStackCheck(False)]
+Public Declare PtrSafe Function SetWindowPos Lib "user32" (ByVal hWnd As LongPtr, ByVal hWndInsertAfter As LongPtr, ByVal X As Long, ByVal Y As Long, ByVal cx As Long, ByVal cy As Long, ByVal uFlags As SETWINDOWPOS_CONSTANTS) As BOOL
+[UseGetLastError(False), DLLStackCheck(False)]
+Private Declare PtrSafe Function ShowWindow Lib "user32" (ByVal hWnd As LongPtr, ByVal nCmdShow As SHOWWINDOW_CONSTANTS) As BOOL
+
+Private qpcFrequency As Currency, qpcStart As Currency, GUID_NULL As UUID
+
+Public lt As LOOKUP_TABLES
+
+Public Function AsIUnknown(ByVal IUnknown As IUnknown) As IUnknown: Set AsIUnknown = IUnknown: End Function
+
+[ArrayBoundsChecks(False), IntegerOverflowChecks(False)]
+Public Function Base64Url(Buffer As IBuffer) As String
+Dim waBase64() As Integer, tSA As SAFE_ARRAY, i As Long
+    If Not Buffer Is Nothing Then
+        Base64Url = GetStr(CryptographicBufferStatics.EncodeToBase64String(Buffer))
+        i = Len(Base64Url)
+        If i > 0 Then
+            InitSA ArrPtr(waBase64), tSA, cbElements:=2, pvData:=StrPtr(Base64Url), cElements1:=i
+            For i = 0 To i - 1
+                Select Case waBase64(i)
+                    Case 43: waBase64(i) = 45 ' "+" -> "-"
+                    Case 47: waBase64(i) = 95 ' "/" -> "_"
+                    Case 61: waBase64(i) = 0 ' "=" -> ""
+                End Select
+            Next i
+            SysReAllocString VarPtr(Base64Url), VarPtr(waBase64(0))
+        End If
+    End If
+End Function
+
+[ArrayBoundsChecks(False), IntegerOverflowChecks(False)]
+Public Function Box(Value As Variant) As IInspectable
+Dim lLength As Long, pvData As LongPtr, ByteArray() As Byte, StringArray() As LongPtr, StringHeaders() As HSTRING_HEADER
+    With PropertyValueStatics
+        If IsArray(Value) Then
+            With SafeArray(ArrPtrVar(Value))
+                pvData = .pvData: lLength = .cElements1: If .cElements2 Then lLength = lLength * .cElements2
+            End With
+        End If
+        Select Case VarType(Value)
+            Case vbString: Set Box = .CreateString(StrRef(Value))
+            Case vbByte: Set Box = .CreateUInt8(Value)
+            Case vbBoolean: Set Box = .CreateBoolean(Abs(Value))
+            Case vbInteger: Set Box = .CreateInt16(Value)
+            Case vbLong: Set Box = .CreateInt32(Value)
+            Case vbCurrency, vbLongLong: Set Box = .CreateInt64(Value)
+            Case vbSingle: Set Box = .CreateSingle(Value)
+            Case vbDouble: Set Box = .CreateDouble(Value)
+            Case vbEmpty: Set Box = .CreateEmpty
+            Case vbObject, vbDataObject: If TypeOf Value Is IInspectable Then Set Box = Value
+            Case vbArray Or vbByte
+                If lLength Then Set Box = .CreateUInt8Array(lLength, ByVal pvData)
+            Case vbArray Or vbInteger
+                If lLength Then Set Box = .CreateInt16Array(lLength, ByVal pvData)
+            Case vbArray Or vbLong
+                If lLength Then Set Box = .CreateInt32Array(lLength, ByVal pvData)
+            Case vbArray Or vbCurrency, vbArray Or vbLongLong
+                If lLength Then Set Box = .CreateInt64Array(lLength, ByVal pvData)
+            Case vbArray Or vbSingle
+                If lLength Then Set Box = .CreateSingleArray(lLength, ByVal pvData)
+            Case vbArray Or vbDouble
+                If lLength Then Set Box = .CreateDoubleArray(lLength, ByVal pvData)
+            Case vbArray Or vbBoolean
+                If lLength Then
+                    ReDim ByteArray(0 To lLength - 1): For lLength = 0 To lLength - 1: ByteArray(lLength) = Abs(Value(lLength)): Next lLength
+                    Set Box = .CreateBooleanArray(lLength, ByteArray(0))
+                End If
+            Case vbArray Or vbString, vbArray Or vbVariant
+                If lLength Then
+                    ReDim StringArray(0 To lLength - 1): ReDim StringHeaders(0 To lLength - 1)
+                    For lLength = 0 To lLength - 1: StringArray(lLength) = StrRef(Value(lLength), VarPtr(StringHeaders(lLength))): Next lLength
+                    Set Box = .CreateStringArray(lLength, StringArray(0))
+                End If
+        End Select
+    End With
+End Function
+
+Public Function Clamp(ByVal lValue As Long, ByVal lMin As Long, ByVal lMax As Long) As Long
+    Select Case lValue
+        Case Is < lMin: Clamp = lMin
+        Case Is > lMax: Clamp = lMax
+        Case Else: Clamp = lValue
+    End Select
+End Function
+
+Public Function Dispose(IClosable As IClosable, Optional bRelease As Boolean = True) As Boolean
+    If Not IClosable Is Nothing Then Dispose = IClosable.Close = S_OK: If bRelease Then Set IClosable = Nothing
+End Function
+
+Public Function Elapsed(Optional ByVal cyStart As Currency = INFINITE) As Currency
+    If cyStart = INFINITE Then cyStart = qpcStart
+    QueryPerformanceCounter Elapsed: Elapsed = (Elapsed - cyStart) * 1000 / qpcFrequency
+End Function
+
+Public Sub EmptyArray(vArray As Variant)
+Dim pSA As LongPtr, ppSA As LongPtr
+    If IsArray(vArray) Then
+        If SafeArrayAllocDescriptor(1, ppSA) = S_OK Then
+            ReDim vArray(0): GetMemPtr ByVal ArrPtrVar(vArray), pSA: vbaCopyBytes 24, ByVal ppSA - 16, ByVal pSA - 16
+            Erase vArray: PutMemPtr ByVal ArrPtrVar(vArray), ppSA
+        End If
+    End If
+End Sub
+
+Public Function FromDate(dtDate As Date, Optional ByVal bLocalTimeToUniversalTime As Boolean) As Currency
+Dim SysTime As SYSTEMTIME
+    If VariantTimeToSystemTime(dtDate, SysTime) Then
+        If bLocalTimeToUniversalTime Then TzSpecificLocalTimeToSystemTimeEx ByVal vbNullPtr, SysTime, SysTime
+        SystemTimeToFileTime SysTime, FromDate
+    End If
+End Function
+
+Public Function GetErrorMessage(ByVal lErrorNumber As Long) As String
+Dim lpBuffer As LongPtr
+    If FormatMessageW(FORMAT_MESSAGE_ALLOCATE_BUFFER Or FORMAT_MESSAGE_FROM_SYSTEM Or FORMAT_MESSAGE_IGNORE_INSERTS Or FORMAT_MESSAGE_MAX_WIDTH_MASK, 0, lErrorNumber, 0, lpBuffer, 0) Then
+        If lpBuffer Then SysReAllocString VarPtr(GetErrorMessage), lpBuffer: LocalFree lpBuffer
+    End If
+End Function
+
+Public Function GuidFromArray(vArray As Variant) As UUID
+    GuidFromArray = SafeArray(ArrPtrVar(vArray)).Guid
+End Function
+
+Public Function GuidFromHash(sStringToHash As String, Optional ByVal UnicodeEncoding As UnicodeEncoding = UnicodeEncoding_UTF8, Optional ByVal bSHA1 As Boolean = True) As UUID
+Dim BufferByteAccess As IBufferByteAccess, hStringPtr As HSTRING, lVersion As Long
+    If bSHA1 Then hStringPtr = HashAlgorithmNamesStatics.Sha1: lVersion = &H50000000 Else hStringPtr = HashAlgorithmNamesStatics.Md5: lVersion = &H30000000
+    With NewString(hStringPtr)
+        With HashAlgorithmProviderStatics.OpenAlgorithm(.hStringPtr)
+            Set BufferByteAccess = .HashData(CryptographicBufferStatics.ConvertStringToBinary(StrRef(sStringToHash), UnicodeEncoding))
+            vbaCopyBytes LenB(GuidFromHash), ByVal VarPtr(GuidFromHash), ByVal BufferByteAccess.Buffer
+            With GuidFromHash ' RFC 4122 version 5 UUID (name-based with SHA1)
+                .Data2 = .Data2 And &HFFFFFFF Or lVersion ' version bits
+                .Data3 = .Data3 And &HFFFFFF3F Or &H80&   ' variant bits
+            End With
+        End With
+    End With
+End Function
+
+Public Function GuidFromString(sGuid As String) As UUID
+    GuidFromString.GuidString = sGuid
+End Function
+
+Public Function HideGhostCoreWindow() As Boolean ' Using XAML Islands in IDE leaves behind a ghost window in the Taskbar, this proc hides it!
+Dim hCoreWindow As LongPtr, ProcessId  As Long, WindowProcessId As Long
+    ProcessId = GetCurrentProcessId
+    Do
+        hCoreWindow = FindWindowExW(vbNullPtr, hCoreWindow, StrPtr("Windows.UI.Core.CoreWindow"), vbNullPtr)
+        If GetWindowThreadProcessId(hCoreWindow, WindowProcessId) Then
+            If WindowProcessId = ProcessId Then
+                SetWindowLongPtr hCoreWindow, GWL_EXSTYLE, GetWindowLongPtr(hCoreWindow, GWL_EXSTYLE) And Not WS_EX_APPWINDOW
+                HideGhostCoreWindow = ShowWindow(hCoreWindow, SW_HIDE) = APITRUE: Exit Function
+            End If
+        End If
+    Loop While hCoreWindow
+End Function
+
+[ArrayBoundsChecks(False), IntegerOverflowChecks(False)]
+Public Function IInspectableGetIIDs(ByVal Interface As IInspectableUnrestricted, SupportedIIDs() As UUID) As Long
+Dim IIDsPtr As LongPtr
+    If Not Interface Is Nothing Then
+        Interface.GetIIDs IInspectableGetIIDs, IIDsPtr
+        If IInspectableGetIIDs > 0 Then
+            ReDim SupportedIIDs(0 To IInspectableGetIIDs - 1)
+            vbaCopyBytes LenB(Of UUID) * IInspectableGetIIDs, ByVal VarPtr(SupportedIIDs(0)), ByVal IIDsPtr
+            CoTaskMemFree IIDsPtr
+        End If
+    End If
+End Function
+
+Public Function IInspectableGetRuntimeClassName(ByVal Interface As IInspectableUnrestricted) As String
+    If Not Interface Is Nothing Then IInspectableGetRuntimeClassName = GetStr(Interface.GetRuntimeClassName)
+End Function
+
+Public Function InitializeWithWindow(ByVal IInitializeWithWindow As IInitializeWithWindow, hWnd As LongPtr) As Boolean
+    InitializeWithWindow = IInitializeWithWindow.Initialize(hWnd) = S_OK
+End Function
+
+Public Sub InitLookupTables(LookupTable As LOOKUP_TABLES)
+Dim i As Long
+    With LookupTable
+        If Not .bInit Then
+            .Pow(0) = 1: .Base32(0) = vbKeyA
+            For i = 1 To 31
+                If i < 26 Then .Base32(i) = i + vbKeyA Else .Base32(i) = vbKey2 + i - 26
+                If i < 31 Then .Pow(i) = 2 * .Pow(i - 1) Else .Pow(i) = -2 * .Pow(i - 1)
+            Next i
+            .bInit = True
+        End If
+    End With
+End Sub
+
+Public Function QI(ByVal Interface As IUnknown, Guid As UUID, ByVal ppvObj As LongPtr) As HRESULT
+    If Not Interface Is Nothing Then QI = Interface.QueryInterface(Guid, ByVal ppvObj) Else QI = E_POINTER
+End Function
+
+Public Sub StartTiming(Optional cyStart As Currency = INFINITE)
+    If qpcFrequency = 0 Then QueryPerformanceFrequency qpcFrequency
+    If cyStart = INFINITE Then QueryPerformanceCounter qpcStart Else QueryPerformanceCounter cyStart
+End Sub
+
+Public Function StringFromGuid(ByVal rIID As LongPtr) As String
+    StringFromGuid = CType(Of UUID)(rIID).GuidString
+End Function
+
+Public Function ToDate(cyDate As Currency, Optional ByVal bUniversalTimeToLocalTime As Boolean) As Date
+Dim SysTime As SYSTEMTIME
+    If FileTimeToSystemTime(cyDate, SysTime) Then
+        If bUniversalTimeToLocalTime Then SystemTimeToTzSpecificLocalTimeEx ByVal vbNullPtr, SysTime, SysTime
+        SystemTimeToVariantTime SysTime, ToDate
+    End If
+End Function
+
+Public Function ToString(ByVal IStringable As IStringable) As String: ToString = GetStr(IStringable.ToString): End Function
+
+[ArrayBoundsChecks(False), IntegerOverflowChecks(False)]
+Public Function Unbox(ByVal Value As IInspectable) As Variant
+Dim PropertyValue As IPropertyValue, lLength As Long, ValuePtr As LongPtr, ValueArray As Variant, PtrArray() As LongPtr, tSA As SAFE_ARRAY
+    If Value Is Nothing Then
+        Exit Function
+    ElseIf TypeOf Value Is IPropertyValue Then
+        Set PropertyValue = Value
+        With PropertyValue
+            Select Case .Type
+                Case PropertyType_String: Unbox = GetStr(.GetString)
+                Case PropertyType_UInt8: Unbox = .GetUInt8
+                Case PropertyType_Int16: Unbox = .GetInt16
+                Case PropertyType_Int32: Unbox = .GetInt32
+                Case PropertyType_Int64: Unbox = .GetInt64
+                Case PropertyType_Single: Unbox = .GetSingle
+                Case PropertyType_Double: Unbox = .GetDouble
+                Case PropertyType_Boolean: Unbox = CBool(.GetBoolean)
+                Case PropertyType_DateTime: Unbox = .GetDateTime
+                Case PropertyType_TimeSpan: Unbox = .GetTimeSpan
+                Case PropertyType_Char16: Unbox = .GetChar16
+                Case PropertyType_UInt16: Unbox = .GetUInt16
+                Case PropertyType_UInt32: Unbox = .GetUInt32
+                Case PropertyType_UInt64: Unbox = .GetUInt64
+                Case PropertyType_StringArray
+                    .GetStringArray lLength, ValuePtr: If lLength > 0 Then ReDim ValueArray(0 To lLength - 1) As String Else ReDim ValueArray(0) As String: EmptyArray ValueArray
+                    InitSA VarPtr(PtrArray), tSA, cbElements:=LenB(ValuePtr), pvData:=ValuePtr, cElements1:=lLength
+                    For lLength = 0 To lLength - 1: ValueArray(lLength) = GetStr(PtrArray(lLength)): Next lLength
+                    CoTaskMemFree ValuePtr
+                Case PropertyType_UInt8Array To PropertyType_TimeSpanArray
+                    Select Case .Type
+                        Case PropertyType_UInt8Array: .GetUInt8Array lLength, ValuePtr: ReDim ValueArray(0) As Byte
+                        Case PropertyType_Int16Array: .GetInt16Array lLength, ValuePtr: ReDim ValueArray(0) As Integer
+                        Case PropertyType_Int32Array: .GetInt32Array lLength, ValuePtr: ReDim ValueArray(0) As Long
+                        Case PropertyType_Int64Array: .GetInt64Array lLength, ValuePtr: ReDim ValueArray(0) As Currency
+                        Case PropertyType_SingleArray: .GetSingleArray lLength, ValuePtr: ReDim ValueArray(0) As Single
+                        Case PropertyType_DoubleArray: .GetDoubleArray lLength, ValuePtr: ReDim ValueArray(0) As Double
+                        Case PropertyType_BooleanArray: .GetBooleanArray lLength, ValuePtr: ReDim ValueArray(0) As Byte
+                        Case PropertyType_DateTimeArray: .GetDateTimeArray lLength, ValuePtr: ReDim ValueArray(0) As Currency
+                        Case PropertyType_TimeSpanArray: .GetTimeSpanArray lLength, ValuePtr: ReDim ValueArray(0) As Currency
+                        Case PropertyType_Char16Array: .GetChar16Array lLength, ValuePtr: ReDim ValueArray(0) As Integer
+                        Case PropertyType_UInt16Array: .GetUInt16Array lLength, ValuePtr: ReDim ValueArray(0) As Integer
+                        Case PropertyType_UInt32Array: .GetUInt32Array lLength, ValuePtr: ReDim ValueArray(0) As Long
+                        Case PropertyType_UInt64Array: .GetUInt64Array lLength, ValuePtr: ReDim ValueArray(0) As Currency
+                    End Select
+                    If lLength > 0 Then
+                        ReDim ValueArray(0 To lLength - 1): With SafeArray(ArrPtrVar(ValueArray)): vbaCopyBytes .cElements1 * .cbElements, ByVal .pvData, ByVal ValuePtr: End With
+                    Else
+                        EmptyArray ValueArray
+                    End If
+                    CoTaskMemFree ValuePtr
+            End Select
+        End With
+    Else
+        Set Unbox = Value
+    End If
+    If Not IsEmpty(Unbox) Then Exit Function
+    Unbox = ValueArray
+End Function
+
+Public Function VarTypeSize(vData As Variant) As Long
+    Select Case VarType(vData) And Not vbArray
+        Case vbByte: VarTypeSize = 1
+        Case vbInteger, vbBoolean: VarTypeSize = 2
+        Case vbLong, vbSingle, vbError: VarTypeSize = 4
+        Case vbCurrency, vbDouble, vbDate: VarTypeSize = 8
+        Case vbString, vbObject, vbDataObject: VarTypeSize = PTR_SIZE
+        Case vbVariant, vbDecimal: VarTypeSize = 16
+    End Select
+End Function
+
+' ------------------------------------------------------------- Statics and Factories -------------------------------------------------------------
+
+Public Function BitmapDecoderStatics() As IBitmapDecoderStatics
+Static IBitmapDecoderStatics As IBitmapDecoderStatics
+    If IBitmapDecoderStatics Is Nothing Then Set IBitmapDecoderStatics = NewObject("BitmapDecoder", False)
+    Set BitmapDecoderStatics = IBitmapDecoderStatics
+End Function
+
+Public Function BitmapEncoderStatics() As IBitmapEncoderStatics
+Static IBitmapEncoderStatics As IBitmapEncoderStatics
+    If IBitmapEncoderStatics Is Nothing Then Set IBitmapEncoderStatics = NewObject("BitmapEncoder", False)
+    Set BitmapEncoderStatics = IBitmapEncoderStatics
+End Function
+
+Public Function BitmapImageFactory() As IBitmapImageFactory
+Static IBitmapImageFactory As IBitmapImageFactory
+    If IBitmapImageFactory Is Nothing Then Set IBitmapImageFactory = NewObject("BitmapImage", False)
+    Set BitmapImageFactory = IBitmapImageFactory
+End Function
+
+Public Function BitmapTypedValueFactory() As IBitmapTypedValueFactory
+Static IBitmapTypedValueFactory As IBitmapTypedValueFactory
+    If IBitmapTypedValueFactory Is Nothing Then Set IBitmapTypedValueFactory = NewObject("BitmapTypedValue", False)
+    Set BitmapTypedValueFactory = IBitmapTypedValueFactory
+End Function
+
+Public Function BluetoothLEAdvertisementDataTypesStatics() As IBluetoothLEAdvertisementDataTypesStatics
+Static IBluetoothLEAdvertisementDataTypesStatics As IBluetoothLEAdvertisementDataTypesStatics
+    If IBluetoothLEAdvertisementDataTypesStatics Is Nothing Then Set IBluetoothLEAdvertisementDataTypesStatics = NewObject("BluetoothLEAdvertisementDataTypes", False)
+    Set BluetoothLEAdvertisementDataTypesStatics = IBluetoothLEAdvertisementDataTypesStatics
+End Function
+
+Public Function BluetoothLEDeviceStatics() As IBluetoothLEDeviceStatics
+Static IBluetoothLEDeviceStatics As IBluetoothLEDeviceStatics
+    If IBluetoothLEDeviceStatics Is Nothing Then Set IBluetoothLEDeviceStatics = NewObject("BluetoothLEDevice", False)
+    Set BluetoothLEDeviceStatics = IBluetoothLEDeviceStatics
+End Function
+
+Public Function BluetoothUuidHelperStatics() As IBluetoothUuidHelperStatics
+Static IBluetoothUuidHelperStatics As IBluetoothUuidHelperStatics
+    If IBluetoothUuidHelperStatics Is Nothing Then Set IBluetoothUuidHelperStatics = NewObject("BluetoothUuidHelper", False)
+    Set BluetoothUuidHelperStatics = IBluetoothUuidHelperStatics
+End Function
+
+Public Function BufferFactory() As IBufferFactory
+Static IBufferFactory As IBufferFactory
+    If IBufferFactory Is Nothing Then Set IBufferFactory = NewObject("Buffer", False)
+    Set BufferFactory = IBufferFactory
+End Function
+
+Public Function BufferStatics() As IBufferStatics
+Static IBufferStatics As IBufferStatics
+    If IBufferStatics Is Nothing Then Set IBufferStatics = NewObject("Buffer", False)
+    Set BufferStatics = IBufferStatics
+End Function
+
+Public Function CanvasStatics() As ICanvasStatics
+Static ICanvasStatics As ICanvasStatics
+    If ICanvasStatics Is Nothing Then Set ICanvasStatics = NewObject("Canvas", False)
+    Set CanvasStatics = ICanvasStatics
+End Function
+
+Public Function ClipboardStatics() As IClipboardStatics
+Static IClipboardStatics As IClipboardStatics
+    If IClipboardStatics Is Nothing Then Set IClipboardStatics = NewObject("Clipboard", False)
+    Set ClipboardStatics = IClipboardStatics
+End Function
+
+Public Function ColorHelperStatics() As IColorHelperStatics
+Static IColorHelperStatics As IColorHelperStatics
+    If IColorHelperStatics Is Nothing Then Set IColorHelperStatics = NewObject("ColorHelper", False)
+    Set ColorHelperStatics = IColorHelperStatics
+End Function
+
+Public Function ColorsStatics() As IColorsStatics
+Static IColorsStatics As IColorsStatics
+    If IColorsStatics Is Nothing Then Set IColorsStatics = NewObject("Colors", False)
+    Set ColorsStatics = IColorsStatics
+End Function
+
+Public Function CoreCursorFactory() As ICoreCursorFactory
+Static ICoreCursorFactory As ICoreCursorFactory
+    If ICoreCursorFactory Is Nothing Then Set ICoreCursorFactory = NewObject("CoreCursor", False)
+    Set CoreCursorFactory = ICoreCursorFactory
+End Function
+
+Public Function CornerRadiusHelperStatics() As ICornerRadiusHelperStatics
+Static ICornerRadiusHelperStatics As ICornerRadiusHelperStatics
+    If ICornerRadiusHelperStatics Is Nothing Then Set ICornerRadiusHelperStatics = NewObject("CornerRadiusHelper", False)
+    Set CornerRadiusHelperStatics = ICornerRadiusHelperStatics
+End Function
+
+Public Function CredentialPickerStatics() As ICredentialPickerStatics
+Static ICredentialPickerStatics As ICredentialPickerStatics
+    If ICredentialPickerStatics Is Nothing Then Set ICredentialPickerStatics = NewObject("CredentialPicker", False)
+    Set CredentialPickerStatics = ICredentialPickerStatics
+End Function
+
+Public Function CryptographicBufferStatics() As ICryptographicBufferStatics
+Static ICryptographicBufferStatics As ICryptographicBufferStatics
+    If ICryptographicBufferStatics Is Nothing Then Set ICryptographicBufferStatics = NewObject("CryptographicBuffer", False)
+    Set CryptographicBufferStatics = ICryptographicBufferStatics
+End Function
+
+Public Function DataReaderFactory() As IDataReaderFactory
+Static IDataReaderFactory As IDataReaderFactory
+    If IDataReaderFactory Is Nothing Then Set IDataReaderFactory = NewObject("DataReader", False)
+    Set DataReaderFactory = IDataReaderFactory
+End Function
+
+Public Function DataReaderStatics() As IDataReaderStatics
+Static IDataReaderStatics As IDataReaderStatics
+    If IDataReaderStatics Is Nothing Then Set IDataReaderStatics = NewObject("DataReader", False)
+    Set DataReaderStatics = IDataReaderStatics
+End Function
+
+Public Function DataTransferManagerStatics() As IDataTransferManagerStatics
+Static IDataTransferManagerStatics As IDataTransferManagerStatics
+    If IDataTransferManagerStatics Is Nothing Then Set IDataTransferManagerStatics = NewObject("DataTransferManager", False)
+    Set DataTransferManagerStatics = IDataTransferManagerStatics
+End Function
+
+Public Function DataWriterFactory() As IDataWriterFactory
+Static IDataWriterFactory As IDataWriterFactory
+    If IDataWriterFactory Is Nothing Then Set IDataWriterFactory = NewObject("DataWriter", False)
+    Set DataWriterFactory = IDataWriterFactory
+End Function
+
+Public Function DeviceInformationStatics() As IDeviceInformationStatics
+Static IDeviceInformationStatics As IDeviceInformationStatics
+    If IDeviceInformationStatics Is Nothing Then Set IDeviceInformationStatics = NewObject("DeviceInformation", False)
+    Set DeviceInformationStatics = IDeviceInformationStatics
+End Function
+
+Public Function Direct3D11CaptureFramePoolStatics() As IDirect3D11CaptureFramePoolStatics
+Static IDirect3D11CaptureFramePoolStatics As IDirect3D11CaptureFramePoolStatics
+    If IDirect3D11CaptureFramePoolStatics Is Nothing Then Set IDirect3D11CaptureFramePoolStatics = NewObject("Direct3D11CaptureFramePool", False)
+    Set Direct3D11CaptureFramePoolStatics = IDirect3D11CaptureFramePoolStatics
+End Function
+
+Public Function DispatcherQueueStatics() As IDispatcherQueueStatics
+Static IDispatcherQueueStatics As IDispatcherQueueStatics
+    If IDispatcherQueueStatics Is Nothing Then Set IDispatcherQueueStatics = NewObject("DispatcherQueue", False)
+    Set DispatcherQueueStatics = IDispatcherQueueStatics
+End Function
+
+Public Function DisplayInformationStatics() As IDisplayInformationStatics
+Static IDisplayInformationStatics As IDisplayInformationStatics
+    If IDisplayInformationStatics Is Nothing Then Set IDisplayInformationStatics = NewObject("DisplayInformation", False)
+    Set DisplayInformationStatics = IDisplayInformationStatics
+End Function
+
+Public Function DurationHelperStatics() As IDurationHelperStatics
+Static IDurationHelperStatics As IDurationHelperStatics
+    If IDurationHelperStatics Is Nothing Then Set IDurationHelperStatics = NewObject("DurationHelper", False)
+    Set DurationHelperStatics = IDurationHelperStatics
+End Function
+
+Public Function ElementCompositionPreviewStatics() As IElementCompositionPreviewStatics
+Static IElementCompositionPreviewStatics As IElementCompositionPreviewStatics
+    If IElementCompositionPreviewStatics Is Nothing Then Set IElementCompositionPreviewStatics = NewObject("ElementCompositionPreview", False)
+    Set ElementCompositionPreviewStatics = IElementCompositionPreviewStatics
+End Function
+
+Public Function FaceDetectorStatics() As IFaceDetectorStatics
+Static IFaceDetectorStatics As IFaceDetectorStatics
+    If IFaceDetectorStatics Is Nothing Then Set IFaceDetectorStatics = NewObject("FaceDetector", False)
+    Set FaceDetectorStatics = IFaceDetectorStatics
+End Function
+
+Public Function FileIOStatics() As IFileIOStatics
+Static IFileIOStatics As IFileIOStatics
+    If IFileIOStatics Is Nothing Then Set IFileIOStatics = NewObject("FileIO", False)
+    Set FileIOStatics = IFileIOStatics
+End Function
+
+Public Function FileRandomAccessStreamStatics() As IFileRandomAccessStreamStatics
+Static IFileRandomAccessStreamStatics As IFileRandomAccessStreamStatics
+    If IFileRandomAccessStreamStatics Is Nothing Then Set IFileRandomAccessStreamStatics = NewObject("FileRandomAccessStream", False)
+    Set FileRandomAccessStreamStatics = IFileRandomAccessStreamStatics
+End Function
+
+Public Function FocusManagerStatics() As IFocusManagerStatics
+Static IFocusManagerStatics As IFocusManagerStatics
+    If IFocusManagerStatics Is Nothing Then Set IFocusManagerStatics = NewObject("FocusManager", False)
+    Set FocusManagerStatics = IFocusManagerStatics
+End Function
+
+Public Function FontWeightsStatics() As IFontWeightsStatics
+Static IFontWeightsStatics As IFontWeightsStatics
+    If IFontWeightsStatics Is Nothing Then Set IFontWeightsStatics = NewObject("FontWeights", False)
+    Set FontWeightsStatics = IFontWeightsStatics
+End Function
+
+Public Function FrameworkElementStatics() As IFrameworkElementStatics
+Static IFrameworkElementStatics As IFrameworkElementStatics
+    If IFrameworkElementStatics Is Nothing Then Set IFrameworkElementStatics = NewObject("FrameworkElement", False)
+    Set FrameworkElementStatics = IFrameworkElementStatics
+End Function
+
+Public Function GattCharacteristicUuidsStatics() As IGattCharacteristicUuidsStatics
+Static IGattCharacteristicUuidsStatics As IGattCharacteristicUuidsStatics
+    If IGattCharacteristicUuidsStatics Is Nothing Then Set IGattCharacteristicUuidsStatics = NewObject("GattCharacteristicUuids", False)
+    Set GattCharacteristicUuidsStatics = IGattCharacteristicUuidsStatics
+End Function
+
+Public Function GattProtocolErrorStatics() As IGattProtocolErrorStatics
+Static IGattProtocolErrorStatics As IGattProtocolErrorStatics
+    If IGattProtocolErrorStatics Is Nothing Then Set IGattProtocolErrorStatics = NewObject("GattProtocolError", False)
+    Set GattProtocolErrorStatics = IGattProtocolErrorStatics
+End Function
+
+Public Function GattServiceUuidsStatics() As IGattServiceUuidsStatics
+Static IGattServiceUuidsStatics As IGattServiceUuidsStatics
+    If IGattServiceUuidsStatics Is Nothing Then Set IGattServiceUuidsStatics = NewObject("GattServiceUuids", False)
+    Set GattServiceUuidsStatics = IGattServiceUuidsStatics
+End Function
+
+Public Function GeneratorPositionHelperStatics() As IGeneratorPositionHelperStatics
+Static IGeneratorPositionHelperStatics As IGeneratorPositionHelperStatics
+    If IGeneratorPositionHelperStatics Is Nothing Then Set IGeneratorPositionHelperStatics = NewObject("GeneratorPositionHelper", False)
+    Set GeneratorPositionHelperStatics = IGeneratorPositionHelperStatics
+End Function
+
+Public Function GraphicsCaptureItemStatics() As IGraphicsCaptureItemStatics
+Static IGraphicsCaptureItemStatics As IGraphicsCaptureItemStatics
+    If IGraphicsCaptureItemStatics Is Nothing Then Set IGraphicsCaptureItemStatics = NewObject("GraphicsCaptureItem", False)
+    Set GraphicsCaptureItemStatics = IGraphicsCaptureItemStatics
+End Function
+
+Public Function GraphicsCaptureSessionStatics() As IGraphicsCaptureSessionStatics
+Static IGraphicsCaptureSessionStatics As IGraphicsCaptureSessionStatics
+    If IGraphicsCaptureSessionStatics Is Nothing Then Set IGraphicsCaptureSessionStatics = NewObject("GraphicsCaptureSession", False)
+    Set GraphicsCaptureSessionStatics = IGraphicsCaptureSessionStatics
+End Function
+
+Public Function GridLengthHelperStatics() As IGridLengthHelperStatics
+Static IGridLengthHelperStatics As IGridLengthHelperStatics
+    If IGridLengthHelperStatics Is Nothing Then Set IGridLengthHelperStatics = NewObject("GridLengthHelper", False)
+    Set GridLengthHelperStatics = IGridLengthHelperStatics
+End Function
+
+Public Function GridStatics() As IGridStatics
+Static IGridStatics As IGridStatics
+    If IGridStatics Is Nothing Then Set IGridStatics = NewObject("Grid", False)
+    Set GridStatics = IGridStatics
+End Function
+
+Public Function GuidHelperStatics() As IGuidHelperStatics
+Static IGuidHelperStatics As IGuidHelperStatics
+    If IGuidHelperStatics Is Nothing Then Set IGuidHelperStatics = NewObject("GuidHelper", False)
+    Set GuidHelperStatics = IGuidHelperStatics
+End Function
+
+Public Function HashAlgorithmNamesStatics() As IHashAlgorithmNamesStatics
+Static IHashAlgorithmNamesStatics As IHashAlgorithmNamesStatics
+    If IHashAlgorithmNamesStatics Is Nothing Then Set IHashAlgorithmNamesStatics = NewObject("HashAlgorithmNames", False)
+    Set HashAlgorithmNamesStatics = IHashAlgorithmNamesStatics
+End Function
+
+Public Function HashAlgorithmProviderStatics() As IHashAlgorithmProviderStatics
+Static IHashAlgorithmProviderStatics As IHashAlgorithmProviderStatics
+    If IHashAlgorithmProviderStatics Is Nothing Then Set IHashAlgorithmProviderStatics = NewObject("HashAlgorithmProvider", False)
+    Set HashAlgorithmProviderStatics = IHashAlgorithmProviderStatics
+End Function
+
+Public Function HostNameFactory() As IHostNameFactory
+Static IHostNameFactory As IHostNameFactory
+    If IHostNameFactory Is Nothing Then Set IHostNameFactory = NewObject("HostName", False)
+    Set HostNameFactory = IHostNameFactory
+End Function
+
+Public Function HtmlUtilities() As IHtmlUtilities
+Static IHtmlUtilities As IHtmlUtilities
+    If IHtmlUtilities Is Nothing Then Set IHtmlUtilities = NewObject("HtmlUtilities", False)
+    Set HtmlUtilities = IHtmlUtilities
+End Function
+
+Public Function HttpBufferContentFactory() As IHttpBufferContentFactory
+Static IHttpBufferContentFactory As IHttpBufferContentFactory
+    If IHttpBufferContentFactory Is Nothing Then Set IHttpBufferContentFactory = NewObject("HttpBufferContent", False)
+    Set HttpBufferContentFactory = IHttpBufferContentFactory
+End Function
+
+Public Function HttpCredentialsHeaderValueFactory() As IHttpCredentialsHeaderValueFactory
+Static IHttpCredentialsHeaderValueFactory As IHttpCredentialsHeaderValueFactory
+    If IHttpCredentialsHeaderValueFactory Is Nothing Then Set IHttpCredentialsHeaderValueFactory = NewObject("HttpCredentialsHeaderValue", False)
+    Set HttpCredentialsHeaderValueFactory = IHttpCredentialsHeaderValueFactory
+End Function
+
+Public Function HttpFormUrlEncodedContentFactory() As IHttpFormUrlEncodedContentFactory
+Static IHttpFormUrlEncodedContentFactory As IHttpFormUrlEncodedContentFactory
+    If IHttpFormUrlEncodedContentFactory Is Nothing Then Set IHttpFormUrlEncodedContentFactory = NewObject("HttpFormUrlEncodedContent", False)
+    Set HttpFormUrlEncodedContentFactory = IHttpFormUrlEncodedContentFactory
+End Function
+
+Public Function HttpMediaTypeHeaderValueFactory() As IHttpMediaTypeHeaderValueFactory
+Static IHttpMediaTypeHeaderValueFactory As IHttpMediaTypeHeaderValueFactory
+    If IHttpMediaTypeHeaderValueFactory Is Nothing Then Set IHttpMediaTypeHeaderValueFactory = NewObject("HttpMediaTypeHeaderValue", False)
+    Set HttpMediaTypeHeaderValueFactory = IHttpMediaTypeHeaderValueFactory
+End Function
+
+Public Function HttpMultipartContentFactory() As IHttpMultipartContentFactory
+Static IHttpMultipartContentFactory As IHttpMultipartContentFactory
+    If IHttpMultipartContentFactory Is Nothing Then Set IHttpMultipartContentFactory = NewObject("HttpMultipartContent", False)
+    Set HttpMultipartContentFactory = IHttpMultipartContentFactory
+End Function
+
+Public Function HttpMultipartFormDataContentFactory() As IHttpMultipartFormDataContentFactory
+Static IHttpMultipartFormDataContentFactory As IHttpMultipartFormDataContentFactory
+    If IHttpMultipartFormDataContentFactory Is Nothing Then Set IHttpMultipartFormDataContentFactory = NewObject("HttpMultipartFormDataContent", False)
+    Set HttpMultipartFormDataContentFactory = IHttpMultipartFormDataContentFactory
+End Function
+
+Public Function HttpNameValueHeaderValueFactory() As IHttpNameValueHeaderValueFactory
+Static IHttpNameValueHeaderValueFactory As IHttpNameValueHeaderValueFactory
+    If IHttpNameValueHeaderValueFactory Is Nothing Then Set IHttpNameValueHeaderValueFactory = NewObject("HttpNameValueHeaderValue", False)
+    Set HttpNameValueHeaderValueFactory = IHttpNameValueHeaderValueFactory
+End Function
+
+Public Function HttpStreamContentFactory() As IHttpStreamContentFactory
+Static IHttpStreamContentFactory As IHttpStreamContentFactory
+    If IHttpStreamContentFactory Is Nothing Then Set IHttpStreamContentFactory = NewObject("HttpStreamContent", False)
+    Set HttpStreamContentFactory = IHttpStreamContentFactory
+End Function
+
+Public Function HttpStringContentFactory() As IHttpStringContentFactory
+Static IHttpStringContentFactory As IHttpStringContentFactory
+    If IHttpStringContentFactory Is Nothing Then Set IHttpStringContentFactory = NewObject("HttpStringContent", False)
+    Set HttpStringContentFactory = IHttpStringContentFactory
+End Function
+
+Public Function ImageEncodingPropertiesStatics() As IImageEncodingPropertiesStatics
+Static IImageEncodingPropertiesStatics As IImageEncodingPropertiesStatics
+    If IImageEncodingPropertiesStatics Is Nothing Then Set IImageEncodingPropertiesStatics = NewObject("ImageEncodingProperties", False)
+    Set ImageEncodingPropertiesStatics = IImageEncodingPropertiesStatics
+End Function
+
+Public Function ImageStatics() As IImageStatics
+Static IImageStatics As IImageStatics
+    If IImageStatics Is Nothing Then Set IImageStatics = NewObject("Image", False)
+    Set ImageStatics = IImageStatics
+End Function
+
+Public Function JsonArrayStatics() As IJsonArrayStatics
+Static IJsonArrayStatics As IJsonArrayStatics
+    If IJsonArrayStatics Is Nothing Then Set IJsonArrayStatics = NewObject("JsonArray", False)
+    Set JsonArrayStatics = IJsonArrayStatics
+End Function
+
+Public Function JsonObjectStatics() As IJsonObjectStatics
+Static IJsonObjectStatics As IJsonObjectStatics
+    If IJsonObjectStatics Is Nothing Then Set IJsonObjectStatics = NewObject("JsonObject", False)
+    Set JsonObjectStatics = IJsonObjectStatics
+End Function
+
+Public Function JsonValueStatics() As IJsonValueStatics
+Static IJsonValueStatics As IJsonValueStatics
+    If IJsonValueStatics Is Nothing Then Set IJsonValueStatics = NewObject("JsonValue", False)
+    Set JsonValueStatics = IJsonValueStatics
+End Function
+
+Public Function KeyTimeHelperStatics() As IKeyTimeHelperStatics
+Static IKeyTimeHelperStatics As IKeyTimeHelperStatics
+    If IKeyTimeHelperStatics Is Nothing Then Set IKeyTimeHelperStatics = NewObject("KeyTimeHelper", False)
+    Set KeyTimeHelperStatics = IKeyTimeHelperStatics
+End Function
+
+Public Function KnownUserPropertiesStatics() As IKnownUserPropertiesStatics
+Static IKnownUserPropertiesStatics As IKnownUserPropertiesStatics
+    If IKnownUserPropertiesStatics Is Nothing Then Set IKnownUserPropertiesStatics = NewObject("KnownUserProperties", False)
+    Set KnownUserPropertiesStatics = IKnownUserPropertiesStatics
+End Function
+
+Public Function LanguageFactory() As ILanguageFactory
+Static ILanguageFactory As ILanguageFactory
+    If ILanguageFactory Is Nothing Then Set ILanguageFactory = NewObject("Language", False)
+    Set LanguageFactory = ILanguageFactory
+End Function
+
+Public Function LauncherStatics() As ILauncherStatics
+Static ILauncherStatics As ILauncherStatics
+    If ILauncherStatics Is Nothing Then Set ILauncherStatics = NewObject("Launcher", False)
+    Set LauncherStatics = ILauncherStatics
+End Function
+
+Public Function Matrix3DHelperStatics() As IMatrix3DHelperStatics
+Static IMatrix3DHelperStatics As IMatrix3DHelperStatics
+    If IMatrix3DHelperStatics Is Nothing Then Set IMatrix3DHelperStatics = NewObject("Matrix3DHelper", False)
+    Set Matrix3DHelperStatics = IMatrix3DHelperStatics
+End Function
+
+Public Function MatrixHelperStatics() As IMatrixHelperStatics
+Static IMatrixHelperStatics As IMatrixHelperStatics
+    If IMatrixHelperStatics Is Nothing Then Set IMatrixHelperStatics = NewObject("MatrixHelper", False)
+    Set MatrixHelperStatics = IMatrixHelperStatics
+End Function
+
+Public Function MediaEncodingProfileStatics() As IMediaEncodingProfileStatics
+Static IMediaEncodingProfileStatics As IMediaEncodingProfileStatics
+    If IMediaEncodingProfileStatics Is Nothing Then Set IMediaEncodingProfileStatics = NewObject("MediaEncodingProfile", False)
+    Set MediaEncodingProfileStatics = IMediaEncodingProfileStatics
+End Function
+
+Public Function MediaSourceStatics() As IMediaSourceStatics
+Static IMediaSourceStatics As IMediaSourceStatics
+    If IMediaSourceStatics Is Nothing Then Set IMediaSourceStatics = NewObject("MediaSource", False)
+    Set MediaSourceStatics = IMediaSourceStatics
+End Function
+
+Public Function MemoryBufferFactory() As IMemoryBufferFactory
+Static IMemoryBufferFactory As IMemoryBufferFactory
+    If IMemoryBufferFactory Is Nothing Then Set IMemoryBufferFactory = NewObject("MemoryBuffer", False)
+    Set MemoryBufferFactory = IMemoryBufferFactory
+End Function
+
+Public Function MessageDialogFactory() As IMessageDialogFactory
+Static IMessageDialogFactory As IMessageDialogFactory
+    If IMessageDialogFactory Is Nothing Then Set IMessageDialogFactory = NewObject("MessageDialog", False)
+    Set MessageDialogFactory = IMessageDialogFactory
+End Function
+
+Public Function OcrEngineStatics() As IOcrEngineStatics
+Static IOcrEngineStatics As IOcrEngineStatics
+    If IOcrEngineStatics Is Nothing Then Set IOcrEngineStatics = NewObject("OcrEngine", False)
+    Set OcrEngineStatics = IOcrEngineStatics
+End Function
+
+Public Function PathIOStatics() As IPathIOStatics
+Static IPathIOStatics As IPathIOStatics
+    If IPathIOStatics Is Nothing Then Set IPathIOStatics = NewObject("PathIO", False)
+    Set PathIOStatics = IPathIOStatics
+End Function
+
+Public Function PdfDocumentStatics() As IPdfDocumentStatics
+Static IPdfDocumentStatics As IPdfDocumentStatics
+    If IPdfDocumentStatics Is Nothing Then Set IPdfDocumentStatics = NewObject("PdfDocument", False)
+    Set PdfDocumentStatics = IPdfDocumentStatics
+End Function
+
+Public Function PlaylistStatics() As IPlaylistStatics
+Static IPlaylistStatics As IPlaylistStatics
+    If IPlaylistStatics Is Nothing Then Set IPlaylistStatics = NewObject("Playlist", False)
+    Set PlaylistStatics = IPlaylistStatics
+End Function
+
+Public Function PointHelperStatics() As IPointHelperStatics
+Static IPointHelperStatics As IPointHelperStatics
+    If IPointHelperStatics Is Nothing Then Set IPointHelperStatics = NewObject("PointHelper", False)
+    Set PointHelperStatics = IPointHelperStatics
+End Function
+
+Public Function PropertyPathFactory() As IPropertyPathFactory
+Static IPropertyPathFactory As IPropertyPathFactory
+    If IPropertyPathFactory Is Nothing Then Set IPropertyPathFactory = NewObject("PropertyPath", False)
+    Set PropertyPathFactory = IPropertyPathFactory
+End Function
+
+Public Function PropertyValueStatics() As IPropertyValueStatics
+Static IPropertyValueStatics As IPropertyValueStatics
+    If IPropertyValueStatics Is Nothing Then Set IPropertyValueStatics = NewObject("PropertyValue", False)
+    Set PropertyValueStatics = IPropertyValueStatics
+End Function
+
+Public Function RandomAccessStreamReferenceStatics() As IRandomAccessStreamReferenceStatics
+    Static IRandomAccessStreamReferenceStatics As IRandomAccessStreamReferenceStatics
+    If IRandomAccessStreamReferenceStatics Is Nothing Then Set IRandomAccessStreamReferenceStatics = NewObject("RandomAccessStreamReference", False)
+    Set RandomAccessStreamReferenceStatics = IRandomAccessStreamReferenceStatics
+End Function
+
+Public Function RandomAccessStreamStatics() As IRandomAccessStreamStatics
+    Static IRandomAccessStreamStatics As IRandomAccessStreamStatics
+    If IRandomAccessStreamStatics Is Nothing Then Set IRandomAccessStreamStatics = NewObject("RandomAccessStream", False)
+    Set RandomAccessStreamStatics = IRandomAccessStreamStatics
+End Function
+
+Public Function RectHelperStatics() As IRectHelperStatics
+    Static IRectHelperStatics As IRectHelperStatics
+    If IRectHelperStatics Is Nothing Then Set IRectHelperStatics = NewObject("RectHelper", False)
+    Set RectHelperStatics = IRectHelperStatics
+End Function
+
+Public Function RepeatBehaviorHelperStatics() As IRepeatBehaviorHelperStatics
+Static IRepeatBehaviorHelperStatics As IRepeatBehaviorHelperStatics
+    If IRepeatBehaviorHelperStatics Is Nothing Then Set IRepeatBehaviorHelperStatics = NewObject("RepeatBehaviorHelper", False)
+    Set RepeatBehaviorHelperStatics = IRepeatBehaviorHelperStatics
+End Function
+
+Public Function SerialDeviceStatics() As ISerialDeviceStatics
+Static ISerialDeviceStatics As ISerialDeviceStatics
+    If ISerialDeviceStatics Is Nothing Then Set ISerialDeviceStatics = NewObject("SerialDevice", False)
+    Set SerialDeviceStatics = ISerialDeviceStatics
+End Function
+
+Public Function SignalNotifierStatics() As ISignalNotifierStatics
+Static ISignalNotifierStatics As ISignalNotifierStatics
+    If ISignalNotifierStatics Is Nothing Then Set ISignalNotifierStatics = NewObject("SignalNotifier", False)
+    Set SignalNotifierStatics = ISignalNotifierStatics
+End Function
+
+Public Function SizeHelperStatics() As ISizeHelperStatics
+Static ISizeHelperStatics As ISizeHelperStatics
+    If ISizeHelperStatics Is Nothing Then Set ISizeHelperStatics = NewObject("SizeHelper", False)
+    Set SizeHelperStatics = ISizeHelperStatics
+End Function
+
+Public Function SoftwareBitmapFactory() As ISoftwareBitmapFactory
+Static ISoftwareBitmapFactory As ISoftwareBitmapFactory
+    If ISoftwareBitmapFactory Is Nothing Then Set ISoftwareBitmapFactory = NewObject("SoftwareBitmap", False)
+    Set SoftwareBitmapFactory = ISoftwareBitmapFactory
+End Function
+
+Public Function SoftwareBitmapStatics() As ISoftwareBitmapStatics
+Static ISoftwareBitmapStatics As ISoftwareBitmapStatics
+    If ISoftwareBitmapStatics Is Nothing Then Set ISoftwareBitmapStatics = NewObject("SoftwareBitmap", False)
+    Set SoftwareBitmapStatics = ISoftwareBitmapStatics
+End Function
+
+Public Function SolidColorBrushFactory() As ISolidColorBrushFactory
+Static ISolidColorBrushFactory As ISolidColorBrushFactory
+    If ISolidColorBrushFactory Is Nothing Then Set ISolidColorBrushFactory = NewObject("SolidColorBrush", False)
+    Set SolidColorBrushFactory = ISolidColorBrushFactory
+End Function
+
+Public Function StandardDataFormatsStatics() As IStandardDataFormatsStatics
+Static IStandardDataFormatsStatics As IStandardDataFormatsStatics
+    If IStandardDataFormatsStatics Is Nothing Then Set IStandardDataFormatsStatics = NewObject("StandardDataFormats", False)
+    Set StandardDataFormatsStatics = IStandardDataFormatsStatics
+End Function
+
+Public Function StorageFileStatics() As IStorageFileStatics
+Static IStorageFileStatics As IStorageFileStatics
+    If IStorageFileStatics Is Nothing Then Set IStorageFileStatics = NewObject("StorageFile", False)
+    Set StorageFileStatics = IStorageFileStatics
+End Function
+
+Public Function StorageFolderStatics() As IStorageFolderStatics
+Static IStorageFolderStatics As IStorageFolderStatics
+    If IStorageFolderStatics Is Nothing Then Set IStorageFolderStatics = NewObject("StorageFolder", False)
+    Set StorageFolderStatics = IStorageFolderStatics
+End Function
+
+Public Function StoryboardStatics() As IStoryboardStatics
+Static IStoryboardStatics As IStoryboardStatics
+    If IStoryboardStatics Is Nothing Then Set IStoryboardStatics = NewObject("Storyboard", False)
+    Set StoryboardStatics = IStoryboardStatics
+End Function
+
+Public Function SystemIdentificationStatics() As ISystemIdentificationStatics
+Static ISystemIdentificationStatics As ISystemIdentificationStatics
+    If ISystemIdentificationStatics Is Nothing Then Set ISystemIdentificationStatics = NewObject("SystemIdentification", False)
+    Set SystemIdentificationStatics = ISystemIdentificationStatics
+End Function
+
+Public Function TextBoxStatics() As ITextBoxStatics
+Static ITextBoxStatics As ITextBoxStatics
+    If ITextBoxStatics Is Nothing Then Set ITextBoxStatics = NewObject("TextBox", False)
+    Set TextBoxStatics = ITextBoxStatics
+End Function
+
+Public Function ThicknessHelperStatics() As IThicknessHelperStatics
+    Static IThicknessHelperStatics As IThicknessHelperStatics
+    If IThicknessHelperStatics Is Nothing Then Set IThicknessHelperStatics = NewObject("ThicknessHelper", False)
+    Set ThicknessHelperStatics = IThicknessHelperStatics
+End Function
+
+Public Function ThreadPoolStatics() As IThreadPoolStatics
+Static IThreadPoolStatics As IThreadPoolStatics
+    If IThreadPoolStatics Is Nothing Then Set IThreadPoolStatics = NewObject("ThreadPool", False)
+    Set ThreadPoolStatics = IThreadPoolStatics
+End Function
+
+Public Function ThreadPoolTimerStatics() As IThreadPoolTimerStatics
+Static IThreadPoolTimerStatics As IThreadPoolTimerStatics
+    If IThreadPoolTimerStatics Is Nothing Then Set IThreadPoolTimerStatics = NewObject("ThreadPoolTimer", False)
+    Set ThreadPoolTimerStatics = IThreadPoolTimerStatics
+End Function
+
+Public Function ToolTipServiceStatics() As IToolTipServiceStatics
+Static IToolTipServiceStatics As IToolTipServiceStatics
+    If IToolTipServiceStatics Is Nothing Then Set IToolTipServiceStatics = NewObject("ToolTipService", False)
+    Set ToolTipServiceStatics = IToolTipServiceStatics
+End Function
+
+Public Function UICommandFactory() As IUICommandFactory
+Static IUICommandFactory As IUICommandFactory
+    If IUICommandFactory Is Nothing Then Set IUICommandFactory = NewObject("UICommand", False)
+    Set UICommandFactory = IUICommandFactory
+End Function
+
+Public Function UriEscapeStatics() As IUriEscapeStatics
+Static IUriEscapeStatics As IUriEscapeStatics
+    If IUriEscapeStatics Is Nothing Then Set IUriEscapeStatics = NewObject("Uri", False)
+    Set UriEscapeStatics = IUriEscapeStatics
+End Function
+
+Public Function UriFactory() As IUriFactory
+Static IUriFactory As IUriFactory
+    If IUriFactory Is Nothing Then Set IUriFactory = NewObject("Uri", False)
+    Set UriFactory = IUriFactory
+End Function
+
+Public Function UserConsentVerifierStatics() As IUserConsentVerifierStatics
+Static IUserConsentVerifierStatics As IUserConsentVerifierStatics
+    If IUserConsentVerifierStatics Is Nothing Then Set IUserConsentVerifierStatics = NewObject("UserConsentVerifier", False)
+    Set UserConsentVerifierStatics = IUserConsentVerifierStatics
+End Function
+
+Public Function UserDataPathsStatics() As IUserDataPathsStatics
+Static IUserDataPathsStatics As IUserDataPathsStatics
+    If IUserDataPathsStatics Is Nothing Then Set IUserDataPathsStatics = NewObject("UserDataPaths", False)
+    Set UserDataPathsStatics = IUserDataPathsStatics
+End Function
+
+Public Function UserStatics() As IUserStatics
+Static IUserStatics As IUserStatics
+    If IUserStatics Is Nothing Then Set IUserStatics = NewObject("User", False)
+    Set UserStatics = IUserStatics
+End Function
+
+Public Function VisualStateManagerStatics() As IVisualStateManagerStatics
+Static IVisualStateManagerStatics As IVisualStateManagerStatics
+    If IVisualStateManagerStatics Is Nothing Then Set IVisualStateManagerStatics = NewObject("VisualStateManager", False)
+    Set VisualStateManagerStatics = IVisualStateManagerStatics
+End Function
+
+Public Function VisualTreeHelperStatics() As IVisualTreeHelperStatics
+Static IVisualTreeHelperStatics As IVisualTreeHelperStatics
+    If IVisualTreeHelperStatics Is Nothing Then Set IVisualTreeHelperStatics = NewObject("VisualTreeHelper", False)
+    Set VisualTreeHelperStatics = IVisualTreeHelperStatics
+End Function
+
+Public Function WindowStatics() As IWindowStatics
+Static IWindowStatics As IWindowStatics
+    If IWindowStatics Is Nothing Then Set IWindowStatics = NewObject("Window", False)
+    Set WindowStatics = IWindowStatics
+End Function
+
+Public Function WindowsXamlManagerStatics() As IWindowsXamlManagerStatics
+Static IWindowsXamlManagerStatics As IWindowsXamlManagerStatics
+    If IWindowsXamlManagerStatics Is Nothing Then Set IWindowsXamlManagerStatics = NewObject("WindowsXamlManager", False)
+    Set WindowsXamlManagerStatics = IWindowsXamlManagerStatics
+End Function
+
+Public Function WriteableBitmapFactory() As IWriteableBitmapFactory
+Static IWriteableBitmapFactory As IWriteableBitmapFactory
+    If IWriteableBitmapFactory Is Nothing Then Set IWriteableBitmapFactory = NewObject("WriteableBitmap", False)
+    Set WriteableBitmapFactory = IWriteableBitmapFactory
+End Function
+
+Public Function XamlReaderStatics() As IXamlReaderStatics
+Static IXamlReaderStatics As IXamlReaderStatics
+    If IXamlReaderStatics Is Nothing Then Set IXamlReaderStatics = NewObject("XamlReader", False)
+    Set XamlReaderStatics = IXamlReaderStatics
+End Function
+
+Public Function XamlSourceFocusNavigationRequestFactory() As IXamlSourceFocusNavigationRequestFactory
+Static IXamlSourceFocusNavigationRequestFactory As IXamlSourceFocusNavigationRequestFactory
+    If IXamlSourceFocusNavigationRequestFactory Is Nothing Then Set IXamlSourceFocusNavigationRequestFactory = NewObject("XamlSourceFocusNavigationRequest", False)
+    Set XamlSourceFocusNavigationRequestFactory = IXamlSourceFocusNavigationRequestFactory
+End Function
+
+End Module

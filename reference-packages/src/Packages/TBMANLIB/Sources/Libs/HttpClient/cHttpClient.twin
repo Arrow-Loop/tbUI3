@@ -1,0 +1,573 @@
+Class cHttpClient
+
+    '作者：邓伟，QQ：215879458，可自由传播，但请勿删本签名
+
+    '引用“Microsoft WinHTTP Services, version 5.1”组件
+    '引用了Microsoft Scripting Runtime组件
+    '引用 cJson.cls 类文件
+
+    '增加了通过Content-Type自动识别 json 数据和强制返回json数据的参数
+
+    '增加了"长轮询"功能
+    '疑问:winhttp组件支持证书,,或许可以参考实现winsock的证书服务?
+    '疑问:winhttp返回值类型还有个"流",,这个是可以做直播等流媒体?---- 了解了一下,可以做文件上传和下载的,不过直播应该也可以
+
+    '2023-03-15 增加了对json的content-type 的处理 : AjaxInst.postContentType = Json
+
+    '2023-03-30 改大了同步请求的默认超时值为5分钟，后续增加超时参数给用户设置
+
+    'todo 增加集合对象, 实现并发异步请求池子
+    'todo 增加集合对象, 实现串行异步请求队列
+
+    Dim WithEvents Inst As WinHttp.WinHttpRequest
+    Attribute Inst.VB_VarHelpID = -1
+    Dim Json As New cJson
+    Private Declare Function ShellExecute Lib "shell32.dll" Alias "ShellExecuteA" ( _
+        ByVal hWnd As Long, _
+        ByVal lpOperation As String, _
+        ByVal lpFile As String, _
+        ByVal lpParameters As String, _
+        ByVal lpDirectory As String, _
+        ByVal nShowCmd As Long) As Long
+
+
+        '缓存请求的返回内容
+    Public ResponseRaw As Variant
+    '模仿前几天写的php版ajax，做个完整处理过的 res.header+res.cookies+res.data
+    Public Event OnResponseFinished()
+
+    Public LastError As String
+    Public RequestData() As Byte
+    Public RequestDataBody As New Scripting.Dictionary
+    Public RequestDataForm As New Scripting.Dictionary
+    Public RequestDataJson As New cJson
+    Public RequestDataQuery As New Scripting.Dictionary
+    Public RequestHeaders As New Scripting.Dictionary
+    Public RequestContentType As String
+    Public RequestChartSet As String
+    Public RequestTimeOut As Long
+
+    Public ResponseHeaders As New Scripting.Dictionary
+    Public Cookies As New Scripting.Dictionary
+
+    Public DebugStart As Boolean
+    Public DebugInfo As New cJson
+    '链式调用函数参数变量区
+    Dim IsAsync As Boolean
+    Public EnableRedirects As Boolean  '是否自动跟随 3xx 重定向，默认 True
+    Public MaxRedirects As Long        '最大重定向次数，默认 10
+    Dim RedirectCount As Long          '当前重定向计数
+
+    'alias
+    Public Function MapRequestContentType(ReqType As EnumRequestContentType, Optional ContentType As String) As String
+        MapRequestContentType = SetRequestContentType(ReqType, ContentType)
+    End Function
+    Public Function SetRequestContentType(ReqType As EnumRequestContentType, Optional ContentType As String) As String
+        Dim Arr As Variant: Arr = Array("", _
+        Consts.TOOLS_HTTP_CONTENT_TYPE_JSON, _
+        Consts.TOOLS_HTTP_CONTENT_TYPE_FORM_URLENCODED, _
+        Consts.TOOLS_HTTP_CONTENT_TYPE_FORM_MULTIPART, _
+        Consts.TOOLS_HTTP_CONTENT_TYPE_TEXT_PLAIN, _
+        Consts.TOOLS_HTTP_CONTENT_TYPE_TEXT_HTML _
+        )
+        RequestContentType = Arr(ReqType)
+        SetRequestContentType = RequestContentType
+    End Function
+
+    Public Sub ShowPage(url As String)
+        ShellExecute 0, "open", url, 0, 0, 1
+    End Sub
+
+    Public Function SetCookies(ByVal Value As String) As cHttpClient
+        Set SetCookies = Me
+        If Trim(Value) = "" Then Exit Function
+        'todo 此处应该实现字符串解析到 Cookies 对象,
+        '并且返回头如果有 set-cookies 也要自动处理, 而且可能有多个 set-Cookies
+        RequestHeaders("Cookie") = Value
+    End Function
+
+    Public Function Async(Bool As Boolean) As cHttpClient
+        Set Async = Me
+        IsAsync = Bool
+    End Function
+
+    Public Function AllowRedirects(Bool As Boolean) As cHttpClient
+        Set AllowRedirects = Me
+        EnableRedirects = Bool
+    End Function
+
+    Public Function GetRedirectUrl() As String
+        '获取 3xx 响应中的 Location 头（重定向目标地址）
+        If ResponseHeaders.Exists("Location") Then
+            GetRedirectUrl = ResponseHeaders("Location")
+        ElseIf ResponseHeaders.Exists("location") Then
+            GetRedirectUrl = ResponseHeaders("location")
+        End If
+    End Function
+
+    Public Function FollowRedirect(Optional RedirectMethod As EnumRequestMethod = 0) As cHttpClient
+        '手动跟随重定向，保留当前请求配置（headers、cookies等）
+        '参数 RedirectMethod: 指定 307/308 重定向时使用的请求方法，默认为0（自动处理）
+        Set FollowRedirect = Me
+        
+        Dim RedirectUrl As String: RedirectUrl = GetRedirectUrl()
+        If RedirectUrl = "" Then Exit Function
+        
+        '检查最大重定向次数
+        RedirectCount = RedirectCount + 1
+        If RedirectCount > MaxRedirects Then
+            Err.Raise 310, , "重定向次数超过最大限制: " & MaxRedirects
+        End If
+        
+        '根据 3xx 状态码处理重定向
+        Select Case Inst.Status
+            Case 301, 302, 303
+                'GET/HEAD 请求使用 GET 方法，其他方法转为 GET
+                SendGet RedirectUrl
+            Case 307, 308
+                '307/308 保持原请求方法和 Body 不变
+                If RedirectMethod <> 0 Then
+                    '开发者指定了方法
+                    Send RedirectMethod, RedirectUrl
+                Else
+                    '默认使用 GET（开发者如需保持原方法，需手动指定）
+                    SendGet RedirectUrl
+                End If
+            Case Else
+                '其他 3xx 状态码，默认使用 GET
+                SendGet RedirectUrl
+        End Select
+    End Function
+
+    Public Function ResetRedirectCount() As cHttpClient
+        '重置重定向计数，链式调用
+        Set ResetRedirectCount = Me
+        RedirectCount = 0
+    End Function
+
+    Public Function SendPost(ByVal url As String, Optional Body As String) As cHttpClient
+        Set SendPost = Fetch(ReqPost, url, Body)
+    End Function
+    Public Function SendGet(ByVal url As String, Optional Body As String) As cHttpClient
+        Set SendGet = Fetch(ReqGet, url, Body)
+    End Function
+    Public Function SendPut(ByVal url As String, Optional Body As String) As cHttpClient
+        Set SendPut = Fetch(ReqPut, url, Body)
+    End Function
+    Public Function SendDelete(ByVal url As String, Optional Body As String) As cHttpClient
+        Set SendDelete = Fetch(ReqDelete, url, Body)
+    End Function
+    Public Function SendOptions(ByVal url As String, Optional Body As String) As cHttpClient
+        Set SendOptions = Fetch(ReqOptions, url, Body)
+    End Function
+
+    'alias
+    Public Function Send(Method As EnumRequestMethod, ByVal Url As String, Optional Body As String) As cHttpClient
+        Set Send = Fetch(Method, Url, Body)
+    End Function
+    Public Function Fetch(Method As EnumRequestMethod, ByVal url As String, Optional Body As String) As cHttpClient
+        Set Fetch = Me
+        On Error GoTo ERR:
+        Dim x As Variant: LastError = "": Set DebugInfo = Nothing
+        '检查url
+        If url = "" Then Err.Raise 500, , "请求的URL地址为空,请检查!"
+        '处理请求参数
+        If RequestDataQuery.Count > 0 Then url = ToolsHttp.AddToQueryString(url, ToolsHttp.MakeContent(RequestDataQuery))
+        '是否添加URL资源版本号
+        '    If addVer Then Url = ToolsHttp.AddToQueryString(Url, Rnd())
+        '打开链路
+        Dim MethodName As String: MethodName = ToolsHttp.MapMethodName(Method)
+        Inst.Open MethodName, url, True
+        '处理Header
+        With RequestHeaders
+            If .Exists("Cookie") = False Then
+                'todo
+            End If
+            If .Exists("Content-Type") = False Then
+                If RequestContentType = "" Then RequestContentType = Consts.TOOLS_HTTP_CONTENT_TYPE_FORM_URLENCODED
+                .Add Consts.TOOLS_HTTP_HEADER_FIELD_CONTENT_TYPE, RequestContentType
+            End If
+            If .Count > 0 Then
+                For Each x In .Keys()
+                    If .Item(x) <> "" Then Inst.SetRequestHeader x, .Item(x)
+                Next
+            End If
+        End With
+        '忽略错误SSL证书
+        Inst.Option(WinHttpRequestOption_SslErrorIgnoreFlags) = &H3300
+        '设置是否自动跟随重定向（301/302/307等）
+        Inst.Option(WinHttpRequestOption_EnableRedirects) = IIf(EnableRedirects, 1, 0)
+        '处理POSTBODY
+        If Body = "" Then
+            If RequestContentType = Consts.TOOLS_HTTP_CONTENT_TYPE_JSON Then
+                Body = RequestDataJson.Encode(, , True)
+            ElseIf RequestContentType = Consts.TOOLS_HTTP_CONTENT_TYPE_FORM_URLENCODED Then
+                Body = ToolsHttp.MakeContent(RequestDataForm)
+            End If
+        End If
+        If Body = "" Then
+            '发送数据
+            Inst.Send
+        Else
+            Dim BodyByte() As Byte
+            If ToolsStr.HasStr("utf", RequestChartSet) > 0 Then
+                BodyByte = ToolsUtf8.Encode(Body)
+            Else
+                BodyByte = ToolsArray.StringToByteArray(Body)
+            End If
+            Inst.SetRequestHeader Consts.TOOLS_HTTP_HEADER_FIELD_CONTENT_LENGHT, UBound(BodyByte) + 1
+            '发送数据
+            Inst.Send BodyByte
+        End If
+        '返回
+    
+        If IsAsync = False Then
+            '设置等待超时, '由于使用异步请求,如果用户参数改为同步请求,此处则等待返回,无需使用do循环+doevents
+            If RequestTimeOut < 5 Then RequestTimeOut = 5
+            If Inst.WaitForResponse(RequestTimeOut) = False Then Err.Raise 900, , "请求超时: " & RequestTimeOut
+            '处理网络不可用
+            '        If Inst.Status = WinHttpRequestStatus_Sending Then ERR.Raise 901, , "网络不可用"
+            '        Do While httpRequest.Status = WinHttpRequestStatus_Sending
+            '            DoEvents                                                            '允许其他事件处理，防止卡死
+            '        Loop
+            '
+            '状态码判断：4xx/5xx 为明确错误，其余交给调用方处理
+            If Inst.Status >= 400 And Inst.Status <= 599 Then Err.Raise Inst.Status, , Inst.Status & "#" & Inst.StatusText & "#" & Left(Inst.ResponseText, 1024)
+            '解析 返回头
+            Call ToolsHttp.ParseKeyValue(Inst.GetAllResponseHeaders(), ResponseHeaders)
+        End If
+        '清理body,但保留头部和get请求参数,头部和参数基本上是不变的,需要清理可以手工执行字典清楚方法
+        GoSub CLEAN
+        Exit Function
+    ERR:
+        Rem todo 这里可以优化一下，对超时错误代码进行准确描述
+        If DebugStart = True Then
+            With DebugInfo
+                With .NewItem("Error")
+                    .Item("Number") = Err.Number
+                    .Item("Source") = Err.Source
+                    .Item("Description") = Err.Description
+                End With
+            End With
+        End If
+        LastError = Err.Description
+        GoSub CLEAN
+        Err.Raise Err.Number, Err.Source, Err.Description, Err.HelpFile, Err.HelpContext
+        Exit Function
+    CLEAN:
+        If DebugStart = True Then
+            With DebugInfo
+                With .NewItem("Request")
+                    .Item("IsAsync") = IsAsync
+                    .Item("Method") = MethodName
+                    .Item("Url") = url
+                    .Item("Body") = Body
+                    Set .Item("Headers") = RequestHeaders
+                    .Item("TimeOut") = RequestTimeOut
+                    .Item("ChartSet") = RequestChartSet
+                End With
+                If IsAsync = False Then
+                    With .NewItem("Response")
+                        .Item("Status") = Inst.Status
+                        .Item("StatusText") = Inst.StatusText
+                        Set .Item("Headers") = ResponseHeaders
+                        .Item("Content") = ReturnText(True)
+                    End With
+                End If
+            End With
+        End If
+        IsAsync = False
+        DebugStart = False
+        RequestDataJson.Clear()
+        RequestDataForm.RemoveAll
+        RequestDataQuery.RemoveAll
+        '    RequestHeaders.RemoveAll
+        '    Cookies.RemoveAll
+        Return
+    End Function
+
+    Public Function ReturnStream() As Variant
+        ReturnStream = Inst.ResponseStream
+    End Function
+
+    ' ==================== 文件上传下载功能 ====================
+    
+    Public Function DownloadFile(ByVal url As String, ByVal savePath As String, Optional Overwrite As Boolean = True) As Boolean
+        '下载文件并保存到指定路径
+        '参数: url - 文件URL, savePath - 保存路径, Overwrite - 是否覆盖已存在文件
+        '返回: 成功返回 True，失败抛出错误
+        On Error GoTo EH
+        
+        '发送 GET 请求获取文件
+        SendGet url
+        
+        '检查响应状态
+        If Inst.Status <> 200 Then
+            Err.Raise Inst.Status, , "下载失败: " & Inst.Status & " " & Inst.StatusText
+        End If
+        
+        '检查文件是否已存在
+        If Dir(savePath) <> "" And Overwrite = False Then
+            Err.Raise 58, , "文件已存在: " & savePath
+        End If
+        
+        '使用 cToolsStream 保存文件
+        Dim Stream As New cToolsStream
+        Dim FileData() As Byte
+        FileData = Inst.ResponseBody
+        Stream.SaveFileAsBinary savePath, FileData
+        
+        DownloadFile = True
+        Exit Function
+EH:
+        LastError = Err.Description
+        Err.Raise Err.Number, Err.Source, Err.Description
+    End Function
+    
+    Public Function DownloadFileAsync(ByVal url As String, ByVal savePath As String, Optional Overwrite As Boolean = True) As cHttpClient
+        '异步下载文件（需要配合 OnResponseFinished 事件处理结果）
+        '注意：异步下载需要在事件中调用 FinishDownloadFile 完成保存
+        Set DownloadFileAsync = Me
+        Async(True).SendGet url
+        '保存下载参数供后续使用
+        RequestHeaders("X-Download-Path") = savePath
+        RequestHeaders("X-Download-Overwrite") = IIf(Overwrite, "1", "0")
+    End Function
+    
+    Public Function FinishDownloadFile() As Boolean
+        '完成异步下载，保存文件（在 OnResponseFinished 事件中调用）
+        On Error GoTo EH
+        
+        If Inst.Status <> 200 Then
+            Err.Raise Inst.Status, , "下载失败: " & Inst.Status & " " & Inst.StatusText
+        End If
+        
+        Dim savePath As String
+        Dim Overwrite As Boolean
+        savePath = RequestHeaders("X-Download-Path")
+        Overwrite = (RequestHeaders("X-Download-Overwrite") = "1")
+        
+        If savePath = "" Then
+            Err.Raise 1, , "未找到下载路径参数"
+        End If
+        
+        '检查文件是否已存在
+        If Dir(savePath) <> "" And Overwrite = False Then
+            Err.Raise 58, , "文件已存在: " & savePath
+        End If
+        
+        '保存文件
+        Dim Stream As New cToolsStream
+        Dim FileData() As Byte
+        FileData = Inst.ResponseBody
+        Stream.SaveFileAsBinary savePath, FileData
+        
+        FinishDownloadFile = True
+        Exit Function
+EH:
+        LastError = Err.Description
+        Err.Raise Err.Number, Err.Source, Err.Description
+    End Function
+
+    Public Function UploadFile(ByVal url As String, ByVal filePath As String, Optional fieldName As String = "file", Optional additionalFormData As Scripting.Dictionary = Nothing) As cHttpClient
+        '上传文件到服务器（使用 multipart/form-data 格式）
+        '参数: url - 上传地址, filePath - 本地文件路径, fieldName - 表单字段名, additionalFormData - 额外的表单数据
+        '返回: cHttpClient 实例（支持链式调用）
+        Set UploadFile = Me
+        On Error GoTo EH
+        
+        '检查文件是否存在
+        If Dir(filePath) = "" Then
+            Err.Raise 53, , "文件不存在: " & filePath
+        End If
+        
+        '读取文件内容
+        Dim Stream As New cToolsStream
+        Dim FileData() As Byte
+        If Not Stream.LoadFileAsBinary(filePath, FileData) Then
+            Err.Raise 1, , "读取文件失败: " & Stream.LastError
+        End If
+        
+        '生成边界字符串
+        Dim Boundary As String
+        Boundary = "----WebKitFormBoundary" & CStr(Rnd() * 1000000000)
+        
+        '构建 multipart 请求体
+        Dim BodyBytes() As Byte
+        Dim PartBytes() As Byte
+        Dim CRLF() As Byte
+        CRLF = ToolsArray.StringToByteArray(vbCrLf)
+        
+        '构建第一部分：文件内容
+        Dim FileName As String
+        FileName = Mid(filePath, InStrRev(filePath, "\") + 1)
+        
+        Dim Part1 As String
+        Part1 = "--" & Boundary & vbCrLf & _
+                "Content-Disposition: form-data; name=""" & fieldName & """; filename=""" & FileName & """" & vbCrLf & _
+                "Content-Type: application/octet-stream" & vbCrLf & vbCrLf
+        
+        PartBytes = ToolsArray.StringToByteArray(Part1)
+        BodyBytes = ConcatByteArrays(BodyBytes, PartBytes)
+        BodyBytes = ConcatByteArrays(BodyBytes, FileData)
+        BodyBytes = ConcatByteArrays(BodyBytes, CRLF)
+        
+        '添加额外的表单数据（如果有）
+        If Not additionalFormData Is Nothing Then
+            Dim key As Variant
+            For Each key In additionalFormData.Keys
+                Dim PartN As String
+                PartN = "--" & Boundary & vbCrLf & _
+                        "Content-Disposition: form-data; name=""" & key & """" & vbCrLf & vbCrLf & _
+                        additionalFormData(key) & vbCrLf
+                PartBytes = ToolsArray.StringToByteArray(PartN)
+                BodyBytes = ConcatByteArrays(BodyBytes, PartBytes)
+            Next
+        End If
+        
+        '添加结束边界
+        Dim EndBoundary As String
+        EndBoundary = "--" & Boundary & "--" & vbCrLf
+        PartBytes = ToolsArray.StringToByteArray(EndBoundary)
+        BodyBytes = ConcatByteArrays(BodyBytes, PartBytes)
+        
+        '设置请求头和发送请求
+        RequestContentType = "multipart/form-data; boundary=" & Boundary
+        RequestHeaders("Content-Length") = UBound(BodyBytes) + 1
+        
+        '打开连接并发送
+        Inst.Open "POST", url, True
+        Inst.SetRequestHeader "Content-Type", RequestContentType
+        Inst.Option(WinHttpRequestOption_SslErrorIgnoreFlags) = &H3300
+        Inst.Option(WinHttpRequestOption_EnableRedirects) = IIf(EnableRedirects, 1, 0)
+        
+        '发送数据
+        Inst.Send BodyBytes
+        
+        '同步等待响应
+        If RequestTimeOut < 5 Then RequestTimeOut = 60  '上传默认60秒超时
+        If Inst.WaitForResponse(RequestTimeOut) = False Then
+            Err.Raise 900, , "上传超时: " & RequestTimeOut
+        End If
+        
+        '处理响应
+        If Inst.Status >= 400 Then
+            Err.Raise Inst.Status, , "上传失败: " & Inst.Status & "#" & Inst.StatusText
+        End If
+        
+        '解析响应头
+        Call ToolsHttp.ParseKeyValue(Inst.GetAllResponseHeaders(), ResponseHeaders)
+        
+        Exit Function
+EH:
+        LastError = Err.Description
+        Err.Raise Err.Number, Err.Source, Err.Description
+    End Function
+    
+    Public Function UploadFileSimple(ByVal url As String, ByVal filePath As String) As Boolean
+        '简化的文件上传，返回布尔值表示成功/失败
+        On Error Resume Next
+        UploadFile url, filePath
+        UploadFileSimple = (Err.Number = 0)
+        If Err.Number <> 0 Then LastError = Err.Description
+    End Function
+
+    Public Function ReturnBody() As Byte()
+        ReturnBody = Inst.ResponseBody
+    End Function
+
+    Public Function ReturnJson(Optional IsUtf8 As Boolean = True, Optional IsConvert As Boolean) As cJson
+        Set ReturnJson = New cJson
+        Dim S As String: S = ReturnText(IsUtf8, IsConvert)
+        Call ReturnJson.Decode(S)
+    End Function
+
+    Public Function ReturnText(Optional IsUtf8 As Boolean = True, Optional IsConvert As Boolean) As String
+        If IsUtf8 = True Then
+            ReturnText = ToolsUtf8.Decode(Inst.ResponseBody)
+            Exit Function
+        End If
+        If IsConvert = True Then
+            '---------------------------二进制转字符串[直接返回字串出现乱码时尝试]
+            ReturnText = StrConv(Inst.ResponseBody, vbUnicode)
+        Else
+            ReturnText = Inst.ResponseText
+        End If
+    End Function
+
+    ' ==================== 私有辅助方法 ====================
+    
+    Private Function ConcatByteArrays(ByRef Arr1() As Byte, ByRef Arr2() As Byte) As Byte()
+        '连接两个字节数组
+        Dim Len1 As Long, Len2 As Long
+        Dim Result() As Byte
+        
+        '处理空数组情况
+        On Error Resume Next
+        Len1 = UBound(Arr1) - LBound(Arr1) + 1
+        If Err.Number <> 0 Then Len1 = 0
+        Err.Clear
+        
+        Len2 = UBound(Arr2) - LBound(Arr2) + 1
+        If Err.Number <> 0 Then Len2 = 0
+        On Error GoTo 0
+        
+        If Len1 = 0 And Len2 = 0 Then
+            ReDim Result(0)
+            ConcatByteArrays = Result
+            Exit Function
+        End If
+        
+        If Len1 = 0 Then
+            ConcatByteArrays = Arr2
+            Exit Function
+        End If
+        
+        If Len2 = 0 Then
+            ConcatByteArrays = Arr1
+            Exit Function
+        End If
+        
+        '创建新数组并复制数据
+        ReDim Result(Len1 + Len2 - 1)
+        CopyMemory Result(0), Arr1(LBound(Arr1)), Len1
+        CopyMemory Result(Len1), Arr2(LBound(Arr2)), Len2
+        
+        ConcatByteArrays = Result
+    End Function
+    
+    Private Declare Sub CopyMemory Lib "kernel32" Alias "RtlMoveMemory" (Destination As Any, Source As Any, ByVal length As Long)
+
+    Private Sub Class_Initialize()
+        Set Inst = New WinHttp.WinHttpRequest
+        '    oHttp.SetProxy 1
+        '    oHttp.SetTimeouts 2000, 2000, 6000, 20000
+        'WinHttp.SetTimeouts 60000, 60000, 60000, 3000 '设置操作超时时间
+        'WinHttp.SetTimeouts resolveTimeout, connectTimeout, sendTimeout, receiveTimeout
+        'resolveTimeout = 10000 '解析 DNS 名字的超时时间，10000 毫秒。
+        'connectTimeout = 10000 '建立 Winsock 连接的超时时间，10000 毫秒。
+        'sendTimeout = 120000 '发送数据的超时时间，120000 毫秒。
+        'receiveTimeout = 60000 '接收 response 的超时时间，60000 毫秒。
+    
+        '    reqHeaders.Add Consts.TOOLS_HTTP_HEADER_FIELD_CONTENT_TYPE, Consts.TOOLS_HTTP_CONTENT_TYPE_FORM_URLENCODED
+        '    reqHeaders.Add "req-from", "vb ajax class by 215879458@qq.com"
+        '    postBody.Add "ver", 1#
+    
+        RequestDataForm.CompareMode = TextCompare
+        RequestDataQuery.CompareMode = TextCompare
+        RequestHeaders.CompareMode = TextCompare
+        Cookies.CompareMode = TextCompare
+        ResponseHeaders.CompareMode = TextCompare
+        RequestTimeOut = 5
+        RequestChartSet = "utf-8"
+        EnableRedirects = True  '默认启用自动重定向
+        MaxRedirects = 10       '默认最大重定向 10 次
+    End Sub
+
+    Private Sub Class_Terminate()
+        Set Inst = Nothing
+    End Sub
+
+
+    
+End Class

@@ -1,0 +1,528 @@
+' =====================================================
+' mConsoleStyle.twin - Console Styling Helpers
+' Modern Console Library for TwinBASIC
+' Provides ANSI/VT100 escape sequences and styling utilities
+' =====================================================
+
+Public Module mConsoleStyle
+
+    ' === ANSI Escape Sequences ===
+
+    Private Const ESC As String = Chr$(27)
+    Private Const CSI As String = Chr$(27) & "["
+
+    ' === Cursor Movement ===
+
+    ' Move cursor up N lines
+    Public Function CursorUp(Optional ByVal n As Long = 1) As String
+        Return CSI & n & "A"
+    End Function
+
+    ' Move cursor down N lines
+    Public Function CursorDown(Optional ByVal n As Long = 1) As String
+        Return CSI & n & "B"
+    End Function
+
+    ' Move cursor forward N columns
+    Public Function CursorForward(Optional ByVal n As Long = 1) As String
+        Return CSI & n & "C"
+    End Function
+
+    ' Move cursor back N columns
+    Public Function CursorBack(Optional ByVal n As Long = 1) As String
+        Return CSI & n & "D"
+    End Function
+
+    ' Move cursor to beginning of line N lines down
+    Public Function CursorNextLine(Optional ByVal n As Long = 1) As String
+        Return CSI & n & "E"
+    End Function
+
+    ' Move cursor to beginning of line N lines up
+    Public Function CursorPrevLine(Optional ByVal n As Long = 1) As String
+        Return CSI & n & "F"
+    End Function
+
+    ' Move cursor to column N
+    Public Function CursorColumn(ByVal n As Long) As String
+        Return CSI & n & "G"
+    End Function
+
+    ' Move cursor to row, column (1-based)
+    Public Function CursorPosition(ByVal row As Long, ByVal col As Long) As String
+        Return CSI & row & ";" & col & "H"
+    End Function
+
+    ' Save cursor position
+    Public Function CursorSave() As String
+        Return CSI & "s"
+    End Function
+
+    ' Restore cursor position
+    Public Function CursorRestore() As String
+        Return CSI & "u"
+    End Function
+
+    ' Hide cursor
+    Public Function CursorHide() As String
+        Return CSI & "?25l"
+    End Function
+
+    ' Show cursor
+    Public Function CursorShow() As String
+        Return CSI & "?25h"
+    End Function
+
+    ' === Screen Clearing ===
+
+    ' Clear screen (0=cursor to end, 1=start to cursor, 2=entire screen, 3=entire screen + scrollback)
+    Public Function ClearScreen(Optional ByVal mode As Long = 2) As String
+        Return CSI & mode & "J"
+    End Function
+
+    ' Clear line (0=cursor to end, 1=start to cursor, 2=entire line)
+    Public Function ClearLine(Optional ByVal mode As Long = 2) As String
+        Return CSI & mode & "K"
+    End Function
+
+    ' === Text Formatting ===
+
+    ' Reset all attributes
+    Public Function Reset() As String
+        Return CSI & "0m"
+    End Function
+
+    ' Bold text
+    Public Function Bold() As String
+        Return CSI & "1m"
+    End Function
+
+    ' Dim text
+    Public Function Dim_() As String
+        Return CSI & "2m"
+    End Function
+
+    ' Italic text
+    Public Function Italic() As String
+        Return CSI & "3m"
+    End Function
+
+    ' Underline text
+    Public Function Underline() As String
+        Return CSI & "4m"
+    End Function
+
+    ' Blinking text
+    Public Function Blink() As String
+        Return CSI & "5m"
+    End Function
+
+    ' Reverse video (swap foreground/background)
+    Public Function Reverse() As String
+        Return CSI & "7m"
+    End Function
+
+    ' Hidden text
+    Public Function Hidden() As String
+        Return CSI & "8m"
+    End Function
+
+    ' Strikethrough text
+    Public Function Strikethrough() As String
+        Return CSI & "9m"
+    End Function
+
+    ' === 16 Color Foreground ===
+
+    Public Function FgBlack() As String
+        Return CSI & "30m"
+    End Function
+
+    Public Function FgRed() As String
+        Return CSI & "31m"
+    End Function
+
+    Public Function FgGreen() As String
+        Return CSI & "32m"
+    End Function
+
+    Public Function FgYellow() As String
+        Return CSI & "33m"
+    End Function
+
+    Public Function FgBlue() As String
+        Return CSI & "34m"
+    End Function
+
+    Public Function FgMagenta() As String
+        Return CSI & "35m"
+    End Function
+
+    Public Function FgCyan() As String
+        Return CSI & "36m"
+    End Function
+
+    Public Function FgWhite() As String
+        Return CSI & "37m"
+    End Function
+
+    Public Function FgDefault() As String
+        Return CSI & "39m"
+    End Function
+
+    ' Bright foreground colors
+    Public Function FgBrightBlack() As String
+        Return CSI & "90m"
+    End Function
+
+    Public Function FgBrightRed() As String
+        Return CSI & "91m"
+    End Function
+
+    Public Function FgBrightGreen() As String
+        Return CSI & "92m"
+    End Function
+
+    Public Function FgBrightYellow() As String
+        Return CSI & "93m"
+    End Function
+
+    Public Function FgBrightBlue() As String
+        Return CSI & "94m"
+    End Function
+
+    Public Function FgBrightMagenta() As String
+        Return CSI & "95m"
+    End Function
+
+    Public Function FgBrightCyan() As String
+        Return CSI & "96m"
+    End Function
+
+    Public Function FgBrightWhite() As String
+        Return CSI & "97m"
+    End Function
+
+    ' === 16 Color Background ===
+
+    Public Function BgBlack() As String
+        Return CSI & "40m"
+    End Function
+
+    Public Function BgRed() As String
+        Return CSI & "41m"
+    End Function
+
+    Public Function BgGreen() As String
+        Return CSI & "42m"
+    End Function
+
+    Public Function BgYellow() As String
+        Return CSI & "43m"
+    End Function
+
+    Public Function BgBlue() As String
+        Return CSI & "44m"
+    End Function
+
+    Public Function BgMagenta() As String
+        Return CSI & "45m"
+    End Function
+
+    Public Function BgCyan() As String
+        Return CSI & "46m"
+    End Function
+
+    Public Function BgWhite() As String
+        Return CSI & "47m"
+    End Function
+
+    Public Function BgDefault() As String
+        Return CSI & "49m"
+    End Function
+
+    ' Bright background colors
+    Public Function BgBrightBlack() As String
+        Return CSI & "100m"
+    End Function
+
+    Public Function BgBrightRed() As String
+        Return CSI & "101m"
+    End Function
+
+    Public Function BgBrightGreen() As String
+        Return CSI & "102m"
+    End Function
+
+    Public Function BgBrightYellow() As String
+        Return CSI & "103m"
+    End Function
+
+    Public Function BgBrightBlue() As String
+        Return CSI & "104m"
+    End Function
+
+    Public Function BgBrightMagenta() As String
+        Return CSI & "105m"
+    End Function
+
+    Public Function BgBrightCyan() As String
+        Return CSI & "106m"
+    End Function
+
+    Public Function BgBrightWhite() As String
+        Return CSI & "107m"
+    End Function
+
+    ' === 256 Color Support ===
+
+    ' Set foreground to 256-color palette (0-255)
+    Public Function Fg256(ByVal colorIndex As Long) As String
+        Return CSI & "38;5;" & colorIndex & "m"
+    End Function
+
+    ' Set background to 256-color palette (0-255)
+    Public Function Bg256(ByVal colorIndex As Long) As String
+        Return CSI & "48;5;" & colorIndex & "m"
+    End Function
+
+    ' === True Color (24-bit) Support ===
+
+    ' Set foreground to RGB color
+    Public Function FgRGB(ByVal r As Long, ByVal g As Long, ByVal b As Long) As String
+        Return CSI & "38;2;" & r & ";" & g & ";" & b & "m"
+    End Function
+
+    ' Set background to RGB color
+    Public Function BgRGB(ByVal r As Long, ByVal g As Long, ByVal b As Long) As String
+        Return CSI & "48;2;" & r & ";" & g & ";" & b & "m"
+    End Function
+
+    ' === Scrolling ===
+
+    ' Scroll up N lines
+    Public Function ScrollUp(Optional ByVal n As Long = 1) As String
+        Return CSI & n & "S"
+    End Function
+
+    ' Scroll down N lines
+    Public Function ScrollDown(Optional ByVal n As Long = 1) As String
+        Return CSI & n & "T"
+    End Function
+
+    ' === Window Title ===
+
+    ' Set window title
+    Public Function SetTitle(ByVal title As String) As String
+        Return ESC & "]0;" & title & Chr$(7)
+    End Function
+
+    ' === Alternative Screen Buffer ===
+
+    ' Switch to alternative screen buffer
+    Public Function AltScreenOn() As String
+        Return CSI & "?1049h"
+    End Function
+
+    ' Switch back to main screen buffer
+    Public Function AltScreenOff() As String
+        Return CSI & "?1049l"
+    End Function
+
+    ' === Hyperlinks (OSC 8) ===
+
+    ' Create a hyperlink
+    Public Function Hyperlink(ByVal url As String, ByVal text As String) As String
+        Return ESC & "]8;;" & url & Chr$(7) & text & ESC & "]8;;" & Chr$(7)
+    End Function
+
+    ' === Box Drawing Characters ===
+
+    ' Single line box characters
+    Public Const BOX_HORIZONTAL As String = "─"         ' U+2500
+    Public Const BOX_VERTICAL As String = "│"           ' U+2502
+    Public Const BOX_TOP_LEFT As String = "┌"           ' U+250C
+    Public Const BOX_TOP_RIGHT As String = "┐"          ' U+2510
+    Public Const BOX_BOTTOM_LEFT As String = "└"        ' U+2514
+    Public Const BOX_BOTTOM_RIGHT As String = "┘"       ' U+2518
+    Public Const BOX_T_LEFT As String = "├"             ' U+251C
+    Public Const BOX_T_RIGHT As String = "┤"            ' U+2524
+    Public Const BOX_T_TOP As String = "┬"              ' U+252C
+    Public Const BOX_T_BOTTOM As String = "┴"           ' U+2534
+    Public Const BOX_CROSS As String = "┼"              ' U+253C
+
+    ' Double line box characters
+    Public Const BOX_D_HORIZONTAL As String = "═"       ' U+2550
+    Public Const BOX_D_VERTICAL As String = "║"         ' U+2551
+    Public Const BOX_D_TOP_LEFT As String = "╔"         ' U+2554
+    Public Const BOX_D_TOP_RIGHT As String = "╗"        ' U+2557
+    Public Const BOX_D_BOTTOM_LEFT As String = "╚"      ' U+255A
+    Public Const BOX_D_BOTTOM_RIGHT As String = "╝"     ' U+255D
+    Public Const BOX_D_T_LEFT As String = "╠"           ' U+2560
+    Public Const BOX_D_T_RIGHT As String = "╣"          ' U+2563
+    Public Const BOX_D_T_TOP As String = "╦"            ' U+2566
+    Public Const BOX_D_T_BOTTOM As String = "╩"         ' U+2569
+    Public Const BOX_D_CROSS As String = "╬"            ' U+256C
+
+    ' Block characters
+    Public Const BLOCK_FULL As String = "█"             ' U+2588
+    Public Const BLOCK_UPPER_HALF As String = "▀"       ' U+2580
+    Public Const BLOCK_LOWER_HALF As String = "▄"       ' U+2584
+    Public Const BLOCK_LEFT_HALF As String = "▌"        ' U+258C
+    Public Const BLOCK_RIGHT_HALF As String = "▐"       ' U+2590
+    Public Const BLOCK_LIGHT As String = "░"            ' U+2591
+    Public Const BLOCK_MEDIUM As String = "▒"           ' U+2592
+    Public Const BLOCK_DARK As String = "▓"             ' U+2593
+
+    ' Progress bar characters
+    Public Const PROGRESS_EMPTY As String = "░"         ' U+2591
+    Public Const PROGRESS_FILLED As String = "█"        ' U+2588
+
+    ' Arrow characters
+    Public Const ARROW_UP As String = "↑"               ' U+2191
+    Public Const ARROW_DOWN As String = "↓"             ' U+2193
+    Public Const ARROW_LEFT As String = "←"             ' U+2190
+    Public Const ARROW_RIGHT As String = "→"            ' U+2192
+    Public Const ARROW_UP_DOWN As String = "↕"          ' U+2195
+    Public Const ARROW_LEFT_RIGHT As String = "↔"       ' U+2194
+
+    ' Check marks and symbols
+    Public Const CHECK_MARK As String = "✓"             ' U+2713
+    Public Const CROSS_MARK As String = "✗"             ' U+2717
+    Public Const BULLET As String = "•"                 ' U+2022
+    Public Const DIAMOND As String = "◆"                ' U+25C6
+    Public Const CIRCLE As String = "●"                 ' U+25CF
+    Public Const CIRCLE_EMPTY As String = "○"           ' U+25CB
+    Public Const SQUARE As String = "■"                 ' U+25A0
+    Public Const SQUARE_EMPTY As String = "□"           ' U+25A1
+    Public Const STAR As String = "★"                   ' U+2605
+    Public Const STAR_EMPTY As String = "☆"             ' U+2606
+
+    ' === Styled Text Helpers ===
+
+    ' Wrap text with style and reset
+    Public Function Styled(ByVal text As String, ByVal style As String) As String
+        Return style & text & Reset()
+    End Function
+
+    ' Create colored text
+    Public Function Colored(ByVal text As String, ByVal fgColor As String, _
+                            Optional ByVal bgColor As String = "") As String
+        If Len(bgColor) > 0 Then
+            Return fgColor & bgColor & text & Reset()
+        Else
+            Return fgColor & text & Reset()
+        End If
+    End Function
+
+    ' Create RGB colored text
+    Public Function ColoredRGB(ByVal text As String, _
+                               ByVal fgR As Long, ByVal fgG As Long, ByVal fgB As Long, _
+                               Optional ByVal bgR As Long = -1, _
+                               Optional ByVal bgG As Long = -1, _
+                               Optional ByVal bgB As Long = -1) As String
+        Dim result As String = FgRGB(fgR, fgG, fgB)
+        If bgR >= 0 AndAlso bgG >= 0 AndAlso bgB >= 0 Then
+            result = result & BgRGB(bgR, bgG, bgB)
+        End If
+        Return result & text & Reset()
+    End Function
+
+    ' === Utility Functions ===
+
+    ' Repeat a string N times
+    Public Function RepeatStr(ByVal s As String, ByVal count As Long) As String
+        If count <= 0 Then Return ""
+        Return String$(count, s)
+    End Function
+
+    ' Center text within a given width
+    Public Function CenterText(ByVal text As String, ByVal width As Long, _
+                               Optional ByVal fillChar As String = " ") As String
+        Dim textLen As Long = Len(text)
+        If textLen >= width Then Return Left$(text, width)
+
+        Dim padding As Long = (width - textLen) \ 2
+        Dim leftPad As String = String$(padding, fillChar)
+        Dim rightPad As String = String$(width - textLen - padding, fillChar)
+        Return leftPad & text & rightPad
+    End Function
+
+    ' Left-align text within a given width
+    Public Function LeftAlign(ByVal text As String, ByVal width As Long, _
+                              Optional ByVal fillChar As String = " ") As String
+        Dim textLen As Long = Len(text)
+        If textLen >= width Then Return Left$(text, width)
+        Return text & String$(width - textLen, fillChar)
+    End Function
+
+    ' Right-align text within a given width
+    Public Function RightAlign(ByVal text As String, ByVal width As Long, _
+                               Optional ByVal fillChar As String = " ") As String
+        Dim textLen As Long = Len(text)
+        If textLen >= width Then Return Left$(text, width)
+        Return String$(width - textLen, fillChar) & text
+    End Function
+
+    ' Truncate text with ellipsis
+    Public Function Truncate(ByVal text As String, ByVal maxLen As Long, _
+                             Optional ByVal ellipsis As String = "...") As String
+        If Len(text) <= maxLen Then Return text
+        If maxLen <= Len(ellipsis) Then Return Left$(ellipsis, maxLen)
+        Return Left$(text, maxLen - Len(ellipsis)) & ellipsis
+    End Function
+
+    ' Word wrap text
+    Public Function WordWrap(ByVal text As String, ByVal width As Long) As String
+        Dim result As String = ""
+        Dim words() As String = Split(text, " ")
+        Dim currentLine As String = ""
+        Dim i As Long
+
+        For i = LBound(words) To UBound(words)
+            If Len(currentLine) = 0 Then
+                currentLine = words(i)
+            ElseIf Len(currentLine) + 1 + Len(words(i)) <= width Then
+                currentLine = currentLine & " " & words(i)
+            Else
+                If Len(result) > 0 Then result = result & vbLf
+                result = result & currentLine
+                currentLine = words(i)
+            End If
+        Next i
+
+        If Len(currentLine) > 0 Then
+            If Len(result) > 0 Then result = result & vbLf
+            result = result & currentLine
+        End If
+
+        Return result
+    End Function
+
+    ' Strip ANSI escape sequences from text
+    Public Function StripAnsi(ByVal text As String) As String
+        Dim result As String = ""
+        Dim i As Long = 1
+        Dim inEscape As Boolean = False
+
+        Do While i <= Len(text)
+            Dim ch As String = Mid$(text, i, 1)
+
+            If ch = Chr$(27) Then
+                inEscape = True
+            ElseIf inEscape Then
+                If ch = "m" OrElse ch = "H" OrElse ch = "J" OrElse ch = "K" OrElse _
+                   ch = "A" OrElse ch = "B" OrElse ch = "C" OrElse ch = "D" Then
+                    inEscape = False
+                End If
+            Else
+                result = result & ch
+            End If
+
+            i += 1
+        Loop
+
+        Return result
+    End Function
+
+End Module

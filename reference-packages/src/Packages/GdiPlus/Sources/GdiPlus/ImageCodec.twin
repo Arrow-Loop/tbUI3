@@ -1,0 +1,40 @@
+' A part of the GDI+ Package for TwinBasic  https://github.com/kubao/GdiPlus
+' Licensed under the MIT license. (c) 2026 Sunderland Ober Consulting.
+' "Windows" is a trademark of the Microsoft Corporation.
+' Modeled after code and descriptions (c) Microsoft, taken from SDK headers and official documentation.
+' Certain flat API function and type declarations taken from WinDevLib by fafalone, with thanks.
+
+Module GdipImageCodec
+    '-------------------------------------------------------------------------
+    ' Codec Management APIs
+    '--------------------------------------------------------------------------
+
+    Function GetImageDecoders() As GpImageCodecInfo()
+        Dim status As GpStatus
+        Dim numDecoders As UINT, arraySize As UINT
+        status = GetImageDecodersSize(numDecoders, arraySize)
+        If status <> Ok Then Exit Function
+        ReDimOversized(GetImageDecoders, 1, numDecoders, arraySize)
+        status = GetImageDecoders(numDecoders, arraySize, GetImageDecoders)
+        If status <> Ok Then Erase GetImageDecoders
+    End Function
+    
+    Function GetImageEncoders() As GpImageCodecInfo()
+        Dim status As GpStatus
+        Dim numEncoders As UINT, arraySize As UINT
+        status = GetImageEncodersSize(numEncoders, arraySize)
+        If status <> Ok Then Exit Function
+        ReDimOversized(GetImageEncoders, 1, numEncoders, arraySize)
+        status = GetImageEncoders(numEncoders, arraySize, GetImageEncoders)
+        If status <> Ok Then Erase GetImageEncoders
+    End Function
+    
+    [UseGetLastError(False)]
+    Public Declare PtrSafe Function GetImageDecodersSize Lib "gdiplus" Alias "GdipGetImageDecodersSize" (numDecoders As UINT, size As UINT) As GpStatus
+    [UseGetLastError(False)]
+    Public Declare PtrSafe Function GetImageDecoders Lib "gdiplus" Alias "GdipGetImageDecoders" (ByVal numDecoders As UINT, ByVal size As UINT, decoders As Any) As GpStatus
+    [UseGetLastError(False)]
+    Public Declare PtrSafe Function GetImageEncodersSize Lib "gdiplus" Alias "GdipGetImageEncodersSize" (numEncoders As UINT, size As UINT) As GpStatus
+    [UseGetLastError(False)]
+    Public Declare PtrSafe Function GetImageEncoders Lib "gdiplus" Alias "GdipGetImageEncoders" (ByVal numEncoders As UINT, ByVal size As UINT, encoders As Any) As GpStatus
+End Module

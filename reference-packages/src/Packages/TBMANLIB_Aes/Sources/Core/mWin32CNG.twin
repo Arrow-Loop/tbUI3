@@ -1,0 +1,268 @@
+' =====================================================
+' mWin32CNG.twin - Windows CNG (Cryptography Next Generation) API Declarations
+' TwinBASIC Project - Crypto Module - AES
+' =====================================================
+' Function: Declare Windows CNG API for AES modes not supported by CryptoAPI
+'           Supports: CFB, OFB, CTR, GCM (Vista and later)
+' 功能：声明 Windows CNG API，用于支持 CryptoAPI 不支持的 AES 模式
+'       支持：CFB、OFB、CTR、GCM（需要 Vista 或更高版本）
+' Author: woeoo (邓伟)
+' Email: 215879458@qq.com
+' Site: https://vb6.pro
+' Date: 2026-02-04
+' Version: 1.0.0
+' =====================================================
+
+Option Explicit
+
+Public Module mWin32CNG
+
+    ' =====================================================
+    ' CNG Algorithm Identifiers (Wide String)
+    ' CNG 算法标识符（宽字符串）
+    ' =====================================================
+    Public Const BCRYPT_AES_ALGORITHM As String = "AES"
+    Public Const BCRYPT_CHAIN_MODE_CBC As String = "ChainingModeCBC"
+    Public Const BCRYPT_CHAIN_MODE_ECB As String = "ChainingModeECB"
+    Public Const BCRYPT_CHAIN_MODE_CFB As String = "ChainingModeCFB"
+    Public Const BCRYPT_CHAIN_MODE_CCM As String = "ChainingModeCCM"
+    Public Const BCRYPT_CHAIN_MODE_GCM As String = "ChainingModeGCM"
+
+    ' =====================================================
+    ' CNG Property Identifiers (Wide String)
+    ' CNG 属性标识符（宽字符串）
+    ' =====================================================
+    Public Const BCRYPT_OBJECT_LENGTH As String = "ObjectLength"
+    Public Const BCRYPT_CHAINING_MODE As String = "ChainingMode"
+    Public Const BCRYPT_BLOCK_LENGTH As String = "BlockLength"
+    Public Const BCRYPT_KEY_LENGTH As String = "KeyLength"
+    Public Const BCRYPT_KEY_DATA_BLOB As String = "KeyDataBlob"
+    Public Const BCRYPT_EFFECTIVE_KEY_LENGTH As String = "EffectiveKeyLength"
+    Public Const BCRYPT_AUTH_TAG_LENGTH As String = "AuthTagLength"
+
+    ' =====================================================
+    ' CNG Flags
+    ' =====================================================
+    Public Const BCRYPT_PROV_DISPATCH As Long = &H1
+    Public Const BCRYPT_ALG_HANDLE_HMAC_FLAG As Long = &H8
+
+    ' =====================================================
+    ' CNG API Function Declarations
+    ' =====================================================
+
+    ' Open algorithm provider
+    ' 打开算法提供者
+    Public Declare PtrSafe Function BCryptOpenAlgorithmProvider Lib "bcrypt.dll" ( _
+        ByRef phAlgorithm As LongPtr, _
+        ByVal pszAlgId As LongPtr, _
+        ByVal pszImplementation As LongPtr, _
+        ByVal dwFlags As Long _
+    ) As Long
+
+    ' Close algorithm provider
+    ' 关闭算法提供者
+    Public Declare PtrSafe Function BCryptCloseAlgorithmProvider Lib "bcrypt.dll" ( _
+        ByVal hAlgorithm As LongPtr, _
+        ByVal dwFlags As Long _
+    ) As Long
+
+    ' Get property value
+    ' 获取属性值
+    Public Declare PtrSafe Function BCryptGetProperty Lib "bcrypt.dll" ( _
+        ByVal hObject As LongPtr, _
+        ByVal pszProperty As LongPtr, _
+        ByVal pbOutput As LongPtr, _
+        ByVal cbOutput As Long, _
+        ByRef pcbResult As Long, _
+        ByVal dwFlags As Long _
+    ) As Long
+
+    ' Set property value
+    ' 设置属性值
+    Public Declare PtrSafe Function BCryptSetProperty Lib "bcrypt.dll" ( _
+        ByVal hObject As LongPtr, _
+        ByVal pszProperty As LongPtr, _
+        ByVal pbInput As LongPtr, _
+        ByVal cbInput As Long, _
+        ByVal dwFlags As Long _
+    ) As Long
+
+    ' Generate symmetric key
+    ' 生成对称密钥
+    Public Declare PtrSafe Function BCryptGenerateSymmetricKey Lib "bcrypt.dll" ( _
+        ByVal hAlgorithm As LongPtr, _
+        ByRef phKey As LongPtr, _
+        ByVal pbKeyObject As LongPtr, _
+        ByVal cbKeyObject As Long, _
+        ByVal pbSecret As LongPtr, _
+        ByVal cbSecret As Long, _
+        ByVal dwFlags As Long _
+    ) As Long
+
+    ' Import key
+    ' 导入密钥
+    Public Declare PtrSafe Function BCryptImportKey Lib "bcrypt.dll" ( _
+        ByVal hAlgorithm As LongPtr, _
+        ByVal hImportKey As LongPtr, _
+        ByVal pszBlobType As LongPtr, _
+        ByRef phKey As LongPtr, _
+        ByVal pbKeyObject As LongPtr, _
+        ByVal cbKeyObject As Long, _
+        ByVal pbInput As LongPtr, _
+        ByVal cbInput As Long, _
+        ByVal dwFlags As Long _
+    ) As Long
+
+    ' Destroy key
+    ' 销毁密钥
+    Public Declare PtrSafe Function BCryptDestroyKey Lib "bcrypt.dll" ( _
+        ByVal hKey As LongPtr _
+    ) As Long
+
+    ' Encrypt data
+    ' 加密数据
+    Public Declare PtrSafe Function BCryptEncrypt Lib "bcrypt.dll" ( _
+        ByVal hKey As LongPtr, _
+        ByVal pbInput As LongPtr, _
+        ByVal cbInput As Long, _
+        ByVal pPaddingInfo As LongPtr, _
+        ByVal pbIV As LongPtr, _
+        ByVal cbIV As Long, _
+        ByVal pbOutput As LongPtr, _
+        ByVal cbOutput As Long, _
+        ByRef pcbResult As Long, _
+        ByVal dwFlags As Long _
+    ) As Long
+
+    ' Decrypt data
+    ' 解密数据
+    Public Declare PtrSafe Function BCryptDecrypt Lib "bcrypt.dll" ( _
+        ByVal hKey As LongPtr, _
+        ByVal pbInput As LongPtr, _
+        ByVal cbInput As Long, _
+        ByVal pPaddingInfo As LongPtr, _
+        ByVal pbIV As LongPtr, _
+        ByVal cbIV As Long, _
+        ByVal pbOutput As LongPtr, _
+        ByVal cbOutput As Long, _
+        ByRef pcbResult As Long, _
+        ByVal dwFlags As Long _
+    ) As Long
+
+    ' =====================================================
+    ' GCM/CCM Mode Info Structure (BCRYPT_AUTHENTICATED_CIPHER_MODE_INFO)
+    ' GCM/CCM 模式信息结构
+    ' =====================================================
+    Public Type BCRYPT_AUTH_MODE_INFO
+        cbSize As Long
+        dwInfoVersion As Long
+        pbNonce As LongPtr
+        cbNonce As Long
+        pbAuthData As LongPtr
+        cbAuthData As Long
+        pbTag As LongPtr
+        cbTag As Long
+        pbMacContext As LongPtr
+        cbMacContext As Long
+        cbAAD As Long
+        cbData As LongLong ' ULONGLONG - 8 bytes on both x86 and x64
+        dwFlags As Long
+    End Type
+
+    Public Const BCRYPT_AUTH_MODE_INFO_VERSION As Long = 1
+    Public Const BCRYPT_AUTH_MODE_CHAIN_MODE_GCM As String = "ChainingModeGCM"
+    Public Const BCRYPT_AUTH_MODE_CHAIN_MODE_CCM As String = "ChainingModeCCM"
+
+    ' =====================================================
+    ' NT Status Codes (Common)
+    ' NTSTATUS 错误码（常用）
+    ' =====================================================
+    Public Const STATUS_SUCCESS As Long = 0
+    Public Const STATUS_INVALID_HANDLE As Long = &HC0000008
+    Public Const STATUS_INVALID_PARAMETER As Long = &HC000000D
+    Public Const STATUS_BUFFER_TOO_SMALL As Long = &HC0000023
+    Public Const STATUS_NOT_SUPPORTED As Long = &HC00000BB
+
+    ' =====================================================
+    ' Helper Functions
+    ' =====================================================
+
+    ' Check if CNG is available (Vista+)
+    ' 检查 CNG 是否可用（Vista 及以上）
+    Public Function IsCNGAvailable() As Boolean
+        On Error Resume Next
+        Dim hAlg As LongPtr
+        Dim status As Long
+        
+        status = BCryptOpenAlgorithmProvider(hAlg, StrPtr(BCRYPT_AES_ALGORITHM), 0, 0)
+        If status = STATUS_SUCCESS Then
+            BCryptCloseAlgorithmProvider hAlg, 0
+            IsCNGAvailable = True
+        Else
+            IsCNGAvailable = False
+        End If
+        On Error GoTo 0
+    End Function
+
+    ' Get error message from NTSTATUS
+    ' 从 NTSTATUS 获取错误信息
+    Public Function CNGErrorMessage(ByVal status As Long) As String
+        Select Case status
+            Case STATUS_INVALID_HANDLE
+                CNGErrorMessage = "无效句柄 (Invalid Handle)"
+            Case STATUS_INVALID_PARAMETER
+                CNGErrorMessage = "无效参数 (Invalid Parameter)"
+            Case STATUS_BUFFER_TOO_SMALL
+                CNGErrorMessage = "缓冲区太小 (Buffer Too Small)"
+            Case STATUS_NOT_SUPPORTED
+                CNGErrorMessage = "不支持的操作 (Not Supported)"
+            Case Else
+                CNGErrorMessage = "CNG 错误: 0x" & Hex$(status)
+        End Select
+    End Function
+
+    ' Initialize BCRYPT_AUTH_MODE_INFO structure for GCM
+    ' 初始化 GCM 模式信息结构
+    Public Sub InitGcmModeInfo(ByRef info As BCRYPT_AUTH_MODE_INFO, _
+                               ByRef nonce() As Byte, _
+                               ByRef authData() As Byte, _
+                               ByRef tag() As Byte, _
+                               Optional ByVal tagLen As Long = 16)
+        info.cbSize = LenB(info)
+        info.dwInfoVersion = BCRYPT_AUTH_MODE_INFO_VERSION
+        
+        ' Set nonce (IV)
+        If UBound(nonce) >= LBound(nonce) Then
+            info.pbNonce = VarPtr(nonce(LBound(nonce)))
+            info.cbNonce = UBound(nonce) - LBound(nonce) + 1
+        Else
+            info.pbNonce = 0
+            info.cbNonce = 0
+        End If
+        
+        ' Set additional authenticated data (AAD)
+        If UBound(authData) >= LBound(authData) Then
+            info.pbAuthData = VarPtr(authData(LBound(authData)))
+            info.cbAuthData = UBound(authData) - LBound(authData) + 1
+        Else
+            info.pbAuthData = 0
+            info.cbAuthData = 0
+        End If
+        
+        ' Set authentication tag
+        If UBound(tag) >= LBound(tag) Then
+            info.pbTag = VarPtr(tag(LBound(tag)))
+            info.cbTag = UBound(tag) - LBound(tag) + 1
+        Else
+            info.pbTag = 0
+            info.cbTag = tagLen
+        End If
+        
+        info.pbMacContext = 0
+        info.cbMacContext = 0
+        info.cbAAD = 0
+        info.cbData = 0
+        info.dwFlags = 0
+    End Sub
+
+End Module

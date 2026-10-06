@@ -4,6 +4,24 @@ All notable changes to tbUI3. Dates are when the change was made, not released. 
 
 ## Unreleased
 
+### 2026-10-06, S3 icons validated; 1.0.0.4 Caption fix
+
+- Shane built 1.0.0.3 in twinBASIC BETA 997 with 0 errors and 0 warnings, then imported it into his local tbUI3Test.
+- Validated on his PC (Windows 11, dark mode), by screenshot:
+  - semantic icons render at design time and at runtime, on the Standard and Accent styles (tested with `ui3IconSort`, saved as 57716 = `&HE174`, WinUI's Sort value, which drew the Sort glyph);
+  - icon left and icon top, with an enlarged button;
+  - icon-only, which centres in the button;
+  - the MDL2 check: `IconGlyph = ChrW(&HE8FB&)` with `IconFontName = "Segoe MDL2 Assets"` draws a modern check mark, which confirms that the single-table decision was right;
+  - win64: the app runs under the Win64 compiler and the icon draws.
+- Found and fixed (1.0.0.4, not yet built):
+  - Caption could not be cleared in the designer. It reverted to "Button" because "Button" was also the saved default, so an empty caption was not kept.
+  - The saved default is now an empty string, and a newly dropped button still starts as "Button".
+  - Side effect: a form saved before this change with the untouched caption "Button" will now load with an empty caption. No known form is affected.
+- Found, not fixed: the designer keeps the old accent colour after a Windows accent change until the IDE restarts. Runtime updates live.
+- Package version 1.0.0.4. Patched `UI3Button.twin`, `Settings` and the package CHANGELOG into `tbUI3/tbUI3.twinproj` with `tools/twinproj-edit.mjs`. Every entry matches `tbUI3/src` byte for byte.
+- Recorded Shane's designer requests in ROADMAP.md: a themed form canvas at design time, a designer accent refresh, and `...` visual catalog pickers. Added research notes for the picker in `docs/research/2026-10-06-property-page-picker.md`.
+
+
 ### 2026-10-06, S3 icons use WinUI's Symbol values and one glyph table
 
 - Shane approved both points from the S3 source review.

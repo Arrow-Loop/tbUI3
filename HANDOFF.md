@@ -32,25 +32,18 @@ The decisions are in `docs/2026-10-06-first-pass-report.md` and `docs/2026-10-06
 | S2: repaint when the form's BackColor changes | Probably fixed by UI3Window's redraw of all child controls, but never checked on its own (see ROADMAP) |
 | UI3Window (dark/light title bar, #202020/#F3F3F3 background) | dark mode passed in win32 and win64; light mode deferred |
 | Form theme spec: drop-on control, live switching, theme cache | Passed. UI3FormTheme is in the toolbox, drops onto frmMain, replaces manual Attach/Detach, and passes the same runtime behavior tests |
+| S3 icons (1.0.0.3): build, designer and runtime rendering, icon left and top, enlarged button, icon-only, MDL2 font check, win64 | Passed on Shane's PC, 2026-10-06 |
+| 1.0.0.4: Caption can be cleared in the designer | Written, not built |
 
-## First job for the next session: compile the 1.0.0.3 S3 package
+## First job for the next session: check the 1.0.0.4 Caption fix, then sync tbUI3Test
 
-The canonical tbUI3 package now contains the S3 icon candidate. The repository tbUI3Test binary was deliberately left alone because Shane's local test form contains the validated designer-dropped UI3FormTheme.
+S3 icons (1.0.0.3) passed on Shane's PC on 2026-10-06 in win32 and win64 (see CHANGELOG). The one bug it found was that Caption could not be cleared in the designer. 1.0.0.4 fixes that, but it has not been built yet.
 
-The source review that ROADMAP.md put before this step is done; it is in `docs/reviews/2026-10-06-s3-source-review.md`. It found the code ready to build. Both of its points are now applied: `UI3Icon` values are WinUI's own Symbol values (so saved forms never shift), and there is a single glyph table, as in WinUI.
-
-1. Pull the latest `tbui3-dev`.
-2. Open `tbUI3/tbUI3.twinproj` in BETA 997 and check Diagnostics/build.
-3. If clean, import the freshly built 1.0.0.3 package into Shane's current local tbUI3Test.
-4. On UI3Button1, set `Icon` to a semantic icon such as `ui3IconAccept`; keep the existing Caption for the first test.
-5. Validate design-time rendering first, then win32 runtime/Click.
-6. Test icon-only by temporarily clearing Caption, then restore it.
-7. Test at least Left and Top positions plus an enlarged button.
-8. After win32 passes, repeat runtime in win64.
-   Also run the one MDL2 check in the review (an `IconGlyph` of `ChrW(&HE8FB)` with `IconFontName` set to `Segoe MDL2 Assets`).
-9. Do not overwrite Shane's local frmMain/tbUI3Test binary from the older repository copy before its UI3FormTheme designer state is synced.
-10. Commit Shane's saved local tbUI3Test (the `.twinproj` and its `src/` export) to `tbui3-dev`, so the repository matches his PC again.
-
+1. Pull the latest `tbui3-dev`, open `tbUI3/tbUI3.twinproj`, check Diagnostics and build.
+2. Update tbUI3Test's tbUI3 package to 1.0.0.4, the same way Shane updated it to 1.0.0.3.
+3. Clear UI3Button1's Caption in the Properties pane. It should stay empty and show an icon-only button. Also drop a new UI3Button on the form, which should still start as "Button".
+4. Remove any test lines from frmMain's `Form_Activate` (the S3 tests added `IconFontName`/`IconGlyph` and `Caption = ""` lines there).
+5. Commit Shane's saved local tbUI3Test (the `.twinproj` and its `src/` export) to `tbui3-dev`, so the repository matches his PC again. Do not overwrite his local copy with the older repository copy.
 
 ## Reference package laboratory
 
@@ -81,7 +74,7 @@ The source review that ROADMAP.md put before this step is done; it is in `docs/r
 
 ## Prepared next milestone
 
-- `docs/2026-10-06-s3-icon-spec.md` is the S3 implementation specification, ready once the 1.0.0.2 form-theme checkpoint passes.
+- `docs/2026-10-06-s3-icon-spec.md` is the S3 specification. S3 is now implemented and validated.
 - Icon code points: a WinUI Symbol value (for example Accept = E10B) is the old Segoe UI Symbol code point. WinUI converts it to a modern code point (Accept = E8FB) before drawing. Segoe Fluent Icons and Segoe MDL2 Assets both use the modern code points, so tbUI3 keeps one table copied from WinUI's `icon.cpp`. This supersedes the S3 spec's original "dual mapping" rule.
 - Ordinary text remains Segoe UI Variable Text with Segoe UI fallback; system icons use Segoe Fluent Icons with Segoe MDL2 Assets fallback.
 - Current Gallery also exposes SubtleButtonStyle, now recorded as part of the UI3Button family target.

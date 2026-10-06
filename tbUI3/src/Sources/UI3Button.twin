@@ -12,7 +12,10 @@ Public Class UI3Button
 
     Public Event Click()
 
-    Private Const DEFAULT_CAPTION As String = "Button"
+    ' Caption given to a newly dropped button. The saved default is an empty string, so a
+    ' caption cleared in the designer stays empty (an icon-only button) instead of reloading as "Button".
+    Private Const NEW_CONTROL_CAPTION As String = "Button"
+    Private Const DEFAULT_CAPTION As String = ""
     Private Const DEFAULT_STYLE As Long = 0
     Private Const DEFAULT_ICON As Long = 0
     Private Const DEFAULT_ICON_GLYPH As String = ""
@@ -106,7 +109,7 @@ Public Class UI3Button
     End Property
 
     Private Sub UserControl_InitProperties()
-        m_Caption = DEFAULT_CAPTION
+        m_Caption = NEW_CONTROL_CAPTION
         m_Style = DEFAULT_STYLE
         m_Icon = DEFAULT_ICON
         m_IconGlyph = DEFAULT_ICON_GLYPH

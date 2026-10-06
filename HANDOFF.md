@@ -49,7 +49,7 @@ Commit 94b621b repaired tbUI3Test's imported tbUI3 1.0.0.1 reference, refreshed 
 - It intentionally enables many packages so their actual source/API patterns can be inspected in one place. That does **not** authorize adding those packages as tbUI3 dependencies.
 - The loose `reference-packages/src/` mirror should be used for searches and diffs; the `.twinproj` remains the canonical snapshot.
 - The original diagnostic avalanche was caused by WinDevLibImpl's embedded `Packages/WinDevLib` folder being empty even though its Settings declared that local dependency. The repaired snapshot embeds the same WinDevLib 9.5.742 payload there. Do not “fix” those interfaces by duplicating hundreds of missing declarations.
-- Priority donors/references: WinRT (UISettings/theme/accent and later Composition), WinDevLib/WinDevLibImpl (Windows/COM declarations), TBMANLIB (subclassing and utility patterns), VBCCR18 (mature control behavior), TwinTimerLib, AutoCompleteLib, and OLEGuids. GdiPlus is comparison/reference only; tbUI3 remains Direct2D/DirectWrite-first.
+- Priority donors/references: WinRT (runtime activation, HSTRING, Composition, and its modern subclass helper), WinDevLib/WinDevLibImpl (Windows/COM declarations), VBCCR18 (modern subclassing and mature control behavior), TwinTimerLib, AutoCompleteLib, and OLEGuids. The audited WinRT 1.7.0.159 source does not contain UISettings/GetColorValue, and TBMANLIB 1.0.29.0's subclass helper is legacy 32-bit code, so neither should be assumed to solve those jobs. GdiPlus is comparison/reference only; tbUI3 remains Direct2D/DirectWrite-first.
 - For any adapted third-party code, verify the licence and record provenance. Minimize the copied surface and keep helpers private where practical.
 
 ## Gotchas

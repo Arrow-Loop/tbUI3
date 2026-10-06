@@ -24,6 +24,7 @@
 - `reference-packages/ReferencePackages.twinproj` is a package-archeology laboratory. Its enabled packages are there to inspect proven twinBASIC implementations.
 - When a reference implementation is useful, first check its licence and provenance. Adapt only the smallest needed portion, keep implementation plumbing private where practical, and record attribution/source details.
 - The loose `reference-packages/src/` mirror is for search and review. The validated `.twinproj` remains the canonical snapshot of the laboratory project.
+- For native window subclassing, prefer the pointer-width-safe comctl32 `SetWindowSubclass` / `RemoveWindowSubclass` / `DefSubclassProc` pattern evidenced by WinRT/VBCCR18. Do not copy TBMANLIB 1.0.29.0's legacy `GetWindowLongW` / `SetWindowLongW` helper into win64-capable tbUI3 code.
 
 ## Branches
 

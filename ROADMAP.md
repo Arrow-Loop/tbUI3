@@ -16,14 +16,13 @@ Committed work is listed first. Exploratory ideas are marked as such.
 - S8: keyboard, focus visuals, and Default and Cancel.
 - S9: coexistence with WinDevLib and a GDI+ package, with no name clashes.
 
-## Committed: reference-package review
+## Committed: reference-derived follow-ups
 
 - Keep `reference-packages/ReferencePackages.twinproj` as the canonical package-laboratory snapshot and keep its loose `reference-packages/src/` mirror synchronized for code search and diffing.
-- Review WinRT's UISettings implementation for a supported Windows theme/accent path. If adopted, copy/adapt only the minimal required interfaces/helpers with attribution; do not add a WinRT package dependency.
-- Compare the planned live-theme subclassing against TBMANLIB's subclass implementation and proven PacketPilot/SPConnect patterns before finalizing UI3FormTheme.
-- Mine VBCCR18 for mature toolbox-control behavior: focus, keyboard handling, Default/Cancel semantics, persistence, designer lifecycle, and 32/64-bit patterns.
+- For UI3FormTheme live notifications, use a minimal private adaptation of the pointer-width-safe `SetWindowSubclass` / `RemoveWindowSubclass` / `DefSubclassProc` pattern evidenced independently by WinRT and VBCCR18. Do not use TBMANLIB 1.0.29.0's legacy `GetWindowLongW` / `SetWindowLongW` subclass helper as the win64 model.
+- Before S7/S8, mine VBCCR18 selectively for focus, keyboard handling, Default/Cancel semantics, persistence, designer lifecycle, and ambient-property behavior without adopting its visual architecture.
 - Review TwinTimerLib before designing animation/timing infrastructure, AutoCompleteLib before native Edit autocomplete, and OLEGuids/WinDevLibImpl before implementing COM/OLE/accessibility interfaces.
-- GdiPlus is retained in the laboratory for comparison/reference only. Direct2D/DirectWrite remains tbUI3's primary rendering architecture; do not introduce GDI/GDI+ unless a specific requirement demonstrates that the modern path cannot satisfy it.
+- GdiPlus remains comparison/reference only. Direct2D/DirectWrite remains tbUI3's primary rendering architecture; do not introduce GDI/GDI+ unless a specific requirement demonstrates that the modern path cannot satisfy it.
 - Maintain third-party provenance/licence notes for any implementation fragments adapted into tbUI3.
 
 ## Committed: technical follow-ups
@@ -42,6 +41,6 @@ Committed work is listed first. Exploratory ideas are marked as such.
 
 ## Exploratory
 
-- Read the accent colour through WinRT `UISettings.GetColorValue`, the supported API, in place of the AccentPalette registry layout, which is observed but undocumented. Shane's twinBASIC package list includes "WinRT Interfaces and XAML Islands DevKit" (library symbol WinRT), probably VanGoghGaming's package (MIT). Review it before relying on it, because tbUI3 must stay dependency-free: copy or adapt only the small part needed.
+- Supported WinRT accent/theme path: the audited WinRT 1.7.0.159 package does **not** implement `UISettings.GetColorValue`; it only defines the `UIColorType` enum. Later, derive/source and validate the minimal `UISettings` declarations needed for `Accent`, `AccentLight1-3`, `AccentDark1-3`, foreground/background, and change notifications. Keep this dependency-free and do not replace the currently working registry/DWM fallback until the supported path is proven.
 - Composition (WinRT) for flyout shadows and acrylic, later.
 - CustomControls as a secondary route, if WaynesForm's limits are ever lifted.

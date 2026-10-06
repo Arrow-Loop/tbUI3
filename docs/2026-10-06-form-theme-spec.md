@@ -41,6 +41,17 @@ Subclass the form with `SetWindowSubclass` (comctl32, version 6), and remove the
 
 Always pass every message on to `DefSubclassProc`.
 
+### Implementation reference choice
+
+The 2026-10-06 reference-package audit resolved the open subclass question:
+
+- model the private tbUI3 helper on the pointer-width-safe comctl32 pattern independently present in WinRT 1.7.0.159 `mdlSubclass.twin` and VBCCR18 1.8.0.125 `ComCtlsBase.bas`;
+- use `LongPtr` for HWNDs, callback/subclass IDs, wParam/lParam, and reference data;
+- remove the subclass on `WM_NCDESTROY`, support explicit Detach, and forward unhandled messages through `DefSubclassProc`;
+- do **not** use TBMANLIB 1.0.29.0 `cSubClass.twin` as the win64 reference; it uses legacy `GetWindowLongW` / `SetWindowLongW` with `Long` pointer values.
+
+Keep only the minimal private declarations/logic needed by tbUI3 and record provenance; do not add WinRT or VBCCR as package dependencies.
+
 Subclassing in the IDE can crash when a debug session stops mid-message. Take a known-good twinBASIC subclass pattern from the Knowledge repo or WinDevLib, and test stopping the debugger while the form is open.
 
 ## Theme cache

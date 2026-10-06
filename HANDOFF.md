@@ -37,12 +37,46 @@ The decisions are in `docs/2026-10-06-first-pass-report.md` and `docs/2026-10-06
 | Property page from `(Custom)` → `...` | Works (spike, 2026-10-06); the per-property `[PropertyPage]` link does not work in BETA 997 |
 | 1.0.0.5: UI3IconPage searchable icon picker | Built and opens on Shane's PC. OK and Apply do not set `Icon` yet; `ApplyChanges` has a temporary diagnostic message box to remove once fixed |
 
-## First job for the next session
+## First job for the next session (written 2026-10-06 late, for ChatGPT)
 
-S3 icons (1.0.0.3) and the 1.0.0.4 Caption fix both passed on Shane's PC on 2026-10-06, in win32 and win64 (see CHANGELOG).
+The last cloud commit (7e5513b) is an unbuilt diagnostic build of the 1.0.0.5 icon picker. Shane builds and tests in the IDE; the twinBASIC CLI cannot build.
 
-1. Done 2026-10-06: Shane's tbUI3Test is synced (commit 7c20660) and `tbUI3Test/src` was regenerated from it. frmMain's `Form_Activate` still holds the two MDL2 test lines (`IconFontName`/`IconGlyph`); remove them when convenient.
-2. Next suggested work: theme the form canvas at design time (ROADMAP, designer experience).
+### Step 1: run the Apply test (Shane, on the PC)
+
+Close tbUI3 in the IDE, `git pull --no-edit`, reopen tbUI3, build, update the package in tbUI3Test, select UI3Button1, click `(Custom)` → `...`, click a different icon, click Apply. Record: whether Apply became clickable, and what the "UI3IconPage diagnostic" message box says (or that none appeared).
+
+### Step 2a: if the box shows the new value and the button changes (expected)
+
+1. In `tbUI3/src/Sources/UI3IconPage.twin`, put `PropertyPage_ApplyChanges` back to a plain loop with no message box:
+   ```
+   Private Sub PropertyPage_ApplyChanges()
+       Dim ctl As Object
+       For Each ctl In Me.SelectedControls
+           CallByName ctl, "Icon", vbLet, m_Selected
+       Next
+   End Sub
+   ```
+   No `On Error Resume Next`: a silent failure here means OK does nothing with no explanation.
+2. Patch it into the project: `node tools/twinproj-src.mjs patch tbUI3/tbUI3.twinproj tbUI3/src Sources/UI3IconPage.twin`, then `node tools/twinproj-src.mjs compare tbUI3/tbUI3.twinproj tbUI3/src` must print only "same". Push to `tbui3-dev`.
+3. Shane rebuilds and runs the picker checks in win32, then win64: pick an icon and click OK (button and the Icon row both change); reopen (lands on the new icon); search `save`, `57716`, `E8CB`, `&HE174` (each narrows the grid); pick then Cancel (no change); mouse wheel over the grid scrolls one row per notch. If the wheel does nothing while the search box has focus, forward `txtSearch_MouseWheel` to the same scrolling code.
+4. Record results as Shane reports them: CHANGELOG.md, `tbUI3/src/CHANGELOG.md` (package line for 1.0.0.5), ROADMAP.md (designer experience section), the table above, and `docs/research/2026-10-06-property-page-picker.md`.
+
+### Step 2b: if it did not work
+
+- **No message box:** Apply never reached the page. Check that clicking a cell enables Apply (`Me.Changed = True` in `picGrid_MouseDown`). The VB package's `PropertyPage.Apply` returns early when `HasChanged` is False.
+- **Box shows an error on setting Icon:** the object the IDE passes may not accept a late-bound Let. Try `ctl.Icon = m_Selected`, and report the error number.
+- **Box shows the new value but the button doesn't change:** the value is set but the designer isn't repainting or saving it. Check whether it shows after clicking off the button and back, or after saving and reopening the form.
+
+### After the picker passes
+
+1. Remove the two MDL2 test lines (`IconFontName`/`IconGlyph`) from frmMain's `Form_Activate` in tbUI3Test.
+2. Next milestone: themed form canvas at design time (ROADMAP, designer experience), then the designer accent refresh. Picker extras (arrow keys, hover) can wait.
+3. The per-property `[PropertyPage("UI3IconPage")]` link on `Icon` stays; Shane filed the twinBASIC bug. Don't remove it.
+
+### Syncing the project and src
+
+- `tools/twinproj-src.mjs` replaces the twinBASIC CLI for this: `extract` regenerates `src/` from a project Shane pushed, `patch` copies edited src files into the project, `compare` checks they match. The CLI export also works but needs absolute paths.
+- Never push a `.twinproj` while Shane has uncommitted IDE changes to the same file: it is binary and cannot be merged. Ask him to commit and push first (`git commit -am "..." && git push`), then pull and work.
 
 ## Reference package laboratory
 

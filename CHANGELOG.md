@@ -4,6 +4,47 @@ All notable changes to tbUI3. Dates are when the change was made, not released. 
 
 ## Unreleased
 
+### 2026-10-06, UI3FormTheme milestone complete
+
+- Shane removed the manual `UI3Window.Attach/Detach` calls from tbUI3Test, dropped `UI3FormTheme` from the toolbox onto frmMain, and repeated the same runtime validation set successfully.
+- The drop-on nonvisual component path therefore matches the code-based Attach/Detach behavior for the tested harness: normal startup, UI3Button Click, live Windows accent updates, live light/dark switching, and clean debugger-stop teardown all pass.
+- This completes the current form-theme baseline milestone. `UI3FormTheme`, cached theme/accent state, live notifications, rounded corners, form background management and child redraw are now validated as a usable package feature.
+- The next implementation milestone is S3 icon support as specified in `docs/2026-10-06-s3-icon-spec.md`.
+
+
+### 2026-10-06, win64 live-engine validation
+
+- Shane repeated the full 1.0.0.2 live-engine test set in win64.
+- The win64 harness runs normally, UI3Button Click remains functional, live Windows accent changes repaint correctly, live light-to-dark switching updates correctly, and debugger-stop teardown returns cleanly to the IDE.
+- The code-based `UI3Window.Attach/Detach` path is now validated in both win32 and win64 for the current form-theme milestone.
+- Remaining validation for the milestone: the drop-on nonvisual `UI3FormTheme` component path.
+
+
+### 2026-10-06, debugger-stop teardown validation
+
+- Shane stopped the running win32 tbUI3Test session from inside the twinBASIC IDE while the subclassed form was still open.
+- twinBASIC returned normally to the debugger, reported that it was waiting for remaining forms to close, completed teardown, and cleared global variables.
+- No IDE crash or hang occurred. This validates the tested win32 subclass/window-destruction cleanup path, including the current `WM_NCDESTROY` removal behavior.
+- Remaining form-theme validation: win64 live-engine run/stop and the drop-on UI3FormTheme path.
+
+
+### 2026-10-06, live accent and theme switching validation
+
+- Shane confirmed that changing the Windows accent colour while tbUI3Test is already running updates the Accent UI3Button immediately and correctly; no app restart or manual re-attachment is required.
+- Shane also confirmed live Windows light-to-dark theme switching works correctly while tbUI3Test is running.
+- This validates the live `WM_SETTINGCHANGE` / DWM/theme refresh path at runtime for the tested win32 harness, including theme-cache refresh and child redraw behavior.
+- Light mode is now runtime-observed as part of the successful live light-to-dark transition; a separate exhaustive light-theme visual pass is no longer required for the current milestone.
+- Remaining form-theme validation: debugger-stop safety, win64 live-engine run/stop, and the drop-on UI3FormTheme path.
+
+
+### 2026-10-06, 1.0.0.2 runtime baseline
+
+- Shane confirmed that the 1.0.0.2 tbUI3 package builds cleanly in twinBASIC BETA 997 and imports into tbUI3Test without issues.
+- Shane then ran the updated tbUI3Test harness successfully with the new `UI3Window.Attach Me` path active.
+- UI3Button Click still raises the Hello World message box under the new live-theme attachment path.
+- This validates the normal runtime baseline for the new form-theme engine. Live accent/theme message handling, debugger-stop safety, the drop-on UI3FormTheme path and light mode remain separate checks.
+
+
 ### 2026-10-06, repository handoff cleanup
 
 - Updated the README with the actual 1.0.0.2 development state, authoritative full-control inventory and prepared S3 icon specification.

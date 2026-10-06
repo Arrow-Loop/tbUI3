@@ -31,21 +31,18 @@ The decisions are in `docs/2026-10-06-first-pass-report.md` and `docs/2026-10-06
 | S2: light mode | Deferred by Shane; not validated |
 | S2: repaint when the form's BackColor changes | Bug. Cause still open (see ROADMAP) |
 | UI3Window (dark/light title bar, #202020/#F3F3F3 background) | dark mode passed in win32 and win64; light mode deferred |
-| Form theme spec: drop-on control, live switching, theme cache | 1.0.0.2 code-based Attach/Detach path fully passed in win32 and win64: normal run, Click, live accent changes, live light→dark switching, and debugger-stop teardown. Only drop-on UI3FormTheme remains |
+| Form theme spec: drop-on control, live switching, theme cache | Passed. UI3FormTheme is in the toolbox, drops onto frmMain, replaces manual Attach/Detach, and passes the same runtime behavior tests |
 
-## First job for the next session: validate the 1.0.0.2 form-theme engine
+## First job for the next session: implement S3 icon support
 
-**Final overnight structural check:** the canonical tbUI3 package matches its loose package mirror byte-for-byte for all current Sources/descriptors and Settings. tbUI3Test's packed frmMain/Settings match its loose mirror, and its 12-file embedded tbUI3 package matches the canonical package exactly. This is not compiler/runtime validation.
+The form-theme milestone is complete. Start from `docs/2026-10-06-s3-icon-spec.md`.
 
-The source/project candidate now contains UI3FormTheme, UI3Window.Attach/Detach, cached theme/accent state and live subclass notifications.
-
-1. **Passed:** tbUI3 builds cleanly in BETA 997 and imports into tbUI3Test.
-2. **Passed:** tbUI3Test runs through `UI3Window.Attach Me`; UI3Button Click still raises Hello World.
-3. **Passed:** changing the Windows accent while the app is open updates the Accent button live.
-4. **Passed:** changing Windows from light to dark while the app is open updates the app live.
-5. **Passed:** stopping the debugger while the subclassed win32 form is open returns cleanly to the IDE with no crash/hang.
-6. **Passed:** the same run/Click/live-accent/live-theme/stop tests all passed in win64.
-7. Drop UI3FormTheme from the toolbox onto frmMain, remove the code Attach/Detach calls, and confirm the drop-on path behaves identically.
+1. Extend the icon enums/public API without creating separate toolbox button variants.
+2. Add the DirectWrite icon-font path with Segoe Fluent Icons → Segoe MDL2 Assets fallback.
+3. Use dual semantic glyph mappings where Microsoft assigns different code points to Fluent and MDL2.
+4. Add measured icon-only and icon+Caption layout to UI3Button while preserving existing Standard/Accent visuals.
+5. Keep S3 scoped to icon/text rendering and font fallback. Do not mix in S4 transparency, S5 Mica, S7 pointer states or S8 keyboard/default/cancel behavior.
+6. Build/import in BETA 997 and validate win32 first, then win64.
 
 
 ## Reference package laboratory

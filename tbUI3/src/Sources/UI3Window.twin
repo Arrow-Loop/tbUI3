@@ -25,6 +25,7 @@ Public Module UI3Window
     Private Const RDW_ALLCHILDREN As Long = &H80
     Private Const RDW_FRAME As Long = &H400
 
+    Private Const WM_SIZE As Long = &H5
     Private Const WM_PAINT As Long = &HF
     Private Const WM_ENABLE As Long = &HA
     Private Const WM_SETFOCUS As Long = &H7
@@ -39,10 +40,13 @@ Public Module UI3Window
     Private Const WM_THEMECHANGED As Long = &H31A
 
     Private Const BM_GETSTATE As Long = &HF2
+    Private Const BM_SETSTATE As Long = &HF3
     Private Const BST_PUSHED As Long = &H4
     Private Const BST_HOT As Long = &H200
     Private Const TCM_FIRST As Long = &H1300
     Private Const TCM_GETITEMRECT As Long = TCM_FIRST + 10
+    Private Const TCM_SETITEMSIZE As Long = TCM_FIRST + 41
+    Private Const TCM_SETPADDING As Long = TCM_FIRST + 43
 
     Private Const IDOK As Long = 1
     Private Const IDCANCEL As Long = 2
@@ -56,6 +60,14 @@ Public Module UI3Window
     Private Const UI3_PSKIN_CANCEL As LongPtr = 4
     Private Const UI3_PSKIN_APPLY As LongPtr = 5
 
+    ' PropertySheet action-row layout. Button visuals still use exact WinUI Button resources;
+    ' these dimensions are tbUI3 convenience values because WinUI has no PropertySheet.
+    Private Const PROPERTY_ACTION_MIN_WIDTH_DIP As Single = 80
+    Private Const PROPERTY_ACTION_MIN_HEIGHT_DIP As Single = 32
+    Private Const PROPERTY_ACTION_SPACING_DIP As Single = 8
+    Private Const PROPERTY_ACTION_RIGHT_MARGIN_DIP As Single = 8
+    Private Const PROPERTY_ACTION_BOTTOM_MARGIN_DIP As Single = 8
+
     Private Declare PtrSafe Function DwmSetWindowAttribute Lib "dwmapi" (ByVal hWnd As LongPtr, ByVal dwAttribute As Long, _
         ByRef pvAttribute As Any, ByVal cbAttribute As Long) As Long
     Private Declare PtrSafe Function SetWindowPos Lib "user32" (ByVal hWnd As LongPtr, ByVal hWndInsertAfter As LongPtr, _
@@ -66,8 +78,19 @@ Public Module UI3Window
     Private Declare PtrSafe Function GetDlgItem Lib "user32" (ByVal hDlg As LongPtr, ByVal nIDDlgItem As Long) As LongPtr
     Private Declare PtrSafe Function FindWindowExW Lib "user32" (ByVal hWndParent As LongPtr, ByVal hWndChildAfter As LongPtr, _
         ByVal lpszClass As LongPtr, ByVal lpszWindow As LongPtr) As LongPtr
+    Private Type UI3PaintStruct
+        hdc As LongPtr
+        fErase As Long
+        rcPaint As UI3GdiRect
+        fRestore As Long
+        fIncUpdate As Long
+        rgbReserved(0 To 31) As Byte
+    End Type
+
     Private Declare PtrSafe Function GetDC Lib "user32" (ByVal hWnd As LongPtr) As LongPtr
     Private Declare PtrSafe Function ReleaseDC Lib "user32" (ByVal hWnd As LongPtr, ByVal hdc As LongPtr) As Long
+    Private Declare PtrSafe Function BeginPaint Lib "user32" (ByVal hWnd As LongPtr, ByRef lpPaint As UI3PaintStruct) As LongPtr
+    Private Declare PtrSafe Function EndPaint Lib "user32" (ByVal hWnd As LongPtr, ByRef lpPaint As UI3PaintStruct) As Long
     Private Declare PtrSafe Function InvalidateRect Lib "user32" (ByVal hWnd As LongPtr, ByVal lpRect As LongPtr, ByVal bErase As Long) As Long
     Private Declare PtrSafe Function IsWindowEnabled Lib "user32" (ByVal hWnd As LongPtr) As Long
     Private Declare PtrSafe Function GetWindowTextLengthW Lib "user32" (ByVal hWnd As LongPtr) As Long

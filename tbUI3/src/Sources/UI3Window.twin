@@ -501,6 +501,7 @@ CleanUp:
     End Sub
 
     Private Sub PaintPropertySheetHwnd(ByVal hWnd As LongPtr, ByVal kind As LongPtr)
+        Dim ps As UI3PaintStruct
         Dim hdc As LongPtr
         Dim client As UI3GdiRect
         Dim dpi As Single
@@ -510,7 +511,7 @@ CleanUp:
 
         On Error GoTo CleanUp
 
-        hdc = GetDC(hWnd)
+        hdc = BeginPaint(hWnd, ps)
         If hdc = 0 Then Exit Sub
         UI3GetClientRect hWnd, client
         If client.Right <= 0 Or client.Bottom <= 0 Then GoTo CleanUp
@@ -543,7 +544,7 @@ CleanUp:
 
 CleanUp:
         If drawing And Not m_PropertySheetTarget Is Nothing Then m_PropertySheetTarget.EndDraw 0, 0
-        If hdc <> 0 Then ReleaseDC hWnd, hdc
+        If hdc <> 0 Then EndPaint hWnd, ps
     End Sub
 
     Private Sub DrawPropertySheetHost(ByVal w As Single, ByVal h As Single)

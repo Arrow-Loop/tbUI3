@@ -25,7 +25,13 @@ Class UI3IconPage
     Private Const SEARCH_HEIGHT_DIP As Single = 32
     Private Const SEARCH_TEXT_INSET_X_DIP As Single = 8
     Private Const SEARCH_TEXT_INSET_Y_DIP As Single = 5
-    Private Const INFO_HEIGHT_DIP As Single = 40
+    Private Const INFO_HEIGHT_DIP As Single = 108
+    Private Const INFO_HEADING_HEIGHT_DIP As Single = 20
+    Private Const INFO_ROW_HEIGHT_DIP As Single = 18
+    Private Const INFO_LABEL_WIDTH_DIP As Single = 52
+    Private Const INFO_LEFT_WIDTH_DIP As Single = 210
+    Private Const PREVIEW_GAP_DIP As Single = 8
+    Private Const PREVIEW_ICON_SIZE_DIP As Single = 28
     Private Const GRID_GAP_DIP As Single = 12
     Private Const SCROLLBAR_SIZE_DIP As Single = 12
     Private Const SCROLLBAR_THUMB_WIDTH_DIP As Single = 8
@@ -48,8 +54,10 @@ Class UI3IconPage
     Private m_ApplyingTheme As Boolean
     Private m_LastDark As Boolean
     Private m_LastAccent As Long
-    Private m_InfoLine1 As String
-    Private m_InfoLine2 As String
+    Private m_InfoName As String
+    Private m_InfoEnum As String
+    Private m_InfoSymbol As String
+    Private m_InfoGlyph As String
 
     Sub New()
     End Sub
@@ -318,22 +326,94 @@ Failed:
             m_ChromeTarget.FillRoundedRectangle box, SolidBrush(m_ChromeTarget, focusArgb)
         End If
 
-        Dim infoPrimary As Long
-        Dim infoSecondary As Long
+        DrawSelectedIconDetails w, h, dark
+    End Sub
+
+    Private Sub DrawSelectedIconDetails(ByVal w As Single, ByVal h As Single, ByVal dark As Boolean)
+        Dim primaryArgb As Long
+        Dim secondaryArgb As Long
+        Dim cardFillArgb As Long
+        Dim cardStrokeArgb As Long
+
         If dark Then
-            infoPrimary = DARK_TextFillColorPrimary
-            infoSecondary = DARK_TextFillColorSecondary
+            primaryArgb = DARK_TextFillColorPrimary
+            secondaryArgb = DARK_TextFillColorSecondary
+            cardFillArgb = DARK_ControlFillColorDefault
+            cardStrokeArgb = DARK_ControlStrokeColorDefault
         Else
-            infoPrimary = LIGHT_TextFillColorPrimary
-            infoSecondary = LIGHT_TextFillColorSecondary
+            primaryArgb = LIGHT_TextFillColorPrimary
+            secondaryArgb = LIGHT_TextFillColorSecondary
+            cardFillArgb = LIGHT_ControlFillColorDefault
+            cardStrokeArgb = LIGHT_ControlStrokeColorDefault
         End If
 
         Dim infoTop As Single
+        Dim rowsTop As Single
+        Dim valueX As Single
+        Dim previewX As Single
+        Dim previewW As Single
+        Dim cardW As Single
+
         infoTop = h - PAGE_PAD_DIP - INFO_HEIGHT_DIP
-        DrawLeftTextStyled m_ChromeTarget, m_InfoLine1, 14, DWRITE_FONT_WEIGHT_NORMAL, _
-            PAGE_PAD_DIP, infoTop, w - PAGE_PAD_DIP, infoTop + 18, infoPrimary
-        DrawLeftTextStyled m_ChromeTarget, m_InfoLine2, 12, DWRITE_FONT_WEIGHT_NORMAL, _
-            PAGE_PAD_DIP, infoTop + 18, w - PAGE_PAD_DIP, infoTop + INFO_HEIGHT_DIP, infoSecondary
+        rowsTop = infoTop + INFO_HEADING_HEIGHT_DIP + 4
+        valueX = PAGE_PAD_DIP + INFO_LABEL_WIDTH_DIP
+        previewX = PAGE_PAD_DIP + INFO_LEFT_WIDTH_DIP + 8
+        previewW = w - PAGE_PAD_DIP - previewX
+        cardW = (previewW - PREVIEW_GAP_DIP) / 2
+
+        DrawLeftTextStyled m_ChromeTarget, "Selected icon", 14, DWRITE_FONT_WEIGHT_SEMI_BOLD, _
+            PAGE_PAD_DIP, infoTop, previewX - 4, infoTop + INFO_HEADING_HEIGHT_DIP, primaryArgb
+
+        DrawInfoField "Name", m_InfoName, PAGE_PAD_DIP, valueX, rowsTop, primaryArgb, secondaryArgb
+        DrawInfoField "Enum", m_InfoEnum, PAGE_PAD_DIP, valueX, rowsTop + INFO_ROW_HEIGHT_DIP, primaryArgb, secondaryArgb
+        DrawInfoField "Symbol", m_InfoSymbol, PAGE_PAD_DIP, valueX, rowsTop + INFO_ROW_HEIGHT_DIP * 2, primaryArgb, secondaryArgb
+        DrawInfoField "Glyph", m_InfoGlyph, PAGE_PAD_DIP, valueX, rowsTop + INFO_ROW_HEIGHT_DIP * 3, primaryArgb, secondaryArgb
+
+        DrawFontPreview previewX, infoTop + 4, cardW, INFO_HEIGHT_DIP - 8, _
+            "Segoe Fluent", "Segoe Fluent Icons", primaryArgb, secondaryArgb, cardFillArgb, cardStrokeArgb
+        DrawFontPreview previewX + cardW + PREVIEW_GAP_DIP, infoTop + 4, cardW, INFO_HEIGHT_DIP - 8, _
+            "Segoe MDL2", "Segoe MDL2 Assets", primaryArgb, secondaryArgb, cardFillArgb, cardStrokeArgb
+    End Sub
+
+    Private Sub DrawInfoField(ByVal labelText As String, ByVal valueText As String, ByVal labelX As Single, _
+            ByVal valueX As Single, ByVal y As Single, ByVal primaryArgb As Long, ByVal secondaryArgb As Long)
+        DrawLeftTextStyled m_ChromeTarget, labelText, 11, DWRITE_FONT_WEIGHT_NORMAL, _
+            labelX, y, valueX - 4, y + INFO_ROW_HEIGHT_DIP, secondaryArgb
+        DrawLeftTextStyled m_ChromeTarget, valueText, 12, DWRITE_FONT_WEIGHT_NORMAL, _
+            valueX, y, PAGE_PAD_DIP + INFO_LEFT_WIDTH_DIP, y + INFO_ROW_HEIGHT_DIP, primaryArgb
+    End Sub
+
+    Private Sub DrawFontPreview(ByVal x As Single, ByVal y As Single, ByVal cardW As Single, ByVal cardH As Single, _
+            ByVal title As String, ByVal family As String, ByVal primaryArgb As Long, ByVal secondaryArgb As Long, _
+            ByVal fillArgb As Long, ByVal strokeArgb As Long)
+        Dim box As D2D1_ROUNDED_RECT
+        box = RoundedRect(x, y, x + cardW, y + cardH, ControlCornerRadius)
+        m_ChromeTarget.FillRoundedRectangle box, SolidBrush(m_ChromeTarget, fillArgb)
+        m_ChromeTarget.DrawRoundedRectangle box, SolidBrush(m_ChromeTarget, strokeArgb), 1, 0
+
+        DrawCenteredTextStyled m_ChromeTarget, title, 10.5!, DWRITE_FONT_WEIGHT_SEMI_BOLD, _
+            x + 4, y + 4, x + cardW - 4, y + 20, primaryArgb
+
+        Dim installed As Boolean
+        Dim statusText As String
+        installed = FontFamilyExists(family)
+        If installed Then
+            If StrComp(SystemIconFontFamily(), family, vbTextCompare) = 0 Then
+                statusText = "Active"
+            Else
+                statusText = "Fallback"
+            End If
+        Else
+            statusText = "Unavailable"
+        End If
+
+        If installed And m_Selected <> 0 Then
+            DrawButtonContent m_ChromeTarget, "", SemanticIconGlyph(m_Selected), family, PREVIEW_ICON_SIZE_DIP, _
+                ui3IconLeft, 0, x + 6, y + 20, x + cardW - 6, y + cardH - 20, primaryArgb
+        End If
+
+        DrawCenteredTextStyled m_ChromeTarget, statusText, 10, DWRITE_FONT_WEIGHT_NORMAL, _
+            x + 4, y + cardH - 18, x + cardW - 4, y + cardH - 3, secondaryArgb
     End Sub
 
     Private Function OleFromArgbOver(ByVal Color As Long, ByVal Backdrop As Long) As Long
@@ -476,6 +556,16 @@ Failed:
         If Columns < 1 Then Columns = 1
     End Function
 
+    Private Function GridOriginX() As Single
+        Dim w As Single
+        Dim h As Single
+        Dim contentW As Single
+        GridSizeDips w, h
+        contentW = w - SCROLLBAR_SIZE_DIP
+        GridOriginX = (contentW - Columns() * CELL_DIP) / 2
+        If GridOriginX < 0 Then GridOriginX = 0
+    End Function
+
     Private Function VisibleRows() As Long
         Dim w As Single
         Dim h As Single
@@ -584,6 +674,7 @@ Failed:
         Dim baseArgb As Long
         Dim family As String
         Dim dark As Boolean
+        Dim originX As Single
 
         dark = IsDarkMode()
         If dark Then
@@ -601,12 +692,13 @@ Failed:
         rows = VisibleRows() + 1
         firstRow = vsbGrid.Value
         family = SystemIconFontFamily()
+        originX = GridOriginX()
 
         For r = 0 To rows - 1
             For c = 0 To cols - 1
                 position = (firstRow + r) * cols + c
                 If position >= m_ShownCount Then Exit For
-                x0 = c * CELL_DIP
+                x0 = originX + c * CELL_DIP
                 y0 = r * CELL_DIP
                 value = ShownValue(position)
 
@@ -719,9 +811,14 @@ Failed:
         Dim c As Long
         Dim r As Long
         Dim position As Long
-        c = Int(xDip / CELL_DIP)
+        Dim originX As Single
+        Dim cols As Long
+        originX = GridOriginX()
+        cols = Columns()
+        If xDip < originX Or xDip >= originX + cols * CELL_DIP Then Exit Sub
+        c = Int((xDip - originX) / CELL_DIP)
         r = Int(yDip / CELL_DIP)
-        If c >= Columns() Then Exit Sub
+        If c >= cols Then Exit Sub
         position = (vsbGrid.Value + r) * Columns() + c
         If position < 0 Or position >= m_ShownCount Then Exit Sub
         m_Selected = ShownValue(position)
@@ -815,29 +912,39 @@ Failed:
     Private Sub UpdateInfo()
         Dim i As Long
         Dim name As String
+
         If m_Selected = 0 Then
-            SetInfoText "None", "ui3IconNone" & InfoSeparator() & "0"
+            SetInfoDetails "None", "ui3IconNone", "0", "None"
             Exit Sub
         End If
+
         For i = 0 To IconCatalogCount() - 1
             If IconCatalogValue(i) = m_Selected Then
                 name = IconCatalogName(i)
                 Exit For
             End If
         Next
+
         If Len(name) = 0 Then
-            SetInfoText "Not in catalog", m_Selected & InfoSeparator() & "&H" & Hex$(m_Selected)
+            SetInfoDetails "Not in catalog", CStr(m_Selected), _
+                CStr(m_Selected) & "  (&H" & Hex$(m_Selected) & ")", "U+" & Hex$(GlyphCode(m_Selected))
             Exit Sub
         End If
-        ' Line 1: the name. Line 2: everything the search box accepts, in the order the hint lists it.
-        SetInfoText name, "ui3Icon" & name & InfoSeparator() & m_Selected & InfoSeparator() & _
-            "&H" & Hex$(m_Selected) & InfoSeparator() & "U+" & Hex$(GlyphCode(m_Selected))
+
+        SetInfoDetails name, "ui3Icon" & name, _
+            CStr(m_Selected) & "  (&H" & Hex$(m_Selected) & ")", "U+" & Hex$(GlyphCode(m_Selected))
     End Sub
 
-    Private Sub SetInfoText(ByVal Line1 As String, ByVal Line2 As String)
-        m_InfoLine1 = Line1
-        m_InfoLine2 = Line2
-        lblInfo.Caption = Line1 & vbCrLf & Line2
+    Private Sub SetInfoDetails(ByVal iconName As String, ByVal enumName As String, _
+            ByVal symbolValue As String, ByVal glyphValue As String)
+        m_InfoName = iconName
+        m_InfoEnum = enumName
+        m_InfoSymbol = symbolValue
+        m_InfoGlyph = glyphValue
+        lblInfo.Caption = "Selected icon" & vbCrLf & _
+            "Name: " & iconName & "   Enum: " & enumName & vbCrLf & _
+            "Symbol: " & symbolValue & "   Glyph: " & glyphValue & vbCrLf & _
+            "Segoe Fluent / Segoe MDL2 preview at runtime"
         picChrome.Refresh
     End Sub
 

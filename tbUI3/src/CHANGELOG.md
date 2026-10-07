@@ -1,3 +1,6 @@
+### 1.0.0.22
+- The skinned OK/Cancel/Apply buttons now repaint after `WM_UPDATEUISTATE`, `BM_SETSTYLE` and `WM_SETTEXT`. The native button draws its caption and mnemonic underline straight to the screen on those messages, which left a stray underline under the disabled Apply button.
+
 ### 1.0.0.21
 - The PropertySheet skin now attaches only to the real PropertySheet (the window with the SysTabControl32), found structurally from the page, and is never swapped back to the page's own window. In 1.0.0.17 to 1.0.0.20 every page repaint re-ran a GetAncestor lookup that returned the page itself, which detached the dark tab and button skin right after it was applied.
 - The search-box colour hooks are armed separately, as soon as the page exists.

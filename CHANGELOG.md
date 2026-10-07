@@ -4,6 +4,13 @@ All notable changes to tbUI3. Dates are when the change was made, not released. 
 
 ## Unreleased
 
+### 2026-10-07, disabled Apply underline fix (1.0.0.22, Claude)
+
+- Shane built 1.0.0.21 on BETA 999 win32. The whole Properties dialog opened dark and WinUI-styled (title bar, tab, search box, page, OK/Cancel/Apply), and hover worked. Interaction checks past hover were still in progress.
+- Shane saw a stray underline under the `A` of the disabled Apply button that went away once Apply was enabled. Cause (inferred, not traced): the native button draws its caption and mnemonic underline directly to a DC on `WM_UPDATEUISTATE` (and `BM_SETSTYLE`/`WM_SETTEXT`) without a `WM_PAINT`, and a disabled button gets no mouse messages to trigger our repaint. The sheet subclass now invalidates the skinned buttons after those three messages.
+- Shane also saw that `Target` shows a missing-glyph box. Not changed: the table maps it to U+F5F0 exactly as WinUI's `icon.cpp` does, and that code point is not in the installed Segoe Fluent Icons or Segoe MDL2 Assets. See ROADMAP.
+- Package revision is now 1.0.0.22. Not yet compiled.
+
 ### 2026-10-07, PropertySheet skin attach fix (1.0.0.21, Claude review)
 
 - Shane asked Claude to review the 1.0.0.6 to 1.0.0.20 PropertyPage passes. Root cause of the regression from 1.0.0.17 on, found by reading the code (not yet confirmed on the PC): `picChrome_Paint` called `ApplyHostTitleBar` on every paint, which resolved the host with `GetAncestor(GA_ROOTOWNER)`. The 1.0.0.15 and 1.0.0.17 logs show that returns the page's own `ThunderPropertyPageDC`. `UI3SkinPropertySheetHost` then saw a different host from the promoted `#32770` and called `DetachPropertySheetSkin`, re-attaching to the page. So the 1.0.0.18 structural promotion worked, and the next page paint undid it: title bar and page dark (those don't depend on the subclass), tab and buttons light. That matches the 1.0.0.18 screenshot.
@@ -12,7 +19,7 @@ All notable changes to tbUI3. Dates are when the change was made, not released. 
 - Kept unchanged: the 1.0.0.10 sheet paint, the native tab metrics from 1.0.0.15, the resized native action buttons, the picker grid/details, and the icon designer bridge.
 - The `%TEMP%\tbUI3-propertypage.log` diagnostic is off (`PROPERTY_PAGE_LOG_ENABLED = False` in `UI3Window`).
 - First build attempt failed to compile: the inserted `UI3Window.twin` block had LF-only line endings, so twinBASIC could not read its line continuations (TB5184/TB5182 from line 391, and a knock-on TB5103 in `UI3IconPage`). The file is CRLF throughout again.
-- Package revision is now 1.0.0.21. Not yet compiled or run in BETA 997.
+- Package revision is now 1.0.0.21. Built and opened on BETA 999 win32: fully dark on first open, hover works.
 
 ### 2026-10-07, WM_APP literal-width correction (1.0.0.20)
 

@@ -46,6 +46,9 @@ Public Module UI3Window
 
     Private Const BM_GETSTATE As Long = &HF2
     Private Const BM_SETSTATE As Long = &HF3
+    Private Const BM_SETSTYLE As Long = &HF4
+    Private Const WM_SETTEXT As Long = &HC
+    Private Const WM_UPDATEUISTATE As Long = &H128
     Private Const BST_PUSHED As Long = &H4
     Private Const BST_HOT As Long = &H200
     Private Const TCM_FIRST As Long = &H1300
@@ -810,7 +813,10 @@ CleanUp:
                 UI3PropertySheetSubclassProc = result
                 Exit Function
 
-            Case WM_MOUSEMOVE, WM_LBUTTONDOWN, WM_LBUTTONUP, WM_SETFOCUS, WM_KILLFOCUS, WM_ENABLE
+            Case WM_MOUSEMOVE, WM_LBUTTONDOWN, WM_LBUTTONUP, WM_SETFOCUS, WM_KILLFOCUS, WM_ENABLE, _
+                    WM_UPDATEUISTATE, BM_SETSTYLE, WM_SETTEXT
+                ' The native button paints its caption and mnemonic underline straight to a DC on
+                ' WM_UPDATEUISTATE, BM_SETSTYLE and WM_SETTEXT, bypassing WM_PAINT. Repaint over it.
                 result = DefSubclassProc(hWnd, uMsg, wParam, lParam)
                 If dwRefData >= UI3_PSKIN_OK Then InvalidateRect hWnd, 0, 0
                 UI3PropertySheetSubclassProc = result

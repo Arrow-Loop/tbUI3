@@ -4,6 +4,14 @@ All notable changes to tbUI3. Dates are when the change was made, not released. 
 
 ## Unreleased
 
+### 2026-10-07, PropertyPage host-metrics + ThunderTextBox erase pass (1.0.0.15)
+
+- Shane built/opened 1.0.0.14 in win32. The screenshot showed the two target defects were still present: the native search edit remained white and the Icon tab was still clipped. The rest of the 1.0.0.10-derived picker layout, including the smaller dual-font preview cards, remained visually sound.
+- The 1.0.0.15 candidate stops resizing the real `SysTabControl32` item. BETA 997 reserves the page from its original tab metrics; enlarging that native item after layout is what creates the observed overlap until the PropertySheet later relayouts. tbUI3 now leaves the native hit/layout rectangle intact and skins exactly the item rectangle the host reserved.
+- On the confirmed `ThunderTextBox` HWND, the diagnostic subclass now owns `WM_ERASEBKGND` using the same theme brush already returned from `ThunderPropertyPageDC` on `WM_CTLCOLOREDIT`. Focus transitions explicitly invalidate the edit so active/rest fill changes cannot leave stale classic white pixels.
+- The 1.0.0.14 probe remains active and is relabeled 1.0.0.15. No manual page-dialog movement, `TCM_ADJUSTRECT`, or designer-persistence bridge changes are part of this pass.
+- Package revision is now 1.0.0.15. Source/project candidate only: **not yet compiled or run in BETA 997**.
+
 ### 2026-10-07, confirmed TextBox brush route + Apply-layout trace (1.0.0.14)
 
 - The 1.0.0.13 probe was run in win32. It confirmed that `txtSearch.hWnd` is itself `ThunderTextBox` (control ID 258), directly parented by `ThunderPropertyPageDC`, and that `ThunderPropertyPageDC` receives `WM_CTLCOLOREDIT` with that exact textbox HWND as the child.

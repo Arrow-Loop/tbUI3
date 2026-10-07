@@ -168,3 +168,13 @@ The same test also revealed that pressing **Apply** causes the native PropertySh
 - the native first tab-item rectangle.
 
 The next tab fix should be based on the recorded native transition, not another replacement rectangle.
+
+## 1.0.0.15 host-metrics / Edit erase follow-up
+
+Shane's win32 1.0.0.14 screenshot showed that returning a themed brush from the confirmed `ThunderPropertyPageDC` `WM_CTLCOLOREDIT` route did not by itself stop the exposed `ThunderTextBox` from repainting white. The enlarged native `SysTabControl32` item was also still clipped.
+
+The geometry evidence now points away from moving the page. BETA 997 reserves the page against the tab control's original item metrics. Asking the live tab for a taller 32-DIP item after that layout creates an overlap by construction; Apply later causes the native host to perform a relayout, which is why the full tab suddenly becomes visible. 1.0.0.15 therefore leaves the native item metrics unchanged and paints the selected-tab skin inside the rectangle returned by `TCM_GETITEMRECT`.
+
+For the Edit, 1.0.0.15 keeps the confirmed parent `WM_CTLCOLOREDIT` brush but also handles `WM_ERASEBKGND` on the actual `ThunderTextBox` HWND itself, filling its client rectangle with the same persistent theme brush before default text painting. Focus transitions invalidate the edit so active/rest state changes repaint immediately.
+
+This pass deliberately does not revive `TCM_ADJUSTRECT`, manual PropertyPage movement, or any designer-persistence changes. The 1.0.0.15 probe stays enabled for one more build so remaining behavior can be diagnosed from the actual host window messages.

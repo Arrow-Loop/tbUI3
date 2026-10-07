@@ -1,3 +1,8 @@
+### 1.0.0.15
+- PropertyPage tab skin now leaves the native BETA 997 tab-item metrics alone and paints within the rectangle the host actually reserved, avoiding the post-resize overlap that clipped the Icon tab until Apply forced a native relayout.
+- The confirmed ThunderTextBox HWND now handles WM_ERASEBKGND with the same persistent themed brush used by its ThunderPropertyPageDC WM_CTLCOLOREDIT route, and repaints on focus transitions. This is a focused attempt to stop the classic white edit fill from reappearing.
+- The 1.0.0.14 diagnostic probe remains enabled for one more validation pass. No manual page-dialog movement or designer-persistence bridge changes were made.
+
 # tbUI3 changelog
 
 Pre-release spike builds. The full history is kept in the project repository CHANGELOG.md.

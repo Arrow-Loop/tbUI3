@@ -102,6 +102,7 @@ Public Module UI3Window
     Private Declare PtrSafe Function BeginPaint Lib "user32" (ByVal hWnd As LongPtr, ByRef lpPaint As UI3PaintStruct) As LongPtr
     Private Declare PtrSafe Function EndPaint Lib "user32" (ByVal hWnd As LongPtr, ByRef lpPaint As UI3PaintStruct) As Long
     Private Declare PtrSafe Function InvalidateRect Lib "user32" (ByVal hWnd As LongPtr, ByVal lpRect As LongPtr, ByVal bErase As Long) As Long
+    Private Declare PtrSafe Function FillRect Lib "user32" (ByVal hdc As LongPtr, ByRef lpRect As UI3GdiRect, ByVal hBrush As LongPtr) As Long
     Private Declare PtrSafe Function IsWindowEnabled Lib "user32" (ByVal hWnd As LongPtr) As Long
     Private Declare PtrSafe Function GetWindowTextLengthW Lib "user32" (ByVal hWnd As LongPtr) As Long
     Private Declare PtrSafe Function GetWindowTextW Lib "user32" (ByVal hWnd As LongPtr, ByVal lpString As LongPtr, ByVal nMaxCount As Long) As Long
@@ -418,8 +419,8 @@ CleanUp:
         m_PropertyProbeEditParent = GetParent(textBoxHwnd)
         If m_PropertyProbeEditParent <> 0 Then m_PropertyProbePageDialog = GetParent(m_PropertyProbeEditParent)
 
-        ProbeLog "=== tbUI3 PropertyPage probe / 1.0.0.14 ==="
-        ProbeLog "Confirmed colour route from 1.0.0.13: ThunderPropertyPageDC receives WM_CTLCOLOREDIT for ThunderTextBox."
+        ProbeLog "=== tbUI3 PropertyPage probe / 1.0.0.15 ==="
+        ProbeLog "1.0.0.15: native tab metrics retained; ThunderTextBox WM_ERASEBKGND is filled from the same theme brush as WM_CTLCOLOREDIT."
         ProbeSnapshot "initial"
         ProbeLog "--- host tree ---"
         DumpWindowTree host, 0, 5
@@ -451,6 +452,14 @@ CleanUp:
         Dim result As LongPtr
 
         Select Case uMsg
+            Case WM_ERASEBKGND
+                If hWnd = m_PropertyProbeEdit Then
+                    If PaintPropertyEditBackground(hWnd, wParam) Then
+                        UI3PropertyProbeProc = 1
+                        Exit Function
+                    End If
+                End If
+
             Case WM_CTLCOLOREDIT
                 If hWnd = m_PropertyProbeEditParent And lParam = m_PropertyProbeEdit Then
                     ProbeLog "WM_CTLCOLOREDIT FIX receiver=" & DebugWindowLine(hWnd) & _
@@ -484,6 +493,14 @@ CleanUp:
                 End If
                 UI3PropertyProbeProc = result
                 Exit Function
+
+            Case WM_SETFOCUS, WM_KILLFOCUS
+                If hWnd = m_PropertyProbeEdit Then
+                    result = DefSubclassProc(hWnd, uMsg, wParam, lParam)
+                    InvalidateRect hWnd, 0, 1
+                    UI3PropertyProbeProc = result
+                    Exit Function
+                End If
 
             Case WM_NCDESTROY
                 RemoveWindowSubclass hWnd, AddressOf UI3PropertyProbeProc, uIdSubclass
@@ -520,6 +537,19 @@ CleanUp:
             DebugTabItemRect = "client=(" & CStr(rc.Left) & "," & CStr(rc.Top) & ")-(" & _
                 CStr(rc.Right) & "," & CStr(rc.Bottom) & ")"
         End If
+    End Function
+
+    Private Function PaintPropertyEditBackground(ByVal hWnd As LongPtr, ByVal hdc As LongPtr) As Boolean
+        If hWnd = 0 Or hdc = 0 Then Exit Function
+
+        Dim client As UI3GdiRect
+        Dim brush As LongPtr
+        UI3GetClientRect hWnd, client
+        brush = PropertyEditBrush(hdc)
+        If brush = 0 Then Exit Function
+
+        FillRect hdc, client, brush
+        PaintPropertyEditBackground = True
     End Function
 
     Private Function PropertyEditBrush(ByVal hdc As LongPtr) As LongPtr
@@ -891,22 +921,11 @@ CleanUp:
     Private Sub LayoutPropertySheetTab()
         If m_PropertySheetTab = 0 Then Exit Sub
 
-        Dim dpi As Single
-        dpi = PropertySheetDpi()
-
-        Dim itemW As Long
-        Dim itemH As Long
-        Dim padX As Long
-        Dim padY As Long
-        itemW = DipToPixel(TabViewItemMinWidth, dpi)
-        itemH = DipToPixel(TabViewItemMinHeight, dpi)
-        padX = DipToPixel(TabViewItemHeaderPaddingLeft, dpi)
-        padY = DipToPixel(TabViewItemHeaderPaddingTop, dpi)
-
-        ' Keep the real SysTabControl32 item as the hit target. If this PropertySheet style
-        ' honors TCM_SETITEMSIZE, its clickable rectangle grows with the new paint.
-        SendMessageW m_PropertySheetTab, TCM_SETITEMSIZE, 0, MakeLParam(itemW, itemH)
-        SendMessageW m_PropertySheetTab, TCM_SETPADDING, 0, MakeLParam(padX, padY)
+        ' BETA 997 lays out the PropertyPage against the tab control's native item metrics
+        ' before tbUI3 gets a chance to skin the host. Enlarging the real item afterwards
+        ' makes the page overlap the lower part of the tab until the host performs its own
+        ' later relayout (observed when Apply is clicked). Keep the native hit/layout metrics
+        ' and paint inside the item rectangle the PropertySheet actually reserved.
         InvalidateRect m_PropertySheetTab, 0, 0
     End Sub
 

@@ -4,6 +4,15 @@ All notable changes to tbUI3. Dates are when the change was made, not released. 
 
 ## Unreleased
 
+### 2026-10-07, centered icon grid and dual-font details (1.0.0.10)
+
+- At Shane's request, the icon picker now centers the actual 44-DIP cell matrix inside the usable grid width rather than merely centering the surrounding PictureBox. The painted scrollbar keeps its own right-side lane, and mouse hit testing uses the same centered origin.
+- The PropertyPage height grows from 400 to 456 DIPs so the picker can keep six icon rows while gaining a 108-DIP details region.
+- The old debug-like two-line selection readout is replaced with a labeled **Selected icon** area: Name, Enum, Symbol (decimal + WinUI Symbol hex) and Glyph (modern U+ code point).
+- The same modern glyph is rendered side by side at 28 DIPs in **Segoe Fluent Icons** and **Segoe MDL2 Assets** so a control designer can see the Windows 11 appearance and the Windows 10 fallback appearance directly. Each preview reports Active, Fallback, or Unavailable based on the fonts actually installed.
+- The preview cards and metadata layout are a tbUI3 picker convenience; the glyph mapping itself still comes from Microsoft SymbolIcon conversion behavior.
+- Package revision is now 1.0.0.10. Source/project candidate only: **not yet compiled or run in BETA 997**.
+
 ### 2026-10-07, PropertySheet paint/layout follow-up (1.0.0.9)
 
 - Shane built and opened the 1.0.0.8 PropertySheet skin in win32. The overall dark shell worked: title bar, page background, painted tab and painted bottom buttons all appeared in the live property sheet.

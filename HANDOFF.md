@@ -39,7 +39,7 @@ The decisions are in `docs/2026-10-06-first-pass-report.md` and `docs/2026-10-06
 | 1.0.0.6: theme-aware PropertyPage chrome | Designer check passed the dark-canvas part but `picChrome` covered the child controls because its designer z-order was wrong. Runtime win32 was also opened by Shane and the themed picker still worked, so the observed stacking issue is designer-only. |
 | 1.0.0.7: PropertyPage designer z-order experiment | Superseded. Shane's side-by-side check showed 1.0.0.6's original sibling order was actually the more accurate designer representation. |
 | 1.0.0.8: native PropertySheet skin | Core visual proof passed in win32: dark host/title/tab/button shell appeared and the picker still worked. Issues found: initial white search Edit until interaction, tab/button hover flicker, clipped Apply text. |
-| 1.0.0.9: PropertySheet paint/layout follow-up | Candidate only. Owns WM_PAINT to remove classic-paint flicker, refreshes the search Edit after theming, moves/resizes the real button HWNDs to the new layout, and requests source-backed WinUI TabViewItem dimensions/typography. Not built/run. |
+| 1.0.0.9: PropertySheet paint/layout follow-up | Candidate only. Owns WM_PAINT to remove classic-paint flicker, refreshes the search Edit after theming, moves/resizes the real button HWNDs to the new layout, requests source-backed WinUI TabViewItem dimensions/typography, and paints the two-line selected-icon info directly in Direct2D so it cannot disappear behind host repainting. Not built/run. |
 
 ## Work queue for the next passes (updated 2026-10-07)
 

@@ -64,4 +64,10 @@ Shane added a PropertyPage named `UI3IconPage` to tbUI3 through Project Explorer
 - A diagnostic in `ApplyChanges` showed that Apply runs, `CallByName ctl, "Icon", vbLet, value` changes the live button (it reads back as the new value), and `Err` holds -2147352570 "Unknown name" afterwards.
 - After closing and reopening the form designer, Icon was back to its old value. The canvas also never redrew the new icon.
 - Likely cause (inferred, not proven): `UserControl.PropertyChanged` in the VB package calls `GetIDsOfNames` for the property name on the outer class to raise `IPropertyNotifySink.OnChanged`. That lookup fails, the error is swallowed by its `On Error Resume Next` (and stays in `Err`), so the IDE never learns of the change and reloads the designer from its saved copy.
-- Status: parked; reported to twinBASIC by Shane.
+- Status at that point: parked and reported to twinBASIC by Shane.
+
+## Workaround result (2026-10-07, win32)
+
+- The IDE's `main.js` shows the form designer keeps each control's properties itself (`d.properties`) and replaces them with the `serialization` the backend sends back with each control image. Package UserControls are hosted through `ActiveXExtender`; its `InvokePropertyExtension("Custom")` opens the page and returns `MadeChanges = True`.
+- Build 537850e added a "pending icon" bridge, re-applied on the next design-time `ReadProperties`, plus a log file. With it, the picked icon was saved: the backend called the live control's `WriteProperties` right after Apply, which wrote the new value, and the designer asked to save the form. The bridge's fallback never ran.
+- Earlier builds differed on that path only in that `Icon`'s `Property Let` now reads `Ambient.DisplayName`. That this matters is a guess. The bridge stays until an experiment shows which piece is needed.

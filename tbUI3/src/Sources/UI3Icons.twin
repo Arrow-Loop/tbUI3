@@ -301,10 +301,11 @@ Private Module UI3Icons
     End Function
 
     ' --- Designer bridge for UI3IconPage (workaround, twinBASIC BETA 997) ---
-    ' The form designer does not keep a value a property page sets: it rebuilds the control from
-    ' its own saved copy. While the page applies, UI3Button records the new Icon here under the
-    ' control's design-time name, and the next design-time ReadProperties for that name applies it
-    ' and marks the property changed, so the designer saves it. Remove once twinBASIC fixes this.
+    ' Earlier builds lost a value the property page set: the designer kept the old Icon. While the
+    ' page applies, UI3Button records the new Icon here under the control's design-time name, and a
+    ' later design-time ReadProperties for that name re-applies it. In the 2026-10-07 test this build
+    ' saved the picked icon, but through the live control's WriteProperties, not this fallback; why
+    ' it now works is not understood, so keep this code unchanged until that is (see CHANGELOG).
 
     Private m_PageApplying As Boolean
     Private m_PendingIcons As Collection
@@ -340,8 +341,11 @@ Private Module UI3Icons
         DesignLog "pending taken " & ControlName & " = " & value
     End Function
 
-    ' DIAGNOSTIC (temporary): appends a line to %TEMP%\tbUI3-design.log.
+    ' Set True to append designer events to %TEMP%\tbUI3-design.log while diagnosing the picker.
+    Private Const DESIGN_LOG_ENABLED As Boolean = False
+
     Public Sub DesignLog(ByVal Text As String)
+        If Not DESIGN_LOG_ENABLED Then Exit Sub
         On Error Resume Next
         Dim f As Integer
         f = FreeFile

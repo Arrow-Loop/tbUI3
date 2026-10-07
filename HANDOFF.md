@@ -35,18 +35,15 @@ The decisions are in `docs/2026-10-06-first-pass-report.md` and `docs/2026-10-06
 | S3 icons (1.0.0.3): build, designer and runtime rendering, icon left and top, enlarged button, icon-only, MDL2 font check, win64 | Passed on Shane's PC, 2026-10-06 |
 | 1.0.0.4: Caption can be cleared in the designer | Passed on Shane's PC in win32 and win64, 2026-10-06 |
 | Property page from `(Custom)` → `...` | Works (spike, 2026-10-06); the per-property `[PropertyPage]` link does not work in BETA 997 |
-| 1.0.0.5: UI3IconPage searchable icon picker | Builds and opens. Apply sets `Icon`, but the designer never saves it (twinBASIC bug, see the research note). Parked until twinBASIC fixes it |
+| 1.0.0.5: UI3IconPage searchable icon picker | Opens, and the picked icon is saved with the form (win32, 2026-10-07). Full checks and win64 still to run. The designer bridge in `UI3Icons` must stay until the cause is understood |
 
 ## First job for the next session (updated 2026-10-07)
 
-The icon picker (1.0.0.5 candidate) opens, searches and sets `Icon`, but twinBASIC BETA 997 never saves a property page's change in the designer (see `docs/research/2026-10-06-property-page-picker.md`). Shane is reporting that, and the per-property `...` link, to twinBASIC. Shane asked for a workaround to be tried first: a designer bridge in `UI3Icons` (see CHANGELOG, 2026-10-07). It is written but not built.
+The icon picker (1.0.0.5 candidate) works on Shane's PC in win32: a picked icon is saved with the form. Why this build saves it while earlier ones lost it is not understood (see CHANGELOG, 2026-10-07). Keep the designer bridge and the `DesignLog` calls in `UI3Icons`/`UI3Button`/`UI3IconPage` unchanged. The log file is off (`DESIGN_LOG_ENABLED`); set it True if the picker misbehaves.
 
-1. Shane pulls, rebuilds tbUI3, updates the package in tbUI3Test, picks a new icon in the picker, clicks OK, then clicks off the button and back, and closes and reopens the form designer. Then he sends `%TEMP%\tbUI3-design.log` (type `notepad %TEMP%\tbUI3-design.log` in a command prompt).
-   - If the icon sticks: remove `DesignLog` and its calls, keep the bridge, and run the full picker checks (pick + OK, reopen, search `save`/`57716`/`E8CB`/`&HE174`, Cancel, mouse wheel) in win32 and win64.
-   - If it reverts: read the log. It shows whether ReadProperties ran for the same name after Apply, and what WriteProperties wrote. If no ReadProperties follows Apply, the bridge cannot work; remove the bridge and the log, and leave the picker parked until twinBASIC fixes the bug.
+1. Shane pulls, rebuilds tbUI3, updates the package in tbUI3Test, and runs the picker checks in win32, then win64: pick + Apply, pick + OK (button changes, and the form asks to be saved), reopen the picker (lands on the current icon), search `save`, `57716`, `E8CB`, `&HE174` (each narrows the grid), pick then Cancel (no change), mouse wheel over the grid (one row per notch). Record results in CHANGELOG.md, `tbUI3/src/CHANGELOG.md`, ROADMAP.md and the table above.
 2. Remove the two MDL2 test lines (`IconFontName`/`IconGlyph`) from frmMain's `Form_Activate` in tbUI3Test.
 3. Next milestone: themed form canvas at design time (ROADMAP, designer experience), then the designer accent refresh.
-4. When twinBASIC fixes the save bug: retest the picker (pick + OK, reopen, search `save`/`57716`/`E8CB`/`&HE174`, Cancel, mouse wheel) in win32 and win64, then record it as validated.
 
 ### Syncing the project and src
 

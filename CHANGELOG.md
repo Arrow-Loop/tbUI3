@@ -4,12 +4,14 @@ All notable changes to tbUI3. Dates are when the change was made, not released. 
 
 ## Unreleased
 
-### 2026-10-07, icon picker save workaround attempt (1.0.0.5 candidate, not built)
+### 2026-10-07, icon picker saves the chosen icon (1.0.0.5 candidate)
 
-- Shane asked for a workaround rather than parking the picker. Reading the IDE's `main.js` showed the form designer keeps each control's properties itself and replaces them with the serialization the backend returns with each control image. So a control that re-applies the picked value when it is next rebuilt should get it saved.
-- `UI3Icons` gained a small designer bridge: while `UI3IconPage.ApplyChanges` runs, `UI3Button.Icon` records the value under the control's design-time name (`Ambient.DisplayName`). The next design-time `ReadProperties` for that name applies it once and calls `PropertyChanged "Icon"`.
-- Temporary diagnostic: `DesignLog` appends Let, ReadProperties, WriteProperties, ApplyChanges and pending-value events to `%TEMP%\tbUI3-design.log`, to show what the designer does if the workaround fails. Remove once the picker is settled.
-- Not compiled or run.
+- Shane asked for a workaround rather than parking the picker. Reading the IDE's `main.js` showed the form designer keeps each control's properties itself and replaces them with the serialization the backend returns with each control image.
+- `UI3Icons` gained a small designer bridge: while `UI3IconPage.ApplyChanges` runs, `UI3Button.Icon` records the value under the control's design-time name (`Ambient.DisplayName`), and a later design-time `ReadProperties` for that name re-applies it once and calls `PropertyChanged "Icon"`.
+- `DesignLog` writes designer events to `%TEMP%\tbUI3-design.log`. It is now off (`DESIGN_LOG_ENABLED = False` in `UI3Icons`), but the calls stay in place.
+- **Validated on Shane's PC (win32, 537850e):** he picked a new icon (57677) and clicked OK. The button redrew with it, and closing the designer prompted to save the form. After saving and reopening, the icon was kept.
+- **Not understood:** the log shows the save came from the live button's `WriteProperties` right after Apply (Icon = 57677), not from the bridge, whose pending value was never used. Earlier builds lost the value, and the only code change on that path is that `Icon`'s `Property Let` now reads `Ambient.DisplayName` (through the bridge and the log call). Until the cause is known, the bridge and the log calls stay unchanged, because removing them might bring the bug back.
+- Turning the log off (537850e plus this change) has not been rebuilt yet.
 
 ### 2026-10-06, UI3IconPage first build on Shane's PC (1.0.0.5 candidate)
 

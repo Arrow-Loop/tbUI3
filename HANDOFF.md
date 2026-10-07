@@ -1,6 +1,6 @@
 # Handoff: tbUI3 state on 2026-10-07
 
-This is written for the next developer or AI session; ChatGPT is expected to run the next several passes. Read `AGENTS.md`, then this file, then `CHANGELOG.md` and `ROADMAP.md`. State at the time of writing: `tbui3-dev` at 42e56c9 or later, package version 1.0.0.5 (candidate), twinBASIC BETA 997.
+This is written for the next developer or AI session; ChatGPT is expected to run the next several passes. Read `AGENTS.md`, then this file, then `CHANGELOG.md` and `ROADMAP.md`. State at the time of writing: `tbui3-dev`, package version 1.0.0.10 (candidate), twinBASIC BETA 997.
 
 ## What tbUI3 is
 

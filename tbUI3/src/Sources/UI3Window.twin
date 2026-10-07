@@ -31,6 +31,8 @@ Public Module UI3Window
     Private Const WM_SETFOCUS As Long = &H7
     Private Const WM_KILLFOCUS As Long = &H8
     Private Const WM_ERASEBKGND As Long = &H14
+    Private Const WM_WINDOWPOSCHANGED As Long = &H47
+    Private Const WM_COMMAND As Long = &H111
     Private Const WM_CTLCOLOREDIT As Long = &H133
     Private Const WM_SETTINGCHANGE As Long = &H1A
     Private Const WM_NCDESTROY As Long = &H82
@@ -85,6 +87,7 @@ Public Module UI3Window
         ByVal nMaxCount As Long) As Long
     Private Declare PtrSafe Function GetWindowRect Lib "user32" (ByVal hWnd As LongPtr, ByRef lpRect As UI3GdiRect) As Long
     Private Declare PtrSafe Function GetDlgCtrlID Lib "user32" (ByVal hWnd As LongPtr) As Long
+    Private Declare PtrSafe Function GetFocus Lib "user32" () As LongPtr
     Private Type UI3PaintStruct
         hdc As LongPtr
         fErase As Long
@@ -104,6 +107,10 @@ Public Module UI3Window
     Private Declare PtrSafe Function GetWindowTextW Lib "user32" (ByVal hWnd As LongPtr, ByVal lpString As LongPtr, ByVal nMaxCount As Long) As Long
     Private Declare PtrSafe Function SendMessageW Lib "user32" (ByVal hWnd As LongPtr, ByVal wMsg As Long, _
         ByVal wParam As LongPtr, ByVal lParam As LongPtr) As LongPtr
+    Private Declare PtrSafe Function SetTextColor Lib "gdi32" (ByVal hdc As LongPtr, ByVal crColor As Long) As Long
+    Private Declare PtrSafe Function SetBkColor Lib "gdi32" (ByVal hdc As LongPtr, ByVal crColor As Long) As Long
+    Private Declare PtrSafe Function CreateSolidBrush Lib "gdi32" (ByVal crColor As Long) As LongPtr
+    Private Declare PtrSafe Function DeleteObject Lib "gdi32" (ByVal hObject As LongPtr) As Long
 
     [UseGetLastError(False), DLLStackCheck(False)]
     Private Declare PtrSafe Function SetWindowSubclass Lib "comctl32" Alias "#410" (ByVal hWnd As LongPtr, _
@@ -130,6 +137,13 @@ Public Module UI3Window
     Private m_PropertySheetApply As LongPtr
     Private m_PropertySheetTabCaption As String
     Private m_PropertySheetTarget As ID2D1DCRenderTarget
+
+    ' Temporary PropertyPage probe + the confirmed native TextBox colour hook.
+    Private m_PropertyProbeEdit As LongPtr
+    Private m_PropertyProbeEditParent As LongPtr
+    Private m_PropertyProbePageDialog As LongPtr
+    Private m_PropertyEditBrush As LongPtr
+    Private m_PropertyEditBrushColor As Long
 
     [Description("True when tbUI3's effective app theme is dark.")]
     Public Function UI3IsDarkMode() As Boolean
@@ -397,12 +411,17 @@ CleanUp:
         Kill path
         On Error GoTo 0
 
-        ProbeLog "=== tbUI3 PropertyPage probe ==="
-        ProbeLog "Host: " & DebugWindowLine(host)
-        ProbeLog "Exposed txtSearch.hWnd: " & DebugWindowLine(textBoxHwnd)
+        ReleasePropertyEditBrush
+        m_PropertyProbeEdit = textBoxHwnd
+        m_PropertyProbeEditParent = GetParent(textBoxHwnd)
+        If m_PropertyProbeEditParent <> 0 Then m_PropertyProbePageDialog = GetParent(m_PropertyProbeEditParent)
+
+        ProbeLog "=== tbUI3 PropertyPage probe / 1.0.0.14 ==="
+        ProbeLog "Confirmed colour route from 1.0.0.13: ThunderPropertyPageDC receives WM_CTLCOLOREDIT for ThunderTextBox."
+        ProbeSnapshot "initial"
         ProbeLog "--- host tree ---"
         DumpWindowTree host, 0, 5
-        ProbeLog "--- txtSearch ancestry / WM_CTLCOLOREDIT probes ---"
+        ProbeLog "--- txtSearch ancestry / layout probes ---"
 
         Dim cur As LongPtr
         Dim depth As Long
@@ -414,18 +433,161 @@ CleanUp:
             cur = GetParent(cur)
             depth = depth + 1
         Loop
-        ProbeLog "=== probe armed ==="
+
+        If m_PropertySheetTab <> 0 Then
+            ProbeLog "T: " & DebugWindowLine(m_PropertySheetTab)
+            SetWindowSubclass m_PropertySheetTab, AddressOf UI3PropertyProbeProc, _
+                CLngPtr(UI3_PROPERTY_PROBE_SUBCLASS_ID), CLngPtr(100)
+        End If
+
+        ProbeLog "=== probe armed; click Apply once to capture the native layout transition ==="
+        If m_PropertyProbeEdit <> 0 Then InvalidateRect m_PropertyProbeEdit, 0, 1
     End Sub
 
     Private Function UI3PropertyProbeProc(ByVal hWnd As LongPtr, ByVal uMsg As Long, ByVal wParam As LongPtr, _
             ByVal lParam As LongPtr, ByVal uIdSubclass As LongPtr, ByVal dwRefData As LongPtr) As LongPtr
-        If uMsg = WM_CTLCOLOREDIT Then
-            ProbeLog "WM_CTLCOLOREDIT receiver=" & DebugWindowLine(hWnd) & _
-                " child=" & DebugWindowLine(lParam)
-        ElseIf uMsg = WM_NCDESTROY Then
-            RemoveWindowSubclass hWnd, AddressOf UI3PropertyProbeProc, uIdSubclass
-        End If
+        Dim result As LongPtr
+
+        Select Case uMsg
+            Case WM_CTLCOLOREDIT
+                If hWnd = m_PropertyProbeEditParent And lParam = m_PropertyProbeEdit Then
+                    ProbeLog "WM_CTLCOLOREDIT FIX receiver=" & DebugWindowLine(hWnd) & _
+                        " child=" & DebugWindowLine(lParam)
+                    UI3PropertyProbeProc = PropertyEditBrush(wParam)
+                    Exit Function
+                End If
+                ProbeLog "WM_CTLCOLOREDIT other receiver=" & DebugWindowLine(hWnd) & _
+                    " child=" & DebugWindowLine(lParam)
+
+            Case WM_COMMAND
+                If hWnd = m_PropertySheetHost Then
+                    If CLng(wParam And &HFFFF&) = ID_APPLY_NOW Then
+                        ProbeSnapshot "Apply WM_COMMAND before default"
+                        result = DefSubclassProc(hWnd, uMsg, wParam, lParam)
+                        ProbeSnapshot "Apply WM_COMMAND after default"
+                        UI3PropertyProbeProc = result
+                        Exit Function
+                    End If
+                End If
+
+            Case WM_SIZE, WM_WINDOWPOSCHANGED
+                result = DefSubclassProc(hWnd, uMsg, wParam, lParam)
+                If hWnd = m_PropertyProbeEditParent Or hWnd = m_PropertyProbePageDialog Or _
+                        hWnd = m_PropertySheetHost Or hWnd = m_PropertySheetTab Then
+                    If uMsg = WM_SIZE Then
+                        ProbeSnapshot "WM_SIZE on " & DebugWindowLine(hWnd)
+                    Else
+                        ProbeSnapshot "WM_WINDOWPOSCHANGED on " & DebugWindowLine(hWnd)
+                    End If
+                End If
+                UI3PropertyProbeProc = result
+                Exit Function
+
+            Case WM_NCDESTROY
+                RemoveWindowSubclass hWnd, AddressOf UI3PropertyProbeProc, uIdSubclass
+                If hWnd = m_PropertyProbeEditParent Then
+                    m_PropertyProbeEditParent = 0
+                    m_PropertyProbeEdit = 0
+                    ReleasePropertyEditBrush
+                End If
+        End Select
+
         UI3PropertyProbeProc = DefSubclassProc(hWnd, uMsg, wParam, lParam)
+    End Function
+
+    Private Sub ProbeSnapshot(ByVal reason As String)
+        ProbeLog "--- snapshot: " & reason & " ---"
+        ProbeLog "Host: " & DebugWindowLine(m_PropertySheetHost)
+        ProbeLog "Tab: " & DebugWindowLine(m_PropertySheetTab)
+        ProbeLog "PageDialog: " & DebugWindowLine(m_PropertyProbePageDialog)
+        ProbeLog "PageDC/EditParent: " & DebugWindowLine(m_PropertyProbeEditParent)
+        ProbeLog "Edit: " & DebugWindowLine(m_PropertyProbeEdit)
+        ProbeLog "Tab item 0: " & DebugTabItemRect()
+    End Sub
+
+    Private Function DebugTabItemRect() As String
+        If m_PropertySheetTab = 0 Then
+            DebugTabItemRect = "unavailable"
+            Exit Function
+        End If
+
+        Dim rc As UI3GdiRect
+        If SendMessageW(m_PropertySheetTab, TCM_GETITEMRECT, 0, VarPtr(rc)) = 0 Then
+            DebugTabItemRect = "TCM_GETITEMRECT failed"
+        Else
+            DebugTabItemRect = "client=(" & CStr(rc.Left) & "," & CStr(rc.Top) & ")-(" & _
+                CStr(rc.Right) & "," & CStr(rc.Bottom) & ")"
+        End If
+    End Function
+
+    Private Function PropertyEditBrush(ByVal hdc As LongPtr) As LongPtr
+        Dim baseArgb As Long
+        Dim fillArgb As Long
+        Dim textArgb As Long
+        Dim colorRef As Long
+
+        If IsDarkMode() Then
+            baseArgb = DARK_SolidBackgroundFillColorBase
+            textArgb = DARK_TextFillColorPrimary
+            If GetFocus() = m_PropertyProbeEdit Then
+                fillArgb = DARK_ControlFillColorInputActive
+            Else
+                fillArgb = DARK_ControlFillColorDefault
+            End If
+        Else
+            baseArgb = LIGHT_SolidBackgroundFillColorBase
+            textArgb = LIGHT_TextFillColorPrimary
+            If GetFocus() = m_PropertyProbeEdit Then
+                fillArgb = LIGHT_ControlFillColorInputActive
+            Else
+                fillArgb = LIGHT_ControlFillColorDefault
+            End If
+        End If
+
+        colorRef = CompositeArgbToColorRef(fillArgb, baseArgb)
+        SetTextColor hdc, CompositeArgbToColorRef(textArgb, baseArgb)
+        SetBkColor hdc, colorRef
+
+        If m_PropertyEditBrush = 0 Or m_PropertyEditBrushColor <> colorRef Then
+            ReleasePropertyEditBrush
+            m_PropertyEditBrush = CreateSolidBrush(colorRef)
+            m_PropertyEditBrushColor = colorRef
+        End If
+
+        PropertyEditBrush = m_PropertyEditBrush
+    End Function
+
+    Private Sub ReleasePropertyEditBrush()
+        If m_PropertyEditBrush <> 0 Then DeleteObject m_PropertyEditBrush
+        m_PropertyEditBrush = 0
+        m_PropertyEditBrushColor = 0
+    End Sub
+
+    Private Function CompositeArgbToColorRef(ByVal argb As Long, ByVal backdrop As Long) As Long
+        Dim a As Long
+        Dim sr As Long
+        Dim sg As Long
+        Dim sb As Long
+        Dim br As Long
+        Dim bg As Long
+        Dim bb As Long
+        Dim rr As Long
+        Dim gg As Long
+        Dim bbOut As Long
+
+        a = (argb And &H7F000000) \ &H1000000
+        If (argb And &H80000000) <> 0 Then a = a + 128
+        sr = (argb And &HFF0000) \ &H10000
+        sg = (argb And &HFF00&) \ &H100&
+        sb = argb And &HFF&
+        br = (backdrop And &HFF0000) \ &H10000
+        bg = (backdrop And &HFF00&) \ &H100&
+        bb = backdrop And &HFF&
+
+        rr = (sr * a + br * (255 - a) + 127) \ 255
+        gg = (sg * a + bg * (255 - a) + 127) \ 255
+        bbOut = (sb * a + bb * (255 - a) + 127) \ 255
+        CompositeArgbToColorRef = rr Or (gg * &H100&) Or (bbOut * &H10000)
     End Function
 
     Private Sub DumpWindowTree(ByVal parent As LongPtr, ByVal depth As Long, ByVal maxDepth As Long)

@@ -1,6 +1,6 @@
 # Handoff: tbUI3 state on 2026-10-07
 
-This is written for the next developer or AI session; ChatGPT is expected to run the next several passes. Read `AGENTS.md`, then this file, then `CHANGELOG.md` and `ROADMAP.md`. State at the time of writing: `tbui3-dev`, package version 1.0.0.19 (candidate), twinBASIC BETA 997.
+This is written for the next developer or AI session; ChatGPT is expected to run the next several passes. Read `AGENTS.md`, then this file, then `CHANGELOG.md` and `ROADMAP.md`. State at the time of writing: `tbui3-dev`, package version 1.0.0.20 (candidate), twinBASIC BETA 997.
 
 ## What tbUI3 is
 
@@ -49,13 +49,14 @@ The decisions are in `docs/2026-10-06-first-pass-report.md` and `docs/2026-10-06
 | 1.0.0.16: PropertySheet owner-chain host fix | Built/opened in win32. Search TextBox stayed dark and the Icon tab was fully visible, but the outer PropertySheet remained classic/light because host discovery still happened before BETA 997 inserted the top-level page into its owner. |
 | 1.0.0.17: late PropertySheet host acquisition | Built/opened in win32. TextBox stayed dark and native Icon tab stayed fully visible, but the outer shell remained classic/light; repaint-time GA_ROOTOWNER still resolved only to ThunderPropertyPageDC. |
 | 1.0.0.18: structural PropertySheet promotion | Built/opened in win32. Correctly found the outer #32770 and SysTabControl32; titlebar/page/TextBox were dark and tab geometry was correct, but tab strip and action buttons still showed native light paint. |
-| 1.0.0.19: deferred PropertySheet skin activation | Candidate only. Posts a private message from page WM_WINDOWPOSCHANGED and attaches host/tab/button subclasses after the callback unwinds; logs each SetWindowSubclass result. Not built/run. |
+| 1.0.0.19: deferred PropertySheet skin activation | Built in win32 with TB0012 on `WM_APP = &H8000`; visual result still showed native light tab/button chrome. |
+| 1.0.0.20: WM_APP literal-width correction | Candidate only. Uses `&H8000&` so the deferred promotion message is a proper 32-bit Long. No other behavior change. |
 
 ## Work queue for the next passes (updated 2026-10-07)
 
 Do these in order, one pass each unless they are trivially small. Each pass ends with Shane building and testing in the IDE, then CHANGELOG.md and ROADMAP.md (and this file's table) recording only what he actually saw.
 
-1. **Build/test 1.0.0.19 in win32.** Pull/build/import and open `(Custom)` → `...`. Check whether the tab strip and OK/Cancel/Apply chrome are dark/themed while the Icon tab remains fully visible and the search TextBox remains dark. Send `%TEMP%\tbUI3-propertypage.log`; it should contain `SKIN host subclass=1` and `SKIN child subclass=1` for the tab/buttons after the `PROMOTE` line.
+1. **Build/test 1.0.0.20 in win32.** Confirm TB0012 is gone, then open `(Custom)` → `...` and check whether the tab strip and OK/Cancel/Apply chrome are dark/themed while the Icon tab remains fully visible and the search TextBox remains dark. Send `%TEMP%\tbUI3-propertypage.log`; look for `SKIN host subclass=1` and `SKIN child subclass=1` after promotion.
    - **Do not touch the designer bridge.** Keep `IconPageApplying`, `SetPendingIcon`/`TakePendingIcon`, `DesignName()` and the `DesignLog` calls exactly as they are.
 2. **Finish validating the picker behavior after the chrome pass is visually stable.** In win32 and then win64: pick + Apply; pick + OK; reopen; search `save`, `57716`, `E8CB`, `&HE174`; pick then Cancel; wheel over both the grid and search box; drag/click the new painted scrollbar. Then switch Windows light/dark while the property page is open and note whether the page/titlebar repaint immediately.
 3. **If the first chrome pass is stable, spike the host button strip.** Inspect the property-sheet HWND hierarchy and test a reversible overlay for host-owned OK/Cancel/Apply while leaving their native behavior underneath. Do not ship a host-window subclass/overlay unless teardown and keyboard behavior are proven.

@@ -46,7 +46,6 @@ Public Module UI3Window
     Private Const BST_HOT As Long = &H200
     Private Const TCM_FIRST As Long = &H1300
     Private Const TCM_GETITEMRECT As Long = TCM_FIRST + 10
-    Private Const TCM_ADJUSTRECT As Long = TCM_FIRST + 40
     Private Const TCM_SETITEMSIZE As Long = TCM_FIRST + 41
     Private Const TCM_SETPADDING As Long = TCM_FIRST + 43
 
@@ -82,6 +81,7 @@ Public Module UI3Window
     Private Declare PtrSafe Function GetDlgItem Lib "user32" (ByVal hDlg As LongPtr, ByVal nIDDlgItem As Long) As LongPtr
     Private Declare PtrSafe Function FindWindowExW Lib "user32" (ByVal hWndParent As LongPtr, ByVal hWndChildAfter As LongPtr, _
         ByVal lpszClass As LongPtr, ByVal lpszWindow As LongPtr) As LongPtr
+    Private Declare PtrSafe Function GetParent Lib "user32" (ByVal hWnd As LongPtr) As LongPtr
     Private Declare PtrSafe Function GetWindowRect Lib "user32" (ByVal hWnd As LongPtr, ByRef lpRect As UI3GdiRect) As Long
     Private Declare PtrSafe Function MapWindowPoints Lib "user32" (ByVal hWndFrom As LongPtr, ByVal hWndTo As LongPtr, _
         ByVal lpPoints As LongPtr, ByVal cPoints As Long) As Long
@@ -135,6 +135,7 @@ Public Module UI3Window
     Private m_PropertySheetApply As LongPtr
     Private m_PropertyPage As LongPtr
     Private m_PropertyEdit As LongPtr
+    Private m_PropertyEditParent As LongPtr
     Private m_PropertyEditBrush As LongPtr
     Private m_PropertyEditBrushColor As Long
     Private m_PropertySheetTabCaption As String
@@ -389,15 +390,17 @@ CleanUp:
         m_PropertySheetCancel = GetDlgItem(hWnd, IDCANCEL)
         m_PropertySheetApply = GetDlgItem(hWnd, ID_APPLY_NOW)
         m_PropertyPage = PageHwnd
-        m_PropertyEdit = EditHwnd
+        m_PropertyEdit = ResolveNativeEdit(EditHwnd)
+        If m_PropertyEdit <> 0 Then m_PropertyEditParent = GetParent(m_PropertyEdit)
 
         AttachPropertySheetChild m_PropertySheetTab, UI3_PSKIN_TAB
         AttachPropertySheetChild m_PropertySheetOK, UI3_PSKIN_OK
         AttachPropertySheetChild m_PropertySheetCancel, UI3_PSKIN_CANCEL
         AttachPropertySheetChild m_PropertySheetApply, UI3_PSKIN_APPLY
-        AttachPropertySheetPage m_PropertyPage
+        AttachPropertyEditParent m_PropertyEditParent
 
         LayoutPropertySheetSkin
+        If m_PropertyEdit <> 0 Then InvalidateRect m_PropertyEdit, 0, 1
         RedrawPropertySheetSkin
     End Sub
 
@@ -406,18 +409,45 @@ CleanUp:
         SetWindowSubclass hWnd, AddressOf UI3PropertySheetSubclassProc, CLngPtr(UI3_PROPERTY_SHEET_SUBCLASS_ID), kind
     End Sub
 
-    Private Sub AttachPropertySheetPage(ByVal hWnd As LongPtr)
+    Private Sub AttachPropertyEditParent(ByVal hWnd As LongPtr)
         If hWnd = 0 Then Exit Sub
         SetWindowSubclass hWnd, AddressOf UI3PropertySheetSubclassProc, CLngPtr(UI3_PROPERTY_PAGE_SUBCLASS_ID), UI3_PSKIN_PAGE
     End Sub
+
+    Private Function ResolveNativeEdit(ByVal hWnd As LongPtr) As LongPtr
+        If hWnd = 0 Then Exit Function
+
+        Dim editChild As LongPtr
+        editChild = FindWindowExW(hWnd, 0, StrPtr("Edit"), 0)
+        If editChild <> 0 Then
+            ResolveNativeEdit = editChild
+            Exit Function
+        End If
+
+        ' Some twinBASIC/VB-compatible controls use one wrapper HWND around the real EDIT.
+        ' Search one more level before falling back to the HWND exposed by the TextBox itself.
+        Dim child As LongPtr
+        Dim nested As LongPtr
+        child = FindWindowExW(hWnd, 0, 0, 0)
+        Do While child <> 0
+            nested = FindWindowExW(child, 0, StrPtr("Edit"), 0)
+            If nested <> 0 Then
+                ResolveNativeEdit = nested
+                Exit Function
+            End If
+            child = FindWindowExW(hWnd, child, 0, 0)
+        Loop
+
+        ResolveNativeEdit = hWnd
+    End Function
 
     Private Sub DetachPropertySheetSkin()
         RemovePropertySheetChild m_PropertySheetTab
         RemovePropertySheetChild m_PropertySheetOK
         RemovePropertySheetChild m_PropertySheetCancel
         RemovePropertySheetChild m_PropertySheetApply
-        If m_PropertyPage <> 0 Then
-            RemoveWindowSubclass m_PropertyPage, AddressOf UI3PropertySheetSubclassProc, CLngPtr(UI3_PROPERTY_PAGE_SUBCLASS_ID)
+        If m_PropertyEditParent <> 0 Then
+            RemoveWindowSubclass m_PropertyEditParent, AddressOf UI3PropertySheetSubclassProc, CLngPtr(UI3_PROPERTY_PAGE_SUBCLASS_ID)
         End If
         If m_PropertySheetHost <> 0 Then
             RemoveWindowSubclass m_PropertySheetHost, AddressOf UI3PropertySheetSubclassProc, CLngPtr(UI3_PROPERTY_SHEET_SUBCLASS_ID)
@@ -429,6 +459,7 @@ CleanUp:
         m_PropertySheetApply = 0
         m_PropertyPage = 0
         m_PropertyEdit = 0
+        m_PropertyEditParent = 0
         ReleasePropertyEditBrush
         m_PropertySheetTabCaption = ""
         Set m_PropertySheetTarget = Nothing
@@ -532,8 +563,8 @@ CleanUp:
         If hWnd = m_PropertySheetOK Then m_PropertySheetOK = 0
         If hWnd = m_PropertySheetCancel Then m_PropertySheetCancel = 0
         If hWnd = m_PropertySheetApply Then m_PropertySheetApply = 0
-        If hWnd = m_PropertyPage Then
-            m_PropertyPage = 0
+        If hWnd = m_PropertyEditParent Then
+            m_PropertyEditParent = 0
             m_PropertyEdit = 0
             ReleasePropertyEditBrush
         End If
@@ -545,6 +576,7 @@ CleanUp:
             m_PropertySheetApply = 0
             m_PropertyPage = 0
             m_PropertyEdit = 0
+            m_PropertyEditParent = 0
             ReleasePropertyEditBrush
             m_PropertySheetTabCaption = ""
             Set m_PropertySheetTarget = Nothing
@@ -775,21 +807,28 @@ CleanUp:
         SendMessageW m_PropertySheetTab, TCM_SETITEMSIZE, 0, MakeLParam(itemW, itemH)
         SendMessageW m_PropertySheetTab, TCM_SETPADDING, 0, MakeLParam(padX, padY)
 
-        ' The PropertySheet does not automatically move the active page when we enlarge the
-        ' tab header. Ask the real tab control for its new display rectangle and move the
-        ' real PropertyPage HWND into it so the 32-DIP selected tab is no longer overpainted/clipped.
+        ' BETA 997 keeps the active PropertyPage at the classic tab-header offset even after
+        ' TCM_SETITEMSIZE. Do not replace its geometry with TCM_ADJUSTRECT (that created a large
+        ' blank band in 1.0.0.11). Instead move the real page only by the amount it actually
+        ' overlaps the enlarged first tab item, preserving the rest of the host's layout.
         If m_PropertyPage <> 0 Then
-            Dim displayRect As UI3GdiRect
-            UI3GetClientRect m_PropertySheetTab, displayRect
-            SendMessageW m_PropertySheetTab, TCM_ADJUSTRECT, 0, VarPtr(displayRect)
-            MapWindowPoints m_PropertySheetTab, m_PropertySheetHost, VarPtr(displayRect), 2
-
+            Dim tabRect As UI3GdiRect
             Dim pageRect As UI3GdiRect
-            If GetWindowRect(m_PropertyPage, pageRect) <> 0 Then
-                MapWindowPoints 0, m_PropertySheetHost, VarPtr(pageRect), 2
-                SetWindowPos m_PropertyPage, 0, displayRect.Left, displayRect.Top, _
-                    displayRect.Right - displayRect.Left, displayRect.Bottom - displayRect.Top, _
-                    SWP_NOZORDER Or SWP_NOACTIVATE
+            If SendMessageW(m_PropertySheetTab, TCM_GETITEMRECT, 0, VarPtr(tabRect)) <> 0 Then
+                MapWindowPoints m_PropertySheetTab, m_PropertySheetHost, VarPtr(tabRect), 2
+                If GetWindowRect(m_PropertyPage, pageRect) <> 0 Then
+                    MapWindowPoints 0, m_PropertySheetHost, VarPtr(pageRect), 2
+                    If pageRect.Top < tabRect.Bottom Then
+                        Dim dy As Long
+                        Dim pageH As Long
+                        dy = tabRect.Bottom - pageRect.Top
+                        pageH = pageRect.Bottom - pageRect.Top - dy
+                        If pageH > 0 Then
+                            SetWindowPos m_PropertyPage, 0, pageRect.Left, pageRect.Top + dy, _
+                                pageRect.Right - pageRect.Left, pageH, SWP_NOZORDER Or SWP_NOACTIVATE
+                        End If
+                    End If
+                End If
             End If
         End If
 

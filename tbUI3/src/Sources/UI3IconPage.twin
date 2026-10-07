@@ -48,6 +48,8 @@ Class UI3IconPage
     Private m_ApplyingTheme As Boolean
     Private m_LastDark As Boolean
     Private m_LastAccent As Long
+    Private m_InfoLine1 As String
+    Private m_InfoLine2 As String
 
     Sub New()
     End Sub
@@ -139,6 +141,9 @@ Class UI3IconPage
         lblInfo.BackStyle = vbBFTransparent
         lblInfo.WordWrap = True
         lblInfo.UseMnemonic = False
+        ' Runtime info text is painted by Direct2D into picChrome so it cannot be covered by
+        ' host/page repaint ordering. Keep lblInfo only as a useful designer placeholder.
+        lblInfo.Visible = False
 
         txtSearch.ZOrder 0
         picGrid.ZOrder 0
@@ -312,6 +317,23 @@ Failed:
                 w - PAGE_PAD_DIP - 1, PAGE_PAD_DIP + SEARCH_HEIGHT_DIP, 1)
             m_ChromeTarget.FillRoundedRectangle box, SolidBrush(m_ChromeTarget, focusArgb)
         End If
+
+        Dim infoPrimary As Long
+        Dim infoSecondary As Long
+        If dark Then
+            infoPrimary = DARK_TextFillColorPrimary
+            infoSecondary = DARK_TextFillColorSecondary
+        Else
+            infoPrimary = LIGHT_TextFillColorPrimary
+            infoSecondary = LIGHT_TextFillColorSecondary
+        End If
+
+        Dim infoTop As Single
+        infoTop = h - PAGE_PAD_DIP - INFO_HEIGHT_DIP
+        DrawLeftTextStyled m_ChromeTarget, m_InfoLine1, 14, DWRITE_FONT_WEIGHT_NORMAL, _
+            PAGE_PAD_DIP, infoTop, w - PAGE_PAD_DIP, infoTop + 18, infoPrimary
+        DrawLeftTextStyled m_ChromeTarget, m_InfoLine2, 12, DWRITE_FONT_WEIGHT_NORMAL, _
+            PAGE_PAD_DIP, infoTop + 18, w - PAGE_PAD_DIP, infoTop + INFO_HEIGHT_DIP, infoSecondary
     End Sub
 
     Private Function OleFromArgbOver(ByVal Color As Long, ByVal Backdrop As Long) As Long
@@ -794,7 +816,7 @@ Failed:
         Dim i As Long
         Dim name As String
         If m_Selected = 0 Then
-            lblInfo.Caption = "None" & vbCrLf & "ui3IconNone" & InfoSeparator() & "0"
+            SetInfoText "None", "ui3IconNone" & InfoSeparator() & "0"
             Exit Sub
         End If
         For i = 0 To IconCatalogCount() - 1
@@ -804,13 +826,19 @@ Failed:
             End If
         Next
         If Len(name) = 0 Then
-            lblInfo.Caption = "Not in catalog" & vbCrLf & m_Selected & InfoSeparator() & "&H" & Hex$(m_Selected)
+            SetInfoText "Not in catalog", m_Selected & InfoSeparator() & "&H" & Hex$(m_Selected)
             Exit Sub
         End If
         ' Line 1: the name. Line 2: everything the search box accepts, in the order the hint lists it.
-        lblInfo.Caption = name & vbCrLf & _
-            "ui3Icon" & name & InfoSeparator() & m_Selected & InfoSeparator() & "&H" & Hex$(m_Selected) & _
-            InfoSeparator() & "U+" & Hex$(GlyphCode(m_Selected))
+        SetInfoText name, "ui3Icon" & name & InfoSeparator() & m_Selected & InfoSeparator() & _
+            "&H" & Hex$(m_Selected) & InfoSeparator() & "U+" & Hex$(GlyphCode(m_Selected))
+    End Sub
+
+    Private Sub SetInfoText(ByVal Line1 As String, ByVal Line2 As String)
+        m_InfoLine1 = Line1
+        m_InfoLine2 = Line2
+        lblInfo.Caption = Line1 & vbCrLf & Line2
+        picChrome.Refresh
     End Sub
 
     Private Function InfoSeparator() As String

@@ -4,11 +4,11 @@ All notable changes to tbUI3. Dates are when the change was made, not released. 
 
 ## Unreleased
 
-### 2026-10-07, icon picker search hint and info line (1.0.0.5 candidate, not built)
+### 2026-10-07, icon picker search hint and info line (1.0.0.5 candidate)
 
 - At Shane's request, the search box shows a grey hint, "Search by name, number, &HE174 or U+E8CB", while it is empty (Windows `EM_SETCUEBANNER`, a private `SendMessageW` declaration; needs Common Controls 6, otherwise nothing shows).
 - The info line under the grid is now two lines: the icon's name, then `ui3IconName · value · &Hhex · U+glyph`, in the same order as the hint. `lblInfo.UseMnemonic` is off so "&H" is shown literally.
-- Not compiled or run.
+- Checked on Shane's PC (win32): he reported the picker "looks great" and pushed tbUI3Test with the updated package (91fef79). `tbUI3Test/src` was regenerated from it.
 
 ### 2026-10-07, icon picker saves the chosen icon (1.0.0.5 candidate)
 

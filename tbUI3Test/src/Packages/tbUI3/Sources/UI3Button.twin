@@ -51,6 +51,9 @@ Public Class UI3Button
         UserControl.Refresh
     End Property
 
+    ' Linked to the UI3IconPage picker. twinBASIC BETA 997 ignores this link (the page opens from
+    ' (Custom) instead); it is kept so Icon gets its own "..." once twinBASIC honours it, as VB6 did.
+    [PropertyPage("UI3IconPage")]
     [Description("Semantic WinUI symbol icon. tbUI3 selects the matching Segoe Fluent Icons or Segoe MDL2 Assets glyph.")]
     Public Property Get Icon() As UI3Icon
         Icon = m_Icon
@@ -58,6 +61,8 @@ Public Class UI3Button
 
     Public Property Let Icon(ByVal Value As UI3Icon)
         m_Icon = Value
+        If IconPageApplying Then SetPendingIcon DesignName(), Value
+        DesignLog "Let Icon " & Hex$(ObjPtr(Me)) & " " & DesignName() & " = " & CLng(Value) & IIf(IconPageApplying, " (from page)", "")
         PropertyChanged "Icon"
         UserControl.Refresh
     End Property
@@ -126,9 +131,26 @@ Public Class UI3Button
         m_IconFontName = PropBag.ReadProperty("IconFontName", DEFAULT_ICON_FONT_NAME)
         m_IconPosition = PropBag.ReadProperty("IconPosition", DEFAULT_ICON_POSITION)
         m_IconSpacing = PropBag.ReadProperty("IconSpacing", ButtonIconSpacingDefault)
+        DesignLog "ReadProperties " & Hex$(ObjPtr(Me)) & " " & DesignName() & " Icon = " & CLng(m_Icon)
+        If Not IsUserMode() Then
+            If TakePendingIcon(DesignName(), m_Icon) Then PropertyChanged "Icon"
+        End If
     End Sub
 
+    ' Design-time name of this control, for the UI3IconPage designer bridge (see UI3Icons).
+    Private Function DesignName() As String
+        On Error Resume Next
+        DesignName = UserControl.Ambient.DisplayName
+    End Function
+
+    Private Function IsUserMode() As Boolean
+        IsUserMode = True
+        On Error Resume Next
+        IsUserMode = UserControl.Ambient.UserMode
+    End Function
+
     Private Sub UserControl_WriteProperties(PropBag As PropertyBag)
+        DesignLog "WriteProperties " & Hex$(ObjPtr(Me)) & " " & DesignName() & " Icon = " & CLng(m_Icon)
         PropBag.WriteProperty "Caption", m_Caption, DEFAULT_CAPTION
         PropBag.WriteProperty "Style", m_Style, DEFAULT_STYLE
         PropBag.WriteProperty "Icon", m_Icon, DEFAULT_ICON

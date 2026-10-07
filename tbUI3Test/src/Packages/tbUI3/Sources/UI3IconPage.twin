@@ -1,0 +1,418 @@
+[Description("tbUI3 icon picker. Opens from (Custom) in the Properties pane of a UI3Button.")]
+[FormDesignerId("682C3191-657B-4BE8-95CE-5EF96F6B1512")]
+[ClassId("D768F084-D796-4059-BDE1-CCE7FF13D95C")]
+[InterfaceId("6FD4EF2D-3B96-43C2-A6B8-0EB453FD28D3")]
+[EventInterfaceId("4136AF42-489D-45BB-BFC7-A6F1461FB755")]
+Class UI3IconPage
+
+    ' A searchable grid of every UI3Icon, drawn with the same Direct2D/DirectWrite code as
+    ' UI3Button. The search box matches a name ("sort"), a UI3Icon value in decimal (57716)
+    ' or hex (E174), or the glyph code that is drawn (E8CB); &H, 0x and U+ prefixes are allowed.
+    ' Designer controls: txtSearch (TextBox), picGrid (PictureBox), vsbGrid (VScrollBar),
+    ' lblInfo (Label). Their positions are set in code, so their designer placement is not critical.
+    '
+    ' twinBASIC BETA 997 shows this page from (Custom) only; it ignores the
+    ' [PropertyPage("UI3IconPage")] link on UI3Button.Icon (reported as a bug).
+
+    Private Const CELL_DIP As Single = 44
+    Private Const CELL_INSET_DIP As Single = 3
+    Private Const NONE_ENTRY As Long = -1
+    Private Const SEARCH_HINT As String = "Search by name, number, &HE174 or U+E8CB"
+    Private Const EM_SETCUEBANNER As Long = &H1501&
+
+    Private Declare PtrSafe Function SendMessageW Lib "user32" (ByVal hWnd As LongPtr, ByVal wMsg As Long, _
+        ByVal wParam As LongPtr, ByVal lParam As LongPtr) As LongPtr
+
+    Private m_Target As ID2D1DCRenderTarget
+    Private m_Shown() As Long          ' catalog indexes currently shown; NONE_ENTRY for ui3IconNone
+    Private m_ShownCount As Long
+    Private m_Selected As Long         ' selected UI3Icon value
+    Private m_LaidOut As Boolean
+
+    Sub New()
+    End Sub
+
+    Private Sub PropertyPage_Initialize()
+        ' The Caption names this page's tab in the property dialog.
+        On Error Resume Next
+        Me.Caption = "Icon"
+    End Sub
+
+    Private Sub PropertyPage_SelectionChanged()
+        LayoutControls
+        m_Selected = 0
+        If Me.SelectedControls.Count > 0 Then
+            On Error Resume Next
+            m_Selected = CLng(CallByName(Me.SelectedControls(0), "Icon", vbGet))
+            On Error GoTo 0
+        End If
+        txtSearch.Text = ""
+        ApplyFilter
+        ScrollToSelected
+        UpdateInfo
+    End Sub
+
+    Private Sub PropertyPage_ApplyChanges()
+        ' twinBASIC BETA 997 does not keep a value set here: the designer rebuilds the control from its
+        ' own saved copy. IconPageApplying makes UI3Button record the value so its next design-time
+        ' ReadProperties re-applies it (see the designer bridge in UI3Icons).
+        Dim ctl As Object
+        DesignLog "ApplyChanges value = " & m_Selected
+        IconPageApplying = True
+        For Each ctl In Me.SelectedControls
+            CallByName ctl, "Icon", vbLet, m_Selected
+        Next
+        IconPageApplying = False
+    End Sub
+
+    Private Sub LayoutControls()
+        If m_LaidOut Then Exit Sub
+        m_LaidOut = True
+        On Error Resume Next
+        Dim pad As Single
+        Dim w As Single
+        Dim h As Single
+        Dim barW As Single
+        Dim boxH As Single
+        Dim infoH As Single
+        pad = Me.ScaleX(8, vbPixels, Me.ScaleMode)
+        barW = Me.ScaleX(17, vbPixels, Me.ScaleMode)
+        boxH = Me.ScaleY(24, vbPixels, Me.ScaleMode)
+        infoH = Me.ScaleY(36, vbPixels, Me.ScaleMode)
+        w = Me.ScaleWidth
+        h = Me.ScaleHeight
+        txtSearch.Move pad, pad, w - 2 * pad, boxH
+        picGrid.Move pad, 2 * pad + boxH, w - 2 * pad - barW, h - 4 * pad - boxH - infoH
+        vsbGrid.Move w - pad - barW, 2 * pad + boxH, barW, h - 4 * pad - boxH - infoH
+        lblInfo.Move pad, h - pad - infoH, w - 2 * pad, infoH
+        picGrid.AutoRedraw = False
+        picGrid.ScaleMode = vbPixels
+        picGrid.BackColor = vbWhite
+        lblInfo.WordWrap = True
+        lblInfo.UseMnemonic = False     ' show "&H" literally instead of underlining H
+        ' Grey hint shown while the search box is empty (Windows edit cue banner; wParam 1 keeps it
+        ' visible while the box has focus). Needs Common Controls 6; without it nothing is shown.
+        SendMessageW txtSearch.hWnd, EM_SETCUEBANNER, 1, StrPtr(SEARCH_HINT)
+    End Sub
+
+    ' --- Filtering ---
+
+    Private Sub ApplyFilter()
+        Dim query As String
+        Dim i As Long
+        Dim n As Long
+        query = Trim$(txtSearch.Text)
+        n = IconCatalogCount()
+        ReDim m_Shown(0 To n)
+        m_ShownCount = 0
+        If Len(query) = 0 Or InStr(1, "none", query, vbTextCompare) = 1 Then
+            m_Shown(0) = NONE_ENTRY
+            m_ShownCount = 1
+        End If
+        For i = 0 To n - 1
+            If EntryMatches(i, query) Then
+                m_Shown(m_ShownCount) = i
+                m_ShownCount = m_ShownCount + 1
+            End If
+        Next
+        UpdateScrollBar
+        vsbGrid.Value = 0
+        picGrid.Refresh
+    End Sub
+
+    Private Function EntryMatches(ByVal Index As Long, ByVal Query As String) As Boolean
+        If Len(Query) = 0 Then
+            EntryMatches = True
+            Exit Function
+        End If
+        If InStr(1, IconCatalogName(Index), Query, vbTextCompare) > 0 Then
+            EntryMatches = True
+            Exit Function
+        End If
+
+        Dim value As Long
+        value = IconCatalogValue(Index)
+        If IsAllDigits(Query) Then
+            If Len(Query) <= 6 Then
+                If CLng(Query) = value Then EntryMatches = True: Exit Function
+            End If
+        End If
+
+        Dim hexQuery As String
+        hexQuery = UCase$(Query)
+        If Left$(hexQuery, 2) = "&H" Or Left$(hexQuery, 2) = "0X" Or Left$(hexQuery, 2) = "U+" Then hexQuery = Mid$(hexQuery, 3)
+        If Right$(hexQuery, 1) = "&" Then hexQuery = Left$(hexQuery, Len(hexQuery) - 1)
+        If Len(hexQuery) > 0 And Len(hexQuery) <= 4 And IsAllHex(hexQuery) Then
+            If Hex$(value) = hexQuery Then EntryMatches = True: Exit Function
+            If Hex$(GlyphCode(value)) = hexQuery Then EntryMatches = True: Exit Function
+        End If
+    End Function
+
+    Private Function IsAllDigits(ByVal Text As String) As Boolean
+        Dim i As Long
+        If Len(Text) = 0 Then Exit Function
+        For i = 1 To Len(Text)
+            If InStr("0123456789", Mid$(Text, i, 1)) = 0 Then Exit Function
+        Next
+        IsAllDigits = True
+    End Function
+
+    Private Function IsAllHex(ByVal Text As String) As Boolean
+        Dim i As Long
+        For i = 1 To Len(Text)
+            If InStr("0123456789ABCDEF", Mid$(Text, i, 1)) = 0 Then Exit Function
+        Next
+        IsAllHex = True
+    End Function
+
+    Private Function GlyphCode(ByVal Icon As Long) As Long
+        If Icon = 0 Then Exit Function
+        GlyphCode = AscW(SemanticIconGlyph(Icon)) And &HFFFF&
+    End Function
+
+    Private Function ShownValue(ByVal Position As Long) As Long
+        If m_Shown(Position) <> NONE_ENTRY Then ShownValue = IconCatalogValue(m_Shown(Position))
+    End Function
+
+    Private Function ShownName(ByVal Position As Long) As String
+        If m_Shown(Position) = NONE_ENTRY Then
+            ShownName = "None"
+        Else
+            ShownName = IconCatalogName(m_Shown(Position))
+        End If
+    End Function
+
+    ' --- Grid geometry (DIPs) ---
+
+    Private Function GridDpi() As Single
+        GridDpi = DpiOfDC(picGrid.hDC)
+        If GridDpi <= 0 Then GridDpi = 96
+    End Function
+
+    Private Sub GridSizeDips(ByRef W As Single, ByRef H As Single)
+        Dim client As UI3GdiRect
+        Dim dpi As Single
+        UI3GetClientRect picGrid.hWnd, client
+        dpi = GridDpi()
+        W = client.Right * 96! / dpi
+        H = client.Bottom * 96! / dpi
+    End Sub
+
+    Private Function Columns() As Long
+        Dim w As Single
+        Dim h As Single
+        GridSizeDips w, h
+        Columns = Int(w / CELL_DIP)
+        If Columns < 1 Then Columns = 1
+    End Function
+
+    Private Function VisibleRows() As Long
+        Dim w As Single
+        Dim h As Single
+        GridSizeDips w, h
+        VisibleRows = Int(h / CELL_DIP)
+        If VisibleRows < 1 Then VisibleRows = 1
+    End Function
+
+    Private Sub UpdateScrollBar()
+        Dim totalRows As Long
+        Dim cols As Long
+        cols = Columns()
+        totalRows = (m_ShownCount + cols - 1) \ cols
+        vsbGrid.Min = 0
+        If totalRows > VisibleRows() Then
+            vsbGrid.Max = totalRows - VisibleRows()
+            vsbGrid.Enabled = True
+        Else
+            vsbGrid.Max = 0
+            vsbGrid.Enabled = False
+        End If
+        vsbGrid.SmallChange = 1
+        vsbGrid.LargeChange = VisibleRows()
+    End Sub
+
+    Private Sub ScrollToSelected()
+        Dim i As Long
+        Dim row As Long
+        For i = 0 To m_ShownCount - 1
+            If ShownValue(i) = m_Selected Then
+                row = i \ Columns()
+                If row > vsbGrid.Max Then row = vsbGrid.Max
+                vsbGrid.Value = row
+                Exit For
+            End If
+        Next
+        picGrid.Refresh
+    End Sub
+
+    ' --- Painting ---
+
+    Private Sub picGrid_Paint()
+        Dim hr As Long
+        hr = PaintGrid()
+        If hr <> 0 Then
+            On Error Resume Next
+            picGrid.Cls
+            picGrid.CurrentX = 4
+            picGrid.CurrentY = 4
+            picGrid.Print "D2D error &H" & Hex$(hr)
+        End If
+    End Sub
+
+    Private Function PaintGrid() As Long
+        Dim hdc As LongPtr
+        Dim client As UI3GdiRect
+        Dim dpi As Single
+        Dim drawing As Boolean
+
+        On Error GoTo Failed
+
+        hdc = picGrid.hDC
+        If hdc = 0 Then Exit Function
+        UI3GetClientRect picGrid.hWnd, client
+        If client.Right <= 0 Or client.Bottom <= 0 Then Exit Function
+
+        If m_Target Is Nothing Then Set m_Target = CreateDCTarget()
+        dpi = DpiOfDC(hdc)
+        m_Target.SetDpi dpi, dpi
+        m_Target.BindDC hdc, client
+
+        m_Target.BeginDraw
+        drawing = True
+        DrawCells
+        drawing = False
+
+        Dim hr As Long
+        hr = m_Target.EndDraw(0, 0)
+        If hr < 0 Then
+            PaintGrid = hr
+            Set m_Target = Nothing
+        End If
+        Exit Function
+
+Failed:
+        PaintGrid = Err.Number
+        If PaintGrid = 0 Then PaintGrid = -1
+        If drawing Then m_Target.EndDraw 0, 0
+        Set m_Target = Nothing
+    End Function
+
+    ' The page is a classic light dialog, so the grid always uses WinUI's light tokens.
+    Private Sub DrawCells()
+        Dim cols As Long
+        Dim firstRow As Long
+        Dim rows As Long
+        Dim position As Long
+        Dim r As Long
+        Dim c As Long
+        Dim x0 As Single
+        Dim y0 As Single
+        Dim value As Long
+        Dim foreground As Long
+        Dim family As String
+
+        m_Target.Clear ColorFromArgb(&HFFFFFFFF)
+        cols = Columns()
+        rows = VisibleRows() + 1
+        firstRow = vsbGrid.Value
+        family = SystemIconFontFamily()
+
+        For r = 0 To rows - 1
+            For c = 0 To cols - 1
+                position = (firstRow + r) * cols + c
+                If position >= m_ShownCount Then Exit For
+                x0 = c * CELL_DIP
+                y0 = r * CELL_DIP
+                value = ShownValue(position)
+                If value = m_Selected Then
+                    m_Target.FillRoundedRectangle RoundedRect(x0 + CELL_INSET_DIP, y0 + CELL_INSET_DIP, _
+                        x0 + CELL_DIP - CELL_INSET_DIP, y0 + CELL_DIP - CELL_INSET_DIP, ControlCornerRadius), _
+                        SolidBrush(m_Target, AccentShade(ACCENT_DARK1))
+                    foreground = LIGHT_TextOnAccentFillColorPrimary
+                Else
+                    foreground = LIGHT_TextFillColorPrimary
+                End If
+                If value = 0 Then
+                    DrawButtonContent m_Target, "None", "", "", SymbolIconDefaultFontSize, ui3IconLeft, 0, _
+                        x0, y0, x0 + CELL_DIP, y0 + CELL_DIP, foreground
+                Else
+                    DrawButtonContent m_Target, "", SemanticIconGlyph(value), family, SymbolIconDefaultFontSize, _
+                        ui3IconLeft, 0, x0, y0, x0 + CELL_DIP, y0 + CELL_DIP, foreground
+                End If
+            Next
+        Next
+    End Sub
+
+    ' --- Interaction ---
+
+    Private Sub picGrid_MouseDown(Button As Integer, Shift As Integer, X As Single, Y As Single)
+        If Button <> vbLeftButton Then Exit Sub
+        Dim dpi As Single
+        Dim c As Long
+        Dim r As Long
+        Dim position As Long
+        dpi = GridDpi()
+        c = Int((X * 96! / dpi) / CELL_DIP)
+        r = Int((Y * 96! / dpi) / CELL_DIP)
+        If c >= Columns() Then Exit Sub
+        position = (vsbGrid.Value + r) * Columns() + c
+        If position < 0 Or position >= m_ShownCount Then Exit Sub
+        m_Selected = ShownValue(position)
+        picGrid.Refresh
+        UpdateInfo
+        Me.Changed = True
+    End Sub
+
+    Private Sub txtSearch_Change()
+        ApplyFilter
+    End Sub
+
+    Private Sub vsbGrid_Change()
+        picGrid.Refresh
+    End Sub
+
+    Private Sub vsbGrid_Scroll()
+        picGrid.Refresh
+    End Sub
+
+    Private Sub picGrid_MouseWheel(ByVal Delta As Integer, ByVal Horizontal As Boolean)
+        ' One wheel notch (WHEEL_DELTA = 120) moves one row; smaller deltas still move one row.
+        If Horizontal Or Not vsbGrid.Enabled Then Exit Sub
+        Dim notches As Long
+        notches = Delta \ 120
+        If notches = 0 Then notches = Sgn(Delta)
+        Dim newValue As Long
+        newValue = vsbGrid.Value - notches
+        If newValue < vsbGrid.Min Then newValue = vsbGrid.Min
+        If newValue > vsbGrid.Max Then newValue = vsbGrid.Max
+        vsbGrid.Value = newValue
+    End Sub
+
+    Private Sub UpdateInfo()
+        Dim i As Long
+        Dim name As String
+        If m_Selected = 0 Then
+            lblInfo.Caption = "None" & vbCrLf & "ui3IconNone" & InfoSeparator() & "0"
+            Exit Sub
+        End If
+        For i = 0 To IconCatalogCount() - 1
+            If IconCatalogValue(i) = m_Selected Then
+                name = IconCatalogName(i)
+                Exit For
+            End If
+        Next
+        If Len(name) = 0 Then
+            lblInfo.Caption = "Not in catalog" & vbCrLf & m_Selected & InfoSeparator() & "&H" & Hex$(m_Selected)
+            Exit Sub
+        End If
+        ' Line 1: the name. Line 2: everything the search box accepts, in the order the hint lists it.
+        lblInfo.Caption = name & vbCrLf & _
+            "ui3Icon" & name & InfoSeparator() & m_Selected & InfoSeparator() & "&H" & Hex$(m_Selected) & _
+            InfoSeparator() & "U+" & Hex$(GlyphCode(m_Selected))
+    End Sub
+
+    Private Function InfoSeparator() As String
+        InfoSeparator = "   " & ChrW(&HB7) & "   "
+    End Function
+
+End Class

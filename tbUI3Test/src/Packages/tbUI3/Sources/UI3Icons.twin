@@ -231,4 +231,127 @@ Private Module UI3Icons
         SemanticIconGlyph = ChrW$(codePoint)
     End Function
 
+    ' --- Icon catalog, used by the UI3IconPage picker ---
+    ' Name and UI3Icon value for every symbol, in UI3Icon order (alphabetical), built once on first use.
+    Private m_CatalogNames() As String
+    Private m_CatalogValues() As Long
+    Private m_CatalogCount As Long
+
+    Private Sub EnsureCatalog()
+        If m_CatalogCount > 0 Then Exit Sub
+        Dim s As String
+        s = s & "Accept=E10B;Account=E168;Add=E109;AddFriend=E1E2;Admin=E1A7;AlignCenter=E1A1;AlignLeft=E1A2;AlignRight=E1A0;"
+        s = s & "AllApps=E179;Attach=E16C;AttachCamera=E12D;Audio=E189;Back=E112;BackToWindow=E1D8;BlockContact=E1E0;Bold=E19B;"
+        s = s & "Bookmarks=E12F;BrowsePhotos=E155;Bullets=E133;Calculator=E1D0;Calendar=E163;CalendarDay=E161;CalendarReply=E1DB;CalendarWeek=E162;"
+        s = s & "Camera=E114;Cancel=E10A;Caption=E15A;CellPhone=E1C9;Character=E164;Clear=E106;ClearSelection=E1C5;Clock=E121;"
+        s = s & "ClosedCaption=E190;ClosePane=E127;Comment=E134;Contact=E13D;Contact2=E187;ContactInfo=E136;ContactPresence=E181;Copy=E16F;"
+        s = s & "Crop=E123;Cut=E16B;Delete=E107;Directions=E1D1;DisableUpdates=E194;DisconnectDrive=E17A;Dislike=E19E;DockBottom=E147;"
+        s = s & "DockLeft=E145;DockRight=E146;Document=E130;Download=E118;Edit=E104;Emoji=E11D;Emoji2=E170;Favorite=E113;"
+        s = s & "Filter=E16E;Find=E11A;Flag=E129;Folder=E188;Font=E185;FontColor=E186;FontDecrease=E1C6;FontIncrease=E1C7;"
+        s = s & "FontSize=E1C8;Forward=E111;FourBars=E1E9;FullScreen=E1D9;GlobalNavigationButton=E700;Globe=E12B;Go=E143;GoToStart=E1E4;"
+        s = s & "GoToToday=E184;HangUp=E137;Help=E11B;HideBcc=E16A;Highlight=E193;Home=E10F;Import=E150;ImportAll=E151;"
+        s = s & "Important=E171;Italic=E199;Keyboard=E144;LeaveChat=E11F;Library=E1D3;Like=E19F;LikeDislike=E19D;Link=E167;"
+        s = s & "List=E14C;Mail=E119;MailFilled=E135;MailForward=E120;MailReply=E172;MailReplyAll=E165;Manage=E178;Map=E1C4;"
+        s = s & "MapDrive=E17B;MapPin=E139;Memo=E1D5;Message=E15F;Microphone=E1D6;More=E10C;MoveToFolder=E19C;MusicInfo=E142;"
+        s = s & "Mute=E198;NewFolder=E1DA;NewWindow=E17C;Next=E101;OneBar=E1E6;OpenFile=E1A5;OpenLocal=E197;OpenPane=E126;"
+        s = s & "OpenWith=E17D;Orientation=E14F;OtherUser=E1A6;OutlineStar=E1CE;Page=E132;Page2=E160;Paste=E16D;Pause=E103;"
+        s = s & "People=E125;Permissions=E192;Phone=E13A;PhoneBook=E1D4;Pictures=E158;Pin=E141;Placeholder=E18A;Play=E102;"
+        s = s & "PostUpdate=E1D7;Preview=E295;PreviewLink=E12A;Previous=E100;Print=E749;Priority=E182;ProtectedDocument=E131;Read=E166;"
+        s = s & "Redo=E10D;Refresh=E149;Remote=E148;Remove=E108;Rename=E13E;Repair=E15E;RepeatAll=E1CD;RepeatOne=E1CC;"
+        s = s & "ReportHacked=E1DE;ReShare=E1CA;Rotate=E14A;RotateCamera=E124;Save=E105;SaveLocal=E159;Scan=E294;SelectAll=E14E;"
+        s = s & "Send=E122;SetLockScreen=E18C;SetTile=E18D;Setting=E115;Share=E72D;Shop=E14D;ShowBcc=E169;ShowResults=E15C;"
+        s = s & "Shuffle=E14B;SlideShow=E173;SolidStar=E1CF;Sort=E174;Stop=E15B;StopSlideShow=E191;Street=E1C3;Switch=E13C;"
+        s = s & "SwitchApps=E1E1;Sync=E117;SyncFolder=E1DF;Tag=E1CB;Target=E1D2;ThreeBars=E1E8;TouchPointer=E1E3;Trim=E12C;"
+        s = s & "TwoBars=E1E7;TwoPage=E11E;Underline=E19A;Undo=E10E;UnFavorite=E195;UnPin=E196;UnSyncFolder=E1DD;Up=E110;"
+        s = s & "Upload=E11C;Video=E116;VideoChat=E13B;View=E18B;ViewAll=E138;Volume=E15D;WebCam=E156;World=E128;"
+        s = s & "XboxOneConsole=E990;ZeroBars=E1E5;Zoom=E1A3;ZoomIn=E12E;ZoomOut=E1A4;"
+        Dim entries() As String
+        entries = Split(s, ";")
+        ReDim m_CatalogNames(0 To UBound(entries))
+        ReDim m_CatalogValues(0 To UBound(entries))
+        Dim i As Long
+        Dim pos As Long
+        For i = 0 To UBound(entries)
+            pos = InStr(entries(i), "=")
+            If pos > 0 Then
+                m_CatalogNames(m_CatalogCount) = Left$(entries(i), pos - 1)
+                ' Every value fits in 16 bits; the mask keeps a 4-digit hex string from reading as a negative Integer.
+                m_CatalogValues(m_CatalogCount) = CLng("&H" & Mid$(entries(i), pos + 1)) And &HFFFF&
+                m_CatalogCount = m_CatalogCount + 1
+            End If
+        Next
+    End Sub
+
+    ' Number of semantic icons (ui3IconNone is not counted).
+    Public Function IconCatalogCount() As Long
+        EnsureCatalog
+        IconCatalogCount = m_CatalogCount
+    End Function
+
+    ' Short name of catalog entry Index (0-based), for example "Accept".
+    Public Function IconCatalogName(ByVal Index As Long) As String
+        EnsureCatalog
+        IconCatalogName = m_CatalogNames(Index)
+    End Function
+
+    ' UI3Icon value of catalog entry Index (0-based).
+    Public Function IconCatalogValue(ByVal Index As Long) As UI3Icon
+        EnsureCatalog
+        IconCatalogValue = m_CatalogValues(Index)
+    End Function
+
+    ' --- Designer bridge for UI3IconPage (workaround, twinBASIC BETA 997) ---
+    ' Earlier builds lost a value the property page set: the designer kept the old Icon. While the
+    ' page applies, UI3Button records the new Icon here under the control's design-time name, and a
+    ' later design-time ReadProperties for that name re-applies it. In the 2026-10-07 test this build
+    ' saved the picked icon, but through the live control's WriteProperties, not this fallback; why
+    ' it now works is not understood, so keep this code unchanged until that is (see CHANGELOG).
+
+    Private m_PageApplying As Boolean
+    Private m_PendingIcons As Collection
+
+    Public Property Get IconPageApplying() As Boolean
+        IconPageApplying = m_PageApplying
+    End Property
+
+    Public Property Let IconPageApplying(ByVal Value As Boolean)
+        m_PageApplying = Value
+    End Property
+
+    Public Sub SetPendingIcon(ByVal ControlName As String, ByVal Icon As UI3Icon)
+        If Len(ControlName) = 0 Then Exit Sub
+        If m_PendingIcons Is Nothing Then Set m_PendingIcons = New Collection
+        On Error Resume Next
+        m_PendingIcons.Remove LCase$(ControlName)
+        m_PendingIcons.Add CLng(Icon), LCase$(ControlName)
+        DesignLog "pending set " & ControlName & " = " & CLng(Icon)
+    End Sub
+
+    ' Returns True and sets Icon when a pending value exists for ControlName, then forgets it.
+    Public Function TakePendingIcon(ByVal ControlName As String, ByRef Icon As UI3Icon) As Boolean
+        If m_PendingIcons Is Nothing Or Len(ControlName) = 0 Then Exit Function
+        Dim value As Long
+        On Error Resume Next
+        value = m_PendingIcons.Item(LCase$(ControlName))
+        If Err.Number <> 0 Then Exit Function
+        m_PendingIcons.Remove LCase$(ControlName)
+        On Error GoTo 0
+        Icon = value
+        TakePendingIcon = True
+        DesignLog "pending taken " & ControlName & " = " & value
+    End Function
+
+    ' Set True to append designer events to %TEMP%\tbUI3-design.log while diagnosing the picker.
+    Private Const DESIGN_LOG_ENABLED As Boolean = False
+
+    Public Sub DesignLog(ByVal Text As String)
+        If Not DESIGN_LOG_ENABLED Then Exit Sub
+        On Error Resume Next
+        Dim f As Integer
+        f = FreeFile
+        Open Environ$("TEMP") & "\tbUI3-design.log" For Append As #f
+        Print #f, Format$(Now, "hh:nn:ss") & "  " & Text
+        Close #f
+    End Sub
+
 End Module

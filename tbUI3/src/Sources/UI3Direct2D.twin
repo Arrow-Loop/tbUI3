@@ -313,6 +313,7 @@ Private Module UI3D2D
     Public Const D2DERR_RECREATE_TARGET As Long = &H8899000C
     Public Const DWRITE_FACTORY_TYPE_SHARED As Long = 0
     Public Const DWRITE_FONT_WEIGHT_NORMAL As Long = 400
+    Public Const DWRITE_FONT_WEIGHT_SEMI_BOLD As Long = 600
     Public Const DWRITE_FONT_STYLE_NORMAL As Long = 0
     Public Const DWRITE_FONT_STRETCH_NORMAL As Long = 5
     Public Const DWRITE_TEXT_ALIGNMENT_CENTER As Long = 2
@@ -422,10 +423,11 @@ Private Module UI3D2D
         Set IconTextFormat = m_IconTextFormat
     End Function
 
-    Private Function CreateCenteredTextFormat(ByVal family As String, ByVal fontSize As Single) As IDWriteTextFormat
+    Private Function CreateCenteredTextFormat(ByVal family As String, ByVal fontSize As Single, _
+            Optional ByVal fontWeight As Long = DWRITE_FONT_WEIGHT_NORMAL) As IDWriteTextFormat
         Dim format As IDWriteTextFormat
         Set format = DWriteFactory().CreateTextFormat(StrPtr(family), 0, _
-            DWRITE_FONT_WEIGHT_NORMAL, DWRITE_FONT_STYLE_NORMAL, DWRITE_FONT_STRETCH_NORMAL, fontSize, StrPtr("en-us"))
+            fontWeight, DWRITE_FONT_STYLE_NORMAL, DWRITE_FONT_STRETCH_NORMAL, fontSize, StrPtr("en-us"))
         format.SetTextAlignment DWRITE_TEXT_ALIGNMENT_CENTER
         format.SetParagraphAlignment DWRITE_PARAGRAPH_ALIGNMENT_CENTER
         format.SetWordWrapping DWRITE_WORD_WRAPPING_NO_WRAP
@@ -586,6 +588,17 @@ Private Module UI3D2D
         Dim brush As ID2D1SolidColorBrush
         Set brush = SolidBrush(target, argb)
         target.DrawText StrPtr(caption), Len(caption), ControlTextFormat(), layout, brush, D2D1_DRAW_TEXT_OPTIONS_CLIP, DWRITE_MEASURING_MODE_NATURAL
+    End Sub
+
+    Public Sub DrawCenteredTextStyled(ByVal target As ID2D1RenderTarget, ByVal caption As String, _
+            ByVal fontSize As Single, ByVal fontWeight As Long, ByVal x0 As Single, ByVal y0 As Single, _
+            ByVal x1 As Single, ByVal y1 As Single, ByVal argb As Long)
+        If Len(caption) = 0 Then Exit Sub
+        Dim family As String
+        family = "Segoe UI Variable Text"
+        If Not FontFamilyExists(family) Then family = "Segoe UI"
+        DrawTextWithFormat target, caption, CreateCenteredTextFormat(family, fontSize, fontWeight), _
+            x0, y0, x1, y1, argb
     End Sub
 
 End Module

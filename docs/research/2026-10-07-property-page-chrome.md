@@ -192,3 +192,11 @@ The 1.0.0.16 run showed the search Edit fix working and the native tab fully vis
 This means the `GA_ROOTOWNER` lookup itself was not necessarily wrong; it was being called before an owner existed. 1.0.0.17 therefore retries `ApplyHostTitleBar` on every `picChrome_Paint`. The intended sequence is: early paint may still see only the page; after BETA 997 inserts/moves the page, the resulting repaint resolves the real owner and `UI3SkinPropertySheetHost` swaps the skin to that host.
 
 This is intentionally a timing fix only. The native tab metrics, ThunderTextBox brush/erase handling, and persistence bridge are unchanged.
+
+## 1.0.0.18 structural host promotion
+
+The 1.0.0.17 run disproved the assumption that `GA_ROOTOWNER` becomes useful after the page is hosted. The log still reported `ThunderPropertyPageDC` as the effective host even after repaint. However, it again captured `WM_WINDOWPOSCHANGED` moving that same page from its initial `(0,0)` top-level position to the PropertySheet's `(21,63)` hosted position.
+
+1.0.0.18 therefore stops trying to infer the host through root/owner semantics. After `DefSubclassProc` processes `WM_WINDOWPOSCHANGED` on the `ThunderPropertyPageDC`, tbUI3 walks `GetParent` repeatedly and calls `FindWindowExW(..., "SysTabControl32", ...)` on each ancestor. The first ancestor with that direct tab child is treated as the real PropertySheet and receives the existing skin.
+
+This uses the hierarchy already observed in the earlier 1.0.0.13 host-tree dump as a runtime structural fingerprint. No page movement or tab resizing is added.

@@ -1,3 +1,8 @@
+### 1.0.0.18
+- PropertySheet discovery no longer depends on GA_ROOT/GA_ROOTOWNER after the page has moved. After the real `ThunderPropertyPageDC` receives `WM_WINDOWPOSCHANGED`, tbUI3 walks its live `GetParent` chain and selects the first ancestor that directly contains a `SysTabControl32` child.
+- When that structural PropertySheet ancestor is found, the existing skin is promoted from the temporary page HWND to the real outer PropertySheet. The diagnostic log records the promotion and a post-promotion snapshot.
+- The working ThunderTextBox color/erase handling, native tab metrics, and icon persistence bridge are unchanged.
+
 ### 1.0.0.17
 - PropertySheet host discovery is now retried from `picChrome_Paint`, not only during the PropertyPage's early theme setup.
 - BETA 997 creates/paints the top-level `ThunderPropertyPageDC` before inserting it into the outer PropertySheet. The first chrome paint after that insertion now re-runs the existing `GA_ROOTOWNER` lookup so the skin can upgrade from the early page HWND to the actual owning `#32770` PropertySheet and recover its `SysTabControl32`.

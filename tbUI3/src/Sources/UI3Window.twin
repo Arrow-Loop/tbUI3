@@ -419,8 +419,8 @@ CleanUp:
         m_PropertyProbeEditParent = GetParent(textBoxHwnd)
         If m_PropertyProbeEditParent <> 0 Then m_PropertyProbePageDialog = GetParent(m_PropertyProbeEditParent)
 
-        ProbeLog "=== tbUI3 PropertyPage probe / 1.0.0.15 ==="
-        ProbeLog "1.0.0.15: native tab metrics retained; ThunderTextBox WM_ERASEBKGND is filled from the same theme brush as WM_CTLCOLOREDIT."
+        ProbeLog "=== tbUI3 PropertyPage probe / 1.0.0.18 ==="
+        ProbeLog "1.0.0.18: promote from ThunderPropertyPageDC to the first live ancestor containing SysTabControl32 after WM_WINDOWPOSCHANGED."
         ProbeSnapshot "initial"
         ProbeLog "--- host tree ---"
         DumpWindowTree host, 0, 5
@@ -445,6 +445,38 @@ CleanUp:
 
         ProbeLog "=== probe armed; click Apply once to capture the native layout transition ==="
         If m_PropertyProbeEdit <> 0 Then InvalidateRect m_PropertyProbeEdit, 0, 1
+    End Sub
+
+    Private Function FindPropertySheetAncestor(ByVal hWnd As LongPtr) As LongPtr
+        Dim cur As LongPtr
+        Dim tabHwnd As LongPtr
+        Dim depth As Long
+
+        cur = GetParent(hWnd)
+        Do While cur <> 0 And depth < 10
+            tabHwnd = FindWindowExW(cur, 0, StrPtr("SysTabControl32"), 0)
+            If tabHwnd <> 0 Then
+                FindPropertySheetAncestor = cur
+                Exit Function
+            End If
+            cur = GetParent(cur)
+            depth = depth + 1
+        Loop
+    End Function
+
+    Private Sub PromotePropertySheetHostFromPage(ByVal pageHwnd As LongPtr)
+        If pageHwnd = 0 Then Exit Sub
+
+        Dim host As LongPtr
+        host = FindPropertySheetAncestor(pageHwnd)
+        If host = 0 Then Exit Sub
+        If host = m_PropertySheetHost And m_PropertySheetTab <> 0 Then Exit Sub
+
+        m_PropertyProbePageDialog = GetParent(pageHwnd)
+        ProbeLog "PROMOTE host from page=" & DebugWindowLine(pageHwnd) & _
+            " to=" & DebugWindowLine(host)
+        UI3SkinPropertySheetHost host, m_PropertySheetTabCaption, m_PropertyProbeEdit
+        ProbeSnapshot "after host promotion"
     End Sub
 
     Private Function UI3PropertyProbeProc(ByVal hWnd As LongPtr, ByVal uMsg As Long, ByVal wParam As LongPtr, _
@@ -483,6 +515,15 @@ CleanUp:
 
             Case WM_SIZE, WM_WINDOWPOSCHANGED
                 result = DefSubclassProc(hWnd, uMsg, wParam, lParam)
+
+                If uMsg = WM_WINDOWPOSCHANGED And hWnd = m_PropertyProbeEditParent Then
+                    ' The PropertyPage starts as a top-level ThunderPropertyPageDC. BETA 997
+                    ' later inserts it under an inner dialog in the real PropertySheet. Walk
+                    ' the live parent chain only after Windows has completed that move and
+                    ' identify the PropertySheet structurally by its SysTabControl32 child.
+                    PromotePropertySheetHostFromPage hWnd
+                End If
+
                 If hWnd = m_PropertyProbeEditParent Or hWnd = m_PropertyProbePageDialog Or _
                         hWnd = m_PropertySheetHost Or hWnd = m_PropertySheetTab Then
                     If uMsg = WM_SIZE Then

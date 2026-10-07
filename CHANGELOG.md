@@ -4,6 +4,14 @@ All notable changes to tbUI3. Dates are when the change was made, not released. 
 
 ## Unreleased
 
+### 2026-10-07, structural PropertySheet promotion (1.0.0.18)
+
+- Shane built/opened 1.0.0.17 in win32. The search TextBox remained correctly dark and the native Icon tab remained fully visible, but the outer PropertySheet still stayed classic/light. The 1.0.0.17 log showed that repaint-time `GA_ROOTOWNER` still returned only the top-level `ThunderPropertyPageDC`.
+- The same log also showed the decisive lifecycle event: BETA 997 later moves `ThunderPropertyPageDC` from `(0,0)-(461,457)` to its hosted `(21,63)-(482,520)` position. Host discovery therefore now runs directly from that page's `WM_WINDOWPOSCHANGED`, after `DefSubclassProc` completes the native move.
+- 1.0.0.18 walks the page's live `GetParent` chain and identifies the real PropertySheet structurally as the first ancestor with a direct `SysTabControl32` child. When found, tbUI3 promotes the existing skin to that ancestor and logs the resulting host/tab snapshot.
+- No new tab/page coordinate manipulation is included. ThunderTextBox painting and the designer persistence bridge remain unchanged.
+- Package revision is now 1.0.0.18. Source/project candidate only: **not yet compiled or run in BETA 997**.
+
 ### 2026-10-07, late PropertySheet host acquisition (1.0.0.17)
 
 - Shane built/opened 1.0.0.16 in win32. The Icon tab became fully visible and the search field stayed dark, but the outer tab/button strip was classic/light because the custom PropertySheet skin still did not attach.

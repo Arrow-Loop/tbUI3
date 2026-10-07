@@ -93,6 +93,17 @@ Public Module UI3Window
     Private Declare PtrSafe Function GetWindowRect Lib "user32" (ByVal hWnd As LongPtr, ByRef lpRect As UI3GdiRect) As Long
     Private Declare PtrSafe Function GetDlgCtrlID Lib "user32" (ByVal hWnd As LongPtr) As Long
     Private Declare PtrSafe Function GetFocus Lib "user32" () As LongPtr
+    Private Declare PtrSafe Function GetWindow Lib "user32" (ByVal hWnd As LongPtr, ByVal uCmd As Long) As LongPtr
+    Private Declare PtrSafe Function MonitorFromWindow Lib "user32" (ByVal hWnd As LongPtr, ByVal dwFlags As Long) As LongPtr
+    Private Declare PtrSafe Function GetMonitorInfoW Lib "user32" (ByVal hMonitor As LongPtr, ByRef lpmi As UI3MonitorInfo) As Long
+    Private Type UI3MonitorInfo
+        cbSize As Long
+        rcMonitor As UI3GdiRect
+        rcWork As UI3GdiRect
+        dwFlags As Long
+    End Type
+    Private Const GW_OWNER As Long = 4
+    Private Const MONITOR_DEFAULTTONEAREST As Long = 2
     Private Type UI3PaintStruct
         hdc As LongPtr
         fErase As Long
@@ -426,6 +437,7 @@ CleanUp:
         AttachPropertySheetChild m_PropertySheetApply, UI3_PSKIN_APPLY
 
         LayoutPropertySheetSkin
+        CenterPropertySheet hWnd
         RedrawPropertySheetSkin
         LogPropertySheet hWnd
     End Sub
@@ -487,6 +499,33 @@ CleanUp:
             depth = depth + 1
         Loop
     End Function
+
+    ' The OLE property frame opens at the top-left of the screen. Centre it once, when it is first
+    ' skinned, in the work area of the monitor showing its owner (the IDE), so it lands in front
+    ' of the window it was opened from and never under the taskbar.
+    Private Sub CenterPropertySheet(ByVal hWnd As LongPtr)
+        Dim anchor As LongPtr
+        Dim mi As UI3MonitorInfo
+        Dim rc As UI3GdiRect
+        Dim w As Long
+        Dim h As Long
+        Dim x As Long
+        Dim y As Long
+
+        anchor = GetWindow(hWnd, GW_OWNER)
+        If anchor = 0 Then anchor = hWnd
+        mi.cbSize = LenB(mi)
+        If GetMonitorInfoW(MonitorFromWindow(anchor, MONITOR_DEFAULTTONEAREST), mi) = 0 Then Exit Sub
+        If GetWindowRect(hWnd, rc) = 0 Then Exit Sub
+
+        w = rc.Right - rc.Left
+        h = rc.Bottom - rc.Top
+        x = mi.rcWork.Left + ((mi.rcWork.Right - mi.rcWork.Left) - w) \ 2
+        y = mi.rcWork.Top + ((mi.rcWork.Bottom - mi.rcWork.Top) - h) \ 2
+        If x < mi.rcWork.Left Then x = mi.rcWork.Left
+        If y < mi.rcWork.Top Then y = mi.rcWork.Top
+        SetWindowPos hWnd, 0, x, y, 0, 0, SWP_NOSIZE Or SWP_NOZORDER Or SWP_NOACTIVATE
+    End Sub
 
     Private Sub PromotePropertySheetHostFromPage(ByVal pageHwnd As LongPtr)
         If pageHwnd = 0 Then Exit Sub

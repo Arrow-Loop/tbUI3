@@ -1,3 +1,9 @@
+### 1.0.0.24
+- The Properties dialog now opens centred in the work area of the monitor showing the IDE, instead of at the top-left of the screen. It is centred once, when tbUI3 first skins the sheet.
+
+### 1.0.0.23
+- Project settings update (Shane) so the package sorts where it is easy to find in the IDE's package picker.
+
 ### 1.0.0.22
 - The skinned OK/Cancel/Apply buttons now repaint after `WM_UPDATEUISTATE`, `BM_SETSTYLE` and `WM_SETTEXT`. The native button draws its caption and mnemonic underline straight to the screen on those messages, which left a stray underline under the disabled Apply button.
 

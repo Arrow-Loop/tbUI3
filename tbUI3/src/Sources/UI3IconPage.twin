@@ -48,21 +48,12 @@ Class UI3IconPage
     End Sub
 
     Private Sub PropertyPage_ApplyChanges()
-        ' DIAGNOSTIC (temporary): reports what Apply does, to find why the icon was not set.
-        Dim report As String
+        ' twinBASIC BETA 997 does not save this change in the designer: the control's PropertyChanged
+        ' cannot find "Icon" by name, so the IDE is never notified (see the property-page research note).
         Dim ctl As Object
-        report = "ApplyChanges ran." & vbCrLf & "Selected controls: " & Me.SelectedControls.Count & vbCrLf & "Value to set: " & m_Selected
         For Each ctl In Me.SelectedControls
-            On Error Resume Next
-            Err.Clear
             CallByName ctl, "Icon", vbLet, m_Selected
-            If Err.Number <> 0 Then report = report & vbCrLf & "Set failed: " & Err.Number & " " & Err.Description
-            Err.Clear
-            report = report & vbCrLf & "Icon reads back as: " & CallByName(ctl, "Icon", vbGet)
-            If Err.Number <> 0 Then report = report & vbCrLf & "Read back failed: " & Err.Number & " " & Err.Description
-            On Error GoTo 0
         Next
-        MsgBox report, vbInformation, "UI3IconPage diagnostic"
     End Sub
 
     Private Sub LayoutControls()

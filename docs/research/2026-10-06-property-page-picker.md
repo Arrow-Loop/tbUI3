@@ -57,3 +57,11 @@ Shane added a PropertyPage named `UI3IconPage` to tbUI3 through Project Explorer
 - Put the visual catalog (a searchable glyph grid, searchable by name, number or code) on a tbUI3 PropertyPage reached through `(Custom)` → `...`.
 - Keep the `[PropertyPage]` attribute out of shipped code until the IDE honours it. Raise a feature request with twinBASIC so that the IDE honours `IPerPropertyBrowsing.MapPropertyToPage`.
 - The spike edits stayed on Shane's PC and were not committed.
+
+## Apply result (2026-10-07, BETA 997, Shane's PC)
+
+- The picker page (1.0.0.5 candidate) opened from `(Custom)` → `...` once `Me.Changed = False` was removed from `SelectionChanged`. Setting `Changed` during `SetObjects` raises "Automation error" 80004005.
+- A diagnostic in `ApplyChanges` showed that Apply runs, `CallByName ctl, "Icon", vbLet, value` changes the live button (it reads back as the new value), and `Err` holds -2147352570 "Unknown name" afterwards.
+- After closing and reopening the form designer, Icon was back to its old value. The canvas also never redrew the new icon.
+- Likely cause (inferred, not proven): `UserControl.PropertyChanged` in the VB package calls `GetIDsOfNames` for the property name on the outer class to raise `IPropertyNotifySink.OnChanged`. That lookup fails, the error is swallowed by its `On Error Resume Next` (and stays in `Err`), so the IDE never learns of the change and reloads the designer from its saved copy.
+- Status: parked; reported to twinBASIC by Shane.

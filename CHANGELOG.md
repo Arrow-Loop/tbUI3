@@ -4,6 +4,17 @@ All notable changes to tbUI3. Dates are when the change was made, not released. 
 
 ## Unreleased
 
+### 2026-10-07, confirmed TextBox brush route + Apply-layout trace (1.0.0.14)
+
+- The 1.0.0.13 probe was run in win32. It confirmed that `txtSearch.hWnd` is itself `ThunderTextBox` (control ID 258), directly parented by `ThunderPropertyPageDC`, and that `ThunderPropertyPageDC` receives `WM_CTLCOLOREDIT` with that exact textbox HWND as the child.
+- 1.0.0.14 therefore stops guessing about wrappers/nested EDIT windows. The existing diagnostic subclass on the confirmed `ThunderPropertyPageDC` receiver now intercepts **only** `WM_CTLCOLOREDIT` for the confirmed `ThunderTextBox`, applies the existing WinUI TextBox light/dark foreground/background resources through a persistent GDI brush, and returns that brush to the native control.
+- No new tab/page geometry manipulation is included in this pass.
+- Shane also observed a repeatable native layout clue in 1.0.0.13: after clicking **Apply**, the whole PropertyPage shifts downward and the full enlarged Icon tab becomes visible.
+- To capture that transition rather than reproduce it by guesswork, the probe now logs the host/tab/inner-page-dialog/`ThunderPropertyPageDC`/textbox rectangles plus tab item 0 before and after the Apply `WM_COMMAND`, and after relevant `WM_SIZE` / `WM_WINDOWPOSCHANGED` messages.
+- Repeated theme refreshes no longer reset the probe/log while the same PropertySheet is open.
+- Package revision is now 1.0.0.14. Source/project candidate only: **not yet compiled or run in BETA 997**.
+
+
 ### 2026-10-07, diagnostic rollback to last good PropertySheet geometry (1.0.0.13)
 
 - Shane's 1.0.0.12 screenshot showed that the corrective overlap calculation still did not materially improve the tab or search Edit, and the large blank/white region introduced during the 1.0.0.11 experiment remained. Continuing to guess at parent HWNDs/geometry was no longer justified.
@@ -11,7 +22,7 @@ All notable changes to tbUI3. Dates are when the change was made, not released. 
 - 1.0.0.13 adds a temporary diagnostic probe instead of another visual hack. On opening the picker it writes `%TEMP%\tbUI3-propertypage.log` containing the real PropertySheet HWND tree (class, control ID, screen rect, caption), the ancestry of the HWND exposed by `txtSearch.hWnd`, and any `WM_CTLCOLOREDIT` messages seen on that ancestry including the actual child HWND that requested a brush.
 - The diagnostic ancestors are subclassed only to observe `WM_CTLCOLOREDIT`; they do not alter painting or geometry. Each probe subclass removes itself on `WM_NCDESTROY`.
 - Goal: identify the exact Win32 EDIT HWND/parent and the exact tab/page rectangles before making the next fix.
-- Package revision is now 1.0.0.13. Source/project candidate only: **not yet compiled or run in BETA 997**.
+- Package revision 1.0.0.13 was built/run in win32 by Shane. Its probe successfully identified the exact TextBox color-message route and exposed the post-Apply native page shift; visual defects themselves remained intentionally unfixed in that diagnostic build.
 
 ### 2026-10-07, corrective PropertyPage geometry/Edit pass (1.0.0.12)
 

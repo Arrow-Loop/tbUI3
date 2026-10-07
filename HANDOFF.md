@@ -41,7 +41,7 @@ The decisions are in `docs/2026-10-06-first-pass-report.md` and `docs/2026-10-06
 
 The icon picker (1.0.0.5 candidate) is parked: it opens, searches and sets `Icon`, but twinBASIC BETA 997 never saves a property page's change in the designer (see `docs/research/2026-10-06-property-page-picker.md`). Shane is reporting that, and the per-property `...` link, to twinBASIC. Don't spend time working around it; leave `UI3IconPage` in the package and the `[PropertyPage("UI3IconPage")]` attribute on `Icon`.
 
-1. Shane rebuilds tbUI3 once from commit with this note so the package no longer contains the diagnostic message box, and updates the package in tbUI3Test. Quick check: the picker still opens.
+1. Shane pulls (commit 1622ac0 or later) and rebuilds tbUI3 once, so the package no longer contains the diagnostic message box, and updates the package in tbUI3Test. Quick check: the picker still opens.
 2. Remove the two MDL2 test lines (`IconFontName`/`IconGlyph`) from frmMain's `Form_Activate` in tbUI3Test.
 3. Next milestone: themed form canvas at design time (ROADMAP, designer experience), then the designer accent refresh.
 4. When twinBASIC fixes the save bug: retest the picker (pick + OK, reopen, search `save`/`57716`/`E8CB`/`&HE174`, Cancel, mouse wheel) in win32 and win64, then record it as validated.

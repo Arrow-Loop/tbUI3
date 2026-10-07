@@ -4,6 +4,19 @@ All notable changes to tbUI3. Dates are when the change was made, not released. 
 
 ## Unreleased
 
+### 2026-10-07, theme-aware PropertyPage chrome candidate (1.0.0.6)
+
+- Reworked `UI3IconPage.tbppage` so the designer canvas is now the baseline layout instead of a collection of arbitrarily placed controls that only become correct in code.
+- Added a full-page `picChrome` Direct2D surface behind the native controls. Runtime layout now adapts that designer-authored baseline to the host size rather than inventing the composition from scratch.
+- The page now follows tbUI3 light/dark state: WinUI window background, primary/secondary text, theme-aware search surface, theme-aware icon grid, and dark/light selected-icon treatment.
+- The classic TextBox remains as the real Edit control for caret, selection, clipboard and IME behavior, but its border is removed and tbUI3 draws the visible 4-DIP rounded TextBox chrome around it. Focus adds the WinUI-style 2-DIP accent bottom edge.
+- The classic VScrollBar is now hidden and retained only as the range/value model. A source-backed WinUI-style scrollbar thumb is painted directly into `picGrid`; wheel, track click and thumb dragging update the hidden scrollbar state.
+- Added source-backed TextBox/ScrollBar theme tokens to `UI3Theme` from microsoft-ui-xaml's Common, TextBox and ScrollBar resources.
+- The page applies the existing DWM dark/light title-bar treatment to the root PropertyPage host window when it can resolve the host HWND.
+- The existing icon-picker designer bridge/logging code was intentionally left untouched.
+- Package revision is now 1.0.0.6. This is a source/project candidate only: **not yet built or run in BETA 997**. The outer host-owned OK/Cancel/Apply strip is not overpainted in this first chrome pass; that remains the next escalation if the page-body/host-titlebar spike is stable.
+
+
 ### 2026-10-07, handoff for ChatGPT's next passes
 
 - HANDOFF.md now has an ordered work queue (finish picker validation, tidy tbUI3Test, design-time form canvas theme, designer accent refresh, S2 BackColor check, then spike A in ROADMAP order), how a pass works with Shane, and new gotchas (PropertyPage behaviour in BETA 997, PropertyBag defaults, CLI export paths). AGENTS.md mentions `tools/twinproj-src.mjs`. Docs only.

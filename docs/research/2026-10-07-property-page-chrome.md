@@ -147,3 +147,24 @@ The details area is a tbUI3 picker convenience, not a WinUI control claim. It pr
 - modern glyph code point
 
 It also renders the selected modern glyph side by side using `Segoe Fluent Icons` and `Segoe MDL2 Assets`. Both fonts use the same modern code point; the point of the comparison is to show the different font artwork a user can see on the Windows 11 primary path versus the Windows 10 fallback path. Each preview is marked Active, Fallback, or Unavailable based on the installed fonts and `SystemIconFontFamily()`.
+
+
+## 1.0.0.14 confirmed native route
+
+The 1.0.0.13 probe removed the remaining ambiguity around the search TextBox:
+
+- `txtSearch.hWnd` is `ThunderTextBox` itself, control ID 258.
+- Its direct parent is `ThunderPropertyPageDC`.
+- `ThunderPropertyPageDC` receives `WM_CTLCOLOREDIT` with the `ThunderTextBox` HWND as `lParam`.
+
+1.0.0.14 therefore applies the TextBox theme brush only on that exact confirmed route. The hook changes no other message and performs no page/tab geometry manipulation.
+
+The same test also revealed that pressing **Apply** causes the native PropertySheet/page hierarchy to perform a layout transition that moves the page down far enough to expose the full enlarged tab. Rather than emulate that transition by guessed coordinates, 1.0.0.14 logs:
+
+- `WM_COMMAND` for Apply, before and after default processing;
+- `WM_SIZE`;
+- `WM_WINDOWPOSCHANGED`;
+- host, tab, inner dialog, `ThunderPropertyPageDC`, and TextBox rectangles;
+- the native first tab-item rectangle.
+
+The next tab fix should be based on the recorded native transition, not another replacement rectangle.

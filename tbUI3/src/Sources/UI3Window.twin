@@ -55,13 +55,12 @@ Public Module UI3Window
 
     Private Const UI3_THEME_SUBCLASS_ID As Long = &H55493354
     Private Const UI3_PROPERTY_SHEET_SUBCLASS_ID As Long = &H55495053
-    Private Const UI3_PROPERTY_PAGE_SUBCLASS_ID As Long = &H55495045
+    Private Const UI3_PROPERTY_PROBE_SUBCLASS_ID As Long = &H55495044
     Private Const UI3_PSKIN_HOST As LongPtr = 1
     Private Const UI3_PSKIN_TAB As LongPtr = 2
     Private Const UI3_PSKIN_OK As LongPtr = 3
     Private Const UI3_PSKIN_CANCEL As LongPtr = 4
     Private Const UI3_PSKIN_APPLY As LongPtr = 5
-    Private Const UI3_PSKIN_PAGE As LongPtr = 6
 
     ' PropertySheet action-row layout. Button visuals still use exact WinUI Button resources;
     ' these dimensions are tbUI3 convenience values because WinUI has no PropertySheet.
@@ -82,10 +81,10 @@ Public Module UI3Window
     Private Declare PtrSafe Function FindWindowExW Lib "user32" (ByVal hWndParent As LongPtr, ByVal hWndChildAfter As LongPtr, _
         ByVal lpszClass As LongPtr, ByVal lpszWindow As LongPtr) As LongPtr
     Private Declare PtrSafe Function GetParent Lib "user32" (ByVal hWnd As LongPtr) As LongPtr
+    Private Declare PtrSafe Function GetClassNameW Lib "user32" (ByVal hWnd As LongPtr, ByVal lpClassName As LongPtr, _
+        ByVal nMaxCount As Long) As Long
     Private Declare PtrSafe Function GetWindowRect Lib "user32" (ByVal hWnd As LongPtr, ByRef lpRect As UI3GdiRect) As Long
-    Private Declare PtrSafe Function MapWindowPoints Lib "user32" (ByVal hWndFrom As LongPtr, ByVal hWndTo As LongPtr, _
-        ByVal lpPoints As LongPtr, ByVal cPoints As Long) As Long
-    Private Declare PtrSafe Function GetFocus Lib "user32" () As LongPtr
+    Private Declare PtrSafe Function GetDlgCtrlID Lib "user32" (ByVal hWnd As LongPtr) As Long
     Private Type UI3PaintStruct
         hdc As LongPtr
         fErase As Long
@@ -105,10 +104,6 @@ Public Module UI3Window
     Private Declare PtrSafe Function GetWindowTextW Lib "user32" (ByVal hWnd As LongPtr, ByVal lpString As LongPtr, ByVal nMaxCount As Long) As Long
     Private Declare PtrSafe Function SendMessageW Lib "user32" (ByVal hWnd As LongPtr, ByVal wMsg As Long, _
         ByVal wParam As LongPtr, ByVal lParam As LongPtr) As LongPtr
-    Private Declare PtrSafe Function SetTextColor Lib "gdi32" (ByVal hdc As LongPtr, ByVal crColor As Long) As Long
-    Private Declare PtrSafe Function SetBkColor Lib "gdi32" (ByVal hdc As LongPtr, ByVal crColor As Long) As Long
-    Private Declare PtrSafe Function CreateSolidBrush Lib "gdi32" (ByVal crColor As Long) As LongPtr
-    Private Declare PtrSafe Function DeleteObject Lib "gdi32" (ByVal hObject As LongPtr) As Long
 
     [UseGetLastError(False), DLLStackCheck(False)]
     Private Declare PtrSafe Function SetWindowSubclass Lib "comctl32" Alias "#410" (ByVal hWnd As LongPtr, _
@@ -133,11 +128,6 @@ Public Module UI3Window
     Private m_PropertySheetOK As LongPtr
     Private m_PropertySheetCancel As LongPtr
     Private m_PropertySheetApply As LongPtr
-    Private m_PropertyPage As LongPtr
-    Private m_PropertyEdit As LongPtr
-    Private m_PropertyEditParent As LongPtr
-    Private m_PropertyEditBrush As LongPtr
-    Private m_PropertyEditBrushColor As Long
     Private m_PropertySheetTabCaption As String
     Private m_PropertySheetTarget As ID2D1DCRenderTarget
 
@@ -374,7 +364,7 @@ CleanUp:
     ' This does not replace the PropertySheet protocol: the original tab and OK/Cancel/Apply HWNDs
     ' continue to own focus, keyboard, enabled state and click behavior underneath our paint.
     Public Sub UI3SkinPropertySheetHost(ByVal hWnd As LongPtr, Optional ByVal TabCaption As String = "Properties", _
-            Optional ByVal PageHwnd As LongPtr = 0, Optional ByVal EditHwnd As LongPtr = 0)
+            Optional ByVal TextBoxHwnd As LongPtr = 0)
         If hWnd = 0 Then Exit Sub
 
         If m_PropertySheetHost <> 0 And m_PropertySheetHost <> hWnd Then DetachPropertySheetSkin
@@ -389,19 +379,95 @@ CleanUp:
         m_PropertySheetOK = GetDlgItem(hWnd, IDOK)
         m_PropertySheetCancel = GetDlgItem(hWnd, IDCANCEL)
         m_PropertySheetApply = GetDlgItem(hWnd, ID_APPLY_NOW)
-        m_PropertyPage = PageHwnd
-        m_PropertyEdit = ResolveNativeEdit(EditHwnd)
-        If m_PropertyEdit <> 0 Then m_PropertyEditParent = GetParent(m_PropertyEdit)
 
         AttachPropertySheetChild m_PropertySheetTab, UI3_PSKIN_TAB
         AttachPropertySheetChild m_PropertySheetOK, UI3_PSKIN_OK
         AttachPropertySheetChild m_PropertySheetCancel, UI3_PSKIN_CANCEL
         AttachPropertySheetChild m_PropertySheetApply, UI3_PSKIN_APPLY
-        AttachPropertyEditParent m_PropertyEditParent
 
         LayoutPropertySheetSkin
-        If m_PropertyEdit <> 0 Then InvalidateRect m_PropertyEdit, 0, 1
         RedrawPropertySheetSkin
+        ProbePropertySheet hWnd, TextBoxHwnd
+    End Sub
+
+    Private Sub ProbePropertySheet(ByVal host As LongPtr, ByVal textBoxHwnd As LongPtr)
+        On Error Resume Next
+        Dim path As String
+        path = Environ$("TEMP") & "\tbUI3-propertypage.log"
+        Kill path
+        On Error GoTo 0
+
+        ProbeLog "=== tbUI3 PropertyPage probe ==="
+        ProbeLog "Host: " & DebugWindowLine(host)
+        ProbeLog "Exposed txtSearch.hWnd: " & DebugWindowLine(textBoxHwnd)
+        ProbeLog "--- host tree ---"
+        DumpWindowTree host, 0, 5
+        ProbeLog "--- txtSearch ancestry / WM_CTLCOLOREDIT probes ---"
+
+        Dim cur As LongPtr
+        Dim depth As Long
+        cur = textBoxHwnd
+        Do While cur <> 0 And depth < 10
+            ProbeLog "A" & CStr(depth) & ": " & DebugWindowLine(cur)
+            SetWindowSubclass cur, AddressOf UI3PropertyProbeProc, CLngPtr(UI3_PROPERTY_PROBE_SUBCLASS_ID), CLngPtr(depth)
+            If cur = host Then Exit Do
+            cur = GetParent(cur)
+            depth = depth + 1
+        Loop
+        ProbeLog "=== probe armed ==="
+    End Sub
+
+    Private Function UI3PropertyProbeProc(ByVal hWnd As LongPtr, ByVal uMsg As Long, ByVal wParam As LongPtr, _
+            ByVal lParam As LongPtr, ByVal uIdSubclass As LongPtr, ByVal dwRefData As LongPtr) As LongPtr
+        If uMsg = WM_CTLCOLOREDIT Then
+            ProbeLog "WM_CTLCOLOREDIT receiver=" & DebugWindowLine(hWnd) & _
+                " child=" & DebugWindowLine(lParam)
+        ElseIf uMsg = WM_NCDESTROY Then
+            RemoveWindowSubclass hWnd, AddressOf UI3PropertyProbeProc, uIdSubclass
+        End If
+        UI3PropertyProbeProc = DefSubclassProc(hWnd, uMsg, wParam, lParam)
+    End Function
+
+    Private Sub DumpWindowTree(ByVal parent As LongPtr, ByVal depth As Long, ByVal maxDepth As Long)
+        If parent = 0 Or depth > maxDepth Then Exit Sub
+        Dim child As LongPtr
+        child = FindWindowExW(parent, 0, 0, 0)
+        Do While child <> 0
+            ProbeLog String$(depth * 2, " ") & DebugWindowLine(child)
+            DumpWindowTree child, depth + 1, maxDepth
+            child = FindWindowExW(parent, child, 0, 0)
+        Loop
+    End Sub
+
+    Private Function DebugWindowLine(ByVal hWnd As LongPtr) As String
+        If hWnd = 0 Then
+            DebugWindowLine = "HWND=0"
+            Exit Function
+        End If
+
+        Dim className As String
+        Dim n As Long
+        className = String$(128, ChrW$(0))
+        n = GetClassNameW(hWnd, StrPtr(className), Len(className))
+        If n > 0 Then className = Left$(className, n) Else className = "?"
+
+        Dim rc As UI3GdiRect
+        GetWindowRect hWnd, rc
+        DebugWindowLine = "HWND=" & CStr(hWnd) & _
+            " class=" & className & _
+            " id=" & CStr(GetDlgCtrlID(hWnd)) & _
+            " rect=(" & CStr(rc.Left) & "," & CStr(rc.Top) & ")-(" & CStr(rc.Right) & "," & CStr(rc.Bottom) & ")" & _
+            " text=[" & WindowCaption(hWnd) & "]"
+    End Function
+
+    Private Sub ProbeLog(ByVal text As String)
+        On Error Resume Next
+        Dim f As Integer
+        f = FreeFile
+        Open Environ$("TEMP") & "\tbUI3-propertypage.log" For Append As #f
+        Print #f, text
+        Close #f
+        On Error GoTo 0
     End Sub
 
     Private Sub AttachPropertySheetChild(ByVal hWnd As LongPtr, ByVal kind As LongPtr)
@@ -409,46 +475,11 @@ CleanUp:
         SetWindowSubclass hWnd, AddressOf UI3PropertySheetSubclassProc, CLngPtr(UI3_PROPERTY_SHEET_SUBCLASS_ID), kind
     End Sub
 
-    Private Sub AttachPropertyEditParent(ByVal hWnd As LongPtr)
-        If hWnd = 0 Then Exit Sub
-        SetWindowSubclass hWnd, AddressOf UI3PropertySheetSubclassProc, CLngPtr(UI3_PROPERTY_PAGE_SUBCLASS_ID), UI3_PSKIN_PAGE
-    End Sub
-
-    Private Function ResolveNativeEdit(ByVal hWnd As LongPtr) As LongPtr
-        If hWnd = 0 Then Exit Function
-
-        Dim editChild As LongPtr
-        editChild = FindWindowExW(hWnd, 0, StrPtr("Edit"), 0)
-        If editChild <> 0 Then
-            ResolveNativeEdit = editChild
-            Exit Function
-        End If
-
-        ' Some twinBASIC/VB-compatible controls use one wrapper HWND around the real EDIT.
-        ' Search one more level before falling back to the HWND exposed by the TextBox itself.
-        Dim child As LongPtr
-        Dim nested As LongPtr
-        child = FindWindowExW(hWnd, 0, 0, 0)
-        Do While child <> 0
-            nested = FindWindowExW(child, 0, StrPtr("Edit"), 0)
-            If nested <> 0 Then
-                ResolveNativeEdit = nested
-                Exit Function
-            End If
-            child = FindWindowExW(hWnd, child, 0, 0)
-        Loop
-
-        ResolveNativeEdit = hWnd
-    End Function
-
     Private Sub DetachPropertySheetSkin()
         RemovePropertySheetChild m_PropertySheetTab
         RemovePropertySheetChild m_PropertySheetOK
         RemovePropertySheetChild m_PropertySheetCancel
         RemovePropertySheetChild m_PropertySheetApply
-        If m_PropertyEditParent <> 0 Then
-            RemoveWindowSubclass m_PropertyEditParent, AddressOf UI3PropertySheetSubclassProc, CLngPtr(UI3_PROPERTY_PAGE_SUBCLASS_ID)
-        End If
         If m_PropertySheetHost <> 0 Then
             RemoveWindowSubclass m_PropertySheetHost, AddressOf UI3PropertySheetSubclassProc, CLngPtr(UI3_PROPERTY_SHEET_SUBCLASS_ID)
         End If
@@ -457,10 +488,6 @@ CleanUp:
         m_PropertySheetOK = 0
         m_PropertySheetCancel = 0
         m_PropertySheetApply = 0
-        m_PropertyPage = 0
-        m_PropertyEdit = 0
-        m_PropertyEditParent = 0
-        ReleasePropertyEditBrush
         m_PropertySheetTabCaption = ""
         Set m_PropertySheetTarget = Nothing
     End Sub
@@ -495,24 +522,12 @@ CleanUp:
                 Exit Function
 
             Case WM_ERASEBKGND
-                If dwRefData <> UI3_PSKIN_PAGE Then
-                    UI3PropertySheetSubclassProc = 1
-                    Exit Function
-                End If
-
-            Case WM_CTLCOLOREDIT
-                If dwRefData = UI3_PSKIN_PAGE And lParam = m_PropertyEdit And m_PropertyEdit <> 0 Then
-                    UI3PropertySheetSubclassProc = PropertyEditBrush(wParam)
-                    Exit Function
-                End If
+                UI3PropertySheetSubclassProc = 1
+                Exit Function
 
             Case WM_PAINT
-                If dwRefData = UI3_PSKIN_PAGE Then
-                    UI3PropertySheetSubclassProc = DefSubclassProc(hWnd, uMsg, wParam, lParam)
-                    Exit Function
-                End If
-                ' Own paint completely for the host/tab/action buttons. Painting the classic
-                ' control first then covering it produced a visible flash during pointer changes.
+                ' Own paint completely. Painting the classic control first then covering it
+                ' produced a visible flash during pointer-state changes.
                 PaintPropertySheetHwnd hWnd, dwRefData
                 UI3PropertySheetSubclassProc = 0
                 Exit Function
@@ -534,7 +549,7 @@ CleanUp:
 
             Case WM_MOUSEMOVE, WM_LBUTTONDOWN, WM_LBUTTONUP, WM_SETFOCUS, WM_KILLFOCUS, WM_ENABLE
                 result = DefSubclassProc(hWnd, uMsg, wParam, lParam)
-                If dwRefData >= UI3_PSKIN_OK And dwRefData <= UI3_PSKIN_APPLY Then InvalidateRect hWnd, 0, 0
+                If dwRefData >= UI3_PSKIN_OK Then InvalidateRect hWnd, 0, 0
                 UI3PropertySheetSubclassProc = result
                 Exit Function
 
@@ -563,94 +578,16 @@ CleanUp:
         If hWnd = m_PropertySheetOK Then m_PropertySheetOK = 0
         If hWnd = m_PropertySheetCancel Then m_PropertySheetCancel = 0
         If hWnd = m_PropertySheetApply Then m_PropertySheetApply = 0
-        If hWnd = m_PropertyEditParent Then
-            m_PropertyEditParent = 0
-            m_PropertyEdit = 0
-            ReleasePropertyEditBrush
-        End If
         If hWnd = m_PropertySheetHost Then
             m_PropertySheetHost = 0
             m_PropertySheetTab = 0
             m_PropertySheetOK = 0
             m_PropertySheetCancel = 0
             m_PropertySheetApply = 0
-            m_PropertyPage = 0
-            m_PropertyEdit = 0
-            m_PropertyEditParent = 0
-            ReleasePropertyEditBrush
             m_PropertySheetTabCaption = ""
             Set m_PropertySheetTarget = Nothing
         End If
     End Sub
-
-    Private Function PropertyEditBrush(ByVal hdc As LongPtr) As LongPtr
-        Dim baseArgb As Long
-        Dim fillArgb As Long
-        Dim textArgb As Long
-        Dim colorRef As Long
-
-        If IsDarkMode() Then
-            baseArgb = DARK_SolidBackgroundFillColorBase
-            textArgb = DARK_TextFillColorPrimary
-            If GetFocus() = m_PropertyEdit Then
-                fillArgb = DARK_ControlFillColorInputActive
-            Else
-                fillArgb = DARK_ControlFillColorDefault
-            End If
-        Else
-            baseArgb = LIGHT_SolidBackgroundFillColorBase
-            textArgb = LIGHT_TextFillColorPrimary
-            If GetFocus() = m_PropertyEdit Then
-                fillArgb = LIGHT_ControlFillColorInputActive
-            Else
-                fillArgb = LIGHT_ControlFillColorDefault
-            End If
-        End If
-
-        colorRef = CompositeArgbToColorRef(fillArgb, baseArgb)
-        SetTextColor hdc, CompositeArgbToColorRef(textArgb, baseArgb)
-        SetBkColor hdc, colorRef
-
-        If m_PropertyEditBrush = 0 Or m_PropertyEditBrushColor <> colorRef Then
-            ReleasePropertyEditBrush
-            m_PropertyEditBrush = CreateSolidBrush(colorRef)
-            m_PropertyEditBrushColor = colorRef
-        End If
-        PropertyEditBrush = m_PropertyEditBrush
-    End Function
-
-    Private Sub ReleasePropertyEditBrush()
-        If m_PropertyEditBrush <> 0 Then DeleteObject m_PropertyEditBrush
-        m_PropertyEditBrush = 0
-        m_PropertyEditBrushColor = 0
-    End Sub
-
-    Private Function CompositeArgbToColorRef(ByVal argb As Long, ByVal backdrop As Long) As Long
-        Dim a As Long
-        Dim sr As Long
-        Dim sg As Long
-        Dim sb As Long
-        Dim br As Long
-        Dim bg As Long
-        Dim bb As Long
-        Dim rr As Long
-        Dim gg As Long
-        Dim bbOut As Long
-
-        a = (argb And &H7F000000) \ &H1000000
-        If (argb And &H80000000) <> 0 Then a = a + 128
-        sr = (argb And &HFF0000) \ &H10000
-        sg = (argb And &HFF00&) \ &H100&
-        sb = argb And &HFF&
-        br = (backdrop And &HFF0000) \ &H10000
-        bg = (backdrop And &HFF00&) \ &H100&
-        bb = backdrop And &HFF&
-
-        rr = (sr * a + br * (255 - a) + 127) \ 255
-        gg = (sg * a + bg * (255 - a) + 127) \ 255
-        bbOut = (sb * a + bb * (255 - a) + 127) \ 255
-        CompositeArgbToColorRef = rr Or (gg * &H100&) Or (bbOut * &H10000)
-    End Function
 
     Private Sub PaintPropertySheetHwnd(ByVal hWnd As LongPtr, ByVal kind As LongPtr)
         Dim ps As UI3PaintStruct
@@ -806,32 +743,6 @@ CleanUp:
         ' honors TCM_SETITEMSIZE, its clickable rectangle grows with the new paint.
         SendMessageW m_PropertySheetTab, TCM_SETITEMSIZE, 0, MakeLParam(itemW, itemH)
         SendMessageW m_PropertySheetTab, TCM_SETPADDING, 0, MakeLParam(padX, padY)
-
-        ' BETA 997 keeps the active PropertyPage at the classic tab-header offset even after
-        ' TCM_SETITEMSIZE. Do not replace its geometry with TCM_ADJUSTRECT (that created a large
-        ' blank band in 1.0.0.11). Instead move the real page only by the amount it actually
-        ' overlaps the enlarged first tab item, preserving the rest of the host's layout.
-        If m_PropertyPage <> 0 Then
-            Dim tabRect As UI3GdiRect
-            Dim pageRect As UI3GdiRect
-            If SendMessageW(m_PropertySheetTab, TCM_GETITEMRECT, 0, VarPtr(tabRect)) <> 0 Then
-                MapWindowPoints m_PropertySheetTab, m_PropertySheetHost, VarPtr(tabRect), 2
-                If GetWindowRect(m_PropertyPage, pageRect) <> 0 Then
-                    MapWindowPoints 0, m_PropertySheetHost, VarPtr(pageRect), 2
-                    If pageRect.Top < tabRect.Bottom Then
-                        Dim dy As Long
-                        Dim pageH As Long
-                        dy = tabRect.Bottom - pageRect.Top
-                        pageH = pageRect.Bottom - pageRect.Top - dy
-                        If pageH > 0 Then
-                            SetWindowPos m_PropertyPage, 0, pageRect.Left, pageRect.Top + dy, _
-                                pageRect.Right - pageRect.Left, pageH, SWP_NOZORDER Or SWP_NOACTIVATE
-                        End If
-                    End If
-                End If
-            End If
-        End If
-
         InvalidateRect m_PropertySheetTab, 0, 0
     End Sub
 

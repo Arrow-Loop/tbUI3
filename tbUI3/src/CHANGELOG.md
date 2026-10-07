@@ -2,7 +2,7 @@
 
 Pre-release spike builds. The full history is kept in the project repository CHANGELOG.md.
 
-- 2026-10-07 1.0.0.7 candidate: corrected UI3IconPage designer z-order after the first 1.0.0.6 canvas check showed the full-page picChrome surface covering the search/grid/info controls. The chrome surface is now the back-most designer sibling; runtime ZOrder behavior is unchanged. Not yet built or run.
+- 2026-10-07 1.0.0.7 candidate: corrected UI3IconPage designer z-order after the first 1.0.0.6 canvas check showed the full-page picChrome surface covering the search/grid/info controls. The chrome surface is now the back-most designer sibling; runtime ZOrder behavior is unchanged. Shane also opened the 1.0.0.6 page at runtime in win32 and confirmed the themed picker still works, so the observed z-order fault is designer-only. 1.0.0.7 itself is not yet built or visually rechecked.
 - 2026-10-07 1.0.0.6 candidate: UI3IconPage designer/live chrome pass. The designer canvas now matches the live layout; the page follows Windows light/dark, uses source-backed WinUI TextBox/ScrollBar tokens, paints a theme-aware Direct2D icon grid and scrollbar, and applies dark/light DWM treatment to the host property-sheet title bar. Not yet built or run.
 - 2026-10-06 1.0.0.5 candidate: UI3IconPage, a searchable icon picker that opens from (Custom) in the Properties pane of a UI3Button. Builds and opens; twinBASIC BETA 997 does not save the chosen icon in the designer, The chosen icon is saved with the form (checked in win32).
 - 2026-10-06 1.0.0.4: UI3Button Caption can be cleared in the designer (icon-only buttons); a newly dropped button still starts as "Button".

@@ -130,3 +130,20 @@ If this Win32 tab style ignores `TCM_SETITEMSIZE`, do not leave paint and hit te
 ### TextBox
 
 The first white rectangle appears to be an initial native Edit repaint-ordering problem rather than the intended tbUI3 focused color. 1.0.0.9 explicitly refreshes the TextBox immediately after setting BackColor/ForeColor. If that is insufficient, the next escalation is handling `WM_CTLCOLOREDIT` on the page host with a persistent theme brush rather than relying on the classic control's first brush selection.
+
+
+## 1.0.0.10 centered grid and selected-icon comparison
+
+Once the PropertyPage shell began to read visually like a WinUI surface, the old grid geometry and diagnostic-style metadata became more obvious.
+
+The grid now centers the **cell matrix** rather than only the surrounding PictureBox. The scrollbar retains a dedicated 12-DIP lane at the right edge; the remaining width is used to calculate the column count and a centered X origin. Drawing and mouse hit testing share that origin.
+
+The page height is increased to 456 DIPs. With a 108-DIP details area, the grid still has enough vertical space for six 44-DIP icon rows.
+
+The details area is a tbUI3 picker convenience, not a WinUI control claim. It presents:
+- Name
+- Enum
+- Symbol value in decimal and hex
+- modern glyph code point
+
+It also renders the selected modern glyph side by side using `Segoe Fluent Icons` and `Segoe MDL2 Assets`. Both fonts use the same modern code point; the point of the comparison is to show the different font artwork a user can see on the Windows 11 primary path versus the Windows 10 fallback path. Each preview is marked Active, Fallback, or Unavailable based on the installed fonts and `SystemIconFontFamily()`.

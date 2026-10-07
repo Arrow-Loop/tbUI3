@@ -20,7 +20,6 @@ Class UI3IconPage
     Private Const NONE_ENTRY As Long = -1
     Private Const SEARCH_HINT As String = "Search by name, number, &HE174 or U+E8CB"
     Private Const EM_SETCUEBANNER As Long = &H1501&
-    Private Const GA_ROOTOWNER As Long = 3
     Private Const PAGE_PAD_DIP As Single = 12
     Private Const SEARCH_HEIGHT_DIP As Single = 32
     Private Const SEARCH_TEXT_INSET_X_DIP As Single = 8
@@ -41,7 +40,6 @@ Class UI3IconPage
 
     Private Declare PtrSafe Function SendMessageW Lib "user32" (ByVal hWnd As LongPtr, ByVal wMsg As Long, _
         ByVal wParam As LongPtr, ByVal lParam As LongPtr) As LongPtr
-    Private Declare PtrSafe Function GetAncestor Lib "user32" (ByVal hWnd As LongPtr, ByVal gaFlags As Long) As LongPtr
 
     Private m_Target As ID2D1DCRenderTarget
     Private m_ChromeTarget As ID2D1DCRenderTarget
@@ -234,18 +232,16 @@ CleanUp:
 
     Private Sub ApplyHostTitleBar()
         On Error Resume Next
-        Dim host As LongPtr
-        host = GetAncestor(picChrome.hWnd, GA_ROOTOWNER)
-        If host <> 0 Then UI3SkinPropertySheetHost host, Me.Caption, txtSearch.hWnd
+        ' Arms the search-box colour hooks, and skins the real PropertySheet once BETA 997 has
+        ' inserted this page into it (found structurally, never by GetAncestor). Safe on every paint.
+        UI3SkinPropertySheetForPage picChrome.hWnd, Me.Caption, txtSearch.hWnd
     End Sub
 
     Private Sub picChrome_Paint()
         EnsurePageThemeCurrent
 
-        ' BETA 997 can create/paint the PropertyPage before it inserts the page into the
-        ' outer property sheet. Re-resolve the host on every chrome paint so the first paint
-        ' after that native insertion upgrades the early ThunderPropertyPageDC attachment
-        ' to the real owning #32770 PropertySheet and its SysTabControl32.
+        ' BETA 997 paints the page before it inserts it into the outer PropertySheet, so the
+        ' sheet may not exist yet. The page-move hook usually skins it; this is the fallback.
         ApplyHostTitleBar
 
         Dim hr As Long

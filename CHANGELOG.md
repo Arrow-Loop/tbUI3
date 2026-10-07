@@ -4,6 +4,15 @@ All notable changes to tbUI3. Dates are when the change was made, not released. 
 
 ## Unreleased
 
+### 2026-10-07, PropertySheet skin attach fix (1.0.0.21, Claude review)
+
+- Shane asked Claude to review the 1.0.0.6 to 1.0.0.20 PropertyPage passes. Root cause of the regression from 1.0.0.17 on, found by reading the code (not yet confirmed on the PC): `picChrome_Paint` called `ApplyHostTitleBar` on every paint, which resolved the host with `GetAncestor(GA_ROOTOWNER)`. The 1.0.0.15 and 1.0.0.17 logs show that returns the page's own `ThunderPropertyPageDC`. `UI3SkinPropertySheetHost` then saw a different host from the promoted `#32770` and called `DetachPropertySheetSkin`, re-attaching to the page. So the 1.0.0.18 structural promotion worked, and the next page paint undid it: title bar and page dark (those don't depend on the subclass), tab and buttons light. That matches the 1.0.0.18 screenshot.
+- `UI3SkinPropertySheetHost` now refuses any window without a direct `SysTabControl32` child and does nothing when the same sheet is already skinned. The page calls a new `UI3SkinPropertySheetForPage`, which finds the sheet structurally (the 1.0.0.18 lookup) and does nothing until BETA 997 has inserted the page. The deferred `WM_WINDOWPOSCHANGED` promotion (1.0.0.19/1.0.0.20) stays as the main trigger.
+- The confirmed search-box hooks (`WM_CTLCOLOREDIT` on `ThunderPropertyPageDC`, `WM_ERASEBKGND` and focus repaint on `ThunderTextBox`) are now armed on their own, as soon as the page exists, instead of only as a side effect of skinning a host. The rest of the probe (whole-ancestry subclassing, Apply/size snapshots) no longer runs.
+- Kept unchanged: the 1.0.0.10 sheet paint, the native tab metrics from 1.0.0.15, the resized native action buttons, the picker grid/details, and the icon designer bridge.
+- The `%TEMP%\tbUI3-propertypage.log` diagnostic is off (`PROPERTY_PAGE_LOG_ENABLED = False` in `UI3Window`).
+- Package revision is now 1.0.0.21. Not yet compiled or run in BETA 997.
+
 ### 2026-10-07, WM_APP literal-width correction (1.0.0.20)
 
 - Shane's 1.0.0.19 build produced TB0012 on `WM_APP = &H8000`: BETA 997 interpreted the literal as the 16-bit Integer value -32768 before widening it to Long.

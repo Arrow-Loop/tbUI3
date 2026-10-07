@@ -142,8 +142,13 @@ Public Module UI3Window
     Private m_PropertySheetApply As LongPtr
     Private m_PropertySheetTabCaption As String
     Private m_PropertySheetTarget As ID2D1DCRenderTarget
+    Private m_PropertyPageCaption As String
 
-    ' Temporary PropertyPage probe + the confirmed native TextBox colour hook.
+    ' Set True to write %TEMP%\tbUI3-propertypage.log (host tree, subclass results, layout snapshots).
+    Private Const PROPERTY_PAGE_LOG_ENABLED As Boolean = False
+
+    ' PropertyPage hooks: the confirmed native TextBox colour route and the page-move trigger
+    ' that promotes the skin to the real PropertySheet.
     Private m_PropertyProbeEdit As LongPtr
     Private m_PropertyProbeEditParent As LongPtr
     Private m_PropertyProbePageDialog As LongPtr
@@ -385,18 +390,29 @@ CleanUp:
     Public Sub UI3SkinPropertySheetHost(ByVal hWnd As LongPtr, Optional ByVal TabCaption As String = "Properties", _
             Optional ByVal TextBoxHwnd As LongPtr = 0)
         If hWnd = 0 Then Exit Sub
+        If TextBoxHwnd <> 0 Then AttachPropertyPageHooks TextBoxHwnd
+        If Len(TabCaption) > 0 Then m_PropertyPageCaption = TabCaption
 
-        If m_PropertySheetHost <> 0 And m_PropertySheetHost <> hWnd Then DetachPropertySheetSkin
+        ' Only a real PropertySheet (a window with a direct SysTabControl32 child) is skinned, and
+        ' an attached sheet is never swapped for a lesser window. 1.0.0.17 to 1.0.0.20 re-resolved
+        ' the host on every page paint through GetAncestor, which still returned the page's own
+        ' ThunderPropertyPageDC; that detached the real sheet's skin straight after it was promoted.
+        Dim tabHwnd As LongPtr
+        tabHwnd = FindWindowExW(hWnd, 0, StrPtr("SysTabControl32"), 0)
+        If tabHwnd = 0 Then Exit Sub
+        If hWnd = m_PropertySheetHost And m_PropertySheetTab <> 0 Then Exit Sub
+
+        If m_PropertySheetHost <> 0 Then DetachPropertySheetSkin
 
         m_PropertySheetHost = hWnd
-        m_PropertySheetTabCaption = TabCaption
+        m_PropertySheetTabCaption = m_PropertyPageCaption
         UI3ApplyTitleBarTheme hWnd
 
         Dim hostSubclassOk As Long
         hostSubclassOk = SetWindowSubclass(hWnd, AddressOf UI3PropertySheetSubclassProc, CLngPtr(UI3_PROPERTY_SHEET_SUBCLASS_ID), UI3_PSKIN_HOST)
         ProbeLog "SKIN host subclass=" & CStr(hostSubclassOk) & " " & DebugWindowLine(hWnd)
 
-        m_PropertySheetTab = FindWindowExW(hWnd, 0, StrPtr("SysTabControl32"), 0)
+        m_PropertySheetTab = tabHwnd
         m_PropertySheetOK = GetDlgItem(hWnd, IDOK)
         m_PropertySheetCancel = GetDlgItem(hWnd, IDCANCEL)
         m_PropertySheetApply = GetDlgItem(hWnd, ID_APPLY_NOW)
@@ -408,49 +424,48 @@ CleanUp:
 
         LayoutPropertySheetSkin
         RedrawPropertySheetSkin
-        If m_PropertyProbeEdit <> TextBoxHwnd Or m_PropertyProbeEditParent = 0 Then
-            ProbePropertySheet hWnd, TextBoxHwnd
-        End If
+        LogPropertySheet hWnd
     End Sub
 
-    Private Sub ProbePropertySheet(ByVal host As LongPtr, ByVal textBoxHwnd As LongPtr)
-        On Error Resume Next
-        Dim path As String
-        path = Environ$("TEMP") & "\tbUI3-propertypage.log"
-        Kill path
-        On Error GoTo 0
+    ' Called by a tbUI3 PropertyPage from its paint and theme code; safe to call repeatedly.
+    ' Arms the search-box hooks at once, and skins the PropertySheet that hosts PageChildHwnd once
+    ' BETA 997 has inserted the page into it. Before that insertion it changes nothing else.
+    Public Sub UI3SkinPropertySheetForPage(ByVal PageChildHwnd As LongPtr, ByVal TabCaption As String, _
+            Optional ByVal TextBoxHwnd As LongPtr = 0)
+        If TextBoxHwnd <> 0 Then AttachPropertyPageHooks TextBoxHwnd
+        If Len(TabCaption) > 0 Then m_PropertyPageCaption = TabCaption
+        Dim host As LongPtr
+        host = FindPropertySheetAncestor(PageChildHwnd)
+        If host <> 0 Then UI3SkinPropertySheetHost host, m_PropertyPageCaption
+    End Sub
+
+    Private Sub AttachPropertyPageHooks(ByVal textBoxHwnd As LongPtr)
+        If textBoxHwnd = 0 Then Exit Sub
+        If textBoxHwnd = m_PropertyProbeEdit And m_PropertyProbeEditParent <> 0 Then Exit Sub
 
         ReleasePropertyEditBrush
         m_PropertyProbeEdit = textBoxHwnd
         m_PropertyProbeEditParent = GetParent(textBoxHwnd)
+        m_PropertyProbePageDialog = 0
         If m_PropertyProbeEditParent <> 0 Then m_PropertyProbePageDialog = GetParent(m_PropertyProbeEditParent)
 
-        ProbeLog "=== tbUI3 PropertyPage probe / 1.0.0.19 ==="
-        ProbeLog "1.0.0.19: defer structural PropertySheet promotion until after the page WM_WINDOWPOSCHANGED subclass frame unwinds; log subclass attach results."
-        ProbeSnapshot "initial"
+        ' ThunderTextBox: WM_ERASEBKGND and focus repaint. ThunderPropertyPageDC: WM_CTLCOLOREDIT for
+        ' that TextBox, and WM_WINDOWPOSCHANGED, which fires when BETA 997 moves the page into the sheet.
+        SetWindowSubclass textBoxHwnd, AddressOf UI3PropertyProbeProc, CLngPtr(UI3_PROPERTY_PROBE_SUBCLASS_ID), 0
+        If m_PropertyProbeEditParent <> 0 Then
+            SetWindowSubclass m_PropertyProbeEditParent, AddressOf UI3PropertyProbeProc, _
+                CLngPtr(UI3_PROPERTY_PROBE_SUBCLASS_ID), 1
+        End If
+        ProbeLog "HOOKS edit=" & DebugWindowLine(textBoxHwnd) & " parent=" & DebugWindowLine(m_PropertyProbeEditParent)
+        InvalidateRect textBoxHwnd, 0, 1
+    End Sub
+
+    Private Sub LogPropertySheet(ByVal host As LongPtr)
+        If Not PROPERTY_PAGE_LOG_ENABLED Then Exit Sub
+        ProbeLog "=== tbUI3 PropertySheet skin attached ==="
+        ProbeSnapshot "attached"
         ProbeLog "--- host tree ---"
         DumpWindowTree host, 0, 5
-        ProbeLog "--- txtSearch ancestry / layout probes ---"
-
-        Dim cur As LongPtr
-        Dim depth As Long
-        cur = textBoxHwnd
-        Do While cur <> 0 And depth < 10
-            ProbeLog "A" & CStr(depth) & ": " & DebugWindowLine(cur)
-            SetWindowSubclass cur, AddressOf UI3PropertyProbeProc, CLngPtr(UI3_PROPERTY_PROBE_SUBCLASS_ID), CLngPtr(depth)
-            If cur = host Then Exit Do
-            cur = GetParent(cur)
-            depth = depth + 1
-        Loop
-
-        If m_PropertySheetTab <> 0 Then
-            ProbeLog "T: " & DebugWindowLine(m_PropertySheetTab)
-            SetWindowSubclass m_PropertySheetTab, AddressOf UI3PropertyProbeProc, _
-                CLngPtr(UI3_PROPERTY_PROBE_SUBCLASS_ID), CLngPtr(100)
-        End If
-
-        ProbeLog "=== probe armed; click Apply once to capture the native layout transition ==="
-        If m_PropertyProbeEdit <> 0 Then InvalidateRect m_PropertyProbeEdit, 0, 1
     End Sub
 
     Private Function FindPropertySheetAncestor(ByVal hWnd As LongPtr) As LongPtr
@@ -481,8 +496,7 @@ CleanUp:
         m_PropertyProbePageDialog = GetParent(pageHwnd)
         ProbeLog "PROMOTE host from page=" & DebugWindowLine(pageHwnd) & _
             " to=" & DebugWindowLine(host)
-        UI3SkinPropertySheetHost host, m_PropertySheetTabCaption, m_PropertyProbeEdit
-        ProbeSnapshot "after host promotion"
+        UI3SkinPropertySheetHost host, m_PropertyPageCaption
     End Sub
 
     Private Function UI3PropertyProbeProc(ByVal hWnd As LongPtr, ByVal uMsg As Long, ByVal wParam As LongPtr, _
@@ -566,6 +580,7 @@ CleanUp:
     End Function
 
     Private Sub ProbeSnapshot(ByVal reason As String)
+        If Not PROPERTY_PAGE_LOG_ENABLED Then Exit Sub
         ProbeLog "--- snapshot: " & reason & " ---"
         ProbeLog "Host: " & DebugWindowLine(m_PropertySheetHost)
         ProbeLog "Tab: " & DebugWindowLine(m_PropertySheetTab)
@@ -706,6 +721,7 @@ CleanUp:
     End Function
 
     Private Sub ProbeLog(ByVal text As String)
+        If Not PROPERTY_PAGE_LOG_ENABLED Then Exit Sub
         On Error Resume Next
         Dim f As Integer
         f = FreeFile

@@ -1,3 +1,8 @@
+### 1.0.0.21
+- The PropertySheet skin now attaches only to the real PropertySheet (the window with the SysTabControl32), found structurally from the page, and is never swapped back to the page's own window. In 1.0.0.17 to 1.0.0.20 every page repaint re-ran a GetAncestor lookup that returned the page itself, which detached the dark tab and button skin right after it was applied.
+- The search-box colour hooks are armed separately, as soon as the page exists.
+- The diagnostic log is off (PROPERTY_PAGE_LOG_ENABLED in UI3Window).
+
 ### 1.0.0.20
 - Corrected the private `WM_APP` constant to `&H8000&`. BETA 997 warned that bare `&H8000` was being interpreted as the 16-bit Integer value -32768 before widening, so the deferred PropertySheet-promotion message could use the wrong 32-bit message ID.
 - No other behavior changed in this pass.

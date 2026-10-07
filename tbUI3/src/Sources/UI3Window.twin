@@ -464,8 +464,10 @@ CleanUp:
                 Exit Function
 
             Case WM_ERASEBKGND
-                UI3PropertySheetSubclassProc = 1
-                Exit Function
+                If dwRefData <> UI3_PSKIN_PAGE Then
+                    UI3PropertySheetSubclassProc = 1
+                    Exit Function
+                End If
 
             Case WM_CTLCOLOREDIT
                 If dwRefData = UI3_PSKIN_PAGE And lParam = m_PropertyEdit And m_PropertyEdit <> 0 Then
@@ -474,8 +476,12 @@ CleanUp:
                 End If
 
             Case WM_PAINT
-                ' Own paint completely. Painting the classic control first then covering it
-                ' produced a visible flash during pointer-state changes.
+                If dwRefData = UI3_PSKIN_PAGE Then
+                    UI3PropertySheetSubclassProc = DefSubclassProc(hWnd, uMsg, wParam, lParam)
+                    Exit Function
+                End If
+                ' Own paint completely for the host/tab/action buttons. Painting the classic
+                ' control first then covering it produced a visible flash during pointer changes.
                 PaintPropertySheetHwnd hWnd, dwRefData
                 UI3PropertySheetSubclassProc = 0
                 Exit Function
@@ -497,7 +503,7 @@ CleanUp:
 
             Case WM_MOUSEMOVE, WM_LBUTTONDOWN, WM_LBUTTONUP, WM_SETFOCUS, WM_KILLFOCUS, WM_ENABLE
                 result = DefSubclassProc(hWnd, uMsg, wParam, lParam)
-                If dwRefData >= UI3_PSKIN_OK Then InvalidateRect hWnd, 0, 0
+                If dwRefData >= UI3_PSKIN_OK And dwRefData <= UI3_PSKIN_APPLY Then InvalidateRect hWnd, 0, 0
                 UI3PropertySheetSubclassProc = result
                 Exit Function
 

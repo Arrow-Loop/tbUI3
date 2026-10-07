@@ -1,6 +1,6 @@
 # Handoff: tbUI3 state on 2026-10-07
 
-This is written for the next developer or AI session; ChatGPT is expected to run the next several passes. Read `AGENTS.md`, then this file, then `CHANGELOG.md` and `ROADMAP.md`. State at the time of writing: `tbui3-dev`, package version 1.0.0.11 (candidate), twinBASIC BETA 997.
+This is written for the next developer or AI session; ChatGPT is expected to run the next several passes. Read `AGENTS.md`, then this file, then `CHANGELOG.md` and `ROADMAP.md`. State at the time of writing: `tbui3-dev`, package version 1.0.0.12 (candidate), twinBASIC BETA 997.
 
 ## What tbUI3 is
 
@@ -41,13 +41,14 @@ The decisions are in `docs/2026-10-06-first-pass-report.md` and `docs/2026-10-06
 | 1.0.0.8: native PropertySheet skin | Core visual proof passed in win32: dark host/title/tab/button shell appeared and the picker still worked. Issues found: initial white search Edit until interaction, tab/button hover flicker, clipped Apply text. |
 | 1.0.0.9: PropertySheet paint/layout follow-up | Superseded by 1.0.0.10 before build. Owns WM_PAINT, refreshes the search Edit, resizes/repositions the real button HWNDs, and requests source-backed WinUI TabViewItem dimensions/typography. |
 | 1.0.0.10: centered grid + dual-font details | Visually reviewed in win32 by Shane: centered matrix and dual-font Selected icon area look good. Remaining issues: native Edit repaints white, Icon tab still clipped, preview cards too dominant/too near action row. |
-| 1.0.0.11: Edit/tab/preview follow-up | Candidate only. Supplies WM_CTLCOLOREDIT from the real PropertyPage parent, moves/resizes the page to the tab control's adjusted display rect, relays out on page Resize, and shrinks/centers the two font-preview cards. Not built/run. |
+| 1.0.0.11: Edit/tab/preview follow-up | Runtime regression in win32: introduced a large white band above the page and did not fix the white Edit; tab still imperfect. Preview cards were reduced as intended. |
+| 1.0.0.12: corrective Edit/tab geometry pass | Candidate only. Removes TCM_ADJUSTRECT page replacement, moves the page only by measured tab overlap, and resolves/subclasses the actual nested EDIT parent for WM_CTLCOLOREDIT. Not built/run. |
 
 ## Work queue for the next passes (updated 2026-10-07)
 
 Do these in order, one pass each unless they are trivially small. Each pass ends with Shane building and testing in the IDE, then CHANGELOG.md and ROADMAP.md (and this file's table) recording only what he actually saw.
 
-1. **Build and visually check the 1.0.0.11 PropertyPage follow-up.** Pull/build/import, open `(Custom)` → `...`, then check only three things first: (a) the search Edit should remain dark both initially and after clicking several different glyphs, (b) the full 100x32-DIP Icon tab should be visible instead of clipped by the page, and (c) the smaller Fluent/MDL2 cards should have noticeably more breathing room above the OK/Cancel/Apply row. Capture one full-dialog screenshot before the longer behavior checklist.
+1. **Build and visually check the 1.0.0.12 corrective PropertyPage pass.** Pull/build/import and open `(Custom)` → `...`. First verify that the large white band introduced by 1.0.0.11 is gone. Then click several glyphs and confirm whether the search Edit remains dark. Finally check whether more of the 100x32-DIP Icon tab is visible without creating a new gap. Capture one full-dialog screenshot before any longer checklist.
    - **Do not touch the designer bridge.** Keep `IconPageApplying`, `SetPendingIcon`/`TakePendingIcon`, `DesignName()` and the `DesignLog` calls exactly as they are.
 2. **Finish validating the picker behavior after the chrome pass is visually stable.** In win32 and then win64: pick + Apply; pick + OK; reopen; search `save`, `57716`, `E8CB`, `&HE174`; pick then Cancel; wheel over both the grid and search box; drag/click the new painted scrollbar. Then switch Windows light/dark while the property page is open and note whether the page/titlebar repaint immediately.
 3. **If the first chrome pass is stable, spike the host button strip.** Inspect the property-sheet HWND hierarchy and test a reversible overlay for host-owned OK/Cancel/Apply while leaving their native behavior underneath. Do not ship a host-window subclass/overlay unless teardown and keyboard behavior are proven.

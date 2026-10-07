@@ -377,6 +377,7 @@ CleanUp:
         AttachPropertySheetChild m_PropertySheetCancel, UI3_PSKIN_CANCEL
         AttachPropertySheetChild m_PropertySheetApply, UI3_PSKIN_APPLY
 
+        LayoutPropertySheetSkin
         RedrawPropertySheetSkin
     End Sub
 
@@ -436,8 +437,24 @@ CleanUp:
                 Exit Function
 
             Case WM_PAINT
-                result = DefSubclassProc(hWnd, uMsg, wParam, lParam)
+                ' Own paint completely. Painting the classic control first then covering it
+                ' produced a visible flash during pointer-state changes.
                 PaintPropertySheetHwnd hWnd, dwRefData
+                UI3PropertySheetSubclassProc = 0
+                Exit Function
+
+            Case WM_SIZE
+                result = DefSubclassProc(hWnd, uMsg, wParam, lParam)
+                If dwRefData = UI3_PSKIN_HOST Then
+                    LayoutPropertySheetSkin
+                    RedrawPropertySheetSkin
+                End If
+                UI3PropertySheetSubclassProc = result
+                Exit Function
+
+            Case BM_SETSTATE
+                result = DefSubclassProc(hWnd, uMsg, wParam, lParam)
+                If dwRefData >= UI3_PSKIN_OK Then InvalidateRect hWnd, 0, 0
                 UI3PropertySheetSubclassProc = result
                 Exit Function
 

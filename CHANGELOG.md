@@ -12,6 +12,7 @@ All notable changes to tbUI3. Dates are when the change was made, not released. 
 - The original IDOK/IDCANCEL/ID_APPLY_NOW HWNDs are now physically resized and repositioned instead of leaving their hit targets behind. This preserves their native PropertySheet commands automatically: the real buttons move with the WinUI-looking paint. The action row uses 8-DIP spacing; widths are equalized from measured captions plus exact WinUI Button padding, with a documented tbUI3 80x32-DIP convenience floor because WinUI has no PropertySheet layout contract.
 - The native SysTabControl32 item is now asked for WinUI TabViewItem's exact 100-DIP minimum width, 32-DIP minimum height and 8,3,8,3 no-close header padding. Its selected paint uses the source-backed selected background, 8-DIP OverlayCornerRadius and 12-DIP semibold header typography. If this PropertySheet style ignores TCM_SETITEMSIZE, the next fallback is custom hit testing/forwarding rather than leaving paint and hit testing misaligned.
 - The search TextBox is explicitly refreshed immediately after its theme colors are applied.
+- The selected-icon name/detail text that disappeared in 1.0.0.8 is no longer left to a classic transparent Label at runtime. Its two lines are now painted directly by Direct2D into the page chrome, while the Label remains only as a designer placeholder.
 - Package revision is now 1.0.0.9. Source/project candidate only: **not yet compiled or run in BETA 997**.
 
 ### 2026-10-07, native PropertySheet skin spike (1.0.0.8)

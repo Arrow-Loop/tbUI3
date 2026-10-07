@@ -4,6 +4,13 @@ All notable changes to tbUI3. Dates are when the change was made, not released. 
 
 ## Unreleased
 
+### 2026-10-07, WM_APP literal-width correction (1.0.0.20)
+
+- Shane's 1.0.0.19 build produced TB0012 on `WM_APP = &H8000`: BETA 997 interpreted the literal as the 16-bit Integer value -32768 before widening it to Long.
+- The constant is now `&H8000&`, forcing the intended 32-bit Long value and keeping the deferred promotion message in the `WM_APP` range.
+- This is intentionally the only code change in 1.0.0.20 so the deferred host-promotion path can be retested cleanly.
+- Package revision is now 1.0.0.20. Source/project candidate only: **not yet compiled or run in BETA 997**.
+
 ### 2026-10-07, deferred PropertySheet skin activation (1.0.0.19)
 
 - Shane built/opened 1.0.0.18 in win32. Structural promotion succeeded: the log found the outer `#32770`, real `SysTabControl32`, inner dialog and `ThunderPropertyPageDC`. The screenshot showed the title bar and page body dark, the Icon tab fully visible and the search TextBox fixed, but the tab strip and action buttons still used native light painting.

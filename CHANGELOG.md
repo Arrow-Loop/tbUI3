@@ -4,6 +4,14 @@ All notable changes to tbUI3. Dates are when the change was made, not released. 
 
 ## Unreleased
 
+### 2026-10-07, late PropertySheet host acquisition (1.0.0.17)
+
+- Shane built/opened 1.0.0.16 in win32. The Icon tab became fully visible and the search field stayed dark, but the outer tab/button strip was classic/light because the custom PropertySheet skin still did not attach.
+- The 1.0.0.16 log showed why: the initial host discovery still occurred while the page was a top-level `ThunderPropertyPageDC` with no tab HWND. Later in the same run, BETA 997 moved that page into the real PropertySheet, but tbUI3 never retried host discovery after the move.
+- 1.0.0.17 re-runs `ApplyHostTitleBar` from `picChrome_Paint`. The existing `GA_ROOTOWNER` lookup therefore gets another chance after native insertion, allowing the skin to switch from the early page HWND to the actual owning `#32770` PropertySheet.
+- The confirmed ThunderTextBox erase/colour fix remains unchanged, and no new tab/page geometry or persistence changes are included.
+- Package revision is now 1.0.0.17. Source/project candidate only: **not yet compiled or run in BETA 997**.
+
 ### 2026-10-07, PropertySheet owner-chain host fix (1.0.0.16)
 
 - Shane's 1.0.0.15 diagnostic log exposed the actual failure: the skin host was `ThunderPropertyPageDC` itself, with `Tab: HWND=0` and `PageDialog: HWND=0`. tbUI3 therefore had no handle to the outer PropertySheet and could not possibly fix the clipped Icon tab in that build.

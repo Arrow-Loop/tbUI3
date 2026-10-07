@@ -184,3 +184,11 @@ This pass deliberately does not revive `TCM_ADJUSTRECT`, manual PropertyPage mov
 The 1.0.0.15 log resolved an important ambiguity: `GetAncestor(picChrome.hWnd, GA_ROOT)` returned the top-level `ThunderPropertyPageDC`, not the outer property-sheet dialog. The resulting probe showed `Tab: HWND=0` and `PageDialog: HWND=0`, so the skin had no access to the actual tab control in that build.
 
 The PropertyPage is effectively a top-level owned window in this designer path. 1.0.0.16 switches the host lookup to `GA_ROOTOWNER`, which walks the owner chain as well as the parent chain and should therefore resolve the real outer `#32770` PropertySheet. This is deliberately a discovery fix only, not another geometry experiment.
+
+## 1.0.0.17 late host acquisition
+
+The 1.0.0.16 run showed the search Edit fix working and the native tab fully visible, but the outer shell stayed classic/light. Its log still began with `ThunderPropertyPageDC` as the host and no tab HWND. Later `WM_WINDOWPOSCHANGED` entries showed BETA 997 moving that page into its final PropertySheet position.
+
+This means the `GA_ROOTOWNER` lookup itself was not necessarily wrong; it was being called before an owner existed. 1.0.0.17 therefore retries `ApplyHostTitleBar` on every `picChrome_Paint`. The intended sequence is: early paint may still see only the page; after BETA 997 inserts/moves the page, the resulting repaint resolves the real owner and `UI3SkinPropertySheetHost` swaps the skin to that host.
+
+This is intentionally a timing fix only. The native tab metrics, ThunderTextBox brush/erase handling, and persistence bridge are unchanged.

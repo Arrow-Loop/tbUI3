@@ -1,3 +1,8 @@
+### 1.0.0.17
+- PropertySheet host discovery is now retried from `picChrome_Paint`, not only during the PropertyPage's early theme setup.
+- BETA 997 creates/paints the top-level `ThunderPropertyPageDC` before inserting it into the outer PropertySheet. The first chrome paint after that insertion now re-runs the existing `GA_ROOTOWNER` lookup so the skin can upgrade from the early page HWND to the actual owning `#32770` PropertySheet and recover its `SysTabControl32`.
+- No tab/page geometry, TextBox painting, or designer-persistence bridge behavior changed in this pass.
+
 ### 1.0.0.16
 - Fixed PropertySheet host discovery for the icon picker. The 1.0.0.15 diagnostic log proved `GetAncestor(..., GA_ROOT)` was resolving only to the top-level `ThunderPropertyPageDC`, so tbUI3 never found the outer `#32770` PropertySheet or its `SysTabControl32` at all.
 - Host discovery now uses `GA_ROOTOWNER`, which follows the owned-window chain to the actual PropertySheet host. This should restore access to the real tab/button shell while leaving the page body and designer persistence bridge untouched.

@@ -241,6 +241,13 @@ CleanUp:
 
     Private Sub picChrome_Paint()
         EnsurePageThemeCurrent
+
+        ' BETA 997 can create/paint the PropertyPage before it inserts the page into the
+        ' outer property sheet. Re-resolve the host on every chrome paint so the first paint
+        ' after that native insertion upgrades the early ThunderPropertyPageDC attachment
+        ' to the real owning #32770 PropertySheet and its SysTabControl32.
+        ApplyHostTitleBar
+
         Dim hr As Long
         hr = PaintChrome()
         If hr <> 0 Then

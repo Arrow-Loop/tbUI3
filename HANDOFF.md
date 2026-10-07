@@ -1,6 +1,6 @@
 # Handoff: tbUI3 state on 2026-10-07
 
-This is written for the next developer or AI session; ChatGPT is expected to run the next several passes. Read `AGENTS.md`, then this file, then `CHANGELOG.md` and `ROADMAP.md`. State at the time of writing: `tbui3-dev`, package version 1.0.0.16 (candidate), twinBASIC BETA 997.
+This is written for the next developer or AI session; ChatGPT is expected to run the next several passes. Read `AGENTS.md`, then this file, then `CHANGELOG.md` and `ROADMAP.md`. State at the time of writing: `tbui3-dev`, package version 1.0.0.17 (candidate), twinBASIC BETA 997.
 
 ## What tbUI3 is
 
@@ -46,13 +46,14 @@ The decisions are in `docs/2026-10-06-first-pass-report.md` and `docs/2026-10-06
 | 1.0.0.13: diagnostic rollback | Built/run win32. Probe confirmed `ThunderTextBox` is the exposed txtSearch HWND, parented by `ThunderPropertyPageDC`, and that parent receives `WM_CTLCOLOREDIT` for it. Clicking Apply also caused the page to shift down and reveal the full Icon tab. |
 | 1.0.0.14: confirmed TextBox brush + Apply-layout trace | Built/opened in win32. Screenshot showed the native search edit still white and the Icon tab still clipped, so the confirmed WM_CTLCOLOREDIT route alone was not enough to fix the edit and the forced 32-DIP native tab item remained incompatible with BETA 997's reserved page geometry. |
 | 1.0.0.15: native tab metrics + ThunderTextBox erase pass | Built/opened in win32. The Icon tab was still clipped; the diagnostic log then showed tbUI3 had attached to ThunderPropertyPageDC itself and had no tab HWND.  Leaves the real tab item at the host's native metrics and paints inside that rectangle; the confirmed ThunderTextBox subclass now fills WM_ERASEBKGND from the same themed brush and invalidates on focus changes. Not built/run. |
-| 1.0.0.16: PropertySheet owner-chain host fix | Candidate only. Uses GA_ROOTOWNER so the top-level PropertyPage can resolve its owning PropertySheet and recover the real SysTabControl32. No new tab geometry change. Not built/run. |
+| 1.0.0.16: PropertySheet owner-chain host fix | Built/opened in win32. Search TextBox stayed dark and the Icon tab was fully visible, but the outer PropertySheet remained classic/light because host discovery still happened before BETA 997 inserted the top-level page into its owner. |
+| 1.0.0.17: late PropertySheet host acquisition | Candidate only. Re-runs the GA_ROOTOWNER lookup from picChrome_Paint so a repaint after native insertion can attach the existing skin to the real #32770 PropertySheet. No new geometry change. Not built/run. |
 
 ## Work queue for the next passes (updated 2026-10-07)
 
 Do these in order, one pass each unless they are trivially small. Each pass ends with Shane building and testing in the IDE, then CHANGELOG.md and ROADMAP.md (and this file's table) recording only what he actually saw.
 
-1. **Build/test 1.0.0.16 in win32.** Pull/build/import and open `(Custom)` → `...`. Check whether the Icon tab is fully visible immediately. Then send the new `%TEMP%\tbUI3-propertypage.log`; the first checkpoint is simply that `Host` is the outer `#32770` PropertySheet and `Tab` is a nonzero `SysTabControl32` HWND. If that is true, continue the search-edit and Apply checks.
+1. **Build/test 1.0.0.17 in win32.** Pull/build/import and open `(Custom)` → `...`. Check three things immediately: the outer PropertySheet shell is dark/themed again, the Icon tab remains fully visible, and the search TextBox remains dark. Then send the new `%TEMP%\tbUI3-propertypage.log`; the key checkpoint is that a later probe/skin attachment reaches the outer `#32770` PropertySheet with a nonzero `SysTabControl32` HWND.
    - **Do not touch the designer bridge.** Keep `IconPageApplying`, `SetPendingIcon`/`TakePendingIcon`, `DesignName()` and the `DesignLog` calls exactly as they are.
 2. **Finish validating the picker behavior after the chrome pass is visually stable.** In win32 and then win64: pick + Apply; pick + OK; reopen; search `save`, `57716`, `E8CB`, `&HE174`; pick then Cancel; wheel over both the grid and search box; drag/click the new painted scrollbar. Then switch Windows light/dark while the property page is open and note whether the page/titlebar repaint immediately.
 3. **If the first chrome pass is stable, spike the host button strip.** Inspect the property-sheet HWND hierarchy and test a reversible overlay for host-owned OK/Cancel/Apply while leaving their native behavior underneath. Do not ship a host-window subclass/overlay unless teardown and keyboard behavior are proven.

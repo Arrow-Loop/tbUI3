@@ -4,6 +4,16 @@ All notable changes to tbUI3. Dates are when the change was made, not released. 
 
 ## Unreleased
 
+### 2026-10-07, PropertySheet paint/layout follow-up (1.0.0.9)
+
+- Shane built and opened the 1.0.0.8 PropertySheet skin in win32. The overall dark shell worked: title bar, page background, painted tab and painted bottom buttons all appeared in the live property sheet.
+- Three problems were observed: the search Edit initially showed a white native fill until interaction forced a repaint; the tab and bottom buttons visibly flickered while the pointer moved around them; and the disabled Apply caption was clipped in the original small Win32 button rectangle.
+- 1.0.0.9 changes the skin from “default paint, then cover it” to owning WM_PAINT for the root/tab/buttons. The native control window procedures still receive input/state messages, but their classic paint is no longer allowed to flash first.
+- The original IDOK/IDCANCEL/ID_APPLY_NOW HWNDs are now physically resized and repositioned instead of leaving their hit targets behind. This preserves their native PropertySheet commands automatically: the real buttons move with the WinUI-looking paint. The action row uses 8-DIP spacing; widths are equalized from measured captions plus exact WinUI Button padding, with a documented tbUI3 80x32-DIP convenience floor because WinUI has no PropertySheet layout contract.
+- The native SysTabControl32 item is now asked for WinUI TabViewItem's exact 100-DIP minimum width, 32-DIP minimum height and 8,3,8,3 no-close header padding. Its selected paint uses the source-backed selected background, 8-DIP OverlayCornerRadius and 12-DIP semibold header typography. If this PropertySheet style ignores TCM_SETITEMSIZE, the next fallback is custom hit testing/forwarding rather than leaving paint and hit testing misaligned.
+- The search TextBox is explicitly refreshed immediately after its theme colors are applied.
+- Package revision is now 1.0.0.9. Source/project candidate only: **not yet compiled or run in BETA 997**.
+
 ### 2026-10-07, native PropertySheet skin spike (1.0.0.8)
 
 - Restored the original `UI3IconPage.tbppage` sibling order from 1.0.0.6. Shane's comparison showed that the earlier canvas was actually the more faithful representation: the search TextBox was visible, while the blank Direct2D grid and hidden scrollbar only appeared absent because they contain no design-time drawing.

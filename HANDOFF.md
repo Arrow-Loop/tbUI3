@@ -36,7 +36,7 @@ The decisions are in `docs/2026-10-06-first-pass-report.md` and `docs/2026-10-06
 | 1.0.0.4: Caption can be cleared in the designer | Passed on Shane's PC in win32 and win64, 2026-10-06 |
 | Property page from `(Custom)` → `...` | Works (spike, 2026-10-06); the per-property `[PropertyPage]` link does not work in BETA 997 |
 | 1.0.0.5: UI3IconPage searchable icon picker | Opens, shows the search hint and two-line info, and the picked icon is saved with the form (win32, 2026-10-07). The designer bridge in `UI3Icons` must stay until the cause is understood |
-| 1.0.0.6: theme-aware PropertyPage chrome | First designer check passed the dark-canvas part, but `picChrome` covered the child controls because its designer z-order was wrong. Not built/run. |
+| 1.0.0.6: theme-aware PropertyPage chrome | Designer check passed the dark-canvas part but `picChrome` covered the child controls because its designer z-order was wrong. Runtime win32 was also opened by Shane and the themed picker still worked, so the observed stacking issue is designer-only. |
 | 1.0.0.7: PropertyPage designer z-order fix | Candidate only. `picChrome` is now the back-most designer sibling so search/grid/info should be visible on the canvas; runtime behavior is unchanged. |
 
 ## Work queue for the next passes (updated 2026-10-07)

@@ -7,7 +7,7 @@
   - Whoever changes a project regenerates its `src/` and checks the export matches the project.
 - Change a project in one of two ways:
   - Edit `src/` and run `twinBASIC_win64.exe import` (with the project closed in the IDE).
-  - Or patch the `.twinproj` directly with the tools in `tools/`. They keep the entry order and leave every entry they don't change byte-identical.
+  - Or patch the `.twinproj` directly with the tools in `tools/`. They keep the entry order and leave every entry they don't change byte-identical. `node tools/twinproj-src.mjs compare|extract|patch <project.twinproj> <srcdir> [relpath...]` covers the usual cases.
   - Don't round-trip a project through `impexp.mjs` export and import: its export drops `.meta`, and its import re-sorts the entries.
 - Line endings:
   - `.twin` sources are CRLF.

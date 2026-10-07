@@ -4,6 +4,10 @@ All notable changes to tbUI3. Dates are when the change was made, not released. 
 
 ## Unreleased
 
+### 2026-10-07, handoff for ChatGPT's next passes
+
+- HANDOFF.md now has an ordered work queue (finish picker validation, tidy tbUI3Test, design-time form canvas theme, designer accent refresh, S2 BackColor check, then spike A in ROADMAP order), how a pass works with Shane, and new gotchas (PropertyPage behaviour in BETA 997, PropertyBag defaults, CLI export paths). AGENTS.md mentions `tools/twinproj-src.mjs`. Docs only.
+
 ### 2026-10-07, icon picker search hint and info line (1.0.0.5 candidate)
 
 - At Shane's request, the search box shows a grey hint, "Search by name, number, &HE174 or U+E8CB", while it is empty (Windows `EM_SETCUEBANNER`, a private `SendMessageW` declaration; needs Common Controls 6, otherwise nothing shows).

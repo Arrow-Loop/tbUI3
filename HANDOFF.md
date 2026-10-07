@@ -1,6 +1,6 @@
-# Handoff: tbUI3 state on 2026-10-06
+# Handoff: tbUI3 state on 2026-10-07
 
-This is written for the next developer or AI session. Read `AGENTS.md`, then `CHANGELOG.md` and `ROADMAP.md`.
+This is written for the next developer or AI session; ChatGPT is expected to run the next several passes. Read `AGENTS.md`, then this file, then `CHANGELOG.md` and `ROADMAP.md`. State at the time of writing: `tbui3-dev` at 42e56c9 or later, package version 1.0.0.5 (candidate), twinBASIC BETA 997.
 
 ## What tbUI3 is
 
@@ -37,13 +37,27 @@ The decisions are in `docs/2026-10-06-first-pass-report.md` and `docs/2026-10-06
 | Property page from `(Custom)` → `...` | Works (spike, 2026-10-06); the per-property `[PropertyPage]` link does not work in BETA 997 |
 | 1.0.0.5: UI3IconPage searchable icon picker | Opens, shows the search hint and two-line info, and the picked icon is saved with the form (win32, 2026-10-07). Full check list and win64 still to run. The designer bridge in `UI3Icons` must stay until the cause is understood |
 
-## First job for the next session (updated 2026-10-07)
+## Work queue for the next passes (updated 2026-10-07)
 
-The icon picker (1.0.0.5 candidate) works on Shane's PC in win32: a picked icon is saved with the form. Why this build saves it while earlier ones lost it is not understood (see CHANGELOG, 2026-10-07). Keep the designer bridge and the `DesignLog` calls in `UI3Icons`/`UI3Button`/`UI3IconPage` unchanged. The log file is off (`DESIGN_LOG_ENABLED`); set it True if the picker misbehaves.
+Do these in order, one pass each unless they are trivially small. Each pass ends with Shane building and testing in the IDE, then CHANGELOG.md and ROADMAP.md (and this file's table) recording only what he actually saw.
 
-1. Shane pulls, rebuilds tbUI3, updates the package in tbUI3Test, and runs the picker checks in win32, then win64: pick + Apply, pick + OK (button changes, and the form asks to be saved), reopen the picker (lands on the current icon), search `save`, `57716`, `E8CB`, `&HE174` (each narrows the grid), pick then Cancel (no change), mouse wheel over the grid (one row per notch). Record results in CHANGELOG.md, `tbUI3/src/CHANGELOG.md`, ROADMAP.md and the table above.
-2. Remove the two MDL2 test lines (`IconFontName`/`IconGlyph`) from frmMain's `Form_Activate` in tbUI3Test.
-3. Next milestone: themed form canvas at design time (ROADMAP, designer experience), then the designer accent refresh.
+1. **Finish validating the icon picker (1.0.0.5).** It works in win32: it opens from `(Custom)` → `...`, shows the search hint and two-line info, and a picked icon is saved with the form. Still to run, in win32 and then win64: pick + Apply; pick + OK (button changes, closing the designer asks to save); reopen the picker (lands on the current icon); search `save`, `57716`, `E8CB`, `&HE174` (each narrows the grid); pick then Cancel (no change); mouse wheel over the grid (one row per notch). If the wheel does nothing while the search box has focus, forward `txtSearch_MouseWheel` to the same scrolling code. When all pass, mark 1.0.0.5 validated in `tbUI3/src/CHANGELOG.md` too.
+   - **Do not touch the designer bridge.** Why this build saves the picked icon while earlier builds lost it is not understood (CHANGELOG, 2026-10-07). Keep `IconPageApplying`, `SetPendingIcon`/`TakePendingIcon`, `DesignName()` and the `DesignLog` calls exactly as they are. If the picker misbehaves, set `DESIGN_LOG_ENABLED = True` in `UI3Icons.twin` and read `%TEMP%\tbUI3-design.log`.
+2. **Tidy tbUI3Test.** Remove the two MDL2 test lines (`IconFontName`/`IconGlyph`) from frmMain's `Form_Activate`.
+3. **Themed form canvas at design time** (ROADMAP, designer experience). UI3FormTheme themes the form only at runtime, so in the designer UI3 controls draw dark on a light form. First check that the designer lets a component set its parent form's BackColor at design time (`Ambient.UserMode = False`), then apply the WinUI window background when `ManageBackColor` is True. Cite the microsoft-ui-xaml source for the colours.
+4. **Designer accent refresh** (ROADMAP). The designer reads the accent once at IDE start; refresh the theme cache at design time cheaply.
+5. **S2 BackColor repaint check** (ROADMAP, spike A). Change a form's BackColor at runtime without UI3FormTheme and confirm the button repaints.
+6. Then continue spike A in ROADMAP order (S4 windowless/transparent, S5 Mica, S6 per-monitor DPI, S7 visual states, S8 keyboard/focus, S9 coexistence). Each needs a short spec and Shane's go-ahead before code.
+
+Things that need Shane's decision, not a pass of their own: a dark icon-picker page (exploratory; the Windows-drawn dialog frame stays light), picker extras (arrow keys, hover), what to do with PR #1 and `main`, and where `reference-packages/` lives.
+
+## How a pass works with Shane
+
+- Shane builds, tests and saves in the IDE himself. Give him one step at a time with the exact command to type or thing to click, and ask for a screenshot when the result is visual.
+- Version: bump `project.versionRevision` in `tbUI3/src/Settings` (LF line endings) when the package changes, and add a line to `tbUI3/src/CHANGELOG.md`, which ships inside the package.
+- Typical test loop: close the projects in the IDE, `git pull --no-edit`, reopen tbUI3, build, update the tbUI3 package inside tbUI3Test, test, then Shane commits and pushes (`git commit -am "..." && git push`).
+- If `git pull` refuses because tbUI3Test.twinproj has local changes (usually from updating the package), use `git stash && git pull --no-edit`; the package is re-imported anyway.
+- After Shane pushes, regenerate src from his projects (`node tools/twinproj-src.mjs extract tbUI3Test/tbUI3Test.twinproj tbUI3Test/src`, and the same for tbUI3) and check with `compare`.
 
 ### Syncing the project and src
 
@@ -89,7 +103,7 @@ The icon picker (1.0.0.5 candidate) works on Shane's PC in win32: a picked icon 
 - **Re-importing the package into tbUI3Test.**
   - The IDE's "Import from file" refuses a package whose name is already embedded ("'tbUI3' conflicts with an existing imported package").
   - Removing the reference in the IDE doesn't remove the embedded copy.
-  - Instead, update the embedded copy through export, copy and import, as in steps 2 to 6 above. The embedded copy is just the package's own source export.
+  - Instead, update the embedded copy (Shane does this from the IDE as part of each test loop). The embedded copy is just the package's own source export.
   - In the IDE's dialog, the imported package also has to be ticked by hand. GUI automation struggled with that.
 - **`.twinproj` files are binary.**
   - Edit them by exporting to `src/`, editing, and importing with the twinBASIC CLI, or patch them with `tools/*.mjs`.
@@ -98,6 +112,9 @@ The icon picker (1.0.0.5 candidate) works on Shane's PC in win32: a picked icon 
 - **IDs.** Never change UI3Button's class, interface or event IDs (`tbUI3/UI3Button-ids.json`).
 - **WinUI colours.** WinUI's dark fills are translucent, so test on a dark form (#202020). On the default light grey form the Standard button's text is nearly invisible.
 - **Declarations.** The Direct2D/DirectWrite interfaces in `UI3Direct2D.twin` declare only the vtable slots that are used; the rest are numbered placeholders. When you call a new method, replace its placeholder in the same slot. Never insert or reorder slots.
+- **PropertyPages (BETA 997).** Setting `Me.Changed` inside `PropertyPage_SelectionChanged` raises "Automation error" 80004005 (the frame is still in `SetObjects`); start pages unchanged instead. The per-property `[PropertyPage("...")]` link is ignored, so pages open only from `(Custom)` → `...`. `UserControl.PropertyChanged` can leave a swallowed DISP_E_UNKNOWNNAME in `Err` after it returns, so don't treat `Err` after a property Let as proof the Let failed. Shane has reported both issues to twinBASIC.
+- **PropertyBag defaults.** A value equal to the `WriteProperty` default is not saved. If a new control starts with a different value (InitProperties), clearing it back to the default must still work (the 1.0.0.4 Caption fix used `NEW_CONTROL_CAPTION` vs `DEFAULT_CAPTION`).
+- **CLI export** needs absolute paths; with relative paths it says the input twinproj does not exist. `tools/twinproj-src.mjs` avoids the CLI entirely.
 - **Reading the accent.** It is read from the undocumented `AccentPalette` registry value. Entry 1 is Light2, which is the accent button fill in dark mode (so the button shows #FF8279 on Shane's PC).
 
 ## Working agreements with Shane

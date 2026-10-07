@@ -1,3 +1,8 @@
+### 1.0.0.16
+- Fixed PropertySheet host discovery for the icon picker. The 1.0.0.15 diagnostic log proved `GetAncestor(..., GA_ROOT)` was resolving only to the top-level `ThunderPropertyPageDC`, so tbUI3 never found the outer `#32770` PropertySheet or its `SysTabControl32` at all.
+- Host discovery now uses `GA_ROOTOWNER`, which follows the owned-window chain to the actual PropertySheet host. This should restore access to the real tab/button shell while leaving the page body and designer persistence bridge untouched.
+- No additional tab geometry changes were made in this pass.
+
 ### 1.0.0.15
 - PropertyPage tab skin now leaves the native BETA 997 tab-item metrics alone and paints within the rectangle the host actually reserved, avoiding the post-resize overlap that clipped the Icon tab until Apply forced a native relayout.
 - The confirmed ThunderTextBox HWND now handles WM_ERASEBKGND with the same persistent themed brush used by its ThunderPropertyPageDC WM_CTLCOLOREDIT route, and repaints on focus transitions. This is a focused attempt to stop the classic white edit fill from reappearing.

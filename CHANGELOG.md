@@ -4,6 +4,13 @@ All notable changes to tbUI3. Dates are when the change was made, not released. 
 
 ## Unreleased
 
+### 2026-10-07, PropertySheet owner-chain host fix (1.0.0.16)
+
+- Shane's 1.0.0.15 diagnostic log exposed the actual failure: the skin host was `ThunderPropertyPageDC` itself, with `Tab: HWND=0` and `PageDialog: HWND=0`. tbUI3 therefore had no handle to the outer PropertySheet and could not possibly fix the clipped Icon tab in that build.
+- `UI3IconPage.ApplyHostTitleBar` now resolves the host with `GA_ROOTOWNER` instead of `GA_ROOT`, so the owned top-level PropertyPage can walk to the real PropertySheet window and recover its `SysTabControl32` and action buttons.
+- This is a host-discovery correction only. The 1.0.0.15 native-tab-metrics strategy and ThunderTextBox erase handling remain in place, and the icon persistence bridge is unchanged.
+- Package revision is now 1.0.0.16. Source/project candidate only: **not yet compiled or run in BETA 997**.
+
 ### 2026-10-07, PropertyPage host-metrics + ThunderTextBox erase pass (1.0.0.15)
 
 - Shane built/opened 1.0.0.14 in win32. The screenshot showed the two target defects were still present: the native search edit remained white and the Icon tab was still clipped. The rest of the 1.0.0.10-derived picker layout, including the smaller dual-font preview cards, remained visually sound.

@@ -20,7 +20,7 @@ Class UI3IconPage
     Private Const NONE_ENTRY As Long = -1
     Private Const SEARCH_HINT As String = "Search by name, number, &HE174 or U+E8CB"
     Private Const EM_SETCUEBANNER As Long = &H1501&
-    Private Const GA_ROOT As Long = 2
+    Private Const GA_ROOTOWNER As Long = 3
     Private Const PAGE_PAD_DIP As Single = 12
     Private Const SEARCH_HEIGHT_DIP As Single = 32
     Private Const SEARCH_TEXT_INSET_X_DIP As Single = 8
@@ -235,7 +235,7 @@ CleanUp:
     Private Sub ApplyHostTitleBar()
         On Error Resume Next
         Dim host As LongPtr
-        host = GetAncestor(picChrome.hWnd, GA_ROOT)
+        host = GetAncestor(picChrome.hWnd, GA_ROOTOWNER)
         If host <> 0 Then UI3SkinPropertySheetHost host, Me.Caption, txtSearch.hWnd
     End Sub
 

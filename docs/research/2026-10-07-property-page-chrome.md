@@ -178,3 +178,9 @@ The geometry evidence now points away from moving the page. BETA 997 reserves th
 For the Edit, 1.0.0.15 keeps the confirmed parent `WM_CTLCOLOREDIT` brush but also handles `WM_ERASEBKGND` on the actual `ThunderTextBox` HWND itself, filling its client rectangle with the same persistent theme brush before default text painting. Focus transitions invalidate the edit so active/rest state changes repaint immediately.
 
 This pass deliberately does not revive `TCM_ADJUSTRECT`, manual PropertyPage movement, or any designer-persistence changes. The 1.0.0.15 probe stays enabled for one more build so remaining behavior can be diagnosed from the actual host window messages.
+
+## 1.0.0.16 owner-chain host discovery
+
+The 1.0.0.15 log resolved an important ambiguity: `GetAncestor(picChrome.hWnd, GA_ROOT)` returned the top-level `ThunderPropertyPageDC`, not the outer property-sheet dialog. The resulting probe showed `Tab: HWND=0` and `PageDialog: HWND=0`, so the skin had no access to the actual tab control in that build.
+
+The PropertyPage is effectively a top-level owned window in this designer path. 1.0.0.16 switches the host lookup to `GA_ROOTOWNER`, which walks the owner chain as well as the parent chain and should therefore resolve the real outer `#32770` PropertySheet. This is deliberately a discovery fix only, not another geometry experiment.

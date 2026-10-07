@@ -4,6 +4,17 @@ All notable changes to tbUI3. Dates are when the change was made, not released. 
 
 ## Unreleased
 
+### 2026-10-07, native PropertySheet skin spike (1.0.0.8)
+
+- Restored the original `UI3IconPage.tbppage` sibling order from 1.0.0.6. Shane's comparison showed that the earlier canvas was actually the more faithful representation: the search TextBox was visible, while the blank Direct2D grid and hidden scrollbar only appeared absent because they contain no design-time drawing.
+- Extended the existing pointer-safe `SetWindowSubclass` pattern to the native Win32 PropertySheet host and its tab/OK/Cancel/Apply child HWNDs.
+- The host window remains the real PropertySheet. tbUI3 now paints over its visible shell instead of replacing its behavior: the root client background is painted with the WinUI window surface, the native tab is repainted as a dark/light tbUI3 tab surface, and the original OK/Cancel/Apply HWNDs are repainted in place.
+- OK uses the WinUI AccentButton resource chain; Cancel/Apply use DefaultButton resources. Rest, pointer-over, pressed and disabled fills/foregrounds follow the corresponding microsoft-ui-xaml Button/Common theme resources. The native buttons continue to own enabled state, focus, keyboard and clicks.
+- The host title bar continues to use the existing DWM dark/light treatment. Theme/accent notifications invalidate the host skin live.
+- This PropertySheet/tab arrangement is explicitly a **tbUI3 convenience skin**, not a claim that WinUI defines a PropertySheet control. Where the skin uses Button visuals, those values remain source-backed WinUI Button values.
+- Package revision is now 1.0.0.8. Source/project candidate only: **not yet compiled or run in BETA 997**.
+
+
 ### 2026-10-07, theme-aware PropertyPage chrome candidate (1.0.0.6)
 
 - Reworked `UI3IconPage.tbppage` so the designer canvas is now the baseline layout instead of a collection of arbitrarily placed controls that only become correct in code.

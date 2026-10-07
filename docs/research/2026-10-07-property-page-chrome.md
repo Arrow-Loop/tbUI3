@@ -67,3 +67,37 @@ If the page-body approach proves stable, the next spike may place a reversible t
 8. Repeat in win64 after win32 is sound.
 
 Record only behavior actually observed.
+
+
+## 1.0.0.8 native host-skin escalation
+
+Shane's side-by-side designer/runtime comparison changed the z-order conclusion: the original 1.0.0.6 sibling order is the better designer representation. The search box was already visible; the Direct2D grid is naturally blank at design time, and the native scrollbar is deliberately hidden because runtime now paints its thumb.
+
+The next spike therefore moves outward to the remaining classic Win32 PropertySheet shell.
+
+### Strategy
+
+Do not replace the property-sheet behavior or create fake buttons on top of it. Instead, subclass the existing HWNDs and paint over their normal pixels after their default window procedures run:
+
+- root PropertySheet client → WinUI window background;
+- `SysTabControl32` → tbUI3 dark/light tab surface with an accent active indicator;
+- native IDOK → WinUI AccentButton paint;
+- native IDCANCEL and ID_APPLY_NOW → WinUI DefaultButton paint.
+
+The original child HWNDs remain in place and continue to own hit testing, keyboard, enabled state and commands. The subclass only replaces visible paint and invalidates on state/theme changes. Cleanup occurs through `WM_NCDESTROY` using the same pointer-safe common-controls subclass model already proven by `UI3Window`.
+
+### Fidelity boundary
+
+WinUI 3 does not define a Win32 PropertySheet control, so the overall dialog/tab composition is a tbUI3 convenience skin. It must not be documented as an exact WinUI PropertySheet.
+
+The painted buttons are different: their rest/pointer-over/pressed/disabled fills and foregrounds use the actual `Button_themeresources.xaml` resource chains and `Common_themeresources_any.xaml` values. This keeps the control-specific fidelity rule intact where a real WinUI equivalent exists.
+
+### First validation
+
+1. Build 1.0.0.8 win32.
+2. Import it into tbUI3Test and open the icon PropertyPage.
+3. Check whether the previously light tab/header and bottom button strip are now dark.
+4. Hover and press OK/Cancel and confirm the native controls still react/click normally.
+5. Select an icon and confirm Apply becomes enabled and adopts the painted enabled state.
+6. Close with Cancel and confirm clean teardown / no IDE instability.
+7. Only after win32 is stable, repeat in win64.

@@ -25,11 +25,36 @@ Public Module UI3Window
     Private Const RDW_ALLCHILDREN As Long = &H80
     Private Const RDW_FRAME As Long = &H400
 
+    Private Const WM_PAINT As Long = &HF
+    Private Const WM_ENABLE As Long = &HA
+    Private Const WM_SETFOCUS As Long = &H7
+    Private Const WM_KILLFOCUS As Long = &H8
+    Private Const WM_ERASEBKGND As Long = &H14
     Private Const WM_SETTINGCHANGE As Long = &H1A
     Private Const WM_NCDESTROY As Long = &H82
+    Private Const WM_MOUSEMOVE As Long = &H200
+    Private Const WM_LBUTTONDOWN As Long = &H201
+    Private Const WM_LBUTTONUP As Long = &H202
     Private Const WM_DWMCOLORIZATIONCOLORCHANGED As Long = &H320
     Private Const WM_THEMECHANGED As Long = &H31A
+
+    Private Const BM_GETSTATE As Long = &HF2
+    Private Const BST_PUSHED As Long = &H4
+    Private Const BST_HOT As Long = &H200
+    Private Const TCM_FIRST As Long = &H1300
+    Private Const TCM_GETITEMRECT As Long = TCM_FIRST + 10
+
+    Private Const IDOK As Long = 1
+    Private Const IDCANCEL As Long = 2
+    Private Const ID_APPLY_NOW As Long = &H3021
+
     Private Const UI3_THEME_SUBCLASS_ID As Long = &H55493354
+    Private Const UI3_PROPERTY_SHEET_SUBCLASS_ID As Long = &H55495053
+    Private Const UI3_PSKIN_HOST As LongPtr = 1
+    Private Const UI3_PSKIN_TAB As LongPtr = 2
+    Private Const UI3_PSKIN_OK As LongPtr = 3
+    Private Const UI3_PSKIN_CANCEL As LongPtr = 4
+    Private Const UI3_PSKIN_APPLY As LongPtr = 5
 
     Private Declare PtrSafe Function DwmSetWindowAttribute Lib "dwmapi" (ByVal hWnd As LongPtr, ByVal dwAttribute As Long, _
         ByRef pvAttribute As Any, ByVal cbAttribute As Long) As Long
@@ -38,6 +63,17 @@ Public Module UI3Window
     Private Declare PtrSafe Function RedrawWindow Lib "user32" (ByVal hWnd As LongPtr, ByVal lprcUpdate As LongPtr, _
         ByVal hrgnUpdate As LongPtr, ByVal flags As Long) As Long
     Private Declare PtrSafe Function lstrcmpiW Lib "kernel32" (ByVal lpString1 As LongPtr, ByVal lpString2 As LongPtr) As Long
+    Private Declare PtrSafe Function GetDlgItem Lib "user32" (ByVal hDlg As LongPtr, ByVal nIDDlgItem As Long) As LongPtr
+    Private Declare PtrSafe Function FindWindowExW Lib "user32" (ByVal hWndParent As LongPtr, ByVal hWndChildAfter As LongPtr, _
+        ByVal lpszClass As LongPtr, ByVal lpszWindow As LongPtr) As LongPtr
+    Private Declare PtrSafe Function GetDC Lib "user32" (ByVal hWnd As LongPtr) As LongPtr
+    Private Declare PtrSafe Function ReleaseDC Lib "user32" (ByVal hWnd As LongPtr, ByVal hdc As LongPtr) As Long
+    Private Declare PtrSafe Function InvalidateRect Lib "user32" (ByVal hWnd As LongPtr, ByVal lpRect As LongPtr, ByVal bErase As Long) As Long
+    Private Declare PtrSafe Function IsWindowEnabled Lib "user32" (ByVal hWnd As LongPtr) As Long
+    Private Declare PtrSafe Function GetWindowTextLengthW Lib "user32" (ByVal hWnd As LongPtr) As Long
+    Private Declare PtrSafe Function GetWindowTextW Lib "user32" (ByVal hWnd As LongPtr, ByVal lpString As LongPtr, ByVal nMaxCount As Long) As Long
+    Private Declare PtrSafe Function SendMessageW Lib "user32" (ByVal hWnd As LongPtr, ByVal wMsg As Long, _
+        ByVal wParam As LongPtr, ByVal lParam As LongPtr) As LongPtr
 
     [UseGetLastError(False), DLLStackCheck(False)]
     Private Declare PtrSafe Function SetWindowSubclass Lib "comctl32" Alias "#410" (ByVal hWnd As LongPtr, _
@@ -54,6 +90,16 @@ Public Module UI3Window
     Private m_ManageBackColor() As Boolean
     Private m_SlotCount As Long
     Private m_Applying As Boolean
+
+    ' PropertyPage host skin: one property sheet is modal at a time in the current designer flow.
+    ' The Win32 PropertySheet remains the behavior owner; tbUI3 only replaces its visible paint.
+    Private m_PropertySheetHost As LongPtr
+    Private m_PropertySheetTab As LongPtr
+    Private m_PropertySheetOK As LongPtr
+    Private m_PropertySheetCancel As LongPtr
+    Private m_PropertySheetApply As LongPtr
+    Private m_PropertySheetTabCaption As String
+    Private m_PropertySheetTarget As ID2D1DCRenderTarget
 
     [Description("True when tbUI3's effective app theme is dark.")]
     Public Function UI3IsDarkMode() As Boolean
@@ -282,6 +328,402 @@ CleanUp:
     Private Function OleFromArgb(ByVal argb As Long) As Long
         OleFromArgb = ((argb And &HFF&) * &H10000) Or (argb And &HFF00&) Or _
             ((argb And &HFF0000) \ &H10000)
+    End Function
+
+    ' Applies a reversible tbUI3 paint skin to the native Win32 PropertySheet that hosts a PropertyPage.
+    ' This does not replace the PropertySheet protocol: the original tab and OK/Cancel/Apply HWNDs
+    ' continue to own focus, keyboard, enabled state and click behavior underneath our paint.
+    Public Sub UI3SkinPropertySheetHost(ByVal hWnd As LongPtr, Optional ByVal TabCaption As String = "Properties")
+        If hWnd = 0 Then Exit Sub
+
+        If m_PropertySheetHost <> 0 And m_PropertySheetHost <> hWnd Then DetachPropertySheetSkin
+
+        m_PropertySheetHost = hWnd
+        m_PropertySheetTabCaption = TabCaption
+        UI3ApplyTitleBarTheme hWnd
+
+        SetWindowSubclass hWnd, AddressOf UI3PropertySheetSubclassProc, CLngPtr(UI3_PROPERTY_SHEET_SUBCLASS_ID), UI3_PSKIN_HOST
+
+        m_PropertySheetTab = FindWindowExW(hWnd, 0, StrPtr("SysTabControl32"), 0)
+        m_PropertySheetOK = GetDlgItem(hWnd, IDOK)
+        m_PropertySheetCancel = GetDlgItem(hWnd, IDCANCEL)
+        m_PropertySheetApply = GetDlgItem(hWnd, ID_APPLY_NOW)
+
+        AttachPropertySheetChild m_PropertySheetTab, UI3_PSKIN_TAB
+        AttachPropertySheetChild m_PropertySheetOK, UI3_PSKIN_OK
+        AttachPropertySheetChild m_PropertySheetCancel, UI3_PSKIN_CANCEL
+        AttachPropertySheetChild m_PropertySheetApply, UI3_PSKIN_APPLY
+
+        RedrawPropertySheetSkin
+    End Sub
+
+    Private Sub AttachPropertySheetChild(ByVal hWnd As LongPtr, ByVal kind As LongPtr)
+        If hWnd = 0 Then Exit Sub
+        SetWindowSubclass hWnd, AddressOf UI3PropertySheetSubclassProc, CLngPtr(UI3_PROPERTY_SHEET_SUBCLASS_ID), kind
+    End Sub
+
+    Private Sub DetachPropertySheetSkin()
+        RemovePropertySheetChild m_PropertySheetTab
+        RemovePropertySheetChild m_PropertySheetOK
+        RemovePropertySheetChild m_PropertySheetCancel
+        RemovePropertySheetChild m_PropertySheetApply
+        If m_PropertySheetHost <> 0 Then
+            RemoveWindowSubclass m_PropertySheetHost, AddressOf UI3PropertySheetSubclassProc, CLngPtr(UI3_PROPERTY_SHEET_SUBCLASS_ID)
+        End If
+        m_PropertySheetHost = 0
+        m_PropertySheetTab = 0
+        m_PropertySheetOK = 0
+        m_PropertySheetCancel = 0
+        m_PropertySheetApply = 0
+        m_PropertySheetTabCaption = ""
+        Set m_PropertySheetTarget = Nothing
+    End Sub
+
+    Private Sub RemovePropertySheetChild(ByVal hWnd As LongPtr)
+        If hWnd = 0 Then Exit Sub
+        RemoveWindowSubclass hWnd, AddressOf UI3PropertySheetSubclassProc, CLngPtr(UI3_PROPERTY_SHEET_SUBCLASS_ID)
+    End Sub
+
+    Private Sub RedrawPropertySheetSkin()
+        InvalidatePropertySheetHwnd m_PropertySheetHost
+        InvalidatePropertySheetHwnd m_PropertySheetTab
+        InvalidatePropertySheetHwnd m_PropertySheetOK
+        InvalidatePropertySheetHwnd m_PropertySheetCancel
+        InvalidatePropertySheetHwnd m_PropertySheetApply
+    End Sub
+
+    Private Sub InvalidatePropertySheetHwnd(ByVal hWnd As LongPtr)
+        If hWnd <> 0 Then InvalidateRect hWnd, 0, 0
+    End Sub
+
+    Private Function UI3PropertySheetSubclassProc(ByVal hWnd As LongPtr, ByVal uMsg As Long, ByVal wParam As LongPtr, _
+            ByVal lParam As LongPtr, ByVal uIdSubclass As LongPtr, ByVal dwRefData As LongPtr) As LongPtr
+
+        Dim result As LongPtr
+
+        Select Case uMsg
+            Case WM_NCDESTROY
+                RemoveWindowSubclass hWnd, AddressOf UI3PropertySheetSubclassProc, uIdSubclass
+                ClearPropertySheetSkinHwnd hWnd
+                UI3PropertySheetSubclassProc = DefSubclassProc(hWnd, uMsg, wParam, lParam)
+                Exit Function
+
+            Case WM_ERASEBKGND
+                UI3PropertySheetSubclassProc = 1
+                Exit Function
+
+            Case WM_PAINT
+                result = DefSubclassProc(hWnd, uMsg, wParam, lParam)
+                PaintPropertySheetHwnd hWnd, dwRefData
+                UI3PropertySheetSubclassProc = result
+                Exit Function
+
+            Case WM_MOUSEMOVE, WM_LBUTTONDOWN, WM_LBUTTONUP, WM_SETFOCUS, WM_KILLFOCUS, WM_ENABLE
+                result = DefSubclassProc(hWnd, uMsg, wParam, lParam)
+                If dwRefData >= UI3_PSKIN_OK Then InvalidateRect hWnd, 0, 0
+                UI3PropertySheetSubclassProc = result
+                Exit Function
+
+            Case WM_SETTINGCHANGE
+                If dwRefData = UI3_PSKIN_HOST And lParam <> 0 Then
+                    If lstrcmpiW(lParam, StrPtr("ImmersiveColorSet")) = 0 Then
+                        RefreshTheme
+                        UI3ApplyTitleBarTheme hWnd
+                        RedrawPropertySheetSkin
+                    End If
+                End If
+
+            Case WM_DWMCOLORIZATIONCOLORCHANGED, WM_THEMECHANGED
+                If dwRefData = UI3_PSKIN_HOST Then
+                    RefreshTheme
+                    UI3ApplyTitleBarTheme hWnd
+                    RedrawPropertySheetSkin
+                End If
+        End Select
+
+        UI3PropertySheetSubclassProc = DefSubclassProc(hWnd, uMsg, wParam, lParam)
+    End Function
+
+    Private Sub ClearPropertySheetSkinHwnd(ByVal hWnd As LongPtr)
+        If hWnd = m_PropertySheetTab Then m_PropertySheetTab = 0
+        If hWnd = m_PropertySheetOK Then m_PropertySheetOK = 0
+        If hWnd = m_PropertySheetCancel Then m_PropertySheetCancel = 0
+        If hWnd = m_PropertySheetApply Then m_PropertySheetApply = 0
+        If hWnd = m_PropertySheetHost Then
+            m_PropertySheetHost = 0
+            m_PropertySheetTab = 0
+            m_PropertySheetOK = 0
+            m_PropertySheetCancel = 0
+            m_PropertySheetApply = 0
+            m_PropertySheetTabCaption = ""
+            Set m_PropertySheetTarget = Nothing
+        End If
+    End Sub
+
+    Private Sub PaintPropertySheetHwnd(ByVal hWnd As LongPtr, ByVal kind As LongPtr)
+        Dim hdc As LongPtr
+        Dim client As UI3GdiRect
+        Dim dpi As Single
+        Dim w As Single
+        Dim h As Single
+        Dim drawing As Boolean
+
+        On Error GoTo CleanUp
+
+        hdc = GetDC(hWnd)
+        If hdc = 0 Then Exit Sub
+        UI3GetClientRect hWnd, client
+        If client.Right <= 0 Or client.Bottom <= 0 Then GoTo CleanUp
+
+        If m_PropertySheetTarget Is Nothing Then Set m_PropertySheetTarget = CreateDCTarget()
+        dpi = DpiOfDC(hdc)
+        m_PropertySheetTarget.SetDpi dpi, dpi
+        m_PropertySheetTarget.BindDC hdc, client
+        w = client.Right * 96! / dpi
+        h = client.Bottom * 96! / dpi
+
+        m_PropertySheetTarget.BeginDraw
+        drawing = True
+
+        Select Case kind
+            Case UI3_PSKIN_HOST
+                DrawPropertySheetHost w, h
+            Case UI3_PSKIN_TAB
+                DrawPropertySheetTab hWnd, dpi, w, h
+            Case UI3_PSKIN_OK
+                DrawPropertySheetButton hWnd, w, h, True
+            Case UI3_PSKIN_CANCEL, UI3_PSKIN_APPLY
+                DrawPropertySheetButton hWnd, w, h, False
+        End Select
+
+        drawing = False
+        Dim hr As Long
+        hr = m_PropertySheetTarget.EndDraw(0, 0)
+        If hr < 0 Then Set m_PropertySheetTarget = Nothing
+
+CleanUp:
+        If drawing And Not m_PropertySheetTarget Is Nothing Then m_PropertySheetTarget.EndDraw 0, 0
+        If hdc <> 0 Then ReleaseDC hWnd, hdc
+    End Sub
+
+    Private Sub DrawPropertySheetHost(ByVal w As Single, ByVal h As Single)
+        If IsDarkMode() Then
+            m_PropertySheetTarget.Clear ColorFromArgb(DARK_SolidBackgroundFillColorBase)
+        Else
+            m_PropertySheetTarget.Clear ColorFromArgb(LIGHT_SolidBackgroundFillColorBase)
+        End If
+    End Sub
+
+    Private Sub DrawPropertySheetTab(ByVal hWnd As LongPtr, ByVal dpi As Single, ByVal w As Single, ByVal h As Single)
+        Dim baseArgb As Long
+        Dim fillArgb As Long
+        Dim strokeArgb As Long
+        Dim textArgb As Long
+        Dim accentArgb As Long
+
+        If IsDarkMode() Then
+            baseArgb = DARK_SolidBackgroundFillColorBase
+            fillArgb = DARK_ControlFillColorDefault
+            strokeArgb = DARK_ControlStrokeColorDefault
+            textArgb = DARK_TextFillColorPrimary
+            accentArgb = AccentShade(ACCENT_LIGHT2)
+        Else
+            baseArgb = LIGHT_SolidBackgroundFillColorBase
+            fillArgb = LIGHT_ControlFillColorDefault
+            strokeArgb = LIGHT_ControlStrokeColorDefault
+            textArgb = LIGHT_TextFillColorPrimary
+            accentArgb = AccentShade(ACCENT_DARK1)
+        End If
+
+        m_PropertySheetTarget.Clear ColorFromArgb(baseArgb)
+
+        Dim tabRect As UI3GdiRect
+        If SendMessageW(hWnd, TCM_GETITEMRECT, 0, VarPtr(tabRect)) <> 0 Then
+            Dim x0 As Single
+            Dim y0 As Single
+            Dim x1 As Single
+            Dim y1 As Single
+            x0 = tabRect.Left * 96! / dpi
+            y0 = tabRect.Top * 96! / dpi
+            x1 = tabRect.Right * 96! / dpi
+            y1 = tabRect.Bottom * 96! / dpi
+
+            Dim box As D2D1_ROUNDED_RECT
+            box = RoundedRect(x0, y0, x1, y1 + 1, ControlCornerRadius)
+            m_PropertySheetTarget.FillRoundedRectangle box, SolidBrush(m_PropertySheetTarget, fillArgb)
+            m_PropertySheetTarget.DrawRoundedRectangle box, SolidBrush(m_PropertySheetTarget, strokeArgb), 1, 0
+
+            DrawButtonContent m_PropertySheetTarget, m_PropertySheetTabCaption, "", "", SymbolIconDefaultFontSize, _
+                ui3IconLeft, 0, x0 + 8, y0, x1 - 8, y1, textArgb
+
+            box = RoundedRect(x0 + 8, y1 - 2, x1 - 8, y1, 1)
+            m_PropertySheetTarget.FillRoundedRectangle box, SolidBrush(m_PropertySheetTarget, accentArgb)
+        End If
+    End Sub
+
+    Private Sub DrawPropertySheetButton(ByVal hWnd As LongPtr, ByVal w As Single, ByVal h As Single, ByVal Accent As Boolean)
+        Dim state As Long
+        Dim enabled As Boolean
+        Dim pressed As Boolean
+        Dim hot As Boolean
+        Dim dark As Boolean
+        Dim fill As Long
+        Dim foreground As Long
+        Dim strokeDefault As Long
+        Dim strokeSecondary As Long
+        Dim borderAtBottom As Boolean
+        Dim useGradientBorder As Boolean
+        Dim drawSolidBorder As Boolean
+        Dim fillInset As Single
+        Dim t As Single
+        Dim r As Single
+
+        state = CLng(SendMessageW(hWnd, BM_GETSTATE, 0, 0))
+        enabled = (IsWindowEnabled(hWnd) <> 0)
+        pressed = ((state And BST_PUSHED) <> 0)
+        hot = ((state And BST_HOT) <> 0)
+        dark = IsDarkMode()
+        t = ButtonBorderThemeThickness
+        r = ControlCornerRadius
+
+        If Accent Then
+            fillInset = 0
+            borderAtBottom = True
+            If dark Then
+                strokeDefault = DARK_ControlStrokeColorOnAccentDefault
+                strokeSecondary = DARK_ControlStrokeColorOnAccentSecondary
+                If Not enabled Then
+                    fill = DARK_AccentFillColorDisabled
+                    foreground = DARK_TextOnAccentFillColorDisabled
+                ElseIf pressed Then
+                    fill = (AccentShade(ACCENT_LIGHT2) And &HFFFFFF) Or &HCC000000
+                    foreground = DARK_TextOnAccentFillColorSecondary
+                ElseIf hot Then
+                    fill = (AccentShade(ACCENT_LIGHT2) And &HFFFFFF) Or &HE6000000
+                    foreground = DARK_TextOnAccentFillColorPrimary
+                Else
+                    fill = AccentShade(ACCENT_LIGHT2)
+                    foreground = DARK_TextOnAccentFillColorPrimary
+                End If
+            Else
+                strokeDefault = LIGHT_ControlStrokeColorOnAccentDefault
+                strokeSecondary = LIGHT_ControlStrokeColorOnAccentSecondary
+                If Not enabled Then
+                    fill = LIGHT_AccentFillColorDisabled
+                    foreground = LIGHT_TextOnAccentFillColorDisabled
+                ElseIf pressed Then
+                    fill = (AccentShade(ACCENT_DARK1) And &HFFFFFF) Or &HCC000000
+                    foreground = LIGHT_TextOnAccentFillColorSecondary
+                ElseIf hot Then
+                    fill = (AccentShade(ACCENT_DARK1) And &HFFFFFF) Or &HE6000000
+                    foreground = LIGHT_TextOnAccentFillColorPrimary
+                Else
+                    fill = AccentShade(ACCENT_DARK1)
+                    foreground = LIGHT_TextOnAccentFillColorPrimary
+                End If
+            End If
+            useGradientBorder = enabled And Not pressed
+        Else
+            fillInset = t
+            If dark Then
+                strokeDefault = DARK_ControlStrokeColorDefault
+                strokeSecondary = DARK_ControlStrokeColorSecondary
+                borderAtBottom = False
+                If Not enabled Then
+                    fill = DARK_ControlFillColorDisabled
+                    foreground = DARK_TextFillColorDisabled
+                ElseIf pressed Then
+                    fill = DARK_ControlFillColorTertiary
+                    foreground = DARK_TextFillColorSecondary
+                ElseIf hot Then
+                    fill = DARK_ControlFillColorSecondary
+                    foreground = DARK_TextFillColorPrimary
+                Else
+                    fill = DARK_ControlFillColorDefault
+                    foreground = DARK_TextFillColorPrimary
+                End If
+            Else
+                strokeDefault = LIGHT_ControlStrokeColorDefault
+                strokeSecondary = LIGHT_ControlStrokeColorSecondary
+                borderAtBottom = True
+                If Not enabled Then
+                    fill = LIGHT_ControlFillColorDisabled
+                    foreground = LIGHT_TextFillColorDisabled
+                ElseIf pressed Then
+                    fill = LIGHT_ControlFillColorTertiary
+                    foreground = LIGHT_TextFillColorSecondary
+                ElseIf hot Then
+                    fill = LIGHT_ControlFillColorSecondary
+                    foreground = LIGHT_TextFillColorPrimary
+                Else
+                    fill = LIGHT_ControlFillColorDefault
+                    foreground = LIGHT_TextFillColorPrimary
+                End If
+            End If
+            useGradientBorder = enabled And Not pressed
+            drawSolidBorder = Not useGradientBorder
+        End If
+
+        If dark Then
+            m_PropertySheetTarget.Clear ColorFromArgb(DARK_SolidBackgroundFillColorBase)
+        Else
+            m_PropertySheetTarget.Clear ColorFromArgb(LIGHT_SolidBackgroundFillColorBase)
+        End If
+
+        Dim box As D2D1_ROUNDED_RECT
+        box = RoundedRect(fillInset, fillInset, w - fillInset, h - fillInset, r - fillInset)
+        m_PropertySheetTarget.FillRoundedRectangle box, SolidBrush(m_PropertySheetTarget, fill)
+
+        If useGradientBorder Then
+            Dim border As ID2D1LinearGradientBrush
+            If borderAtBottom Then
+                Set border = VerticalGradientBrush(m_PropertySheetTarget, h, h - ElevationBorderGradientLength, _
+                    ElevationBorderStop0, strokeSecondary, ElevationBorderStop1, strokeDefault)
+            Else
+                Set border = VerticalGradientBrush(m_PropertySheetTarget, 0, ElevationBorderGradientLength, _
+                    ElevationBorderStop0, strokeSecondary, ElevationBorderStop1, strokeDefault)
+            End If
+            box = RoundedRect(t / 2, t / 2, w - t / 2, h - t / 2, r - t / 2)
+            m_PropertySheetTarget.DrawRoundedRectangle box, border, t, 0
+        ElseIf drawSolidBorder Then
+            box = RoundedRect(t / 2, t / 2, w - t / 2, h - t / 2, r - t / 2)
+            m_PropertySheetTarget.DrawRoundedRectangle box, SolidBrush(m_PropertySheetTarget, strokeDefault), t, 0
+        End If
+
+        Dim caption As String
+        caption = WindowCaption(hWnd)
+        DrawButtonContent m_PropertySheetTarget, caption, "", "", SymbolIconDefaultFontSize, ui3IconLeft, 0, _
+            ButtonPaddingLeft, ButtonPaddingTop, w - ButtonPaddingRight, h - ButtonPaddingBottom, foreground
+    End Sub
+
+    Private Function WindowCaption(ByVal hWnd As LongPtr) As String
+        Dim length As Long
+        Dim text As String
+        length = GetWindowTextLengthW(hWnd)
+        If length <= 0 Then Exit Function
+        text = String$(length + 1, ChrW$(0))
+        length = GetWindowTextW(hWnd, StrPtr(text), length + 1)
+        If length > 0 Then WindowCaption = StripMnemonic(Left$(text, length))
+    End Function
+
+    Private Function StripMnemonic(ByVal text As String) As String
+        Dim i As Long
+        Dim ch As String
+        i = 1
+        Do While i <= Len(text)
+            ch = Mid$(text, i, 1)
+            If ch = "&" Then
+                If i < Len(text) And Mid$(text, i + 1, 1) = "&" Then
+                    StripMnemonic = StripMnemonic & "&"
+                    i = i + 2
+                Else
+                    i = i + 1
+                End If
+            Else
+                StripMnemonic = StripMnemonic & ch
+                i = i + 1
+            End If
+        Loop
     End Function
 
 End Module

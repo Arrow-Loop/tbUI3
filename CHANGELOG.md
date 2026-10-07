@@ -4,6 +4,15 @@ All notable changes to tbUI3. Dates are when the change was made, not released. 
 
 ## Unreleased
 
+### 2026-10-07, corrective PropertyPage geometry/Edit pass (1.0.0.12)
+
+- Shane's 1.0.0.11 runtime screenshot showed a clear regression: a large white band appeared between the tab strip and the actual page content, while the search Edit still painted white. The tab itself also remained imperfect.
+- Root cause of the geometry regression is the 1.0.0.11 use of `TCM_ADJUSTRECT` as a replacement page rectangle. In this BETA 997 PropertySheet hierarchy that moved the real page much farther down than intended.
+- 1.0.0.12 removes that strategy. After enlarging the real first tab item, tbUI3 now compares the real tab-item bottom and the real PropertyPage top in the same host coordinate space, then moves the page down **only by the measured overlap**. The existing width/bottom edge are otherwise preserved.
+- The search TextBox path is also corrected. `txtSearch.hWnd` may be a wrapper rather than the actual Win32 EDIT that sends `WM_CTLCOLOREDIT`. tbUI3 now resolves a nested `Edit` child when present, subclasses the resolved EDIT's actual parent, and matches the color request against the actual EDIT HWND.
+- The 1.0.0.11 preview-card size reduction remains: 96x88-DIP cards with a 26-DIP glyph.
+- Package revision is now 1.0.0.12. Source/project candidate only: **not yet compiled or run in BETA 997**.
+
 ### 2026-10-07, native Edit brush + tab display-area fix + preview spacing (1.0.0.11)
 
 - Shane's 1.0.0.10 screenshot confirmed the centered glyph matrix and dual-font **Selected icon** panel are a strong direction. Remaining visual defects were: the native search Edit turns white again whenever selection/focus activity causes Windows to repaint it; the enlarged **Icon** tab is still clipped; and the two preview cards feel too dominant / too close to the bottom action row.

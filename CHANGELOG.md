@@ -11,6 +11,7 @@ All notable changes to tbUI3. Dates are when the change was made, not released. 
 - The confirmed search-box hooks (`WM_CTLCOLOREDIT` on `ThunderPropertyPageDC`, `WM_ERASEBKGND` and focus repaint on `ThunderTextBox`) are now armed on their own, as soon as the page exists, instead of only as a side effect of skinning a host. The rest of the probe (whole-ancestry subclassing, Apply/size snapshots) no longer runs.
 - Kept unchanged: the 1.0.0.10 sheet paint, the native tab metrics from 1.0.0.15, the resized native action buttons, the picker grid/details, and the icon designer bridge.
 - The `%TEMP%\tbUI3-propertypage.log` diagnostic is off (`PROPERTY_PAGE_LOG_ENABLED = False` in `UI3Window`).
+- First build attempt failed to compile: the inserted `UI3Window.twin` block had LF-only line endings, so twinBASIC could not read its line continuations (TB5184/TB5182 from line 391, and a knock-on TB5103 in `UI3IconPage`). The file is CRLF throughout again.
 - Package revision is now 1.0.0.21. Not yet compiled or run in BETA 997.
 
 ### 2026-10-07, WM_APP literal-width correction (1.0.0.20)

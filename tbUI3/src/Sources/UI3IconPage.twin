@@ -48,12 +48,16 @@ Class UI3IconPage
     End Sub
 
     Private Sub PropertyPage_ApplyChanges()
-        ' twinBASIC BETA 997 does not save this change in the designer: the control's PropertyChanged
-        ' cannot find "Icon" by name, so the IDE is never notified (see the property-page research note).
+        ' twinBASIC BETA 997 does not keep a value set here: the designer rebuilds the control from its
+        ' own saved copy. IconPageApplying makes UI3Button record the value so its next design-time
+        ' ReadProperties re-applies it (see the designer bridge in UI3Icons).
         Dim ctl As Object
+        DesignLog "ApplyChanges value = " & m_Selected
+        IconPageApplying = True
         For Each ctl In Me.SelectedControls
             CallByName ctl, "Icon", vbLet, m_Selected
         Next
+        IconPageApplying = False
     End Sub
 
     Private Sub LayoutControls()

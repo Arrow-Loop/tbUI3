@@ -4,6 +4,13 @@ All notable changes to tbUI3. Dates are when the change was made, not released. 
 
 ## Unreleased
 
+### 2026-10-07, icon picker save workaround attempt (1.0.0.5 candidate, not built)
+
+- Shane asked for a workaround rather than parking the picker. Reading the IDE's `main.js` showed the form designer keeps each control's properties itself and replaces them with the serialization the backend returns with each control image. So a control that re-applies the picked value when it is next rebuilt should get it saved.
+- `UI3Icons` gained a small designer bridge: while `UI3IconPage.ApplyChanges` runs, `UI3Button.Icon` records the value under the control's design-time name (`Ambient.DisplayName`). The next design-time `ReadProperties` for that name applies it once and calls `PropertyChanged "Icon"`.
+- Temporary diagnostic: `DesignLog` appends Let, ReadProperties, WriteProperties, ApplyChanges and pending-value events to `%TEMP%\tbUI3-design.log`, to show what the designer does if the workaround fails. Remove once the picker is settled.
+- Not compiled or run.
+
 ### 2026-10-06, UI3IconPage first build on Shane's PC (1.0.0.5 candidate)
 
 - Shane added `txtSearch`, `picGrid` and `vsbGrid` in the page designer and built it (commit 2e022ed). `tbUI3/src` was regenerated from his project.

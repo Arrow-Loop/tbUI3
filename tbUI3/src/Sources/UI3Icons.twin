@@ -300,4 +300,54 @@ Private Module UI3Icons
         IconCatalogValue = m_CatalogValues(Index)
     End Function
 
+    ' --- Designer bridge for UI3IconPage (workaround, twinBASIC BETA 997) ---
+    ' The form designer does not keep a value a property page sets: it rebuilds the control from
+    ' its own saved copy. While the page applies, UI3Button records the new Icon here under the
+    ' control's design-time name, and the next design-time ReadProperties for that name applies it
+    ' and marks the property changed, so the designer saves it. Remove once twinBASIC fixes this.
+
+    Private m_PageApplying As Boolean
+    Private m_PendingIcons As Collection
+
+    Public Property Get IconPageApplying() As Boolean
+        IconPageApplying = m_PageApplying
+    End Property
+
+    Public Property Let IconPageApplying(ByVal Value As Boolean)
+        m_PageApplying = Value
+    End Property
+
+    Public Sub SetPendingIcon(ByVal ControlName As String, ByVal Icon As UI3Icon)
+        If Len(ControlName) = 0 Then Exit Sub
+        If m_PendingIcons Is Nothing Then Set m_PendingIcons = New Collection
+        On Error Resume Next
+        m_PendingIcons.Remove LCase$(ControlName)
+        m_PendingIcons.Add CLng(Icon), LCase$(ControlName)
+        DesignLog "pending set " & ControlName & " = " & CLng(Icon)
+    End Sub
+
+    ' Returns True and sets Icon when a pending value exists for ControlName, then forgets it.
+    Public Function TakePendingIcon(ByVal ControlName As String, ByRef Icon As UI3Icon) As Boolean
+        If m_PendingIcons Is Nothing Or Len(ControlName) = 0 Then Exit Function
+        Dim value As Long
+        On Error Resume Next
+        value = m_PendingIcons.Item(LCase$(ControlName))
+        If Err.Number <> 0 Then Exit Function
+        m_PendingIcons.Remove LCase$(ControlName)
+        On Error GoTo 0
+        Icon = value
+        TakePendingIcon = True
+        DesignLog "pending taken " & ControlName & " = " & value
+    End Function
+
+    ' DIAGNOSTIC (temporary): appends a line to %TEMP%\tbUI3-design.log.
+    Public Sub DesignLog(ByVal Text As String)
+        On Error Resume Next
+        Dim f As Integer
+        f = FreeFile
+        Open Environ$("TEMP") & "\tbUI3-design.log" For Append As #f
+        Print #f, Format$(Now, "hh:nn:ss") & "  " & Text
+        Close #f
+    End Sub
+
 End Module

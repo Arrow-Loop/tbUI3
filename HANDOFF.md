@@ -39,9 +39,11 @@ The decisions are in `docs/2026-10-06-first-pass-report.md` and `docs/2026-10-06
 
 ## First job for the next session (updated 2026-10-07)
 
-The icon picker (1.0.0.5 candidate) is parked: it opens, searches and sets `Icon`, but twinBASIC BETA 997 never saves a property page's change in the designer (see `docs/research/2026-10-06-property-page-picker.md`). Shane is reporting that, and the per-property `...` link, to twinBASIC. Don't spend time working around it; leave `UI3IconPage` in the package and the `[PropertyPage("UI3IconPage")]` attribute on `Icon`.
+The icon picker (1.0.0.5 candidate) opens, searches and sets `Icon`, but twinBASIC BETA 997 never saves a property page's change in the designer (see `docs/research/2026-10-06-property-page-picker.md`). Shane is reporting that, and the per-property `...` link, to twinBASIC. Shane asked for a workaround to be tried first: a designer bridge in `UI3Icons` (see CHANGELOG, 2026-10-07). It is written but not built.
 
-1. Shane pulls (commit 1622ac0 or later) and rebuilds tbUI3 once, so the package no longer contains the diagnostic message box, and updates the package in tbUI3Test. Quick check: the picker still opens.
+1. Shane pulls, rebuilds tbUI3, updates the package in tbUI3Test, picks a new icon in the picker, clicks OK, then clicks off the button and back, and closes and reopens the form designer. Then he sends `%TEMP%\tbUI3-design.log` (type `notepad %TEMP%\tbUI3-design.log` in a command prompt).
+   - If the icon sticks: remove `DesignLog` and its calls, keep the bridge, and run the full picker checks (pick + OK, reopen, search `save`/`57716`/`E8CB`/`&HE174`, Cancel, mouse wheel) in win32 and win64.
+   - If it reverts: read the log. It shows whether ReadProperties ran for the same name after Apply, and what WriteProperties wrote. If no ReadProperties follows Apply, the bridge cannot work; remove the bridge and the log, and leave the picker parked until twinBASIC fixes the bug.
 2. Remove the two MDL2 test lines (`IconFontName`/`IconGlyph`) from frmMain's `Form_Activate` in tbUI3Test.
 3. Next milestone: themed form canvas at design time (ROADMAP, designer experience), then the designer accent refresh.
 4. When twinBASIC fixes the save bug: retest the picker (pick + OK, reopen, search `save`/`57716`/`E8CB`/`&HE174`, Cancel, mouse wheel) in win32 and win64, then record it as validated.

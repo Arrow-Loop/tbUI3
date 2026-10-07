@@ -200,3 +200,11 @@ The 1.0.0.17 run disproved the assumption that `GA_ROOTOWNER` becomes useful aft
 1.0.0.18 therefore stops trying to infer the host through root/owner semantics. After `DefSubclassProc` processes `WM_WINDOWPOSCHANGED` on the `ThunderPropertyPageDC`, tbUI3 walks `GetParent` repeatedly and calls `FindWindowExW(..., "SysTabControl32", ...)` on each ancestor. The first ancestor with that direct tab child is treated as the real PropertySheet and receives the existing skin.
 
 This uses the hierarchy already observed in the earlier 1.0.0.13 host-tree dump as a runtime structural fingerprint. No page movement or tab resizing is added.
+
+## 1.0.0.19 deferred skin activation
+
+1.0.0.18 proved the structural host lookup: the page promoted to the outer `#32770`, with a valid `SysTabControl32` and inner page dialog. Yet the screenshot still showed native light tab/button chrome even though the titlebar and page were dark.
+
+The remaining suspicious difference is timing. 1.0.0.18 called `UI3SkinPropertySheetHost` while still executing the `ThunderPropertyPageDC` `WM_WINDOWPOSCHANGED` subclass callback. 1.0.0.19 now posts a private `WM_APP` message back to the page, returns from the native window-position callback, and performs the same structural promotion only when that posted message is later dispatched.
+
+The pass also logs the return value of `SetWindowSubclass` for the promoted host, tab and each action button. This will show whether any remaining light paint is caused by attachment failure or by the custom paint path itself.

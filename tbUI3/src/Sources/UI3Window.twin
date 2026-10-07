@@ -41,6 +41,8 @@ Public Module UI3Window
     Private Const WM_LBUTTONUP As Long = &H202
     Private Const WM_DWMCOLORIZATIONCOLORCHANGED As Long = &H320
     Private Const WM_THEMECHANGED As Long = &H31A
+    Private Const WM_APP As Long = &H8000
+    Private Const WM_UI3_PROMOTE_PROPERTY_SHEET As Long = WM_APP + &H313
 
     Private Const BM_GETSTATE As Long = &HF2
     Private Const BM_SETSTATE As Long = &HF3
@@ -108,6 +110,8 @@ Public Module UI3Window
     Private Declare PtrSafe Function GetWindowTextW Lib "user32" (ByVal hWnd As LongPtr, ByVal lpString As LongPtr, ByVal nMaxCount As Long) As Long
     Private Declare PtrSafe Function SendMessageW Lib "user32" (ByVal hWnd As LongPtr, ByVal wMsg As Long, _
         ByVal wParam As LongPtr, ByVal lParam As LongPtr) As LongPtr
+    Private Declare PtrSafe Function PostMessageW Lib "user32" (ByVal hWnd As LongPtr, ByVal wMsg As Long, _
+        ByVal wParam As LongPtr, ByVal lParam As LongPtr) As Long
     Private Declare PtrSafe Function SetTextColor Lib "gdi32" (ByVal hdc As LongPtr, ByVal crColor As Long) As Long
     Private Declare PtrSafe Function SetBkColor Lib "gdi32" (ByVal hdc As LongPtr, ByVal crColor As Long) As Long
     Private Declare PtrSafe Function CreateSolidBrush Lib "gdi32" (ByVal crColor As Long) As LongPtr
@@ -388,7 +392,9 @@ CleanUp:
         m_PropertySheetTabCaption = TabCaption
         UI3ApplyTitleBarTheme hWnd
 
-        SetWindowSubclass hWnd, AddressOf UI3PropertySheetSubclassProc, CLngPtr(UI3_PROPERTY_SHEET_SUBCLASS_ID), UI3_PSKIN_HOST
+        Dim hostSubclassOk As Long
+        hostSubclassOk = SetWindowSubclass(hWnd, AddressOf UI3PropertySheetSubclassProc, CLngPtr(UI3_PROPERTY_SHEET_SUBCLASS_ID), UI3_PSKIN_HOST)
+        ProbeLog "SKIN host subclass=" & CStr(hostSubclassOk) & " " & DebugWindowLine(hWnd)
 
         m_PropertySheetTab = FindWindowExW(hWnd, 0, StrPtr("SysTabControl32"), 0)
         m_PropertySheetOK = GetDlgItem(hWnd, IDOK)
@@ -419,8 +425,8 @@ CleanUp:
         m_PropertyProbeEditParent = GetParent(textBoxHwnd)
         If m_PropertyProbeEditParent <> 0 Then m_PropertyProbePageDialog = GetParent(m_PropertyProbeEditParent)
 
-        ProbeLog "=== tbUI3 PropertyPage probe / 1.0.0.18 ==="
-        ProbeLog "1.0.0.18: promote from ThunderPropertyPageDC to the first live ancestor containing SysTabControl32 after WM_WINDOWPOSCHANGED."
+        ProbeLog "=== tbUI3 PropertyPage probe / 1.0.0.19 ==="
+        ProbeLog "1.0.0.19: defer structural PropertySheet promotion until after the page WM_WINDOWPOSCHANGED subclass frame unwinds; log subclass attach results."
         ProbeSnapshot "initial"
         ProbeLog "--- host tree ---"
         DumpWindowTree host, 0, 5
@@ -517,11 +523,10 @@ CleanUp:
                 result = DefSubclassProc(hWnd, uMsg, wParam, lParam)
 
                 If uMsg = WM_WINDOWPOSCHANGED And hWnd = m_PropertyProbeEditParent Then
-                    ' The PropertyPage starts as a top-level ThunderPropertyPageDC. BETA 997
-                    ' later inserts it under an inner dialog in the real PropertySheet. Walk
-                    ' the live parent chain only after Windows has completed that move and
-                    ' identify the PropertySheet structurally by its SysTabControl32 child.
-                    PromotePropertySheetHostFromPage hWnd
+                    ' Do not attach new subclasses while still inside the native page's
+                    ' WM_WINDOWPOSCHANGED callback. Queue promotion so this subclass frame
+                    ' unwinds first; then discover/skin the now-stable PropertySheet.
+                    PostMessageW hWnd, WM_UI3_PROMOTE_PROPERTY_SHEET, 0, 0
                 End If
 
                 If hWnd = m_PropertyProbeEditParent Or hWnd = m_PropertyProbePageDialog Or _
@@ -533,6 +538,11 @@ CleanUp:
                     End If
                 End If
                 UI3PropertyProbeProc = result
+                Exit Function
+
+            Case WM_UI3_PROMOTE_PROPERTY_SHEET
+                PromotePropertySheetHostFromPage hWnd
+                UI3PropertyProbeProc = 0
                 Exit Function
 
             Case WM_SETFOCUS, WM_KILLFOCUS
@@ -707,7 +717,9 @@ CleanUp:
 
     Private Sub AttachPropertySheetChild(ByVal hWnd As LongPtr, ByVal kind As LongPtr)
         If hWnd = 0 Then Exit Sub
-        SetWindowSubclass hWnd, AddressOf UI3PropertySheetSubclassProc, CLngPtr(UI3_PROPERTY_SHEET_SUBCLASS_ID), kind
+        Dim ok As Long
+        ok = SetWindowSubclass(hWnd, AddressOf UI3PropertySheetSubclassProc, CLngPtr(UI3_PROPERTY_SHEET_SUBCLASS_ID), kind)
+        ProbeLog "SKIN child subclass=" & CStr(ok) & " kind=" & CStr(kind) & " " & DebugWindowLine(hWnd)
     End Sub
 
     Private Sub DetachPropertySheetSkin()

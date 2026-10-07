@@ -1,3 +1,9 @@
+### 1.0.0.19
+- Structural PropertySheet promotion is now deferred with a private posted message instead of attaching the host/tab/button subclasses from inside the page's `WM_WINDOWPOSCHANGED` subclass callback.
+- This lets the native move/subclass frame unwind before tbUI3 attaches its paint skin to the real outer PropertySheet and its children, avoiding a re-entrant subclass-attachment path that left the native light tab/button chrome visible in 1.0.0.18.
+- The diagnostic log now records success/failure for each `SetWindowSubclass` call on the promoted host, tab and action buttons.
+- No page/tab geometry, TextBox painting, or designer-persistence bridge changes were made.
+
 ### 1.0.0.18
 - PropertySheet discovery no longer depends on GA_ROOT/GA_ROOTOWNER after the page has moved. After the real `ThunderPropertyPageDC` receives `WM_WINDOWPOSCHANGED`, tbUI3 walks its live `GetParent` chain and selects the first ancestor that directly contains a `SysTabControl32` child.
 - When that structural PropertySheet ancestor is found, the existing skin is promoted from the temporary page HWND to the real outer PropertySheet. The diagnostic log records the promotion and a post-promotion snapshot.

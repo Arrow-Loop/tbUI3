@@ -101,3 +101,32 @@ The painted buttons are different: their rest/pointer-over/pressed/disabled fill
 5. Select an icon and confirm Apply becomes enabled and adopts the painted enabled state.
 6. Close with Cancel and confirm clean teardown / no IDE instability.
 7. Only after win32 is stable, repeat in win64.
+
+
+## 1.0.0.9 paint/layout follow-up
+
+The first 1.0.0.8 live run proved the HWND-skin approach, but also exposed why “paint after default” is not sufficient: Windows visibly paints the classic tab/button for a frame during pointer state changes, then Direct2D covers it.
+
+1.0.0.9 therefore owns `WM_PAINT` for the host/tab/buttons. Input/state messages still pass to the original HWND procedures, so the native PropertySheet remains responsible for commands, focus, enable/disable and keyboard semantics.
+
+### Action buttons
+
+Do not create disconnected overlay buttons. Reposition and resize the original IDOK/IDCANCEL/ID_APPLY_NOW HWNDs themselves.
+
+That means:
+- their clickable regions move with the tbUI3 visuals;
+- their standard PropertySheet command IDs remain intact;
+- no click-forwarding shim is required;
+- native enable/disable state remains authoritative.
+
+WinUI's Button template supplies exact padding and visual resources but does not define a PropertySheet action-row size. The 80x32-DIP minimum/equal-width/right-aligned arrangement is therefore a documented tbUI3 convenience. The 8-DIP inter-button gap follows the WinUI ContentDialog button-spacing resource.
+
+### Tab
+
+The PropertySheet's real `SysTabControl32` item is asked for the current WinUI TabViewItem minimum dimensions (100x32 DIPs) and no-close header padding (8,3,8,3). Selected text is 12-DIP semibold and the selected background follows the TabView resource chain.
+
+If this Win32 tab style ignores `TCM_SETITEMSIZE`, do not leave paint and hit testing permanently misaligned. The next fallback is custom hit testing/forwarding or moving the underlying tab/page geometry together.
+
+### TextBox
+
+The first white rectangle appears to be an initial native Edit repaint-ordering problem rather than the intended tbUI3 focused color. 1.0.0.9 explicitly refreshes the TextBox immediately after setting BackColor/ForeColor. If that is insufficient, the next escalation is handling `WM_CTLCOLOREDIT` on the page host with a persistent theme brush rather than relying on the classic control's first brush selection.

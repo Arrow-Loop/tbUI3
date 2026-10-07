@@ -4,6 +4,14 @@ All notable changes to tbUI3. Dates are when the change was made, not released. 
 
 ## Unreleased
 
+### 2026-10-07, native Edit brush + tab display-area fix + preview spacing (1.0.0.11)
+
+- Shane's 1.0.0.10 screenshot confirmed the centered glyph matrix and dual-font **Selected icon** panel are a strong direction. Remaining visual defects were: the native search Edit turns white again whenever selection/focus activity causes Windows to repaint it; the enlarged **Icon** tab is still clipped; and the two preview cards feel too dominant / too close to the bottom action row.
+- The active PropertyPage HWND is now subclassed **only** for native Edit-color handling. On `WM_CTLCOLOREDIT`, tbUI3 supplies the correct light/dark text color and a persistent theme brush composited from the WinUI TextBox resources. This keeps the real Edit control (caret, selection, clipboard, IME, tab order) while preventing Windows from reasserting the classic white fill after a grid click or focus transition.
+- The PropertySheet tab layout now uses `TCM_ADJUSTRECT` after requesting the WinUI TabViewItem 100x32-DIP size. The real PropertyPage HWND is moved/resized into the tab control's resulting display rectangle instead of remaining at the old classic-tab offset. `UI3IconPage` handles PropertyPage resize by re-running its layout, so the larger header should no longer be overpainted by the page.
+- The Fluent and MDL2 preview cards are reduced to **96x88 DIPs** with a **26-DIP** preview glyph and centered as a pair inside their details-column region, creating more whitespace around the cards and above the native action buttons.
+- Package revision is now 1.0.0.11. Source/project candidate only: **not yet compiled or run in BETA 997**.
+
 ### 2026-10-07, centered icon grid and dual-font details (1.0.0.10)
 
 - At Shane's request, the icon picker now centers the actual 44-DIP cell matrix inside the usable grid width rather than merely centering the surrounding PictureBox. The painted scrollbar keeps its own right-side lane, and mouse hit testing uses the same centered origin.

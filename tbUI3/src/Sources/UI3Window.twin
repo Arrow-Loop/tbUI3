@@ -547,6 +547,116 @@ CleanUp:
         If hdc <> 0 Then EndPaint hWnd, ps
     End Sub
 
+    Private Sub LayoutPropertySheetSkin()
+        LayoutPropertySheetButtons
+        LayoutPropertySheetTab
+    End Sub
+
+    Private Function PropertySheetDpi() As Single
+        Dim hdc As LongPtr
+        hdc = GetDC(m_PropertySheetHost)
+        If hdc <> 0 Then
+            PropertySheetDpi = DpiOfDC(hdc)
+            ReleaseDC m_PropertySheetHost, hdc
+        End If
+        If PropertySheetDpi <= 0 Then PropertySheetDpi = 96
+    End Function
+
+    Private Function DipToPixel(ByVal dip As Single, ByVal dpi As Single) As Long
+        DipToPixel = CLng(dip * dpi / 96! + 0.5!)
+    End Function
+
+    Private Function MakeLParam(ByVal lowWord As Long, ByVal highWord As Long) As LongPtr
+        MakeLParam = CLngPtr((lowWord And &HFFFF&) Or ((highWord And &HFFFF&) * &H10000))
+    End Function
+
+    Private Sub LayoutPropertySheetButtons()
+        If m_PropertySheetHost = 0 Then Exit Sub
+
+        Dim client As UI3GdiRect
+        UI3GetClientRect m_PropertySheetHost, client
+        If client.Right <= 0 Or client.Bottom <= 0 Then Exit Sub
+
+        Dim dpi As Single
+        dpi = PropertySheetDpi()
+
+        Dim wantedW As Single
+        Dim wantedH As Single
+        wantedW = PROPERTY_ACTION_MIN_WIDTH_DIP
+        wantedH = PROPERTY_ACTION_MIN_HEIGHT_DIP
+
+        Dim textW As Single
+        Dim textH As Single
+        MeasureActionCaption m_PropertySheetOK, textW, textH
+        If textW + ButtonPaddingLeft + ButtonPaddingRight > wantedW Then wantedW = textW + ButtonPaddingLeft + ButtonPaddingRight
+        If textH + ButtonPaddingTop + ButtonPaddingBottom > wantedH Then wantedH = textH + ButtonPaddingTop + ButtonPaddingBottom
+
+        MeasureActionCaption m_PropertySheetCancel, textW, textH
+        If textW + ButtonPaddingLeft + ButtonPaddingRight > wantedW Then wantedW = textW + ButtonPaddingLeft + ButtonPaddingRight
+        If textH + ButtonPaddingTop + ButtonPaddingBottom > wantedH Then wantedH = textH + ButtonPaddingTop + ButtonPaddingBottom
+
+        MeasureActionCaption m_PropertySheetApply, textW, textH
+        If textW + ButtonPaddingLeft + ButtonPaddingRight > wantedW Then wantedW = textW + ButtonPaddingLeft + ButtonPaddingRight
+        If textH + ButtonPaddingTop + ButtonPaddingBottom > wantedH Then wantedH = textH + ButtonPaddingTop + ButtonPaddingBottom
+
+        Dim bw As Long
+        Dim bh As Long
+        Dim gap As Long
+        Dim rightMargin As Long
+        Dim bottomMargin As Long
+        bw = DipToPixel(wantedW, dpi)
+        bh = DipToPixel(wantedH, dpi)
+        gap = DipToPixel(PROPERTY_ACTION_SPACING_DIP, dpi)
+        rightMargin = DipToPixel(PROPERTY_ACTION_RIGHT_MARGIN_DIP, dpi)
+        bottomMargin = DipToPixel(PROPERTY_ACTION_BOTTOM_MARGIN_DIP, dpi)
+
+        Dim x As Long
+        Dim y As Long
+        x = client.Right - rightMargin - bw
+        y = client.Bottom - bottomMargin - bh
+
+        If m_PropertySheetApply <> 0 Then
+            SetWindowPos m_PropertySheetApply, 0, x, y, bw, bh, SWP_NOZORDER Or SWP_NOACTIVATE
+            x = x - gap - bw
+        End If
+        If m_PropertySheetCancel <> 0 Then
+            SetWindowPos m_PropertySheetCancel, 0, x, y, bw, bh, SWP_NOZORDER Or SWP_NOACTIVATE
+            x = x - gap - bw
+        End If
+        If m_PropertySheetOK <> 0 Then
+            SetWindowPos m_PropertySheetOK, 0, x, y, bw, bh, SWP_NOZORDER Or SWP_NOACTIVATE
+        End If
+    End Sub
+
+    Private Sub MeasureActionCaption(ByVal hWnd As LongPtr, ByRef width As Single, ByRef height As Single)
+        width = 0
+        height = 0
+        If hWnd = 0 Then Exit Sub
+        MeasureControlText WindowCaption(hWnd), width, height
+    End Sub
+
+    Private Sub LayoutPropertySheetTab()
+        If m_PropertySheetTab = 0 Then Exit Sub
+
+        Dim dpi As Single
+        dpi = PropertySheetDpi()
+
+        Dim itemW As Long
+        Dim itemH As Long
+        Dim padX As Long
+        Dim padY As Long
+        itemW = DipToPixel(TabViewItemMinWidth, dpi)
+        itemH = DipToPixel(TabViewItemMinHeight, dpi)
+        padX = DipToPixel(TabViewItemHeaderPaddingLeft, dpi)
+        padY = DipToPixel(TabViewItemHeaderPaddingTop, dpi)
+
+        ' Keep the real SysTabControl32 item as the hit target. If this PropertySheet style
+        ' honors TCM_SETITEMSIZE, its clickable rectangle grows with the new paint.
+        SendMessageW m_PropertySheetTab, TCM_SETITEMSIZE, 0, MakeLParam(itemW, itemH)
+        SendMessageW m_PropertySheetTab, TCM_SETPADDING, 0, MakeLParam(padX, padY)
+        InvalidateRect m_PropertySheetTab, 0, 0
+    End Sub
+
     Private Sub DrawPropertySheetHost(ByVal w As Single, ByVal h As Single)
         If IsDarkMode() Then
             m_PropertySheetTarget.Clear ColorFromArgb(DARK_SolidBackgroundFillColorBase)

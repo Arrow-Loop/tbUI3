@@ -316,6 +316,7 @@ Private Module UI3D2D
     Public Const DWRITE_FONT_WEIGHT_SEMI_BOLD As Long = 600
     Public Const DWRITE_FONT_STYLE_NORMAL As Long = 0
     Public Const DWRITE_FONT_STRETCH_NORMAL As Long = 5
+    Public Const DWRITE_TEXT_ALIGNMENT_LEADING As Long = 0
     Public Const DWRITE_TEXT_ALIGNMENT_CENTER As Long = 2
     Public Const DWRITE_PARAGRAPH_ALIGNMENT_CENTER As Long = 2
     Public Const DWRITE_WORD_WRAPPING_NO_WRAP As Long = 1
@@ -599,6 +600,19 @@ Private Module UI3D2D
         If Not FontFamilyExists(family) Then family = "Segoe UI"
         DrawTextWithFormat target, caption, CreateCenteredTextFormat(family, fontSize, fontWeight), _
             x0, y0, x1, y1, argb
+    End Sub
+
+    Public Sub DrawLeftTextStyled(ByVal target As ID2D1RenderTarget, ByVal caption As String, _
+            ByVal fontSize As Single, ByVal fontWeight As Long, ByVal x0 As Single, ByVal y0 As Single, _
+            ByVal x1 As Single, ByVal y1 As Single, ByVal argb As Long)
+        If Len(caption) = 0 Then Exit Sub
+        Dim family As String
+        Dim format As IDWriteTextFormat
+        family = "Segoe UI Variable Text"
+        If Not FontFamilyExists(family) Then family = "Segoe UI"
+        Set format = CreateCenteredTextFormat(family, fontSize, fontWeight)
+        format.SetTextAlignment DWRITE_TEXT_ALIGNMENT_LEADING
+        DrawTextWithFormat target, caption, format, x0, y0, x1, y1, argb
     End Sub
 
 End Module

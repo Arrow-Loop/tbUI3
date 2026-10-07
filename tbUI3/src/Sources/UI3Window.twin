@@ -667,23 +667,17 @@ CleanUp:
 
     Private Sub DrawPropertySheetTab(ByVal hWnd As LongPtr, ByVal dpi As Single, ByVal w As Single, ByVal h As Single)
         Dim baseArgb As Long
-        Dim fillArgb As Long
-        Dim strokeArgb As Long
+        Dim selectedArgb As Long
         Dim textArgb As Long
-        Dim accentArgb As Long
 
         If IsDarkMode() Then
             baseArgb = DARK_SolidBackgroundFillColorBase
-            fillArgb = DARK_ControlFillColorDefault
-            strokeArgb = DARK_ControlStrokeColorDefault
+            selectedArgb = DARK_SolidBackgroundFillColorTertiary
             textArgb = DARK_TextFillColorPrimary
-            accentArgb = AccentShade(ACCENT_LIGHT2)
         Else
             baseArgb = LIGHT_SolidBackgroundFillColorBase
-            fillArgb = LIGHT_ControlFillColorDefault
-            strokeArgb = LIGHT_ControlStrokeColorDefault
+            selectedArgb = LIGHT_SolidBackgroundFillColorTertiary
             textArgb = LIGHT_TextFillColorPrimary
-            accentArgb = AccentShade(ACCENT_DARK1)
         End If
 
         m_PropertySheetTarget.Clear ColorFromArgb(baseArgb)
@@ -700,15 +694,13 @@ CleanUp:
             y1 = tabRect.Bottom * 96! / dpi
 
             Dim box As D2D1_ROUNDED_RECT
-            box = RoundedRect(x0, y0, x1, y1 + 1, ControlCornerRadius)
-            m_PropertySheetTarget.FillRoundedRectangle box, SolidBrush(m_PropertySheetTarget, fillArgb)
-            m_PropertySheetTarget.DrawRoundedRectangle box, SolidBrush(m_PropertySheetTarget, strokeArgb), 1, 0
+            box = RoundedRect(x0, y0, x1, y1, OverlayCornerRadius)
+            m_PropertySheetTarget.FillRoundedRectangle box, SolidBrush(m_PropertySheetTarget, selectedArgb)
 
-            DrawButtonContent m_PropertySheetTarget, m_PropertySheetTabCaption, "", "", SymbolIconDefaultFontSize, _
-                ui3IconLeft, 0, x0 + 8, y0, x1 - 8, y1, textArgb
-
-            box = RoundedRect(x0 + 8, y1 - 2, x1 - 8, y1, 1)
-            m_PropertySheetTarget.FillRoundedRectangle box, SolidBrush(m_PropertySheetTarget, accentArgb)
+            DrawCenteredTextStyled m_PropertySheetTarget, m_PropertySheetTabCaption, _
+                TabViewItemHeaderFontSize, DWRITE_FONT_WEIGHT_SEMI_BOLD, _
+                x0 + TabViewItemHeaderPaddingLeft, y0 + TabViewItemHeaderPaddingTop, _
+                x1 - TabViewItemHeaderPaddingRight, y1 - TabViewItemHeaderPaddingBottom, textArgb
         End If
     End Sub
 

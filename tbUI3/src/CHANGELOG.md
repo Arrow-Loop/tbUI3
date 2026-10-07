@@ -1,3 +1,7 @@
+### 1.0.0.20
+- Corrected the private `WM_APP` constant to `&H8000&`. BETA 997 warned that bare `&H8000` was being interpreted as the 16-bit Integer value -32768 before widening, so the deferred PropertySheet-promotion message could use the wrong 32-bit message ID.
+- No other behavior changed in this pass.
+
 ### 1.0.0.19
 - Structural PropertySheet promotion is now deferred with a private posted message instead of attaching the host/tab/button subclasses from inside the page's `WM_WINDOWPOSCHANGED` subclass callback.
 - This lets the native move/subclass frame unwind before tbUI3 attaches its paint skin to the real outer PropertySheet and its children, avoiding a re-entrant subclass-attachment path that left the native light tab/button chrome visible in 1.0.0.18.

@@ -31,6 +31,7 @@ Public Module UI3Window
     Private Const WM_SETFOCUS As Long = &H7
     Private Const WM_KILLFOCUS As Long = &H8
     Private Const WM_ERASEBKGND As Long = &H14
+    Private Const WM_CTLCOLOREDIT As Long = &H133
     Private Const WM_SETTINGCHANGE As Long = &H1A
     Private Const WM_NCDESTROY As Long = &H82
     Private Const WM_MOUSEMOVE As Long = &H200
@@ -45,6 +46,7 @@ Public Module UI3Window
     Private Const BST_HOT As Long = &H200
     Private Const TCM_FIRST As Long = &H1300
     Private Const TCM_GETITEMRECT As Long = TCM_FIRST + 10
+    Private Const TCM_ADJUSTRECT As Long = TCM_FIRST + 40
     Private Const TCM_SETITEMSIZE As Long = TCM_FIRST + 41
     Private Const TCM_SETPADDING As Long = TCM_FIRST + 43
 
@@ -54,11 +56,13 @@ Public Module UI3Window
 
     Private Const UI3_THEME_SUBCLASS_ID As Long = &H55493354
     Private Const UI3_PROPERTY_SHEET_SUBCLASS_ID As Long = &H55495053
+    Private Const UI3_PROPERTY_PAGE_SUBCLASS_ID As Long = &H55495045
     Private Const UI3_PSKIN_HOST As LongPtr = 1
     Private Const UI3_PSKIN_TAB As LongPtr = 2
     Private Const UI3_PSKIN_OK As LongPtr = 3
     Private Const UI3_PSKIN_CANCEL As LongPtr = 4
     Private Const UI3_PSKIN_APPLY As LongPtr = 5
+    Private Const UI3_PSKIN_PAGE As LongPtr = 6
 
     ' PropertySheet action-row layout. Button visuals still use exact WinUI Button resources;
     ' these dimensions are tbUI3 convenience values because WinUI has no PropertySheet.
@@ -78,6 +82,10 @@ Public Module UI3Window
     Private Declare PtrSafe Function GetDlgItem Lib "user32" (ByVal hDlg As LongPtr, ByVal nIDDlgItem As Long) As LongPtr
     Private Declare PtrSafe Function FindWindowExW Lib "user32" (ByVal hWndParent As LongPtr, ByVal hWndChildAfter As LongPtr, _
         ByVal lpszClass As LongPtr, ByVal lpszWindow As LongPtr) As LongPtr
+    Private Declare PtrSafe Function GetWindowRect Lib "user32" (ByVal hWnd As LongPtr, ByRef lpRect As UI3GdiRect) As Long
+    Private Declare PtrSafe Function MapWindowPoints Lib "user32" (ByVal hWndFrom As LongPtr, ByVal hWndTo As LongPtr, _
+        ByVal lpPoints As LongPtr, ByVal cPoints As Long) As Long
+    Private Declare PtrSafe Function GetFocus Lib "user32" () As LongPtr
     Private Type UI3PaintStruct
         hdc As LongPtr
         fErase As Long
@@ -97,6 +105,10 @@ Public Module UI3Window
     Private Declare PtrSafe Function GetWindowTextW Lib "user32" (ByVal hWnd As LongPtr, ByVal lpString As LongPtr, ByVal nMaxCount As Long) As Long
     Private Declare PtrSafe Function SendMessageW Lib "user32" (ByVal hWnd As LongPtr, ByVal wMsg As Long, _
         ByVal wParam As LongPtr, ByVal lParam As LongPtr) As LongPtr
+    Private Declare PtrSafe Function SetTextColor Lib "gdi32" (ByVal hdc As LongPtr, ByVal crColor As Long) As Long
+    Private Declare PtrSafe Function SetBkColor Lib "gdi32" (ByVal hdc As LongPtr, ByVal crColor As Long) As Long
+    Private Declare PtrSafe Function CreateSolidBrush Lib "gdi32" (ByVal crColor As Long) As LongPtr
+    Private Declare PtrSafe Function DeleteObject Lib "gdi32" (ByVal hObject As LongPtr) As Long
 
     [UseGetLastError(False), DLLStackCheck(False)]
     Private Declare PtrSafe Function SetWindowSubclass Lib "comctl32" Alias "#410" (ByVal hWnd As LongPtr, _
@@ -121,6 +133,10 @@ Public Module UI3Window
     Private m_PropertySheetOK As LongPtr
     Private m_PropertySheetCancel As LongPtr
     Private m_PropertySheetApply As LongPtr
+    Private m_PropertyPage As LongPtr
+    Private m_PropertyEdit As LongPtr
+    Private m_PropertyEditBrush As LongPtr
+    Private m_PropertyEditBrushColor As Long
     Private m_PropertySheetTabCaption As String
     Private m_PropertySheetTarget As ID2D1DCRenderTarget
 
@@ -356,7 +372,8 @@ CleanUp:
     ' Applies a reversible tbUI3 paint skin to the native Win32 PropertySheet that hosts a PropertyPage.
     ' This does not replace the PropertySheet protocol: the original tab and OK/Cancel/Apply HWNDs
     ' continue to own focus, keyboard, enabled state and click behavior underneath our paint.
-    Public Sub UI3SkinPropertySheetHost(ByVal hWnd As LongPtr, Optional ByVal TabCaption As String = "Properties")
+    Public Sub UI3SkinPropertySheetHost(ByVal hWnd As LongPtr, Optional ByVal TabCaption As String = "Properties", _
+            Optional ByVal PageHwnd As LongPtr = 0, Optional ByVal EditHwnd As LongPtr = 0)
         If hWnd = 0 Then Exit Sub
 
         If m_PropertySheetHost <> 0 And m_PropertySheetHost <> hWnd Then DetachPropertySheetSkin
@@ -371,11 +388,14 @@ CleanUp:
         m_PropertySheetOK = GetDlgItem(hWnd, IDOK)
         m_PropertySheetCancel = GetDlgItem(hWnd, IDCANCEL)
         m_PropertySheetApply = GetDlgItem(hWnd, ID_APPLY_NOW)
+        m_PropertyPage = PageHwnd
+        m_PropertyEdit = EditHwnd
 
         AttachPropertySheetChild m_PropertySheetTab, UI3_PSKIN_TAB
         AttachPropertySheetChild m_PropertySheetOK, UI3_PSKIN_OK
         AttachPropertySheetChild m_PropertySheetCancel, UI3_PSKIN_CANCEL
         AttachPropertySheetChild m_PropertySheetApply, UI3_PSKIN_APPLY
+        AttachPropertySheetPage m_PropertyPage
 
         LayoutPropertySheetSkin
         RedrawPropertySheetSkin
@@ -386,11 +406,19 @@ CleanUp:
         SetWindowSubclass hWnd, AddressOf UI3PropertySheetSubclassProc, CLngPtr(UI3_PROPERTY_SHEET_SUBCLASS_ID), kind
     End Sub
 
+    Private Sub AttachPropertySheetPage(ByVal hWnd As LongPtr)
+        If hWnd = 0 Then Exit Sub
+        SetWindowSubclass hWnd, AddressOf UI3PropertySheetSubclassProc, CLngPtr(UI3_PROPERTY_PAGE_SUBCLASS_ID), UI3_PSKIN_PAGE
+    End Sub
+
     Private Sub DetachPropertySheetSkin()
         RemovePropertySheetChild m_PropertySheetTab
         RemovePropertySheetChild m_PropertySheetOK
         RemovePropertySheetChild m_PropertySheetCancel
         RemovePropertySheetChild m_PropertySheetApply
+        If m_PropertyPage <> 0 Then
+            RemoveWindowSubclass m_PropertyPage, AddressOf UI3PropertySheetSubclassProc, CLngPtr(UI3_PROPERTY_PAGE_SUBCLASS_ID)
+        End If
         If m_PropertySheetHost <> 0 Then
             RemoveWindowSubclass m_PropertySheetHost, AddressOf UI3PropertySheetSubclassProc, CLngPtr(UI3_PROPERTY_SHEET_SUBCLASS_ID)
         End If
@@ -399,6 +427,9 @@ CleanUp:
         m_PropertySheetOK = 0
         m_PropertySheetCancel = 0
         m_PropertySheetApply = 0
+        m_PropertyPage = 0
+        m_PropertyEdit = 0
+        ReleasePropertyEditBrush
         m_PropertySheetTabCaption = ""
         Set m_PropertySheetTarget = Nothing
     End Sub
@@ -435,6 +466,12 @@ CleanUp:
             Case WM_ERASEBKGND
                 UI3PropertySheetSubclassProc = 1
                 Exit Function
+
+            Case WM_CTLCOLOREDIT
+                If dwRefData = UI3_PSKIN_PAGE And lParam = m_PropertyEdit And m_PropertyEdit <> 0 Then
+                    UI3PropertySheetSubclassProc = PropertyEditBrush(wParam)
+                    Exit Function
+                End If
 
             Case WM_PAINT
                 ' Own paint completely. Painting the classic control first then covering it
@@ -489,16 +526,93 @@ CleanUp:
         If hWnd = m_PropertySheetOK Then m_PropertySheetOK = 0
         If hWnd = m_PropertySheetCancel Then m_PropertySheetCancel = 0
         If hWnd = m_PropertySheetApply Then m_PropertySheetApply = 0
+        If hWnd = m_PropertyPage Then
+            m_PropertyPage = 0
+            m_PropertyEdit = 0
+            ReleasePropertyEditBrush
+        End If
         If hWnd = m_PropertySheetHost Then
             m_PropertySheetHost = 0
             m_PropertySheetTab = 0
             m_PropertySheetOK = 0
             m_PropertySheetCancel = 0
             m_PropertySheetApply = 0
+            m_PropertyPage = 0
+            m_PropertyEdit = 0
+            ReleasePropertyEditBrush
             m_PropertySheetTabCaption = ""
             Set m_PropertySheetTarget = Nothing
         End If
     End Sub
+
+    Private Function PropertyEditBrush(ByVal hdc As LongPtr) As LongPtr
+        Dim baseArgb As Long
+        Dim fillArgb As Long
+        Dim textArgb As Long
+        Dim colorRef As Long
+
+        If IsDarkMode() Then
+            baseArgb = DARK_SolidBackgroundFillColorBase
+            textArgb = DARK_TextFillColorPrimary
+            If GetFocus() = m_PropertyEdit Then
+                fillArgb = DARK_ControlFillColorInputActive
+            Else
+                fillArgb = DARK_ControlFillColorDefault
+            End If
+        Else
+            baseArgb = LIGHT_SolidBackgroundFillColorBase
+            textArgb = LIGHT_TextFillColorPrimary
+            If GetFocus() = m_PropertyEdit Then
+                fillArgb = LIGHT_ControlFillColorInputActive
+            Else
+                fillArgb = LIGHT_ControlFillColorDefault
+            End If
+        End If
+
+        colorRef = CompositeArgbToColorRef(fillArgb, baseArgb)
+        SetTextColor hdc, CompositeArgbToColorRef(textArgb, baseArgb)
+        SetBkColor hdc, colorRef
+
+        If m_PropertyEditBrush = 0 Or m_PropertyEditBrushColor <> colorRef Then
+            ReleasePropertyEditBrush
+            m_PropertyEditBrush = CreateSolidBrush(colorRef)
+            m_PropertyEditBrushColor = colorRef
+        End If
+        PropertyEditBrush = m_PropertyEditBrush
+    End Function
+
+    Private Sub ReleasePropertyEditBrush()
+        If m_PropertyEditBrush <> 0 Then DeleteObject m_PropertyEditBrush
+        m_PropertyEditBrush = 0
+        m_PropertyEditBrushColor = 0
+    End Sub
+
+    Private Function CompositeArgbToColorRef(ByVal argb As Long, ByVal backdrop As Long) As Long
+        Dim a As Long
+        Dim sr As Long
+        Dim sg As Long
+        Dim sb As Long
+        Dim br As Long
+        Dim bg As Long
+        Dim bb As Long
+        Dim rr As Long
+        Dim gg As Long
+        Dim bbOut As Long
+
+        a = (argb And &H7F000000) \ &H1000000
+        If (argb And &H80000000) <> 0 Then a = a + 128
+        sr = (argb And &HFF0000) \ &H10000
+        sg = (argb And &HFF00&) \ &H100&
+        sb = argb And &HFF&
+        br = (backdrop And &HFF0000) \ &H10000
+        bg = (backdrop And &HFF00&) \ &H100&
+        bb = backdrop And &HFF&
+
+        rr = (sr * a + br * (255 - a) + 127) \ 255
+        gg = (sg * a + bg * (255 - a) + 127) \ 255
+        bbOut = (sb * a + bb * (255 - a) + 127) \ 255
+        CompositeArgbToColorRef = rr Or (gg * &H100&) Or (bbOut * &H10000)
+    End Function
 
     Private Sub PaintPropertySheetHwnd(ByVal hWnd As LongPtr, ByVal kind As LongPtr)
         Dim ps As UI3PaintStruct
@@ -654,6 +768,25 @@ CleanUp:
         ' honors TCM_SETITEMSIZE, its clickable rectangle grows with the new paint.
         SendMessageW m_PropertySheetTab, TCM_SETITEMSIZE, 0, MakeLParam(itemW, itemH)
         SendMessageW m_PropertySheetTab, TCM_SETPADDING, 0, MakeLParam(padX, padY)
+
+        ' The PropertySheet does not automatically move the active page when we enlarge the
+        ' tab header. Ask the real tab control for its new display rectangle and move the
+        ' real PropertyPage HWND into it so the 32-DIP selected tab is no longer overpainted/clipped.
+        If m_PropertyPage <> 0 Then
+            Dim displayRect As UI3GdiRect
+            UI3GetClientRect m_PropertySheetTab, displayRect
+            SendMessageW m_PropertySheetTab, TCM_ADJUSTRECT, 0, VarPtr(displayRect)
+            MapWindowPoints m_PropertySheetTab, m_PropertySheetHost, VarPtr(displayRect), 2
+
+            Dim pageRect As UI3GdiRect
+            If GetWindowRect(m_PropertyPage, pageRect) <> 0 Then
+                MapWindowPoints 0, m_PropertySheetHost, VarPtr(pageRect), 2
+                SetWindowPos m_PropertyPage, 0, displayRect.Left, displayRect.Top, _
+                    displayRect.Right - displayRect.Left, displayRect.Bottom - displayRect.Top, _
+                    SWP_NOZORDER Or SWP_NOACTIVATE
+            End If
+        End If
+
         InvalidateRect m_PropertySheetTab, 0, 0
     End Sub
 

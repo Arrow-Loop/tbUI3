@@ -4,6 +4,15 @@ All notable changes to tbUI3. Dates are when the change was made, not released. 
 
 ## Unreleased
 
+### 2026-10-07, diagnostic rollback to last good PropertySheet geometry (1.0.0.13)
+
+- Shane's 1.0.0.12 screenshot showed that the corrective overlap calculation still did not materially improve the tab or search Edit, and the large blank/white region introduced during the 1.0.0.11 experiment remained. Continuing to guess at parent HWNDs/geometry was no longer justified.
+- `UI3Window.twin` is therefore rolled back to the **1.0.0.10 PropertySheet host-skin baseline** for painting, tab sizing and action-button layout. The successful 1.0.0.10 icon-grid/details work and the later smaller Fluent/MDL2 preview cards are retained.
+- 1.0.0.13 adds a temporary diagnostic probe instead of another visual hack. On opening the picker it writes `%TEMP%\tbUI3-propertypage.log` containing the real PropertySheet HWND tree (class, control ID, screen rect, caption), the ancestry of the HWND exposed by `txtSearch.hWnd`, and any `WM_CTLCOLOREDIT` messages seen on that ancestry including the actual child HWND that requested a brush.
+- The diagnostic ancestors are subclassed only to observe `WM_CTLCOLOREDIT`; they do not alter painting or geometry. Each probe subclass removes itself on `WM_NCDESTROY`.
+- Goal: identify the exact Win32 EDIT HWND/parent and the exact tab/page rectangles before making the next fix.
+- Package revision is now 1.0.0.13. Source/project candidate only: **not yet compiled or run in BETA 997**.
+
 ### 2026-10-07, corrective PropertyPage geometry/Edit pass (1.0.0.12)
 
 - Shane's 1.0.0.11 runtime screenshot showed a clear regression: a large white band appeared between the tab strip and the actual page content, while the search Edit still painted white. The tab itself also remained imperfect.

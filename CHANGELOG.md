@@ -4,6 +4,13 @@ All notable changes to tbUI3. Dates are when the change was made, not released. 
 
 ## Unreleased
 
+### 2026-10-14, icon gallery spike (1.0.0.26, Claude)
+
+- Shane validated 1.0.0.25 (full Segoe Fluent set, tag search) and asked for the Fluent UI System and Gallery image tabs, placed below the property sheet's Icon tab and above the search box.
+- Before building them, 1.0.0.26 is a spike for the two unproven points in ROADMAP: whether package code can read the package's own embedded resource (`LoadResData` on `Resources/OTHER/tbUI3Spike.txt`) at design time and in a built app, and whether a 256-byte array written by `UI3Button.WriteProperties` (`SpikeBytes`) survives Save, close and reopen. New module `UI3Spike` (gated by `SPIKE_ENABLED`) shows each result in a message box and appends it to `%TEMP%\tbUI3-spike.log`. All spike code and the resource are to be removed once answered.
+- `tools/twinproj-src.mjs add` (with `twinproj-edit.mjs`) can now add new files and missing folders to a `.twinproj`; used to add `UI3Spike.twin` and `Resources/OTHER/tbUI3Spike.txt`.
+- Package revision is now 1.0.0.26. Not yet compiled.
+
 ### 2026-10-14, full Segoe Fluent icon set (1.0.0.25, Claude)
 
 - Shane asked for one icon route covering the whole font. `UI3Icon` is now generated from the WinUI Gallery's Iconography data (1,533 glyphs, `docs/research/data/segoe-fluent-icons.json`, MIT) by the new `tools/gen-icons.mjs`, which rewrites only the marked regions of `UI3Enums.twin` and `UI3Icons.twin`. Values are glyph code points; names are the Gallery's.

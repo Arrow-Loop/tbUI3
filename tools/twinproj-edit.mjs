@@ -1,5 +1,6 @@
 // Order-preserving .twinproj editor. Keeps every untouched entry byte-identical.
-// Operations: replace a file's content; set a top-level directory's children to new files.
+// Operations: replace a file's content; set a top-level directory's children to new files;
+// add new files (creating missing folders) at the end of their folder.
 import fs from "node:fs";
 const MAGIC = 0xea0ba51c;
 function scan(buf) {
@@ -25,14 +26,45 @@ export function newFileEntry(name, content) {
   const meta = Buffer.alloc(13); // revision u64 = 0, flags u32 = 0, category u8 = 0 (as in IDE-created seed sources)
   return Buffer.concat([head, lp(Buffer.from(name, "utf8")), meta, lp(Buffer.from(content)), Buffer.alloc(4)]);
 }
-export function edit(buf, { replace = {}, setDirChildren = {} }) {
+function newDirEntry(name, children) {
+  const head = Buffer.alloc(2); head.writeInt16LE(2, 0);
+  const cnt = Buffer.alloc(4); cnt.writeUInt32LE(children.length, 0);
+  return Buffer.concat([head, lp(Buffer.from(name, "utf8")), Buffer.alloc(13), cnt, ...children]);
+}
+// add: { "Resources/OTHER/x.txt": content, ... }. Each new file goes at the end of its folder; a missing
+// folder is created (with IDE-default metadata, like the ICON folder) at the end of its parent.
+function addEdits(ents, add) {
+  const byDir = new Map();
+  for (const [p, data] of Object.entries(add)) {
+    if (ents[p]) throw new Error("already exists " + p);
+    const parts = p.split("/"); let dir = ""; let i = 0;
+    while (i < parts.length - 1 && ents[(dir ? dir + "/" : "") + parts[i]]?.type === "dir") { dir = (dir ? dir + "/" : "") + parts[i]; i++; }
+    let entry = newFileEntry(parts[parts.length - 1], data);
+    for (let j = parts.length - 2; j >= i; j--) entry = newDirEntry(parts[j], [entry]);
+    if (!byDir.has(dir)) byDir.set(dir, []);
+    byDir.get(dir).push(entry);
+  }
+  const edits = [];
+  for (const [dir, entries] of byDir) {
+    const d = ents[dir]; if (!d || d.type !== "dir") throw new Error("no dir " + dir);
+    if (dir === "") throw new Error("cannot add at the project root");
+    edits.push({ start: d.countAt, end: d.countAt + 4, bytes: (() => { const b = Buffer.alloc(4); b.writeUInt32LE(0, 0); return b; })(), countDelta: entries.length });
+    edits.push({ start: d.end, end: d.end, bytes: Buffer.concat(entries) });
+  }
+  return edits;
+}
+export function edit(buf, { replace = {}, setDirChildren = {}, add = {} }) {
   const ents = scan(buf); const edits = [];
   for (const [p, data] of Object.entries(replace)) { const f = ents[p]; if (!f || f.type !== "file") throw new Error("no file " + p);
     edits.push({ start: f.cStart, end: f.cEnd, bytes: lp(Buffer.from(data)) }); }
   for (const [p, files] of Object.entries(setDirChildren)) { const d = ents[p]; if (!d || d.type !== "dir") throw new Error("no dir " + p);
     const cnt = Buffer.alloc(4); cnt.writeUInt32LE(files.length, 0);
     edits.push({ start: d.countAt, end: d.end, bytes: Buffer.concat([cnt, ...files.map(([n, c]) => newFileEntry(n, c))]) }); }
-  edits.sort((a, b) => b.start - a.start);
+  for (const e of addEdits(ents, add)) {
+    if (e.countDelta) e.bytes.writeUInt32LE(buf.readUInt32LE(e.start) + e.countDelta, 0);
+    edits.push(e);
+  }
+  edits.sort((a, b) => b.start - a.start || b.end - a.end);
   for (let i = 1; i < edits.length; i++) if (edits[i].end > edits[i - 1].start) throw new Error("overlapping edits");
   let out = Buffer.from(buf); for (const e of edits) out = Buffer.concat([out.subarray(0, e.start), e.bytes, out.subarray(e.end)]);
   return out;

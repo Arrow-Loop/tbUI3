@@ -1,3 +1,6 @@
+### 1.0.0.26
+- Temporary spike build for the icon galleries: `UI3Spike` reports in message boxes whether tbUI3 can read its own embedded resource (`Resources/OTHER/tbUI3Spike.txt`) and whether a Byte array saved by UI3Button survives Save and reopen. Remove before release.
+
 ### 1.0.0.25
 - **Breaking:** `UI3Icon` now covers all 1,533 Segoe Fluent Icons glyphs the WinUI Gallery lists, named as the Gallery names them, and a value is the glyph's code point (as in WinUI's `FontIcon.Glyph`). It used to be WinUI's 197-value `Symbol` enum, converted through icon.cpp's table; that table is gone. Some names changed (for example `Find` is now `ui3IconSearch`, `Setting` is `ui3IconSettings`), and saved numeric values from earlier builds point at different glyphs, so re-pick icons on existing forms.
 - The icon picker searches the Gallery's tags too (for example "hamburger"), labels the code row Value, and notes glyphs that Segoe MDL2 Assets lacks. When only Segoe MDL2 Assets is installed, those 127 glyphs are left out of the picker.

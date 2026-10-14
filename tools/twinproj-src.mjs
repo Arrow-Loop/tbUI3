@@ -2,13 +2,17 @@
 //   node tools/twinproj-src.mjs compare <project.twinproj> <srcdir>   lists "same"/"DIFF" per file
 //   node tools/twinproj-src.mjs extract <project.twinproj> <srcdir>   writes every file entry into srcdir
 //   node tools/twinproj-src.mjs patch   <project.twinproj> <srcdir> <relpath>...   copies the listed src files into the project
+//   node tools/twinproj-src.mjs add     <project.twinproj> <srcdir> <relpath>...   adds new src files (and missing folders) to the project
 // Paths inside the project use forward slashes, e.g. Sources/UI3Button.twin. Untouched entries stay byte-identical.
 import fs from "node:fs"; import path from "node:path";
 import { scan, edit } from "./twinproj-edit.mjs";
 const [cmd, proj, srcdir, ...rels] = process.argv.slice(2);
-if (!cmd || !proj || !srcdir) { console.error("usage: compare|extract|patch <project.twinproj> <srcdir> [relpath...]"); process.exit(1); }
+if (!cmd || !proj || !srcdir) { console.error("usage: compare|extract|patch|add <project.twinproj> <srcdir> [relpath...]"); process.exit(1); }
 const buf = fs.readFileSync(proj);
-if (cmd === "patch") {
+if (cmd === "add") {
+  const add = Object.fromEntries(rels.map(r => [r, fs.readFileSync(path.join(srcdir, r))]));
+  fs.writeFileSync(proj, edit(buf, { add }));
+} else if (cmd === "patch") {
   const replace = Object.fromEntries(rels.map(r => [r, fs.readFileSync(path.join(srcdir, r))]));
   fs.writeFileSync(proj, edit(buf, { replace }));
 } else {

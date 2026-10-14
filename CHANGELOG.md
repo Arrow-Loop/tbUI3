@@ -4,6 +4,10 @@ All notable changes to tbUI3. Dates are when the change was made, not released. 
 
 ## Unreleased
 
+### 2026-10-14, icon library research (Claude)
+
+- Checked the 1,533 Segoe Fluent glyphs in Shane's WebView2 toolbox against tbUI3's 197 Symbol icons. The toolbox data records its source (WinUI Gallery `IconsData.json` at a pinned commit, MIT). Findings and the agreed direction are in `docs/research/2026-10-14-icon-library.md`; the extracted list is `docs/research/data/segoe-fluent-icons.json`. No code changed.
+
 ### 2026-10-07, Properties dialog centred on open (1.0.0.24, Claude)
 
 - Shane validated 1.0.0.22 on BETA 999 win32: the whole Properties dialog is dark and WinUI-styled, hover works, the disabled Apply has no stray underline, and picking, Apply, OK, Cancel and reopening all behave as expected.

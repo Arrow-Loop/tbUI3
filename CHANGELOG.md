@@ -4,6 +4,14 @@ All notable changes to tbUI3. Dates are when the change was made, not released. 
 
 ## Unreleased
 
+### 2026-10-14, full Segoe Fluent icon set (1.0.0.25, Claude)
+
+- Shane asked for one icon route covering the whole font. `UI3Icon` is now generated from the WinUI Gallery's Iconography data (1,533 glyphs, `docs/research/data/segoe-fluent-icons.json`, MIT) by the new `tools/gen-icons.mjs`, which rewrites only the marked regions of `UI3Enums.twin` and `UI3Icons.twin`. Values are glyph code points; names are the Gallery's.
+- Breaking: the Symbol-value enum and icon.cpp conversion table are removed. 26 old names differ (for example `Find` is `Search`); `Placeholder`, `StopSlideShow` and `Target` have no Gallery glyph and are gone. tbUI3Test's form saves the icon by enum name (`ui3IconUnFavorite`), which may still resolve case-insensitively to `ui3IconUnfavorite`; otherwise re-pick it.
+- Picker: search covers Gallery tags; the details row reads Value; Fluent-only glyphs are marked "(not in MDL2)" and hidden when Segoe Fluent Icons is not installed. A few single-symbol tags with non-ASCII characters or separators are dropped by the generator.
+- The icon designer bridge in `UI3Icons` is unchanged.
+- Package revision is now 1.0.0.25. Not yet compiled.
+
 ### 2026-10-14, icon library research (Claude)
 
 - Shane measured that package resources do not ship in built apps: a 1.6 MB dummy resource made `tbUI3_win32.twinpack` 1.80 MB, while `tbUI3Test.exe` built against it was 0.99 MB (BETA 999, win32). Recorded in ROADMAP.

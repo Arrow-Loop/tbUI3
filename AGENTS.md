@@ -8,6 +8,7 @@
 - Change a project in one of two ways:
   - Edit `src/` and run `twinBASIC_win64.exe import` (with the project closed in the IDE).
   - Or patch the `.twinproj` directly with the tools in `tools/`. They keep the entry order and leave every entry they don't change byte-identical. `node tools/twinproj-src.mjs compare|extract|patch <project.twinproj> <srcdir> [relpath...]` covers the usual cases.
+  - `UI3Icon` and the picker's icon catalog are generated: edit `docs/research/data/segoe-fluent-icons.json` or `tools/gen-icons.mjs`, run `node tools/gen-icons.mjs`, then patch the `.twinproj`. Never hand-edit the `<generated:...>` regions.
   - Don't round-trip a project through `impexp.mjs` export and import: its export drops `.meta`, and its import re-sorts the entries.
 - Line endings:
   - `.twin` sources are CRLF.

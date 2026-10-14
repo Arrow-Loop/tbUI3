@@ -5,9 +5,9 @@
 [EventInterfaceId("4136AF42-489D-45BB-BFC7-A6F1461FB755")]
 Class UI3IconPage
 
-    ' A searchable grid of every UI3Icon, drawn with the same Direct2D/DirectWrite code as
-    ' UI3Button. The search box matches a name ("sort"), a UI3Icon value in decimal (57716)
-    ' or hex (E174), or the glyph code that is drawn (E8CB); &H, 0x and U+ prefixes are allowed.
+    ' A searchable grid of every UI3Icon (the Segoe Fluent Icons set), drawn with the same
+    ' Direct2D/DirectWrite code as UI3Button. The search box matches a name ("sort"), a search tag
+    ' ("hamburger"), or the glyph code in decimal (59595) or hex (E8CB); &H, 0x and U+ prefixes are allowed.
     ' Designer controls: picChrome (PictureBox background/chrome), txtSearch (native TextBox),
     ' picGrid (Direct2D surface), hidden vsbGrid (scroll state only), and lblInfo (Label).
     ' The .tbppage is laid out to match the live page; runtime layout only adapts it to host size.
@@ -18,7 +18,7 @@ Class UI3IconPage
     Private Const CELL_DIP As Single = 44
     Private Const CELL_INSET_DIP As Single = 3
     Private Const NONE_ENTRY As Long = -1
-    Private Const SEARCH_HINT As String = "Search by name, number, &HE174 or U+E8CB"
+    Private Const SEARCH_HINT As String = "Search by name, tag, number, &HE8CB or U+E8CB"
     Private Const EM_SETCUEBANNER As Long = &H1501&
     Private Const PAGE_PAD_DIP As Single = 12
     Private Const SEARCH_HEIGHT_DIP As Single = 32
@@ -376,7 +376,7 @@ Failed:
 
         DrawInfoField "Name", m_InfoName, PAGE_PAD_DIP, valueX, rowsTop, primaryArgb, secondaryArgb
         DrawInfoField "Enum", m_InfoEnum, PAGE_PAD_DIP, valueX, rowsTop + INFO_ROW_HEIGHT_DIP, primaryArgb, secondaryArgb
-        DrawInfoField "Symbol", m_InfoSymbol, PAGE_PAD_DIP, valueX, rowsTop + INFO_ROW_HEIGHT_DIP * 2, primaryArgb, secondaryArgb
+        DrawInfoField "Value", m_InfoSymbol, PAGE_PAD_DIP, valueX, rowsTop + INFO_ROW_HEIGHT_DIP * 2, primaryArgb, secondaryArgb
         DrawInfoField "Glyph", m_InfoGlyph, PAGE_PAD_DIP, valueX, rowsTop + INFO_ROW_HEIGHT_DIP * 3, primaryArgb, secondaryArgb
 
         DrawFontPreview previewStartX, previewY, PREVIEW_CARD_WIDTH_DIP, PREVIEW_CARD_HEIGHT_DIP, _
@@ -489,6 +489,10 @@ Failed:
             EntryMatches = True
             Exit Function
         End If
+        If InStr(1, IconCatalogTags(Index), Query, vbTextCompare) > 0 Then
+            EntryMatches = True
+            Exit Function
+        End If
 
         Dim value As Long
         value = IconCatalogValue(Index)
@@ -504,7 +508,6 @@ Failed:
         If Right$(hexQuery, 1) = "&" Then hexQuery = Left$(hexQuery, Len(hexQuery) - 1)
         If Len(hexQuery) > 0 And Len(hexQuery) <= 4 And IsAllHex(hexQuery) Then
             If Hex$(value) = hexQuery Then EntryMatches = True: Exit Function
-            If Hex$(GlyphCode(value)) = hexQuery Then EntryMatches = True: Exit Function
         End If
     End Function
 
@@ -523,11 +526,6 @@ Failed:
             If InStr("0123456789ABCDEF", Mid$(Text, i, 1)) = 0 Then Exit Function
         Next
         IsAllHex = True
-    End Function
-
-    Private Function GlyphCode(ByVal Icon As Long) As Long
-        If Icon = 0 Then Exit Function
-        GlyphCode = AscW(SemanticIconGlyph(Icon)) And &HFFFF&
     End Function
 
     Private Function ShownValue(ByVal Position As Long) As Long
@@ -929,21 +927,24 @@ Failed:
             Exit Sub
         End If
 
+        Dim glyph As String
+        glyph = "U+" & Hex$(m_Selected)
         For i = 0 To IconCatalogCount() - 1
             If IconCatalogValue(i) = m_Selected Then
                 name = IconCatalogName(i)
+                If IconCatalogFluentOnly(i) Then glyph = glyph & "  (not in MDL2)"
                 Exit For
             End If
         Next
 
         If Len(name) = 0 Then
             SetInfoDetails "Not in catalog", CStr(m_Selected), _
-                CStr(m_Selected) & "  (&H" & Hex$(m_Selected) & ")", "U+" & Hex$(GlyphCode(m_Selected))
+                CStr(m_Selected) & "  (&H" & Hex$(m_Selected) & ")", glyph
             Exit Sub
         End If
 
         SetInfoDetails name, "ui3Icon" & name, _
-            CStr(m_Selected) & "  (&H" & Hex$(m_Selected) & ")", "U+" & Hex$(GlyphCode(m_Selected))
+            CStr(m_Selected) & "  (&H" & Hex$(m_Selected) & ")", glyph
     End Sub
 
     Private Sub SetInfoDetails(ByVal iconName As String, ByVal enumName As String, _
@@ -954,7 +955,7 @@ Failed:
         m_InfoGlyph = glyphValue
         lblInfo.Caption = "Selected icon" & vbCrLf & _
             "Name: " & iconName & "   Enum: " & enumName & vbCrLf & _
-            "Symbol: " & symbolValue & "   Glyph: " & glyphValue & vbCrLf & _
+            "Value: " & symbolValue & "   Glyph: " & glyphValue & vbCrLf & _
             "Segoe Fluent / Segoe MDL2 preview at runtime"
         picChrome.Refresh
     End Sub

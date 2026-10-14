@@ -1,3 +1,7 @@
+### 1.0.0.25
+- **Breaking:** `UI3Icon` now covers all 1,533 Segoe Fluent Icons glyphs the WinUI Gallery lists, named as the Gallery names them, and a value is the glyph's code point (as in WinUI's `FontIcon.Glyph`). It used to be WinUI's 197-value `Symbol` enum, converted through icon.cpp's table; that table is gone. Some names changed (for example `Find` is now `ui3IconSearch`, `Setting` is `ui3IconSettings`), and saved numeric values from earlier builds point at different glyphs, so re-pick icons on existing forms.
+- The icon picker searches the Gallery's tags too (for example "hamburger"), labels the code row Value, and notes glyphs that Segoe MDL2 Assets lacks. When only Segoe MDL2 Assets is installed, those 127 glyphs are left out of the picker.
+
 ### 1.0.0.24
 - The Properties dialog now opens centred in the work area of the monitor showing the IDE, instead of at the top-left of the screen. It is centred once, when tbUI3 first skins the sheet.
 

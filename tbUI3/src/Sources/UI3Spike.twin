@@ -1,7 +1,7 @@
 ' Temporary spike for the icon galleries (1.0.0.26). Delete this module and its calls when done.
 '
 ' It answers two questions on Shane's PC:
-'   1. Can tbUI3's own code read a resource embedded in the tbUI3 package (LoadResData), at design
+'   1. Can tbUI3's own code read a resource embedded in the tbUI3 package (LoadResDataInternal), at design
 '      time and in a built app? The galleries need the first; the second is expected to fail.
 '   2. Does a Byte array survive a UserControl's PropertyBag through Save, closing and reopening
 '      the form, and into the built app? Copy-on-pick depends on it.
@@ -34,21 +34,26 @@ Private Module UI3Spike
         If m_ResourceShown(slot) Then Exit Sub
         m_ResourceShown(slot) = True
 
-        Dim result As String
-        Dim data As Variant
-        On Error GoTo Failed
-        data = LoadResData(SPIKE_RESOURCE, "OTHER")
-        On Error GoTo 0
-        Dim n As Long
-        n = UBound(data) - LBound(data) + 1
-        result = "OK, " & n & " bytes: " & Left$(StrConv(data, vbUnicode), 60)
-        GoTo Report
-Failed:
-        result = "FAILED, error " & Err.Number & ": " & Err.Description
-        Resume Report
-Report:
-        SpikeReport "Resource read (" & ModeName(userMode) & ", " & where & "): " & result
+        ' LoadResData reads the host project's resources (1.0.0.26 result). LoadResDataInternal is the
+        ' hidden runtime function twinBASIC's own VB package and IDE add-ins use for their own resources.
+        SpikeReport "Resource read (" & ModeName(userMode) & ", " & where & ")" & vbCrLf & _
+            "LoadResDataInternal: " & TryRead(True) & vbCrLf & _
+            "LoadResData: " & TryRead(False)
     End Sub
+
+    Private Function TryRead(ByVal internal As Boolean) As String
+        Dim data() As Byte
+        On Error GoTo Failed
+        If internal Then
+            data = LoadResDataInternal(SPIKE_RESOURCE, "OTHER")
+        Else
+            data = LoadResData(SPIKE_RESOURCE, "OTHER")
+        End If
+        TryRead = "OK, " & (UBound(data) - LBound(data) + 1) & " bytes: " & Left$(StrConv(data, vbUnicode), 60)
+        Exit Function
+Failed:
+        TryRead = "FAILED, error " & Err.Number & ": " & Err.Description
+    End Function
 
     Public Sub UI3SpikeCheckBytes(ByVal value As Variant, ByVal userMode As Boolean, ByVal where As String)
         If Not SPIKE_ENABLED Then Exit Sub

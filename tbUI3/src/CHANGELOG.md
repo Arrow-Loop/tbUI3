@@ -1,3 +1,6 @@
+### 1.0.0.27
+- Spike: also tries `LoadResDataInternal`, the hidden runtime function twinBASIC's VB package and IDE add-ins use to read their own resources, alongside `LoadResData`.
+
 ### 1.0.0.26
 - Temporary spike build for the icon galleries: `UI3Spike` reports in message boxes whether tbUI3 can read its own embedded resource (`Resources/OTHER/tbUI3Spike.txt`) and whether a Byte array saved by UI3Button survives Save and reopen. Remove before release.
 

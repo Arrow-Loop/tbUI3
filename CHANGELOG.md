@@ -4,6 +4,10 @@ All notable changes to tbUI3. Dates are when the change was made, not released. 
 
 ## Unreleased
 
+### 2026-10-14, spike retry with LoadResDataInternal (1.0.0.27, Claude)
+
+- Shane suspected a pathing issue rather than a hard limit. The twinBASIC VB package reads its own images with the hidden runtime function `LoadResDataInternal` (for example `DirListBox.InitImages`, where it is assigned to a `Const` with the comment that the resource then does not exist as an ordinary resource in the output PE), and IDE add-ins call it at run time (`Dim data() As Byte = LoadResDataInternal("symbols.json", "SYMBOLS")`). `UI3Spike` now reports both `LoadResDataInternal` and `LoadResData`. Not yet compiled.
+
 ### 2026-10-14, icon gallery spike (1.0.0.26, Claude)
 
 - Shane validated 1.0.0.25 (full Segoe Fluent set, tag search) and asked for the Fluent UI System and Gallery image tabs, placed below the property sheet's Icon tab and above the search box.

@@ -54,7 +54,7 @@ The decisions are in `docs/2026-10-06-first-pass-report.md` and `docs/2026-10-06
 | 1.0.0.21: PropertySheet skin attach fix (Claude review) | Built on BETA 999 win32: fully dark on open, hover works. Skin attaches only to the real sheet and is never swapped back to the page; search-box hooks armed separately; log off. See CHANGELOG. |
 | 1.0.0.22: disabled Apply underline fix | Validated on BETA 999 win32 with Apply, OK, Cancel and reopen. Skinned buttons repaint after WM_UPDATEUISTATE, BM_SETSTYLE and WM_SETTEXT. |
 | 1.0.0.23: package settings (Shane) | Package sorts where it is easy to find in the IDE picker. |
-| 1.0.0.24: dialog centred on open | Candidate only. Centred once on the IDE's monitor work area. |
+| 1.0.0.24: dialog centred on open | Validated by Shane (win32 and win64 checks). Centred once on the IDE's monitor work area. |
 
 ## Work queue for the next passes (updated 2026-10-07)
 

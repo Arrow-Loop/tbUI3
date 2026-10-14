@@ -9,7 +9,7 @@ All notable changes to tbUI3. Dates are when the change was made, not released. 
 - Shane validated 1.0.0.22 on BETA 999 win32: the whole Properties dialog is dark and WinUI-styled, hover works, the disabled Apply has no stray underline, and picking, Apply, OK, Cancel and reopening all behave as expected.
 - Shane's 1.0.0.23 changed the package project settings so tbUI3 sorts where it is easy to find in the IDE's package picker.
 - The dialog opened at the top-left of the screen. `UI3SkinPropertySheetHost` now centres the sheet once, when it is first skinned, in the work area of the monitor showing its owner window (the IDE), clamped to the work area's top-left. `CenterPropertySheet` in `UI3Window`.
-- Package revision is now 1.0.0.24. Not yet compiled.
+- Package revision is now 1.0.0.24. Shane reported on 2026-10-14 that 1.0.0.24 builds and opens centred, and that the dialog checks pass in win64.
 
 ### 2026-10-07, disabled Apply underline fix (1.0.0.22, Claude)
 

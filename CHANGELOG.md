@@ -6,6 +6,7 @@ All notable changes to tbUI3. Dates are when the change was made, not released. 
 
 ### 2026-10-14, icon library research (Claude)
 
+- Shane measured that package resources do not ship in built apps: a 1.6 MB dummy resource made `tbUI3_win32.twinpack` 1.80 MB, while `tbUI3Test.exe` built against it was 0.99 MB (BETA 999, win32). Recorded in ROADMAP.
 - Checked the 1,533 Segoe Fluent glyphs in Shane's WebView2 toolbox against tbUI3's 197 Symbol icons. The toolbox data records its source (WinUI Gallery `IconsData.json` at a pinned commit, MIT). Findings and the agreed direction are in `docs/research/2026-10-14-icon-library.md`; the extracted list is `docs/research/data/segoe-fluent-icons.json`. No code changed.
 
 ### 2026-10-07, Properties dialog centred on open (1.0.0.24, Claude)

@@ -4,6 +4,16 @@ All notable changes to tbUI3. Dates are when the change was made, not released. 
 
 ## Unreleased
 
+### 2026-10-19, pass 5b result
+
+- Shane's 1.0.0.43 test in tbUI3Test (BETA 1012):
+  - The mono SVG, the colour SVG and the PNG all draw from files. Copying `IconData` to another button works, and IconSize 20, 32 and 48 scale every kind.
+  - Setting `Icon` replaces an image.
+  - The mono SVG follows the text colour in dark and light, including on Accent (dark ink in dark mode, white in light, as WinUI's TextOnAccentFillColorPrimary).
+  - The three copied designer entries load fine.
+- Properties pane: `IconData` shows as a blank row and `IconSource` is not listed, because the pane leaves out a property with no Let, as VB6 did. Fixed in 5c by hiding IconData and giving IconSource a Let that raises error 383.
+- Save and reopen of an image is not testable until 5c, since nothing sets one at design time yet.
+
 ### 2026-10-19, pass 5b: stored SVG and image icons (1.0.0.43, Claude)
 
 - New private `UI3IconImage` class: holds an icon file's own bytes (SVG, or PNG, JPEG, GIF, BMP, ICO or TIFF, recognised by their first bytes) and draws it to fill a square with Direct2D. An SVG that uses the Fluent ink `#212121` or `currentColor` is drawn in the control's text colour; other SVGs and all bitmaps keep their own colours. This replaces the plan's `Recolor` parameter with detection. Bitmaps are scaled with high-quality cubic sampling where available.

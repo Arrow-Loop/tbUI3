@@ -3,6 +3,7 @@
 //
 //   node tools/build-icon-library.mjs --fluent <fluentui-system-icons checkout>
 //        --gallery <WinUI-Gallery checkout> --version 2026.10.19.1 --out <folder>
+//        [--repo Arrow-Loop/tbUI3-Libraries]
 //
 // Inputs are checkouts of microsoft/fluentui-system-icons (assets/**/*.svg and
 // assets/*/metadata.json) and microsoft/WinUI-Gallery (WinUIGallery/Assets/ControlImages/*.png),
@@ -12,7 +13,9 @@
 // Writes to --out:
 //   tbUI3-Icons.dat              the library (format below), installed to %LOCALAPPDATA%\tbUI3
 //   tbUI3-Icons-<version>.zip    tbUI3-Icons.dat plus NOTICE.txt, the release download
-//   manifest.txt                 key=value lines the picker reads to offer an update
+//   manifest.txt                 key=value lines the picker reads to offer an update. Published as
+//                                icons/manifest.txt on the libraries repo's main branch; the zip is an
+//                                asset of that repo's release tagged icons-<version>.
 //
 // tbUI3-Icons.dat (little-endian; every number is a 32-bit signed Long so twinBASIC can Get it):
 //   0   8 bytes  "tbUI3LIB"
@@ -39,6 +42,7 @@ for (const k of ['fluent', 'gallery', 'version', 'out']) if (!args[k]) throw new
 if (!/^\d{4}\.\d{1,2}\.\d{1,2}\.\d+$/.test(args.version)) throw new Error('Version must look like 2026.10.19.1');
 
 const CRLF = '\r\n';
+const repo = args.repo || 'Arrow-Loop/tbUI3-Libraries';
 const commitOf = dir => execFileSync('git', ['-C', dir, 'rev-parse', 'HEAD'], { encoding: 'utf8' }).trim();
 // The index is split on "|", ";" is reserved, and the picker reads it as ASCII.
 const clean = s => String(s).trim().replace(/\s+/g, ' ');
@@ -163,6 +167,7 @@ const manifest = [
   'format=1',
   `version=${args.version}`,
   `file=${zipName}`,
+  `url=https://github.com/${repo}/releases/download/icons-${args.version}/${zipName}`,
   `size=${zipped.length}`,
   `sha256=${sha(zipped)}`,
   `datSize=${dat.length}`,

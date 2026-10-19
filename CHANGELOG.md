@@ -8,6 +8,7 @@ All notable changes to tbUI3. Dates are when the change was made, not released. 
 
 - New `tools/build-icon-library.mjs` builds the per-PC icon library from checkouts of microsoft/fluentui-system-icons (commit cd332ec1) and microsoft/WinUI-Gallery (commit 05939cc7). It writes `tbUI3-Icons.dat` (a 32-byte header, an ASCII index with one `set|id|name|style|size|variant|tags|offset|length` line per icon, then the unchanged SVG and PNG bytes), `tbUI3-Icons-<version>.zip` (the .dat plus NOTICE.txt with both MIT licences) and `manifest.txt` (version, size and SHA-256 for update checks). The format is documented at the top of the script.
 - Checked in the cloud: 21,876 entries (Fluent 21,764: regular 10,267, filled 10,393, color 890, light 214; Gallery 112). Every file in Shane's WinUIElementToolbox library is present with identical bytes. The .dat is 31.2 MB and the zip 7.1 MB; `unzip -t` passes and two builds give byte-identical zips. Shane extracted it with Windows `tar -xf` on 2026-10-19 (works). Nothing in tbUI3 reads it yet.
+- The manifest now carries the zip's download `url` (`--repo`, default Arrow-Loop/tbUI3-Libraries). Published `icons/manifest.txt`, a README and the .dat format description to tbUI3-Libraries main (1d914b3); the release itself is for Shane to create, because cloud sessions are not allowed to create releases.
 - Upstream quirk: two Fluent folders (Chart Person, Person Support) hold a second icon id, so each index line carries the file's own id.
 
 ### 2026-10-19, spike removed (1.0.0.29, Claude)

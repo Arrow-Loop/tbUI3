@@ -34,6 +34,11 @@ Public Module UI3Window
     Private Const WM_WINDOWPOSCHANGED As Long = &H47
     Private Const WM_COMMAND As Long = &H111
     Private Const WM_CTLCOLOREDIT As Long = &H133
+    Private Const WM_CTLCOLORSTATIC As Long = &H138
+    Private Const WM_TIMER As Long = &H113
+    Private Const RDW_UPDATENOW As Long = &H100
+    Private Const UI3_SEARCH_REPAINT_TIMER_ID As Long = &H55495352
+    Private Const UI3_SEARCH_REPAINT_TICKS As Long = 4
     Private Const WM_SETTINGCHANGE As Long = &H1A
     Private Const WM_NCDESTROY As Long = &H82
     Private Const WM_MOUSEMOVE As Long = &H200
@@ -130,6 +135,12 @@ Public Module UI3Window
     Private Declare PtrSafe Function SetTextColor Lib "gdi32" (ByVal hdc As LongPtr, ByVal crColor As Long) As Long
     Private Declare PtrSafe Function SetBkColor Lib "gdi32" (ByVal hdc As LongPtr, ByVal crColor As Long) As Long
     Private Declare PtrSafe Function CreateSolidBrush Lib "gdi32" (ByVal crColor As Long) As LongPtr
+    Private Declare PtrSafe Function GetPixel Lib "gdi32" (ByVal hdc As LongPtr, ByVal x As Long, ByVal y As Long) As Long
+    Private Declare PtrSafe Function GetClipBox Lib "gdi32" (ByVal hdc As LongPtr, ByRef lprc As UI3GdiRect) As Long
+    Private Declare PtrSafe Function SetTimer Lib "user32" (ByVal hWnd As LongPtr, ByVal nIDEvent As LongPtr, _
+        ByVal uElapse As Long, ByVal lpTimerFunc As LongPtr) As LongPtr
+    Private Declare PtrSafe Function KillTimer Lib "user32" (ByVal hWnd As LongPtr, ByVal uIDEvent As LongPtr) As Long
+    Private Declare PtrSafe Function IsWindowVisible Lib "user32" (ByVal hWnd As LongPtr) As Long
     Private Declare PtrSafe Function DeleteObject Lib "gdi32" (ByVal hObject As LongPtr) As Long
 
     [UseGetLastError(False), DLLStackCheck(False)]
@@ -160,12 +171,13 @@ Public Module UI3Window
     Private m_PropertyPageCaption As String
 
     ' Set True to write %TEMP%\tbUI3-propertypage.log (host tree, subclass results, layout snapshots).
-    Private Const PROPERTY_PAGE_LOG_ENABLED As Boolean = False
+    Private Const PROPERTY_PAGE_LOG_ENABLED As Boolean = True
 
     ' PropertyPage hooks: the confirmed native TextBox colour route and the page-move trigger
     ' that promotes the skin to the real PropertySheet.
     Private m_PropertyProbeEdit As LongPtr
     Private m_PropertyProbeEditParent As LongPtr
+    Private m_SearchRepaintTicks As Long
     Private m_PropertyProbePageDialog As LongPtr
     Private m_PropertyEditBrush As LongPtr
     Private m_PropertyEditBrushColor As Long
@@ -441,6 +453,7 @@ CleanUp:
         CenterPropertySheet hWnd
         RedrawPropertySheetSkin
         LogPropertySheet hWnd
+        StartSearchRepaint
     End Sub
 
     ' Called by a tbUI3 PropertyPage from its paint and theme code; safe to call repeatedly.
@@ -484,9 +497,45 @@ CleanUp:
             SetWindowSubclass m_PropertyProbeEditParent, AddressOf UI3PropertyProbeProc, _
                 CLngPtr(UI3_PROPERTY_PROBE_SUBCLASS_ID), 1
         End If
-        ProbeLog "HOOKS edit=" & DebugWindowLine(textBoxHwnd) & " parent=" & DebugWindowLine(m_PropertyProbeEditParent)
+        ' Log-only: the container around the page, to see whether its erase covers the search box.
+        If PROPERTY_PAGE_LOG_ENABLED And m_PropertyProbePageDialog <> 0 Then
+            SetWindowSubclass m_PropertyProbePageDialog, AddressOf UI3PropertyProbeProc, _
+                CLngPtr(UI3_PROPERTY_PROBE_SUBCLASS_ID), 2
+        End If
+        ProbeLog "HOOKS edit=" & DebugWindowLine(textBoxHwnd) & " parent=" & DebugWindowLine(m_PropertyProbeEditParent) & _
+            " container=" & DebugWindowLine(m_PropertyProbePageDialog)
         InvalidateRect textBoxHwnd, 0, 1
+        StartSearchRepaint
     End Sub
+
+    ' The search box can open classic light even though every paint the hooks see is dark, and the
+    ' first interaction fixes it. Repaint it a few times after the dialog settles (1.0.0.36).
+    Private Sub StartSearchRepaint()
+        If m_PropertyProbeEdit = 0 Then Exit Sub
+        m_SearchRepaintTicks = 0
+        SetTimer m_PropertyProbeEdit, CLngPtr(UI3_SEARCH_REPAINT_TIMER_ID), 250, 0
+    End Sub
+
+    Private Function ScreenPixelAt(ByVal hWnd As LongPtr) As String
+        If Not PROPERTY_PAGE_LOG_ENABLED Then Exit Function
+        Dim rc As UI3GdiRect
+        Dim screenDC As LongPtr
+        Dim c As Long
+        GetWindowRect hWnd, rc
+        screenDC = GetDC(0)
+        If screenDC = 0 Then Exit Function
+        c = GetPixel(screenDC, (rc.Left + rc.Right) \ 2, (rc.Top + rc.Bottom) \ 2)
+        ReleaseDC 0, screenDC
+        ScreenPixelAt = "rgb(" & CStr(c And &HFF&) & "," & CStr((c \ &H100&) And &HFF&) & "," & _
+            CStr((c \ &H10000) And &HFF&) & ")"
+    End Function
+
+    Private Function ClipBoxText(ByVal hdc As LongPtr) As String
+        If Not PROPERTY_PAGE_LOG_ENABLED Then Exit Function
+        Dim rc As UI3GdiRect
+        GetClipBox hdc, rc
+        ClipBoxText = "(" & CStr(rc.Left) & "," & CStr(rc.Top) & ")-(" & CStr(rc.Right) & "," & CStr(rc.Bottom) & ")"
+    End Function
 
     Private Sub LogPropertySheet(ByVal host As LongPtr)
         If Not PROPERTY_PAGE_LOG_ENABLED Then Exit Sub
@@ -567,6 +616,34 @@ CleanUp:
                         Exit Function
                     End If
                     ProbeLog "EDIT WM_ERASEBKGND not painted"
+                ElseIf PROPERTY_PAGE_LOG_ENABLED And (hWnd = m_PropertyProbeEditParent Or hWnd = m_PropertyProbePageDialog) Then
+                    ProbeLog "ERASE " & DebugWindowLine(hWnd) & " clip=" & ClipBoxText(wParam) & _
+                        " edit pixel=" & ScreenPixelAt(m_PropertyProbeEdit)
+                End If
+
+            Case WM_TIMER
+                If wParam = CLngPtr(UI3_SEARCH_REPAINT_TIMER_ID) Then
+                    If hWnd = m_PropertyProbeEdit Then
+                        m_SearchRepaintTicks = m_SearchRepaintTicks + 1
+                        ProbeLog "SEARCH REPAINT " & CStr(m_SearchRepaintTicks) & " visible=" & CStr(IsWindowVisible(hWnd)) & _
+                            " enabled=" & CStr(IsWindowEnabled(hWnd)) & " pixel before=" & ScreenPixelAt(hWnd)
+                        RedrawWindow hWnd, 0, 0, RDW_INVALIDATE Or RDW_ERASE Or RDW_FRAME Or RDW_UPDATENOW
+                        ProbeLog "SEARCH REPAINT " & CStr(m_SearchRepaintTicks) & " pixel after=" & ScreenPixelAt(hWnd)
+                        If m_SearchRepaintTicks >= UI3_SEARCH_REPAINT_TICKS Then KillTimer hWnd, wParam
+                    Else
+                        KillTimer hWnd, wParam
+                    End If
+                    UI3PropertyProbeProc = 0
+                    Exit Function
+                End If
+
+            Case WM_CTLCOLORSTATIC
+                ' A disabled or read-only Edit asks for WM_CTLCOLORSTATIC, whose default is the
+                ' classic button-face grey.
+                If hWnd = m_PropertyProbeEditParent And lParam = m_PropertyProbeEdit Then
+                    ProbeLog "WM_CTLCOLORSTATIC FIX for search box"
+                    UI3PropertyProbeProc = PropertyEditBrush(wParam)
+                    Exit Function
                 End If
 
             Case WM_CTLCOLOREDIT

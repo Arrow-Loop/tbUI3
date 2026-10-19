@@ -4,6 +4,11 @@ All notable changes to tbUI3. Dates are when the change was made, not released. 
 
 ## Unreleased
 
+### 2026-10-19, search box repaint and pixel log (1.0.0.36, Claude)
+
+- Shane's 1.0.0.35 test: the search box still opens light with the caret blinking, so the hidden second page was not the cause (the 1.0.0.35 guard stays, as it is harmless). Measured on Shane's 1.0.0.33 screenshot: the box is rgb(240,240,240), which is the classic button-face grey, not the Edit's native white (255) and not any colour tbUI3 sets. The page, picChrome, picGrid and txtSearch all have dark designer colours, so the grey comes from a window or message tbUI3 does not colour. Candidates, unproven: the inner #32770 container around the page (its class background is button face) erasing over the box, or the Edit painting through WM_CTLCOLORSTATIC (used while an Edit is disabled or read-only), whose default is button face.
+- 1.0.0.36: the search box's parent now also answers WM_CTLCOLORSTATIC for the search box with the dark brush. After the hooks arm and again after the sheet is skinned, a timer repaints the search box four times, 250 ms apart. The log is on again: each repaint records the screen pixel at the box's centre before and after, whether the box is visible and enabled, and every erase of the page and its container with its clip box and the box's pixel. Not yet built.
+
 ### 2026-10-19, search box keeps its hooks (1.0.0.35, Claude)
 
 - Shane's 1.0.0.34 log: every paint of the visible search box erased dark and its WM_CTLCOLOREDIT was answered, so the hooks themselves worked. The last log line shows a second, never-shown UI3IconPage (its TextBox still at the designer position) arming the hooks for its own TextBox after the real page had painted. From then on the real search box painted classic light until a click made the real page repaint and re-arm them. The new chrome paint changed the timing so the stray page now runs last.

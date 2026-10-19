@@ -7,7 +7,7 @@ Every rule below was learned from a real failure on Shane's PC. Where a cause is
 ## 1. How a page is reached and applied
 
 - A page is opened from the Properties pane's `(Custom)` row, with `...`. Add it through Project Explorer, Add, Add Windows PropertyPage, then tick it in the UserControl's `PropertyPages` list.
-- The per-property link `[PropertyPage("PageName")]` does nothing in these betas, whatever the property's type. Leave it out until twinBASIC honours it.
+- The per-property link `[PropertyPage("PageName")]` above a property gives that property its own "..." button that opens the page. It did nothing up to BETA 1007; Wayne fixed it in BETA 1008, and Shane confirmed it on UI3Button.Icon in BETA 1012 (2026-10-19). Add the link as well as ticking the page, so both routes work.
 - Never set `Me.Changed = False` in `SelectionChanged`. Setting `Changed` while the IDE is calling `SetObjects` raises Automation error 80004005 and the page doesn't open. Set `Me.Changed = True` only in response to a user action.
 - A value set in `ApplyChanges` with `CallByName` changes the live control, but the designer reloads its saved copy and loses it. The icon picker survives this through the designer bridge in `UI3Icons` (`IconPageApplying`, `SetPendingIcon`/`TakePendingIcon`, `DesignName`, `DesignLog`). Don't change or remove that bridge until an experiment shows which part is needed. A new page that applies values needs the same treatment. Copy the pattern; don't redesign it.
 
@@ -69,7 +69,7 @@ The OK, Cancel and Apply buttons, the tab and the dialog belong to the IDE's pro
 
 ## 7. Checklist for a new page
 
-1. Add the page and tick it in the UserControl's `PropertyPages`. Expect `(Custom)` and `...`, not a per-property button.
+1. Add the page and tick it in the UserControl's `PropertyPages`. Add `[PropertyPage("PageName")]` above the property it edits; from BETA 1008 that property gets its own `...`, and `(Custom)` still works.
 2. Lay out the `.tbppage` at the live size. Use one owner-drawn surface for everything visual, and native controls only for text entry or scrolling state.
 3. Attach a `UI3PageSurface`-style subclass to the surface in `LayoutControls`, and repaint with no-erase invalidation.
 4. If the page has a TextBox, route it through the existing hooks (`UI3SkinPropertySheetForPage` with the TextBox's hWnd) rather than writing new ones.

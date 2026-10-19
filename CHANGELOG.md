@@ -4,6 +4,11 @@ All notable changes to tbUI3. Dates are when the change was made, not released. 
 
 ## Unreleased
 
+### 2026-10-19, 1.0.0.41 results and the Icon "..." button
+
+- Shane's 1.0.0.41 test: the disabled Segoe MDL2 preview works, and the Additional Icons tab fits the strip. Picks on the library tabs don't enable Apply, as designed (preview only until pass 5).
+- The `[PropertyPage("UI3IconPage")]` link on UI3Button.Icon now works: Icon shows its own "..." that opens the picker (BETA 1012, Shane). Wayne fixed the bug in BETA 1008 after our report. The guide and the code comments now say so; comment-only source change, no version bump.
+
 ### 2026-10-19, Additional Icons tab and MDL2 preview (1.0.0.41, Claude)
 
 - Shane's requests on 1.0.0.39:

@@ -4,6 +4,12 @@ All notable changes to tbUI3. Dates are when the change was made, not released. 
 
 ## Unreleased
 
+### 2026-10-19, owner-drawn picker chrome (1.0.0.33, Claude)
+
+- Shane's 1.0.0.32 test: the chrome paints again, but hovering the tab strip or the Setup and library tab content still flickers, while the icon grid, the selected-icon details and OK/Cancel/Apply never do. The search box still opens classic light and turns dark on the first interaction. Shane pointed at the difference: the property sheet's buttons are painted by tbUI3 itself.
+- New private module `UI3PageSurface` subclasses picChrome exactly as UI3Window subclasses the sheet's buttons: WM_ERASEBKGND returns 1, WM_PAINT is handled with BeginPaint/EndPaint and the page draws into that DC (`UI3IconPage.PaintChromeSurface`, a Friend method), and TrackMouseEvent's WM_MOUSELEAVE clears hover (`ChromeMouseLeave`). `PaintChrome` takes the DC to draw into; picChrome's own Paint event remains only as the fallback before the subclass is attached.
+- After the first owner-drawn chrome paint, the search box is invalidated once so it repaints with its colour hooks armed. This addresses the symptom; why the Edit's first paint misses the hooks is still not proven. Not yet built.
+
 ### 2026-10-19, undo sibling clipping, keep the Segoe path as in 1.0.0.29 (1.0.0.32, Claude)
 
 - Shane's 1.0.0.31 test: the whole chrome stayed classic light (no tab strip, search box frame or details) while the grid drew normally. The WS_CLIPSIBLINGS style added to picChrome in 1.0.0.31 is the only change that affects all chrome painting, so it is removed. Inferred, not proven: picChrome draws through its own persistent `hDC`, and changing the style after creation likely left that DC's visible region out of step with the window.

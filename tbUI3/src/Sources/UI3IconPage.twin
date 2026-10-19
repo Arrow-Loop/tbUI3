@@ -94,6 +94,7 @@ Class UI3IconPage
 
     Private m_Tab As Long
     Private m_SegoeControlsHidden As Boolean
+    Private m_SearchRepainted As Boolean
     Private m_TabX0(0 To TAB_COUNT - 1) As Single
     Private m_TabX1(0 To TAB_COUNT - 1) As Single
     Private m_HotTab As Long
@@ -188,6 +189,8 @@ Class UI3IconPage
 
         picChrome.Move 0, 0, w, h
         picChrome.BorderStyle = vbNoBorder
+        ' From here picChrome paints like the property sheet's own buttons (UI3PageSurface).
+        UI3AttachIconPageSurface picChrome.hWnd, Me
         picChrome.AutoRedraw = False
         picChrome.ScaleMode = vbPixels
         picChrome.TabStop = False
@@ -302,6 +305,7 @@ CleanUp:
         UI3SkinPropertySheetForPage picChrome.hWnd, Me.Caption, txtSearch.hWnd
     End Sub
 
+    ' Only runs until UI3PageSurface owns picChrome's paint (see LayoutControls).
     Private Sub picChrome_Paint()
         EnsurePageThemeCurrent
 
@@ -310,21 +314,41 @@ CleanUp:
         ApplyHostTitleBar
 
         Dim hr As Long
-        hr = PaintChrome()
+        hr = PaintChrome(picChrome.hDC)
         If hr <> 0 Then
             On Error Resume Next
             picChrome.Cls
         End If
     End Sub
 
-    Private Function PaintChrome() As Long
-        Dim hdc As LongPtr
+    ' Called by UI3PageSurface from picChrome's WM_PAINT with the BeginPaint DC.
+    Friend Sub PaintChromeSurface(ByVal hdc As LongPtr)
+        EnsurePageThemeCurrent
+        ApplyHostTitleBar
+        PaintChrome hdc
+        ' The search box can paint once before its colour hooks exist and stay classic light until
+        ' something repaints it; repaint it once now that they are armed.
+        If Not m_SearchRepainted Then
+            m_SearchRepainted = True
+            InvalidateRect txtSearch.hWnd, 0, 1
+        End If
+    End Sub
+
+    ' Called by UI3PageSurface when the pointer leaves picChrome.
+    Friend Sub ChromeMouseLeave()
+        If m_HotTab >= 0 Or m_HotButton >= 0 Then
+            m_HotTab = -1
+            m_HotButton = -1
+            RepaintChrome
+        End If
+    End Sub
+
+    Private Function PaintChrome(ByVal hdc As LongPtr) As Long
         Dim client As UI3GdiRect
         Dim dpi As Single
         Dim drawing As Boolean
 
         On Error GoTo Failed
-        hdc = picChrome.hDC
         If hdc = 0 Then Exit Function
         UI3GetClientRect picChrome.hWnd, client
         If client.Right <= 0 Or client.Bottom <= 0 Then Exit Function
@@ -939,6 +963,7 @@ Failed:
     End Sub
 
     Private Sub picChrome_MouseMove(Button As Integer, Shift As Integer, X As Single, Y As Single)
+        UI3TrackIconPageSurfaceLeave
         Dim xDip As Single
         Dim yDip As Single
         Dim hotTab As Long

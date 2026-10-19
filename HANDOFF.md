@@ -1,6 +1,6 @@
 # Handoff: tbUI3 state on 2026-10-07
 
-This is written for the next developer or AI session; ChatGPT is expected to run the next several passes. Read `AGENTS.md`, then this file, then `CHANGELOG.md` and `ROADMAP.md`. State at the time of writing: `tbui3-dev`, package version 1.0.0.32, twinBASIC BETA 1012.
+This is written for the next developer or AI session; ChatGPT is expected to run the next several passes. Read `AGENTS.md`, then this file, then `CHANGELOG.md` and `ROADMAP.md`. State at the time of writing: `tbui3-dev`, package version 1.0.0.33, twinBASIC BETA 1012.
 
 ## What tbUI3 is
 
@@ -61,7 +61,8 @@ The decisions are in `docs/2026-10-06-first-pass-report.md` and `docs/2026-10-06
 | Icon library builder | `tools/build-icon-library.mjs` (zip checked in the cloud and with Windows `tar` by Shane; not yet used by tbUI3). Host: Arrow-Loop/tbUI3-Libraries. |
 | 1.0.0.30: picker tab strip and Setup tab | Built by Shane: install/uninstall work; flicker and a light search box on first open. Installs the library to %LOCALAPPDATA%\tbUI3 (UI3IconLibrary); Fluent and Gallery tabs only report state. |
 | 1.0.0.31: flicker and search box fix | Built by Shane: worse, the chrome stopped painting (WS_CLIPSIBLINGS). |
-| 1.0.0.32: clipping removed | Not yet built. Opening the page follows the 1.0.0.29 path for the search box and grid. |
+| 1.0.0.32: clipping removed | Built by Shane: chrome paints; tab/Setup hover still flickers; search box opens light until first interaction. |
+| 1.0.0.33: owner-drawn picker chrome | Not yet built. UI3PageSurface owns picChrome WM_PAINT like the sheet buttons; search box repainted once after first paint. |
 
 ## Work queue for the next passes (updated 2026-10-07)
 

@@ -1,3 +1,7 @@
+### 1.0.0.33
+- The icon picker's chrome (tab strip, Setup and library tabs, search box frame, selected-icon details) now paints the same way as the property dialog's OK/Cancel/Apply buttons: tbUI3 owns its WM_PAINT and never lets the background be cleared first. This is meant to stop the flicker when hovering the tabs and Setup buttons. Hover also clears when the pointer leaves the chrome.
+- The search box is repainted once after the chrome's first paint, so it should no longer open classic light.
+
 ### 1.0.0.32
 - Undoes 1.0.0.31's sibling clipping on the picker chrome, which stopped the chrome painting at all.
 - Opening the picker no longer touches the search box or grid: they are only hidden and shown again when you switch tabs. The tab strip and buttons still repaint without erasing first.

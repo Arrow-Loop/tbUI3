@@ -12,6 +12,13 @@ All notable changes to tbUI3. Dates are when the change was made, not released. 
 - UI3Direct2D: `ComposeArgb`; `CreateSvgFromBytes` takes a height for non-square SVGs; `CreateBitmapFromImageBytes` returns the pixel size.
 - Not yet built.
 
+### 2026-10-19, pass 5b test form (tbUI3Test, Claude)
+
+- At Shane's request the test files live in the repo: `tbUI3Test/test-icons/` holds `mono.svg` (#212121, should take the text colour), `color.svg` (keeps its colours) and `sample.png` (64 px with soft edges), all made for this test.
+- `frmMain` now has four UI3Buttons (2 to 4 are copies of button 1's saved entry, restyled in `Form_Load`): a monochrome SVG on Accent, a colour SVG (click: switches to a Segoe icon), a PNG, and a copy of button 1's `IconData` (click: cycles IconSize 20, 32, 48 on all four). Button 1's click shows every `IconSource`. The icons load from `App.Path\test-icons`, else `E:\Code Projects\tbUI3\tbUI3Test\test-icons`. The earlier `Form_Activate` MDL2 glyph test is removed.
+- The form edit was made on the saved project's own copy of `frmMain.tbform` and the export now matches it. The test project's `Settings` and `tBUI3Spike.txt` exports were already out of step with the saved project and are left as they were.
+- Not yet run.
+
 ### 2026-10-19, pass 5a result
 
 - Shane's 1.0.0.42 test: IconSize works (sizes, save and reopen) and looks right to Shane. The log shows `PAGE EditProperty Icon` each time the page was opened from Icon's own "...". So twinBASIC raises `PropertyPage_EditProperty` with the property's name, as VB6 did, and a control with two icon properties can share the picker. The log also shows the known hidden second page instance (a TextBox at the designer position, never visible).

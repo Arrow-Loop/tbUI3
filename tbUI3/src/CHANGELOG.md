@@ -1,3 +1,7 @@
+### 1.0.0.32
+- Undoes 1.0.0.31's sibling clipping on the picker chrome, which stopped the chrome painting at all.
+- Opening the picker no longer touches the search box or grid: they are only hidden and shown again when you switch tabs. The tab strip and buttons still repaint without erasing first.
+
 ### 1.0.0.31
 - Fixes flicker in the icon picker: the chrome now repaints without erasing first, and no longer paints over the search box and grid (it clips to them).
 - Re-arms the search box's dark colours whenever the Segoe Fluent tab shows it, for the light search box seen on first open in 1.0.0.30.

@@ -4,6 +4,12 @@ All notable changes to tbUI3. Dates are when the change was made, not released. 
 
 ## Unreleased
 
+### 2026-10-19, undo sibling clipping, keep the Segoe path as in 1.0.0.29 (1.0.0.32, Claude)
+
+- Shane's 1.0.0.31 test: the whole chrome stayed classic light (no tab strip, search box frame or details) while the grid drew normally. The WS_CLIPSIBLINGS style added to picChrome in 1.0.0.31 is the only change that affects all chrome painting, so it is removed. Inferred, not proven: picChrome draws through its own persistent `hDC`, and changing the style after creation likely left that DC's visible region out of step with the window.
+- `ApplyPageTheme` and `SetInfoDetails` use `picChrome.Refresh` again, as they did in 1.0.0.29; only the new hover, tab and status repaints use `RepaintChrome` (no erase).
+- `PropertyPage_SelectionChanged` no longer calls `ShowTabControls` while the Segoe tab is showing and nothing has hidden its controls, so opening the page touches the search box exactly as 1.0.0.29 did. This targets the light search box seen on first open in 1.0.0.30; its cause is still unproven. Not yet built.
+
 ### 2026-10-19, picker flicker and search box fix (1.0.0.31, Claude)
 
 - Shane's 1.0.0.30 test (BETA 1012): the tab strip, Setup and the Fluent tab work; Install from the published release and Uninstall both worked. Two regressions: the picker flickered as the mouse moved over it, and the search box was classic light on first open (the chrome around it stayed dark).

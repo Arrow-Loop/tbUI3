@@ -927,6 +927,11 @@ CleanUp:
             " text=[" & WindowCaption(hWnd) & "]"
     End Function
 
+    ' One line in %TEMP%\tbUI3-propertypage.log from a property page (only while the log is on).
+    Public Sub UI3PropertyPageLog(ByVal Text As String)
+        ProbeLog Text
+    End Sub
+
     Private Sub ProbeLog(ByVal text As String)
         If Not PROPERTY_PAGE_LOG_ENABLED Then Exit Sub
         On Error Resume Next

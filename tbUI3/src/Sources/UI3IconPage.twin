@@ -189,6 +189,7 @@ Class UI3IconPage
     End Sub
 
     Private Sub PropertyPage_SelectionChanged()
+        UI3PropertyPageLog "PAGE SelectionChanged"
         LayoutControls
         ApplyPageTheme True
         m_Selected = 0
@@ -212,6 +213,12 @@ Class UI3IconPage
         ApplyFilter
         ScrollToSelected
         UpdateInfo
+    End Sub
+
+    ' VB6 raises EditProperty when a property's own "..." opens the page, naming that property, so a
+    ' control with two icon properties can tell which was clicked. Pass 5a logs whether twinBASIC does.
+    Private Sub PropertyPage_EditProperty(PropertyName As String)
+        UI3PropertyPageLog "PAGE EditProperty " & PropertyName
     End Sub
 
     Private Sub PropertyPage_ApplyChanges()

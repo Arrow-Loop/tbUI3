@@ -1,6 +1,6 @@
 # Pass 5 plan: one icon system for every control
 
-Status: **proposal, waiting for Shane's approval.** No code has been written for this pass.
+Status: **approved by Shane on 2026-10-19.** Build 5a is written in 1.0.0.42.
 Written 2026-10-19, from the decisions recorded in ROADMAP.md that day.
 
 ## Goal

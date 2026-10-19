@@ -4,6 +4,13 @@ All notable changes to tbUI3. Dates are when the change was made, not released. 
 
 ## Unreleased
 
+### 2026-10-19, pass 5a: IconSize (1.0.0.42, Claude)
+
+- Shane approved the pass 5 plan (`docs/2026-10-19-pass5-icon-system-plan.md`) and set the Windows version policy: the minimum rises to whatever a feature needs. It is recorded in ROADMAP.
+- New `UI3Button.IconSize`: the size in DIPs of the icon, default 20 (WinUI's SymbolIcon size), saved with the form. For now it sets the Segoe glyph's font size; library icons follow in 5b and 5c. Values of 0 or less are rejected (error 380). The glyph is still placed by its own text box; the IconSize square layout comes with 5b.
+- The icon picker writes `PAGE SelectionChanged` and `PAGE EditProperty <name>` to the property page log. This shows whether twinBASIC raises `PropertyPage_EditProperty` when Icon's own "..." opens the page, as VB6 did. New `UI3PropertyPageLog` (UI3Window) for page code to write to that log.
+- Not yet built.
+
 ### 2026-10-19, 1.0.0.41 results and the Icon "..." button
 
 - Shane's 1.0.0.41 test: the disabled Segoe MDL2 preview works, and the Additional Icons tab fits the strip. Picks on the library tabs don't enable Apply, as designed (preview only until pass 5).

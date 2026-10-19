@@ -1,3 +1,6 @@
+### 1.0.0.42
+- New `IconSize` property on UI3Button: the icon's size in DIPs, default 20 (WinUI's standard).
+
 ### 1.0.0.41
 - The icon picker's Gallery tab is now Additional Icons, with its images at the same size as the other tabs' icons. The Segoe MDL2 preview is disabled for icons that font doesn't have.
 

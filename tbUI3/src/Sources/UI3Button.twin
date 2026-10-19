@@ -29,6 +29,7 @@ Public Class UI3Button
     Private m_IconFontName As String
     Private m_IconPosition As UI3IconPosition
     Private m_IconSpacing As Single
+    Private m_IconSize As Single
     Private m_Target As ID2D1DCRenderTarget
 
     Public Property Get Caption() As String
@@ -113,6 +114,18 @@ Public Class UI3Button
         UserControl.Refresh
     End Property
 
+    [Description("Size in DIPs of the square the icon fills. Default 20, WinUI's SymbolIcon size (SymbolIcon.FontSize).")]
+    Public Property Get IconSize() As Single
+        IconSize = m_IconSize
+    End Property
+
+    Public Property Let IconSize(ByVal Value As Single)
+        If Value <= 0 Then Err.Raise 380
+        m_IconSize = Value
+        PropertyChanged "IconSize"
+        UserControl.Refresh
+    End Property
+
     Private Sub UserControl_InitProperties()
         m_Caption = NEW_CONTROL_CAPTION
         m_Style = DEFAULT_STYLE
@@ -121,6 +134,7 @@ Public Class UI3Button
         m_IconFontName = DEFAULT_ICON_FONT_NAME
         m_IconPosition = DEFAULT_ICON_POSITION
         m_IconSpacing = ButtonIconSpacingDefault
+        m_IconSize = SymbolIconDefaultFontSize
     End Sub
 
     Private Sub UserControl_ReadProperties(PropBag As PropertyBag)
@@ -131,6 +145,8 @@ Public Class UI3Button
         m_IconFontName = PropBag.ReadProperty("IconFontName", DEFAULT_ICON_FONT_NAME)
         m_IconPosition = PropBag.ReadProperty("IconPosition", DEFAULT_ICON_POSITION)
         m_IconSpacing = PropBag.ReadProperty("IconSpacing", ButtonIconSpacingDefault)
+        m_IconSize = PropBag.ReadProperty("IconSize", SymbolIconDefaultFontSize)
+        If m_IconSize <= 0 Then m_IconSize = SymbolIconDefaultFontSize
         DesignLog "ReadProperties " & Hex$(ObjPtr(Me)) & " " & DesignName() & " Icon = " & CLng(m_Icon)
         If Not IsUserMode() Then
             If TakePendingIcon(DesignName(), m_Icon) Then PropertyChanged "Icon"
@@ -158,6 +174,7 @@ Public Class UI3Button
         PropBag.WriteProperty "IconFontName", m_IconFontName, DEFAULT_ICON_FONT_NAME
         PropBag.WriteProperty "IconPosition", m_IconPosition, DEFAULT_ICON_POSITION
         PropBag.WriteProperty "IconSpacing", m_IconSpacing, ButtonIconSpacingDefault
+        PropBag.WriteProperty "IconSize", m_IconSize, SymbolIconDefaultFontSize
     End Sub
 
     Private Sub UserControl_Resize()
@@ -291,7 +308,7 @@ Failed:
         Dim glyph As String
         ResolveIconContent glyph, iconFamily
 
-        DrawButtonContent m_Target, m_Caption, glyph, iconFamily, SymbolIconDefaultFontSize, _
+        DrawButtonContent m_Target, m_Caption, glyph, iconFamily, m_IconSize, _
             m_IconPosition, m_IconSpacing, ButtonPaddingLeft, ButtonPaddingTop, _
             w - ButtonPaddingRight, h - ButtonPaddingBottom, foreground
     End Sub

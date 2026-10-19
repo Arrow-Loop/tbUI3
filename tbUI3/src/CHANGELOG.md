@@ -1,3 +1,6 @@
+### 1.0.0.40
+- Fluent icons that don't come in 24 px (many Light icons, for example) are scaled to the same size as the rest of the grid.
+
 ### 1.0.0.39
 - The icon picker's Fluent UI System and Gallery tabs now show the installed icon library in a searchable grid. The Fluent tab has Regular, Filled, Color and Light styles. Picks on these tabs are a preview only for now; Apply still sets only Segoe icons.
 

@@ -662,7 +662,6 @@ Failed:
         Dim accentArgb As Long
         Dim x0 As Single
         Dim x1 As Single
-        Dim doc As ID2D1SvgDocument
 
         available = StyleCardEnabled(Style)
         x0 = m_CardX0(Style)
@@ -714,9 +713,8 @@ Failed:
         End If
 
         If available And m_FluentSelected >= 0 Then
-            Set doc = LibrarySvg(True, IconLibraryFluentEntry(m_FluentSelected, Style), _
-                Style <> ICON_STYLE_COLOR, OleFromArgbOver(textArgb, baseArgb))
-            DrawSvgAt m_ChromeTarget, doc, (x0 + x1 - FLUENT_ICON_DIP) / 2, m_CardY0 + 22
+            DrawFluentIcon True, IconLibraryFluentEntry(m_FluentSelected, Style), _
+                Style <> ICON_STYLE_COLOR, OleFromArgbOver(textArgb, baseArgb), (x0 + x1 - FLUENT_ICON_DIP) / 2, m_CardY0 + 22
         End If
         DrawCenteredTextStyled m_ChromeTarget, FluentStyleName(Style), 10.5!, DWRITE_FONT_WEIGHT_NORMAL, _
             x0 + 2, m_CardY1 - 26, x1 - 2, m_CardY1 - 8, textArgb
@@ -1668,7 +1666,6 @@ Failed:
         Dim restInk As Long
         Dim selectedInk As Long
         Dim recolor As Boolean
-        Dim doc As ID2D1SvgDocument
         Dim bmp As ID2D1Bitmap
 
         dark = IsDarkMode()
@@ -1717,9 +1714,8 @@ Failed:
                 Select Case m_ShownKind
                     Case TAB_FLUENT
                         itemIndex = m_Shown(position)
-                        Set doc = LibrarySvg(False, IconLibraryFluentEntry(itemIndex, m_FluentStyle), recolor, _
-                            IIf(selected, selectedInk, restInk))
-                        DrawSvgAt m_Target, doc, x0 + (cell - FLUENT_ICON_DIP) / 2, y0 + (cell - FLUENT_ICON_DIP) / 2
+                        DrawFluentIcon False, IconLibraryFluentEntry(itemIndex, m_FluentStyle), recolor, _
+                            IIf(selected, selectedInk, restInk), x0 + (cell - FLUENT_ICON_DIP) / 2, y0 + (cell - FLUENT_ICON_DIP) / 2
                     Case TAB_GALLERY
                         itemIndex = m_Shown(position)
                         Set bmp = GalleryBitmap(False, itemIndex)
@@ -1788,6 +1784,23 @@ Failed:
         End If
     End Sub
 
+    ' Draws a Fluent icon in a FLUENT_ICON_DIP square at X, Y. An SVG is made at its own design size
+    ' (12 to 48 px), so sizes other than 24 are scaled to fit the square.
+    Private Sub DrawFluentIcon(ByVal ForChrome As Boolean, ByVal Entry As Long, ByVal Recolor As Boolean, _
+            ByVal InkOle As Long, ByVal X As Single, ByVal Y As Single)
+        Dim doc As ID2D1SvgDocument
+        Dim size As Single
+        Set doc = LibrarySvg(ForChrome, Entry, Recolor, InkOle)
+        If doc Is Nothing Then Exit Sub
+        size = IconLibraryEntrySize(Entry)
+        If size <= 0 Then size = FLUENT_ICON_DIP
+        If ForChrome Then
+            DrawSvgAt m_ChromeTarget, doc, X, Y, FLUENT_ICON_DIP / size
+        Else
+            DrawSvgAt m_Target, doc, X, Y, FLUENT_ICON_DIP / size
+        End If
+    End Sub
+
     ' The SVG document for a library entry, made once per colour and kept until the cache fills.
     Private Function LibrarySvg(ByVal ForChrome As Boolean, ByVal Entry As Long, ByVal Recolor As Boolean, _
             ByVal InkOle As Long) As ID2D1SvgDocument
@@ -1812,9 +1825,9 @@ Failed:
         If IconLibraryEntryBytes(Entry, data) Then
             If Recolor Then RecolorSvg data, key
             If ForChrome Then
-                Set doc = CreateSvgFromBytes(m_ChromeTarget, data, FLUENT_ICON_DIP)
+                Set doc = CreateSvgFromBytes(m_ChromeTarget, data, SvgViewportDip(Entry))
             Else
-                Set doc = CreateSvgFromBytes(m_Target, data, FLUENT_ICON_DIP)
+                Set doc = CreateSvgFromBytes(m_Target, data, SvgViewportDip(Entry))
             End If
         End If
         If doc Is Nothing Then key = "!" & key
@@ -1829,6 +1842,11 @@ Failed:
             m_GridSvgCount = m_GridSvgCount + 1
         End If
         Set LibrarySvg = doc
+    End Function
+
+    Private Function SvgViewportDip(ByVal Entry As Long) As Single
+        SvgViewportDip = IconLibraryEntrySize(Entry)
+        If SvgViewportDip <= 0 Then SvgViewportDip = FLUENT_ICON_DIP
     End Function
 
     Private Function SvgHex(ByVal Ole As Long) As String

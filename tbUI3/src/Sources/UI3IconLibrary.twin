@@ -99,6 +99,7 @@ Private Module UI3IconLibrary
     Private m_EntryCount As Long
     Private m_EntryOffset() As Long
     Private m_EntryLength() As Long
+    Private m_EntrySize() As Long
     Private m_FluentCount As Long
     Private m_FluentId() As String
     Private m_FluentName() As String
@@ -452,6 +453,7 @@ Failed:
         n = UBound(lines)
         ReDim m_EntryOffset(0 To n)
         ReDim m_EntryLength(0 To n)
+        ReDim m_EntrySize(0 To n)
         ReDim m_FluentId(0 To n)
         ReDim m_FluentName(0 To n)
         ReDim m_FluentTags(0 To n)
@@ -469,6 +471,7 @@ Failed:
                     e = m_EntryCount
                     m_EntryOffset(e) = CLng(parts(7))
                     m_EntryLength(e) = CLng(parts(8))
+                    m_EntrySize(e) = CLng(parts(4))
                     m_EntryCount = m_EntryCount + 1
 
                     If parts(0) = "F" Then
@@ -529,6 +532,7 @@ Failed:
         m_GalleryCount = 0
         Erase m_EntryOffset
         Erase m_EntryLength
+        Erase m_EntrySize
         Erase m_FluentId
         Erase m_FluentName
         Erase m_FluentTags
@@ -610,6 +614,12 @@ Failed:
 
     Public Function IconLibraryGalleryWidth(ByVal ImageIndex As Long) As Long
         IconLibraryGalleryWidth = m_GalleryWidth(ImageIndex)
+    End Function
+
+    ' An entry's design size in pixels (a Fluent SVG's size, or a Gallery PNG's width).
+    Public Function IconLibraryEntrySize(ByVal Entry As Long) As Long
+        If Entry < 0 Or Entry >= m_EntryCount Then Exit Function
+        IconLibraryEntrySize = m_EntrySize(Entry)
     End Function
 
     ' The bytes of one entry (an SVG or PNG file), read straight from the installed library.

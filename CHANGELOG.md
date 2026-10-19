@@ -4,6 +4,11 @@ All notable changes to tbUI3. Dates are when the change was made, not released. 
 
 ## Unreleased
 
+### 2026-10-19, Fluent icons scaled to their slot (1.0.0.40, Claude)
+
+- Shane's 1.0.0.39 screenshots: both library tabs work. Install from the Fluent tab switches it to the grid; search, selection, the style cards and Color icons (gradients included) all draw, and the Gallery tab shows its images with name and 72 x 72 px size. One fault: an icon whose chosen file isn't 24 px drew at its own size from the slot's corner. Example: the Light arrow_down, which comes only in larger sizes, drew bigger than its neighbours.
+- 1.0.0.40 makes each SVG at its own design size and scales it to the 24 DIP slot. `IconLibraryEntrySize` is new, and `DrawSvgAt` takes an optional scale. Not yet built.
+
 ### 2026-10-19, Fluent UI System and Gallery grids (1.0.0.39, Claude)
 
 - The Fluent UI System and Gallery tabs now browse the installed icon library in the same grid as the Segoe Fluent tab, with their own search box text and hint. Fluent icons are drawn from their SVG files with Direct2D (`ID2D1DeviceContext5`, Windows 10 1703 or later), at the 24 px size where there is one; the monochrome styles are recoloured to the theme's text colour by swapping their `#212121` fill, and the color style keeps its own colours. Gallery images are decoded with WIC and fitted into 64 DIPs in larger cells.

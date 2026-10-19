@@ -914,20 +914,23 @@ Failed:
         Set CreateSvgFromBytes = Nothing
     End Function
 
-    ' Draws Doc with its top-left corner at X, Y (DIPs).
-    Public Sub DrawSvgAt(ByVal target As ID2D1RenderTarget, ByVal doc As ID2D1SvgDocument, ByVal x As Single, ByVal y As Single)
+    ' Draws Doc with its top-left corner at X, Y (DIPs), scaled by ScaleFactor.
+    Public Sub DrawSvgAt(ByVal target As ID2D1RenderTarget, ByVal doc As ID2D1SvgDocument, ByVal x As Single, ByVal y As Single, _
+            Optional ByVal scaleFactor As Single = 1)
         If doc Is Nothing Then Exit Sub
         On Error Resume Next
         Dim dc As ID2D1DeviceContext5
         Dim m As D2D1_MATRIX_3X2_F
         Set dc = target
         If dc Is Nothing Then Exit Sub
-        m.m11 = 1
-        m.m22 = 1
+        m.m11 = scaleFactor
+        m.m22 = scaleFactor
         m.dx = x
         m.dy = y
         target.SetTransform m
         dc.DrawSvgDocument doc
+        m.m11 = 1
+        m.m22 = 1
         m.dx = 0
         m.dy = 0
         target.SetTransform m

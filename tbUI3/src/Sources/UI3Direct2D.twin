@@ -161,7 +161,8 @@ Private Interface ID2D1DeviceContext5 Extends ID2D1RenderTarget
     Sub DCSlot25()
     Sub DCSlot26()
     Sub DCSlot27()
-    Sub DCSlot28()
+    [PreserveSig]
+    Sub DrawBitmapEx(ByVal bitmap As ID2D1Bitmap, ByRef destinationRectangle As D2D1_RECT_F, ByVal opacity As Single, ByVal interpolationMode As Long, ByVal sourceRectangle As LongPtr, ByVal perspectiveTransform As LongPtr)
     Sub DCSlot29()
     Sub DCSlot30()
     Sub DCSlot31()
@@ -481,6 +482,7 @@ Private Module UI3D2D
     Private Const WICBitmapDitherTypeNone As Long = 0
     Private Const WICBitmapPaletteTypeCustom As Long = 0
     Private Const D2D1_BITMAP_INTERPOLATION_MODE_LINEAR As Long = 1
+    Private Const D2D1_INTERPOLATION_MODE_HIGH_QUALITY_CUBIC As Long = 5
 
     Private Declare PtrSafe Function D2D1CreateFactory Lib "d2d1" (ByVal factoryType As Long, ByRef riid As UI3Guid, ByVal pFactoryOptions As LongPtr, ByRef ppIFactory As ID2D1Factory) As Long
     Private Declare PtrSafe Function DWriteCreateFactory Lib "dwrite" (ByVal factoryType As Long, ByRef iid As UI3Guid, ByRef ppFactory As IDWriteFactory) As Long
@@ -978,7 +980,17 @@ Failed:
         dest.Top = y0
         dest.Right = x1
         dest.Bottom = y1
-        target.DrawBitmap bitmap, dest, 1, D2D1_BITMAP_INTERPOLATION_MODE_LINEAR, 0
+        ' A device context can shrink with high-quality cubic sampling (Windows 8.1 and later), which
+        ' keeps a large image smooth when it is drawn small; linear sampling is the fallback.
+        Dim dc As ID2D1DeviceContext5
+        On Error Resume Next
+        Set dc = target
+        On Error GoTo 0
+        If dc Is Nothing Then
+            target.DrawBitmap bitmap, dest, 1, D2D1_BITMAP_INTERPOLATION_MODE_LINEAR, 0
+        Else
+            dc.DrawBitmapEx bitmap, dest, 1, D2D1_INTERPOLATION_MODE_HIGH_QUALITY_CUBIC, 0, 0
+        End If
     End Sub
 
     Public Sub DrawLeftTextStyled(ByVal target As ID2D1RenderTarget, ByVal caption As String, _

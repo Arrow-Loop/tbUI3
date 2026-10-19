@@ -1,6 +1,6 @@
 # Handoff: tbUI3 state on 2026-10-07
 
-This is written for the next developer or AI session; ChatGPT is expected to run the next several passes. Read `AGENTS.md`, then this file, then `CHANGELOG.md` and `ROADMAP.md`. State at the time of writing: `tbui3-dev`, package version 1.0.0.40, twinBASIC BETA 1012.
+This is written for the next developer or AI session; ChatGPT is expected to run the next several passes. Read `AGENTS.md`, then this file, then `CHANGELOG.md` and `ROADMAP.md`. State at the time of writing: `tbui3-dev`, package version 1.0.0.41, twinBASIC BETA 1012.
 
 ## What tbUI3 is
 
@@ -70,6 +70,7 @@ The decisions are in `docs/2026-10-06-first-pass-report.md` and `docs/2026-10-06
 | 1.0.0.38: immediate search box repaint | Built by Shane: no grey flash, confirmed fixed. Cause: the inner #32770 container's erase. Diagnostic log still on. |
 | 1.0.0.39: Fluent UI System and Gallery grids | Built by Shane: both tabs work, Color SVGs draw; non-24 px icons drew unscaled. Passes 3 and 4: SVG grid with style cards, PNG grid; picks preview only. How the page was built: `docs/PROPERTY_PAGE_GUIDE.md`. |
 | 1.0.0.40: Fluent icons scaled to their slot | Not yet built. |
+| 1.0.0.41: Additional Icons tab, MDL2 preview disabled when the glyph is missing | Not yet built. |
 
 ## Work queue for the next passes (updated 2026-10-07)
 

@@ -4,6 +4,14 @@ All notable changes to tbUI3. Dates are when the change was made, not released. 
 
 ## Unreleased
 
+### 2026-10-19, Additional Icons tab and MDL2 preview (1.0.0.41, Claude)
+
+- Shane's requests on 1.0.0.39:
+  - The Gallery tab is renamed Additional Icons.
+  - Its images now sit in the same 44 DIP cells as the other tabs, shrunk to 24 DIPs. Where Direct2D offers it (a device context, Windows 8.1 and later), they are shrunk with high-quality cubic sampling. The details card still shows the image at its own size.
+  - On the Segoe Fluent tab, the Segoe MDL2 preview card is disabled ("Not in font") for a glyph that only Segoe Fluent Icons has. This uses the catalog's FluentOnly flag, the same one behind "(not in MDL2)". The card no longer draws the font's missing-character box.
+- Not yet built.
+
 ### 2026-10-19, Fluent icons scaled to their slot (1.0.0.40, Claude)
 
 - Shane's 1.0.0.39 screenshots: both library tabs work. Install from the Fluent tab switches it to the grid; search, selection, the style cards and Color icons (gradients included) all draw, and the Gallery tab shows its images with name and 72 x 72 px size. One fault: an icon whose chosen file isn't 24 px drew at its own size from the slot's corner. Example: the Light arrow_down, which comes only in larger sizes, drew bigger than its neighbours.

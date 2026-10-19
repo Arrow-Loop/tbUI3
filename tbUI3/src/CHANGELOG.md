@@ -1,3 +1,6 @@
+### 1.0.0.41
+- The icon picker's Gallery tab is now Additional Icons, with its images at the same size as the other tabs' icons. The Segoe MDL2 preview is disabled for icons that font doesn't have.
+
 ### 1.0.0.40
 - Fluent icons that don't come in 24 px (many Light icons, for example) are scaled to the same size as the rest of the grid.
 

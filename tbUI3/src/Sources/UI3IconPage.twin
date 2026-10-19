@@ -9,7 +9,7 @@ Class UI3IconPage
     ' Direct2D/DirectWrite code as UI3Button. The search box matches a name ("sort"), a search tag
     ' ("hamburger"), or the glyph code in decimal (59595) or hex (E8CB); &H, 0x and U+ prefixes are allowed.
     ' A SelectorBar-style strip across the top switches between the icon sets and Setup, which installs,
-    ' updates and removes the per-PC icon library (UI3IconLibrary). The Fluent UI System and Gallery tabs
+    ' updates and removes the per-PC icon library (UI3IconLibrary). The Fluent UI System and Additional Icons tabs
     ' browse that library in the same grid, drawing its SVG and PNG files with Direct2D. Picking from them
     ' is a preview only until a picked file can be copied into the project.
     ' Designer controls: picChrome (PictureBox background/chrome), txtSearch (native TextBox),
@@ -24,7 +24,7 @@ Class UI3IconPage
     Private Const NONE_ENTRY As Long = -1
     Private Const SEARCH_HINT As String = "Search by name, tag, number, &HE8CB or U+E8CB"
     Private Const FLUENT_SEARCH_HINT As String = "Search Fluent icons by name or tag"
-    Private Const GALLERY_SEARCH_HINT As String = "Search Gallery images by name"
+    Private Const GALLERY_SEARCH_HINT As String = "Search additional icons by name"
     Private Const EM_SETCUEBANNER As Long = &H1501&
     Private Const PAGE_PAD_DIP As Single = 12
     Private Const SEARCH_HEIGHT_DIP As Single = 32
@@ -45,12 +45,11 @@ Class UI3IconPage
     Private Const SCROLLBAR_THUMB_MIN_HEIGHT_DIP As Single = 30
 
     ' Library grids (tbUI3 layout). Fluent icons are drawn at their 24 px design size in the Segoe-sized
-    ' cells. The WinUI Gallery images (mostly 72 px) are fitted into 64 DIPs in larger cells, and shown
+    ' cells, and so are the Additional Icons (the WinUI Gallery's 72 px images, shrunk), which are shown
     ' at their own size in the details card. Monochrome Fluent SVGs are drawn in SVG_INK, which is
     ' swapped for the theme's text colour; the color style keeps its own colours.
     Private Const FLUENT_ICON_DIP As Single = 24
-    Private Const GALLERY_CELL_DIP As Single = 84
-    Private Const GALLERY_IMAGE_DIP As Single = 64
+    Private Const GALLERY_IMAGE_DIP As Single = 24
     Private Const GALLERY_PREVIEW_DIP As Single = 72
     Private Const STYLE_CARD_GAP_DIP As Single = 6
     Private Const STYLE_COUNT As Long = 4
@@ -107,6 +106,7 @@ Class UI3IconPage
     Private m_InfoEnum As String
     Private m_InfoSymbol As String
     Private m_InfoGlyph As String
+    Private m_SelectedFluentOnly As Boolean   ' the selected glyph isn't in Segoe MDL2 Assets
 
     Private m_Tab As Long
     Private m_GridControlsHidden As Boolean
@@ -575,6 +575,28 @@ Failed:
             ByVal title As String, ByVal family As String, ByVal primaryArgb As Long, ByVal secondaryArgb As Long, _
             ByVal fillArgb As Long, ByVal strokeArgb As Long)
         Dim box As D2D1_ROUNDED_RECT
+        Dim installed As Boolean
+        Dim hasGlyph As Boolean
+        Dim statusText As String
+
+        ' A glyph the font doesn't have would draw as the "no character" box, so its card is disabled,
+        ' as the Fluent tab does for a style an icon doesn't come in.
+        installed = FontFamilyExists(family)
+        hasGlyph = installed
+        If installed And m_Selected <> 0 And m_SelectedFluentOnly Then
+            If StrComp(family, "Segoe MDL2 Assets", vbTextCompare) = 0 Then hasGlyph = False
+        End If
+        If Not hasGlyph Then
+            If IsDarkMode() Then
+                fillArgb = DARK_ControlFillColorDisabled
+                primaryArgb = DARK_TextFillColorDisabled
+            Else
+                fillArgb = LIGHT_ControlFillColorDisabled
+                primaryArgb = LIGHT_TextFillColorDisabled
+            End If
+            secondaryArgb = primaryArgb
+        End If
+
         box = RoundedRect(x, y, x + cardW, y + cardH, ControlCornerRadius)
         m_ChromeTarget.FillRoundedRectangle box, SolidBrush(m_ChromeTarget, fillArgb)
         m_ChromeTarget.DrawRoundedRectangle box, SolidBrush(m_ChromeTarget, strokeArgb), 1, 0
@@ -582,10 +604,9 @@ Failed:
         DrawCenteredTextStyled m_ChromeTarget, title, 10.5!, DWRITE_FONT_WEIGHT_SEMI_BOLD, _
             x + 4, y + 4, x + cardW - 4, y + 20, primaryArgb
 
-        Dim installed As Boolean
-        Dim statusText As String
-        installed = FontFamilyExists(family)
-        If installed Then
+        If installed And Not hasGlyph Then
+            statusText = "Not in font"
+        ElseIf installed Then
             If StrComp(SystemIconFontFamily(), family, vbTextCompare) = 0 Then
                 statusText = "Active"
             Else
@@ -595,7 +616,7 @@ Failed:
             statusText = "Unavailable"
         End If
 
-        If installed And m_Selected <> 0 Then
+        If hasGlyph And m_Selected <> 0 Then
             DrawButtonContent m_ChromeTarget, "", SemanticIconGlyph(m_Selected), family, PREVIEW_ICON_SIZE_DIP, _
                 ui3IconLeft, 0, x + 6, y + 20, x + cardW - 6, y + cardH - 20, primaryArgb
         End If
@@ -783,7 +804,7 @@ Failed:
             nameText = "None"
         End If
 
-        DrawLeftTextStyled m_ChromeTarget, "Image preview", 14, DWRITE_FONT_WEIGHT_SEMI_BOLD, _
+        DrawLeftTextStyled m_ChromeTarget, "Icon preview", 14, DWRITE_FONT_WEIGHT_SEMI_BOLD, _
             PAGE_PAD_DIP, infoTop, previewX - 4, infoTop + INFO_HEADING_HEIGHT_DIP, primaryArgb
         DrawInfoField "Name", nameText, PAGE_PAD_DIP, valueX, rowsTop, primaryArgb, secondaryArgb
         DrawInfoField "Size", sizeText, PAGE_PAD_DIP, valueX, rowsTop + INFO_ROW_HEIGHT_DIP, primaryArgb, secondaryArgb
@@ -847,7 +868,7 @@ Failed:
         Select Case Index
             Case TAB_SEGOE: TabCaption = "Segoe Fluent"
             Case TAB_FLUENT: TabCaption = "Fluent UI System"
-            Case TAB_GALLERY: TabCaption = "Gallery"
+            Case TAB_GALLERY: TabCaption = "Additional Icons"
             Case TAB_SETUP: TabCaption = "Setup"
         End Select
     End Function
@@ -1018,7 +1039,7 @@ Failed:
             setName = "Fluent UI System Icons"
             setCount = "21,764 icons in regular, filled, color and light styles."
         Else
-            setName = "WinUI Gallery images"
+            setName = "Additional Icons"
             setCount = "112 control images from the WinUI Gallery."
         End If
 
@@ -1505,14 +1526,6 @@ Failed:
 
     ' --- Grid geometry (DIPs) ---
 
-    Private Function CellDip() As Single
-        If m_ShownKind = TAB_GALLERY Then
-            CellDip = GALLERY_CELL_DIP
-        Else
-            CellDip = CELL_DIP
-        End If
-    End Function
-
     Private Function GridDpi() As Single
         GridDpi = DpiOfDC(picGrid.hDC)
         If GridDpi <= 0 Then GridDpi = 96
@@ -1532,7 +1545,7 @@ Failed:
         Dim h As Single
         GridSizeDips w, h
         w = w - SCROLLBAR_SIZE_DIP
-        Columns = Int(w / CellDip())
+        Columns = Int(w / CELL_DIP)
         If Columns < 1 Then Columns = 1
     End Function
 
@@ -1542,7 +1555,7 @@ Failed:
         Dim contentW As Single
         GridSizeDips w, h
         contentW = w - SCROLLBAR_SIZE_DIP
-        GridOriginX = (contentW - Columns() * CellDip()) / 2
+        GridOriginX = (contentW - Columns() * CELL_DIP) / 2
         If GridOriginX < 0 Then GridOriginX = 0
     End Function
 
@@ -1550,7 +1563,7 @@ Failed:
         Dim w As Single
         Dim h As Single
         GridSizeDips w, h
-        VisibleRows = Int(h / CellDip())
+        VisibleRows = Int(h / CELL_DIP)
         If VisibleRows < 1 Then VisibleRows = 1
     End Function
 
@@ -1682,7 +1695,7 @@ Failed:
         End If
 
         m_Target.Clear ColorFromArgb(baseArgb)
-        cell = CellDip()
+        cell = CELL_DIP
         cols = Columns()
         rows = VisibleRows() + 1
         firstRow = vsbGrid.Value
@@ -2029,7 +2042,7 @@ Failed:
         originX = GridOriginX()
         cols = Columns()
         Dim cell As Single
-        cell = CellDip()
+        cell = CELL_DIP
         If xDip < originX Or xDip >= originX + cols * cell Then Exit Sub
         c = Int((xDip - originX) / cell)
         r = Int(yDip / cell)
@@ -2147,6 +2160,7 @@ Failed:
         Dim i As Long
         Dim name As String
 
+        m_SelectedFluentOnly = False
         If m_Selected = 0 Then
             SetInfoDetails "None", "ui3IconNone", "0", "None"
             Exit Sub
@@ -2157,7 +2171,8 @@ Failed:
         For i = 0 To IconCatalogCount() - 1
             If IconCatalogValue(i) = m_Selected Then
                 name = IconCatalogName(i)
-                If IconCatalogFluentOnly(i) Then glyph = glyph & "  (not in MDL2)"
+                m_SelectedFluentOnly = IconCatalogFluentOnly(i)
+                If m_SelectedFluentOnly Then glyph = glyph & "  (not in MDL2)"
                 Exit For
             End If
         Next

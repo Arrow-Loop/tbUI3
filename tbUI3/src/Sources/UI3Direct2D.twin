@@ -201,7 +201,7 @@ End Interface
 [InterfaceId("00000120-A8F2-4877-BA0A-FD2B6645FB94")]
 [OleAutomation(False)]
 Private Interface IWICBitmapSource Extends stdole.IUnknown
-    Sub Slot00_GetSize()
+    Sub GetSize(ByRef width As Long, ByRef height As Long)
     Sub Slot01_GetPixelFormat()
     Sub Slot02_GetResolution()
     Sub Slot03_CopyPalette()
@@ -633,9 +633,14 @@ Private Module UI3D2D
         target.DrawText StrPtr(text), Len(text), format, layout, brush, D2D1_DRAW_TEXT_OPTIONS_CLIP, DWRITE_MEASURING_MODE_NATURAL
     End Sub
 
+    ' Draws a caption and an icon side by side (or stacked), centred in the box. The icon is a Segoe
+    ' glyph, or Image when it holds one: an image fills an IconFontSize-DIP square and a recolouring
+    ' SVG is drawn in InkArgb (Argb when InkArgb is 0). A glyph keeps its own text-box measurement, so
+    ' glyph buttons draw exactly as before images existed.
     Public Sub DrawButtonContent(ByVal target As ID2D1RenderTarget, ByVal caption As String, ByVal glyph As String, ByVal iconFamily As String, _
             ByVal iconFontSize As Single, ByVal iconPosition As UI3IconPosition, ByVal iconSpacing As Single, _
-            ByVal x0 As Single, ByVal y0 As Single, ByVal x1 As Single, ByVal y1 As Single, ByVal argb As Long)
+            ByVal x0 As Single, ByVal y0 As Single, ByVal x1 As Single, ByVal y1 As Single, ByVal argb As Long, _
+            Optional ByVal image As UI3IconImage, Optional ByVal inkArgb As Long = 0)
         Dim hasText As Boolean
         Dim hasIcon As Boolean
         Dim textW As Single
@@ -647,12 +652,21 @@ Private Module UI3D2D
         Dim totalW As Single
         Dim totalH As Single
 
+        Dim hasImage As Boolean
+
         hasText = (Len(caption) <> 0)
-        hasIcon = (Len(glyph) <> 0)
+        If Not image Is Nothing Then hasImage = image.HasImage
+        hasIcon = hasImage Or (Len(glyph) <> 0)
         If Not hasText And Not hasIcon Then Exit Sub
+        If inkArgb = 0 Then inkArgb = argb
 
         If hasText Then MeasureControlText caption, textW, textH
-        If hasIcon Then MeasureIconText glyph, iconFamily, iconFontSize, iconW, iconH
+        If hasImage Then
+            iconW = iconFontSize
+            iconH = iconFontSize
+        ElseIf hasIcon Then
+            MeasureIconText glyph, iconFamily, iconFontSize, iconW, iconH
+        End If
 
         If hasText And Not hasIcon Then
             DrawCenteredText target, caption, x0, y0, x1, y1, argb
@@ -660,7 +674,7 @@ Private Module UI3D2D
         End If
 
         If hasIcon And Not hasText Then
-            DrawTextWithFormat target, glyph, IconTextFormat(iconFamily, iconFontSize), x0, y0, x1, y1, argb
+            DrawIconPart target, image, hasImage, glyph, iconFamily, iconFontSize, x0, y0, x1, y1, argb, inkArgb
             Exit Sub
         End If
 
@@ -670,22 +684,33 @@ Private Module UI3D2D
             totalH = iconH + iconSpacing + textH
             startY = y0 + ((y1 - y0) - totalH) / 2
             If iconPosition = ui3IconTop Then
-                DrawTextWithFormat target, glyph, IconTextFormat(iconFamily, iconFontSize), x0, startY, x1, startY + iconH, argb
+                DrawIconPart target, image, hasImage, glyph, iconFamily, iconFontSize, x0, startY, x1, startY + iconH, argb, inkArgb
                 DrawTextWithFormat target, caption, ControlTextFormat(), x0, startY + iconH + iconSpacing, x1, startY + totalH, argb
             Else
                 DrawTextWithFormat target, caption, ControlTextFormat(), x0, startY, x1, startY + textH, argb
-                DrawTextWithFormat target, glyph, IconTextFormat(iconFamily, iconFontSize), x0, startY + textH + iconSpacing, x1, startY + totalH, argb
+                DrawIconPart target, image, hasImage, glyph, iconFamily, iconFontSize, x0, startY + textH + iconSpacing, x1, startY + totalH, argb, inkArgb
             End If
         Else
             totalW = iconW + iconSpacing + textW
             startX = x0 + ((x1 - x0) - totalW) / 2
             If iconPosition = ui3IconRight Then
                 DrawTextWithFormat target, caption, ControlTextFormat(), startX, y0, startX + textW, y1, argb
-                DrawTextWithFormat target, glyph, IconTextFormat(iconFamily, iconFontSize), startX + textW + iconSpacing, y0, startX + totalW, y1, argb
+                DrawIconPart target, image, hasImage, glyph, iconFamily, iconFontSize, startX + textW + iconSpacing, y0, startX + totalW, y1, argb, inkArgb
             Else
-                DrawTextWithFormat target, glyph, IconTextFormat(iconFamily, iconFontSize), startX, y0, startX + iconW, y1, argb
+                DrawIconPart target, image, hasImage, glyph, iconFamily, iconFontSize, startX, y0, startX + iconW, y1, argb, inkArgb
                 DrawTextWithFormat target, caption, ControlTextFormat(), startX + iconW + iconSpacing, y0, startX + totalW, y1, argb
             End If
+        End If
+    End Sub
+
+    ' The icon half of DrawButtonContent: Image centred in the box as a Size-DIP square, else the glyph.
+    Private Sub DrawIconPart(ByVal target As ID2D1RenderTarget, ByVal image As UI3IconImage, ByVal hasImage As Boolean, _
+            ByVal glyph As String, ByVal iconFamily As String, ByVal size As Single, _
+            ByVal x0 As Single, ByVal y0 As Single, ByVal x1 As Single, ByVal y1 As Single, ByVal argb As Long, ByVal inkArgb As Long)
+        If hasImage Then
+            image.Draw target, x0 + ((x1 - x0) - size) / 2, y0 + ((y1 - y0) - size) / 2, size, inkArgb
+        Else
+            DrawTextWithFormat target, glyph, IconTextFormat(iconFamily, size), x0, y0, x1, y1, argb
         End If
     End Sub
 
@@ -700,6 +725,20 @@ Private Module UI3D2D
         c.g = ((argb And &HFF00&) \ &H100&) / 255!
         c.b = (argb And &HFF&) / 255!
         ColorFromArgb = c
+    End Function
+
+    ' Top (&HAARRGGBB, any alpha) composited over Bottom, as an opaque &HFFRRGGBB.
+    Public Function ComposeArgb(ByVal top As Long, ByVal bottom As Long) As Long
+        Dim a As Long
+        Dim r As Long
+        Dim g As Long
+        Dim b As Long
+        a = (top And &H7F000000) \ &H1000000
+        If (top And &H80000000) <> 0 Then a = a + 128
+        r = (((top And &HFF0000) \ &H10000) * a + ((bottom And &HFF0000) \ &H10000) * (255 - a) + 127) \ 255
+        g = (((top And &HFF00&) \ &H100&) * a + ((bottom And &HFF00&) \ &H100&) * (255 - a) + 127) \ 255
+        b = ((top And &HFF&) * a + (bottom And &HFF&) * (255 - a) + 127) \ 255
+        ComposeArgb = &HFF000000 Or (r * &H10000) Or (g * &H100&) Or b
     End Function
 
     ' A VB OLE_COLOR (BGR, or a system colour such as vbButtonFace) to an opaque &HAARRGGBB value.
@@ -891,10 +930,11 @@ Private Module UI3D2D
 
     ' --- SVG and PNG images (the icon picker's library tabs) ---
 
-    ' An SVG document sized to SizeDip square, or Nothing when the data does not parse or Direct2D
-    ' has no SVG support (before Windows 10 1703). The document belongs to Target's device.
+    ' An SVG document with a SizeDip by HeightDip viewport (square when HeightDip is left out), or
+    ' Nothing when the data does not parse or Direct2D has no SVG support (before Windows 10 1703).
+    ' The document belongs to Target's device.
     Public Function CreateSvgFromBytes(ByVal target As ID2D1RenderTarget, ByRef data() As Byte, _
-            ByVal sizeDip As Single) As ID2D1SvgDocument
+            ByVal sizeDip As Single, Optional ByVal heightDip As Single = 0) As ID2D1SvgDocument
         On Error GoTo Failed
         Dim dc As ID2D1DeviceContext5
         Dim stream As stdole.IUnknown
@@ -908,6 +948,7 @@ Private Module UI3D2D
         If stream Is Nothing Then Exit Function
         viewport.width = sizeDip
         viewport.height = sizeDip
+        If heightDip > 0 Then viewport.height = heightDip
         UI3CopyMemory packed, viewport, 8
         dc.CreateSvgDocument stream, packed, doc
         Set CreateSvgFromBytes = doc
@@ -950,7 +991,9 @@ Failed:
     End Function
 
     ' A Direct2D bitmap from PNG (or any WIC-readable) bytes, or Nothing when it cannot be decoded.
-    Public Function CreateBitmapFromImageBytes(ByVal target As ID2D1RenderTarget, ByRef data() As Byte) As ID2D1Bitmap
+    ' PixelW and PixelH receive the image's size in pixels.
+    Public Function CreateBitmapFromImageBytes(ByVal target As ID2D1RenderTarget, ByRef data() As Byte, _
+            Optional ByRef pixelW As Long, Optional ByRef pixelH As Long) As ID2D1Bitmap
         On Error GoTo Failed
         Dim stream As stdole.IUnknown
         Dim decoder As IWICBitmapDecoder
@@ -963,6 +1006,7 @@ Failed:
         If stream Is Nothing Then Exit Function
         Set decoder = m_WicFactory.CreateDecoderFromStream(stream, 0, WICDecodeMetadataCacheOnDemand)
         Set frame = decoder.GetFrame(0)
+        frame.GetSize pixelW, pixelH
         Set converter = m_WicFactory.CreateFormatConverter()
         pbgra = GuidFromString(GUID_WICPixelFormat32bppPBGRA)
         If converter.Initialize(frame, pbgra, WICBitmapDitherTypeNone, 0, 0#, WICBitmapPaletteTypeCustom) < 0 Then Exit Function

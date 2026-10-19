@@ -1,0 +1,353 @@
+' A control's stored icon image: an SVG or a bitmap file (PNG and anything else WIC decodes) kept as
+' the file's own bytes, so a built app draws it without the tbUI3 icon library. Every tbUI3 control
+' with icon properties keeps one of these (pass 5, docs/2026-10-19-pass5-icon-system-plan.md).
+'
+' An SVG that uses the Fluent icons' ink (#212121) or currentColor is drawn in the control's text
+' colour; any other SVG, and every bitmap, keeps its own colours. Direct2D resources belong to the
+' render target that made them, so the control calls ReleaseDeviceResources when it makes a new one.
+' SVG drawing needs Windows 10 1703 or later; before that an SVG draws nothing.
+
+Private Class UI3IconImage
+
+    Private Const SVG_INK As String = "#212121"
+    Private Const SVG_CURRENT_COLOR As String = "currentColor"
+
+    Private m_Data() As Byte
+    Private m_HasData As Boolean
+    Private m_IsSvg As Boolean
+    Private m_Recolors As Boolean
+    Private m_Source As String
+    Private m_SvgW As Single
+    Private m_SvgH As Single
+
+    Private m_Svg As ID2D1SvgDocument
+    Private m_SvgKey As String
+    Private m_Bitmap As ID2D1Bitmap
+    Private m_BitmapTried As Boolean
+    Private m_PixelW As Long
+    Private m_PixelH As Long
+
+    ' Stores a copy of Data. Returns False, keeping the previous image, when Data is neither an SVG
+    ' nor a bitmap format WIC recognises by its signature.
+    Public Function SetData(ByRef Data() As Byte, ByVal Source As String) As Boolean
+        Dim n As Long
+        Dim isSvg As Boolean
+        On Error GoTo Failed
+        n = UBound(Data) - LBound(Data) + 1
+        If n < 4 Then Exit Function
+        If IsBitmapSignature(Data) Then
+            isSvg = False
+        ElseIf ContainsAscii(Data, "<svg") Then
+            isSvg = True
+        Else
+            Exit Function
+        End If
+
+        ReleaseDeviceResources
+        ReDim m_Data(0 To n - 1)
+        Dim i As Long
+        For i = 0 To n - 1
+            m_Data(i) = Data(LBound(Data) + i)
+        Next
+        m_HasData = True
+        m_IsSvg = isSvg
+        m_Source = Source
+        m_PixelW = 0
+        m_PixelH = 0
+        If isSvg Then
+            m_Recolors = ContainsAscii(m_Data, SVG_INK) Or ContainsAscii(m_Data, SVG_CURRENT_COLOR)
+            ReadSvgSize
+        Else
+            m_Recolors = False
+        End If
+        SetData = True
+        Exit Function
+Failed:
+        SetData = False
+    End Function
+
+    Public Sub Clear()
+        ReleaseDeviceResources
+        Erase m_Data
+        m_HasData = False
+        m_IsSvg = False
+        m_Recolors = False
+        m_Source = ""
+    End Sub
+
+    Public Property Get HasImage() As Boolean
+        HasImage = m_HasData
+    End Property
+
+    Public Property Get IsSvg() As Boolean
+        IsSvg = m_IsSvg
+    End Property
+
+    Public Property Get Source() As String
+        Source = m_Source
+    End Property
+
+    ' A copy of the stored file, or an empty array.
+    Public Function GetData() As Byte()
+        Dim none() As Byte
+        If m_HasData Then GetData = m_Data Else GetData = none
+    End Function
+
+    Public Function ByteCount() As Long
+        If m_HasData Then ByteCount = UBound(m_Data) + 1
+    End Function
+
+    Public Sub ReleaseDeviceResources()
+        Set m_Svg = Nothing
+        m_SvgKey = ""
+        Set m_Bitmap = Nothing
+        m_BitmapTried = False
+    End Sub
+
+    ' Draws the image to fill a Size-DIP square at X, Y (keeping its proportions, centred).
+    ' InkArgb is the opaque colour a recolouring SVG is drawn in.
+    Public Sub Draw(ByVal Target As ID2D1RenderTarget, ByVal X As Single, ByVal Y As Single, ByVal Size As Single, _
+            ByVal InkArgb As Long)
+        If Not m_HasData Or Size <= 0 Then Exit Sub
+        On Error Resume Next
+        If m_IsSvg Then
+            DrawSvg Target, X, Y, Size, InkArgb
+        Else
+            DrawBitmapImage Target, X, Y, Size
+        End If
+    End Sub
+
+    Private Sub DrawSvg(ByVal Target As ID2D1RenderTarget, ByVal X As Single, ByVal Y As Single, ByVal Size As Single, _
+            ByVal InkArgb As Long)
+        Dim key As String
+        Dim data() As Byte
+        Dim longest As Single
+        Dim factor As Single
+
+        If m_Recolors Then key = HexColor(InkArgb) Else key = "-"
+        If key <> m_SvgKey Then
+            m_SvgKey = key
+            Set m_Svg = Nothing
+            If m_Recolors Then
+                data = ReplaceAscii(m_Data, SVG_INK, key)
+                data = ReplaceAscii(data, SVG_CURRENT_COLOR, key)
+            Else
+                data = m_Data
+            End If
+            Set m_Svg = CreateSvgFromBytes(Target, data, m_SvgW, m_SvgH)
+        End If
+        If m_Svg Is Nothing Then Exit Sub
+
+        longest = m_SvgW
+        If m_SvgH > longest Then longest = m_SvgH
+        If longest <= 0 Then Exit Sub
+        factor = Size / longest
+        DrawSvgAt Target, m_Svg, X + (Size - m_SvgW * factor) / 2, Y + (Size - m_SvgH * factor) / 2, factor
+    End Sub
+
+    Private Sub DrawBitmapImage(ByVal Target As ID2D1RenderTarget, ByVal X As Single, ByVal Y As Single, ByVal Size As Single)
+        Dim w As Single
+        Dim h As Single
+        Dim factor As Single
+        If Not m_BitmapTried Then
+            m_BitmapTried = True
+            Set m_Bitmap = CreateBitmapFromImageBytes(Target, m_Data, m_PixelW, m_PixelH)
+        End If
+        If m_Bitmap Is Nothing Then Exit Sub
+        w = m_PixelW
+        h = m_PixelH
+        If w <= 0 Or h <= 0 Then
+            w = Size
+            h = Size
+        End If
+        factor = Size / w
+        If Size / h < factor Then factor = Size / h
+        DrawBitmapIn Target, m_Bitmap, X + (Size - w * factor) / 2, Y + (Size - h * factor) / 2, _
+            X + (Size + w * factor) / 2, Y + (Size + h * factor) / 2
+    End Sub
+
+    ' The SVG's own size from its root viewBox, else its width and height; 24 when neither is readable.
+    Private Sub ReadSvgSize()
+        Dim head As String
+        Dim i As Long
+        Dim n As Long
+        Dim tagEnd As Long
+        Dim parts() As String
+        Dim box As String
+
+        m_SvgW = 0
+        m_SvgH = 0
+        n = UBound(m_Data)
+        If n > 2047 Then n = 2047
+        For i = 0 To n
+            If m_Data(i) >= 32 And m_Data(i) < 127 Then head = head & Chr$(m_Data(i)) Else head = head & " "
+        Next
+        i = InStr(1, head, "<svg", vbTextCompare)
+        If i = 0 Then GoTo Fallback
+        tagEnd = InStr(i, head, ">")
+        If tagEnd = 0 Then tagEnd = Len(head)
+        head = Mid$(head, i, tagEnd - i + 1)
+
+        box = AttributeValue(head, "viewBox")
+        If Len(box) > 0 Then
+            parts = Split(SqueezeSpaces(Replace(box, ",", " ")), " ")
+            If UBound(parts) >= 3 Then
+                m_SvgW = NumberOf(parts(2))
+                m_SvgH = NumberOf(parts(3))
+            End If
+        End If
+        If m_SvgW <= 0 Or m_SvgH <= 0 Then
+            m_SvgW = NumberOf(AttributeValue(head, "width"))
+            m_SvgH = NumberOf(AttributeValue(head, "height"))
+        End If
+Fallback:
+        If m_SvgW <= 0 Or m_SvgH <= 0 Then
+            m_SvgW = 24
+            m_SvgH = 24
+        End If
+    End Sub
+
+    ' The value of Name="..." (or '...') in a start tag, or "".
+    Private Function AttributeValue(ByVal Tag As String, ByVal Name As String) As String
+        Dim i As Long
+        Dim q As String
+        Dim j As Long
+        i = 1
+        Do
+            i = InStr(i, Tag, Name & "=", vbTextCompare)
+            If i = 0 Then Exit Function
+            ' Skip a match inside a longer name (for example stroke-width).
+            If i = 1 Then Exit Do
+            If Mid$(Tag, i - 1, 1) = " " Then Exit Do
+            i = i + 1
+        Loop
+        i = i + Len(Name) + 1
+        q = Mid$(Tag, i, 1)
+        If q <> Chr(34) And q <> "'" Then Exit Function
+        j = InStr(i + 1, Tag, q)
+        If j = 0 Then Exit Function
+        AttributeValue = Mid$(Tag, i + 1, j - i - 1)
+    End Function
+
+    ' Leading number of Text ("24", "24px", "1.5e1"), read with a dot as the decimal separator.
+    Private Function NumberOf(ByVal Text As String) As Single
+        Dim i As Long
+        Dim c As String
+        Text = Trim$(Text)
+        For i = 1 To Len(Text)
+            c = Mid$(Text, i, 1)
+            If InStr("0123456789.-+eE", c) = 0 Then Exit For
+        Next
+        Text = Left$(Text, i - 1)
+        If Len(Text) = 0 Then Exit Function
+        On Error Resume Next
+        NumberOf = CSng(Val(Text))
+    End Function
+
+    Private Function SqueezeSpaces(ByVal Text As String) As String
+        Text = Trim$(Replace(Replace(Replace(Text, vbTab, " "), vbCr, " "), vbLf, " "))
+        Do While InStr(Text, "  ") > 0
+            Text = Replace(Text, "  ", " ")
+        Loop
+        SqueezeSpaces = Text
+    End Function
+
+    ' PNG, JPEG, GIF, BMP, ICO and TIFF, by their first bytes.
+    Private Function IsBitmapSignature(ByRef Data() As Byte) As Boolean
+        Dim b0 As Long
+        Dim b1 As Long
+        Dim b2 As Long
+        Dim b3 As Long
+        b0 = Data(LBound(Data))
+        b1 = Data(LBound(Data) + 1)
+        b2 = Data(LBound(Data) + 2)
+        b3 = Data(LBound(Data) + 3)
+        If b0 = &H89 And b1 = &H50 And b2 = &H4E And b3 = &H47 Then IsBitmapSignature = True   ' PNG
+        If b0 = &HFF And b1 = &HD8 Then IsBitmapSignature = True                              ' JPEG
+        If b0 = &H47 And b1 = &H49 And b2 = &H46 Then IsBitmapSignature = True                ' GIF
+        If b0 = &H42 And b1 = &H4D Then IsBitmapSignature = True                              ' BMP
+        If b0 = 0 And b1 = 0 And b2 = 1 And b3 = 0 Then IsBitmapSignature = True              ' ICO
+        If b0 = &H49 And b1 = &H49 And b2 = &H2A And b3 = 0 Then IsBitmapSignature = True     ' TIFF (Intel)
+        If b0 = &H4D And b1 = &H4D And b2 = 0 And b3 = &H2A Then IsBitmapSignature = True     ' TIFF (Motorola)
+    End Function
+
+    Private Function ContainsAscii(ByRef Data() As Byte, ByVal Text As String) As Boolean
+        ContainsAscii = (FindAscii(Data, Text, LBound(Data)) >= 0)
+    End Function
+
+    ' Index of the first case-insensitive match of an ASCII Text at or after Start, or -1.
+    Private Function FindAscii(ByRef Data() As Byte, ByVal Text As String, ByVal Start As Long) As Long
+        Dim i As Long
+        Dim j As Long
+        Dim n As Long
+        Dim last As Long
+        Dim c As Long
+        Dim t As Long
+        FindAscii = -1
+        n = Len(Text)
+        last = UBound(Data) - n + 1
+        For i = Start To last
+            For j = 0 To n - 1
+                c = Data(i + j)
+                t = Asc(Mid$(Text, j + 1, 1))
+                If c >= 65 And c <= 90 Then c = c + 32
+                If t >= 65 And t <= 90 Then t = t + 32
+                If c <> t Then Exit For
+            Next
+            If j = n Then
+                FindAscii = i
+                Exit Function
+            End If
+        Next
+    End Function
+
+    ' A copy of Data with every case-insensitive Find replaced by Replacement (both ASCII).
+    Private Function ReplaceAscii(ByRef Data() As Byte, ByVal Find As String, ByVal Replacement As String) As Byte()
+        Dim result() As Byte
+        Dim count As Long
+        Dim i As Long
+        Dim hit As Long
+        Dim outLen As Long
+        Dim o As Long
+        Dim j As Long
+
+        i = LBound(Data)
+        Do
+            hit = FindAscii(Data, Find, i)
+            If hit < 0 Then Exit Do
+            count = count + 1
+            i = hit + Len(Find)
+        Loop
+        If count = 0 Then
+            ReplaceAscii = Data
+            Exit Function
+        End If
+
+        outLen = (UBound(Data) - LBound(Data) + 1) + count * (Len(Replacement) - Len(Find))
+        ReDim result(0 To outLen - 1)
+        i = LBound(Data)
+        Do
+            hit = FindAscii(Data, Find, i)
+            If hit < 0 Then hit = UBound(Data) + 1
+            Do While i < hit
+                result(o) = Data(i)
+                o = o + 1
+                i = i + 1
+            Loop
+            If hit > UBound(Data) Then Exit Do
+            For j = 1 To Len(Replacement)
+                result(o) = Asc(Mid$(Replacement, j, 1))
+                o = o + 1
+            Next
+            i = hit + Len(Find)
+        Loop
+        ReplaceAscii = result
+    End Function
+
+    Private Function HexColor(ByVal Argb As Long) As String
+        HexColor = "#" & Right$("0" & Hex$((Argb And &HFF0000) \ &H10000), 2) & _
+            Right$("0" & Hex$((Argb And &HFF00&) \ &H100&), 2) & _
+            Right$("0" & Hex$(Argb And &HFF&), 2)
+    End Function
+
+End Class

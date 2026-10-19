@@ -1,3 +1,6 @@
+### 1.0.0.43
+- UI3Button can show an SVG or image icon: `LoadIconFile`, `LoadIcon` (bytes, for example from `LoadResData`), `IconData` to copy one button's icon to another, and read-only `IconSource`. The icon is saved with the form. Monochrome SVGs take the button's text colour.
+
 ### 1.0.0.42
 - New `IconSize` property on UI3Button: the icon's size in DIPs, default 20 (WinUI's standard).
 

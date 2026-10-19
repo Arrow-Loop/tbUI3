@@ -30,6 +30,8 @@ Public Class UI3Button
     Private m_IconPosition As UI3IconPosition
     Private m_IconSpacing As Single
     Private m_IconSize As Single
+    ' A stored SVG or bitmap icon (IconData). When it holds one, Icon is None and IconGlyph is empty.
+    Private m_IconImage As New UI3IconImage
     Private m_Target As ID2D1DCRenderTarget
 
     Public Property Get Caption() As String
@@ -62,6 +64,7 @@ Public Class UI3Button
 
     Public Property Let Icon(ByVal Value As UI3Icon)
         m_Icon = Value
+        ClearIconImage
         If IconPageApplying Then SetPendingIcon DesignName(), Value
         DesignLog "Let Icon " & Hex$(ObjPtr(Me)) & " " & DesignName() & " = " & CLng(Value) & IIf(IconPageApplying, " (from page)", "")
         PropertyChanged "Icon"
@@ -75,6 +78,7 @@ Public Class UI3Button
 
     Public Property Let IconGlyph(ByVal Value As String)
         m_IconGlyph = Value
+        If Len(Value) <> 0 Then ClearIconImage
         PropertyChanged "IconGlyph"
         UserControl.Refresh
     End Property
@@ -126,6 +130,95 @@ Public Class UI3Button
         UserControl.Refresh
     End Property
 
+    ' The stored icon file (an SVG, or a PNG or other image) as a Byte array in a Variant, or Empty.
+    ' Assigning another control's IconData copies its icon; assigning Empty or an empty array removes it.
+    [Description("The stored SVG or image icon's file bytes. Assign another control's IconData to copy its icon. Set it with LoadIcon or LoadIconFile.")]
+    Public Property Get IconData() As Variant
+        If m_IconImage.HasImage Then IconData = m_IconImage.GetData() Else IconData = Empty
+    End Property
+
+    Public Property Let IconData(ByVal Value As Variant)
+        Dim data() As Byte
+        If IsEmpty(Value) Then
+            ClearIconImage
+            UserControl.Refresh
+            Exit Property
+        End If
+        If Not IsArray(Value) Then Err.Raise 380
+        data = Value
+        If ByteArrayLength(data) = 0 Then
+            ClearIconImage
+            UserControl.Refresh
+            Exit Property
+        End If
+        StoreIconImage data, ""
+    End Property
+
+    [Description("Read-only name of the stored SVG or image icon, such as file:save.svg. Empty when the icon is Icon or IconGlyph.")]
+    Public Property Get IconSource() As String
+        If Not m_IconImage.HasImage Then Exit Property
+        IconSource = m_IconImage.Source
+        If Len(IconSource) = 0 Then IconSource = IIf(m_IconImage.IsSvg, "(SVG)", "(image)")
+    End Property
+
+    ' Stores an SVG, PNG or other image file's bytes as the icon, for example from LoadResData.
+    ' Name is shown as IconSource. Raises error 380 when Data is not a recognised image.
+    [Description("Stores SVG or image file bytes (for example from LoadResData) as the icon. Name is shown as IconSource.")]
+    Public Sub LoadIcon(ByRef Data() As Byte, Optional ByVal Name As String = "")
+        StoreIconImage Data, Name
+    End Sub
+
+    ' Stores an SVG, PNG or other image file as the icon. IconSource becomes file:<file name>.
+    [Description("Stores an SVG or image file as the icon. IconSource becomes file:<file name>.")]
+    Public Sub LoadIconFile(ByVal Path As String)
+        Dim data() As Byte
+        Dim f As Integer
+        Dim n As Long
+        Dim fileName As String
+
+        f = FreeFile
+        Open Path For Binary Access Read As #f
+        n = LOF(f)
+        If n > 0 Then
+            ReDim data(0 To n - 1)
+            Get #f, , data
+        End If
+        Close #f
+        If n = 0 Then Err.Raise 380
+
+        fileName = Mid$(Path, InStrRev(Path, "\") + 1)
+        fileName = Mid$(fileName, InStrRev(fileName, "/") + 1)
+        StoreIconImage data, "file:" & fileName
+    End Sub
+
+    ' The last icon set wins: a stored image replaces Icon and IconGlyph.
+    Private Sub StoreIconImage(ByRef Data() As Byte, ByVal Source As String)
+        If Not m_IconImage.SetData(Data, Source) Then Err.Raise 380
+        If m_Icon <> ui3IconNone Then
+            m_Icon = ui3IconNone
+            PropertyChanged "Icon"
+        End If
+        If Len(m_IconGlyph) <> 0 Then
+            m_IconGlyph = ""
+            PropertyChanged "IconGlyph"
+        End If
+        PropertyChanged "IconData"
+        PropertyChanged "IconSource"
+        UserControl.Refresh
+    End Sub
+
+    Private Sub ClearIconImage()
+        If Not m_IconImage.HasImage Then Exit Sub
+        m_IconImage.Clear
+        PropertyChanged "IconData"
+        PropertyChanged "IconSource"
+    End Sub
+
+    Private Function ByteArrayLength(ByRef Data() As Byte) As Long
+        On Error Resume Next
+        ByteArrayLength = UBound(Data) - LBound(Data) + 1
+    End Function
+
     Private Sub UserControl_InitProperties()
         m_Caption = NEW_CONTROL_CAPTION
         m_Style = DEFAULT_STYLE
@@ -135,6 +228,7 @@ Public Class UI3Button
         m_IconPosition = DEFAULT_ICON_POSITION
         m_IconSpacing = ButtonIconSpacingDefault
         m_IconSize = SymbolIconDefaultFontSize
+        m_IconImage.Clear
     End Sub
 
     Private Sub UserControl_ReadProperties(PropBag As PropertyBag)
@@ -147,10 +241,25 @@ Public Class UI3Button
         m_IconSpacing = PropBag.ReadProperty("IconSpacing", ButtonIconSpacingDefault)
         m_IconSize = PropBag.ReadProperty("IconSize", SymbolIconDefaultFontSize)
         If m_IconSize <= 0 Then m_IconSize = SymbolIconDefaultFontSize
+        ReadIconImage PropBag
         DesignLog "ReadProperties " & Hex$(ObjPtr(Me)) & " " & DesignName() & " Icon = " & CLng(m_Icon)
         If Not IsUserMode() Then
-            If TakePendingIcon(DesignName(), m_Icon) Then PropertyChanged "Icon"
+            If TakePendingIcon(DesignName(), m_Icon) Then
+                PropertyChanged "Icon"
+                ClearIconImage
+            End If
         End If
+    End Sub
+
+    Private Sub ReadIconImage(ByVal PropBag As PropertyBag)
+        Dim stored As Variant
+        Dim data() As Byte
+        m_IconImage.Clear
+        stored = PropBag.ReadProperty("IconData", Empty)
+        If Not IsArray(stored) Then Exit Sub
+        data = stored
+        If ByteArrayLength(data) = 0 Then Exit Sub
+        m_IconImage.SetData data, PropBag.ReadProperty("IconSource", "")
     End Sub
 
     ' Design-time name of this control, for the UI3IconPage designer bridge (see UI3Icons).
@@ -175,6 +284,10 @@ Public Class UI3Button
         PropBag.WriteProperty "IconPosition", m_IconPosition, DEFAULT_ICON_POSITION
         PropBag.WriteProperty "IconSpacing", m_IconSpacing, ButtonIconSpacingDefault
         PropBag.WriteProperty "IconSize", m_IconSize, SymbolIconDefaultFontSize
+        If m_IconImage.HasImage Then
+            PropBag.WriteProperty "IconData", m_IconImage.GetData()
+            PropBag.WriteProperty "IconSource", m_IconImage.Source, ""
+        End If
     End Sub
 
     Private Sub UserControl_Resize()
@@ -211,7 +324,10 @@ Public Class UI3Button
         UI3GetClientRect UserControl.hWnd, client
         If client.Right <= 0 Or client.Bottom <= 0 Then Exit Function
 
-        If m_Target Is Nothing Then Set m_Target = CreateDCTarget()
+        If m_Target Is Nothing Then
+            Set m_Target = CreateDCTarget()
+            m_IconImage.ReleaseDeviceResources
+        End If
         dpi = DpiOfDC(hdc)
         m_Target.SetDpi dpi, dpi
         m_Target.BindDC hdc, client
@@ -306,18 +422,23 @@ Failed:
 
         Dim iconFamily As String
         Dim glyph As String
+        Dim ink As Long
         ResolveIconContent glyph, iconFamily
+        ' A recolouring SVG takes the text colour, made opaque over the button's own fill.
+        ink = ComposeArgb(foreground, ComposeArgb(fill, ArgbFromOleColor(ContainerBackColor())))
 
         DrawButtonContent m_Target, m_Caption, glyph, iconFamily, m_IconSize, _
             m_IconPosition, m_IconSpacing, ButtonPaddingLeft, ButtonPaddingTop, _
-            w - ButtonPaddingRight, h - ButtonPaddingBottom, foreground
+            w - ButtonPaddingRight, h - ButtonPaddingBottom, foreground, m_IconImage, ink
     End Sub
 
     Private Sub ResolveIconContent(ByRef Glyph As String, ByRef FontFamily As String)
         Glyph = ""
         FontFamily = ""
 
-        If Len(m_IconGlyph) <> 0 Then
+        If m_IconImage.HasImage Then
+            Exit Sub
+        ElseIf Len(m_IconGlyph) <> 0 Then
             Glyph = m_IconGlyph
             FontFamily = m_IconFontName
             If Len(FontFamily) = 0 Then FontFamily = SystemIconFontFamily()

@@ -1,6 +1,6 @@
 # Handoff: tbUI3 state on 2026-10-07
 
-This is written for the next developer or AI session; ChatGPT is expected to run the next several passes. Read `AGENTS.md`, then this file, then `CHANGELOG.md` and `ROADMAP.md`. State at the time of writing: `tbui3-dev`, package version 1.0.0.42, twinBASIC BETA 1012.
+This is written for the next developer or AI session; ChatGPT is expected to run the next several passes. Read `AGENTS.md`, then this file, then `CHANGELOG.md` and `ROADMAP.md`. State at the time of writing: `tbui3-dev`, package version 1.0.0.43, twinBASIC BETA 1012.
 
 ## What tbUI3 is
 
@@ -72,6 +72,7 @@ The decisions are in `docs/2026-10-06-first-pass-report.md` and `docs/2026-10-06
 | 1.0.0.40: Fluent icons scaled to their slot | Not yet built. |
 | 1.0.0.40 and 1.0.0.41: icon scaling, Additional Icons tab, MDL2 preview disabled when the glyph is missing | Built by Shane: all work. Icon's own "..." works from BETA 1008 (confirmed in 1012). |
 | 1.0.0.42: pass 5a, IconSize and the EditProperty log | Built by Shane: IconSize works; `PropertyPage_EditProperty` is raised with "Icon". Pass 5 plan: `docs/2026-10-19-pass5-icon-system-plan.md`. |
+| 1.0.0.43: pass 5b, stored SVG and image icons | Not yet built. `UI3IconImage`; UI3Button `IconData`, `IconSource`, `LoadIcon`, `LoadIconFile`. |
 
 ## Work queue for the next passes (updated 2026-10-07)
 

@@ -4,6 +4,14 @@ All notable changes to tbUI3. Dates are when the change was made, not released. 
 
 ## Unreleased
 
+### 2026-10-19, pass 5b: stored SVG and image icons (1.0.0.43, Claude)
+
+- New private `UI3IconImage` class: holds an icon file's own bytes (SVG, or PNG, JPEG, GIF, BMP, ICO or TIFF, recognised by their first bytes) and draws it to fill a square with Direct2D. An SVG that uses the Fluent ink `#212121` or `currentColor` is drawn in the control's text colour; other SVGs and all bitmaps keep their own colours. This replaces the plan's `Recolor` parameter with detection. Bitmaps are scaled with high-quality cubic sampling where available.
+- UI3Button: new `IconData` (the file bytes, as a Byte array in a Variant, so `Button1.IconData = Button2.IconData` copies an icon and `Empty` removes it), read-only `IconSource` (`file:<name>`, the name given to `LoadIcon`, or `(SVG)`/`(image)` after a copy), `LoadIcon(Data, Optional Name)` and `LoadIconFile(Path)`. Unrecognised data raises error 380. The last icon set wins: storing an image clears `Icon` and `IconGlyph`, and setting either (or a picker Apply) clears the image. `IconData` and `IconSource` are saved with the form only when there is an image.
+- `DrawButtonContent` takes an optional image and ink colour. An image fills the IconSize square and sits beside or above the caption as a glyph does. Segoe glyphs keep their own text-box measurement, so existing buttons don't move.
+- UI3Direct2D: `ComposeArgb`; `CreateSvgFromBytes` takes a height for non-square SVGs; `CreateBitmapFromImageBytes` returns the pixel size.
+- Not yet built.
+
 ### 2026-10-19, pass 5a result
 
 - Shane's 1.0.0.42 test: IconSize works (sizes, save and reopen) and looks right to Shane. The log shows `PAGE EditProperty Icon` each time the page was opened from Icon's own "...". So twinBASIC raises `PropertyPage_EditProperty` with the property's name, as VB6 did, and a control with two icon properties can share the picker. The log also shows the known hidden second page instance (a TextBox at the designer position, never visible).

@@ -1,6 +1,6 @@
 # Pass 5 plan: one icon system for every control
 
-Status: **approved by Shane on 2026-10-19.** Build 5a is written in 1.0.0.42.
+Status: **approved by Shane on 2026-10-19.** Build 5a is in 1.0.0.42 (validated); 5b is written in 1.0.0.43.
 Written 2026-10-19, from the decisions recorded in ROADMAP.md that day.
 
 ## Goal
@@ -37,20 +37,22 @@ These are the properties and methods every icon-capable control implements, with
 | `Icon` | `UI3Icon`, read/write | Exists today. Setting it clears any stored icon. |
 | `IconGlyph`, `IconFontName` | String, read/write | Exist today (a custom glyph). Setting `IconGlyph` clears any stored icon. |
 | `IconSize` | Single, read/write | New. Default 20. Applies to every kind of icon. |
-| `IconData` | Byte array, read/write | New. The stored SVG or PNG file. Assigning it from another control copies the icon. Empty means no stored icon. Hidden from the Properties pane if twinBASIC allows it (to check). |
+| `IconData` | Variant holding a Byte array, read/write | New. The stored SVG or PNG file. Assigning it from another control copies the icon. Empty means no stored icon. A Variant so that copying and clearing need no array plumbing in the caller. Hidden from the Properties pane if it misbehaves there (to check in 5b). |
 | `IconSource` | String, read-only | New. The readable name shown in the Properties pane, for example `ic_fluent_arrow_down_20_regular`, `gallery_Acrylic`, or `file:save.svg`. |
-| `LoadIcon(Data() As Byte, Optional Name As String, Optional Recolor As Boolean = True)` | Method | New. Stores an SVG or PNG from bytes, for example from `LoadResData` in the app's own resources. `Recolor` only affects SVGs. |
-| `LoadIconFile(Path As String, Optional Recolor As Boolean = True)` | Method | New. The same, from a file. `IconSource` becomes `file:<name>`. |
+| `LoadIcon(Data() As Byte, Optional Name As String)` | Method | New. Stores an SVG or PNG from bytes, for example from `LoadResData` in the app's own resources. |
+| `LoadIconFile(Path As String)` | Method | New. The same, from a file. `IconSource` becomes `file:<name>`. |
 
-Saved with the form: `IconData`, `IconSource` and `IconRecolor` (whether a monochrome SVG takes the text colour; False for the Fluent Color style and for PNGs).
+Saved with the form: `IconData` and `IconSource`.
+
+Recolouring (changed in 5b): there is no `Recolor` flag. An SVG that uses the Fluent ink `#212121` or `currentColor` takes the text colour; every other SVG (including the Fluent Color style) and every bitmap keeps its own colours.
 
 Precedence rule: the last icon set wins and clears the others. That means setting `Icon`, `IconGlyph`, `IconData`, or calling `LoadIcon`.
 
 ## Shared code
 
-- **New `UI3IconImage` class.** It holds the bytes, the kind (SVG or PNG, recognised from the first bytes), whether to recolour, and per-render-target caches (an SVG document per colour, a bitmap). Every control keeps one instance. Its drawing code comes from the picker's library tabs (1.0.0.39 to 1.0.0.41), moved here rather than copied.
+- **New `UI3IconImage` class.** It holds the bytes, the kind (SVG or PNG, recognised from the first bytes), whether to recolour, and per-render-target caches (an SVG document per colour, a bitmap). Every control keeps one instance. Its drawing code comes from the picker's library tabs (1.0.0.39 to 1.0.0.41), moved here rather than copied. (5b: the class is written with its own drawing; the picker's tabs still use their own code and move onto it in 5c, when the picker draws the current pick.)
 - **Content layout.** `DrawButtonContent` (UI3Direct2D) measures a glyph by its text box today. It gets split into a layout step, which places an IconSize square and the caption, and a draw step for each kind of icon. Any control that shows "icon plus text" calls the same layout.
-- **Visible change to check.** A Segoe glyph's box becomes the IconSize square rather than the glyph's own text box, so icon-and-caption buttons may shift by a pixel or two. Shane compares before and after; if it shows, the glyph path keeps its old measurement.
+- **Glyph placement (5b).** Only images use the IconSize square; a Segoe glyph keeps its own text-box measurement, so existing buttons don't shift.
 
 ## The picker
 

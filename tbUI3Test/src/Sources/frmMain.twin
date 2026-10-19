@@ -4,7 +4,8 @@
 Class frmMain
 
     ' Pass 5b test (tbUI3 1.0.0.43): SVG and image icons loaded in code.
-    ' The icons are in test-icons next to tbUI3Test.twinproj.
+    ' The icons are in test-icons next to tbUI3Test.twinproj. A button that already has a stored
+    ' icon (one applied from the picker's library tabs, pass 5c) keeps it.
 
     Sub New()
     End Sub
@@ -14,24 +15,30 @@ Class frmMain
         folder = IconFolder()
 
         ' A monochrome SVG (#212121) takes the text colour: white on an Accent button.
-        UI3Button1.Caption = "Mono SVG"
-        UI3Button1.LoadIconFile folder & "mono.svg"
+        If Len(UI3Button1.IconSource) = 0 Then
+            UI3Button1.Caption = "Mono SVG"
+            UI3Button1.LoadIconFile folder & "mono.svg"
+        End If
 
         ' A colour SVG keeps its own colours. Click it to switch to a Segoe icon (Icon replaces the image).
         UI3Button2.Style = ui3ButtonStandard
-        UI3Button2.Caption = "Color SVG"
-        UI3Button2.LoadIconFile folder & "color.svg"
+        If Len(UI3Button2.IconSource) = 0 Then
+            UI3Button2.Caption = "Color SVG"
+            UI3Button2.LoadIconFile folder & "color.svg"
+        End If
 
         ' A 64 px PNG, shrunk to IconSize.
         UI3Button3.Style = ui3ButtonStandard
         UI3Button3.IconPosition = ui3IconLeft
-        UI3Button3.Caption = "PNG"
-        UI3Button3.LoadIconFile folder & "sample.png"
+        If Len(UI3Button3.IconSource) = 0 Then
+            UI3Button3.Caption = "PNG"
+            UI3Button3.LoadIconFile folder & "sample.png"
+        End If
 
         ' A copy of button 1's icon. Click it to cycle IconSize through 20, 32 and 48 on every button.
         UI3Button4.Style = ui3ButtonStandard
-        UI3Button4.IconData = UI3Button1.IconData
-        UI3Button4.Caption = "Copy, size 20"
+        If Len(UI3Button4.IconSource) = 0 Then UI3Button4.IconData = UI3Button1.IconData
+        UI3Button4.Caption = "Copy, size " & UI3Button4.IconSize
     End Sub
 
     ' test-icons beside the project (App.Path), else Shane's working copy.

@@ -4,6 +4,20 @@ All notable changes to tbUI3. Dates are when the change was made, not released. 
 
 ## Unreleased
 
+### 2026-10-19, pass 5c: Apply from the library tabs (1.0.0.44, Claude)
+
+- The icon picker's Fluent UI System and Additional Icons tabs now apply. Clicking an icon on any tab enables Apply, and Apply writes the tab clicked last.
+  - A Fluent pick stores the file whose size is closest to each control's IconSize (a tie goes to the larger file). Its IconSource is Microsoft's file name, such as `ic_fluent_arrow_down_20_regular`.
+  - An Additional Icons pick stores the PNG as `gallery_<name>`.
+  - Switching the style card of the picked Fluent icon also enables Apply.
+- The picker writes through the control's `LoadIcon`, which now takes a Variant holding a Byte array (as `LoadResData` returns), so `CallByName` can pass the bytes.
+- Designer bridge: new `SetPendingLibraryIcon`, `TakePendingLibraryIcon` and `ClearPendingLibraryIcon` in UI3Icons, a second slot beside the existing members, which are unchanged. UI3Button records a library pick while the page applies and takes it back in its next design-time ReadProperties. Applying a Segoe icon clears any pending library pick.
+- The page opens on the tab of the control's current icon with it selected: a Segoe icon opens the Segoe tab; a Fluent or Additional icon opens its tab, style and icon (when the library is installed). The log records the current Icon and IconSource, and each library Apply.
+- Library: `IconLibraryFluentEntryNear`, `IconLibraryFluentFind`, `IconLibraryGalleryFind` and `IconLibraryStyleFromName`.
+- Properties pane: `IconData` is `[NonBrowsable]` (still usable in code); `IconSource` has a Let that raises error 383, so the pane lists it read-only.
+- tbUI3Test: Form_Load leaves a button's stored icon alone, so icons applied in the designer show at run time.
+- Not yet built.
+
 ### 2026-10-19, pass 5b result
 
 - Shane's 1.0.0.43 test in tbUI3Test (BETA 1012):

@@ -65,7 +65,10 @@ Public Class UI3Button
     Public Property Let Icon(ByVal Value As UI3Icon)
         m_Icon = Value
         ClearIconImage
-        If IconPageApplying Then SetPendingIcon DesignName(), Value
+        If IconPageApplying Then
+            SetPendingIcon DesignName(), Value
+            ClearPendingLibraryIcon DesignName()
+        End If
         DesignLog "Let Icon " & Hex$(ObjPtr(Me)) & " " & DesignName() & " = " & CLng(Value) & IIf(IconPageApplying, " (from page)", "")
         PropertyChanged "Icon"
         UserControl.Refresh
@@ -132,11 +135,14 @@ Public Class UI3Button
 
     ' The stored icon file (an SVG, or a PNG or other image) as a Byte array in a Variant, or Empty.
     ' Assigning another control's IconData copies its icon; assigning Empty or an empty array removes it.
+    ' Not listed in the Properties pane (it can't show bytes); IconSource names the icon there.
     [Description("The stored SVG or image icon's file bytes. Assign another control's IconData to copy its icon. Set it with LoadIcon or LoadIconFile.")]
+    [NonBrowsable]
     Public Property Get IconData() As Variant
         If m_IconImage.HasImage Then IconData = m_IconImage.GetData() Else IconData = Empty
     End Property
 
+    [NonBrowsable]
     Public Property Let IconData(ByVal Value As Variant)
         Dim data() As Byte
         If IsEmpty(Value) Then
@@ -161,11 +167,20 @@ Public Class UI3Button
         If Len(IconSource) = 0 Then IconSource = IIf(m_IconImage.IsSvg, "(SVG)", "(image)")
     End Property
 
-    ' Stores an SVG, PNG or other image file's bytes as the icon, for example from LoadResData.
-    ' Name is shown as IconSource. Raises error 380 when Data is not a recognised image.
+    ' Read-only. The Let exists only so the Properties pane lists IconSource; it refuses every value.
+    Public Property Let IconSource(ByVal Value As String)
+        Err.Raise 383
+    End Property
+
+    ' Stores an SVG, PNG or other image file's bytes (a Byte array, or a Variant holding one, as
+    ' LoadResData returns) as the icon. Name is shown as IconSource. Raises error 380 when Data is not
+    ' a recognised image. The icon picker applies its library picks through this method.
     [Description("Stores SVG or image file bytes (for example from LoadResData) as the icon. Name is shown as IconSource.")]
-    Public Sub LoadIcon(ByRef Data() As Byte, Optional ByVal Name As String = "")
-        StoreIconImage Data, Name
+    Public Sub LoadIcon(ByVal Data As Variant, Optional ByVal Name As String = "")
+        Dim bytes() As Byte
+        If Not IsArray(Data) Then Err.Raise 380
+        bytes = Data
+        StoreIconImage bytes, Name
     End Sub
 
     ' Stores an SVG, PNG or other image file as the icon. IconSource becomes file:<file name>.
@@ -194,6 +209,8 @@ Public Class UI3Button
     ' The last icon set wins: a stored image replaces Icon and IconGlyph.
     Private Sub StoreIconImage(ByRef Data() As Byte, ByVal Source As String)
         If Not m_IconImage.SetData(Data, Source) Then Err.Raise 380
+        DesignLog "Store image " & Hex$(ObjPtr(Me)) & " " & DesignName() & " = " & Source & IIf(IconPageApplying, " (from page)", "")
+        If IconPageApplying Then SetPendingLibraryIcon DesignName(), Data, Source
         If m_Icon <> ui3IconNone Then
             m_Icon = ui3IconNone
             PropertyChanged "Icon"
@@ -248,7 +265,22 @@ Public Class UI3Button
                 PropertyChanged "Icon"
                 ClearIconImage
             End If
+            TakeLibraryIcon
         End If
+    End Sub
+
+    ' The library half of the designer bridge: an SVG or PNG the picker applied (see UI3Icons).
+    Private Sub TakeLibraryIcon()
+        Dim data() As Byte
+        Dim source As String
+        If Not TakePendingLibraryIcon(DesignName(), data, source) Then Exit Sub
+        If Not m_IconImage.SetData(data, source) Then Exit Sub
+        m_Icon = ui3IconNone
+        m_IconGlyph = ""
+        PropertyChanged "Icon"
+        PropertyChanged "IconGlyph"
+        PropertyChanged "IconData"
+        PropertyChanged "IconSource"
     End Sub
 
     Private Sub ReadIconImage(ByVal PropBag As PropertyBag)

@@ -106,6 +106,7 @@ Private Module UI3IconLibrary
     Private m_FluentTags() As String
     Private m_FluentEntry() As Long         ' (style, icon): the entry the picker draws, or -1
     Private m_FluentSizes() As String       ' (style, icon): "16, 20, 24"
+    Private m_FluentFiles() As String       ' (style, icon): "size,entry,variant;" for every usable file
     Private m_GalleryCount As Long
     Private m_GalleryName() As String
     Private m_GalleryEntry() As Long
@@ -459,6 +460,7 @@ Failed:
         ReDim m_FluentTags(0 To n)
         ReDim m_FluentEntry(0 To 3, 0 To n)
         ReDim m_FluentSizes(0 To 3, 0 To n)
+        ReDim m_FluentFiles(0 To 3, 0 To n)
         ReDim m_GalleryName(0 To n)
         ReDim m_GalleryEntry(0 To n)
         ReDim m_GalleryWidth(0 To n)
@@ -493,6 +495,7 @@ Failed:
                         If st >= 0 And (Len(parts(5)) = 0 Or parts(5) = "ltr") Then
                             rank = SizeRank(CLng(parts(4))) * 2
                             If Len(parts(5)) > 0 Then rank = rank + 1
+                            m_FluentFiles(st, g) = m_FluentFiles(st, g) & parts(4) & "," & CStr(e) & "," & parts(5) & ";"
                             If rank < bestRank(st) Then
                                 bestRank(st) = rank
                                 m_FluentEntry(st, g) = e
@@ -538,6 +541,7 @@ Failed:
         Erase m_FluentTags
         Erase m_FluentEntry
         Erase m_FluentSizes
+        Erase m_FluentFiles
         Erase m_GalleryName
         Erase m_GalleryEntry
         Erase m_GalleryWidth
@@ -598,6 +602,93 @@ Failed:
 
     Public Function IconLibraryFluentSizes(ByVal IconIndex As Long, ByVal Style As Long) As String
         IconLibraryFluentSizes = m_FluentSizes(Style, IconIndex)
+    End Function
+
+    ' The file of IconIndex in Style whose size is closest to SizePx (a tie goes to the larger file; at
+    ' one size the file with no variant beats an _ltr one), or -1. FileName receives Microsoft's own
+    ' file name without its extension, such as ic_fluent_arrow_down_20_regular.
+    Public Function IconLibraryFluentEntryNear(ByVal IconIndex As Long, ByVal Style As Long, ByVal SizePx As Long, _
+            ByRef FileName As String) As Long
+        Dim files() As String
+        Dim fields() As String
+        Dim i As Long
+        Dim size As Long
+        Dim distance As Long
+        Dim bestDistance As Long
+        Dim bestSize As Long
+        Dim bestVariant As String
+        Dim better As Boolean
+
+        IconLibraryFluentEntryNear = -1
+        FileName = ""
+        If IconIndex < 0 Or IconIndex >= m_FluentCount Or Style < 0 Or Style > 3 Then Exit Function
+        files = Split(m_FluentFiles(Style, IconIndex), ";")
+        bestDistance = -1
+        For i = 0 To UBound(files)
+            If Len(files(i)) > 0 Then
+                fields = Split(files(i), ",")
+                size = CLng(fields(0))
+                distance = Abs(size - SizePx)
+                If bestDistance < 0 Then
+                    better = True
+                ElseIf distance < bestDistance Then
+                    better = True
+                ElseIf distance = bestDistance And size > bestSize Then
+                    better = True
+                ElseIf distance = bestDistance And size = bestSize And Len(fields(2)) = 0 And Len(bestVariant) > 0 Then
+                    better = True
+                Else
+                    better = False
+                End If
+                If better Then
+                    bestDistance = distance
+                    bestSize = size
+                    bestVariant = fields(2)
+                    IconLibraryFluentEntryNear = CLng(fields(1))
+                End If
+            End If
+        Next
+        If IconLibraryFluentEntryNear < 0 Then Exit Function
+        FileName = "ic_fluent_" & m_FluentId(IconIndex) & "_" & CStr(bestSize) & "_" & StyleName(Style)
+        If Len(bestVariant) > 0 Then FileName = FileName & "_" & bestVariant
+    End Function
+
+    ' The icon whose id is Id (as in Microsoft's file names), or -1.
+    Public Function IconLibraryFluentFind(ByVal Id As String) As Long
+        Dim i As Long
+        IconLibraryFluentFind = -1
+        For i = 0 To m_FluentCount - 1
+            If StrComp(m_FluentId(i), Id, vbTextCompare) = 0 Then
+                IconLibraryFluentFind = i
+                Exit Function
+            End If
+        Next
+    End Function
+
+    ' The Gallery image named Name, or -1.
+    Public Function IconLibraryGalleryFind(ByVal Name As String) As Long
+        Dim i As Long
+        IconLibraryGalleryFind = -1
+        For i = 0 To m_GalleryCount - 1
+            If StrComp(m_GalleryName(i), Name, vbTextCompare) = 0 Then
+                IconLibraryGalleryFind = i
+                Exit Function
+            End If
+        Next
+    End Function
+
+    ' The style named in Fluent file names ("regular", "filled", "color", "light"), or -1.
+    Public Function IconLibraryStyleFromName(ByVal Name As String) As Long
+        IconLibraryStyleFromName = StyleIndex(LCase$(Name))
+    End Function
+
+    Private Function StyleName(ByVal Style As Long) As String
+        Select Case Style
+            Case ICON_STYLE_REGULAR: StyleName = "regular"
+            Case ICON_STYLE_FILLED: StyleName = "filled"
+            Case ICON_STYLE_COLOR: StyleName = "color"
+            Case ICON_STYLE_LIGHT: StyleName = "light"
+        End Select
     End Function
 
     Public Function IconLibraryGalleryCount() As Long

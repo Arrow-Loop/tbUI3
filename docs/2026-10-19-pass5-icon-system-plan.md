@@ -1,6 +1,6 @@
 # Pass 5 plan: one icon system for every control
 
-Status: **approved by Shane on 2026-10-19.** Build 5a is in 1.0.0.42 (validated); 5b is written in 1.0.0.43.
+Status: **approved by Shane on 2026-10-19.** Build 5a is in 1.0.0.42 (validated); 5b is in 1.0.0.43 (validated); 5c is written in 1.0.0.44.
 Written 2026-10-19, from the decisions recorded in ROADMAP.md that day.
 
 ## Goal
@@ -50,7 +50,7 @@ Precedence rule: the last icon set wins and clears the others. That means settin
 
 ## Shared code
 
-- **New `UI3IconImage` class.** It holds the bytes, the kind (SVG or PNG, recognised from the first bytes), whether to recolour, and per-render-target caches (an SVG document per colour, a bitmap). Every control keeps one instance. Its drawing code comes from the picker's library tabs (1.0.0.39 to 1.0.0.41), moved here rather than copied. (5b: the class is written with its own drawing; the picker's tabs still use their own code and move onto it in 5c, when the picker draws the current pick.)
+- **New `UI3IconImage` class.** It holds the bytes, the kind (SVG or PNG, recognised from the first bytes), whether to recolour, and per-render-target caches (an SVG document per colour, a bitmap). Every control keeps one instance. Its drawing code comes from the picker's library tabs (1.0.0.39 to 1.0.0.41), moved here rather than copied. (5b: the class is written with its own drawing. The picker's tabs still use their own drawing code; moving them onto UI3IconImage is a later cleanup, not needed for 5c.)
 - **Content layout.** `DrawButtonContent` (UI3Direct2D) measures a glyph by its text box today. It gets split into a layout step, which places an IconSize square and the caption, and a draw step for each kind of icon. Any control that shows "icon plus text" calls the same layout.
 - **Glyph placement (5b).** Only images use the IconSize square; a Segoe glyph keeps its own text-box measurement, so existing buttons don't shift.
 

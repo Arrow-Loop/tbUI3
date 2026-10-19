@@ -746,6 +746,45 @@ Private Module UI3Icons
         DesignLog "pending taken " & ControlName & " = " & value
     End Function
 
+    ' --- Library slot (pass 5c) ---
+    ' The same workaround for an SVG or PNG applied from the picker's library tabs: while the page
+    ' applies, the control records the file and its name here, and its next design-time
+    ' ReadProperties takes them. Added beside the members above, which stay as they are.
+
+    Private m_PendingLibrary As Collection
+
+    Public Sub SetPendingLibraryIcon(ByVal ControlName As String, ByRef Data() As Byte, ByVal Source As String)
+        If Len(ControlName) = 0 Then Exit Sub
+        If m_PendingLibrary Is Nothing Then Set m_PendingLibrary = New Collection
+        On Error Resume Next
+        m_PendingLibrary.Remove LCase$(ControlName)
+        m_PendingLibrary.Add Array(Data, Source), LCase$(ControlName)
+        DesignLog "pending library set " & ControlName & " = " & Source
+    End Sub
+
+    ' Returns True and sets Data and Source when a pending library icon exists for ControlName, then
+    ' forgets it.
+    Public Function TakePendingLibraryIcon(ByVal ControlName As String, ByRef Data() As Byte, ByRef Source As String) As Boolean
+        If m_PendingLibrary Is Nothing Or Len(ControlName) = 0 Then Exit Function
+        Dim item As Variant
+        On Error Resume Next
+        item = m_PendingLibrary.Item(LCase$(ControlName))
+        If Err.Number <> 0 Then Exit Function
+        m_PendingLibrary.Remove LCase$(ControlName)
+        On Error GoTo 0
+        Data = item(0)
+        Source = item(1)
+        TakePendingLibraryIcon = True
+        DesignLog "pending library taken " & ControlName & " = " & Source
+    End Function
+
+    ' Forgets a pending library icon for ControlName (a Segoe icon was applied after it).
+    Public Sub ClearPendingLibraryIcon(ByVal ControlName As String)
+        If m_PendingLibrary Is Nothing Or Len(ControlName) = 0 Then Exit Sub
+        On Error Resume Next
+        m_PendingLibrary.Remove LCase$(ControlName)
+    End Sub
+
     ' Set True to append designer events to %TEMP%\tbUI3-design.log while diagnosing the picker.
     Private Const DESIGN_LOG_ENABLED As Boolean = False
 

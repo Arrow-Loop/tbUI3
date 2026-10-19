@@ -10,8 +10,8 @@ Class UI3IconPage
     ' ("hamburger"), or the glyph code in decimal (59595) or hex (E8CB); &H, 0x and U+ prefixes are allowed.
     ' A SelectorBar-style strip across the top switches between the icon sets and Setup, which installs,
     ' updates and removes the per-PC icon library (UI3IconLibrary). The Fluent UI System and Additional Icons tabs
-    ' browse that library in the same grid, drawing its SVG and PNG files with Direct2D. Picking from them
-    ' is a preview only until a picked file can be copied into the project.
+    ' browse that library in the same grid, drawing its SVG and PNG files with Direct2D. Applying a pick
+    ' from them copies the file into the control (its LoadIcon method), so a built app needs no library.
     ' Designer controls: picChrome (PictureBox background/chrome), txtSearch (native TextBox),
     ' picGrid (Direct2D surface), hidden vsbGrid (scroll state only), and lblInfo (Label).
     ' The .tbppage is laid out to match the live page; runtime layout only adapts it to host size.
@@ -124,6 +124,7 @@ Class UI3IconPage
     Private m_FluentStyle As Long
     Private m_FluentSelected As Long
     Private m_GallerySelected As Long
+    Private m_PickKind As Long         ' the tab of the last icon clicked: what Apply writes
     Private m_LibraryReady As Boolean
     Private m_LibraryLoadError As String
     Private m_LibraryGeneration As Long
@@ -193,13 +194,20 @@ Class UI3IconPage
         LayoutControls
         ApplyPageTheme True
         m_Selected = 0
+        Dim source As String
         If Me.SelectedControls.Count > 0 Then
             On Error Resume Next
             m_Selected = CLng(CallByName(Me.SelectedControls(0), "Icon", vbGet))
+            source = CStr(CallByName(Me.SelectedControls(0), "IconSource", vbGet))
             On Error GoTo 0
         End If
         m_InstalledVersion = IconLibraryInstalledVersion()
         m_LibraryReady = False
+        m_PickKind = TAB_SEGOE
+        ' Open on the tab of the control's current icon, with that icon selected.
+        If m_Selected <> 0 Then m_Tab = TAB_SEGOE
+        If Len(source) > 0 Then OpenOnLibraryPick source
+        UI3PropertyPageLog "PAGE current Icon = " & m_Selected & ", IconSource = " & source & ", tab " & m_Tab
         If m_Tab = TAB_FLUENT Or m_Tab = TAB_GALLERY Then EnsureLibrary
         Dim i As Long
         For i = 0 To TAB_COUNT - 1
@@ -222,6 +230,10 @@ Class UI3IconPage
     End Sub
 
     Private Sub PropertyPage_ApplyChanges()
+        If m_PickKind = TAB_FLUENT Or m_PickKind = TAB_GALLERY Then
+            ApplyLibraryPick
+            Exit Sub
+        End If
         ' twinBASIC BETA 997 does not keep a value set here: the designer rebuilds the control from its
         ' own saved copy. IconPageApplying makes UI3Button record the value so its next design-time
         ' ReadProperties re-applies it (see the designer bridge in UI3Icons).
@@ -232,6 +244,89 @@ Class UI3IconPage
             CallByName ctl, "Icon", vbLet, m_Selected
         Next
         IconPageApplying = False
+    End Sub
+
+    ' Copies the picked library file into each selected control through its LoadIcon method. A Fluent
+    ' icon is stored at the file size closest to that control's IconSize. IconPageApplying makes the
+    ' control record the file for the designer bridge, as a Segoe pick does.
+    Private Sub ApplyLibraryPick()
+        Dim ctl As Object
+        Dim entry As Long
+        Dim source As String
+        Dim data() As Byte
+        Dim sizeDip As Single
+        For Each ctl In Me.SelectedControls
+            entry = -1
+            source = ""
+            If m_PickKind = TAB_FLUENT Then
+                If m_FluentSelected < 0 Then Exit Sub
+                sizeDip = SymbolIconDefaultFontSize
+                On Error Resume Next
+                sizeDip = CSng(CallByName(ctl, "IconSize", vbGet))
+                On Error GoTo 0
+                entry = IconLibraryFluentEntryNear(m_FluentSelected, m_FluentStyle, CLng(sizeDip), source)
+            Else
+                If m_GallerySelected < 0 Then Exit Sub
+                entry = IconLibraryGalleryEntry(m_GallerySelected)
+                source = "gallery_" & IconLibraryGalleryName(m_GallerySelected)
+            End If
+            UI3PropertyPageLog "PAGE Apply library " & source & " (entry " & entry & ")"
+            If entry >= 0 Then
+                If IconLibraryEntryBytes(entry, data) Then
+                    IconPageApplying = True
+                    On Error Resume Next
+                    CallByName ctl, "LoadIcon", VbMethod, data, source
+                    If Err.Number <> 0 Then UI3PropertyPageLog "PAGE LoadIcon failed: " & Err.Description
+                    On Error GoTo 0
+                    IconPageApplying = False
+                End If
+            End If
+        Next
+    End Sub
+
+    ' Selects the control's current library icon from its IconSource (ic_fluent_<id>_<size>_<style>,
+    ' optionally _ltr, or gallery_<name>) and switches to that tab. Does nothing when the library isn't
+    ' installed or doesn't have the icon.
+    Private Sub OpenOnLibraryPick(ByVal Source As String)
+        Dim parts() As String
+        Dim n As Long
+        Dim i As Long
+        Dim style As Long
+        Dim id As String
+        Dim found As Long
+
+        If Len(m_InstalledVersion) = 0 Then Exit Sub
+        If LCase$(Left$(Source, 10)) = "ic_fluent_" Then
+            parts = Split(LCase$(Mid$(Source, 11)), "_")
+            n = UBound(parts)
+            If n >= 0 Then
+                If parts(n) = "ltr" Or parts(n) = "rtl" Then n = n - 1
+            End If
+            If n < 2 Then Exit Sub
+            style = IconLibraryStyleFromName(parts(n))
+            If style < 0 Then Exit Sub
+            id = parts(0)
+            For i = 1 To n - 2
+                id = id & "_" & parts(i)
+            Next
+            EnsureLibrary
+            If Not m_LibraryReady Then Exit Sub
+            found = IconLibraryFluentFind(id)
+            If found < 0 Then Exit Sub
+            If IconLibraryFluentEntry(found, style) < 0 Then Exit Sub
+            m_FluentStyle = style
+            m_FluentSelected = found
+            m_PickKind = TAB_FLUENT
+            m_Tab = TAB_FLUENT
+        ElseIf LCase$(Left$(Source, 8)) = "gallery_" Then
+            EnsureLibrary
+            If Not m_LibraryReady Then Exit Sub
+            found = IconLibraryGalleryFind(Mid$(Source, 9))
+            If found < 0 Then Exit Sub
+            m_GallerySelected = found
+            m_PickKind = TAB_GALLERY
+            m_Tab = TAB_GALLERY
+        End If
     End Sub
 
     Private Sub LayoutControls()
@@ -1394,6 +1489,7 @@ Failed:
     Private Sub SetFluentStyle(ByVal Style As Long)
         If Style <> m_FluentStyle Then
             m_FluentStyle = Style
+            If m_PickKind = TAB_FLUENT And m_FluentSelected >= 0 Then Me.Changed = True
             ApplyFilter
             ScrollToSelected
         End If
@@ -2057,22 +2153,25 @@ Failed:
         position = (vsbGrid.Value + r) * Columns() + c
         If position < 0 Or position >= m_ShownCount Then Exit Sub
 
-        ' Library picks only preview for now: nothing is applied, so the page isn't marked changed.
+        ' Whichever tab was clicked last is what Apply writes.
         Select Case m_ShownKind
             Case TAB_FLUENT
                 m_FluentSelected = m_Shown(position)
+                m_PickKind = TAB_FLUENT
                 picGrid.Refresh
                 RepaintChrome
             Case TAB_GALLERY
                 m_GallerySelected = m_Shown(position)
+                m_PickKind = TAB_GALLERY
                 picGrid.Refresh
                 RepaintChrome
             Case Else
                 m_Selected = ShownValue(position)
+                m_PickKind = TAB_SEGOE
                 picGrid.Refresh
                 UpdateInfo
-                Me.Changed = True
         End Select
+        Me.Changed = True
     End Sub
 
     Private Sub picGrid_MouseMove(Button As Integer, Shift As Integer, X As Single, Y As Single)

@@ -1,6 +1,6 @@
 # Handoff: tbUI3 state on 2026-10-07
 
-This is written for the next developer or AI session; ChatGPT is expected to run the next several passes. Read `AGENTS.md`, then this file, then `CHANGELOG.md` and `ROADMAP.md`. State at the time of writing: `tbui3-dev`, package version 1.0.0.30, twinBASIC BETA 1012.
+This is written for the next developer or AI session; ChatGPT is expected to run the next several passes. Read `AGENTS.md`, then this file, then `CHANGELOG.md` and `ROADMAP.md`. State at the time of writing: `tbui3-dev`, package version 1.0.0.31, twinBASIC BETA 1012.
 
 ## What tbUI3 is
 
@@ -59,7 +59,8 @@ The decisions are in `docs/2026-10-06-first-pass-report.md` and `docs/2026-10-06
 | 1.0.0.26 to 1.0.0.28: icon gallery spike | Answered and removed in 1.0.0.29. Package resources read from the host or bloat EXEs; PropertyBag byte arrays persist. |
 | 1.0.0.29: spike removed | Not yet built. Next: per-PC icon library (ROADMAP). |
 | Icon library builder | `tools/build-icon-library.mjs` (zip checked in the cloud and with Windows `tar` by Shane; not yet used by tbUI3). Host: Arrow-Loop/tbUI3-Libraries. |
-| 1.0.0.30: picker tab strip and Setup tab | Not yet built. Installs the library to %LOCALAPPDATA%\tbUI3 (UI3IconLibrary); Fluent and Gallery tabs only report state. |
+| 1.0.0.30: picker tab strip and Setup tab | Built by Shane: install/uninstall work; flicker and a light search box on first open. Installs the library to %LOCALAPPDATA%\tbUI3 (UI3IconLibrary); Fluent and Gallery tabs only report state. |
+| 1.0.0.31: flicker and search box fix | Not yet built. Chrome repaints without erase and clips to its siblings; search hooks re-armed when shown. |
 
 ## Work queue for the next passes (updated 2026-10-07)
 

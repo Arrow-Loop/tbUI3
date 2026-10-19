@@ -1,3 +1,7 @@
+### 1.0.0.31
+- Fixes flicker in the icon picker: the chrome now repaints without erasing first, and no longer paints over the search box and grid (it clips to them).
+- Re-arms the search box's dark colours whenever the Segoe Fluent tab shows it, for the light search box seen on first open in 1.0.0.30.
+
 ### 1.0.0.30
 - The icon picker has a tab strip across the top (Segoe Fluent, Fluent UI System, Gallery, Setup), drawn like WinUI's SelectorBar.
 - New Setup tab installs, updates, reinstalls and removes the tbUI3 icon library in `%LOCALAPPDATA%\tbUI3`. It downloads the release named by the Arrow-Loop/tbUI3-Libraries manifest, checks its size and SHA-256, unpacks it with Windows' `tar.exe` and checks the library's SHA-256 before moving it into place. The Fluent UI System and Gallery tabs show whether the library is installed and offer a one-click install; browsing them comes later.

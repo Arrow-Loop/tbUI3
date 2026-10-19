@@ -4,6 +4,12 @@ All notable changes to tbUI3. Dates are when the change was made, not released. 
 
 ## Unreleased
 
+### 2026-10-19, picker flicker and search box fix (1.0.0.31, Claude)
+
+- Shane's 1.0.0.30 test (BETA 1012): the tab strip, Setup and the Fluent tab work; Install from the published release and Uninstall both worked. Two regressions: the picker flickered as the mouse moved over it, and the search box was classic light on first open (the chrome around it stayed dark).
+- Flicker: hover changes called `picChrome.Refresh`, which erases the whole chrome before Direct2D redraws it, and the chrome had no WS_CLIPSIBLINGS, so each repaint also painted over the search box and grid. 1.0.0.31 repaints with `InvalidateRect(..., bErase = 0)` and `UpdateWindow`, and sets WS_CLIPSIBLINGS on picChrome.
+- Search box: the light colour is the native Edit painting without tbUI3's WM_CTLCOLOREDIT hook. The cause is not proven; the likeliest new factor in 1.0.0.30 is `ShowTabControls` assigning `Visible` on every selection change. 1.0.0.31 only assigns `Visible` when it changes and re-arms the hooks (and invalidates the Edit) whenever the search box is shown. Not yet built.
+
 ### 2026-10-19, icon picker tab strip and Setup tab (1.0.0.30, Claude)
 
 - The icon picker gets a tab strip across the top: Segoe Fluent (the existing grid), Fluent UI System, Gallery and Setup. It follows WinUI's SelectorBar (`controls/dev/SelectorBar/SelectorBar_themeresources.xaml` at microsoft-ui-xaml 8318c5bf): item padding 12,10,12,7, bar padding 0,4, primary text with secondary on hover and tertiary while pressed, and a 16 by 3 accent pill under the selected item. The 4 DIP gap below the strip is a tbUI3 layout choice.

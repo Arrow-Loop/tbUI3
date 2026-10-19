@@ -70,6 +70,14 @@ Class UI3IconPage
 
     Private Declare PtrSafe Function SendMessageW Lib "user32" (ByVal hWnd As LongPtr, ByVal wMsg As Long, _
         ByVal wParam As LongPtr, ByVal lParam As LongPtr) As LongPtr
+    Private Declare PtrSafe Function InvalidateRect Lib "user32" (ByVal hWnd As LongPtr, ByVal lpRect As LongPtr, _
+        ByVal bErase As Long) As Long
+    Private Declare PtrSafe Function UpdateWindow Lib "user32" (ByVal hWnd As LongPtr) As Long
+    Private Declare PtrSafe Function GetWindowLongW Lib "user32" (ByVal hWnd As LongPtr, ByVal nIndex As Long) As Long
+    Private Declare PtrSafe Function SetWindowLongW Lib "user32" (ByVal hWnd As LongPtr, ByVal nIndex As Long, _
+        ByVal dwNewLong As Long) As Long
+    Private Const GWL_STYLE As Long = -16
+    Private Const WS_CLIPSIBLINGS As Long = &H4000000
 
     Private m_Target As ID2D1DCRenderTarget
     Private m_ChromeTarget As ID2D1DCRenderTarget
@@ -184,6 +192,9 @@ Class UI3IconPage
 
         picChrome.Move 0, 0, w, h
         picChrome.BorderStyle = vbNoBorder
+        ' picChrome lies under the search box and grid. Clipping it to its siblings keeps a chrome
+        ' repaint (hover on the tab strip or a button) from painting over them, which flickered.
+        SetWindowLongW picChrome.hWnd, GWL_STYLE, GetWindowLongW(picChrome.hWnd, GWL_STYLE) Or WS_CLIPSIBLINGS
         picChrome.AutoRedraw = False
         picChrome.ScaleMode = vbPixels
         picChrome.TabStop = False
@@ -272,7 +283,7 @@ Class UI3IconPage
 
         ApplyHostTitleBar
         txtSearch.Refresh
-        picChrome.Refresh
+        RepaintChrome
         picGrid.Refresh
 
 CleanUp:
@@ -617,14 +628,29 @@ Failed:
         m_HotButton = -1
         m_PressedButton = -1
         ShowTabControls
-        picChrome.Refresh
+        RepaintChrome
         If m_Tab = TAB_SETUP And Not m_LibraryChecked Then RunCheck
     End Sub
 
     Private Sub ShowTabControls()
+        Dim showSegoe As Boolean
         On Error Resume Next
-        txtSearch.Visible = (m_Tab = TAB_SEGOE)
-        picGrid.Visible = (m_Tab = TAB_SEGOE)
+        showSegoe = (m_Tab = TAB_SEGOE)
+        ' Only touch Visible when it changes, and re-arm the search box's colour hooks whenever it is
+        ' shown: an unhooked native Edit paints in classic light colours.
+        If txtSearch.Visible <> showSegoe Then txtSearch.Visible = showSegoe
+        If picGrid.Visible <> showSegoe Then picGrid.Visible = showSegoe
+        If showSegoe Then
+            ApplyHostTitleBar
+            InvalidateRect txtSearch.hWnd, 0, 1
+        End If
+    End Sub
+
+    ' Repaints the chrome at once without erasing it first. Direct2D composes the whole frame
+    ' before copying it to the window, so skipping the erase removes the blank-then-draw flash.
+    Private Sub RepaintChrome()
+        InvalidateRect picChrome.hWnd, 0, 0
+        UpdateWindow picChrome.hWnd
     End Sub
 
     ' --- Library tabs ---
@@ -814,7 +840,7 @@ Failed:
     Private Sub SetLibraryStatus(ByVal Text As String, Optional ByVal IsError As Boolean = False)
         m_LibraryStatus = Text
         m_LibraryStatusIsError = IsError
-        picChrome.Refresh
+        RepaintChrome
     End Sub
 
     Private Sub BeginLibraryWork()
@@ -828,7 +854,7 @@ Failed:
         m_LibraryBusy = False
         Screen.MousePointer = vbDefault
         m_InstalledVersion = IconLibraryInstalledVersion()
-        picChrome.Refresh
+        RepaintChrome
     End Sub
 
     Private Sub RunCheck()
@@ -911,7 +937,7 @@ Failed:
         m_PressedButton = ButtonAt(xDip, yDip)
         m_HotTab = m_PressedTab
         m_HotButton = m_PressedButton
-        picChrome.Refresh
+        RepaintChrome
     End Sub
 
     Private Sub picChrome_MouseMove(Button As Integer, Shift As Integer, X As Single, Y As Single)
@@ -925,7 +951,7 @@ Failed:
         If hotTab <> m_HotTab Or hotButton <> m_HotButton Then
             m_HotTab = hotTab
             m_HotButton = hotButton
-            picChrome.Refresh
+            RepaintChrome
         End If
     End Sub
 
@@ -943,10 +969,10 @@ Failed:
         If pressedTab >= 0 And TabAt(xDip, yDip) = pressedTab Then
             SelectTab pressedTab
         ElseIf pressedButton >= 0 And ButtonAt(xDip, yDip) = pressedButton Then
-            picChrome.Refresh
+            RepaintChrome
             RunButtonAction m_ButtonAction(pressedButton)
         Else
-            picChrome.Refresh
+            RepaintChrome
         End If
     End Sub
 
@@ -1334,7 +1360,7 @@ Failed:
     Private Sub picGrid_MouseMove(Button As Integer, Shift As Integer, X As Single, Y As Single)
         If m_HotTab >= 0 Then
             m_HotTab = -1
-            picChrome.Refresh
+            RepaintChrome
         End If
         If Not m_ScrollDragging Then Exit Sub
         Dim dpi As Single
@@ -1456,7 +1482,7 @@ Failed:
             "Name: " & iconName & "   Enum: " & enumName & vbCrLf & _
             "Value: " & symbolValue & "   Glyph: " & glyphValue & vbCrLf & _
             "Segoe Fluent / Segoe MDL2 preview at runtime"
-        picChrome.Refresh
+        RepaintChrome
     End Sub
 
 End Class

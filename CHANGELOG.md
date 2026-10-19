@@ -4,6 +4,12 @@ All notable changes to tbUI3. Dates are when the change was made, not released. 
 
 ## Unreleased
 
+### 2026-10-19, spike removed (1.0.0.29, Claude)
+
+- Shane chose a per-PC icon library (option A): the Fluent UI System SVGs and Gallery PNGs will live in one data file under `%LOCALAPPDATA%\tbUI3`, installed, updated, reinstalled or uninstalled from a new Setup tab in the icon picker. Built apps will carry only the icons picked, copied into the control's saved properties.
+- Removed the spike: `UI3Spike.twin`, `Resources/OTHER` (`tbUI3Spike.txt` and the 1.6 MB `tbUI3SpikeBig.bin`), and the spike calls in `UI3Button` and `UI3IconPage`. The project file drops from 1.9 MB to 339 KB. Not yet built.
+- `tools/twinproj-src.mjs remove` (with `twinproj-edit.mjs`) drops files or whole folders from a `.twinproj`.
+
 ### 2026-10-19, spike results and Const resource test (1.0.0.28, Claude)
 
 - 1.0.0.27 on BETA 999 win32: `LoadResDataInternal` and `LoadResData` called at run time from package code both returned tbUI3Test's own `tbUI3Spike.txt` ("TEst"), not the package's. A 256-byte array written by `UI3Button.WriteProperties` survived Save, close and reopen intact; the form stores it base64-encoded inside `_IPersistStreamData`. Copy-on-pick is therefore viable.

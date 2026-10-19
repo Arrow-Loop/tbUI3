@@ -1,6 +1,6 @@
 // Order-preserving .twinproj editor. Keeps every untouched entry byte-identical.
 // Operations: replace a file's content; set a top-level directory's children to new files;
-// add new files (creating missing folders) at the end of their folder.
+// add new files (creating missing folders) at the end of their folder; remove files or folders.
 import fs from "node:fs";
 const MAGIC = 0xea0ba51c;
 function scan(buf) {
@@ -53,7 +53,24 @@ function addEdits(ents, add) {
   }
   return edits;
 }
-export function edit(buf, { replace = {}, setDirChildren = {}, add = {} }) {
+// remove: [ "Sources/Old.twin", "Resources/OTHER", ... ]. Drops each entry (a folder with everything in it)
+// and lowers its parent folder's child count.
+function removeEdits(buf, ents, remove) {
+  const edits = []; const delta = new Map();
+  for (const p of remove) {
+    const e = ents[p]; if (!e) throw new Error("no entry " + p);
+    const parent = p.includes("/") ? p.slice(0, p.lastIndexOf("/")) : "";
+    if (parent === "") throw new Error("cannot remove a top-level entry " + p);
+    edits.push({ start: e.start, end: e.end, bytes: Buffer.alloc(0) });
+    delta.set(parent, (delta.get(parent) || 0) + 1);
+  }
+  for (const [parent, n] of delta) {
+    const d = ents[parent]; const b = Buffer.alloc(4); b.writeUInt32LE(buf.readUInt32LE(d.countAt) - n, 0);
+    edits.push({ start: d.countAt, end: d.countAt + 4, bytes: b });
+  }
+  return edits;
+}
+export function edit(buf, { replace = {}, setDirChildren = {}, add = {}, remove = [] }) {
   const ents = scan(buf); const edits = [];
   for (const [p, data] of Object.entries(replace)) { const f = ents[p]; if (!f || f.type !== "file") throw new Error("no file " + p);
     edits.push({ start: f.cStart, end: f.cEnd, bytes: lp(Buffer.from(data)) }); }
@@ -64,6 +81,7 @@ export function edit(buf, { replace = {}, setDirChildren = {}, add = {} }) {
     if (e.countDelta) e.bytes.writeUInt32LE(buf.readUInt32LE(e.start) + e.countDelta, 0);
     edits.push(e);
   }
+  edits.push(...removeEdits(buf, ents, remove));
   edits.sort((a, b) => b.start - a.start || b.end - a.end);
   for (let i = 1; i < edits.length; i++) if (edits[i].end > edits[i - 1].start) throw new Error("overlapping edits");
   let out = Buffer.from(buf); for (const e of edits) out = Buffer.concat([out.subarray(0, e.start), e.bytes, out.subarray(e.end)]);

@@ -1,3 +1,6 @@
+### 1.0.0.29
+- Removed the 1.0.0.26 to 1.0.0.28 spike code and test resources. No behaviour change otherwise.
+
 ### 1.0.0.28
 - Spike: also reads resources through a `Const ... = LoadResDataInternal(...)`, the form twinBASIC's VB package uses, plus a 1.6 MB random `tbUI3SpikeBig.bin` to measure whether such a constant ends up in built EXEs.
 

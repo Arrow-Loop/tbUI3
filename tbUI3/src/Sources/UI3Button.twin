@@ -135,10 +135,6 @@ Public Class UI3Button
         If Not IsUserMode() Then
             If TakePendingIcon(DesignName(), m_Icon) Then PropertyChanged "Icon"
         End If
-        If SPIKE_ENABLED Then
-            UI3SpikeReadResource IsUserMode(), "UI3Button"
-            UI3SpikeCheckBytes PropBag.ReadProperty("SpikeBytes", Empty), IsUserMode(), DesignName()
-        End If
     End Sub
 
     ' Design-time name of this control, for the UI3IconPage designer bridge (see UI3Icons).
@@ -162,7 +158,6 @@ Public Class UI3Button
         PropBag.WriteProperty "IconFontName", m_IconFontName, DEFAULT_ICON_FONT_NAME
         PropBag.WriteProperty "IconPosition", m_IconPosition, DEFAULT_ICON_POSITION
         PropBag.WriteProperty "IconSpacing", m_IconSpacing, ButtonIconSpacingDefault
-        If SPIKE_ENABLED Then PropBag.WriteProperty "SpikeBytes", UI3SpikeBytes()
     End Sub
 
     Private Sub UserControl_Resize()

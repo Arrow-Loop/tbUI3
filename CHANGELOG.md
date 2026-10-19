@@ -4,6 +4,10 @@ All notable changes to tbUI3. Dates are when the change was made, not released. 
 
 ## Unreleased
 
+### 2026-10-19, pass 5a result
+
+- Shane's 1.0.0.42 test: IconSize works (sizes, save and reopen) and looks right to Shane. The log shows `PAGE EditProperty Icon` each time the page was opened from Icon's own "...". So twinBASIC raises `PropertyPage_EditProperty` with the property's name, as VB6 did, and a control with two icon properties can share the picker. The log also shows the known hidden second page instance (a TextBox at the designer position, never visible).
+
 ### 2026-10-19, pass 5a: IconSize (1.0.0.42, Claude)
 
 - Shane approved the pass 5 plan (`docs/2026-10-19-pass5-icon-system-plan.md`) and set the Windows version policy: the minimum rises to whatever a feature needs. It is recorded in ROADMAP.

@@ -58,7 +58,7 @@ Precedence rule: the last icon set wins and clears the others. That means settin
 - `ApplyChanges` writes a Segoe pick through `Icon`, as now. A library pick goes through a new contract call that sets the data, the source and the recolour flag together.
 - The designer bridge gets a second slot in UI3Icons: `SetPendingLibraryIcon` and `TakePendingLibraryIcon`, keyed the same way. The control's `ReadProperties` takes it next to the existing `TakePendingIcon` call. The existing bridge members are not changed.
 - The page opens on the tab of the control's current icon, with that icon selected. It reads `IconSource` and finds the icon in the library when the library is installed.
-- **Early test: which property was clicked.** A control with two icon properties needs to know which "..." was clicked. VB6 raised `PropertyPage_EditProperty(PropertyName)` for that. Since BETA 1008 honours the per-property link, the page logs whether twinBASIC raises it. The result decides how later controls with two icon properties work; UI3Button has only one.
+- **Early test: which property was clicked.** Result (5a, 2026-10-19): twinBASIC raises `PropertyPage_EditProperty` with the property name ("Icon"). A control with two icon properties needs to know which "..." was clicked. VB6 raised `PropertyPage_EditProperty(PropertyName)` for that. Since BETA 1008 honours the per-property link, the page logs whether twinBASIC raises it. The result decides how later controls with two icon properties work; UI3Button has only one.
 
 ## Builds, in order (Shane tests each)
 

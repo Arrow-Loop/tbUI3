@@ -159,7 +159,7 @@ Public Module UI3Window
     Private m_PropertyPageCaption As String
 
     ' Set True to write %TEMP%\tbUI3-propertypage.log (host tree, subclass results, layout snapshots).
-    Private Const PROPERTY_PAGE_LOG_ENABLED As Boolean = False
+    Private Const PROPERTY_PAGE_LOG_ENABLED As Boolean = True
 
     ' PropertyPage hooks: the confirmed native TextBox colour route and the page-move trigger
     ' that promotes the skin to the real PropertySheet.
@@ -549,9 +549,17 @@ CleanUp:
             Case WM_ERASEBKGND
                 If hWnd = m_PropertyProbeEdit Then
                     If PaintPropertyEditBackground(hWnd, wParam) Then
+                        ProbeLog "EDIT WM_ERASEBKGND painted dark"
                         UI3PropertyProbeProc = 1
                         Exit Function
                     End If
+                    ProbeLog "EDIT WM_ERASEBKGND not painted"
+                End If
+
+            Case WM_PAINT
+                If hWnd = m_PropertyProbeEdit Then
+                    ProbeLog "EDIT WM_PAINT edit=" & DebugWindowLine(hWnd) & " current parent=" & _
+                        DebugWindowLine(GetParent(hWnd)) & " hooked parent=" & DebugWindowLine(m_PropertyProbeEditParent)
                 End If
 
             Case WM_CTLCOLOREDIT

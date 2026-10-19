@@ -4,6 +4,11 @@ All notable changes to tbUI3. Dates are when the change was made, not released. 
 
 ## Unreleased
 
+### 2026-10-19, search box diagnostic build (1.0.0.34, Claude)
+
+- Shane's 1.0.0.33 test: no flicker on the tab strip or any tab's content (owner-drawn chrome works). The search box still opens classic light; the one-off repaint after the chrome's first paint did not fix it.
+- 1.0.0.34 turns on `PROPERTY_PAGE_LOG_ENABLED` and adds two log points to the search box hook: every Edit WM_PAINT (with its current and hooked parent) and whether WM_ERASEBKGND painted the dark background. The log must be switched off again before release. Not yet built.
+
 ### 2026-10-19, owner-drawn picker chrome (1.0.0.33, Claude)
 
 - Shane's 1.0.0.32 test: the chrome paints again, but hovering the tab strip or the Setup and library tab content still flickers, while the icon grid, the selected-icon details and OK/Cancel/Apply never do. The search box still opens classic light and turns dark on the first interaction. Shane pointed at the difference: the property sheet's buttons are painted by tbUI3 itself.

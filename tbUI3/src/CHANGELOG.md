@@ -1,3 +1,6 @@
+### 1.0.0.34
+- Diagnostic build: writes %TEMP%\tbUI3-propertypage.log to trace why the icon picker's search box opens classic light. Turn the log off again afterwards.
+
 ### 1.0.0.33
 - The icon picker's chrome (tab strip, Setup and library tabs, search box frame, selected-icon details) now paints the same way as the property dialog's OK/Cancel/Apply buttons: tbUI3 owns its WM_PAINT and never lets the background be cleared first. This is meant to stop the flicker when hovering the tabs and Setup buttons. Hover also clears when the pointer leaves the chrome.
 - The search box is repainted once after the chrome's first paint, so it should no longer open classic light.

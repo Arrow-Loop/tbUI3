@@ -36,10 +36,31 @@ Private Module UI3Spike
 
         ' LoadResData reads the host project's resources (1.0.0.26 result). LoadResDataInternal is the
         ' hidden runtime function twinBASIC's own VB package and IDE add-ins use for their own resources.
+        ' 1.0.0.27 result: both read the host project's file when called at run time. The VB package
+        ' instead assigns LoadResDataInternal to a Const, which the compiler resolves from the package's
+        ' own resources at compile time (DirListBox.InitImages). 1.0.0.28 tests that form.
         SpikeReport "Resource read (" & ModeName(userMode) & ", " & where & ")" & vbCrLf & _
+            "Const LoadResDataInternal: " & TryReadConst() & vbCrLf & _
             "LoadResDataInternal: " & TryRead(True) & vbCrLf & _
             "LoadResData: " & TryRead(False)
     End Sub
+
+    Private Function TryReadConst() As String
+        ' tbUI3SpikeBig.bin is 1,600,000 random (incompressible) bytes. If a Const resource is baked
+        ' into the compiled package code, tbUI3Test.exe grows by about 1.6 MB.
+        Const SpikeText As Variant = LoadResDataInternal("tbUI3Spike.txt", "OTHER")
+        Const SpikeBig As Variant = LoadResDataInternal("tbUI3SpikeBig.bin", "OTHER")
+        On Error GoTo Failed
+        Dim text() As Byte
+        Dim big() As Byte
+        text = SpikeText
+        big = SpikeBig
+        TryReadConst = "OK, " & (UBound(text) - LBound(text) + 1) & " bytes: " & _
+            Left$(StrConv(text, vbUnicode), 60) & "; big file " & (UBound(big) - LBound(big) + 1) & " bytes"
+        Exit Function
+Failed:
+        TryReadConst = "FAILED, error " & Err.Number & ": " & Err.Description
+    End Function
 
     Private Function TryRead(ByVal internal As Boolean) As String
         Dim data() As Byte

@@ -1,3 +1,6 @@
+### 1.0.0.28
+- Spike: also reads resources through a `Const ... = LoadResDataInternal(...)`, the form twinBASIC's VB package uses, plus a 1.6 MB random `tbUI3SpikeBig.bin` to measure whether such a constant ends up in built EXEs.
+
 ### 1.0.0.27
 - Spike: also tries `LoadResDataInternal`, the hidden runtime function twinBASIC's VB package and IDE add-ins use to read their own resources, alongside `LoadResData`.
 

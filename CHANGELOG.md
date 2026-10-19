@@ -4,6 +4,11 @@ All notable changes to tbUI3. Dates are when the change was made, not released. 
 
 ## Unreleased
 
+### 2026-10-19, spike results and Const resource test (1.0.0.28, Claude)
+
+- 1.0.0.27 on BETA 999 win32: `LoadResDataInternal` and `LoadResData` called at run time from package code both returned tbUI3Test's own `tbUI3Spike.txt` ("TEst"), not the package's. A 256-byte array written by `UI3Button.WriteProperties` survived Save, close and reopen intact; the form stores it base64-encoded inside `_IPersistStreamData`. Copy-on-pick is therefore viable.
+- 1.0.0.28 tests the VB package's own pattern, `Const X As Variant = LoadResDataInternal(...)`, which the compiler resolves from the package's resources. A 1.6 MB random resource (`tbUI3SpikeBig.bin`) is read the same way so an EXE size check shows whether the constant ships in built apps. Not yet compiled.
+
 ### 2026-10-14, spike retry with LoadResDataInternal (1.0.0.27, Claude)
 
 - Shane suspected a pathing issue rather than a hard limit. The twinBASIC VB package reads its own images with the hidden runtime function `LoadResDataInternal` (for example `DirListBox.InitImages`, where it is assigned to a `Const` with the comment that the resource then does not exist as an ordinary resource in the output PE), and IDE add-ins call it at run time (`Dim data() As Byte = LoadResDataInternal("symbols.json", "SYMBOLS")`). `UI3Spike` now reports both `LoadResDataInternal` and `LoadResData`. Not yet compiled.

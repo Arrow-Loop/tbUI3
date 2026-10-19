@@ -4,6 +4,11 @@ All notable changes to tbUI3. Dates are when the change was made, not released. 
 
 ## Unreleased
 
+### 2026-10-19, search box confirmed fixed (1.0.0.38 result)
+
+- Shane's 1.0.0.38 test: no grey flash; Shane called it fixed. The log names the cause: the box paints dark (rgb 31), then the inner #32770 container that holds the page erases its whole client in button-face grey and the box reads rgb 240 afterwards (container ERASE before 31, after 240). Windows does not repaint the box after that, so it stayed grey until something invalidated it; the 1 ms repaint now lands straight after this erase. The page's own erase (clipped in 1.0.0.37) was not the cause.
+- Possible clean-up, not done: clip the box out of the container's erase as well, which might let the timed repaints go. The diagnostic log is still on.
+
 ### 2026-10-19, immediate search box repaint (1.0.0.38, Claude)
 
 - Shane's 1.0.0.37 test: the grey flash remains. Correction to the 1.0.0.37 entry: the log's pixel was read before the page's erase ran, and it was already grey, so the page erase was not shown to be the cause; the screen pixel also lags behind painting, because Windows composes the screen later. What paints the grey is still unknown.

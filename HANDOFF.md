@@ -67,7 +67,7 @@ The decisions are in `docs/2026-10-06-first-pass-report.md` and `docs/2026-10-06
 | 1.0.0.35: search box keeps its hooks | Built by Shane: still light on open. Hooks stay on the TextBox inside the sheet. |
 | 1.0.0.36: search box repaint and pixel log | Built by Shane: box ends dark after a brief grey flash; log shows the page erase covering it. |
 | 1.0.0.37: page erase skips the search box | Built by Shane: grey flash remains. |
-| 1.0.0.38: immediate search box repaint | Not yet built. Log stays on until Shane confirms everything is fixed. |
+| 1.0.0.38: immediate search box repaint | Built by Shane: no grey flash, confirmed fixed. Cause: the inner #32770 container's erase. Diagnostic log still on. |
 
 ## Work queue for the next passes (updated 2026-10-07)
 

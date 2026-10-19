@@ -41,7 +41,7 @@ End Interface
 [OleAutomation(False)]
 Private Interface ID2D1RenderTarget Extends ID2D1Resource
     Sub Slot00_CreateBitmap()
-    Sub Slot01_CreateBitmapFromWicBitmap()
+    Function CreateBitmapFromWicBitmap(ByVal wicBitmapSource As IWICBitmapSource, ByVal bitmapProperties As LongPtr) As ID2D1Bitmap
     Sub Slot02_CreateSharedBitmap()
     Sub Slot03_CreateBitmapBrush()
     Function CreateSolidColorBrush(ByRef color As D2D1_COLOR_F, ByVal brushProperties As LongPtr) As ID2D1SolidColorBrush
@@ -64,12 +64,14 @@ Private Interface ID2D1RenderTarget Extends ID2D1Resource
     Sub Slot19_FillGeometry()
     Sub Slot20_FillMesh()
     Sub Slot21_FillOpacityMask()
-    Sub Slot22_DrawBitmap()
+    [PreserveSig]
+    Sub DrawBitmap(ByVal bitmap As ID2D1Bitmap, ByRef destinationRectangle As D2D1_RECT_F, ByVal opacity As Single, ByVal interpolationMode As Long, ByVal sourceRectangle As LongPtr)
     [PreserveSig]
     Sub DrawText(ByVal textString As LongPtr, ByVal stringLength As Long, ByVal textFormat As IDWriteTextFormat, ByRef layoutRect As D2D1_RECT_F, ByVal defaultFillBrush As ID2D1Brush, ByVal options As Long, ByVal measuringMode As Long)
     Sub Slot24_DrawTextLayout()
     Sub Slot25_DrawGlyphRun()
-    Sub Slot26_SetTransform()
+    [PreserveSig]
+    Sub SetTransform(ByRef transform As D2D1_MATRIX_3X2_F)
     Sub Slot27_GetTransform()
     Sub Slot28_SetAntialiasMode()
     Sub Slot29_GetAntialiasMode()
@@ -107,6 +109,138 @@ End Interface
 [OleAutomation(False)]
 Private Interface ID2D1DCRenderTarget Extends ID2D1RenderTarget
     Sub BindDC(ByVal hdc As LongPtr, ByRef pSubRect As UI3GdiRect)
+End Interface
+
+[InterfaceId("65019F75-8DA2-497C-B32C-DFA34E48EDE6")]
+[OleAutomation(False)]
+Private Interface ID2D1Image Extends ID2D1Resource
+End Interface
+
+[InterfaceId("A2296057-EA42-4099-983B-539FB6505426")]
+[OleAutomation(False)]
+Private Interface ID2D1Bitmap Extends ID2D1Image
+End Interface
+
+[InterfaceId("86B88E4D-AFA4-4D7B-88E4-68A51C4A0AEC")]
+[OleAutomation(False)]
+Private Interface ID2D1SvgDocument Extends ID2D1Resource
+End Interface
+
+' ID2D1DeviceContext5 (d2d1_3.h, Windows 10 1703 and later), reached by QueryInterface on any
+' render target. The 58 placeholders are the methods of ID2D1DeviceContext (35), ID2D1DeviceContext1 (3),
+' ID2D1DeviceContext2 (11), ID2D1DeviceContext3 (2) and ID2D1DeviceContext4 (7), in that order.
+' viewportSize is a D2D1_SIZE_F passed by value, packed into a LongLong.
+[InterfaceId("7836D248-68CC-4DF6-B9E8-DE991BF62EB7")]
+[OleAutomation(False)]
+Private Interface ID2D1DeviceContext5 Extends ID2D1RenderTarget
+    Sub DCSlot00()
+    Sub DCSlot01()
+    Sub DCSlot02()
+    Sub DCSlot03()
+    Sub DCSlot04()
+    Sub DCSlot05()
+    Sub DCSlot06()
+    Sub DCSlot07()
+    Sub DCSlot08()
+    Sub DCSlot09()
+    Sub DCSlot10()
+    Sub DCSlot11()
+    Sub DCSlot12()
+    Sub DCSlot13()
+    Sub DCSlot14()
+    Sub DCSlot15()
+    Sub DCSlot16()
+    Sub DCSlot17()
+    Sub DCSlot18()
+    Sub DCSlot19()
+    Sub DCSlot20()
+    Sub DCSlot21()
+    Sub DCSlot22()
+    Sub DCSlot23()
+    Sub DCSlot24()
+    Sub DCSlot25()
+    Sub DCSlot26()
+    Sub DCSlot27()
+    Sub DCSlot28()
+    Sub DCSlot29()
+    Sub DCSlot30()
+    Sub DCSlot31()
+    Sub DCSlot32()
+    Sub DCSlot33()
+    Sub DCSlot34()
+    Sub DCSlot35()
+    Sub DCSlot36()
+    Sub DCSlot37()
+    Sub DCSlot38()
+    Sub DCSlot39()
+    Sub DCSlot40()
+    Sub DCSlot41()
+    Sub DCSlot42()
+    Sub DCSlot43()
+    Sub DCSlot44()
+    Sub DCSlot45()
+    Sub DCSlot46()
+    Sub DCSlot47()
+    Sub DCSlot48()
+    Sub DCSlot49()
+    Sub DCSlot50()
+    Sub DCSlot51()
+    Sub DCSlot52()
+    Sub DCSlot53()
+    Sub DCSlot54()
+    Sub DCSlot55()
+    Sub DCSlot56()
+    Sub DCSlot57()
+    Sub CreateSvgDocument(ByVal inputXmlStream As stdole.IUnknown, ByVal viewportSize As LongLong, ByRef svgDocument As ID2D1SvgDocument)
+    [PreserveSig]
+    Sub DrawSvgDocument(ByVal svgDocument As ID2D1SvgDocument)
+End Interface
+
+' Windows Imaging Component, for the WinUI Gallery PNGs (wincodec.h).
+[InterfaceId("00000120-A8F2-4877-BA0A-FD2B6645FB94")]
+[OleAutomation(False)]
+Private Interface IWICBitmapSource Extends stdole.IUnknown
+    Sub Slot00_GetSize()
+    Sub Slot01_GetPixelFormat()
+    Sub Slot02_GetResolution()
+    Sub Slot03_CopyPalette()
+    Sub Slot04_CopyPixels()
+End Interface
+
+[InterfaceId("00000301-A8F2-4877-BA0A-FD2B6645FB94")]
+[OleAutomation(False)]
+Private Interface IWICFormatConverter Extends IWICBitmapSource
+    [PreserveSig]
+    Function Initialize(ByVal source As IWICBitmapSource, ByRef dstFormat As UI3Guid, ByVal dither As Long, ByVal palette As LongPtr, ByVal alphaThresholdPercent As Double, ByVal paletteTranslate As Long) As Long
+End Interface
+
+[InterfaceId("9EDDE9E7-8DEE-47EA-99DF-E6FAF2ED44BF")]
+[OleAutomation(False)]
+Private Interface IWICBitmapDecoder Extends stdole.IUnknown
+    Sub Slot00_QueryCapability()
+    Sub Slot01_Initialize()
+    Sub Slot02_GetContainerFormat()
+    Sub Slot03_GetDecoderInfo()
+    Sub Slot04_CopyPalette()
+    Sub Slot05_GetMetadataQueryReader()
+    Sub Slot06_GetPreview()
+    Sub Slot07_GetColorContexts()
+    Sub Slot08_GetThumbnail()
+    Sub Slot09_GetFrameCount()
+    Function GetFrame(ByVal index As Long) As IWICBitmapSource
+End Interface
+
+[InterfaceId("EC5EC8A9-C395-4314-9C77-54D7A935FF70")]
+[OleAutomation(False)]
+Private Interface IWICImagingFactory Extends stdole.IUnknown
+    Sub Slot00_CreateDecoderFromFilename()
+    Function CreateDecoderFromStream(ByVal stream As stdole.IUnknown, ByVal vendor As LongPtr, ByVal metadataOptions As Long) As IWICBitmapDecoder
+    Sub Slot02_CreateDecoderFromFileHandle()
+    Sub Slot03_CreateComponentInfo()
+    Sub Slot04_CreateDecoder()
+    Sub Slot05_CreateEncoder()
+    Sub Slot06_CreatePalette()
+    Function CreateFormatConverter() As IWICFormatConverter
 End Interface
 
 [InterfaceId("06152247-6F50-465A-9245-118BFD3B6007")]
@@ -260,6 +394,20 @@ Private Module UI3D2D
         Bottom As Single
     End Type
 
+    Public Type D2D1_MATRIX_3X2_F
+        m11 As Single
+        m12 As Single
+        m21 As Single
+        m22 As Single
+        dx As Single
+        dy As Single
+    End Type
+
+    Private Type UI3SizeF
+        width As Single
+        height As Single
+    End Type
+
     Public Type D2D1_ROUNDED_RECT
         rect As D2D1_RECT_F
         radiusX As Single
@@ -325,10 +473,23 @@ Private Module UI3D2D
     Private Const IID_ID2D1Factory As String = "{06152247-6F50-465A-9245-118BFD3B6007}"
     Private Const IID_IDWriteFactory As String = "{B859EE5A-D838-4B5B-A2E8-1ADC7D93DB48}"
     Private Const LOGPIXELSX As Long = 88
+    Private Const CLSID_WICImagingFactory As String = "{CACAF262-9370-4615-A13B-9F5539DA4C0A}"
+    Private Const IID_IWICImagingFactory As String = "{EC5EC8A9-C395-4314-9C77-54D7A935FF70}"
+    Private Const GUID_WICPixelFormat32bppPBGRA As String = "{6FDDC324-4E03-4BFE-B185-3D77768DC910}"
+    Private Const CLSCTX_INPROC_SERVER As Long = 1
+    Private Const WICDecodeMetadataCacheOnDemand As Long = 0
+    Private Const WICBitmapDitherTypeNone As Long = 0
+    Private Const WICBitmapPaletteTypeCustom As Long = 0
+    Private Const D2D1_BITMAP_INTERPOLATION_MODE_LINEAR As Long = 1
 
     Private Declare PtrSafe Function D2D1CreateFactory Lib "d2d1" (ByVal factoryType As Long, ByRef riid As UI3Guid, ByVal pFactoryOptions As LongPtr, ByRef ppIFactory As ID2D1Factory) As Long
     Private Declare PtrSafe Function DWriteCreateFactory Lib "dwrite" (ByVal factoryType As Long, ByRef iid As UI3Guid, ByRef ppFactory As IDWriteFactory) As Long
     Private Declare PtrSafe Function IIDFromString Lib "ole32" (ByVal lpsz As LongPtr, ByRef lpiid As UI3Guid) As Long
+    Private Declare PtrSafe Function CoCreateInstance Lib "ole32" (ByRef rclsid As UI3Guid, ByVal pUnkOuter As LongPtr, _
+        ByVal dwClsContext As Long, ByRef riid As UI3Guid, ByRef ppv As IWICImagingFactory) As Long
+    Private Declare PtrSafe Function SHCreateMemStream Lib "shlwapi" (ByRef pInit As Byte, ByVal cbInit As Long) As stdole.IUnknown
+    Private Declare PtrSafe Sub UI3CopyMemory Lib "kernel32" Alias "RtlMoveMemory" (ByRef Destination As Any, _
+        ByRef Source As Any, ByVal Length As LongPtr)
     Private Declare PtrSafe Function GetDeviceCaps Lib "gdi32" (ByVal hdc As LongPtr, ByVal nIndex As Long) As Long
     Private Declare PtrSafe Function OleTranslateColor Lib "oleaut32" (ByVal clr As Long, ByVal hpal As LongPtr, ByRef lpcolorref As Long) As Long
     Public Declare PtrSafe Function UI3GetClientRect Lib "user32" Alias "GetClientRect" (ByVal hWnd As LongPtr, ByRef lpRect As UI3GdiRect) As Long
@@ -340,6 +501,7 @@ Private Module UI3D2D
     Private m_IconTextFormat As IDWriteTextFormat
     Private m_IconTextFormatFamily As String
     Private m_IconTextFormatSize As Single
+    Private m_WicFactory As IWICImagingFactory
 
     Private Function GuidFromString(ByVal guidText As String) As UI3Guid
         Dim id As UI3Guid
@@ -723,6 +885,97 @@ Private Module UI3D2D
         If Not FontFamilyExists(family) Then family = "Segoe UI"
         DrawTextWithFormat target, caption, CreateCenteredTextFormat(family, fontSize, fontWeight), _
             x0, y0, x1, y1, argb
+    End Sub
+
+    ' --- SVG and PNG images (the icon picker's library tabs) ---
+
+    ' An SVG document sized to SizeDip square, or Nothing when the data does not parse or Direct2D
+    ' has no SVG support (before Windows 10 1703). The document belongs to Target's device.
+    Public Function CreateSvgFromBytes(ByVal target As ID2D1RenderTarget, ByRef data() As Byte, _
+            ByVal sizeDip As Single) As ID2D1SvgDocument
+        On Error GoTo Failed
+        Dim dc As ID2D1DeviceContext5
+        Dim stream As stdole.IUnknown
+        Dim viewport As UI3SizeF
+        Dim packed As LongLong
+        Dim doc As ID2D1SvgDocument
+
+        Set dc = target
+        If dc Is Nothing Then Exit Function
+        Set stream = SHCreateMemStream(data(LBound(data)), UBound(data) - LBound(data) + 1)
+        If stream Is Nothing Then Exit Function
+        viewport.width = sizeDip
+        viewport.height = sizeDip
+        UI3CopyMemory packed, viewport, 8
+        dc.CreateSvgDocument stream, packed, doc
+        Set CreateSvgFromBytes = doc
+        Exit Function
+Failed:
+        Set CreateSvgFromBytes = Nothing
+    End Function
+
+    ' Draws Doc with its top-left corner at X, Y (DIPs).
+    Public Sub DrawSvgAt(ByVal target As ID2D1RenderTarget, ByVal doc As ID2D1SvgDocument, ByVal x As Single, ByVal y As Single)
+        If doc Is Nothing Then Exit Sub
+        On Error Resume Next
+        Dim dc As ID2D1DeviceContext5
+        Dim m As D2D1_MATRIX_3X2_F
+        Set dc = target
+        If dc Is Nothing Then Exit Sub
+        m.m11 = 1
+        m.m22 = 1
+        m.dx = x
+        m.dy = y
+        target.SetTransform m
+        dc.DrawSvgDocument doc
+        m.dx = 0
+        m.dy = 0
+        target.SetTransform m
+    End Sub
+
+    Private Function WicFactory() As IWICImagingFactory
+        If m_WicFactory Is Nothing Then
+            Dim clsid As UI3Guid
+            Dim iid As UI3Guid
+            clsid = GuidFromString(CLSID_WICImagingFactory)
+            iid = GuidFromString(IID_IWICImagingFactory)
+            CoCreateInstance clsid, 0, CLSCTX_INPROC_SERVER, iid, m_WicFactory
+        End If
+        Set WicFactory = m_WicFactory
+    End Function
+
+    ' A Direct2D bitmap from PNG (or any WIC-readable) bytes, or Nothing when it cannot be decoded.
+    Public Function CreateBitmapFromImageBytes(ByVal target As ID2D1RenderTarget, ByRef data() As Byte) As ID2D1Bitmap
+        On Error GoTo Failed
+        Dim stream As stdole.IUnknown
+        Dim decoder As IWICBitmapDecoder
+        Dim frame As IWICBitmapSource
+        Dim converter As IWICFormatConverter
+        Dim pbgra As UI3Guid
+
+        If WicFactory() Is Nothing Then Exit Function
+        Set stream = SHCreateMemStream(data(LBound(data)), UBound(data) - LBound(data) + 1)
+        If stream Is Nothing Then Exit Function
+        Set decoder = m_WicFactory.CreateDecoderFromStream(stream, 0, WICDecodeMetadataCacheOnDemand)
+        Set frame = decoder.GetFrame(0)
+        Set converter = m_WicFactory.CreateFormatConverter()
+        pbgra = GuidFromString(GUID_WICPixelFormat32bppPBGRA)
+        If converter.Initialize(frame, pbgra, WICBitmapDitherTypeNone, 0, 0#, WICBitmapPaletteTypeCustom) < 0 Then Exit Function
+        Set CreateBitmapFromImageBytes = target.CreateBitmapFromWicBitmap(converter, 0)
+        Exit Function
+Failed:
+        Set CreateBitmapFromImageBytes = Nothing
+    End Function
+
+    Public Sub DrawBitmapIn(ByVal target As ID2D1RenderTarget, ByVal bitmap As ID2D1Bitmap, _
+            ByVal x0 As Single, ByVal y0 As Single, ByVal x1 As Single, ByVal y1 As Single)
+        If bitmap Is Nothing Then Exit Sub
+        Dim dest As D2D1_RECT_F
+        dest.Left = x0
+        dest.Top = y0
+        dest.Right = x1
+        dest.Bottom = y1
+        target.DrawBitmap bitmap, dest, 1, D2D1_BITMAP_INTERPOLATION_MODE_LINEAR, 0
     End Sub
 
     Public Sub DrawLeftTextStyled(ByVal target As ID2D1RenderTarget, ByVal caption As String, _

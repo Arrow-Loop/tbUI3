@@ -4,6 +4,15 @@ All notable changes to tbUI3. Dates are when the change was made, not released. 
 
 ## Unreleased
 
+### 2026-10-19, Fluent UI System and Gallery grids (1.0.0.39, Claude)
+
+- The Fluent UI System and Gallery tabs now browse the installed icon library in the same grid as the Segoe Fluent tab, with their own search box text and hint. Fluent icons are drawn from their SVG files with Direct2D (`ID2D1DeviceContext5`, Windows 10 1703 or later), at the 24 px size where there is one; the monochrome styles are recoloured to the theme's text colour by swapping their `#212121` fill, and the color style keeps its own colours. Gallery images are decoded with WIC and fitted into 64 DIPs in larger cells.
+- The Fluent tab's details show the icon's name, id, style and sizes, with four style cards (Regular, Filled, Color, Light). Clicking a card switches the grid to that style; styles the selected icon doesn't come in are disabled. Search matches the icon's name, id and tags. The Gallery tab's details show the image's name, pixel size and source, with a card at its own size.
+- Picks on these two tabs are a preview only: Apply still writes only the Segoe icon, until copy-on-pick (pass 5) exists. If the library is installed but can't be read, the tab says why.
+- New `UI3IconLibrary` index reader (`IconLibraryLoadIndex` and accessors) and new Direct2D helpers (`CreateSvgFromBytes`, `DrawSvgAt`, `CreateBitmapFromImageBytes`, `DrawBitmapIn`). The diagnostic log is still on.
+- New `docs/PROPERTY_PAGE_GUIDE.md`: how the icon picker page was built and the mistakes made on the way, with a checklist for the next property page.
+- Not yet built. Unverified: whether Direct2D draws every color SVG (they use gradients), and how the grid performs while scrolling, since each SVG is read from the library file the first time it is shown.
+
 ### 2026-10-19, search box confirmed fixed (1.0.0.38 result)
 
 - Shane's 1.0.0.38 test: no grey flash; Shane called it fixed. The log names the cause: the box paints dark (rgb 31), then the inner #32770 container that holds the page erases its whole client in button-face grey and the box reads rgb 240 afterwards (container ERASE before 31, after 240). Windows does not repaint the box after that, so it stayed grey until something invalidated it; the 1 ms repaint now lands straight after this erase. The page's own erase (clipped in 1.0.0.37) was not the cause.

@@ -1,3 +1,6 @@
+### 1.0.0.39
+- The icon picker's Fluent UI System and Gallery tabs now show the installed icon library in a searchable grid. The Fluent tab has Regular, Filled, Color and Light styles. Picks on these tabs are a preview only for now; Apply still sets only Segoe icons.
+
 ### 1.0.0.38
 - The icon picker's search box is repainted straight after the dialog's first paint, to shorten or remove the grey flash on open. The diagnostic log is still on.
 

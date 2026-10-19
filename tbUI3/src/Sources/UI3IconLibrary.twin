@@ -88,6 +88,28 @@ Private Module UI3IconLibrary
     Private m_LatestDatSha256 As String
     Private m_LatestEntries As Long
 
+    ' The installed library's index, as read by IconLibraryLoadIndex.
+    Public Const ICON_STYLE_REGULAR As Long = 0
+    Public Const ICON_STYLE_FILLED As Long = 1
+    Public Const ICON_STYLE_COLOR As Long = 2
+    Public Const ICON_STYLE_LIGHT As Long = 3
+    Private m_IndexStamp As String
+    Private m_IndexGeneration As Long
+    Private m_DataOffset As Long
+    Private m_EntryCount As Long
+    Private m_EntryOffset() As Long
+    Private m_EntryLength() As Long
+    Private m_FluentCount As Long
+    Private m_FluentId() As String
+    Private m_FluentName() As String
+    Private m_FluentTags() As String
+    Private m_FluentEntry() As Long         ' (style, icon): the entry the picker draws, or -1
+    Private m_FluentSizes() As String       ' (style, icon): "16, 20, 24"
+    Private m_GalleryCount As Long
+    Private m_GalleryName() As String
+    Private m_GalleryEntry() As Long
+    Private m_GalleryWidth() As Long
+
     ' --- Where the library lives ---
 
     Public Function IconLibraryFolder() As String
@@ -322,6 +344,7 @@ Failed:
     Public Function IconLibraryCommit(ByRef ErrorText As String) As Boolean
         Dim folder As String
         ErrorText = ""
+        IconLibraryUnloadIndex
         folder = UnpackFolder()
         If Not MoveReplacing(folder & "\" & LIBRARY_FILE, IconLibraryPath(), ErrorText) Then Exit Function
         If FileExists(folder & "\" & NOTICE_FILE) Then
@@ -334,6 +357,7 @@ Failed:
     ' Removes the library and its notice; the tbUI3 folder goes too when nothing else is in it.
     Public Function IconLibraryUninstall(ByRef ErrorText As String) As Boolean
         ErrorText = ""
+        IconLibraryUnloadIndex
         IconLibraryClearDownloads
         If FileExists(IconLibraryPath()) Then
             On Error Resume Next
@@ -359,6 +383,252 @@ Failed:
         DeleteFile DownloadFolder() & "\manifest.txt"
         RmDir DownloadFolder()
     End Sub
+
+    ' --- Reading the installed library ---
+
+    ' Reads the installed library's index once (again only when the file changes). Fluent icons are
+    ' grouped by icon id: for each style the picker draws the 24 px file where there is one (then 20,
+    ' 28, 32, 16, 48, 12, 10), and ignores the locale-specific variants. The file is opened only for
+    ' each read, so installing or removing the library is never blocked by an open handle.
+    Public Function IconLibraryLoadIndex(ByRef ErrorText As String) As Boolean
+        Dim path As String
+        Dim stamp As String
+        Dim f As Integer
+        Dim header() As Byte
+        Dim raw() As Byte
+        Dim magic As String
+        Dim indexOffset As Long
+        Dim indexLength As Long
+        Dim lines() As String
+        Dim parts() As String
+        Dim i As Long
+        Dim n As Long
+        Dim e As Long
+        Dim g As Long
+        Dim st As Long
+        Dim key As String
+        Dim lastKey As String
+        Dim rank As Long
+        Dim bestRank(0 To 3) As Long
+        Dim lastSize(0 To 3) As Long
+
+        ErrorText = ""
+        path = IconLibraryPath()
+        If Not FileExists(path) Then
+            IconLibraryUnloadIndex
+            ErrorText = "The icon library isn't installed."
+            Exit Function
+        End If
+        stamp = CStr(FileLen(path)) & "|" & CStr(FileDateTime(path))
+        If stamp = m_IndexStamp And m_EntryCount > 0 Then
+            IconLibraryLoadIndex = True
+            Exit Function
+        End If
+        IconLibraryUnloadIndex
+
+        On Error GoTo Failed
+        f = FreeFile
+        Open path For Binary Access Read Shared As #f
+        ReDim header(0 To 31)
+        Get #f, 1, header
+        For i = 0 To 7
+            magic = magic & Chr$(header(i))
+        Next
+        If magic <> LIBRARY_MAGIC Or BytesToLong(header, 8) <> LIBRARY_FORMAT Then
+            Close #f
+            ErrorText = "The installed file isn't a tbUI3 icon library this version can read."
+            Exit Function
+        End If
+        indexOffset = BytesToLong(header, 16)
+        indexLength = BytesToLong(header, 20)
+        m_DataOffset = BytesToLong(header, 24)
+        ReDim raw(0 To indexLength - 1)
+        Get #f, indexOffset + 1, raw
+        Close #f
+        f = 0
+
+        lines = Split(StrConv(raw, vbUnicode), vbCrLf)
+        Erase raw
+        n = UBound(lines)
+        ReDim m_EntryOffset(0 To n)
+        ReDim m_EntryLength(0 To n)
+        ReDim m_FluentId(0 To n)
+        ReDim m_FluentName(0 To n)
+        ReDim m_FluentTags(0 To n)
+        ReDim m_FluentEntry(0 To 3, 0 To n)
+        ReDim m_FluentSizes(0 To 3, 0 To n)
+        ReDim m_GalleryName(0 To n)
+        ReDim m_GalleryEntry(0 To n)
+        ReDim m_GalleryWidth(0 To n)
+        g = -1
+
+        For i = 1 To n
+            If Len(lines(i)) > 0 Then
+                parts = Split(lines(i), "|")
+                If UBound(parts) >= 8 Then
+                    e = m_EntryCount
+                    m_EntryOffset(e) = CLng(parts(7))
+                    m_EntryLength(e) = CLng(parts(8))
+                    m_EntryCount = m_EntryCount + 1
+
+                    If parts(0) = "F" Then
+                        key = parts(1) & "|" & parts(2)
+                        If key <> lastKey Then
+                            lastKey = key
+                            g = m_FluentCount
+                            m_FluentCount = m_FluentCount + 1
+                            m_FluentId(g) = parts(1)
+                            m_FluentName(g) = parts(2)
+                            m_FluentTags(g) = parts(6)
+                            For st = 0 To 3
+                                m_FluentEntry(st, g) = -1
+                                bestRank(st) = 99
+                                lastSize(st) = 0
+                            Next
+                        End If
+                        st = StyleIndex(parts(3))
+                        If st >= 0 And (Len(parts(5)) = 0 Or parts(5) = "ltr") Then
+                            rank = SizeRank(CLng(parts(4))) * 2
+                            If Len(parts(5)) > 0 Then rank = rank + 1
+                            If rank < bestRank(st) Then
+                                bestRank(st) = rank
+                                m_FluentEntry(st, g) = e
+                            End If
+                            If CLng(parts(4)) <> lastSize(st) Then
+                                lastSize(st) = CLng(parts(4))
+                                If Len(m_FluentSizes(st, g)) > 0 Then m_FluentSizes(st, g) = m_FluentSizes(st, g) & ", "
+                                m_FluentSizes(st, g) = m_FluentSizes(st, g) & parts(4)
+                            End If
+                        End If
+                    ElseIf parts(0) = "G" Then
+                        m_GalleryName(m_GalleryCount) = parts(2)
+                        m_GalleryEntry(m_GalleryCount) = e
+                        m_GalleryWidth(m_GalleryCount) = CLng(parts(4))
+                        m_GalleryCount = m_GalleryCount + 1
+                    End If
+                End If
+            End If
+        Next
+
+        m_IndexStamp = stamp
+        m_IndexGeneration = m_IndexGeneration + 1
+        IconLibraryLoadIndex = True
+        Exit Function
+
+Failed:
+        ErrorText = "Couldn't read the icon library (" & Err.Description & ")."
+        On Error Resume Next
+        If f <> 0 Then Close #f
+        IconLibraryUnloadIndex
+    End Function
+
+    Public Sub IconLibraryUnloadIndex()
+        m_IndexStamp = ""
+        m_EntryCount = 0
+        m_FluentCount = 0
+        m_GalleryCount = 0
+        Erase m_EntryOffset
+        Erase m_EntryLength
+        Erase m_FluentId
+        Erase m_FluentName
+        Erase m_FluentTags
+        Erase m_FluentEntry
+        Erase m_FluentSizes
+        Erase m_GalleryName
+        Erase m_GalleryEntry
+        Erase m_GalleryWidth
+    End Sub
+
+    Private Function StyleIndex(ByVal Style As String) As Long
+        Select Case Style
+            Case "regular": StyleIndex = ICON_STYLE_REGULAR
+            Case "filled": StyleIndex = ICON_STYLE_FILLED
+            Case "color": StyleIndex = ICON_STYLE_COLOR
+            Case "light": StyleIndex = ICON_STYLE_LIGHT
+            Case Else: StyleIndex = -1
+        End Select
+    End Function
+
+    Private Function SizeRank(ByVal Size As Long) As Long
+        Select Case Size
+            Case 24: SizeRank = 0
+            Case 20: SizeRank = 1
+            Case 28: SizeRank = 2
+            Case 32: SizeRank = 3
+            Case 16: SizeRank = 4
+            Case 48: SizeRank = 5
+            Case 12: SizeRank = 6
+            Case Else: SizeRank = 7
+        End Select
+    End Function
+
+    ' Changes each time the index is read again, so callers know to drop anything cached per entry.
+    Public Function IconLibraryIndexGeneration() As Long
+        IconLibraryIndexGeneration = m_IndexGeneration
+    End Function
+
+    Public Function IconLibraryEntryCount() As Long
+        IconLibraryEntryCount = m_EntryCount
+    End Function
+
+    Public Function IconLibraryFluentCount() As Long
+        IconLibraryFluentCount = m_FluentCount
+    End Function
+
+    Public Function IconLibraryFluentId(ByVal IconIndex As Long) As String
+        IconLibraryFluentId = m_FluentId(IconIndex)
+    End Function
+
+    Public Function IconLibraryFluentName(ByVal IconIndex As Long) As String
+        IconLibraryFluentName = m_FluentName(IconIndex)
+    End Function
+
+    Public Function IconLibraryFluentTags(ByVal IconIndex As Long) As String
+        IconLibraryFluentTags = m_FluentTags(IconIndex)
+    End Function
+
+    ' The library entry the picker draws for IconIndex in Style, or -1 when the icon has no such style.
+    Public Function IconLibraryFluentEntry(ByVal IconIndex As Long, ByVal Style As Long) As Long
+        IconLibraryFluentEntry = m_FluentEntry(Style, IconIndex)
+    End Function
+
+    Public Function IconLibraryFluentSizes(ByVal IconIndex As Long, ByVal Style As Long) As String
+        IconLibraryFluentSizes = m_FluentSizes(Style, IconIndex)
+    End Function
+
+    Public Function IconLibraryGalleryCount() As Long
+        IconLibraryGalleryCount = m_GalleryCount
+    End Function
+
+    Public Function IconLibraryGalleryName(ByVal ImageIndex As Long) As String
+        IconLibraryGalleryName = m_GalleryName(ImageIndex)
+    End Function
+
+    Public Function IconLibraryGalleryEntry(ByVal ImageIndex As Long) As Long
+        IconLibraryGalleryEntry = m_GalleryEntry(ImageIndex)
+    End Function
+
+    Public Function IconLibraryGalleryWidth(ByVal ImageIndex As Long) As Long
+        IconLibraryGalleryWidth = m_GalleryWidth(ImageIndex)
+    End Function
+
+    ' The bytes of one entry (an SVG or PNG file), read straight from the installed library.
+    Public Function IconLibraryEntryBytes(ByVal Entry As Long, ByRef Data() As Byte) As Boolean
+        Dim f As Integer
+        If Entry < 0 Or Entry >= m_EntryCount Then Exit Function
+        If m_EntryLength(Entry) <= 0 Then Exit Function
+        On Error GoTo Failed
+        f = FreeFile
+        Open IconLibraryPath() For Binary Access Read Shared As #f
+        ReDim Data(0 To m_EntryLength(Entry) - 1)
+        Get #f, m_DataOffset + m_EntryOffset(Entry) + 1, Data
+        Close #f
+        IconLibraryEntryBytes = True
+        Exit Function
+Failed:
+        On Error Resume Next
+        If f <> 0 Then Close #f
+    End Function
 
     ' --- Helpers ---
 

@@ -1,6 +1,6 @@
 # Handoff: tbUI3 state on 2026-10-07
 
-This is written for the next developer or AI session; ChatGPT is expected to run the next several passes. Read `AGENTS.md`, then this file, then `CHANGELOG.md` and `ROADMAP.md`. State at the time of writing: `tbui3-dev`, package version 1.0.0.38, twinBASIC BETA 1012.
+This is written for the next developer or AI session; ChatGPT is expected to run the next several passes. Read `AGENTS.md`, then this file, then `CHANGELOG.md` and `ROADMAP.md`. State at the time of writing: `tbui3-dev`, package version 1.0.0.39, twinBASIC BETA 1012.
 
 ## What tbUI3 is
 
@@ -68,6 +68,7 @@ The decisions are in `docs/2026-10-06-first-pass-report.md` and `docs/2026-10-06
 | 1.0.0.36: search box repaint and pixel log | Built by Shane: box ends dark after a brief grey flash; log shows the page erase covering it. |
 | 1.0.0.37: page erase skips the search box | Built by Shane: grey flash remains. |
 | 1.0.0.38: immediate search box repaint | Built by Shane: no grey flash, confirmed fixed. Cause: the inner #32770 container's erase. Diagnostic log still on. |
+| 1.0.0.39: Fluent UI System and Gallery grids | Not yet built. Passes 3 and 4: SVG grid with style cards, PNG grid; picks preview only. How the page was built: `docs/PROPERTY_PAGE_GUIDE.md`. |
 
 ## Work queue for the next passes (updated 2026-10-07)
 

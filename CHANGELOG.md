@@ -4,6 +4,11 @@ All notable changes to tbUI3. Dates are when the change was made, not released. 
 
 ## Unreleased
 
+### 2026-10-19, immediate search box repaint (1.0.0.38, Claude)
+
+- Shane's 1.0.0.37 test: the grey flash remains. Correction to the 1.0.0.37 entry: the log's pixel was read before the page's erase ran, and it was already grey, so the page erase was not shown to be the cause; the screen pixel also lags behind painting, because Windows composes the screen later. What paints the grey is still unknown.
+- 1.0.0.38 repaints the search box 1 ms after the hooks arm or the sheet is skinned. Windows delivers a timer only when no paint is pending, so this repaint lands straight after whatever painted over the box; five more repaints follow at 15, 50, 120, 250 and 500 ms. The log now reads the box's own window surface (not the screen) before and after each erase and paint of the box, the page and the page's container window, so it can show which paint turns the box grey. The page-erase clipping from 1.0.0.37 stays. Not yet built.
+
 ### 2026-10-19, page erase skips the search box (1.0.0.37, Claude)
 
 - Shane's 1.0.0.36 test: the search box now ends up dark, with a brief grey flash on open. The log shows the cause: after the search box has painted dark, the page (ThunderPropertyPageDC) erases its whole client, clip (0,0)-(461,457), and the box reads rgb(240,240,240) afterwards; nothing repaints it until the first timed repaint, which turns it rgb(31,31,31). WM_CTLCOLORSTATIC never arrived, so that theory is ruled out.

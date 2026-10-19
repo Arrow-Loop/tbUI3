@@ -38,7 +38,7 @@ Public Module UI3Window
     Private Const WM_TIMER As Long = &H113
     Private Const RDW_UPDATENOW As Long = &H100
     Private Const UI3_SEARCH_REPAINT_TIMER_ID As Long = &H55495352
-    Private Const UI3_SEARCH_REPAINT_TICKS As Long = 4
+    Private Const UI3_SEARCH_REPAINT_TICKS As Long = 6
     Private Const WM_SETTINGCHANGE As Long = &H1A
     Private Const WM_NCDESTROY As Long = &H82
     Private Const WM_MOUSEMOVE As Long = &H200
@@ -514,11 +514,48 @@ CleanUp:
 
     ' The search box can open classic light even though every paint the hooks see is dark, and the
     ' first interaction fixes it. Repaint it a few times after the dialog settles (1.0.0.36).
+    ' WM_TIMER is only delivered once no WM_PAINT is pending, so a short first interval repaints
+    ' the box straight after whatever paints over it; later ticks catch anything slower.
     Private Sub StartSearchRepaint()
         If m_PropertyProbeEdit = 0 Then Exit Sub
         m_SearchRepaintTicks = 0
-        SetTimer m_PropertyProbeEdit, CLngPtr(UI3_SEARCH_REPAINT_TIMER_ID), 250, 0
+        If PROPERTY_PAGE_LOG_ENABLED And m_PropertyProbeEditParent <> 0 Then
+            Dim container As LongPtr
+            container = GetParent(m_PropertyProbeEditParent)
+            If container <> 0 And container <> m_PropertySheetHost Then
+                m_PropertyProbePageDialog = container
+                SetWindowSubclass container, AddressOf UI3PropertyProbeProc, CLngPtr(UI3_PROPERTY_PROBE_SUBCLASS_ID), 2
+            End If
+        End If
+        SetTimer m_PropertyProbeEdit, CLngPtr(UI3_SEARCH_REPAINT_TIMER_ID), SearchRepaintInterval(0), 0
     End Sub
+
+    Private Function SearchRepaintInterval(ByVal tick As Long) As Long
+        Select Case tick
+            Case 0: SearchRepaintInterval = 1
+            Case 1: SearchRepaintInterval = 15
+            Case 2: SearchRepaintInterval = 50
+            Case 3: SearchRepaintInterval = 120
+            Case 4: SearchRepaintInterval = 250
+            Case Else: SearchRepaintInterval = 500
+        End Select
+    End Function
+
+    ' Reads the search box's own window surface (not the composed screen, which lags behind).
+    Private Function EditPixel() As String
+        If Not PROPERTY_PAGE_LOG_ENABLED Then Exit Function
+        If m_PropertyProbeEdit = 0 Then Exit Function
+        Dim rc As UI3GdiRect
+        Dim dc As LongPtr
+        Dim c As Long
+        UI3GetClientRect m_PropertyProbeEdit, rc
+        dc = GetDC(m_PropertyProbeEdit)
+        If dc = 0 Then Exit Function
+        c = GetPixel(dc, rc.Right \ 2, rc.Bottom \ 2)
+        ReleaseDC m_PropertyProbeEdit, dc
+        EditPixel = "rgb(" & CStr(c And &HFF&) & "," & CStr((c \ &H100&) And &HFF&) & "," & _
+            CStr((c \ &H10000) And &HFF&) & ")"
+    End Function
 
     Private Function ScreenPixelAt(ByVal hWnd As LongPtr) As String
         If Not PROPERTY_PAGE_LOG_ENABLED Then Exit Function
@@ -630,18 +667,27 @@ CleanUp:
                         Exit Function
                     End If
                     ProbeLog "EDIT WM_ERASEBKGND not painted"
-                ElseIf hWnd = m_PropertyProbeEditParent Then
-                    ' The page erases its whole client in classic button-face grey without clipping
-                    ' the search box, after the box has painted, and nothing repaints the box. Keep
-                    ' the box out of the page's erase (1.0.0.37).
-                    ExcludeSearchBoxFromPageDC wParam
+                ElseIf hWnd = m_PropertyProbeEditParent Or (PROPERTY_PAGE_LOG_ENABLED And hWnd = m_PropertyProbePageDialog) Then
+                    ' Keep the search box out of the page's erase, as WS_CLIPCHILDREN would (1.0.0.37).
+                    If hWnd = m_PropertyProbeEditParent Then ExcludeSearchBoxFromPageDC wParam
                     If PROPERTY_PAGE_LOG_ENABLED Then
-                        ProbeLog "ERASE " & DebugWindowLine(hWnd) & " clip=" & ClipBoxText(wParam) & _
-                            " edit pixel=" & ScreenPixelAt(m_PropertyProbeEdit)
+                        ProbeLog "ERASE " & DebugWindowLine(hWnd) & " clip=" & ClipBoxText(wParam) & " box before=" & EditPixel()
+                        result = DefSubclassProc(hWnd, uMsg, wParam, lParam)
+                        ProbeLog "ERASE done box after=" & EditPixel()
+                        UI3PropertyProbeProc = result
+                        Exit Function
                     End If
-                ElseIf PROPERTY_PAGE_LOG_ENABLED And hWnd = m_PropertyProbePageDialog Then
-                    ProbeLog "ERASE " & DebugWindowLine(hWnd) & " clip=" & ClipBoxText(wParam) & _
-                        " edit pixel=" & ScreenPixelAt(m_PropertyProbeEdit)
+                End If
+
+            Case WM_PAINT
+                ' Log-only: the search box's own pixel after each paint of the box, the page and its container.
+                If PROPERTY_PAGE_LOG_ENABLED Then
+                    If hWnd = m_PropertyProbeEdit Or hWnd = m_PropertyProbeEditParent Or hWnd = m_PropertyProbePageDialog Then
+                        result = DefSubclassProc(hWnd, uMsg, wParam, lParam)
+                        ProbeLog "PAINT done " & DebugWindowLine(hWnd) & " box=" & EditPixel()
+                        UI3PropertyProbeProc = result
+                        Exit Function
+                    End If
                 End If
 
             Case WM_TIMER
@@ -649,10 +695,14 @@ CleanUp:
                     If hWnd = m_PropertyProbeEdit Then
                         m_SearchRepaintTicks = m_SearchRepaintTicks + 1
                         ProbeLog "SEARCH REPAINT " & CStr(m_SearchRepaintTicks) & " visible=" & CStr(IsWindowVisible(hWnd)) & _
-                            " enabled=" & CStr(IsWindowEnabled(hWnd)) & " pixel before=" & ScreenPixelAt(hWnd)
+                            " box before=" & EditPixel() & " screen before=" & ScreenPixelAt(hWnd)
                         RedrawWindow hWnd, 0, 0, RDW_INVALIDATE Or RDW_ERASE Or RDW_FRAME Or RDW_UPDATENOW
-                        ProbeLog "SEARCH REPAINT " & CStr(m_SearchRepaintTicks) & " pixel after=" & ScreenPixelAt(hWnd)
-                        If m_SearchRepaintTicks >= UI3_SEARCH_REPAINT_TICKS Then KillTimer hWnd, wParam
+                        ProbeLog "SEARCH REPAINT " & CStr(m_SearchRepaintTicks) & " box after=" & EditPixel()
+                        If m_SearchRepaintTicks >= UI3_SEARCH_REPAINT_TICKS Then
+                            KillTimer hWnd, wParam
+                        Else
+                            SetTimer hWnd, wParam, SearchRepaintInterval(m_SearchRepaintTicks), 0
+                        End If
                     Else
                         KillTimer hWnd, wParam
                     End If

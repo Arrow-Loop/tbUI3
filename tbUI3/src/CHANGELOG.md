@@ -1,3 +1,6 @@
+### 1.0.0.38
+- The icon picker's search box is repainted straight after the dialog's first paint, to shorten or remove the grey flash on open. The diagnostic log is still on.
+
 ### 1.0.0.37
 - The icon picker's search box should no longer flash grey on open: the page's background erase now leaves the box alone. The diagnostic log is still on.
 

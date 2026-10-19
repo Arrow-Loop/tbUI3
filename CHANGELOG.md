@@ -4,6 +4,12 @@ All notable changes to tbUI3. Dates are when the change was made, not released. 
 
 ## Unreleased
 
+### 2026-10-19, search box keeps its hooks (1.0.0.35, Claude)
+
+- Shane's 1.0.0.34 log: every paint of the visible search box erased dark and its WM_CTLCOLOREDIT was answered, so the hooks themselves worked. The last log line shows a second, never-shown UI3IconPage (its TextBox still at the designer position) arming the hooks for its own TextBox after the real page had painted. From then on the real search box painted classic light until a click made the real page repaint and re-arm them. The new chrome paint changed the timing so the stray page now runs last.
+- `AttachPropertyPageHooks` (UI3Window) now keeps the hooks on a TextBox that is already inside the property sheet when the new TextBox is not inside one. A page that has been moved into the sheet can still take them over.
+- The diagnostic log is off again, and the per-paint log line added in 1.0.0.34 is removed. Not yet built.
+
 ### 2026-10-19, search box diagnostic build (1.0.0.34, Claude)
 
 - Shane's 1.0.0.33 test: no flicker on the tab strip or any tab's content (owner-drawn chrome works). The search box still opens classic light; the one-off repaint after the chrome's first paint did not fix it.

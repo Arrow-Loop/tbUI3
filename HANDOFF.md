@@ -1,6 +1,6 @@
 # Handoff: tbUI3 state on 2026-10-07
 
-This is written for the next developer or AI session; ChatGPT is expected to run the next several passes. Read `AGENTS.md`, then this file, then `CHANGELOG.md` and `ROADMAP.md`. State at the time of writing: `tbui3-dev`, package version 1.0.0.34, twinBASIC BETA 1012.
+This is written for the next developer or AI session; ChatGPT is expected to run the next several passes. Read `AGENTS.md`, then this file, then `CHANGELOG.md` and `ROADMAP.md`. State at the time of writing: `tbui3-dev`, package version 1.0.0.35, twinBASIC BETA 1012.
 
 ## What tbUI3 is
 
@@ -63,7 +63,8 @@ The decisions are in `docs/2026-10-06-first-pass-report.md` and `docs/2026-10-06
 | 1.0.0.31: flicker and search box fix | Built by Shane: worse, the chrome stopped painting (WS_CLIPSIBLINGS). |
 | 1.0.0.32: clipping removed | Built by Shane: chrome paints; tab/Setup hover still flickers; search box opens light until first interaction. |
 | 1.0.0.33: owner-drawn picker chrome | Built by Shane: flicker gone; search box still opens light. UI3PageSurface owns picChrome WM_PAINT like the sheet buttons; search box repainted once after first paint. |
-| 1.0.0.34: search box log build | Not yet built. PROPERTY_PAGE_LOG_ENABLED = True (turn off before release). |
+| 1.0.0.34: search box log build | Built by Shane: log showed a hidden second icon page taking over the search-box hooks. |
+| 1.0.0.35: search box keeps its hooks | Not yet built. Hooks stay on the TextBox inside the sheet; log off again. |
 
 ## Work queue for the next passes (updated 2026-10-07)
 

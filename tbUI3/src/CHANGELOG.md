@@ -1,3 +1,6 @@
+### 1.0.0.35
+- The icon picker's search box opens dark again instead of classic light (a hidden second page was taking over its colour hooks). The diagnostic log is off.
+
 ### 1.0.0.34
 - Diagnostic build: writes %TEMP%\tbUI3-propertypage.log to trace why the icon picker's search box opens classic light. Turn the log off again afterwards.
 

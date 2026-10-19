@@ -120,6 +120,7 @@ Public Module UI3Window
     Private Declare PtrSafe Function InvalidateRect Lib "user32" (ByVal hWnd As LongPtr, ByVal lpRect As LongPtr, ByVal bErase As Long) As Long
     Private Declare PtrSafe Function FillRect Lib "user32" (ByVal hdc As LongPtr, ByRef lpRect As UI3GdiRect, ByVal hBrush As LongPtr) As Long
     Private Declare PtrSafe Function IsWindowEnabled Lib "user32" (ByVal hWnd As LongPtr) As Long
+    Private Declare PtrSafe Function IsWindow Lib "user32" (ByVal hWnd As LongPtr) As Long
     Private Declare PtrSafe Function GetWindowTextLengthW Lib "user32" (ByVal hWnd As LongPtr) As Long
     Private Declare PtrSafe Function GetWindowTextW Lib "user32" (ByVal hWnd As LongPtr, ByVal lpString As LongPtr, ByVal nMaxCount As Long) As Long
     Private Declare PtrSafe Function SendMessageW Lib "user32" (ByVal hWnd As LongPtr, ByVal wMsg As Long, _
@@ -159,7 +160,7 @@ Public Module UI3Window
     Private m_PropertyPageCaption As String
 
     ' Set True to write %TEMP%\tbUI3-propertypage.log (host tree, subclass results, layout snapshots).
-    Private Const PROPERTY_PAGE_LOG_ENABLED As Boolean = True
+    Private Const PROPERTY_PAGE_LOG_ENABLED As Boolean = False
 
     ' PropertyPage hooks: the confirmed native TextBox colour route and the page-move trigger
     ' that promotes the skin to the real PropertySheet.
@@ -458,6 +459,18 @@ CleanUp:
         If textBoxHwnd = 0 Then Exit Sub
         If textBoxHwnd = m_PropertyProbeEdit And m_PropertyProbeEditParent <> 0 Then Exit Sub
 
+        ' The IDE can create a second, never-shown icon page while the real one is open, and its paint
+        ' arms the hooks for its own TextBox. Keep them on a TextBox that is already inside the sheet,
+        ' or the visible search box loses its dark paint and shows white until the page repaints.
+        If m_PropertyProbeEdit <> 0 Then
+            If IsWindow(m_PropertyProbeEdit) <> 0 Then
+                If FindPropertySheetAncestor(m_PropertyProbeEdit) <> 0 And FindPropertySheetAncestor(textBoxHwnd) = 0 Then
+                    ProbeLog "HOOKS kept on " & DebugWindowLine(m_PropertyProbeEdit) & " ignored " & DebugWindowLine(textBoxHwnd)
+                    Exit Sub
+                End If
+            End If
+        End If
+
         ReleasePropertyEditBrush
         m_PropertyProbeEdit = textBoxHwnd
         m_PropertyProbeEditParent = GetParent(textBoxHwnd)
@@ -554,12 +567,6 @@ CleanUp:
                         Exit Function
                     End If
                     ProbeLog "EDIT WM_ERASEBKGND not painted"
-                End If
-
-            Case WM_PAINT
-                If hWnd = m_PropertyProbeEdit Then
-                    ProbeLog "EDIT WM_PAINT edit=" & DebugWindowLine(hWnd) & " current parent=" & _
-                        DebugWindowLine(GetParent(hWnd)) & " hooked parent=" & DebugWindowLine(m_PropertyProbeEditParent)
                 End If
 
             Case WM_CTLCOLOREDIT

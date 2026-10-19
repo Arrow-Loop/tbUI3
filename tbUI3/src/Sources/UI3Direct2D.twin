@@ -591,6 +591,129 @@ Private Module UI3D2D
         target.DrawText StrPtr(caption), Len(caption), ControlTextFormat(), layout, brush, D2D1_DRAW_TEXT_OPTIONS_CLIP, DWRITE_MEASURING_MODE_NATURAL
     End Sub
 
+    ' A WinUI Button (default or AccentButtonStyle) drawn into x0,y0-x1,y1, using the state resources
+    ' of Button_themeresources.xaml. The caller clears the background first.
+    Public Sub DrawStandardButton(ByVal target As ID2D1RenderTarget, ByVal x0 As Single, ByVal y0 As Single, _
+            ByVal x1 As Single, ByVal y1 As Single, ByVal caption As String, ByVal Accent As Boolean, _
+            ByVal enabled As Boolean, ByVal pressed As Boolean, ByVal hot As Boolean)
+        Dim dark As Boolean
+        Dim fill As Long
+        Dim foreground As Long
+        Dim strokeDefault As Long
+        Dim strokeSecondary As Long
+        Dim borderAtBottom As Boolean
+        Dim useGradientBorder As Boolean
+        Dim drawSolidBorder As Boolean
+        Dim fillInset As Single
+        Dim t As Single
+        Dim r As Single
+
+        dark = IsDarkMode()
+        t = ButtonBorderThemeThickness
+        r = ControlCornerRadius
+
+        If Accent Then
+            fillInset = 0
+            borderAtBottom = True
+            If dark Then
+                strokeDefault = DARK_ControlStrokeColorOnAccentDefault
+                strokeSecondary = DARK_ControlStrokeColorOnAccentSecondary
+                If Not enabled Then
+                    fill = DARK_AccentFillColorDisabled
+                    foreground = DARK_TextOnAccentFillColorDisabled
+                ElseIf pressed Then
+                    fill = (AccentShade(ACCENT_LIGHT2) And &HFFFFFF) Or &HCC000000
+                    foreground = DARK_TextOnAccentFillColorSecondary
+                ElseIf hot Then
+                    fill = (AccentShade(ACCENT_LIGHT2) And &HFFFFFF) Or &HE6000000
+                    foreground = DARK_TextOnAccentFillColorPrimary
+                Else
+                    fill = AccentShade(ACCENT_LIGHT2)
+                    foreground = DARK_TextOnAccentFillColorPrimary
+                End If
+            Else
+                strokeDefault = LIGHT_ControlStrokeColorOnAccentDefault
+                strokeSecondary = LIGHT_ControlStrokeColorOnAccentSecondary
+                If Not enabled Then
+                    fill = LIGHT_AccentFillColorDisabled
+                    foreground = LIGHT_TextOnAccentFillColorDisabled
+                ElseIf pressed Then
+                    fill = (AccentShade(ACCENT_DARK1) And &HFFFFFF) Or &HCC000000
+                    foreground = LIGHT_TextOnAccentFillColorSecondary
+                ElseIf hot Then
+                    fill = (AccentShade(ACCENT_DARK1) And &HFFFFFF) Or &HE6000000
+                    foreground = LIGHT_TextOnAccentFillColorPrimary
+                Else
+                    fill = AccentShade(ACCENT_DARK1)
+                    foreground = LIGHT_TextOnAccentFillColorPrimary
+                End If
+            End If
+            useGradientBorder = enabled And Not pressed
+        Else
+            fillInset = t
+            If dark Then
+                strokeDefault = DARK_ControlStrokeColorDefault
+                strokeSecondary = DARK_ControlStrokeColorSecondary
+                borderAtBottom = False
+                If Not enabled Then
+                    fill = DARK_ControlFillColorDisabled
+                    foreground = DARK_TextFillColorDisabled
+                ElseIf pressed Then
+                    fill = DARK_ControlFillColorTertiary
+                    foreground = DARK_TextFillColorSecondary
+                ElseIf hot Then
+                    fill = DARK_ControlFillColorSecondary
+                    foreground = DARK_TextFillColorPrimary
+                Else
+                    fill = DARK_ControlFillColorDefault
+                    foreground = DARK_TextFillColorPrimary
+                End If
+            Else
+                strokeDefault = LIGHT_ControlStrokeColorDefault
+                strokeSecondary = LIGHT_ControlStrokeColorSecondary
+                borderAtBottom = True
+                If Not enabled Then
+                    fill = LIGHT_ControlFillColorDisabled
+                    foreground = LIGHT_TextFillColorDisabled
+                ElseIf pressed Then
+                    fill = LIGHT_ControlFillColorTertiary
+                    foreground = LIGHT_TextFillColorSecondary
+                ElseIf hot Then
+                    fill = LIGHT_ControlFillColorSecondary
+                    foreground = LIGHT_TextFillColorPrimary
+                Else
+                    fill = LIGHT_ControlFillColorDefault
+                    foreground = LIGHT_TextFillColorPrimary
+                End If
+            End If
+            useGradientBorder = enabled And Not pressed
+            drawSolidBorder = Not useGradientBorder
+        End If
+
+        Dim box As D2D1_ROUNDED_RECT
+        box = RoundedRect(x0 + fillInset, y0 + fillInset, x1 - fillInset, y1 - fillInset, r - fillInset)
+        target.FillRoundedRectangle box, SolidBrush(target, fill)
+
+        If useGradientBorder Then
+            Dim border As ID2D1LinearGradientBrush
+            If borderAtBottom Then
+                Set border = VerticalGradientBrush(target, y1, y1 - ElevationBorderGradientLength, _
+                    ElevationBorderStop0, strokeSecondary, ElevationBorderStop1, strokeDefault)
+            Else
+                Set border = VerticalGradientBrush(target, y0, y0 + ElevationBorderGradientLength, _
+                    ElevationBorderStop0, strokeSecondary, ElevationBorderStop1, strokeDefault)
+            End If
+            box = RoundedRect(x0 + t / 2, y0 + t / 2, x1 - t / 2, y1 - t / 2, r - t / 2)
+            target.DrawRoundedRectangle box, border, t, 0
+        ElseIf drawSolidBorder Then
+            box = RoundedRect(x0 + t / 2, y0 + t / 2, x1 - t / 2, y1 - t / 2, r - t / 2)
+            target.DrawRoundedRectangle box, SolidBrush(target, strokeDefault), t, 0
+        End If
+
+        DrawButtonContent target, caption, "", "", SymbolIconDefaultFontSize, ui3IconLeft, 0, _
+            x0 + ButtonPaddingLeft, y0 + ButtonPaddingTop, x1 - ButtonPaddingRight, y1 - ButtonPaddingBottom, foreground
+    End Sub
+
     Public Sub DrawCenteredTextStyled(ByVal target As ID2D1RenderTarget, ByVal caption As String, _
             ByVal fontSize As Single, ByVal fontWeight As Long, ByVal x0 As Single, ByVal y0 As Single, _
             ByVal x1 As Single, ByVal y1 As Single, ByVal argb As Long)

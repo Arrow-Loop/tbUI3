@@ -1,3 +1,8 @@
+### 1.0.0.30
+- The icon picker has a tab strip across the top (Segoe Fluent, Fluent UI System, Gallery, Setup), drawn like WinUI's SelectorBar.
+- New Setup tab installs, updates, reinstalls and removes the tbUI3 icon library in `%LOCALAPPDATA%\tbUI3`. It downloads the release named by the Arrow-Loop/tbUI3-Libraries manifest, checks its size and SHA-256, unpacks it with Windows' `tar.exe` and checks the library's SHA-256 before moving it into place. The Fluent UI System and Gallery tabs show whether the library is installed and offer a one-click install; browsing them comes later.
+- The property dialog's OK/Cancel/Apply buttons and the picker's new buttons share one WinUI Button drawing routine (`DrawStandardButton`), with no visual change intended.
+
 ### 1.0.0.29
 - Removed the 1.0.0.26 to 1.0.0.28 spike code and test resources. No behaviour change otherwise.
 

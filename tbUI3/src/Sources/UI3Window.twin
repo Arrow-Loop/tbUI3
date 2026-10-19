@@ -1092,137 +1092,16 @@ CleanUp:
 
     Private Sub DrawPropertySheetButton(ByVal hWnd As LongPtr, ByVal w As Single, ByVal h As Single, ByVal Accent As Boolean)
         Dim state As Long
-        Dim enabled As Boolean
-        Dim pressed As Boolean
-        Dim hot As Boolean
-        Dim dark As Boolean
-        Dim fill As Long
-        Dim foreground As Long
-        Dim strokeDefault As Long
-        Dim strokeSecondary As Long
-        Dim borderAtBottom As Boolean
-        Dim useGradientBorder As Boolean
-        Dim drawSolidBorder As Boolean
-        Dim fillInset As Single
-        Dim t As Single
-        Dim r As Single
-
         state = CLng(SendMessageW(hWnd, BM_GETSTATE, 0, 0))
-        enabled = (IsWindowEnabled(hWnd) <> 0)
-        pressed = ((state And BST_PUSHED) <> 0)
-        hot = ((state And BST_HOT) <> 0)
-        dark = IsDarkMode()
-        t = ButtonBorderThemeThickness
-        r = ControlCornerRadius
 
-        If Accent Then
-            fillInset = 0
-            borderAtBottom = True
-            If dark Then
-                strokeDefault = DARK_ControlStrokeColorOnAccentDefault
-                strokeSecondary = DARK_ControlStrokeColorOnAccentSecondary
-                If Not enabled Then
-                    fill = DARK_AccentFillColorDisabled
-                    foreground = DARK_TextOnAccentFillColorDisabled
-                ElseIf pressed Then
-                    fill = (AccentShade(ACCENT_LIGHT2) And &HFFFFFF) Or &HCC000000
-                    foreground = DARK_TextOnAccentFillColorSecondary
-                ElseIf hot Then
-                    fill = (AccentShade(ACCENT_LIGHT2) And &HFFFFFF) Or &HE6000000
-                    foreground = DARK_TextOnAccentFillColorPrimary
-                Else
-                    fill = AccentShade(ACCENT_LIGHT2)
-                    foreground = DARK_TextOnAccentFillColorPrimary
-                End If
-            Else
-                strokeDefault = LIGHT_ControlStrokeColorOnAccentDefault
-                strokeSecondary = LIGHT_ControlStrokeColorOnAccentSecondary
-                If Not enabled Then
-                    fill = LIGHT_AccentFillColorDisabled
-                    foreground = LIGHT_TextOnAccentFillColorDisabled
-                ElseIf pressed Then
-                    fill = (AccentShade(ACCENT_DARK1) And &HFFFFFF) Or &HCC000000
-                    foreground = LIGHT_TextOnAccentFillColorSecondary
-                ElseIf hot Then
-                    fill = (AccentShade(ACCENT_DARK1) And &HFFFFFF) Or &HE6000000
-                    foreground = LIGHT_TextOnAccentFillColorPrimary
-                Else
-                    fill = AccentShade(ACCENT_DARK1)
-                    foreground = LIGHT_TextOnAccentFillColorPrimary
-                End If
-            End If
-            useGradientBorder = enabled And Not pressed
-        Else
-            fillInset = t
-            If dark Then
-                strokeDefault = DARK_ControlStrokeColorDefault
-                strokeSecondary = DARK_ControlStrokeColorSecondary
-                borderAtBottom = False
-                If Not enabled Then
-                    fill = DARK_ControlFillColorDisabled
-                    foreground = DARK_TextFillColorDisabled
-                ElseIf pressed Then
-                    fill = DARK_ControlFillColorTertiary
-                    foreground = DARK_TextFillColorSecondary
-                ElseIf hot Then
-                    fill = DARK_ControlFillColorSecondary
-                    foreground = DARK_TextFillColorPrimary
-                Else
-                    fill = DARK_ControlFillColorDefault
-                    foreground = DARK_TextFillColorPrimary
-                End If
-            Else
-                strokeDefault = LIGHT_ControlStrokeColorDefault
-                strokeSecondary = LIGHT_ControlStrokeColorSecondary
-                borderAtBottom = True
-                If Not enabled Then
-                    fill = LIGHT_ControlFillColorDisabled
-                    foreground = LIGHT_TextFillColorDisabled
-                ElseIf pressed Then
-                    fill = LIGHT_ControlFillColorTertiary
-                    foreground = LIGHT_TextFillColorSecondary
-                ElseIf hot Then
-                    fill = LIGHT_ControlFillColorSecondary
-                    foreground = LIGHT_TextFillColorPrimary
-                Else
-                    fill = LIGHT_ControlFillColorDefault
-                    foreground = LIGHT_TextFillColorPrimary
-                End If
-            End If
-            useGradientBorder = enabled And Not pressed
-            drawSolidBorder = Not useGradientBorder
-        End If
-
-        If dark Then
+        If IsDarkMode() Then
             m_PropertySheetTarget.Clear ColorFromArgb(DARK_SolidBackgroundFillColorBase)
         Else
             m_PropertySheetTarget.Clear ColorFromArgb(LIGHT_SolidBackgroundFillColorBase)
         End If
 
-        Dim box As D2D1_ROUNDED_RECT
-        box = RoundedRect(fillInset, fillInset, w - fillInset, h - fillInset, r - fillInset)
-        m_PropertySheetTarget.FillRoundedRectangle box, SolidBrush(m_PropertySheetTarget, fill)
-
-        If useGradientBorder Then
-            Dim border As ID2D1LinearGradientBrush
-            If borderAtBottom Then
-                Set border = VerticalGradientBrush(m_PropertySheetTarget, h, h - ElevationBorderGradientLength, _
-                    ElevationBorderStop0, strokeSecondary, ElevationBorderStop1, strokeDefault)
-            Else
-                Set border = VerticalGradientBrush(m_PropertySheetTarget, 0, ElevationBorderGradientLength, _
-                    ElevationBorderStop0, strokeSecondary, ElevationBorderStop1, strokeDefault)
-            End If
-            box = RoundedRect(t / 2, t / 2, w - t / 2, h - t / 2, r - t / 2)
-            m_PropertySheetTarget.DrawRoundedRectangle box, border, t, 0
-        ElseIf drawSolidBorder Then
-            box = RoundedRect(t / 2, t / 2, w - t / 2, h - t / 2, r - t / 2)
-            m_PropertySheetTarget.DrawRoundedRectangle box, SolidBrush(m_PropertySheetTarget, strokeDefault), t, 0
-        End If
-
-        Dim caption As String
-        caption = WindowCaption(hWnd)
-        DrawButtonContent m_PropertySheetTarget, caption, "", "", SymbolIconDefaultFontSize, ui3IconLeft, 0, _
-            ButtonPaddingLeft, ButtonPaddingTop, w - ButtonPaddingRight, h - ButtonPaddingBottom, foreground
+        DrawStandardButton m_PropertySheetTarget, 0, 0, w, h, WindowCaption(hWnd), Accent, _
+            (IsWindowEnabled(hWnd) <> 0), ((state And BST_PUSHED) <> 0), ((state And BST_HOT) <> 0)
     End Sub
 
     Private Function WindowCaption(ByVal hWnd As LongPtr) As String

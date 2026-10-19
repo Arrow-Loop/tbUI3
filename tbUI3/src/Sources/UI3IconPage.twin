@@ -8,6 +8,9 @@ Class UI3IconPage
     ' A searchable grid of every UI3Icon (the Segoe Fluent Icons set), drawn with the same
     ' Direct2D/DirectWrite code as UI3Button. The search box matches a name ("sort"), a search tag
     ' ("hamburger"), or the glyph code in decimal (59595) or hex (E8CB); &H, 0x and U+ prefixes are allowed.
+    ' A SelectorBar-style strip across the top switches between the icon sets and Setup, which installs,
+    ' updates and removes the per-PC icon library (UI3IconLibrary). The Fluent UI System and Gallery tabs
+    ' only report the library's state so far; browsing them comes in a later pass.
     ' Designer controls: picChrome (PictureBox background/chrome), txtSearch (native TextBox),
     ' picGrid (Direct2D surface), hidden vsbGrid (scroll state only), and lblInfo (Label).
     ' The .tbppage is laid out to match the live page; runtime layout only adapts it to host size.
@@ -38,6 +41,33 @@ Class UI3IconPage
     Private Const SCROLLBAR_THUMB_WIDTH_DIP As Single = 8
     Private Const SCROLLBAR_THUMB_MIN_HEIGHT_DIP As Single = 30
 
+    ' Tab strip: WinUI SelectorBar (controls/dev/SelectorBar/SelectorBar_themeresources.xaml):
+    ' SelectorBarPadding 0,4; SelectorBarItemPadding 12,10,12,7; pill 3 high and 4 wide, scaled 4x
+    ' when selected. The gap below the strip is a tbUI3 layout choice.
+    Private Const TAB_SEGOE As Long = 0
+    Private Const TAB_FLUENT As Long = 1
+    Private Const TAB_GALLERY As Long = 2
+    Private Const TAB_SETUP As Long = 3
+    Private Const TAB_COUNT As Long = 4
+    Private Const SELECTOR_PADDING_Y_DIP As Single = 4
+    Private Const SELECTOR_ITEM_PAD_LEFT_DIP As Single = 12
+    Private Const SELECTOR_ITEM_PAD_TOP_DIP As Single = 10
+    Private Const SELECTOR_ITEM_PAD_RIGHT_DIP As Single = 12
+    Private Const SELECTOR_ITEM_PAD_BOTTOM_DIP As Single = 7
+    Private Const SELECTOR_PILL_HEIGHT_DIP As Single = 3
+    Private Const SELECTOR_PILL_WIDTH_DIP As Single = 16
+    Private Const SELECTOR_GAP_DIP As Single = 4
+
+    ' Library tabs (tbUI3 layout).
+    Private Const BUTTON_HEIGHT_DIP As Single = 32
+    Private Const BUTTON_GAP_DIP As Single = 8
+    Private Const SETUP_LABEL_WIDTH_DIP As Single = 64
+    Private Const SETUP_ROW_HEIGHT_DIP As Single = 20
+    Private Const ACTION_INSTALL As Long = 1
+    Private Const ACTION_UNINSTALL As Long = 2
+    Private Const ACTION_CHECK As Long = 3
+    Private Const MAX_BUTTONS As Long = 4
+
     Private Declare PtrSafe Function SendMessageW Lib "user32" (ByVal hWnd As LongPtr, ByVal wMsg As Long, _
         ByVal wParam As LongPtr, ByVal lParam As LongPtr) As LongPtr
 
@@ -59,7 +89,34 @@ Class UI3IconPage
     Private m_InfoSymbol As String
     Private m_InfoGlyph As String
 
+    Private m_Tab As Long
+    Private m_TabX0(0 To TAB_COUNT - 1) As Single
+    Private m_TabX1(0 To TAB_COUNT - 1) As Single
+    Private m_HotTab As Long
+    Private m_PressedTab As Long
+
+    Private m_ButtonCount As Long
+    Private m_ButtonX0(0 To MAX_BUTTONS - 1) As Single
+    Private m_ButtonY0(0 To MAX_BUTTONS - 1) As Single
+    Private m_ButtonX1(0 To MAX_BUTTONS - 1) As Single
+    Private m_ButtonY1(0 To MAX_BUTTONS - 1) As Single
+    Private m_ButtonCaption(0 To MAX_BUTTONS - 1) As String
+    Private m_ButtonAction(0 To MAX_BUTTONS - 1) As Long
+    Private m_ButtonAccent(0 To MAX_BUTTONS - 1) As Boolean
+    Private m_HotButton As Long
+    Private m_PressedButton As Long
+
+    Private m_InstalledVersion As String
+    Private m_LibraryChecked As Boolean
+    Private m_LibraryBusy As Boolean
+    Private m_LibraryStatus As String
+    Private m_LibraryStatusIsError As Boolean
+
     Sub New()
+        m_HotTab = -1
+        m_PressedTab = -1
+        m_HotButton = -1
+        m_PressedButton = -1
     End Sub
 
     Private Sub PropertyPage_Initialize()
@@ -78,6 +135,8 @@ Class UI3IconPage
             On Error GoTo 0
         End If
         txtSearch.Text = ""
+        m_InstalledVersion = IconLibraryInstalledVersion()
+        ShowTabControls
         ApplyFilter
         ScrollToSelected
         UpdateInfo
@@ -111,8 +170,10 @@ Class UI3IconPage
         Dim h As Single
         Dim gridTop As Single
         Dim gridH As Single
+        Dim top As Single
 
         pad = Me.ScaleX(PAGE_PAD_DIP, vbPixels, Me.ScaleMode)
+        top = Me.ScaleY(ContentTopDip(), vbPixels, Me.ScaleMode)
         searchH = Me.ScaleY(SEARCH_HEIGHT_DIP, vbPixels, Me.ScaleMode)
         infoH = Me.ScaleY(INFO_HEIGHT_DIP, vbPixels, Me.ScaleMode)
         gap = Me.ScaleY(GRID_GAP_DIP, vbPixels, Me.ScaleMode)
@@ -130,9 +191,9 @@ Class UI3IconPage
 
         txtSearch.BorderStyle = vbNoBorder
         txtSearch.Appearance = vbAppearFlat
-        txtSearch.Move pad + insetX, pad + insetY, w - 2 * pad - 2 * insetX, searchH - 2 * insetY
+        txtSearch.Move pad + insetX, top + insetY, w - 2 * pad - 2 * insetX, searchH - 2 * insetY
 
-        gridTop = pad + searchH + gap
+        gridTop = top + searchH + gap
         gridH = h - gridTop - gap - infoH - pad
         If gridH < Me.ScaleY(88, vbPixels, Me.ScaleMode) Then gridH = Me.ScaleY(88, vbPixels, Me.ScaleMode)
         picGrid.Move pad, gridTop, w - 2 * pad, gridH
@@ -319,15 +380,27 @@ Failed:
         End If
 
         m_ChromeTarget.Clear ColorFromArgb(baseArgb)
+        DrawSelectorBar dark
+        m_ButtonCount = 0
 
-        box = RoundedRect(PAGE_PAD_DIP, PAGE_PAD_DIP, w - PAGE_PAD_DIP, _
-            PAGE_PAD_DIP + SEARCH_HEIGHT_DIP, ControlCornerRadius)
+        If m_Tab = TAB_SETUP Then
+            DrawSetupTab w, h, dark
+            Exit Sub
+        ElseIf m_Tab <> TAB_SEGOE Then
+            DrawLibraryTab w, h, dark
+            Exit Sub
+        End If
+
+        Dim top As Single
+        top = ContentTopDip()
+        box = RoundedRect(PAGE_PAD_DIP, top, w - PAGE_PAD_DIP, _
+            top + SEARCH_HEIGHT_DIP, ControlCornerRadius)
         m_ChromeTarget.FillRoundedRectangle box, SolidBrush(m_ChromeTarget, fillArgb)
         m_ChromeTarget.DrawRoundedRectangle box, SolidBrush(m_ChromeTarget, strokeArgb), 1, 0
 
         If m_SearchFocused Then
-            box = RoundedRect(PAGE_PAD_DIP + 1, PAGE_PAD_DIP + SEARCH_HEIGHT_DIP - 2, _
-                w - PAGE_PAD_DIP - 1, PAGE_PAD_DIP + SEARCH_HEIGHT_DIP, 1)
+            box = RoundedRect(PAGE_PAD_DIP + 1, top + SEARCH_HEIGHT_DIP - 2, _
+                w - PAGE_PAD_DIP - 1, top + SEARCH_HEIGHT_DIP, 1)
             m_ChromeTarget.FillRoundedRectangle box, SolidBrush(m_ChromeTarget, focusArgb)
         End If
 
@@ -454,6 +527,428 @@ Failed:
 
         OleFromArgbOver = r Or (g * &H100&) Or (b * &H10000)
     End Function
+
+    ' --- Tab strip ---
+
+    Private Function SelectorItemTextHeight() As Single
+        Dim textW As Single
+        MeasureControlText "Segoe Fluent", textW, SelectorItemTextHeight
+    End Function
+
+    Private Function SelectorBarHeightDip() As Single
+        SelectorBarHeightDip = SELECTOR_PADDING_Y_DIP * 2 + SELECTOR_ITEM_PAD_TOP_DIP + SelectorItemTextHeight() + _
+            SELECTOR_ITEM_PAD_BOTTOM_DIP + SELECTOR_PILL_HEIGHT_DIP
+    End Function
+
+    Private Function ContentTopDip() As Single
+        ContentTopDip = SelectorBarHeightDip() + SELECTOR_GAP_DIP
+    End Function
+
+    Private Function TabCaption(ByVal Index As Long) As String
+        Select Case Index
+            Case TAB_SEGOE: TabCaption = "Segoe Fluent"
+            Case TAB_FLUENT: TabCaption = "Fluent UI System"
+            Case TAB_GALLERY: TabCaption = "Gallery"
+            Case TAB_SETUP: TabCaption = "Setup"
+        End Select
+    End Function
+
+    Private Sub DrawSelectorBar(ByVal dark As Boolean)
+        Dim i As Long
+        Dim x As Single
+        Dim textW As Single
+        Dim textH As Single
+        Dim itemTop As Single
+        Dim itemBottom As Single
+        Dim foreground As Long
+        Dim pill As Long
+
+        textH = SelectorItemTextHeight()
+        itemTop = SELECTOR_PADDING_Y_DIP
+        itemBottom = itemTop + SELECTOR_ITEM_PAD_TOP_DIP + textH + SELECTOR_ITEM_PAD_BOTTOM_DIP + SELECTOR_PILL_HEIGHT_DIP
+        If dark Then
+            pill = AccentShade(ACCENT_LIGHT2)
+        Else
+            pill = AccentShade(ACCENT_DARK1)
+        End If
+
+        ' The strip starts at the page edge, so the first caption lines up with the search box.
+        x = PAGE_PAD_DIP - SELECTOR_ITEM_PAD_LEFT_DIP
+        For i = 0 To TAB_COUNT - 1
+            MeasureControlText TabCaption(i), textW, textH
+            m_TabX0(i) = x
+            m_TabX1(i) = x + SELECTOR_ITEM_PAD_LEFT_DIP + textW + SELECTOR_ITEM_PAD_RIGHT_DIP
+
+            ' SelectorBarItemForeground*: hover and pressed lighten the text, selected or not.
+            If i = m_PressedTab And i = m_HotTab And i <> m_Tab Then
+                foreground = IIf(dark, DARK_TextFillColorTertiary, LIGHT_TextFillColorTertiary)
+            ElseIf i = m_HotTab Then
+                foreground = IIf(dark, DARK_TextFillColorSecondary, LIGHT_TextFillColorSecondary)
+            Else
+                foreground = IIf(dark, DARK_TextFillColorPrimary, LIGHT_TextFillColorPrimary)
+            End If
+            DrawLeftTextStyled m_ChromeTarget, TabCaption(i), 14, DWRITE_FONT_WEIGHT_NORMAL, _
+                x + SELECTOR_ITEM_PAD_LEFT_DIP, itemTop + SELECTOR_ITEM_PAD_TOP_DIP, _
+                m_TabX1(i), itemTop + SELECTOR_ITEM_PAD_TOP_DIP + textH, foreground
+
+            If i = m_Tab Then
+                Dim cx As Single
+                cx = (m_TabX0(i) + m_TabX1(i)) / 2
+                m_ChromeTarget.FillRoundedRectangle RoundedRect(cx - SELECTOR_PILL_WIDTH_DIP / 2, _
+                    itemBottom - SELECTOR_PILL_HEIGHT_DIP, cx + SELECTOR_PILL_WIDTH_DIP / 2, itemBottom, 1), _
+                    SolidBrush(m_ChromeTarget, pill)
+            End If
+            x = m_TabX1(i)
+        Next
+    End Sub
+
+    Private Function TabAt(ByVal xDip As Single, ByVal yDip As Single) As Long
+        Dim i As Long
+        TabAt = -1
+        If yDip < SELECTOR_PADDING_Y_DIP Or yDip >= SelectorBarHeightDip() - SELECTOR_PADDING_Y_DIP Then Exit Function
+        For i = 0 To TAB_COUNT - 1
+            If xDip >= m_TabX0(i) And xDip < m_TabX1(i) Then TabAt = i: Exit Function
+        Next
+    End Function
+
+    Private Sub SelectTab(ByVal Index As Long)
+        If Index = m_Tab Then Exit Sub
+        m_Tab = Index
+        m_HotButton = -1
+        m_PressedButton = -1
+        ShowTabControls
+        picChrome.Refresh
+        If m_Tab = TAB_SETUP And Not m_LibraryChecked Then RunCheck
+    End Sub
+
+    Private Sub ShowTabControls()
+        On Error Resume Next
+        txtSearch.Visible = (m_Tab = TAB_SEGOE)
+        picGrid.Visible = (m_Tab = TAB_SEGOE)
+    End Sub
+
+    ' --- Library tabs ---
+
+    Private Sub DrawLibraryTab(ByVal w As Single, ByVal h As Single, ByVal dark As Boolean)
+        Dim top As Single
+        Dim primaryArgb As Long
+        Dim secondaryArgb As Long
+        Dim setName As String
+        Dim setCount As String
+
+        primaryArgb = IIf(dark, DARK_TextFillColorPrimary, LIGHT_TextFillColorPrimary)
+        secondaryArgb = IIf(dark, DARK_TextFillColorSecondary, LIGHT_TextFillColorSecondary)
+        If m_Tab = TAB_FLUENT Then
+            setName = "Fluent UI System Icons"
+            setCount = "21,764 icons in regular, filled, color and light styles."
+        Else
+            setName = "WinUI Gallery images"
+            setCount = "112 control images from the WinUI Gallery."
+        End If
+
+        top = ContentTopDip() + 8
+        DrawLeftTextStyled m_ChromeTarget, setName, 14, DWRITE_FONT_WEIGHT_SEMI_BOLD, _
+            PAGE_PAD_DIP, top, w - PAGE_PAD_DIP, top + SETUP_ROW_HEIGHT_DIP, primaryArgb
+        top = top + SETUP_ROW_HEIGHT_DIP + 4
+        DrawLeftTextStyled m_ChromeTarget, setCount, 12, DWRITE_FONT_WEIGHT_NORMAL, _
+            PAGE_PAD_DIP, top, w - PAGE_PAD_DIP, top + SETUP_ROW_HEIGHT_DIP, secondaryArgb
+        top = top + SETUP_ROW_HEIGHT_DIP
+
+        If Len(m_InstalledVersion) = 0 Then
+            DrawLeftTextStyled m_ChromeTarget, "These come from the tbUI3 icon library, which isn't installed on this PC.", 12, _
+                DWRITE_FONT_WEIGHT_NORMAL, PAGE_PAD_DIP, top, w - PAGE_PAD_DIP, top + SETUP_ROW_HEIGHT_DIP, secondaryArgb
+            top = top + SETUP_ROW_HEIGHT_DIP + 12
+            AddButton "Install icon library", ACTION_INSTALL, True, PAGE_PAD_DIP, top
+            DrawButtons
+            DrawLibraryStatus top + BUTTON_HEIGHT_DIP + 8, w, dark
+        Else
+            DrawLeftTextStyled m_ChromeTarget, "The icon library (version " & m_InstalledVersion & ") is installed.", 12, _
+                DWRITE_FONT_WEIGHT_NORMAL, PAGE_PAD_DIP, top, w - PAGE_PAD_DIP, top + SETUP_ROW_HEIGHT_DIP, secondaryArgb
+            top = top + SETUP_ROW_HEIGHT_DIP
+            DrawLeftTextStyled m_ChromeTarget, "Browsing and picking these icons isn't built yet.", 12, _
+                DWRITE_FONT_WEIGHT_NORMAL, PAGE_PAD_DIP, top, w - PAGE_PAD_DIP, top + SETUP_ROW_HEIGHT_DIP, secondaryArgb
+        End If
+    End Sub
+
+    Private Sub DrawSetupTab(ByVal w As Single, ByVal h As Single, ByVal dark As Boolean)
+        Dim top As Single
+        Dim primaryArgb As Long
+        Dim secondaryArgb As Long
+        Dim latest As String
+        Dim latestText As String
+        Dim sizeText As String
+        Dim x As Single
+
+        primaryArgb = IIf(dark, DARK_TextFillColorPrimary, LIGHT_TextFillColorPrimary)
+        secondaryArgb = IIf(dark, DARK_TextFillColorSecondary, LIGHT_TextFillColorSecondary)
+        latest = IconLibraryLatestVersion()
+
+        top = ContentTopDip() + 8
+        DrawLeftTextStyled m_ChromeTarget, "Icon library", 14, DWRITE_FONT_WEIGHT_SEMI_BOLD, _
+            PAGE_PAD_DIP, top, w - PAGE_PAD_DIP, top + SETUP_ROW_HEIGHT_DIP, primaryArgb
+        top = top + SETUP_ROW_HEIGHT_DIP + 4
+        DrawLeftTextStyled m_ChromeTarget, "Adds the Fluent UI System Icons and the WinUI Gallery images to this picker.", 12, _
+            DWRITE_FONT_WEIGHT_NORMAL, PAGE_PAD_DIP, top, w - PAGE_PAD_DIP, top + SETUP_ROW_HEIGHT_DIP, secondaryArgb
+        top = top + SETUP_ROW_HEIGHT_DIP
+        DrawLeftTextStyled m_ChromeTarget, "It is only needed on this PC. Apps you build carry just the icons you pick.", 12, _
+            DWRITE_FONT_WEIGHT_NORMAL, PAGE_PAD_DIP, top, w - PAGE_PAD_DIP, top + SETUP_ROW_HEIGHT_DIP, secondaryArgb
+        top = top + SETUP_ROW_HEIGHT_DIP + 10
+
+        If Len(latest) > 0 Then
+            latestText = latest
+            If Len(m_InstalledVersion) > 0 Then
+                If IconLibraryCompareVersions(latest, m_InstalledVersion) > 0 Then
+                    latestText = latest & "  (update available)"
+                ElseIf IconLibraryCompareVersions(latest, m_InstalledVersion) = 0 Then
+                    latestText = latest & "  (up to date)"
+                End If
+            End If
+        ElseIf m_LibraryBusy Then
+            latestText = "Checking..."
+        Else
+            latestText = "Not checked"
+        End If
+
+        If Len(m_InstalledVersion) > 0 Then
+            sizeText = FormatMegabytes(IconLibraryInstalledSize()) & " on disk"
+        ElseIf IconLibraryLatestSize() > 0 Then
+            sizeText = FormatMegabytes(IconLibraryLatestSize()) & " download"
+        End If
+
+        DrawSetupField "Installed", IIf(Len(m_InstalledVersion) > 0, m_InstalledVersion, "Not installed"), top, w, dark
+        DrawSetupField "Latest", latestText, top + SETUP_ROW_HEIGHT_DIP, w, dark
+        DrawSetupField "Size", sizeText, top + SETUP_ROW_HEIGHT_DIP * 2, w, dark
+        DrawSetupField "Folder", IconLibraryFolder(), top + SETUP_ROW_HEIGHT_DIP * 3, w, dark
+        top = top + SETUP_ROW_HEIGHT_DIP * 4 + 12
+
+        x = PAGE_PAD_DIP
+        If Len(m_InstalledVersion) = 0 Then
+            x = AddButton("Install", ACTION_INSTALL, True, x, top)
+        Else
+            If Len(latest) > 0 Then
+                If IconLibraryCompareVersions(latest, m_InstalledVersion) > 0 Then
+                    x = AddButton("Update", ACTION_INSTALL, True, x, top)
+                End If
+            End If
+            If m_ButtonCount = 0 Then x = AddButton("Reinstall", ACTION_INSTALL, False, x, top)
+            x = AddButton("Uninstall", ACTION_UNINSTALL, False, x, top)
+        End If
+        x = AddButton("Check for updates", ACTION_CHECK, False, x, top)
+        DrawButtons
+        DrawLibraryStatus top + BUTTON_HEIGHT_DIP + 8, w, dark
+    End Sub
+
+    Private Sub DrawSetupField(ByVal labelText As String, ByVal valueText As String, ByVal y As Single, _
+            ByVal w As Single, ByVal dark As Boolean)
+        DrawLeftTextStyled m_ChromeTarget, labelText, 12, DWRITE_FONT_WEIGHT_NORMAL, _
+            PAGE_PAD_DIP, y, PAGE_PAD_DIP + SETUP_LABEL_WIDTH_DIP - 4, y + SETUP_ROW_HEIGHT_DIP, _
+            IIf(dark, DARK_TextFillColorSecondary, LIGHT_TextFillColorSecondary)
+        DrawLeftTextStyled m_ChromeTarget, valueText, 12, DWRITE_FONT_WEIGHT_NORMAL, _
+            PAGE_PAD_DIP + SETUP_LABEL_WIDTH_DIP, y, w - PAGE_PAD_DIP, y + SETUP_ROW_HEIGHT_DIP, _
+            IIf(dark, DARK_TextFillColorPrimary, LIGHT_TextFillColorPrimary)
+    End Sub
+
+    Private Sub DrawLibraryStatus(ByVal y As Single, ByVal w As Single, ByVal dark As Boolean)
+        Dim argb As Long
+        If Len(m_LibraryStatus) = 0 Then Exit Sub
+        If m_LibraryStatusIsError Then
+            argb = IIf(dark, DARK_SystemFillColorCritical, LIGHT_SystemFillColorCritical)
+        Else
+            argb = IIf(dark, DARK_TextFillColorSecondary, LIGHT_TextFillColorSecondary)
+        End If
+        DrawLeftTextStyled m_ChromeTarget, m_LibraryStatus, 12, DWRITE_FONT_WEIGHT_NORMAL, _
+            PAGE_PAD_DIP, y, w - PAGE_PAD_DIP, y + SETUP_ROW_HEIGHT_DIP, argb
+    End Sub
+
+    Private Function FormatMegabytes(ByVal Bytes As Double) As String
+        FormatMegabytes = Format$(Bytes / 1048576#, "0.0") & " MB"
+    End Function
+
+    ' Lays out one button from X and returns where the next one starts.
+    Private Function AddButton(ByVal Caption As String, ByVal Action As Long, ByVal Accent As Boolean, _
+            ByVal X As Single, ByVal Y As Single) As Single
+        Dim textW As Single
+        Dim textH As Single
+        If m_ButtonCount >= MAX_BUTTONS Then AddButton = X: Exit Function
+        MeasureControlText Caption, textW, textH
+        m_ButtonX0(m_ButtonCount) = X
+        m_ButtonY0(m_ButtonCount) = Y
+        m_ButtonX1(m_ButtonCount) = X + ButtonPaddingLeft + textW + ButtonPaddingRight + 2 * ButtonBorderThemeThickness
+        m_ButtonY1(m_ButtonCount) = Y + BUTTON_HEIGHT_DIP
+        m_ButtonCaption(m_ButtonCount) = Caption
+        m_ButtonAction(m_ButtonCount) = Action
+        m_ButtonAccent(m_ButtonCount) = Accent
+        AddButton = m_ButtonX1(m_ButtonCount) + BUTTON_GAP_DIP
+        m_ButtonCount = m_ButtonCount + 1
+    End Function
+
+    Private Sub DrawButtons()
+        Dim i As Long
+        For i = 0 To m_ButtonCount - 1
+            DrawStandardButton m_ChromeTarget, m_ButtonX0(i), m_ButtonY0(i), m_ButtonX1(i), m_ButtonY1(i), _
+                m_ButtonCaption(i), m_ButtonAccent(i), Not m_LibraryBusy, _
+                (i = m_PressedButton And i = m_HotButton), (i = m_HotButton)
+        Next
+    End Sub
+
+    Private Function ButtonAt(ByVal xDip As Single, ByVal yDip As Single) As Long
+        Dim i As Long
+        ButtonAt = -1
+        If m_LibraryBusy Then Exit Function
+        For i = 0 To m_ButtonCount - 1
+            If xDip >= m_ButtonX0(i) And xDip < m_ButtonX1(i) And yDip >= m_ButtonY0(i) And yDip < m_ButtonY1(i) Then
+                ButtonAt = i
+                Exit Function
+            End If
+        Next
+    End Function
+
+    Private Sub RunButtonAction(ByVal Action As Long)
+        Select Case Action
+            Case ACTION_INSTALL: RunInstall
+            Case ACTION_UNINSTALL: RunUninstall
+            Case ACTION_CHECK: RunCheck
+        End Select
+    End Sub
+
+    Private Sub SetLibraryStatus(ByVal Text As String, Optional ByVal IsError As Boolean = False)
+        m_LibraryStatus = Text
+        m_LibraryStatusIsError = IsError
+        picChrome.Refresh
+    End Sub
+
+    Private Sub BeginLibraryWork()
+        m_LibraryBusy = True
+        m_HotButton = -1
+        m_PressedButton = -1
+        Screen.MousePointer = vbHourglass
+    End Sub
+
+    Private Sub EndLibraryWork()
+        m_LibraryBusy = False
+        Screen.MousePointer = vbDefault
+        m_InstalledVersion = IconLibraryInstalledVersion()
+        picChrome.Refresh
+    End Sub
+
+    Private Sub RunCheck()
+        Dim errorText As String
+        If m_LibraryBusy Then Exit Sub
+        BeginLibraryWork
+        SetLibraryStatus "Checking for the latest icon library..."
+        m_LibraryChecked = True
+        If IconLibraryCheckLatest(errorText) Then
+            m_InstalledVersion = IconLibraryInstalledVersion()
+            If Len(m_InstalledVersion) = 0 Then
+                SetLibraryStatus "Version " & IconLibraryLatestVersion() & " is available."
+            ElseIf IconLibraryCompareVersions(IconLibraryLatestVersion(), m_InstalledVersion) > 0 Then
+                SetLibraryStatus "Version " & IconLibraryLatestVersion() & " is available."
+            Else
+                SetLibraryStatus "The installed library is up to date."
+            End If
+        Else
+            SetLibraryStatus "Couldn't check for the library: " & errorText, True
+        End If
+        EndLibraryWork
+    End Sub
+
+    Private Sub RunInstall()
+        Dim errorText As String
+        If m_LibraryBusy Then Exit Sub
+        BeginLibraryWork
+        m_LibraryChecked = True
+
+        SetLibraryStatus "Checking for the latest icon library..."
+        If Not IconLibraryCheckLatest(errorText) Then GoTo Failed
+
+        SetLibraryStatus "Downloading " & FormatMegabytes(IconLibraryLatestSize()) & "..."
+        If Not IconLibraryDownload(errorText) Then GoTo Failed
+
+        SetLibraryStatus "Unpacking and checking the library..."
+        If Not IconLibraryUnpack(errorText) Then GoTo Failed
+        If Not IconLibraryCommit(errorText) Then GoTo Failed
+
+        SetLibraryStatus "Installed version " & IconLibraryLatestVersion() & "."
+        EndLibraryWork
+        Exit Sub
+
+Failed:
+        IconLibraryClearDownloads
+        SetLibraryStatus "Install failed: " & errorText, True
+        EndLibraryWork
+    End Sub
+
+    Private Sub RunUninstall()
+        Dim errorText As String
+        If m_LibraryBusy Then Exit Sub
+        If MsgBox("Remove the tbUI3 icon library from this PC?" & vbCrLf & vbCrLf & _
+                "You can install it again from Setup at any time.", vbYesNo Or vbQuestion, "tbUI3") <> vbYes Then Exit Sub
+        BeginLibraryWork
+        If IconLibraryUninstall(errorText) Then
+            SetLibraryStatus "The icon library was removed."
+        Else
+            SetLibraryStatus "Uninstall failed: " & errorText, True
+        End If
+        EndLibraryWork
+    End Sub
+
+    ' --- Chrome mouse: tab strip and library buttons ---
+
+    Private Sub ChromePointToDip(ByVal X As Single, ByVal Y As Single, ByRef xDip As Single, ByRef yDip As Single)
+        Dim dpi As Single
+        dpi = DpiOfDC(picChrome.hDC)
+        If dpi <= 0 Then dpi = 96
+        xDip = X * 96! / dpi
+        yDip = Y * 96! / dpi
+    End Sub
+
+    Private Sub picChrome_MouseDown(Button As Integer, Shift As Integer, X As Single, Y As Single)
+        If Button <> vbLeftButton Then Exit Sub
+        Dim xDip As Single
+        Dim yDip As Single
+        ChromePointToDip X, Y, xDip, yDip
+        m_PressedTab = TabAt(xDip, yDip)
+        m_PressedButton = ButtonAt(xDip, yDip)
+        m_HotTab = m_PressedTab
+        m_HotButton = m_PressedButton
+        picChrome.Refresh
+    End Sub
+
+    Private Sub picChrome_MouseMove(Button As Integer, Shift As Integer, X As Single, Y As Single)
+        Dim xDip As Single
+        Dim yDip As Single
+        Dim hotTab As Long
+        Dim hotButton As Long
+        ChromePointToDip X, Y, xDip, yDip
+        hotTab = TabAt(xDip, yDip)
+        hotButton = ButtonAt(xDip, yDip)
+        If hotTab <> m_HotTab Or hotButton <> m_HotButton Then
+            m_HotTab = hotTab
+            m_HotButton = hotButton
+            picChrome.Refresh
+        End If
+    End Sub
+
+    Private Sub picChrome_MouseUp(Button As Integer, Shift As Integer, X As Single, Y As Single)
+        If Button <> vbLeftButton Then Exit Sub
+        Dim xDip As Single
+        Dim yDip As Single
+        Dim pressedTab As Long
+        Dim pressedButton As Long
+        ChromePointToDip X, Y, xDip, yDip
+        pressedTab = m_PressedTab
+        pressedButton = m_PressedButton
+        m_PressedTab = -1
+        m_PressedButton = -1
+        If pressedTab >= 0 And TabAt(xDip, yDip) = pressedTab Then
+            SelectTab pressedTab
+        ElseIf pressedButton >= 0 And ButtonAt(xDip, yDip) = pressedButton Then
+            picChrome.Refresh
+            RunButtonAction m_ButtonAction(pressedButton)
+        Else
+            picChrome.Refresh
+        End If
+    End Sub
 
     ' --- Filtering ---
 
@@ -837,6 +1332,10 @@ Failed:
     End Sub
 
     Private Sub picGrid_MouseMove(Button As Integer, Shift As Integer, X As Single, Y As Single)
+        If m_HotTab >= 0 Then
+            m_HotTab = -1
+            picChrome.Refresh
+        End If
         If Not m_ScrollDragging Then Exit Sub
         Dim dpi As Single
         dpi = GridDpi()

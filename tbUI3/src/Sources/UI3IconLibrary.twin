@@ -1,0 +1,513 @@
+' tbUI3 icon library: the Fluent UI System Icons and WinUI Gallery images the icon picker offers.
+'
+' The library is one file per PC, %LOCALAPPDATA%\tbUI3\tbUI3-Icons.dat, needed only at design time
+' (built apps carry just the icons a developer picked). The picker's Setup tab installs, updates,
+' reinstalls and removes it. Releases live in https://github.com/Arrow-Loop/tbUI3-Libraries: the
+' manifest on main names the current zip, its size and SHA-256. tools/build-icon-library.mjs builds
+' both and documents the .dat format.
+'
+' Install steps, each a separate call so the picker can show progress between them:
+' IconLibraryCheckLatest, IconLibraryDownload, IconLibraryUnpack (Windows' own tar.exe), IconLibraryCommit.
+
+Private Module UI3IconLibrary
+
+    Private Const MANIFEST_URL As String = "https://raw.githubusercontent.com/Arrow-Loop/tbUI3-Libraries/main/icons/manifest.txt"
+    ' A manifest may only send the download to this repository's releases.
+    Private Const RELEASE_URL_PREFIX As String = "https://github.com/Arrow-Loop/tbUI3-Libraries/releases/download/"
+    Private Const LIBRARY_FILE As String = "tbUI3-Icons.dat"
+    Private Const NOTICE_FILE As String = "NOTICE.txt"
+    Private Const LIBRARY_MAGIC As String = "tbUI3LIB"
+    Private Const LIBRARY_FORMAT As Long = 1
+    Private Const TAR_TIMEOUT_MS As Long = 300000
+
+    Private Const MOVEFILE_REPLACE_EXISTING As Long = 1
+    Private Const MOVEFILE_COPY_ALLOWED As Long = 2
+    Private Const CREATE_NO_WINDOW As Long = &H8000000
+    Private Const WAIT_OBJECT_0 As Long = 0
+
+    Private Type UI3StartupInfo
+        cb As Long
+        lpReserved As LongPtr
+        lpDesktop As LongPtr
+        lpTitle As LongPtr
+        dwX As Long
+        dwY As Long
+        dwXSize As Long
+        dwYSize As Long
+        dwXCountChars As Long
+        dwYCountChars As Long
+        dwFillAttribute As Long
+        dwFlags As Long
+        wShowWindow As Integer
+        cbReserved2 As Integer
+        lpReserved2 As LongPtr
+        hStdInput As LongPtr
+        hStdOutput As LongPtr
+        hStdError As LongPtr
+    End Type
+
+    Private Type UI3ProcessInfo
+        hProcess As LongPtr
+        hThread As LongPtr
+        dwProcessId As Long
+        dwThreadId As Long
+    End Type
+
+    Private Declare PtrSafe Function URLDownloadToFileW Lib "urlmon" (ByVal pCaller As LongPtr, ByVal szURL As LongPtr, _
+        ByVal szFileName As LongPtr, ByVal dwReserved As Long, ByVal lpfnCB As LongPtr) As Long
+    Private Declare PtrSafe Function DeleteUrlCacheEntryW Lib "wininet" (ByVal lpszUrlName As LongPtr) As Long
+    Private Declare PtrSafe Function BCryptOpenAlgorithmProvider Lib "bcrypt" (ByRef phAlgorithm As LongPtr, _
+        ByVal pszAlgId As LongPtr, ByVal pszImplementation As LongPtr, ByVal dwFlags As Long) As Long
+    Private Declare PtrSafe Function BCryptHash Lib "bcrypt" (ByVal hAlgorithm As LongPtr, ByVal pbSecret As LongPtr, _
+        ByVal cbSecret As Long, ByVal pbInput As LongPtr, ByVal cbInput As Long, ByVal pbOutput As LongPtr, _
+        ByVal cbOutput As Long) As Long
+    Private Declare PtrSafe Function BCryptCloseAlgorithmProvider Lib "bcrypt" (ByVal hAlgorithm As LongPtr, _
+        ByVal dwFlags As Long) As Long
+    Private Declare PtrSafe Function CreateProcessW Lib "kernel32" (ByVal lpApplicationName As LongPtr, _
+        ByVal lpCommandLine As LongPtr, ByVal lpProcessAttributes As LongPtr, ByVal lpThreadAttributes As LongPtr, _
+        ByVal bInheritHandles As Long, ByVal dwCreationFlags As Long, ByVal lpEnvironment As LongPtr, _
+        ByVal lpCurrentDirectory As LongPtr, ByRef lpStartupInfo As UI3StartupInfo, _
+        ByRef lpProcessInformation As UI3ProcessInfo) As Long
+    Private Declare PtrSafe Function WaitForSingleObject Lib "kernel32" (ByVal hHandle As LongPtr, _
+        ByVal dwMilliseconds As Long) As Long
+    Private Declare PtrSafe Function GetExitCodeProcess Lib "kernel32" (ByVal hProcess As LongPtr, _
+        ByRef lpExitCode As Long) As Long
+    Private Declare PtrSafe Function TerminateProcess Lib "kernel32" (ByVal hProcess As LongPtr, _
+        ByVal uExitCode As Long) As Long
+    Private Declare PtrSafe Function CloseHandle Lib "kernel32" (ByVal hObject As LongPtr) As Long
+    Private Declare PtrSafe Function MoveFileExW Lib "kernel32" (ByVal lpExistingFileName As LongPtr, _
+        ByVal lpNewFileName As LongPtr, ByVal dwFlags As Long) As Long
+    Private Declare PtrSafe Function GetSystemDirectoryW Lib "kernel32" (ByVal lpBuffer As LongPtr, ByVal uSize As Long) As Long
+
+    ' The latest release, as read by IconLibraryCheckLatest.
+    Private m_LatestVersion As String
+    Private m_LatestUrl As String
+    Private m_LatestFile As String
+    Private m_LatestSize As Double
+    Private m_LatestSha256 As String
+    Private m_LatestDatSha256 As String
+    Private m_LatestEntries As Long
+
+    ' --- Where the library lives ---
+
+    Public Function IconLibraryFolder() As String
+        IconLibraryFolder = Environ$("LOCALAPPDATA")
+        If Len(IconLibraryFolder) = 0 Then IconLibraryFolder = Environ$("APPDATA")
+        IconLibraryFolder = IconLibraryFolder & "\tbUI3"
+    End Function
+
+    Public Function IconLibraryPath() As String
+        IconLibraryPath = IconLibraryFolder() & "\" & LIBRARY_FILE
+    End Function
+
+    Private Function DownloadFolder() As String
+        DownloadFolder = IconLibraryFolder() & "\download"
+    End Function
+
+    Private Function UnpackFolder() As String
+        UnpackFolder = DownloadFolder() & "\unpacked"
+    End Function
+
+    ' The installed library's version, or "" when none is installed or the file is not a library.
+    Public Function IconLibraryInstalledVersion() As String
+        Dim path As String
+        Dim f As Integer
+        Dim header() As Byte
+        Dim firstLine() As Byte
+        Dim indexOffset As Long
+        Dim indexLength As Long
+        Dim text As String
+        Dim parts() As String
+        Dim magic As String
+        Dim i As Long
+
+        path = IconLibraryPath()
+        If Not FileExists(path) Then Exit Function
+        On Error GoTo Failed
+        f = FreeFile
+        Open path For Binary Access Read Shared As #f
+        If LOF(f) < 32 Then GoTo Done
+        ReDim header(0 To 31)
+        Get #f, 1, header
+        For i = 0 To 7
+            magic = magic & Chr$(header(i))
+        Next
+        If magic <> LIBRARY_MAGIC Then GoTo Done
+        If BytesToLong(header, 8) <> LIBRARY_FORMAT Then GoTo Done
+        indexOffset = BytesToLong(header, 16)
+        indexLength = BytesToLong(header, 20)
+        If indexOffset < 32 Or indexLength <= 0 Then GoTo Done
+        If indexLength > 256 Then indexLength = 256
+        ReDim firstLine(0 To indexLength - 1)
+        Get #f, indexOffset + 1, firstLine
+        text = StrConv(firstLine, vbUnicode)
+        If InStr(text, vbCr) > 0 Then text = Left$(text, InStr(text, vbCr) - 1)
+        parts = Split(text, "|")
+        If UBound(parts) >= 1 Then
+            If parts(0) = "#tbUI3-Icons" Then IconLibraryInstalledVersion = parts(1)
+        End If
+Done:
+        Close #f
+        Exit Function
+Failed:
+        On Error Resume Next
+        If f <> 0 Then Close #f
+    End Function
+
+    Public Function IconLibraryInstalledSize() As Double
+        On Error Resume Next
+        If FileExists(IconLibraryPath()) Then IconLibraryInstalledSize = FileLen(IconLibraryPath())
+    End Function
+
+    ' --- The latest release ---
+
+    Public Function IconLibraryLatestVersion() As String
+        IconLibraryLatestVersion = m_LatestVersion
+    End Function
+
+    Public Function IconLibraryLatestSize() As Double
+        IconLibraryLatestSize = m_LatestSize
+    End Function
+
+    Public Function IconLibraryLatestEntries() As Long
+        IconLibraryLatestEntries = m_LatestEntries
+    End Function
+
+    ' Reads the manifest from the libraries repository. On failure ErrorText says why.
+    Public Function IconLibraryCheckLatest(ByRef ErrorText As String) As Boolean
+        Dim temp As String
+        Dim text As String
+        Dim lines() As String
+        Dim i As Long
+        Dim eq As Long
+        Dim key As String
+        Dim value As String
+        Dim version As String
+        Dim url As String
+        Dim file As String
+        Dim size As Double
+        Dim sha As String
+        Dim datSha As String
+        Dim entries As Long
+        Dim libFormat As Long
+
+        ErrorText = ""
+        If Not EnsureFolder(DownloadFolder(), ErrorText) Then Exit Function
+        temp = DownloadFolder() & "\manifest.txt"
+        ' The query string sidesteps cached copies of an older manifest.
+        If Not DownloadFile(MANIFEST_URL & "?t=" & Format$(Now, "yyyymmddhhnnss"), temp, ErrorText) Then Exit Function
+        text = ReadTextFile(temp)
+        DeleteFile temp
+
+        text = Replace(text, vbCr, "")
+        lines = Split(text, vbLf)
+        For i = 0 To UBound(lines)
+            eq = InStr(lines(i), "=")
+            If eq > 1 Then
+                key = LCase$(Trim$(Left$(lines(i), eq - 1)))
+                value = Trim$(Mid$(lines(i), eq + 1))
+                Select Case key
+                    Case "format": libFormat = Val(value)
+                    Case "version": version = value
+                    Case "url": url = value
+                    Case "file": file = value
+                    Case "size": size = Val(value)
+                    Case "sha256": sha = LCase$(value)
+                    Case "datsha256": datSha = LCase$(value)
+                    Case "entries": entries = Val(value)
+                End Select
+            End If
+        Next
+
+        If libFormat <> LIBRARY_FORMAT Then
+            ErrorText = "This version of tbUI3 can't read the new library format (" & libFormat & "). Update tbUI3."
+            Exit Function
+        End If
+        If Len(version) = 0 Or Len(file) = 0 Or size <= 0 Or Len(sha) <> 64 Or Len(datSha) <> 64 Then
+            ErrorText = "The library manifest is incomplete."
+            Exit Function
+        End If
+        If LCase$(Left$(url, Len(RELEASE_URL_PREFIX))) <> LCase$(RELEASE_URL_PREFIX) Or InStr(file, "\") > 0 Or InStr(file, "/") > 0 Then
+            ErrorText = "The library manifest points somewhere unexpected, so it was ignored."
+            Exit Function
+        End If
+
+        m_LatestVersion = version
+        m_LatestUrl = url
+        m_LatestFile = file
+        m_LatestSize = size
+        m_LatestSha256 = sha
+        m_LatestDatSha256 = datSha
+        m_LatestEntries = entries
+        IconLibraryCheckLatest = True
+    End Function
+
+    ' -1 when A is older than B, 0 when equal, 1 when newer. Versions are dotted numbers.
+    Public Function IconLibraryCompareVersions(ByVal A As String, ByVal B As String) As Long
+        Dim pa() As String
+        Dim pb() As String
+        Dim i As Long
+        Dim na As Double
+        Dim nb As Double
+        pa = Split(A, ".")
+        pb = Split(B, ".")
+        For i = 0 To IIf(UBound(pa) > UBound(pb), UBound(pa), UBound(pb))
+            na = 0
+            nb = 0
+            If i <= UBound(pa) Then na = Val(pa(i))
+            If i <= UBound(pb) Then nb = Val(pb(i))
+            If na < nb Then IconLibraryCompareVersions = -1: Exit Function
+            If na > nb Then IconLibraryCompareVersions = 1: Exit Function
+        Next
+    End Function
+
+    ' --- Install steps ---
+
+    ' Downloads the latest zip and checks its size and SHA-256.
+    Public Function IconLibraryDownload(ByRef ErrorText As String) As Boolean
+        Dim zipPath As String
+        ErrorText = ""
+        If Len(m_LatestUrl) = 0 Then ErrorText = "Check for the latest library first.": Exit Function
+        If Not EnsureFolder(DownloadFolder(), ErrorText) Then Exit Function
+        zipPath = DownloadFolder() & "\" & m_LatestFile
+        DeleteFile zipPath
+        If Not DownloadFile(m_LatestUrl, zipPath, ErrorText) Then Exit Function
+        If FileLen(zipPath) <> m_LatestSize Then
+            ErrorText = "The download is the wrong size (" & FileLen(zipPath) & " bytes, expected " & m_LatestSize & ")."
+            DeleteFile zipPath
+            Exit Function
+        End If
+        If FileSha256(zipPath) <> m_LatestSha256 Then
+            ErrorText = "The download failed its SHA-256 check, so it was deleted."
+            DeleteFile zipPath
+            Exit Function
+        End If
+        IconLibraryDownload = True
+    End Function
+
+    ' Unpacks the downloaded zip with Windows' tar.exe and checks the library inside it.
+    Public Function IconLibraryUnpack(ByRef ErrorText As String) As Boolean
+        Dim zipPath As String
+        Dim folder As String
+        Dim tarPath As String
+        Dim exitCode As Long
+
+        ErrorText = ""
+        zipPath = DownloadFolder() & "\" & m_LatestFile
+        folder = UnpackFolder()
+        If Not FileExists(zipPath) Then ErrorText = "The download is missing.": Exit Function
+        DeleteFile folder & "\" & LIBRARY_FILE
+        DeleteFile folder & "\" & NOTICE_FILE
+        If Not EnsureFolder(folder, ErrorText) Then Exit Function
+
+        tarPath = SystemDirectory() & "\tar.exe"
+        If Not FileExists(tarPath) Then
+            ErrorText = "Windows' tar.exe was not found (it ships with Windows 10 1803 and later)."
+            Exit Function
+        End If
+        If Not RunHidden(Chr(34) & tarPath & Chr(34) & " -xf " & Chr(34) & zipPath & Chr(34) & _
+                " -C " & Chr(34) & folder & Chr(34), exitCode, ErrorText) Then Exit Function
+        If exitCode <> 0 Then ErrorText = "tar could not unpack the download (exit code " & exitCode & ").": Exit Function
+
+        If Not FileExists(folder & "\" & LIBRARY_FILE) Then ErrorText = "The download did not contain " & LIBRARY_FILE & ".": Exit Function
+        If FileSha256(folder & "\" & LIBRARY_FILE) <> m_LatestDatSha256 Then
+            ErrorText = "The unpacked library failed its SHA-256 check."
+            DeleteFile folder & "\" & LIBRARY_FILE
+            Exit Function
+        End If
+        IconLibraryUnpack = True
+    End Function
+
+    ' Moves the checked library into place, replacing any older one, and clears the download folder.
+    Public Function IconLibraryCommit(ByRef ErrorText As String) As Boolean
+        Dim folder As String
+        ErrorText = ""
+        folder = UnpackFolder()
+        If Not MoveReplacing(folder & "\" & LIBRARY_FILE, IconLibraryPath(), ErrorText) Then Exit Function
+        If FileExists(folder & "\" & NOTICE_FILE) Then
+            MoveReplacing folder & "\" & NOTICE_FILE, IconLibraryFolder() & "\" & NOTICE_FILE, ""
+        End If
+        IconLibraryClearDownloads
+        IconLibraryCommit = True
+    End Function
+
+    ' Removes the library and its notice; the tbUI3 folder goes too when nothing else is in it.
+    Public Function IconLibraryUninstall(ByRef ErrorText As String) As Boolean
+        ErrorText = ""
+        IconLibraryClearDownloads
+        If FileExists(IconLibraryPath()) Then
+            On Error Resume Next
+            Kill IconLibraryPath()
+            If Err.Number <> 0 Then
+                ErrorText = "Could not delete " & IconLibraryPath() & " (" & Err.Description & ")."
+                Exit Function
+            End If
+            On Error GoTo 0
+        End If
+        DeleteFile IconLibraryFolder() & "\" & NOTICE_FILE
+        On Error Resume Next
+        RmDir IconLibraryFolder()
+        IconLibraryUninstall = True
+    End Function
+
+    Public Sub IconLibraryClearDownloads()
+        On Error Resume Next
+        DeleteFile UnpackFolder() & "\" & LIBRARY_FILE
+        DeleteFile UnpackFolder() & "\" & NOTICE_FILE
+        RmDir UnpackFolder()
+        If Len(m_LatestFile) > 0 Then DeleteFile DownloadFolder() & "\" & m_LatestFile
+        DeleteFile DownloadFolder() & "\manifest.txt"
+        RmDir DownloadFolder()
+    End Sub
+
+    ' --- Helpers ---
+
+    Private Function DownloadFile(ByVal Url As String, ByVal Path As String, ByRef ErrorText As String) As Boolean
+        Dim hr As Long
+        DeleteUrlCacheEntryW StrPtr(Url)
+        hr = URLDownloadToFileW(0, StrPtr(Url), StrPtr(Path), 0, 0)
+        If hr <> 0 Or Not FileExists(Path) Then
+            ErrorText = "The download failed (&H" & Hex$(hr) & "). Check the internet connection."
+            Exit Function
+        End If
+        DownloadFile = True
+    End Function
+
+    Private Function RunHidden(ByVal CommandLine As String, ByRef ExitCode As Long, ByRef ErrorText As String) As Boolean
+        Dim si As UI3StartupInfo
+        Dim pi As UI3ProcessInfo
+        Dim buffer As String
+        si.cb = LenB(si)
+        buffer = CommandLine & vbNullChar
+        If CreateProcessW(0, StrPtr(buffer), 0, 0, 0, CREATE_NO_WINDOW, 0, 0, si, pi) = 0 Then
+            ErrorText = "Could not start tar.exe (error " & Err.LastDllError & ")."
+            Exit Function
+        End If
+        If WaitForSingleObject(pi.hProcess, TAR_TIMEOUT_MS) <> WAIT_OBJECT_0 Then
+            TerminateProcess pi.hProcess, 1
+            ErrorText = "tar.exe took too long and was stopped."
+        Else
+            GetExitCodeProcess pi.hProcess, ExitCode
+            RunHidden = True
+        End If
+        CloseHandle pi.hThread
+        CloseHandle pi.hProcess
+    End Function
+
+    Private Function SystemDirectory() As String
+        Dim buffer As String
+        Dim n As Long
+        buffer = String$(260, vbNullChar)
+        n = GetSystemDirectoryW(StrPtr(buffer), 260)
+        If n > 0 And n < 260 Then
+            SystemDirectory = Left$(buffer, n)
+        Else
+            SystemDirectory = Environ$("SystemRoot") & "\System32"
+        End If
+    End Function
+
+    ' Lower-case hex SHA-256 of a file, or "" if it cannot be read.
+    Private Function FileSha256(ByVal Path As String) As String
+        Dim f As Integer
+        Dim data() As Byte
+        Dim digest(0 To 31) As Byte
+        Dim alg As LongPtr
+        Dim n As Long
+        Dim i As Long
+        Dim result As String
+
+        On Error GoTo Failed
+        f = FreeFile
+        Open Path For Binary Access Read Shared As #f
+        n = LOF(f)
+        If n > 0 Then
+            ReDim data(0 To n - 1)
+            Get #f, 1, data
+        End If
+        Close #f
+        f = 0
+
+        If BCryptOpenAlgorithmProvider(alg, StrPtr("SHA256"), 0, 0) <> 0 Then Exit Function
+        If n > 0 Then
+            If BCryptHash(alg, 0, 0, VarPtr(data(0)), n, VarPtr(digest(0)), 32) <> 0 Then GoTo CloseAlg
+        Else
+            If BCryptHash(alg, 0, 0, 0, 0, VarPtr(digest(0)), 32) <> 0 Then GoTo CloseAlg
+        End If
+        For i = 0 To 31
+            result = result & Right$("0" & LCase$(Hex$(digest(i))), 2)
+        Next
+        FileSha256 = result
+CloseAlg:
+        BCryptCloseAlgorithmProvider alg, 0
+        Exit Function
+Failed:
+        If f <> 0 Then Close #f
+    End Function
+
+    Private Function ReadTextFile(ByVal Path As String) As String
+        Dim f As Integer
+        Dim data() As Byte
+        On Error GoTo Failed
+        f = FreeFile
+        Open Path For Binary Access Read Shared As #f
+        If LOF(f) > 0 Then
+            ReDim data(0 To LOF(f) - 1)
+            Get #f, 1, data
+            ReadTextFile = StrConv(data, vbUnicode)
+        End If
+        Close #f
+        Exit Function
+Failed:
+        If f <> 0 Then Close #f
+    End Function
+
+    Private Function BytesToLong(ByRef Data() As Byte, ByVal Offset As Long) As Long
+        Dim hi As Long
+        hi = Data(Offset + 3)
+        If hi >= 128 Then hi = hi - 256
+        BytesToLong = Data(Offset) Or (Data(Offset + 1) * &H100&) Or (Data(Offset + 2) * &H10000) Or (hi * &H1000000)
+    End Function
+
+    Private Function MoveReplacing(ByVal Source As String, ByVal Destination As String, ByRef ErrorText As String) As Boolean
+        If MoveFileExW(StrPtr(Source), StrPtr(Destination), MOVEFILE_REPLACE_EXISTING Or MOVEFILE_COPY_ALLOWED) = 0 Then
+            ErrorText = "Could not move the library into " & IconLibraryFolder() & " (error " & Err.LastDllError & _
+                "). Close anything that has it open and try again."
+            Exit Function
+        End If
+        MoveReplacing = True
+    End Function
+
+    Private Function EnsureFolder(ByVal Path As String, ByRef ErrorText As String) As Boolean
+        Dim parent As String
+        If FolderExists(Path) Then EnsureFolder = True: Exit Function
+        parent = Left$(Path, InStrRev(Path, "\") - 1)
+        If Len(parent) > 3 And Not FolderExists(parent) Then
+            If Not EnsureFolder(parent, ErrorText) Then Exit Function
+        End If
+        On Error Resume Next
+        MkDir Path
+        If Not FolderExists(Path) Then
+            ErrorText = "Could not create " & Path & "."
+            Exit Function
+        End If
+        EnsureFolder = True
+    End Function
+
+    Private Function FileExists(ByVal Path As String) As Boolean
+        On Error Resume Next
+        FileExists = ((GetAttr(Path) And vbDirectory) = 0)
+        If Err.Number <> 0 Then FileExists = False
+    End Function
+
+    Private Function FolderExists(ByVal Path As String) As Boolean
+        On Error Resume Next
+        FolderExists = ((GetAttr(Path) And vbDirectory) <> 0)
+        If Err.Number <> 0 Then FolderExists = False
+    End Function
+
+    Private Sub DeleteFile(ByVal Path As String)
+        On Error Resume Next
+        If FileExists(Path) Then Kill Path
+    End Sub
+
+End Module

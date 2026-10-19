@@ -4,6 +4,15 @@ All notable changes to tbUI3. Dates are when the change was made, not released. 
 
 ## Unreleased
 
+### 2026-10-19, icon picker tab strip and Setup tab (1.0.0.30, Claude)
+
+- The icon picker gets a tab strip across the top: Segoe Fluent (the existing grid), Fluent UI System, Gallery and Setup. It follows WinUI's SelectorBar (`controls/dev/SelectorBar/SelectorBar_themeresources.xaml` at microsoft-ui-xaml 8318c5bf): item padding 12,10,12,7, bar padding 0,4, primary text with secondary on hover and tertiary while pressed, and a 16 by 3 accent pill under the selected item. The 4 DIP gap below the strip is a tbUI3 layout choice.
+- Setup (new `UI3IconLibrary` module) shows the installed and latest library versions, size and folder, with Install, Update, Reinstall, Uninstall and Check for updates. Opening Setup checks the manifest once. Install reads `icons/manifest.txt` from tbUI3-Libraries main (only download URLs under that repository's releases are accepted), downloads the zip with `URLDownloadToFileW`, checks its size and SHA-256 (BCrypt), unpacks it with `%SystemRoot%\System32\tar.exe`, checks the .dat's SHA-256 and moves it to `%LOCALAPPDATA%\tbUI3\tbUI3-Icons.dat`. Uninstall asks first, then removes the library, its NOTICE.txt and the folder if empty.
+- The Fluent UI System and Gallery tabs say whether the library is installed and offer a one-click "Install icon library"; browsing those icons is a later pass.
+- `DrawStandardButton` (UI3Direct2D) now draws a WinUI Button anywhere on a Direct2D target. The property dialog's OK/Cancel/Apply skin calls it, with identical drawing (the code moved; offsets were added).
+- New theme tokens: TextFillColorTertiary and SystemFillColorCritical (light and dark), from Common_themeresources_any.xaml.
+- Not yet built. Known limits: the tab strip and buttons are mouse-only (no keyboard focus yet); hover can stay lit if the pointer leaves the page straight from the strip; downloads block the dialog until they finish; Install cannot succeed until the `icons-2026.10.19.1` release exists.
+
 ### 2026-10-19, icon library builder (Claude)
 
 - New `tools/build-icon-library.mjs` builds the per-PC icon library from checkouts of microsoft/fluentui-system-icons (commit cd332ec1) and microsoft/WinUI-Gallery (commit 05939cc7). It writes `tbUI3-Icons.dat` (a 32-byte header, an ASCII index with one `set|id|name|style|size|variant|tags|offset|length` line per icon, then the unchanged SVG and PNG bytes), `tbUI3-Icons-<version>.zip` (the .dat plus NOTICE.txt with both MIT licences) and `manifest.txt` (version, size and SHA-256 for update checks). The format is documented at the top of the script.

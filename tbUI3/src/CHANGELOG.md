@@ -1,3 +1,6 @@
+### 1.0.0.37
+- The icon picker's search box should no longer flash grey on open: the page's background erase now leaves the box alone. The diagnostic log is still on.
+
 ### 1.0.0.36
 - Another attempt at the icon picker's search box opening light: it is repainted shortly after the dialog opens. Diagnostic build: writes %TEMP%\tbUI3-propertypage.log. Turn the log off again afterwards.
 

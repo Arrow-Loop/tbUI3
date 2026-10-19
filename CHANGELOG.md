@@ -4,6 +4,11 @@ All notable changes to tbUI3. Dates are when the change was made, not released. 
 
 ## Unreleased
 
+### 2026-10-19, page erase skips the search box (1.0.0.37, Claude)
+
+- Shane's 1.0.0.36 test: the search box now ends up dark, with a brief grey flash on open. The log shows the cause: after the search box has painted dark, the page (ThunderPropertyPageDC) erases its whole client, clip (0,0)-(461,457), and the box reads rgb(240,240,240) afterwards; nothing repaints it until the first timed repaint, which turns it rgb(31,31,31). WM_CTLCOLORSTATIC never arrived, so that theory is ruled out.
+- 1.0.0.37 removes the search box's rectangle from the page's DC (ExcludeClipRect) when the page erases, as WS_CLIPCHILDREN would, so the grey never reaches the box. The timed repaints and the log stay for now (Shane: keep the log on until everything is confirmed fixed). Not yet built.
+
 ### 2026-10-19, search box repaint and pixel log (1.0.0.36, Claude)
 
 - Shane's 1.0.0.35 test: the search box still opens light with the caret blinking, so the hidden second page was not the cause (the 1.0.0.35 guard stays, as it is harmless). Measured on Shane's 1.0.0.33 screenshot: the box is rgb(240,240,240), which is the classic button-face grey, not the Edit's native white (255) and not any colour tbUI3 sets. The page, picChrome, picGrid and txtSearch all have dark designer colours, so the grey comes from a window or message tbUI3 does not colour. Candidates, unproven: the inner #32770 container around the page (its class background is button face) erasing over the box, or the Edit painting through WM_CTLCOLORSTATIC (used while an Edit is disabled or read-only), whose default is button face.

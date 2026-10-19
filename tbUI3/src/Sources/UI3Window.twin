@@ -141,6 +141,10 @@ Public Module UI3Window
         ByVal uElapse As Long, ByVal lpTimerFunc As LongPtr) As LongPtr
     Private Declare PtrSafe Function KillTimer Lib "user32" (ByVal hWnd As LongPtr, ByVal uIDEvent As LongPtr) As Long
     Private Declare PtrSafe Function IsWindowVisible Lib "user32" (ByVal hWnd As LongPtr) As Long
+    Private Declare PtrSafe Function ExcludeClipRect Lib "gdi32" (ByVal hdc As LongPtr, ByVal x1 As Long, ByVal y1 As Long, _
+        ByVal x2 As Long, ByVal y2 As Long) As Long
+    Private Declare PtrSafe Function MapWindowPoints Lib "user32" (ByVal hWndFrom As LongPtr, ByVal hWndTo As LongPtr, _
+        ByRef lpPoints As UI3GdiRect, ByVal cPoints As Long) As Long
     Private Declare PtrSafe Function DeleteObject Lib "gdi32" (ByVal hObject As LongPtr) As Long
 
     [UseGetLastError(False), DLLStackCheck(False)]
@@ -530,6 +534,16 @@ CleanUp:
             CStr((c \ &H10000) And &HFF&) & ")"
     End Function
 
+    ' Removes the search box's rectangle from the page's paint DC, as WS_CLIPCHILDREN would.
+    Private Sub ExcludeSearchBoxFromPageDC(ByVal hdc As LongPtr)
+        If hdc = 0 Or m_PropertyProbeEdit = 0 Or m_PropertyProbeEditParent = 0 Then Exit Sub
+        If IsWindowVisible(m_PropertyProbeEdit) = 0 Then Exit Sub
+        Dim rc As UI3GdiRect
+        If GetWindowRect(m_PropertyProbeEdit, rc) = 0 Then Exit Sub
+        MapWindowPoints 0, m_PropertyProbeEditParent, rc, 2
+        ExcludeClipRect hdc, rc.Left, rc.Top, rc.Right, rc.Bottom
+    End Sub
+
     Private Function ClipBoxText(ByVal hdc As LongPtr) As String
         If Not PROPERTY_PAGE_LOG_ENABLED Then Exit Function
         Dim rc As UI3GdiRect
@@ -616,7 +630,16 @@ CleanUp:
                         Exit Function
                     End If
                     ProbeLog "EDIT WM_ERASEBKGND not painted"
-                ElseIf PROPERTY_PAGE_LOG_ENABLED And (hWnd = m_PropertyProbeEditParent Or hWnd = m_PropertyProbePageDialog) Then
+                ElseIf hWnd = m_PropertyProbeEditParent Then
+                    ' The page erases its whole client in classic button-face grey without clipping
+                    ' the search box, after the box has painted, and nothing repaints the box. Keep
+                    ' the box out of the page's erase (1.0.0.37).
+                    ExcludeSearchBoxFromPageDC wParam
+                    If PROPERTY_PAGE_LOG_ENABLED Then
+                        ProbeLog "ERASE " & DebugWindowLine(hWnd) & " clip=" & ClipBoxText(wParam) & _
+                            " edit pixel=" & ScreenPixelAt(m_PropertyProbeEdit)
+                    End If
+                ElseIf PROPERTY_PAGE_LOG_ENABLED And hWnd = m_PropertyProbePageDialog Then
                     ProbeLog "ERASE " & DebugWindowLine(hWnd) & " clip=" & ClipBoxText(wParam) & _
                         " edit pixel=" & ScreenPixelAt(m_PropertyProbeEdit)
                 End If

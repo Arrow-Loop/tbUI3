@@ -74,7 +74,7 @@ The decisions are in `docs/2026-10-06-first-pass-report.md` and `docs/2026-10-06
 | 1.0.0.42: pass 5a, IconSize and the EditProperty log | Built by Shane: IconSize works; `PropertyPage_EditProperty` is raised with "Icon". Pass 5 plan: `docs/2026-10-19-pass5-icon-system-plan.md`. |
 | 1.0.0.43: pass 5b, stored SVG and image icons | Built by Shane: images load, copy, scale and recolour in dark and light. The pane hides IconSource and shows a blank IconData (fixed in 5c). |
 | 1.0.0.44: pass 5c, Apply from the library tabs | Built by Shane: works. Log shows a spurious error 438 from `CallByName ... LoadIcon` after each Apply. |
-| 1.0.0.45: LoadIcon step logging, for 5d | Not yet built. |
+| 1.0.0.45: LoadIcon step logging, for 5d | Built by Shane: EXE draws all picked icons without the library (win32). No error 438. |
 
 ## Work queue for the next passes (updated 2026-10-07)
 

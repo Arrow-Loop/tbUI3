@@ -4,6 +4,12 @@ All notable changes to tbUI3. Dates are when the change was made, not released. 
 
 ## Unreleased
 
+### 2026-10-20, pass 5d result (1.0.0.45)
+
+- Shane built tbUI3Test to an EXE and ran it with `%LOCALAPPDATA%\tbUI3` renamed: every icon picked in the designer still draws, so a built app needs no icon library. Win32; win64 not yet reported.
+- The 1.0.0.45 log shows every library Apply running LoadIcon to the end (`BUTTON LoadIcon done`) with no error. The error 438 seen in 1.0.0.44 did not recur; its cause is unknown (possibly a stale embedded package at the time). The log keeps the step lines in case it returns.
+- Closest-size choice checked: at IconSize 48 a Fluent Color pick stored `ic_fluent_alert_48_color`, and at 20 `ic_fluent_alert_20_color`. A Light pick stored `_32_light` (Light icons don't come in 20).
+
 ### 2026-10-20, pass 5c result and a LoadIcon diagnostic (1.0.0.45, Claude)
 
 - Shane's 1.0.0.44 test (BETA 1012): "It all appears to work correctly." Fluent and Additional Icons picks apply, survive the designer rebuild, and the page reopens on the current pick (the log shows `IconSource = ic_fluent_accessibility_checkmark_20_filled, tab 1`). The Properties pane fixes were part of the test steps.

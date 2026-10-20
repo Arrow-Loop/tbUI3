@@ -1,6 +1,6 @@
 # Pass 5 plan: one icon system for every control
 
-Status: **approved by Shane on 2026-10-19.** Build 5a is in 1.0.0.42 (validated); 5b is in 1.0.0.43 (validated); 5c is in 1.0.0.44 (validated); 1.0.0.45 adds logging for 5d.
+Status: **approved by Shane on 2026-10-19.** Build 5a is in 1.0.0.42 (validated); 5b is in 1.0.0.43 (validated); 5c is in 1.0.0.44 (validated); 5d passed in win32 with 1.0.0.45 (win64 to confirm).
 Written 2026-10-19, from the decisions recorded in ROADMAP.md that day.
 
 ## Goal

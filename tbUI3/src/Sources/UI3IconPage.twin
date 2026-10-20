@@ -195,17 +195,19 @@ Class UI3IconPage
     End Sub
 
     Private Sub PropertyPage_SelectionChanged()
-        UI3PropertyPageLog "PAGE SelectionChanged (window hooks " & IIf(PageHooksEnabled(), "on", "off") & ")"
+        UI3PropertyPageLog "PAGE SelectionChanged, controls " & Me.SelectedControls.Count & " (window hooks " & IIf(PageHooksEnabled(), "on", "off") & ")"
+        ' twinBASIC's PropertyPage also raises SelectionChanged from its Class_Terminate, with nothing
+        ' selected, while the page is being torn down. Laying out, theming or filling the page then
+        ' touches windows that are going away, so leave it alone.
+        If Me.SelectedControls.Count = 0 Then Exit Sub
         LayoutControls
         ApplyPageTheme True
         m_Selected = 0
         Dim source As String
-        If Me.SelectedControls.Count > 0 Then
-            On Error Resume Next
-            m_Selected = CLng(CallByName(Me.SelectedControls(0), "Icon", vbGet))
-            source = CStr(CallByName(Me.SelectedControls(0), "IconSource", vbGet))
-            On Error GoTo 0
-        End If
+        On Error Resume Next
+        m_Selected = CLng(CallByName(Me.SelectedControls(0), "Icon", vbGet))
+        source = CStr(CallByName(Me.SelectedControls(0), "IconSource", vbGet))
+        On Error GoTo 0
         m_InstalledVersion = IconLibraryInstalledVersion()
         m_LibraryReady = False
         m_PickKind = TAB_SEGOE

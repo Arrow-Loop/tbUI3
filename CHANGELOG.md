@@ -4,6 +4,12 @@ All notable changes to tbUI3. Dates are when the change was made, not released. 
 
 ## Unreleased
 
+### 2026-10-20, repro result: win64 Apply works in twinBASIC; likely cause found (1.0.0.51, Claude)
+
+- Shane ran the repro in win64: the page set Value to 43 and it stuck. twinBASIC's win64 property page Apply works, so the tbUI3 failure is ours, not a twinBASIC bug. Nothing goes to Wayne.
+- The repro also showed (error 9, call stack `Class_Terminate` → `SetObjects` → `SelectionChanged`) that twinBASIC's PropertyPage raises SelectionChanged with an empty selection while the page is torn down, on OK, Cancel or Apply-then-close alike. UI3IconPage's SelectionChanged ignored the count and went on to lay out, re-theme and refill the page, touching windows that are being destroyed. That fits every win64 symptom: it runs on Cancel too, and the "SelectionChanged after Apply" in the 1.0.0.46 log is likely this one. The working theory is that this crashes the 64-bit designer host, and x86 survives it.
+- 1.0.0.51: SelectionChanged logs the selected-control count and returns at once when it is 0. Not yet built. If win64 now applies and keeps the icon, this was the cause.
+
 ### 2026-10-20, win64 property page repro project (Claude)
 
 - `tbUI3-Repro/NewProject.twinproj` (Shane's new Standard EXE) is a twinBASIC-only repro for the win64 Apply failure. It has no tbUI3 code: ReproControl has one Long property, `Value`, linked to ReproPage, a page with one TextBox that sets it. Its code had been pasted outside the class blocks; it now sits inside them, and `tbUI3-Repro/src` is its export. Test: drop a ReproControl on Form1, set Value to 42 from the page, reopen, in win32 then win64. Not yet run.

@@ -83,10 +83,10 @@ Class UI3IconPage
     Private Const ACTION_CHECK As Long = 3
     Private Const MAX_BUTTONS As Long = 4
 
-    ' Diagnostic switch (1.0.0.49): in win64 the designer process dies after the property dialog
-    ' closes. False leaves the dialog and this page's windows unhooked in win64 (classic look, no
-    ' skin, no search-box colour hooks, no chrome surface subclass), to test whether the hooks cause it.
-    Private Const WIN64_PAGE_HOOKS As Boolean = False
+    ' Diagnostic switch: False leaves the dialog and this page's windows unhooked in win64 (classic
+    ' look, no skin, no search-box colour hooks, no chrome surface subclass). 1.0.0.49 used it to show
+    ' the hooks don't cause the win64 designer process dying after the dialog closes.
+    Private Const WIN64_PAGE_HOOKS As Boolean = True
 
     Private Declare PtrSafe Function SendMessageW Lib "user32" (ByVal hWnd As LongPtr, ByVal wMsg As Long, _
         ByVal wParam As LongPtr, ByVal lParam As LongPtr) As LongPtr

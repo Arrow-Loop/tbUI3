@@ -1,3 +1,6 @@
+### 1.0.0.50
+- The icon picker's dialog is skinned again in win64.
+
 ### 1.0.0.49
 - Diagnostic only: in win64 the icon picker's dialog is left unskinned, to test whether its window hooks crash the 64-bit designer.
 

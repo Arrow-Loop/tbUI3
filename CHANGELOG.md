@@ -4,6 +4,12 @@ All notable changes to tbUI3. Dates are when the change was made, not released. 
 
 ## Unreleased
 
+### 2026-10-20, BETA 999 result and a correction (1.0.0.50, Claude)
+
+- Shane: the same win64 failure happens in BETA 999. It is not a recent twinBASIC regression.
+- Correction: earlier entries today said Segoe Apply "passed in win64 on 2026-10-14 (1.0.0.24, BETA 999)". The record doesn't support that. The 1.0.0.24 entry says only that "the dialog checks pass in win64", and Shane doesn't recall testing Apply in win64 since the project's early days. As far as anyone knows, applying a value from a property page has never been shown to work in win64.
+- 1.0.0.50 turns `WIN64_PAGE_HOOKS` back on, since 1.0.0.49 showed the hooks aren't the cause. The page logging stays.
+
 ### 2026-10-20, win64 hooks-off result
 
 - Shane, 1.0.0.49 in win64: still resyncs with every page window hook off. tbUI3's dialog skin, search-box hooks and chrome subclass are cleared as the cause. The win64 designer process dying after the property dialog closes looks like twinBASIC's (BETA 1012). Shane is checking an older BETA next. `WIN64_PAGE_HOOKS` goes back to True once this is settled.

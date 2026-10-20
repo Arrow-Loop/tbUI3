@@ -170,3 +170,4 @@ Things that need Shane's decision, not a pass of their own: a dark icon-picker p
 - Push only to `tbui3-dev`. Don't open PRs or merge without Shane asking.
 - Update CHANGELOG.md and ROADMAP.md in every pass. Record only what was actually run as verified.
 - Keep instructions to Shane short and one step at a time, with the exact thing to click or type.
+- win32 and win64 (Shane, 2026-10-20): Shane tests each build in win32 only. At the end of each pass, first review that pass's changes for x64 traps (Long vs LongPtr in declares, struct sizes, COM interface layouts, subclassing), then Shane runs one short win64 smoke test: open a form, open the picker, apply, reopen, run the app.

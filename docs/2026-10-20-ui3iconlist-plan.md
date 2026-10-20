@@ -1,6 +1,6 @@
 # UI3IconList plan: an ImageList for tbUI3 icons
 
-Status: **draft, not yet approved by Shane.** Written 2026-10-20, from the decisions recorded in ROADMAP.md on 2026-10-19 and the pass 5 icon system. Nothing here is built.
+Status: **approved by Shane on 2026-10-20.** L1 is in 1.0.0.52 (not yet built). Written 2026-10-20, from the decisions recorded in ROADMAP.md on 2026-10-19 and the pass 5 icon system. Nothing here is built.
 
 ## Goal
 

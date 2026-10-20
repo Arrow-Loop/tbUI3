@@ -1,3 +1,7 @@
+### 1.0.0.52
+- The icon picker's Fluent and Additional Icons tabs draw through the same image code as the button, so a pick looks the same in both. No visible change is intended.
+- Stored SVG icons are set up faster (only the root tag is read for the size).
+
 ### 1.0.0.51
 - The icon picker no longer lays out or refills itself when twinBASIC tears the page down (an empty selection). This fixes Apply in win64.
 

@@ -4,6 +4,13 @@ All notable changes to tbUI3. Dates are when the change was made, not released. 
 
 ## Unreleased
 
+### 2026-10-20, UI3IconList L1: the picker draws with UI3IconImage (1.0.0.52, Claude)
+
+- Shane approved `docs/2026-10-20-ui3iconlist-plan.md`. L1 is in 1.0.0.52, not yet built.
+- UI3IconPage's library grid, style cards and Gallery preview now draw through `UI3IconImage`, one per library entry and per render target (grid and chrome), capped at 800 per target as before. The page's own SVG and bitmap caches, `RecolorSvg`, `SvgHex`, `LibrarySvg` and `GalleryBitmap` are gone. Gallery images are still never enlarged; their pixel size is still read from the PNG header for the details card.
+- One deliberate difference: the picker used to recolour by style (every style but Color). It now uses UI3IconImage's rule, recolouring any SVG containing #212121 or currentColor, which is what the button already does. If a Color-style SVG contains #212121, the picker now shows it as the button would.
+- UI3IconImage reads an SVG's size from its root start tag only, instead of building a string from its first 2 KB, so the grid can create hundreds quickly.
+
 ### 2026-10-20, pass 5 closed (Claude)
 
 - Shane chose UI3IconList as the next work. Draft plan written: `docs/2026-10-20-ui3iconlist-plan.md` (awaiting approval).

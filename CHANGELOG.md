@@ -4,6 +4,12 @@ All notable changes to tbUI3. Dates are when the change was made, not released. 
 
 ## Unreleased
 
+### 2026-10-20, pass 5c result and a LoadIcon diagnostic (1.0.0.45, Claude)
+
+- Shane's 1.0.0.44 test (BETA 1012): "It all appears to work correctly." Fluent and Additional Icons picks apply, survive the designer rebuild, and the page reopens on the current pick (the log shows `IconSource = ic_fluent_accessibility_checkmark_20_filled, tab 1`). The Properties pane fixes were part of the test steps.
+- The log also shows `PAGE LoadIcon failed: Object doesn't support this property or method` after every library Apply, although the icon is applied. The picker's `CallByName ... LoadIcon` raises error 438 somewhere after the call reaches the button. 1.0.0.45 logs each step inside UI3Button's LoadIcon while the page applies, and the error's number and source, to find where. No behaviour change.
+- The log has no Apply at an IconSize other than 20, so picking the file size closest to IconSize is still unchecked.
+
 ### 2026-10-19, pass 5c: Apply from the library tabs (1.0.0.44, Claude)
 
 - The icon picker's Fluent UI System and Additional Icons tabs now apply. Clicking an icon on any tab enables Apply, and Apply writes the tab clicked last.

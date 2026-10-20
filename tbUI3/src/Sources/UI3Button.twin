@@ -178,9 +178,11 @@ Public Class UI3Button
     [Description("Stores SVG or image file bytes (for example from LoadResData) as the icon. Name is shown as IconSource.")]
     Public Sub LoadIcon(ByVal Data As Variant, Optional ByVal Name As String = "")
         Dim bytes() As Byte
+        If IconPageApplying Then UI3PropertyPageLog "BUTTON LoadIcon start " & DesignName() & " = " & Name
         If Not IsArray(Data) Then Err.Raise 380
         bytes = Data
         StoreIconImage bytes, Name
+        If IconPageApplying Then UI3PropertyPageLog "BUTTON LoadIcon done " & DesignName()
     End Sub
 
     ' Stores an SVG, PNG or other image file as the icon. IconSource becomes file:<file name>.
@@ -210,7 +212,10 @@ Public Class UI3Button
     Private Sub StoreIconImage(ByRef Data() As Byte, ByVal Source As String)
         If Not m_IconImage.SetData(Data, Source) Then Err.Raise 380
         DesignLog "Store image " & Hex$(ObjPtr(Me)) & " " & DesignName() & " = " & Source & IIf(IconPageApplying, " (from page)", "")
-        If IconPageApplying Then SetPendingLibraryIcon DesignName(), Data, Source
+        If IconPageApplying Then
+            SetPendingLibraryIcon DesignName(), Data, Source
+            UI3PropertyPageLog "BUTTON stored and pending " & DesignName() & " = " & Source
+        End If
         If m_Icon <> ui3IconNone Then
             m_Icon = ui3IconNone
             PropertyChanged "Icon"
@@ -221,6 +226,7 @@ Public Class UI3Button
         End If
         PropertyChanged "IconData"
         PropertyChanged "IconSource"
+        If IconPageApplying Then UI3PropertyPageLog "BUTTON PropertyChanged done " & DesignName()
         UserControl.Refresh
     End Sub
 

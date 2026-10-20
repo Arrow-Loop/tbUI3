@@ -276,7 +276,7 @@ Class UI3IconPage
                     IconPageApplying = True
                     On Error Resume Next
                     CallByName ctl, "LoadIcon", VbMethod, data, source
-                    If Err.Number <> 0 Then UI3PropertyPageLog "PAGE LoadIcon failed: " & Err.Description
+                    If Err.Number <> 0 Then UI3PropertyPageLog "PAGE LoadIcon failed: " & Err.Number & " " & Err.Description & " (source " & Err.Source & ")"
                     On Error GoTo 0
                     IconPageApplying = False
                 End If

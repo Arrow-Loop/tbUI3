@@ -1,3 +1,6 @@
+### 1.0.0.45
+- Diagnostic only: the property page log records each step when the icon picker applies a library icon.
+
 ### 1.0.0.44
 - The icon picker's Fluent UI System and Additional Icons tabs now apply: the picked SVG or PNG is copied into the button and saved with the form. The picker opens on the button's current icon. IconSource shows in the Properties pane (read-only); IconData is hidden there.
 

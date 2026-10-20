@@ -9,7 +9,7 @@ All notable changes to tbUI3. Dates are when the change was made, not released. 
 - Shane ran the repro in win64: the page set Value to 43 and it stuck. twinBASIC's win64 property page Apply works, so the tbUI3 failure is ours, not a twinBASIC bug. Nothing goes to Wayne.
 - The repro also showed (error 9, call stack `Class_Terminate` → `SetObjects` → `SelectionChanged`) that twinBASIC's PropertyPage raises SelectionChanged with an empty selection while the page is torn down, on OK, Cancel or Apply-then-close alike. UI3IconPage's SelectionChanged ignored the count and went on to lay out, re-theme and refill the page, touching windows that are being destroyed. That fits every win64 symptom: it runs on Cancel too, and the "SelectionChanged after Apply" in the 1.0.0.46 log is likely this one. The working theory is that this crashes the 64-bit designer host, and x86 survives it.
 - Agreed with Shane: win32 testing for each build, plus an x64 review and a short win64 smoke test at the end of each pass (see HANDOFF's working agreements).
-- 1.0.0.51: SelectionChanged logs the selected-control count and returns at once when it is 0. Shane built 1.0.0.51 and reported win64 Apply "works" (2026-10-20), so the empty teardown SelectionChanged was the cause.
+- 1.0.0.51: SelectionChanged logs the selected-control count and returns at once when it is 0. Shane built 1.0.0.51 and reported win64 Apply "works" (2026-10-20), so the empty teardown SelectionChanged was the cause. Fluent and Additional Icons picks also apply in win64 (Shane, 2026-10-20).
 
 ### 2026-10-20, win64 property page repro project (Claude)
 

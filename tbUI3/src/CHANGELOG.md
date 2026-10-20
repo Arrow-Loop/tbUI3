@@ -1,5 +1,5 @@
 ### 1.0.0.51
-- The icon picker no longer lays out or refills itself when twinBASIC tears the page down (an empty selection). Expected to fix Apply in win64.
+- The icon picker no longer lays out or refills itself when twinBASIC tears the page down (an empty selection). This fixes Apply in win64.
 
 ### 1.0.0.50
 - The icon picker's dialog is skinned again in win64.

@@ -83,6 +83,11 @@ Class UI3IconPage
     Private Const ACTION_CHECK As Long = 3
     Private Const MAX_BUTTONS As Long = 4
 
+    ' Diagnostic switch (1.0.0.49): in win64 the designer process dies after the property dialog
+    ' closes. False leaves the dialog and this page's windows unhooked in win64 (classic look, no
+    ' skin, no search-box colour hooks, no chrome surface subclass), to test whether the hooks cause it.
+    Private Const WIN64_PAGE_HOOKS As Boolean = False
+
     Private Declare PtrSafe Function SendMessageW Lib "user32" (ByVal hWnd As LongPtr, ByVal wMsg As Long, _
         ByVal wParam As LongPtr, ByVal lParam As LongPtr) As LongPtr
     Private Declare PtrSafe Function InvalidateRect Lib "user32" (ByVal hWnd As LongPtr, ByVal lpRect As LongPtr, _
@@ -190,7 +195,7 @@ Class UI3IconPage
     End Sub
 
     Private Sub PropertyPage_SelectionChanged()
-        UI3PropertyPageLog "PAGE SelectionChanged"
+        UI3PropertyPageLog "PAGE SelectionChanged (window hooks " & IIf(PageHooksEnabled(), "on", "off") & ")"
         LayoutControls
         ApplyPageTheme True
         m_Selected = 0
@@ -365,7 +370,7 @@ Class UI3IconPage
         picChrome.Move 0, 0, w, h
         picChrome.BorderStyle = vbNoBorder
         ' From here picChrome paints like the property sheet's own buttons (UI3PageSurface).
-        UI3AttachIconPageSurface picChrome.hWnd, Me
+        If PageHooksEnabled() Then UI3AttachIconPageSurface picChrome.hWnd, Me
         picChrome.AutoRedraw = False
         picChrome.ScaleMode = vbPixels
         picChrome.TabStop = False
@@ -473,7 +478,16 @@ CleanUp:
         End If
     End Sub
 
+    Private Function PageHooksEnabled() As Boolean
+        #If Win64 Then
+            PageHooksEnabled = WIN64_PAGE_HOOKS
+        #Else
+            PageHooksEnabled = True
+        #End If
+    End Function
+
     Private Sub ApplyHostTitleBar()
+        If Not PageHooksEnabled() Then Exit Sub
         On Error Resume Next
         ' Arms the search-box colour hooks, and skins the real PropertySheet once BETA 997 has
         ' inserted this page into it (found structurally, never by GetAncestor). Safe on every paint.

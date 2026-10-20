@@ -4,6 +4,15 @@ All notable changes to tbUI3. Dates are when the change was made, not released. 
 
 ## Unreleased
 
+### 2026-10-20, win64: the designer process dies when the property dialog closes (1.0.0.49 diagnostic, Claude)
+
+- Shane, 1.0.0.48 in win64:
+  - The Apply ran cleanly: Let Icon, PropertyChanged and Refresh all completed, with no error 438 this time.
+  - The button on the form didn't change, even with the dialog still open after Apply.
+  - Unlike win32, the IDE never asked the button to save. The next log lines come from a new designer process.
+- Shane also found that pressing Cancel, OK or Apply makes no difference: the RESYNC always appears the next time the property page is opened. So in win64 the designer host process dies when (or after) the property dialog closes, and the IDE only notices on the next open. Whatever the page applied is lost with it, including the bridge's pending values.
+- 1.0.0.49 adds `WIN64_PAGE_HOOKS` in UI3IconPage, set False for this test. In win64 it leaves the dialog unskinned and installs none of the page's window hooks: the PropertySheet skin, the search-box colour hooks and timers, and the chrome surface subclass. The page looks classic there, and win32 is unchanged. If win64 then applies and saves, one of those hooks crashes the 64-bit host and gets bisected next. If it still fails, it is a twinBASIC win64 designer bug to report to Wayne.
+
 ### 2026-10-20, win64 trace 2 result and trace 3 (1.0.0.48 diagnostic, Claude)
 
 - Shane, 1.0.0.47 in win64: Apply reaches the button. `Let Icon` runs on the live button with the new value ("from page"), then the page's `CallByName ... Icon` returns error 438 ("Object doesn't support this property or method"). The next log lines come from a new process id each time (45004, then 50968, then 41168): the win64 designer host process is replaced after the error, which is the RESYNC, so the pending icon recorded in the old process is lost and the buttons reload from the saved form.

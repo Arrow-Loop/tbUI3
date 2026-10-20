@@ -1,3 +1,6 @@
+### 1.0.0.49
+- Diagnostic only: in win64 the icon picker's dialog is left unskinned, to test whether its window hooks crash the 64-bit designer.
+
 ### 1.0.0.48
 - Diagnostic only: pins down where the win64 icon picker Apply fails.
 

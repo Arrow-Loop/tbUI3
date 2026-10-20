@@ -1,6 +1,6 @@
 # Handoff: tbUI3 state on 2026-10-07
 
-This is written for the next developer or AI session; ChatGPT is expected to run the next several passes. Read `AGENTS.md`, then this file, then `CHANGELOG.md` and `ROADMAP.md`. State at the time of writing: `tbui3-dev`, package version 1.0.0.48, twinBASIC BETA 1012.
+This is written for the next developer or AI session; ChatGPT is expected to run the next several passes. Read `AGENTS.md`, then this file, then `CHANGELOG.md` and `ROADMAP.md`. State at the time of writing: `tbui3-dev`, package version 1.0.0.49, twinBASIC BETA 1012.
 
 ## What tbUI3 is
 
@@ -77,7 +77,8 @@ The decisions are in `docs/2026-10-06-first-pass-report.md` and `docs/2026-10-06
 | 1.0.0.45: LoadIcon step logging, for 5d | Built by Shane: EXE draws all picked icons without the library (win32). No error 438. win64: library Apply resyncs and is lost. |
 | 1.0.0.46: design-time load/save tracing for the win64 failure | Built by Shane: win64 rebuilds the buttons from the saved form; Segoe Apply fails too. |
 | 1.0.0.47: ApplyChanges, Let Icon and process tracing | Built by Shane: win64 Let Icon runs, then error 438 and the designer host process restarts. |
-| 1.0.0.48: locate the win64 error inside Let Icon | Not yet built. |
+| 1.0.0.48: locate the win64 error inside Let Icon | Built by Shane: Let Icon completes; the win64 designer process dies when the dialog closes (even Cancel). |
+| 1.0.0.49: win64 page window hooks off | Not yet built. |
 
 ## Work queue for the next passes (updated 2026-10-07)
 

@@ -29,6 +29,9 @@ Public Class UI3Button
     Private m_IconFontName As String
     Private m_IconPosition As UI3IconPosition
     Private m_IconSpacing As Single
+    Private m_IconSize As Single
+    ' A stored SVG or bitmap icon (IconData). When it holds one, Icon is None and IconGlyph is empty.
+    Private m_IconImage As New UI3IconImage
     Private m_Target As ID2D1DCRenderTarget
 
     Public Property Get Caption() As String
@@ -51,20 +54,27 @@ Public Class UI3Button
         UserControl.Refresh
     End Property
 
-    ' Linked to the UI3IconPage picker. twinBASIC BETA 997 ignores this link (the page opens from
-    ' (Custom) instead); it is kept so Icon gets its own "..." once twinBASIC honours it, as VB6 did.
+    ' Linked to the UI3IconPage picker: Icon gets its own "..." in the Properties pane, as in VB6
+    ' (twinBASIC BETA 1008 and later; earlier betas open the page only from (Custom)).
     [PropertyPage("UI3IconPage")]
-    [Description("Semantic WinUI symbol icon. tbUI3 selects the matching Segoe Fluent Icons or Segoe MDL2 Assets glyph.")]
+    [Description("Segoe Fluent Icons glyph, as in WinUI's FontIcon. Drawn in Segoe Fluent Icons, or Segoe MDL2 Assets on Windows 10.")]
     Public Property Get Icon() As UI3Icon
         Icon = m_Icon
     End Property
 
     Public Property Let Icon(ByVal Value As UI3Icon)
         m_Icon = Value
-        If IconPageApplying Then SetPendingIcon DesignName(), Value
+        ClearIconImage
+        If IconPageApplying Then
+            SetPendingIcon DesignName(), Value
+            ClearPendingLibraryIcon DesignName()
+        End If
+        DesignTrace "Let Icon " & Hex$(ObjPtr(Me)) & " " & DesignName() & " = " & CLng(Value) & IIf(IconPageApplying, " (from page)", "")
         DesignLog "Let Icon " & Hex$(ObjPtr(Me)) & " " & DesignName() & " = " & CLng(Value) & IIf(IconPageApplying, " (from page)", "")
         PropertyChanged "Icon"
+        DesignTrace "Let Icon PropertyChanged done " & DesignName()
         UserControl.Refresh
+        DesignTrace "Let Icon done " & DesignName()
     End Property
 
     [Description("Advanced raw glyph override. When non-empty, this takes precedence over Icon.")]
@@ -74,6 +84,7 @@ Public Class UI3Button
 
     Public Property Let IconGlyph(ByVal Value As String)
         m_IconGlyph = Value
+        If Len(Value) <> 0 Then ClearIconImage
         PropertyChanged "IconGlyph"
         UserControl.Refresh
     End Property
@@ -113,6 +124,127 @@ Public Class UI3Button
         UserControl.Refresh
     End Property
 
+    [Description("Size in DIPs of the square the icon fills. Default 20, WinUI's SymbolIcon size (SymbolIcon.FontSize).")]
+    Public Property Get IconSize() As Single
+        IconSize = m_IconSize
+    End Property
+
+    Public Property Let IconSize(ByVal Value As Single)
+        If Value <= 0 Then Err.Raise 380
+        m_IconSize = Value
+        PropertyChanged "IconSize"
+        UserControl.Refresh
+    End Property
+
+    ' The stored icon file (an SVG, or a PNG or other image) as a Byte array in a Variant, or Empty.
+    ' Assigning another control's IconData copies its icon; assigning Empty or an empty array removes it.
+    ' Not listed in the Properties pane (it can't show bytes); IconSource names the icon there.
+    [Description("The stored SVG or image icon's file bytes. Assign another control's IconData to copy its icon. Set it with LoadIcon or LoadIconFile.")]
+    [NonBrowsable]
+    Public Property Get IconData() As Variant
+        If m_IconImage.HasImage Then IconData = m_IconImage.GetData() Else IconData = Empty
+    End Property
+
+    [NonBrowsable]
+    Public Property Let IconData(ByVal Value As Variant)
+        Dim data() As Byte
+        If IsEmpty(Value) Then
+            ClearIconImage
+            UserControl.Refresh
+            Exit Property
+        End If
+        If Not IsArray(Value) Then Err.Raise 380
+        data = Value
+        If ByteArrayLength(data) = 0 Then
+            ClearIconImage
+            UserControl.Refresh
+            Exit Property
+        End If
+        StoreIconImage data, ""
+    End Property
+
+    [Description("Read-only name of the stored SVG or image icon, such as file:save.svg. Empty when the icon is Icon or IconGlyph.")]
+    Public Property Get IconSource() As String
+        If Not m_IconImage.HasImage Then Exit Property
+        IconSource = m_IconImage.Source
+        If Len(IconSource) = 0 Then IconSource = IIf(m_IconImage.IsSvg, "(SVG)", "(image)")
+    End Property
+
+    ' Read-only. The Let exists only so the Properties pane lists IconSource; it refuses every value.
+    Public Property Let IconSource(ByVal Value As String)
+        Err.Raise 383
+    End Property
+
+    ' Stores an SVG, PNG or other image file's bytes (a Byte array, or a Variant holding one, as
+    ' LoadResData returns) as the icon. Name is shown as IconSource. Raises error 380 when Data is not
+    ' a recognised image. The icon picker applies its library picks through this method.
+    [Description("Stores SVG or image file bytes (for example from LoadResData) as the icon. Name is shown as IconSource.")]
+    Public Sub LoadIcon(ByVal Data As Variant, Optional ByVal Name As String = "")
+        Dim bytes() As Byte
+        If IconPageApplying Then UI3PropertyPageLog "BUTTON LoadIcon start " & DesignName() & " = " & Name
+        If Not IsArray(Data) Then Err.Raise 380
+        bytes = Data
+        StoreIconImage bytes, Name
+        If IconPageApplying Then UI3PropertyPageLog "BUTTON LoadIcon done " & DesignName()
+    End Sub
+
+    ' Stores an SVG, PNG or other image file as the icon. IconSource becomes file:<file name>.
+    [Description("Stores an SVG or image file as the icon. IconSource becomes file:<file name>.")]
+    Public Sub LoadIconFile(ByVal Path As String)
+        Dim data() As Byte
+        Dim f As Integer
+        Dim n As Long
+        Dim fileName As String
+
+        f = FreeFile
+        Open Path For Binary Access Read As #f
+        n = LOF(f)
+        If n > 0 Then
+            ReDim data(0 To n - 1)
+            Get #f, , data
+        End If
+        Close #f
+        If n = 0 Then Err.Raise 380
+
+        fileName = Mid$(Path, InStrRev(Path, "\") + 1)
+        fileName = Mid$(fileName, InStrRev(fileName, "/") + 1)
+        StoreIconImage data, "file:" & fileName
+    End Sub
+
+    ' The last icon set wins: a stored image replaces Icon and IconGlyph.
+    Private Sub StoreIconImage(ByRef Data() As Byte, ByVal Source As String)
+        If Not m_IconImage.SetData(Data, Source) Then Err.Raise 380
+        DesignLog "Store image " & Hex$(ObjPtr(Me)) & " " & DesignName() & " = " & Source & IIf(IconPageApplying, " (from page)", "")
+        If IconPageApplying Then
+            SetPendingLibraryIcon DesignName(), Data, Source
+            UI3PropertyPageLog "BUTTON stored and pending " & DesignName() & " = " & Source
+        End If
+        If m_Icon <> ui3IconNone Then
+            m_Icon = ui3IconNone
+            PropertyChanged "Icon"
+        End If
+        If Len(m_IconGlyph) <> 0 Then
+            m_IconGlyph = ""
+            PropertyChanged "IconGlyph"
+        End If
+        PropertyChanged "IconData"
+        PropertyChanged "IconSource"
+        If IconPageApplying Then UI3PropertyPageLog "BUTTON PropertyChanged done " & DesignName()
+        UserControl.Refresh
+    End Sub
+
+    Private Sub ClearIconImage()
+        If Not m_IconImage.HasImage Then Exit Sub
+        m_IconImage.Clear
+        PropertyChanged "IconData"
+        PropertyChanged "IconSource"
+    End Sub
+
+    Private Function ByteArrayLength(ByRef Data() As Byte) As Long
+        On Error Resume Next
+        ByteArrayLength = UBound(Data) - LBound(Data) + 1
+    End Function
+
     Private Sub UserControl_InitProperties()
         m_Caption = NEW_CONTROL_CAPTION
         m_Style = DEFAULT_STYLE
@@ -121,6 +253,8 @@ Public Class UI3Button
         m_IconFontName = DEFAULT_ICON_FONT_NAME
         m_IconPosition = DEFAULT_ICON_POSITION
         m_IconSpacing = ButtonIconSpacingDefault
+        m_IconSize = SymbolIconDefaultFontSize
+        m_IconImage.Clear
     End Sub
 
     Private Sub UserControl_ReadProperties(PropBag As PropertyBag)
@@ -131,10 +265,56 @@ Public Class UI3Button
         m_IconFontName = PropBag.ReadProperty("IconFontName", DEFAULT_ICON_FONT_NAME)
         m_IconPosition = PropBag.ReadProperty("IconPosition", DEFAULT_ICON_POSITION)
         m_IconSpacing = PropBag.ReadProperty("IconSpacing", ButtonIconSpacingDefault)
+        m_IconSize = PropBag.ReadProperty("IconSize", SymbolIconDefaultFontSize)
+        If m_IconSize <= 0 Then m_IconSize = SymbolIconDefaultFontSize
+        ReadIconImage PropBag
         DesignLog "ReadProperties " & Hex$(ObjPtr(Me)) & " " & DesignName() & " Icon = " & CLng(m_Icon)
         If Not IsUserMode() Then
-            If TakePendingIcon(DesignName(), m_Icon) Then PropertyChanged "Icon"
+            DesignTrace "ReadProperties " & Hex$(ObjPtr(Me)) & " " & DesignName() & " Icon = " & CLng(m_Icon) & _
+                ", IconSource = " & m_IconImage.Source & ", bytes = " & m_IconImage.ByteCount()
+            If TakePendingIcon(DesignName(), m_Icon) Then
+                DesignTrace "pending Icon taken " & DesignName() & " = " & CLng(m_Icon)
+                PropertyChanged "Icon"
+                ClearIconImage
+            End If
+            TakeLibraryIcon
         End If
+    End Sub
+
+    ' Design-time steps of the icon picker's designer bridge, written to the property page log
+    ' (pass 5 diagnostics; the log is %TEMP%\tbUI3-propertypage.log while it is switched on).
+    Private Sub DesignTrace(ByVal Text As String)
+        If IsUserMode() Then Exit Sub
+        UI3PropertyPageLog "BUTTON " & Text
+    End Sub
+
+    ' The library half of the designer bridge: an SVG or PNG the picker applied (see UI3Icons).
+    Private Sub TakeLibraryIcon()
+        Dim data() As Byte
+        Dim source As String
+        If Not TakePendingLibraryIcon(DesignName(), data, source) Then Exit Sub
+        DesignTrace "pending library taken " & DesignName() & " = " & source & ", bytes = " & ByteArrayLength(data)
+        If Not m_IconImage.SetData(data, source) Then
+            DesignTrace "pending library rejected by SetData " & DesignName()
+            Exit Sub
+        End If
+        m_Icon = ui3IconNone
+        m_IconGlyph = ""
+        PropertyChanged "Icon"
+        PropertyChanged "IconGlyph"
+        PropertyChanged "IconData"
+        PropertyChanged "IconSource"
+    End Sub
+
+    Private Sub ReadIconImage(ByVal PropBag As PropertyBag)
+        Dim stored As Variant
+        Dim data() As Byte
+        m_IconImage.Clear
+        stored = PropBag.ReadProperty("IconData", Empty)
+        If Not IsArray(stored) Then Exit Sub
+        data = stored
+        If ByteArrayLength(data) = 0 Then Exit Sub
+        m_IconImage.SetData data, PropBag.ReadProperty("IconSource", "")
     End Sub
 
     ' Design-time name of this control, for the UI3IconPage designer bridge (see UI3Icons).
@@ -158,6 +338,17 @@ Public Class UI3Button
         PropBag.WriteProperty "IconFontName", m_IconFontName, DEFAULT_ICON_FONT_NAME
         PropBag.WriteProperty "IconPosition", m_IconPosition, DEFAULT_ICON_POSITION
         PropBag.WriteProperty "IconSpacing", m_IconSpacing, ButtonIconSpacingDefault
+        PropBag.WriteProperty "IconSize", m_IconSize, SymbolIconDefaultFontSize
+        DesignTrace "WriteProperties " & Hex$(ObjPtr(Me)) & " " & DesignName() & " Icon = " & CLng(m_Icon) & _
+            ", IconSource = " & m_IconImage.Source & ", bytes = " & m_IconImage.ByteCount()
+        If m_IconImage.HasImage Then
+            On Error GoTo WriteFailed
+            PropBag.WriteProperty "IconData", m_IconImage.GetData()
+            PropBag.WriteProperty "IconSource", m_IconImage.Source, ""
+        End If
+        Exit Sub
+WriteFailed:
+        DesignTrace "WriteProperties image failed " & DesignName() & ": " & Err.Number & " " & Err.Description
     End Sub
 
     Private Sub UserControl_Resize()
@@ -194,7 +385,10 @@ Public Class UI3Button
         UI3GetClientRect UserControl.hWnd, client
         If client.Right <= 0 Or client.Bottom <= 0 Then Exit Function
 
-        If m_Target Is Nothing Then Set m_Target = CreateDCTarget()
+        If m_Target Is Nothing Then
+            Set m_Target = CreateDCTarget()
+            m_IconImage.ReleaseDeviceResources
+        End If
         dpi = DpiOfDC(hdc)
         m_Target.SetDpi dpi, dpi
         m_Target.BindDC hdc, client
@@ -289,18 +483,23 @@ Failed:
 
         Dim iconFamily As String
         Dim glyph As String
+        Dim ink As Long
         ResolveIconContent glyph, iconFamily
+        ' A recolouring SVG takes the text colour, made opaque over the button's own fill.
+        ink = ComposeArgb(foreground, ComposeArgb(fill, ArgbFromOleColor(ContainerBackColor())))
 
-        DrawButtonContent m_Target, m_Caption, glyph, iconFamily, SymbolIconDefaultFontSize, _
+        DrawButtonContent m_Target, m_Caption, glyph, iconFamily, m_IconSize, _
             m_IconPosition, m_IconSpacing, ButtonPaddingLeft, ButtonPaddingTop, _
-            w - ButtonPaddingRight, h - ButtonPaddingBottom, foreground
+            w - ButtonPaddingRight, h - ButtonPaddingBottom, foreground, m_IconImage, ink
     End Sub
 
     Private Sub ResolveIconContent(ByRef Glyph As String, ByRef FontFamily As String)
         Glyph = ""
         FontFamily = ""
 
-        If Len(m_IconGlyph) <> 0 Then
+        If m_IconImage.HasImage Then
+            Exit Sub
+        ElseIf Len(m_IconGlyph) <> 0 Then
             Glyph = m_IconGlyph
             FontFamily = m_IconFontName
             If Len(FontFamily) = 0 Then FontFamily = SystemIconFontFamily()

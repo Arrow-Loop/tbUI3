@@ -11,41 +11,61 @@ Class frmMain
     End Sub
 
     Private Sub Form_Load()
+        ' Built EXEs give no line number, so a failure names the step it stopped at.
+        Dim stepName As String
+        On Error GoTo Failed
         Dim folder As String
+        stepName = "IconFolder"
         folder = IconFolder()
+        If Len(folder) = 0 Then MsgBox "test-icons not found next to " & App.Path
 
-        ' A monochrome SVG (#212121) takes the text colour: white on an Accent button.
+        stepName = "button 1"
         If Len(UI3Button1.IconSource) = 0 Then
             UI3Button1.Caption = "Mono SVG"
             UI3Button1.LoadIconFile folder & "mono.svg"
         End If
 
-        ' A colour SVG keeps its own colours. Click it to switch to a Segoe icon (Icon replaces the image).
+        stepName = "button 2 Style"
         UI3Button2.Style = ui3ButtonStandard
+        stepName = "button 2 icon"
         If Len(UI3Button2.IconSource) = 0 Then
             UI3Button2.Caption = "Color SVG"
             UI3Button2.LoadIconFile folder & "color.svg"
         End If
 
-        ' A 64 px PNG, shrunk to IconSize.
+        stepName = "button 3 Style"
         UI3Button3.Style = ui3ButtonStandard
+        stepName = "button 3 IconPosition"
         UI3Button3.IconPosition = ui3IconLeft
+        stepName = "button 3 icon"
         If Len(UI3Button3.IconSource) = 0 Then
             UI3Button3.Caption = "PNG"
             UI3Button3.LoadIconFile folder & "sample.png"
         End If
 
-        ' A copy of button 1's icon. Click it to cycle IconSize through 20, 32 and 48 on every button.
+        stepName = "button 4 Style"
         UI3Button4.Style = ui3ButtonStandard
+        stepName = "button 4 icon"
         If Len(UI3Button4.IconSource) = 0 Then UI3Button4.IconData = UI3Button1.IconData
+        stepName = "button 4 Caption"
         UI3Button4.Caption = "Copy, size " & UI3Button4.IconSize
+        Exit Sub
+
+    Failed:
+        MsgBox "Form_Load stopped at " & stepName & ": " & Err.Number & " " & Err.Description & _
+            " (source: " & Err.Source & ")" & vbCrLf & "App.Path = " & App.Path
     End Sub
 
-    ' test-icons beside the project (App.Path), else Shane's working copy.
+    ' test-icons beside the project: App.Path in the IDE, one folder up from a built EXE in Build.
     Private Function IconFolder() As String
+        Dim candidate As Variant
         On Error Resume Next
-        IconFolder = App.Path & "\test-icons\"
-        If Len(Dir$(IconFolder & "mono.svg")) = 0 Then IconFolder = "E:\Code Projects\tbUI3\tbUI3Test\test-icons\"
+        For Each candidate In Array(App.Path & "\test-icons\", App.Path & "\..\test-icons\")
+            If Len(Dir$(candidate & "mono.svg")) > 0 Then
+                IconFolder = candidate
+                Exit Function
+            End If
+        Next
     End Function
 
     Private Sub UI3Button1_Click()

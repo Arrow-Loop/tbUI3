@@ -4,6 +4,12 @@ All notable changes to tbUI3. Dates are when the change was made, not released. 
 
 ## Unreleased
 
+### 2026-10-20, built tbUI3Test EXE error 80004005 at startup (Claude)
+
+- Shane's win64 EXE check: the built tbUI3Test showed "Run-time error -2147467259 Unspecified error" at startup, then ran (win32 too). No error when run from the IDE in either.
+- A step-logging Form_Load (Shane pasted it, then pushed tbUI3Test) showed it stops at button 2's icon load, with App.Path = `...\tbUI3Test\Build`. Button 2 holds a Segoe icon, so Form_Load loads `color.svg` from `IconFolder`. From Build, `IconFolder` missed `test-icons` (one folder up) and fell back to a hard-coded `E:\` path that isn't Shane's current checkout. Likely cause: a test-code bug loading a missing file; not yet confirmed by a rebuild.
+- tbUI3Test: `IconFolder` now looks in `App.Path\test-icons` and `App.Path\..\test-icons`, with no hard-coded path, and Form_Load says so if neither exists. The step-logging handler stays, since a built EXE gives no line number. `tbUI3Test/src` regenerated from Shane's push.
+
 ### 2026-10-20, repro result: win64 Apply works in twinBASIC; likely cause found (1.0.0.51, Claude)
 
 - Shane ran the repro in win64: the page set Value to 43 and it stuck. twinBASIC's win64 property page Apply works, so the tbUI3 failure is ours, not a twinBASIC bug. Nothing goes to Wayne.

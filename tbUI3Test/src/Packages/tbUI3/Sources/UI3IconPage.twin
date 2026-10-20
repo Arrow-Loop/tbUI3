@@ -5,31 +5,187 @@
 [EventInterfaceId("4136AF42-489D-45BB-BFC7-A6F1461FB755")]
 Class UI3IconPage
 
-    ' A searchable grid of every UI3Icon, drawn with the same Direct2D/DirectWrite code as
-    ' UI3Button. The search box matches a name ("sort"), a UI3Icon value in decimal (57716)
-    ' or hex (E174), or the glyph code that is drawn (E8CB); &H, 0x and U+ prefixes are allowed.
-    ' Designer controls: txtSearch (TextBox), picGrid (PictureBox), vsbGrid (VScrollBar),
-    ' lblInfo (Label). Their positions are set in code, so their designer placement is not critical.
+    ' A searchable grid of every UI3Icon (the Segoe Fluent Icons set), drawn with the same
+    ' Direct2D/DirectWrite code as UI3Button. The search box matches a name ("sort"), a search tag
+    ' ("hamburger"), or the glyph code in decimal (59595) or hex (E8CB); &H, 0x and U+ prefixes are allowed.
+    ' A SelectorBar-style strip across the top switches between the icon sets and Setup, which installs,
+    ' updates and removes the per-PC icon library (UI3IconLibrary). The Fluent UI System and Additional Icons tabs
+    ' browse that library in the same grid, drawing its SVG and PNG files with Direct2D. Applying a pick
+    ' from them copies the file into the control (its LoadIcon method), so a built app needs no library.
+    ' Designer controls: picChrome (PictureBox background/chrome), txtSearch (native TextBox),
+    ' picGrid (Direct2D surface), hidden vsbGrid (scroll state only), and lblInfo (Label).
+    ' The .tbppage is laid out to match the live page; runtime layout only adapts it to host size.
     '
-    ' twinBASIC BETA 997 shows this page from (Custom) only; it ignores the
-    ' [PropertyPage("UI3IconPage")] link on UI3Button.Icon (reported as a bug).
+    ' The page opens from the "..." on UI3Button.Icon (the [PropertyPage("UI3IconPage")] link, honoured
+    ' from twinBASIC BETA 1008) and from (Custom).
 
     Private Const CELL_DIP As Single = 44
     Private Const CELL_INSET_DIP As Single = 3
     Private Const NONE_ENTRY As Long = -1
-    Private Const SEARCH_HINT As String = "Search by name, number, &HE174 or U+E8CB"
+    Private Const SEARCH_HINT As String = "Search by name, tag, number, &HE8CB or U+E8CB"
+    Private Const FLUENT_SEARCH_HINT As String = "Search Fluent icons by name or tag"
+    Private Const GALLERY_SEARCH_HINT As String = "Search additional icons by name"
     Private Const EM_SETCUEBANNER As Long = &H1501&
+    Private Const PAGE_PAD_DIP As Single = 12
+    Private Const SEARCH_HEIGHT_DIP As Single = 32
+    Private Const SEARCH_TEXT_INSET_X_DIP As Single = 8
+    Private Const SEARCH_TEXT_INSET_Y_DIP As Single = 5
+    Private Const INFO_HEIGHT_DIP As Single = 108
+    Private Const INFO_HEADING_HEIGHT_DIP As Single = 20
+    Private Const INFO_ROW_HEIGHT_DIP As Single = 18
+    Private Const INFO_LABEL_WIDTH_DIP As Single = 52
+    Private Const INFO_LEFT_WIDTH_DIP As Single = 210
+    Private Const PREVIEW_GAP_DIP As Single = 8
+    Private Const PREVIEW_CARD_WIDTH_DIP As Single = 96
+    Private Const PREVIEW_CARD_HEIGHT_DIP As Single = 88
+    Private Const PREVIEW_ICON_SIZE_DIP As Single = 26
+    Private Const GRID_GAP_DIP As Single = 12
+    Private Const SCROLLBAR_SIZE_DIP As Single = 12
+    Private Const SCROLLBAR_THUMB_WIDTH_DIP As Single = 8
+    Private Const SCROLLBAR_THUMB_MIN_HEIGHT_DIP As Single = 30
+
+    ' Library grids (tbUI3 layout). Fluent icons are drawn at their 24 px design size in the Segoe-sized
+    ' cells, and so are the Additional Icons (the WinUI Gallery's 72 px images, shrunk), which are shown
+    ' at their own size in the details card. Monochrome Fluent SVGs are drawn in SVG_INK, which is
+    ' swapped for the theme's text colour; the color style keeps its own colours.
+    Private Const FLUENT_ICON_DIP As Single = 24
+    Private Const GALLERY_IMAGE_DIP As Single = 24
+    Private Const GALLERY_PREVIEW_DIP As Single = 72
+    Private Const STYLE_CARD_GAP_DIP As Single = 6
+    Private Const STYLE_COUNT As Long = 4
+    Private Const SVG_INK As String = "#212121"
+    Private Const MAX_CACHED_SVGS As Long = 800
+
+    ' Tab strip: WinUI SelectorBar (controls/dev/SelectorBar/SelectorBar_themeresources.xaml):
+    ' SelectorBarPadding 0,4; SelectorBarItemPadding 12,10,12,7; pill 3 high and 4 wide, scaled 4x
+    ' when selected. The gap below the strip is a tbUI3 layout choice.
+    Private Const TAB_SEGOE As Long = 0
+    Private Const TAB_FLUENT As Long = 1
+    Private Const TAB_GALLERY As Long = 2
+    Private Const TAB_SETUP As Long = 3
+    Private Const TAB_COUNT As Long = 4
+    Private Const SELECTOR_PADDING_Y_DIP As Single = 4
+    Private Const SELECTOR_ITEM_PAD_LEFT_DIP As Single = 12
+    Private Const SELECTOR_ITEM_PAD_TOP_DIP As Single = 10
+    Private Const SELECTOR_ITEM_PAD_RIGHT_DIP As Single = 12
+    Private Const SELECTOR_ITEM_PAD_BOTTOM_DIP As Single = 7
+    Private Const SELECTOR_PILL_HEIGHT_DIP As Single = 3
+    Private Const SELECTOR_PILL_WIDTH_DIP As Single = 16
+    Private Const SELECTOR_GAP_DIP As Single = 4
+
+    ' Library tabs (tbUI3 layout).
+    Private Const BUTTON_HEIGHT_DIP As Single = 32
+    Private Const BUTTON_GAP_DIP As Single = 8
+    Private Const SETUP_LABEL_WIDTH_DIP As Single = 64
+    Private Const SETUP_ROW_HEIGHT_DIP As Single = 20
+    Private Const ACTION_INSTALL As Long = 1
+    Private Const ACTION_UNINSTALL As Long = 2
+    Private Const ACTION_CHECK As Long = 3
+    Private Const MAX_BUTTONS As Long = 4
+
+    ' Diagnostic switch: False leaves the dialog and this page's windows unhooked in win64 (classic
+    ' look, no skin, no search-box colour hooks, no chrome surface subclass). 1.0.0.49 used it to show
+    ' the hooks don't cause the win64 designer process dying after the dialog closes.
+    Private Const WIN64_PAGE_HOOKS As Boolean = True
 
     Private Declare PtrSafe Function SendMessageW Lib "user32" (ByVal hWnd As LongPtr, ByVal wMsg As Long, _
         ByVal wParam As LongPtr, ByVal lParam As LongPtr) As LongPtr
+    Private Declare PtrSafe Function InvalidateRect Lib "user32" (ByVal hWnd As LongPtr, ByVal lpRect As LongPtr, _
+        ByVal bErase As Long) As Long
+    Private Declare PtrSafe Function UpdateWindow Lib "user32" (ByVal hWnd As LongPtr) As Long
 
     Private m_Target As ID2D1DCRenderTarget
+    Private m_ChromeTarget As ID2D1DCRenderTarget
     Private m_Shown() As Long          ' catalog indexes currently shown; NONE_ENTRY for ui3IconNone
     Private m_ShownCount As Long
     Private m_Selected As Long         ' selected UI3Icon value
     Private m_LaidOut As Boolean
+    Private m_SearchFocused As Boolean
+    Private m_ScrollDragging As Boolean
+    Private m_ScrollDragOffset As Single
+    Private m_ThemeApplied As Boolean
+    Private m_ApplyingTheme As Boolean
+    Private m_LastDark As Boolean
+    Private m_LastAccent As Long
+    Private m_InfoName As String
+    Private m_InfoEnum As String
+    Private m_InfoSymbol As String
+    Private m_InfoGlyph As String
+    Private m_SelectedFluentOnly As Boolean   ' the selected glyph isn't in Segoe MDL2 Assets
+
+    Private m_Tab As Long
+    Private m_GridControlsHidden As Boolean
+    Private m_SearchRepainted As Boolean
+    Private m_TabX0(0 To TAB_COUNT - 1) As Single
+    Private m_TabX1(0 To TAB_COUNT - 1) As Single
+    Private m_HotTab As Long
+    Private m_PressedTab As Long
+
+    ' Each grid tab keeps its own search text and selection. m_Shown holds catalog indexes for the
+    ' Segoe tab, icon indexes for Fluent and image indexes for Gallery; m_ShownKind says which.
+    Private m_TabQuery(0 To TAB_COUNT - 1) As String
+    Private m_SettingQuery As Boolean
+    Private m_ShownKind As Long
+    Private m_FluentStyle As Long
+    Private m_FluentSelected As Long
+    Private m_GallerySelected As Long
+    Private m_PickKind As Long         ' the tab of the last icon clicked: what Apply writes
+    Private m_LibraryReady As Boolean
+    Private m_LibraryLoadError As String
+    Private m_LibraryGeneration As Long
+
+    ' Direct2D resources belong to the render target that made them, so the grid and the chrome keep
+    ' their own, indexed by library entry (SVGs) or Gallery image (bitmaps). An SVG's key is the colour
+    ' it was made in, with a leading "!" when it couldn't be made.
+    Private m_GridSvg() As ID2D1SvgDocument
+    Private m_GridSvgKey() As String
+    Private m_GridSvgCount As Long
+    Private m_ChromeSvg() As ID2D1SvgDocument
+    Private m_ChromeSvgKey() As String
+    Private m_ChromeSvgCount As Long
+    Private m_GridBitmap() As ID2D1Bitmap
+    Private m_GridBitmapTried() As Boolean
+    Private m_ChromeBitmap() As ID2D1Bitmap
+    Private m_ChromeBitmapTried() As Boolean
+    Private m_GalleryPixelW() As Long
+    Private m_GalleryPixelH() As Long
+
+    ' Style cards on the Fluent tab: clicking one switches the grid to that style.
+    Private m_CardX0(0 To STYLE_COUNT - 1) As Single
+    Private m_CardX1(0 To STYLE_COUNT - 1) As Single
+    Private m_CardY0 As Single
+    Private m_CardY1 As Single
+    Private m_CardsShown As Boolean
+    Private m_HotCard As Long
+    Private m_PressedCard As Long
+
+    Private m_ButtonCount As Long
+    Private m_ButtonX0(0 To MAX_BUTTONS - 1) As Single
+    Private m_ButtonY0(0 To MAX_BUTTONS - 1) As Single
+    Private m_ButtonX1(0 To MAX_BUTTONS - 1) As Single
+    Private m_ButtonY1(0 To MAX_BUTTONS - 1) As Single
+    Private m_ButtonCaption(0 To MAX_BUTTONS - 1) As String
+    Private m_ButtonAction(0 To MAX_BUTTONS - 1) As Long
+    Private m_ButtonAccent(0 To MAX_BUTTONS - 1) As Boolean
+    Private m_HotButton As Long
+    Private m_PressedButton As Long
+
+    Private m_InstalledVersion As String
+    Private m_LibraryChecked As Boolean
+    Private m_LibraryBusy As Boolean
+    Private m_LibraryStatus As String
+    Private m_LibraryStatusIsError As Boolean
 
     Sub New()
+        m_HotTab = -1
+        m_PressedTab = -1
+        m_HotButton = -1
+        m_PressedButton = -1
+        m_HotCard = -1
+        m_PressedCard = -1
+        m_FluentSelected = -1
+        m_GallerySelected = -1
+        ResetImageCaches
     End Sub
 
     Private Sub PropertyPage_Initialize()
@@ -39,20 +195,53 @@ Class UI3IconPage
     End Sub
 
     Private Sub PropertyPage_SelectionChanged()
+        UI3PropertyPageLog "PAGE SelectionChanged, controls " & Me.SelectedControls.Count & " (window hooks " & IIf(PageHooksEnabled(), "on", "off") & ")"
+        ' twinBASIC's PropertyPage also raises SelectionChanged from its Class_Terminate, with nothing
+        ' selected, while the page is being torn down. Laying out, theming or filling the page then
+        ' touches windows that are going away, so leave it alone.
+        If Me.SelectedControls.Count = 0 Then Exit Sub
         LayoutControls
+        ApplyPageTheme True
         m_Selected = 0
-        If Me.SelectedControls.Count > 0 Then
-            On Error Resume Next
-            m_Selected = CLng(CallByName(Me.SelectedControls(0), "Icon", vbGet))
-            On Error GoTo 0
-        End If
+        Dim source As String
+        On Error Resume Next
+        m_Selected = CLng(CallByName(Me.SelectedControls(0), "Icon", vbGet))
+        source = CStr(CallByName(Me.SelectedControls(0), "IconSource", vbGet))
+        On Error GoTo 0
+        m_InstalledVersion = IconLibraryInstalledVersion()
+        m_LibraryReady = False
+        m_PickKind = TAB_SEGOE
+        ' Open on the tab of the control's current icon, with that icon selected.
+        If m_Selected <> 0 Then m_Tab = TAB_SEGOE
+        If Len(source) > 0 Then OpenOnLibraryPick source
+        UI3PropertyPageLog "PAGE current Icon = " & m_Selected & ", IconSource = " & source & ", tab " & m_Tab
+        If m_Tab = TAB_FLUENT Or m_Tab = TAB_GALLERY Then EnsureLibrary
+        Dim i As Long
+        For i = 0 To TAB_COUNT - 1
+            m_TabQuery(i) = ""
+        Next
+        m_SettingQuery = True
         txtSearch.Text = ""
+        m_SettingQuery = False
+        If Not TabHasGrid(m_Tab) Or m_GridControlsHidden Then ShowTabControls
+        If m_Tab <> TAB_SEGOE And TabHasGrid(m_Tab) Then SetSearchHint
         ApplyFilter
         ScrollToSelected
         UpdateInfo
     End Sub
 
+    ' VB6 raises EditProperty when a property's own "..." opens the page, naming that property, so a
+    ' control with two icon properties can tell which was clicked. Pass 5a logs whether twinBASIC does.
+    Private Sub PropertyPage_EditProperty(PropertyName As String)
+        UI3PropertyPageLog "PAGE EditProperty " & PropertyName
+    End Sub
+
     Private Sub PropertyPage_ApplyChanges()
+        UI3PropertyPageLog "PAGE ApplyChanges tab " & m_PickKind & ", Icon " & m_Selected & ", controls " & Me.SelectedControls.Count
+        If m_PickKind = TAB_FLUENT Or m_PickKind = TAB_GALLERY Then
+            ApplyLibraryPick
+            Exit Sub
+        End If
         ' twinBASIC BETA 997 does not keep a value set here: the designer rebuilds the control from its
         ' own saved copy. IconPageApplying makes UI3Button record the value so its next design-time
         ' ReadProperties re-applies it (see the designer bridge in UI3Icons).
@@ -60,39 +249,1273 @@ Class UI3IconPage
         DesignLog "ApplyChanges value = " & m_Selected
         IconPageApplying = True
         For Each ctl In Me.SelectedControls
+            UI3PropertyPageLog "PAGE setting Icon on a " & TypeName(ctl)
+            On Error Resume Next
             CallByName ctl, "Icon", vbLet, m_Selected
+            If Err.Number <> 0 Then UI3PropertyPageLog "PAGE Let Icon failed: " & Err.Number & " " & Err.Description
+            On Error GoTo 0
         Next
         IconPageApplying = False
+        UI3PropertyPageLog "PAGE ApplyChanges done"
+    End Sub
+
+    ' Copies the picked library file into each selected control through its LoadIcon method. A Fluent
+    ' icon is stored at the file size closest to that control's IconSize. IconPageApplying makes the
+    ' control record the file for the designer bridge, as a Segoe pick does.
+    Private Sub ApplyLibraryPick()
+        Dim ctl As Object
+        Dim entry As Long
+        Dim source As String
+        Dim data() As Byte
+        Dim sizeDip As Single
+        For Each ctl In Me.SelectedControls
+            entry = -1
+            source = ""
+            If m_PickKind = TAB_FLUENT Then
+                If m_FluentSelected < 0 Then Exit Sub
+                sizeDip = SymbolIconDefaultFontSize
+                On Error Resume Next
+                sizeDip = CSng(CallByName(ctl, "IconSize", vbGet))
+                On Error GoTo 0
+                entry = IconLibraryFluentEntryNear(m_FluentSelected, m_FluentStyle, CLng(sizeDip), source)
+            Else
+                If m_GallerySelected < 0 Then Exit Sub
+                entry = IconLibraryGalleryEntry(m_GallerySelected)
+                source = "gallery_" & IconLibraryGalleryName(m_GallerySelected)
+            End If
+            UI3PropertyPageLog "PAGE Apply library " & source & " (entry " & entry & ")"
+            If entry >= 0 Then
+                If IconLibraryEntryBytes(entry, data) Then
+                    IconPageApplying = True
+                    On Error Resume Next
+                    CallByName ctl, "LoadIcon", VbMethod, data, source
+                    If Err.Number <> 0 Then UI3PropertyPageLog "PAGE LoadIcon failed: " & Err.Number & " " & Err.Description & " (source " & Err.Source & ")"
+                    On Error GoTo 0
+                    IconPageApplying = False
+                End If
+            End If
+        Next
+    End Sub
+
+    ' Selects the control's current library icon from its IconSource (ic_fluent_<id>_<size>_<style>,
+    ' optionally _ltr, or gallery_<name>) and switches to that tab. Does nothing when the library isn't
+    ' installed or doesn't have the icon.
+    Private Sub OpenOnLibraryPick(ByVal Source As String)
+        Dim parts() As String
+        Dim n As Long
+        Dim i As Long
+        Dim style As Long
+        Dim id As String
+        Dim found As Long
+
+        If Len(m_InstalledVersion) = 0 Then Exit Sub
+        If LCase$(Left$(Source, 10)) = "ic_fluent_" Then
+            parts = Split(LCase$(Mid$(Source, 11)), "_")
+            n = UBound(parts)
+            If n >= 0 Then
+                If parts(n) = "ltr" Or parts(n) = "rtl" Then n = n - 1
+            End If
+            If n < 2 Then Exit Sub
+            style = IconLibraryStyleFromName(parts(n))
+            If style < 0 Then Exit Sub
+            id = parts(0)
+            For i = 1 To n - 2
+                id = id & "_" & parts(i)
+            Next
+            EnsureLibrary
+            If Not m_LibraryReady Then Exit Sub
+            found = IconLibraryFluentFind(id)
+            If found < 0 Then Exit Sub
+            If IconLibraryFluentEntry(found, style) < 0 Then Exit Sub
+            m_FluentStyle = style
+            m_FluentSelected = found
+            m_PickKind = TAB_FLUENT
+            m_Tab = TAB_FLUENT
+        ElseIf LCase$(Left$(Source, 8)) = "gallery_" Then
+            EnsureLibrary
+            If Not m_LibraryReady Then Exit Sub
+            found = IconLibraryGalleryFind(Mid$(Source, 9))
+            If found < 0 Then Exit Sub
+            m_GallerySelected = found
+            m_PickKind = TAB_GALLERY
+            m_Tab = TAB_GALLERY
+        End If
     End Sub
 
     Private Sub LayoutControls()
         If m_LaidOut Then Exit Sub
         m_LaidOut = True
         On Error Resume Next
+
         Dim pad As Single
+        Dim searchH As Single
+        Dim infoH As Single
+        Dim gap As Single
+        Dim insetX As Single
+        Dim insetY As Single
         Dim w As Single
         Dim h As Single
-        Dim barW As Single
-        Dim boxH As Single
-        Dim infoH As Single
-        pad = Me.ScaleX(8, vbPixels, Me.ScaleMode)
-        barW = Me.ScaleX(17, vbPixels, Me.ScaleMode)
-        boxH = Me.ScaleY(24, vbPixels, Me.ScaleMode)
-        infoH = Me.ScaleY(36, vbPixels, Me.ScaleMode)
+        Dim gridTop As Single
+        Dim gridH As Single
+        Dim top As Single
+
+        pad = Me.ScaleX(PAGE_PAD_DIP, vbPixels, Me.ScaleMode)
+        top = Me.ScaleY(ContentTopDip(), vbPixels, Me.ScaleMode)
+        searchH = Me.ScaleY(SEARCH_HEIGHT_DIP, vbPixels, Me.ScaleMode)
+        infoH = Me.ScaleY(INFO_HEIGHT_DIP, vbPixels, Me.ScaleMode)
+        gap = Me.ScaleY(GRID_GAP_DIP, vbPixels, Me.ScaleMode)
+        insetX = Me.ScaleX(SEARCH_TEXT_INSET_X_DIP, vbPixels, Me.ScaleMode)
+        insetY = Me.ScaleY(SEARCH_TEXT_INSET_Y_DIP, vbPixels, Me.ScaleMode)
         w = Me.ScaleWidth
         h = Me.ScaleHeight
-        txtSearch.Move pad, pad, w - 2 * pad, boxH
-        picGrid.Move pad, 2 * pad + boxH, w - 2 * pad - barW, h - 4 * pad - boxH - infoH
-        vsbGrid.Move w - pad - barW, 2 * pad + boxH, barW, h - 4 * pad - boxH - infoH
-        lblInfo.Move pad, h - pad - infoH, w - 2 * pad, infoH
+
+        picChrome.Move 0, 0, w, h
+        picChrome.BorderStyle = vbNoBorder
+        ' From here picChrome paints like the property sheet's own buttons (UI3PageSurface).
+        If PageHooksEnabled() Then UI3AttachIconPageSurface picChrome.hWnd, Me
+        picChrome.AutoRedraw = False
+        picChrome.ScaleMode = vbPixels
+        picChrome.TabStop = False
+        picChrome.ZOrder 1
+
+        txtSearch.BorderStyle = vbNoBorder
+        txtSearch.Appearance = vbAppearFlat
+        txtSearch.Move pad + insetX, top + insetY, w - 2 * pad - 2 * insetX, searchH - 2 * insetY
+
+        gridTop = top + searchH + gap
+        gridH = h - gridTop - gap - infoH - pad
+        If gridH < Me.ScaleY(88, vbPixels, Me.ScaleMode) Then gridH = Me.ScaleY(88, vbPixels, Me.ScaleMode)
+        picGrid.Move pad, gridTop, w - 2 * pad, gridH
         picGrid.AutoRedraw = False
         picGrid.ScaleMode = vbPixels
-        picGrid.BackColor = vbWhite
+        picGrid.BorderStyle = vbNoBorder
+
+        ' Keep the native VScrollBar only as a range/value model. The visible scrollbar is
+        ' painted into picGrid from WinUI ScrollBar resources so the classic control never shows.
+        vsbGrid.Visible = False
+        vsbGrid.TabStop = False
+
+        lblInfo.Move pad, gridTop + gridH + gap, w - 2 * pad, infoH
+        lblInfo.BackStyle = vbBFTransparent
         lblInfo.WordWrap = True
-        lblInfo.UseMnemonic = False     ' show "&H" literally instead of underlining H
-        ' Grey hint shown while the search box is empty (Windows edit cue banner; wParam 1 keeps it
-        ' visible while the box has focus). Needs Common Controls 6; without it nothing is shown.
+        lblInfo.UseMnemonic = False
+        ' Runtime info text is painted by Direct2D into picChrome so it cannot be covered by
+        ' host/page repaint ordering. Keep lblInfo only as a useful designer placeholder.
+        lblInfo.Visible = False
+
+        txtSearch.ZOrder 0
+        picGrid.ZOrder 0
+        lblInfo.ZOrder 0
+
+        ' Grey hint shown while the search box is empty. It is still the native Edit control,
+        ' which keeps caret/selection/clipboard/IME behavior while tbUI3 draws the chrome.
         SendMessageW txtSearch.hWnd, EM_SETCUEBANNER, 1, StrPtr(SEARCH_HINT)
+    End Sub
+
+    ' --- Property-page chrome / theme ---
+
+    Private Sub ApplyPageTheme(ByVal RefreshNativeState As Boolean)
+        If m_ApplyingTheme Then Exit Sub
+        m_ApplyingTheme = True
+        On Error GoTo CleanUp
+
+        If RefreshNativeState Then RefreshTheme
+
+        Dim dark As Boolean
+        Dim baseArgb As Long
+        Dim fillArgb As Long
+        Dim primaryArgb As Long
+        Dim secondaryArgb As Long
+
+        dark = IsDarkMode()
+        If dark Then
+            baseArgb = DARK_SolidBackgroundFillColorBase
+            primaryArgb = DARK_TextFillColorPrimary
+            secondaryArgb = DARK_TextFillColorSecondary
+            If m_SearchFocused Then
+                fillArgb = DARK_ControlFillColorInputActive
+            Else
+                fillArgb = DARK_ControlFillColorDefault
+            End If
+        Else
+            baseArgb = LIGHT_SolidBackgroundFillColorBase
+            primaryArgb = LIGHT_TextFillColorPrimary
+            secondaryArgb = LIGHT_TextFillColorSecondary
+            If m_SearchFocused Then
+                fillArgb = LIGHT_ControlFillColorInputActive
+            Else
+                fillArgb = LIGHT_ControlFillColorDefault
+            End If
+        End If
+
+        Me.BackColor = OleFromArgbOver(baseArgb, baseArgb)
+        picChrome.BackColor = Me.BackColor
+        picGrid.BackColor = Me.BackColor
+        txtSearch.BackColor = OleFromArgbOver(fillArgb, baseArgb)
+        txtSearch.ForeColor = OleFromArgbOver(primaryArgb, baseArgb)
+        lblInfo.ForeColor = OleFromArgbOver(secondaryArgb, baseArgb)
+
+        m_LastDark = dark
+        m_LastAccent = AccentShade(ACCENT_BASE)
+        m_ThemeApplied = True
+
+        ApplyHostTitleBar
+        txtSearch.Refresh
+        picChrome.Refresh
+        picGrid.Refresh
+
+CleanUp:
+        m_ApplyingTheme = False
+    End Sub
+
+    Private Sub EnsurePageThemeCurrent()
+        If m_ApplyingTheme Then Exit Sub
+        RefreshTheme
+        Dim dark As Boolean
+        Dim accent As Long
+        dark = IsDarkMode()
+        accent = AccentShade(ACCENT_BASE)
+        If Not m_ThemeApplied Or dark <> m_LastDark Or accent <> m_LastAccent Then
+            ApplyPageTheme False
+        End If
+    End Sub
+
+    Private Function PageHooksEnabled() As Boolean
+        #If Win64 Then
+            PageHooksEnabled = WIN64_PAGE_HOOKS
+        #Else
+            PageHooksEnabled = True
+        #End If
+    End Function
+
+    Private Sub ApplyHostTitleBar()
+        If Not PageHooksEnabled() Then Exit Sub
+        On Error Resume Next
+        ' Arms the search-box colour hooks, and skins the real PropertySheet once BETA 997 has
+        ' inserted this page into it (found structurally, never by GetAncestor). Safe on every paint.
+        UI3SkinPropertySheetForPage picChrome.hWnd, Me.Caption, txtSearch.hWnd
+    End Sub
+
+    ' Only runs until UI3PageSurface owns picChrome's paint (see LayoutControls).
+    Private Sub picChrome_Paint()
+        EnsurePageThemeCurrent
+
+        ' BETA 997 paints the page before it inserts it into the outer PropertySheet, so the
+        ' sheet may not exist yet. The page-move hook usually skins it; this is the fallback.
+        ApplyHostTitleBar
+
+        Dim hr As Long
+        hr = PaintChrome(picChrome.hDC)
+        If hr <> 0 Then
+            On Error Resume Next
+            picChrome.Cls
+        End If
+    End Sub
+
+    ' Called by UI3PageSurface from picChrome's WM_PAINT with the BeginPaint DC.
+    Friend Sub PaintChromeSurface(ByVal hdc As LongPtr)
+        EnsurePageThemeCurrent
+        ApplyHostTitleBar
+        PaintChrome hdc
+        ' The search box can paint once before its colour hooks exist and stay classic light until
+        ' something repaints it; repaint it once now that they are armed.
+        If Not m_SearchRepainted Then
+            m_SearchRepainted = True
+            InvalidateRect txtSearch.hWnd, 0, 1
+        End If
+    End Sub
+
+    ' Called by UI3PageSurface when the pointer leaves picChrome.
+    Friend Sub ChromeMouseLeave()
+        If m_HotTab >= 0 Or m_HotButton >= 0 Or m_HotCard >= 0 Then
+            m_HotTab = -1
+            m_HotButton = -1
+            m_HotCard = -1
+            RepaintChrome
+        End If
+    End Sub
+
+    Private Function PaintChrome(ByVal hdc As LongPtr) As Long
+        Dim client As UI3GdiRect
+        Dim dpi As Single
+        Dim drawing As Boolean
+
+        On Error GoTo Failed
+        If hdc = 0 Then Exit Function
+        UI3GetClientRect picChrome.hWnd, client
+        If client.Right <= 0 Or client.Bottom <= 0 Then Exit Function
+
+        If m_ChromeTarget Is Nothing Then
+            Set m_ChromeTarget = CreateDCTarget()
+            ResetTargetImages True
+        End If
+        dpi = DpiOfDC(hdc)
+        m_ChromeTarget.SetDpi dpi, dpi
+        m_ChromeTarget.BindDC hdc, client
+
+        m_ChromeTarget.BeginDraw
+        drawing = True
+        DrawChrome client.Right * 96! / dpi, client.Bottom * 96! / dpi
+        drawing = False
+
+        Dim hr As Long
+        hr = m_ChromeTarget.EndDraw(0, 0)
+        If hr < 0 Then
+            PaintChrome = hr
+            Set m_ChromeTarget = Nothing
+        End If
+        Exit Function
+
+Failed:
+        PaintChrome = Err.Number
+        If PaintChrome = 0 Then PaintChrome = -1
+        If drawing Then m_ChromeTarget.EndDraw 0, 0
+        Set m_ChromeTarget = Nothing
+    End Function
+
+    Private Sub DrawChrome(ByVal w As Single, ByVal h As Single)
+        Dim dark As Boolean
+        Dim baseArgb As Long
+        Dim fillArgb As Long
+        Dim strokeArgb As Long
+        Dim focusArgb As Long
+        Dim box As D2D1_ROUNDED_RECT
+
+        dark = IsDarkMode()
+        If dark Then
+            baseArgb = DARK_SolidBackgroundFillColorBase
+            If m_SearchFocused Then
+                fillArgb = DARK_ControlFillColorInputActive
+            Else
+                fillArgb = DARK_ControlFillColorDefault
+            End If
+            strokeArgb = DARK_ControlStrokeColorDefault
+            focusArgb = AccentShade(ACCENT_LIGHT2)
+        Else
+            baseArgb = LIGHT_SolidBackgroundFillColorBase
+            If m_SearchFocused Then
+                fillArgb = LIGHT_ControlFillColorInputActive
+            Else
+                fillArgb = LIGHT_ControlFillColorDefault
+            End If
+            strokeArgb = LIGHT_ControlStrokeColorDefault
+            focusArgb = AccentShade(ACCENT_DARK1)
+        End If
+
+        m_ChromeTarget.Clear ColorFromArgb(baseArgb)
+        DrawSelectorBar dark
+        m_ButtonCount = 0
+        m_CardsShown = False
+
+        If m_Tab = TAB_SETUP Then
+            DrawSetupTab w, h, dark
+            Exit Sub
+        ElseIf Not TabHasGrid(m_Tab) Then
+            DrawLibraryTab w, h, dark
+            Exit Sub
+        End If
+
+        Dim top As Single
+        top = ContentTopDip()
+        box = RoundedRect(PAGE_PAD_DIP, top, w - PAGE_PAD_DIP, _
+            top + SEARCH_HEIGHT_DIP, ControlCornerRadius)
+        m_ChromeTarget.FillRoundedRectangle box, SolidBrush(m_ChromeTarget, fillArgb)
+        m_ChromeTarget.DrawRoundedRectangle box, SolidBrush(m_ChromeTarget, strokeArgb), 1, 0
+
+        If m_SearchFocused Then
+            box = RoundedRect(PAGE_PAD_DIP + 1, top + SEARCH_HEIGHT_DIP - 2, _
+                w - PAGE_PAD_DIP - 1, top + SEARCH_HEIGHT_DIP, 1)
+            m_ChromeTarget.FillRoundedRectangle box, SolidBrush(m_ChromeTarget, focusArgb)
+        End If
+
+        Select Case m_Tab
+            Case TAB_FLUENT: DrawFluentDetails w, h, dark
+            Case TAB_GALLERY: DrawGalleryDetails w, h, dark
+            Case Else: DrawSelectedIconDetails w, h, dark
+        End Select
+    End Sub
+
+    Private Sub DrawSelectedIconDetails(ByVal w As Single, ByVal h As Single, ByVal dark As Boolean)
+        Dim primaryArgb As Long
+        Dim secondaryArgb As Long
+        Dim cardFillArgb As Long
+        Dim cardStrokeArgb As Long
+
+        If dark Then
+            primaryArgb = DARK_TextFillColorPrimary
+            secondaryArgb = DARK_TextFillColorSecondary
+            cardFillArgb = DARK_ControlFillColorDefault
+            cardStrokeArgb = DARK_ControlStrokeColorDefault
+        Else
+            primaryArgb = LIGHT_TextFillColorPrimary
+            secondaryArgb = LIGHT_TextFillColorSecondary
+            cardFillArgb = LIGHT_ControlFillColorDefault
+            cardStrokeArgb = LIGHT_ControlStrokeColorDefault
+        End If
+
+        Dim infoTop As Single
+        Dim rowsTop As Single
+        Dim valueX As Single
+        Dim previewX As Single
+        Dim previewW As Single
+        Dim previewGroupW As Single
+        Dim previewStartX As Single
+        Dim previewY As Single
+
+        infoTop = h - PAGE_PAD_DIP - INFO_HEIGHT_DIP
+        rowsTop = infoTop + INFO_HEADING_HEIGHT_DIP + 4
+        valueX = PAGE_PAD_DIP + INFO_LABEL_WIDTH_DIP
+        previewX = PAGE_PAD_DIP + INFO_LEFT_WIDTH_DIP + 8
+        previewW = w - PAGE_PAD_DIP - previewX
+        previewGroupW = PREVIEW_CARD_WIDTH_DIP * 2 + PREVIEW_GAP_DIP
+        previewStartX = previewX + (previewW - previewGroupW) / 2
+        If previewStartX < previewX Then previewStartX = previewX
+        previewY = infoTop + (INFO_HEIGHT_DIP - PREVIEW_CARD_HEIGHT_DIP) / 2
+
+        DrawLeftTextStyled m_ChromeTarget, "Selected icon", 14, DWRITE_FONT_WEIGHT_SEMI_BOLD, _
+            PAGE_PAD_DIP, infoTop, previewX - 4, infoTop + INFO_HEADING_HEIGHT_DIP, primaryArgb
+
+        DrawInfoField "Name", m_InfoName, PAGE_PAD_DIP, valueX, rowsTop, primaryArgb, secondaryArgb
+        DrawInfoField "Enum", m_InfoEnum, PAGE_PAD_DIP, valueX, rowsTop + INFO_ROW_HEIGHT_DIP, primaryArgb, secondaryArgb
+        DrawInfoField "Value", m_InfoSymbol, PAGE_PAD_DIP, valueX, rowsTop + INFO_ROW_HEIGHT_DIP * 2, primaryArgb, secondaryArgb
+        DrawInfoField "Glyph", m_InfoGlyph, PAGE_PAD_DIP, valueX, rowsTop + INFO_ROW_HEIGHT_DIP * 3, primaryArgb, secondaryArgb
+
+        DrawFontPreview previewStartX, previewY, PREVIEW_CARD_WIDTH_DIP, PREVIEW_CARD_HEIGHT_DIP, _
+            "Segoe Fluent", "Segoe Fluent Icons", primaryArgb, secondaryArgb, cardFillArgb, cardStrokeArgb
+        DrawFontPreview previewStartX + PREVIEW_CARD_WIDTH_DIP + PREVIEW_GAP_DIP, previewY, _
+            PREVIEW_CARD_WIDTH_DIP, PREVIEW_CARD_HEIGHT_DIP, _
+            "Segoe MDL2", "Segoe MDL2 Assets", primaryArgb, secondaryArgb, cardFillArgb, cardStrokeArgb
+    End Sub
+
+    Private Sub DrawInfoField(ByVal labelText As String, ByVal valueText As String, ByVal labelX As Single, _
+            ByVal valueX As Single, ByVal y As Single, ByVal primaryArgb As Long, ByVal secondaryArgb As Long)
+        DrawLeftTextStyled m_ChromeTarget, labelText, 11, DWRITE_FONT_WEIGHT_NORMAL, _
+            labelX, y, valueX - 4, y + INFO_ROW_HEIGHT_DIP, secondaryArgb
+        DrawLeftTextStyled m_ChromeTarget, valueText, 12, DWRITE_FONT_WEIGHT_NORMAL, _
+            valueX, y, PAGE_PAD_DIP + INFO_LEFT_WIDTH_DIP, y + INFO_ROW_HEIGHT_DIP, primaryArgb
+    End Sub
+
+    Private Sub DrawFontPreview(ByVal x As Single, ByVal y As Single, ByVal cardW As Single, ByVal cardH As Single, _
+            ByVal title As String, ByVal family As String, ByVal primaryArgb As Long, ByVal secondaryArgb As Long, _
+            ByVal fillArgb As Long, ByVal strokeArgb As Long)
+        Dim box As D2D1_ROUNDED_RECT
+        Dim installed As Boolean
+        Dim hasGlyph As Boolean
+        Dim statusText As String
+
+        ' A glyph the font doesn't have would draw as the "no character" box, so its card is disabled,
+        ' as the Fluent tab does for a style an icon doesn't come in.
+        installed = FontFamilyExists(family)
+        hasGlyph = installed
+        If installed And m_Selected <> 0 And m_SelectedFluentOnly Then
+            If StrComp(family, "Segoe MDL2 Assets", vbTextCompare) = 0 Then hasGlyph = False
+        End If
+        If Not hasGlyph Then
+            If IsDarkMode() Then
+                fillArgb = DARK_ControlFillColorDisabled
+                primaryArgb = DARK_TextFillColorDisabled
+            Else
+                fillArgb = LIGHT_ControlFillColorDisabled
+                primaryArgb = LIGHT_TextFillColorDisabled
+            End If
+            secondaryArgb = primaryArgb
+        End If
+
+        box = RoundedRect(x, y, x + cardW, y + cardH, ControlCornerRadius)
+        m_ChromeTarget.FillRoundedRectangle box, SolidBrush(m_ChromeTarget, fillArgb)
+        m_ChromeTarget.DrawRoundedRectangle box, SolidBrush(m_ChromeTarget, strokeArgb), 1, 0
+
+        DrawCenteredTextStyled m_ChromeTarget, title, 10.5!, DWRITE_FONT_WEIGHT_SEMI_BOLD, _
+            x + 4, y + 4, x + cardW - 4, y + 20, primaryArgb
+
+        If installed And Not hasGlyph Then
+            statusText = "Not in font"
+        ElseIf installed Then
+            If StrComp(SystemIconFontFamily(), family, vbTextCompare) = 0 Then
+                statusText = "Active"
+            Else
+                statusText = "Fallback"
+            End If
+        Else
+            statusText = "Unavailable"
+        End If
+
+        If hasGlyph And m_Selected <> 0 Then
+            DrawButtonContent m_ChromeTarget, "", SemanticIconGlyph(m_Selected), family, PREVIEW_ICON_SIZE_DIP, _
+                ui3IconLeft, 0, x + 6, y + 20, x + cardW - 6, y + cardH - 20, primaryArgb
+        End If
+
+        DrawCenteredTextStyled m_ChromeTarget, statusText, 10, DWRITE_FONT_WEIGHT_NORMAL, _
+            x + 4, y + cardH - 18, x + cardW - 4, y + cardH - 3, secondaryArgb
+    End Sub
+
+    Private Sub DrawFluentDetails(ByVal w As Single, ByVal h As Single, ByVal dark As Boolean)
+        Dim primaryArgb As Long
+        Dim secondaryArgb As Long
+        Dim infoTop As Single
+        Dim rowsTop As Single
+        Dim valueX As Single
+        Dim previewX As Single
+        Dim cardW As Single
+        Dim st As Long
+        Dim nameText As String
+        Dim idText As String
+        Dim sizesText As String
+
+        primaryArgb = IIf(dark, DARK_TextFillColorPrimary, LIGHT_TextFillColorPrimary)
+        secondaryArgb = IIf(dark, DARK_TextFillColorSecondary, LIGHT_TextFillColorSecondary)
+        infoTop = h - PAGE_PAD_DIP - INFO_HEIGHT_DIP
+        rowsTop = infoTop + INFO_HEADING_HEIGHT_DIP + 4
+        valueX = PAGE_PAD_DIP + INFO_LABEL_WIDTH_DIP
+        previewX = PAGE_PAD_DIP + INFO_LEFT_WIDTH_DIP + 8
+
+        If m_FluentSelected >= 0 Then
+            nameText = IconLibraryFluentName(m_FluentSelected)
+            idText = IconLibraryFluentId(m_FluentSelected)
+            sizesText = IconLibraryFluentSizes(m_FluentSelected, m_FluentStyle)
+        Else
+            nameText = "None"
+        End If
+
+        DrawLeftTextStyled m_ChromeTarget, "Icon preview", 14, DWRITE_FONT_WEIGHT_SEMI_BOLD, _
+            PAGE_PAD_DIP, infoTop, previewX - 4, infoTop + INFO_HEADING_HEIGHT_DIP, primaryArgb
+        DrawInfoField "Name", nameText, PAGE_PAD_DIP, valueX, rowsTop, primaryArgb, secondaryArgb
+        DrawInfoField "Id", idText, PAGE_PAD_DIP, valueX, rowsTop + INFO_ROW_HEIGHT_DIP, primaryArgb, secondaryArgb
+        DrawInfoField "Style", FluentStyleName(m_FluentStyle), PAGE_PAD_DIP, valueX, _
+            rowsTop + INFO_ROW_HEIGHT_DIP * 2, primaryArgb, secondaryArgb
+        DrawInfoField "Sizes", sizesText, PAGE_PAD_DIP, valueX, rowsTop + INFO_ROW_HEIGHT_DIP * 3, primaryArgb, secondaryArgb
+
+        cardW = (w - PAGE_PAD_DIP - previewX - (STYLE_COUNT - 1) * STYLE_CARD_GAP_DIP) / STYLE_COUNT
+        m_CardY0 = infoTop + (INFO_HEIGHT_DIP - PREVIEW_CARD_HEIGHT_DIP) / 2
+        m_CardY1 = m_CardY0 + PREVIEW_CARD_HEIGHT_DIP
+        For st = 0 To STYLE_COUNT - 1
+            m_CardX0(st) = previewX + st * (cardW + STYLE_CARD_GAP_DIP)
+            m_CardX1(st) = m_CardX0(st) + cardW
+            DrawStyleCard st, dark
+        Next
+        m_CardsShown = True
+    End Sub
+
+    ' One style card: the selected icon in that style over its name. The current style has an accent
+    ' outline; a style the selected icon doesn't come in is drawn disabled.
+    Private Sub DrawStyleCard(ByVal Style As Long, ByVal dark As Boolean)
+        Dim available As Boolean
+        Dim baseArgb As Long
+        Dim fillArgb As Long
+        Dim strokeArgb As Long
+        Dim textArgb As Long
+        Dim accentArgb As Long
+        Dim x0 As Single
+        Dim x1 As Single
+
+        available = StyleCardEnabled(Style)
+        x0 = m_CardX0(Style)
+        x1 = m_CardX1(Style)
+        If dark Then
+            baseArgb = DARK_SolidBackgroundFillColorBase
+            strokeArgb = DARK_ControlStrokeColorDefault
+            accentArgb = AccentShade(ACCENT_LIGHT2)
+            If Not available Then
+                fillArgb = DARK_ControlFillColorDisabled
+                textArgb = DARK_TextFillColorDisabled
+            ElseIf Style = m_PressedCard And Style = m_HotCard Then
+                fillArgb = DARK_ControlFillColorTertiary
+                textArgb = DARK_TextFillColorSecondary
+            ElseIf Style = m_HotCard Then
+                fillArgb = DARK_ControlFillColorSecondary
+                textArgb = DARK_TextFillColorPrimary
+            Else
+                fillArgb = DARK_ControlFillColorDefault
+                textArgb = DARK_TextFillColorPrimary
+            End If
+        Else
+            baseArgb = LIGHT_SolidBackgroundFillColorBase
+            strokeArgb = LIGHT_ControlStrokeColorDefault
+            accentArgb = AccentShade(ACCENT_DARK1)
+            If Not available Then
+                fillArgb = LIGHT_ControlFillColorDisabled
+                textArgb = LIGHT_TextFillColorDisabled
+            ElseIf Style = m_PressedCard And Style = m_HotCard Then
+                fillArgb = LIGHT_ControlFillColorTertiary
+                textArgb = LIGHT_TextFillColorSecondary
+            ElseIf Style = m_HotCard Then
+                fillArgb = LIGHT_ControlFillColorSecondary
+                textArgb = LIGHT_TextFillColorPrimary
+            Else
+                fillArgb = LIGHT_ControlFillColorDefault
+                textArgb = LIGHT_TextFillColorPrimary
+            End If
+        End If
+
+        m_ChromeTarget.FillRoundedRectangle RoundedRect(x0, m_CardY0, x1, m_CardY1, ControlCornerRadius), _
+            SolidBrush(m_ChromeTarget, fillArgb)
+        If Style = m_FluentStyle Then
+            m_ChromeTarget.DrawRoundedRectangle RoundedRect(x0 + 1, m_CardY0 + 1, x1 - 1, m_CardY1 - 1, ControlCornerRadius), _
+                SolidBrush(m_ChromeTarget, accentArgb), 2, 0
+        Else
+            m_ChromeTarget.DrawRoundedRectangle RoundedRect(x0, m_CardY0, x1, m_CardY1, ControlCornerRadius), _
+                SolidBrush(m_ChromeTarget, strokeArgb), 1, 0
+        End If
+
+        If available And m_FluentSelected >= 0 Then
+            DrawFluentIcon True, IconLibraryFluentEntry(m_FluentSelected, Style), _
+                Style <> ICON_STYLE_COLOR, OleFromArgbOver(textArgb, baseArgb), (x0 + x1 - FLUENT_ICON_DIP) / 2, m_CardY0 + 22
+        End If
+        DrawCenteredTextStyled m_ChromeTarget, FluentStyleName(Style), 10.5!, DWRITE_FONT_WEIGHT_NORMAL, _
+            x0 + 2, m_CardY1 - 26, x1 - 2, m_CardY1 - 8, textArgb
+    End Sub
+
+    Private Function StyleCardEnabled(ByVal Style As Long) As Boolean
+        If m_FluentSelected < 0 Then
+            StyleCardEnabled = True
+        Else
+            StyleCardEnabled = (IconLibraryFluentEntry(m_FluentSelected, Style) >= 0)
+        End If
+    End Function
+
+    Private Function FluentStyleName(ByVal Style As Long) As String
+        Select Case Style
+            Case ICON_STYLE_REGULAR: FluentStyleName = "Regular"
+            Case ICON_STYLE_FILLED: FluentStyleName = "Filled"
+            Case ICON_STYLE_COLOR: FluentStyleName = "Color"
+            Case ICON_STYLE_LIGHT: FluentStyleName = "Light"
+        End Select
+    End Function
+
+    Private Sub DrawGalleryDetails(ByVal w As Single, ByVal h As Single, ByVal dark As Boolean)
+        Dim primaryArgb As Long
+        Dim secondaryArgb As Long
+        Dim cardFillArgb As Long
+        Dim cardStrokeArgb As Long
+        Dim infoTop As Single
+        Dim rowsTop As Single
+        Dim valueX As Single
+        Dim previewX As Single
+        Dim cardX As Single
+        Dim cardY As Single
+        Dim nameText As String
+        Dim sizeText As String
+        Dim sourceText As String
+        Dim bmp As ID2D1Bitmap
+
+        If dark Then
+            primaryArgb = DARK_TextFillColorPrimary
+            secondaryArgb = DARK_TextFillColorSecondary
+            cardFillArgb = DARK_ControlFillColorDefault
+            cardStrokeArgb = DARK_ControlStrokeColorDefault
+        Else
+            primaryArgb = LIGHT_TextFillColorPrimary
+            secondaryArgb = LIGHT_TextFillColorSecondary
+            cardFillArgb = LIGHT_ControlFillColorDefault
+            cardStrokeArgb = LIGHT_ControlStrokeColorDefault
+        End If
+        infoTop = h - PAGE_PAD_DIP - INFO_HEIGHT_DIP
+        rowsTop = infoTop + INFO_HEADING_HEIGHT_DIP + 4
+        valueX = PAGE_PAD_DIP + INFO_LABEL_WIDTH_DIP
+        previewX = PAGE_PAD_DIP + INFO_LEFT_WIDTH_DIP + 8
+        cardX = previewX + (w - PAGE_PAD_DIP - previewX - PREVIEW_CARD_WIDTH_DIP) / 2
+        If cardX < previewX Then cardX = previewX
+        cardY = infoTop + (INFO_HEIGHT_DIP - PREVIEW_CARD_HEIGHT_DIP) / 2
+
+        If m_GallerySelected >= 0 Then
+            Set bmp = GalleryBitmap(True, m_GallerySelected)
+            nameText = IconLibraryGalleryName(m_GallerySelected)
+            If m_GalleryPixelW(m_GallerySelected) > 0 Then
+                sizeText = m_GalleryPixelW(m_GallerySelected) & " x " & m_GalleryPixelH(m_GallerySelected) & " px"
+            End If
+            sourceText = "WinUI Gallery"
+        Else
+            nameText = "None"
+        End If
+
+        DrawLeftTextStyled m_ChromeTarget, "Icon preview", 14, DWRITE_FONT_WEIGHT_SEMI_BOLD, _
+            PAGE_PAD_DIP, infoTop, previewX - 4, infoTop + INFO_HEADING_HEIGHT_DIP, primaryArgb
+        DrawInfoField "Name", nameText, PAGE_PAD_DIP, valueX, rowsTop, primaryArgb, secondaryArgb
+        DrawInfoField "Size", sizeText, PAGE_PAD_DIP, valueX, rowsTop + INFO_ROW_HEIGHT_DIP, primaryArgb, secondaryArgb
+        DrawInfoField "Source", sourceText, PAGE_PAD_DIP, valueX, rowsTop + INFO_ROW_HEIGHT_DIP * 2, primaryArgb, secondaryArgb
+
+        m_ChromeTarget.FillRoundedRectangle RoundedRect(cardX, cardY, cardX + PREVIEW_CARD_WIDTH_DIP, _
+            cardY + PREVIEW_CARD_HEIGHT_DIP, ControlCornerRadius), SolidBrush(m_ChromeTarget, cardFillArgb)
+        m_ChromeTarget.DrawRoundedRectangle RoundedRect(cardX, cardY, cardX + PREVIEW_CARD_WIDTH_DIP, _
+            cardY + PREVIEW_CARD_HEIGHT_DIP, ControlCornerRadius), SolidBrush(m_ChromeTarget, cardStrokeArgb), 1, 0
+        If m_GallerySelected >= 0 Then
+            DrawGalleryImage m_ChromeTarget, bmp, m_GallerySelected, cardX + PREVIEW_CARD_WIDTH_DIP / 2, _
+                cardY + PREVIEW_CARD_HEIGHT_DIP / 2, GALLERY_PREVIEW_DIP
+        End If
+    End Sub
+
+    Private Function OleFromArgbOver(ByVal Color As Long, ByVal Backdrop As Long) As Long
+        Dim a As Long
+        Dim sr As Long
+        Dim sg As Long
+        Dim sb As Long
+        Dim br As Long
+        Dim bg As Long
+        Dim bb As Long
+        Dim r As Long
+        Dim g As Long
+        Dim b As Long
+
+        a = (Color And &H7F000000) \ &H1000000
+        If (Color And &H80000000) <> 0 Then a = a + 128
+        sr = (Color And &HFF0000) \ &H10000
+        sg = (Color And &HFF00&) \ &H100&
+        sb = Color And &HFF&
+        br = (Backdrop And &HFF0000) \ &H10000
+        bg = (Backdrop And &HFF00&) \ &H100&
+        bb = Backdrop And &HFF&
+
+        r = (sr * a + br * (255 - a) + 127) \ 255
+        g = (sg * a + bg * (255 - a) + 127) \ 255
+        b = (sb * a + bb * (255 - a) + 127) \ 255
+
+        OleFromArgbOver = r Or (g * &H100&) Or (b * &H10000)
+    End Function
+
+    ' --- Tab strip ---
+
+    Private Function SelectorItemTextHeight() As Single
+        Dim textW As Single
+        MeasureControlText "Segoe Fluent", textW, SelectorItemTextHeight
+    End Function
+
+    Private Function SelectorBarHeightDip() As Single
+        SelectorBarHeightDip = SELECTOR_PADDING_Y_DIP * 2 + SELECTOR_ITEM_PAD_TOP_DIP + SelectorItemTextHeight() + _
+            SELECTOR_ITEM_PAD_BOTTOM_DIP + SELECTOR_PILL_HEIGHT_DIP
+    End Function
+
+    Private Function ContentTopDip() As Single
+        ContentTopDip = SelectorBarHeightDip() + SELECTOR_GAP_DIP
+    End Function
+
+    Private Function TabCaption(ByVal Index As Long) As String
+        Select Case Index
+            Case TAB_SEGOE: TabCaption = "Segoe Fluent"
+            Case TAB_FLUENT: TabCaption = "Fluent UI System"
+            Case TAB_GALLERY: TabCaption = "Additional Icons"
+            Case TAB_SETUP: TabCaption = "Setup"
+        End Select
+    End Function
+
+    Private Sub DrawSelectorBar(ByVal dark As Boolean)
+        Dim i As Long
+        Dim x As Single
+        Dim textW As Single
+        Dim textH As Single
+        Dim itemTop As Single
+        Dim itemBottom As Single
+        Dim foreground As Long
+        Dim pill As Long
+
+        textH = SelectorItemTextHeight()
+        itemTop = SELECTOR_PADDING_Y_DIP
+        itemBottom = itemTop + SELECTOR_ITEM_PAD_TOP_DIP + textH + SELECTOR_ITEM_PAD_BOTTOM_DIP + SELECTOR_PILL_HEIGHT_DIP
+        If dark Then
+            pill = AccentShade(ACCENT_LIGHT2)
+        Else
+            pill = AccentShade(ACCENT_DARK1)
+        End If
+
+        ' The strip starts at the page edge, so the first caption lines up with the search box.
+        x = PAGE_PAD_DIP - SELECTOR_ITEM_PAD_LEFT_DIP
+        For i = 0 To TAB_COUNT - 1
+            MeasureControlText TabCaption(i), textW, textH
+            m_TabX0(i) = x
+            m_TabX1(i) = x + SELECTOR_ITEM_PAD_LEFT_DIP + textW + SELECTOR_ITEM_PAD_RIGHT_DIP
+
+            ' SelectorBarItemForeground*: hover and pressed lighten the text, selected or not.
+            If i = m_PressedTab And i = m_HotTab And i <> m_Tab Then
+                foreground = IIf(dark, DARK_TextFillColorTertiary, LIGHT_TextFillColorTertiary)
+            ElseIf i = m_HotTab Then
+                foreground = IIf(dark, DARK_TextFillColorSecondary, LIGHT_TextFillColorSecondary)
+            Else
+                foreground = IIf(dark, DARK_TextFillColorPrimary, LIGHT_TextFillColorPrimary)
+            End If
+            DrawLeftTextStyled m_ChromeTarget, TabCaption(i), 14, DWRITE_FONT_WEIGHT_NORMAL, _
+                x + SELECTOR_ITEM_PAD_LEFT_DIP, itemTop + SELECTOR_ITEM_PAD_TOP_DIP, _
+                m_TabX1(i), itemTop + SELECTOR_ITEM_PAD_TOP_DIP + textH, foreground
+
+            If i = m_Tab Then
+                Dim cx As Single
+                cx = (m_TabX0(i) + m_TabX1(i)) / 2
+                m_ChromeTarget.FillRoundedRectangle RoundedRect(cx - SELECTOR_PILL_WIDTH_DIP / 2, _
+                    itemBottom - SELECTOR_PILL_HEIGHT_DIP, cx + SELECTOR_PILL_WIDTH_DIP / 2, itemBottom, 1), _
+                    SolidBrush(m_ChromeTarget, pill)
+            End If
+            x = m_TabX1(i)
+        Next
+    End Sub
+
+    Private Function TabAt(ByVal xDip As Single, ByVal yDip As Single) As Long
+        Dim i As Long
+        TabAt = -1
+        If yDip < SELECTOR_PADDING_Y_DIP Or yDip >= SelectorBarHeightDip() - SELECTOR_PADDING_Y_DIP Then Exit Function
+        For i = 0 To TAB_COUNT - 1
+            If xDip >= m_TabX0(i) And xDip < m_TabX1(i) Then TabAt = i: Exit Function
+        Next
+    End Function
+
+    Private Sub SelectTab(ByVal Index As Long)
+        If Index = m_Tab Then Exit Sub
+        If TabHasGrid(m_Tab) Then m_TabQuery(m_Tab) = txtSearch.Text
+        m_Tab = Index
+        m_HotButton = -1
+        m_PressedButton = -1
+        m_HotCard = -1
+        m_PressedCard = -1
+        If m_Tab = TAB_FLUENT Or m_Tab = TAB_GALLERY Then EnsureLibrary
+        ShowTabControls
+        If TabHasGrid(m_Tab) Then EnterGridTab
+        RepaintChrome
+        If m_Tab = TAB_SETUP And Not m_LibraryChecked Then RunCheck
+    End Sub
+
+    ' The Segoe tab always has a grid. The library tabs have one once the installed library's index
+    ' has been read; until then they show the library's state instead.
+    Private Function TabHasGrid(ByVal Index As Long) As Boolean
+        Select Case Index
+            Case TAB_SEGOE: TabHasGrid = True
+            Case TAB_FLUENT: TabHasGrid = m_LibraryReady And IconLibraryFluentCount() > 0
+            Case TAB_GALLERY: TabHasGrid = m_LibraryReady And IconLibraryGalleryCount() > 0
+        End Select
+    End Function
+
+    ' Reads the installed library's index (cheap when it hasn't changed). A new index drops the
+    ' library selections and every image made from the old one.
+    Private Sub EnsureLibrary()
+        Dim errorText As String
+        If m_LibraryReady Then Exit Sub
+        m_LibraryLoadError = ""
+        If Len(m_InstalledVersion) = 0 Then Exit Sub
+        Screen.MousePointer = vbHourglass
+        m_LibraryReady = IconLibraryLoadIndex(errorText)
+        Screen.MousePointer = vbDefault
+        If Not m_LibraryReady Then
+            m_LibraryLoadError = errorText
+            Exit Sub
+        End If
+        If IconLibraryIndexGeneration() <> m_LibraryGeneration Then
+            m_LibraryGeneration = IconLibraryIndexGeneration()
+            m_FluentSelected = -1
+            m_GallerySelected = -1
+            ResetImageCaches
+        End If
+    End Sub
+
+    ' Puts back the tab's own search text and hint, and fills the grid for it.
+    Private Sub EnterGridTab()
+        m_SettingQuery = True
+        txtSearch.Text = m_TabQuery(m_Tab)
+        m_SettingQuery = False
+        SetSearchHint
+        ApplyFilter
+        ScrollToSelected
+    End Sub
+
+    Private Sub SetSearchHint()
+        Dim hint As String
+        Select Case m_Tab
+            Case TAB_FLUENT: hint = FLUENT_SEARCH_HINT
+            Case TAB_GALLERY: hint = GALLERY_SEARCH_HINT
+            Case Else: hint = SEARCH_HINT
+        End Select
+        SendMessageW txtSearch.hWnd, EM_SETCUEBANNER, 1, StrPtr(hint)
+    End Sub
+
+    ' The grid tabs' native controls are only touched once another tab has hidden them, so opening
+    ' the page takes exactly the 1.0.0.29 path. When they come back, the search box's colour hooks
+    ' are re-armed: an unhooked native Edit paints in classic light colours.
+    Private Sub ShowTabControls()
+        On Error Resume Next
+        If TabHasGrid(m_Tab) Then
+            If Not m_GridControlsHidden Then Exit Sub
+            m_GridControlsHidden = False
+            txtSearch.Visible = True
+            picGrid.Visible = True
+            ApplyHostTitleBar
+            InvalidateRect txtSearch.hWnd, 0, 1
+        ElseIf Not m_GridControlsHidden Then
+            m_GridControlsHidden = True
+            txtSearch.Visible = False
+            picGrid.Visible = False
+        End If
+    End Sub
+
+    ' Repaints the chrome at once without erasing it first. Direct2D composes the whole frame
+    ' before copying it to the window, so skipping the erase removes the blank-then-draw flash.
+    Private Sub RepaintChrome()
+        InvalidateRect picChrome.hWnd, 0, 0
+        UpdateWindow picChrome.hWnd
+    End Sub
+
+    ' --- Library tabs ---
+
+    Private Sub DrawLibraryTab(ByVal w As Single, ByVal h As Single, ByVal dark As Boolean)
+        Dim top As Single
+        Dim primaryArgb As Long
+        Dim secondaryArgb As Long
+        Dim setName As String
+        Dim setCount As String
+
+        primaryArgb = IIf(dark, DARK_TextFillColorPrimary, LIGHT_TextFillColorPrimary)
+        secondaryArgb = IIf(dark, DARK_TextFillColorSecondary, LIGHT_TextFillColorSecondary)
+        If m_Tab = TAB_FLUENT Then
+            setName = "Fluent UI System Icons"
+            setCount = "21,764 icons in regular, filled, color and light styles."
+        Else
+            setName = "Additional Icons"
+            setCount = "112 control images from the WinUI Gallery."
+        End If
+
+        top = ContentTopDip() + 8
+        DrawLeftTextStyled m_ChromeTarget, setName, 14, DWRITE_FONT_WEIGHT_SEMI_BOLD, _
+            PAGE_PAD_DIP, top, w - PAGE_PAD_DIP, top + SETUP_ROW_HEIGHT_DIP, primaryArgb
+        top = top + SETUP_ROW_HEIGHT_DIP + 4
+        DrawLeftTextStyled m_ChromeTarget, setCount, 12, DWRITE_FONT_WEIGHT_NORMAL, _
+            PAGE_PAD_DIP, top, w - PAGE_PAD_DIP, top + SETUP_ROW_HEIGHT_DIP, secondaryArgb
+        top = top + SETUP_ROW_HEIGHT_DIP
+
+        If Len(m_InstalledVersion) = 0 Then
+            DrawLeftTextStyled m_ChromeTarget, "These come from the tbUI3 icon library, which isn't installed on this PC.", 12, _
+                DWRITE_FONT_WEIGHT_NORMAL, PAGE_PAD_DIP, top, w - PAGE_PAD_DIP, top + SETUP_ROW_HEIGHT_DIP, secondaryArgb
+            top = top + SETUP_ROW_HEIGHT_DIP + 12
+            AddButton "Install icon library", ACTION_INSTALL, True, PAGE_PAD_DIP, top
+            DrawButtons
+            DrawLibraryStatus top + BUTTON_HEIGHT_DIP + 8, w, dark
+        Else
+            DrawLeftTextStyled m_ChromeTarget, "The icon library (version " & m_InstalledVersion & ") is installed.", 12, _
+                DWRITE_FONT_WEIGHT_NORMAL, PAGE_PAD_DIP, top, w - PAGE_PAD_DIP, top + SETUP_ROW_HEIGHT_DIP, secondaryArgb
+            top = top + SETUP_ROW_HEIGHT_DIP
+            If Len(m_LibraryLoadError) > 0 Then
+                DrawLeftTextStyled m_ChromeTarget, m_LibraryLoadError, 12, DWRITE_FONT_WEIGHT_NORMAL, _
+                    PAGE_PAD_DIP, top, w - PAGE_PAD_DIP, top + SETUP_ROW_HEIGHT_DIP, _
+                    IIf(dark, DARK_SystemFillColorCritical, LIGHT_SystemFillColorCritical)
+            Else
+                DrawLeftTextStyled m_ChromeTarget, "It has nothing to show on this tab.", 12, _
+                    DWRITE_FONT_WEIGHT_NORMAL, PAGE_PAD_DIP, top, w - PAGE_PAD_DIP, top + SETUP_ROW_HEIGHT_DIP, secondaryArgb
+            End If
+        End If
+    End Sub
+
+    Private Sub DrawSetupTab(ByVal w As Single, ByVal h As Single, ByVal dark As Boolean)
+        Dim top As Single
+        Dim primaryArgb As Long
+        Dim secondaryArgb As Long
+        Dim latest As String
+        Dim latestText As String
+        Dim sizeText As String
+        Dim x As Single
+
+        primaryArgb = IIf(dark, DARK_TextFillColorPrimary, LIGHT_TextFillColorPrimary)
+        secondaryArgb = IIf(dark, DARK_TextFillColorSecondary, LIGHT_TextFillColorSecondary)
+        latest = IconLibraryLatestVersion()
+
+        top = ContentTopDip() + 8
+        DrawLeftTextStyled m_ChromeTarget, "Icon library", 14, DWRITE_FONT_WEIGHT_SEMI_BOLD, _
+            PAGE_PAD_DIP, top, w - PAGE_PAD_DIP, top + SETUP_ROW_HEIGHT_DIP, primaryArgb
+        top = top + SETUP_ROW_HEIGHT_DIP + 4
+        DrawLeftTextStyled m_ChromeTarget, "Adds the Fluent UI System Icons and the WinUI Gallery images to this picker.", 12, _
+            DWRITE_FONT_WEIGHT_NORMAL, PAGE_PAD_DIP, top, w - PAGE_PAD_DIP, top + SETUP_ROW_HEIGHT_DIP, secondaryArgb
+        top = top + SETUP_ROW_HEIGHT_DIP
+        DrawLeftTextStyled m_ChromeTarget, "It is only needed on this PC. Apps you build carry just the icons you pick.", 12, _
+            DWRITE_FONT_WEIGHT_NORMAL, PAGE_PAD_DIP, top, w - PAGE_PAD_DIP, top + SETUP_ROW_HEIGHT_DIP, secondaryArgb
+        top = top + SETUP_ROW_HEIGHT_DIP + 10
+
+        If Len(latest) > 0 Then
+            latestText = latest
+            If Len(m_InstalledVersion) > 0 Then
+                If IconLibraryCompareVersions(latest, m_InstalledVersion) > 0 Then
+                    latestText = latest & "  (update available)"
+                ElseIf IconLibraryCompareVersions(latest, m_InstalledVersion) = 0 Then
+                    latestText = latest & "  (up to date)"
+                End If
+            End If
+        ElseIf m_LibraryBusy Then
+            latestText = "Checking..."
+        Else
+            latestText = "Not checked"
+        End If
+
+        If Len(m_InstalledVersion) > 0 Then
+            sizeText = FormatMegabytes(IconLibraryInstalledSize()) & " on disk"
+        ElseIf IconLibraryLatestSize() > 0 Then
+            sizeText = FormatMegabytes(IconLibraryLatestSize()) & " download"
+        End If
+
+        DrawSetupField "Installed", IIf(Len(m_InstalledVersion) > 0, m_InstalledVersion, "Not installed"), top, w, dark
+        DrawSetupField "Latest", latestText, top + SETUP_ROW_HEIGHT_DIP, w, dark
+        DrawSetupField "Size", sizeText, top + SETUP_ROW_HEIGHT_DIP * 2, w, dark
+        DrawSetupField "Folder", IconLibraryFolder(), top + SETUP_ROW_HEIGHT_DIP * 3, w, dark
+        top = top + SETUP_ROW_HEIGHT_DIP * 4 + 12
+
+        x = PAGE_PAD_DIP
+        If Len(m_InstalledVersion) = 0 Then
+            x = AddButton("Install", ACTION_INSTALL, True, x, top)
+        Else
+            If Len(latest) > 0 Then
+                If IconLibraryCompareVersions(latest, m_InstalledVersion) > 0 Then
+                    x = AddButton("Update", ACTION_INSTALL, True, x, top)
+                End If
+            End If
+            If m_ButtonCount = 0 Then x = AddButton("Reinstall", ACTION_INSTALL, False, x, top)
+            x = AddButton("Uninstall", ACTION_UNINSTALL, False, x, top)
+        End If
+        x = AddButton("Check for updates", ACTION_CHECK, False, x, top)
+        DrawButtons
+        DrawLibraryStatus top + BUTTON_HEIGHT_DIP + 8, w, dark
+    End Sub
+
+    Private Sub DrawSetupField(ByVal labelText As String, ByVal valueText As String, ByVal y As Single, _
+            ByVal w As Single, ByVal dark As Boolean)
+        DrawLeftTextStyled m_ChromeTarget, labelText, 12, DWRITE_FONT_WEIGHT_NORMAL, _
+            PAGE_PAD_DIP, y, PAGE_PAD_DIP + SETUP_LABEL_WIDTH_DIP - 4, y + SETUP_ROW_HEIGHT_DIP, _
+            IIf(dark, DARK_TextFillColorSecondary, LIGHT_TextFillColorSecondary)
+        DrawLeftTextStyled m_ChromeTarget, valueText, 12, DWRITE_FONT_WEIGHT_NORMAL, _
+            PAGE_PAD_DIP + SETUP_LABEL_WIDTH_DIP, y, w - PAGE_PAD_DIP, y + SETUP_ROW_HEIGHT_DIP, _
+            IIf(dark, DARK_TextFillColorPrimary, LIGHT_TextFillColorPrimary)
+    End Sub
+
+    Private Sub DrawLibraryStatus(ByVal y As Single, ByVal w As Single, ByVal dark As Boolean)
+        Dim argb As Long
+        If Len(m_LibraryStatus) = 0 Then Exit Sub
+        If m_LibraryStatusIsError Then
+            argb = IIf(dark, DARK_SystemFillColorCritical, LIGHT_SystemFillColorCritical)
+        Else
+            argb = IIf(dark, DARK_TextFillColorSecondary, LIGHT_TextFillColorSecondary)
+        End If
+        DrawLeftTextStyled m_ChromeTarget, m_LibraryStatus, 12, DWRITE_FONT_WEIGHT_NORMAL, _
+            PAGE_PAD_DIP, y, w - PAGE_PAD_DIP, y + SETUP_ROW_HEIGHT_DIP, argb
+    End Sub
+
+    Private Function FormatMegabytes(ByVal Bytes As Double) As String
+        FormatMegabytes = Format$(Bytes / 1048576#, "0.0") & " MB"
+    End Function
+
+    ' Lays out one button from X and returns where the next one starts.
+    Private Function AddButton(ByVal Caption As String, ByVal Action As Long, ByVal Accent As Boolean, _
+            ByVal X As Single, ByVal Y As Single) As Single
+        Dim textW As Single
+        Dim textH As Single
+        If m_ButtonCount >= MAX_BUTTONS Then AddButton = X: Exit Function
+        MeasureControlText Caption, textW, textH
+        m_ButtonX0(m_ButtonCount) = X
+        m_ButtonY0(m_ButtonCount) = Y
+        m_ButtonX1(m_ButtonCount) = X + ButtonPaddingLeft + textW + ButtonPaddingRight + 2 * ButtonBorderThemeThickness
+        m_ButtonY1(m_ButtonCount) = Y + BUTTON_HEIGHT_DIP
+        m_ButtonCaption(m_ButtonCount) = Caption
+        m_ButtonAction(m_ButtonCount) = Action
+        m_ButtonAccent(m_ButtonCount) = Accent
+        AddButton = m_ButtonX1(m_ButtonCount) + BUTTON_GAP_DIP
+        m_ButtonCount = m_ButtonCount + 1
+    End Function
+
+    Private Sub DrawButtons()
+        Dim i As Long
+        For i = 0 To m_ButtonCount - 1
+            DrawStandardButton m_ChromeTarget, m_ButtonX0(i), m_ButtonY0(i), m_ButtonX1(i), m_ButtonY1(i), _
+                m_ButtonCaption(i), m_ButtonAccent(i), Not m_LibraryBusy, _
+                (i = m_PressedButton And i = m_HotButton), (i = m_HotButton)
+        Next
+    End Sub
+
+    Private Function ButtonAt(ByVal xDip As Single, ByVal yDip As Single) As Long
+        Dim i As Long
+        ButtonAt = -1
+        If m_LibraryBusy Then Exit Function
+        For i = 0 To m_ButtonCount - 1
+            If xDip >= m_ButtonX0(i) And xDip < m_ButtonX1(i) And yDip >= m_ButtonY0(i) And yDip < m_ButtonY1(i) Then
+                ButtonAt = i
+                Exit Function
+            End If
+        Next
+    End Function
+
+    Private Sub RunButtonAction(ByVal Action As Long)
+        Select Case Action
+            Case ACTION_INSTALL: RunInstall
+            Case ACTION_UNINSTALL: RunUninstall
+            Case ACTION_CHECK: RunCheck
+        End Select
+    End Sub
+
+    Private Sub SetLibraryStatus(ByVal Text As String, Optional ByVal IsError As Boolean = False)
+        m_LibraryStatus = Text
+        m_LibraryStatusIsError = IsError
+        RepaintChrome
+    End Sub
+
+    Private Sub BeginLibraryWork()
+        m_LibraryBusy = True
+        m_HotButton = -1
+        m_PressedButton = -1
+        Screen.MousePointer = vbHourglass
+    End Sub
+
+    ' After an install, update or uninstall the index is read again, so a library tab switches between
+    ' its grid and the library's state at once.
+    Private Sub EndLibraryWork()
+        m_LibraryBusy = False
+        m_InstalledVersion = IconLibraryInstalledVersion()
+        m_LibraryReady = False
+        If m_Tab = TAB_FLUENT Or m_Tab = TAB_GALLERY Then EnsureLibrary
+        If Len(m_InstalledVersion) = 0 Then ResetImageCaches
+        Screen.MousePointer = vbDefault
+        ShowTabControls
+        If m_Tab <> TAB_SEGOE And TabHasGrid(m_Tab) Then EnterGridTab
+        RepaintChrome
+    End Sub
+
+    Private Sub RunCheck()
+        Dim errorText As String
+        If m_LibraryBusy Then Exit Sub
+        BeginLibraryWork
+        SetLibraryStatus "Checking for the latest icon library..."
+        m_LibraryChecked = True
+        If IconLibraryCheckLatest(errorText) Then
+            m_InstalledVersion = IconLibraryInstalledVersion()
+            If Len(m_InstalledVersion) = 0 Then
+                SetLibraryStatus "Version " & IconLibraryLatestVersion() & " is available."
+            ElseIf IconLibraryCompareVersions(IconLibraryLatestVersion(), m_InstalledVersion) > 0 Then
+                SetLibraryStatus "Version " & IconLibraryLatestVersion() & " is available."
+            Else
+                SetLibraryStatus "The installed library is up to date."
+            End If
+        Else
+            SetLibraryStatus "Couldn't check for the library: " & errorText, True
+        End If
+        EndLibraryWork
+    End Sub
+
+    Private Sub RunInstall()
+        Dim errorText As String
+        If m_LibraryBusy Then Exit Sub
+        BeginLibraryWork
+        m_LibraryChecked = True
+
+        SetLibraryStatus "Checking for the latest icon library..."
+        If Not IconLibraryCheckLatest(errorText) Then GoTo Failed
+
+        SetLibraryStatus "Downloading " & FormatMegabytes(IconLibraryLatestSize()) & "..."
+        If Not IconLibraryDownload(errorText) Then GoTo Failed
+
+        SetLibraryStatus "Unpacking and checking the library..."
+        If Not IconLibraryUnpack(errorText) Then GoTo Failed
+        If Not IconLibraryCommit(errorText) Then GoTo Failed
+
+        SetLibraryStatus "Installed version " & IconLibraryLatestVersion() & "."
+        EndLibraryWork
+        Exit Sub
+
+Failed:
+        IconLibraryClearDownloads
+        SetLibraryStatus "Install failed: " & errorText, True
+        EndLibraryWork
+    End Sub
+
+    Private Sub RunUninstall()
+        Dim errorText As String
+        If m_LibraryBusy Then Exit Sub
+        If MsgBox("Remove the tbUI3 icon library from this PC?" & vbCrLf & vbCrLf & _
+                "You can install it again from Setup at any time.", vbYesNo Or vbQuestion, "tbUI3") <> vbYes Then Exit Sub
+        BeginLibraryWork
+        If IconLibraryUninstall(errorText) Then
+            SetLibraryStatus "The icon library was removed."
+        Else
+            SetLibraryStatus "Uninstall failed: " & errorText, True
+        End If
+        EndLibraryWork
+    End Sub
+
+    ' --- Chrome mouse: tab strip and library buttons ---
+
+    Private Sub ChromePointToDip(ByVal X As Single, ByVal Y As Single, ByRef xDip As Single, ByRef yDip As Single)
+        Dim dpi As Single
+        dpi = DpiOfDC(picChrome.hDC)
+        If dpi <= 0 Then dpi = 96
+        xDip = X * 96! / dpi
+        yDip = Y * 96! / dpi
+    End Sub
+
+    Private Sub picChrome_MouseDown(Button As Integer, Shift As Integer, X As Single, Y As Single)
+        If Button <> vbLeftButton Then Exit Sub
+        Dim xDip As Single
+        Dim yDip As Single
+        ChromePointToDip X, Y, xDip, yDip
+        m_PressedTab = TabAt(xDip, yDip)
+        m_PressedButton = ButtonAt(xDip, yDip)
+        m_PressedCard = CardAt(xDip, yDip)
+        m_HotTab = m_PressedTab
+        m_HotButton = m_PressedButton
+        m_HotCard = m_PressedCard
+        RepaintChrome
+    End Sub
+
+    Private Sub picChrome_MouseMove(Button As Integer, Shift As Integer, X As Single, Y As Single)
+        UI3TrackIconPageSurfaceLeave
+        Dim xDip As Single
+        Dim yDip As Single
+        Dim hotTab As Long
+        Dim hotButton As Long
+        Dim hotCard As Long
+        ChromePointToDip X, Y, xDip, yDip
+        hotTab = TabAt(xDip, yDip)
+        hotButton = ButtonAt(xDip, yDip)
+        hotCard = CardAt(xDip, yDip)
+        If hotTab <> m_HotTab Or hotButton <> m_HotButton Or hotCard <> m_HotCard Then
+            m_HotTab = hotTab
+            m_HotButton = hotButton
+            m_HotCard = hotCard
+            RepaintChrome
+        End If
+    End Sub
+
+    Private Sub picChrome_MouseUp(Button As Integer, Shift As Integer, X As Single, Y As Single)
+        If Button <> vbLeftButton Then Exit Sub
+        Dim xDip As Single
+        Dim yDip As Single
+        Dim pressedTab As Long
+        Dim pressedButton As Long
+        Dim pressedCard As Long
+        ChromePointToDip X, Y, xDip, yDip
+        pressedTab = m_PressedTab
+        pressedButton = m_PressedButton
+        pressedCard = m_PressedCard
+        m_PressedTab = -1
+        m_PressedButton = -1
+        m_PressedCard = -1
+        If pressedTab >= 0 And TabAt(xDip, yDip) = pressedTab Then
+            SelectTab pressedTab
+        ElseIf pressedButton >= 0 And ButtonAt(xDip, yDip) = pressedButton Then
+            RepaintChrome
+            RunButtonAction m_ButtonAction(pressedButton)
+        ElseIf pressedCard >= 0 And CardAt(xDip, yDip) = pressedCard Then
+            SetFluentStyle pressedCard
+        Else
+            RepaintChrome
+        End If
+    End Sub
+
+    Private Function CardAt(ByVal xDip As Single, ByVal yDip As Single) As Long
+        Dim i As Long
+        CardAt = -1
+        If Not m_CardsShown Or m_Tab <> TAB_FLUENT Then Exit Function
+        If yDip < m_CardY0 Or yDip >= m_CardY1 Then Exit Function
+        For i = 0 To STYLE_COUNT - 1
+            If xDip >= m_CardX0(i) And xDip < m_CardX1(i) Then
+                If StyleCardEnabled(i) Then CardAt = i
+                Exit Function
+            End If
+        Next
+    End Function
+
+    Private Sub SetFluentStyle(ByVal Style As Long)
+        If Style <> m_FluentStyle Then
+            m_FluentStyle = Style
+            If m_PickKind = TAB_FLUENT And m_FluentSelected >= 0 Then Me.Changed = True
+            ApplyFilter
+            ScrollToSelected
+        End If
+        RepaintChrome
     End Sub
 
     ' --- Filtering ---
@@ -102,19 +1525,45 @@ Class UI3IconPage
         Dim i As Long
         Dim n As Long
         query = Trim$(txtSearch.Text)
-        n = IconCatalogCount()
-        ReDim m_Shown(0 To n)
         m_ShownCount = 0
-        If Len(query) = 0 Or InStr(1, "none", query, vbTextCompare) = 1 Then
-            m_Shown(0) = NONE_ENTRY
-            m_ShownCount = 1
-        End If
-        For i = 0 To n - 1
-            If EntryMatches(i, query) Then
-                m_Shown(m_ShownCount) = i
-                m_ShownCount = m_ShownCount + 1
+        If m_Tab = TAB_FLUENT And TabHasGrid(TAB_FLUENT) Then
+            ' Only icons that come in the chosen style are listed.
+            m_ShownKind = TAB_FLUENT
+            n = IconLibraryFluentCount()
+            ReDim m_Shown(0 To n)
+            For i = 0 To n - 1
+                If IconLibraryFluentEntry(i, m_FluentStyle) >= 0 Then
+                    If FluentMatches(i, query) Then
+                        m_Shown(m_ShownCount) = i
+                        m_ShownCount = m_ShownCount + 1
+                    End If
+                End If
+            Next
+        ElseIf m_Tab = TAB_GALLERY And TabHasGrid(TAB_GALLERY) Then
+            m_ShownKind = TAB_GALLERY
+            n = IconLibraryGalleryCount()
+            ReDim m_Shown(0 To n)
+            For i = 0 To n - 1
+                If Len(query) = 0 Or InStr(1, IconLibraryGalleryName(i), query, vbTextCompare) > 0 Then
+                    m_Shown(m_ShownCount) = i
+                    m_ShownCount = m_ShownCount + 1
+                End If
+            Next
+        Else
+            m_ShownKind = TAB_SEGOE
+            n = IconCatalogCount()
+            ReDim m_Shown(0 To n)
+            If Len(query) = 0 Or InStr(1, "none", query, vbTextCompare) = 1 Then
+                m_Shown(0) = NONE_ENTRY
+                m_ShownCount = 1
             End If
-        Next
+            For i = 0 To n - 1
+                If EntryMatches(i, query) Then
+                    m_Shown(m_ShownCount) = i
+                    m_ShownCount = m_ShownCount + 1
+                End If
+            Next
+        End If
         UpdateScrollBar
         vsbGrid.Value = 0
         picGrid.Refresh
@@ -126,6 +1575,10 @@ Class UI3IconPage
             Exit Function
         End If
         If InStr(1, IconCatalogName(Index), Query, vbTextCompare) > 0 Then
+            EntryMatches = True
+            Exit Function
+        End If
+        If InStr(1, IconCatalogTags(Index), Query, vbTextCompare) > 0 Then
             EntryMatches = True
             Exit Function
         End If
@@ -144,7 +1597,18 @@ Class UI3IconPage
         If Right$(hexQuery, 1) = "&" Then hexQuery = Left$(hexQuery, Len(hexQuery) - 1)
         If Len(hexQuery) > 0 And Len(hexQuery) <= 4 And IsAllHex(hexQuery) Then
             If Hex$(value) = hexQuery Then EntryMatches = True: Exit Function
-            If Hex$(GlyphCode(value)) = hexQuery Then EntryMatches = True: Exit Function
+        End If
+    End Function
+
+    Private Function FluentMatches(ByVal IconIndex As Long, ByVal Query As String) As Boolean
+        If Len(Query) = 0 Then
+            FluentMatches = True
+        ElseIf InStr(1, IconLibraryFluentName(IconIndex), Query, vbTextCompare) > 0 Then
+            FluentMatches = True
+        ElseIf InStr(1, IconLibraryFluentId(IconIndex), Query, vbTextCompare) > 0 Then
+            FluentMatches = True
+        ElseIf InStr(1, IconLibraryFluentTags(IconIndex), Query, vbTextCompare) > 0 Then
+            FluentMatches = True
         End If
     End Function
 
@@ -165,11 +1629,6 @@ Class UI3IconPage
         IsAllHex = True
     End Function
 
-    Private Function GlyphCode(ByVal Icon As Long) As Long
-        If Icon = 0 Then Exit Function
-        GlyphCode = AscW(SemanticIconGlyph(Icon)) And &HFFFF&
-    End Function
-
     Private Function ShownValue(ByVal Position As Long) As Long
         If m_Shown(Position) <> NONE_ENTRY Then ShownValue = IconCatalogValue(m_Shown(Position))
     End Function
@@ -180,6 +1639,14 @@ Class UI3IconPage
         Else
             ShownName = IconCatalogName(m_Shown(Position))
         End If
+    End Function
+
+    Private Function ShownIsSelected(ByVal Position As Long) As Boolean
+        Select Case m_ShownKind
+            Case TAB_FLUENT: ShownIsSelected = (m_Shown(Position) = m_FluentSelected)
+            Case TAB_GALLERY: ShownIsSelected = (m_Shown(Position) = m_GallerySelected)
+            Case Else: ShownIsSelected = (ShownValue(Position) = m_Selected)
+        End Select
     End Function
 
     ' --- Grid geometry (DIPs) ---
@@ -202,8 +1669,19 @@ Class UI3IconPage
         Dim w As Single
         Dim h As Single
         GridSizeDips w, h
+        w = w - SCROLLBAR_SIZE_DIP
         Columns = Int(w / CELL_DIP)
         If Columns < 1 Then Columns = 1
+    End Function
+
+    Private Function GridOriginX() As Single
+        Dim w As Single
+        Dim h As Single
+        Dim contentW As Single
+        GridSizeDips w, h
+        contentW = w - SCROLLBAR_SIZE_DIP
+        GridOriginX = (contentW - Columns() * CELL_DIP) / 2
+        If GridOriginX < 0 Then GridOriginX = 0
     End Function
 
     Private Function VisibleRows() As Long
@@ -229,13 +1707,14 @@ Class UI3IconPage
         End If
         vsbGrid.SmallChange = 1
         vsbGrid.LargeChange = VisibleRows()
+        vsbGrid.Visible = False
     End Sub
 
     Private Sub ScrollToSelected()
         Dim i As Long
         Dim row As Long
         For i = 0 To m_ShownCount - 1
-            If ShownValue(i) = m_Selected Then
+            If ShownIsSelected(i) Then
                 row = i \ Columns()
                 If row > vsbGrid.Max Then row = vsbGrid.Max
                 vsbGrid.Value = row
@@ -248,6 +1727,7 @@ Class UI3IconPage
     ' --- Painting ---
 
     Private Sub picGrid_Paint()
+        EnsurePageThemeCurrent
         Dim hr As Long
         hr = PaintGrid()
         If hr <> 0 Then
@@ -272,7 +1752,10 @@ Class UI3IconPage
         UI3GetClientRect picGrid.hWnd, client
         If client.Right <= 0 Or client.Bottom <= 0 Then Exit Function
 
-        If m_Target Is Nothing Then Set m_Target = CreateDCTarget()
+        If m_Target Is Nothing Then
+            Set m_Target = CreateDCTarget()
+            ResetTargetImages False
+        End If
         dpi = DpiOfDC(hdc)
         m_Target.SetDpi dpi, dpi
         m_Target.BindDC hdc, client
@@ -297,7 +1780,6 @@ Failed:
         Set m_Target = Nothing
     End Function
 
-    ' The page is a classic light dialog, so the grid always uses WinUI's light tokens.
     Private Sub DrawCells()
         Dim cols As Long
         Dim firstRow As Long
@@ -307,64 +1789,474 @@ Failed:
         Dim c As Long
         Dim x0 As Single
         Dim y0 As Single
+        Dim cell As Single
         Dim value As Long
+        Dim itemIndex As Long
+        Dim selected As Boolean
         Dim foreground As Long
+        Dim onAccent As Long
+        Dim cellForeground As Long
+        Dim selectedFill As Long
+        Dim baseArgb As Long
         Dim family As String
+        Dim dark As Boolean
+        Dim originX As Single
+        Dim restInk As Long
+        Dim selectedInk As Long
+        Dim recolor As Boolean
+        Dim bmp As ID2D1Bitmap
 
-        m_Target.Clear ColorFromArgb(&HFFFFFFFF)
+        dark = IsDarkMode()
+        If dark Then
+            baseArgb = DARK_SolidBackgroundFillColorBase
+            foreground = DARK_TextFillColorPrimary
+            onAccent = DARK_TextOnAccentFillColorPrimary
+            selectedFill = AccentShade(ACCENT_LIGHT2)
+        Else
+            baseArgb = LIGHT_SolidBackgroundFillColorBase
+            foreground = LIGHT_TextFillColorPrimary
+            onAccent = LIGHT_TextOnAccentFillColorPrimary
+            selectedFill = AccentShade(ACCENT_DARK1)
+        End If
+
+        m_Target.Clear ColorFromArgb(baseArgb)
+        cell = CELL_DIP
         cols = Columns()
         rows = VisibleRows() + 1
         firstRow = vsbGrid.Value
         family = SystemIconFontFamily()
+        originX = GridOriginX()
+        If m_ShownKind = TAB_FLUENT Then
+            restInk = OleFromArgbOver(foreground, baseArgb)
+            selectedInk = OleFromArgbOver(onAccent, selectedFill)
+            recolor = (m_FluentStyle <> ICON_STYLE_COLOR)
+        End If
 
         For r = 0 To rows - 1
             For c = 0 To cols - 1
                 position = (firstRow + r) * cols + c
                 If position >= m_ShownCount Then Exit For
-                x0 = c * CELL_DIP
-                y0 = r * CELL_DIP
-                value = ShownValue(position)
-                If value = m_Selected Then
+                x0 = originX + c * cell
+                y0 = r * cell
+                selected = ShownIsSelected(position)
+
+                ' Gallery images keep their own colours, so their selection is an outline, not a fill.
+                cellForeground = foreground
+                If selected And m_ShownKind <> TAB_GALLERY Then
                     m_Target.FillRoundedRectangle RoundedRect(x0 + CELL_INSET_DIP, y0 + CELL_INSET_DIP, _
-                        x0 + CELL_DIP - CELL_INSET_DIP, y0 + CELL_DIP - CELL_INSET_DIP, ControlCornerRadius), _
-                        SolidBrush(m_Target, AccentShade(ACCENT_DARK1))
-                    foreground = LIGHT_TextOnAccentFillColorPrimary
-                Else
-                    foreground = LIGHT_TextFillColorPrimary
+                        x0 + cell - CELL_INSET_DIP, y0 + cell - CELL_INSET_DIP, ControlCornerRadius), _
+                        SolidBrush(m_Target, selectedFill)
+                    cellForeground = onAccent
                 End If
-                If value = 0 Then
-                    DrawButtonContent m_Target, "None", "", "", SymbolIconDefaultFontSize, ui3IconLeft, 0, _
-                        x0, y0, x0 + CELL_DIP, y0 + CELL_DIP, foreground
-                Else
-                    DrawButtonContent m_Target, "", SemanticIconGlyph(value), family, SymbolIconDefaultFontSize, _
-                        ui3IconLeft, 0, x0, y0, x0 + CELL_DIP, y0 + CELL_DIP, foreground
-                End If
+
+                Select Case m_ShownKind
+                    Case TAB_FLUENT
+                        itemIndex = m_Shown(position)
+                        DrawFluentIcon False, IconLibraryFluentEntry(itemIndex, m_FluentStyle), recolor, _
+                            IIf(selected, selectedInk, restInk), x0 + (cell - FLUENT_ICON_DIP) / 2, y0 + (cell - FLUENT_ICON_DIP) / 2
+                    Case TAB_GALLERY
+                        itemIndex = m_Shown(position)
+                        Set bmp = GalleryBitmap(False, itemIndex)
+                        DrawGalleryImage m_Target, bmp, itemIndex, x0 + cell / 2, y0 + cell / 2, GALLERY_IMAGE_DIP
+                        If selected Then
+                            m_Target.DrawRoundedRectangle RoundedRect(x0 + CELL_INSET_DIP + 1, y0 + CELL_INSET_DIP + 1, _
+                                x0 + cell - CELL_INSET_DIP - 1, y0 + cell - CELL_INSET_DIP - 1, ControlCornerRadius), _
+                                SolidBrush(m_Target, selectedFill), 2, 0
+                        End If
+                    Case Else
+                        value = ShownValue(position)
+                        If value = 0 Then
+                            DrawButtonContent m_Target, "None", "", "", SymbolIconDefaultFontSize, ui3IconLeft, 0, _
+                                x0, y0, x0 + cell, y0 + cell, cellForeground
+                        Else
+                            DrawButtonContent m_Target, "", SemanticIconGlyph(value), family, SymbolIconDefaultFontSize, _
+                                ui3IconLeft, 0, x0, y0, x0 + cell, y0 + cell, cellForeground
+                        End If
+                End Select
             Next
         Next
+
+        DrawScrollIndicator
+    End Sub
+
+    ' --- Library images ---
+
+    ' Drops every image made from the old index (a new or removed library).
+    Private Sub ResetImageCaches()
+        Dim n As Long
+        ResetTargetImages False
+        ResetTargetImages True
+        n = IconLibraryGalleryCount()
+        If n < 1 Then n = 1
+        ReDim m_GalleryPixelW(0 To n - 1)
+        ReDim m_GalleryPixelH(0 To n - 1)
+    End Sub
+
+    ' Drops the images made for the grid's or the chrome's render target.
+    Private Sub ResetTargetImages(ByVal ForChrome As Boolean)
+        ResetSvgCache ForChrome
+        Dim n As Long
+        n = IconLibraryGalleryCount()
+        If n < 1 Then n = 1
+        If ForChrome Then
+            ReDim m_ChromeBitmap(0 To n - 1)
+            ReDim m_ChromeBitmapTried(0 To n - 1)
+        Else
+            ReDim m_GridBitmap(0 To n - 1)
+            ReDim m_GridBitmapTried(0 To n - 1)
+        End If
+    End Sub
+
+    Private Sub ResetSvgCache(ByVal ForChrome As Boolean)
+        Dim n As Long
+        n = IconLibraryEntryCount()
+        If n < 1 Then n = 1
+        If ForChrome Then
+            ReDim m_ChromeSvg(0 To n - 1)
+            ReDim m_ChromeSvgKey(0 To n - 1)
+            m_ChromeSvgCount = 0
+        Else
+            ReDim m_GridSvg(0 To n - 1)
+            ReDim m_GridSvgKey(0 To n - 1)
+            m_GridSvgCount = 0
+        End If
+    End Sub
+
+    ' Draws a Fluent icon in a FLUENT_ICON_DIP square at X, Y. An SVG is made at its own design size
+    ' (12 to 48 px), so sizes other than 24 are scaled to fit the square.
+    Private Sub DrawFluentIcon(ByVal ForChrome As Boolean, ByVal Entry As Long, ByVal Recolor As Boolean, _
+            ByVal InkOle As Long, ByVal X As Single, ByVal Y As Single)
+        Dim doc As ID2D1SvgDocument
+        Dim size As Single
+        Set doc = LibrarySvg(ForChrome, Entry, Recolor, InkOle)
+        If doc Is Nothing Then Exit Sub
+        size = IconLibraryEntrySize(Entry)
+        If size <= 0 Then size = FLUENT_ICON_DIP
+        If ForChrome Then
+            DrawSvgAt m_ChromeTarget, doc, X, Y, FLUENT_ICON_DIP / size
+        Else
+            DrawSvgAt m_Target, doc, X, Y, FLUENT_ICON_DIP / size
+        End If
+    End Sub
+
+    ' The SVG document for a library entry, made once per colour and kept until the cache fills.
+    Private Function LibrarySvg(ByVal ForChrome As Boolean, ByVal Entry As Long, ByVal Recolor As Boolean, _
+            ByVal InkOle As Long) As ID2D1SvgDocument
+        Dim key As String
+        Dim data() As Byte
+        Dim doc As ID2D1SvgDocument
+
+        If Entry < 0 Or Entry >= IconLibraryEntryCount() Then Exit Function
+        If Recolor Then key = SvgHex(InkOle) Else key = "-"
+        If ForChrome Then
+            If Entry > UBound(m_ChromeSvgKey) Then Exit Function
+            If m_ChromeSvgKey(Entry) = key Then Set LibrarySvg = m_ChromeSvg(Entry): Exit Function
+            If m_ChromeSvgKey(Entry) = "!" & key Then Exit Function
+            If m_ChromeSvgCount >= MAX_CACHED_SVGS Then ResetSvgCache True
+        Else
+            If Entry > UBound(m_GridSvgKey) Then Exit Function
+            If m_GridSvgKey(Entry) = key Then Set LibrarySvg = m_GridSvg(Entry): Exit Function
+            If m_GridSvgKey(Entry) = "!" & key Then Exit Function
+            If m_GridSvgCount >= MAX_CACHED_SVGS Then ResetSvgCache False
+        End If
+
+        If IconLibraryEntryBytes(Entry, data) Then
+            If Recolor Then RecolorSvg data, key
+            If ForChrome Then
+                Set doc = CreateSvgFromBytes(m_ChromeTarget, data, SvgViewportDip(Entry))
+            Else
+                Set doc = CreateSvgFromBytes(m_Target, data, SvgViewportDip(Entry))
+            End If
+        End If
+        If doc Is Nothing Then key = "!" & key
+
+        If ForChrome Then
+            Set m_ChromeSvg(Entry) = doc
+            m_ChromeSvgKey(Entry) = key
+            m_ChromeSvgCount = m_ChromeSvgCount + 1
+        Else
+            Set m_GridSvg(Entry) = doc
+            m_GridSvgKey(Entry) = key
+            m_GridSvgCount = m_GridSvgCount + 1
+        End If
+        Set LibrarySvg = doc
+    End Function
+
+    Private Function SvgViewportDip(ByVal Entry As Long) As Single
+        SvgViewportDip = IconLibraryEntrySize(Entry)
+        If SvgViewportDip <= 0 Then SvgViewportDip = FLUENT_ICON_DIP
+    End Function
+
+    Private Function SvgHex(ByVal Ole As Long) As String
+        SvgHex = "#" & Right$("0" & Hex$(Ole And &HFF&), 2) & _
+            Right$("0" & Hex$((Ole \ &H100&) And &HFF&), 2) & _
+            Right$("0" & Hex$((Ole \ &H10000) And &HFF&), 2)
+    End Function
+
+    ' Swaps every SVG_INK in the file for HexColor (same length, so the bytes are changed in place).
+    Private Sub RecolorSvg(ByRef Data() As Byte, ByVal HexColor As String)
+        Dim ink(0 To 6) As Byte
+        Dim paint(0 To 6) As Byte
+        Dim i As Long
+        Dim j As Long
+        Dim last As Long
+
+        For j = 0 To 6
+            ink(j) = Asc(Mid$(SVG_INK, j + 1, 1))
+            paint(j) = Asc(Mid$(HexColor, j + 1, 1))
+        Next
+        last = UBound(Data) - 6
+        i = LBound(Data)
+        Do While i <= last
+            If Data(i) = ink(0) Then
+                For j = 1 To 6
+                    If Data(i + j) <> ink(j) Then Exit For
+                Next
+                If j = 7 Then
+                    For j = 1 To 6
+                        Data(i + j) = paint(j)
+                    Next
+                    i = i + 7
+                Else
+                    i = i + 1
+                End If
+            Else
+                i = i + 1
+            End If
+        Loop
+    End Sub
+
+    ' The bitmap for a Gallery image, decoded once per render target. Its pixel size is read from the
+    ' PNG header on the way.
+    Private Function GalleryBitmap(ByVal ForChrome As Boolean, ByVal ImageIndex As Long) As ID2D1Bitmap
+        Dim data() As Byte
+        Dim bmp As ID2D1Bitmap
+
+        If ImageIndex < 0 Or ImageIndex >= IconLibraryGalleryCount() Then Exit Function
+        If ImageIndex > UBound(m_GalleryPixelW) Then Exit Function
+        If ForChrome Then
+            If ImageIndex > UBound(m_ChromeBitmapTried) Then Exit Function
+            If m_ChromeBitmapTried(ImageIndex) Then Set GalleryBitmap = m_ChromeBitmap(ImageIndex): Exit Function
+            m_ChromeBitmapTried(ImageIndex) = True
+        Else
+            If ImageIndex > UBound(m_GridBitmapTried) Then Exit Function
+            If m_GridBitmapTried(ImageIndex) Then Set GalleryBitmap = m_GridBitmap(ImageIndex): Exit Function
+            m_GridBitmapTried(ImageIndex) = True
+        End If
+
+        If IconLibraryEntryBytes(IconLibraryGalleryEntry(ImageIndex), data) Then
+            If UBound(data) >= 23 Then
+                m_GalleryPixelW(ImageIndex) = data(17) * &H10000 + data(18) * &H100& + data(19)
+                m_GalleryPixelH(ImageIndex) = data(21) * &H10000 + data(22) * &H100& + data(23)
+            End If
+            If ForChrome Then
+                Set bmp = CreateBitmapFromImageBytes(m_ChromeTarget, data)
+                Set m_ChromeBitmap(ImageIndex) = bmp
+            Else
+                Set bmp = CreateBitmapFromImageBytes(m_Target, data)
+                Set m_GridBitmap(ImageIndex) = bmp
+            End If
+        End If
+        Set GalleryBitmap = bmp
+    End Function
+
+    ' Draws a Gallery image centred on Cx, Cy, shrunk to fit a Box-DIP square but never enlarged.
+    Private Sub DrawGalleryImage(ByVal target As ID2D1RenderTarget, ByVal bmp As ID2D1Bitmap, ByVal ImageIndex As Long, _
+            ByVal cx As Single, ByVal cy As Single, ByVal Box As Single)
+        Dim pw As Single
+        Dim ph As Single
+        Dim factor As Single
+        If bmp Is Nothing Then Exit Sub
+        pw = m_GalleryPixelW(ImageIndex)
+        ph = m_GalleryPixelH(ImageIndex)
+        If pw <= 0 Or ph <= 0 Then
+            pw = Box
+            ph = Box
+        End If
+        factor = Box / pw
+        If Box / ph < factor Then factor = Box / ph
+        If factor > 1 Then factor = 1
+        DrawBitmapIn target, bmp, cx - pw * factor / 2, cy - ph * factor / 2, cx + pw * factor / 2, cy + ph * factor / 2
+    End Sub
+
+    Private Sub DrawScrollIndicator()
+        If Not vsbGrid.Enabled Or vsbGrid.Max <= vsbGrid.Min Then Exit Sub
+
+        Dim x0 As Single
+        Dim y0 As Single
+        Dim x1 As Single
+        Dim y1 As Single
+        Dim thumbArgb As Long
+        ScrollThumbRect x0, y0, x1, y1
+
+        If IsDarkMode() Then
+            thumbArgb = DARK_ControlStrongFillColorDefault
+        Else
+            thumbArgb = LIGHT_ControlStrongFillColorDefault
+        End If
+
+        m_Target.FillRoundedRectangle RoundedRect(x0, y0, x1, y1, SCROLLBAR_THUMB_WIDTH_DIP / 2), _
+            SolidBrush(m_Target, thumbArgb)
+    End Sub
+
+    Private Sub ScrollThumbRect(ByRef x0 As Single, ByRef y0 As Single, ByRef x1 As Single, ByRef y1 As Single)
+        Dim w As Single
+        Dim h As Single
+        Dim totalRows As Long
+        Dim visible As Long
+        Dim thumbH As Single
+        Dim travel As Single
+        Dim ratio As Single
+
+        GridSizeDips w, h
+        visible = VisibleRows()
+        totalRows = (m_ShownCount + Columns() - 1) \ Columns()
+        If totalRows < 1 Then totalRows = 1
+
+        thumbH = h * visible / totalRows
+        If thumbH < SCROLLBAR_THUMB_MIN_HEIGHT_DIP Then thumbH = SCROLLBAR_THUMB_MIN_HEIGHT_DIP
+        If thumbH > h Then thumbH = h
+
+        travel = h - thumbH
+        If vsbGrid.Max > vsbGrid.Min Then
+            ratio = (vsbGrid.Value - vsbGrid.Min) / (vsbGrid.Max - vsbGrid.Min)
+        End If
+
+        x1 = w - (SCROLLBAR_SIZE_DIP - SCROLLBAR_THUMB_WIDTH_DIP) / 2
+        x0 = x1 - SCROLLBAR_THUMB_WIDTH_DIP
+        y0 = travel * ratio
+        y1 = y0 + thumbH
     End Sub
 
     ' --- Interaction ---
 
     Private Sub picGrid_MouseDown(Button As Integer, Shift As Integer, X As Single, Y As Single)
         If Button <> vbLeftButton Then Exit Sub
+
         Dim dpi As Single
+        Dim xDip As Single
+        Dim yDip As Single
+        Dim w As Single
+        Dim h As Single
+        dpi = GridDpi()
+        xDip = X * 96! / dpi
+        yDip = Y * 96! / dpi
+        GridSizeDips w, h
+
+        If xDip >= w - SCROLLBAR_SIZE_DIP And vsbGrid.Enabled Then
+            Dim sx0 As Single
+            Dim sy0 As Single
+            Dim sx1 As Single
+            Dim sy1 As Single
+            ScrollThumbRect sx0, sy0, sx1, sy1
+            If yDip >= sy0 And yDip <= sy1 Then
+                m_ScrollDragging = True
+                m_ScrollDragOffset = yDip - sy0
+            Else
+                SetScrollFromThumbTop yDip - (sy1 - sy0) / 2
+            End If
+            picGrid.Refresh
+            Exit Sub
+        End If
+
         Dim c As Long
         Dim r As Long
         Dim position As Long
-        dpi = GridDpi()
-        c = Int((X * 96! / dpi) / CELL_DIP)
-        r = Int((Y * 96! / dpi) / CELL_DIP)
-        If c >= Columns() Then Exit Sub
+        Dim originX As Single
+        Dim cols As Long
+        originX = GridOriginX()
+        cols = Columns()
+        Dim cell As Single
+        cell = CELL_DIP
+        If xDip < originX Or xDip >= originX + cols * cell Then Exit Sub
+        c = Int((xDip - originX) / cell)
+        r = Int(yDip / cell)
+        If c >= cols Then Exit Sub
         position = (vsbGrid.Value + r) * Columns() + c
         If position < 0 Or position >= m_ShownCount Then Exit Sub
-        m_Selected = ShownValue(position)
-        picGrid.Refresh
-        UpdateInfo
+
+        ' Whichever tab was clicked last is what Apply writes.
+        Select Case m_ShownKind
+            Case TAB_FLUENT
+                m_FluentSelected = m_Shown(position)
+                m_PickKind = TAB_FLUENT
+                picGrid.Refresh
+                RepaintChrome
+            Case TAB_GALLERY
+                m_GallerySelected = m_Shown(position)
+                m_PickKind = TAB_GALLERY
+                picGrid.Refresh
+                RepaintChrome
+            Case Else
+                m_Selected = ShownValue(position)
+                m_PickKind = TAB_SEGOE
+                picGrid.Refresh
+                UpdateInfo
+        End Select
         Me.Changed = True
     End Sub
 
+    Private Sub picGrid_MouseMove(Button As Integer, Shift As Integer, X As Single, Y As Single)
+        If m_HotTab >= 0 Or m_HotCard >= 0 Then
+            m_HotTab = -1
+            m_HotCard = -1
+            RepaintChrome
+        End If
+        If Not m_ScrollDragging Then Exit Sub
+        Dim dpi As Single
+        dpi = GridDpi()
+        SetScrollFromThumbTop (Y * 96! / dpi) - m_ScrollDragOffset
+    End Sub
+
+    Private Sub picGrid_MouseUp(Button As Integer, Shift As Integer, X As Single, Y As Single)
+        m_ScrollDragging = False
+    End Sub
+
+    Private Sub SetScrollFromThumbTop(ByVal ThumbTop As Single)
+        If Not vsbGrid.Enabled Or vsbGrid.Max <= vsbGrid.Min Then Exit Sub
+
+        Dim x0 As Single
+        Dim y0 As Single
+        Dim x1 As Single
+        Dim y1 As Single
+        Dim w As Single
+        Dim h As Single
+        Dim travel As Single
+        Dim ratio As Single
+        Dim newValue As Long
+
+        ScrollThumbRect x0, y0, x1, y1
+        GridSizeDips w, h
+        travel = h - (y1 - y0)
+        If travel <= 0 Then Exit Sub
+
+        If ThumbTop < 0 Then ThumbTop = 0
+        If ThumbTop > travel Then ThumbTop = travel
+        ratio = ThumbTop / travel
+        newValue = vsbGrid.Min + CLng(ratio * (vsbGrid.Max - vsbGrid.Min))
+        If newValue < vsbGrid.Min Then newValue = vsbGrid.Min
+        If newValue > vsbGrid.Max Then newValue = vsbGrid.Max
+        vsbGrid.Value = newValue
+        picGrid.Refresh
+    End Sub
+
     Private Sub txtSearch_Change()
+        If m_SettingQuery Then Exit Sub
         ApplyFilter
+    End Sub
+
+    Private Sub txtSearch_GotFocus()
+        m_SearchFocused = True
+        ApplyPageTheme True
+    End Sub
+
+    Private Sub txtSearch_LostFocus()
+        m_SearchFocused = False
+        ApplyPageTheme True
+    End Sub
+
+    Private Sub txtSearch_MouseWheel(ByVal Delta As Integer, ByVal Horizontal As Boolean)
+        ScrollByWheel Delta, Horizontal
     End Sub
 
     Private Sub vsbGrid_Change()
@@ -376,7 +2268,10 @@ Failed:
     End Sub
 
     Private Sub picGrid_MouseWheel(ByVal Delta As Integer, ByVal Horizontal As Boolean)
-        ' One wheel notch (WHEEL_DELTA = 120) moves one row; smaller deltas still move one row.
+        ScrollByWheel Delta, Horizontal
+    End Sub
+
+    Private Sub ScrollByWheel(ByVal Delta As Integer, ByVal Horizontal As Boolean)
         If Horizontal Or Not vsbGrid.Enabled Then Exit Sub
         Dim notches As Long
         notches = Delta \ 120
@@ -386,33 +2281,51 @@ Failed:
         If newValue < vsbGrid.Min Then newValue = vsbGrid.Min
         If newValue > vsbGrid.Max Then newValue = vsbGrid.Max
         vsbGrid.Value = newValue
+        picGrid.Refresh
     End Sub
 
     Private Sub UpdateInfo()
         Dim i As Long
         Dim name As String
+
+        m_SelectedFluentOnly = False
         If m_Selected = 0 Then
-            lblInfo.Caption = "None" & vbCrLf & "ui3IconNone" & InfoSeparator() & "0"
+            SetInfoDetails "None", "ui3IconNone", "0", "None"
             Exit Sub
         End If
+
+        Dim glyph As String
+        glyph = "U+" & Hex$(m_Selected)
         For i = 0 To IconCatalogCount() - 1
             If IconCatalogValue(i) = m_Selected Then
                 name = IconCatalogName(i)
+                m_SelectedFluentOnly = IconCatalogFluentOnly(i)
+                If m_SelectedFluentOnly Then glyph = glyph & "  (not in MDL2)"
                 Exit For
             End If
         Next
+
         If Len(name) = 0 Then
-            lblInfo.Caption = "Not in catalog" & vbCrLf & m_Selected & InfoSeparator() & "&H" & Hex$(m_Selected)
+            SetInfoDetails "Not in catalog", CStr(m_Selected), _
+                CStr(m_Selected) & "  (&H" & Hex$(m_Selected) & ")", glyph
             Exit Sub
         End If
-        ' Line 1: the name. Line 2: everything the search box accepts, in the order the hint lists it.
-        lblInfo.Caption = name & vbCrLf & _
-            "ui3Icon" & name & InfoSeparator() & m_Selected & InfoSeparator() & "&H" & Hex$(m_Selected) & _
-            InfoSeparator() & "U+" & Hex$(GlyphCode(m_Selected))
+
+        SetInfoDetails name, "ui3Icon" & name, _
+            CStr(m_Selected) & "  (&H" & Hex$(m_Selected) & ")", glyph
     End Sub
 
-    Private Function InfoSeparator() As String
-        InfoSeparator = "   " & ChrW(&HB7) & "   "
-    End Function
+    Private Sub SetInfoDetails(ByVal iconName As String, ByVal enumName As String, _
+            ByVal symbolValue As String, ByVal glyphValue As String)
+        m_InfoName = iconName
+        m_InfoEnum = enumName
+        m_InfoSymbol = symbolValue
+        m_InfoGlyph = glyphValue
+        lblInfo.Caption = "Selected icon" & vbCrLf & _
+            "Name: " & iconName & "   Enum: " & enumName & vbCrLf & _
+            "Value: " & symbolValue & "   Glyph: " & glyphValue & vbCrLf & _
+            "Segoe Fluent / Segoe MDL2 preview at runtime"
+        picChrome.Refresh
+    End Sub
 
 End Class

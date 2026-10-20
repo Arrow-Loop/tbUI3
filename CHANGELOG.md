@@ -6,7 +6,7 @@ All notable changes to tbUI3. Dates are when the change was made, not released. 
 
 ### 2026-10-20, pass 5 closed (Claude)
 
-- Shane's win64 built EXE (before the IconFolder fix) drew the three designer-picked icons (Fluent color, Fluent regular, Additional Icons) after the test-code error. Whether `%LOCALAPPDATA%\tbUI3` was renamed for that run wasn't stated; win32 was checked with it renamed (1.0.0.45). Shane agreed pass 5 is done: designer picks are compiled into the form, so a built app needs no icon folder. The tbUI3Test IconFolder fix (6cd52b8) is not yet rebuilt.
+- Shane's win64 built EXE (before the IconFolder fix) drew the three designer-picked icons (Fluent color, Fluent regular, Additional Icons) after the test-code error. `%LOCALAPPDATA%\tbUI3` was renamed (to `tbUI3-bak`) for that run, as it was for the win32 check (1.0.0.45). Shane agreed pass 5 is done: designer picks are compiled into the form, so a built app needs no icon folder. The tbUI3Test IconFolder fix (6cd52b8) is not yet rebuilt.
 
 ### 2026-10-20, built tbUI3Test EXE error 80004005 at startup (Claude)
 

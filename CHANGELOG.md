@@ -4,6 +4,11 @@ All notable changes to tbUI3. Dates are when the change was made, not released. 
 
 ## Unreleased
 
+### 2026-10-20, win64: library Apply doesn't stick (1.0.0.46 diagnostic, Claude)
+
+- Shane, BETA 1012 win64: applying a library icon makes the IDE flicker and show RESYNC, and the button keeps its old icon. The log shows the page's Apply and the button's LoadIcon both complete and record the pending icon, but after the designer rebuild the page still reads the old Icon and an empty IconSource. In win32 the rebuilt control had the new icon. So the rebuilt control in win64 doesn't end up with the image: either its ReadProperties doesn't take the pending icon, or writing the image to the form fails and the IDE resyncs to the saved copy.
+- 1.0.0.46 logs, at design time, every UI3Button ReadProperties and WriteProperties (Icon, IconSource, byte count), each pending icon taken, and any error writing the image to the PropertyBag (now caught and logged instead of raised). No other change.
+
 ### 2026-10-20, pass 5d result (1.0.0.45)
 
 - Shane built tbUI3Test to an EXE and ran it with `%LOCALAPPDATA%\tbUI3` renamed: every icon picked in the designer still draws, so a built app needs no icon library. Win32; win64 not yet reported.

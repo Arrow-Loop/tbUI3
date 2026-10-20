@@ -267,7 +267,10 @@ Public Class UI3Button
         ReadIconImage PropBag
         DesignLog "ReadProperties " & Hex$(ObjPtr(Me)) & " " & DesignName() & " Icon = " & CLng(m_Icon)
         If Not IsUserMode() Then
+            DesignTrace "ReadProperties " & Hex$(ObjPtr(Me)) & " " & DesignName() & " Icon = " & CLng(m_Icon) & _
+                ", IconSource = " & m_IconImage.Source & ", bytes = " & m_IconImage.ByteCount()
             If TakePendingIcon(DesignName(), m_Icon) Then
+                DesignTrace "pending Icon taken " & DesignName() & " = " & CLng(m_Icon)
                 PropertyChanged "Icon"
                 ClearIconImage
             End If
@@ -275,12 +278,23 @@ Public Class UI3Button
         End If
     End Sub
 
+    ' Design-time steps of the icon picker's designer bridge, written to the property page log
+    ' (pass 5 diagnostics; the log is %TEMP%\tbUI3-propertypage.log while it is switched on).
+    Private Sub DesignTrace(ByVal Text As String)
+        If IsUserMode() Then Exit Sub
+        UI3PropertyPageLog "BUTTON " & Text
+    End Sub
+
     ' The library half of the designer bridge: an SVG or PNG the picker applied (see UI3Icons).
     Private Sub TakeLibraryIcon()
         Dim data() As Byte
         Dim source As String
         If Not TakePendingLibraryIcon(DesignName(), data, source) Then Exit Sub
-        If Not m_IconImage.SetData(data, source) Then Exit Sub
+        DesignTrace "pending library taken " & DesignName() & " = " & source & ", bytes = " & ByteArrayLength(data)
+        If Not m_IconImage.SetData(data, source) Then
+            DesignTrace "pending library rejected by SetData " & DesignName()
+            Exit Sub
+        End If
         m_Icon = ui3IconNone
         m_IconGlyph = ""
         PropertyChanged "Icon"
@@ -322,10 +336,16 @@ Public Class UI3Button
         PropBag.WriteProperty "IconPosition", m_IconPosition, DEFAULT_ICON_POSITION
         PropBag.WriteProperty "IconSpacing", m_IconSpacing, ButtonIconSpacingDefault
         PropBag.WriteProperty "IconSize", m_IconSize, SymbolIconDefaultFontSize
+        DesignTrace "WriteProperties " & Hex$(ObjPtr(Me)) & " " & DesignName() & " Icon = " & CLng(m_Icon) & _
+            ", IconSource = " & m_IconImage.Source & ", bytes = " & m_IconImage.ByteCount()
         If m_IconImage.HasImage Then
+            On Error GoTo WriteFailed
             PropBag.WriteProperty "IconData", m_IconImage.GetData()
             PropBag.WriteProperty "IconSource", m_IconImage.Source, ""
         End If
+        Exit Sub
+WriteFailed:
+        DesignTrace "WriteProperties image failed " & DesignName() & ": " & Err.Number & " " & Err.Description
     End Sub
 
     Private Sub UserControl_Resize()

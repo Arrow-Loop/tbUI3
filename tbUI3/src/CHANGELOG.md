@@ -1,3 +1,6 @@
+### 1.0.0.46
+- Diagnostic only: the property page log records UI3Button's design-time loads and saves, to trace an icon picker problem in win64.
+
 ### 1.0.0.45
 - Diagnostic only: the property page log records each step when the icon picker applies a library icon.
 

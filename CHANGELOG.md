@@ -4,6 +4,10 @@ All notable changes to tbUI3. Dates are when the change was made, not released. 
 
 ## Unreleased
 
+### 2026-10-20, win64 hooks-off result
+
+- Shane, 1.0.0.49 in win64: still resyncs with every page window hook off. tbUI3's dialog skin, search-box hooks and chrome subclass are cleared as the cause. The win64 designer process dying after the property dialog closes looks like twinBASIC's (BETA 1012). Shane is checking an older BETA next. `WIN64_PAGE_HOOKS` goes back to True once this is settled.
+
 ### 2026-10-20, win64: the designer process dies when the property dialog closes (1.0.0.49 diagnostic, Claude)
 
 - Shane, 1.0.0.48 in win64:

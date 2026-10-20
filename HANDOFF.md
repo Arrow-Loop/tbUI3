@@ -78,7 +78,7 @@ The decisions are in `docs/2026-10-06-first-pass-report.md` and `docs/2026-10-06
 | 1.0.0.46: design-time load/save tracing for the win64 failure | Built by Shane: win64 rebuilds the buttons from the saved form; Segoe Apply fails too. |
 | 1.0.0.47: ApplyChanges, Let Icon and process tracing | Built by Shane: win64 Let Icon runs, then error 438 and the designer host process restarts. |
 | 1.0.0.48: locate the win64 error inside Let Icon | Built by Shane: Let Icon completes; the win64 designer process dies when the dialog closes (even Cancel). |
-| 1.0.0.49: win64 page window hooks off | Not yet built. |
+| 1.0.0.49: win64 page window hooks off | Built by Shane: still resyncs; tbUI3's hooks are not the cause. |
 
 ## Work queue for the next passes (updated 2026-10-07)
 

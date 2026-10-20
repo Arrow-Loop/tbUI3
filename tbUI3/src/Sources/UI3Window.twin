@@ -82,6 +82,7 @@ Public Module UI3Window
     Private Const PROPERTY_ACTION_RIGHT_MARGIN_DIP As Single = 8
     Private Const PROPERTY_ACTION_BOTTOM_MARGIN_DIP As Single = 8
 
+    Private Declare PtrSafe Function GetCurrentProcessId Lib "kernel32" () As Long
     Private Declare PtrSafe Function DwmSetWindowAttribute Lib "dwmapi" (ByVal hWnd As LongPtr, ByVal dwAttribute As Long, _
         ByRef pvAttribute As Any, ByVal cbAttribute As Long) As Long
     Private Declare PtrSafe Function SetWindowPos Lib "user32" (ByVal hWnd As LongPtr, ByVal hWndInsertAfter As LongPtr, _
@@ -928,8 +929,16 @@ CleanUp:
     End Function
 
     ' One line in %TEMP%\tbUI3-propertypage.log from a property page (only while the log is on).
+    ' Lines from page and control code carry the time, process id and bitness, since the designer may
+    ' host controls and pages in a different process in win64.
     Public Sub UI3PropertyPageLog(ByVal Text As String)
-        ProbeLog Text
+        Dim bits As String
+        #If Win64 Then
+            bits = "x64"
+        #Else
+            bits = "x86"
+        #End If
+        ProbeLog "[" & Format$(Now, "hh:nn:ss") & " pid " & GetCurrentProcessId() & " " & bits & "] " & Text
     End Sub
 
     Private Sub ProbeLog(ByVal text As String)

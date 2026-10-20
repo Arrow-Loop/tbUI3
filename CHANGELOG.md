@@ -4,6 +4,14 @@ All notable changes to tbUI3. Dates are when the change was made, not released. 
 
 ## Unreleased
 
+### 2026-10-20, win64 trace 1 result and trace 2 (1.0.0.47 diagnostic, Claude)
+
+- Shane, 1.0.0.46: in win64 even a Segoe icon doesn't apply; win32 still works (checked by switching the IDE back and forth). The log:
+  - win32: after Apply the live button saves the new Icon (WriteProperties, 59446) and nothing is rebuilt.
+  - win64: after Apply the page gets SelectionChanged, then every button is rebuilt from the saved form (the RESYNC) with its old Icon. No live save with the new value happens first, and no pending icon is taken. So the value never reaches the button, or the IDE throws away its state before saving.
+  - Segoe icons applied in win64 passed on 2026-10-14 (1.0.0.24, BETA 999). What changed since includes BETA 1008-1012 and opening the page from Icon's own "...".
+- 1.0.0.47 logs ApplyChanges (start, end, and any error setting Icon, which is now caught and logged) and the button's Let Icon, and stamps page and button lines with time, process id and x86/x64, to see whether the page and the controls run in the same process in win64.
+
 ### 2026-10-20, win64: library Apply doesn't stick (1.0.0.46 diagnostic, Claude)
 
 - Shane, BETA 1012 win64: applying a library icon makes the IDE flicker and show RESYNC, and the button keeps its old icon. The log shows the page's Apply and the button's LoadIcon both complete and record the pending icon, but after the designer rebuild the page still reads the old Icon and an empty IconSource. In win32 the rebuilt control had the new icon. So the rebuilt control in win64 doesn't end up with the image: either its ReadProperties doesn't take the pending icon, or writing the image to the form fails and the IDE resyncs to the saved copy.

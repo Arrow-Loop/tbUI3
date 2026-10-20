@@ -69,6 +69,7 @@ Public Class UI3Button
             SetPendingIcon DesignName(), Value
             ClearPendingLibraryIcon DesignName()
         End If
+        DesignTrace "Let Icon " & Hex$(ObjPtr(Me)) & " " & DesignName() & " = " & CLng(Value) & IIf(IconPageApplying, " (from page)", "")
         DesignLog "Let Icon " & Hex$(ObjPtr(Me)) & " " & DesignName() & " = " & CLng(Value) & IIf(IconPageApplying, " (from page)", "")
         PropertyChanged "Icon"
         UserControl.Refresh

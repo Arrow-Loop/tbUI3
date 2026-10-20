@@ -230,6 +230,7 @@ Class UI3IconPage
     End Sub
 
     Private Sub PropertyPage_ApplyChanges()
+        UI3PropertyPageLog "PAGE ApplyChanges tab " & m_PickKind & ", Icon " & m_Selected & ", controls " & Me.SelectedControls.Count
         If m_PickKind = TAB_FLUENT Or m_PickKind = TAB_GALLERY Then
             ApplyLibraryPick
             Exit Sub
@@ -241,9 +242,13 @@ Class UI3IconPage
         DesignLog "ApplyChanges value = " & m_Selected
         IconPageApplying = True
         For Each ctl In Me.SelectedControls
+            On Error Resume Next
             CallByName ctl, "Icon", vbLet, m_Selected
+            If Err.Number <> 0 Then UI3PropertyPageLog "PAGE Let Icon failed: " & Err.Number & " " & Err.Description
+            On Error GoTo 0
         Next
         IconPageApplying = False
+        UI3PropertyPageLog "PAGE ApplyChanges done"
     End Sub
 
     ' Copies the picked library file into each selected control through its LoadIcon method. A Fluent

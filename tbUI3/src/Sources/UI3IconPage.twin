@@ -242,6 +242,7 @@ Class UI3IconPage
         DesignLog "ApplyChanges value = " & m_Selected
         IconPageApplying = True
         For Each ctl In Me.SelectedControls
+            UI3PropertyPageLog "PAGE setting Icon on a " & TypeName(ctl)
             On Error Resume Next
             CallByName ctl, "Icon", vbLet, m_Selected
             If Err.Number <> 0 Then UI3PropertyPageLog "PAGE Let Icon failed: " & Err.Number & " " & Err.Description

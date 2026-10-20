@@ -1,3 +1,6 @@
+### 1.0.0.48
+- Diagnostic only: pins down where the win64 icon picker Apply fails.
+
 ### 1.0.0.47
 - Diagnostic only: more property page log detail for the win64 icon picker problem.
 

@@ -81,7 +81,7 @@ The decisions are in `docs/2026-10-06-first-pass-report.md` and `docs/2026-10-06
 | 1.0.0.49: win64 page window hooks off | Built by Shane: still resyncs; tbUI3's hooks are not the cause. BETA 999 fails too. |
 | 1.0.0.50: hooks back on in win64 | Superseded by 1.0.0.51. |
 | Repro (`tbUI3-Repro`) | win64 Apply works in plain twinBASIC; the fault is tbUI3's. |
-| 1.0.0.51: page ignores the teardown SelectionChanged | Built by Shane: win64 Apply works for Segoe, Fluent and Additional Icons (2026-10-20). |
+| 1.0.0.51: page ignores the teardown SelectionChanged | Built by Shane: win64 Apply works for Segoe, Fluent and Additional Icons, and a win64 EXE draws the picked icons. Pass 5 closed (2026-10-20). |
 
 ## Work queue for the next passes (updated 2026-10-07)
 

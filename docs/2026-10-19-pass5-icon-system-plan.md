@@ -1,6 +1,6 @@
 # Pass 5 plan: one icon system for every control
 
-Status: **approved by Shane on 2026-10-19.** Build 5a is in 1.0.0.42 (validated); 5b is in 1.0.0.43 (validated); 5c is in 1.0.0.44 (validated); 5d passed in win32 with 1.0.0.45 (win64 to confirm). win64 Apply fails (the designer host dies when the dialog closes); a plain twinBASIC repro works in win64, so it is tbUI3's. 1.0.0.51 stops the picker relaying itself on the empty teardown SelectionChanged, and Shane confirmed win64 Apply works with it.
+Status: **approved by Shane on 2026-10-19.** Build 5a is in 1.0.0.42 (validated); 5b is in 1.0.0.43 (validated); 5c is in 1.0.0.44 (validated); 5d passed in win32 with 1.0.0.45 (win64 to confirm). win64 Apply fails (the designer host dies when the dialog closes); a plain twinBASIC repro works in win64, so it is tbUI3's. 1.0.0.51 stops the picker relaying itself on the empty teardown SelectionChanged, and Shane confirmed win64 Apply works with it. **Pass 5 closed by Shane on 2026-10-20**; the win64 built EXE drew the picked icons.
 Written 2026-10-19, from the decisions recorded in ROADMAP.md that day.
 
 ## Goal

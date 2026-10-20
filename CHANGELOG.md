@@ -4,6 +4,10 @@ All notable changes to tbUI3. Dates are when the change was made, not released. 
 
 ## Unreleased
 
+### 2026-10-20, win64 property page repro project (Claude)
+
+- `tbUI3-Repro/NewProject.twinproj` (Shane's new Standard EXE) is a twinBASIC-only repro for the win64 Apply failure. It has no tbUI3 code: ReproControl has one Long property, `Value`, linked to ReproPage, a page with one TextBox that sets it. Its code had been pasted outside the class blocks; it now sits inside them, and `tbUI3-Repro/src` is its export. Test: drop a ReproControl on Form1, set Value to 42 from the page, reopen, in win32 then win64. Not yet run.
+
 ### 2026-10-20, BETA 999 result and a correction (1.0.0.50, Claude)
 
 - Shane: the same win64 failure happens in BETA 999. It is not a recent twinBASIC regression.

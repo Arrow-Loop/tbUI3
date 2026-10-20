@@ -8,11 +8,17 @@ Class ReproPage
 	Sub New()
 	End Sub
 
+    ' Filling the box fires Text1_Change; only the user's typing should mark the page changed.
+    Private m_Loading As Boolean
+
     Private Sub PropertyPage_SelectionChanged()
+        m_Loading = True
         Text1.Text = CStr(Me.SelectedControls(0).Value)
+        m_Loading = False
     End Sub
 
     Private Sub Text1_Change()
+        If m_Loading Then Exit Sub
         Me.Changed = True
     End Sub
 

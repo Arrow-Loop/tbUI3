@@ -12,6 +12,8 @@ Class ReproPage
     Private m_Loading As Boolean
 
     Private Sub PropertyPage_SelectionChanged()
+        ' The page also gets an empty selection when it closes.
+        If Me.SelectedControls.Count = 0 Then Exit Sub
         m_Loading = True
         Text1.Text = CStr(Me.SelectedControls(0).Value)
         m_Loading = False
@@ -23,6 +25,7 @@ Class ReproPage
     End Sub
 
     Private Sub PropertyPage_ApplyChanges()
+        If Me.SelectedControls.Count = 0 Then Exit Sub
         Me.SelectedControls(0).Value = CLng(Val(Text1.Text))
     End Sub
 

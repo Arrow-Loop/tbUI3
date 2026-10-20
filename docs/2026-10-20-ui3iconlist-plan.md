@@ -59,7 +59,7 @@ Open: whether the button's own picker also gets a "List" tab to choose an `IconK
 ## Builds, in order (Shane tests each in win32)
 
 1. **L1, the picker draws with UI3IconImage.** Move the picker's Fluent and Additional Icons grid drawing onto `UI3IconImage`, which the list's page will share. No visible change. Test: scroll each tab, pick, Apply, reopen; compare with the current build.
-2. **L2, spike: an invisible component and finding it by name.** A throwaway control (not shipped) answers three questions: can a tbUI3 UserControl be invisible at run time; can a button find a sibling by name at design time and at run time; and does twinBASIC allow a dropdown of names for a property in the pane.
+2. **L2, spike: finding the list by name.** A throwaway control (not shipped) answers two questions: can a button find a sibling by name at design time and at run time, and does twinBASIC allow a dropdown of names for a property in the pane. Being invisible at run time is already proven: UI3FormTheme sets `InvisibleAtRuntime` in its `.tbcontrol` (Shane, 2026-10-20), and the list does the same.
 3. **L3, the list in code.** `UI3IconList` with the members above, saving and loading, plus `IconKey` and `IconList` on UI3Button. Test in tbUI3Test with no page: add icons in code from `LoadResData` and from a Segoe value, assign keys, save and reopen, remove a key, switch dark and light.
 4. **L4, the list's page.** The picker plus the list pane, import, and Apply through the bridge. Test: fill a list from every tab and from a file, set keys on buttons, Apply, OK, Cancel, reopen.
 5. **L5, closing checks.** An x64 review of the pass's changes, then the win64 smoke test (open a form, open both pages, apply, reopen, build and run the EXE with `%LOCALAPPDATA%\tbUI3` renamed).
@@ -68,7 +68,7 @@ Each build bumps the package version and updates CHANGELOG.md, ROADMAP.md, HANDO
 
 ## Risks and open checks
 
-- **Invisible at run time.** Unknown until L2. If twinBASIC has no equivalent of VB6's `InvisibleAtRunTime`, the list hides its own window at run time instead.
+- **Invisible at run time.** Not a risk: UI3FormTheme already uses `InvisibleAtRuntime`.
 - **Finding the list.** Controls may load before the list does when a form opens. The registry lets a control find the list on its first paint instead of in `ReadProperties`.
 - **The designer bridge.** Applying a whole list needs a third pending slot. It copies the existing pattern; the existing members stay untouched.
 - **Form size.** A list with many large images makes the form file big. The page's size column is the only guard; there is no limit.

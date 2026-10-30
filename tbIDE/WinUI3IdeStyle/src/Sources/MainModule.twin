@@ -1,0 +1,105 @@
+Module MainModule
+    [DllExport]
+    Public Function tbCreateCompilerAddin(ByVal Host As Host) As AddIn
+        ' Entry point the twinBASIC IDE calls for every add-in DLL in its addins\win32 or addins\win64 folder.
+        ' The IDE releases the returned object when it unloads the add-in.
+        Return New WinUI3IdeStyleAddin(Host)
+    End Function
+End Module
+
+Private Class WinUI3IdeStyleAddin
+
+    Implements AddIn
+
+    ' Id of the <style> element the add-in adds to the IDE page. It is never removed, only emptied.
+    Private Const StyleElementId As String = "winui3IdeStyleCss"
+    ' Themes whose name starts with this get the stylesheet: "WinUI3 Dark", "WinUI3 Light".
+    Private Const ThemePrefix As String = "WinUI3"
+    Private Const LogPrefix As String = "[WinUI3 IDE Style] "
+
+    Private WithEvents Host As Host
+    ' A hidden tool window. Its body lives in a shadow root inside the IDE page, so its
+    ' ownerDocument is the IDE page itself, which is how the stylesheet reaches the whole IDE.
+    Private StyleWindow As ToolWindow
+    Private IsApplied As Boolean
+
+    Public Sub New(ByVal Host As Host)
+        Set Me.Host = Host
+        ApplyForActiveTheme
+    End Sub
+
+    Private Sub Class_Terminate()
+        ClearStyle
+    End Sub
+
+    Private Property Get AddIn_Name() As String
+        Return "WinUI3 IDE Style"
+    End Property
+
+    Private Sub Host_OnProjectLoaded()
+        ApplyForActiveTheme
+    End Sub
+
+    Private Sub Host_OnChangedTheme(ByVal ThemeName As String)
+        ApplyForTheme ThemeName
+    End Sub
+
+    Private Sub ApplyForActiveTheme()
+        On Error GoTo Failed
+        ApplyForTheme Host.Themes.ActiveThemeName
+        Exit Sub
+    Failed:
+        Log "could not read the active theme: " & Err.Description
+    End Sub
+
+    Private Sub ApplyForTheme(ByVal ThemeName As String)
+        If Left$(ThemeName, Len(ThemePrefix)) = ThemePrefix Then
+            ApplyStyle ThemeName
+        Else
+            ClearStyle
+        End If
+    End Sub
+
+    Private Sub ApplyStyle(ByVal ThemeName As String)
+        On Error GoTo Failed
+        If StyleWindow Is Nothing Then
+            ' Tool windows start invisible, and this one stays that way.
+            Set StyleWindow = Host.ToolWindows.Add("WinUI3IdeStyle", "WinUI3IdeStyleHost")
+            StyleWindow.Title = "WinUI3 IDE Style"
+        End If
+
+        Dim css As String = WinUI3IdeCss.Build()
+        If Not SetStyleText(css) Then
+            ' First use in this IDE session: add the element, then it can be refilled or emptied.
+            StyleWindow.RootDomElement.Properties.ownerDocument.head.insertAdjacentHTML("beforeend", "<style id=" & StyleElementId & ">" & css & "</style>")
+        End If
+
+        If Not IsApplied Then Log "stylesheet applied for " & ThemeName & " (" & Len(css) & " characters)"
+        IsApplied = True
+        Exit Sub
+    Failed:
+        Log "could not apply the stylesheet: " & Err.Description
+    End Sub
+
+    Private Sub ClearStyle()
+        If Not IsApplied Then Exit Sub
+        If SetStyleText("") Then Log "stylesheet removed"
+        IsApplied = False
+    End Sub
+
+    ' Replaces the text of the add-in's <style> element. Returns False when the element is not there yet.
+    Private Function SetStyleText(ByVal css As String) As Boolean
+        On Error GoTo Missing
+        If StyleWindow Is Nothing Then Exit Function
+        StyleWindow.RootDomElement.Properties.ownerDocument.getElementById(StyleElementId).textContent = css
+        Return True
+    Missing:
+        ' Falls through and returns False.
+    End Function
+
+    Private Sub Log(ByVal Text As String)
+        On Error Resume Next
+        Host.DebugConsole.PrintText(LogPrefix & Text)
+    End Sub
+
+End Class

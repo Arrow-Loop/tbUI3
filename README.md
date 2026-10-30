@@ -13,6 +13,7 @@ twinBASIC forms like the built-in VB6-compatible controls.
 | `tbUI3Test/src/` | Plain-text export of the test harness |
 | `reference-packages/ReferencePackages.twinproj` | Validated package-laboratory project used only to study third-party implementations |
 | `reference-packages/src/` | Loose mirror of the reference project and embedded packages for search, diffing, and code archaeology |
+| `tbIDE/` | WinUI3 Dark and Light themes for the twinBASIC IDE itself, and the WinUI3 IDE Style add-in (own README, CHANGELOG and ROADMAP) |
 
 The `.twinproj` files are binary and are the source of truth for the IDE. The `src/` folders are
 exported from them so changes can be diffed and reviewed.

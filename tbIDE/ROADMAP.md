@@ -31,5 +31,6 @@ Steps:
 - Accent variants: the build script could take an accent colour and emit themes for other Windows accents, since a theme file cannot read the system accent.
 - WinUI-style syntax colours: optional, since WinUI defines no code palette; would need a reference such as Visual Studio's Dark and Light.
 - Toolbox icons: the `ToolboxIcon*` properties accept data URIs, so the toolbox could show Fluent icons. Could reuse the tbUI3 icon library.
+- Distribution (decided by Shane 2026-10-30): the themes and add-in stay separate from the tbUI3 package. A package runs no code when it is enabled, and silently installing into the IDE from a control was rejected. Likely shape: a "tbUI3 IDE extras" zip attached to tbUI3 releases, and possibly the add-in copying the themes into `%APPDATA%\twinBASIC\themes` on first load. Only after the add-in spike works in win32 and win64.
 - Read the accent from Windows: the add-in could read the system accent and set the theme's accent CSS variables at run time, which a static .theme file cannot.
 - Generate `WinUI3IdeCss.twin` from a plain .css file with a small script, once the stylesheet grows beyond a spike.

@@ -183,6 +183,7 @@ Public Module UI3Window
     Private m_PropertyProbeEdit As LongPtr
     Private m_PropertyProbeEditParent As LongPtr
     Private m_SearchRepaintTicks As Long
+    Private m_IconPageGrid As LongPtr   ' the icon picker's grid, repainted with the search box (1.0.0.56)
     Private m_PropertyProbePageDialog As LongPtr
     Private m_PropertyEditBrush As LongPtr
     Private m_PropertyEditBrushColor As Long
@@ -517,6 +518,11 @@ CleanUp:
     ' first interaction fixes it. Repaint it a few times after the dialog settles (1.0.0.36).
     ' WM_TIMER is only delivered once no WM_PAINT is pending, so a short first interval repaints
     ' the box straight after whatever paints over it; later ticks catch anything slower.
+    ' The icon picker's grid window, repainted on the search box's repaint ticks. 0 clears it.
+    Public Sub UI3SetIconPageGrid(ByVal hWnd As LongPtr)
+        m_IconPageGrid = hWnd
+    End Sub
+
     Private Sub StartSearchRepaint()
         If m_PropertyProbeEdit = 0 Then Exit Sub
         m_SearchRepaintTicks = 0
@@ -699,6 +705,17 @@ CleanUp:
                             " box before=" & EditPixel() & " screen before=" & ScreenPixelAt(hWnd)
                         RedrawWindow hWnd, 0, 0, RDW_INVALIDATE Or RDW_ERASE Or RDW_FRAME Or RDW_UPDATENOW
                         ProbeLog "SEARCH REPAINT " & CStr(m_SearchRepaintTicks) & " box after=" & EditPixel()
+                        ' The page's #32770 container erases over the grid too (1.0.0.55 log), and the
+                        ' grid no longer repaints itself through an erase, so it is repainted on the same
+                        ' ticks, without an erase.
+                        If m_IconPageGrid <> 0 Then
+                            If IsWindow(m_IconPageGrid) <> 0 Then
+                                RedrawWindow m_IconPageGrid, 0, 0, RDW_INVALIDATE Or RDW_UPDATENOW
+                                ProbeLog "GRID REPAINT " & CStr(m_SearchRepaintTicks)
+                            Else
+                                m_IconPageGrid = 0
+                            End If
+                        End If
                         If m_SearchRepaintTicks >= UI3_SEARCH_REPAINT_TICKS Then
                             KillTimer hWnd, wParam
                         Else
@@ -941,15 +958,26 @@ CleanUp:
         ProbeLog "[" & Format$(Now, "hh:nn:ss") & " pid " & GetCurrentProcessId() & " " & bits & "] " & Text
     End Sub
 
+    ' Writes to %TEMP%\tbUI3-propertypage.log and, so Shane needn't hunt for it, to a copy beside the
+    ' project (App.Path; in the designer that is expected to be the host project's folder, unverified).
     Private Sub ProbeLog(ByVal text As String)
         If Not PROPERTY_PAGE_LOG_ENABLED Then Exit Sub
         On Error Resume Next
+        AppendLogLine Environ$("TEMP") & "\tbUI3-propertypage.log", text
+        If StrComp(App.Path, Environ$("TEMP"), vbTextCompare) <> 0 Then
+            AppendLogLine App.Path & "\tbUI3-propertypage.log", text
+        End If
+        On Error GoTo 0
+    End Sub
+
+    Private Sub AppendLogLine(ByVal Path As String, ByVal text As String)
+        On Error Resume Next
         Dim f As Integer
         f = FreeFile
-        Open Environ$("TEMP") & "\tbUI3-propertypage.log" For Append As #f
+        Open Path For Append As #f
+        If Err.Number <> 0 Then Exit Sub
         Print #f, text
         Close #f
-        On Error GoTo 0
     End Sub
 
     Private Sub AttachPropertySheetChild(ByVal hWnd As LongPtr, ByVal kind As LongPtr)

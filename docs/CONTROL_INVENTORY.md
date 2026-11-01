@@ -78,6 +78,7 @@ These are the intended public designer/toolbox families. The exact public enum/p
 | `UI3Shape` | Shape, Line and common Rectangle/Ellipse/Path-style primitives | `Shape`/geometry property selects primitive; stroke/fill/radius/geometry properties |
 | `UI3TitleBar` | TitleBar, AppWindowTitleBar visual behavior | custom client title-bar content when a project wants more than the normal DWM title bar |
 | `UI3FormTheme` | Window theme/backdrop integration | nonvisual designer component; System/Light/Dark mode, form background management, live theme/accent notifications |
+| `UI3IconList` | none (tbUI3-only, like VB6's ImageList) | nonvisual designer component; keyed Segoe glyphs, SVGs and images that icon-capable controls show through `IconKey` |
 
 That is roughly thirty toolbox-visible families rather than hundreds of entries. Specialized hosts such as media, ink and map may ultimately be moved to an optional companion package if their platform/runtime requirements conflict with tbUI3's dependency-free core contract; they remain coverage targets unless that decision is explicitly made.
 

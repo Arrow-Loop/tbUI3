@@ -21,6 +21,8 @@ Public Class UI3Button
     Private Const DEFAULT_ICON_GLYPH As String = ""
     Private Const DEFAULT_ICON_FONT_NAME As String = ""
     Private Const DEFAULT_ICON_POSITION As Long = 0
+    Private Const DEFAULT_ICON_KEY As String = ""
+    Private Const DEFAULT_ICON_LIST As String = ""
 
     Private m_Caption As String
     Private m_Style As UI3ButtonStyle
@@ -32,6 +34,17 @@ Public Class UI3Button
     Private m_IconSize As Single
     ' A stored SVG or bitmap icon (IconData). When it holds one, Icon is None and IconGlyph is empty.
     Private m_IconImage As New UI3IconImage
+    ' UI3IconList link (IconKey, IconList). The entry is fetched from the list when the button
+    ' paints, and fetched again only when the list's Revision or the key changes.
+    Private m_IconKey As String
+    Private m_IconListName As String
+    Private m_IconListObject As UI3IconList   ' set from code only; never saved
+    Private m_ListImage As New UI3IconImage
+    Private m_ListGlyph As Long
+    Private m_ListRevision As Long
+    Private m_ListFetchedKey As String
+    Private m_ListLookupNote As String
+    Private m_RegisteredHwnd As LongPtr
     Private m_Target As ID2D1DCRenderTarget
 
     Public Property Get Caption() As String
@@ -65,6 +78,7 @@ Public Class UI3Button
     Public Property Let Icon(ByVal Value As UI3Icon)
         m_Icon = Value
         ClearIconImage
+        If Value <> ui3IconNone Then ClearIconKey
         If IconPageApplying Then
             SetPendingIcon DesignName(), Value
             ClearPendingLibraryIcon DesignName()
@@ -84,7 +98,10 @@ Public Class UI3Button
 
     Public Property Let IconGlyph(ByVal Value As String)
         m_IconGlyph = Value
-        If Len(Value) <> 0 Then ClearIconImage
+        If Len(Value) <> 0 Then
+            ClearIconImage
+            ClearIconKey
+        End If
         PropertyChanged "IconGlyph"
         UserControl.Refresh
     End Property
@@ -135,6 +152,69 @@ Public Class UI3Button
         PropertyChanged "IconSize"
         UserControl.Refresh
     End Property
+
+    [Description("Key of the UI3IconList entry to show. Setting it replaces Icon, IconGlyph and a stored image. A missing key or list shows no icon.")]
+    Public Property Get IconKey() As String
+        IconKey = m_IconKey
+    End Property
+
+    Public Property Let IconKey(ByVal Value As String)
+        m_IconKey = Value
+        m_ListRevision = 0
+        If Len(Value) <> 0 Then
+            If m_Icon <> ui3IconNone Then
+                m_Icon = ui3IconNone
+                PropertyChanged "Icon"
+            End If
+            If Len(m_IconGlyph) <> 0 Then
+                m_IconGlyph = ""
+                PropertyChanged "IconGlyph"
+            End If
+            ClearIconImage
+        End If
+        PropertyChanged "IconKey"
+        UserControl.Refresh
+    End Property
+
+    ' The list IconKey refers to: a list's name (typed in the Properties pane), or in code a
+    ' UI3IconList object (Set). Empty means the form's only UI3IconList.
+    [Description("Name of the UI3IconList that IconKey refers to. Leave empty to use the form's only UI3IconList. In code, Set it to a UI3IconList.")]
+    Public Property Get IconList() As Variant
+        If Not m_IconListObject Is Nothing Then
+            Set IconList = m_IconListObject
+        Else
+            IconList = m_IconListName
+        End If
+    End Property
+
+    Public Property Let IconList(ByVal Value As Variant)
+        m_IconListName = CStr(Value)
+        Set m_IconListObject = Nothing
+        m_ListRevision = 0
+        PropertyChanged "IconList"
+        UserControl.Refresh
+    End Property
+
+    Public Property Set IconList(ByVal Value As Variant)
+        If Not IsObject(Value) Then Err.Raise 13
+        If Value Is Nothing Then
+            Set m_IconListObject = Nothing
+        ElseIf TypeOf Value Is UI3IconList Then
+            Set m_IconListObject = Value
+            m_IconListName = ""
+        Else
+            Err.Raise 13
+        End If
+        m_ListRevision = 0
+        UserControl.Refresh
+    End Property
+
+    Private Sub ClearIconKey()
+        If Len(m_IconKey) = 0 Then Exit Sub
+        m_IconKey = ""
+        m_ListRevision = 0
+        PropertyChanged "IconKey"
+    End Sub
 
     ' The stored icon file (an SVG, or a PNG or other image) as a Byte array in a Variant, or Empty.
     ' Assigning another control's IconData copies its icon; assigning Empty or an empty array removes it.
@@ -227,6 +307,7 @@ Public Class UI3Button
             m_IconGlyph = ""
             PropertyChanged "IconGlyph"
         End If
+        ClearIconKey
         PropertyChanged "IconData"
         PropertyChanged "IconSource"
         If IconPageApplying Then UI3PropertyPageLog "BUTTON PropertyChanged done " & DesignName()
@@ -255,6 +336,8 @@ Public Class UI3Button
         m_IconSpacing = ButtonIconSpacingDefault
         m_IconSize = SymbolIconDefaultFontSize
         m_IconImage.Clear
+        m_IconKey = DEFAULT_ICON_KEY
+        m_IconListName = DEFAULT_ICON_LIST
     End Sub
 
     Private Sub UserControl_ReadProperties(PropBag As PropertyBag)
@@ -268,6 +351,9 @@ Public Class UI3Button
         m_IconSize = PropBag.ReadProperty("IconSize", SymbolIconDefaultFontSize)
         If m_IconSize <= 0 Then m_IconSize = SymbolIconDefaultFontSize
         ReadIconImage PropBag
+        m_IconKey = PropBag.ReadProperty("IconKey", DEFAULT_ICON_KEY)
+        m_IconListName = PropBag.ReadProperty("IconList", DEFAULT_ICON_LIST)
+        m_ListRevision = 0
         DesignLog "ReadProperties " & Hex$(ObjPtr(Me)) & " " & DesignName() & " Icon = " & CLng(m_Icon)
         If Not IsUserMode() Then
             DesignTrace "ReadProperties " & Hex$(ObjPtr(Me)) & " " & DesignName() & " Icon = " & CLng(m_Icon) & _
@@ -276,6 +362,7 @@ Public Class UI3Button
                 DesignTrace "pending Icon taken " & DesignName() & " = " & CLng(m_Icon)
                 PropertyChanged "Icon"
                 ClearIconImage
+                If m_Icon <> ui3IconNone Then ClearIconKey
             End If
             TakeLibraryIcon
         End If
@@ -304,6 +391,7 @@ Public Class UI3Button
         PropertyChanged "IconGlyph"
         PropertyChanged "IconData"
         PropertyChanged "IconSource"
+        ClearIconKey
     End Sub
 
     Private Sub ReadIconImage(ByVal PropBag As PropertyBag)
@@ -339,6 +427,8 @@ Public Class UI3Button
         PropBag.WriteProperty "IconPosition", m_IconPosition, DEFAULT_ICON_POSITION
         PropBag.WriteProperty "IconSpacing", m_IconSpacing, ButtonIconSpacingDefault
         PropBag.WriteProperty "IconSize", m_IconSize, SymbolIconDefaultFontSize
+        PropBag.WriteProperty "IconKey", m_IconKey, DEFAULT_ICON_KEY
+        PropBag.WriteProperty "IconList", m_IconListName, DEFAULT_ICON_LIST
         DesignTrace "WriteProperties " & Hex$(ObjPtr(Me)) & " " & DesignName() & " Icon = " & CLng(m_Icon) & _
             ", IconSource = " & m_IconImage.Source & ", bytes = " & m_IconImage.ByteCount()
         If m_IconImage.HasImage Then
@@ -353,6 +443,12 @@ WriteFailed:
 
     Private Sub UserControl_Resize()
         UserControl.Refresh
+    End Sub
+
+    Private Sub UserControl_Terminate()
+        If m_RegisteredHwnd <> 0 Then UnregisterIconListUser m_RegisteredHwnd
+        m_RegisteredHwnd = 0
+        Set m_IconListObject = Nothing
     End Sub
 
     Private Sub UserControl_Click()
@@ -388,6 +484,7 @@ WriteFailed:
         If m_Target Is Nothing Then
             Set m_Target = CreateDCTarget()
             m_IconImage.ReleaseDeviceResources
+            m_ListImage.ReleaseDeviceResources
         End If
         dpi = DpiOfDC(hdc)
         m_Target.SetDpi dpi, dpi
@@ -484,21 +581,25 @@ Failed:
         Dim iconFamily As String
         Dim glyph As String
         Dim ink As Long
-        ResolveIconContent glyph, iconFamily
+        Dim iconImage As UI3IconImage
+        Set iconImage = ResolveIconContent(glyph, iconFamily)
         ' A recolouring SVG takes the text colour, made opaque over the button's own fill.
         ink = ComposeArgb(foreground, ComposeArgb(fill, ArgbFromOleColor(ContainerBackColor())))
 
         DrawButtonContent m_Target, m_Caption, glyph, iconFamily, m_IconSize, _
             m_IconPosition, m_IconSpacing, ButtonPaddingLeft, ButtonPaddingTop, _
-            w - ButtonPaddingRight, h - ButtonPaddingBottom, foreground, m_IconImage, ink
+            w - ButtonPaddingRight, h - ButtonPaddingBottom, foreground, iconImage, ink
     End Sub
 
-    Private Sub ResolveIconContent(ByRef Glyph As String, ByRef FontFamily As String)
+    ' The icon to draw: returns the image to draw (or Nothing), or sets Glyph and FontFamily.
+    Private Function ResolveIconContent(ByRef Glyph As String, ByRef FontFamily As String) As UI3IconImage
         Glyph = ""
         FontFamily = ""
 
-        If m_IconImage.HasImage Then
-            Exit Sub
+        If Len(m_IconKey) <> 0 Then
+            Set ResolveIconContent = ListIconContent(Glyph, FontFamily)
+        ElseIf m_IconImage.HasImage Then
+            Set ResolveIconContent = m_IconImage
         ElseIf Len(m_IconGlyph) <> 0 Then
             Glyph = m_IconGlyph
             FontFamily = m_IconFontName
@@ -507,6 +608,107 @@ Failed:
             FontFamily = SystemIconFontFamily()
             Glyph = SemanticIconGlyph(m_Icon)
         End If
+    End Function
+
+    ' The IconKey entry of the linked list, fetched again only when the list's Revision or the key
+    ' changed. A missing list or key draws nothing.
+    Private Function ListIconContent(ByRef Glyph As String, ByRef FontFamily As String) As UI3IconImage
+        Dim linked As UI3IconList
+        Dim stored As Variant
+        Dim bytes() As Byte
+
+        RegisterForListChanges
+        Set linked = ResolveIconList()
+        If linked Is Nothing Then
+            m_ListRevision = 0
+            Exit Function
+        End If
+
+        On Error GoTo Failed
+        If linked.Revision <> m_ListRevision Or StrComp(m_ListFetchedKey, m_IconKey, vbBinaryCompare) <> 0 Then
+            m_ListImage.Clear
+            m_ListGlyph = 0
+            stored = linked.IconData(m_IconKey)
+            If IsArray(stored) Then
+                bytes = stored
+                m_ListImage.SetData bytes, linked.IconSource(m_IconKey)
+            Else
+                m_ListGlyph = linked.Icon(m_IconKey)
+            End If
+            m_ListRevision = linked.Revision
+            m_ListFetchedKey = m_IconKey
+        End If
+
+        If m_ListImage.HasImage Then
+            Set ListIconContent = m_ListImage
+        ElseIf m_ListGlyph <> 0 Then
+            FontFamily = SystemIconFontFamily()
+            Glyph = SemanticIconGlyph(m_ListGlyph)
+        End If
+        Exit Function
+
+Failed:
+        NoteListLookup "fetch failed " & Err.Number & " " & Err.Description
+        m_ListRevision = 0
+    End Function
+
+    ' Finds the list on each paint rather than keeping it: Parent.Controls(name) works at design
+    ' and run time (L2 spike, 2026-11-01), and a list deleted or renamed in the designer is then
+    ' never held on to.
+    Private Function ResolveIconList() As UI3IconList
+        Dim found As Object
+        Dim item As Object
+        Dim lists As Long
+
+        If Not m_IconListObject Is Nothing Then
+            Set ResolveIconList = m_IconListObject
+            Exit Function
+        End If
+
+        On Error GoTo Failed
+        If Len(m_IconListName) <> 0 Then
+            Set found = UserControl.Parent.Controls(m_IconListName)
+            If TypeOf found Is UI3IconList Then
+                Set ResolveIconList = found
+                NoteListLookup "found " & m_IconListName & " by name"
+            Else
+                NoteListLookup m_IconListName & " is a " & TypeName(found) & ", not a UI3IconList"
+            End If
+            Exit Function
+        End If
+
+        For Each item In UserControl.Parent.Controls
+            If TypeOf item Is UI3IconList Then
+                lists = lists + 1
+                Set found = item
+            End If
+        Next
+        If lists = 1 Then
+            Set ResolveIconList = found
+            NoteListLookup "found the form's only list"
+        Else
+            NoteListLookup "the form has " & lists & " lists; IconList names none"
+        End If
+        Exit Function
+
+Failed:
+        NoteListLookup "lookup " & IIf(Len(m_IconListName) <> 0, m_IconListName, "(only list)") & " failed " & Err.Number & " " & Err.Description
+    End Function
+
+    Private Sub RegisterForListChanges()
+        Dim wnd As LongPtr
+        wnd = UserControl.hWnd
+        If wnd = m_RegisteredHwnd Then Exit Sub
+        If m_RegisteredHwnd <> 0 Then UnregisterIconListUser m_RegisteredHwnd
+        RegisterIconListUser wnd
+        m_RegisteredHwnd = wnd
+    End Sub
+
+    ' Writes each new list lookup outcome to the property page log once (L3 diagnostics).
+    Private Sub NoteListLookup(ByVal Text As String)
+        If Text = m_ListLookupNote Then Exit Sub
+        m_ListLookupNote = Text
+        UI3PropertyPageLog "BUTTON " & DesignName() & " " & IIf(IsUserMode(), "run", "design") & " IconList: " & Text
     End Sub
 
     Private Function ContainerBackColor() As Long

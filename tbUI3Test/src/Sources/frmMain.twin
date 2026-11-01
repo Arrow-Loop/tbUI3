@@ -49,12 +49,53 @@ Class frmMain
         If Len(UI3Button4.IconSource) = 0 Then UI3Button4.IconData = UI3Button1.IconData
         stepName = "button 4 Caption"
         UI3Button4.Caption = "Copy, size " & UI3Button4.IconSize
+
+        stepName = "icon list"
+        TestIconList folder
         Exit Sub
 
     Failed:
         MsgBox "Form_Load stopped at " & stepName & ": " & Err.Number & " " & Err.Description & _
             " (source: " & Err.Source & ")" & vbCrLf & "App.Path = " & App.Path
     End Sub
+
+    ' UI3IconList L3 test (tbUI3 1.0.0.60). Needs a UI3IconList named UI3IconList1 on this form;
+    ' it is found late bound, so the form still compiles and runs without one. UI3Button2's IconKey
+    ' is typed in the Properties pane ("save"), so it finds the form's only list by itself.
+    Private Function TestList() As Object
+        On Error Resume Next
+        Set TestList = Me.Controls("UI3IconList1")
+    End Function
+
+    Private Sub TestIconList(ByVal folder As String)
+        Dim list As Object
+        Set list = TestList()
+        If list Is Nothing Then
+            Me.Caption = "No UI3IconList1 on the form: list test skipped"
+            Exit Sub
+        End If
+        list.AddIcon "save", ui3IconSave
+        list.Add "mono", ReadFileBytes(folder & "mono.svg"), "file:mono.svg"
+        list.Add "png", ReadFileBytes(folder & "sample.png"), "file:sample.png"
+        UI3Button1.IconKey = "mono"
+        UI3Button1.Caption = "List: mono"
+        Set UI3Button3.IconList = list
+        UI3Button3.IconKey = "png"
+        UI3Button3.Caption = "List: png (click removes)"
+        Me.Caption = "List has " & list.Count & ": " & list.Key(1) & ", " & list.Key(2) & ", " & list.Key(3) & _
+            " | Button2 IconKey = " & UI3Button2.IconKey
+    End Sub
+
+    Private Function ReadFileBytes(ByVal Path As String) As Byte()
+        Dim data() As Byte
+        Dim f As Integer
+        f = FreeFile
+        Open Path For Binary Access Read As #f
+        ReDim data(0 To LOF(f) - 1)
+        Get #f, , data
+        Close #f
+        ReadFileBytes = data
+    End Function
 
     ' test-icons beside the project: App.Path in the IDE, one folder up from a built EXE in Build.
     Private Function IconFolder() As String
@@ -70,7 +111,17 @@ Class frmMain
 
     Private Sub UI3Button1_Click()
         MsgBox "IconSource: " & UI3Button1.IconSource & " | " & UI3Button2.IconSource & " | " & _
-            UI3Button3.IconSource & " | " & UI3Button4.IconSource
+            UI3Button3.IconSource & " | " & UI3Button4.IconSource & vbCrLf & _
+            "IconKey: " & UI3Button1.IconKey & " | " & UI3Button2.IconKey & " | " & _
+            UI3Button3.IconKey & " | " & UI3Button4.IconKey
+    End Sub
+
+    Private Sub UI3Button3_Click()
+        Dim list As Object
+        Set list = TestList()
+        If list Is Nothing Then Exit Sub
+        list.Remove "png"
+        UI3Button3.Caption = "png removed, list has " & list.Count
     End Sub
 
     Private Sub UI3Button2_Click()

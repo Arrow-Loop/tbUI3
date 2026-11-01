@@ -1,3 +1,30 @@
+### 1.0.0.58
+- Temporary: UI3Button has a `SpikeFind` property for an internal test. It will be removed in a later build.
+
+### 1.0.0.57
+- Removes the 1.0.0.55 grid paint diagnostic.
+
+### 1.0.0.56
+- The icon picker's grid no longer opens classic grey: it is repainted after the dialog's container paints over it.
+
+### 1.0.0.55
+- Diagnostic only: logs the icon picker grid's first paints after the page opens.
+- The property page log is also written beside the project (App.Path), as well as to %TEMP%.
+
+### 1.0.0.54
+- The icon picker's grid no longer opens classic grey.
+
+### 1.0.0.53
+- Scrolling the icon picker's grid no longer flickers: the grid paints without showing its background first, and the mouse wheel repaints once instead of twice.
+- Stored icons are set up faster.
+
+### 1.0.0.52
+- The icon picker's Fluent and Additional Icons tabs draw through the same image code as the button, so a pick looks the same in both. No visible change is intended.
+- Stored SVG icons are set up faster (only the root tag is read for the size).
+
+### 1.0.0.51
+- The icon picker no longer lays out or refills itself when twinBASIC tears the page down (an empty selection). This fixes Apply in win64.
+
 ### 1.0.0.50
 - The icon picker's dialog is skinned again in win64.
 

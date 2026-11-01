@@ -1,5 +1,6 @@
 ### 1.0.0.55
 - Diagnostic only: logs the icon picker grid's first paints after the page opens.
+- The property page log is also written beside the project (App.Path), as well as to %TEMP%.
 
 ### 1.0.0.54
 - The icon picker's grid no longer opens classic grey.

@@ -941,15 +941,26 @@ CleanUp:
         ProbeLog "[" & Format$(Now, "hh:nn:ss") & " pid " & GetCurrentProcessId() & " " & bits & "] " & Text
     End Sub
 
+    ' Writes to %TEMP%\tbUI3-propertypage.log and, so Shane needn't hunt for it, to a copy beside the
+    ' project (App.Path; in the designer that is expected to be the host project's folder, unverified).
     Private Sub ProbeLog(ByVal text As String)
         If Not PROPERTY_PAGE_LOG_ENABLED Then Exit Sub
         On Error Resume Next
+        AppendLogLine Environ$("TEMP") & "\tbUI3-propertypage.log", text
+        If StrComp(App.Path, Environ$("TEMP"), vbTextCompare) <> 0 Then
+            AppendLogLine App.Path & "\tbUI3-propertypage.log", text
+        End If
+        On Error GoTo 0
+    End Sub
+
+    Private Sub AppendLogLine(ByVal Path As String, ByVal text As String)
+        On Error Resume Next
         Dim f As Integer
         f = FreeFile
-        Open Environ$("TEMP") & "\tbUI3-propertypage.log" For Append As #f
+        Open Path For Append As #f
+        If Err.Number <> 0 Then Exit Sub
         Print #f, text
         Close #f
-        On Error GoTo 0
     End Sub
 
     Private Sub AttachPropertySheetChild(ByVal hWnd As LongPtr, ByVal kind As LongPtr)

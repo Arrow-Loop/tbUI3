@@ -191,7 +191,7 @@ Class UI3IconPage
     End Sub
 
     Private Sub PropertyPage_SelectionChanged()
-        UI3PropertyPageLog "PAGE SelectionChanged, controls " & Me.SelectedControls.Count & " (window hooks " & IIf(PageHooksEnabled(), "on", "off") & ")"
+        UI3PropertyPageLog "PAGE SelectionChanged, controls " & Me.SelectedControls.Count & " (window hooks " & IIf(PageHooksEnabled(), "on", "off") & "), App.Path " & App.Path
         ' twinBASIC's PropertyPage also raises SelectionChanged from its Class_Terminate, with nothing
         ' selected, while the page is being torn down. Laying out, theming or filling the page then
         ' touches windows that are going away, so leave it alone.

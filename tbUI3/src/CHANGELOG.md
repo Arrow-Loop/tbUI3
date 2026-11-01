@@ -1,3 +1,10 @@
+### 1.0.0.60
+- New `UI3IconList`: a nonvisual list of keyed icons (Segoe glyphs, SVGs and images), like VB6's ImageList.
+- UI3Button gets `IconKey` and `IconList` to show an icon from a list.
+
+### 1.0.0.59
+- Removes the temporary `SpikeFind` property from UI3Button.
+
 ### 1.0.0.58
 - Temporary: UI3Button has a `SpikeFind` property for an internal test. It will be removed in a later build.
 

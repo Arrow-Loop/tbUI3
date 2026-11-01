@@ -172,21 +172,23 @@ Failed:
         Dim i As Long
         Dim n As Long
         Dim tagEnd As Long
+        Dim j As Long
         Dim parts() As String
         Dim box As String
 
         m_SvgW = 0
         m_SvgH = 0
+        ' Only the root start tag is read, so the picker can make hundreds of these quickly.
+        i = FindAscii(m_Data, "<svg", 0)
+        If i < 0 Then GoTo Fallback
+        tagEnd = FindAscii(m_Data, ">", i)
         n = UBound(m_Data)
-        If n > 2047 Then n = 2047
-        For i = 0 To n
-            If m_Data(i) >= 32 And m_Data(i) < 127 Then head = head & Chr$(m_Data(i)) Else head = head & " "
+        If tagEnd >= 0 And tagEnd < n Then n = tagEnd
+        If n > i + 2047 Then n = i + 2047
+        head = Space$(n - i + 1)
+        For j = i To n
+            If m_Data(j) >= 32 And m_Data(j) < 127 Then Mid$(head, j - i + 1, 1) = Chr$(m_Data(j))
         Next
-        i = InStr(1, head, "<svg", vbTextCompare)
-        If i = 0 Then GoTo Fallback
-        tagEnd = InStr(i, head, ">")
-        If tagEnd = 0 Then tagEnd = Len(head)
-        head = Mid$(head, i, tagEnd - i + 1)
 
         box = AttributeValue(head, "viewBox")
         If Len(box) > 0 Then
@@ -282,17 +284,24 @@ Fallback:
         Dim n As Long
         Dim last As Long
         Dim c As Long
-        Dim t As Long
+        Dim pattern() As Long
         FindAscii = -1
         n = Len(Text)
+        If n = 0 Then Exit Function
+        ' The text's lower-case codes once, rather than a Mid$ per byte compared (a picker grid makes
+        ' hundreds of these images while scrolling).
+        ReDim pattern(0 To n - 1)
+        For j = 0 To n - 1
+            c = Asc(Mid$(Text, j + 1, 1))
+            If c >= 65 And c <= 90 Then c = c + 32
+            pattern(j) = c
+        Next
         last = UBound(Data) - n + 1
         For i = Start To last
             For j = 0 To n - 1
                 c = Data(i + j)
-                t = Asc(Mid$(Text, j + 1, 1))
                 If c >= 65 And c <= 90 Then c = c + 32
-                If t >= 65 And t <= 90 Then t = t + 32
-                If c <> t Then Exit For
+                If c <> pattern(j) Then Exit For
             Next
             If j = n Then
                 FindAscii = i

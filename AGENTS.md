@@ -16,7 +16,7 @@
   - `.gitattributes` stores every file byte-for-byte.
 - Build, test and save in the twinBASIC IDE. The command-line compiler (BETA 997) only exports and imports projects.
   - After rebuilding tbUI3, re-import the `.twinpack` into tbUI3Test (Ctrl+T, then Available Packages). `tbUI3Test/src/Packages/tbUI3` is the embedded copy.
-- Never change the FormDesignerId, class, interface or event IDs of an existing control. Each public control's stable IDs are recorded in `tbUI3/UI3*-ids.json` (currently `UI3Button-ids.json` and `UI3FormTheme-ids.json`). Add a new record when a new public control is created; preserve it thereafter.
+- Never change the FormDesignerId, class, interface or event IDs of an existing control. Each public control's stable IDs are recorded in `tbUI3/UI3*-ids.json` (currently `UI3Button-ids.json`, `UI3FormTheme-ids.json` and `UI3IconList-ids.json`). Add a new record when a new public control is created; preserve it thereafter.
 
 ## WinUI fidelity
 

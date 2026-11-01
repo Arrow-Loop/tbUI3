@@ -3,7 +3,8 @@
 ' swallowed and WM_PAINT is handled with BeginPaint/EndPaint, so a repaint never shows the
 ' PictureBox's own background first. Hover changes on the picker's tab strip and Setup buttons
 ' flickered without this (1.0.0.30 to 1.0.0.32). Also reports WM_MOUSELEAVE so hover clears when
-' the pointer leaves the chrome.
+' the pointer leaves the chrome. The icon grid (picGrid) is painted the same way, so scrolling
+' doesn't flash the PictureBox's background between frames.
 
 Private Module UI3PageSurface
 
@@ -48,6 +49,11 @@ Private Module UI3PageSurface
     Private m_SurfaceHwnd As LongPtr
     Private m_SurfacePage As UI3IconPage
     Private m_Tracking As Boolean
+    Private m_GridHwnd As LongPtr
+    Private m_GridPage As UI3IconPage
+
+    Private Const SURFACE_CHROME As Long = 0
+    Private Const SURFACE_GRID As Long = 1
 
     Public Sub UI3AttachIconPageSurface(ByVal hWnd As LongPtr, ByVal Page As UI3IconPage)
         If hWnd = 0 Then Exit Sub
@@ -61,7 +67,21 @@ Private Module UI3PageSurface
         m_SurfaceHwnd = hWnd
         Set m_SurfacePage = Page
         m_Tracking = False
-        SetWindowSubclass hWnd, AddressOf UI3PageSurfaceProc, CLngPtr(UI3_PAGE_SURFACE_SUBCLASS_ID), 0
+        SetWindowSubclass hWnd, AddressOf UI3PageSurfaceProc, CLngPtr(UI3_PAGE_SURFACE_SUBCLASS_ID), SURFACE_CHROME
+    End Sub
+
+    Public Sub UI3AttachIconPageGrid(ByVal hWnd As LongPtr, ByVal Page As UI3IconPage)
+        If hWnd = 0 Then Exit Sub
+        If hWnd = m_GridHwnd Then
+            Set m_GridPage = Page
+            Exit Sub
+        End If
+        If m_GridHwnd <> 0 Then
+            RemoveWindowSubclass m_GridHwnd, AddressOf UI3PageSurfaceProc, CLngPtr(UI3_PAGE_SURFACE_SUBCLASS_ID)
+        End If
+        m_GridHwnd = hWnd
+        Set m_GridPage = Page
+        SetWindowSubclass hWnd, AddressOf UI3PageSurfaceProc, CLngPtr(UI3_PAGE_SURFACE_SUBCLASS_ID), SURFACE_GRID
     End Sub
 
     ' Asks for one WM_MOUSELEAVE; call from the surface's mouse-move handler.
@@ -86,11 +106,13 @@ Private Module UI3PageSurface
                 Dim hdc As LongPtr
                 hdc = BeginPaint(hWnd, ps)
                 If hdc <> 0 Then
-                    If Not m_SurfacePage Is Nothing Then
-                        On Error Resume Next
+                    On Error Resume Next
+                    If dwRefData = SURFACE_GRID Then
+                        If Not m_GridPage Is Nothing Then m_GridPage.PaintGridSurface hdc
+                    ElseIf Not m_SurfacePage Is Nothing Then
                         m_SurfacePage.PaintChromeSurface hdc
-                        On Error GoTo 0
                     End If
+                    On Error GoTo 0
                     EndPaint hWnd, ps
                 End If
                 UI3PageSurfaceProc = 0
@@ -110,6 +132,10 @@ Private Module UI3PageSurface
                     m_SurfaceHwnd = 0
                     Set m_SurfacePage = Nothing
                     m_Tracking = False
+                End If
+                If hWnd = m_GridHwnd Then
+                    m_GridHwnd = 0
+                    Set m_GridPage = Nothing
                 End If
         End Select
 

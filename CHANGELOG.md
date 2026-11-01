@@ -4,6 +4,11 @@ All notable changes to tbUI3. Dates are when the change was made, not released. 
 
 ## Unreleased
 
+### 2026-11-01, grid grey on open: cause found (1.0.0.56, Claude)
+
+- Shane's 1.0.0.55 log (`tbUI3Test/tbUI3-propertypage.log`, pushed in 735c22f; App.Path in the designer is the host project's folder, so the log copy lands beside tbUI3Test.twinproj): the grid paints successfully twice on open (hr 0, Fluent tab, 199 icons), the second time after 1.0.0.54's invalidate. Straight after, the page's inner `#32770` container erases (search box pixel 51,31,31 to 240,240,240), then the `ThunderPropertyPageDC` erases. Neither has WS_CLIPCHILDREN, so both paint classic grey over the grid. The search box survives because its repaint timer (1.0.0.36) repaints it after those erases; nothing repainted the grid any more, since 1.0.0.53 stopped it repainting through its own erase.
+- 1.0.0.56: the page registers its grid with UI3Window (`UI3SetIconPageGrid`), and each search-box repaint tick also redraws the grid without an erase (`GRID REPAINT n` in the log). 1.0.0.54's one-off invalidate is removed. The grid paint log stays for this check. Not yet built.
+
 ### 2026-11-01, grid still grey on open: paint log (1.0.0.55 diagnostic, Claude)
 
 - Shane, 1.0.0.54: the grid still opens classic grey (light #F0F0F0, no icons, on the Fluent tab in dark mode) until the page is touched, so the container-erase guess was wrong or incomplete.

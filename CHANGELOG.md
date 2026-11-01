@@ -4,6 +4,11 @@ All notable changes to tbUI3. Dates are when the change was made, not released. 
 
 ## Unreleased
 
+### 2026-11-01, UI3IconList L2 spike result; spike removed (1.0.0.59, Claude)
+
+- Shane's 1.0.0.58 log (`tbUI3Test/tbUI3-propertypage.log`, 2774b89), with `UI3Button2.SpikeFind = "UI3FormTheme1"`: `UserControl.Parent.Controls(name)` returned the sibling as `UI3FormTheme` at every moment tested: the Let, ReadProperties on reopening the form, the first Paint, and at run time both ReadProperties and the first Paint. Its own member read worked late bound (`ThemeMode`) and held typed (`Dim theme As UI3FormTheme: Set theme = found`). `UserControl.ParentControls` fails in twinBASIC (0 items, -2147467262 No such interface supported), so tbUI3 must not use it. Caveat: the buttons' ReadProperties ran in reverse file order (UI3Button4 first), and UI3FormTheme1 is last in the form file, so it probably loaded before UI3Button2. The ReadProperties success does not prove that a sibling loaded later is visible yet, so L3 looks the list up when it is first needed (paint), and never caches a failed lookup. Not tested: `For Each` over `Parent.Controls` (needed for "the form's only list"), and a dropdown of names in the Properties pane (left for later, as planned).
+- 1.0.0.59 removes `SpikeFind` from UI3Button (reverting it to 1.0.0.57's source). tbUI3Test's saved frmMain still holds a `SpikeFind` value on UI3Button2; it is ignored on load and dropped at the next save. Not yet built; no behaviour change intended.
+
 ### 2026-11-01, UI3IconList L1 done; L2 spike (1.0.0.58, Claude)
 
 - Shane, 1.0.0.57: the grid opens correctly, scrolls smoothly, and picking and Apply work. L1 is done.

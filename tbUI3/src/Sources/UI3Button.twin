@@ -32,8 +32,6 @@ Public Class UI3Button
     Private m_IconSize As Single
     ' A stored SVG or bitmap icon (IconData). When it holds one, Icon is None and IconGlyph is empty.
     Private m_IconImage As New UI3IconImage
-    Private m_SpikeFind As String        ' L2 spike, temporary
-    Private m_SpikePainted As Boolean    ' L2 spike, temporary
     Private m_Target As ID2D1DCRenderTarget
 
     Public Property Get Caption() As String
@@ -247,91 +245,6 @@ Public Class UI3Button
         ByteArrayLength = UBound(Data) - LBound(Data) + 1
     End Function
 
-    ' --- UI3IconList L2 spike (temporary; removed once its result is recorded) ---
-    ' Can a control find a sibling on its form by name, at design time and at run time, reach that
-    ' sibling's own members, and hold it as its tbUI3 class? Set SpikeFind to another control's name
-    ' (for example UI3FormTheme1); each lookup is written to the property page log.
-
-    [Description("Temporary UI3IconList spike: the name of another control on this form to look up. Results go to tbUI3-propertypage.log.")]
-    Public Property Get SpikeFind() As String
-        SpikeFind = m_SpikeFind
-    End Property
-
-    Public Property Let SpikeFind(ByVal Value As String)
-        m_SpikeFind = Value
-        PropertyChanged "SpikeFind"
-        m_SpikePainted = False
-        SpikeLookup "Let"
-    End Property
-
-    Private Sub SpikeLookup(ByVal Moment As String)
-        If Len(m_SpikeFind) = 0 Then Exit Sub
-        Dim head As String
-        Dim found As Object
-        Dim item As Object
-        Dim count As Long
-        Dim text As String
-        head = "SPIKE " & DesignName() & " " & IIf(IsUserMode(), "run", "design") & " " & Moment & ": "
-
-        ' 1. The form's Controls collection, by name.
-        On Error Resume Next
-        Set found = UserControl.Parent.Controls(m_SpikeFind)
-        If Err.Number <> 0 Then
-            text = "Parent.Controls(" & m_SpikeFind & ") failed " & Err.Number & " " & Err.Description
-        ElseIf found Is Nothing Then
-            text = "Parent.Controls(" & m_SpikeFind & ") is Nothing"
-        Else
-            text = "Parent.Controls(" & m_SpikeFind & ") = " & TypeName(found)
-        End If
-        Err.Clear
-        UI3PropertyPageLog head & text
-
-        ' 2. ParentControls, walked by Name.
-        Set item = Nothing
-        count = 0
-        text = "not found"
-        For Each item In UserControl.ParentControls
-            If Err.Number <> 0 Then Exit For
-            count = count + 1
-            If StrComp(CStr(CallByName(item, "Name", VbGet)), m_SpikeFind, vbTextCompare) = 0 Then
-                text = "found as " & TypeName(item)
-                If found Is Nothing Then Set found = item
-            End If
-        Next
-        If Err.Number <> 0 Then text = "failed " & Err.Number & " " & Err.Description
-        Err.Clear
-        UI3PropertyPageLog head & "ParentControls (" & count & " items): " & text
-
-        If found Is Nothing Then Exit Sub
-
-        ' 3. Its own members, late bound through the extender.
-        text = CStr(CallByName(found, "ThemeMode", VbGet))
-        If Err.Number <> 0 Then
-            Err.Clear
-            text = CStr(CallByName(found, "Caption", VbGet))
-            If Err.Number <> 0 Then text = "failed " & Err.Number & " " & Err.Description Else text = "Caption = " & text
-        Else
-            text = "ThemeMode = " & text
-        End If
-        Err.Clear
-        UI3PropertyPageLog head & "member read: " & text
-
-        ' 4. Held as its own tbUI3 class (what Set x.IconList = list would need).
-        Dim theme As UI3FormTheme
-        Dim button As UI3Button
-        If TypeName(found) = "UI3FormTheme" Then
-            Set theme = found
-            If Err.Number <> 0 Then text = "Set As UI3FormTheme failed " & Err.Number & " " & Err.Description Else text = "Set As UI3FormTheme ok, ThemeMode = " & theme.ThemeMode
-        Else
-            Set button = found
-            If Err.Number <> 0 Then text = "Set As UI3Button failed " & Err.Number & " " & Err.Description Else text = "Set As UI3Button ok, Caption = " & button.Caption
-        End If
-        Err.Clear
-        UI3PropertyPageLog head & "typed: " & text
-        On Error GoTo 0
-    End Sub
-    ' --- end of the L2 spike ---
-
     Private Sub UserControl_InitProperties()
         m_Caption = NEW_CONTROL_CAPTION
         m_Style = DEFAULT_STYLE
@@ -355,8 +268,6 @@ Public Class UI3Button
         m_IconSize = PropBag.ReadProperty("IconSize", SymbolIconDefaultFontSize)
         If m_IconSize <= 0 Then m_IconSize = SymbolIconDefaultFontSize
         ReadIconImage PropBag
-        m_SpikeFind = PropBag.ReadProperty("SpikeFind", "")
-        SpikeLookup "ReadProperties"
         DesignLog "ReadProperties " & Hex$(ObjPtr(Me)) & " " & DesignName() & " Icon = " & CLng(m_Icon)
         If Not IsUserMode() Then
             DesignTrace "ReadProperties " & Hex$(ObjPtr(Me)) & " " & DesignName() & " Icon = " & CLng(m_Icon) & _
@@ -428,7 +339,6 @@ Public Class UI3Button
         PropBag.WriteProperty "IconPosition", m_IconPosition, DEFAULT_ICON_POSITION
         PropBag.WriteProperty "IconSpacing", m_IconSpacing, ButtonIconSpacingDefault
         PropBag.WriteProperty "IconSize", m_IconSize, SymbolIconDefaultFontSize
-        PropBag.WriteProperty "SpikeFind", m_SpikeFind, ""
         DesignTrace "WriteProperties " & Hex$(ObjPtr(Me)) & " " & DesignName() & " Icon = " & CLng(m_Icon) & _
             ", IconSource = " & m_IconImage.Source & ", bytes = " & m_IconImage.ByteCount()
         If m_IconImage.HasImage Then
@@ -454,10 +364,6 @@ WriteFailed:
     End Sub
 
     Private Sub UserControl_Paint()
-        If Len(m_SpikeFind) <> 0 And Not m_SpikePainted Then
-            m_SpikePainted = True
-            SpikeLookup "first Paint"
-        End If
         Dim hr As Long
         hr = PaintWithDirect2D()
         If hr <> 0 Then PaintFailure hr

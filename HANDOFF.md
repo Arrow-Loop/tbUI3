@@ -88,7 +88,8 @@ The decisions are in `docs/2026-10-06-first-pass-report.md` and `docs/2026-10-06
 | 1.0.0.55: grid paint log | Built by Shane: the container erase paints over the grid after it draws (2026-11-01). |
 | 1.0.0.56: grid repainted on the search box's repaint ticks | Built by Shane: grid opens correctly (2026-11-01). |
 | 1.0.0.57: grid paint diagnostic removed | Built by Shane: all good; UI3IconList L1 done (2026-11-01). |
-| 1.0.0.58: L2 spike (UI3Button.SpikeFind, temporary) | Not yet built. |
+| 1.0.0.58: L2 spike (UI3Button.SpikeFind, temporary) | Built by Shane: `Parent.Controls(name)` finds a sibling at design and run time; `ParentControls` fails (2026-11-01). |
+| 1.0.0.59: L2 spike removed | Not yet built. |
 
 ## Work queue for the next passes (updated 2026-10-07)
 

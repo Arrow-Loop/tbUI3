@@ -1,6 +1,6 @@
 # UI3IconList plan: an ImageList for tbUI3 icons
 
-Status: **approved by Shane on 2026-10-20.** L1 is in 1.0.0.52 and works (Shane, 2026-11-01); 1.0.0.53 fixes the grid flicker on scroll. Written 2026-10-20, from the decisions recorded in ROADMAP.md on 2026-10-19 and the pass 5 icon system. Nothing here is built.
+Status: **approved by Shane on 2026-10-20.** L1 is in 1.0.0.52 and works (Shane, 2026-11-01); 1.0.0.53 fixes the grid flicker on scroll; 1.0.0.56 fixes the grid opening grey. L1 done (1.0.0.57). L2 is in 1.0.0.58 as a temporary `SpikeFind` property on UI3Button rather than a throwaway control, and leaves the dropdown question for later. Written 2026-10-20, from the decisions recorded in ROADMAP.md on 2026-10-19 and the pass 5 icon system. Nothing here is built.
 
 ## Goal
 

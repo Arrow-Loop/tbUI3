@@ -4,6 +4,11 @@ All notable changes to tbUI3. Dates are when the change was made, not released. 
 
 ## Unreleased
 
+### 2026-11-01, UI3IconList L1 done; L2 spike (1.0.0.58, Claude)
+
+- Shane, 1.0.0.57: the grid opens correctly, scrolls smoothly, and picking and Apply work. L1 is done.
+- L2 spike in 1.0.0.58, not yet built. Instead of a throwaway control, UI3Button gets a temporary `SpikeFind` property (saved with the form). Set to another control's name, it logs (`SPIKE` lines) at the Let, at ReadProperties and at the first Paint, at design time and at run time: (1) `UserControl.Parent.Controls(name)`, (2) walking `UserControl.ParentControls` by Name, (3) reading the found control's own member late bound (ThemeMode or Caption), and (4) holding it as its tbUI3 class (`Dim theme As UI3FormTheme: Set theme = found`). ReadProperties runs before the form's other controls may exist, so its result shows whether a lookup there is safe. The property-pane dropdown of names is not part of this spike; typed names come first, as the plan proposes.
+
 ### 2026-11-01, grid grey on open fixed (1.0.0.57, Claude)
 
 - Shane, 1.0.0.56: the grid opens with the right colours. The log (`tbUI3Test/tbUI3-propertypage.log`, d407b4e) confirms it: after the `#32770` and `ThunderPropertyPageDC` erases turn the area 240,240,240, `SEARCH REPAINT 1` restores the search box and `GRID REPAINT 1` repaints the grid straight after, all six ticks paint with hr 0, and no errors appear. Later paints (switching to the Segoe tab, scrolling) are ordinary surface paints with no erase.

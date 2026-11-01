@@ -1,3 +1,6 @@
+### 1.0.0.58
+- Temporary: UI3Button has a `SpikeFind` property for an internal test. It will be removed in a later build.
+
 ### 1.0.0.57
 - Removes the 1.0.0.55 grid paint diagnostic.
 

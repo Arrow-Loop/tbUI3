@@ -4,6 +4,11 @@ All notable changes to tbUI3. Dates are when the change was made, not released. 
 
 ## Unreleased
 
+### 2026-11-01, grid grey on open fixed (1.0.0.57, Claude)
+
+- Shane, 1.0.0.56: the grid opens with the right colours. The log (`tbUI3Test/tbUI3-propertypage.log`, d407b4e) confirms it: after the `#32770` and `ThunderPropertyPageDC` erases turn the area 240,240,240, `SEARCH REPAINT 1` restores the search box and `GRID REPAINT 1` repaints the grid straight after, all six ticks paint with hr 0, and no errors appear. Later paints (switching to the Segoe tab, scrolling) are ordinary surface paints with no erase.
+- 1.0.0.57 removes the 1.0.0.55 grid paint diagnostic (`GridLog`). The rest of the property page log, including `GRID REPAINT n`, stays on until the property page work is done. Not yet built; no behaviour change intended.
+
 ### 2026-11-01, grid grey on open: cause found (1.0.0.56, Claude)
 
 - Shane's 1.0.0.55 log (`tbUI3Test/tbUI3-propertypage.log`, pushed in 735c22f; App.Path in the designer is the host project's folder, so the log copy lands beside tbUI3Test.twinproj): the grid paints successfully twice on open (hr 0, Fluent tab, 199 icons), the second time after 1.0.0.54's invalidate. Straight after, the page's inner `#32770` container erases (search box pixel 51,31,31 to 240,240,240), then the `ThunderPropertyPageDC` erases. Neither has WS_CLIPCHILDREN, so both paint classic grey over the grid. The search box survives because its repaint timer (1.0.0.36) repaints it after those erases; nothing repainted the grid any more, since 1.0.0.53 stopped it repainting through its own erase.

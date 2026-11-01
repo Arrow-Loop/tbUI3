@@ -1,3 +1,6 @@
+### 1.0.0.57
+- Removes the 1.0.0.55 grid paint diagnostic.
+
 ### 1.0.0.56
 - The icon picker's grid no longer opens classic grey: it is repainted after the dialog's container paints over it.
 

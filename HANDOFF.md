@@ -1,6 +1,6 @@
 # Handoff: tbUI3 state on 2026-10-07
 
-This is written for the next developer or AI session; ChatGPT is expected to run the next several passes. Read `AGENTS.md`, then this file, then `CHANGELOG.md` and `ROADMAP.md`. State at the time of writing: `tbui3-dev`, package version 1.0.0.56, twinBASIC BETA 1012.
+This is written for the next developer or AI session; ChatGPT is expected to run the next several passes. Read `AGENTS.md`, then this file, then `CHANGELOG.md` and `ROADMAP.md`. State at the time of writing: `tbui3-dev`, package version 1.0.0.57, twinBASIC BETA 1012.
 
 ## What tbUI3 is
 
@@ -86,7 +86,8 @@ The decisions are in `docs/2026-10-06-first-pass-report.md` and `docs/2026-10-06
 | 1.0.0.53: grid paints without erase | Built by Shane: smooth scrolling, but the grid opened classic grey (2026-11-01). |
 | 1.0.0.54: grid repainted once on open | Built by Shane: still grey on open (2026-11-01). |
 | 1.0.0.55: grid paint log | Built by Shane: the container erase paints over the grid after it draws (2026-11-01). |
-| 1.0.0.56: grid repainted on the search box's repaint ticks | Not yet built. |
+| 1.0.0.56: grid repainted on the search box's repaint ticks | Built by Shane: grid opens correctly (2026-11-01). |
+| 1.0.0.57: grid paint diagnostic removed | Not yet built. |
 
 ## Work queue for the next passes (updated 2026-10-07)
 

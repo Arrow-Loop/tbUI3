@@ -115,7 +115,6 @@ Class UI3IconPage
     Private m_Tab As Long
     Private m_GridControlsHidden As Boolean
     Private m_SearchRepainted As Boolean
-    Private m_GridLogCount As Long     ' 1.0.0.55 diagnostic: grid paint lines logged since the page opened
     Private m_TabX0(0 To TAB_COUNT - 1) As Single
     Private m_TabX1(0 To TAB_COUNT - 1) As Single
     Private m_HotTab As Long
@@ -195,7 +194,6 @@ Class UI3IconPage
         ' selected, while the page is being torn down. Laying out, theming or filling the page then
         ' touches windows that are going away, so leave it alone.
         If Me.SelectedControls.Count = 0 Then Exit Sub
-        m_GridLogCount = 0
         LayoutControls
         ApplyPageTheme True
         m_Selected = 0
@@ -224,7 +222,6 @@ Class UI3IconPage
         ApplyFilter
         ScrollToSelected
         UpdateInfo
-        GridLog "SelectionChanged done"
     End Sub
 
     ' VB6 raises EditProperty when a property's own "..." opens the page, naming that property, so a
@@ -391,7 +388,6 @@ Class UI3IconPage
             UI3AttachIconPageGrid picGrid.hWnd, Me
             UI3SetIconPageGrid picGrid.hWnd
         End If
-        GridLog "layout: grid subclass attached"
 
         ' Keep the native VScrollBar only as a range/value model. The visible scrollbar is
         ' painted into picGrid from WinUI ScrollBar resources so the classic control never shows.
@@ -1134,7 +1130,6 @@ Failed:
             m_GridControlsHidden = False
             txtSearch.Visible = True
             picGrid.Visible = True
-            GridLog "tab controls shown"
             ApplyHostTitleBar
             InvalidateRect txtSearch.hWnd, 0, 1
         ElseIf Not m_GridControlsHidden Then
@@ -1745,7 +1740,6 @@ Failed:
         EnsurePageThemeCurrent
         Dim hr As Long
         hr = PaintGrid(picGrid.hDC)
-        GridLog "PictureBox Paint event, hr " & Hex$(hr)
         If hr <> 0 Then
             On Error Resume Next
             picGrid.Cls
@@ -1757,24 +1751,8 @@ Failed:
 
     ' Called by UI3PageSurface from picGrid's WM_PAINT with the BeginPaint DC.
     Friend Sub PaintGridSurface(ByVal hdc As LongPtr)
-        GridLog "surface paint start"
         EnsurePageThemeCurrent
-        Dim hr As Long
-        hr = PaintGrid(hdc)
-        GridLog "surface paint end, hr " & Hex$(hr)
-    End Sub
-
-    ' 1.0.0.55 diagnostic: the first 40 grid paint events after the page opens, with the grid's state,
-    ' to find why the grid opens classic grey.
-    Friend Sub GridLog(ByVal Text As String)
-        If m_GridLogCount >= 40 Then Exit Sub
-        m_GridLogCount = m_GridLogCount + 1
-        Dim client As UI3GdiRect
-        On Error Resume Next
-        UI3GetClientRect picGrid.hWnd, client
-        UI3PropertyPageLog "GRID " & Text & " (hwnd " & Hex$(picGrid.hWnd) & ", visible " & picGrid.Visible & _
-            ", client " & client.Right & "x" & client.Bottom & ", tab " & m_Tab & ", shown " & m_ShownCount & _
-            ", target " & IIf(m_Target Is Nothing, "none", "made") & ")"
+        PaintGrid hdc
     End Sub
 
     Private Function PaintGrid(ByVal hdc As LongPtr) As Long
@@ -1812,7 +1790,6 @@ Failed:
 Failed:
         PaintGrid = Err.Number
         If PaintGrid = 0 Then PaintGrid = -1
-        GridLog "PaintGrid error " & Err.Number & " " & Err.Description
         If drawing Then m_Target.EndDraw 0, 0
         Set m_Target = Nothing
     End Function

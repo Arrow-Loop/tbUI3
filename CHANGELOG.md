@@ -4,6 +4,12 @@ All notable changes to tbUI3. Dates are when the change was made, not released. 
 
 ## Unreleased
 
+### 2026-11-01, L1 result and grid flicker fix (1.0.0.53, Claude)
+
+- Shane built 1.0.0.52: the picker looks right and works. The only complaint: scrolling the icon grids flickers (possibly before 1.0.0.52 too; Shane hadn't noticed).
+- Cause (from the code, not measured): every grid repaint went through `picGrid.Refresh`, which erases the PictureBox to its BackColor before the Direct2D paint, the same flash the chrome had in 1.0.0.30 to 1.0.0.32. The wheel also repainted twice (the scrollbar's Change event, then an explicit Refresh). 1.0.0.52 likely made it more visible, because each newly shown icon now builds a `UI3IconImage`, which scanned its bytes with a `Mid$` per byte compared.
+- 1.0.0.53: `UI3PageSurface` subclasses picGrid as it does picChrome (WM_ERASEBKGND swallowed, WM_PAINT painted with the BeginPaint DC through `PaintGridSurface`), only when the page hooks are on. Grid repaints go through `RepaintGrid` (invalidate without erase, then update). The wheel and thumb drag repaint once, through the scrollbar's Change event. `UI3IconImage`'s byte search precomputes the pattern. Not yet built.
+
 ### 2026-10-20, UI3IconList L1: the picker draws with UI3IconImage (1.0.0.52, Claude)
 
 - Shane approved `docs/2026-10-20-ui3iconlist-plan.md`. L1 is in 1.0.0.52, not yet built.

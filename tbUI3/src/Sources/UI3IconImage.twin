@@ -284,17 +284,24 @@ Fallback:
         Dim n As Long
         Dim last As Long
         Dim c As Long
-        Dim t As Long
+        Dim pattern() As Long
         FindAscii = -1
         n = Len(Text)
+        If n = 0 Then Exit Function
+        ' The text's lower-case codes once, rather than a Mid$ per byte compared (a picker grid makes
+        ' hundreds of these images while scrolling).
+        ReDim pattern(0 To n - 1)
+        For j = 0 To n - 1
+            c = Asc(Mid$(Text, j + 1, 1))
+            If c >= 65 And c <= 90 Then c = c + 32
+            pattern(j) = c
+        Next
         last = UBound(Data) - n + 1
         For i = Start To last
             For j = 0 To n - 1
                 c = Data(i + j)
-                t = Asc(Mid$(Text, j + 1, 1))
                 If c >= 65 And c <= 90 Then c = c + 32
-                If t >= 65 And t <= 90 Then t = t + 32
-                If c <> t Then Exit For
+                If c <> pattern(j) Then Exit For
             Next
             If j = n Then
                 FindAscii = i

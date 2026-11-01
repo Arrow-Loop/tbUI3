@@ -1,3 +1,7 @@
+### 1.0.0.53
+- Scrolling the icon picker's grid no longer flickers: the grid paints without showing its background first, and the mouse wheel repaints once instead of twice.
+- Stored icons are set up faster.
+
 ### 1.0.0.52
 - The icon picker's Fluent and Additional Icons tabs draw through the same image code as the button, so a pick looks the same in both. No visible change is intended.
 - Stored SVG icons are set up faster (only the root tag is read for the size).

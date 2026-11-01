@@ -1,6 +1,6 @@
 # UI3IconList plan: an ImageList for tbUI3 icons
 
-Status: **approved by Shane on 2026-10-20.** L1 is in 1.0.0.52 (not yet built). Written 2026-10-20, from the decisions recorded in ROADMAP.md on 2026-10-19 and the pass 5 icon system. Nothing here is built.
+Status: **approved by Shane on 2026-10-20.** L1 is in 1.0.0.52 and works (Shane, 2026-11-01); 1.0.0.53 fixes the grid flicker on scroll. Written 2026-10-20, from the decisions recorded in ROADMAP.md on 2026-10-19 and the pass 5 icon system. Nothing here is built.
 
 ## Goal
 

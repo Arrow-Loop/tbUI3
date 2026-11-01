@@ -383,6 +383,8 @@ Class UI3IconPage
         picGrid.AutoRedraw = False
         picGrid.ScaleMode = vbPixels
         picGrid.BorderStyle = vbNoBorder
+        ' The grid paints like picChrome too, so scrolling never shows its background first.
+        If PageHooksEnabled() Then UI3AttachIconPageGrid picGrid.hWnd, Me
 
         ' Keep the native VScrollBar only as a range/value model. The visible scrollbar is
         ' painted into picGrid from WinUI ScrollBar resources so the classic control never shows.
@@ -456,7 +458,7 @@ Class UI3IconPage
         ApplyHostTitleBar
         txtSearch.Refresh
         picChrome.Refresh
-        picGrid.Refresh
+        RepaintGrid
 
 CleanUp:
         m_ApplyingTheme = False
@@ -1134,6 +1136,17 @@ Failed:
         End If
     End Sub
 
+    ' Repaints the grid at once without erasing it first, like RepaintChrome. Without the page hooks
+    ' the PictureBox paints itself, so it is refreshed the ordinary way.
+    Private Sub RepaintGrid()
+        If PageHooksEnabled() Then
+            InvalidateRect picGrid.hWnd, 0, 0
+            UpdateWindow picGrid.hWnd
+        Else
+            picGrid.Refresh
+        End If
+    End Sub
+
     ' Repaints the chrome at once without erasing it first. Direct2D composes the whole frame
     ' before copying it to the window, so skipping the erase removes the blank-then-draw flash.
     Private Sub RepaintChrome()
@@ -1559,7 +1572,7 @@ Failed:
         End If
         UpdateScrollBar
         vsbGrid.Value = 0
-        picGrid.Refresh
+        RepaintGrid
     End Sub
 
     Private Function EntryMatches(ByVal Index As Long, ByVal Query As String) As Boolean
@@ -1714,15 +1727,16 @@ Failed:
                 Exit For
             End If
         Next
-        picGrid.Refresh
+        RepaintGrid
     End Sub
 
     ' --- Painting ---
 
+    ' Only runs until UI3PageSurface owns picGrid's paint (see LayoutControls).
     Private Sub picGrid_Paint()
         EnsurePageThemeCurrent
         Dim hr As Long
-        hr = PaintGrid()
+        hr = PaintGrid(picGrid.hDC)
         If hr <> 0 Then
             On Error Resume Next
             picGrid.Cls
@@ -1732,15 +1746,19 @@ Failed:
         End If
     End Sub
 
-    Private Function PaintGrid() As Long
-        Dim hdc As LongPtr
+    ' Called by UI3PageSurface from picGrid's WM_PAINT with the BeginPaint DC.
+    Friend Sub PaintGridSurface(ByVal hdc As LongPtr)
+        EnsurePageThemeCurrent
+        PaintGrid hdc
+    End Sub
+
+    Private Function PaintGrid(ByVal hdc As LongPtr) As Long
         Dim client As UI3GdiRect
         Dim dpi As Single
         Dim drawing As Boolean
 
         On Error GoTo Failed
 
-        hdc = picGrid.hDC
         If hdc = 0 Then Exit Function
         UI3GetClientRect picGrid.hWnd, client
         If client.Right <= 0 Or client.Bottom <= 0 Then Exit Function
@@ -2045,7 +2063,7 @@ Failed:
             Else
                 SetScrollFromThumbTop yDip - (sy1 - sy0) / 2
             End If
-            picGrid.Refresh
+            RepaintGrid
             Exit Sub
         End If
 
@@ -2070,17 +2088,17 @@ Failed:
             Case TAB_FLUENT
                 m_FluentSelected = m_Shown(position)
                 m_PickKind = TAB_FLUENT
-                picGrid.Refresh
+                RepaintGrid
                 RepaintChrome
             Case TAB_GALLERY
                 m_GallerySelected = m_Shown(position)
                 m_PickKind = TAB_GALLERY
-                picGrid.Refresh
+                RepaintGrid
                 RepaintChrome
             Case Else
                 m_Selected = ShownValue(position)
                 m_PickKind = TAB_SEGOE
-                picGrid.Refresh
+                RepaintGrid
                 UpdateInfo
         End Select
         Me.Changed = True
@@ -2126,8 +2144,8 @@ Failed:
         newValue = vsbGrid.Min + CLng(ratio * (vsbGrid.Max - vsbGrid.Min))
         If newValue < vsbGrid.Min Then newValue = vsbGrid.Min
         If newValue > vsbGrid.Max Then newValue = vsbGrid.Max
+        ' Changing the value repaints the grid (vsbGrid_Change).
         vsbGrid.Value = newValue
-        picGrid.Refresh
     End Sub
 
     Private Sub txtSearch_Change()
@@ -2150,11 +2168,11 @@ Failed:
     End Sub
 
     Private Sub vsbGrid_Change()
-        picGrid.Refresh
+        RepaintGrid
     End Sub
 
     Private Sub vsbGrid_Scroll()
-        picGrid.Refresh
+        RepaintGrid
     End Sub
 
     Private Sub picGrid_MouseWheel(ByVal Delta As Integer, ByVal Horizontal As Boolean)
@@ -2170,8 +2188,8 @@ Failed:
         newValue = vsbGrid.Value - notches
         If newValue < vsbGrid.Min Then newValue = vsbGrid.Min
         If newValue > vsbGrid.Max Then newValue = vsbGrid.Max
+        ' Changing the value repaints the grid (vsbGrid_Change).
         vsbGrid.Value = newValue
-        picGrid.Refresh
     End Sub
 
     Private Sub UpdateInfo()

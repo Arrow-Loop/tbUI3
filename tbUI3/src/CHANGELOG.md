@@ -1,3 +1,6 @@
+### 1.0.0.56
+- The icon picker's grid no longer opens classic grey: it is repainted after the dialog's container paints over it.
+
 ### 1.0.0.55
 - Diagnostic only: logs the icon picker grid's first paints after the page opens.
 - The property page log is also written beside the project (App.Path), as well as to %TEMP%.

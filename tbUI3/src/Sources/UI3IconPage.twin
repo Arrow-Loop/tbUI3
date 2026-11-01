@@ -115,7 +115,6 @@ Class UI3IconPage
     Private m_Tab As Long
     Private m_GridControlsHidden As Boolean
     Private m_SearchRepainted As Boolean
-    Private m_GridRepainted As Boolean
     Private m_GridLogCount As Long     ' 1.0.0.55 diagnostic: grid paint lines logged since the page opened
     Private m_TabX0(0 To TAB_COUNT - 1) As Single
     Private m_TabX1(0 To TAB_COUNT - 1) As Single
@@ -388,7 +387,10 @@ Class UI3IconPage
         picGrid.ScaleMode = vbPixels
         picGrid.BorderStyle = vbNoBorder
         ' The grid paints like picChrome too, so scrolling never shows its background first.
-        If PageHooksEnabled() Then UI3AttachIconPageGrid picGrid.hWnd, Me
+        If PageHooksEnabled() Then
+            UI3AttachIconPageGrid picGrid.hWnd, Me
+            UI3SetIconPageGrid picGrid.hWnd
+        End If
         GridLog "layout: grid subclass attached"
 
         ' Keep the native VScrollBar only as a range/value model. The visible scrollbar is
@@ -523,13 +525,6 @@ CleanUp:
         If Not m_SearchRepainted Then
             m_SearchRepainted = True
             InvalidateRect txtSearch.hWnd, 0, 1
-        End If
-        ' The inner #32770 container's first erase also paints over the grid, which no longer
-        ' repaints itself through an erase (1.0.0.53), so it opened classic grey. Repaint it once.
-        If Not m_GridRepainted Then
-            m_GridRepainted = True
-            InvalidateRect picGrid.hWnd, 0, 0
-            GridLog "first chrome paint: grid invalidated"
         End If
     End Sub
 

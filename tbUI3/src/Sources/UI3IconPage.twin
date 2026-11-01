@@ -115,6 +115,7 @@ Class UI3IconPage
     Private m_Tab As Long
     Private m_GridControlsHidden As Boolean
     Private m_SearchRepainted As Boolean
+    Private m_GridRepainted As Boolean
     Private m_TabX0(0 To TAB_COUNT - 1) As Single
     Private m_TabX1(0 To TAB_COUNT - 1) As Single
     Private m_HotTab As Long
@@ -518,6 +519,12 @@ CleanUp:
         If Not m_SearchRepainted Then
             m_SearchRepainted = True
             InvalidateRect txtSearch.hWnd, 0, 1
+        End If
+        ' The inner #32770 container's first erase also paints over the grid, which no longer
+        ' repaints itself through an erase (1.0.0.53), so it opened classic grey. Repaint it once.
+        If Not m_GridRepainted Then
+            m_GridRepainted = True
+            InvalidateRect picGrid.hWnd, 0, 0
         End If
     End Sub
 

@@ -1,3 +1,6 @@
+### 1.0.0.54
+- The icon picker's grid no longer opens classic grey.
+
 ### 1.0.0.53
 - Scrolling the icon picker's grid no longer flickers: the grid paints without showing its background first, and the mouse wheel repaints once instead of twice.
 - Stored icons are set up faster.

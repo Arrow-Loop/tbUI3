@@ -1,6 +1,6 @@
 # Handoff: tbUI3 state on 2026-10-07
 
-This is written for the next developer or AI session; ChatGPT is expected to run the next several passes. Read `AGENTS.md`, then this file, then `CHANGELOG.md` and `ROADMAP.md`. State at the time of writing: `tbui3-dev`, package version 1.0.0.53, twinBASIC BETA 1012.
+This is written for the next developer or AI session; ChatGPT is expected to run the next several passes. Read `AGENTS.md`, then this file, then `CHANGELOG.md` and `ROADMAP.md`. State at the time of writing: `tbui3-dev`, package version 1.0.0.54, twinBASIC BETA 1012.
 
 ## What tbUI3 is
 
@@ -83,7 +83,8 @@ The decisions are in `docs/2026-10-06-first-pass-report.md` and `docs/2026-10-06
 | Repro (`tbUI3-Repro`) | win64 Apply works in plain twinBASIC; the fault is tbUI3's. |
 | 1.0.0.51: page ignores the teardown SelectionChanged | Built by Shane: win64 Apply works for Segoe, Fluent and Additional Icons, and a win64 EXE draws the picked icons. Pass 5 closed (2026-10-20). |
 | 1.0.0.52: UI3IconList L1, picker draws with UI3IconImage | Built by Shane: looks right and works; the grid flickered on scroll (2026-11-01). |
-| 1.0.0.53: grid paints without erase | Not yet built. |
+| 1.0.0.53: grid paints without erase | Built by Shane: smooth scrolling, but the grid opened classic grey (2026-11-01). |
+| 1.0.0.54: grid repainted once on open | Not yet built. |
 
 ## Work queue for the next passes (updated 2026-10-07)
 

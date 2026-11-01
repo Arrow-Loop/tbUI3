@@ -4,6 +4,12 @@ All notable changes to tbUI3. Dates are when the change was made, not released. 
 
 ## Unreleased
 
+### 2026-11-01, grid opens grey (1.0.0.54, Claude)
+
+- Shane, 1.0.0.53: scrolling is now smooth, but the grid opens classic grey until anything on the page is touched.
+- Likely cause (inferred, not logged): the same first erase by the page's inner #32770 container that left the search box grey until 1.0.0.38. The grid used to repaint itself through `picGrid.Refresh` with an erase; since 1.0.0.53 nothing repaints it after that container erase.
+- 1.0.0.54: on the chrome's first surface paint, the page invalidates the grid once (`m_GridRepainted`), next to the existing search-box repaint. Not yet built.
+
 ### 2026-11-01, L1 result and grid flicker fix (1.0.0.53, Claude)
 
 - Shane built 1.0.0.52: the picker looks right and works. The only complaint: scrolling the icon grids flickers (possibly before 1.0.0.52 too; Shane hadn't noticed).

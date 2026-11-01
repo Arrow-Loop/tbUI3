@@ -26,6 +26,10 @@ Steps:
 3. Record per-BETA re-check steps (rerun the property map, then confirm each selector in `WinUI3IdeCss.twin` still exists in `ide/styles.css`).
 4. If an IDE release blocks reaching the page, fall back to the themes alone and raise the missing theme properties upstream (see Exploratory).
 
+## Planned: designer bridge for tbUI3 containers (explored 2026-11-01)
+
+The add-in can drive the form designer, not just style it. `ownerDocument.defaultView.eval(js)` runs JavaScript in the IDE page and returns its value, and inserting a control's JSON through the designer's own insert steps creates a real, saved, undoable control. Proven with the throwaway DesignerBridgeProbe add-in. Recipe and history: `../docs/research/2026-11-01-multipage-designer.md`. Intended first use: one-click "New Page" for UI3TabView. Ideas beyond that (each needs Shane's go-ahead): HTML tab headers and a "+" drawn over the TabView (instant clicks, hover), our own items on the designer's right-click menu, drag to reorder tabs, hiding UI3TabPage from the toolbox, and handles for SplitView and Expander. Open for Shane: whether this goes in WinUI3IdeStyle or a separate add-in, and whether tbUI3 containers require it. The same per-beta risk as the stylesheet applies, but it's higher here, because these are internal designer functions, not just selectors.
+
 ## Exploratory
 - Ask the twinBASIC project for theme properties for the hard-coded colours listed in README.md "Known limits" (still open in 1033: context menu item text, menu bar hover, title and dialog title text, caption icons, drop-down text, property category text, a separate focused dialog button text colour, tab shape, UI font). 1033 already added dialog contents and panel corners. With the rest, WinUI3 Dark could have dark menus, and WinUI3 Light a light title bar. This would be a GitHub issue on twinbasic/twinbasic, filed only with Shane's go-ahead.
 - Accent variants: the build script could take an accent colour and emit themes for other Windows accents, since a theme file cannot read the system accent.

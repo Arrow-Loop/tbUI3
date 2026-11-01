@@ -1,5 +1,12 @@
 # Changelog: tbIDE (WinUI 3 look for the twinBASIC IDE)
 
+## 2026-11-01: designer bridge probe (research, no add-in change)
+
+Validated by Shane on BETA 1033 with a throwaway add-in (`../docs/research/2026-11-01-multipage-designer/probes/DesignerBridgeProbe/`):
+- `ownerDocument.defaultView.eval(js)` runs in the IDE page and returns its value synchronously. A `<script>` element appended through the bridge did not run, and an inline `onerror` handler ran, but only asynchronously.
+- The form designer's functions are page globals (`addControl`, `preparePaste`, `deserializeControls`, `doPaste`, `executeIdeCommand` and others). The open designer's state is `getCurrentFormEditorGlobals()`.
+- Inserting a page control's JSON through the designer's own insert steps, plus `undoPoint`, created a real control inside the selected container: named, selectable, one-step undo, and kept after save and reopen.
+
 ## 2026-10-30: moved into tbUI3, WinUI3 IDE Style add-in spike
 
 Added

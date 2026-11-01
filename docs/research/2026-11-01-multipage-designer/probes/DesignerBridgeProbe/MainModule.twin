@@ -1,0 +1,220 @@
+Module MainModule
+    [DllExport]
+    Public Function tbCreateCompilerAddin(ByVal Host As Host) As AddIn
+        ' Entry point the twinBASIC IDE calls for every add-in DLL in its addins\win32 or addins\win64 folder.
+        Return New DesignerBridgeProbeAddin(Host)
+    End Function
+End Module
+
+' Throwaway probe, not part of tbUI3. Answers one question: can an add-in run JavaScript in the
+' IDE page and see the form designer's own functions (addControl, the paste path and so on)?
+' "Designer probe" only reads. "Probe copy" and "Probe paste" (probe 2) insert a copy of the
+' selected control through the designer's own insert code, without touching the clipboard. Results go to the Debug Console and designerprobe.log.
+Private Class DesignerBridgeProbeAddin
+
+    Implements AddIn
+
+    Private Const LogPrefix As String = "[Designer probe] "
+    Private Const ResultAttr As String = "data-tbprobe-script"
+    Private Const InlineAttr As String = "data-tbprobe-inline"
+
+    Private WithEvents Host As Host
+    Private WithEvents ProbeButton As Button
+    Private WithEvents CopyButton As Button
+    Private WithEvents PasteButton As Button
+    ' Hidden tool window, used only to reach the IDE page (its ownerDocument), as WinUI3IdeStyle does.
+    Private ProbeWindow As ToolWindow
+    Private RunCount As Long
+
+    Public Sub New(ByVal Host As Host)
+        Set Me.Host = Host
+    End Sub
+
+    Private Property Get AddIn_Name() As String
+        Return "Designer Bridge Probe"
+    End Property
+
+    Private Sub Host_OnProjectLoaded()
+        On Error GoTo Failed
+        If ProbeButton Is Nothing Then
+            With Host.Toolbars(0)
+                .AddSplitter()
+                Set ProbeButton = .AddButton("DesignerBridgeProbe", "Designer probe")
+                Set CopyButton = .AddButton("DesignerBridgeProbeCopy", "Probe copy")
+                Set PasteButton = .AddButton("DesignerBridgeProbePaste", "Probe paste")
+            End With
+            Log "ready: open a form, select one control, then click Designer probe"
+        End If
+        Exit Sub
+    Failed:
+        Log "could not add the toolbar button: " & Err.Description
+    End Sub
+
+    Private Sub ProbeButton_OnClick()
+        RunCount = RunCount + 1
+        Log "---- run " & RunCount & " ----"
+        Dim doc As Object
+        Set doc = GetPage()
+        If doc Is Nothing Then Exit Sub
+
+        ' Results of the inline-handler test from the previous run (it may only fire after a delay).
+        ReadAttr doc, InlineAttr, "T4 inline handler (from previous run)"
+
+        ' T1: plain property read through the bridge.
+        On Error Resume Next
+        Log "T1 document.title = " & doc.title & ErrText()
+        Err.Clear
+
+        ' T2: window.eval returning a value straight back.
+        Dim r As Variant
+        r = doc.defaultView.eval(ProbeExpression())
+        Log "T2 eval = " & CStr(r) & ErrText()
+        Err.Clear
+
+        ' T3: a <script> element that writes its result into an attribute we then read.
+        Dim s As Object
+        Set s = doc.createElement("script")
+        s.textContent = "document.documentElement.setAttribute('" & ResultAttr & "', " & ProbeExpression() & ");"
+        doc.head.appendChild s
+        Log "T3 script element appended" & ErrText()
+        Err.Clear
+        On Error GoTo 0
+        ReadAttr doc, ResultAttr, "T3 script element result"
+
+        ' T4: an inline onerror handler added as HTML. Read on the next click.
+        On Error Resume Next
+        doc.body.insertAdjacentHTML "beforeend", "<img src=" & Chr(34) & "x:" & Chr(34) & " style=" & Chr(34) & "display:none" & Chr(34) & _
+            " onerror=" & Chr(34) & "this.remove();document.documentElement.setAttribute('" & InlineAttr & "', " & ProbeExpression() & ");" & Chr(34) & ">"
+        Log "T4 inline handler added (click Designer probe again to read it)" & ErrText()
+        Err.Clear
+    End Sub
+
+    ' Probe 2: find the open form designer's state object and use the designer's own
+    ' serialize and insert code. The clipboard is never read or written. "Probe copy" keeps the
+    ' selected control(s) as JSON in the page; "Probe paste" inserts that JSON into the selected
+    ' container through the same steps as the designer's own Paste, minus the clipboard request.
+    Private Sub CopyButton_OnClick()
+        Log "---- copy ----"
+        Log "copy = " & RunJs("__tbProbe.copy()")
+    End Sub
+
+    Private Sub PasteButton_OnClick()
+        Log "---- paste ----"
+        Log "paste = " & RunJs("__tbProbe.paste()")
+    End Sub
+
+    ' Installs the helper object once per IDE session, then evaluates Expr in the IDE page.
+    Private Function RunJs(ByVal Expr As String) As String
+        Dim doc As Object
+        Set doc = GetPage()
+        If doc Is Nothing Then Return "(no page)"
+        On Error Resume Next
+        Dim r As Variant
+        r = doc.defaultView.eval("if(!window.__tbProbe||window.__tbProbe.v!==2){window.__tbProbe=" & HelperJs() & "};" & Expr)
+        If Err.Number <> 0 Then Return "ERR " & Err.Number & ": " & Err.Description
+        Return CStr(r)
+    End Function
+
+    ' JavaScript only, single quotes only. find() returns the designer state object of the
+    ' visible form designer (openEditors > .tbform entries > domContainer.globalVars).
+    Private Function HelperJs() As String
+        Return "{v:2," & _
+            "find:function(){var cur=(typeof getCurrentFormEditorGlobals==='function')?getCurrentFormEditorGlobals():undefined;" & _
+                "if(cur){this.lastInfo='current designer';return cur}" & _
+                "var all=[];openEditors.tree.rootFolder.enumerateContent(true,function(x){" & _
+                "if(x.fileHandler===fileHandler_tbform&&x.domContainer&&x.domContainer.globalVars){all.push(x.domContainer)}return true});" & _
+                "var vis=all.filter(function(d){return d.offsetParent!==null});" & _
+                "this.lastInfo='designers='+all.length+' visible='+vis.length;" & _
+                "return vis.length?vis[0].globalVars:(all.length?all[0].globalVars:null)}," & _
+            "sel:function(g){return g.selectedControls.map(function(c){return c.properties.Name+':'+c.properties._className}).join(',')}," & _
+            "copy:function(){try{var g=this.find();if(!g)return 'no designer ('+this.lastInfo+')';" & _
+                "if(!g.selectedControls.length)return 'nothing selected ('+this.lastInfo+')';" & _
+                "this.json=JSON.stringify(serializeControls(g,g.selectedControls));" & _
+                "return this.lastInfo+' copied ['+this.sel(g)+'] json='+this.json.length+' chars: '+this.json.substring(0,400)}" & _
+                "catch(e){return 'ERR '+e}}," & _
+            "paste:function(){try{var g=this.find();if(!g)return 'no designer ('+this.lastInfo+')';" & _
+                "if(!this.json)return 'nothing copied yet: click Probe copy first';" & _
+                "var before=g.allControls?g.allControls.length:-1;var target=this.sel(g);" & _
+                "var n=preparePaste(g);prepareForMultipleChangeProperties(g);" & _
+                "g.selectedControls=deserializeControls(g,this.json,n.parentContainer,false,false);" & _
+                "changedSelectedControls(g);doPaste(g,n,g.selectedControls,false);handleMultipleChangeProperties(g);" & _
+                "undoPoint(g);" & _
+                "var after=g.allControls?g.allControls.length:-1;" & _
+                "return this.lastInfo+' pasted into ['+target+'] controls '+before+' -> '+after+', now selected ['+this.sel(g)+']'}" & _
+                "catch(e){return 'ERR '+e}}" & _
+            "}"
+    End Function
+
+    ' One JavaScript expression (single quotes only) that reports what the designer exposes.
+    ' Uses typeof on bare names so top-level let/const globals are found as well as functions.
+    Private Function ProbeExpression() As String
+        Return "(function(){var r=[];" & _
+            "try{r.push('addControl='+typeof addControl)}catch(e){r.push('addControl=ERR')}" & _
+            "try{r.push('doPasteRaw='+typeof doPasteRaw)}catch(e){r.push('doPasteRaw=ERR')}" & _
+            "try{r.push('deserializeControls='+typeof deserializeControls)}catch(e){r.push('deserializeControls=ERR')}" & _
+            "try{r.push('doPaste='+typeof doPaste)}catch(e){r.push('doPaste=ERR')}" & _
+            "try{r.push('preparePaste='+typeof preparePaste)}catch(e){r.push('preparePaste=ERR')}" & _
+            "try{r.push('executeIdeCommand='+typeof executeIdeCommand)}catch(e){r.push('executeIdeCommand=ERR')}" & _
+            "try{r.push('globals='+typeof globals);" & _
+            "if(typeof globals!=='undefined'&&globals){r.push('globals.designer='+(!!globals.designer));" & _
+            "r.push('selected='+(globals.selectedControls?globals.selectedControls.map(function(c){return c.properties.Name+':'+c.properties._className}).join(','):'none'))}}" & _
+            "catch(e){r.push('globals ERR '+e)}" & _
+            "return r.join(' | ')})()"
+    End Function
+
+    Private Function GetPage() As Object
+        On Error GoTo Failed
+        If ProbeWindow Is Nothing Then
+            ' Tool windows start invisible, and this one stays that way.
+            Set ProbeWindow = Host.ToolWindows.Add("DesignerBridgeProbe", "DesignerBridgeProbeHost")
+            ProbeWindow.Title = "Designer probe"
+        End If
+        Set GetPage = ProbeWindow.RootDomElement.Properties.ownerDocument
+        Exit Function
+    Failed:
+        Log "could not reach the IDE page: " & Err.Description
+    End Function
+
+    Private Sub ReadAttr(ByVal doc As Object, ByVal attrName As String, ByVal label As String)
+        On Error Resume Next
+        Dim v As Variant
+        v = doc.documentElement.getAttribute(attrName)
+        If Err.Number <> 0 Then
+            Log label & ": read failed" & ErrText()
+        ElseIf IsNull(v) Or IsEmpty(v) Then
+            Log label & ": (not set)"
+        Else
+            Log label & " = " & CStr(v)
+        End If
+        Err.Clear
+    End Sub
+
+    Private Function ErrText() As String
+        If Err.Number <> 0 Then Return "  [err " & Err.Number & ": " & Err.Description & "]"
+    End Function
+
+    ' Debug Console, plus designerprobe.log next to the open project and in %TEMP%.
+    Private Sub Log(ByVal Text As String)
+        On Error Resume Next
+        Host.DebugConsole.PrintText(LogPrefix & Text)
+        Dim lineText As String
+        lineText = Format$(Now, "hh:nn:ss") & "  " & Text
+        Dim projectFolder As String
+        projectFolder = Host.CurrentProject.Path
+        If Len(projectFolder) > 0 Then
+            If LCase$(Right$(projectFolder, 9)) = ".twinproj" Then projectFolder = Left$(projectFolder, InStrRev(projectFolder, "\") - 1)
+            WriteLogFile projectFolder & "\designerprobe.log", lineText
+        End If
+        WriteLogFile Environ$("TEMP") & "\designerprobe.log", lineText
+    End Sub
+
+    Private Sub WriteLogFile(ByVal filePath As String, ByVal lineText As String)
+        On Error Resume Next
+        Dim f As Integer
+        f = FreeFile
+        Open filePath For Append As #f
+        Print #f, lineText
+        Close #f
+    End Sub
+
+End Class

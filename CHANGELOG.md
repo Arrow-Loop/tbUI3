@@ -4,6 +4,17 @@ All notable changes to tbUI3. Dates are when the change was made, not released. 
 
 ## Unreleased
 
+### 2026-11-01, MultiPage-style containers in the designer: investigation (research, no package change, Claude)
+
+- Record: `docs/research/2026-11-01-multipage-designer.md`, with the working notes, the twinBASIC feature request draft and the throwaway probe projects under `docs/research/2026-11-01-multipage-designer/`.
+- Validated by Shane on BETA 1033 with the TabProbe test projects:
+  - A second click on a selected ControlContainer UserControl reaches its MouseDown and Click at design time (`UserMode = False`).
+  - The designer follows when the control moves its ContainedControls.
+  - A container whose ScaleMode differs from the form's (pixels on a twips form) makes newly drawn children jump to its top-left. With matching twips they stay put.
+- Failed: `UserControl.Parent.Controls.Add` at design time. A CommandButton is created and draws, but the designer can't select it, doesn't list it and doesn't save it. A project UserControl fails with -2147467259. Wayne (Discord) confirmed there's currently no supported way to create a designer control from code, and pointed out that `UserControl.Verbs` and `VerbInvoked` exist (confirmed in the VB package).
+- Validated by Shane with the DesignerBridgeProbe add-in: an add-in can run JavaScript in the IDE page (`ownerDocument.defaultView.eval`, synchronous). Through the designer's own insert steps, with no clipboard, it created a real page control inside a selected container: named, selectable, draggable, undone with one Ctrl+Z (once `undoPoint` was added), and still there after save and reopen.
+- Decisions (Shane): shipped containers must feel like VBA's MultiPage and never use SSTab-style negative Left. The model is a host plus real page containers (UI3TabView with UI3TabPage). Public posts don't mention tbUI3. Still open: whether the add-in is required, what triggers "New Page", and the per-beta breakage policy.
+
 ### 2026-11-01, UI3IconList L3: the list in code (1.0.0.60, Claude)
 
 - New public control `UI3IconList` (stable IDs in `tbUI3/UI3IconList-ids.json`): a nonvisual box like UI3FormTheme (`InvisibleAtRuntime`), with its own toolbox bitmap. Members: `Add(Key, Data, Source)` for SVG or image bytes, `AddIcon(Key, Icon)` for a Segoe Fluent glyph, `Remove(Key)` (no error for a missing key), `Clear`, `Count`, `Exists(Key)`, `Key(Index)` (1-based, as in VB6's ImageList), `IconData(Key)`, `IconSource(Key)`, and two additions to the plan's table: `Icon(Key)`, so a glyph entry can be copied out too, and a hidden read-only `Revision` that changes on every edit. Keys are case-insensitive, not empty (error 5), and adding an existing key replaces it; data that isn't a recognised image raises 380. Entries are saved with the form (`Count`, then `Key<n>`, `Kind<n>`, and `Glyph<n>` or `Data<n>`/`Source<n>`).

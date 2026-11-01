@@ -98,6 +98,7 @@ Private Module UI3PageSurface
             ByVal lParam As LongPtr, ByVal uIdSubclass As LongPtr, ByVal dwRefData As LongPtr) As LongPtr
         Select Case uMsg
             Case WM_ERASEBKGND
+                If dwRefData = SURFACE_GRID And Not m_GridPage Is Nothing Then m_GridPage.GridLog "WM_ERASEBKGND swallowed"
                 UI3PageSurfaceProc = 1
                 Exit Function
 

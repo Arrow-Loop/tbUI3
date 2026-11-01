@@ -4,6 +4,11 @@ All notable changes to tbUI3. Dates are when the change was made, not released. 
 
 ## Unreleased
 
+### 2026-11-01, grid still grey on open: paint log (1.0.0.55 diagnostic, Claude)
+
+- Shane, 1.0.0.54: the grid still opens classic grey (light #F0F0F0, no icons, on the Fluent tab in dark mode) until the page is touched, so the container-erase guess was wrong or incomplete.
+- 1.0.0.55 logs (`GRID` lines in `%TEMP%\tbUI3-propertypage.log`) the first 40 grid events after the page opens: subclass attach, swallowed WM_ERASEBKGND, each surface paint and its result, the PictureBox Paint event if it still fires, PaintGrid errors, the tab controls being shown, and the end of SelectionChanged, each with the grid's hwnd, visibility, client size, tab and whether a render target exists. No behaviour change.
+
 ### 2026-11-01, grid opens grey (1.0.0.54, Claude)
 
 - Shane, 1.0.0.53: scrolling is now smooth, but the grid opens classic grey until anything on the page is touched.

@@ -1,0 +1,419 @@
+' =====================================================
+' cDialogCountdownMsgBox.twin - Countdown Message Box Class
+' cDialogCountdownMsgBox.twin - 倒计时消息框类
+' TBMANLIB Dialog Library
+' =====================================================
+' Function: Provides message box with countdown timer and auto-close
+' 功能：提供带倒计时计时器的消息框，支持自动关闭
+' Author: woeoo (邓伟)
+' Email: 215879458@qq.com
+' Site: https://vb6.pro
+' Date: 2026-03-11
+' Version: 1.0.0
+' =====================================================
+
+Option Explicit
+
+[COMCreatable(False)]
+Public Class cDialogCountdownMsgBox
+
+    ' =====================================================
+    ' Windows API Declarations
+    ' =====================================================
+    Private Declare PtrSafe Function SetTimer Lib "user32" (ByVal hWnd As LongPtr, ByVal nIDEvent As LongPtr, ByVal uElapse As Long, ByVal lpTimerFunc As LongPtr) As LongPtr
+    Private Declare PtrSafe Function KillTimer Lib "user32" (ByVal hWnd As LongPtr, ByVal nIDEvent As LongPtr) As Long
+    Private Declare PtrSafe Function FindWindow Lib "user32" Alias "FindWindowW" (ByVal lpClassName As LongPtr, ByVal lpWindowName As LongPtr) As LongPtr
+    Private Declare PtrSafe Function SetWindowText Lib "user32" Alias "SetWindowTextW" (ByVal hWnd As LongPtr, ByVal lpString As LongPtr) As Long
+    Private Declare PtrSafe Function GetDlgItem Lib "user32" (ByVal hDlg As LongPtr, ByVal nIDDlgItem As Long) As LongPtr
+    Private Declare PtrSafe Function EnableWindow Lib "user32" (ByVal hWnd As LongPtr, ByVal fEnable As Long) As Long
+    Private Declare PtrSafe Function MessageBoxTimeout Lib "user32" Alias "MessageBoxTimeoutW" (ByVal hWnd As LongPtr, ByVal lpText As LongPtr, ByVal lpCaption As LongPtr, ByVal uType As Long, ByVal wLanguageId As Long, ByVal dwMilliseconds As Long) As Long
+
+    ' =====================================================
+    ' Constants
+    ' =====================================================
+    Private Const IDOK As Long = 1
+    Private Const IDCANCEL As Long = 2
+    Private Const IDABORT As Long = 3
+    Private Const IDRETRY As Long = 4
+    Private Const IDIGNORE As Long = 5
+    Private Const IDYES As Long = 6
+    Private Const IDNO As Long = 7
+    Private Const IDTIMEOUT As Long = 32000
+
+    ' MessageBox buttons
+    Public Enum MessageBoxButtons
+        MB_OK = &H0
+        MB_OKCANCEL = &H1
+        MB_ABORTRETRYIGNORE = &H2
+        MB_YESNOCANCEL = &H3
+        MB_YESNO = &H4
+        MB_RETRYCANCEL = &H5
+    End Enum
+
+    ' MessageBox icons
+    Public Enum MessageBoxIcons
+        MB_ICONSTOP = &H10
+        MB_ICONQUESTION = &H20
+        MB_ICONEXCLAMATION = &H30
+        MB_ICONINFORMATION = &H40
+    End Enum
+
+    ' MessageBox default button
+    Public Enum MessageBoxDefaultButton
+        MB_DEFBUTTON1 = &H0
+        MB_DEFBUTTON2 = &H100
+        MB_DEFBUTTON3 = &H200
+    End Enum
+
+    ' =====================================================
+    ' Result Enum
+    ' =====================================================
+    Public Enum DialogResult
+        drOK = 1
+        drCancel = 2
+        drAbort = 3
+        drRetry = 4
+        drIgnore = 5
+        drYes = 6
+        drNo = 7
+        drTimeout = 32000
+    End Enum
+
+    ' =====================================================
+    ' Class Data
+    ' =====================================================
+    Private Type cDialogCountdownMsgBoxData
+        mTitle As String
+        mMessage As String
+        mCountdownSeconds As Long
+        mRemainingSeconds As Long
+        mButtons As Long
+        mIcon As Long
+        mDefaultButton As Long
+        mShowProgress As Boolean
+        mAutoClose As Boolean
+        mOwnerHwnd As LongPtr
+        mResult As DialogResult
+    End Type
+
+    Private mData As cDialogCountdownMsgBoxData
+
+    ' =====================================================
+    ' Class Initialize
+    ' =====================================================
+    Private Sub Class_Initialize()
+        mData.mTitle = "Message"
+        mData.mMessage = ""
+        mData.mCountdownSeconds = 10
+        mData.mRemainingSeconds = 10
+        mData.mButtons = MB_OK
+        mData.mIcon = MB_ICONINFORMATION
+        mData.mDefaultButton = MB_DEFBUTTON1
+        mData.mShowProgress = True
+        mData.mAutoClose = True
+        mData.mOwnerHwnd = 0
+        mData.mResult = DialogResult.drTimeout
+    End Sub
+
+    ' =====================================================
+    ' Property: Dialog Title
+    ' =====================================================
+    Public Property Get Title() As String
+        Title = mData.mTitle
+    End Property
+
+    Public Property Let Title(ByVal value As String)
+        mData.mTitle = value
+    End Property
+
+    ' =====================================================
+    ' Property: Message Text
+    ' =====================================================
+    Public Property Get Message() As String
+        Message = mData.mMessage
+    End Property
+
+    Public Property Let Message(ByVal value As String)
+        mData.mMessage = value
+    End Property
+
+    ' =====================================================
+    ' Property: Countdown Seconds
+    ' =====================================================
+    Public Property Get CountdownSeconds() As Long
+        CountdownSeconds = mData.mCountdownSeconds
+    End Property
+
+    Public Property Let CountdownSeconds(ByVal value As Long)
+        mData.mCountdownSeconds = value
+        mData.mRemainingSeconds = value
+    End Property
+
+    ' =====================================================
+    ' Property: Remaining Seconds (read-only)
+    ' =====================================================
+    Public Property Get RemainingSeconds() As Long
+        RemainingSeconds = mData.mRemainingSeconds
+    End Property
+
+    ' =====================================================
+    ' Property: Button Style
+    ' =====================================================
+    Public Property Get Buttons() As Long
+        Buttons = mData.mButtons
+    End Property
+
+    Public Property Let Buttons(ByVal value As Long)
+        mData.mButtons = value
+    End Property
+
+    ' =====================================================
+    ' Property: Icon Style
+    ' =====================================================
+    Public Property Get Icon() As Long
+        Icon = mData.mIcon
+    End Property
+
+    Public Property Let Icon(ByVal value As Long)
+        mData.mIcon = value
+    End Property
+
+    ' =====================================================
+    ' Property: Default Button
+    ' =====================================================
+    Public Property Get DefaultButton() As Long
+        DefaultButton = mData.mDefaultButton
+    End Property
+
+    Public Property Let DefaultButton(ByVal value As Long)
+        mData.mDefaultButton = value
+    End Property
+
+    ' =====================================================
+    ' Property: Show Progress Bar
+    ' =====================================================
+    Public Property Get ShowProgress() As Boolean
+        ShowProgress = mData.mShowProgress
+    End Property
+
+    Public Property Let ShowProgress(ByVal value As Boolean)
+        mData.mShowProgress = value
+    End Property
+
+    ' =====================================================
+    ' Property: Auto Close on Timeout
+    ' =====================================================
+    Public Property Get AutoClose() As Boolean
+        AutoClose = mData.mAutoClose
+    End Property
+
+    Public Property Let AutoClose(ByVal value As Boolean)
+        mData.mAutoClose = value
+    End Property
+
+    ' =====================================================
+    ' Property: Owner Window Handle
+    ' =====================================================
+    Public Property Get OwnerHwnd() As LongPtr
+        OwnerHwnd = mData.mOwnerHwnd
+    End Property
+
+    Public Property Let OwnerHwnd(ByVal value As LongPtr)
+        mData.mOwnerHwnd = value
+    End Property
+
+    ' =====================================================
+    ' Property: Result (read-only after Show)
+    ' =====================================================
+    Public Property Get Result() As DialogResult
+        Result = mData.mResult
+    End Property
+
+    ' =====================================================
+    ' Method: Show Countdown Message Box
+    ' =====================================================
+    Public Function ShowDialog() As DialogResult
+        On Error GoTo ErrorHandler
+
+        ' Use MessageBoxTimeout API for auto-close functionality
+        Dim dwMilliseconds As Long
+        Dim style As Long
+
+        If mData.mAutoClose Then
+            dwMilliseconds = mData.mCountdownSeconds * 1000
+        Else
+            dwMilliseconds = 0  ' No timeout
+        End If
+
+        ' Combine button and icon styles
+        style = mData.mButtons Or mData.mIcon Or mData.mDefaultButton
+
+        ' Build message with countdown info
+        Dim strMessage As String
+        If mData.mShowProgress And mData.mAutoClose Then
+            strMessage = mData.mMessage & vbCrLf & vbCrLf & _
+                        "This message will close automatically in " & _
+                        mData.mCountdownSeconds & " seconds..."
+        Else
+            strMessage = mData.mMessage
+        End If
+
+        ' Show message box with timeout
+        Dim ret As Long
+        ret = MessageBoxTimeout(mData.mOwnerHwnd, _
+                               StrPtr(strMessage), _
+                               StrPtr(mData.mTitle), _
+                               style, _
+                               0, _
+                               dwMilliseconds)
+
+        ' Map result
+        Select Case ret
+            Case IDOK:     mData.mResult = DialogResult.drOK
+            Case IDCANCEL: mData.mResult = DialogResult.drCancel
+            Case IDABORT:  mData.mResult = DialogResult.drAbort
+            Case IDRETRY:  mData.mResult = DialogResult.drRetry
+            Case IDIGNORE: mData.mResult = DialogResult.drIgnore
+            Case IDYES:    mData.mResult = DialogResult.drYes
+            Case IDNO:     mData.mResult = DialogResult.drNo
+            Case IDTIMEOUT: mData.mResult = DialogResult.drTimeout
+        End Select
+
+        ShowDialog = mData.mResult
+        Exit Function
+
+ErrorHandler:
+        ' Fallback to regular MsgBox if API fails
+        Dim fallbackResult As VbMsgBoxResult
+        fallbackResult = MsgBox(mData.mMessage, style, mData.mTitle)
+
+        Select Case fallbackResult
+            Case vbOK:     mData.mResult = DialogResult.drOK
+            Case vbCancel: mData.mResult = DialogResult.drCancel
+            Case vbAbort:  mData.mResult = DialogResult.drAbort
+            Case vbRetry:  mData.mResult = DialogResult.drRetry
+            Case vbIgnore: mData.mResult = DialogResult.drIgnore
+            Case vbYes:    mData.mResult = DialogResult.drYes
+            Case vbNo:     mData.mResult = DialogResult.drNo
+        End Select
+
+        ShowDialog = mData.mResult
+    End Function
+
+    ' =====================================================
+    ' Method: Show Info with Countdown
+    ' =====================================================
+    Public Function ShowInfo(ByVal message As String, Optional ByVal title As String = "Information", Optional ByVal seconds As Long = 10) As DialogResult
+        mData.mMessage = message
+        mData.mTitle = title
+        mData.mCountdownSeconds = seconds
+        mData.mButtons = MB_OK
+        mData.mIcon = MB_ICONINFORMATION
+        ShowInfo = ShowDialog()
+    End Function
+
+    ' =====================================================
+    ' Method: Show Warning with Countdown
+    ' =====================================================
+    Public Function ShowWarning(ByVal message As String, Optional ByVal title As String = "Warning", Optional ByVal seconds As Long = 15) As DialogResult
+        mData.mMessage = message
+        mData.mTitle = title
+        mData.mCountdownSeconds = seconds
+        mData.mButtons = MB_OK
+        mData.mIcon = MB_ICONEXCLAMATION
+        ShowWarning = ShowDialog()
+    End Function
+
+    ' =====================================================
+    ' Method: Show Error with Countdown
+    ' =====================================================
+    Public Function ShowError(ByVal message As String, Optional ByVal title As String = "Error", Optional ByVal seconds As Long = 20) As DialogResult
+        mData.mMessage = message
+        mData.mTitle = title
+        mData.mCountdownSeconds = seconds
+        mData.mButtons = MB_OK
+        mData.mIcon = MB_ICONSTOP
+        ShowError = ShowDialog()
+    End Function
+
+    ' =====================================================
+    ' Method: Show Question with Countdown (Yes/No)
+    ' =====================================================
+    Public Function ShowQuestion(ByVal message As String, Optional ByVal title As String = "Question", Optional ByVal seconds As Long = 30) As DialogResult
+        mData.mMessage = message
+        mData.mTitle = title
+        mData.mCountdownSeconds = seconds
+        mData.mButtons = MB_YESNO
+        mData.mIcon = MB_ICONQUESTION
+        ShowQuestion = ShowDialog()
+    End Function
+
+    ' =====================================================
+    ' Method: Show Confirmation with Countdown (Yes/No/Cancel)
+    ' =====================================================
+    Public Function ShowConfirm(ByVal message As String, Optional ByVal title As String = "Confirm", Optional ByVal seconds As Long = 30) As DialogResult
+        mData.mMessage = message
+        mData.mTitle = title
+        mData.mCountdownSeconds = seconds
+        mData.mButtons = MB_YESNOCANCEL
+        mData.mIcon = MB_ICONQUESTION
+        ShowConfirm = ShowDialog()
+    End Function
+
+    ' =====================================================
+    ' Method: Show with custom button labels
+    ' =====================================================
+    Public Function ShowCustom(ByVal message As String, _
+                               ByVal title As String, _
+                               ByVal buttons As Long, _
+                               ByVal icon As Long, _
+                               Optional ByVal seconds As Long = 10) As DialogResult
+        mData.mMessage = message
+        mData.mTitle = title
+        mData.mCountdownSeconds = seconds
+        mData.mButtons = buttons
+        mData.mIcon = icon
+        ShowCustom = ShowDialog()
+    End Function
+
+    ' =====================================================
+    ' Method: Check if timed out
+    ' =====================================================
+    Public Function IsTimedOut() As Boolean
+        IsTimedOut = (mData.mResult = DialogResult.drTimeout)
+    End Function
+
+    ' =====================================================
+    ' Method: Get Result Description
+    ' =====================================================
+    Public Function GetResultDescription() As String
+        Select Case mData.mResult
+            Case DialogResult.drOK:      GetResultDescription = "OK"
+            Case DialogResult.drCancel:  GetResultDescription = "Cancel"
+            Case DialogResult.drAbort:   GetResultDescription = "Abort"
+            Case DialogResult.drRetry:   GetResultDescription = "Retry"
+            Case DialogResult.drIgnore:  GetResultDescription = "Ignore"
+            Case DialogResult.drYes:     GetResultDescription = "Yes"
+            Case DialogResult.drNo:      GetResultDescription = "No"
+            Case DialogResult.drTimeout: GetResultDescription = "Timeout (Auto-close)"
+        End Select
+    End Function
+
+    ' =====================================================
+    ' Method: Reset to default settings
+    ' =====================================================
+    Public Sub Reset()
+        mData.mTitle = "Message"
+        mData.mMessage = ""
+        mData.mCountdownSeconds = 10
+        mData.mRemainingSeconds = 10
+        mData.mButtons = MB_OK
+        mData.mIcon = MB_ICONINFORMATION
+        mData.mDefaultButton = MB_DEFBUTTON1
+        mData.mShowProgress = True
+        mData.mAutoClose = True
+        mData.mOwnerHwnd = 0
+        mData.mResult = DialogResult.drTimeout
+    End Sub
+
+End Class

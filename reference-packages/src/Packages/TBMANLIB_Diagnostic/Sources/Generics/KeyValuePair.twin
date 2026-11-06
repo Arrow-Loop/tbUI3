@@ -1,0 +1,51 @@
+' =====================================================
+' KeyValuePair.twin - 泛型键值对
+' Twinbasic Diagnostic Tool
+' =====================================================
+
+' 泛型键值对类
+' 用于存储诊断数据的键值对
+[ COMCreatable (False) ]
+[ ClassId ("E8A1B2C3-D4E5-F6A7-B8C9-D0E1F2A3B4C5") ]
+[ InterfaceId ("E8A1B2C3-D4E5-F6A7-B8C9-D0E1F2A3B4C6") ]
+Public Class KeyValuePair(Of TKey, TValue)
+
+    Private m_Key As TKey
+    Private m_Value As TValue
+
+    ' 构造函数
+    Public Sub New(ByVal key As TKey, ByVal value As TValue)
+        m_Key = key
+        m_Value = value
+    End Sub
+
+    ' 默认构造函数
+    Public Sub New()
+    End Sub
+
+    ' 获取键
+    Public Property Get Key() As TKey
+        Return m_Key
+    End Property
+
+    ' 设置键
+    Public Property Let Key(ByVal value As TKey)
+        m_Key = value
+    End Property
+
+    ' 获取值
+    Public Property Get Value() As TValue
+        Return m_Value
+    End Property
+
+    ' 设置值
+    Public Property Let Value(ByVal v As TValue)
+        m_Value = v
+    End Property
+
+    ' 转换为字符串表示
+    Public Function ToString() As String
+        Return "[" & CStr(m_Key) & ": " & CStr(m_Value) & "]"
+    End Function
+
+End Class

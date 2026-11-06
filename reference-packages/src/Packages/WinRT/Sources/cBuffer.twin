@@ -1,0 +1,330 @@
+Class cBuffer
+
+Implements IBuffer
+Implements IBufferByteAccess
+
+Private m_BufferCapacity As Long, m_BufferLength As Long, m_BufferData() As Byte, m_BufferPtr As LongPtr, m_Height As Long, m_bFreeBuffer As Boolean
+
+Friend Sub BindToArray(vArray As Variant, tSA As SAFE_ARRAY, Optional ByVal bBidimensional As Boolean)
+Dim cbElements As Long
+    If IsArray(vArray) Then
+        cbElements = VarTypeSize(vArray)
+        If Not bBidimensional Then
+            InitSA ArrPtrVar(vArray), tSA, cbElements:=cbElements, pvData:=m_BufferPtr, cElements1:=m_BufferLength \ cbElements
+        Else
+            InitSA ArrPtrVar(vArray), tSA, cbElements:=cbElements, pvData:=m_BufferPtr, cElements1:=Height, cElements2:=Width \ cbElements
+        End If
+    End If
+End Sub
+
+Friend Property Get BufferPtr() As LongPtr
+    BufferPtr = m_BufferPtr
+End Property
+
+Friend Property Get Capacity() As Long
+    Capacity = m_BufferCapacity
+End Property
+
+Friend Function Clone() As cBuffer
+    With New cBuffer: Set Clone = .This(m_BufferLength, m_BufferPtr, True, Height): End With
+End Function
+
+Friend Function Compare(Target As cBuffer) As Boolean
+    Compare = CryptographicBufferStatics.Compare(Me, Target) = APITRUE
+End Function
+
+Friend Function Deflate(Optional ByVal CompressionFormat As COMPRESSION_FORMATS = MAXIMUM_XPRESS_HUFF, Optional bCopy As Boolean) As cBuffer
+Dim lDataSize As Long, pWorkSpaceAddress As LongPtr, WorkSpaceSize As Long, CompressFragmentWorkSpaceSize As Long, FinalCompressedSize As Long, FileHeader As COMPRESSED_FILE_HEADER, _
+    Buffer As New cBuffer
+Const UncompressedChunkSize As Long = 4096&, STATUS_BUFFER_TOO_SMALL As Long = &HC0000023
+    lDataSize = m_BufferLength
+    If lDataSize > 0 Then
+        With FileHeader
+            .CompressionFormat = CompressionFormat: .ElementType = vbByte: .ElementSize = 1: .OriginalSize = lDataSize
+            If RtlGetCompressionWorkSpaceSize(CompressionFormat, WorkSpaceSize, CompressFragmentWorkSpaceSize) = S_OK Then
+                pWorkSpaceAddress = CoTaskMemAlloc(WorkSpaceSize)
+                Do
+                    lDataSize = lDataSize + UncompressedChunkSize: Set Deflate = Buffer.This(lDataSize + LenB(FileHeader))
+                    Select Case RtlCompressBuffer(CompressionFormat, m_BufferPtr, .OriginalSize, Buffer.BufferPtr + LenB(FileHeader), lDataSize, UncompressedChunkSize, FinalCompressedSize, pWorkSpaceAddress)
+                        Case S_OK
+                            Set Deflate = Buffer.This(FinalCompressedSize + LenB(FileHeader), bCopy:=True)
+                            vbaCopyBytes LenB(FileHeader), ByVal Buffer.BufferPtr, ByVal VarPtr(FileHeader)
+                            If bCopy Then Set Deflate = This(Buffer.Length, Buffer.BufferPtr, True)
+                            Exit Do
+                        Case STATUS_BUFFER_TOO_SMALL
+                        Case Else: Set Deflate = Buffer.This(0): Exit Do
+                    End Select
+                Loop
+                CoTaskMemFree pWorkSpaceAddress
+            End If
+        End With
+    End If
+    If Deflate Is Nothing Then Set Deflate = Buffer.This(0)
+End Function
+
+Friend Function FromArray(vArray As Variant, Optional ByVal bCopy As Boolean, Optional ByVal Height As Long = 1) As cBuffer
+Dim Length As Long
+    With SafeArray(ArrPtrVar(vArray))
+        Length = .cElements1 * .cbElements: If .cElements2 > 0 Then Length = Length * .cElements2: Height = .cElements1
+        Set FromArray = This(Length, .pvData, bCopy, Height)
+    End With
+End Function
+
+[ArrayBoundsChecks(False), IntegerOverflowChecks(False)]
+Friend Function FromBase32(vBase32 As Variant, Optional ByVal Height As Long = 1) As cBuffer
+Dim lBits As Long, lChar As Long, lByteCount As Long, lBitsBuffer As Long, baData() As Byte, waData() As Integer, tSA As SAFE_ARRAY, i As Long
+    If VarType(vBase32) = (vbArray Or vbByte) Then vBase32 = StrConv(vBase32, vbUnicode)
+    InitSA ArrPtr(waData), tSA, cbElements:=2, pvData:=StrPtr(vBase32), cElements1:=Len(vBase32)
+    If tSA.cElements1 > 0 Then
+        ReDim baData(0 To tSA.cElements1 - 1): If Not lt.bInit Then InitLookupTables lt
+        For i = 0 To tSA.cElements1 - 1
+            lChar = waData(i)
+            Select Case lChar
+                Case vbKeyA To vbKeyZ: lChar = lChar - vbKeyA
+                Case vbKey2 To vbKey7: lChar = lChar - vbKey2 + 26
+                Case Else: GoTo NextI
+            End Select
+            lBitsBuffer = (lBitsBuffer * 32 Or lChar) And &HFFFF&: lBits = lBits + 5
+            If lBits >= 8 Then lBits = lBits - 8: baData(lByteCount) = lBitsBuffer \ lt.Pow(lBits) And &HFF: lByteCount = lByteCount + 1
+NextI:  Next i
+        Set FromBase32 = This(lByteCount, VarPtr(baData(0)), True, Height)
+    Else
+        Set FromBase32 = This(0)
+    End If
+End Function
+
+Friend Function FromBase64(vBase64 As Variant, Optional ByVal Height As Long = 1) As cBuffer
+    If VarType(vBase64) = (vbArray Or vbByte) Then vBase64 = StrConv(vBase64, vbUnicode)
+    Set FromBase64 = FromIBuffer(CryptographicBufferStatics.DecodeFromBase64String(StrRef(vBase64)), True, Height)
+End Function
+
+Friend Function FromIBuffer(Buffer As IBuffer, Optional ByVal bCopy As Boolean, Optional ByVal Height As Long = 1) As cBuffer
+Dim BufferByteAccess As IBufferByteAccess
+    If Not Buffer Is Nothing Then
+        Set BufferByteAccess = Buffer: Set FromIBuffer = This(Buffer.Length, BufferByteAccess.Buffer, bCopy, Height)
+    Else
+        Set FromIBuffer = This(0)
+    End If
+End Function
+
+[ArrayBoundsChecks(False), IntegerOverflowChecks(False)]
+Friend Function FromNullTerminatedString(ByVal pNullTerminatedString As LongPtr, Optional ByVal UnicodeEncoding As UnicodeEncoding = UnicodeEncoding_UTF8, Optional ByVal cch As Long, Optional ByVal bCopy As Boolean, Optional ByVal Height As Long = 1, Optional ByVal bFreeBuffer As Boolean) As cBuffer
+Dim baData() As Byte, waData() As Integer, tSA As SAFE_ARRAY
+    If cch = 0 Then ' null terminated string
+        With tSA
+            If UnicodeEncoding = UnicodeEncoding_UTF8 Then
+                InitSA ArrPtr(baData), tSA, pvData:=pNullTerminatedString, lLBound1:=1
+                While baData(.cElements1): .cElements1 = .cElements1 + 1: Wend
+            Else
+                InitSA ArrPtr(waData), tSA, cbElements:=2, pvData:=pNullTerminatedString, lLBound1:=1
+                While waData(.cElements1): .cElements1 = .cElements1 + 1: Wend
+            End If
+            cch = (.cElements1 - 1) * .cbElements
+        End With
+    Else
+        If UnicodeEncoding <> UnicodeEncoding_UTF8 Then cch = cch * 2
+    End If
+    Set FromNullTerminatedString = This(cch, pNullTerminatedString, bCopy, Height, bFreeBuffer)
+End Function
+
+Friend Function FromString(sString As String, Optional ByVal ToUnicodeEncoding As UnicodeEncoding = UnicodeEncoding_UTF8, Optional ByVal bCopy As Boolean, Optional ByVal Height As Long = 1) As cBuffer
+    If ToUnicodeEncoding = UnicodeEncoding_UTF8 Then
+        Set FromString = FromIBuffer(CryptographicBufferStatics.ConvertStringToBinary(StrRef(sString), ToUnicodeEncoding), True, Height)
+    Else
+        Set FromString = This(LenB(sString), StrPtr(sString), bCopy, Height)
+    End If
+End Function
+
+Friend Property Get Height() As Long
+    If m_Height > 0 Then Height = m_Height Else Height = 1
+End Property
+
+Friend Function Inflate(Optional ByVal bCopy As Boolean) As cBuffer
+Dim lCompressedSize As Long, pWorkSpaceAddress As LongPtr, WorkSpaceSize As Long, CompressFragmentWorkSpaceSize As Long, FinalUncompressedSize As Long, FileHeader As COMPRESSED_FILE_HEADER, _
+    Buffer As New cBuffer
+    lCompressedSize = m_BufferLength - LenB(FileHeader)
+    If lCompressedSize > 0 Then
+        vbaCopyBytes LenB(FileHeader), ByVal VarPtr(FileHeader), ByVal m_BufferPtr
+        With FileHeader
+            If .OriginalSize > 0 And .ElementType = vbByte And .ElementSize = 1 Then
+                Select Case .CompressionFormat
+                    Case MAXIMUM_XPRESS_HUFF, MAXIMUM_XPRESS, MAXIMUM_LZNT1, STANDARD_XPRESS_HUFF, STANDARD_XPRESS, STANDARD_LZNT1
+                        If RtlGetCompressionWorkSpaceSize(.CompressionFormat, WorkSpaceSize, CompressFragmentWorkSpaceSize) = S_OK Then
+                            pWorkSpaceAddress = CoTaskMemAlloc(WorkSpaceSize): Set Inflate = Buffer.This(.OriginalSize)
+                            If RtlDecompressBufferEx(.CompressionFormat, Buffer.BufferPtr, .OriginalSize, m_BufferPtr + LenB(FileHeader), lCompressedSize, FinalUncompressedSize, pWorkSpaceAddress) = S_OK Then
+                                If FinalUncompressedSize = .OriginalSize Then
+                                    If bCopy Then Set Inflate = This(.OriginalSize, Buffer.BufferPtr, True)
+                                Else
+                                    Set Inflate = Buffer.This(0)
+                                End If
+                            Else
+                                Set Inflate = Buffer.This(0)
+                            End If
+                            CoTaskMemFree pWorkSpaceAddress
+                        End If
+                End Select
+            End If
+        End With
+    End If
+    If Inflate Is Nothing Then Set Inflate = Buffer.This(0)
+End Function
+
+Friend Property Get Length() As Long
+    Length = m_BufferLength
+End Property
+
+Friend Property Let Length(ByVal lLength As Long)
+    m_BufferLength = Clamp(lLength, 0, m_BufferCapacity)
+End Property
+
+Friend Function This(Optional ByVal Capacity As Long = -1, Optional ByVal BufferPtr As LongPtr, Optional ByVal bCopy As Boolean, Optional ByVal Height As Long = 1, Optional ByVal bFreeBuffer As Boolean) As cBuffer
+    Set This = Me
+    Select Case Capacity
+        Case Is > 0: Class_Terminate
+            If BufferPtr = vbNullPtr Then
+                If bCopy Then ReDim Preserve m_BufferData(0 To Capacity - 1) Else ReDim m_BufferData(0 To Capacity - 1)
+                m_BufferPtr = VarPtr(m_BufferData(0))
+            Else
+                If Not bCopy Then
+                    m_BufferPtr = BufferPtr: m_bFreeBuffer = bFreeBuffer
+                Else
+                    ReDim m_BufferData(0 To Capacity - 1): m_BufferPtr = vbaCopyBytes(Capacity, ByVal VarPtr(m_BufferData(0)), ByVal BufferPtr)
+                    If bFreeBuffer Then CoTaskMemFree BufferPtr
+                End If
+            End If
+        Case 0: Class_Terminate: m_BufferPtr = vbNullPtr: Erase m_BufferData
+        Case Else: Exit Function
+    End Select
+    m_BufferCapacity = Capacity: m_BufferLength = Capacity: m_Height = Height
+End Function
+
+[ArrayBoundsChecks(False), IntegerOverflowChecks(False)]
+Friend Function ToBase32() As String
+Dim i As Long, lBits As Long, lBitsBuffer As Long, lByteCount As Long, baData() As Byte, waData() As Integer, baBase32(0 To 31) As Byte, tSA As SAFE_ARRAY
+    If m_BufferLength > 0 Then
+        If Not lt.bInit Then InitLookupTables lt
+        InitSA ArrPtr(baData), tSA, pvData:=m_BufferPtr, cElements1:=m_BufferLength
+        ReDim waData(LBound(baData) To Int((UBound(baData) + 1) / 5 * 8 + 1))
+        For i = LBound(baData) To UBound(baData)
+            lBitsBuffer = (lBitsBuffer * 256 Or baData(i)) And &HFFFF&: lBits = lBits + 8
+            While lBits >= 5: lBits = lBits - 5: waData(lByteCount) = lt.Base32(lBitsBuffer \ lt.Pow(lBits) And &H1F): lByteCount = lByteCount + 1: Wend
+        Next i
+        If lBits > 0 Then waData(lByteCount) = baBase32(lBitsBuffer * lt.Pow(5 - lBits) And &H1F)
+        SysReAllocString VarPtr(ToBase32), VarPtr(waData(0))
+    End If
+End Function
+
+[ArrayBoundsChecks(False), IntegerOverflowChecks(False)]
+Friend Function ToBase64(Optional ByVal bBase64Url As Boolean) As String
+Dim waBase64() As Integer, tSA As SAFE_ARRAY, i As Long, lByteLength As Long
+    ToBase64 = GetStr(CryptographicBufferStatics.EncodeToBase64String(Me))
+    If bBase64Url Then
+        i = Len(ToBase64) + 2
+        If i > 2 Then
+            InitSA ArrPtr(waBase64), tSA, cbElements:=2, pvData:=StrPtr(ToBase64) - 4, cElements1:=i ' Overlay an integer array over the string including the length prefix at offset -4
+            For i = 2 To i - 1
+                Select Case waBase64(i)
+                    Case 43: waBase64(i) = 45 ' "+" -> "-" (convert plus to minus)
+                    Case 47: waBase64(i) = 95 ' "/" -> "_" (convert slash to underscore)
+                    Case 61: waBase64(i) = 0: If lByteLength = 0 Then lByteLength = (i - 2) * 2 ' "=" -> vbNullChar
+                End Select
+            Next i
+            Select Case lByteLength ' Update the string's length prefix effectively truncating the string without reallocating it
+                Case 0:
+                Case Is < 65536: waBase64(0) = lByteLength
+                Case Else: waBase64(0) = lByteLength And &HFFFF&: waBase64(1) = lByteLength \ 65536
+            End Select
+        End If
+    End If
+End Function
+
+Friend Function ToByteArray() As Byte()
+Dim baData() As Byte
+    If m_BufferLength > 0 Then ReDim baData(0 To m_BufferLength - 1): vbaCopyBytes m_BufferLength, ByVal VarPtr(baData(0)), ByVal m_BufferPtr
+    ToByteArray = baData
+End Function
+
+[ArrayBoundsChecks(False), IntegerOverflowChecks(False)]
+Friend Function ToByteString(Optional ByVal bReverse As Boolean) As String
+Dim i As Long, CurrentPos As Long, baData() As Byte, tSA As SAFE_ARRAY
+    If m_BufferLength > 0 Then
+        InitSA ArrPtr(baData), tSA, pvData:=m_BufferPtr, cElements1:=m_BufferLength: ToByteString = Space$(m_BufferLength * 4 - 1)
+        If Not bReverse Then
+            For i = 0 To m_BufferLength - 1
+                If i > 0 Then CurrentPos = CurrentPos + Len(CStr(baData(i - 1))) + 1
+                Mid$(ToByteString, CurrentPos + 1) = CStr(baData(i))
+            Next i
+        Else
+            For i = m_BufferLength - 1 To 0 Step -1
+                If i < m_BufferLength - 1 Then CurrentPos = CurrentPos + Len(CStr(baData(i + 1))) + 1
+                Mid$(ToByteString, CurrentPos + 1) = CStr(baData(i))
+            Next i
+        End If
+        ToByteString = RTrim$(ToByteString)
+    End If
+End Function
+
+[ArrayBoundsChecks(False), IntegerOverflowChecks(False)]
+Friend Function ToHexString(Optional ByVal bReverse As Boolean) As String
+Dim i As Long, baData() As Byte, tSA As SAFE_ARRAY
+    If m_BufferLength > 0 Then
+        InitSA ArrPtr(baData), tSA, pvData:=m_BufferPtr, cElements1:=m_BufferLength: ToHexString = Space$(m_BufferLength * 3 - 1)
+        If Not bReverse Then
+            For i = 0 To m_BufferLength - 1
+                If baData(i) > &HF Then Mid$(ToHexString, i * 3 + 1) = Hex$(baData(i)) Else Mid$(ToHexString, i * 3 + 1) = "0" & Hex$(baData(i))
+            Next i
+        Else
+            For i = m_BufferLength - 1 To 0 Step -1
+                If baData(i) > &HF Then Mid$(ToHexString, (m_BufferLength - i - 1) * 3 + 1) = Hex$(baData(i)) Else Mid$(ToHexString, (m_BufferLength - i - 1) * 3 + 1) = "0" & Hex$(baData(i))
+            Next i
+        End If
+    End If
+End Function
+
+Friend Function ToISafeArray(Optional vArray As Variant, Optional ByVal bBidimensional As Boolean) As ISafeArray
+Dim cbElements As Long
+    If IsArray(vArray) Then
+        cbElements = VarTypeSize(vArray)
+        If Not bBidimensional Then
+            Set ToISafeArray = NewSA(ArrPtrVar(vArray), cbElements:=cbElements, pvData:=m_BufferPtr, cElements1:=m_BufferLength \ cbElements)
+        Else
+            Set ToISafeArray = NewSA(ArrPtrVar(vArray), cbElements:=cbElements, pvData:=m_BufferPtr, cElements1:=Height, cElements2:=Width \ cbElements)
+        End If
+    Else
+        If Not bBidimensional Then
+            Set ToISafeArray = NewSA(pvData:=m_BufferPtr, cElements1:=m_BufferLength)
+        Else
+            Set ToISafeArray = NewSA(pvData:=m_BufferPtr, cElements1:=Height, cElements2:=Width)
+        End If
+    End If
+End Function
+
+Friend Function ToString(Optional ByVal FromUnicodeEncoding As UnicodeEncoding = UnicodeEncoding_UTF8) As String
+    ToString = GetStr(CryptographicBufferStatics.ConvertBinaryToString(FromUnicodeEncoding, Me))
+End Function
+
+Friend Property Get Width() As Long
+    Width = m_BufferLength \ Height
+End Property
+
+Private Sub Class_Terminate()
+    If m_bFreeBuffer Then CoTaskMemFree m_BufferPtr: m_BufferPtr = vbNullPtr: m_bFreeBuffer = False
+End Sub
+
+Private Property Get IBuffer_Capacity() As Long
+    IBuffer_Capacity = m_BufferCapacity
+End Property
+
+Private Property Get IBuffer_Length() As Long
+    IBuffer_Length = m_BufferLength
+End Property
+
+Private Property Let IBuffer_Length(ByVal RHS As Long)
+    m_BufferLength = Clamp(RHS, 0, m_BufferCapacity)
+End Property
+
+Private Function IBufferByteAccess_Buffer() As LongPtr
+    IBufferByteAccess_Buffer = m_BufferPtr
+End Function
+    
+End Class

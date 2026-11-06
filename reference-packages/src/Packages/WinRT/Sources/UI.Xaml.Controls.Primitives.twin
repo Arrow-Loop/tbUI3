@@ -1,0 +1,1659 @@
+[InterfaceId("36B28888-19AC-4B4E-9137-A6CF2B023883")]
+Interface IDragCompletedEventHandler Extends IUnknown
+    Sub Invoke(ByVal Sender As IInspectable, ByVal Args As IDragCompletedEventArgs)
+End Interface
+
+[InterfaceId("4AC24F9F-AC28-49E9-9189-DCCFFEB66472")]
+Interface IDragDeltaEventHandler Extends IUnknown
+    Sub Invoke(ByVal Sender As IInspectable, ByVal Args As IDragDeltaEventArgs)
+End Interface
+
+[InterfaceId("D2EEA48A-C65A-495D-A2F1-72C66989142D")]
+Interface IDragStartedEventHandler Extends IUnknown
+    Sub Invoke(ByVal Sender As IInspectable, ByVal Args As IDragStartedEventArgs)
+End Interface
+
+[InterfaceId("178257BE-A304-482F-8BF0-B9D2E39612A3")]
+Interface IItemsChangedEventHandler Extends IUnknown
+    Sub Invoke(ByVal Sender As IInspectable, ByVal Args As IItemsChangedEventArgs)
+End Interface
+
+[InterfaceId("E3906FD9-4D1B-4AC8-A43C-C3B908742799")]
+Interface IRangeBaseValueChangedEventHandler Extends IUnknown
+    Sub Invoke(ByVal Sender As IInspectable, ByVal Args As IRangeBaseValueChangedEventArgs)
+End Interface
+
+[InterfaceId("8860B0A4-A383-4C83-B306-A1C39D7DB87F")]
+Interface IScrollEventHandler Extends IUnknown
+    Sub Invoke(ByVal Sender As IInspectable, ByVal Args As IScrollEventArgs)
+End Interface
+
+[InterfaceId("CBC9B39D-0C95-4951-BFF2-13963691C366")]
+Interface IAppBarButtonTemplateSettings Extends IInspectable
+    Property Get KeyboardAcceleratorTextMinWidth() As Double
+End Interface
+
+[InterfaceId("BCC2A863-EB35-423C-8389-D7827BE3BF67")]
+Interface IAppBarTemplateSettings Extends IInspectable
+    Property Get ClipRect() As RECTF
+    Property Get CompactVerticalDelta() As Double
+    Property Get CompactRootMargin() As Thickness
+    Property Get MinimalVerticalDelta() As Double
+    Property Get MinimalRootMargin() As Thickness
+    Property Get HiddenVerticalDelta() As Double
+    Property Get HiddenRootMargin() As Thickness
+End Interface
+
+[InterfaceId("CBE66259-0399-5BCC-B925-4D5F5C9A4568")]
+Interface IAppBarTemplateSettings2 Extends IInspectable
+    Property Get NegativeCompactVerticalDelta() As Double
+    Property Get NegativeMinimalVerticalDelta() As Double
+    Property Get NegativeHiddenVerticalDelta() As Double
+End Interface
+
+[InterfaceId("AAF99C48-D8F4-40D9-9FA3-3A64F0FEC5D8")]
+Interface IAppBarToggleButtonTemplateSettings Extends IInspectable
+    Property Get KeyboardAcceleratorTextMinWidth() As Double
+End Interface
+
+[InterfaceId("FA002C1A-494E-46CF-91D4-E14A8D798674")]
+Interface IButtonBase Extends IInspectable
+    Property Get ClickMode() As ClickMode
+    Property Let ClickMode(ByVal Value As ClickMode)
+    Property Get IsPointerOver() As BooleanByte
+    Property Get IsPressed() As BooleanByte
+    Property Get Command() As ICommand
+    Property Set Command(ByVal Value As ICommand)
+    Property Get CommandParameter() As IInspectable
+    Property Set CommandParameter(ByVal Value As IInspectable)
+    [PreserveSig]
+    Function AddClick(ByVal Handler As IRoutedEventHandler, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveClick(ByVal Token As EventRegistrationToken) As HRESULT
+End Interface
+
+[InterfaceId("389B7C71-5220-42B2-9992-2690C1A6702F")]
+Interface IButtonBaseFactory Extends IInspectable
+    Function CreateInstance(Optional ByVal BaseInterface As IInspectable, Optional InnerInterface As IInspectable) As IButtonBase
+End Interface
+
+[InterfaceId("67EF17E1-FE37-474F-9E97-3B5E0B30F2DF")]
+Interface IButtonBaseStatics Extends IInspectable
+    Property Get ClickModeProperty() As IDependencyProperty
+    Property Get IsPointerOverProperty() As IDependencyProperty
+    Property Get IsPressedProperty() As IDependencyProperty
+    Property Get CommandProperty() As IDependencyProperty
+    Property Get CommandParameterProperty() As IDependencyProperty
+End Interface
+
+[InterfaceId("FCD55A2D-02D3-4EE6-9A90-9DF3EAD00994")]
+Interface ICalendarPanel Extends IInspectable
+
+End Interface
+
+[InterfaceId("56C71483-64E1-477C-8A0B-CB2F3334B9B0")]
+Interface ICalendarViewTemplateSettings Extends IInspectable
+    Property Get MinViewWidth() As Double
+    Property Get HeaderText() As LongPtr
+    Property Get WeekDay1() As LongPtr
+    Property Get WeekDay2() As LongPtr
+    Property Get WeekDay3() As LongPtr
+    Property Get WeekDay4() As LongPtr
+    Property Get WeekDay5() As LongPtr
+    Property Get WeekDay6() As LongPtr
+    Property Get WeekDay7() As LongPtr
+    Property Get HasMoreContentAfter() As BooleanByte
+    Property Get HasMoreContentBefore() As BooleanByte
+    Property Get HasMoreViews() As BooleanByte
+    Property Get ClipRect() As RECTF
+    Property Get CenterX() As Double
+    Property Get CenterY() As Double
+End Interface
+
+[InterfaceId("DEAB78B2-373B-4151-8785-E544D0D9362B")]
+Interface ICarouselPanel Extends IInspectable
+    Property Get CanVerticallyScroll() As BooleanByte
+    Property Let CanVerticallyScroll(ByVal Value As BooleanByte)
+    Property Get CanHorizontallyScroll() As BooleanByte
+    Property Let CanHorizontallyScroll(ByVal Value As BooleanByte)
+    Property Get ExtentWidth() As Double
+    Property Get ExtentHeight() As Double
+    Property Get ViewportWidth() As Double
+    Property Get ViewportHeight() As Double
+    Property Get HorizontalOffset() As Double
+    Property Get VerticalOffset() As Double
+    Property Get ScrollOwner() As IInspectable
+    Property Set ScrollOwner(ByVal Value As IInspectable)
+    [PreserveSig]
+    Function LineUp() As HRESULT
+    [PreserveSig]
+    Function LineDown() As HRESULT
+    [PreserveSig]
+    Function LineLeft() As HRESULT
+    [PreserveSig]
+    Function LineRight() As HRESULT
+    [PreserveSig]
+    Function PageUp() As HRESULT
+    [PreserveSig]
+    Function PageDown() As HRESULT
+    [PreserveSig]
+    Function PageLeft() As HRESULT
+    [PreserveSig]
+    Function PageRight() As HRESULT
+    [PreserveSig]
+    Function MouseWheelUp() As HRESULT
+    [PreserveSig]
+    Function MouseWheelDown() As HRESULT
+    [PreserveSig]
+    Function MouseWheelLeft() As HRESULT
+    [PreserveSig]
+    Function MouseWheelRight() As HRESULT
+    [PreserveSig]
+    Function SetHorizontalOffset(ByVal Offset As Double) As HRESULT
+    [PreserveSig]
+    Function SetVerticalOffset(ByVal Offset As Double) As HRESULT
+    Function MakeVisible(ByVal Visual As IUIElement, ByVal Rectangle As RECTF) As RECTF
+End Interface
+
+[InterfaceId("C1109404-9AE1-440E-A0DD-BBB6E2293CBE")]
+Interface ICarouselPanelFactory Extends IInspectable
+    Function CreateInstance(Optional ByVal BaseInterface As IInspectable, Optional InnerInterface As IInspectable) As ICarouselPanel
+End Interface
+
+[InterfaceId("94394D83-E0DF-4C5F-BBCD-8155F4020440")]
+Interface IColorPickerSlider Extends IInspectable
+    Property Get ColorChannel() As ColorPickerHsvChannel
+    Property Let ColorChannel(ByVal Value As ColorPickerHsvChannel)
+End Interface
+
+[InterfaceId("06D879A2-8C07-4B1E-A940-9FBCE8F49639")]
+Interface IColorPickerSliderFactory Extends IInspectable
+    Function CreateInstance(Optional ByVal BaseInterface As IInspectable, Optional InnerInterface As IInspectable) As IColorPickerSlider
+End Interface
+
+[InterfaceId("22EAFC6A-9FE3-4EEE-8734-A1398EC4413A")]
+Interface IColorPickerSliderStatics Extends IInspectable
+    Property Get ColorChannelProperty() As IDependencyProperty
+End Interface
+
+[InterfaceId("650CFA09-70C2-5151-A2CD-27570FB9556B")]
+Interface ITypedEventHandlerColorSpectrumColorChanged Extends IUnknown
+    Sub Invoke(ByVal Sender As IColorSpectrum, ByVal Args As IColorChangedEventArgs)
+End Interface
+
+[InterfaceId("CE46F271-F509-4F98-8288-E4942FB385DF")]
+Interface IColorSpectrum Extends IInspectable
+    Property Get Color() As Color
+    Property Let Color(ByVal Value As Color)
+    Property Get HsvColor() As Vector4
+    Property Let HsvColor(ByVal Value As Vector4)
+    Property Get MinHue() As Long
+    Property Let MinHue(ByVal Value As Long)
+    Property Get MaxHue() As Long
+    Property Let MaxHue(ByVal Value As Long)
+    Property Get MinSaturation() As Long
+    Property Let MinSaturation(ByVal Value As Long)
+    Property Get MaxSaturation() As Long
+    Property Let MaxSaturation(ByVal Value As Long)
+    Property Get MinValue() As Long
+    Property Let MinValue(ByVal Value As Long)
+    Property Get MaxValue() As Long
+    Property Let MaxValue(ByVal Value As Long)
+    Property Get Shape() As ColorSpectrumShape
+    Property Let Shape(ByVal Value As ColorSpectrumShape)
+    Property Get Components() As ColorSpectrumComponents
+    Property Let Components(ByVal Value As ColorSpectrumComponents)
+    [PreserveSig]
+    Function AddColorChanged(ByVal Handler As ITypedEventHandlerColorSpectrumColorChanged, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveColorChanged(ByVal Token As EventRegistrationToken) As HRESULT
+End Interface
+
+[InterfaceId("90C7E61E-904D-42AB-B44F-E68DBF0CDEE9")]
+Interface IColorSpectrumFactory Extends IInspectable
+    Function CreateInstance(Optional ByVal BaseInterface As IInspectable, Optional InnerInterface As IInspectable) As IColorSpectrum
+End Interface
+
+[InterfaceId("906BEE7C-2CEE-4E90-968B-F0A5BD691B4A")]
+Interface IColorSpectrumStatics Extends IInspectable
+    Property Get ColorProperty() As IDependencyProperty
+    Property Get HsvColorProperty() As IDependencyProperty
+    Property Get MinHueProperty() As IDependencyProperty
+    Property Get MaxHueProperty() As IDependencyProperty
+    Property Get MinSaturationProperty() As IDependencyProperty
+    Property Get MaxSaturationProperty() As IDependencyProperty
+    Property Get MinValueProperty() As IDependencyProperty
+    Property Get MaxValueProperty() As IDependencyProperty
+    Property Get ShapeProperty() As IDependencyProperty
+    Property Get ComponentsProperty() As IDependencyProperty
+End Interface
+
+[InterfaceId("83285C4E-17F6-4AA3-B61B-E87C718604EA")]
+Interface IComboBoxTemplateSettings Extends IInspectable
+    Property Get DropDownOpenedHeight() As Double
+    Property Get DropDownClosedHeight() As Double
+    Property Get DropDownOffset() As Double
+    Property Get SelectedItemDirection() As AnimationDirection
+End Interface
+
+[InterfaceId("00E90CD7-68BE-449D-B5A7-76E26F703E9B")]
+Interface IComboBoxTemplateSettings2 Extends IInspectable
+    Property Get DropDownContentMinWidth() As Double
+End Interface
+
+[InterfaceId("14146E7C-38C4-55C4-B706-CE18F6061E7E")]
+Interface ICommandBarFlyoutCommandBar Extends IInspectable
+    Property Get FlyoutTemplateSettings() As ICommandBarFlyoutCommandBarTemplateSettings
+End Interface
+
+[InterfaceId("F8236F9F-5559-5697-8E6F-20D70CA17DD0")]
+Interface ICommandBarFlyoutCommandBarFactory Extends IInspectable
+    Function CreateInstance(Optional ByVal BaseInterface As IInspectable, Optional InnerInterface As IInspectable) As ICommandBarFlyoutCommandBar
+End Interface
+
+[InterfaceId("47642C44-26FF-5D14-9CFC-77DC64F3A447")]
+Interface ICommandBarFlyoutCommandBarTemplateSettings Extends IInspectable
+    Property Get OpenAnimationStartPosition() As Double
+    Property Get OpenAnimationEndPosition() As Double
+    Property Get CloseAnimationEndPosition() As Double
+    Property Get CurrentWidth() As Double
+    Property Get ExpandedWidth() As Double
+    Property Get WidthExpansionDelta() As Double
+    Property Get WidthExpansionAnimationStartPosition() As Double
+    Property Get WidthExpansionAnimationEndPosition() As Double
+    Property Get WidthExpansionMoreButtonAnimationStartPosition() As Double
+    Property Get WidthExpansionMoreButtonAnimationEndPosition() As Double
+    Property Get ExpandUpOverflowVerticalPosition() As Double
+    Property Get ExpandDownOverflowVerticalPosition() As Double
+    Property Get ExpandUpAnimationStartPosition() As Double
+    Property Get ExpandUpAnimationEndPosition() As Double
+    Property Get ExpandUpAnimationHoldPosition() As Double
+    Property Get ExpandDownAnimationStartPosition() As Double
+    Property Get ExpandDownAnimationEndPosition() As Double
+    Property Get ExpandDownAnimationHoldPosition() As Double
+    Property Get ContentClipRect() As RECTF
+    Property Get OverflowContentClipRect() As RECTF
+End Interface
+
+[InterfaceId("61C8F92C-05AA-414A-A2AE-482C5A46C08E")]
+Interface ICommandBarTemplateSettings Extends IInspectable
+    Property Get ContentHeight() As Double
+    Property Get OverflowContentClipRect() As RECTF
+    Property Get OverflowContentMinWidth() As Double
+    Property Get OverflowContentMaxHeight() As Double
+    Property Get OverflowContentHorizontalOffset() As Double
+    Property Get OverflowContentHeight() As Double
+    Property Get NegativeOverflowContentHeight() As Double
+End Interface
+
+[InterfaceId("FBB24F93-C2E2-4177-A2B6-3CD705073CF6")]
+Interface ICommandBarTemplateSettings2 Extends IInspectable
+    Property Get OverflowContentMaxWidth() As Double
+End Interface
+
+[InterfaceId("3BD71EBA-3403-4BFE-842D-2CE8C511D245")]
+Interface ICommandBarTemplateSettings3 Extends IInspectable
+    Property Get EffectiveOverflowButtonVisibility() As Visibility
+End Interface
+
+[InterfaceId("F2562DD3-AA58-59C5-853B-828A19D1214E")]
+Interface ICommandBarTemplateSettings4 Extends IInspectable
+    Property Get OverflowContentCompactYTranslation() As Double
+    Property Get OverflowContentMinimalYTranslation() As Double
+    Property Get OverflowContentHiddenYTranslation() As Double
+End Interface
+
+[InterfaceId("B04F29A1-BD16-48F6-A511-9C2763641331")]
+Interface IDragCompletedEventArgs Extends IInspectable
+    Property Get HorizontalChange() As Double
+    Property Get VerticalChange() As Double
+    Property Get Canceled() As BooleanByte
+End Interface
+
+[InterfaceId("36A7D99D-148C-495F-A0FC-AFC871D62F33")]
+Interface IDragCompletedEventArgsFactory Extends IInspectable
+    Function CreateInstanceWithHorizontalChangeVerticalChangeAndCanceled(ByVal HorizontalChange As Double, ByVal VerticalChange As Double, ByVal Canceled As BooleanByte, Optional ByVal BaseInterface As IInspectable, Optional InnerInterface As IInspectable) As IDragCompletedEventArgs
+End Interface
+
+[InterfaceId("2C2DD73C-2806-49FC-AAE9-6D792B572B6A")]
+Interface IDragDeltaEventArgs Extends IInspectable
+    Property Get HorizontalChange() As Double
+    Property Get VerticalChange() As Double
+End Interface
+
+[InterfaceId("46E7A1EF-AE15-44A6-8A04-95B0BF9AB876")]
+Interface IDragDeltaEventArgsFactory Extends IInspectable
+    Function CreateInstanceWithHorizontalChangeAndVerticalChange(ByVal HorizontalChange As Double, ByVal VerticalChange As Double, Optional ByVal BaseInterface As IInspectable, Optional InnerInterface As IInspectable) As IDragDeltaEventArgs
+End Interface
+
+[InterfaceId("9F915DD0-A124-4366-BD85-2408214AEED4")]
+Interface IDragStartedEventArgs Extends IInspectable
+    Property Get HorizontalOffset() As Double
+    Property Get VerticalOffset() As Double
+End Interface
+
+[InterfaceId("5EEFE579-C706-4781-A308-C9E7F4C6A1D7")]
+Interface IDragStartedEventArgsFactory Extends IInspectable
+    Function CreateInstanceWithHorizontalOffsetAndVerticalOffset(ByVal HorizontalOffset As Double, ByVal VerticalOffset As Double, Optional ByVal BaseInterface As IInspectable, Optional InnerInterface As IInspectable) As IDragStartedEventArgs
+End Interface
+
+[InterfaceId("723EEA0B-D12E-430D-A9F0-9BB32BBF9913")]
+Interface IFlyoutBase Extends IInspectable
+    Property Get Placement() As FlyoutPlacementMode
+    Property Let Placement(ByVal Value As FlyoutPlacementMode)
+    [PreserveSig]
+    Function AddOpened(ByVal Handler As IEventHandlerIInspectable, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveOpened(ByVal Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function AddClosed(ByVal Handler As IEventHandlerIInspectable, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveClosed(ByVal Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function AddOpening(ByVal Handler As IEventHandlerIInspectable, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveOpening(ByVal Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function ShowAt(ByVal PlacementTarget As IFrameworkElement) As HRESULT
+    [PreserveSig]
+    Function Hide() As HRESULT
+End Interface
+
+[InterfaceId("96E17FBC-78C7-5560-AC3A-587F46DB70D6")]
+Interface ITypedEventHandlerFlyoutBaseClosing Extends IUnknown
+    Sub Invoke(ByVal Sender As IFlyoutBase, ByVal Args As IFlyoutBaseClosingEventArgs)
+End Interface
+
+[InterfaceId("F82B435E-65B3-41C6-A9E2-77B67BC4C00C")]
+Interface IFlyoutBase2 Extends IInspectable
+    Property Get Target() As IFrameworkElement
+    Property Get AllowFocusOnInteraction() As BooleanByte
+    Property Let AllowFocusOnInteraction(ByVal Value As BooleanByte)
+    Property Get LightDismissOverlayMode() As LightDismissOverlayMode
+    Property Let LightDismissOverlayMode(ByVal Value As LightDismissOverlayMode)
+    Property Get AllowFocusWhenDisabled() As BooleanByte
+    Property Let AllowFocusWhenDisabled(ByVal Value As BooleanByte)
+    Property Get ElementSoundMode() As ElementSoundMode
+    Property Let ElementSoundMode(ByVal Value As ElementSoundMode)
+    [PreserveSig]
+    Function AddClosing(ByVal Handler As ITypedEventHandlerFlyoutBaseClosing, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveClosing(ByVal Token As EventRegistrationToken) As HRESULT
+End Interface
+
+[InterfaceId("A89C9712-48E0-4240-95B9-0DFD0826A8D3")]
+Interface IFlyoutBase3 Extends IInspectable
+    Property Get OverlayInputPassThroughElement() As IDependencyObject
+    Property Set OverlayInputPassThroughElement(ByVal Value As IDependencyObject)
+End Interface
+
+[InterfaceId("E3897D69-A37F-4828-9B70-0EF67C03B5F8")]
+Interface IFlyoutBase4 Extends IInspectable
+    [PreserveSig]
+    Function TryInvokeKeyboardAccelerator(ByVal Args As IProcessKeyboardAcceleratorEventArgs) As HRESULT
+End Interface
+
+[InterfaceId("AD3EC0C7-12BB-5A73-B78E-105192CA73D6")]
+Interface IFlyoutBase5 Extends IInspectable
+    Property Get ShowMode() As FlyoutShowMode
+    Property Let ShowMode(ByVal Value As FlyoutShowMode)
+    Property Get InputDevicePrefersPrimaryCommands() As BooleanByte
+    Property Get AreOpenCloseAnimationsEnabled() As BooleanByte
+    Property Let AreOpenCloseAnimationsEnabled(ByVal Value As BooleanByte)
+    Property Get IsOpen() As BooleanByte
+    [PreserveSig]
+    Function ShowAt(ByVal PlacementTarget As IDependencyObject, ByVal ShowOptions As IFlyoutShowOptions) As HRESULT
+End Interface
+
+[InterfaceId("5399DE8C-06CC-5B52-B65A-FF9322D1C940")]
+Interface IFlyoutBase6 Extends IInspectable
+    Property Get ShouldConstrainToRootBounds() As BooleanByte
+    Property Let ShouldConstrainToRootBounds(ByVal Value As BooleanByte)
+    Property Get IsConstrainedToRootBounds() As BooleanByte
+    Property Get XamlRoot() As IXamlRoot
+    Property Set XamlRoot(ByVal Value As IXamlRoot)
+End Interface
+
+[InterfaceId("D075852D-B09A-4FD1-B005-DB2BA01206FB")]
+Interface IFlyoutBaseClosingEventArgs Extends IInspectable
+    Property Get Cancel() As BooleanByte
+    Property Let Cancel(ByVal Value As BooleanByte)
+End Interface
+
+[InterfaceId("1C3363D7-FCA7-407E-920E-70E15E9F0BF1")]
+Interface IFlyoutBaseFactory Extends IInspectable
+    Function CreateInstance(Optional ByVal BaseInterface As IInspectable, Optional InnerInterface As IInspectable) As IFlyoutBase
+End Interface
+
+[InterfaceId("101DEC86-6F4D-45A4-9D0E-3ECE6F16977E")]
+Interface IFlyoutBaseOverrides Extends IInspectable
+    Function CreatePresenter() As WinRT.IControl
+End Interface
+
+[InterfaceId("A6BFD04D-5FF3-4418-ADD8-4042A88D2DA5")]
+Interface IFlyoutBaseOverrides4 Extends IInspectable
+    [PreserveSig]
+    Function OnProcessKeyboardAccelerators(ByVal Args As IProcessKeyboardAcceleratorEventArgs) As HRESULT
+End Interface
+
+[InterfaceId("E2D795E3-85C0-4DE2-BAC1-5294CA011A78")]
+Interface IFlyoutBaseStatics Extends IInspectable
+    Property Get PlacementProperty() As IDependencyProperty
+    Property Get AttachedFlyoutProperty() As IDependencyProperty
+    Function GetAttachedFlyout(ByVal Element As IFrameworkElement) As IFlyoutBase
+    [PreserveSig]
+    Function SetAttachedFlyout(ByVal Element As IFrameworkElement, ByVal Value As IFlyoutBase) As HRESULT
+    [PreserveSig]
+    Function ShowAttachedFlyout(ByVal FlyoutOwner As IFrameworkElement) As HRESULT
+End Interface
+
+[InterfaceId("A8E913FE-2D60-4307-AAD9-56B450121B58")]
+Interface IFlyoutBaseStatics2 Extends IInspectable
+    Property Get AllowFocusOnInteractionProperty() As IDependencyProperty
+    Property Get LightDismissOverlayModeProperty() As IDependencyProperty
+    Property Get AllowFocusWhenDisabledProperty() As IDependencyProperty
+    Property Get ElementSoundModeProperty() As IDependencyProperty
+End Interface
+
+[InterfaceId("7BA92E4F-DD16-4BE4-99DB-BD9D4406C0F8")]
+Interface IFlyoutBaseStatics3 Extends IInspectable
+    Property Get OverlayInputPassThroughElementProperty() As IDependencyProperty
+End Interface
+
+[InterfaceId("69EDB25C-992A-542B-BCFF-2F7F855523BD")]
+Interface IFlyoutBaseStatics5 Extends IInspectable
+    Property Get TargetProperty() As IDependencyProperty
+    Property Get ShowModeProperty() As IDependencyProperty
+    Property Get InputDevicePrefersPrimaryCommandsProperty() As IDependencyProperty
+    Property Get AreOpenCloseAnimationsEnabledProperty() As IDependencyProperty
+    Property Get IsOpenProperty() As IDependencyProperty
+End Interface
+
+[InterfaceId("96D49254-C91B-5246-8B39-AFC2A2C50CF8")]
+Interface IFlyoutBaseStatics6 Extends IInspectable
+    Property Get ShouldConstrainToRootBoundsProperty() As IDependencyProperty
+End Interface
+
+[InterfaceId("57D693AD-0C74-54DD-B110-1EE43FABADD9")]
+Interface IFlyoutShowOptions Extends IInspectable
+    Property Get Position() As IReference_Point
+    Property Set Position(ByVal Value As IReference_Point)
+    Property Get ExclusionRect() As IReference_Rect
+    Property Set ExclusionRect(ByVal Value As IReference_Rect)
+    Property Get ShowMode() As FlyoutShowMode
+    Property Let ShowMode(ByVal Value As FlyoutShowMode)
+    Property Get Placement() As FlyoutPlacementMode
+    Property Let Placement(ByVal Value As FlyoutPlacementMode)
+End Interface
+
+[InterfaceId("CE596F61-2EB4-5B4E-AF69-F9AF42320EEE")]
+Interface IFlyoutShowOptionsFactory Extends IInspectable
+    Function CreateInstance(Optional ByVal BaseInterface As IInspectable, Optional InnerInterface As IInspectable) As IFlyoutShowOptions
+End Interface
+
+[InterfaceId("CD40318D-7745-40D9-AB9D-ABBDA4A7FFEA")]
+Interface IGeneratorPositionHelper Extends IInspectable
+
+End Interface
+
+[InterfaceId("AD4095CD-60EC-4588-8D60-39D29097A4DF")]
+Interface IGeneratorPositionHelperStatics Extends IInspectable
+    Function FromIndexAndOffset(ByVal Index As Long, ByVal Offset As Long) As GeneratorPosition
+End Interface
+
+[InterfaceId("214F9010-56E2-4821-8A1C-2305709AF94B")]
+Interface IGridViewItemPresenter Extends IInspectable
+    Property Get SelectionCheckMarkVisualEnabled() As BooleanByte
+    Property Let SelectionCheckMarkVisualEnabled(ByVal Value As BooleanByte)
+    Property Get CheckHintBrush() As IBrush
+    Property Set CheckHintBrush(ByVal Value As IBrush)
+    Property Get CheckSelectingBrush() As IBrush
+    Property Set CheckSelectingBrush(ByVal Value As IBrush)
+    Property Get CheckBrush() As IBrush
+    Property Set CheckBrush(ByVal Value As IBrush)
+    Property Get DragBackground() As IBrush
+    Property Set DragBackground(ByVal Value As IBrush)
+    Property Get DragForeground() As IBrush
+    Property Set DragForeground(ByVal Value As IBrush)
+    Property Get FocusBorderBrush() As IBrush
+    Property Set FocusBorderBrush(ByVal Value As IBrush)
+    Property Get PlaceholderBackground() As IBrush
+    Property Set PlaceholderBackground(ByVal Value As IBrush)
+    Property Get PointerOverBackground() As IBrush
+    Property Set PointerOverBackground(ByVal Value As IBrush)
+    Property Get SelectedBackground() As IBrush
+    Property Set SelectedBackground(ByVal Value As IBrush)
+    Property Get SelectedForeground() As IBrush
+    Property Set SelectedForeground(ByVal Value As IBrush)
+    Property Get SelectedPointerOverBackground() As IBrush
+    Property Set SelectedPointerOverBackground(ByVal Value As IBrush)
+    Property Get SelectedPointerOverBorderBrush() As IBrush
+    Property Set SelectedPointerOverBorderBrush(ByVal Value As IBrush)
+    Property Get SelectedBorderThickness() As Thickness
+    Property Let SelectedBorderThickness(ByVal Value As Thickness)
+    Property Get DisabledOpacity() As Double
+    Property Let DisabledOpacity(ByVal Value As Double)
+    Property Get DragOpacity() As Double
+    Property Let DragOpacity(ByVal Value As Double)
+    Property Get ReorderHintOffset() As Double
+    Property Let ReorderHintOffset(ByVal Value As Double)
+    Property Get GridViewItemPresenterHorizontalContentAlignment() As HorizontalAlignment
+    Property Let GridViewItemPresenterHorizontalContentAlignment(ByVal Value As HorizontalAlignment)
+    Property Get GridViewItemPresenterVerticalContentAlignment() As VerticalAlignment
+    Property Let GridViewItemPresenterVerticalContentAlignment(ByVal Value As VerticalAlignment)
+    Property Get GridViewItemPresenterPadding() As Thickness
+    Property Let GridViewItemPresenterPadding(ByVal Value As Thickness)
+    Property Get PointerOverBackgroundMargin() As Thickness
+    Property Let PointerOverBackgroundMargin(ByVal Value As Thickness)
+    Property Get ContentMargin() As Thickness
+    Property Let ContentMargin(ByVal Value As Thickness)
+End Interface
+
+[InterfaceId("53C12178-63BB-4A65-A3F1-AB114CFC6FFE")]
+Interface IGridViewItemPresenterFactory Extends IInspectable
+    Function CreateInstance(Optional ByVal BaseInterface As IInspectable, Optional InnerInterface As IInspectable) As IGridViewItemPresenter
+End Interface
+
+[InterfaceId("E958F8C4-277E-4A72-A01E-9E1688980178")]
+Interface IGridViewItemPresenterStatics Extends IInspectable
+    Property Get SelectionCheckMarkVisualEnabledProperty() As IDependencyProperty
+    Property Get CheckHintBrushProperty() As IDependencyProperty
+    Property Get CheckSelectingBrushProperty() As IDependencyProperty
+    Property Get CheckBrushProperty() As IDependencyProperty
+    Property Get DragBackgroundProperty() As IDependencyProperty
+    Property Get DragForegroundProperty() As IDependencyProperty
+    Property Get FocusBorderBrushProperty() As IDependencyProperty
+    Property Get PlaceholderBackgroundProperty() As IDependencyProperty
+    Property Get PointerOverBackgroundProperty() As IDependencyProperty
+    Property Get SelectedBackgroundProperty() As IDependencyProperty
+    Property Get SelectedForegroundProperty() As IDependencyProperty
+    Property Get SelectedPointerOverBackgroundProperty() As IDependencyProperty
+    Property Get SelectedPointerOverBorderBrushProperty() As IDependencyProperty
+    Property Get SelectedBorderThicknessProperty() As IDependencyProperty
+    Property Get DisabledOpacityProperty() As IDependencyProperty
+    Property Get DragOpacityProperty() As IDependencyProperty
+    Property Get ReorderHintOffsetProperty() As IDependencyProperty
+    Property Get GridViewItemPresenterHorizontalContentAlignmentProperty() As IDependencyProperty
+    Property Get GridViewItemPresenterVerticalContentAlignmentProperty() As IDependencyProperty
+    Property Get GridViewItemPresenterPaddingProperty() As IDependencyProperty
+    Property Get PointerOverBackgroundMarginProperty() As IDependencyProperty
+    Property Get ContentMarginProperty() As IDependencyProperty
+End Interface
+
+[InterfaceId("9E30BAAF-165D-4267-A45E-1A43A75706AC")]
+Interface IGridViewItemTemplateSettings Extends IInspectable
+    Property Get DragItemsCount() As Long
+End Interface
+
+[InterfaceId("E8B45568-7D10-421E-BE29-81839A91DE20")]
+Interface IItemsChangedEventArgs Extends IInspectable
+    Property Get Action() As Long
+    Property Get Position() As GeneratorPosition
+    Property Get OldPosition() As GeneratorPosition
+    Property Get ItemCount() As Long
+    Property Get ItemUICount() As Long
+End Interface
+
+[InterfaceId("81177858-D224-410C-B16C-C5B6BB6188B2")]
+Interface IJumpListItemBackgroundConverter Extends IInspectable
+    Property Get Enabled() As IBrush
+    Property Set Enabled(ByVal Value As IBrush)
+    Property Get Disabled() As IBrush
+    Property Set Disabled(ByVal Value As IBrush)
+End Interface
+
+[InterfaceId("20E7C3DD-6F27-4808-B0BE-83E0E9B5CC45")]
+Interface IJumpListItemBackgroundConverterStatics Extends IInspectable
+    Property Get EnabledProperty() As IDependencyProperty
+    Property Get DisabledProperty() As IDependencyProperty
+End Interface
+
+[InterfaceId("1590ED38-C504-4796-A63A-5BFC9EEFAAE8")]
+Interface IJumpListItemForegroundConverter Extends IInspectable
+    Property Get Enabled() As IBrush
+    Property Set Enabled(ByVal Value As IBrush)
+    Property Get Disabled() As IBrush
+    Property Set Disabled(ByVal Value As IBrush)
+End Interface
+
+[InterfaceId("474E7352-210C-4673-AC6A-413F0E2C7750")]
+Interface IJumpListItemForegroundConverterStatics Extends IInspectable
+    Property Get EnabledProperty() As IDependencyProperty
+    Property Get DisabledProperty() As IDependencyProperty
+End Interface
+
+[InterfaceId("B5384C9B-C8CF-41B3-BF16-18C8420E72C9")]
+Interface ILayoutInformation Extends IInspectable
+
+End Interface
+
+[InterfaceId("CF06CF99-58E9-4682-8326-50CAAB65ED7C")]
+Interface ILayoutInformationStatics Extends IInspectable
+    Function GetLayoutExceptionElement(ByVal Dispatcher As IInspectable) As IUIElement
+    Function GetLayoutSlot(ByVal Element As IFrameworkElement) As RECTF
+End Interface
+
+[InterfaceId("760315B5-6D4E-4939-AC61-639863CEA36B")]
+Interface ILayoutInformationStatics2 Extends IInspectable
+    Function GetAvailableSize(ByVal Element As IUIElement) As SIZEF
+End Interface
+
+[InterfaceId("FC8946BD-A3A2-4969-8174-25B5D3C28033")]
+Interface IListViewItemPresenter Extends IInspectable
+    Property Get SelectionCheckMarkVisualEnabled() As BooleanByte
+    Property Let SelectionCheckMarkVisualEnabled(ByVal Value As BooleanByte)
+    Property Get CheckHintBrush() As IBrush
+    Property Set CheckHintBrush(ByVal Value As IBrush)
+    Property Get CheckSelectingBrush() As IBrush
+    Property Set CheckSelectingBrush(ByVal Value As IBrush)
+    Property Get CheckBrush() As IBrush
+    Property Set CheckBrush(ByVal Value As IBrush)
+    Property Get DragBackground() As IBrush
+    Property Set DragBackground(ByVal Value As IBrush)
+    Property Get DragForeground() As IBrush
+    Property Set DragForeground(ByVal Value As IBrush)
+    Property Get FocusBorderBrush() As IBrush
+    Property Set FocusBorderBrush(ByVal Value As IBrush)
+    Property Get PlaceholderBackground() As IBrush
+    Property Set PlaceholderBackground(ByVal Value As IBrush)
+    Property Get PointerOverBackground() As IBrush
+    Property Set PointerOverBackground(ByVal Value As IBrush)
+    Property Get SelectedBackground() As IBrush
+    Property Set SelectedBackground(ByVal Value As IBrush)
+    Property Get SelectedForeground() As IBrush
+    Property Set SelectedForeground(ByVal Value As IBrush)
+    Property Get SelectedPointerOverBackground() As IBrush
+    Property Set SelectedPointerOverBackground(ByVal Value As IBrush)
+    Property Get SelectedPointerOverBorderBrush() As IBrush
+    Property Set SelectedPointerOverBorderBrush(ByVal Value As IBrush)
+    Property Get SelectedBorderThickness() As Thickness
+    Property Let SelectedBorderThickness(ByVal Value As Thickness)
+    Property Get DisabledOpacity() As Double
+    Property Let DisabledOpacity(ByVal Value As Double)
+    Property Get DragOpacity() As Double
+    Property Let DragOpacity(ByVal Value As Double)
+    Property Get ReorderHintOffset() As Double
+    Property Let ReorderHintOffset(ByVal Value As Double)
+    Property Get ListViewItemPresenterHorizontalContentAlignment() As HorizontalAlignment
+    Property Let ListViewItemPresenterHorizontalContentAlignment(ByVal Value As HorizontalAlignment)
+    Property Get ListViewItemPresenterVerticalContentAlignment() As VerticalAlignment
+    Property Let ListViewItemPresenterVerticalContentAlignment(ByVal Value As VerticalAlignment)
+    Property Get ListViewItemPresenterPadding() As Thickness
+    Property Let ListViewItemPresenterPadding(ByVal Value As Thickness)
+    Property Get PointerOverBackgroundMargin() As Thickness
+    Property Let PointerOverBackgroundMargin(ByVal Value As Thickness)
+    Property Get ContentMargin() As Thickness
+    Property Let ContentMargin(ByVal Value As Thickness)
+End Interface
+
+[InterfaceId("F5DC5496-E122-4C57-A625-AC4B08FB2D4C")]
+Interface IListViewItemPresenter2 Extends IInspectable
+    Property Get SelectedPressedBackground() As IBrush
+    Property Set SelectedPressedBackground(ByVal Value As IBrush)
+    Property Get PressedBackground() As IBrush
+    Property Set PressedBackground(ByVal Value As IBrush)
+    Property Get CheckBoxBrush() As IBrush
+    Property Set CheckBoxBrush(ByVal Value As IBrush)
+    Property Get FocusSecondaryBorderBrush() As IBrush
+    Property Set FocusSecondaryBorderBrush(ByVal Value As IBrush)
+    Property Get CheckMode() As ListViewItemPresenterCheckMode
+    Property Set CheckMode(ByVal Value As ListViewItemPresenterCheckMode)
+    Property Get PointerOverForeground() As IBrush
+    Property Set PointerOverForeground(ByVal Value As IBrush)
+End Interface
+
+[InterfaceId("36620013-0390-4E30-AD97-8744404F7010")]
+Interface IListViewItemPresenter3 Extends IInspectable
+    Property Get RevealBackground() As IBrush
+    Property Set RevealBackground(ByVal Value As IBrush)
+    Property Get RevealBorderBrush() As IBrush
+    Property Set RevealBorderBrush(ByVal Value As IBrush)
+    Property Get RevealBorderThickness() As Thickness
+    Property Let RevealBorderThickness(ByVal Value As Thickness)
+    Property Get RevealBackgroundShowsAboveContent() As BooleanByte
+    Property Let RevealBackgroundShowsAboveContent(ByVal Value As BooleanByte)
+End Interface
+
+[InterfaceId("DA600AC1-ADEA-5940-A18F-57582F96D99A")]
+Interface IListViewItemPresenter4 Extends IInspectable
+    Property Get SelectedDisabledBackground() As IBrush
+    Property Set SelectedDisabledBackground(ByVal Value As IBrush)
+    Property Get CheckPressedBrush() As IBrush
+    Property Set CheckPressedBrush(ByVal Value As IBrush)
+    Property Get CheckDisabledBrush() As IBrush
+    Property Set CheckDisabledBrush(ByVal Value As IBrush)
+    Property Get CheckBoxPointerOverBrush() As IBrush
+    Property Set CheckBoxPointerOverBrush(ByVal Value As IBrush)
+    Property Get CheckBoxPressedBrush() As IBrush
+    Property Set CheckBoxPressedBrush(ByVal Value As IBrush)
+    Property Get CheckBoxDisabledBrush() As IBrush
+    Property Set CheckBoxDisabledBrush(ByVal Value As IBrush)
+    Property Get CheckBoxSelectedBrush() As IBrush
+    Property Set CheckBoxSelectedBrush(ByVal Value As IBrush)
+    Property Get CheckBoxSelectedPointerOverBrush() As IBrush
+    Property Set CheckBoxSelectedPointerOverBrush(ByVal Value As IBrush)
+    Property Get CheckBoxSelectedPressedBrush() As IBrush
+    Property Set CheckBoxSelectedPressedBrush(ByVal Value As IBrush)
+    Property Get CheckBoxSelectedDisabledBrush() As IBrush
+    Property Set CheckBoxSelectedDisabledBrush(ByVal Value As IBrush)
+    Property Get CheckBoxBorderBrush() As IBrush
+    Property Set CheckBoxBorderBrush(ByVal Value As IBrush)
+    Property Get CheckBoxPointerOverBorderBrush() As IBrush
+    Property Set CheckBoxPointerOverBorderBrush(ByVal Value As IBrush)
+    Property Get CheckBoxPressedBorderBrush() As IBrush
+    Property Set CheckBoxPressedBorderBrush(ByVal Value As IBrush)
+    Property Get CheckBoxDisabledBorderBrush() As IBrush
+    Property Set CheckBoxDisabledBorderBrush(ByVal Value As IBrush)
+    Property Get CheckBoxCornerRadius() As CornerRadius
+    Property Let CheckBoxCornerRadius(ByVal Value As CornerRadius)
+    Property Get SelectionIndicatorCornerRadius() As CornerRadius
+    Property Let SelectionIndicatorCornerRadius(ByVal Value As CornerRadius)
+    Property Get SelectionIndicatorVisualEnabled() As BooleanByte
+    Property Let SelectionIndicatorVisualEnabled(ByVal Value As BooleanByte)
+    Property Get SelectionIndicatorMode() As ListViewItemPresenterSelectionIndicatorMode
+    Property Let SelectionIndicatorMode(ByVal Value As ListViewItemPresenterSelectionIndicatorMode)
+    Property Get SelectionIndicatorBrush() As IBrush
+    Property Set SelectionIndicatorBrush(ByVal Value As IBrush)
+    Property Get SelectionIndicatorPointerOverBrush() As IBrush
+    Property Set SelectionIndicatorPointerOverBrush(ByVal Value As IBrush)
+    Property Get SelectionIndicatorPressedBrush() As IBrush
+    Property Set SelectionIndicatorPressedBrush(ByVal Value As IBrush)
+    Property Get SelectionIndicatorDisabledBrush() As IBrush
+    Property Set SelectionIndicatorDisabledBrush(ByVal Value As IBrush)
+    Property Get SelectedBorderBrush() As IBrush
+    Property Set SelectedBorderBrush(ByVal Value As IBrush)
+    Property Get SelectedPressedBorderBrush() As IBrush
+    Property Set SelectedPressedBorderBrush(ByVal Value As IBrush)
+    Property Get SelectedDisabledBorderBrush() As IBrush
+    Property Set SelectedDisabledBorderBrush(ByVal Value As IBrush)
+    Property Get SelectedInnerBorderBrush() As IBrush
+    Property Set SelectedInnerBorderBrush(ByVal Value As IBrush)
+    Property Get PointerOverBorderBrush() As IBrush
+    Property Set PointerOverBorderBrush(ByVal Value As IBrush)
+End Interface
+
+[InterfaceId("E0777CFD-F7E4-4A67-9AC0-A994FCACD020")]
+Interface IListViewItemPresenterFactory Extends IInspectable
+    Function CreateInstance(Optional ByVal BaseInterface As IInspectable, Optional InnerInterface As IInspectable) As IListViewItemPresenter
+End Interface
+
+[InterfaceId("6504A55A-15DD-42FB-AA5D-2D8CE2E9C294")]
+Interface IListViewItemPresenterStatics Extends IInspectable
+    Property Get SelectionCheckMarkVisualEnabledProperty() As IDependencyProperty
+    Property Get CheckHintBrushProperty() As IDependencyProperty
+    Property Get CheckSelectingBrushProperty() As IDependencyProperty
+    Property Get CheckBrushProperty() As IDependencyProperty
+    Property Get DragBackgroundProperty() As IDependencyProperty
+    Property Get DragForegroundProperty() As IDependencyProperty
+    Property Get FocusBorderBrushProperty() As IDependencyProperty
+    Property Get PlaceholderBackgroundProperty() As IDependencyProperty
+    Property Get PointerOverBackgroundProperty() As IDependencyProperty
+    Property Get SelectedBackgroundProperty() As IDependencyProperty
+    Property Get SelectedForegroundProperty() As IDependencyProperty
+    Property Get SelectedPointerOverBackgroundProperty() As IDependencyProperty
+    Property Get SelectedPointerOverBorderBrushProperty() As IDependencyProperty
+    Property Get SelectedBorderThicknessProperty() As IDependencyProperty
+    Property Get DisabledOpacityProperty() As IDependencyProperty
+    Property Get DragOpacityProperty() As IDependencyProperty
+    Property Get ReorderHintOffsetProperty() As IDependencyProperty
+    Property Get ListViewItemPresenterHorizontalContentAlignmentProperty() As IDependencyProperty
+    Property Get ListViewItemPresenterVerticalContentAlignmentProperty() As IDependencyProperty
+    Property Get ListViewItemPresenterPaddingProperty() As IDependencyProperty
+    Property Get PointerOverBackgroundMarginProperty() As IDependencyProperty
+    Property Get ContentMarginProperty() As IDependencyProperty
+End Interface
+
+[InterfaceId("4CB3B945-D24D-42A3-9E83-A86D0618BF1B")]
+Interface IListViewItemPresenterStatics2 Extends IInspectable
+    Property Get SelectedPressedBackgroundProperty() As IDependencyProperty
+    Property Get PressedBackgroundProperty() As IDependencyProperty
+    Property Get CheckBoxBrushProperty() As IDependencyProperty
+    Property Get FocusSecondaryBorderBrushProperty() As IDependencyProperty
+    Property Get CheckModeProperty() As IDependencyProperty
+    Property Get PointerOverForegroundProperty() As IDependencyProperty
+End Interface
+
+[InterfaceId("C3D3D11E-FA26-4CE7-A4ED-FF948F01B7C0")]
+Interface IListViewItemPresenterStatics3 Extends IInspectable
+    Property Get RevealBackgroundProperty() As IDependencyProperty
+    Property Get RevealBorderBrushProperty() As IDependencyProperty
+    Property Get RevealBorderThicknessProperty() As IDependencyProperty
+    Property Get RevealBackgroundShowsAboveContentProperty() As IDependencyProperty
+End Interface
+
+[InterfaceId("3917159E-74A1-5E7E-A743-E45BE9FB919B")]
+Interface IListViewItemPresenterStatics4 Extends IInspectable
+    Property Get SelectedDisabledBackgroundProperty() As IDependencyProperty
+    Property Get CheckPressedBrushProperty() As IDependencyProperty
+    Property Get CheckDisabledBrushProperty() As IDependencyProperty
+    Property Get CheckBoxPointerOverBrushProperty() As IDependencyProperty
+    Property Get CheckBoxPressedBrushProperty() As IDependencyProperty
+    Property Get CheckBoxDisabledBrushProperty() As IDependencyProperty
+    Property Get CheckBoxSelectedBrushProperty() As IDependencyProperty
+    Property Get CheckBoxSelectedPointerOverBrushProperty() As IDependencyProperty
+    Property Get CheckBoxSelectedPressedBrushProperty() As IDependencyProperty
+    Property Get CheckBoxSelectedDisabledBrushProperty() As IDependencyProperty
+    Property Get CheckBoxBorderBrushProperty() As IDependencyProperty
+    Property Get CheckBoxPointerOverBorderBrushProperty() As IDependencyProperty
+    Property Get CheckBoxPressedBorderBrushProperty() As IDependencyProperty
+    Property Get CheckBoxDisabledBorderBrushProperty() As IDependencyProperty
+    Property Get CheckBoxCornerRadiusProperty() As IDependencyProperty
+    Property Get SelectionIndicatorCornerRadiusProperty() As IDependencyProperty
+    Property Get SelectionIndicatorVisualEnabledProperty() As IDependencyProperty
+    Property Get SelectionIndicatorModeProperty() As IDependencyProperty
+    Property Get SelectionIndicatorBrushProperty() As IDependencyProperty
+    Property Get SelectionIndicatorPointerOverBrushProperty() As IDependencyProperty
+    Property Get SelectionIndicatorPressedBrushProperty() As IDependencyProperty
+    Property Get SelectionIndicatorDisabledBrushProperty() As IDependencyProperty
+    Property Get SelectedBorderBrushProperty() As IDependencyProperty
+    Property Get SelectedPressedBorderBrushProperty() As IDependencyProperty
+    Property Get SelectedDisabledBorderBrushProperty() As IDependencyProperty
+    Property Get SelectedInnerBorderBrushProperty() As IDependencyProperty
+    Property Get PointerOverBorderBrushProperty() As IDependencyProperty
+End Interface
+
+[InterfaceId("67AF84BF-8279-4686-9326-CD189F27575D")]
+Interface IListViewItemTemplateSettings Extends IInspectable
+    Property Get DragItemsCount() As Long
+End Interface
+
+[InterfaceId("44A94F2D-04F8-5091-B336-BE7892DD10BE")]
+Interface IIterator_IInspectable Extends IInspectable
+    Property Get Current() As IInspectable
+    Property Get HasCurrent() As BooleanByte
+    Function MoveNext() As BooleanByte
+    Function GetMany(ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("092B849B-60B1-52BE-A44A-6FE8E933CBE4")]
+Interface IIterable_IInspectable Extends IInspectable
+    Function First() As IIterator_IInspectable
+End Interface
+
+[InterfaceId("A6487363-B074-5C60-AB16-866DCE4EE54D")]
+Interface IVectorView_IInspectable Extends IInspectable
+    Function GetAt(ByVal Index As Long) As IInspectable
+    Property Get Size() As Long
+    Function IndexOf(ByVal Value As IInspectable, Index As Long) As BooleanByte
+    Function GetMany(ByVal StartIndex As Long, ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("B32BDCA4-5E52-5B27-BC5D-D66A1A268C2A")]
+Interface IVector_IInspectable Extends IInspectable
+    Function GetAt(ByVal Index As Long) As IInspectable
+    Property Get Size() As Long
+    Function GetView() As IVectorView_IInspectable
+    Function IndexOf(ByVal Value As IInspectable, Index As Long) As BooleanByte
+    [PreserveSig]
+    Function SetAt(ByVal Index As Long, ByVal Value As IInspectable) As HRESULT
+    [PreserveSig]
+    Function InsertAt(ByVal Index As Long, ByVal Value As IInspectable) As HRESULT
+    [PreserveSig]
+    Function RemoveAt(ByVal Index As Long) As HRESULT
+    [PreserveSig]
+    Function Append(ByVal Value As IInspectable) As HRESULT
+    [PreserveSig]
+    Function RemoveAtEnd() As HRESULT
+    [PreserveSig]
+    Function Clear() As HRESULT
+    Function GetMany(ByVal StartIndex As Long, ByVal Length As Long, Items As Any) As Long
+    [PreserveSig]
+    Function ReplaceAll(ByVal Length As Long, Items As Any) As HRESULT
+End Interface
+
+[InterfaceId("B423A801-D35E-56B9-813B-00889536CB98")]
+Interface IVectorChangedEventHandlerIInspectable Extends IUnknown
+    Sub Invoke(ByVal Sender As IObservableVector_IInspectable, ByVal Args As IVectorChangedEventArgs)
+End Interface
+
+[InterfaceId("7B81C56A-0985-518D-BAA9-0DA9AE009F65")]
+Interface IObservableVector_IInspectable Extends IInspectable
+    [PreserveSig]
+    Function AddVectorChanged(ByVal Handler As IVectorChangedEventHandlerIInspectable, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveVectorChanged(ByVal Token As EventRegistrationToken) As HRESULT
+End Interface
+
+[InterfaceId("4C9A3E04-4827-49D9-8806-093957B0FD21")]
+Interface ILoopingSelector Extends IInspectable
+    Property Get ShouldLoop() As BooleanByte
+    Property Let ShouldLoop(ByVal Value As BooleanByte)
+    Property Get Items() As IVector_IInspectable
+    Property Set Items(ByVal Value As IVector_IInspectable)
+    Property Get SelectedIndex() As Long
+    Property Let SelectedIndex(ByVal Value As Long)
+    Property Get SelectedItem() As IInspectable
+    Property Set SelectedItem(ByVal Value As IInspectable)
+    Property Get ItemWidth() As Long
+    Property Let ItemWidth(ByVal Value As Long)
+    Property Get ItemHeight() As Long
+    Property Let ItemHeight(ByVal Value As Long)
+    Property Get ItemTemplate() As IDataTemplate
+    Property Set ItemTemplate(ByVal Value As IDataTemplate)
+    [PreserveSig]
+    Function AddSelectionChanged(ByVal Handler As ISelectionChangedEventHandler, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveSelectionChanged(ByVal Token As EventRegistrationToken) As HRESULT
+End Interface
+
+[InterfaceId("C69714B9-27C6-4433-9D7C-0DBFB2F4344F")]
+Interface ILoopingSelectorItem Extends IInspectable
+
+End Interface
+
+[InterfaceId("40A9BA70-1011-4778-87F7-6BFD20D6377D")]
+Interface ILoopingSelectorPanel Extends IInspectable
+
+End Interface
+
+[InterfaceId("03E8BAFA-8C7D-4FC5-B92A-F049FB933CC5")]
+Interface ILoopingSelectorStatics Extends IInspectable
+    Property Get ShouldLoopProperty() As IDependencyProperty
+    Property Get ItemsProperty() As IDependencyProperty
+    Property Get SelectedIndexProperty() As IDependencyProperty
+    Property Get SelectedItemProperty() As IDependencyProperty
+    Property Get ItemWidthProperty() As IDependencyProperty
+    Property Get ItemHeightProperty() As IDependencyProperty
+    Property Get ItemTemplateProperty() As IDependencyProperty
+End Interface
+
+[InterfaceId("56AD1809-3A16-4147-81CB-D0B35C834E0F")]
+Interface IMenuFlyoutItemTemplateSettings Extends IInspectable
+    Property Get KeyboardAcceleratorTextMinWidth() As Double
+End Interface
+
+[InterfaceId("D68FD00D-629D-4349-AC51-B877C80983B8")]
+Interface IMenuFlyoutPresenterTemplateSettings Extends IInspectable
+    Property Get FlyoutContentMinWidth() As Double
+End Interface
+
+[InterfaceId("9956D3FC-4693-59CB-B6BF-37249058BE96")]
+Interface INavigationViewItemPresenter Extends IInspectable
+    Property Get Icon() As IIconElement
+    Property Set Icon(ByVal Value As IIconElement)
+End Interface
+
+[InterfaceId("BB062C50-4A36-52E7-9459-E89D02F3FC42")]
+Interface INavigationViewItemPresenterFactory Extends IInspectable
+    Function CreateInstance(Optional ByVal BaseInterface As IInspectable, Optional InnerInterface As IInspectable) As INavigationViewItemPresenter
+End Interface
+
+[InterfaceId("52814604-CFC1-5AD5-A3AA-FA355BE6BD76")]
+Interface INavigationViewItemPresenterStatics Extends IInspectable
+    Property Get IconProperty() As IDependencyProperty
+End Interface
+
+[InterfaceId("F077B577-39BD-46EE-BDD7-0826BEED71B8")]
+Interface IOrientedVirtualizingPanel Extends IInspectable
+    Property Get CanVerticallyScroll() As BooleanByte
+    Property Let CanVerticallyScroll(ByVal Value As BooleanByte)
+    Property Get CanHorizontallyScroll() As BooleanByte
+    Property Let CanHorizontallyScroll(ByVal Value As BooleanByte)
+    Property Get ExtentWidth() As Double
+    Property Get ExtentHeight() As Double
+    Property Get ViewportWidth() As Double
+    Property Get ViewportHeight() As Double
+    Property Get HorizontalOffset() As Double
+    Property Get VerticalOffset() As Double
+    Property Get ScrollOwner() As IInspectable
+    Property Set ScrollOwner(ByVal Value As IInspectable)
+    [PreserveSig]
+    Function LineUp() As HRESULT
+    [PreserveSig]
+    Function LineDown() As HRESULT
+    [PreserveSig]
+    Function LineLeft() As HRESULT
+    [PreserveSig]
+    Function LineRight() As HRESULT
+    [PreserveSig]
+    Function PageUp() As HRESULT
+    [PreserveSig]
+    Function PageDown() As HRESULT
+    [PreserveSig]
+    Function PageLeft() As HRESULT
+    [PreserveSig]
+    Function PageRight() As HRESULT
+    [PreserveSig]
+    Function MouseWheelUp() As HRESULT
+    [PreserveSig]
+    Function MouseWheelDown() As HRESULT
+    [PreserveSig]
+    Function MouseWheelLeft() As HRESULT
+    [PreserveSig]
+    Function MouseWheelRight() As HRESULT
+    [PreserveSig]
+    Function SetHorizontalOffset(ByVal Offset As Double) As HRESULT
+    [PreserveSig]
+    Function SetVerticalOffset(ByVal Offset As Double) As HRESULT
+    Function MakeVisible(ByVal Visual As IUIElement, ByVal Rectangle As RECTF) As RECTF
+End Interface
+
+[InterfaceId("7B8EAEAF-F92F-439D-9EBF-E9919F56C94D")]
+Interface IOrientedVirtualizingPanelFactory Extends IInspectable
+
+End Interface
+
+[InterfaceId("E33574EA-1076-44D1-9383-DC24AC5CFF2A")]
+Interface IPickerFlyoutBase Extends IInspectable
+
+End Interface
+
+[InterfaceId("7EC27A53-9502-4BEB-B342-00566C8F16B0")]
+Interface IPickerFlyoutBaseFactory Extends IInspectable
+    Function CreateInstance(Optional ByVal BaseInterface As IInspectable, Optional InnerInterface As IInspectable) As IPickerFlyoutBase
+End Interface
+
+[InterfaceId("5BFC4F4A-4822-47B4-A958-77C20BA120D3")]
+Interface IPickerFlyoutBaseOverrides Extends IInspectable
+    [PreserveSig]
+    Function OnConfirmed() As HRESULT
+    Function ShouldShowConfirmationButtons() As BooleanByte
+End Interface
+
+[InterfaceId("5A4D0AC5-89AE-40E5-A7F1-BB702355ADF3")]
+Interface IPickerFlyoutBaseStatics Extends IInspectable
+    Property Get TitleProperty() As IDependencyProperty
+    Function GetTitle(ByVal Element As IDependencyObject) As LongPtr
+    [PreserveSig]
+    Function SetTitle(ByVal Element As IDependencyObject, ByVal Value As LongPtr) As HRESULT
+End Interface
+
+[InterfaceId("594572C2-82AA-410B-9E55-FD8E2C98862D")]
+Interface IPivotHeaderItem Extends IInspectable
+
+End Interface
+
+[InterfaceId("14308B37-185B-4117-BC77-DDA2EB261B99")]
+Interface IPivotHeaderItemFactory Extends IInspectable
+    Function CreateInstance(Optional ByVal BaseInterface As IInspectable, Optional InnerInterface As IInspectable) As IPivotHeaderItem
+End Interface
+
+[InterfaceId("21484EBC-9241-4203-BD37-6C08FB096612")]
+Interface IPivotHeaderPanel Extends IInspectable
+    
+End Interface
+
+[InterfaceId("AD4EBE80-22A9-4CA3-9212-2773B6359FF3")]
+Interface IPivotPanel Extends IInspectable
+
+End Interface
+
+[InterfaceId("0F149913-D622-5DDE-B6E3-7835C2AB54B7")]
+Interface IIterator_ITransition Extends IInspectable
+    Property Get Current() As ITransition
+    Property Get HasCurrent() As BooleanByte
+    Function MoveNext() As BooleanByte
+    Function GetMany(ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("FEB51398-4FDB-5112-8A9B-6A8786CA01CE")]
+Interface IIterable_ITransition Extends IInspectable
+    Function First() As IIterator_ITransition
+End Interface
+
+[InterfaceId("43B475A1-3811-5992-BE44-AB41A825D355")]
+Interface IVectorView_ITransition Extends IInspectable
+    Function GetAt(ByVal Index As Long) As ITransition
+    Property Get Size() As Long
+    Function IndexOf(ByVal Value As ITransition, Index As Long) As BooleanByte
+    Function GetMany(ByVal StartIndex As Long, ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("E798571F-7E3E-5E1A-AA55-CBC93B83F821")]
+Interface IVector_ITransition Extends IInspectable
+    Function GetAt(ByVal Index As Long) As ITransition
+    Property Get Size() As Long
+    Function GetView() As IVectorView_ITransition
+    Function IndexOf(ByVal Value As ITransition, Index As Long) As BooleanByte
+    [PreserveSig]
+    Function SetAt(ByVal Index As Long, ByVal Value As ITransition) As HRESULT
+    [PreserveSig]
+    Function InsertAt(ByVal Index As Long, ByVal Value As ITransition) As HRESULT
+    [PreserveSig]
+    Function RemoveAt(ByVal Index As Long) As HRESULT
+    [PreserveSig]
+    Function Append(ByVal Value As ITransition) As HRESULT
+    [PreserveSig]
+    Function RemoveAtEnd() As HRESULT
+    [PreserveSig]
+    Function Clear() As HRESULT
+    Function GetMany(ByVal StartIndex As Long, ByVal Length As Long, Items As Any) As Long
+    [PreserveSig]
+    Function ReplaceAll(ByVal Length As Long, Items As Any) As HRESULT
+End Interface
+
+[InterfaceId("62418240-E6D3-4705-A1DC-39156456EE29")]
+Interface IPopup Extends IInspectable
+    Property Get Child() As IUIElement
+    Property Set Child(ByVal Value As IUIElement)
+    Property Get IsOpen() As BooleanByte
+    Property Let IsOpen(ByVal Value As BooleanByte)
+    Property Get HorizontalOffset() As Double
+    Property Let HorizontalOffset(ByVal Value As Double)
+    Property Get VerticalOffset() As Double
+    Property Let VerticalOffset(ByVal Value As Double)
+    Property Get ChildTransitions() As IVector_ITransition
+    Property Set ChildTransitions(ByVal Value As IVector_ITransition)
+    Property Get IsLightDismissEnabled() As BooleanByte
+    Property Let IsLightDismissEnabled(ByVal Value As BooleanByte)
+    [PreserveSig]
+    Function AddOpened(ByVal Handler As IEventHandlerIInspectable, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveOpened(ByVal Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function AddClosed(ByVal Handler As IEventHandlerIInspectable, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveClosed(ByVal Token As EventRegistrationToken) As HRESULT
+End Interface
+
+[InterfaceId("376A8C4C-AAC0-4B20-966A-0B9364FEB4B5")]
+Interface IPopup2 Extends IInspectable
+    Property Get LightDismissOverlayMode() As LightDismissOverlayMode
+    Property Let LightDismissOverlayMode(ByVal Value As LightDismissOverlayMode)
+End Interface
+
+[InterfaceId("F9C46915-A65C-5F68-9F54-310A1B51095F")]
+Interface IPopup3 Extends IInspectable
+    Property Get ShouldConstrainToRootBounds() As BooleanByte
+    Property Let ShouldConstrainToRootBounds(ByVal Value As BooleanByte)
+    Property Get IsConstrainedToRootBounds() As BooleanByte
+End Interface
+
+[InterfaceId("1870B836-DF2F-5FC6-A5F2-748ED6CE7321")]
+Interface IPopup4 Extends IInspectable
+    Property Get PlacementTarget() As IFrameworkElement
+    Property Set PlacementTarget(ByVal Value As IFrameworkElement)
+    Property Get DesiredPlacement() As PopupPlacementMode
+    Property Let DesiredPlacement(ByVal Value As PopupPlacementMode)
+    Property Get ActualPlacement() As PopupPlacementMode
+    [PreserveSig]
+    Function AddActualPlacementChanged(ByVal Handler As IEventHandlerIInspectable, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveActualPlacementChanged(ByVal Token As EventRegistrationToken) As HRESULT
+End Interface
+
+[InterfaceId("5AE3BF1A-6E34-40D6-8A7F-CA822AAF59E3")]
+Interface IPopupStatics Extends IInspectable
+    Property Get ChildProperty() As IDependencyProperty
+    Property Get IsOpenProperty() As IDependencyProperty
+    Property Get HorizontalOffsetProperty() As IDependencyProperty
+    Property Get VerticalOffsetProperty() As IDependencyProperty
+    Property Get ChildTransitionsProperty() As IDependencyProperty
+    Property Get IsLightDismissEnabledProperty() As IDependencyProperty
+End Interface
+
+[InterfaceId("2B9AE9EC-55EF-43B6-B459-12E40FFA4302")]
+Interface IPopupStatics2 Extends IInspectable
+    Property Get LightDismissOverlayModeProperty() As IDependencyProperty
+End Interface
+
+[InterfaceId("00789589-C580-558F-945A-7D02EE004D3E")]
+Interface IPopupStatics3 Extends IInspectable
+    Property Get ShouldConstrainToRootBoundsProperty() As IDependencyProperty
+End Interface
+
+[InterfaceId("D1A42C06-8BFA-5164-8554-48BFE6BD4CC6")]
+Interface IPopupStatics4 Extends IInspectable
+    Property Get PlacementTargetProperty() As IDependencyProperty
+    Property Get DesiredPlacementProperty() As IDependencyProperty
+End Interface
+
+[InterfaceId("3FE2EA2A-E3F2-4C2B-9488-918D77D2BBE4")]
+Interface IProgressBarTemplateSettings Extends IInspectable
+    Property Get EllipseDiameter() As Double
+    Property Get EllipseOffset() As Double
+    Property Get EllipseAnimationWellPosition() As Double
+    Property Get EllipseAnimationEndPosition() As Double
+    Property Get ContainerAnimationStartPosition() As Double
+    Property Get ContainerAnimationEndPosition() As Double
+    Property Get IndicatorLengthDelta() As Double
+End Interface
+
+[InterfaceId("B9B675EC-C723-42E6-83E9-9826272BDC0E")]
+Interface IProgressRingTemplateSettings Extends IInspectable
+    Property Get EllipseDiameter() As Double
+    Property Get EllipseOffset() As Thickness
+    Property Get MaxSideLength() As Double
+End Interface
+
+[InterfaceId("FA002C1A-494E-46CF-91D4-E14A8D798675")]
+Interface IRangeBase Extends IInspectable
+    Property Get Minimum() As Double
+    Property Let Minimum(ByVal Value As Double)
+    Property Get Maximum() As Double
+    Property Let Maximum(ByVal Value As Double)
+    Property Get SmallChange() As Double
+    Property Let SmallChange(ByVal Value As Double)
+    Property Get LargeChange() As Double
+    Property Let LargeChange(ByVal Value As Double)
+    Property Get Value() As Double
+    Property Let Value(ByVal Value As Double)
+    [PreserveSig]
+    Function AddValueChanged(ByVal Handler As IRangeBaseValueChangedEventHandler, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveValueChanged(ByVal Token As EventRegistrationToken) As HRESULT
+End Interface
+
+[InterfaceId("389B7C71-5220-42B2-9992-2690C1A67030")]
+Interface IRangeBaseFactory Extends IInspectable
+    Function CreateInstance(Optional ByVal BaseInterface As IInspectable, Optional InnerInterface As IInspectable) As IRangeBase
+End Interface
+
+[InterfaceId("4291AF39-7F0B-4BC2-99C4-06E7062682D8")]
+Interface IRangeBaseOverrides Extends IInspectable
+    [PreserveSig]
+    Function OnMinimumChanged(ByVal OldMinimum As Double, ByVal NewMinimum As Double) As HRESULT
+    [PreserveSig]
+    Function OnMaximumChanged(ByVal OldMaximum As Double, ByVal NewMaximum As Double) As HRESULT
+    [PreserveSig]
+    Function OnValueChanged(ByVal OldValue As Double, ByVal NewValue As Double) As HRESULT
+End Interface
+
+[InterfaceId("67EF17E1-FE37-474F-9E97-3B5E0B30F2E0")]
+Interface IRangeBaseStatics Extends IInspectable
+    Property Get MinimumProperty() As IDependencyProperty
+    Property Get MaximumProperty() As IDependencyProperty
+    Property Get SmallChangeProperty() As IDependencyProperty
+    Property Get LargeChangeProperty() As IDependencyProperty
+    Property Get ValueProperty() As IDependencyProperty
+End Interface
+
+[InterfaceId("A1921777-D5C1-4F9C-A7B0-0401B7E6DC5C")]
+Interface IRangeBaseValueChangedEventArgs Extends IInspectable
+    Property Get OldValue() As Double
+    Property Get NewValue() As Double
+End Interface
+
+[InterfaceId("02200DF9-021A-484A-A93B-0F31020314E5")]
+Interface IRepeatButton Extends IInspectable
+    Property Get Delay() As Long
+    Property Let Delay(ByVal Value As Long)
+    Property Get Interval() As Long
+    Property Let Interval(ByVal Value As Long)
+End Interface
+
+[InterfaceId("3914AC4E-F462-4F73-8197-E8846639C682")]
+Interface IRepeatButtonStatics Extends IInspectable
+    Property Get DelayProperty() As IDependencyProperty
+    Property Get IntervalProperty() As IDependencyProperty
+End Interface
+
+[InterfaceId("F57AE6CA-D1A6-4B90-A4E9-54DF1BA8D2EC")]
+Interface IScrollBar Extends IInspectable
+    Property Get Orientation() As Orientation
+    Property Let Orientation(ByVal Value As Orientation)
+    Property Get ViewportSize() As Double
+    Property Let ViewportSize(ByVal Value As Double)
+    Property Get IndicatorMode() As ScrollingIndicatorMode
+    Property Let IndicatorMode(ByVal Value As ScrollingIndicatorMode)
+    [PreserveSig]
+    Function AddScroll(ByVal Handler As IScrollEventHandler, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveScroll(ByVal Token As EventRegistrationToken) As HRESULT
+End Interface
+
+[InterfaceId("45EAF38D-B814-48CF-97F2-539EB16DFD4D")]
+Interface IScrollBarStatics Extends IInspectable
+    Property Get OrientationProperty() As IDependencyProperty
+    Property Get ViewportSizeProperty() As IDependencyProperty
+    Property Get IndicatorModeProperty() As IDependencyProperty
+End Interface
+
+[InterfaceId("C57E5168-3AFE-448D-B752-2F364C75D743")]
+Interface IScrollEventArgs Extends IInspectable
+    Property Get NewValue() As Double
+    Property Get ScrollEventType() As ScrollEventType
+End Interface
+
+[InterfaceId("42614E61-B0AA-5E72-9354-2771DB20B7A8")]
+Interface IIterator_Single Extends IInspectable
+    Property Get Current() As Single
+    Property Get HasCurrent() As BooleanByte
+    Function MoveNext() As BooleanByte
+    Function GetMany(ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("B01BEE51-063A-5FDA-BD72-D76637BB8CB8")]
+Interface IIterable_Single Extends IInspectable
+    Function First() As IIterator_Single
+End Interface
+
+[InterfaceId("7BCA64FD-150C-5D50-B56B-9F4F474C5930")]
+Interface IVectorView_Single Extends IInspectable
+    Function GetAt(ByVal Index As Long) As Single
+    Property Get Size() As Long
+    Function IndexOf(ByVal Value As Single, Index As Long) As BooleanByte
+    Function GetMany(ByVal StartIndex As Long, ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("61CF693F-DB4C-579F-B905-5DD3D23CFD4D")]
+Interface IVector_Single Extends IInspectable
+    Function GetAt(ByVal Index As Long) As Single
+    Property Get Size() As Long
+    Function GetView() As IVectorView_Single
+    Function IndexOf(ByVal Value As Single, Index As Long) As BooleanByte
+    [PreserveSig]
+    Function SetAt(ByVal Index As Long, ByVal Value As Single) As HRESULT
+    [PreserveSig]
+    Function InsertAt(ByVal Index As Long, ByVal Value As Single) As HRESULT
+    [PreserveSig]
+    Function RemoveAt(ByVal Index As Long) As HRESULT
+    [PreserveSig]
+    Function Append(ByVal Value As Single) As HRESULT
+    [PreserveSig]
+    Function RemoveAtEnd() As HRESULT
+    [PreserveSig]
+    Function Clear() As HRESULT
+    Function GetMany(ByVal StartIndex As Long, ByVal Length As Long, Items As Any) As Long
+    [PreserveSig]
+    Function ReplaceAll(ByVal Length As Long, Items As Any) As HRESULT
+End Interface
+
+[InterfaceId("1B5D1336-E61B-4D51-BE41-FD8DDC55C58C")]
+Interface IScrollSnapPointsInfo Extends IInspectable
+    Property Get AreHorizontalSnapPointsRegular() As BooleanByte
+    Property Get AreVerticalSnapPointsRegular() As BooleanByte
+    [PreserveSig]
+    Function AddHorizontalSnapPointsChanged(ByVal Handler As IEventHandlerIInspectable, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveHorizontalSnapPointsChanged(ByVal Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function AddVerticalSnapPointsChanged(ByVal Handler As IEventHandlerIInspectable, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveVerticalSnapPointsChanged(ByVal Token As EventRegistrationToken) As HRESULT
+    Function GetIrregularSnapPoints(ByVal Orientation As Orientation, ByVal Alignment As SnapPointsAlignment) As IVectorView_Single
+    Function GetRegularSnapPoints(ByVal Orientation As Orientation, ByVal Alignment As SnapPointsAlignment, Offset As Single) As Single
+End Interface
+
+[InterfaceId("E30EB3A5-B36B-42DC-8527-CD25136C083C")]
+Interface ISelector Extends IInspectable
+    Property Get SelectedIndex() As Long
+    Property Let SelectedIndex(ByVal Value As Long)
+    Property Get SelectedItem() As IInspectable
+    Property Set SelectedItem(ByVal Value As IInspectable)
+    Property Get SelectedValue() As IInspectable
+    Property Set SelectedValue(ByVal Value As IInspectable)
+    Property Get SelectedValuePath() As LongPtr
+    Property Let SelectedValuePath(ByVal Value As LongPtr)
+    Property Get IsSynchronizedWithCurrentItem() As IReference_Boolean
+    Property Set IsSynchronizedWithCurrentItem(ByVal Value As IReference_Boolean)
+    [PreserveSig]
+    Function AddSelectionChanged(ByVal Handler As ISelectionChangedEventHandler, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveSelectionChanged(ByVal Token As EventRegistrationToken) As HRESULT
+End Interface
+
+[InterfaceId("C9BE2995-D136-4600-B187-8AD56079B48A")]
+Interface ISelectorFactory Extends IInspectable
+
+End Interface
+
+[InterfaceId("541C8D6C-0283-4581-B945-2A64C28A0646")]
+Interface ISelectorItem Extends IInspectable
+    Property Get IsSelected() As BooleanByte
+    Property Let IsSelected(ByVal Value As BooleanByte)
+End Interface
+
+[InterfaceId("B9363945-C86A-4B1E-9440-1879378D5313")]
+Interface ISelectorItemFactory Extends IInspectable
+    Function CreateInstance(Optional ByVal BaseInterface As IInspectable, Optional InnerInterface As IInspectable) As ISelectorItem
+End Interface
+
+[InterfaceId("2A353AB8-CBE9-4303-92E7-C8906E218392")]
+Interface ISelectorItemStatics Extends IInspectable
+    Property Get IsSelectedProperty() As IDependencyProperty
+End Interface
+
+[InterfaceId("13300B06-BD10-4E09-BFF7-71EFB8BBB42B")]
+Interface ISelectorStatics Extends IInspectable
+    Property Get SelectedIndexProperty() As IDependencyProperty
+    Property Get SelectedItemProperty() As IDependencyProperty
+    Property Get SelectedValueProperty() As IDependencyProperty
+    Property Get SelectedValuePathProperty() As IDependencyProperty
+    Property Get IsSynchronizedWithCurrentItemProperty() As IDependencyProperty
+    Function GetIsSelectionActive(ByVal Element As IDependencyProperty) As BooleanByte
+End Interface
+
+[InterfaceId("BCF14C10-CEA7-43F1-9D68-57605DED69D4")]
+Interface ISettingsFlyoutTemplateSettings Extends IInspectable
+    Property Get HeaderBackground() As IBrush
+    Property Get HeaderForeground() As IBrush
+    Property Get BorderBrush() As IBrush
+    Property Get BorderThickness() As Thickness
+    Property Get IconSource() As IImageSource
+    Property Get ContentTransitions() As IVector_ITransition
+End Interface
+
+[InterfaceId("C16AB5A7-4996-4443-B199-6B6B89124EAB")]
+Interface ISplitViewTemplateSettings Extends IInspectable
+    Property Get OpenPaneLength() As Double
+    Property Get NegativeOpenPaneLength() As Double
+    Property Get OpenPaneLengthMinusCompactLength() As Double
+    Property Get NegativeOpenPaneLengthMinusCompactLength() As Double
+    Property Get OpenPaneGridLength() As GridLength
+    Property Get CompactPaneGridLength() As GridLength
+End Interface
+
+[InterfaceId("E8B2B281-0D6A-45CF-B333-2402B037F099")]
+Interface IThumb Extends IInspectable
+    Property Get IsDragging() As BooleanByte
+    [PreserveSig]
+    Function AddDragStarted(ByVal Handler As IDragStartedEventHandler, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveDragStarted(ByVal Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function AddDragDelta(ByVal Handler As IDragDeltaEventHandler, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveDragDelta(ByVal Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function AddDragCompleted(ByVal Handler As IDragCompletedEventHandler, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveDragCompleted(ByVal Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function CancelDrag() As HRESULT
+End Interface
+
+[InterfaceId("955024EB-36F3-4672-A186-BAAF626AC4AD")]
+Interface IThumbStatics Extends IInspectable
+    Property Get IsDraggingProperty() As IDependencyProperty
+End Interface
+
+[InterfaceId("994683FA-F1F6-487D-A5AC-C15921BFA995")]
+Interface ITickBar Extends IInspectable
+    Property Get Fill() As IBrush
+    Property Set Fill(ByVal Value As IBrush)
+End Interface
+
+[InterfaceId("2C6D7E40-799D-4A54-BE09-1FEFC61D018E")]
+Interface ITickBarStatics Extends IInspectable
+    Property Get FillProperty() As IDependencyProperty
+End Interface
+
+[InterfaceId("589877FB-0FC7-4036-9D8B-127DFA75C16D")]
+Interface IToggleButton Extends IInspectable
+    Property Get IsChecked() As IReference_Boolean
+    Property Set IsChecked(ByVal Value As IReference_Boolean)
+    Property Get IsThreeState() As BooleanByte
+    Property Let IsThreeState(ByVal Value As BooleanByte)
+    [PreserveSig]
+    Function AddChecked(ByVal Handler As IRoutedEventHandler, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveChecked(ByVal Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function AddUnchecked(ByVal Handler As IRoutedEventHandler, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveUnchecked(ByVal Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function AddIndeterminate(ByVal Handler As IRoutedEventHandler, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveIndeterminate(ByVal Token As EventRegistrationToken) As HRESULT
+End Interface
+
+[InterfaceId("D56AA2FC-FC7F-449C-9855-7A1055D668A8")]
+Interface IToggleButtonFactory Extends IInspectable
+    Function CreateInstance(Optional ByVal BaseInterface As IInspectable, Optional InnerInterface As IInspectable) As IToggleButton
+End Interface
+
+[InterfaceId("D20E4C28-F18B-491A-9A45-F1A04A9369A4")]
+Interface IToggleButtonOverrides Extends IInspectable
+    [PreserveSig]
+    Function OnToggle() As HRESULT
+End Interface
+
+[InterfaceId("AF1EAB12-0128-4F67-9C5A-82320C445D19")]
+Interface IToggleButtonStatics Extends IInspectable
+    Property Get IsCheckedProperty() As IDependencyProperty
+    Property Get IsThreeStateProperty() As IDependencyProperty
+End Interface
+
+[InterfaceId("02B7BDCD-628A-4363-86E0-51D6E2E89E58")]
+Interface IToggleSwitchTemplateSettings Extends IInspectable
+    Property Get KnobCurrentToOnOffset() As Double
+    Property Get KnobCurrentToOffOffset() As Double
+    Property Get KnobOnToOffOffset() As Double
+    Property Get KnobOffToOnOffset() As Double
+    Property Get CurtainCurrentToOnOffset() As Double
+    Property Get CurtainCurrentToOffOffset() As Double
+    Property Get CurtainOnToOffOffset() As Double
+    Property Get CurtainOffToOnOffset() As Double
+End Interface
+
+[InterfaceId("D4388247-0EC4-4506-AFFD-AFAC2225B48C")]
+Interface IToolTipTemplateSettings Extends IInspectable
+    Property Get FromHorizontalOffset() As Double
+    Property Get FromVerticalOffset() As Double
+End Interface
+
+Module UIXamlControlsPrimitives
+
+Public Enum AnimationDirection
+    AnimationDirection_Normal
+    AnimationDirection_Reverse
+    AnimationDirection_Alternate
+    AnimationDirection_AlternateReverse
+End Enum
+
+Public Enum ComponentResourceLocation
+    ComponentResourceLocation_Application
+    ComponentResourceLocation_Nested
+End Enum
+
+Public Enum EdgeTransitionLocation
+    EdgeTransitionLocation_Left
+    EdgeTransitionLocation_Top
+    EdgeTransitionLocation_Right
+    EdgeTransitionLocation_Bottom
+End Enum
+
+Public Enum FlyoutPlacementMode
+    FlyoutPlacementMode_Top
+    FlyoutPlacementMode_Bottom
+    FlyoutPlacementMode_Left
+    FlyoutPlacementMode_Right
+    FlyoutPlacementMode_Full
+    FlyoutPlacementMode_TopEdgeAlignedLeft
+    FlyoutPlacementMode_TopEdgeAlignedRight
+    FlyoutPlacementMode_BottomEdgeAlignedLeft
+    FlyoutPlacementMode_BottomEdgeAlignedRight
+    FlyoutPlacementMode_LeftEdgeAlignedTop
+    FlyoutPlacementMode_LeftEdgeAlignedBottom
+    FlyoutPlacementMode_RightEdgeAlignedTop
+    FlyoutPlacementMode_RightEdgeAlignedBottom
+    FlyoutPlacementMode_Auto
+End Enum
+
+Public Enum FlyoutShowMode
+    FlyoutShowMode_Auto
+    FlyoutShowMode_Standard
+    FlyoutShowMode_Transient
+    FlyoutShowMode_TransientWithDismissOnPointerMoveAway
+End Enum
+
+Public Enum GeneratorDirection
+    GeneratorDirection_Forward
+    GeneratorDirection_Backward
+End Enum
+
+Public Enum GroupHeaderPlacement
+    GroupHeaderPlacement_Top
+    GroupHeaderPlacement_Left
+End Enum
+
+Public Enum ListViewItemPresenterCheckMode
+    ListViewItemPresenterCheckMode_Inline
+    ListViewItemPresenterCheckMode_Overlay
+End Enum
+
+Public Enum ListViewItemPresenterSelectionIndicatorMode
+    ListViewItemPresenterSelectionIndicatorMode_Inline
+    ListViewItemPresenterSelectionIndicatorMode_Overlay
+End Enum
+
+Public Enum PlacementMode
+    PlacementMode_Bottom = 2
+    PlacementMode_Left = 9
+    PlacementMode_Mouse = 7
+    PlacementMode_Right = 4
+    PlacementMode_Top = 10
+End Enum
+
+Public Enum PopupPlacementMode
+    PopupPlacementMode_Auto
+    PopupPlacementMode_Top
+    PopupPlacementMode_Bottom
+    PopupPlacementMode_Left
+    PopupPlacementMode_Right
+    PopupPlacementMode_TopEdgeAlignedLeft
+    PopupPlacementMode_TopEdgeAlignedRight
+    PopupPlacementMode_BottomEdgeAlignedLeft
+    PopupPlacementMode_BottomEdgeAlignedRight
+    PopupPlacementMode_LeftEdgeAlignedTop
+    PopupPlacementMode_LeftEdgeAlignedBottom
+    PopupPlacementMode_RightEdgeAlignedTop
+    PopupPlacementMode_RightEdgeAlignedBottom
+End Enum
+
+Public Enum ScrollEventType
+    ScrollEventType_SmallDecrement
+    ScrollEventType_SmallIncrement
+    ScrollEventType_LargeDecrement
+    ScrollEventType_LargeIncrement
+    ScrollEventType_ThumbPosition
+    ScrollEventType_ThumbTrack
+    ScrollEventType_First
+    ScrollEventType_Last
+    ScrollEventType_EndScroll
+End Enum
+
+Public Enum ScrollingIndicatorMode
+    ScrollingIndicatorMode_None
+    ScrollingIndicatorMode_TouchIndicator
+    ScrollingIndicatorMode_MouseIndicator
+End Enum
+
+Public Enum SliderSnapsTo
+    SliderSnapsTo_StepValues
+    SliderSnapsTo_Ticks
+End Enum
+
+Public Enum SnapPointsAlignment
+    SnapPointsAlignment_Near
+    SnapPointsAlignment_Center
+    SnapPointsAlignment_Far
+End Enum
+
+Public Enum TickPlacement
+    TickPlacement_None
+    TickPlacement_TopLeft
+    TickPlacement_BottomRight
+    TickPlacement_Outside
+    TickPlacement_Inline
+End Enum
+
+Public Type GeneratorPosition
+    Index As Long
+    Offset As Long
+    Function FromIndexAndOffset(ByVal Index As Long, ByVal Offset As Long) As GeneratorPosition: FromIndexAndOffset = GeneratorPositionHelperStatics.FromIndexAndOffset(Index, Offset): Me = FromIndexAndOffset: End Function
+End Type
+
+End Module

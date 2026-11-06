@@ -1,0 +1,441 @@
+[InterfaceId("AA94D8E9-CAEF-53F6-823D-91B6E8340510")]
+Interface IAsyncOperationIBitmapDecoder Extends IInspectable
+    Property Set Completed(ByVal Handler As IAsyncOperationCompletedHandlerIBitmapDecoder)
+    Property Get Completed() As IAsyncOperationCompletedHandlerIBitmapDecoder
+    Function GetResults() As IBitmapDecoder
+End Interface
+
+[InterfaceId("BB6514F2-3CFB-566F-82BC-60AABD302D53")]
+Interface IAsyncOperationCompletedHandlerIBitmapDecoder Extends IUnknown
+    Sub Invoke(ByVal AsyncOperation As IAsyncOperationIBitmapDecoder, ByVal AsyncStatus As AsyncStatus)
+End Interface
+
+[InterfaceId("151BD1C5-4675-5AF5-A289-001EDC66B86A")]
+Interface IAsyncOperationIBitmapEncoder Extends IInspectable
+    Property Set Completed(ByVal Handler As IAsyncOperationCompletedHandlerIBitmapEncoder)
+    Property Get Completed() As IAsyncOperationCompletedHandlerIBitmapEncoder
+    Function GetResults() As IBitmapEncoder
+End Interface
+
+[InterfaceId("5DF1AFC5-478D-55DD-B317-024274062A0D")]
+Interface IAsyncOperationCompletedHandlerIBitmapEncoder Extends IUnknown
+    Sub Invoke(ByVal AsyncOperation As IAsyncOperationIBitmapEncoder, ByVal AsyncStatus As AsyncStatus)
+End Interface
+
+[InterfaceId("CB1483D1-1464-5BF9-9346-D537735DFBD6")]
+Interface IAsyncOperationIBitmapFrame Extends IInspectable
+    Property Set Completed(ByVal Handler As IAsyncOperationCompletedHandlerIBitmapFrame)
+    Property Get Completed() As IAsyncOperationCompletedHandlerIBitmapFrame
+    Function GetResults() As IBitmapFrame
+End Interface
+
+[InterfaceId("2817455A-983F-5A06-9FE4-FB9637684320")]
+Interface IAsyncOperationCompletedHandlerIBitmapFrame Extends IUnknown
+    Sub Invoke(ByVal AsyncOperation As IAsyncOperationIBitmapFrame, ByVal AsyncStatus As AsyncStatus)
+End Interface
+
+[InterfaceId("93621BF0-DAE9-5F00-94AC-795AA943DCA6")]
+Interface KVP_IBitmapTypedValue Extends IInspectable
+    Property Get Key() As LongPtr
+    Property Get Value() As IBitmapTypedValue
+End Interface
+
+[InterfaceId("2AD3FB0C-0656-5302-B504-3153BE845161")]
+Interface IIterator_KVP_IBitmapTypedValue Extends IInspectable
+    Property Get Current() As KVP_IBitmapTypedValue
+    Property Get HasCurrent() As BooleanByte
+    Function MoveNext() As BooleanByte
+    Function GetMany(ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("05F9430C-2F22-5638-AA89-8C9ABCD54FF9")]
+Interface IIterable_KVP_IBitmapTypedValue Extends IInspectable
+    Function First() As IIterator_KVP_IBitmapTypedValue
+End Interface
+
+[InterfaceId("9CDA5A9A-8924-5B3B-8B19-894D8DA99DDE")]
+Interface IMapView_IBitmapTypedValue Extends IInspectable
+    Function Lookup(ByVal Key As LongPtr) As IBitmapTypedValue
+    Property Get Size() As Long
+    Function HasKey(ByVal Key As LongPtr) As BooleanByte
+    Sub Split(First As IMapView_IBitmapTypedValue, Second As IMapView_IBitmapTypedValue)
+End Interface
+
+[InterfaceId("2C70EF8D-5D4C-5185-8DB7-FED87728165D")]
+Interface IMap_IBitmapTypedValue Extends IInspectable
+    Function Lookup(ByVal Key As LongPtr) As IBitmapTypedValue
+    Property Get Size() As Long
+    Function HasKey(ByVal Key As LongPtr) As BooleanByte
+    Function GetView() As IMapView_IBitmapTypedValue
+    Function Insert(ByVal Key As LongPtr, ByVal Value As IBitmapTypedValue) As BooleanByte
+    [PreserveSig]
+    Function Remove(ByVal Key As LongPtr) As HRESULT
+    [PreserveSig]
+    Function Clear() As HRESULT
+End Interface
+
+[InterfaceId("464AC000-B1F1-5246-8268-912A2593D889")]
+Interface IAsyncOperationIBitmapPropertySet Extends IInspectable
+    Property Set Completed(ByVal Handler As IAsyncOperationCompletedHandlerIBitmapPropertySet)
+    Property Get Completed() As IAsyncOperationCompletedHandlerIBitmapPropertySet
+    Function GetResults() As IMap_IBitmapTypedValue
+End Interface
+
+[InterfaceId("A8325BD7-A3BE-5881-9FA7-04CEEFB9DC2F")]
+Interface IAsyncOperationCompletedHandlerIBitmapPropertySet Extends IUnknown
+    Sub Invoke(ByVal AsyncOperation As IAsyncOperationIBitmapPropertySet, ByVal AsyncStatus As AsyncStatus)
+End Interface
+
+[InterfaceId("684165BE-0011-56D6-BEBF-430016D51B7A")]
+Interface IAsyncOperationIImageStream Extends IInspectable
+    Property Set Completed(ByVal Handler As IAsyncOperationCompletedHandlerIImageStream)
+    Property Get Completed() As IAsyncOperationCompletedHandlerIImageStream
+    Function GetResults() As IRandomAccessStreamWithContentType
+End Interface
+
+[InterfaceId("29BB8288-4462-516E-A675-8C9235C42994")]
+Interface IAsyncOperationCompletedHandlerIImageStream Extends IUnknown
+    Sub Invoke(ByVal AsyncOperation As IAsyncOperationIImageStream, ByVal AsyncStatus As AsyncStatus)
+End Interface
+
+[InterfaceId("8C2DFEB0-6C22-5863-88D8-85C1FBC75697")]
+Interface IAsyncOperationIPixelDataProvider Extends IInspectable
+    Property Set Completed(ByVal Handler As IAsyncOperationCompletedHandlerIPixelDataProvider)
+    Property Get Completed() As IAsyncOperationCompletedHandlerIPixelDataProvider
+    Function GetResults() As IPixelDataProvider
+End Interface
+
+[InterfaceId("37BDF4BE-2F39-592C-A4F7-D16A09D2B2DB")]
+Interface IAsyncOperationCompletedHandlerIPixelDataProvider Extends IUnknown
+    Sub Invoke(ByVal AsyncOperation As IAsyncOperationIPixelDataProvider, ByVal AsyncStatus As AsyncStatus)
+End Interface
+
+[InterfaceId("C4A10980-714B-5501-8DA2-DBDACCE70F73")]
+Interface IAsyncOperationISoftwareBitmap Extends IInspectable
+    Property Set Completed(ByVal Handler As IAsyncOperationCompletedHandlerISoftwareBitmap)
+    Property Get Completed() As IAsyncOperationCompletedHandlerISoftwareBitmap
+    Function GetResults() As ISoftwareBitmap
+End Interface
+
+[InterfaceId("B699B653-33ED-5E2D-A75F-02BF90E32619")]
+Interface IAsyncOperationCompletedHandlerISoftwareBitmap Extends IUnknown
+    Sub Invoke(ByVal AsyncOperation As IAsyncOperationISoftwareBitmap, ByVal AsyncStatus As AsyncStatus)
+End Interface
+
+[InterfaceId("4FF2B2DB-9326-537F-B8DC-4C93D77FBB84")]
+Interface IIterator_IBitmapCodecInformation Extends IInspectable
+    Property Get Current() As IBitmapCodecInformation
+    Property Get HasCurrent() As BooleanByte
+    Function MoveNext() As BooleanByte
+    Function GetMany(ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("2B6BDB90-A4EB-5142-B582-3CCB1EDC5789")]
+Interface IIterable_IBitmapCodecInformation Extends IInspectable
+    Function First() As IIterator_IBitmapCodecInformation
+End Interface
+
+[InterfaceId("97DFDE96-FF1D-5AA1-863A-90116A31B86B")]
+Interface IVectorView_IBitmapCodecInformation Extends IInspectable
+    Function GetAt(ByVal Index As Long) As IBitmapCodecInformation
+    Property Get Size() As Long
+    Function IndexOf(ByVal BitmapCodecInformation As IBitmapCodecInformation, Index As Long) As BooleanByte
+    Function GetMany(ByVal StartIndex As Long, ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("A53E04C4-399C-438C-B28F-A63A6B83D1A1")]
+Interface IBitmapBuffer Extends IInspectable ' requires IClosable
+    Function GetPlaneCount() As Long
+    Function GetPlaneDescription(ByVal Index As Long) As BitmapPlaneDescription
+End Interface
+
+[InterfaceId("400CAAF2-C4B0-4392-A3B0-6F6F9BA95CB4")]
+Interface IBitmapCodecInformation Extends IInspectable
+    Property Get CodecId() As UUID
+    Property Get FileExtensions() As IVectorView_HSTRING
+    Property Get FriendlyName() As LongPtr
+    Property Get MimeTypes() As IVectorView_HSTRING
+End Interface
+
+[InterfaceId("ACEF22BA-1D74-4C91-9DFC-9620745233E6")]
+Interface IBitmapDecoder Extends IInspectable
+    Property Get BitmapContainerProperties() As IBitmapPropertiesView
+    Property Get DecoderInformation() As IBitmapCodecInformation
+    Property Get FrameCount() As Long
+    Function GetPreviewAsync() As IAsyncOperationIImageStream
+    Function GetFrameAsync(ByVal FrameIndex As Long) As IAsyncOperationIBitmapFrame
+End Interface
+
+[InterfaceId("438CCB26-BCEF-4E95-BAD6-23A822E58D01")]
+Interface IBitmapDecoderStatics Extends IInspectable
+    Property Get BmpDecoderId() As UUID
+    Property Get JpegDecoderId() As UUID
+    Property Get PngDecoderId() As UUID
+    Property Get TiffDecoderId() As UUID
+    Property Get GifDecoderId() As UUID
+    Property Get JpegXRDecoderId() As UUID
+    Property Get IcoDecoderId() As UUID
+    Function GetDecoderInformationEnumerator() As IVectorView_IBitmapCodecInformation
+    Function CreateAsync(ByVal RandomAccessStream As IRandomAccessStream) As IAsyncOperationIBitmapDecoder
+    Function CreateWithIdAsync(ByVal DecoderId As UUID, ByVal RandomAccessStream As IRandomAccessStream) As IAsyncOperationIBitmapDecoder
+End Interface
+
+[InterfaceId("50BA68EA-99A1-40C4-80D9-AEF0DAFA6C3F")]
+Interface IBitmapDecoderStatics2 Extends IInspectable
+    Property Get HeifDecoderId() As UUID
+    Property Get WebpDecoderId() As UUID
+End Interface
+
+[InterfaceId("2BC468E3-E1F8-4B54-95E8-32919551CE62")]
+Interface IBitmapEncoder Extends IInspectable
+    Property Get EncoderInformation() As IBitmapCodecInformation
+    Property Get BitmapProperties() As IBitmapProperties
+    Property Get BitmapContainerProperties() As IBitmapProperties
+    Property Get IsThumbnailGenerated() As BooleanByte
+    Property Let IsThumbnailGenerated(ByVal Value As BooleanByte)
+    Property Get GeneratedThumbnailWidth() As Long
+    Property Let GeneratedThumbnailWidth(ByVal Value As Long)
+    Property Get GeneratedThumbnailHeight() As Long
+    Property Let GeneratedThumbnailHeight(ByVal Value As Long)
+    Property Get BitmapTransform() As IBitmapTransform
+    [PreserveSig]
+    Function SetPixelData(ByVal PixelFormat As BitmapPixelFormat, ByVal BitmapAlphaMode As BitmapAlphaMode, ByVal Width As Long, ByVal Height As Long, ByVal dpiX As Double, ByVal dpiY As Double, ByVal PixelsDataLength As Long, ByVal PixelsDataPtr As LongPtr) As HRESULT
+    Function GoToNextFrameAsync() As IAsyncAction
+    Function GoToNextFrameWithEncodingOptionsAsync(ByVal EncodingOptions As IIterable_KVP_IBitmapTypedValue) As IAsyncAction
+    Function FlushAsync() As IAsyncAction
+End Interface
+
+[InterfaceId("A74356A7-A4E4-4EB9-8E40-564DE7E1CCB2")]
+Interface IBitmapEncoderStatics Extends IInspectable
+    Property Get BmpEncoderId() As UUID
+    Property Get JpegEncoderId() As UUID
+    Property Get PngEncoderId() As UUID
+    Property Get TiffEncoderId() As UUID
+    Property Get GifEncoderId() As UUID
+    Property Get JpegXREncoderId() As UUID
+    Function GetEncoderInformationEnumerator() As IVectorView_IBitmapCodecInformation
+    Function CreateAsync(ByVal Data1 As Long, ByVal Data2 As Long, ByVal Data3 As Long, ByVal Data4 As Long, ByVal RandomAccessStream As IRandomAccessStream) As IAsyncOperationIBitmapEncoder
+    Function CreateWithEncodingOptionsAsync(ByVal EncoderId As UUID, ByVal RandomAccessStream As IRandomAccessStream, ByVal EncodingOptions As IIterable_KVP_IBitmapTypedValue) As IAsyncOperationIBitmapEncoder
+    Function CreateForTranscodingAsync(ByVal RandomAccessStream As IRandomAccessStream, ByVal BitmapDecoder As IBitmapDecoder) As IAsyncOperationIBitmapEncoder
+    Function CreateForInPlacePropertyEncodingAsync(ByVal BitmapDecoder As IBitmapDecoder) As IAsyncOperationIBitmapEncoder
+End Interface
+
+[InterfaceId("33CBC259-FE31-41B1-B812-086D21E87E16")]
+Interface IBitmapEncoderStatics2 Extends IInspectable
+    Property Get HeifEncoderId() As UUID
+End Interface
+
+[InterfaceId("686CD241-4330-4C77-ACE4-0334968B1768")]
+Interface IBitmapEncoderWithSoftwareBitmap Extends IInspectable
+    [PreserveSig]
+    Function SetSoftwareBitmap(ByVal SoftwareBitmap As ISoftwareBitmap) As HRESULT
+End Interface
+
+[InterfaceId("72A49A1C-8081-438D-91BC-94ECFC8185C6")]
+Interface IBitmapFrame Extends IInspectable
+    Function GetThumbnailAsync() As IAsyncOperationIImageStream
+    Property Get BitmapProperties() As IBitmapPropertiesView
+    Property Get BitmapPixelFormat() As BitmapPixelFormat
+    Property Get BitmapAlphaMode() As BitmapAlphaMode
+    Property Get DpiX() As Double
+    Property Get DpiY() As Double
+    Property Get PixelWidth() As Long
+    Property Get PixelHeight() As Long
+    Property Get OrientedPixelWidth() As Long
+    Property Get OrientedPixelHeight() As Long
+    Function GetPixelDataAsync() As IAsyncOperationIPixelDataProvider
+    Function GetPixelDataTransformedAsync(ByVal BitmapPixelFormat As BitmapPixelFormat, ByVal BitmapAlphaMode As BitmapAlphaMode, ByVal BitmapTransform As IBitmapTransform, ByVal ExifOrientationMode As ExifOrientationMode, ByVal ColorManagementMode As ColorManagementMode) As IAsyncOperationIPixelDataProvider
+End Interface
+
+[InterfaceId("FE287C9A-420C-4963-87AD-691436E08383")]
+Interface IBitmapFrameWithSoftwareBitmap Extends IInspectable
+    Function GetSoftwareBitmapAsync() As IAsyncOperationISoftwareBitmap
+    Function GetSoftwareBitmapConvertedAsync(ByVal BitmapPixelFormat As BitmapPixelFormat, ByVal BitmapAlphaMode As BitmapAlphaMode) As IAsyncOperationISoftwareBitmap
+    Function GetSoftwareBitmapTransformedAsync(ByVal BitmapPixelFormat As BitmapPixelFormat, ByVal BitmapAlphaMode As BitmapAlphaMode, ByVal BitmapTransform As IBitmapTransform, ByVal ExifOrientationMode As ExifOrientationMode, ByVal ColorManagementMode As ColorManagementMode) As IAsyncOperationISoftwareBitmap
+End Interface
+
+[InterfaceId("EA9F4F1B-B505-4450-A4D1-E8CA94529D8D")]
+Interface IBitmapProperties Extends IInspectable
+    Function SetPropertiesAsync(ByVal PropertiesToSet As IIterable_KVP_IBitmapTypedValue) As IAsyncAction
+End Interface
+
+[InterfaceId("7E0FE87A-3A70-48F8-9C55-196CF5A545F5")]
+Interface IBitmapPropertiesView Extends IInspectable
+    Function GetPropertiesAsync(ByVal PropertiesToRetrieve As IIterable_HSTRING) As IAsyncOperationIBitmapPropertySet
+End Interface
+
+[InterfaceId("AE755344-E268-4D35-ADCF-E995D31A8D34")]
+Interface IBitmapTransform Extends IInspectable
+    Property Get ScaledWidth() As Long
+    Property Let ScaledWidth(ByVal Value As Long)
+    Property Get ScaledHeight() As Long
+    Property Let ScaledHeight(ByVal Value As Long)
+    Property Get InterpolationMode() As BitmapInterpolationMode
+    Property Let InterpolationMode(ByVal Value As BitmapInterpolationMode)
+    Property Get Flip() As BitmapFlip
+    Property Let Flip(ByVal Value As BitmapFlip)
+    Property Get Rotation() As BitmapRotation
+    Property Let Rotation(ByVal Value As BitmapRotation)
+    Property Get Bounds() As BitmapBounds
+    Property Let Bounds(ByVal BitmapBounds As BitmapBounds)
+End Interface
+
+[InterfaceId("CD8044A9-2443-4000-B0CD-79316C56F589")]
+Interface IBitmapTypedValue Extends IInspectable
+    Property Get Value() As IInspectable
+    Property Get Type() As PropertyType
+End Interface
+
+[InterfaceId("92DBB599-CE13-46BB-9545-CB3A3F63EB8B")]
+Interface IBitmapTypedValueFactory Extends IInspectable
+    Function Create(ByVal Value As IInspectable, ByVal Type As PropertyType) As IBitmapTypedValue
+End Interface
+
+[InterfaceId("DD831F25-185C-4595-9FB9-CCBE6EC18A6F")]
+Interface IPixelDataProvider Extends IInspectable
+    [PreserveSig]
+    Function DetachPixelData(PixelDataLength As Long, PixelDataPtr As LongPtr) As HRESULT ' Call CoTaskMemFree on PixelDataPtr
+End Interface
+
+[InterfaceId("689E0708-7EEF-483F-963F-DA938818E073")]
+Interface ISoftwareBitmap Extends IInspectable ' requires IClosable
+    Property Get BitmapPixelFormat() As BitmapPixelFormat
+    Property Get BitmapAlphaMode() As BitmapAlphaMode
+    Property Get PixelWidth() As Long
+    Property Get PixelHeight() As Long
+    Property Get IsReadOnly() As BooleanByte
+    Property Let DpiX(ByVal Value As Double)
+    Property Get DpiX() As Double
+    Property Let DpiY(ByVal Value As Double)
+    Property Get DpiY() As Double
+    Function LockBuffer(ByVal BitmapBufferAccessMode As BitmapBufferAccessMode) As IBitmapBuffer
+    [PreserveSig]
+    Function CopyTo(ByVal SoftwareBitmap As ISoftwareBitmap) As HRESULT
+    [PreserveSig]
+    Function CopyFromBuffer(ByVal Buffer As IBuffer) As HRESULT
+    [PreserveSig]
+    Function CopyToBuffer(ByVal Buffer As IBuffer) As HRESULT
+    Function GetReadOnlyView() As ISoftwareBitmap
+End Interface
+
+[InterfaceId("C99FEB69-2D62-4D47-A6B3-4FDB6A07FDF8")]
+Interface ISoftwareBitmapFactory Extends IInspectable
+    Function Create(ByVal BitmapPixelFormat As BitmapPixelFormat, ByVal Width As Long, ByVal Height As Long) As ISoftwareBitmap
+    Function CreateWithAlpha(ByVal BitmapPixelFormat As BitmapPixelFormat, ByVal Width As Long, ByVal Height As Long, ByVal BitmapAlphaMode As BitmapAlphaMode) As ISoftwareBitmap
+End Interface
+
+[InterfaceId("DF0385DB-672F-4A9D-806E-C2442F343E86")]
+Interface ISoftwareBitmapStatics Extends IInspectable
+    Function Copy(ByVal SourceSoftwareBitmap As ISoftwareBitmap) As ISoftwareBitmap
+    Function Convert(ByVal SourceSoftwareBitmap As ISoftwareBitmap, ByVal BitmapPixelFormat As BitmapPixelFormat) As ISoftwareBitmap
+    Function ConvertWithAlpha(ByVal SourceSoftwareBitmap As ISoftwareBitmap, ByVal BitmapPixelFormat As BitmapPixelFormat, ByVal BitmapAlphaMode As BitmapAlphaMode) As ISoftwareBitmap
+    Function CreateCopyFromBuffer(ByVal Buffer As IBuffer, ByVal BitmapPixelFormat As BitmapPixelFormat, ByVal Width As Long, ByVal Height As Long) As ISoftwareBitmap
+    Function CreateCopyWithAlphaFromBuffer(ByVal Buffer As IBuffer, ByVal BitmapPixelFormat As BitmapPixelFormat, ByVal Width As Long, ByVal Height As Long, ByVal BitmapAlphaMode As BitmapAlphaMode) As ISoftwareBitmap
+    Function CreateCopyFromSurfaceAsync(ByVal Direct3DSurface As IDirect3DSurface) As IAsyncOperationISoftwareBitmap
+    Function CreateCopyWithAlphaFromSurfaceAsync(ByVal Direct3DSurface As IDirect3DSurface, ByVal BitmapAlphaMode As BitmapAlphaMode) As IAsyncOperationISoftwareBitmap
+End Interface
+
+Module mdlGraphicsImaging
+
+Public Enum BitmapAlphaMode
+    BitmapAlphaMode_Premultiplied
+    BitmapAlphaMode_Straight
+    BitmapAlphaMode_Ignore
+End Enum
+
+Public Enum BitmapBufferAccessMode
+    BitmapBufferAccessMode_Read
+    BitmapBufferAccessMode_ReadWrite
+    BitmapBufferAccessMode_Write
+End Enum
+
+Public Enum BitmapFlip
+    BitmapFlip_None
+    BitmapFlip_Horizontal
+    BitmapFlip_Vertical
+End Enum
+
+Public Enum BitmapInterpolationMode
+    BitmapInterpolationMode_NearestNeighbor
+    BitmapInterpolationMode_Linear
+    BitmapInterpolationMode_Cubic
+    BitmapInterpolationMode_Fant
+End Enum
+
+Public Enum BitmapPixelFormat
+    BitmapPixelFormat_Unknown
+    BitmapPixelFormat_Rgba16 = 12
+    BitmapPixelFormat_Rgba8 = 30
+    BitmapPixelFormat_Gray16 = 57
+    BitmapPixelFormat_Gray8 = 62
+    BitmapPixelFormat_Bgra8 = 87
+    BitmapPixelFormat_Nv12 = 103
+    BitmapPixelFormat_P010 = 104
+    BitmapPixelFormat_Yuy2 = 107
+End Enum
+
+Public Enum BitmapRotation
+    BitmapRotation_None
+    BitmapRotation_Clockwise90Degrees
+    BitmapRotation_Clockwise180Degrees
+    BitmapRotation_Clockwise270Degrees
+End Enum
+
+Public Enum ColorManagementMode
+    ColorManagementMode_DoNotColorManage
+    ColorManagementMode_ColorManageToSRgb
+End Enum
+
+Public Enum ExifOrientationMode
+    ExifOrientationMode_IgnoreExifOrientation
+    ExifOrientationMode_RespectExifOrientation
+End Enum
+
+Public Enum JpegSubsamplingMode
+    JpegSubsamplingMode_Default
+    JpegSubsamplingMode_Y4Cb2Cr0
+    JpegSubsamplingMode_Y4Cb2Cr2
+    JpegSubsamplingMode_Y4Cb4Cr4
+End Enum
+
+Public Enum PngFilterMode
+    PngFilterMode_Automatic
+    PngFilterMode_None
+    PngFilterMode_Sub
+    PngFilterMode_Up
+    PngFilterMode_Average
+    PngFilterMode_Paeth
+    PngFilterMode_Adaptive
+End Enum
+
+Public Enum TiffCompressionMode
+    TiffCompressionMode_Automatic
+    TiffCompressionMode_None
+    TiffCompressionMode_Ccitt3
+    TiffCompressionMode_Ccitt4
+    TiffCompressionMode_Lzw
+    TiffCompressionMode_Rle
+    TiffCompressionMode_Zip
+    TiffCompressionMode_LzwhDifferencing
+End Enum
+
+Public Type BitmapBounds
+    X As Long
+    Y As Long
+    Width As Long
+    Height As Long
+End Type
+
+Public Type BitmapPlaneDescription
+    StartIndex As Long
+    Width As Long
+    Height As Long
+    Stride As Long
+End Type
+
+Public Type BitmapSize
+    Width As Long
+    Height As Long
+End Type
+
+End Module

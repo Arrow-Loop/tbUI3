@@ -1,0 +1,145 @@
+' Owner-drawn paint for the icon picker's chrome (picChrome), the same way UI3Window paints the
+' property sheet's tab and OK/Cancel/Apply buttons: the window is subclassed, WM_ERASEBKGND is
+' swallowed and WM_PAINT is handled with BeginPaint/EndPaint, so a repaint never shows the
+' PictureBox's own background first. Hover changes on the picker's tab strip and Setup buttons
+' flickered without this (1.0.0.30 to 1.0.0.32). Also reports WM_MOUSELEAVE so hover clears when
+' the pointer leaves the chrome. The icon grid (picGrid) is painted the same way, so scrolling
+' doesn't flash the PictureBox's background between frames.
+
+Private Module UI3PageSurface
+
+    Private Const WM_PAINT As Long = &HF
+    Private Const WM_ERASEBKGND As Long = &H14
+    Private Const WM_NCDESTROY As Long = &H82
+    Private Const WM_MOUSELEAVE As Long = &H2A3
+    Private Const TME_LEAVE As Long = &H2
+    Private Const UI3_PAGE_SURFACE_SUBCLASS_ID As Long = &H55495346
+
+    Private Type UI3SurfacePaintStruct
+        hdc As LongPtr
+        fErase As Long
+        rcPaint As UI3GdiRect
+        fRestore As Long
+        fIncUpdate As Long
+        rgbReserved(0 To 31) As Byte
+    End Type
+
+    Private Type UI3TrackMouseEvent
+        cbSize As Long
+        dwFlags As Long
+        hwndTrack As LongPtr
+        dwHoverTime As Long
+    End Type
+
+    Private Declare PtrSafe Function BeginPaint Lib "user32" (ByVal hWnd As LongPtr, ByRef lpPaint As UI3SurfacePaintStruct) As LongPtr
+    Private Declare PtrSafe Function EndPaint Lib "user32" (ByVal hWnd As LongPtr, ByRef lpPaint As UI3SurfacePaintStruct) As Long
+    Private Declare PtrSafe Function TrackMouseEvent Lib "user32" (ByRef lpEventTrack As UI3TrackMouseEvent) As Long
+
+    [UseGetLastError(False), DLLStackCheck(False)]
+    Private Declare PtrSafe Function SetWindowSubclass Lib "comctl32" Alias "#410" (ByVal hWnd As LongPtr, _
+        ByVal pfnSubclass As LongPtr, ByVal uIdSubclass As LongPtr, ByVal dwRefData As LongPtr) As Long
+    [UseGetLastError(False), DLLStackCheck(False)]
+    Private Declare PtrSafe Function RemoveWindowSubclass Lib "comctl32" Alias "#412" (ByVal hWnd As LongPtr, _
+        ByVal pfnSubclass As LongPtr, ByVal uIdSubclass As LongPtr) As Long
+    [UseGetLastError(False), DLLStackCheck(False)]
+    Private Declare PtrSafe Function DefSubclassProc Lib "comctl32" Alias "#413" (ByVal hWnd As LongPtr, _
+        ByVal uMsg As Long, ByVal wParam As LongPtr, ByVal lParam As LongPtr) As LongPtr
+
+    ' One property dialog is open at a time, so one surface is enough.
+    Private m_SurfaceHwnd As LongPtr
+    Private m_SurfacePage As UI3IconPage
+    Private m_Tracking As Boolean
+    Private m_GridHwnd As LongPtr
+    Private m_GridPage As UI3IconPage
+
+    Private Const SURFACE_CHROME As Long = 0
+    Private Const SURFACE_GRID As Long = 1
+
+    Public Sub UI3AttachIconPageSurface(ByVal hWnd As LongPtr, ByVal Page As UI3IconPage)
+        If hWnd = 0 Then Exit Sub
+        If hWnd = m_SurfaceHwnd Then
+            Set m_SurfacePage = Page
+            Exit Sub
+        End If
+        If m_SurfaceHwnd <> 0 Then
+            RemoveWindowSubclass m_SurfaceHwnd, AddressOf UI3PageSurfaceProc, CLngPtr(UI3_PAGE_SURFACE_SUBCLASS_ID)
+        End If
+        m_SurfaceHwnd = hWnd
+        Set m_SurfacePage = Page
+        m_Tracking = False
+        SetWindowSubclass hWnd, AddressOf UI3PageSurfaceProc, CLngPtr(UI3_PAGE_SURFACE_SUBCLASS_ID), SURFACE_CHROME
+    End Sub
+
+    Public Sub UI3AttachIconPageGrid(ByVal hWnd As LongPtr, ByVal Page As UI3IconPage)
+        If hWnd = 0 Then Exit Sub
+        If hWnd = m_GridHwnd Then
+            Set m_GridPage = Page
+            Exit Sub
+        End If
+        If m_GridHwnd <> 0 Then
+            RemoveWindowSubclass m_GridHwnd, AddressOf UI3PageSurfaceProc, CLngPtr(UI3_PAGE_SURFACE_SUBCLASS_ID)
+        End If
+        m_GridHwnd = hWnd
+        Set m_GridPage = Page
+        SetWindowSubclass hWnd, AddressOf UI3PageSurfaceProc, CLngPtr(UI3_PAGE_SURFACE_SUBCLASS_ID), SURFACE_GRID
+    End Sub
+
+    ' Asks for one WM_MOUSELEAVE; call from the surface's mouse-move handler.
+    Public Sub UI3TrackIconPageSurfaceLeave()
+        If m_SurfaceHwnd = 0 Or m_Tracking Then Exit Sub
+        Dim tme As UI3TrackMouseEvent
+        tme.cbSize = LenB(tme)
+        tme.dwFlags = TME_LEAVE
+        tme.hwndTrack = m_SurfaceHwnd
+        If TrackMouseEvent(tme) <> 0 Then m_Tracking = True
+    End Sub
+
+    Private Function UI3PageSurfaceProc(ByVal hWnd As LongPtr, ByVal uMsg As Long, ByVal wParam As LongPtr, _
+            ByVal lParam As LongPtr, ByVal uIdSubclass As LongPtr, ByVal dwRefData As LongPtr) As LongPtr
+        Select Case uMsg
+            Case WM_ERASEBKGND
+                UI3PageSurfaceProc = 1
+                Exit Function
+
+            Case WM_PAINT
+                Dim ps As UI3SurfacePaintStruct
+                Dim hdc As LongPtr
+                hdc = BeginPaint(hWnd, ps)
+                If hdc <> 0 Then
+                    On Error Resume Next
+                    If dwRefData = SURFACE_GRID Then
+                        If Not m_GridPage Is Nothing Then m_GridPage.PaintGridSurface hdc
+                    ElseIf Not m_SurfacePage Is Nothing Then
+                        m_SurfacePage.PaintChromeSurface hdc
+                    End If
+                    On Error GoTo 0
+                    EndPaint hWnd, ps
+                End If
+                UI3PageSurfaceProc = 0
+                Exit Function
+
+            Case WM_MOUSELEAVE
+                m_Tracking = False
+                If Not m_SurfacePage Is Nothing Then
+                    On Error Resume Next
+                    m_SurfacePage.ChromeMouseLeave
+                    On Error GoTo 0
+                End If
+
+            Case WM_NCDESTROY
+                RemoveWindowSubclass hWnd, AddressOf UI3PageSurfaceProc, uIdSubclass
+                If hWnd = m_SurfaceHwnd Then
+                    m_SurfaceHwnd = 0
+                    Set m_SurfacePage = Nothing
+                    m_Tracking = False
+                End If
+                If hWnd = m_GridHwnd Then
+                    m_GridHwnd = 0
+                    Set m_GridPage = Nothing
+                End If
+        End Select
+
+        UI3PageSurfaceProc = DefSubclassProc(hWnd, uMsg, wParam, lParam)
+    End Function
+
+End Module

@@ -1,0 +1,83 @@
+' =====================================================
+' FormatterFactory.twin - 格式化器工厂
+' Twinbasic Diagnostic Tool
+' =====================================================
+
+' 格式化器工厂模块
+' 根据名称或扩展名创建格式化器
+Public Module FormatterFactory
+
+    ' 根据格式名称创建格式化器
+    ' @param formatName 格式名称 (text/json/html)
+    ' @return 对应的格式化器实例
+    Public Function CreateFormatter(ByVal formatName As String) As IOutputFormatter
+        Select Case LCase$(formatName)
+            Case "text", "txt"
+                Return New TextFormatter
+
+            Case "json"
+                Return New JsonFormatter
+
+            Case "html", "htm"
+                Return New HtmlFormatter
+
+            Case Else
+                ' 默认返回文本格式化器
+                Return New TextFormatter
+        End Select
+    End Function
+
+    ' 根据命令行参数创建格式化器
+    ' @param arg 命令行参数 (/text, /json, /html)
+    ' @return 对应的格式化器实例
+    Public Function CreateFormatterFromArg(ByVal arg As String) As IOutputFormatter
+        Dim formatName As String = LCase$(arg)
+
+        ' 移除前导斜杠或连字符
+        If Left$(formatName, 1) = "/" Or Left$(formatName, 1) = "-" Then
+            formatName = Mid$(formatName, 2)
+        End If
+
+        Return CreateFormatter(formatName)
+    End Function
+
+    ' 获取支持的格式列表
+    Public Function GetSupportedFormats() As String
+        Return "text, json, html"
+    End Function
+
+    ' 格式化诊断结果
+    ' 使用指定的格式化器格式化结果列表
+    ' @param results 诊断结果列表
+    ' @param formatter 格式化器
+    ' @return 格式化后的字符串
+    Public Function FormatResults( _
+        ByVal results As List(Of DiagnosticResult(Of KeyValuePair(Of String, String))), _
+        ByVal formatter As IOutputFormatter) As String
+
+        formatter.BeginFormat
+
+        Dim i As Long
+        Dim j As Long
+
+        For i = 0 To results.Count - 1
+            Dim result As DiagnosticResult(Of KeyValuePair(Of String, String)) = results.Item(i)
+
+            formatter.FormatCategory result.Category
+
+            If result.Success Then
+                For j = 0 To result.Items.Count - 1
+                    Dim item As KeyValuePair(Of String, String) = result.Items.Item(j)
+                    formatter.FormatItem item.Key, item.Value
+                Next j
+            Else
+                formatter.FormatItem "Error", result.ErrorMessage
+            End If
+
+            formatter.EndCategory
+        Next i
+
+        Return formatter.EndFormat()
+    End Function
+
+End Module

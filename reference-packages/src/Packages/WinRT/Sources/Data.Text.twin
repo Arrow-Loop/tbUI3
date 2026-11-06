@@ -1,0 +1,307 @@
+[InterfaceId("A5842459-147D-5A88-8F23-A3398AFD8A85")]
+Interface IIterator_ISelectableWordSegment Extends IInspectable
+    Property Get Current() As ISelectableWordSegment
+    Property Get HasCurrent() As BooleanByte
+    Function MoveNext() As BooleanByte
+    Function GetMany(ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("784B0CEC-1348-5334-91E5-2E013294E211")]
+Interface IIterable_ISelectableWordSegment Extends IInspectable
+    Function First() As IIterator_ISelectableWordSegment
+End Interface
+
+[InterfaceId("33F90A72-86F4-5027-B50A-6939A1F9D560")]
+Interface IVectorView_ISelectableWordSegment Extends IInspectable
+    Function GetAt(ByVal Index As Long) As ISelectableWordSegment
+    Property Get Size() As Long
+    Function IndexOf(ByVal Value As ISelectableWordSegment, Index As Long) As BooleanByte
+    Function GetMany(ByVal StartIndex As Long, ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("3A3DFC9C-AEDE-4DC7-9E6C-41C044BD3592")]
+Interface ISelectableWordSegmentsTokenizingHandler Extends IUnknown
+    Sub Invoke(ByVal PrecedingWords As IIterable_ISelectableWordSegment, ByVal Words As IIterable_ISelectableWordSegment)
+End Interface
+
+[InterfaceId("AEB846B3-664B-545E-AB93-F5FC66D24E32")]
+Interface IIterator_IWordSegment Extends IInspectable
+    Property Get Current() As IWordSegment
+    Property Get HasCurrent() As BooleanByte
+    Function MoveNext() As BooleanByte
+    Function GetMany(ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("D14DC94A-A311-5DDC-BF8B-D58795D87D6D")]
+Interface IIterable_IWordSegment Extends IInspectable
+    Function First() As IIterator_IWordSegment
+End Interface
+
+[InterfaceId("C706749A-E11D-5E07-8534-2BD23EC210F9")]
+Interface IVectorView_IWordSegment Extends IInspectable
+    Function GetAt(ByVal Index As Long) As IWordSegment
+    Property Get Size() As Long
+    Function IndexOf(ByVal Value As IWordSegment, Index As Long) As BooleanByte
+    Function GetMany(ByVal StartIndex As Long, ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("A5DD6357-BF2A-4C4F-A31F-29E71C6F8B35")]
+Interface IWordSegmentsTokenizingHandler Extends IUnknown
+    Sub Invoke(ByVal PrecedingWords As IIterable_IWordSegment, ByVal Words As IIterable_IWordSegment)
+End Interface
+
+[InterfaceId("47396C1E-51B9-4207-9146-248E636A1D1D")]
+Interface IAlternateWordForm Extends IInspectable
+    Property Get SourceTextSegment() As TextSegment
+    Property Get AlternateText() As LongPtr
+    Property Get NormalizationFormat() As AlternateNormalizationFormat
+End Interface
+
+[InterfaceId("916A4CB7-8AA7-4C78-B374-5DEDB752E60B")]
+Interface ISelectableWordSegment Extends IInspectable
+    Property Get Text() As LongPtr
+    Property Get SourceTextSegment() As TextSegment
+End Interface
+
+[InterfaceId("F6DC31E7-4B13-45C5-8897-7D71269E085D")]
+Interface ISelectableWordsSegmenter Extends IInspectable
+    Property Get ResolvedLanguage() As LongPtr
+    Function GetTokenAt(ByVal Text As LongPtr, ByVal StartIndex As Long) As ISelectableWordSegment
+    Function GetTokens(ByVal Text As LongPtr) As IVectorView_ISelectableWordSegment
+    [PreserveSig]
+    Function Tokenize(ByVal Text As LongPtr, ByVal StartIndex As Long, ByVal Handler As ISelectableWordSegmentsTokenizingHandler) As HRESULT
+End Interface
+
+[InterfaceId("8C7A7648-6057-4339-BC70-F210010A4150")]
+Interface ISelectableWordsSegmenterFactory Extends IInspectable
+    Function CreateWithLanguage(ByVal Language As LongPtr) As ISelectableWordsSegmenter
+End Interface
+
+[InterfaceId("6A1CAB51-1FB2-4909-80B8-35731A2B3E7F")]
+Interface ISemanticTextQuery Extends IInspectable
+    Function Find(ByVal Content As LongPtr) As IVectorView_TextSegment
+    Function FindInProperty(ByVal PropertyContent As LongPtr, ByVal PropertyName As LongPtr) As IVectorView_TextSegment
+End Interface
+
+[InterfaceId("238C0503-F995-4587-8777-A2B7D80ACFEF")]
+Interface ISemanticTextQueryFactory Extends IInspectable
+    Function Create(ByVal AqsFilter As LongPtr) As ISemanticTextQuery
+    Function CreateWithLanguage(ByVal AqsFilter As LongPtr, ByVal FilterLanguage As LongPtr) As ISemanticTextQuery
+End Interface
+
+[InterfaceId("03606A5E-2AA9-4AB6-AF8B-A562B63A8992")]
+Interface ITextConversionGenerator Extends IInspectable
+    Property Get ResolvedLanguage() As LongPtr
+    Property Get LanguageAvailableButNotInstalled() As BooleanByte
+    Function GetCandidatesAsync(ByVal Input As LongPtr) As IAsyncOperationIVectorView_HSTRING
+    Function GetCandidatesWithMaxCountAsync(ByVal Input As LongPtr, ByVal MaxCandidates As Long) As IAsyncOperationIVectorView_HSTRING
+End Interface
+
+[InterfaceId("FCAA3781-3083-49AB-BE15-56DFBBB74D6F")]
+Interface ITextConversionGeneratorFactory Extends IInspectable
+    Function Create(ByVal LanguageTag As LongPtr) As ITextConversionGenerator
+End Interface
+
+[InterfaceId("9362A40A-9B7A-4569-94CF-D84F2F38CF9B")]
+Interface ITextPhoneme Extends IInspectable
+    Property Get DisplayText() As LongPtr
+    Property Get ReadingText() As LongPtr
+End Interface
+
+[InterfaceId("5EACAB07-ABF1-4CB6-9D9E-326F2B468756")]
+Interface ITextPredictionGenerator Extends IInspectable
+    Property Get ResolvedLanguage() As LongPtr
+    Property Get LanguageAvailableButNotInstalled() As BooleanByte
+    Function GetCandidatesAsync(ByVal Input As LongPtr) As IAsyncOperationIVectorView_HSTRING
+    Function GetCandidatesWithMaxCountAsync(ByVal Input As LongPtr, ByVal MaxCandidates As Long) As IAsyncOperationIVectorView_HSTRING
+End Interface
+
+[InterfaceId("B84723B8-2C77-486A-900A-A3453EEDC15D")]
+Interface ITextPredictionGenerator2 Extends IInspectable
+    Function GetCandidatesWithParametersAsync(ByVal Input As LongPtr, ByVal MaxCandidates As Long, ByVal PredictionOptions As TextPredictionOptions, ByVal PreviousStrings As IIterable_HSTRING) As IAsyncOperationIVectorView_HSTRING
+    Function GetNextWordCandidatesAsync(ByVal MaxCandidates As Long, ByVal PreviousStrings As IIterable_HSTRING) As IAsyncOperationIVectorView_HSTRING
+    Property Get InputScope() As CoreTextInputScope
+    Property Let InputScope(ByVal Value As CoreTextInputScope)
+End Interface
+
+[InterfaceId("7257B416-8BA2-4751-9D30-9D85435653A2")]
+Interface ITextPredictionGeneratorFactory Extends IInspectable
+    Function Create(ByVal LanguageTag As LongPtr) As ITextPredictionGenerator
+End Interface
+
+[InterfaceId("51E7F514-9C51-4D86-AE1B-B498FBAD8313")]
+Interface ITextReverseConversionGenerator Extends IInspectable
+    Property Get ResolvedLanguage() As LongPtr
+    Property Get LanguageAvailableButNotInstalled() As BooleanByte
+    Function ConvertBackAsync(ByVal Input As LongPtr) As IAsyncOperationHSTRING
+End Interface
+
+[InterfaceId("36426C36-B5C4-5D1B-A468-AFF3B48B7C3A")]
+Interface IIterator_ITextPhoneme Extends IInspectable
+    Property Get Current() As ITextPhoneme
+    Property Get HasCurrent() As BooleanByte
+    Function MoveNext() As BooleanByte
+    Function GetMany(ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("2017F561-8162-55F8-B056-656636935815")]
+Interface IIterable_ITextPhoneme Extends IInspectable
+    Function First() As IIterator_ITextPhoneme
+End Interface
+
+[InterfaceId("CFC6E66D-5E2A-582D-8B6D-FBF71CF3D0EB")]
+Interface IVectorView_ITextPhoneme Extends IInspectable
+    Function GetAt(ByVal Index As Long) As ITextPhoneme
+    Property Get Size() As Long
+    Function IndexOf(ByVal Value As ITextPhoneme, Index As Long) As BooleanByte
+    Function GetMany(ByVal StartIndex As Long, ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("6BC3019D-DD10-5510-B164-808C232B7D64")]
+Interface IAsyncOperationIVectorView_ITextPhoneme Extends IInspectable
+    Property Set Completed(ByVal Handler As IAsyncOperationCompletedHandlerIVectorView_ITextPhoneme)
+    Property Get Completed() As IAsyncOperationCompletedHandlerIVectorView_ITextPhoneme
+    Function GetResults() As IVectorView_ITextPhoneme
+End Interface
+
+[InterfaceId("83E14307-0BE1-5560-8BFC-291095CF6D30")]
+Interface IAsyncOperationCompletedHandlerIVectorView_ITextPhoneme Extends IUnknown
+    Sub Invoke(ByVal AsyncOperation As IAsyncOperationIVectorView_ITextPhoneme, ByVal AsyncStatus As AsyncStatus)
+End Interface
+
+[InterfaceId("1AAFD2EC-85D6-46FD-828A-3A4830FA6E18")]
+Interface ITextReverseConversionGenerator2 Extends IInspectable
+    Function GetPhonemesAsync(ByVal Input As LongPtr) As IAsyncOperationIVectorView_ITextPhoneme
+End Interface
+
+[InterfaceId("63BED326-1FDA-41F6-89D5-23DDEA3C729A")]
+Interface ITextReverseConversionGeneratorFactory Extends IInspectable
+    Function Create(ByVal LanguageTag As LongPtr) As ITextReverseConversionGenerator
+End Interface
+
+[InterfaceId("97909E87-9291-4F91-B6C8-B6E359D7A7FB")]
+Interface IUnicodeCharactersStatics Extends IInspectable
+    Function GetCodepointFromSurrogatePair(ByVal HighSurrogate As Long, ByVal LowSurrogate As Long) As Long
+    [PreserveSig]
+    Function GetSurrogatePairFromCodepoint(ByVal Codepoint As Long, HighSurrogate As Integer, LowSurrogate As Integer) As HRESULT
+    Function IsHighSurrogate(ByVal Codepoint As Long) As BooleanByte
+    Function IsLowSurrogate(ByVal Codepoint As Long) As BooleanByte
+    Function IsSupplementary(ByVal Codepoint As Long) As BooleanByte
+    Function IsNoncharacter(ByVal Codepoint As Long) As BooleanByte
+    Function IsWhitespace(ByVal Codepoint As Long) As BooleanByte
+    Function IsAlphabetic(ByVal Codepoint As Long) As BooleanByte
+    Function IsCased(ByVal Codepoint As Long) As BooleanByte
+    Function IsUppercase(ByVal Codepoint As Long) As BooleanByte
+    Function IsLowercase(ByVal Codepoint As Long) As BooleanByte
+    Function IsIdStart(ByVal Codepoint As Long) As BooleanByte
+    Function IsIdContinue(ByVal Codepoint As Long) As BooleanByte
+    Function IsGraphemeBase(ByVal Codepoint As Long) As BooleanByte
+    Function IsGraphemeExtend(ByVal Codepoint As Long) As BooleanByte
+    Function GetNumericType(ByVal Codepoint As Long) As UnicodeNumericType
+    Function GetGeneralCategory(ByVal Codepoint As Long) As UnicodeGeneralCategory
+End Interface
+
+[InterfaceId("7F463F8A-E08F-516E-B4B8-81B5417BFB58")]
+Interface IIterator_IAlternateWordForm Extends IInspectable
+    Property Get Current() As IAlternateWordForm
+    Property Get HasCurrent() As BooleanByte
+    Function MoveNext() As BooleanByte
+    Function GetMany(ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("AE838C29-60C1-5093-AE61-0ED22857DB05")]
+Interface IIterable_IAlternateWordForm Extends IInspectable
+    Function First() As IIterator_IAlternateWordForm
+End Interface
+
+[InterfaceId("6B742FF2-746A-5545-A6ED-3BBA453CF5D9")]
+Interface IVectorView_IAlternateWordForm Extends IInspectable
+    Function GetAt(ByVal Index As Long) As IAlternateWordForm
+    Property Get Size() As Long
+    Function IndexOf(ByVal Value As IAlternateWordForm, Index As Long) As BooleanByte
+    Function GetMany(ByVal StartIndex As Long, ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("D2D4BA6D-987C-4CC0-B6BD-D49A11B38F9A")]
+Interface IWordSegment Extends IInspectable
+    Property Get Text() As LongPtr
+    Property Get SourceTextSegment() As TextSegment
+    Property Get AlternateForms() As IVectorView_IAlternateWordForm
+End Interface
+
+[InterfaceId("86B4D4D1-B2FE-4E34-A81D-66640300454F")]
+Interface IWordsSegmenter Extends IInspectable
+    Property Get ResolvedLanguage() As LongPtr
+    Function GetTokenAt(ByVal Text As LongPtr, ByVal StartIndex As Long) As IWordSegment
+    Function GetTokens(ByVal Text As LongPtr) As IVectorView_IWordSegment
+    [PreserveSig]
+    Function Tokenize(ByVal Text As LongPtr, ByVal StartIndex As Long, ByVal Handler As IWordSegmentsTokenizingHandler) As HRESULT
+End Interface
+
+[InterfaceId("E6977274-FC35-455C-8BFB-6D7F4653CA97")]
+Interface IWordsSegmenterFactory Extends IInspectable
+    Function CreateWithLanguage(ByVal Language As LongPtr) As IWordsSegmenter
+End Interface
+
+Module mdlDataText
+    
+Public Enum AlternateNormalizationFormat
+    AlternateNormalizationFormat_NotNormalized
+    AlternateNormalizationFormat_Number
+    AlternateNormalizationFormat_Currency = 3
+    AlternateNormalizationFormat_Date
+    AlternateNormalizationFormat_Time
+End Enum
+
+Public Enum TextPredictionOptions
+    TextPredictionOptions_None
+    TextPredictionOptions_Predictions
+    TextPredictionOptions_Corrections
+End Enum
+
+Public Enum UnicodeGeneralCategory
+    UnicodeGeneralCategory_UppercaseLetter
+    UnicodeGeneralCategory_LowercaseLetter
+    UnicodeGeneralCategory_TitlecaseLetter
+    UnicodeGeneralCategory_ModifierLetter
+    UnicodeGeneralCategory_OtherLetter
+    UnicodeGeneralCategory_NonspacingMark
+    UnicodeGeneralCategory_SpacingCombiningMark
+    UnicodeGeneralCategory_EnclosingMark
+    UnicodeGeneralCategory_DecimalDigitNumber
+    UnicodeGeneralCategory_LetterNumber
+    UnicodeGeneralCategory_OtherNumber
+    UnicodeGeneralCategory_SpaceSeparator
+    UnicodeGeneralCategory_LineSeparator
+    UnicodeGeneralCategory_ParagraphSeparator
+    UnicodeGeneralCategory_Control
+    UnicodeGeneralCategory_Format
+    UnicodeGeneralCategory_Surrogate
+    UnicodeGeneralCategory_PrivateUse
+    UnicodeGeneralCategory_ConnectorPunctuation
+    UnicodeGeneralCategory_DashPunctuation
+    UnicodeGeneralCategory_OpenPunctuation
+    UnicodeGeneralCategory_ClosePunctuation
+    UnicodeGeneralCategory_InitialQuotePunctuation
+    UnicodeGeneralCategory_FinalQuotePunctuation
+    UnicodeGeneralCategory_OtherPunctuation
+    UnicodeGeneralCategory_MathSymbol
+    UnicodeGeneralCategory_CurrencySymbol
+    UnicodeGeneralCategory_ModifierSymbol
+    UnicodeGeneralCategory_OtherSymbol
+    UnicodeGeneralCategory_NotAssigned
+End Enum
+
+Public Enum UnicodeNumericType
+    UnicodeNumericType_None
+    UnicodeNumericType_Decimal
+    UnicodeNumericType_Digit
+    UnicodeNumericType_Numeric
+End Enum
+
+Public Type TextSegment
+    StartPosition As Long
+    Length As Long
+End Type
+
+End Module

@@ -1,0 +1,54 @@
+' A part of the GDI+ Package for TwinBasic  https://github.com/kubao/GdiPlus
+' Licensed under the MIT license. (c) 2026 Sunderland Ober Consulting.
+' "Windows" is a trademark of the Microsoft Corporation.
+' Modeled after code and descriptions (c) Microsoft, taken from SDK headers and official documentation.
+' Certain flat API function and type declarations taken from WinDevLib by fafalone, with thanks.
+
+Interface IBrush Extends IUnknown
+    Function CloneBrush() As IBrush
+    Property Get NativeBrush() As GpBrush
+    Property Get Type() As GpBrushType
+End Interface
+
+Alias Brush As IBrush
+
+Module GdipBrush
+    Function BrushFrom(ByVal native As GpBrush) As IBrush
+        Dim Type As GpBrushType
+        Dim lastResult As GpStatus = native.GetType(Type)
+        Select Case Type
+            Case PenTypeSolidColor
+                Set BrushFrom = CType(Of Brush)(New SolidBrush(GpSolidFill(native.Release()), lastResult))
+            Case PenTypeHatchFill
+                Set BrushFrom = CType(Of Brush)(New HatchBrush(GpHatch(native.Release()), lastResult))
+            Case PenTypeTextureFill
+                Set BrushFrom = CType(Of Brush)(New TextureBrush(GpTexture(native.Release()), lastResult))
+            Case PenTypePathGradient
+                Set BrushFrom = CType(Of Brush)(New PathGradientBrush(GpPathGradient(native.Release()), lastResult))
+            Case PenTypeLinearGradient
+                Set BrushFrom = CType(Of Brush)(New LinearGradientBrush(GpLineGradient(native.Release()), lastResult))
+            Case Else
+                native.Delete
+        End Select
+    End Function
+
+    Type GpBrush
+        Native As LongPtr
+        
+        Function Release() As GpBrush
+            Release.Native = Me.Native
+            Me.Native = 0
+        End Function
+        
+        [UseGetLastError(False)]
+        Declare PtrSafe Function Delete Lib "gdiplus" Alias "GdipDeleteBrush" (ByVal Me As GpBrush) As GpStatus
+        [UseGetLastError(False)]
+        Declare PtrSafe Function Clone Lib "gdiplus" Alias "GdipCloneBrush" (ByVal Me As GpBrush, cloneBrush As GpBrush) As GpStatus
+        [UseGetLastError(False)]
+        Declare PtrSafe Function GetType Lib "gdiplus" Alias "GdipGetBrushType" (ByVal Me As GpBrush, type As GpBrushType) As GpStatus
+    End Type
+    
+    Function GpBrush() As GpBrush
+        GpBrush.Native = 0
+    End Function
+End Module

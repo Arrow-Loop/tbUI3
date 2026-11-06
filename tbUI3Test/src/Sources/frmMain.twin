@@ -3,11 +3,144 @@
 [PredeclaredId]
 Class frmMain
 
-	Sub New()
-	End Sub
-    
+    ' Pass 5b test (tbUI3 1.0.0.43): SVG and image icons loaded in code.
+    ' The icons are in test-icons next to tbUI3Test.twinproj. A button that already has a stored
+    ' icon (one applied from the picker's library tabs, pass 5c) keeps it.
+
+    Sub New()
+    End Sub
+
+    Private Sub Form_Load()
+        ' Built EXEs give no line number, so a failure names the step it stopped at.
+        Dim stepName As String
+        On Error GoTo Failed
+        Dim folder As String
+        stepName = "IconFolder"
+        folder = IconFolder()
+        If Len(folder) = 0 Then MsgBox "test-icons not found next to " & App.Path
+
+        stepName = "button 1"
+        If Len(UI3Button1.IconSource) = 0 Then
+            UI3Button1.Caption = "Mono SVG"
+            UI3Button1.LoadIconFile folder & "mono.svg"
+        End If
+
+        stepName = "button 2 Style"
+        UI3Button2.Style = ui3ButtonStandard
+        stepName = "button 2 icon"
+        If Len(UI3Button2.IconSource) = 0 Then
+            UI3Button2.Caption = "Color SVG"
+            UI3Button2.LoadIconFile folder & "color.svg"
+        End If
+
+        stepName = "button 3 Style"
+        UI3Button3.Style = ui3ButtonStandard
+        stepName = "button 3 IconPosition"
+        UI3Button3.IconPosition = ui3IconLeft
+        stepName = "button 3 icon"
+        If Len(UI3Button3.IconSource) = 0 Then
+            UI3Button3.Caption = "PNG"
+            UI3Button3.LoadIconFile folder & "sample.png"
+        End If
+
+        stepName = "button 4 Style"
+        UI3Button4.Style = ui3ButtonStandard
+        stepName = "button 4 icon"
+        If Len(UI3Button4.IconSource) = 0 Then UI3Button4.IconData = UI3Button1.IconData
+        stepName = "button 4 Caption"
+        UI3Button4.Caption = "Copy, size " & UI3Button4.IconSize
+
+        stepName = "icon list"
+        TestIconList folder
+        Exit Sub
+
+    Failed:
+        MsgBox "Form_Load stopped at " & stepName & ": " & Err.Number & " " & Err.Description & _
+            " (source: " & Err.Source & ")" & vbCrLf & "App.Path = " & App.Path
+    End Sub
+
+    ' UI3IconList L3 test (tbUI3 1.0.0.60). Needs a UI3IconList named UI3IconList1 on this form;
+    ' it is found late bound, so the form still compiles and runs without one. UI3Button2's IconKey
+    ' is typed in the Properties pane ("save"), so it finds the form's only list by itself.
+    Private Function TestList() As Object
+        On Error Resume Next
+        Set TestList = Me.Controls("UI3IconList1")
+    End Function
+
+    Private Sub TestIconList(ByVal folder As String)
+        Dim list As Object
+        Set list = TestList()
+        If list Is Nothing Then
+            Me.Caption = "No UI3IconList1 on the form: list test skipped"
+            Exit Sub
+        End If
+        list.AddIcon "save", ui3IconSave
+        list.Add "mono", ReadFileBytes(folder & "mono.svg"), "file:mono.svg"
+        list.Add "png", ReadFileBytes(folder & "sample.png"), "file:sample.png"
+        UI3Button1.IconKey = "mono"
+        UI3Button1.Caption = "List: mono"
+        Set UI3Button3.IconList = list
+        UI3Button3.IconKey = "png"
+        UI3Button3.Caption = "List: png (click removes)"
+        Me.Caption = "List has " & list.Count & ": " & list.Key(1) & ", " & list.Key(2) & ", " & list.Key(3) & _
+            " | Button2 IconKey = " & UI3Button2.IconKey
+    End Sub
+
+    Private Function ReadFileBytes(ByVal Path As String) As Byte()
+        Dim data() As Byte
+        Dim f As Integer
+        f = FreeFile
+        Open Path For Binary Access Read As #f
+        ReDim data(0 To LOF(f) - 1)
+        Get #f, , data
+        Close #f
+        ReadFileBytes = data
+    End Function
+
+    ' test-icons beside the project: App.Path in the IDE, one folder up from a built EXE in Build.
+    Private Function IconFolder() As String
+        Dim candidate As Variant
+        On Error Resume Next
+        For Each candidate In Array(App.Path & "\test-icons\", App.Path & "\..\test-icons\")
+            If Len(Dir$(candidate & "mono.svg")) > 0 Then
+                IconFolder = candidate
+                Exit Function
+            End If
+        Next
+    End Function
+
     Private Sub UI3Button1_Click()
-        MsgBox("Hello World")
+        MsgBox "IconSource: " & UI3Button1.IconSource & " | " & UI3Button2.IconSource & " | " & _
+            UI3Button3.IconSource & " | " & UI3Button4.IconSource & vbCrLf & _
+            "IconKey: " & UI3Button1.IconKey & " | " & UI3Button2.IconKey & " | " & _
+            UI3Button3.IconKey & " | " & UI3Button4.IconKey
+    End Sub
+
+    Private Sub UI3Button3_Click()
+        Dim list As Object
+        Set list = TestList()
+        If list Is Nothing Then Exit Sub
+        list.Remove "png"
+        UI3Button3.Caption = "png removed, list has " & list.Count
+    End Sub
+
+    Private Sub UI3Button2_Click()
+        UI3Button2.Icon = ui3IconAccept
+        UI3Button2.Caption = "Now a Segoe icon"
+    End Sub
+
+    Private Sub UI3Button4_Click()
+        Dim size As Single
+        Select Case UI3Button4.IconSize
+            Case 20: size = 32
+            Case 32: size = 48
+            Case Else: size = 20
+        End Select
+        UI3Button1.IconSize = size
+        UI3Button2.IconSize = size
+        UI3Button3.IconSize = size
+        UI3Button4.IconSize = size
+        UI3Button4.Caption = "Copy, size " & size
     End Sub
 
 End Class

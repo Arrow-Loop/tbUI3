@@ -1,0 +1,380 @@
+Alias HCORENUM As LongPtr
+Alias mdToken As Long
+Alias mdModule As Long
+Alias mdTypeRef As Long
+Alias mdTypeDef As Long
+Alias mdFieldDef As Long
+Alias mdMethodDef As Long
+Alias mdParamDef As Long
+Alias mdInterfaceImpl As Long
+Alias mdMemberRef As Long
+Alias mdCustomAttribute As Long
+Alias mdPermission As Long
+Alias mdSignature As Long
+Alias mdEvent As Long
+Alias mdProperty As Long
+Alias mdModuleRef As Long
+Alias mdAssembly As Long
+Alias mdAssemblyRef As Long
+Alias mdFile As Long
+Alias mdExportedType As Long
+Alias mdManifestResource As Long
+Alias mdTypeSpec As Long
+Alias mdGenericParam As Long
+Alias mdMethodSpec As Long
+Alias mdGenericParamConstraint As Long
+Alias mdString As Long
+
+[InterfaceId("809C652E-7396-11D2-9771-00A0C9B4D50C")]
+Interface IMetaDataDispenser Extends IUnknown
+    [PreserveSig] Function DefineScope(rCLSID As Any, ByVal dwCreateFlags As Long, rIID As Any, ppIUnk As Any) As HRESULT
+    [PreserveSig] Function OpenScope(ByVal szScope As LongPtr, ByVal dwOpenFlags As CorOpenFlags, rIID As Any, ppIUnk As Any) As HRESULT
+    [PreserveSig] Function OpenScopeOnMemory(pData As Any, ByVal cbData As Long, ByVal dwOpenFlags As CorOpenFlags, rIID As Any, ppIUnk As Any) As HRESULT
+End Interface
+
+[InterfaceId("31BCFCE2-DAFB-11D2-9F81-00C04F79A0A3")]
+Interface IMetaDataDispenserEx Extends IMetaDataDispenser
+    [PreserveSig] Function SetOption(rOptionId As Any, ByVal pValue As LongPtr) As HRESULT
+    [PreserveSig] Function GetOption(rOptionId As Any, ByVal pValue As LongPtr) As HRESULT
+    [PreserveSig] Function OpenScopeOnITypeInfo(ByVal pITI As LongPtr, ByVal dwOpenFlags As CorOpenFlags, rIID As Any, ppIUnk As Any) As HRESULT
+    [PreserveSig] Function GetCORSystemDirectory(ByVal szBuffer As LongPtr, ByVal cchBuffer As Long, pchBuffer As Long) As HRESULT
+    [PreserveSig] Function FindAssembly(ByVal szAppBase As LongPtr, ByVal szPrivateBin As LongPtr, ByVal szGlobalBin As LongPtr, ByVal szAssemblyName As LongPtr, ByVal szName As LongPtr, ByVal cchName As Long, pchName As Long) As HRESULT
+    [PreserveSig] Function FindAssemblyModule(ByVal szAppBase As LongPtr, ByVal szPrivateBin As LongPtr, ByVal szGlobalBin As LongPtr, ByVal szAssemblyName As LongPtr, ByVal szModuleName As LongPtr, ByVal szName As LongPtr, ByVal cchName As Long, pchName As Long) As HRESULT
+End Interface
+
+[InterfaceId("EE62470B-E94B-424E-9B7C-2F00C9249F93")]
+Interface IMetaDataAssemblyImport Extends IUnknown
+    [PreserveSig] Function GetAssemblyProps(ByVal tkAssembly As mdAssembly, ppbPublicKey As Any, pcbPublicKey As Long, pulHashAlgId As Long, ByVal szName As LongPtr, ByVal cchName As Long, pchName As Long, pMetaData As ASSEMBLYMETADATA, pdwAssemblyFlags As Long) As HRESULT
+    [PreserveSig] Function GetAssemblyRefProps(ByVal tkAssemblyRef As mdAssemblyRef, ppbPublicKeyOrToken As Any, pcbPublicKeyOrToken As Long, ByVal szName As LongPtr, ByVal cchName As Long, pchName As Long, pMetaData As ASSEMBLYMETADATA, ppbHashValue As Any, pcbHashValue As Long, pdwAssemblyRefFlags As Long) As HRESULT
+    [PreserveSig] Function GetFileProps(ByVal tkFile As mdFile, ByVal szName As LongPtr, ByVal cchName As Long, pchName As Long, ppbHashValue As Any, pcbHashValue As Long, pdwFileFlags As Long) As HRESULT
+    [PreserveSig] Function GetExportedTypeProps(ByVal tkExportedType As mdExportedType, ByVal szName As LongPtr, ByVal cchName As Long, pchName As Long, ptkImplementation As mdToken, ptkTypeDef As mdTypeDef, pdwExportedTypeFlags As Long) As HRESULT
+    [PreserveSig] Function GetManifestResourceProps(ByVal tkManifestResource As mdManifestResource, ByVal szName As LongPtr, ByVal cchName As Long, pchName As Long, ptkImplementation As mdToken, pdwOffset As Long, pdwResourceFlags As Long) As HRESULT
+    [PreserveSig] Function EnumAssemblyRefs(phEnum As HCORENUM, rgAssemblyRefs As Any, ByVal cMax As Long, pcTokens As Long) As HRESULT
+    [PreserveSig] Function EnumFiles(phEnum As HCORENUM, rgFiles As Any, ByVal cMax As Long, pcTokens As Long) As HRESULT
+    [PreserveSig] Function EnumExportedTypes(phEnum As HCORENUM, rgExportedTypes As Any, ByVal cMax As Long, pcTokens As Long) As HRESULT
+    [PreserveSig] Function EnumManifestResources(phEnum As HCORENUM, rgManifestResources As Any, ByVal cMax As Long, pcTokens As Long) As HRESULT
+    [PreserveSig] Function GetAssemblyFromScope(ptkAssembly As mdAssembly) As HRESULT
+    [PreserveSig] Function FindExportedTypeByName(ByVal szName As LongPtr, ByVal mdtExportedType As mdToken, ptkExportedType As mdExportedType) As HRESULT
+    [PreserveSig] Function FindManifestResourceByName(ByVal szName As LongPtr, ptkManifestResource As mdManifestResource) As HRESULT
+    [PreserveSig] Sub CloseEnum(ByVal hEnum As HCORENUM)
+    [PreserveSig] Function FindAssembliesByName(ByVal szAppBase As LongPtr, ByVal szPrivateBin As LongPtr, ByVal szAssemblyName As LongPtr, ppIUnk As Any, ByVal cMax As Long, pcAssemblies As Long) As HRESULT
+End Interface
+
+[InterfaceId("7DAC8207-D3AE-4C75-9B67-92801A497D44")]
+Interface IMetaDataImport Extends IUnknown
+    [PreserveSig] Sub CloseEnum(ByVal hEnum As HCORENUM)
+    [PreserveSig] Function CountEnum(ByVal hEnum As HCORENUM, pulCount As Long) As HRESULT
+    [PreserveSig] Function ResetEnum(ByVal hEnum As HCORENUM, ByVal ulPos As Long) As HRESULT
+    [PreserveSig] Function EnumTypeDefs(phEnum As HCORENUM, rgTypeDefs As Any, ByVal cMax As Long, pcTypeDefs As Long) As HRESULT
+    [PreserveSig] Function EnumInterfaceImpls(phEnum As HCORENUM, ByVal mdTypeDef As mdTypeDef, rgImpls As Any, ByVal cMax As Long, pcImpls As Long) As HRESULT
+    [PreserveSig] Function EnumTypeRefs(phEnum As HCORENUM, rgTypeDefs As Any, ByVal cMax As Long, pcTypeRefs As Long) As HRESULT
+    [PreserveSig] Function FindTypeDefByName(ByVal szTypeDef As LongPtr, ByVal tkEnclosingClass As mdToken, ptkTypeDef As mdTypeDef) As HRESULT
+    [PreserveSig] Function GetScopeProps(ByVal szName As LongPtr, ByVal cchName As Long, pchName As Long, pMVID As Any) As HRESULT
+    [PreserveSig] Function GetModuleFromScope(ptkModule As mdModule) As HRESULT
+    [PreserveSig] Function GetTypeDefProps(ByVal tkTypeDef As mdTypeDef, ByVal szTypeDef As LongPtr, ByVal cchTypeDef As Long, pchTypeDef As Long, pdwTypeDefFlags As Long, ptkExtends As mdToken) As HRESULT
+    [PreserveSig] Function GetInterfaceImplProps(ByVal tkInterfaceImpl As mdInterfaceImpl, ptkClass As mdTypeDef, ptkIface As mdToken) As HRESULT
+    [PreserveSig] Function GetTypeRefProps(ByVal tkTypeRef As mdTypeRef, ptkResolutionScope As mdToken, ByVal szName As LongPtr, ByVal cchName As Long, pchName As Long) As HRESULT
+    [PreserveSig] Function ResolveTypeRef(ByVal tkTypeRef As mdTypeRef, rIID_IMetaDataImport As Any, ppIScope As Any, ptkTypeDef As mdTypeDef) As HRESULT
+    [PreserveSig] Function EnumMembers(phEnum As HCORENUM, ByVal tkTypeDef As mdTypeDef, rgMembers As Any, ByVal cMax As Long, pcTokens As Long) As HRESULT
+    [PreserveSig] Function EnumMembersWithName(phEnum As HCORENUM, ByVal tkTypeDef As mdTypeDef, ByVal szName As LongPtr, rgMembers As Any, ByVal cMax As Long, pcTokens As Long) As HRESULT
+    [PreserveSig] Function EnumMethods(phEnum As HCORENUM, ByVal tkTypeDef As mdTypeDef, rgMethods As Any, ByVal cMax As Long, pcTokens As Long) As HRESULT
+    [PreserveSig] Function EnumMethodsWithName(phEnum As HCORENUM, ByVal tkTypeDef As mdTypeDef, ByVal szName As LongPtr, rgMethods As Any, ByVal cMax As Long, pcTokens As Long) As HRESULT
+    [PreserveSig] Function EnumFields(phEnum As HCORENUM, ByVal tkTypeDef As mdTypeDef, rgFields As Any, ByVal cMax As Long, pcTokens As Long) As HRESULT
+    [PreserveSig] Function EnumFieldsWithName(phEnum As HCORENUM, ByVal tkTypeDef As mdTypeDef, ByVal szName As LongPtr, rgFields As Any, ByVal cMax As Long, pcTokens As Long) As HRESULT
+    [PreserveSig] Function EnumParams(phEnum As HCORENUM, ByVal tkMethodDef As mdMethodDef, rgParams As Any, ByVal cMax As Long, pcTokens As Long) As HRESULT
+    [PreserveSig] Function EnumMemberRefs(phEnum As HCORENUM, ByVal tkParent As mdToken, rgMemberRefs As Any, ByVal cMax As Long, pcTokens As Long) As HRESULT
+    [PreserveSig] Function EnumMethodImpls(phEnum As HCORENUM, ByVal tkTypeDef As mdTypeDef, rgMethodBody As Any, rgMethodDecl As Any, ByVal cMax As Long, pcTokens As Long) As HRESULT
+    [PreserveSig] Function EnumPermissionSets(phEnum As HCORENUM, ByVal tkToken As mdToken, ByVal dwActions As Long, rgPermission As Any, ByVal cMax As Long, pcTokens As Long) As HRESULT
+    [PreserveSig] Function FindMember(ByVal tkTypeDef As mdTypeDef, ByVal szName As LongPtr, ByVal pvSigBlob As LongPtr, ByVal cbSigBlob As Long, ptkMemberDef As mdToken) As HRESULT
+    [PreserveSig] Function FindMethod(ByVal tkTypeDef As mdTypeDef, ByVal szName As LongPtr, ByVal pvSigBlob As LongPtr, ByVal cbSigBlob As Long, ptkMethodDef As mdMethodDef) As HRESULT
+    [PreserveSig] Function FindField(ByVal tkTypeDef As mdTypeDef, ByVal szName As LongPtr, ByVal pvSigBlob As LongPtr, ByVal cbSigBlob As Long, ptkFieldDef As mdFieldDef) As HRESULT
+    [PreserveSig] Function FindMemberRef(ByVal tkTypeRef As mdTypeRef, ByVal szName As LongPtr, ByVal pvSigBlob As LongPtr, ByVal cbSigBlob As Long, ptkMemberRef As mdMemberRef) As HRESULT
+    [PreserveSig] Function GetMethodProps(ByVal tkMethodDef As mdMethodDef, ptkClass As mdTypeDef, ByVal szMethod As LongPtr, ByVal cchMethod As Long, pchMethod As Long, pdwAttr As Long, pvSigBlob As Any, pcbSigBlob As Long, pulCodeRVA As Long, pdwImplFlags As Long) As HRESULT
+    [PreserveSig] Function GetMemberRefProps(ByVal tkMethodRef As mdMemberRef, ptkToken As mdToken, ByVal szMember As LongPtr, ByVal cchMember As Long, pchMember As Long, pvSigBlob As Any, pcbSigBlob As Long) As HRESULT
+    [PreserveSig] Function EnumProperties(phEnum As HCORENUM, ByVal tkTypDef As mdTypeDef, rgProperties As Any, ByVal cMax As Long, pcProperties As Long) As HRESULT
+    [PreserveSig] Function EnumEvents(phEnum As HCORENUM, ByVal tkTypDef As mdTypeDef, rgEvents As Any, ByVal cMax As Long, pcEvents As Long) As HRESULT
+    [PreserveSig] Function GetEventProps(ByVal tkEvent As mdEvent, ptkClass As mdTypeDef, ByVal szEvent As LongPtr, ByVal cchEvent As Long, pchEvent As Long, pdwEventFlags As Long, ptkEventType As mdToken, ptkAddOn As mdMethodDef, ptkRemoveOn As mdMethodDef, ptkFire As mdMethodDef, rgOtherMethod As Any, ByVal cMax As Long, pcOtherMethod As Long) As HRESULT
+    [PreserveSig] Function EnumMethodSemantics(phEnum As HCORENUM, ByVal tkMethodDef As mdMethodDef, rgEventProp As Any, ByVal cMax As Long, pcEventProp As Long) As HRESULT
+    [PreserveSig] Function GetMethodSemantics(ByVal tkMethodDef As mdMethodDef, ByVal tkEventProp As mdToken, pdwSemanticsFlags As Long) As HRESULT
+    [PreserveSig] Function GetClassLayout(ByVal tkTypeDef As mdTypeDef, pdwPackSize As Long, rgFieldOffset As Any, ByVal cMax As Long, pcFieldOffset As Long, pulClassSize As Long) As HRESULT
+    [PreserveSig] Function GetFieldMarshal(ByVal tkToken As mdToken, ppvNativeType As Any, pcbNativeType As Long) As HRESULT
+    [PreserveSig] Function GetRVA(ByVal tkToken As mdToken, pulCodeRVA As Long, pdwImplFlags As Long) As HRESULT
+    [PreserveSig] Function GetPermissionSetProps(ByVal tkPermission As mdPermission, pdwAction As Long, ppvPermission As Any, pcbPermission As Long) As HRESULT
+    [PreserveSig] Function GetSigFromToken(ByVal tkSignature As mdSignature, ppvSig As Any, pcbSig As Long) As HRESULT
+    [PreserveSig] Function GetModuleRefProps(ByVal tkModuleRef As mdModuleRef, ByVal szName As LongPtr, ByVal cchName As Long, pchName As Long) As HRESULT
+    [PreserveSig] Function EnumModuleRefs(phEnum As HCORENUM, rgModuleRefs As Any, ByVal cMax As Long, pcModuleRefs As Long) As HRESULT
+    [PreserveSig] Function GetTypeSpecFromToken(ByVal tkTypeSpec As mdTypeSpec, ppvSig As Any, pcbSig As Long) As HRESULT
+    [PreserveSig] Function GetNameFromToken(ByVal tkToken As mdToken, pszUtf8NamePtr As LongPtr) As HRESULT
+    [PreserveSig] Function EnumUnresolvedMethods(phEnum As HCORENUM, rgMethods As Any, ByVal cMax As Long, pcTokens As Long) As HRESULT
+    [PreserveSig] Function GetUserString(ByVal tkString As mdString, ByVal szString As LongPtr, ByVal cchString As Long, pchString As Long) As HRESULT
+    [PreserveSig] Function GetPinvokeMap(ByVal tkToken As mdToken, pdwMappingFlags As Long, ByVal szImportName As LongPtr, ByVal cchImportName As Long, pchImportName As Long, ptkImportDLL As mdModuleRef) As HRESULT
+    [PreserveSig] Function EnumSignatures(phEnum As HCORENUM, rgSignatures As Any, ByVal cMax As Long, pcSignatures As Long) As HRESULT
+    [PreserveSig] Function EnumTypeSpecs(phEnum As HCORENUM, rgTypeSpecs As Any, ByVal cMax As Long, pcTypeSpecs As Long) As HRESULT
+    [PreserveSig] Function EnumUserStrings(phEnum As HCORENUM, rgStrings As Any, ByVal cMax As Long, pcStrings As Long) As HRESULT
+    [PreserveSig] Function GetParamForMethodIndex(ByVal tkMethodDef As mdMethodDef, ByVal ulParamSeq As Long, ptkParamDef As mdParamDef) As HRESULT
+    [PreserveSig] Function EnumCustomAttributes(phEnum As HCORENUM, ByVal tkToken As mdToken, ByVal tkType As mdToken, rgCustomAttributes As Any, ByVal cMax As Long, pcCustomAttributes As Long) As HRESULT
+    [PreserveSig] Function GetCustomAttributeProps(ByVal tkCustomAttribute As mdCustomAttribute, ptkObj As mdToken, ptkType As mdToken, ppBlob As Any, pcbBlob As Long) As HRESULT
+    [PreserveSig] Function FindTypeRef(ByVal tkResolutionScope As mdToken, ByVal szName As LongPtr, tkTypeRef As mdTypeRef) As HRESULT
+    [PreserveSig] Function GetMemberProps(ByVal tkMember As mdToken, ptkTypeDef As mdTypeDef, ByVal szMember As LongPtr, ByVal cchMember As Long, pchMember As Long, pdwAttr As Long, ppvSigBlob As Any, pcbSigBlob As Long, pulCodeRVA As Long, pdwImplFlags As Long, pdwCPlusTypeFlag As Long, ppValue As Any, pcchValue As Long) As HRESULT
+    [PreserveSig] Function GetFieldProps(ByVal tkFieldDef As mdFieldDef, ptkTypeDef As mdTypeDef, ByVal szField As LongPtr, ByVal cchField As Long, pchField As Long, pdwAttr As Long, ppvSigBlob As Any, pcbSigBlob As Long, pdwCPlusTypeFlag As Long, ppValue As Any, pcchValue As Long) As HRESULT
+    [PreserveSig] Function GetPropertyProps(ByVal tkProperty As mdProperty, ptkTypeDef As mdTypeDef, ByVal szProperty As LongPtr, ByVal cchProperty As Long, pchProperty As Long, pdwPropFlags As Long, ppvSigBlob As Any, pcbSigBlob As Long, pdwCPlusTypeFlag As Long, ppDefaultValue As Any, pcchDefaultValue As Long, ptkSetter As mdMethodDef, ptkGetter As mdMethodDef, rgOtherMethod As Any, ByVal cMax As Long, pcOtherMethod As Long) As HRESULT
+    [PreserveSig] Function GetParamProps(ByVal tkParamDef As mdParamDef, ptkMethodDef As mdMethodDef, pulSequence As Long, ByVal szName As LongPtr, ByVal cchName As Long, pchName As Long, pdwAttr As Long, pdwCPlusTypeFlag As Long, ppValue As Any, pcchValue As Long) As HRESULT
+    [PreserveSig] Function GetCustomAttributeByName(ByVal tkObj As mdToken, ByVal szName As LongPtr, ppData As Any, pcbData As Long) As HRESULT
+    [PreserveSig] Function IsValidToken(ByVal tkToken As mdToken) As BOOL
+    [PreserveSig] Function GetNestedClassProps(ByVal tdNestedClass As mdTypeDef, ptdEnclosingClass As mdTypeDef) As HRESULT
+    [PreserveSig] Function GetNativeCallConvFromSig(pvSig As Any, ByVal cbSig As Long, pCallConv As Long) As HRESULT
+    [PreserveSig] Function IsGlobal(ByVal tkToken As mdToken, pbIsGlobal As BOOL) As HRESULT
+End Interface
+
+[InterfaceId("FCE5EFA0-8BBA-4f8E-A036-8F2022B08466")]
+Interface IMetaDataImport2 Extends IMetaDataImport
+    [PreserveSig] Function EnumGenericParams(phEnum As HCORENUM, ByVal tkToken As mdToken, rgGenericParams As Any, ByVal cMax As Long, pcGenericParams As Long) As HRESULT
+    [PreserveSig] Function GetGenericParamProps(ByVal tkGenericParam As mdGenericParam, pulParamSeq As Long, pdwParamFlags As Long, ptOwner As mdToken, Reserved As Long, ByVal szName As LongPtr, ByVal cchName As Long, pchName As Long) As HRESULT
+    [PreserveSig] Function GetMethodSpecProps(ByVal tkMethodSpec As mdMethodSpec, tkParent As mdToken, ppvSigBlob As Any, pcbSigBlob As Long) As HRESULT
+    [PreserveSig] Function EnumGenericParamConstraints(phEnum As HCORENUM, ByVal tkGenericParam As mdGenericParam, rgGenericParamConstraints As Any, ByVal cMax As Long, pcGenericParamConstraints As Long) As HRESULT
+    [PreserveSig] Function GetGenericParamConstraintProps(ByVal tkGenericParamConstraint As mdGenericParamConstraint, ptGenericParam As mdGenericParam, ptkConstraintType As mdToken) As HRESULT
+    [PreserveSig] Function GetPEKind(pdwPEKind As Long, pdwMachine As Long) As HRESULT
+    [PreserveSig] Function GetVersionString(ByVal pwzBuf As LongPtr, ByVal cchBufSize As Long, pchBufSize As Long) As HRESULT
+    [PreserveSig] Function EnumMethodSpecs(phEnum As HCORENUM, ByVal tkToken As mdToken, rgMethodSpecs As Any, ByVal cMax As Long, pcMethodSpecs As Long) As HRESULT
+End Interface
+
+[InterfaceId("D8F579AB-402D-4B8E-82D9-5D63B1065C68")]
+Interface IMetaDataTables Extends IUnknown
+    [PreserveSig] Function GetStringHeapSize(pcbStrings As Long) As HRESULT
+    [PreserveSig] Function GetBlobHeapSize(pcbBlobs As Long) As HRESULT
+    [PreserveSig] Function GetGuidHeapSize(pcbGuids As Long) As HRESULT
+    [PreserveSig] Function GetUserStringHeapSize(pcbUserStrings As Long) As HRESULT
+    [PreserveSig] Function GetNumTables(pcTables As Long) As HRESULT
+    [PreserveSig] Function GetTableIndex(ByVal Token As Long, pixTbl As Long) As HRESULT
+    [PreserveSig] Function GetTableInfo(ByVal ixTbl As Long, pcbRow As Long, pcRows As Long, pcCols As Long, piKey As Long, ppName As Any) As HRESULT
+    [PreserveSig] Function GetColumnInfo(ByVal ixTbl As Long, ByVal ixCol As Long, poCol As Long, pcbCol As Long, pcCols As Long, pType As Long, ppName As Any) As HRESULT
+    [PreserveSig] Function GetCodedTokenInfo(ByVal ixCdTkn As Long, pcTokens As Long, ppTokens As Any, ppName As Any) As HRESULT
+    [PreserveSig] Function GetRow(ByVal ixTbl As Long, ByVal rowId As Long, ppRow As Any) As HRESULT
+    [PreserveSig] Function GetColumn(ByVal ixTbl As Long, ByVal ixCol As Long, ByVal rowId As Long, pVal As Any) As HRESULT
+    [PreserveSig] Function GetString(ByVal ixString As Long, ppString As Any) As HRESULT
+    [PreserveSig] Function GetBlob(ByVal ixBlob As Long, pcbData As Long, ppData As Any) As HRESULT
+    [PreserveSig] Function GetGuid(ByVal ixGuid As Long, ppGUID As Any) As HRESULT
+    [PreserveSig] Function GetUserString(ByVal ixUserString As Long, pcbData As Long, ppData As Any) As HRESULT
+    [PreserveSig] Function GetNextString(ByVal ixString As Long, pNext As Any) As HRESULT
+    [PreserveSig] Function GetNextBlob(ByVal ixBlob As Long, pNext As Any) As HRESULT
+    [PreserveSig] Function GetNextGuid(ByVal ixGuid As Long, pNext As Any) As HRESULT
+    [PreserveSig] Function GetNextUserString(ByVal ixUserString As Long, pNext As Any) As HRESULT
+End Interface
+
+[InterfaceId("BADB5F70-58DA-43a9-A1C6-D74819F19B15")]
+Interface IMetaDataTables2 Extends IMetaDataTables
+    [PreserveSig] Function GetMetaDataStorage(ppvMd As Any, pcbMd As Long) As HRESULT
+    [PreserveSig] Function GetMetaDataStreamInfo(ByVal Index As Long, ppchName As Any, ppvStream As Any, pcbStream As Long) As HRESULT
+End Interface
+
+Interface IRoSimpleMetaDataBuilder Extends Nothing
+    [PreserveSig] Function SetWinRtInterface(ByVal Guid As UUID) As HRESULT
+    [PreserveSig] Function SetDelegate(ByVal Guid As UUID) As HRESULT
+    [PreserveSig] Function SetInterfaceGroupSimpleDefault(ByVal szName As LongPtr, ByVal szDefaultInterfaceName As LongPtr, DefaultInterfaceIID As Any) As HRESULT
+    [PreserveSig] Function SetInterfaceGroupParameterizedDefault(ByVal szName As LongPtr, ByVal ElementCount As Long, ByVal szDefaultInterfaceNameElements As LongPtr) As HRESULT
+    [PreserveSig] Function SetRuntimeClassSimpleDefault(ByVal szName As LongPtr, ByVal szDefaultInterfaceName As LongPtr, DefaultInterfaceIID As Any) As HRESULT
+    [PreserveSig] Function SetRuntimeClassParameterizedDefault(ByVal szName As LongPtr, ByVal ElementCount As Long, ByVal szDefaultInterfaceNameElements As LongPtr) As HRESULT
+    [PreserveSig] Function SetStruct(ByVal szName As LongPtr, ByVal NumFields As Long, ByVal szFieldTypeNames As LongPtr) As HRESULT
+    [PreserveSig] Function SetEnum(ByVal szName As LongPtr, ByVal szBaseType As LongPtr) As HRESULT
+    [PreserveSig] Function SetParameterizedInterface(ByVal Guid As UUID, ByVal NumArgs As Long) As HRESULT
+    [PreserveSig] Function SetParameterizedDelegate(ByVal Guid As UUID, ByVal NumArgs As Long) As HRESULT
+End Interface
+
+[InterfaceId("D332DB9E-B9B3-4125-8207-A14884F53216")]
+Interface ICLRMetaHost Extends IUnknown
+    [PreserveSig] Function GetRuntime(ByVal pwzVersion As LongPtr, rIID As Any, ppRuntime As Any) As HRESULT
+    [PreserveSig] Function GetVersionFromFile(ByVal pwzFilePath As LongPtr, ByVal pwzBuffer As LongPtr, pcchBuffer As Long) As HRESULT
+    [PreserveSig] Function EnumerateInstalledRuntimes(ppEnumerator As Any) As HRESULT
+    [PreserveSig] Function EnumerateLoadedRuntimes(ByVal hProcess As LongPtr, ppEnumerator As Any) As HRESULT
+    [PreserveSig] Function RequestRuntimeLoadedNotification(ByVal pCallbackFunction As LongPtr) As HRESULT
+    [PreserveSig] Function QueryLegacyV2RuntimeBinding(rIID As Any, ppUnk As Any) As HRESULT
+    [PreserveSig] Function ExitProcess(ByVal iExitCode As Long) As HRESULT
+End Interface
+
+[InterfaceId("BD39D1D2-BA2F-486a-89B0-B4B0CB466891")]
+Interface ICLRRuntimeInfo Extends IUnknown
+    [PreserveSig] Function GetVersionString(ByVal pwzBuffer As LongPtr, pcchBuffer As Long) As HRESULT
+    [PreserveSig] Function GetRuntimeDirectory(ByVal pwzBuffer As LongPtr, pcchBuffer As Long) As HRESULT
+    [PreserveSig] Function IsLoaded(ByVal hProcess As LongPtr, pbLoaded As BOOL) As HRESULT
+    [PreserveSig] Function LoadErrorString(ByVal iResourceID As Long, ByVal pwzBuffer As LongPtr, pcchBuffer As Long, ByVal iLocaleID As Long) As HRESULT
+    [PreserveSig] Function LoadLibrary(ByVal pwzDllName As LongPtr, hModule As LongPtr) As HRESULT
+    [PreserveSig] Function GetProcAddress(ByVal pszProcName As LongPtr, ppProc As LongPtr) As HRESULT
+    [PreserveSig] Function GetInterface(rCLSID As Any, rIID As Any, ppUnk As Any) As HRESULT
+    [PreserveSig] Function IsLoadable(pbLoadable As BOOL) As HRESULT
+    [PreserveSig] Function SetDefaultStartupFlags(ByVal dwStartupFlags As Long, ByVal pwzHostConfigFile As LongPtr) As HRESULT
+    [PreserveSig] Function GetDefaultStartupFlags(dwStartupFlags As Long, ByVal pwzHostConfigFile As LongPtr, pcchHostConfigFile As Long) As HRESULT
+    [PreserveSig] Function BindAsLegacyV2Runtime() As HRESULT
+    [PreserveSig] Function IsStarted(pbStarted As BOOL, dwStartupFlags As Long) As HRESULT
+End Interface
+
+Module mdlRoMetaDataApi
+
+[UseGetLastError(False), DLLStackCheck(False)]
+Public Declare PtrSafe Function CoCreateInstance Lib "combase" (rCLSID As Any, ByVal pUnkOuter As IUnknown, ByVal dwClsContext As CLSCTX, rIID As Any, ppvObject As Any) As HRESULT
+[UseGetLastError(False), DLLStackCheck(False)]
+Public Declare PtrSafe Function RoActivateInstance Lib "combase" (ByVal ActivatableClassId As LongPtr, Instance As Any) As HRESULT
+[UseGetLastError(False), DLLStackCheck(False)]
+Public Declare PtrSafe Function RoGetActivationFactory Lib "combase" (ByVal ActivatableClassId As LongPtr, rIID As Any, Instance As Any) As HRESULT
+[UseGetLastError(False), DLLStackCheck(False)]
+Public Declare PtrSafe Function RoGetParameterizedTypeInstanceIID Lib "combase" (ByVal NameElementCount As Long, ByVal szNameElements As LongPtr, ByVal MetaDataLocator As LongPtr, rIID As Any, Optional pExtra As LongPtr) As HRESULT
+[UseGetLastError(False), DLLStackCheck(False)]
+Public Declare PtrSafe Sub RoFreeParameterizedTypeExtra Lib "combase" (ByVal pExtra As LongPtr)
+[UseGetLastError(False), DLLStackCheck(False)]
+Public Declare PtrSafe Function RoParameterizedTypeExtraGetTypeSignature Lib "combase" (ByVal pExtra As LongPtr) As LongPtr
+[UseGetLastError(False), DLLStackCheck(False)]
+Public Declare PtrSafe Function CLRCreateInstance Lib "mscoree" (rCLSID As Any, rIID As Any, ppvObject As Any) As HRESULT
+[UseGetLastError(False), DLLStackCheck(False)]
+Public Declare PtrSafe Function MetaDataGetDispenser Lib "rometadata" (CLSID_CorMetaDataDispenser As Any, IID_IMetaDataDispenser As Any, MetaDataDispenser As Any) As HRESULT
+[UseGetLastError(False), DLLStackCheck(False)]
+Public Declare PtrSafe Function RoCreatePropertySetSerializer Lib "wintypes" (PropertySetSerializer As IPropertySetSerializer) As HRESULT
+[UseGetLastError(False), DLLStackCheck(False)]
+Public Declare PtrSafe Function RoGetMetaDataFile Lib "wintypes" (ByVal hName As LongPtr, Optional ByVal MetaDataDispenser As IMetaDataDispenserEx, Optional hMetaDataFilePath As LongPtr, Optional MetaDataImport As IMetaDataImport2, Optional TypeDefToken As mdTypeDef) As HRESULT
+[UseGetLastError(False), DLLStackCheck(False)]
+Public Declare PtrSafe Function RoIsApiContractMajorVersionPresent Lib "wintypes" (ByVal szName As LongPtr, ByVal MajorVersion As Integer, IsPresent As BOOL) As HRESULT
+[UseGetLastError(False), DLLStackCheck(False)]
+Public Declare PtrSafe Function RoIsApiContractPresent Lib "wintypes" (ByVal szName As LongPtr, ByVal MajorVersion As Integer, ByVal MinorVersion As Integer, IsPresent As BOOL) As HRESULT
+[UseGetLastError(False), DLLStackCheck(False)]
+Public Declare PtrSafe Function RoParseTypeName Lib "wintypes" (ByVal hTypeName As LongPtr, PartsCount As Long, TypeNameParts As Any) As HRESULT ' requires CoTaskMemFree TypeNameParts
+[UseGetLastError(False), DLLStackCheck(False)]
+Public Declare PtrSafe Function RoResolveNamespace Lib "wintypes" (Optional ByVal hName As LongPtr, Optional ByVal hWindowsMetaDataDir As LongPtr, Optional ByVal PackageGraphDirsCount As Long, Optional ByVal hPackageGraphDirs As LongPtr, Optional MetaDataFilePathsCount As Long, Optional hMetaDataFilePaths As LongPtr, Optional SubNamespacesCount As Long, Optional hSubNamespaces As LongPtr) As HRESULT
+
+Public Enum CLSCTX
+    CLSCTX_INPROC_SERVER = &H1
+    CLSCTX_INPROC_HANDLER = &H2
+    CLSCTX_LOCAL_SERVER = &H4
+    CLSCTX_INPROC_SERVER16 = &H8
+    CLSCTX_REMOTE_SERVER = &H10
+    CLSCTX_INPROC_HANDLER16 = &H20
+    CLSCTX_RESERVED1 = &H40
+    CLSCTX_RESERVED2 = &H80
+    CLSCTX_RESERVED3 = &H100
+    CLSCTX_RESERVED4 = &H00
+    CLSCTX_NO_CODE_DOWNLOAD = &H400
+    CLSCTX_RESERVED5 = &H800
+    CLSCTX_NO_CUSTOM_MARSHAL = &H1000
+    CLSCTX_ENABLE_CODE_DOWNLOAD = &H2000
+    CLSCTX_NO_FAILURE_LOG = &H4000
+    CLSCTX_DISABLE_AAA = &H8000&
+    CLSCTX_ENABLE_AAA = &H10000
+    CLSCTX_FROM_DEFAULT_CONTEXT = &H20000
+    CLSCTX_ACTIVATE_X86_SERVER = &H40000
+    CLSCTX_ACTIVATE_32_BIT_SERVER = &H40000
+    CLSCTX_ACTIVATE_64_BIT_SERVER = &H80000
+    CLSCTX_ENABLE_CLOAKING = &H100000
+    CLSCTX_APPCONTAINER = &H400000
+    CLSCTX_ACTIVATE_AAA_AS_IU = &H800000
+    CLSCTX_RESERVED6 = &H1000000
+    CLSCTX_ACTIVATE_ARM32_SERVER = &H2000000
+    CLSCTX_ALLOW_LOWER_TRUST_REGISTRATION = &H4000000
+    CLSCTX_PS_DLL = &H8000000
+End Enum
+
+Public Enum CorOpenFlags
+    CorOpenFlags_ofRead = &H0
+    CorOpenFlags_ofWrite = &H1
+    CorOpenFlags_ofReadWriteMask = &H1
+    CorOpenFlags_ofCopyMemory = &H2
+    CorOpenFlags_ofCacheImage = &H4
+    CorOpenFlags_ofManifestMetadata = &H8
+    CorOpenFlags_ofReadOnly = &H10
+    CorOpenFlags_ofTakeOwnership = &H20
+    CorOpenFlags_ofNoTypeLib = &H80
+    CorOpenFlags_ofCheckIntegrity = &H800
+    CorOpenFlags_ofNoTransform = &H1000
+    CorOpenFlags_ofReserved1 = &H100
+    CorOpenFlags_ofReserved2 = &H200
+    CorOpenFlags_ofReserved3 = &H400
+    CorOpenFlags_ofReserved = &HFFFFE740
+End Enum
+
+Public Enum CorTokenType
+    mdtModule = &H00000000
+    mdtTypeRef = &H01000000
+    mdtTypeDef = &H02000000
+    mdtFieldDef = &H04000000
+    mdtMethodDef = &H06000000
+    mdtParamDef = &H08000000
+    mdtInterfaceImpl = &H09000000
+    mdtMemberRef = &H0A000000
+    mdtCustomAttribute = &H0C000000
+    mdtPermission = &H0E000000
+    mdtSignature = &H11000000
+    mdtEvent = &H14000000
+    mdtProperty = &H17000000
+    mdtMethodImpl = &H19000000
+    mdtModuleRef = &H1A000000
+    mdtTypeSpec = &H1B000000
+    mdtAssembly = &H20000000
+    mdtAssemblyRef = &H23000000
+    mdtFile = &H26000000
+    mdtExportedType = &H27000000
+    mdtManifestResource = &H28000000
+    mdtGenericParam = &H2A000000
+    mdtMethodSpec = &H2B000000
+    mdtGenericParamConstraint = &H2C000000
+    mdtString = &H70000000
+    mdtName = &H71000000
+    mdtBaseType = &H72000000
+End Enum
+
+Public Enum CorTypeAttr
+    tdVisibilityMask = &H7
+    tdNotPublic = &H0
+    tdPublic = &H1
+    tdNestedPublic = &H2
+    tdNestedPrivate = &H3
+    tdNestedFamily = &H4
+    tdNestedAssembly = &H5
+    tdNestedFamANDAssem = &H6
+    tdNestedFamORAssem = &H7
+    tdLayoutMask = &H18
+    tdAutoLayout = &H0
+    tdSequentialLayout = &H8
+    tdExplicitLayout = &H10
+    tdClassSemanticsMask = &H20
+    tdClass = &H0
+    tdInterface = &H20
+    tdAbstract = &H80
+    tdSealed = &H100
+    tdSpecialName = &H400
+    tdImport = &H1000
+    tdSerializable = &H2000
+    tdWindowsRuntime = &H4000
+    tdStringFormatMask = &H30000
+    tdAnsiClass = &H0
+    tdUnicodeClass = &H10000
+    tdAutoClass = &H20000
+    tdCustomFormatClass = &H30000
+    tdCustomFormatMask = &HC00000
+    tdBeforeFieldInit = &H100000
+    tdForwarder = &H200000
+    tdReservedMask = &H40800
+    tdRTSpecialName = &H800
+    tdHasSecurity = &H40000
+End Enum
+
+Public Type COR_FIELD_OFFSET
+    ridOfField As mdFieldDef
+    ulOffset As Long
+End Type
+
+Public Type OSINFO
+    dwOSPlatformId As Long
+    dwOSMajorVersion As Long
+    dwOSMinorVersion As Long
+End Type
+
+Public Type ASSEMBLYMETADATA
+    usMajorVersion As Integer
+    usMinorVersion As Integer
+    usBuildNumber As Integer
+    usRevisionNumber As Integer
+    szLocale As LongPtr
+    cbLocale As Long
+    rProcessor As LongPtr
+    ulProcessor As Long
+    rOS As LongPtr
+    ulOS As Long
+End Type
+
+End Module

@@ -1,0 +1,545 @@
+[InterfaceId("75B40847-0A4C-4A92-9565-FD63C95F7AED")]
+Interface IApplicationLanguagesStatics Extends IInspectable
+    Property Get PrimaryLanguageOverride() As LongPtr
+    Property Let PrimaryLanguageOverride(ByVal Value As LongPtr)
+    Property Get Languages() As IVectorView_HSTRING
+    Property Get ManifestLanguages() As IVectorView_HSTRING
+End Interface
+
+[InterfaceId("1DF0DE4F-072B-4D7B-8F06-CB2DB40F2BB5")]
+Interface IApplicationLanguagesStatics2 Extends IInspectable
+    Function GetLanguagesForUser(ByVal User As IUser) As IVectorView_HSTRING
+End Interface
+
+[InterfaceId("CA30221D-86D9-40FB-A26B-D44EB7CF08EA")]
+Interface ICalendar Extends IInspectable
+    Function Clone() As ICalendar
+    [PreserveSig]
+    Function SetToMin() As HRESULT
+    [PreserveSig]
+    Function SetToMax() As HRESULT
+    Property Get Languages() As IVectorView_HSTRING
+    Property Get NumeralSystem() As LongPtr
+    Property Let NumeralSystem(ByVal Value As LongPtr)
+    Function GetCalendarSystem() As LongPtr
+    [PreserveSig]
+    Function ChangeCalendarSystem(ByVal Value As LongPtr) As HRESULT
+    Function GetClock() As LongPtr
+    [PreserveSig]
+    Function ChangeClock(ByVal Value As LongPtr) As HRESULT
+    Function GetDateTime() As DateTime
+    [PreserveSig]
+    Function SetDateTime(ByVal Value As DateTime) As HRESULT
+    [PreserveSig]
+    Function SetToNow() As HRESULT
+    Property Get FirstEra() As Long
+    Property Get LastEra() As Long
+    Property Get NumberOfEras() As Long
+    Property Get Era() As Long
+    Property Let Era(ByVal Value As Long)
+    [PreserveSig]
+    Function AddEras(ByVal Eras As Long) As HRESULT
+    Function EraAsFullString() As LongPtr
+    Function EraAsString(ByVal IdealLength As Long) As LongPtr
+    Property Get FirstYearInThisEra() As Long
+    Property Get LastYearInThisEra() As Long
+    Property Get NumberOfYearsInThisEra() As Long
+    Property Get Year() As Long
+    Property Let Year(ByVal Value As Long)
+    [PreserveSig]
+    Function AddYears(ByVal Years As Long) As HRESULT
+    Function YearAsString() As LongPtr
+    Function YearAsTruncatedString(ByVal RemainingDigits As Long) As LongPtr
+    Function YearAsPaddedString(ByVal MinDigits As Long) As LongPtr
+    Property Get FirstMonthInThisYear() As Long
+    Property Get LastMonthInThisYear() As Long
+    Property Get NumberOfMonthsInThisYear() As Long
+    Property Get Month() As Long
+    Property Let Month(ByVal Value As Long)
+    [PreserveSig]
+    Function AddMonths(ByVal Months As Long) As HRESULT
+    Function MonthAsFullString() As LongPtr
+    Function MonthAsString(ByVal IdealLength As Long) As LongPtr
+    Function MonthAsFullSoloString() As LongPtr
+    Function MonthAsSoloString(ByVal IdealLength As Long) As LongPtr
+    Function MonthAsNumericString() As LongPtr
+    Function MonthAsPaddedNumericString(ByVal MinDigits As Long) As LongPtr
+    [PreserveSig]
+    Function AddWeeks(ByVal Weeks As Long) As HRESULT
+    Property Get FirstDayInThisMonth() As Long
+    Property Get LastDayInThisMonth() As Long
+    Property Get NumberOfDaysInThisMonth() As Long
+    Property Get Day() As Long
+    Property Let Day(ByVal Value As Long)
+    [PreserveSig]
+    Function AddDays(ByVal Days As Long) As HRESULT
+    Function DayAsString() As LongPtr
+    Function DayAsPaddedString(ByVal MinDigits As Long) As LongPtr
+    Property Get DayOfWeek() As DayOfWeek
+    Function DayOfWeekAsFullString() As LongPtr
+    Function DayOfWeekAsString(ByVal IdealLength As Long) As LongPtr
+    Function DayOfWeekAsFullSoloString() As LongPtr
+    Function DayOfWeekAsSoloString(ByVal IdealLength As Long) As LongPtr
+    Property Get FirstPeriodInThisDay() As Long
+    Property Get LastPeriodInThisDay() As Long
+    Property Get NumberOfPeriodsInThisDay() As Long
+    Property Get Period() As Long
+    Property Let Period(ByVal Value As Long)
+    [PreserveSig]
+    Function AddPeriods(ByVal Periods As Long) As HRESULT
+    Function PeriodAsFullString() As LongPtr
+    Function PeriodAsString(ByVal IdealLength As Long) As LongPtr
+    Property Get FirstHourInThisPeriod() As Long
+    Property Get LastHourInThisPeriod() As Long
+    Property Get NumberOfHoursInThisPeriod() As Long
+    Property Get Hour() As Long
+    Property Let Hour(ByVal Value As Long)
+    [PreserveSig]
+    Function AddHours(ByVal Hours As Long) As HRESULT
+    Function HourAsString() As LongPtr
+    Function HourAsPaddedString(ByVal MinDigits As Long) As LongPtr
+    Property Get Minute() As Long
+    Property Let Minute(ByVal Value As Long)
+    [PreserveSig]
+    Function AddMinutes(ByVal Minutes As Long) As HRESULT
+    Function MinuteAsString() As LongPtr
+    Function MinuteAsPaddedString(ByVal MinDigits As Long) As LongPtr
+    Property Get Second() As Long
+    Property Let Second(ByVal Value As Long)
+    [PreserveSig]
+    Function AddSeconds(ByVal Seconds As Long) As HRESULT
+    Function SecondAsString() As LongPtr
+    Function SecondAsPaddedString(ByVal MinDigits As Long) As LongPtr
+    Property Get Nanosecond() As Long
+    Property Let Nanosecond(ByVal Value As Long)
+    [PreserveSig]
+    Function AddNanoseconds(ByVal Nanoseconds As Long) As HRESULT
+    Function NanosecondAsString() As LongPtr
+    Function NanosecondAsPaddedString(ByVal MinDigits As Long) As LongPtr
+    Function Compare(ByVal Other As ICalendar) As Long
+    Function CompareDateTime(ByVal Other As DateTime) As Long
+    [PreserveSig]
+    Function CopyTo(ByVal Other As ICalendar) As HRESULT
+    Property Get FirstMinuteInThisHour() As Long
+    Property Get LastMinuteInThisHour() As Long
+    Property Get NumberOfMinutesInThisHour() As Long
+    Property Get FirstSecondInThisMinute() As Long
+    Property Get LastSecondInThisMinute() As Long
+    Property Get NumberOfSecondsInThisMinute() As Long
+    Property Get ResolvedLanguage() As LongPtr
+    Property Get IsDaylightSavingTime() As BooleanByte
+End Interface
+
+[InterfaceId("83F58412-E56B-4C75-A66E-0F63D57758A6")]
+Interface ICalendarFactory Extends IInspectable
+    Function CreateCalendarDefaultCalendarAndClock(ByVal Languages As IIterable_HSTRING) As ICalendar
+    Function CreateCalendar(ByVal Languages As IIterable_HSTRING, ByVal Calendar As LongPtr, ByVal Clock As LongPtr) As ICalendar
+End Interface
+
+[InterfaceId("B44B378C-CA7E-4590-9E72-EA2BEC1A5115")]
+Interface ICalendarFactory2 Extends IInspectable
+    Function CreateCalendarWithTimeZone(ByVal Languages As IIterable_HSTRING, ByVal Calendar As LongPtr, ByVal Clock As LongPtr, ByVal TimeZoneId As LongPtr) As ICalendar
+End Interface
+
+[InterfaceId("80653F68-2CB2-4C1F-B590-F0F52BF4FD1A")]
+Interface ICalendarIdentifiersStatics Extends IInspectable
+    Property Get Gregorian() As LongPtr
+    Property Get Hebrew() As LongPtr
+    Property Get Hijri() As LongPtr
+    Property Get Japanese() As LongPtr
+    Property Get Julian() As LongPtr
+    Property Get Korean() As LongPtr
+    Property Get Taiwan() As LongPtr
+    Property Get Thai() As LongPtr
+    Property Get UmAlQura() As LongPtr
+End Interface
+
+[InterfaceId("7DF4D488-5FD0-42A7-95B5-7D98D823075F")]
+Interface ICalendarIdentifiersStatics2 Extends IInspectable
+    Property Get Persian() As LongPtr
+End Interface
+
+[InterfaceId("2C225423-1FAD-40C0-9334-A8EB90DB04F5")]
+Interface ICalendarIdentifiersStatics3 Extends IInspectable
+    Property Get ChineseLunar() As LongPtr
+    Property Get JapaneseLunar() As LongPtr
+    Property Get KoreanLunar() As LongPtr
+    Property Get TaiwanLunar() As LongPtr
+    Property Get VietnameseLunar() As LongPtr
+End Interface
+
+[InterfaceId("523805BB-12EC-4F83-BC31-B1B4376B0808")]
+Interface IClockIdentifiersStatics Extends IInspectable
+    Property Get TwelveHour() As LongPtr
+    Property Get TwentyFourHour() As LongPtr
+End Interface
+
+[InterfaceId("74B49942-EB75-443A-95B3-7D723F56F93C")]
+Interface ICurrencyAmount Extends IInspectable
+    Property Get Amount() As LongPtr
+    Property Get Currency() As LongPtr
+End Interface
+
+[InterfaceId("48D7168F-EF3B-4AEE-A6A1-4B036FE03FF0")]
+Interface ICurrencyAmountFactory Extends IInspectable
+    Function Create(ByVal Amount As LongPtr, ByVal Currency As LongPtr) As ICurrencyAmount
+End Interface
+
+[InterfaceId("9F1D091B-D586-4913-9B6A-A9BD2DC12874")]
+Interface ICurrencyIdentifiersStatics Extends IInspectable
+    Property Get AED() As LongPtr
+    Property Get AFN() As LongPtr
+    Property Get ALL() As LongPtr
+    Property Get AMD() As LongPtr
+    Property Get ANG() As LongPtr
+    Property Get AOA() As LongPtr
+    Property Get ARS() As LongPtr
+    Property Get AUD() As LongPtr
+    Property Get AWG() As LongPtr
+    Property Get AZN() As LongPtr
+    Property Get BAM() As LongPtr
+    Property Get BBD() As LongPtr
+    Property Get BDT() As LongPtr
+    Property Get BGN() As LongPtr
+    Property Get BHD() As LongPtr
+    Property Get BIF() As LongPtr
+    Property Get BMD() As LongPtr
+    Property Get BND() As LongPtr
+    Property Get BOB() As LongPtr
+    Property Get BRL() As LongPtr
+    Property Get BSD() As LongPtr
+    Property Get BTN() As LongPtr
+    Property Get BWP() As LongPtr
+    Property Get BYR() As LongPtr
+    Property Get BZD() As LongPtr
+    Property Get CAD() As LongPtr
+    Property Get CDF() As LongPtr
+    Property Get CHF() As LongPtr
+    Property Get CLP() As LongPtr
+    Property Get CNY() As LongPtr
+    Property Get COP() As LongPtr
+    Property Get CRC() As LongPtr
+    Property Get CUP() As LongPtr
+    Property Get CVE() As LongPtr
+    Property Get CZK() As LongPtr
+    Property Get DJF() As LongPtr
+    Property Get DKK() As LongPtr
+    Property Get DOP() As LongPtr
+    Property Get DZD() As LongPtr
+    Property Get EGP() As LongPtr
+    Property Get ERN() As LongPtr
+    Property Get ETB() As LongPtr
+    Property Get EUR() As LongPtr
+    Property Get FJD() As LongPtr
+    Property Get FKP() As LongPtr
+    Property Get GBP() As LongPtr
+    Property Get GEL() As LongPtr
+    Property Get GHS() As LongPtr
+    Property Get GIP() As LongPtr
+    Property Get GMD() As LongPtr
+    Property Get GNF() As LongPtr
+    Property Get GTQ() As LongPtr
+    Property Get GYD() As LongPtr
+    Property Get HKD() As LongPtr
+    Property Get HNL() As LongPtr
+    Property Get HRK() As LongPtr
+    Property Get HTG() As LongPtr
+    Property Get HUF() As LongPtr
+    Property Get IDR() As LongPtr
+    Property Get ILS() As LongPtr
+    Property Get INR() As LongPtr
+    Property Get IQD() As LongPtr
+    Property Get IRR() As LongPtr
+    Property Get ISK() As LongPtr
+    Property Get JMD() As LongPtr
+    Property Get JOD() As LongPtr
+    Property Get JPY() As LongPtr
+    Property Get KES() As LongPtr
+    Property Get KGS() As LongPtr
+    Property Get KHR() As LongPtr
+    Property Get KMF() As LongPtr
+    Property Get KPW() As LongPtr
+    Property Get KRW() As LongPtr
+    Property Get KWD() As LongPtr
+    Property Get KYD() As LongPtr
+    Property Get KZT() As LongPtr
+    Property Get LAK() As LongPtr
+    Property Get LBP() As LongPtr
+    Property Get LKR() As LongPtr
+    Property Get LRD() As LongPtr
+    Property Get LSL() As LongPtr
+    Property Get LTL() As LongPtr
+    Property Get LVL() As LongPtr
+    Property Get LYD() As LongPtr
+    Property Get MAD() As LongPtr
+    Property Get MDL() As LongPtr
+    Property Get MGA() As LongPtr
+    Property Get MKD() As LongPtr
+    Property Get MMK() As LongPtr
+    Property Get MNT() As LongPtr
+    Property Get MOP() As LongPtr
+    Property Get MRO() As LongPtr
+    Property Get MUR() As LongPtr
+    Property Get MVR() As LongPtr
+    Property Get MWK() As LongPtr
+    Property Get MXN() As LongPtr
+    Property Get MYR() As LongPtr
+    Property Get MZN() As LongPtr
+    Property Get NAD() As LongPtr
+    Property Get NGN() As LongPtr
+    Property Get NIO() As LongPtr
+    Property Get NOK() As LongPtr
+    Property Get NPR() As LongPtr
+    Property Get NZD() As LongPtr
+    Property Get OMR() As LongPtr
+    Property Get PAB() As LongPtr
+    Property Get PEN() As LongPtr
+    Property Get PGK() As LongPtr
+    Property Get PHP() As LongPtr
+    Property Get PKR() As LongPtr
+    Property Get PLN() As LongPtr
+    Property Get PYG() As LongPtr
+    Property Get QAR() As LongPtr
+    Property Get RON() As LongPtr
+    Property Get RSD() As LongPtr
+    Property Get RUB() As LongPtr
+    Property Get RWF() As LongPtr
+    Property Get SAR() As LongPtr
+    Property Get SBD() As LongPtr
+    Property Get SCR() As LongPtr
+    Property Get SDG() As LongPtr
+    Property Get SEK() As LongPtr
+    Property Get SGD() As LongPtr
+    Property Get SHP() As LongPtr
+    Property Get SLL() As LongPtr
+    Property Get SOS() As LongPtr
+    Property Get SRD() As LongPtr
+    Property Get STD() As LongPtr
+    Property Get SYP() As LongPtr
+    Property Get SZL() As LongPtr
+    Property Get THB() As LongPtr
+    Property Get TJS() As LongPtr
+    Property Get TMT() As LongPtr
+    Property Get TND() As LongPtr
+    Property Get TOP() As LongPtr
+    Property Get TRY() As LongPtr
+    Property Get TTD() As LongPtr
+    Property Get TWD() As LongPtr
+    Property Get TZS() As LongPtr
+    Property Get UAH() As LongPtr
+    Property Get UGX() As LongPtr
+    Property Get USD() As LongPtr
+    Property Get UYU() As LongPtr
+    Property Get UZS() As LongPtr
+    Property Get VEF() As LongPtr
+    Property Get VND() As LongPtr
+    Property Get VUV() As LongPtr
+    Property Get WST() As LongPtr
+    Property Get XAF() As LongPtr
+    Property Get XCD() As LongPtr
+    Property Get XOF() As LongPtr
+    Property Get XPF() As LongPtr
+    Property Get XXX() As LongPtr
+    Property Get YER() As LongPtr
+    Property Get ZAR() As LongPtr
+    Property Get ZMW() As LongPtr
+    Property Get ZWL() As LongPtr
+End Interface
+
+[InterfaceId("1814797F-C3B2-4C33-9591-980011950D37")]
+Interface ICurrencyIdentifiersStatics2 Extends IInspectable
+    Property Get BYN() As LongPtr
+End Interface
+
+[InterfaceId("4FB23BFA-ED25-4F4D-857F-237F1748C21C")]
+Interface ICurrencyIdentifiersStatics3 Extends IInspectable
+    Property Get MRU() As LongPtr
+    Property Get SSP() As LongPtr
+    Property Get STN() As LongPtr
+    Property Get VES() As LongPtr
+End Interface
+
+[InterfaceId("01E9A621-4A64-4ED9-954F-9EDEB07BD903")]
+Interface IGeographicRegion Extends IInspectable
+    Property Get Code() As LongPtr
+    Property Get CodeTwoLetter() As LongPtr
+    Property Get CodeThreeLetter() As LongPtr
+    Property Get CodeThreeDigit() As LongPtr
+    Property Get DisplayName() As LongPtr
+    Property Get NativeName() As LongPtr
+    Property Get CurrenciesInUse() As IVectorView_HSTRING
+End Interface
+
+[InterfaceId("53425270-77B4-426B-859F-81E19D512546")]
+Interface IGeographicRegionFactory Extends IInspectable
+    Function CreateGeographicRegion(ByVal GeographicRegionCode As LongPtr) As IGeographicRegion
+End Interface
+
+[InterfaceId("29E28974-7AD9-4EF4-8799-B3B44FADEC08")]
+Interface IGeographicRegionStatics Extends IInspectable
+    Function IsSupported(ByVal GeographicRegionCode As LongPtr) As BooleanByte
+End Interface
+
+[InterfaceId("2F6A9300-E85B-43E6-897D-5D82F862DF21")]
+Interface IJapanesePhoneme Extends IInspectable
+    Property Get DisplayText() As LongPtr
+    Property Get YomiText() As LongPtr
+    Property Get IsPhraseStart() As BooleanByte
+End Interface
+
+[InterfaceId("F15CA7E7-69A8-564D-9C20-4DA75A773432")]
+Interface IIterator_IJapanesePhoneme Extends IInspectable
+    Property Get Current() As IUri
+    Property Get HasCurrent() As BooleanByte
+    Function MoveNext() As BooleanByte
+    Function GetMany(ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("1AAD17CB-1829-5236-8AEF-0B75F8DFD7A6")]
+Interface IIterable_IJapanesePhoneme Extends IInspectable
+    Function First() As IIterator_IJapanesePhoneme
+End Interface
+
+[InterfaceId("4CDC5BD0-D4AA-5B60-BF25-7144905050F9")]
+Interface IVectorView_IJapanesePhoneme Extends IInspectable
+    Function GetAt(ByVal Index As Long) As IJapanesePhoneme
+    Property Get Size() As Long
+    Function IndexOf(ByVal Value As IJapanesePhoneme, Index As Long) As BooleanByte
+    Function GetMany(ByVal StartIndex As Long, ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("88AB9E90-93DE-41B2-B4D5-8EDB227FD1C2")]
+Interface IJapanesePhoneticAnalyzerStatics Extends IInspectable
+    Function GetWords(ByVal Input As LongPtr) As IVectorView_IJapanesePhoneme
+    Function GetWordsWithMonoRubyOption(ByVal Input As LongPtr, ByVal MonoRuby As BooleanByte) As IVectorView_IJapanesePhoneme
+End Interface
+
+[InterfaceId("EA79A752-F7C2-4265-B1BD-C4DEC4E4F080")]
+Interface ILanguage Extends IInspectable
+    Property Get LanguageTag() As LongPtr
+    Property Get DisplayName() As LongPtr
+    Property Get NativeName() As LongPtr
+    Property Get Script() As LongPtr
+End Interface
+
+[InterfaceId("6A47E5B5-D94D-4886-A404-A5A5B9D5B494")]
+Interface ILanguage2 Extends IInspectable
+    Property Get LayoutDirection() As LanguageLayoutDirection
+End Interface
+
+[InterfaceId("C6AF3D10-641A-5BA4-BB43-5E12AED75954")]
+Interface ILanguage3 Extends IInspectable
+    Property Get AbbreviatedName() As LongPtr
+End Interface
+
+[InterfaceId("7D7DAF45-368D-4364-852B-DEC927037B85")]
+Interface ILanguageExtensionSubtags Extends IInspectable
+    Function GetExtensionSubtags(ByVal Singleton As LongPtr) As IVectorView_HSTRING
+End Interface
+
+[InterfaceId("9B0252AC-0C27-44F8-B792-9793FB66C63E")]
+Interface ILanguageFactory Extends IInspectable
+    Function CreateLanguage(ByVal LanguageTag As LongPtr) As ILanguage
+End Interface
+
+[InterfaceId("B23CD557-0865-46D4-89B8-D59BE8990F0D")]
+Interface ILanguageStatics Extends IInspectable
+    Function IsWellFormed(ByVal LanguageTag As LongPtr) As BooleanByte
+    Property Get CurrentInputMethodLanguageTag() As LongPtr
+End Interface
+
+[InterfaceId("30199F6E-914B-4B2A-9D6E-E3B0E27DBE4F")]
+Interface ILanguageStatics2 Extends IInspectable
+    Function TrySetInputMethodLanguageTag(ByVal LanguageTag As LongPtr) As BooleanByte
+End Interface
+
+[InterfaceId("D15ECB5A-71DE-5752-9542-FAC5B4F27261")]
+Interface ILanguageStatics3 Extends IInspectable
+    Function GetMuiCompatibleLanguageListFromLanguageTags(ByVal LanguageTags As IIterable_HSTRING) As IVector_HSTRING
+End Interface
+
+[InterfaceId("A5C662C3-68C9-4D3D-B765-972029E21DEC")]
+Interface INumeralSystemIdentifiersStatics Extends IInspectable
+    Property Get Arab() As LongPtr
+    Property Get ArabExt() As LongPtr
+    Property Get Bali() As LongPtr
+    Property Get Beng() As LongPtr
+    Property Get Cham() As LongPtr
+    Property Get Deva() As LongPtr
+    Property Get FullWide() As LongPtr
+    Property Get Gujr() As LongPtr
+    Property Get Guru() As LongPtr
+    Property Get HaniDec() As LongPtr
+    Property Get Java() As LongPtr
+    Property Get Kali() As LongPtr
+    Property Get Khmr() As LongPtr
+    Property Get Knda() As LongPtr
+    Property Get Lana() As LongPtr
+    Property Get LanaTham() As LongPtr
+    Property Get Laoo() As LongPtr
+    Property Get Latn() As LongPtr
+    Property Get Lepc() As LongPtr
+    Property Get Limb() As LongPtr
+    Property Get Mlym() As LongPtr
+    Property Get Mong() As LongPtr
+    Property Get Mtei() As LongPtr
+    Property Get Mymr() As LongPtr
+    Property Get MymrShan() As LongPtr
+    Property Get Nkoo() As LongPtr
+    Property Get Olck() As LongPtr
+    Property Get Orya() As LongPtr
+    Property Get Saur() As LongPtr
+    Property Get Sund() As LongPtr
+    Property Get Talu() As LongPtr
+    Property Get TamlDec() As LongPtr
+    Property Get Telu() As LongPtr
+    Property Get Thai() As LongPtr
+    Property Get Tibt() As LongPtr
+    Property Get Vaii() As LongPtr
+End Interface
+
+[InterfaceId("7F003228-9DDB-4A34-9104-0260C091A7C7")]
+Interface INumeralSystemIdentifiersStatics2 Extends IInspectable
+    Property Get Brah() As LongPtr
+    Property Get Osma() As LongPtr
+    Property Get MathBold() As LongPtr
+    Property Get MathDbl() As LongPtr
+    Property Get MathSans() As LongPtr
+    Property Get MathSanb() As LongPtr
+    Property Get MathMono() As LongPtr
+    Property Get ZmthBold() As LongPtr
+    Property Get ZmthDbl() As LongPtr
+    Property Get ZmthSans() As LongPtr
+    Property Get ZmthSanb() As LongPtr
+    Property Get ZmthMono() As LongPtr
+End Interface
+
+[InterfaceId("BB3C25E5-46CF-4317-A3F5-02621AD54478")]
+Interface ITimeZoneOnCalendar Extends IInspectable
+    Function GetTimeZone() As LongPtr
+    [PreserveSig]
+    Function ChangeTimeZone(ByVal TimeZoneId As LongPtr) As HRESULT
+    Function TimeZoneAsFullString() As LongPtr
+    Function TimeZoneAsString(ByVal IdealLength As Long) As LongPtr
+End Interface
+
+Module mdlGlobalization
+
+Public Enum DayOfWeek
+    DayOfWeek_Sunday
+    DayOfWeek_Monday
+    DayOfWeek_Tuesday
+    DayOfWeek_Wednesday
+    DayOfWeek_Thursday
+    DayOfWeek_Friday
+    DayOfWeek_Saturday
+End Enum
+
+Public Enum LanguageLayoutDirection
+    LanguageLayoutDirection_Ltr
+    LanguageLayoutDirection_Rtl
+    LanguageLayoutDirection_TtbLtr
+    LanguageLayoutDirection_TtbRtl
+End Enum
+
+End Module

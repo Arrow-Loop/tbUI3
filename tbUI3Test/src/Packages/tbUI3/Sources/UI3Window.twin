@@ -1,0 +1,1344 @@
+' tbUI3 form/window theming for ordinary twinBASIC Forms.
+'
+' Live subclassing is a minimal private adaptation of the pointer-width-safe comctl32 pattern
+' found independently in VanGoghGaming WinRT 1.7.0.159 (MIT, mdlSubclass.twin) and Krool
+' VBCCR18 1.8.0.125 (MIT, ComCtlsBase.bas). tbUI3 does not depend on either package.
+
+Public Module UI3Window
+
+    Private Const DWMWA_USE_IMMERSIVE_DARK_MODE_BEFORE_20H1 As Long = 19
+    Private Const DWMWA_USE_IMMERSIVE_DARK_MODE As Long = 20
+    Private Const DWMWA_WINDOW_CORNER_PREFERENCE As Long = 33
+    Private Const DWMWA_CAPTION_COLOR As Long = 35
+    Private Const DWMWA_TEXT_COLOR As Long = 36
+    Private Const DWMWA_COLOR_DEFAULT As Long = &HFFFFFFFF
+    Private Const DWMWCP_ROUND As Long = 2
+
+    Private Const SWP_NOSIZE As Long = &H1
+    Private Const SWP_NOMOVE As Long = &H2
+    Private Const SWP_NOZORDER As Long = &H4
+    Private Const SWP_NOACTIVATE As Long = &H10
+    Private Const SWP_FRAMECHANGED As Long = &H20
+
+    Private Const RDW_INVALIDATE As Long = &H1
+    Private Const RDW_ERASE As Long = &H4
+    Private Const RDW_ALLCHILDREN As Long = &H80
+    Private Const RDW_FRAME As Long = &H400
+
+    Private Const WM_SIZE As Long = &H5
+    Private Const WM_PAINT As Long = &HF
+    Private Const WM_ENABLE As Long = &HA
+    Private Const WM_SETFOCUS As Long = &H7
+    Private Const WM_KILLFOCUS As Long = &H8
+    Private Const WM_ERASEBKGND As Long = &H14
+    Private Const WM_WINDOWPOSCHANGED As Long = &H47
+    Private Const WM_COMMAND As Long = &H111
+    Private Const WM_CTLCOLOREDIT As Long = &H133
+    Private Const WM_CTLCOLORSTATIC As Long = &H138
+    Private Const WM_TIMER As Long = &H113
+    Private Const RDW_UPDATENOW As Long = &H100
+    Private Const UI3_SEARCH_REPAINT_TIMER_ID As Long = &H55495352
+    Private Const UI3_SEARCH_REPAINT_TICKS As Long = 6
+    Private Const WM_SETTINGCHANGE As Long = &H1A
+    Private Const WM_NCDESTROY As Long = &H82
+    Private Const WM_MOUSEMOVE As Long = &H200
+    Private Const WM_LBUTTONDOWN As Long = &H201
+    Private Const WM_LBUTTONUP As Long = &H202
+    Private Const WM_DWMCOLORIZATIONCOLORCHANGED As Long = &H320
+    Private Const WM_THEMECHANGED As Long = &H31A
+    Private Const WM_APP As Long = &H8000&
+    Private Const WM_UI3_PROMOTE_PROPERTY_SHEET As Long = WM_APP + &H313
+
+    Private Const BM_GETSTATE As Long = &HF2
+    Private Const BM_SETSTATE As Long = &HF3
+    Private Const BM_SETSTYLE As Long = &HF4
+    Private Const WM_SETTEXT As Long = &HC
+    Private Const WM_UPDATEUISTATE As Long = &H128
+    Private Const BST_PUSHED As Long = &H4
+    Private Const BST_HOT As Long = &H200
+    Private Const TCM_FIRST As Long = &H1300
+    Private Const TCM_GETITEMRECT As Long = TCM_FIRST + 10
+    Private Const TCM_SETITEMSIZE As Long = TCM_FIRST + 41
+    Private Const TCM_SETPADDING As Long = TCM_FIRST + 43
+
+    Private Const IDOK As Long = 1
+    Private Const IDCANCEL As Long = 2
+    Private Const ID_APPLY_NOW As Long = &H3021
+
+    Private Const UI3_THEME_SUBCLASS_ID As Long = &H55493354
+    Private Const UI3_PROPERTY_SHEET_SUBCLASS_ID As Long = &H55495053
+    Private Const UI3_PROPERTY_PROBE_SUBCLASS_ID As Long = &H55495044
+    Private Const UI3_PSKIN_HOST As LongPtr = 1
+    Private Const UI3_PSKIN_TAB As LongPtr = 2
+    Private Const UI3_PSKIN_OK As LongPtr = 3
+    Private Const UI3_PSKIN_CANCEL As LongPtr = 4
+    Private Const UI3_PSKIN_APPLY As LongPtr = 5
+
+    ' PropertySheet action-row layout. Button visuals still use exact WinUI Button resources;
+    ' these dimensions are tbUI3 convenience values because WinUI has no PropertySheet.
+    Private Const PROPERTY_ACTION_MIN_WIDTH_DIP As Single = 80
+    Private Const PROPERTY_ACTION_MIN_HEIGHT_DIP As Single = 32
+    Private Const PROPERTY_ACTION_SPACING_DIP As Single = 8
+    Private Const PROPERTY_ACTION_RIGHT_MARGIN_DIP As Single = 8
+    Private Const PROPERTY_ACTION_BOTTOM_MARGIN_DIP As Single = 8
+
+    Private Declare PtrSafe Function GetCurrentProcessId Lib "kernel32" () As Long
+    Private Declare PtrSafe Function DwmSetWindowAttribute Lib "dwmapi" (ByVal hWnd As LongPtr, ByVal dwAttribute As Long, _
+        ByRef pvAttribute As Any, ByVal cbAttribute As Long) As Long
+    Private Declare PtrSafe Function SetWindowPos Lib "user32" (ByVal hWnd As LongPtr, ByVal hWndInsertAfter As LongPtr, _
+        ByVal x As Long, ByVal y As Long, ByVal cx As Long, ByVal cy As Long, ByVal uFlags As Long) As Long
+    Private Declare PtrSafe Function RedrawWindow Lib "user32" (ByVal hWnd As LongPtr, ByVal lprcUpdate As LongPtr, _
+        ByVal hrgnUpdate As LongPtr, ByVal flags As Long) As Long
+    Private Declare PtrSafe Function lstrcmpiW Lib "kernel32" (ByVal lpString1 As LongPtr, ByVal lpString2 As LongPtr) As Long
+    Private Declare PtrSafe Function GetDlgItem Lib "user32" (ByVal hDlg As LongPtr, ByVal nIDDlgItem As Long) As LongPtr
+    Private Declare PtrSafe Function FindWindowExW Lib "user32" (ByVal hWndParent As LongPtr, ByVal hWndChildAfter As LongPtr, _
+        ByVal lpszClass As LongPtr, ByVal lpszWindow As LongPtr) As LongPtr
+    Private Declare PtrSafe Function GetParent Lib "user32" (ByVal hWnd As LongPtr) As LongPtr
+    Private Declare PtrSafe Function GetClassNameW Lib "user32" (ByVal hWnd As LongPtr, ByVal lpClassName As LongPtr, _
+        ByVal nMaxCount As Long) As Long
+    Private Declare PtrSafe Function GetWindowRect Lib "user32" (ByVal hWnd As LongPtr, ByRef lpRect As UI3GdiRect) As Long
+    Private Declare PtrSafe Function GetDlgCtrlID Lib "user32" (ByVal hWnd As LongPtr) As Long
+    Private Declare PtrSafe Function GetFocus Lib "user32" () As LongPtr
+    Private Declare PtrSafe Function GetWindow Lib "user32" (ByVal hWnd As LongPtr, ByVal uCmd As Long) As LongPtr
+    Private Declare PtrSafe Function MonitorFromWindow Lib "user32" (ByVal hWnd As LongPtr, ByVal dwFlags As Long) As LongPtr
+    Private Declare PtrSafe Function GetMonitorInfoW Lib "user32" (ByVal hMonitor As LongPtr, ByRef lpmi As UI3MonitorInfo) As Long
+    Private Type UI3MonitorInfo
+        cbSize As Long
+        rcMonitor As UI3GdiRect
+        rcWork As UI3GdiRect
+        dwFlags As Long
+    End Type
+    Private Const GW_OWNER As Long = 4
+    Private Const MONITOR_DEFAULTTONEAREST As Long = 2
+    Private Type UI3PaintStruct
+        hdc As LongPtr
+        fErase As Long
+        rcPaint As UI3GdiRect
+        fRestore As Long
+        fIncUpdate As Long
+        rgbReserved(0 To 31) As Byte
+    End Type
+
+    Private Declare PtrSafe Function GetDC Lib "user32" (ByVal hWnd As LongPtr) As LongPtr
+    Private Declare PtrSafe Function ReleaseDC Lib "user32" (ByVal hWnd As LongPtr, ByVal hdc As LongPtr) As Long
+    Private Declare PtrSafe Function BeginPaint Lib "user32" (ByVal hWnd As LongPtr, ByRef lpPaint As UI3PaintStruct) As LongPtr
+    Private Declare PtrSafe Function EndPaint Lib "user32" (ByVal hWnd As LongPtr, ByRef lpPaint As UI3PaintStruct) As Long
+    Private Declare PtrSafe Function InvalidateRect Lib "user32" (ByVal hWnd As LongPtr, ByVal lpRect As LongPtr, ByVal bErase As Long) As Long
+    Private Declare PtrSafe Function FillRect Lib "user32" (ByVal hdc As LongPtr, ByRef lpRect As UI3GdiRect, ByVal hBrush As LongPtr) As Long
+    Private Declare PtrSafe Function IsWindowEnabled Lib "user32" (ByVal hWnd As LongPtr) As Long
+    Private Declare PtrSafe Function IsWindow Lib "user32" (ByVal hWnd As LongPtr) As Long
+    Private Declare PtrSafe Function GetWindowTextLengthW Lib "user32" (ByVal hWnd As LongPtr) As Long
+    Private Declare PtrSafe Function GetWindowTextW Lib "user32" (ByVal hWnd As LongPtr, ByVal lpString As LongPtr, ByVal nMaxCount As Long) As Long
+    Private Declare PtrSafe Function SendMessageW Lib "user32" (ByVal hWnd As LongPtr, ByVal wMsg As Long, _
+        ByVal wParam As LongPtr, ByVal lParam As LongPtr) As LongPtr
+    Private Declare PtrSafe Function PostMessageW Lib "user32" (ByVal hWnd As LongPtr, ByVal wMsg As Long, _
+        ByVal wParam As LongPtr, ByVal lParam As LongPtr) As Long
+    Private Declare PtrSafe Function SetTextColor Lib "gdi32" (ByVal hdc As LongPtr, ByVal crColor As Long) As Long
+    Private Declare PtrSafe Function SetBkColor Lib "gdi32" (ByVal hdc As LongPtr, ByVal crColor As Long) As Long
+    Private Declare PtrSafe Function CreateSolidBrush Lib "gdi32" (ByVal crColor As Long) As LongPtr
+    Private Declare PtrSafe Function GetPixel Lib "gdi32" (ByVal hdc As LongPtr, ByVal x As Long, ByVal y As Long) As Long
+    Private Declare PtrSafe Function GetClipBox Lib "gdi32" (ByVal hdc As LongPtr, ByRef lprc As UI3GdiRect) As Long
+    Private Declare PtrSafe Function SetTimer Lib "user32" (ByVal hWnd As LongPtr, ByVal nIDEvent As LongPtr, _
+        ByVal uElapse As Long, ByVal lpTimerFunc As LongPtr) As LongPtr
+    Private Declare PtrSafe Function KillTimer Lib "user32" (ByVal hWnd As LongPtr, ByVal uIDEvent As LongPtr) As Long
+    Private Declare PtrSafe Function IsWindowVisible Lib "user32" (ByVal hWnd As LongPtr) As Long
+    Private Declare PtrSafe Function ExcludeClipRect Lib "gdi32" (ByVal hdc As LongPtr, ByVal x1 As Long, ByVal y1 As Long, _
+        ByVal x2 As Long, ByVal y2 As Long) As Long
+    Private Declare PtrSafe Function MapWindowPoints Lib "user32" (ByVal hWndFrom As LongPtr, ByVal hWndTo As LongPtr, _
+        ByRef lpPoints As UI3GdiRect, ByVal cPoints As Long) As Long
+    Private Declare PtrSafe Function DeleteObject Lib "gdi32" (ByVal hObject As LongPtr) As Long
+
+    [UseGetLastError(False), DLLStackCheck(False)]
+    Private Declare PtrSafe Function SetWindowSubclass Lib "comctl32" Alias "#410" (ByVal hWnd As LongPtr, _
+        ByVal pfnSubclass As LongPtr, ByVal uIdSubclass As LongPtr, ByVal dwRefData As LongPtr) As Long
+    [UseGetLastError(False), DLLStackCheck(False)]
+    Private Declare PtrSafe Function RemoveWindowSubclass Lib "comctl32" Alias "#412" (ByVal hWnd As LongPtr, _
+        ByVal pfnSubclass As LongPtr, ByVal uIdSubclass As LongPtr) As Long
+    [UseGetLastError(False), DLLStackCheck(False)]
+    Private Declare PtrSafe Function DefSubclassProc Lib "comctl32" Alias "#413" (ByVal hWnd As LongPtr, _
+        ByVal uMsg As Long, ByVal wParam As LongPtr, ByVal lParam As LongPtr) As LongPtr
+
+    Private m_Forms As Collection
+    Private m_HWnds() As LongPtr
+    Private m_ManageBackColor() As Boolean
+    Private m_SlotCount As Long
+    Private m_Applying As Boolean
+
+    ' PropertyPage host skin: one property sheet is modal at a time in the current designer flow.
+    ' The Win32 PropertySheet remains the behavior owner; tbUI3 only replaces its visible paint.
+    Private m_PropertySheetHost As LongPtr
+    Private m_PropertySheetTab As LongPtr
+    Private m_PropertySheetOK As LongPtr
+    Private m_PropertySheetCancel As LongPtr
+    Private m_PropertySheetApply As LongPtr
+    Private m_PropertySheetTabCaption As String
+    Private m_PropertySheetTarget As ID2D1DCRenderTarget
+    Private m_PropertyPageCaption As String
+
+    ' Set True to write %TEMP%\tbUI3-propertypage.log (host tree, subclass results, layout snapshots).
+    Private Const PROPERTY_PAGE_LOG_ENABLED As Boolean = True
+
+    ' PropertyPage hooks: the confirmed native TextBox colour route and the page-move trigger
+    ' that promotes the skin to the real PropertySheet.
+    Private m_PropertyProbeEdit As LongPtr
+    Private m_PropertyProbeEditParent As LongPtr
+    Private m_SearchRepaintTicks As Long
+    Private m_IconPageGrid As LongPtr   ' the icon picker's grid, repainted with the search box (1.0.0.56)
+    Private m_PropertyProbePageDialog As LongPtr
+    Private m_PropertyEditBrush As LongPtr
+    Private m_PropertyEditBrushColor As Long
+
+    [Description("True when tbUI3's effective app theme is dark.")]
+    Public Function UI3IsDarkMode() As Boolean
+        UI3IsDarkMode = IsDarkMode()
+    End Function
+
+    [Description("One shade of the Windows accent colour, as an OLE colour usable for BackColor/ForeColor.")]
+    Public Function UI3AccentColor(Optional ByVal Shade As UI3AccentShade = ui3AccentBase) As Long
+        UI3AccentColor = OleFromArgb(AccentShade(Shade))
+    End Function
+
+    [Description("The WinUI window background colour for the effective mode (#202020 dark, #F3F3F3 light), as an OLE colour.")]
+    Public Function UI3WindowBackColor() As Long
+        If IsDarkMode() Then
+            UI3WindowBackColor = OleFromArgb(DARK_SolidBackgroundFillColorBase)
+        Else
+            UI3WindowBackColor = OleFromArgb(LIGHT_SolidBackgroundFillColorBase)
+        End If
+    End Function
+
+    [Description("Attaches live tbUI3 theme handling to a form. ThemeMode is package-wide; ManageBackColor applies to this form.")]
+    Public Sub Attach(ByVal Form As Object, Optional ByVal Mode As UI3ThemeMode = ui3ThemeSystem, _
+            Optional ByVal ManageBackColor As Boolean = True)
+        Dim hWnd As LongPtr
+
+        On Error Resume Next
+        hWnd = Form.hWnd
+        On Error GoTo 0
+        If hWnd = 0 Then Exit Sub
+
+        SetThemeMode Mode
+        RefreshTheme
+
+        ' Retain a Form reference only after the subclass is installed. If comctl32 rejects
+        ' the subclass for any reason, apply once but do not create a module-level reference
+        ' that would have no WM_NCDESTROY path to release it.
+        If SetWindowSubclass(hWnd, AddressOf UI3WindowSubclassProc, CLngPtr(UI3_THEME_SUBCLASS_ID), 0) <> 0 Then
+            RegisterAttachment Form, hWnd, ManageBackColor
+            ApplyAllAttached
+        Else
+            ApplyFormTheme Form, ManageBackColor
+        End If
+    End Sub
+
+    [Description("Removes live tbUI3 theme handling from a form.")]
+    Public Sub Detach(ByVal Form As Object)
+        Dim hWnd As LongPtr
+
+        On Error Resume Next
+        hWnd = Form.hWnd
+        On Error GoTo 0
+        If hWnd = 0 Then Exit Sub
+
+        RemoveWindowSubclass hWnd, AddressOf UI3WindowSubclassProc, CLngPtr(UI3_THEME_SUBCLASS_ID)
+        ClearAttachment hWnd
+    End Sub
+
+    [Description("One-shot form theme application. Prefer UI3Window.Attach or UI3FormTheme for live updates.")]
+    Public Sub UI3ApplyWindowTheme(ByVal Form As Object, Optional ByVal SetBackColor As Boolean = True)
+        RefreshTheme
+        ApplyFormTheme Form, SetBackColor
+    End Sub
+
+    [Description("Sets a window's title bar to dark or light to match tbUI3's effective app mode.")]
+    Public Sub UI3ApplyTitleBarTheme(ByVal hWnd As LongPtr)
+        If hWnd = 0 Then Exit Sub
+
+        Dim useDark As Long
+        If IsDarkMode() Then useDark = 1
+
+        If DwmSetWindowAttribute(hWnd, DWMWA_USE_IMMERSIVE_DARK_MODE, useDark, 4) <> 0 Then
+            DwmSetWindowAttribute hWnd, DWMWA_USE_IMMERSIVE_DARK_MODE_BEFORE_20H1, useDark, 4
+        End If
+
+        Dim systemDefault As Long
+        systemDefault = DWMWA_COLOR_DEFAULT
+        DwmSetWindowAttribute hWnd, DWMWA_CAPTION_COLOR, systemDefault, 4
+        DwmSetWindowAttribute hWnd, DWMWA_TEXT_COLOR, systemDefault, 4
+
+        Dim corners As Long
+        corners = DWMWCP_ROUND
+        DwmSetWindowAttribute hWnd, DWMWA_WINDOW_CORNER_PREFERENCE, corners, 4
+
+        SetWindowPos hWnd, 0, 0, 0, 0, 0, _
+            SWP_NOMOVE Or SWP_NOSIZE Or SWP_NOZORDER Or SWP_NOACTIVATE Or SWP_FRAMECHANGED
+    End Sub
+
+    Private Sub RegisterAttachment(ByVal Form As Object, ByVal hWnd As LongPtr, ByVal ManageBackColor As Boolean)
+        Dim slot As Long
+        Dim i As Long
+        Dim key As String
+
+        If m_Forms Is Nothing Then Set m_Forms = New Collection
+
+        slot = FindSlot(hWnd)
+        If slot = 0 Then
+            For i = 1 To m_SlotCount
+                If m_HWnds(i) = 0 Then
+                    slot = i
+                    Exit For
+                End If
+            Next i
+        End If
+
+        If slot = 0 Then
+            m_SlotCount = m_SlotCount + 1
+            ReDim Preserve m_HWnds(1 To m_SlotCount)
+            ReDim Preserve m_ManageBackColor(1 To m_SlotCount)
+            slot = m_SlotCount
+        End If
+
+        m_HWnds(slot) = hWnd
+        m_ManageBackColor(slot) = ManageBackColor
+
+        key = WindowKey(hWnd)
+        On Error Resume Next
+        m_Forms.Remove key
+        On Error GoTo 0
+        m_Forms.Add Form, key
+    End Sub
+
+    Private Sub ClearAttachment(ByVal hWnd As LongPtr)
+        Dim slot As Long
+        Dim key As String
+
+        slot = FindSlot(hWnd)
+        If slot <> 0 Then
+            m_HWnds(slot) = 0
+            m_ManageBackColor(slot) = False
+        End If
+
+        If Not m_Forms Is Nothing Then
+            key = WindowKey(hWnd)
+            On Error Resume Next
+            m_Forms.Remove key
+            On Error GoTo 0
+        End If
+    End Sub
+
+    Private Function FindSlot(ByVal hWnd As LongPtr) As Long
+        Dim i As Long
+        For i = 1 To m_SlotCount
+            If m_HWnds(i) = hWnd Then
+                FindSlot = i
+                Exit Function
+            End If
+        Next i
+    End Function
+
+    Private Function FormForWindow(ByVal hWnd As LongPtr) As Object
+        If m_Forms Is Nothing Then Exit Function
+        On Error Resume Next
+        Set FormForWindow = m_Forms(WindowKey(hWnd))
+        On Error GoTo 0
+    End Function
+
+    Private Function WindowKey(ByVal hWnd As LongPtr) As String
+        WindowKey = "W" & CStr(hWnd)
+    End Function
+
+    Private Sub ApplyAllAttached()
+        If m_Applying Then Exit Sub
+        m_Applying = True
+        On Error GoTo CleanUp
+
+        Dim i As Long
+        Dim Form As Object
+
+        For i = 1 To m_SlotCount
+            If m_HWnds(i) <> 0 Then
+                Set Form = FormForWindow(m_HWnds(i))
+                If Not Form Is Nothing Then ApplyFormTheme Form, m_ManageBackColor(i)
+                Set Form = Nothing
+            End If
+        Next i
+
+CleanUp:
+        m_Applying = False
+    End Sub
+
+    Private Sub ApplyFormTheme(ByVal Form As Object, ByVal ManageBackColor As Boolean)
+        Dim hWnd As LongPtr
+        Dim wanted As Long
+
+        On Error Resume Next
+        hWnd = Form.hWnd
+        On Error GoTo 0
+        If hWnd = 0 Then Exit Sub
+
+        UI3ApplyTitleBarTheme hWnd
+
+        If ManageBackColor Then
+            wanted = UI3WindowBackColor()
+            On Error Resume Next
+            If Form.BackColor <> wanted Then Form.BackColor = wanted
+            On Error GoTo 0
+        End If
+
+        RedrawWindow hWnd, 0, 0, RDW_INVALIDATE Or RDW_ERASE Or RDW_ALLCHILDREN Or RDW_FRAME
+    End Sub
+
+    Private Function UI3WindowSubclassProc(ByVal hWnd As LongPtr, ByVal uMsg As Long, ByVal wParam As LongPtr, _
+            ByVal lParam As LongPtr, ByVal uIdSubclass As LongPtr, ByVal dwRefData As LongPtr) As LongPtr
+
+        Select Case uMsg
+            Case WM_NCDESTROY
+                RemoveWindowSubclass hWnd, AddressOf UI3WindowSubclassProc, uIdSubclass
+                ClearAttachment hWnd
+
+            Case WM_SETTINGCHANGE
+                If lParam <> 0 Then
+                    If lstrcmpiW(lParam, StrPtr("ImmersiveColorSet")) = 0 Then
+                        RefreshTheme
+                        ApplyAllAttached
+                    End If
+                End If
+
+            Case WM_DWMCOLORIZATIONCOLORCHANGED, WM_THEMECHANGED
+                RefreshTheme
+                ApplyAllAttached
+        End Select
+
+        UI3WindowSubclassProc = DefSubclassProc(hWnd, uMsg, wParam, lParam)
+    End Function
+
+    Private Function OleFromArgb(ByVal argb As Long) As Long
+        OleFromArgb = ((argb And &HFF&) * &H10000) Or (argb And &HFF00&) Or _
+            ((argb And &HFF0000) \ &H10000)
+    End Function
+
+    ' Applies a reversible tbUI3 paint skin to the native Win32 PropertySheet that hosts a PropertyPage.
+    ' This does not replace the PropertySheet protocol: the original tab and OK/Cancel/Apply HWNDs
+    ' continue to own focus, keyboard, enabled state and click behavior underneath our paint.
+    Public Sub UI3SkinPropertySheetHost(ByVal hWnd As LongPtr, Optional ByVal TabCaption As String = "Properties", _
+            Optional ByVal TextBoxHwnd As LongPtr = 0)
+        If hWnd = 0 Then Exit Sub
+        If TextBoxHwnd <> 0 Then AttachPropertyPageHooks TextBoxHwnd
+        If Len(TabCaption) > 0 Then m_PropertyPageCaption = TabCaption
+
+        ' Only a real PropertySheet (a window with a direct SysTabControl32 child) is skinned, and
+        ' an attached sheet is never swapped for a lesser window. 1.0.0.17 to 1.0.0.20 re-resolved
+        ' the host on every page paint through GetAncestor, which still returned the page's own
+        ' ThunderPropertyPageDC; that detached the real sheet's skin straight after it was promoted.
+        Dim tabHwnd As LongPtr
+        tabHwnd = FindWindowExW(hWnd, 0, StrPtr("SysTabControl32"), 0)
+        If tabHwnd = 0 Then Exit Sub
+        If hWnd = m_PropertySheetHost And m_PropertySheetTab <> 0 Then Exit Sub
+
+        If m_PropertySheetHost <> 0 Then DetachPropertySheetSkin
+
+        m_PropertySheetHost = hWnd
+        m_PropertySheetTabCaption = m_PropertyPageCaption
+        UI3ApplyTitleBarTheme hWnd
+
+        Dim hostSubclassOk As Long
+        hostSubclassOk = SetWindowSubclass(hWnd, AddressOf UI3PropertySheetSubclassProc, CLngPtr(UI3_PROPERTY_SHEET_SUBCLASS_ID), UI3_PSKIN_HOST)
+        ProbeLog "SKIN host subclass=" & CStr(hostSubclassOk) & " " & DebugWindowLine(hWnd)
+
+        m_PropertySheetTab = tabHwnd
+        m_PropertySheetOK = GetDlgItem(hWnd, IDOK)
+        m_PropertySheetCancel = GetDlgItem(hWnd, IDCANCEL)
+        m_PropertySheetApply = GetDlgItem(hWnd, ID_APPLY_NOW)
+
+        AttachPropertySheetChild m_PropertySheetTab, UI3_PSKIN_TAB
+        AttachPropertySheetChild m_PropertySheetOK, UI3_PSKIN_OK
+        AttachPropertySheetChild m_PropertySheetCancel, UI3_PSKIN_CANCEL
+        AttachPropertySheetChild m_PropertySheetApply, UI3_PSKIN_APPLY
+
+        LayoutPropertySheetSkin
+        CenterPropertySheet hWnd
+        RedrawPropertySheetSkin
+        LogPropertySheet hWnd
+        StartSearchRepaint
+    End Sub
+
+    ' Called by a tbUI3 PropertyPage from its paint and theme code; safe to call repeatedly.
+    ' Arms the search-box hooks at once, and skins the PropertySheet that hosts PageChildHwnd once
+    ' BETA 997 has inserted the page into it. Before that insertion it changes nothing else.
+    Public Sub UI3SkinPropertySheetForPage(ByVal PageChildHwnd As LongPtr, ByVal TabCaption As String, _
+            Optional ByVal TextBoxHwnd As LongPtr = 0)
+        If TextBoxHwnd <> 0 Then AttachPropertyPageHooks TextBoxHwnd
+        If Len(TabCaption) > 0 Then m_PropertyPageCaption = TabCaption
+        Dim host As LongPtr
+        host = FindPropertySheetAncestor(PageChildHwnd)
+        If host <> 0 Then UI3SkinPropertySheetHost host, m_PropertyPageCaption
+    End Sub
+
+    Private Sub AttachPropertyPageHooks(ByVal textBoxHwnd As LongPtr)
+        If textBoxHwnd = 0 Then Exit Sub
+        If textBoxHwnd = m_PropertyProbeEdit And m_PropertyProbeEditParent <> 0 Then Exit Sub
+
+        ' The IDE can create a second, never-shown icon page while the real one is open, and its paint
+        ' arms the hooks for its own TextBox. Keep them on a TextBox that is already inside the sheet,
+        ' or the visible search box loses its dark paint and shows white until the page repaints.
+        If m_PropertyProbeEdit <> 0 Then
+            If IsWindow(m_PropertyProbeEdit) <> 0 Then
+                If FindPropertySheetAncestor(m_PropertyProbeEdit) <> 0 And FindPropertySheetAncestor(textBoxHwnd) = 0 Then
+                    ProbeLog "HOOKS kept on " & DebugWindowLine(m_PropertyProbeEdit) & " ignored " & DebugWindowLine(textBoxHwnd)
+                    Exit Sub
+                End If
+            End If
+        End If
+
+        ReleasePropertyEditBrush
+        m_PropertyProbeEdit = textBoxHwnd
+        m_PropertyProbeEditParent = GetParent(textBoxHwnd)
+        m_PropertyProbePageDialog = 0
+        If m_PropertyProbeEditParent <> 0 Then m_PropertyProbePageDialog = GetParent(m_PropertyProbeEditParent)
+
+        ' ThunderTextBox: WM_ERASEBKGND and focus repaint. ThunderPropertyPageDC: WM_CTLCOLOREDIT for
+        ' that TextBox, and WM_WINDOWPOSCHANGED, which fires when BETA 997 moves the page into the sheet.
+        SetWindowSubclass textBoxHwnd, AddressOf UI3PropertyProbeProc, CLngPtr(UI3_PROPERTY_PROBE_SUBCLASS_ID), 0
+        If m_PropertyProbeEditParent <> 0 Then
+            SetWindowSubclass m_PropertyProbeEditParent, AddressOf UI3PropertyProbeProc, _
+                CLngPtr(UI3_PROPERTY_PROBE_SUBCLASS_ID), 1
+        End If
+        ' Log-only: the container around the page, to see whether its erase covers the search box.
+        If PROPERTY_PAGE_LOG_ENABLED And m_PropertyProbePageDialog <> 0 Then
+            SetWindowSubclass m_PropertyProbePageDialog, AddressOf UI3PropertyProbeProc, _
+                CLngPtr(UI3_PROPERTY_PROBE_SUBCLASS_ID), 2
+        End If
+        ProbeLog "HOOKS edit=" & DebugWindowLine(textBoxHwnd) & " parent=" & DebugWindowLine(m_PropertyProbeEditParent) & _
+            " container=" & DebugWindowLine(m_PropertyProbePageDialog)
+        InvalidateRect textBoxHwnd, 0, 1
+        StartSearchRepaint
+    End Sub
+
+    ' The search box can open classic light even though every paint the hooks see is dark, and the
+    ' first interaction fixes it. Repaint it a few times after the dialog settles (1.0.0.36).
+    ' WM_TIMER is only delivered once no WM_PAINT is pending, so a short first interval repaints
+    ' the box straight after whatever paints over it; later ticks catch anything slower.
+    ' The icon picker's grid window, repainted on the search box's repaint ticks. 0 clears it.
+    Public Sub UI3SetIconPageGrid(ByVal hWnd As LongPtr)
+        m_IconPageGrid = hWnd
+    End Sub
+
+    Private Sub StartSearchRepaint()
+        If m_PropertyProbeEdit = 0 Then Exit Sub
+        m_SearchRepaintTicks = 0
+        If PROPERTY_PAGE_LOG_ENABLED And m_PropertyProbeEditParent <> 0 Then
+            Dim container As LongPtr
+            container = GetParent(m_PropertyProbeEditParent)
+            If container <> 0 And container <> m_PropertySheetHost Then
+                m_PropertyProbePageDialog = container
+                SetWindowSubclass container, AddressOf UI3PropertyProbeProc, CLngPtr(UI3_PROPERTY_PROBE_SUBCLASS_ID), 2
+            End If
+        End If
+        SetTimer m_PropertyProbeEdit, CLngPtr(UI3_SEARCH_REPAINT_TIMER_ID), SearchRepaintInterval(0), 0
+    End Sub
+
+    Private Function SearchRepaintInterval(ByVal tick As Long) As Long
+        Select Case tick
+            Case 0: SearchRepaintInterval = 1
+            Case 1: SearchRepaintInterval = 15
+            Case 2: SearchRepaintInterval = 50
+            Case 3: SearchRepaintInterval = 120
+            Case 4: SearchRepaintInterval = 250
+            Case Else: SearchRepaintInterval = 500
+        End Select
+    End Function
+
+    ' Reads the search box's own window surface (not the composed screen, which lags behind).
+    Private Function EditPixel() As String
+        If Not PROPERTY_PAGE_LOG_ENABLED Then Exit Function
+        If m_PropertyProbeEdit = 0 Then Exit Function
+        Dim rc As UI3GdiRect
+        Dim dc As LongPtr
+        Dim c As Long
+        UI3GetClientRect m_PropertyProbeEdit, rc
+        dc = GetDC(m_PropertyProbeEdit)
+        If dc = 0 Then Exit Function
+        c = GetPixel(dc, rc.Right \ 2, rc.Bottom \ 2)
+        ReleaseDC m_PropertyProbeEdit, dc
+        EditPixel = "rgb(" & CStr(c And &HFF&) & "," & CStr((c \ &H100&) And &HFF&) & "," & _
+            CStr((c \ &H10000) And &HFF&) & ")"
+    End Function
+
+    Private Function ScreenPixelAt(ByVal hWnd As LongPtr) As String
+        If Not PROPERTY_PAGE_LOG_ENABLED Then Exit Function
+        Dim rc As UI3GdiRect
+        Dim screenDC As LongPtr
+        Dim c As Long
+        GetWindowRect hWnd, rc
+        screenDC = GetDC(0)
+        If screenDC = 0 Then Exit Function
+        c = GetPixel(screenDC, (rc.Left + rc.Right) \ 2, (rc.Top + rc.Bottom) \ 2)
+        ReleaseDC 0, screenDC
+        ScreenPixelAt = "rgb(" & CStr(c And &HFF&) & "," & CStr((c \ &H100&) And &HFF&) & "," & _
+            CStr((c \ &H10000) And &HFF&) & ")"
+    End Function
+
+    ' Removes the search box's rectangle from the page's paint DC, as WS_CLIPCHILDREN would.
+    Private Sub ExcludeSearchBoxFromPageDC(ByVal hdc As LongPtr)
+        If hdc = 0 Or m_PropertyProbeEdit = 0 Or m_PropertyProbeEditParent = 0 Then Exit Sub
+        If IsWindowVisible(m_PropertyProbeEdit) = 0 Then Exit Sub
+        Dim rc As UI3GdiRect
+        If GetWindowRect(m_PropertyProbeEdit, rc) = 0 Then Exit Sub
+        MapWindowPoints 0, m_PropertyProbeEditParent, rc, 2
+        ExcludeClipRect hdc, rc.Left, rc.Top, rc.Right, rc.Bottom
+    End Sub
+
+    Private Function ClipBoxText(ByVal hdc As LongPtr) As String
+        If Not PROPERTY_PAGE_LOG_ENABLED Then Exit Function
+        Dim rc As UI3GdiRect
+        GetClipBox hdc, rc
+        ClipBoxText = "(" & CStr(rc.Left) & "," & CStr(rc.Top) & ")-(" & CStr(rc.Right) & "," & CStr(rc.Bottom) & ")"
+    End Function
+
+    Private Sub LogPropertySheet(ByVal host As LongPtr)
+        If Not PROPERTY_PAGE_LOG_ENABLED Then Exit Sub
+        ProbeLog "=== tbUI3 PropertySheet skin attached ==="
+        ProbeSnapshot "attached"
+        ProbeLog "--- host tree ---"
+        DumpWindowTree host, 0, 5
+    End Sub
+
+    Private Function FindPropertySheetAncestor(ByVal hWnd As LongPtr) As LongPtr
+        Dim cur As LongPtr
+        Dim tabHwnd As LongPtr
+        Dim depth As Long
+
+        cur = GetParent(hWnd)
+        Do While cur <> 0 And depth < 10
+            tabHwnd = FindWindowExW(cur, 0, StrPtr("SysTabControl32"), 0)
+            If tabHwnd <> 0 Then
+                FindPropertySheetAncestor = cur
+                Exit Function
+            End If
+            cur = GetParent(cur)
+            depth = depth + 1
+        Loop
+    End Function
+
+    ' The OLE property frame opens at the top-left of the screen. Centre it once, when it is first
+    ' skinned, in the work area of the monitor showing its owner (the IDE), so it lands in front
+    ' of the window it was opened from and never under the taskbar.
+    Private Sub CenterPropertySheet(ByVal hWnd As LongPtr)
+        Dim anchor As LongPtr
+        Dim mi As UI3MonitorInfo
+        Dim rc As UI3GdiRect
+        Dim w As Long
+        Dim h As Long
+        Dim x As Long
+        Dim y As Long
+
+        anchor = GetWindow(hWnd, GW_OWNER)
+        If anchor = 0 Then anchor = hWnd
+        mi.cbSize = LenB(mi)
+        If GetMonitorInfoW(MonitorFromWindow(anchor, MONITOR_DEFAULTTONEAREST), mi) = 0 Then Exit Sub
+        If GetWindowRect(hWnd, rc) = 0 Then Exit Sub
+
+        w = rc.Right - rc.Left
+        h = rc.Bottom - rc.Top
+        x = mi.rcWork.Left + ((mi.rcWork.Right - mi.rcWork.Left) - w) \ 2
+        y = mi.rcWork.Top + ((mi.rcWork.Bottom - mi.rcWork.Top) - h) \ 2
+        If x < mi.rcWork.Left Then x = mi.rcWork.Left
+        If y < mi.rcWork.Top Then y = mi.rcWork.Top
+        SetWindowPos hWnd, 0, x, y, 0, 0, SWP_NOSIZE Or SWP_NOZORDER Or SWP_NOACTIVATE
+    End Sub
+
+    Private Sub PromotePropertySheetHostFromPage(ByVal pageHwnd As LongPtr)
+        If pageHwnd = 0 Then Exit Sub
+
+        Dim host As LongPtr
+        host = FindPropertySheetAncestor(pageHwnd)
+        If host = 0 Then Exit Sub
+        If host = m_PropertySheetHost And m_PropertySheetTab <> 0 Then Exit Sub
+
+        m_PropertyProbePageDialog = GetParent(pageHwnd)
+        ProbeLog "PROMOTE host from page=" & DebugWindowLine(pageHwnd) & _
+            " to=" & DebugWindowLine(host)
+        UI3SkinPropertySheetHost host, m_PropertyPageCaption
+    End Sub
+
+    Private Function UI3PropertyProbeProc(ByVal hWnd As LongPtr, ByVal uMsg As Long, ByVal wParam As LongPtr, _
+            ByVal lParam As LongPtr, ByVal uIdSubclass As LongPtr, ByVal dwRefData As LongPtr) As LongPtr
+        Dim result As LongPtr
+
+        Select Case uMsg
+            Case WM_ERASEBKGND
+                If hWnd = m_PropertyProbeEdit Then
+                    If PaintPropertyEditBackground(hWnd, wParam) Then
+                        ProbeLog "EDIT WM_ERASEBKGND painted dark"
+                        UI3PropertyProbeProc = 1
+                        Exit Function
+                    End If
+                    ProbeLog "EDIT WM_ERASEBKGND not painted"
+                ElseIf hWnd = m_PropertyProbeEditParent Or (PROPERTY_PAGE_LOG_ENABLED And hWnd = m_PropertyProbePageDialog) Then
+                    ' Keep the search box out of the page's erase, as WS_CLIPCHILDREN would (1.0.0.37).
+                    If hWnd = m_PropertyProbeEditParent Then ExcludeSearchBoxFromPageDC wParam
+                    If PROPERTY_PAGE_LOG_ENABLED Then
+                        ProbeLog "ERASE " & DebugWindowLine(hWnd) & " clip=" & ClipBoxText(wParam) & " box before=" & EditPixel()
+                        result = DefSubclassProc(hWnd, uMsg, wParam, lParam)
+                        ProbeLog "ERASE done box after=" & EditPixel()
+                        UI3PropertyProbeProc = result
+                        Exit Function
+                    End If
+                End If
+
+            Case WM_PAINT
+                ' Log-only: the search box's own pixel after each paint of the box, the page and its container.
+                If PROPERTY_PAGE_LOG_ENABLED Then
+                    If hWnd = m_PropertyProbeEdit Or hWnd = m_PropertyProbeEditParent Or hWnd = m_PropertyProbePageDialog Then
+                        result = DefSubclassProc(hWnd, uMsg, wParam, lParam)
+                        ProbeLog "PAINT done " & DebugWindowLine(hWnd) & " box=" & EditPixel()
+                        UI3PropertyProbeProc = result
+                        Exit Function
+                    End If
+                End If
+
+            Case WM_TIMER
+                If wParam = CLngPtr(UI3_SEARCH_REPAINT_TIMER_ID) Then
+                    If hWnd = m_PropertyProbeEdit Then
+                        m_SearchRepaintTicks = m_SearchRepaintTicks + 1
+                        ProbeLog "SEARCH REPAINT " & CStr(m_SearchRepaintTicks) & " visible=" & CStr(IsWindowVisible(hWnd)) & _
+                            " box before=" & EditPixel() & " screen before=" & ScreenPixelAt(hWnd)
+                        RedrawWindow hWnd, 0, 0, RDW_INVALIDATE Or RDW_ERASE Or RDW_FRAME Or RDW_UPDATENOW
+                        ProbeLog "SEARCH REPAINT " & CStr(m_SearchRepaintTicks) & " box after=" & EditPixel()
+                        ' The page's #32770 container erases over the grid too (1.0.0.55 log), and the
+                        ' grid no longer repaints itself through an erase, so it is repainted on the same
+                        ' ticks, without an erase.
+                        If m_IconPageGrid <> 0 Then
+                            If IsWindow(m_IconPageGrid) <> 0 Then
+                                RedrawWindow m_IconPageGrid, 0, 0, RDW_INVALIDATE Or RDW_UPDATENOW
+                                ProbeLog "GRID REPAINT " & CStr(m_SearchRepaintTicks)
+                            Else
+                                m_IconPageGrid = 0
+                            End If
+                        End If
+                        If m_SearchRepaintTicks >= UI3_SEARCH_REPAINT_TICKS Then
+                            KillTimer hWnd, wParam
+                        Else
+                            SetTimer hWnd, wParam, SearchRepaintInterval(m_SearchRepaintTicks), 0
+                        End If
+                    Else
+                        KillTimer hWnd, wParam
+                    End If
+                    UI3PropertyProbeProc = 0
+                    Exit Function
+                End If
+
+            Case WM_CTLCOLORSTATIC
+                ' A disabled or read-only Edit asks for WM_CTLCOLORSTATIC, whose default is the
+                ' classic button-face grey.
+                If hWnd = m_PropertyProbeEditParent And lParam = m_PropertyProbeEdit Then
+                    ProbeLog "WM_CTLCOLORSTATIC FIX for search box"
+                    UI3PropertyProbeProc = PropertyEditBrush(wParam)
+                    Exit Function
+                End If
+
+            Case WM_CTLCOLOREDIT
+                If hWnd = m_PropertyProbeEditParent And lParam = m_PropertyProbeEdit Then
+                    ProbeLog "WM_CTLCOLOREDIT FIX receiver=" & DebugWindowLine(hWnd) & _
+                        " child=" & DebugWindowLine(lParam)
+                    UI3PropertyProbeProc = PropertyEditBrush(wParam)
+                    Exit Function
+                End If
+                ProbeLog "WM_CTLCOLOREDIT other receiver=" & DebugWindowLine(hWnd) & _
+                    " child=" & DebugWindowLine(lParam)
+
+            Case WM_COMMAND
+                If hWnd = m_PropertySheetHost Then
+                    If CLng(wParam And &HFFFF&) = ID_APPLY_NOW Then
+                        ProbeSnapshot "Apply WM_COMMAND before default"
+                        result = DefSubclassProc(hWnd, uMsg, wParam, lParam)
+                        ProbeSnapshot "Apply WM_COMMAND after default"
+                        UI3PropertyProbeProc = result
+                        Exit Function
+                    End If
+                End If
+
+            Case WM_SIZE, WM_WINDOWPOSCHANGED
+                result = DefSubclassProc(hWnd, uMsg, wParam, lParam)
+
+                If uMsg = WM_WINDOWPOSCHANGED And hWnd = m_PropertyProbeEditParent Then
+                    ' Do not attach new subclasses while still inside the native page's
+                    ' WM_WINDOWPOSCHANGED callback. Queue promotion so this subclass frame
+                    ' unwinds first; then discover/skin the now-stable PropertySheet.
+                    PostMessageW hWnd, WM_UI3_PROMOTE_PROPERTY_SHEET, 0, 0
+                End If
+
+                If hWnd = m_PropertyProbeEditParent Or hWnd = m_PropertyProbePageDialog Or _
+                        hWnd = m_PropertySheetHost Or hWnd = m_PropertySheetTab Then
+                    If uMsg = WM_SIZE Then
+                        ProbeSnapshot "WM_SIZE on " & DebugWindowLine(hWnd)
+                    Else
+                        ProbeSnapshot "WM_WINDOWPOSCHANGED on " & DebugWindowLine(hWnd)
+                    End If
+                End If
+                UI3PropertyProbeProc = result
+                Exit Function
+
+            Case WM_UI3_PROMOTE_PROPERTY_SHEET
+                PromotePropertySheetHostFromPage hWnd
+                UI3PropertyProbeProc = 0
+                Exit Function
+
+            Case WM_SETFOCUS, WM_KILLFOCUS
+                If hWnd = m_PropertyProbeEdit Then
+                    result = DefSubclassProc(hWnd, uMsg, wParam, lParam)
+                    InvalidateRect hWnd, 0, 1
+                    UI3PropertyProbeProc = result
+                    Exit Function
+                End If
+
+            Case WM_NCDESTROY
+                RemoveWindowSubclass hWnd, AddressOf UI3PropertyProbeProc, uIdSubclass
+                If hWnd = m_PropertyProbeEditParent Then
+                    m_PropertyProbeEditParent = 0
+                    m_PropertyProbeEdit = 0
+                    ReleasePropertyEditBrush
+                End If
+        End Select
+
+        UI3PropertyProbeProc = DefSubclassProc(hWnd, uMsg, wParam, lParam)
+    End Function
+
+    Private Sub ProbeSnapshot(ByVal reason As String)
+        If Not PROPERTY_PAGE_LOG_ENABLED Then Exit Sub
+        ProbeLog "--- snapshot: " & reason & " ---"
+        ProbeLog "Host: " & DebugWindowLine(m_PropertySheetHost)
+        ProbeLog "Tab: " & DebugWindowLine(m_PropertySheetTab)
+        ProbeLog "PageDialog: " & DebugWindowLine(m_PropertyProbePageDialog)
+        ProbeLog "PageDC/EditParent: " & DebugWindowLine(m_PropertyProbeEditParent)
+        ProbeLog "Edit: " & DebugWindowLine(m_PropertyProbeEdit)
+        ProbeLog "Tab item 0: " & DebugTabItemRect()
+    End Sub
+
+    Private Function DebugTabItemRect() As String
+        If m_PropertySheetTab = 0 Then
+            DebugTabItemRect = "unavailable"
+            Exit Function
+        End If
+
+        Dim rc As UI3GdiRect
+        If SendMessageW(m_PropertySheetTab, TCM_GETITEMRECT, 0, VarPtr(rc)) = 0 Then
+            DebugTabItemRect = "TCM_GETITEMRECT failed"
+        Else
+            DebugTabItemRect = "client=(" & CStr(rc.Left) & "," & CStr(rc.Top) & ")-(" & _
+                CStr(rc.Right) & "," & CStr(rc.Bottom) & ")"
+        End If
+    End Function
+
+    Private Function PaintPropertyEditBackground(ByVal hWnd As LongPtr, ByVal hdc As LongPtr) As Boolean
+        If hWnd = 0 Or hdc = 0 Then Exit Function
+
+        Dim client As UI3GdiRect
+        Dim brush As LongPtr
+        UI3GetClientRect hWnd, client
+        brush = PropertyEditBrush(hdc)
+        If brush = 0 Then Exit Function
+
+        FillRect hdc, client, brush
+        PaintPropertyEditBackground = True
+    End Function
+
+    Private Function PropertyEditBrush(ByVal hdc As LongPtr) As LongPtr
+        Dim baseArgb As Long
+        Dim fillArgb As Long
+        Dim textArgb As Long
+        Dim colorRef As Long
+
+        If IsDarkMode() Then
+            baseArgb = DARK_SolidBackgroundFillColorBase
+            textArgb = DARK_TextFillColorPrimary
+            If GetFocus() = m_PropertyProbeEdit Then
+                fillArgb = DARK_ControlFillColorInputActive
+            Else
+                fillArgb = DARK_ControlFillColorDefault
+            End If
+        Else
+            baseArgb = LIGHT_SolidBackgroundFillColorBase
+            textArgb = LIGHT_TextFillColorPrimary
+            If GetFocus() = m_PropertyProbeEdit Then
+                fillArgb = LIGHT_ControlFillColorInputActive
+            Else
+                fillArgb = LIGHT_ControlFillColorDefault
+            End If
+        End If
+
+        colorRef = CompositeArgbToColorRef(fillArgb, baseArgb)
+        SetTextColor hdc, CompositeArgbToColorRef(textArgb, baseArgb)
+        SetBkColor hdc, colorRef
+
+        If m_PropertyEditBrush = 0 Or m_PropertyEditBrushColor <> colorRef Then
+            ReleasePropertyEditBrush
+            m_PropertyEditBrush = CreateSolidBrush(colorRef)
+            m_PropertyEditBrushColor = colorRef
+        End If
+
+        PropertyEditBrush = m_PropertyEditBrush
+    End Function
+
+    Private Sub ReleasePropertyEditBrush()
+        If m_PropertyEditBrush <> 0 Then DeleteObject m_PropertyEditBrush
+        m_PropertyEditBrush = 0
+        m_PropertyEditBrushColor = 0
+    End Sub
+
+    Private Function CompositeArgbToColorRef(ByVal argb As Long, ByVal backdrop As Long) As Long
+        Dim a As Long
+        Dim sr As Long
+        Dim sg As Long
+        Dim sb As Long
+        Dim br As Long
+        Dim bg As Long
+        Dim bb As Long
+        Dim rr As Long
+        Dim gg As Long
+        Dim bbOut As Long
+
+        a = (argb And &H7F000000) \ &H1000000
+        If (argb And &H80000000) <> 0 Then a = a + 128
+        sr = (argb And &HFF0000) \ &H10000
+        sg = (argb And &HFF00&) \ &H100&
+        sb = argb And &HFF&
+        br = (backdrop And &HFF0000) \ &H10000
+        bg = (backdrop And &HFF00&) \ &H100&
+        bb = backdrop And &HFF&
+
+        rr = (sr * a + br * (255 - a) + 127) \ 255
+        gg = (sg * a + bg * (255 - a) + 127) \ 255
+        bbOut = (sb * a + bb * (255 - a) + 127) \ 255
+        CompositeArgbToColorRef = rr Or (gg * &H100&) Or (bbOut * &H10000)
+    End Function
+
+    Private Sub DumpWindowTree(ByVal parent As LongPtr, ByVal depth As Long, ByVal maxDepth As Long)
+        If parent = 0 Or depth > maxDepth Then Exit Sub
+        Dim child As LongPtr
+        child = FindWindowExW(parent, 0, 0, 0)
+        Do While child <> 0
+            ProbeLog String$(depth * 2, " ") & DebugWindowLine(child)
+            DumpWindowTree child, depth + 1, maxDepth
+            child = FindWindowExW(parent, child, 0, 0)
+        Loop
+    End Sub
+
+    Private Function DebugWindowLine(ByVal hWnd As LongPtr) As String
+        If hWnd = 0 Then
+            DebugWindowLine = "HWND=0"
+            Exit Function
+        End If
+
+        Dim className As String
+        Dim n As Long
+        className = String$(128, ChrW$(0))
+        n = GetClassNameW(hWnd, StrPtr(className), Len(className))
+        If n > 0 Then className = Left$(className, n) Else className = "?"
+
+        Dim rc As UI3GdiRect
+        GetWindowRect hWnd, rc
+        DebugWindowLine = "HWND=" & CStr(hWnd) & _
+            " class=" & className & _
+            " id=" & CStr(GetDlgCtrlID(hWnd)) & _
+            " rect=(" & CStr(rc.Left) & "," & CStr(rc.Top) & ")-(" & CStr(rc.Right) & "," & CStr(rc.Bottom) & ")" & _
+            " text=[" & WindowCaption(hWnd) & "]"
+    End Function
+
+    ' One line in %TEMP%\tbUI3-propertypage.log from a property page (only while the log is on).
+    ' Lines from page and control code carry the time, process id and bitness, since the designer may
+    ' host controls and pages in a different process in win64.
+    Public Sub UI3PropertyPageLog(ByVal Text As String)
+        Dim bits As String
+        #If Win64 Then
+            bits = "x64"
+        #Else
+            bits = "x86"
+        #End If
+        ProbeLog "[" & Format$(Now, "hh:nn:ss") & " pid " & GetCurrentProcessId() & " " & bits & "] " & Text
+    End Sub
+
+    ' Writes to %TEMP%\tbUI3-propertypage.log and, so Shane needn't hunt for it, to a copy beside the
+    ' project (App.Path; in the designer that is expected to be the host project's folder, unverified).
+    Private Sub ProbeLog(ByVal text As String)
+        If Not PROPERTY_PAGE_LOG_ENABLED Then Exit Sub
+        On Error Resume Next
+        AppendLogLine Environ$("TEMP") & "\tbUI3-propertypage.log", text
+        If StrComp(App.Path, Environ$("TEMP"), vbTextCompare) <> 0 Then
+            AppendLogLine App.Path & "\tbUI3-propertypage.log", text
+        End If
+        On Error GoTo 0
+    End Sub
+
+    Private Sub AppendLogLine(ByVal Path As String, ByVal text As String)
+        On Error Resume Next
+        Dim f As Integer
+        f = FreeFile
+        Open Path For Append As #f
+        If Err.Number <> 0 Then Exit Sub
+        Print #f, text
+        Close #f
+    End Sub
+
+    Private Sub AttachPropertySheetChild(ByVal hWnd As LongPtr, ByVal kind As LongPtr)
+        If hWnd = 0 Then Exit Sub
+        Dim ok As Long
+        ok = SetWindowSubclass(hWnd, AddressOf UI3PropertySheetSubclassProc, CLngPtr(UI3_PROPERTY_SHEET_SUBCLASS_ID), kind)
+        ProbeLog "SKIN child subclass=" & CStr(ok) & " kind=" & CStr(kind) & " " & DebugWindowLine(hWnd)
+    End Sub
+
+    Private Sub DetachPropertySheetSkin()
+        RemovePropertySheetChild m_PropertySheetTab
+        RemovePropertySheetChild m_PropertySheetOK
+        RemovePropertySheetChild m_PropertySheetCancel
+        RemovePropertySheetChild m_PropertySheetApply
+        If m_PropertySheetHost <> 0 Then
+            RemoveWindowSubclass m_PropertySheetHost, AddressOf UI3PropertySheetSubclassProc, CLngPtr(UI3_PROPERTY_SHEET_SUBCLASS_ID)
+        End If
+        m_PropertySheetHost = 0
+        m_PropertySheetTab = 0
+        m_PropertySheetOK = 0
+        m_PropertySheetCancel = 0
+        m_PropertySheetApply = 0
+        m_PropertySheetTabCaption = ""
+        Set m_PropertySheetTarget = Nothing
+    End Sub
+
+    Private Sub RemovePropertySheetChild(ByVal hWnd As LongPtr)
+        If hWnd = 0 Then Exit Sub
+        RemoveWindowSubclass hWnd, AddressOf UI3PropertySheetSubclassProc, CLngPtr(UI3_PROPERTY_SHEET_SUBCLASS_ID)
+    End Sub
+
+    Private Sub RedrawPropertySheetSkin()
+        InvalidatePropertySheetHwnd m_PropertySheetHost
+        InvalidatePropertySheetHwnd m_PropertySheetTab
+        InvalidatePropertySheetHwnd m_PropertySheetOK
+        InvalidatePropertySheetHwnd m_PropertySheetCancel
+        InvalidatePropertySheetHwnd m_PropertySheetApply
+    End Sub
+
+    Private Sub InvalidatePropertySheetHwnd(ByVal hWnd As LongPtr)
+        If hWnd <> 0 Then InvalidateRect hWnd, 0, 0
+    End Sub
+
+    Private Function UI3PropertySheetSubclassProc(ByVal hWnd As LongPtr, ByVal uMsg As Long, ByVal wParam As LongPtr, _
+            ByVal lParam As LongPtr, ByVal uIdSubclass As LongPtr, ByVal dwRefData As LongPtr) As LongPtr
+
+        Dim result As LongPtr
+
+        Select Case uMsg
+            Case WM_NCDESTROY
+                RemoveWindowSubclass hWnd, AddressOf UI3PropertySheetSubclassProc, uIdSubclass
+                ClearPropertySheetSkinHwnd hWnd
+                UI3PropertySheetSubclassProc = DefSubclassProc(hWnd, uMsg, wParam, lParam)
+                Exit Function
+
+            Case WM_ERASEBKGND
+                UI3PropertySheetSubclassProc = 1
+                Exit Function
+
+            Case WM_PAINT
+                ' Own paint completely. Painting the classic control first then covering it
+                ' produced a visible flash during pointer-state changes.
+                PaintPropertySheetHwnd hWnd, dwRefData
+                UI3PropertySheetSubclassProc = 0
+                Exit Function
+
+            Case WM_SIZE
+                result = DefSubclassProc(hWnd, uMsg, wParam, lParam)
+                If dwRefData = UI3_PSKIN_HOST Then
+                    LayoutPropertySheetSkin
+                    RedrawPropertySheetSkin
+                End If
+                UI3PropertySheetSubclassProc = result
+                Exit Function
+
+            Case BM_SETSTATE
+                result = DefSubclassProc(hWnd, uMsg, wParam, lParam)
+                If dwRefData >= UI3_PSKIN_OK Then InvalidateRect hWnd, 0, 0
+                UI3PropertySheetSubclassProc = result
+                Exit Function
+
+            Case WM_MOUSEMOVE, WM_LBUTTONDOWN, WM_LBUTTONUP, WM_SETFOCUS, WM_KILLFOCUS, WM_ENABLE, _
+                    WM_UPDATEUISTATE, BM_SETSTYLE, WM_SETTEXT
+                ' The native button paints its caption and mnemonic underline straight to a DC on
+                ' WM_UPDATEUISTATE, BM_SETSTYLE and WM_SETTEXT, bypassing WM_PAINT. Repaint over it.
+                result = DefSubclassProc(hWnd, uMsg, wParam, lParam)
+                If dwRefData >= UI3_PSKIN_OK Then InvalidateRect hWnd, 0, 0
+                UI3PropertySheetSubclassProc = result
+                Exit Function
+
+            Case WM_SETTINGCHANGE
+                If dwRefData = UI3_PSKIN_HOST And lParam <> 0 Then
+                    If lstrcmpiW(lParam, StrPtr("ImmersiveColorSet")) = 0 Then
+                        RefreshTheme
+                        UI3ApplyTitleBarTheme hWnd
+                        RedrawPropertySheetSkin
+                    End If
+                End If
+
+            Case WM_DWMCOLORIZATIONCOLORCHANGED, WM_THEMECHANGED
+                If dwRefData = UI3_PSKIN_HOST Then
+                    RefreshTheme
+                    UI3ApplyTitleBarTheme hWnd
+                    RedrawPropertySheetSkin
+                End If
+        End Select
+
+        UI3PropertySheetSubclassProc = DefSubclassProc(hWnd, uMsg, wParam, lParam)
+    End Function
+
+    Private Sub ClearPropertySheetSkinHwnd(ByVal hWnd As LongPtr)
+        If hWnd = m_PropertySheetTab Then m_PropertySheetTab = 0
+        If hWnd = m_PropertySheetOK Then m_PropertySheetOK = 0
+        If hWnd = m_PropertySheetCancel Then m_PropertySheetCancel = 0
+        If hWnd = m_PropertySheetApply Then m_PropertySheetApply = 0
+        If hWnd = m_PropertySheetHost Then
+            m_PropertySheetHost = 0
+            m_PropertySheetTab = 0
+            m_PropertySheetOK = 0
+            m_PropertySheetCancel = 0
+            m_PropertySheetApply = 0
+            m_PropertySheetTabCaption = ""
+            Set m_PropertySheetTarget = Nothing
+        End If
+    End Sub
+
+    Private Sub PaintPropertySheetHwnd(ByVal hWnd As LongPtr, ByVal kind As LongPtr)
+        Dim ps As UI3PaintStruct
+        Dim hdc As LongPtr
+        Dim client As UI3GdiRect
+        Dim dpi As Single
+        Dim w As Single
+        Dim h As Single
+        Dim drawing As Boolean
+
+        On Error GoTo CleanUp
+
+        hdc = BeginPaint(hWnd, ps)
+        If hdc = 0 Then Exit Sub
+        UI3GetClientRect hWnd, client
+        If client.Right <= 0 Or client.Bottom <= 0 Then GoTo CleanUp
+
+        If m_PropertySheetTarget Is Nothing Then Set m_PropertySheetTarget = CreateDCTarget()
+        dpi = DpiOfDC(hdc)
+        m_PropertySheetTarget.SetDpi dpi, dpi
+        m_PropertySheetTarget.BindDC hdc, client
+        w = client.Right * 96! / dpi
+        h = client.Bottom * 96! / dpi
+
+        m_PropertySheetTarget.BeginDraw
+        drawing = True
+
+        Select Case kind
+            Case UI3_PSKIN_HOST
+                DrawPropertySheetHost w, h
+            Case UI3_PSKIN_TAB
+                DrawPropertySheetTab hWnd, dpi, w, h
+            Case UI3_PSKIN_OK
+                DrawPropertySheetButton hWnd, w, h, True
+            Case UI3_PSKIN_CANCEL, UI3_PSKIN_APPLY
+                DrawPropertySheetButton hWnd, w, h, False
+        End Select
+
+        drawing = False
+        Dim hr As Long
+        hr = m_PropertySheetTarget.EndDraw(0, 0)
+        If hr < 0 Then Set m_PropertySheetTarget = Nothing
+
+CleanUp:
+        If drawing And Not m_PropertySheetTarget Is Nothing Then m_PropertySheetTarget.EndDraw 0, 0
+        If hdc <> 0 Then EndPaint hWnd, ps
+    End Sub
+
+    Private Sub LayoutPropertySheetSkin()
+        LayoutPropertySheetButtons
+        LayoutPropertySheetTab
+    End Sub
+
+    Private Function PropertySheetDpi() As Single
+        Dim hdc As LongPtr
+        hdc = GetDC(m_PropertySheetHost)
+        If hdc <> 0 Then
+            PropertySheetDpi = DpiOfDC(hdc)
+            ReleaseDC m_PropertySheetHost, hdc
+        End If
+        If PropertySheetDpi <= 0 Then PropertySheetDpi = 96
+    End Function
+
+    Private Function DipToPixel(ByVal dip As Single, ByVal dpi As Single) As Long
+        DipToPixel = CLng(dip * dpi / 96! + 0.5!)
+    End Function
+
+    Private Function MakeLParam(ByVal lowWord As Long, ByVal highWord As Long) As LongPtr
+        MakeLParam = CLngPtr((lowWord And &HFFFF&) Or ((highWord And &HFFFF&) * &H10000))
+    End Function
+
+    Private Sub LayoutPropertySheetButtons()
+        If m_PropertySheetHost = 0 Then Exit Sub
+
+        Dim client As UI3GdiRect
+        UI3GetClientRect m_PropertySheetHost, client
+        If client.Right <= 0 Or client.Bottom <= 0 Then Exit Sub
+
+        Dim dpi As Single
+        dpi = PropertySheetDpi()
+
+        Dim wantedW As Single
+        Dim wantedH As Single
+        wantedW = PROPERTY_ACTION_MIN_WIDTH_DIP
+        wantedH = PROPERTY_ACTION_MIN_HEIGHT_DIP
+
+        Dim textW As Single
+        Dim textH As Single
+        MeasureActionCaption m_PropertySheetOK, textW, textH
+        If textW + ButtonPaddingLeft + ButtonPaddingRight > wantedW Then wantedW = textW + ButtonPaddingLeft + ButtonPaddingRight
+        If textH + ButtonPaddingTop + ButtonPaddingBottom > wantedH Then wantedH = textH + ButtonPaddingTop + ButtonPaddingBottom
+
+        MeasureActionCaption m_PropertySheetCancel, textW, textH
+        If textW + ButtonPaddingLeft + ButtonPaddingRight > wantedW Then wantedW = textW + ButtonPaddingLeft + ButtonPaddingRight
+        If textH + ButtonPaddingTop + ButtonPaddingBottom > wantedH Then wantedH = textH + ButtonPaddingTop + ButtonPaddingBottom
+
+        MeasureActionCaption m_PropertySheetApply, textW, textH
+        If textW + ButtonPaddingLeft + ButtonPaddingRight > wantedW Then wantedW = textW + ButtonPaddingLeft + ButtonPaddingRight
+        If textH + ButtonPaddingTop + ButtonPaddingBottom > wantedH Then wantedH = textH + ButtonPaddingTop + ButtonPaddingBottom
+
+        Dim bw As Long
+        Dim bh As Long
+        Dim gap As Long
+        Dim rightMargin As Long
+        Dim bottomMargin As Long
+        bw = DipToPixel(wantedW, dpi)
+        bh = DipToPixel(wantedH, dpi)
+        gap = DipToPixel(PROPERTY_ACTION_SPACING_DIP, dpi)
+        rightMargin = DipToPixel(PROPERTY_ACTION_RIGHT_MARGIN_DIP, dpi)
+        bottomMargin = DipToPixel(PROPERTY_ACTION_BOTTOM_MARGIN_DIP, dpi)
+
+        Dim x As Long
+        Dim y As Long
+        x = client.Right - rightMargin - bw
+        y = client.Bottom - bottomMargin - bh
+
+        If m_PropertySheetApply <> 0 Then
+            SetWindowPos m_PropertySheetApply, 0, x, y, bw, bh, SWP_NOZORDER Or SWP_NOACTIVATE
+            x = x - gap - bw
+        End If
+        If m_PropertySheetCancel <> 0 Then
+            SetWindowPos m_PropertySheetCancel, 0, x, y, bw, bh, SWP_NOZORDER Or SWP_NOACTIVATE
+            x = x - gap - bw
+        End If
+        If m_PropertySheetOK <> 0 Then
+            SetWindowPos m_PropertySheetOK, 0, x, y, bw, bh, SWP_NOZORDER Or SWP_NOACTIVATE
+        End If
+    End Sub
+
+    Private Sub MeasureActionCaption(ByVal hWnd As LongPtr, ByRef width As Single, ByRef height As Single)
+        width = 0
+        height = 0
+        If hWnd = 0 Then Exit Sub
+        MeasureControlText WindowCaption(hWnd), width, height
+    End Sub
+
+    Private Sub LayoutPropertySheetTab()
+        If m_PropertySheetTab = 0 Then Exit Sub
+
+        ' BETA 997 lays out the PropertyPage against the tab control's native item metrics
+        ' before tbUI3 gets a chance to skin the host. Enlarging the real item afterwards
+        ' makes the page overlap the lower part of the tab until the host performs its own
+        ' later relayout (observed when Apply is clicked). Keep the native hit/layout metrics
+        ' and paint inside the item rectangle the PropertySheet actually reserved.
+        InvalidateRect m_PropertySheetTab, 0, 0
+    End Sub
+
+    Private Sub DrawPropertySheetHost(ByVal w As Single, ByVal h As Single)
+        If IsDarkMode() Then
+            m_PropertySheetTarget.Clear ColorFromArgb(DARK_SolidBackgroundFillColorBase)
+        Else
+            m_PropertySheetTarget.Clear ColorFromArgb(LIGHT_SolidBackgroundFillColorBase)
+        End If
+    End Sub
+
+    Private Sub DrawPropertySheetTab(ByVal hWnd As LongPtr, ByVal dpi As Single, ByVal w As Single, ByVal h As Single)
+        Dim baseArgb As Long
+        Dim selectedArgb As Long
+        Dim textArgb As Long
+
+        If IsDarkMode() Then
+            baseArgb = DARK_SolidBackgroundFillColorBase
+            selectedArgb = DARK_SolidBackgroundFillColorTertiary
+            textArgb = DARK_TextFillColorPrimary
+        Else
+            baseArgb = LIGHT_SolidBackgroundFillColorBase
+            selectedArgb = LIGHT_SolidBackgroundFillColorTertiary
+            textArgb = LIGHT_TextFillColorPrimary
+        End If
+
+        m_PropertySheetTarget.Clear ColorFromArgb(baseArgb)
+
+        Dim tabRect As UI3GdiRect
+        If SendMessageW(hWnd, TCM_GETITEMRECT, 0, VarPtr(tabRect)) <> 0 Then
+            Dim x0 As Single
+            Dim y0 As Single
+            Dim x1 As Single
+            Dim y1 As Single
+            x0 = tabRect.Left * 96! / dpi
+            y0 = tabRect.Top * 96! / dpi
+            x1 = tabRect.Right * 96! / dpi
+            y1 = tabRect.Bottom * 96! / dpi
+
+            Dim box As D2D1_ROUNDED_RECT
+            box = RoundedRect(x0, y0, x1, y1, OverlayCornerRadius)
+            m_PropertySheetTarget.FillRoundedRectangle box, SolidBrush(m_PropertySheetTarget, selectedArgb)
+
+            DrawCenteredTextStyled m_PropertySheetTarget, m_PropertySheetTabCaption, _
+                TabViewItemHeaderFontSize, DWRITE_FONT_WEIGHT_SEMI_BOLD, _
+                x0 + TabViewItemHeaderPaddingLeft, y0 + TabViewItemHeaderPaddingTop, _
+                x1 - TabViewItemHeaderPaddingRight, y1 - TabViewItemHeaderPaddingBottom, textArgb
+        End If
+    End Sub
+
+    Private Sub DrawPropertySheetButton(ByVal hWnd As LongPtr, ByVal w As Single, ByVal h As Single, ByVal Accent As Boolean)
+        Dim state As Long
+        state = CLng(SendMessageW(hWnd, BM_GETSTATE, 0, 0))
+
+        If IsDarkMode() Then
+            m_PropertySheetTarget.Clear ColorFromArgb(DARK_SolidBackgroundFillColorBase)
+        Else
+            m_PropertySheetTarget.Clear ColorFromArgb(LIGHT_SolidBackgroundFillColorBase)
+        End If
+
+        DrawStandardButton m_PropertySheetTarget, 0, 0, w, h, WindowCaption(hWnd), Accent, _
+            (IsWindowEnabled(hWnd) <> 0), ((state And BST_PUSHED) <> 0), ((state And BST_HOT) <> 0)
+    End Sub
+
+    Private Function WindowCaption(ByVal hWnd As LongPtr) As String
+        Dim length As Long
+        Dim text As String
+        length = GetWindowTextLengthW(hWnd)
+        If length <= 0 Then Exit Function
+        text = String$(length + 1, ChrW$(0))
+        length = GetWindowTextW(hWnd, StrPtr(text), length + 1)
+        If length > 0 Then WindowCaption = StripMnemonic(Left$(text, length))
+    End Function
+
+    Private Function StripMnemonic(ByVal text As String) As String
+        Dim i As Long
+        Dim ch As String
+        i = 1
+        Do While i <= Len(text)
+            ch = Mid$(text, i, 1)
+            If ch = "&" Then
+                If i < Len(text) And Mid$(text, i + 1, 1) = "&" Then
+                    StripMnemonic = StripMnemonic & "&"
+                    i = i + 2
+                Else
+                    i = i + 1
+                End If
+            Else
+                StripMnemonic = StripMnemonic & ch
+                i = i + 1
+            End If
+        Loop
+    End Function
+
+End Module

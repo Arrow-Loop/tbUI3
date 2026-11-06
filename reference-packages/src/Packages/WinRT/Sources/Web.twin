@@ -1,0 +1,71 @@
+[InterfaceId("B0ABA86A-9AEB-4D3A-9590-003E3CA7E290")]
+Interface IUriToStreamResolver Extends IInspectable
+    Function UriToStreamAsync(ByVal Uri As IUri) As IAsyncOperationIInputStream
+End Interface
+
+[InterfaceId("FE616766-BF27-4064-87B7-6563BB11CE2E")]
+Interface IWebErrorStatics Extends IInspectable
+    Function GetStatus(ByVal hResult As Long) As WebErrorStatus
+End Interface
+
+Module mdlWeb
+
+Public Enum WebErrorStatus
+    WebErrorStatus_Unknown
+    WebErrorStatus_CertificateCommonNameIsIncorrect
+    WebErrorStatus_CertificateExpired
+    WebErrorStatus_CertificateContainsErrors
+    WebErrorStatus_CertificateRevoked
+    WebErrorStatus_CertificateIsInvalid
+    WebErrorStatus_ServerUnreachable
+    WebErrorStatus_Timeout
+    WebErrorStatus_ErrorHttpInvalidServerResponse
+    WebErrorStatus_ConnectionAborted
+    WebErrorStatus_ConnectionReset
+    WebErrorStatus_Disconnected
+    WebErrorStatus_HttpToHttpsOnRedirection
+    WebErrorStatus_HttpsToHttpOnRedirection
+    WebErrorStatus_CannotConnect
+    WebErrorStatus_HostNameNotResolved
+    WebErrorStatus_OperationCanceled
+    WebErrorStatus_RedirectFailed
+    WebErrorStatus_UnexpectedStatusCode
+    WebErrorStatus_UnexpectedRedirection
+    WebErrorStatus_UnexpectedClientError
+    WebErrorStatus_UnexpectedServerError
+    WebErrorStatus_InsufficientRangeSupport
+    WebErrorStatus_MissingContentLengthSupport
+    WebErrorStatus_MultipleChoices = 300
+    WebErrorStatus_MovedPermanently
+    WebErrorStatus_Found
+    WebErrorStatus_SeeOther
+    WebErrorStatus_NotModified
+    WebErrorStatus_UseProxy
+    WebErrorStatus_TemporaryRedirect = 307
+    WebErrorStatus_BadRequest = 400
+    WebErrorStatus_Unauthorized
+    WebErrorStatus_PaymentRequired
+    WebErrorStatus_Forbidden
+    WebErrorStatus_NotFound
+    WebErrorStatus_MethodNotAllowed
+    WebErrorStatus_NotAcceptable
+    WebErrorStatus_ProxyAuthenticationRequired
+    WebErrorStatus_RequestTimeout
+    WebErrorStatus_Conflict
+    WebErrorStatus_Gone
+    WebErrorStatus_LengthRequired
+    WebErrorStatus_PreconditionFailed
+    WebErrorStatus_RequestEntityTooLarge
+    WebErrorStatus_RequestUriTooLong
+    WebErrorStatus_UnsupportedMediaType
+    WebErrorStatus_RequestedRangeNotSatisfiable
+    WebErrorStatus_ExpectationFailed
+    WebErrorStatus_InternalServerError = 500
+    WebErrorStatus_NotImplemented
+    WebErrorStatus_BadGateway
+    WebErrorStatus_ServiceUnavailable
+    WebErrorStatus_GatewayTimeout
+    WebErrorStatus_HttpVersionNotSupported
+End Enum
+
+End Module

@@ -1,0 +1,253 @@
+[InterfaceId("1ABAEE23-74EE-4CC7-99BA-B171E3CDA61E")]
+Interface IDownloadProgressEventHandler Extends IUnknown
+    Sub Invoke(ByVal Sender As IInspectable, ByVal Args As IDownloadProgressEventArgs)
+End Interface
+
+[InterfaceId("31AF3271-E3B4-442D-A341-4C0226B2725B")]
+Interface IBitmapImage Extends IInspectable
+    Property Get CreateOptions() As BitmapCreateOptions
+    Property Let CreateOptions(ByVal Value As BitmapCreateOptions)
+    Property Get UriSource() As IUri
+    Property Set UriSource(ByVal Value As IUri)
+    Property Get DecodePixelWidth() As Long
+    Property Let DecodePixelWidth(ByVal Value As Long)
+    Property Get DecodePixelHeight() As Long
+    Property Let DecodePixelHeight(ByVal Value As Long)
+    [PreserveSig]
+    Function AddDownloadProgress(ByVal Handler As IDownloadProgressEventHandler, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveDownloadProgress(ByVal Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function AddImageOpened(ByVal Handler As IRoutedEventHandler, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveImageOpened(ByVal Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function AddImageFailed(ByVal Handler As IExceptionRoutedEventHandler, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveImageFailed(ByVal Token As EventRegistrationToken) As HRESULT
+End Interface
+
+[InterfaceId("1069C1B6-8C9B-4762-BE3D-759F5698F2B3")]
+Interface IBitmapImage2 Extends IInspectable
+    Property Get DecodePixelType() As DecodePixelType
+    Property Let DecodePixelType(ByVal Value As DecodePixelType)
+End Interface
+
+[InterfaceId("F1DE6F26-3C73-453F-A7BA-9B85C18B3733")]
+Interface IBitmapImage3 Extends IInspectable
+    Property Get IsAnimatedBitmap() As BooleanByte
+    Property Get IsPlaying() As BooleanByte
+    Property Get AutoPlay() As BooleanByte
+    Property Let AutoPlay(ByVal Value As BooleanByte)
+    [PreserveSig]
+    Function Play() As HRESULT
+    [PreserveSig]
+    Function Stop() As HRESULT
+End Interface
+
+[InterfaceId("C9132978-4810-4E5E-8087-03671EE60D85")]
+Interface IBitmapImageFactory Extends IInspectable
+    Function CreateInstanceWithUriSource(ByVal UriSource As IUri) As IBitmapImage
+End Interface
+
+[InterfaceId("9E282143-70E8-437C-9FA4-2CBF295CFF84")]
+Interface IBitmapImageStatics Extends IInspectable
+    Property Get CreateOptionsProperty() As IDependencyProperty
+    Property Get UriSourceProperty() As IDependencyProperty
+    Property Get DecodePixelWidthProperty() As IDependencyProperty
+    Property Get DecodePixelHeightProperty() As IDependencyProperty
+End Interface
+
+[InterfaceId("C5F5576A-75AF-41A4-B893-8FE91FEE2882")]
+Interface IBitmapImageStatics2 Extends IInspectable
+    Property Get DecodePixelTypeProperty() As IDependencyProperty
+End Interface
+
+[InterfaceId("2B44E30D-F6D5-4411-A8CD-BF7603C4FAA0")]
+Interface IBitmapImageStatics3 Extends IInspectable
+    Property Get IsAnimatedBitmapProperty() As IDependencyProperty
+    Property Get IsPlayingProperty() As IDependencyProperty
+    Property Get AutoPlayProperty() As IDependencyProperty
+End Interface
+
+[InterfaceId("23D86411-202F-41B2-8C5B-A8A3B333800B")]
+Interface IBitmapSource Extends IInspectable
+    Property Get PixelWidth() As Long
+    Property Get PixelHeight() As Long
+    [PreserveSig]
+    Function SetSource(ByVal StreamSource As IRandomAccessStream) As HRESULT
+    Function SetSourceAsync(ByVal StreamSource As IRandomAccessStream) As IAsyncAction
+End Interface
+
+[InterfaceId("E240420E-D4A7-49A4-A0B4-A59FDD77E508")]
+Interface IBitmapSourceFactory Extends IInspectable
+    Function CreateInstance(Optional ByVal BaseInterface As IInspectable, Optional InnerInterface As IInspectable) As IBitmapSource
+End Interface
+
+[InterfaceId("9A9C9981-827B-4E51-891B-8A15B511842D")]
+Interface IBitmapSourceStatics Extends IInspectable
+    Property Get PixelWidthProperty() As IDependencyProperty
+    Property Get PixelHeightProperty() As IDependencyProperty
+End Interface
+
+[InterfaceId("7311E0D4-FE94-4E70-9B90-CDD47AC23AFB")]
+Interface IDownloadProgressEventArgs Extends IInspectable
+    Property Get Progress() As Long
+    Property Let Progress(ByVal Value As Long)
+End Interface
+
+[InterfaceId("500DEE81-893C-4C0A-8FEC-4678AC717589")]
+Interface IRenderTargetBitmap Extends IInspectable
+    Property Get PixelWidth() As Long
+    Property Get PixelHeight() As Long
+    Function RenderAsync(ByVal Element As IUIElement) As IAsyncAction
+    Function RenderToSizeAsync(ByVal Element As IUIElement, ByVal ScaledWidth As Long, ByVal ScaledHeight As Long) As IAsyncAction
+    Function GetPixelsAsync() As IAsyncOperationIBuffer
+End Interface
+
+[InterfaceId("F0A1EFEE-C131-4D40-9C47-F7D7CF2B077F")]
+Interface IRenderTargetBitmapStatics Extends IInspectable
+    Property Get PixelWidthProperty() As IDependencyProperty
+    Property Get PixelHeightProperty() As IDependencyProperty
+End Interface
+
+[InterfaceId("D2DD9ED0-D3C5-4056-91B5-B7C1D1E8130E")]
+Interface ISoftwareBitmapSource Extends IInspectable
+    Function SetBitmapAsync(ByVal SoftwareBitmap As ISoftwareBitmap) As IAsyncAction
+End Interface
+
+[InterfaceId("62F7D416-C714-4C4C-8273-F839BC58135C")]
+Interface ISurfaceImageSource Extends IInspectable
+
+End Interface
+
+[InterfaceId("3AB2212A-EF65-4A5F-BFAC-73993E8C12C9")]
+Interface ISurfaceImageSourceFactory Extends IInspectable
+    Function CreateInstanceWithDimensions(ByVal PixelWidth As Long, ByVal PixelHeight As Long, Optional ByVal BaseInterface As IInspectable, Optional InnerInterface As IInspectable) As ISurfaceImageSource
+    Function CreateInstanceWithDimensionsAndOpacity(ByVal PixelWidth As Long, ByVal PixelHeight As Long, ByVal IsOpaque As BooleanByte, Optional ByVal BaseInterface As IInspectable, Optional InnerInterface As IInspectable) As ISurfaceImageSource
+End Interface
+
+[InterfaceId("F19DF5C2-2B78-53A9-8D38-5CA8DBB5DBC6")]
+Interface IAsyncOperationSvgImageSourceLoadStatus Extends IInspectable
+    Property Set Completed(ByVal Handler As IAsyncOperationCompletedHandlerSvgImageSourceLoadStatus)
+    Property Get Completed() As IAsyncOperationCompletedHandlerSvgImageSourceLoadStatus
+    Function GetResults() As SvgImageSourceLoadStatus
+End Interface
+
+[InterfaceId("7C8BC668-4E0B-5924-B7E7-234A11D63D61")]
+Interface IAsyncOperationCompletedHandlerSvgImageSourceLoadStatus Extends IUnknown
+    Sub Invoke(ByVal AsyncOperation As IAsyncOperationSvgImageSourceLoadStatus, ByVal AsyncStatus As AsyncStatus)
+End Interface
+
+[InterfaceId("D723938D-EFEE-5A0C-AB3E-1E1DB3C9A216")]
+Interface ITypedEventHandlerSvgImageSourceFailed Extends IUnknown
+    Sub Invoke(ByVal Sender As ISvgImageSource, ByVal Args As ISvgImageSourceFailedEventArgs)
+End Interface
+
+[InterfaceId("9E321151-8B27-5E18-9EA3-50520ACEB7EF")]
+Interface ITypedEventHandlerSvgImageSourceOpened Extends IUnknown
+    Sub Invoke(ByVal Sender As ISvgImageSource, ByVal Args As ISvgImageSourceOpenedEventArgs)
+End Interface
+
+[InterfaceId("03E1CEC3-0CA8-4A4E-8D7C-C808A0838586")]
+Interface ISvgImageSource Extends IInspectable
+    Property Get UriSource() As IUri
+    Property Set UriSource(ByVal Value As IUri)
+    Property Get RasterizePixelWidth() As Double
+    Property Let RasterizePixelWidth(ByVal Value As Double)
+    Property Get RasterizePixelHeight() As Double
+    Property Let RasterizePixelHeight(ByVal Value As Double)
+    [PreserveSig]
+    Function AddOpened(ByVal Handler As ITypedEventHandlerSvgImageSourceOpened, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveOpened(ByVal Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function AddOpenFailed(ByVal Handler As ITypedEventHandlerSvgImageSourceFailed, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveOpenFailed(ByVal Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function SetSourceAsync(ByVal StreamSource As IRandomAccessStream) As IAsyncOperationSvgImageSourceLoadStatus
+End Interface
+
+[InterfaceId("C794E9E7-CF23-4D72-BF1A-DFAA16D8EA52")]
+Interface ISvgImageSourceFactory Extends IInspectable
+    Function CreateInstance(Optional ByVal BaseInterface As IInspectable, Optional InnerInterface As IInspectable) As ISvgImageSource
+    Function CreateInstanceWithUriSource(ByVal UriSource As IUri, Optional ByVal BaseInterface As IInspectable, Optional InnerInterface As IInspectable) As ISvgImageSource
+End Interface
+
+[InterfaceId("68BB3170-3CCC-4035-AC01-9834543D744E")]
+Interface ISvgImageSourceFailedEventArgs Extends IInspectable
+    Property Get Status() As SvgImageSourceLoadStatus
+End Interface
+
+[InterfaceId("85EF4C16-748E-4008-95C7-6A23DD7316DB")]
+Interface ISvgImageSourceOpenedEventArgs Extends IInspectable
+
+End Interface
+
+[InterfaceId("9C6638CE-BED1-4AAB-ACBB-D3E2185D315A")]
+Interface ISvgImageSourceStatics Extends IInspectable
+    Property Get UriSourceProperty() As IDependencyProperty
+    Property Get RasterizePixelWidthProperty() As IDependencyProperty
+    Property Get RasterizePixelHeightProperty() As IDependencyProperty
+End Interface
+
+[InterfaceId("4A711FEA-BFAC-11E0-A06A-9DE44724019B")]
+Interface IVirtualSurfaceImageSource Extends IInspectable
+
+End Interface
+
+[InterfaceId("3AB2212A-BFAC-11E0-8A92-69E44724019B")]
+Interface IVirtualSurfaceImageSourceFactory Extends IInspectable
+    Function CreateInstanceWithDimensions(ByVal PixelWidth As Long, ByVal PixelHeight As Long) As IVirtualSurfaceImageSource
+    Function CreateInstanceWithDimensionsAndOpacity(ByVal PixelWidth As Long, ByVal PixelHeight As Long, ByVal IsOpaque As BooleanByte) As IVirtualSurfaceImageSource
+End Interface
+
+[InterfaceId("BF0B7E6F-DF7C-4A85-8413-A1216285835C")]
+Interface IWriteableBitmap Extends IInspectable
+    Property Get PixelBuffer() As IBuffer
+    [PreserveSig]
+    Function Invalidate() As HRESULT
+End Interface
+
+[InterfaceId("5563EBB1-3EF2-42C5-9C6D-1CF5DCC041FF")]
+Interface IWriteableBitmapFactory Extends IInspectable
+    Function CreateInstanceWithDimensions(ByVal PixelWidth As Long, ByVal PixelHeight As Long) As IWriteableBitmap
+End Interface
+
+[InterfaceId("5D5FE9AA-533E-44B8-A975-FC5F1E3BFF52")]
+Interface IXamlRenderingBackgroundTask Extends IInspectable
+
+End Interface
+
+[InterfaceId("A3D1BB63-38F8-4DA3-9FCA-FD8128A2CBF9")]
+Interface IXamlRenderingBackgroundTaskFactory Extends IInspectable
+    Function CreateInstance(Optional ByVal BaseInterface As IInspectable, Optional InnerInterface As IInspectable) As IXamlRenderingBackgroundTask
+End Interface
+
+[InterfaceId("9C2A6997-A908-4711-B4B2-A960DB3D8E5A")]
+Interface IXamlRenderingBackgroundTaskOverrides Extends IInspectable
+    [PreserveSig]
+    Function OnRun(ByVal TaskInstance As IBackgroundTaskInstance) As HRESULT
+End Interface
+
+Module mdlUIXamlMediaImaging
+
+Public Enum BitmapCreateOptions
+    BitmapCreateOptions_None = &H0
+    BitmapCreateOptions_IgnoreImageCache = &H8
+End Enum
+
+Public Enum DecodePixelType
+    DecodePixelType_Physical
+    DecodePixelType_Logical
+End Enum
+
+Public Enum SvgImageSourceLoadStatus
+    SvgImageSourceLoadStatus_Success
+    SvgImageSourceLoadStatus_NetworkError
+    SvgImageSourceLoadStatus_InvalidFormat
+    SvgImageSourceLoadStatus_Other
+End Enum
+
+End Module

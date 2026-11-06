@@ -1,0 +1,618 @@
+[InterfaceId("9B822734-A3C1-542A-B2F4-0E32B773FB07")]
+Interface IAttachableInputObject Extends IInspectable
+
+End Interface
+
+[InterfaceId("A4C54C4E-42BC-58FA-A640-EA1516F4C06B")]
+Interface IAttachableInputObjectFactory Extends IInspectable
+
+End Interface
+
+[InterfaceId("E9374738-6F88-41D9-8720-78E08E398349")]
+Interface ICrossSlidingEventArgs Extends IInspectable
+    Property Get PointerDeviceType() As PointerDeviceType
+    Property Get Position() As POINTF
+    Property Get CrossSlidingState() As CrossSlidingState
+End Interface
+
+[InterfaceId("EEFB7D48-C070-59F3-8DAB-BCAF621D8687")]
+Interface ICrossSlidingEventArgs2 Extends IInspectable
+    Property Get ContactCount() As Long
+End Interface
+
+[InterfaceId("1C905384-083C-4BD3-B559-179CDDEB33EC")]
+Interface IDraggingEventArgs Extends IInspectable
+    Property Get PointerDeviceType() As PointerDeviceType
+    Property Get Position() As POINTF
+    Property Get DraggingState() As DraggingState
+End Interface
+
+[InterfaceId("71EFDBF9-382A-55CA-B4B9-008123C1BF1A")]
+Interface IDraggingEventArgs2 Extends IInspectable
+    Property Get ContactCount() As Long
+End Interface
+
+[InterfaceId("B62D7F11-C7B1-5BF0-A347-3366252DB4CE")]
+Interface ITypedEventHandlerEdgeGesture Extends IUnknown
+    Sub Invoke(ByVal Sender As IEdgeGesture, ByVal Args As IEdgeGestureEventArgs)
+End Interface
+
+[InterfaceId("580D5292-2AB1-49AA-A7F0-33BD3F8DF9F1")]
+Interface IEdgeGesture Extends IInspectable
+    [PreserveSig]
+    Function AddStarting(ByVal Handler As ITypedEventHandlerEdgeGesture, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveStarting(ByVal Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function AddCompleted(ByVal Handler As ITypedEventHandlerEdgeGesture, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveCompleted(ByVal Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function AddCanceled(ByVal Handler As ITypedEventHandlerEdgeGesture, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveCanceled(ByVal Token As EventRegistrationToken) As HRESULT
+End Interface
+
+[InterfaceId("44FA4A24-2D09-42E1-8B5E-368208796A4C")]
+Interface IEdgeGestureEventArgs Extends IInspectable
+    Property Get Kind() As EdgeGestureKind
+End Interface
+
+[InterfaceId("BC6A8519-18EE-4043-9839-4FC584D60A14")]
+Interface IEdgeGestureStatics Extends IInspectable
+    Function GetForCurrentView() As IEdgeGesture
+End Interface
+
+[InterfaceId("1FC1EB70-0C26-5CF0-9E50-843A34083613")]
+Interface ITypedEventHandlerGestureRecognizerCrossSliding Extends IUnknown
+    Sub Invoke(ByVal Sender As IGestureRecognizer, ByVal Args As ICrossSlidingEventArgs)
+End Interface
+
+[InterfaceId("BE7CCA42-98DD-5D72-9E91-976113D7985E")]
+Interface ITypedEventHandlerGestureRecognizerDragging Extends IUnknown
+    Sub Invoke(ByVal Sender As IGestureRecognizer, ByVal Args As IDraggingEventArgs)
+End Interface
+
+[InterfaceId("0027BDF5-6948-53F7-AFBE-D4D8FE500FEB")]
+Interface ITypedEventHandlerGestureRecognizerHolding Extends IUnknown
+    Sub Invoke(ByVal Sender As IGestureRecognizer, ByVal Args As IHoldingEventArgs)
+End Interface
+
+[InterfaceId("C24F5605-3059-52CC-BDF3-7098146D34D7")]
+Interface ITypedEventHandlerGestureRecognizerManipulationCompleted Extends IUnknown
+    Sub Invoke(ByVal Sender As IGestureRecognizer, ByVal Args As IManipulationCompletedEventArgs)
+End Interface
+
+[InterfaceId("350A72AB-34A5-5193-913D-3D4C5983842C")]
+Interface ITypedEventHandlerGestureRecognizerManipulationInertiaStarting Extends IUnknown
+    Sub Invoke(ByVal Sender As IGestureRecognizer, ByVal Args As IManipulationInertiaStartingEventArgs)
+End Interface
+
+[InterfaceId("110D75C8-BA5E-5462-8B2D-4A1582574B61")]
+Interface ITypedEventHandlerGestureRecognizerManipulationStarted Extends IUnknown
+    Sub Invoke(ByVal Sender As IGestureRecognizer, ByVal Args As IManipulationStartedEventArgs)
+End Interface
+
+[InterfaceId("EB5216F5-020A-5E40-9C4B-48912C690E2D")]
+Interface ITypedEventHandlerGestureRecognizerManipulationUpdated Extends IUnknown
+    Sub Invoke(ByVal Sender As IGestureRecognizer, ByVal Args As IManipulationUpdatedEventArgs)
+End Interface
+
+[InterfaceId("8420D242-BA34-5B17-92F3-8F767F1D0DE4")]
+Interface ITypedEventHandlerGestureRecognizerRightTapped Extends IUnknown
+    Sub Invoke(ByVal Sender As IGestureRecognizer, ByVal Args As IRightTappedEventArgs)
+End Interface
+
+[InterfaceId("27F3AD57-8994-5712-8B83-A93BA17C03C2")]
+Interface ITypedEventHandlerGestureRecognizerTapped Extends IUnknown
+    Sub Invoke(ByVal Sender As IGestureRecognizer, ByVal Args As ITappedEventArgs)
+End Interface
+
+[InterfaceId("B47A37BF-3D6B-4F88-83E8-6DCB4012FFB0")]
+Interface IGestureRecognizer Extends IInspectable
+    Property Get GestureSettings() As GestureSettings
+    Property Let GestureSettings(ByVal Value As GestureSettings)
+    Property Get IsInertial() As BooleanByte
+    Property Get IsActive() As BooleanByte
+    Property Get ShowGestureFeedback() As BooleanByte
+    Property Let ShowGestureFeedback(ByVal Value As BooleanByte)
+    Property Get PivotCenter() As POINTF
+    Property Let PivotCenter(ByVal Value As POINTF)
+    Property Get PivotRadius() As Single
+    Property Let PivotRadius(ByVal Value As Single)
+    Property Get InertiaTranslationDeceleration() As Single
+    Property Let InertiaTranslationDeceleration(ByVal Value As Single)
+    Property Get InertiaRotationDeceleration() As Single
+    Property Let InertiaRotationDeceleration(ByVal Value As Single)
+    Property Get InertiaExpansionDeceleration() As Single
+    Property Let InertiaExpansionDeceleration(ByVal Value As Single)
+    Property Get InertiaTranslationDisplacement() As Single
+    Property Let InertiaTranslationDisplacement(ByVal Value As Single)
+    Property Get InertiaRotationAngle() As Single
+    Property Let InertiaRotationAngle(ByVal Value As Single)
+    Property Get InertiaExpansion() As Single
+    Property Let InertiaExpansion(ByVal Value As Single)
+    Property Get ManipulationExact() As BooleanByte
+    Property Let ManipulationExact(ByVal Value As BooleanByte)
+    Property Get CrossSlideThresholds() As CrossSlideThresholds
+    Property Let CrossSlideThresholds(ByVal Value As CrossSlideThresholds)
+    Property Get CrossSlideHorizontally() As BooleanByte
+    Property Let CrossSlideHorizontally(ByVal Value As BooleanByte)
+    Property Get CrossSlideExact() As BooleanByte
+    Property Let CrossSlideExact(ByVal Value As BooleanByte)
+    Property Get AutoProcessInertia() As BooleanByte
+    Property Let AutoProcessInertia(ByVal Value As BooleanByte)
+    Property Get MouseWheelParameters() As IMouseWheelParameters
+    Function CanBeDoubleTap(ByVal Value As IPointerPoint) As BooleanByte
+    [PreserveSig]
+    Function ProcessDownEvent(ByVal Value As IPointerPoint) As HRESULT
+    [PreserveSig]
+    Function ProcessMoveEvents(ByVal Value As IVector_IPointerPoint) As HRESULT
+    [PreserveSig]
+    Function ProcessUpEvent(ByVal Value As IPointerPoint) As HRESULT
+    [PreserveSig]
+    Function ProcessMouseWheelEvent(ByVal Value As IPointerPoint, ByVal IsShiftKeyDown As BooleanByte, ByVal IsControlKeyDown As BooleanByte) As HRESULT
+    [PreserveSig]
+    Function ProcessInertia() As HRESULT
+    [PreserveSig]
+    Function CompleteGesture() As HRESULT
+    [PreserveSig]
+    Function AddTapped(ByVal Handler As ITypedEventHandlerGestureRecognizerTapped, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveTapped(ByVal Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function AddRightTapped(ByVal Handler As ITypedEventHandlerGestureRecognizerRightTapped, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveRightTapped(ByVal Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function AddHolding(ByVal Handler As ITypedEventHandlerGestureRecognizerHolding, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveHolding(ByVal Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function AddDragging(ByVal Handler As ITypedEventHandlerGestureRecognizerDragging, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveDragging(ByVal Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function AddManipulationStarted(ByVal Handler As ITypedEventHandlerGestureRecognizerManipulationStarted, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveManipulationStarted(ByVal Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function AddManipulationUpdated(ByVal Handler As ITypedEventHandlerGestureRecognizerManipulationUpdated, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveManipulationUpdated(ByVal Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function AddManipulationInertiaStarting(ByVal Handler As ITypedEventHandlerGestureRecognizerManipulationInertiaStarting, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveManipulationInertiaStarting(ByVal Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function AddManipulationCompleted(ByVal Handler As ITypedEventHandlerGestureRecognizerManipulationCompleted, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveManipulationCompleted(ByVal Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function AddCrossSliding(ByVal Handler As ITypedEventHandlerGestureRecognizerCrossSliding, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveCrossSliding(ByVal Token As EventRegistrationToken) As HRESULT
+End Interface
+
+[InterfaceId("D646097F-6EF7-5746-8BA8-8FF2206E6F3B")]
+Interface IGestureRecognizer2 Extends IInspectable
+    Property Get TapMinContactCount() As Long
+    Property Let TapMinContactCount(ByVal Value As Long)
+    Property Get TapMaxContactCount() As Long
+    Property Let TapMaxContactCount(ByVal Value As Long)
+    Property Get HoldMinContactCount() As Long
+    Property Let HoldMinContactCount(ByVal Value As Long)
+    Property Get HoldMaxContactCount() As Long
+    Property Let HoldMaxContactCount(ByVal Value As Long)
+    Property Get HoldRadius() As Single
+    Property Let HoldRadius(ByVal Value As Single)
+    Property Get HoldStartDelay() As TimeSpan
+    Property Let HoldStartDelay(ByVal Value As TimeSpan)
+    Property Get TranslationMinContactCount() As Long
+    Property Let TranslationMinContactCount(ByVal Value As Long)
+    Property Get TranslationMaxContactCount() As Long
+    Property Let TranslationMaxContactCount(ByVal Value As Long)
+End Interface
+
+[InterfaceId("2BF755C5-E799-41B4-BB40-242F40959B71")]
+Interface IHoldingEventArgs Extends IInspectable
+    Property Get PointerDeviceType() As PointerDeviceType
+    Property Get Position() As POINTF
+    Property Get HoldingState() As HoldingState
+End Interface
+
+[InterfaceId("141DA9EA-4C79-5674-AFEA-493FDEB91F19")]
+Interface IHoldingEventArgs2 Extends IInspectable
+    Property Get ContactCount() As Long
+    Property Get CurrentContactCount() As Long
+End Interface
+
+[InterfaceId("27256541-CA03-5192-BB2E-8EF1DAF0BDEB")]
+Interface ITypedEventHandlerInputActivationListenerInputActivationChanged Extends IUnknown
+    Sub Invoke(ByVal Sender As IInputActivationListener, ByVal Args As IInputActivationListenerActivationChangedEventArgs)
+End Interface
+
+[InterfaceId("5D6D4ED2-28C7-5AE3-AA74-C918A9F243CA")]
+Interface IInputActivationListener Extends IInspectable
+    Property Get State() As InputActivationState
+    [PreserveSig]
+    Function AddInputActivationChanged(ByVal Handler As ITypedEventHandlerInputActivationListenerInputActivationChanged, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveInputActivationChanged(ByVal Token As EventRegistrationToken) As HRESULT
+End Interface
+
+[InterfaceId("7699B465-1DCF-5791-B4B9-6CAFBEED2056")]
+Interface IInputActivationListenerActivationChangedEventArgs Extends IInspectable
+    Property Get State() As InputActivationState
+End Interface
+
+[InterfaceId("2C1CAF11-9D6F-5E0F-A9EA-4C7C734D73D6")]
+Interface ITypedEventHandlerKeyboardDeliveryInterceptorKeyEvent Extends IUnknown
+    Sub Invoke(ByVal Sender As IKeyboardDeliveryInterceptor, ByVal Args As IKeyEventArgs)
+End Interface
+
+[InterfaceId("B4BAF068-8F49-446C-8DB5-8C0FFE85CC9E")]
+Interface IKeyboardDeliveryInterceptor Extends IInspectable
+    Property Get IsInterceptionEnabledWhenInForeground() As BooleanByte
+    Property Let IsInterceptionEnabledWhenInForeground(ByVal Value As BooleanByte)
+    [PreserveSig]
+    Function AddKeyDown(ByVal Handler As ITypedEventHandlerKeyboardDeliveryInterceptorKeyEvent, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveKeyDown(ByVal Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function AddKeyUp(ByVal Handler As ITypedEventHandlerKeyboardDeliveryInterceptorKeyEvent, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveKeyUp(ByVal Token As EventRegistrationToken) As HRESULT
+End Interface
+
+[InterfaceId("F9F63BA2-CEBA-4755-8A7E-14C0FFECD239")]
+Interface IKeyboardDeliveryInterceptorStatics Extends IInspectable
+    Function GetForCurrentView() As IKeyboardDeliveryInterceptor
+End Interface
+
+[InterfaceId("B34AB22B-D19B-46FF-9F38-DEC7754BB9E7")]
+Interface IManipulationCompletedEventArgs Extends IInspectable
+    Property Get PointerDeviceType() As PointerDeviceType
+    Property Get Position() As POINTF
+    Property Get Cumulative() As ManipulationDelta
+    Property Get Velocities() As ManipulationVelocities
+End Interface
+
+[InterfaceId("F0C0DCE7-30A9-5B96-886F-6560A85E4757")]
+Interface IManipulationCompletedEventArgs2 Extends IInspectable
+    Property Get ContactCount() As Long
+    Property Get CurrentContactCount() As Long
+End Interface
+
+[InterfaceId("DD37A898-26BF-467A-9CE5-CCF3FB11371E")]
+Interface IManipulationInertiaStartingEventArgs Extends IInspectable
+    Property Get PointerDeviceType() As PointerDeviceType
+    Property Get Position() As POINTF
+    Property Get Delta() As ManipulationDelta
+    Property Get Cumulative() As ManipulationDelta
+    Property Get Velocities() As ManipulationVelocities
+End Interface
+
+[InterfaceId("C25409B8-F9FA-5A45-BD97-DCBBB2201860")]
+Interface IManipulationInertiaStartingEventArgs2 Extends IInspectable
+    Property Get ContactCount() As Long
+End Interface
+
+[InterfaceId("DDEC873E-CFCE-4932-8C1D-3C3D011A34C0")]
+Interface IManipulationStartedEventArgs Extends IInspectable
+    Property Get PointerDeviceType() As PointerDeviceType
+    Property Get Position() As POINTF
+    Property Get Cumulative() As ManipulationDelta
+End Interface
+
+[InterfaceId("2DA3DB4E-E583-5055-AFAA-16FD986531A6")]
+Interface IManipulationStartedEventArgs2 Extends IInspectable
+    Property Get ContactCount() As Long
+End Interface
+
+[InterfaceId("CB354CE5-ABB8-4F9F-B3CE-8181AA61AD82")]
+Interface IManipulationUpdatedEventArgs Extends IInspectable
+    Property Get PointerDeviceType() As PointerDeviceType
+    Property Get Position() As POINTF
+    Property Get Delta() As ManipulationDelta
+    Property Get Cumulative() As ManipulationDelta
+    Property Get Velocities() As ManipulationVelocities
+End Interface
+
+[InterfaceId("F3DFB96A-3306-5903-A1C5-FF9757A8689E")]
+Interface IManipulationUpdatedEventArgs2 Extends IInspectable
+    Property Get ContactCount() As Long
+    Property Get CurrentContactCount() As Long
+End Interface
+
+[InterfaceId("EAD0CA44-9DED-4037-8149-5E4CC2564468")]
+Interface IMouseWheelParameters Extends IInspectable
+    Property Get CharTranslation() As POINTF
+    Property Let CharTranslation(ByVal Value As POINTF)
+    Property Get DeltaScale() As Single
+    Property Let DeltaScale(ByVal Value As Single)
+    Property Get DeltaRotationAngle() As Single
+    Property Let DeltaRotationAngle(ByVal Value As Single)
+    Property Get PageTranslation() As POINTF
+    Property Let PageTranslation(ByVal Value As POINTF)
+End Interface
+
+[InterfaceId("E995317D-7296-42D9-8233-C5BE73B74A4A")]
+Interface IPointerPoint Extends IInspectable
+    Property Get PointerDevice() As IPointerDevice
+    Property Get Position() As POINTF
+    Property Get RawPosition() As POINTF
+    Property Get PointerId() As Long
+    Property Get FrameId() As Long
+    Property Get Timestamp() As UInt64
+    Property Get IsInContact() As BooleanByte
+    Property Get Properties() As IPointerPointProperties
+End Interface
+
+[InterfaceId("C79D8A4B-C163-4EE7-803F-67CE79F9972D")]
+Interface IPointerPointProperties Extends IInspectable
+    Property Get Pressure() As Single
+    Property Get IsInverted() As BooleanByte
+    Property Get IsEraser() As BooleanByte
+    Property Get Orientation() As Single
+    Property Get XTilt() As Single
+    Property Get YTilt() As Single
+    Property Get Twist() As Single
+    Property Get ContactRect() As RECTF
+    Property Get ContactRectRaw() As RECTF
+    Property Get TouchConfidence() As BooleanByte
+    Property Get IsLeftButtonPressed() As BooleanByte
+    Property Get IsRightButtonPressed() As BooleanByte
+    Property Get IsMiddleButtonPressed() As BooleanByte
+    Property Get MouseWheelDelta() As Long
+    Property Get IsHorizontalMouseWheel() As BooleanByte
+    Property Get IsPrimary() As BooleanByte
+    Property Get IsInRange() As BooleanByte
+    Property Get IsCanceled() As BooleanByte
+    Property Get IsBarrelButtonPressed() As BooleanByte
+    Property Get IsXButton1Pressed() As BooleanByte
+    Property Get IsXButton2Pressed() As BooleanByte
+    Property Get PointerUpdateKind() As PointerUpdateKind
+    Function HasUsage(ByVal UsagePage As Long, ByVal UsageId As Long) As BooleanByte
+    Function GetUsageValue(ByVal UsagePage As Long, ByVal UsageId As Long) As Long
+End Interface
+
+[InterfaceId("22C3433A-C83B-41C0-A296-5E232D64D6AF")]
+Interface IPointerPointProperties2 Extends IInspectable
+    Property Get ZDistance() As IReference_Single
+End Interface
+
+[InterfaceId("A506638D-2A1A-413E-BC75-9F38381CC069")]
+Interface IPointerPointStatics Extends IInspectable
+    Function GetCurrentPoint(ByVal PointerId As Long) As IPointerPoint
+    Function GetIntermediatePoints(ByVal PointerId As Long) As IVector_IPointerPoint
+    Function GetCurrentPointTransformed(ByVal PointerId As Long, ByVal Transform As IPointerPointTransform) As IPointerPoint
+    Function GetIntermediatePointsTransformed(ByVal PointerId As Long, ByVal Transform As IPointerPointTransform) As IVector_IPointerPoint
+End Interface
+
+[InterfaceId("4D5FE14F-B87C-4028-BC9C-59E9947FB056")]
+Interface IPointerPointTransform Extends IInspectable
+    Property Get Inverse() As IPointerPointTransform
+    Function TryTransform(ByVal InPoint As POINTF, OutPoint As POINTF) As BooleanByte
+    Function TransformBounds(ByVal Rect As RECTF) As RECTF
+End Interface
+
+[InterfaceId("4D1E6461-84F7-499D-BD91-2A36E2B7AAA2")]
+Interface IPointerVisualizationSettings Extends IInspectable
+    Property Let IsContactFeedbackEnabled(ByVal Value As BooleanByte)
+    Property Get IsContactFeedbackEnabled() As BooleanByte
+    Property Let IsBarrelButtonFeedbackEnabled(ByVal Value As BooleanByte)
+    Property Get IsBarrelButtonFeedbackEnabled() As BooleanByte
+End Interface
+
+[InterfaceId("68870EDB-165B-4214-B4F3-584ECA8C8A69")]
+Interface IPointerVisualizationSettingsStatics Extends IInspectable
+    Function GetForCurrentView() As IPointerVisualizationSettings
+End Interface
+
+[InterfaceId("4CBF40BD-AF7A-4A36-9476-B1DCE141709A")]
+Interface IRightTappedEventArgs Extends IInspectable
+    Property Get PointerDeviceType() As PointerDeviceType
+    Property Get Position() As POINTF
+End Interface
+
+[InterfaceId("61C7B7BB-9F57-5857-A33C-C58C3DFA959E")]
+Interface IRightTappedEventArgs2 Extends IInspectable
+    Property Get ContactCount() As Long
+End Interface
+
+[InterfaceId("B19C7B2A-A907-5297-8279-ADBA1140218D")]
+Interface ITypedEventHandlerSystemButtonEventControllerSystemFunctionButton Extends IUnknown
+    Sub Invoke(ByVal Sender As IGestureRecognizer, ByVal Args As ISystemFunctionButtonEventArgs)
+End Interface
+
+[InterfaceId("52C14F10-FF66-5358-BBFE-022DF20E79EA")]
+Interface ITypedEventHandlerSystemButtonEventControllerSystemFunctionLockChanged Extends IUnknown
+    Sub Invoke(ByVal Sender As IGestureRecognizer, ByVal Args As ISystemFunctionLockChangedEventArgs)
+End Interface
+
+[InterfaceId("E0846333-0428-5440-93D7-1829D3CA674F")]
+Interface ITypedEventHandlerSystemButtonEventControllerSystemFunctionLockIndicatorChanged Extends IUnknown
+    Sub Invoke(ByVal Sender As IGestureRecognizer, ByVal Args As ISystemFunctionLockIndicatorChangedEventArgs)
+End Interface
+
+[InterfaceId("59B893A9-73BC-52B5-BA41-82511B2CB46C")]
+Interface ISystemButtonEventController Extends IInspectable
+    [PreserveSig]
+    Function AddSystemFunctionButtonPressed(ByVal Handler As ITypedEventHandlerSystemButtonEventControllerSystemFunctionButton, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveSystemFunctionButtonPressed(ByVal Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function AddSystemFunctionButtonReleased(ByVal Handler As ITypedEventHandlerSystemButtonEventControllerSystemFunctionButton, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveSystemFunctionButtonReleased(ByVal Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function AddSystemFunctionLockChanged(ByVal Handler As ITypedEventHandlerSystemButtonEventControllerSystemFunctionLockChanged, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveSystemFunctionLockChanged(ByVal Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function AddSystemFunctionLockIndicatorChanged(ByVal Handler As ITypedEventHandlerSystemButtonEventControllerSystemFunctionLockIndicatorChanged, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveSystemFunctionLockIndicatorChanged(ByVal Token As EventRegistrationToken) As HRESULT
+End Interface
+
+[InterfaceId("632FB07B-20BD-5E15-AF4A-00DBF2064FFA")]
+Interface ISystemButtonEventControllerStatics Extends IInspectable
+    Function CreateForDispatcherQueue(ByVal Queue As IDispatcherQueue) As ISystemButtonEventController
+End Interface
+
+[InterfaceId("4833896F-80D1-5DD6-92A7-62A508FFEF5A")]
+Interface ISystemFunctionButtonEventArgs Extends IInspectable
+    Property Get Timestamp() As UInt64
+    Property Get Handled() As BooleanByte
+    Property Let Handled(ByVal Value As BooleanByte)
+End Interface
+
+[InterfaceId("CD040608-FCF9-585C-BEAB-F1D2EAF364AB")]
+Interface ISystemFunctionLockChangedEventArgs Extends IInspectable
+    Property Get Timestamp() As UInt64
+    Property Get IsLocked() As BooleanByte
+    Property Get Handled() As BooleanByte
+    Property Let Handled(ByVal Value As BooleanByte)
+End Interface
+
+[InterfaceId("B212B94E-7A6F-58AE-B304-BAE61D0371B9")]
+Interface ISystemFunctionLockIndicatorChangedEventArgs Extends IInspectable
+    Property Get Timestamp() As UInt64
+    Property Get IsIndicatorOn() As BooleanByte
+    Property Get Handled() As BooleanByte
+    Property Let Handled(ByVal Value As BooleanByte)
+End Interface
+
+[InterfaceId("CFA126E4-253A-4C3C-953B-395C37AED309")]
+Interface ITappedEventArgs Extends IInspectable
+    Property Get PointerDeviceType() As PointerDeviceType
+    Property Get Position() As POINTF
+    Property Get TapCount() As Long
+End Interface
+
+[InterfaceId("294388F2-177E-51D5-BE56-EE0866FA968C")]
+Interface ITappedEventArgs2 Extends IInspectable
+    Property Get ContactCount() As Long
+End Interface
+
+Module mdlUIInput
+
+Public Enum CrossSlidingState
+    CrossSlidingState_Started
+    CrossSlidingState_Dragging
+    CrossSlidingState_Selecting
+    CrossSlidingState_SelectSpeedBumping
+    CrossSlidingState_SpeedBumping
+    CrossSlidingState_Rearranging
+    CrossSlidingState_Completed
+End Enum
+
+Public Enum DraggingState
+    DraggingState_Started
+    DraggingState_Continuing
+    DraggingState_Completed
+End Enum
+
+Public Enum EdgeGestureKind
+    EdgeGestureKind_Touch
+    EdgeGestureKind_Keyboard
+    EdgeGestureKind_Mouse
+End Enum
+
+Public Enum GazeInputAccessStatus
+    GazeInputAccessStatus_Unspecified
+    GazeInputAccessStatus_Allowed
+    GazeInputAccessStatus_DeniedByUser
+    GazeInputAccessStatus_DeniedBySystem
+End Enum
+
+Public Enum GestureSettings
+    GestureSettings_None = &H0
+    GestureSettings_Tap = &H1
+    GestureSettings_DoubleTap = &H2
+    GestureSettings_Hold = &H4
+    GestureSettings_HoldWithMouse = &H8
+    GestureSettings_RightTap = &H10
+    GestureSettings_Drag = &H20
+    GestureSettings_ManipulationTranslateX = &H40
+    GestureSettings_ManipulationTranslateY = &H80
+    GestureSettings_ManipulationTranslateRailsX = &H100
+    GestureSettings_ManipulationTranslateRailsY = &H200
+    GestureSettings_ManipulationRotate = &H400
+    GestureSettings_ManipulationScale = &H800
+    GestureSettings_ManipulationTranslateInertia = &H1000
+    GestureSettings_ManipulationRotateInertia = &H2000
+    GestureSettings_ManipulationScaleInertia = &H4000
+    GestureSettings_CrossSlide = &H8000&
+    GestureSettings_ManipulationMultipleFingerPanning = &H10000
+End Enum
+
+Public Enum HoldingState
+    HoldingState_Started
+    HoldingState_Completed
+    HoldingState_Canceled
+End Enum
+
+Public Enum InputActivationState
+    InputActivationState_None
+    InputActivationState_Deactivated
+    InputActivationState_ActivatedNotForeground
+    InputActivationState_ActivatedInForeground
+End Enum
+
+Public Enum PointerUpdateKind
+    PointerUpdateKind_Other
+    PointerUpdateKind_LeftButtonPressed
+    PointerUpdateKind_LeftButtonReleased
+    PointerUpdateKind_RightButtonPressed
+    PointerUpdateKind_RightButtonReleased
+    PointerUpdateKind_MiddleButtonPressed
+    PointerUpdateKind_MiddleButtonReleased
+    PointerUpdateKind_XButton1Pressed
+    PointerUpdateKind_XButton1Released
+    PointerUpdateKind_XButton2Pressed
+    PointerUpdateKind_XButton2Released
+End Enum
+
+Public Enum RadialControllerMenuKnownIcon
+    RadialControllerMenuKnownIcon_Scroll
+    RadialControllerMenuKnownIcon_Zoom
+    RadialControllerMenuKnownIcon_UndoRedo
+    RadialControllerMenuKnownIcon_Volume
+    RadialControllerMenuKnownIcon_NextPreviousTrack
+    RadialControllerMenuKnownIcon_Ruler
+    RadialControllerMenuKnownIcon_InkColor
+    RadialControllerMenuKnownIcon_InkThickness
+    RadialControllerMenuKnownIcon_PenType
+End Enum
+
+Public Enum RadialControllerSystemMenuItemKind
+    RadialControllerSystemMenuItemKind_Scroll
+    RadialControllerSystemMenuItemKind_Zoom
+    RadialControllerSystemMenuItemKind_UndoRedo
+    RadialControllerSystemMenuItemKind_Volume
+    RadialControllerSystemMenuItemKind_NextPreviousTrack
+End Enum
+
+Public Type CrossSlideThresholds
+    SelectionStart As Single
+    SpeedBumpStart As Single
+    SpeedBumpEnd As Single
+    RearrangeStart As Single
+End Type
+
+Public Type ManipulationDelta
+    Translation As POINTF
+    Scale As Single
+    Rotation As Single
+    Expansion As Single
+End Type
+
+Public Type ManipulationVelocities
+    Linear As POINTF
+    Angular As Single
+    Expansion As Single
+End Type
+
+End Module

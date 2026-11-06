@@ -1,0 +1,916 @@
+[InterfaceId("B01B6BE1-6F4E-49E2-AC01-559D62BEB3A9")]
+Interface IAudioDeviceInputNode Extends IInspectable ' requires IClosable, IAudioInputNode, IAudioNode
+    Property Get Device() As IDeviceInformation
+End Interface
+
+[InterfaceId("362EDBFF-FF1C-4434-9E0F-BD2EF522AC82")]
+Interface IAudioDeviceOutputNode Extends IInspectable ' requires IClosable, IAudioNode
+    Property Get Device() As IDeviceInformation
+End Interface
+
+[InterfaceId("4481085B-8B8B-5520-9825-E9671DA2A89F")]
+Interface ITypedEventHandlerAudioFileInputNodeFileCompleted Extends IUnknown
+    Sub Invoke(ByVal Sender As IAudioFileInputNode, ByVal Args As IInspectable)
+End Interface
+
+[InterfaceId("905B67C8-6F65-4CD4-8890-4694843C276D")]
+Interface IAudioFileInputNode Extends IInspectable ' requires IClosable, IAudioInputNode, IAudioNode
+    Property Let PlaybackSpeedFactor(ByVal Value As Double)
+    Property Get PlaybackSpeedFactor() As Double
+    Property Get Position() As TimeSpan
+    [PreserveSig]
+    Function Seek(ByVal Position As TimeSpan) As HRESULT
+    Property Get StartTime() As IReference_TimeSpan
+    Property Set StartTime(ByVal Value As IReference_TimeSpan)
+    Property Get EndTime() As IReference_TimeSpan
+    Property Set EndTime(ByVal Value As IReference_TimeSpan)
+    Property Get LoopCount() As IReference_Int32
+    Property Set LoopCount(ByVal Value As IReference_Int32)
+    Property Get Duration() As TimeSpan
+    Property Get SourceFile() As IStorageFile
+    [PreserveSig]
+    Function AddFileCompleted(ByVal Handler As ITypedEventHandlerAudioFileInputNodeFileCompleted, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveFileCompleted(ByVal Token As EventRegistrationToken) As HRESULT
+End Interface
+
+[InterfaceId("02132510-3899-5257-BED9-A43E5149D28C")]
+Interface IAsyncOperationTranscodeFailureReason Extends IInspectable
+    Property Set Completed(ByVal Handler As IAsyncOperationCompletedHandlerTranscodeFailureReason)
+    Property Get Completed() As IAsyncOperationCompletedHandlerTranscodeFailureReason
+    Function GetResults() As TranscodeFailureReason
+End Interface
+
+[InterfaceId("C42AE2BF-E194-5179-B8AD-03B51C04E1DA")]
+Interface IAsyncOperationCompletedHandlerTranscodeFailureReason Extends IUnknown
+    Sub Invoke(ByVal AsyncOperation As IAsyncOperationTranscodeFailureReason, ByVal AsyncStatus As AsyncStatus)
+End Interface
+
+[InterfaceId("50E01980-5166-4093-80F8-ADA00089E9CF")]
+Interface IAudioFileOutputNode Extends IInspectable ' requires IClosable, IAudioNode
+    Property Get File() As IStorageFile
+    Property Get FileEncodingProfile() As IMediaEncodingProfile
+    Function FinalizeAsync() As IAsyncOperationTranscodeFailureReason
+End Interface
+
+[InterfaceId("DC7C829E-0208-4504-A5A8-F0F268920A65")]
+Interface IAudioFrameCompletedEventArgs Extends IInspectable
+    Property Get Frame() As IAudioFrame
+End Interface
+
+[InterfaceId("AD59DCFE-71B0-5E16-99C2-CD90644D8EE8")]
+Interface ITypedEventHandlerAudioFrameInputNodeAudioFrameCompleted Extends IUnknown
+    Sub Invoke(ByVal Sender As IAudioFrameInputNode, ByVal Args As IAudioFrameCompletedEventArgs)
+End Interface
+
+[InterfaceId("4530D121-BB9A-57FE-922F-A98EEEDF59AF")]
+Interface ITypedEventHandlerAudioFrameInputNodeQuantumStarted Extends IUnknown
+    Sub Invoke(ByVal Sender As IAudioFrameInputNode, ByVal Args As IFrameInputNodeQuantumStartedEventArgs)
+End Interface
+
+[InterfaceId("01B266C7-FD96-4FF5-A3C5-D27A9BF44237")]
+Interface IAudioFrameInputNode Extends IInspectable ' requires IClosable, IAudioInputNode, IAudioNode
+    Property Let PlaybackSpeedFactor(ByVal Value As Double)
+    Property Get PlaybackSpeedFactor() As Double
+    [PreserveSig]
+    Function AddFrame(ByVal Frame As IAudioFrame) As HRESULT
+    [PreserveSig]
+    Function DiscardQueuedFrames() As HRESULT
+    Property Get QueuedSampleCount() As UInt64
+    [PreserveSig]
+    Function AddAudioFrameCompleted(ByVal Handler As ITypedEventHandlerAudioFrameInputNodeAudioFrameCompleted, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveAudioFrameCompleted(ByVal Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function AddQuantumStarted(ByVal Handler As ITypedEventHandlerAudioFrameInputNodeQuantumStarted, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveQuantumStarted(ByVal Token As EventRegistrationToken) As HRESULT
+End Interface
+
+[InterfaceId("B847371B-3299-45F5-88B3-C9D12A3F1CC8")]
+Interface IAudioFrameOutputNode Extends IInspectable ' requires IClosable, IAudioNode
+    Function GetFrame() As IAudioFrame
+End Interface
+
+[InterfaceId("71AB4481-EC4A-5EE9-A342-3A31747829B8")]
+Interface IAsyncOperationICreateAudioDeviceInputNodeResult Extends IInspectable
+    Property Set Completed(ByVal Handler As IAsyncOperationCompletedHandlerICreateAudioDeviceInputNodeResult)
+    Property Get Completed() As IAsyncOperationCompletedHandlerICreateAudioDeviceInputNodeResult
+    Function GetResults() As ICreateAudioDeviceInputNodeResult
+End Interface
+
+[InterfaceId("6CC56450-E4E8-59C9-83D8-63E46EACB20B")]
+Interface IAsyncOperationCompletedHandlerICreateAudioDeviceInputNodeResult Extends IUnknown
+    Sub Invoke(ByVal AsyncOperation As IAsyncOperationICreateAudioDeviceInputNodeResult, ByVal AsyncStatus As AsyncStatus)
+End Interface
+
+[InterfaceId("F810D730-DE15-58E0-A5F4-C159F73669ED")]
+Interface IAsyncOperationICreateAudioDeviceOutputNodeResult Extends IInspectable
+    Property Set Completed(ByVal Handler As IAsyncOperationCompletedHandlerICreateAudioDeviceOutputNodeResult)
+    Property Get Completed() As IAsyncOperationCompletedHandlerICreateAudioDeviceOutputNodeResult
+    Function GetResults() As ICreateAudioDeviceOutputNodeResult
+End Interface
+
+[InterfaceId("EDBC9B59-7CAE-513F-B0DC-17666D37BA77")]
+Interface IAsyncOperationCompletedHandlerICreateAudioDeviceOutputNodeResult Extends IUnknown
+    Sub Invoke(ByVal AsyncOperation As IAsyncOperationICreateAudioDeviceOutputNodeResult, ByVal AsyncStatus As AsyncStatus)
+End Interface
+
+[InterfaceId("473B06BF-387B-56CA-BEE1-527480272B0F")]
+Interface IAsyncOperationICreateAudioFileInputNodeResult Extends IInspectable
+    Property Set Completed(ByVal Handler As IAsyncOperationCompletedHandlerICreateAudioFileInputNodeResult)
+    Property Get Completed() As IAsyncOperationCompletedHandlerICreateAudioFileInputNodeResult
+    Function GetResults() As ICreateAudioFileInputNodeResult
+End Interface
+
+[InterfaceId("504D1EFD-C11C-506E-B8C9-AF17C771EFB5")]
+Interface IAsyncOperationCompletedHandlerICreateAudioFileInputNodeResult Extends IUnknown
+    Sub Invoke(ByVal AsyncOperation As IAsyncOperationICreateAudioFileInputNodeResult, ByVal AsyncStatus As AsyncStatus)
+End Interface
+
+[InterfaceId("1164517D-E953-5415-A5B3-4249A969BE7B")]
+Interface IAsyncOperationICreateAudioFileOutputNodeResult Extends IInspectable
+    Property Set Completed(ByVal Handler As IAsyncOperationCompletedHandlerICreateAudioFileOutputNodeResult)
+    Property Get Completed() As IAsyncOperationCompletedHandlerICreateAudioFileOutputNodeResult
+    Function GetResults() As ICreateAudioFileOutputNodeResult
+End Interface
+
+[InterfaceId("A7A95713-A08F-5FDF-89C6-9627BCF5D80A")]
+Interface IAsyncOperationCompletedHandlerICreateAudioFileOutputNodeResult Extends IUnknown
+    Sub Invoke(ByVal AsyncOperation As IAsyncOperationICreateAudioFileOutputNodeResult, ByVal AsyncStatus As AsyncStatus)
+End Interface
+
+[InterfaceId("E1407134-09E7-53DE-B54C-8A0659397B88")]
+Interface ITypedEventHandlerAudioGraphIInspectable Extends IUnknown
+    Sub Invoke(ByVal Sender As IAudioGraph, ByVal Args As IInspectable)
+End Interface
+
+[InterfaceId("899670C9-DD7F-5F12-98CB-8B17FE80A47F")]
+Interface ITypedEventHandlerAudioGraphUnrecoverableErrorOccurred Extends IUnknown
+    Sub Invoke(ByVal Sender As IAudioGraph, ByVal Args As IAudioGraphUnrecoverableErrorOccurredEventArgs)
+End Interface
+
+[InterfaceId("1AD46EED-E48C-4E14-9660-2C4F83E9CDD8")]
+Interface IAudioGraph Extends IInspectable ' requires IClosable
+    Function CreateFrameInputNode() As IAudioFrameInputNode
+    Function CreateFrameInputNodeWithFormat(ByVal EncodingProperties As IAudioEncodingProperties) As IAudioFrameInputNode
+    Function CreateDeviceInputNodeAsync(ByVal Category As MediaCategory) As IAsyncOperationICreateAudioDeviceInputNodeResult
+    Function CreateDeviceInputNodeWithFormatAsync(ByVal Category As MediaCategory, ByVal EncodingProperties As IAudioEncodingProperties) As IAsyncOperationICreateAudioDeviceInputNodeResult
+    Function CreateDeviceInputNodeWithFormatOnDeviceAsync(ByVal Category As MediaCategory, ByVal EncodingProperties As IAudioEncodingProperties, ByVal Device As IDeviceInformation) As IAsyncOperationICreateAudioDeviceInputNodeResult
+    Function CreateFrameOutputNode() As IAudioFrameOutputNode
+    Function CreateFrameOutputNodeWithFormat(ByVal EncodingProperties As IAudioEncodingProperties) As IAudioFrameOutputNode
+    Function CreateDeviceOutputNodeAsync() As IAsyncOperationICreateAudioDeviceOutputNodeResult
+    Function CreateFileInputNodeAsync(ByVal File As IStorageFile) As IAsyncOperationICreateAudioFileInputNodeResult
+    Function CreateFileOutputNodeAsync(ByVal File As IStorageFile) As IAsyncOperationICreateAudioFileOutputNodeResult
+    Function CreateFileOutputNodeWithFileProfileAsync(ByVal File As IStorageFile, ByVal FileEncodingProfile As IMediaEncodingProfile) As IAsyncOperationICreateAudioFileOutputNodeResult
+    Function CreateSubmixNode() As IAudioInputNode
+    Function CreateSubmixNodeWithFormat(ByVal EncodingProperties As IAudioEncodingProperties) As IAudioInputNode
+    [PreserveSig]
+    Function Start() As HRESULT
+    [PreserveSig]
+    Function Stop() As HRESULT
+    [PreserveSig]
+    Function ResetAllNodes() As HRESULT
+    [PreserveSig]
+    Function AddQuantumStarted(ByVal Handler As ITypedEventHandlerAudioGraphIInspectable, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveQuantumStarted(ByVal Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function AddQuantumProcessed(ByVal Handler As ITypedEventHandlerAudioGraphIInspectable, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveQuantumProcessed(ByVal Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function AddUnrecoverableErrorOccurred(ByVal Handler As ITypedEventHandlerAudioGraphUnrecoverableErrorOccurred, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveUnrecoverableErrorOccurred(ByVal Token As EventRegistrationToken) As HRESULT
+    Property Get CompletedQuantumCount() As UInt64
+    Property Get EncodingProperties() As IAudioEncodingProperties
+    Property Get LatencyInSamples() As Long
+    Property Get PrimaryRenderDevice() As IDeviceInformation
+    Property Get RenderDeviceAudioProcessing() As AudioProcessing
+    Property Get SamplesPerQuantum() As Long
+End Interface
+
+[InterfaceId("4E4C3BD5-4FC1-45F6-A947-3CD38F4FD839")]
+Interface IAudioGraph2 Extends IInspectable ' requires IClosable
+    Function CreateFrameInputNodeWithFormatAndEmitter(ByVal EncodingProperties As IAudioEncodingProperties, ByVal Emitter As IAudioNodeEmitter) As IAudioFrameInputNode
+    Function CreateDeviceInputNodeWithFormatAndEmitterOnDeviceAsync(ByVal Category As MediaCategory, ByVal EncodingProperties As IAudioEncodingProperties, ByVal Device As IDeviceInformation, ByVal Emitter As IAudioNodeEmitter) As IAsyncOperationICreateAudioDeviceInputNodeResult
+    Function CreateFileInputNodeWithEmitterAsync(ByVal File As IStorageFile, ByVal Emitter As IAudioNodeEmitter) As IAsyncOperationICreateAudioFileInputNodeResult
+    Function CreateSubmixNodeWithFormatAndEmitter(ByVal EncodingProperties As IAudioEncodingProperties, ByVal Emitter As IAudioNodeEmitter) As IAudioInputNode
+    Function CreateBatchUpdater() As IClosable
+End Interface
+
+[InterfaceId("C69C20F3-88FC-5F3A-95D0-2816EAE45968")]
+Interface IAsyncOperationICreateMediaSourceAudioInputNodeResult Extends IInspectable
+    Property Set Completed(ByVal Handler As IAsyncOperationCompletedHandlerICreateMediaSourceAudioInputNodeResult)
+    Property Get Completed() As IAsyncOperationCompletedHandlerICreateMediaSourceAudioInputNodeResult
+    Function GetResults() As ICreateMediaSourceAudioInputNodeResult
+End Interface
+
+[InterfaceId("E471B446-3A01-5190-89C9-15E740374CFC")]
+Interface IAsyncOperationCompletedHandlerICreateMediaSourceAudioInputNodeResult Extends IUnknown
+    Sub Invoke(ByVal AsyncOperation As IAsyncOperationICreateMediaSourceAudioInputNodeResult, ByVal AsyncStatus As AsyncStatus)
+End Interface
+
+[InterfaceId("DDCD25AE-1185-42A7-831D-6A9B0FC86820")]
+Interface IAudioGraph3 Extends IInspectable
+    Function CreateMediaSourceAudioInputNodeAsync(ByVal MediaSource As IMediaSource) As IAsyncOperationICreateMediaSourceAudioInputNodeResult
+    Function CreateMediaSourceAudioInputNodeWithEmitterAsync(ByVal MediaSource As IMediaSource, ByVal Emitter As IAudioNodeEmitter) As IAsyncOperationICreateMediaSourceAudioInputNodeResult
+End Interface
+
+[InterfaceId("763070ED-D04E-4FAC-B233-600B42EDD469")]
+Interface IAudioGraphConnection Extends IInspectable
+    Property Get Destination() As IAudioNode
+    Property Let Gain(ByVal Value As Double)
+    Property Get Gain() As Double
+End Interface
+
+[InterfaceId("1D59647F-E6FE-4628-84F8-9D8BDBA25785")]
+Interface IAudioGraphSettings Extends IInspectable
+    Property Get EncodingProperties() As IAudioEncodingProperties
+    Property Set EncodingProperties(ByVal Value As IAudioEncodingProperties)
+    Property Get PrimaryRenderDevice() As IDeviceInformation
+    Property Set PrimaryRenderDevice(ByVal Value As IDeviceInformation)
+    Property Get QuantumSizeSelectionMode() As QuantumSizeSelectionMode
+    Property Let QuantumSizeSelectionMode(ByVal Value As QuantumSizeSelectionMode)
+    Property Get DesiredSamplesPerQuantum() As Long
+    Property Let DesiredSamplesPerQuantum(ByVal Value As Long)
+    Property Get AudioRenderCategory() As AudioRenderCategory
+    Property Let AudioRenderCategory(ByVal Value As AudioRenderCategory)
+    Property Get DesiredRenderDeviceAudioProcessing() As AudioProcessing
+    Property Let DesiredRenderDeviceAudioProcessing(ByVal Value As AudioProcessing)
+End Interface
+
+[InterfaceId("72919787-4DAB-46E3-B4C9-D8E1A2636062")]
+Interface IAudioGraphSettings2 Extends IInspectable
+    Property Let MaxPlaybackSpeedFactor(ByVal Value As Double)
+    Property Get MaxPlaybackSpeedFactor() As Double
+End Interface
+
+[InterfaceId("A5D91CC6-C2EB-4A61-A214-1D66D75F83DA")]
+Interface IAudioGraphSettingsFactory Extends IInspectable
+    Function Create(ByVal AudioRenderCategory As AudioRenderCategory) As IAudioGraphSettings
+End Interface
+
+[InterfaceId("3E13B431-65CE-5BFB-B0AA-FAC8DF958B95")]
+Interface IAsyncOperationICreateAudioGraphResult Extends IInspectable
+    Property Set Completed(ByVal Handler As IAsyncOperationCompletedHandlerICreateAudioGraphResult)
+    Property Get Completed() As IAsyncOperationCompletedHandlerICreateAudioGraphResult
+    Function GetResults() As ICreateAudioGraphResult
+End Interface
+
+[InterfaceId("4E660BDA-D438-5741-8B66-85FE72574AAB")]
+Interface IAsyncOperationCompletedHandlerICreateAudioGraphResult Extends IUnknown
+    Sub Invoke(ByVal AsyncOperation As IAsyncOperationICreateAudioGraphResult, ByVal AsyncStatus As AsyncStatus)
+End Interface
+
+[InterfaceId("76EC3132-E159-4AB7-A82A-17BEB4B31E94")]
+Interface IAudioGraphStatics Extends IInspectable
+    Function CreateAsync(ByVal Settings As IAudioGraphSettings) As IAsyncOperationICreateAudioGraphResult
+End Interface
+
+[InterfaceId("C3D9CBE0-3FF6-4FB3-B262-50D435C55423")]
+Interface IAudioGraphUnrecoverableErrorOccurredEventArgs Extends IInspectable
+    Property Get Error() As AudioGraphUnrecoverableError
+End Interface
+
+[InterfaceId("4AF6A8FC-E7FB-5957-91C1-2DF9600B22EB")]
+Interface IIterator_IAudioGraphConnection Extends IInspectable
+    Property Get Current() As IAudioGraphConnection
+    Property Get HasCurrent() As BooleanByte
+    Function MoveNext() As BooleanByte
+    Function GetMany(ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("96168D06-A51A-5480-9403-FBD7631E3B3C")]
+Interface IIterable_IAudioGraphConnection Extends IInspectable
+    Function First() As IIterator_IAudioGraphConnection
+End Interface
+
+[InterfaceId("8485AED1-9B0C-59D2-A206-699BF746C3FF")]
+Interface IVectorView_IAudioGraphConnection Extends IInspectable
+    Function GetAt(ByVal Index As Long) As IAudioGraphConnection
+    Property Get Size() As Long
+    Function IndexOf(ByVal Value As IAudioGraphConnection, Index As Long) As BooleanByte
+    Function GetMany(ByVal StartIndex As Long, ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("D148005C-8428-4784-B7FD-A99D468C5D20")]
+Interface IAudioInputNode Extends IInspectable ' requires IClosable, IAudioNode
+    Property Get OutgoingConnections() As IVectorView_IAudioGraphConnection
+    [PreserveSig]
+    Function AddOutgoingConnection(ByVal Destination As IAudioNode) As HRESULT
+    [PreserveSig]
+    Function AddOutgoingConnectionWithGain(ByVal Destination As IAudioNode, ByVal Gain As Double) As HRESULT
+    [PreserveSig]
+    Function RemoveOutgoingConnection(ByVal Destination As IAudioNode) As HRESULT
+End Interface
+
+[InterfaceId("905156B7-CA68-4C6D-A8BC-E3EE17FE3FD2")]
+Interface IAudioInputNode2 Extends IInspectable ' requires IClosable, IAudioInputNode, IAudioNode
+    Property Get Emitter() As IAudioNodeEmitter
+End Interface
+
+[InterfaceId("EC0F39FC-6959-5423-9E1A-F7CB8E845CA1")]
+Interface IIterator_IAudioEffectDefinition Extends IInspectable
+    Property Get Current() As IAudioEffectDefinition
+    Property Get HasCurrent() As BooleanByte
+    Function MoveNext() As BooleanByte
+    Function GetMany(ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("607A20BF-32B4-5B8E-A793-3024F8D3582A")]
+Interface IIterable_IAudioEffectDefinition Extends IInspectable
+    Function First() As IIterator_IAudioEffectDefinition
+End Interface
+
+[InterfaceId("DE9E6A7F-D28E-5EF1-916A-EFA880B489D1")]
+Interface IVectorView_IAudioEffectDefinition Extends IInspectable
+    Function GetAt(ByVal Index As Long) As IAudioEffectDefinition
+    Property Get Size() As Long
+    Function IndexOf(ByVal Value As IAudioEffectDefinition, Index As Long) As BooleanByte
+    Function GetMany(ByVal StartIndex As Long, ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("2828A982-D849-5FC9-84CE-F9A4B3B4D341")]
+Interface IVector_IAudioEffectDefinition Extends IInspectable
+    Function GetAt(ByVal Index As Long) As IAudioEffectDefinition
+    Property Get Size() As Long
+    Function GetView() As IVectorView_IAudioEffectDefinition
+    Function IndexOf(ByVal Value As IAudioEffectDefinition, Index As Long) As BooleanByte
+    [PreserveSig]
+    Function SetAt(ByVal Index As Long, ByVal Value As IAudioEffectDefinition) As HRESULT
+    [PreserveSig]
+    Function InsertAt(ByVal Index As Long, ByVal Value As IAudioEffectDefinition) As HRESULT
+    [PreserveSig]
+    Function RemoveAt(ByVal Index As Long) As HRESULT
+    [PreserveSig]
+    Function Append(ByVal Value As IAudioEffectDefinition) As HRESULT
+    [PreserveSig]
+    Function RemoveAtEnd() As HRESULT
+    [PreserveSig]
+    Function Clear() As HRESULT
+    Function GetMany(ByVal StartIndex As Long, ByVal Length As Long, Items As Any) As Long
+    [PreserveSig]
+    Function ReplaceAll(ByVal Length As Long, Items As Any) As HRESULT
+End Interface
+
+[InterfaceId("15389D7F-DBD8-4819-BF03-668E9357CD6D")]
+Interface IAudioNode Extends IInspectable
+    Property Get EffectDefinitions() As IVector_IAudioEffectDefinition
+    Property Let OutgoingGain(ByVal Value As Double)
+    Property Get OutgoingGain() As Double
+    Property Get EncodingProperties() As IAudioEncodingProperties
+    Property Get ConsumeInput() As BooleanByte
+    Property Let ConsumeInput(ByVal Value As BooleanByte)
+    [PreserveSig]
+    Function Start() As HRESULT
+    [PreserveSig]
+    Function Stop() As HRESULT
+    [PreserveSig]
+    Function Reset() As HRESULT
+    [PreserveSig]
+    Function DisableEffectsByDefinition(ByVal Definition As IAudioEffectDefinition) As HRESULT
+    [PreserveSig]
+    Function EnableEffectsByDefinition(ByVal Definition As IAudioEffectDefinition) As HRESULT
+End Interface
+
+[InterfaceId("3676971D-880A-47B8-ADF7-1323A9D965BE")]
+Interface IAudioNodeEmitter Extends IInspectable
+    Property Get Position() As Vector3
+    Property Let Position(ByVal Value As Vector3)
+    Property Get Direction() As Vector3
+    Property Let Direction(ByVal Value As Vector3)
+    Property Get Shape() As IAudioNodeEmitterShape
+    Property Get DecayModel() As IAudioNodeEmitterDecayModel
+    Property Get Gain() As Double
+    Property Let Gain(ByVal Value As Double)
+    Property Get DistanceScale() As Double
+    Property Let DistanceScale(ByVal Value As Double)
+    Property Get DopplerScale() As Double
+    Property Let DopplerScale(ByVal Value As Double)
+    Property Get DopplerVelocity() As Vector3
+    Property Let DopplerVelocity(ByVal Value As Vector3)
+    Property Get IsDopplerDisabled() As BooleanByte
+End Interface
+
+[InterfaceId("4AB6EECB-EC29-47F8-818C-B6B660A5AEB1")]
+Interface IAudioNodeEmitter2 Extends IInspectable
+    Property Get SpatialAudioModel() As SpatialAudioModel
+    Property Let SpatialAudioModel(ByVal Value As SpatialAudioModel)
+End Interface
+
+[InterfaceId("E99B2CEE-02CA-4375-9326-0C6AE4BCDFB5")]
+Interface IAudioNodeEmitterConeProperties Extends IInspectable
+    Property Get InnerAngle() As Double
+    Property Get OuterAngle() As Double
+    Property Get OuterAngleGain() As Double
+End Interface
+
+[InterfaceId("1D1D5AF7-0D53-4FA9-BD84-D5816A86F3FF")]
+Interface IAudioNodeEmitterDecayModel Extends IInspectable
+    Property Get Kind() As AudioNodeEmitterDecayKind
+    Property Get MinGain() As Double
+    Property Get MaxGain() As Double
+    Property Get NaturalProperties() As IAudioNodeEmitterNaturalDecayModelProperties
+End Interface
+
+[InterfaceId("C7787CA8-F178-462F-BC81-8DD5CBE5DAE8")]
+Interface IAudioNodeEmitterDecayModelStatics Extends IInspectable
+    Function CreateNatural(ByVal MinGain As Double, ByVal MaxGain As Double, ByVal UnityGainDistance As Double, ByVal CutoffDistance As Double) As IAudioNodeEmitterDecayModel
+    Function CreateCustom(ByVal MinGain As Double, ByVal MaxGain As Double) As IAudioNodeEmitterDecayModel
+End Interface
+
+[InterfaceId("FDC8489A-6AD6-4CE4-B7F7-A99370DF7EE9")]
+Interface IAudioNodeEmitterFactory Extends IInspectable
+    Function CreateAudioNodeEmitter(ByVal Shape As IAudioNodeEmitterShape, ByVal DecayModel As IAudioNodeEmitterDecayModel, ByVal Settings As AudioNodeEmitterSettings) As IAudioNodeEmitter
+End Interface
+
+[InterfaceId("48934BCF-CF2C-4EFC-9331-75BD22DF1F0C")]
+Interface IAudioNodeEmitterNaturalDecayModelProperties Extends IInspectable
+    Property Get UnityGainDistance() As Double
+    Property Get CutoffDistance() As Double
+End Interface
+
+[InterfaceId("EA0311C5-E73D-44BC-859C-45553BBC4828")]
+Interface IAudioNodeEmitterShape Extends IInspectable
+    Property Get Kind() As AudioNodeEmitterShapeKind
+    Property Get ConeProperties() As IAudioNodeEmitterConeProperties
+End Interface
+
+[InterfaceId("57BB2771-FFA5-4B86-A779-E264AEB9145F")]
+Interface IAudioNodeEmitterShapeStatics Extends IInspectable
+    Function CreateCone(ByVal InnerAngle As Double, ByVal OuterAngle As Double, ByVal OuterAngleGain As Double) As IAudioNodeEmitterShape
+    Function CreateOmnidirectional() As IAudioNodeEmitterShape
+End Interface
+
+[InterfaceId("D9722E16-0C0A-41DA-B755-6C77835FB1EB")]
+Interface IAudioNodeListener Extends IInspectable
+    Property Get Position() As Vector3
+    Property Let Position(ByVal Value As Vector3)
+    Property Get OrientationGet() As Quaternion
+    Property Let Orientation(ByVal Value As Quaternion)
+    Property Get SpeedOfSound() As Double
+    Property Let SpeedOfSound(ByVal Value As Double)
+    Property Get DopplerVelocity() As Vector3
+    Property Let DopplerVelocity(ByVal Value As Vector3)
+End Interface
+
+[InterfaceId("0E0F907C-79FF-4544-9EEB-01257B15105A")]
+Interface IAudioNodeWithListener Extends IInspectable ' requires IClosable, IAudioNode
+    Property Set Listener(ByVal Value As IAudioNodeListener)
+    Property Get Listener() As IAudioNodeListener
+End Interface
+
+[InterfaceId("F5245F8A-3DD1-56B2-829B-9888251D689C")]
+Interface IAsyncOperationIAudioPlaybackConnectionOpenResult Extends IInspectable
+    Property Set Completed(ByVal Handler As IAsyncOperationCompletedHandlerIAudioPlaybackConnectionOpenResult)
+    Property Get Completed() As IAsyncOperationCompletedHandlerIAudioPlaybackConnectionOpenResult
+    Function GetResults() As IAudioPlaybackConnectionOpenResult
+End Interface
+
+[InterfaceId("56DDB54D-EB8D-5FFB-A54B-8FAF918C8031")]
+Interface IAsyncOperationCompletedHandlerIAudioPlaybackConnectionOpenResult Extends IUnknown
+    Sub Invoke(ByVal AsyncOperation As IAsyncOperationIAudioPlaybackConnectionOpenResult, ByVal AsyncStatus As AsyncStatus)
+End Interface
+
+[InterfaceId("0E389B05-31A6-58F1-9EA4-0C1E4D70A7B8")]
+Interface ITypedEventHandlerAudioPlaybackConnectionStateChanged Extends IUnknown
+    Sub Invoke(ByVal Sender As IAudioPlaybackConnection, ByVal Args As IInspectable)
+End Interface
+
+[InterfaceId("1A4C1DEA-CAFC-50E7-8718-EA3F81CBFA51")]
+Interface IAudioPlaybackConnection Extends IInspectable
+    [PreserveSig]
+    Function Start() As HRESULT
+    Function StartAsync() As IAsyncAction
+    Property Get DeviceId() As LongPtr
+    Property Get State() As AudioPlaybackConnectionState
+    Function Open() As IAudioPlaybackConnectionOpenResult
+    Function OpenAsync() As IAsyncOperationIAudioPlaybackConnectionOpenResult
+    [PreserveSig]
+    Function AddStateChanged(ByVal Handler As ITypedEventHandlerAudioPlaybackConnectionStateChanged, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveStateChanged(ByVal Token As EventRegistrationToken) As HRESULT
+End Interface
+
+[InterfaceId("4E656AEF-39F9-5FC9-A519-A5BBFD9FE921")]
+Interface IAudioPlaybackConnectionOpenResult Extends IInspectable
+    Property Get Status() As AudioPlaybackConnectionOpenResultStatus
+    Property Get ExtendedError() As HRESULT
+End Interface
+
+[InterfaceId("E60963A2-69E6-5FFC-9E13-824A85213DAF")]
+Interface IAudioPlaybackConnectionStatics Extends IInspectable
+    Function GetDeviceSelector() As LongPtr
+    Function TryCreateFromId(ByVal Id As LongPtr) As IAudioPlaybackConnection
+End Interface
+
+[InterfaceId("1333DF3F-C55B-5A23-9596-34657C2A3406")]
+Interface ITypedEventHandlerAudioStateMonitorSoundLevelChanged Extends IUnknown
+    Sub Invoke(ByVal Sender As IAudioStateMonitor, ByVal Args As IInspectable)
+End Interface
+
+[InterfaceId("1D13D136-0199-4CDC-B84E-E72C2B581ECE")]
+Interface IAudioStateMonitor Extends IInspectable
+    [PreserveSig]
+    Function AddSoundLevelChanged(ByVal Handler As ITypedEventHandlerAudioStateMonitorSoundLevelChanged, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveSoundLevelChanged(ByVal Token As EventRegistrationToken) As HRESULT
+    Property Get SoundLevel() As SoundLevel
+End Interface
+
+[InterfaceId("6374EA4C-1B3B-4001-94D9-DD225330FA40")]
+Interface IAudioStateMonitorStatics Extends IInspectable
+    Function CreateForRenderMonitoring() As IAudioStateMonitor
+    Function CreateForRenderMonitoringWithCategory(ByVal Category As AudioRenderCategory) As IAudioStateMonitor
+    Function CreateForRenderMonitoringWithCategoryAndDeviceRole(ByVal Category As AudioRenderCategory, ByVal Role As AudioDeviceRole) As IAudioStateMonitor
+    Function CreateForRenderMonitoringWithCategoryAndDeviceId(ByVal Category As AudioRenderCategory, ByVal DeviceId As LongPtr) As IAudioStateMonitor
+    Function CreateForCaptureMonitoring() As IAudioStateMonitor
+    Function CreateForCaptureMonitoringWithCategory(ByVal Category As MediaCategory) As IAudioStateMonitor
+    Function CreateForCaptureMonitoringWithCategoryAndDeviceRole(ByVal Category As MediaCategory, ByVal Role As AudioDeviceRole) As IAudioStateMonitor
+    Function CreateForCaptureMonitoringWithCategoryAndDeviceId(ByVal Category As MediaCategory, ByVal DeviceId As LongPtr) As IAudioStateMonitor
+End Interface
+
+[InterfaceId("16EEC7A8-1CA7-40EF-91A4-D346E0AA1BBA")]
+Interface ICreateAudioDeviceInputNodeResult Extends IInspectable
+    Property Get Status() As AudioDeviceNodeCreationStatus
+    Property Get DeviceInputNode() As IAudioDeviceInputNode
+End Interface
+
+[InterfaceId("921C69CE-3F35-41C7-9622-79F608BAEDC2")]
+Interface ICreateAudioDeviceInputNodeResult2 Extends IInspectable
+    Property Get ExtendedError() As HRESULT
+End Interface
+
+[InterfaceId("F7776D27-1D9A-47F7-9CD4-2859CC1B7BFF")]
+Interface ICreateAudioDeviceOutputNodeResult Extends IInspectable
+    Property Get Status() As AudioDeviceNodeCreationStatus
+    Property Get DeviceOutputNode() As IAudioDeviceOutputNode
+End Interface
+
+[InterfaceId("4864269F-BDCE-4AB1-BD38-FBAE93AEDACA")]
+Interface ICreateAudioDeviceOutputNodeResult2 Extends IInspectable
+    Property Get ExtendedError() As HRESULT
+End Interface
+
+[InterfaceId("CE83D61C-E297-4C50-9CE7-1C7A69D6BD09")]
+Interface ICreateAudioFileInputNodeResult Extends IInspectable
+    Property Get Status() As AudioFileNodeCreationStatus
+    Property Get FileInputNode() As IAudioFileInputNode
+End Interface
+
+[InterfaceId("F9082020-3D80-4FE0-81C1-768FEA7CA7E0")]
+Interface ICreateAudioFileInputNodeResult2 Extends IInspectable
+    Property Get ExtendedError() As HRESULT
+End Interface
+
+[InterfaceId("47D6BA7B-E909-453F-866E-5540CDA734FF")]
+Interface ICreateAudioFileOutputNodeResult Extends IInspectable
+    Property Get Status() As AudioFileNodeCreationStatus
+    Property Get FileOutputNode() As IAudioFileOutputNode
+End Interface
+
+[InterfaceId("9F01B50D-3318-47B3-A60A-1B492BE7FC0D")]
+Interface ICreateAudioFileOutputNodeResult2 Extends IInspectable
+    Property Get ExtendedError() As HRESULT
+End Interface
+
+[InterfaceId("5453EF7E-7BDE-4B76-BB5D-48F79CFC8C0B")]
+Interface ICreateAudioGraphResult Extends IInspectable
+    Property Get Status() As AudioGraphCreationStatus
+    Property Get Graph() As IAudioGraph
+End Interface
+
+[InterfaceId("6D738DFC-88C6-4FCB-A534-85CEDD4050A1")]
+Interface ICreateAudioGraphResult2 Extends IInspectable
+    Property Get ExtendedError() As HRESULT
+End Interface
+
+[InterfaceId("46A658A3-53C0-4D59-9E51-CC1D1044A4C4")]
+Interface ICreateMediaSourceAudioInputNodeResult Extends IInspectable
+    Property Get Status() As MediaSourceAudioInputNodeCreationStatus
+    Property Get Node() As IMediaSourceAudioInputNode
+End Interface
+
+[InterfaceId("63514CE8-6A1A-49E3-97EC-28FD5BE114E5")]
+Interface ICreateMediaSourceAudioInputNodeResult2 Extends IInspectable
+    Property Get ExtendedError() As HRESULT
+End Interface
+
+[InterfaceId("0E4D3FAA-36B8-4C91-B9DA-11F44A8A6610")]
+Interface IEchoEffectDefinition Extends IInspectable ' requires IAudioEffectDefinition
+    Property Let WetDryMix(ByVal Value As Double)
+    Property Get WetDryMix() As Double
+    Property Let Feedback(ByVal Value As Double)
+    Property Get Feedback() As Double
+    Property Let Delay(ByVal Value As Double)
+    Property Get Delay() As Double
+End Interface
+
+[InterfaceId("0D4E2257-AAF2-4E86-A54C-FB79DB8F6C12")]
+Interface IEchoEffectDefinitionFactory Extends IInspectable
+    Function Create(ByVal AudioGraph As IAudioGraph) As IEchoEffectDefinition
+End Interface
+
+[InterfaceId("C00A5A6A-262D-4B85-9BB7-43280B62ED0C")]
+Interface IEqualizerBand Extends IInspectable
+    Property Get Bandwidth() As Double
+    Property Let Bandwidth(ByVal Value As Double)
+    Property Get FrequencyCenter() As Double
+    Property Let FrequencyCenter(ByVal Value As Double)
+    Property Get Gain() As Double
+    Property Let Gain(ByVal Value As Double)
+End Interface
+
+[InterfaceId("EB4F8B6A-7928-5F2F-B7F2-7B90C084356F")]
+Interface IIterator_IEqualizerBand Extends IInspectable
+    Property Get Current() As IEqualizerBand
+    Property Get HasCurrent() As BooleanByte
+    Function MoveNext() As BooleanByte
+    Function GetMany(ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("6F76D148-023E-565A-9F09-4AD4A32AD74F")]
+Interface IIterable_IEqualizerBand Extends IInspectable
+    Function First() As IIterator_IEqualizerBand
+End Interface
+
+[InterfaceId("48F26053-EA7D-59E1-952B-FB78AF42D2E2")]
+Interface IVectorView_IEqualizerBand Extends IInspectable
+    Function GetAt(ByVal Index As Long) As IEqualizerBand
+    Property Get Size() As Long
+    Function IndexOf(ByVal Value As IEqualizerBand, Index As Long) As BooleanByte
+    Function GetMany(ByVal StartIndex As Long, ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("023F6F1F-83FE-449A-A822-C696442D16B0")]
+Interface IEqualizerEffectDefinition Extends IInspectable
+    Property Get Bands() As IVectorView_IEqualizerBand
+End Interface
+
+[InterfaceId("D2876FC4-D410-4EB5-9E69-C9AA1277EAF0")]
+Interface IEqualizerEffectDefinitionFactory Extends IInspectable
+    Function Create(ByVal AudioGraph As IAudioGraph) As IEqualizerEffectDefinition
+End Interface
+
+[InterfaceId("3D9BD498-A306-4F06-BD9F-E9EFC8226304")]
+Interface IFrameInputNodeQuantumStartedEventArgs Extends IInspectable
+    Property Get RequiredSamples() As Long
+End Interface
+
+[InterfaceId("6B755D19-2603-47BA-BDEB-39055E3486DC")]
+Interface ILimiterEffectDefinition Extends IInspectable ' requires IAudioEffectDefinition
+    Property Let Release(ByVal Value As Long)
+    Property Get Release() As Long
+    Property Let Loudness(ByVal Value As Long)
+    Property Get Loudness() As Long
+End Interface
+
+[InterfaceId("ECBAE6F1-61FF-45EF-B8F5-48659A57C72D")]
+Interface ILimiterEffectDefinitionFactory Extends IInspectable
+    Function Create(ByVal AudioGraph As IAudioGraph) As ILimiterEffectDefinition
+End Interface
+
+[InterfaceId("B78980BF-7ACF-5DC8-9FCD-31D6AB2F92F1")]
+Interface ITypedEventHandlerMediaSourceAudioInputNodeMediaSourceCompleted Extends IUnknown
+    Sub Invoke(ByVal Sender As IMediaSourceAudioInputNode, ByVal Args As IInspectable)
+End Interface
+
+[InterfaceId("99D8983B-A88A-4041-8E4F-DDBAC0C91FD3")]
+Interface IMediaSourceAudioInputNode Extends IInspectable ' requires IClosable, IAudioInputNode, IAudioInputNode2, IAudioNode
+    Property Let PlaybackSpeedFactor(ByVal Value As Double)
+    Property Get PlaybackSpeedFactor() As Double
+    Property Get Position() As TimeSpan
+    [PreserveSig]
+    Function Seek(ByVal Position As TimeSpan) As HRESULT
+    Property Get StartTime() As IReference_TimeSpan
+    Property Set StartTime(ByVal Value As IReference_TimeSpan)
+    Property Get EndTime() As IReference_TimeSpan
+    Property Set EndTime(ByVal Value As IReference_TimeSpan)
+    Property Get LoopCount() As IReference_Int32
+    Property Set LoopCount(ByVal Value As IReference_Int32)
+    Property Get Duration() As TimeSpan
+    Property Get MediaSource() As IMediaSource
+    [PreserveSig]
+    Function AddMediaSourceCompleted(ByVal Handler As ITypedEventHandlerMediaSourceAudioInputNodeMediaSourceCompleted, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveMediaSourceCompleted(ByVal Token As EventRegistrationToken) As HRESULT
+End Interface
+
+[InterfaceId("4606AA89-F563-4D0A-8F6E-F0CDDFF35D84")]
+Interface IReverbEffectDefinition Extends IInspectable
+    Property Let WetDryMix(ByVal Value As Double)
+    Property Get WetDryMix() As Double
+    Property Let ReflectionsDelay(ByVal Value As Long)
+    Property Get ReflectionsDelay() As Long
+    Property Let ReverbDelay(ByVal Value As Byte)
+    Property Get ReverbDelay() As Byte
+    Property Let RearDelay(ByVal Value As Byte)
+    Property Get RearDelay() As Byte
+    Property Let PositionLeft(ByVal Value As Byte)
+    Property Get PositionLeft() As Byte
+    Property Let PositionRight(ByVal Value As Byte)
+    Property Get PositionRight() As Byte
+    Property Let PositionMatrixLeft(ByVal Value As Byte)
+    Property Get PositionMatrixLeft() As Byte
+    Property Let PositionMatrixRight(ByVal Value As Byte)
+    Property Get PositionMatrixRight() As Byte
+    Property Let EarlyDiffusion(ByVal Value As Byte)
+    Property Get EarlyDiffusion() As Byte
+    Property Let LateDiffusion(ByVal Value As Byte)
+    Property Get LateDiffusion() As Byte
+    Property Let LowEQGain(ByVal Value As Byte)
+    Property Get LowEQGain() As Byte
+    Property Let LowEQCutoff(ByVal Value As Byte)
+    Property Get LowEQCutoff() As Byte
+    Property Let HighEQGain(ByVal Value As Byte)
+    Property Get HighEQGain() As Byte
+    Property Let HighEQCutoff(ByVal Value As Byte)
+    Property Get HighEQCutoff() As Byte
+    Property Let RoomFilterFreq(ByVal Value As Double)
+    Property Get RoomFilterFreq() As Double
+    Property Let RoomFilterMain(ByVal Value As Double)
+    Property Get RoomFilterMain() As Double
+    Property Let RoomFilterHF(ByVal Value As Double)
+    Property Get RoomFilterHF() As Double
+    Property Let ReflectionsGain(ByVal Value As Double)
+    Property Get ReflectionsGain() As Double
+    Property Let ReverbGain(ByVal Value As Double)
+    Property Get ReverbGain() As Double
+    Property Let DecayTime(ByVal Value As Double)
+    Property Get DecayTime() As Double
+    Property Let Density(ByVal Value As Double)
+    Property Get Density() As Double
+    Property Let RoomSize(ByVal Value As Double)
+    Property Get RoomSize() As Double
+    Property Let DisableLateField(ByVal Value As BooleanByte)
+    Property Get DisableLateField() As BooleanByte
+End Interface
+
+[InterfaceId("A7D5CBFE-100B-4FF0-9DA6-DC4E05A759F0")]
+Interface IReverbEffectDefinitionFactory Extends IInspectable
+    Function Create(ByVal AudioGraph As IAudioGraph) As IReverbEffectDefinition
+End Interface
+
+[InterfaceId("1C2AA511-1400-5E70-9EA9-AE151241E8EA")]
+Interface ISetDefaultSpatialAudioFormatResult Extends IInspectable
+    Property Get Status() As SetDefaultSpatialAudioFormatStatus
+End Interface
+
+[InterfaceId("49E3B522-42D9-5909-80F1-33F9DAE69BC1")]
+Interface IAsyncOperationISetDefaultSpatialAudioFormatResult Extends IInspectable
+    Property Set Completed(ByVal Handler As IAsyncOperationCompletedHandlerISetDefaultSpatialAudioFormatResult)
+    Property Get Completed() As IAsyncOperationCompletedHandlerISetDefaultSpatialAudioFormatResult
+    Function GetResults() As ISetDefaultSpatialAudioFormatResult
+End Interface
+
+[InterfaceId("B059D94D-0C13-5E6B-9CDA-B3CFA15B5BE8")]
+Interface IAsyncOperationCompletedHandlerISetDefaultSpatialAudioFormatResult Extends IUnknown
+    Sub Invoke(ByVal AsyncOperation As IAsyncOperationISetDefaultSpatialAudioFormatResult, ByVal AsyncStatus As AsyncStatus)
+End Interface
+
+[InterfaceId("34CB725D-D620-5C8D-97F6-A3EBDFF1F964")]
+Interface ITypedEventHandlerSpatialAudioDeviceConfigurationConfigurationChanged Extends IUnknown
+    Sub Invoke(ByVal Sender As ISpatialAudioDeviceConfiguration, ByVal Args As IInspectable)
+End Interface
+
+[InterfaceId("EE830034-61CF-5749-9DA4-10F0FE028199")]
+Interface ISpatialAudioDeviceConfiguration Extends IInspectable
+    Property Get DeviceId() As LongPtr
+    Property Get IsSpatialAudioSupported() As BooleanByte
+    Function IsSpatialAudioFormatSupported(ByVal Subtype As LongPtr) As BooleanByte
+    Property Get ActiveSpatialAudioFormat() As LongPtr
+    Property Get DefaultSpatialAudioFormat() As LongPtr
+    Function SetDefaultSpatialAudioFormatAsync(ByVal Subtype As LongPtr) As IAsyncOperationISetDefaultSpatialAudioFormatResult
+    [PreserveSig]
+    Function AddConfigurationChanged(ByVal Handler As ITypedEventHandlerSpatialAudioDeviceConfigurationConfigurationChanged, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveConfigurationChanged(ByVal Token As EventRegistrationToken) As HRESULT
+End Interface
+
+[InterfaceId("3EC37F7B-936D-4E04-9728-2827D9F758C4")]
+Interface ISpatialAudioDeviceConfigurationStatics Extends IInspectable
+    Function GetForDeviceId(ByVal DeviceId As LongPtr) As ISpatialAudioDeviceConfiguration
+End Interface
+
+[InterfaceId("32DF09A8-50F0-5395-9923-7D44CA71ED6D")]
+Interface ISpatialAudioFormatConfiguration Extends IInspectable
+    Function ReportLicenseChangedAsync(ByVal Subtype As LongPtr) As IAsyncAction
+    Function ReportConfigurationChangedAsync(ByVal Subtype As LongPtr) As IAsyncAction
+    Property Get MixedRealityExclusiveModePolicy() As MixedRealitySpatialAudioFormatPolicy
+    Property Let MixedRealityExclusiveModePolicy(ByVal Value As MixedRealitySpatialAudioFormatPolicy)
+End Interface
+
+[InterfaceId("2B5FEF71-67C9-4E5F-A35B-41680711F8C7")]
+Interface ISpatialAudioFormatConfigurationStatics Extends IInspectable
+    Function GetDefault() As ISpatialAudioFormatConfiguration
+End Interface
+
+[InterfaceId("B3DE8A47-83EE-4266-A945-BEDF507AFEED")]
+Interface ISpatialAudioFormatSubtypeStatics Extends IInspectable
+    Property Get WindowsSonic() As LongPtr
+    Property Get DolbyAtmosForHeadphones() As LongPtr
+    Property Get DolbyAtmosForHomeTheater() As LongPtr
+    Property Get DolbyAtmosForSpeakers() As LongPtr
+    Property Get DTSHeadphoneX() As LongPtr
+    Property Get DTSXUltra() As LongPtr
+End Interface
+
+[InterfaceId("4565E6CB-D95B-5621-B6AF-0E8849C57C80")]
+Interface ISpatialAudioFormatSubtypeStatics2 Extends IInspectable
+    Property Get DTSXForHomeTheater() As LongPtr
+End Interface
+
+Module mdlMediaAudio
+
+Public Enum AudioDeviceNodeCreationStatus
+    AudioDeviceNodeCreationStatus_Success
+    AudioDeviceNodeCreationStatus_DeviceNotAvailable
+    AudioDeviceNodeCreationStatus_FormatNotSupported
+    AudioDeviceNodeCreationStatus_UnknownFailure
+    AudioDeviceNodeCreationStatus_AccessDenied
+End Enum
+
+Public Enum AudioFileNodeCreationStatus
+    AudioFileNodeCreationStatus_Success
+    AudioFileNodeCreationStatus_FileNotFound
+    AudioFileNodeCreationStatus_InvalidFileType
+    AudioFileNodeCreationStatus_FormatNotSupported
+    AudioFileNodeCreationStatus_UnknownFailure
+End Enum
+
+Public Enum AudioGraphCreationStatus
+    AudioGraphCreationStatus_Success
+    AudioGraphCreationStatus_DeviceNotAvailable
+    AudioGraphCreationStatus_FormatNotSupported
+    AudioGraphCreationStatus_UnknownFailure
+End Enum
+
+Public Enum AudioGraphUnrecoverableError
+    AudioGraphUnrecoverableError_None
+    AudioGraphUnrecoverableError_AudioDeviceLost
+    AudioGraphUnrecoverableError_AudioSessionDisconnected
+    AudioGraphUnrecoverableError_UnknownFailure
+End Enum
+
+Public Enum AudioNodeEmitterDecayKind
+    AudioNodeEmitterDecayKind_Natural
+    AudioNodeEmitterDecayKind_Custom
+End Enum
+
+Public Enum AudioNodeEmitterSettings
+    AudioNodeEmitterSettings_None
+    AudioNodeEmitterSettings_DisableDoppler
+End Enum
+
+Public Enum AudioNodeEmitterShapeKind
+    AudioNodeEmitterShapeKind_Omnidirectional
+    AudioNodeEmitterShapeKind_Cone
+End Enum
+
+Public Enum AudioPlaybackConnectionOpenResultStatus
+    AudioPlaybackConnectionOpenResultStatus_Success
+    AudioPlaybackConnectionOpenResultStatus_RequestTimedOut
+    AudioPlaybackConnectionOpenResultStatus_DeniedBySystem
+    AudioPlaybackConnectionOpenResultStatus_UnknownFailure
+End Enum
+
+Public Enum AudioPlaybackConnectionState
+    AudioPlaybackConnectionState_Closed
+    AudioPlaybackConnectionState_Opened
+End Enum
+
+Public Enum MediaSourceAudioInputNodeCreationStatus
+    MediaSourceAudioInputNodeCreationStatus_Success
+    MediaSourceAudioInputNodeCreationStatus_FormatNotSupported
+    MediaSourceAudioInputNodeCreationStatus_NetworkError
+    MediaSourceAudioInputNodeCreationStatus_UnknownFailure
+End Enum
+
+Public Enum MixedRealitySpatialAudioFormatPolicy
+    MixedRealitySpatialAudioFormatPolicy_UseMixedRealityDefaultSpatialAudioFormat
+    MixedRealitySpatialAudioFormatPolicy_UseDeviceConfigurationDefaultSpatialAudioFormat
+End Enum
+
+Public Enum QuantumSizeSelectionMode
+    QuantumSizeSelectionMode_SystemDefault
+    QuantumSizeSelectionMode_LowestLatency
+    QuantumSizeSelectionMode_ClosestToDesired
+End Enum
+
+Public Enum SetDefaultSpatialAudioFormatStatus
+    SetDefaultSpatialAudioFormatStatus_Succeeded
+    SetDefaultSpatialAudioFormatStatus_AccessDenied
+    SetDefaultSpatialAudioFormatStatus_LicenseExpired
+    SetDefaultSpatialAudioFormatStatus_LicenseNotValidForAudioEndpoint
+    SetDefaultSpatialAudioFormatStatus_NotSupportedOnAudioEndpoint
+    SetDefaultSpatialAudioFormatStatus_UnknownError
+End Enum
+
+Public Enum SpatialAudioModel
+    SpatialAudioModel_ObjectBased
+    SpatialAudioModel_FoldDown
+End Enum
+
+End Module

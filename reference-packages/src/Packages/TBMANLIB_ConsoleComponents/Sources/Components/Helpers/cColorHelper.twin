@@ -1,0 +1,183 @@
+' =====================================================
+' cColorHelper.twin - Color Helper Component
+' Modern Console Library for TwinBASIC - Components
+' =====================================================
+
+[COMCreatable(False)]
+Public Class cColorHelper
+
+    ' Get heatmap color based on value (green -> yellow -> red)
+    Public Function HeatmapColor(ByVal value As Double, _
+                                  ByVal min As Double, _
+                                  ByVal max As Double, _
+                                  Optional ByVal lowColor As ConsoleColor = ConsoleColor.Green, _
+                                  Optional ByVal midColor As ConsoleColor = ConsoleColor.Yellow, _
+                                  Optional ByVal highColor As ConsoleColor = ConsoleColor.Red) As ConsoleColor
+        ' Normalize value to 0-1 range
+        Dim normalized As Double
+        If max > min Then
+            normalized = (value - min) / (max - min)
+        Else
+            normalized = 0.5
+        End If
+
+        If normalized < 0 Then normalized = 0
+        If normalized > 1 Then normalized = 1
+
+        ' Return color based on thresholds
+        If normalized < 0.5 Then
+            Return lowColor
+        ElseIf normalized < 0.8 Then
+            Return midColor
+        Else
+            Return highColor
+        End If
+    End Function
+
+    ' Get gradient color (smooth transition between 3 colors)
+    Public Function GradientColor(ByVal value As Double, _
+                                   ByVal min As Double, _
+                                   ByVal max As Double, _
+                                   ByVal color1 As ConsoleColor, _
+                                   ByVal color2 As ConsoleColor, _
+                                   ByVal color3 As ConsoleColor) As ConsoleColor
+        Dim normalized As Double
+        If max > min Then
+            normalized = (value - min) / (max - min)
+        Else
+            normalized = 0.5
+        End If
+
+        If normalized < 0 Then normalized = 0
+        If normalized > 1 Then normalized = 1
+
+        ' Three-stage gradient
+        If normalized < 0.5 Then
+            ' Transition from color1 to color2
+            If normalized < 0.25 Then
+                Return color1
+            Else
+                Return color2
+            End If
+        Else
+            ' Transition from color2 to color3
+            If normalized < 0.75 Then
+                Return color2
+            Else
+                Return color3
+            End If
+        End If
+    End Function
+
+    ' Get intensity color (black -> dark -> light -> white)
+    Public Function IntensityColor(ByVal value As Double, _
+                                     ByVal min As Double, _
+                                     ByVal max As Double, _
+                                     Optional ByVal baseColor As ConsoleColor = ConsoleColor.Gray) As ConsoleColor
+        Dim normalized As Double
+        If max > min Then
+            normalized = (value - min) / (max - min)
+        Else
+            normalized = 0.5
+        End If
+
+        If normalized < 0 Then normalized = 0
+        If normalized > 1 Then normalized = 1
+
+        ' Map to 8 intensity levels
+        Dim intensityLevel As Long = CLng(normalized * 7)
+
+        Select Case intensityLevel
+            Case 0: Return ConsoleColor.Black
+            Case 1: Return ConsoleColor.DarkBlue
+            Case 2: Return ConsoleColor.DarkGreen
+            Case 3: Return ConsoleColor.DarkCyan
+            Case 4: Return ConsoleColor.DarkRed
+            Case 5: Return ConsoleColor.DarkMagenta
+            Case 6: Return ConsoleColor.DarkYellow
+            Case 7: Return ConsoleColor.DarkGray
+        End Select
+
+        Return baseColor
+    End Function
+
+    ' Get color for CPU usage (0-100%)
+    Public Function CPUUsageColor(ByVal usage As Double) As ConsoleColor
+        If usage < 50 Then
+            Return ConsoleColor.Green
+        ElseIf usage < 80 Then
+            Return ConsoleColor.Yellow
+        Else
+            Return ConsoleColor.Red
+        End If
+    End Function
+
+    ' Get color for memory usage (0-100%)
+    Public Function MemoryUsageColor(ByVal usage As Double) As ConsoleColor
+        If usage < 70 Then
+            Return ConsoleColor.Green
+        ElseIf usage < 90 Then
+            Return ConsoleColor.Yellow
+        Else
+            Return ConsoleColor.Red
+        End If
+    End Function
+
+    ' Get color for disk usage (0-100%)
+    Public Function DiskUsageColor(ByVal usage As Double) As ConsoleColor
+        If usage < 80 Then
+            Return ConsoleColor.Green
+        ElseIf usage < 95 Then
+            Return ConsoleColor.Yellow
+        Else
+            Return ConsoleColor.Red
+        End If
+    End Function
+
+    ' Get contrasting text color for a background
+    Public Function GetContrastColor(ByVal bgColor As ConsoleColor) As ConsoleColor
+        Dim isDark As Boolean = (bgColor <= ConsoleColor.DarkGray)
+
+        If isDark Then
+            Return ConsoleColor.White
+        Else
+            Return ConsoleColor.Black
+        End If
+    End Function
+
+    ' Check if a color is dark
+    Public Function IsDarkColor(ByVal color As ConsoleColor) As Boolean
+        Return color <= ConsoleColor.DarkGray
+    End Function
+
+    ' Get a dimmer version of a color
+    Public Function DimColor(ByVal color As ConsoleColor) As ConsoleColor
+        If color >= ConsoleColor.Blue AndAlso color <= ConsoleColor.White Then
+            Return CType(Of ConsoleColor)(color - 8)
+        Else
+            Return ConsoleColor.DarkGray
+        End If
+    End Function
+
+    ' Get a brighter version of a color
+    Public Function BrightenColor(ByVal color As ConsoleColor) As ConsoleColor
+        If color >= ConsoleColor.Black AndAlso color <= ConsoleColor.DarkGray Then
+            Return CType(Of ConsoleColor)(color + 8)
+        Else
+            Return ConsoleColor.White
+        End If
+    End Function
+
+    ' Cycle through colors for different items
+    Public Function CycleColor(ByVal index As Long, _
+                               ByRef colors() As ConsoleColor) As ConsoleColor
+        Dim count As Long = UBound(colors) - LBound(colors) + 1
+        If count = 0 Then Return ConsoleColor.Gray
+
+        Dim idx As Long = index Mod count
+        If idx < 0 Then idx = idx + count
+
+        Return colors(idx)
+    End Function
+
+End Class

@@ -1,0 +1,85 @@
+' =====================================================
+' MemoryInfoCollector.twin - 内存信息收集器
+' Twinbasic Diagnostic Tool
+' =====================================================
+
+' 内存信息收集器
+' 刷新模式：Dynamic（每次刷新都获取）
+' 使用 GlobalMemoryStatusEx 获取内存状态
+[ ClassId ("07A2B3C4-D5E6-F7A8-B9C0-D1E2F3A4B5C6") ]
+[ InterfaceId ("07A2B3C4-D5E6-F7A8-B9C0-D1E2F3A4B5C7") ]
+Public Class MemoryInfoCollector
+    Implements IDiagnosticCollector
+
+    ' === IDiagnosticCollector 实现 ===
+
+    Public Property Get IDiagnosticCollector_CategoryName() As String
+        Return "Memory"
+    End Property
+
+    Public Property Get IDiagnosticCollector_Description() As String
+        Return "Physical and virtual memory status"
+    End Property
+
+    Public Property Get IDiagnosticCollector_RefreshMode() As RefreshMode
+        Return RefreshMode.Dynamic
+    End Property
+
+    Public Property Get IDiagnosticCollector_RequiresElevation() As Boolean
+        Return False
+    End Property
+
+    Public Property Get IDiagnosticCollector_SupportsSummary() As Boolean
+        Return False
+    End Property
+
+    Public Function IDiagnosticCollector_Collect() As DiagnosticResult(Of KeyValuePair(Of String, String))
+        Dim result As DiagnosticResult(Of KeyValuePair(Of String, String))
+        Set result = New DiagnosticResult(Of KeyValuePair(Of String, String))("Memory")
+
+        ' 获取内存状态
+        Dim memStatus As MEMORYSTATUSEX
+        memStatus.dwLength = LenB(memStatus)
+
+        If GlobalMemoryStatusEx(memStatus) = 0 Then
+            result.SetError "Failed to get memory status"
+            Return result
+        End If
+
+        ' 内存负载百分比
+        result.AddItem New KeyValuePair(Of String, String)("Memory Load", _
+            memStatus.dwMemoryLoad & "%")
+
+        ' 物理内存
+        result.AddItem New KeyValuePair(Of String, String)("Total Physical", _
+            FormatHelper.FormatBytes(memStatus.ullTotalPhys))
+
+        result.AddItem New KeyValuePair(Of String, String)("Available Physical", _
+            FormatHelper.FormatBytes(memStatus.ullAvailPhys))
+
+        Dim usedPhys As LongLong = memStatus.ullTotalPhys - memStatus.ullAvailPhys
+        result.AddItem New KeyValuePair(Of String, String)("Used Physical", _
+            FormatHelper.FormatBytes(usedPhys))
+
+        ' 页面文件
+        result.AddItem New KeyValuePair(Of String, String)("Total Page File", _
+            FormatHelper.FormatBytes(memStatus.ullTotalPageFile))
+
+        result.AddItem New KeyValuePair(Of String, String)("Available Page File", _
+            FormatHelper.FormatBytes(memStatus.ullAvailPageFile))
+
+        ' 虚拟内存
+        result.AddItem New KeyValuePair(Of String, String)("Total Virtual", _
+            FormatHelper.FormatBytes(memStatus.ullTotalVirtual))
+
+        result.AddItem New KeyValuePair(Of String, String)("Available Virtual", _
+            FormatHelper.FormatBytes(memStatus.ullAvailVirtual))
+
+        Return result
+    End Function
+
+    Public Function IDiagnosticCollector_CollectSummary() As DiagnosticResult(Of KeyValuePair(Of String, String))
+        Return IDiagnosticCollector_Collect()
+    End Function
+
+End Class

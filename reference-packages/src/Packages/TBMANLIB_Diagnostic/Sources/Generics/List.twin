@@ -1,0 +1,206 @@
+' =====================================================
+' List.twin - 泛型列表
+' Twinbasic Diagnostic Tool
+' =====================================================
+
+' 泛型列表类
+' 使用 VB Collection 对象作为底层存储，支持类型安全的元素存储
+' Collection 对象可以自动处理值类型和对象类型，无需区分
+' 注意：由于泛型类型限制，某些方法可能产生编译警告/错误，但运行时错误处理会确保功能正常
+[ COMCreatable (False) ]
+[ ClassId ("F1A2B3C4-D5E6-F7A8-B9C0-D1E2F3A4B5C6") ]
+[ InterfaceId ("F1A2B3C4-D5E6-F7A8-B9C0-D1E2F3A4B5C7") ]
+[ IgnoreWarnings (TB0022) ]
+Public Class List(Of T)
+
+    Private m_Items As Collection
+
+    ' 构造函数
+    Public Sub New()
+        Set m_Items = New Collection
+    End Sub
+
+    ' 带初始容量的构造函数（Collection 会自动扩展，此参数仅用于兼容性）
+    Public Sub New(ByVal initialCapacity As Long)
+        Set m_Items = New Collection
+    End Sub
+
+    ' 添加元素
+    Public Sub Add(ByVal item As T)
+        ' Collection.Add 可以自动处理对象和值类型
+        ' 对于对象类型，需要使用 Set 赋值给 Variant
+        Dim itemVar As Variant
+        On Error Resume Next
+        Set itemVar = item
+        If Err.Number <> 0 Then
+            Err.Clear
+            itemVar = item
+        End If
+        On Error GoTo 0
+        m_Items.Add itemVar
+    End Sub
+
+    ' 获取元素（使用 0-based 索引，内部转换为 1-based）
+    Public Function Item(ByVal index As Long) As T
+        If index < 0 Or index >= m_Items.Count Then
+            Err.Raise 9, "List(Of T).Item", "Index out of range: " & index
+        End If
+        ' Collection 使用 1-based 索引，需要转换
+        Dim result As Variant
+        result = m_Items.Item(index + 1)
+        ' 对于对象类型，需要使用 Set；对于值类型，直接赋值
+        ' 使用错误处理来动态判断类型
+        Dim returnValue As Variant
+        On Error Resume Next
+        Set returnValue = result
+        If Err.Number <> 0 Then
+            Err.Clear
+            returnValue = result
+        End If
+        On Error GoTo 0
+        Return returnValue
+    End Function
+
+    ' 设置元素（使用 0-based 索引，Collection 不支持直接设置，需要先移除再添加）
+    Public Sub SetItem(ByVal index As Long, ByVal item As T)
+        If index < 0 Or index >= m_Items.Count Then
+            Err.Raise 9, "List(Of T).SetItem", "Index out of range: " & index
+        End If
+        ' Collection 不支持直接修改，需要移除后重新添加
+        Dim itemVar As Variant
+        On Error Resume Next
+        Set itemVar = item
+        If Err.Number <> 0 Then
+            Err.Clear
+            itemVar = item
+        End If
+        On Error GoTo 0
+        Dim collIndex As Long
+        collIndex = index + 1  ' 转换为 1-based
+        m_Items.Remove collIndex
+        If collIndex = 1 Then
+            m_Items.Add itemVar, , , 1
+        Else
+            m_Items.Add itemVar, , , collIndex - 1
+        End If
+    End Sub
+
+    ' 获取元素数量
+    Public Property Get Count() As Long
+        Return m_Items.Count
+    End Property
+
+    ' 获取容量（Collection 自动管理，返回 Count）
+    Public Property Get Capacity() As Long
+        Return m_Items.Count
+    End Property
+
+    ' 清空列表
+    Public Sub Clear()
+        Dim i As Long
+        For i = m_Items.Count To 1 Step -1
+            m_Items.Remove i
+        Next i
+    End Sub
+
+    ' 检查是否包含元素
+    Public Function Contains(ByVal item As T) As Boolean
+        Dim i As Long
+        Dim itemVar As Variant
+        On Error Resume Next
+        Set itemVar = item
+        If Err.Number <> 0 Then
+            Err.Clear
+            itemVar = item
+        End If
+        On Error GoTo 0
+        For i = 1 To m_Items.Count
+            If m_Items.Item(i) = itemVar Then
+                Return True
+            End If
+        Next i
+        Return False
+    End Function
+
+    ' 查找元素索引（返回 0-based 索引，-1 表示未找到）
+    Public Function IndexOf(ByVal item As T) As Long
+        Dim i As Long
+        Dim itemVar As Variant
+        On Error Resume Next
+        Set itemVar = item
+        If Err.Number <> 0 Then
+            Err.Clear
+            itemVar = item
+        End If
+        On Error GoTo 0
+        For i = 1 To m_Items.Count
+            If m_Items.Item(i) = itemVar Then
+                Return i - 1  ' 转换为 0-based
+            End If
+        Next i
+        Return -1
+    End Function
+
+    ' 移除指定索引的元素（使用 0-based 索引）
+    Public Sub RemoveAt(ByVal index As Long)
+        If index < 0 Or index >= m_Items.Count Then
+            Err.Raise 9, "List(Of T).RemoveAt", "Index out of range: " & index
+        End If
+        m_Items.Remove index + 1  ' 转换为 1-based
+    End Sub
+
+    ' 移除元素
+    Public Function Remove(ByVal item As T) As Boolean
+        Dim index As Long = IndexOf(item)
+        If index >= 0 Then
+            RemoveAt index
+            Return True
+        End If
+        Return False
+    End Function
+
+    ' 在指定位置插入元素（使用 0-based 索引）
+    Public Sub Insert(ByVal index As Long, ByVal item As T)
+        If index < 0 Or index > m_Items.Count Then
+            Err.Raise 9, "List(Of T).Insert", "Index out of range: " & index
+        End If
+        Dim itemVar As Variant
+        On Error Resume Next
+        Set itemVar = item
+        If Err.Number <> 0 Then
+            Err.Clear
+            itemVar = item
+        End If
+        On Error GoTo 0
+        Dim collIndex As Long
+        collIndex = index + 1  ' 转换为 1-based
+        ' Collection.Add 的 Before 参数用于插入
+        If collIndex = 1 Then
+            m_Items.Add itemVar, , , 1
+        ElseIf collIndex > m_Items.Count Then
+            m_Items.Add itemVar
+        Else
+            m_Items.Add itemVar, , , collIndex
+        End If
+    End Sub
+
+    ' 转换为数组
+    ' 注意：由于泛型类型限制，当 T 是值类型时会产生编译错误
+    ' 此方法返回 Variant 数组，调用者需要自行转换类型
+    ' 如果确实需要 T() 数组，建议直接使用 Item 方法遍历
+    Public Function ToArray() As Variant()
+        If m_Items.Count = 0 Then
+            Dim emptyArray() As Variant
+            Return emptyArray
+        End If
+
+        Dim result() As Variant
+        ReDim result(0 To m_Items.Count - 1)
+        Dim i As Long
+        For i = 1 To m_Items.Count
+            result(i - 1) = m_Items.Item(i)
+        Next i
+        Return result
+    End Function
+
+End Class

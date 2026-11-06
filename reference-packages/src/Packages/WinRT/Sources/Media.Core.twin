@@ -1,0 +1,1769 @@
+[InterfaceId("1E3692E4-4027-4847-A70B-DF1D9A2A7B04")]
+Interface IAudioStreamDescriptor Extends IInspectable ' requires IMediaStreamDescriptor
+    Property Get EncodingProperties() As IAudioEncodingProperties
+End Interface
+
+[InterfaceId("2E68F1F6-A448-497B-8840-85082665ACF9")]
+Interface IAudioStreamDescriptor2 Extends IInspectable
+    Property Set LeadingEncoderPadding(ByVal Value As IReference_UInt32)
+    Property Get LeadingEncoderPadding() As IReference_UInt32
+    Property Set TrailingEncoderPadding(ByVal Value As IReference_UInt32)
+    Property Get TrailingEncoderPadding() As IReference_UInt32
+End Interface
+
+[InterfaceId("4D220DA1-8E83-44EF-8973-2F63E993F36B")]
+Interface IAudioStreamDescriptor3 Extends IInspectable
+    Function Copy() As IAudioStreamDescriptor
+End Interface
+
+[InterfaceId("4A86CE9E-4CB1-4380-8E0C-83504B7F5BF3")]
+Interface IAudioStreamDescriptorFactory Extends IInspectable
+    Function Create(ByVal EncodingProperties As IAudioEncodingProperties) As IAudioStreamDescriptor
+End Interface
+
+[InterfaceId("B5B7E554-2476-5667-9C9A-1C7A7D09ACE2")]
+Interface ITypedEventHandlerAudioTrackOpenFailed Extends IUnknown
+    Sub Invoke(ByVal Sender As IAudioTrack, ByVal Args As IAudioTrackOpenFailedEventArgs)
+End Interface
+
+[InterfaceId("F23B6E77-3EF7-40DE-B943-068B1321701D")]
+Interface IAudioTrack Extends IInspectable
+    [PreserveSig]
+    Function AddOpenFailed(ByVal Handler As ITypedEventHandlerAudioTrackOpenFailed, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveOpenFailed(ByVal Token As EventRegistrationToken) As HRESULT
+    Function GetEncodingProperties() As IAudioEncodingProperties
+    Property Get PlaybackItem() As IMediaPlaybackItem
+    Property Get Name() As LongPtr
+    Property Get SupportInfo() As IAudioTrackSupportInfo
+End Interface
+
+[InterfaceId("EEDDB9B9-BB7C-4112-BF76-9384676F824B")]
+Interface IAudioTrackOpenFailedEventArgs Extends IInspectable
+    Property Get ExtendedError() As HRESULT
+End Interface
+
+[InterfaceId("178BEFF7-CC39-44A6-B951-4A5653F073FA")]
+Interface IAudioTrackSupportInfo Extends IInspectable
+    Property Get DecoderStatus() As MediaDecoderStatus
+    Property Get Degradation() As AudioDecoderDegradation
+    Property Get DegradationReason() As AudioDecoderDegradationReason
+    Property Get MediaSourceStatus() As MediaSourceStatus
+End Interface
+
+[InterfaceId("72A98001-D38A-4C0A-8FA6-75CDDAF4664C")]
+Interface IChapterCue Extends IInspectable ' requires IMediaCue
+    Property Let Title(ByVal Value As LongPtr)
+    Property Get Title() As LongPtr
+End Interface
+
+[InterfaceId("51E89F85-EA97-499C-86AC-4CE5E73F3A42")]
+Interface ICodecInfo Extends IInspectable
+    Property Get Kind() As CodecKind
+    Property Get Category() As CodecCategory
+    Property Get Subtypes() As IVectorView_HSTRING
+    Property Get DisplayName() As LongPtr
+    Property Get IsTrusted() As BooleanByte
+End Interface
+
+[InterfaceId("D4141D5B-23F6-564B-B85C-5D4609F81863")]
+Interface IIterator_ICodecInfo Extends IInspectable
+    Property Get Current() As ICodecInfo
+    Property Get HasCurrent() As BooleanByte
+    Function MoveNext() As BooleanByte
+    Function GetMany(ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("552F7709-3BC3-59FB-93E6-1EBD28D3C008")]
+Interface IIterable_ICodecInfo Extends IInspectable
+    Function First() As IIterator_ICodecInfo
+End Interface
+
+[InterfaceId("1FD24A93-C3DA-513D-B216-0C4C7F412B88")]
+Interface IVectorView_ICodecInfo Extends IInspectable
+    Function GetAt(ByVal Index As Long) As ICodecInfo
+    Property Get Size() As Long
+    Function IndexOf(ByVal Value As ICodecInfo, Index As Long) As BooleanByte
+    Function GetMany(ByVal StartIndex As Long, ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("C1C59EFC-71DF-5534-B03F-E18A8FBE78BB")]
+Interface IAsyncOperationIVectorView_ICodecInfo Extends IInspectable
+    Property Set Completed(ByVal Handler As IAsyncOperationCompletedHandlerIVectorView_ICodecInfo)
+    Property Get Completed() As IAsyncOperationCompletedHandlerIVectorView_ICodecInfo
+    Function GetResults() As IVectorView_ICodecInfo
+End Interface
+
+[InterfaceId("58BF2D7C-AE9B-5F1B-8B66-5FF1BBB1029A")]
+Interface IAsyncOperationCompletedHandlerIVectorView_ICodecInfo Extends IUnknown
+    Sub Invoke(ByVal AsyncOperation As IAsyncOperationIVectorView_ICodecInfo, ByVal AsyncStatus As AsyncStatus)
+End Interface
+
+[InterfaceId("222A953A-AF61-4E04-808A-A4634E2F3AC4")]
+Interface ICodecQuery Extends IInspectable
+    Function FindAllAsync(ByVal Kind As CodecKind, ByVal Category As CodecCategory, ByVal SubType As LongPtr) As IAsyncOperationIVectorView_ICodecInfo
+End Interface
+
+[InterfaceId("A66AC4F2-888B-4224-8CF6-2A8D4EB02382")]
+Interface ICodecSubtypesStatics Extends IInspectable
+    Property Get VideoFormatDV25() As LongPtr
+    Property Get VideoFormatDV50() As LongPtr
+    Property Get VideoFormatDvc() As LongPtr
+    Property Get VideoFormatDvh1() As LongPtr
+    Property Get VideoFormatDvhD() As LongPtr
+    Property Get VideoFormatDvsd() As LongPtr
+    Property Get VideoFormatDvsl() As LongPtr
+    Property Get VideoFormatH263() As LongPtr
+    Property Get VideoFormatH264() As LongPtr
+    Property Get VideoFormatH265() As LongPtr
+    Property Get VideoFormatH264ES() As LongPtr
+    Property Get VideoFormatHevc() As LongPtr
+    Property Get VideoFormatHevcES() As LongPtr
+    Property Get VideoFormatM4S2() As LongPtr
+    Property Get VideoFormatMjpg() As LongPtr
+    Property Get VideoFormatMP43() As LongPtr
+    Property Get VideoFormatMP4S() As LongPtr
+    Property Get VideoFormatMP4V() As LongPtr
+    Property Get VideoFormatMpeg2() As LongPtr
+    Property Get VideoFormatVP80() As LongPtr
+    Property Get VideoFormatVP90() As LongPtr
+    Property Get VideoFormatMpg1() As LongPtr
+    Property Get VideoFormatMss1() As LongPtr
+    Property Get VideoFormatMss2() As LongPtr
+    Property Get VideoFormatWmv1() As LongPtr
+    Property Get VideoFormatWmv2() As LongPtr
+    Property Get VideoFormatWmv3() As LongPtr
+    Property Get VideoFormatWvc1() As LongPtr
+    Property Get VideoFormat420O() As LongPtr
+    Property Get AudioFormatAac() As LongPtr
+    Property Get AudioFormatAdts() As LongPtr
+    Property Get AudioFormatAlac() As LongPtr
+    Property Get AudioFormatAmrNB() As LongPtr
+    Property Get AudioFormatAmrWB() As LongPtr
+    Property Get AudioFormatAmrWP() As LongPtr
+    Property Get AudioFormatDolbyAC3() As LongPtr
+    Property Get AudioFormatDolbyAC3Spdif() As LongPtr
+    Property Get AudioFormatDolbyDDPlus() As LongPtr
+    Property Get AudioFormatDrm() As LongPtr
+    Property Get AudioFormatDts() As LongPtr
+    Property Get AudioFormatFlac() As LongPtr
+    Property Get AudioFormatFloat() As LongPtr
+    Property Get AudioFormatMP3() As LongPtr
+    Property Get AudioFormatMPeg() As LongPtr
+    Property Get AudioFormatMsp1() As LongPtr
+    Property Get AudioFormatOpus() As LongPtr
+    Property Get AudioFormatPcm() As LongPtr
+    Property Get AudioFormatWmaSpdif() As LongPtr
+    Property Get AudioFormatWMAudioLossless() As LongPtr
+    Property Get AudioFormatWMAudioV8() As LongPtr
+    Property Get AudioFormatWMAudioV9() As LongPtr
+End Interface
+
+[InterfaceId("7C7F676D-1FBC-4E2D-9A87-EE38BD1DC637")]
+Interface IDataCue Extends IInspectable ' requires IMediaCue
+    Property Set Data(ByVal Value As IBuffer)
+    Property Get Data() As IBuffer
+End Interface
+
+[InterfaceId("BC561B15-95F2-49E8-96F1-8DD5DAC68D93")]
+Interface IDataCue2 Extends IInspectable ' requires IDataCue, IMediaCue
+    Property Get Properties() As IPropertySet
+End Interface
+
+[InterfaceId("19918426-C65B-46BA-85F8-13880576C90A")]
+Interface IFaceDetectedEventArgs Extends IInspectable
+    Property Get ResultFrame() As IFaceDetectionEffectFrame
+End Interface
+
+[InterfaceId("01F0D7A6-F9BD-5BC1-AAA9-DFF396F72F87")]
+Interface ITypedEventHandlerFaceDetectionEffectFaceDetected Extends IUnknown
+    Sub Invoke(ByVal Sender As IFaceDetectionEffect, ByVal Args As IFaceDetectedEventArgs)
+End Interface
+
+[InterfaceId("AE15EBD2-0542-42A9-BC90-F283A29F46C1")]
+Interface IFaceDetectionEffect Extends IInspectable ' requires IMediaExtension
+    Property Let Enabled(ByVal Value As BooleanByte)
+    Property Get Enabled() As BooleanByte
+    Property Let DesiredDetectionInterval(ByVal Value As TimeSpan)
+    Property Get DesiredDetectionInterval() As TimeSpan
+    [PreserveSig]
+    Function AddFaceDetected(ByVal Handler As ITypedEventHandlerFaceDetectionEffectFaceDetected, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveFaceDetected(ByVal Token As EventRegistrationToken) As HRESULT
+End Interface
+
+[InterfaceId("43DCA081-B848-4F33-B702-1FD2624FB016")]
+Interface IFaceDetectionEffectDefinition Extends IInspectable ' requires IVideoEffectDefinition
+    Property Let DetectionMode(ByVal Value As FaceDetectionMode)
+    Property Get DetectionMode() As FaceDetectionMode
+    Property Let SynchronousDetectionEnabled(ByVal Value As BooleanByte)
+    Property Get SynchronousDetectionEnabled() As BooleanByte
+End Interface
+
+[InterfaceId("A0CF090E-0340-531F-898B-C21EAFB9F4AE")]
+Interface IIterator_IDetectedFace Extends IInspectable
+    Property Get Current() As IDetectedFace
+    Property Get HasCurrent() As BooleanByte
+    Function MoveNext() As BooleanByte
+    Function GetMany(ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("25347323-3556-5CBB-9855-2B5856437F4D")]
+Interface IIterable_IDetectedFace Extends IInspectable
+    Function First() As IIterator_IDetectedFace
+End Interface
+
+[InterfaceId("39EF4411-0618-5B8D-8EA2-81C637F823F8")]
+Interface IVectorView_IDetectedFace Extends IInspectable
+    Function GetAt(ByVal Index As Long) As IDetectedFace
+    Property Get Size() As Long
+    Function IndexOf(ByVal Value As IDetectedFace, Index As Long) As BooleanByte
+    Function GetMany(ByVal StartIndex As Long, ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("8AB08993-5DC8-447B-A247-5270BD802ECE")]
+Interface IFaceDetectionEffectFrame Extends IInspectable ' requires IClosable, IMediaFrame
+    Property Get DetectedFaces() As IVectorView_IDetectedFace
+End Interface
+
+[InterfaceId("55F1A7AE-D957-4DC9-9D1C-8553A82A7D99")]
+Interface IHighDynamicRangeControl Extends IInspectable
+    Property Let Enabled(ByVal Value As BooleanByte)
+    Property Get Enabled() As BooleanByte
+End Interface
+
+[InterfaceId("1440DC88-63FF-5A01-BB93-390C76742488")]
+Interface IIterator_IFrameController Extends IInspectable
+    Property Get Current() As IFrameController
+    Property Get HasCurrent() As BooleanByte
+    Function MoveNext() As BooleanByte
+    Function GetMany(ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("BD8EEADC-2DD9-5AD8-AC5D-F3B13B94B9C2")]
+Interface IIterable_IFrameController Extends IInspectable
+    Function First() As IIterator_IFrameController
+End Interface
+
+[InterfaceId("FCD6A2A3-B6FF-5572-912B-99EBAF95165D")]
+Interface IVectorView_IFrameController Extends IInspectable
+    Function GetAt(ByVal Index As Long) As IFrameController
+    Property Get Size() As Long
+    Function IndexOf(ByVal Value As IFrameController, Index As Long) As BooleanByte
+    Function GetMany(ByVal StartIndex As Long, ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("0F57806B-253B-4119-BB40-3A90E51384F7")]
+Interface IHighDynamicRangeOutput Extends IInspectable
+    Property Get Certainty() As Double
+    Property Get FrameControllers() As IVectorView_IFrameController
+End Interface
+
+[InterfaceId("52828282-367B-440B-9116-3C84570DD270")]
+Interface IImageCue Extends IInspectable ' requires IMediaCue
+    Property Get Position() As TimedTextPoint
+    Property Let Position(ByVal Value As TimedTextPoint)
+    Property Get Extent() As TimedTextSize
+    Property Let Extent(ByVal Value As TimedTextSize)
+    Property Set SoftwareBitmap(ByVal Value As ISoftwareBitmap)
+    Property Get SoftwareBitmap() As ISoftwareBitmap
+End Interface
+
+[InterfaceId("25BC45E1-9B08-4C2E-A855-4542F1A75DEB")]
+Interface IInitializeMediaStreamSourceRequestedEventArgs Extends IInspectable
+    Property Get Source() As IMediaStreamSource
+    Property Get RandomAccessStream() As IRandomAccessStream
+    Function GetDeferral() As IDeferral
+End Interface
+
+[InterfaceId("78EDBE35-27A0-42E0-9CD3-738D2089DE9C")]
+Interface ILowLightFusionResult Extends IInspectable
+    Property Get Frame() As ISoftwareBitmap
+End Interface
+
+[InterfaceId("A2302C2D-66B5-59C7-AB97-3F5793E21D43")]
+Interface IAsyncOperationWithProgressILowLightFusionResultDouble Extends IInspectable
+    Property Set Progress(ByVal Handler As IAsyncOperationProgressHandlerILowLightFusionResultDouble)
+    Property Get Progress() As IAsyncOperationProgressHandlerILowLightFusionResultDouble
+    Property Set Completed(ByVal Handler As IAsyncOperationWithProgressCompletedHandlerILowLightFusionResultDouble)
+    Property Get Completed() As IAsyncOperationWithProgressCompletedHandlerILowLightFusionResultDouble
+    Function GetResults() As ILowLightFusionResult
+End Interface
+
+[InterfaceId("79337BBF-7B7F-5F88-A2EA-8DF14AE31DE4")]
+Interface IAsyncOperationProgressHandlerILowLightFusionResultDouble Extends IUnknown
+    Sub Invoke(ByVal AsyncOperation As IAsyncOperationWithProgressILowLightFusionResultDouble, ByVal ProgressInfo As Double)
+End Interface
+
+[InterfaceId("4A952FC2-EFCE-5275-90D0-3689BE26F666")]
+Interface IAsyncOperationWithProgressCompletedHandlerILowLightFusionResultDouble Extends IUnknown
+    Sub Invoke(ByVal AsyncOperation As IAsyncOperationWithProgressILowLightFusionResultDouble, ByVal AsyncStatus As AsyncStatus)
+End Interface
+
+[InterfaceId("7FC2E293-1084-5D45-B8B8-93E10692BCC8")]
+Interface IIterator_BitmapPixelFormat Extends IInspectable
+    Property Get Current() As BitmapPixelFormat
+    Property Get HasCurrent() As BooleanByte
+    Function MoveNext() As BooleanByte
+    Function GetMany(ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("E924D9ED-A13E-5BDB-9ED8-65A1474DC274")]
+Interface IIterable_BitmapPixelFormat Extends IInspectable
+    Function First() As IIterator_BitmapPixelFormat
+End Interface
+
+[InterfaceId("76AC4BC2-C19C-559C-B287-1694C0DC3A0D")]
+Interface IVectorView_BitmapPixelFormat Extends IInspectable
+    Function GetAt(ByVal Index As Long) As BitmapPixelFormat
+    Property Get Size() As Long
+    Function IndexOf(ByVal Value As BitmapPixelFormat, Index As Long) As BooleanByte
+    Function GetMany(ByVal StartIndex As Long, ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("CD12E4C3-8CA8-5BE6-B64B-204A014FC620")]
+Interface IIterator_ISoftwareBitmap Extends IInspectable
+    Property Get Current() As ISoftwareBitmap
+    Property Get HasCurrent() As BooleanByte
+    Function MoveNext() As BooleanByte
+    Function GetMany(ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("22D3A30F-0898-5E94-99A3-AFA5951DFCD4")]
+Interface IIterable_ISoftwareBitmap Extends IInspectable
+    Function First() As IIterator_ISoftwareBitmap
+End Interface
+
+[InterfaceId("5305016D-C29E-40E2-87A9-9E1FD2F192F5")]
+Interface ILowLightFusionStatics Extends IInspectable
+    Property Get SupportedBitmapPixelFormats() As IVectorView_BitmapPixelFormat
+    Property Get MaxSupportedFrameCount() As Long
+    Function FuseAsync(ByVal FrameSet As IIterable_ISoftwareBitmap) As IAsyncOperationWithProgressILowLightFusionResultDouble
+End Interface
+
+[InterfaceId("5B133719-EE98-59B2-B432-1C9A5A56AB05")]
+Interface ITypedEventHandlerMediaBinderBinding Extends IUnknown
+    Sub Invoke(ByVal Sender As IMediaBinder, ByVal Args As IMediaBindingEventArgs)
+End Interface
+
+[InterfaceId("2B7E40AA-DE07-424F-83F1-F1DE46C4FA2E")]
+Interface IMediaBinder Extends IInspectable
+    [PreserveSig]
+    Function AddBinding(ByVal Handler As ITypedEventHandlerMediaBinderBinding, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveBinding(ByVal Token As EventRegistrationToken) As HRESULT
+    Property Get Token() As LongPtr
+    Property Let Token(ByVal Value As LongPtr)
+    Property Get Source() As IMediaSource
+End Interface
+
+[InterfaceId("3F3B10E2-B2E9-55C6-ABB3-4A258072EBB9")]
+Interface ITypedEventHandlerMediaBindingEventArgsCanceled Extends IUnknown
+    Sub Invoke(ByVal Sender As IMediaBindingEventArgs, ByVal Args As IInspectable)
+End Interface
+
+[InterfaceId("B61CB25A-1B6D-4630-A86D-2F0837F712E5")]
+Interface IMediaBindingEventArgs Extends IInspectable
+    [PreserveSig]
+    Function AddCanceled(ByVal Handler As ITypedEventHandlerMediaBindingEventArgsCanceled, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveCanceled(ByVal Token As EventRegistrationToken) As HRESULT
+    Property Get MediaBinder() As IMediaBinder
+    Function GetDeferral() As IDeferral
+    [PreserveSig]
+    Function SetUri(ByVal Uri As IUri) As HRESULT
+    [PreserveSig]
+    Function SetStream(ByVal Stream As IRandomAccessStream, ByVal ContentType As LongPtr) As HRESULT
+    [PreserveSig]
+    Function SetStreamReference(ByVal Stream As IRandomAccessStreamReference, ByVal ContentType As LongPtr) As HRESULT
+End Interface
+
+[InterfaceId("0464CCEB-BB5A-482F-B8BA-F0284C696567")]
+Interface IMediaBindingEventArgs2 Extends IInspectable
+    [PreserveSig]
+    Function SetAdaptiveMediaSource(ByVal MediaSource As IAdaptiveMediaSource) As HRESULT
+    [PreserveSig]
+    Function SetStorageFile(ByVal File As IStorageFile) As HRESULT
+End Interface
+
+[InterfaceId("F8EB475E-19BE-44FC-A5ED-7ABA315037F9")]
+Interface IMediaBindingEventArgs3 Extends IInspectable
+    [PreserveSig]
+    Function SetDownloadOperation(ByVal DownloadOperation As IDownloadOperation) As HRESULT
+End Interface
+
+[InterfaceId("C7D15E5D-59DC-431F-A0EE-27744323B36D")]
+Interface IMediaCue Extends IInspectable
+    Property Let StartTime(ByVal Value As TimeSpan)
+    Property Get StartTime() As TimeSpan
+    Property Let Duration(ByVal Value As TimeSpan)
+    Property Get Duration() As TimeSpan
+    Property Let Id(ByVal Value As LongPtr)
+    Property Get Id() As LongPtr
+End Interface
+
+[InterfaceId("D12F47F7-5FA4-4E68-9FE5-32160DCEE57E")]
+Interface IMediaCueEventArgs Extends IInspectable
+    Property Get Cue() As IMediaCue
+End Interface
+
+[InterfaceId("E7BFB599-A09D-4C21-BCDF-20AF4F86B3D9")]
+Interface IMediaSource Extends IInspectable
+
+End Interface
+
+[InterfaceId("859354E5-077B-5D53-B297-1A07B97F09C3")]
+Interface IIterator_ITimedMetadataTrack Extends IInspectable
+    Property Get Current() As ITimedMetadataTrack
+    Property Get HasCurrent() As BooleanByte
+    Function MoveNext() As BooleanByte
+    Function GetMany(ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("150A4454-03BB-5DD1-8153-6A600E851F71")]
+Interface IIterable_ITimedMetadataTrack Extends IInspectable
+    Function First() As IIterator_ITimedMetadataTrack
+End Interface
+
+[InterfaceId("0313AE7A-2803-5D45-B5A1-A0FC5CD55E7C")]
+Interface IVectorView_ITimedMetadataTrack Extends IInspectable
+    Function GetAt(ByVal Index As Long) As ITimedMetadataTrack
+    Property Get Size() As Long
+    Function IndexOf(ByVal Value As ITimedMetadataTrack, Index As Long) As BooleanByte
+    Function GetMany(ByVal StartIndex As Long, ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("C46D9E34-EA11-5BB2-9744-1617417EF016")]
+Interface IVector_ITimedMetadataTrack Extends IInspectable
+    Function GetAt(ByVal Index As Long) As ITimedMetadataTrack
+    Property Get Size() As Long
+    Function GetView() As IVectorView_ITimedMetadataTrack
+    Function IndexOf(ByVal Value As ITimedMetadataTrack, Index As Long) As BooleanByte
+    [PreserveSig]
+    Function SetAt(ByVal Index As Long, ByVal Value As ITimedMetadataTrack) As HRESULT
+    [PreserveSig]
+    Function InsertAt(ByVal Index As Long, ByVal Value As ITimedMetadataTrack) As HRESULT
+    [PreserveSig]
+    Function RemoveAt(ByVal Index As Long) As HRESULT
+    [PreserveSig]
+    Function Append(ByVal Value As ITimedMetadataTrack) As HRESULT
+    [PreserveSig]
+    Function RemoveAtEnd() As HRESULT
+    [PreserveSig]
+    Function Clear() As HRESULT
+    Function GetMany(ByVal StartIndex As Long, ByVal Length As Long, Items As Any) As Long
+    [PreserveSig]
+    Function ReplaceAll(ByVal Length As Long, Items As Any) As HRESULT
+End Interface
+
+[InterfaceId("BD1DC81C-23C4-5B4B-AC38-C5D34CDF34E4")]
+Interface IVectorChangedEventHandlerITimedMetadataTrack Extends IUnknown
+    Sub Invoke(ByVal Sender As IObservableVector_ITimedMetadataTrack, ByVal Args As IVectorChangedEventArgs)
+End Interface
+
+[InterfaceId("98EBEBA8-6659-5AF2-BE4F-32FDEEDE3B77")]
+Interface IObservableVector_ITimedMetadataTrack Extends IInspectable
+    [PreserveSig]
+    Function AddVectorChanged(ByVal Handler As IVectorChangedEventHandlerITimedMetadataTrack, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveVectorChanged(ByVal Token As EventRegistrationToken) As HRESULT
+End Interface
+
+[InterfaceId("BDDED7C0-5C73-57F5-9B08-652933586DD5")]
+Interface IIterator_ITimedTextSource Extends IInspectable
+    Property Get Current() As ITimedTextSource
+    Property Get HasCurrent() As BooleanByte
+    Function MoveNext() As BooleanByte
+    Function GetMany(ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("4FC57282-0EDF-5D85-9D89-DDC2A5692C13")]
+Interface IIterable_ITimedTextSource Extends IInspectable
+    Function First() As IIterator_ITimedTextSource
+End Interface
+
+[InterfaceId("EDCD634E-B7E4-5FF8-B8C2-8493849B2C0D")]
+Interface IVectorView_ITimedTextSource Extends IInspectable
+    Function GetAt(ByVal Index As Long) As ITimedTextSource
+    Property Get Size() As Long
+    Function IndexOf(ByVal Value As ITimedTextSource, Index As Long) As BooleanByte
+    Function GetMany(ByVal StartIndex As Long, ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("D0A72378-5432-50BF-93C3-C5F35FC93517")]
+Interface IVector_ITimedTextSource Extends IInspectable
+    Function GetAt(ByVal Index As Long) As ITimedTextSource
+    Property Get Size() As Long
+    Function GetView() As IVectorView_ITimedTextSource
+    Function IndexOf(ByVal Value As ITimedTextSource, Index As Long) As BooleanByte
+    [PreserveSig]
+    Function SetAt(ByVal Index As Long, ByVal Value As ITimedTextSource) As HRESULT
+    [PreserveSig]
+    Function InsertAt(ByVal Index As Long, ByVal Value As ITimedTextSource) As HRESULT
+    [PreserveSig]
+    Function RemoveAt(ByVal Index As Long) As HRESULT
+    [PreserveSig]
+    Function Append(ByVal Value As ITimedTextSource) As HRESULT
+    [PreserveSig]
+    Function RemoveAtEnd() As HRESULT
+    [PreserveSig]
+    Function Clear() As HRESULT
+    Function GetMany(ByVal StartIndex As Long, ByVal Length As Long, Items As Any) As Long
+    [PreserveSig]
+    Function ReplaceAll(ByVal Length As Long, Items As Any) As HRESULT
+End Interface
+
+[InterfaceId("E12E6261-B198-56E0-9822-BA2D3BB6F8FE")]
+Interface IVectorChangedEventHandlerITimedTextSource Extends IUnknown
+    Sub Invoke(ByVal Sender As IObservableVector_ITimedTextSource, ByVal Args As IVectorChangedEventArgs)
+End Interface
+
+[InterfaceId("95E6C852-6E9C-50A9-8935-054320242945")]
+Interface IObservableVector_ITimedTextSource Extends IInspectable
+    [PreserveSig]
+    Function AddVectorChanged(ByVal Handler As IVectorChangedEventHandlerITimedTextSource, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveVectorChanged(ByVal Token As EventRegistrationToken) As HRESULT
+End Interface
+
+[InterfaceId("425D53E3-FBA6-5EA3-B713-DB4D70787436")]
+Interface ITypedEventHandlerMediaSourceOpenOperationCompleted Extends IUnknown
+    Sub Invoke(ByVal Sender As IMediaSource, ByVal Args As IMediaSourceOpenOperationCompletedEventArgs)
+End Interface
+
+[InterfaceId("2EB61048-655F-4C37-B813-B4E45DFA0ABE")]
+Interface IMediaSource2 Extends IInspectable ' requires IClosable, IMediaPlaybackSource
+    [PreserveSig]
+    Function AddOpenOperationCompleted(ByVal Handler As ITypedEventHandlerMediaSourceOpenOperationCompleted, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveOpenOperationCompleted(ByVal Token As EventRegistrationToken) As HRESULT
+    Property Get CustomProperties() As IPropertySet
+    Property Get Duration() As IReference_TimeSpan
+    Property Get IsOpen() As BooleanByte
+    Property Get ExternalTimedTextSources() As IObservableVector_ITimedTextSource
+    Property Get ExternalTimedMetadataTracks() As IObservableVector_ITimedMetadataTrack
+End Interface
+
+[InterfaceId("2274D3A6-1BA0-5230-BB86-DE90058B6403")]
+Interface ITypedEventHandlerMediaSourceStateChanged Extends IUnknown
+    Sub Invoke(ByVal Sender As IMediaSource, ByVal Args As IMediaSourceStateChangedEventArgs)
+End Interface
+
+[InterfaceId("B59F0D9B-4B6E-41ED-BBB4-7C7509A994AD")]
+Interface IMediaSource3 Extends IInspectable ' requires IClosable, IMediaPlaybackSource
+    [PreserveSig]
+    Function AddStateChanged(ByVal Handler As ITypedEventHandlerMediaSourceStateChanged, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveStateChanged(ByVal Token As EventRegistrationToken) As HRESULT
+    Property Get State() As MediaSourceState
+    [PreserveSig]
+    Function Reset() As HRESULT
+End Interface
+
+[InterfaceId("BDAFAD57-8EFF-4C63-85A6-84DE0AE3E4F2")]
+Interface IMediaSource4 Extends IInspectable ' requires IClosable, IMediaPlaybackSource
+    Property Get AdaptiveMediaSource() As IAdaptiveMediaSource
+    Property Get MediaStreamSource() As IMediaStreamSource
+    Property Get MseStreamSource() As IMseStreamSource
+    Property Get Uri() As IUri
+    Function OpenAsync() As IAsyncAction
+End Interface
+
+[InterfaceId("331A22AE-ED2E-4A22-94C8-B743A92B3022")]
+Interface IMediaSource5 Extends IInspectable
+    Property Get DownloadOperation() As IDownloadOperation
+End Interface
+
+[InterfaceId("F6F1B895-9C61-5E2A-8883-9FF8CC8B3D76")]
+Interface ITypedEventHandlerMediaSourceAppServiceConnectionInitializeMediaStreamSourceRequested Extends IUnknown
+    Sub Invoke(ByVal Sender As IMediaSourceAppServiceConnection, ByVal Args As IInitializeMediaStreamSourceRequestedEventArgs)
+End Interface
+
+[InterfaceId("61E1EA97-1916-4810-B7F4-B642BE829596")]
+Interface IMediaSourceAppServiceConnection Extends IInspectable
+    [PreserveSig]
+    Function AddInitializeMediaStreamSourceRequested(ByVal Handler As ITypedEventHandlerMediaSourceAppServiceConnectionInitializeMediaStreamSourceRequested, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveInitializeMediaStreamSourceRequested(ByVal Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function Start() As HRESULT
+End Interface
+
+[InterfaceId("65B912EB-80B9-44F9-9C1E-E120F6D92838")]
+Interface IMediaSourceAppServiceConnectionFactory Extends IInspectable
+    Function Create(ByVal AppServiceConnection As IAppServiceConnection) As IMediaSourceAppServiceConnection
+End Interface
+
+[InterfaceId("5C0A8965-37C5-4E9D-8D21-1CDEE90CECC6")]
+Interface IMediaSourceError Extends IInspectable
+    Property Get ExtendedError() As HRESULT
+End Interface
+
+[InterfaceId("FC682CEB-E281-477C-A8E0-1ACD654114C8")]
+Interface IMediaSourceOpenOperationCompletedEventArgs Extends IInspectable
+    Property Get Error() As IMediaSourceError
+End Interface
+
+[InterfaceId("0A30AF82-9071-4BAC-BC39-CA2A93B717A9")]
+Interface IMediaSourceStateChangedEventArgs Extends IInspectable
+    Property Get OldState() As MediaSourceState
+    Property Get NewState() As MediaSourceState
+End Interface
+
+[InterfaceId("F77D6FA4-4652-410E-B1D8-E9A5E245A45C")]
+Interface IMediaSourceStatics Extends IInspectable
+    Function CreateFromAdaptiveMediaSource(ByVal MediaSource As IAdaptiveMediaSource) As IMediaSource
+    Function CreateFromMediaStreamSource(ByVal MediaSource As IMediaStreamSource) As IMediaSource
+    Function CreateFromMseStreamSource(ByVal MediaSource As IMseStreamSource) As IMediaSource
+    Function CreateFromIMediaSource(ByVal MediaSource As IMediaSource) As IMediaSource
+    Function CreateFromStorageFile(ByVal File As IStorageFile) As IMediaSource
+    Function CreateFromStream(ByVal Stream As IRandomAccessStream, ByVal ContentType As LongPtr) As IMediaSource
+    Function CreateFromStreamReference(ByVal Stream As IRandomAccessStreamReference, ByVal ContentType As LongPtr) As IMediaSource
+    Function CreateFromUri(ByVal Uri As IUri) As IMediaSource
+End Interface
+
+[InterfaceId("EEE161A4-7F13-4896-B8CB-DF0DE5BCB9F1")]
+Interface IMediaSourceStatics2 Extends IInspectable
+    Function CreateFromMediaBinder(ByVal Binder As IMediaBinder) As IMediaSource
+End Interface
+
+[InterfaceId("453A30D6-2BEA-4122-9F73-EACE04526E35")]
+Interface IMediaSourceStatics3 Extends IInspectable
+    Function CreateFromMediaFrameSource(ByVal FrameSource As IMediaFrameSource) As IMediaSource
+End Interface
+
+[InterfaceId("281B3BFC-E50A-4428-A500-9C4ED918D3F0")]
+Interface IMediaSourceStatics4 Extends IInspectable
+    Function CreateFromDownloadOperation(ByVal DownloadOperation As IDownloadOperation) As IMediaSource
+End Interface
+
+[InterfaceId("80F16E6E-92F7-451E-97D2-AFD80742DA70")]
+Interface IMediaStreamDescriptor Extends IInspectable
+    Property Get IsSelected() As BooleanByte
+    Property Let Name(ByVal Value As LongPtr)
+    Property Get Name() As LongPtr
+    Property Let Language(ByVal Value As LongPtr)
+    Property Get Language() As LongPtr
+End Interface
+
+[InterfaceId("5073010F-E8B2-4071-B00B-EBF337A76B58")]
+Interface IMediaStreamDescriptor2 Extends IInspectable
+    Property Let Label(ByVal Value As LongPtr)
+    Property Get Label() As LongPtr
+End Interface
+
+[InterfaceId("D4DC5EF1-C1CB-5C32-803D-F2F9A7AD9916")]
+Interface ITypedEventHandlerMediaStreamSampleProcessed Extends IUnknown
+    Sub Invoke(ByVal Sender As IMediaStreamSample, ByVal Args As IInspectable)
+End Interface
+
+[InterfaceId("5C8DB627-4B80-4361-9837-6CB7481AD9D6")]
+Interface IMediaStreamSample Extends IInspectable
+    [PreserveSig]
+    Function AddProcessed(ByVal Handler As ITypedEventHandlerMediaStreamSampleProcessed, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveProcessed(ByVal Token As EventRegistrationToken) As HRESULT
+    Property Get Buffer() As IBuffer
+    Property Get Timestamp() As TimeSpan
+    Property Get ExtendedProperties() As IMap_GUID_IInspectable
+    Property Get Protection() As IMediaStreamSampleProtectionProperties
+    Property Let DecodeTimestamp(ByVal Value As TimeSpan)
+    Property Get DecodeTimestamp() As TimeSpan
+    Property Let Duration(ByVal Value As TimeSpan)
+    Property Get Duration() As TimeSpan
+    Property Let KeyFrame(ByVal Value As BooleanByte)
+    Property Get KeyFrame() As BooleanByte
+    Property Let Discontinuous(ByVal Value As BooleanByte)
+    Property Get Discontinuous() As BooleanByte
+End Interface
+
+[InterfaceId("45078691-FCE8-4746-A1C8-10C25D3D7CD3")]
+Interface IMediaStreamSample2 Extends IInspectable
+    Property Get Direct3D11Surface() As IDirect3DSurface
+End Interface
+
+[InterfaceId("4EB88292-ECDF-493E-841D-DD4ADD7CACA2")]
+Interface IMediaStreamSampleProtectionProperties Extends IInspectable
+    [PreserveSig]
+    Function SetKeyIdentifier(ByVal ValueSize As Long, Value As Any) As HRESULT
+    [PreserveSig]
+    Function GetKeyIdentifier(ValueSize As Long, Value As Any) As HRESULT
+    [PreserveSig]
+    Function SetInitializationVector(ByVal ValueSize As Long, Value As Any) As HRESULT
+    [PreserveSig]
+    Function GetInitializationVector(ValueSize As Long, Value As Any) As HRESULT
+    [PreserveSig]
+    Function SetSubSampleMapping(ByVal ValueSize As Long, Value As Any) As HRESULT
+    [PreserveSig]
+    Function GetSubSampleMapping(ValueSize As Long, Value As Any) As HRESULT
+End Interface
+
+[InterfaceId("3CDC5E86-4ADA-5EF7-967A-E137A4621907")]
+Interface IAsyncOperationIMediaStreamSample Extends IInspectable
+    Property Set Completed(ByVal Handler As IAsyncOperationCompletedHandlerIMediaStreamSample)
+    Property Get Completed() As IAsyncOperationCompletedHandlerIMediaStreamSample
+    Function GetResults() As IMediaStreamSample
+End Interface
+
+[InterfaceId("DF7AACC9-A86C-5C7D-BF98-CC371C97C67B")]
+Interface IAsyncOperationCompletedHandlerIMediaStreamSample Extends IUnknown
+    Sub Invoke(ByVal AsyncOperation As IAsyncOperationIMediaStreamSample, ByVal AsyncStatus As AsyncStatus)
+End Interface
+
+[InterfaceId("DFDF218F-A6CF-4579-BE41-73DD941AD972")]
+Interface IMediaStreamSampleStatics Extends IInspectable
+    Function CreateFromBuffer(ByVal Buffer As IBuffer, ByVal Timestamp As TimeSpan) As IMediaStreamSample
+    Function CreateFromStreamAsync(ByVal Stream As IInputStream, ByVal Count As Long, ByVal Timestamp As TimeSpan) As IAsyncOperationIMediaStreamSample
+End Interface
+
+[InterfaceId("9EFE9521-6D46-494C-A2F8-D662922E2DD7")]
+Interface IMediaStreamSampleStatics2 Extends IInspectable
+    Function CreateFromDirect3D11Surface(ByVal Surface As IDirect3DSurface, ByVal Timestamp As TimeSpan) As IMediaStreamSample
+End Interface
+
+[InterfaceId("6FD6DED7-421B-5EF5-8BF5-EDEA45401665")]
+Interface ITypedEventHandlerMediaStreamSourcePaused Extends IUnknown
+    Sub Invoke(ByVal Sender As IMediaStreamSource, ByVal Args As IInspectable)
+End Interface
+
+[InterfaceId("238CC251-D0B8-5A34-81D4-0DD1F936A20D")]
+Interface ITypedEventHandlerMediaStreamSourceClosed Extends IUnknown
+    Sub Invoke(ByVal Sender As IMediaStreamSource, ByVal Args As IMediaStreamSourceClosedEventArgs)
+End Interface
+
+[InterfaceId("4F1A3AE3-B8B7-5689-901D-B0B623F5A172")]
+Interface ITypedEventHandlerMediaStreamSourceSampleRequested Extends IUnknown
+    Sub Invoke(ByVal Sender As IMediaStreamSource, ByVal Args As IMediaStreamSourceSampleRequestedEventArgs)
+End Interface
+
+[InterfaceId("A93D5846-C660-586E-B6B5-A52FB81F9240")]
+Interface ITypedEventHandlerMediaStreamSourceStarting Extends IUnknown
+    Sub Invoke(ByVal Sender As IMediaStreamSource, ByVal Args As IMediaStreamSourceStartingEventArgs)
+End Interface
+
+[InterfaceId("452B2E4A-5511-5B3C-8A8E-EE659576A4C1")]
+Interface ITypedEventHandlerMediaStreamSwitchStreamsRequested Extends IUnknown
+    Sub Invoke(ByVal Sender As IMediaStreamSource, ByVal Args As IMediaStreamSourceSwitchStreamsRequestedEventArgs)
+End Interface
+
+[InterfaceId("3712D543-45EB-4138-AA62-C01E26F3843F")]
+Interface IMediaStreamSource Extends IInspectable ' requires IMediaSource
+    [PreserveSig]
+    Function AddClosed(ByVal Handler As ITypedEventHandlerMediaStreamSourceClosed, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveClosed(ByVal Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function AddStarting(ByVal Handler As ITypedEventHandlerMediaStreamSourceStarting, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveStarting(ByVal Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function AddPaused(ByVal Handler As ITypedEventHandlerMediaStreamSourcePaused, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemovePaused(ByVal Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function AddSampleRequested(ByVal Handler As ITypedEventHandlerMediaStreamSourceSampleRequested, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveSampleRequested(ByVal Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function AddSwitchStreamsRequested(ByVal Handler As ITypedEventHandlerMediaStreamSwitchStreamsRequested, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveSwitchStreamsRequested(ByVal Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function NotifyError(ByVal ErrorStatus As MediaStreamSourceErrorStatus) As HRESULT
+    [PreserveSig]
+    Function AddStreamDescriptor(ByVal Descriptor As IMediaStreamDescriptor) As HRESULT
+    Property Set MediaProtectionManager(ByVal Value As IMediaProtectionManager)
+    Property Get MediaProtectionManager() As IMediaProtectionManager
+    Property Let Duration(ByVal Value As TimeSpan)
+    Property Get Duration() As TimeSpan
+    Property Let CanSeek(ByVal Value As BooleanByte)
+    Property Get CanSeek() As BooleanByte
+    Property Let BufferTime(ByVal Value As TimeSpan)
+    Property Get BufferTime() As TimeSpan
+    [PreserveSig]
+    Function SetBufferedRange(ByVal StartOffset As TimeSpan, ByVal EndOffset As TimeSpan) As HRESULT
+    Property Get MusicProperties() As IMusicProperties
+    Property Get VideoProperties() As IVideoProperties
+    Property Set Thumbnail(ByVal Value As IRandomAccessStreamReference)
+    Property Get Thumbnail() As IRandomAccessStreamReference
+    [PreserveSig]
+    Function AddProtectionKey(ByVal StreamDescriptor As IMediaStreamDescriptor, ByVal KeyIdentifierSize As Long, KeyIdentifier As Any, ByVal LicenseDataSize As Long, LicenseData As Any) As HRESULT
+End Interface
+
+[InterfaceId("9D812C70-9F0D-5AD5-8274-F760C9CA0C38")]
+Interface ITypedEventHandlerMediaStreamSourceSampleRendered Extends IUnknown
+    Sub Invoke(ByVal Sender As IMediaStreamSource, ByVal Args As IMediaStreamSourceSampleRenderedEventArgs)
+End Interface
+
+[InterfaceId("EC55D0AD-2E6A-4F74-ADBB-B562D1533849")]
+Interface IMediaStreamSource2 Extends IInspectable ' requires IMediaSource
+    [PreserveSig]
+    Function AddSampleRendered(ByVal Handler As ITypedEventHandlerMediaStreamSourceSampleRendered, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveSampleRendered(ByVal Token As EventRegistrationToken) As HRESULT
+End Interface
+
+[InterfaceId("6A2A2746-3DDD-4DDF-A121-94045ECF9440")]
+Interface IMediaStreamSource3 Extends IInspectable ' requires IMediaSource
+    Property Set MaxSupportedPlaybackRate(ByVal Value As IReference_Double)
+    Property Get MaxSupportedPlaybackRate() As IReference_Double
+End Interface
+
+[InterfaceId("1D0CFCAB-830D-417C-A3A9-2454FD6415C7")]
+Interface IMediaStreamSource4 Extends IInspectable ' requires IMediaSource
+    Property Let IsLive(ByVal Value As BooleanByte)
+    Property Get IsLive() As BooleanByte
+End Interface
+
+[InterfaceId("CD8C7EB2-4816-4E24-88F0-491EF7386406")]
+Interface IMediaStreamSourceClosedEventArgs Extends IInspectable
+    Property Get Request() As IMediaStreamSourceClosedRequest
+End Interface
+
+[InterfaceId("907C00E9-18A3-4951-887A-2C1EEBD5C69E")]
+Interface IMediaStreamSourceClosedRequest Extends IInspectable
+    Property Get Reason() As MediaStreamSourceClosedReason
+End Interface
+
+[InterfaceId("EF77E0D9-D158-4B7A-863F-203342FBFD41")]
+Interface IMediaStreamSourceFactory Extends IInspectable
+    Function CreateFromDescriptor(ByVal Descriptor As IMediaStreamDescriptor) As IMediaStreamSource
+    Function CreateFromDescriptors(ByVal Descriptor As IMediaStreamDescriptor, ByVal Descriptor2 As IMediaStreamDescriptor) As IMediaStreamSource
+End Interface
+
+[InterfaceId("9D697B05-D4F2-4C7A-9DFE-8D6CD0B3EE84")]
+Interface IMediaStreamSourceSampleRenderedEventArgs Extends IInspectable
+    Property Get SampleLag() As TimeSpan
+End Interface
+
+[InterfaceId("4DB341A9-3501-4D9B-83F9-8F235C822532")]
+Interface IMediaStreamSourceSampleRequest Extends IInspectable
+    Property Get StreamDescriptor() As IMediaStreamDescriptor
+    Function GetDeferral() As IMediaStreamSourceSampleRequestDeferral
+    Property Set Sample(ByVal Value As IMediaStreamSample)
+    Property Get Sample() As IMediaStreamSample
+    [PreserveSig]
+    Function ReportSampleProgress(ByVal Progress As Long) As HRESULT
+End Interface
+
+[InterfaceId("7895CC02-F982-43C8-9D16-C62D999319BE")]
+Interface IMediaStreamSourceSampleRequestDeferral Extends IInspectable
+    [PreserveSig]
+    Function Complete() As HRESULT
+End Interface
+
+[InterfaceId("10F9BB9E-71C5-492F-847F-0DA1F35E81F8")]
+Interface IMediaStreamSourceSampleRequestedEventArgs Extends IInspectable
+    Property Get Request() As IMediaStreamSourceSampleRequest
+End Interface
+
+[InterfaceId("F41468F2-C274-4940-A5BB-28A572452FA7")]
+Interface IMediaStreamSourceStartingEventArgs Extends IInspectable
+    Property Get Request() As IMediaStreamSourceStartingRequest
+End Interface
+
+[InterfaceId("2A9093E4-35C4-4B1B-A791-0D99DB56DD1D")]
+Interface IMediaStreamSourceStartingRequest Extends IInspectable
+    Property Get StartPosition() As IReference_TimeSpan
+    Function GetDeferral() As IMediaStreamSourceStartingRequestDeferral
+    [PreserveSig]
+    Function SetActualStartPosition(ByVal Position As TimeSpan) As HRESULT
+End Interface
+
+[InterfaceId("3F1356A5-6340-4DC4-9910-068ED9F598F8")]
+Interface IMediaStreamSourceStartingRequestDeferral Extends IInspectable
+    [PreserveSig]
+    Function Complete() As HRESULT
+End Interface
+
+[InterfaceId("41B8808E-38A9-4EC3-9BA0-B69B85501E90")]
+Interface IMediaStreamSourceSwitchStreamsRequest Extends IInspectable
+    Property Get OldStreamDescriptor() As IMediaStreamDescriptor
+    Property Get NewStreamDescriptor() As IMediaStreamDescriptor
+    Function GetDeferral() As IMediaStreamSourceSwitchStreamsRequestDeferral
+End Interface
+
+[InterfaceId("BEE3D835-A505-4F9A-B943-2B8CB1B4BBD9")]
+Interface IMediaStreamSourceSwitchStreamsRequestDeferral Extends IInspectable
+    [PreserveSig]
+    Function Complete() As HRESULT
+End Interface
+
+[InterfaceId("42202B72-6EA1-4677-981E-350A0DA412AA")]
+Interface IMediaStreamSourceSwitchStreamsRequestedEventArgs Extends IInspectable
+    Property Get Request() As IMediaStreamSourceSwitchStreamsRequest
+End Interface
+
+[InterfaceId("03E1FAFC-C931-491A-B46B-C10EE8C256B7")]
+Interface IMediaTrack Extends IInspectable
+    Property Get Id() As LongPtr
+    Property Get Language() As LongPtr
+    Property Get TrackKind() As MediaTrackKind
+    Property Let Label(ByVal Value As LongPtr)
+    Property Get Label() As LongPtr
+End Interface
+
+[InterfaceId("92A36852-FBB3-5B48-B4EC-01DDA0972A5C")]
+Interface IIterator_MseTimeRange Extends IInspectable
+    Property Get Current() As MseTimeRange
+    Property Get HasCurrent() As BooleanByte
+    Function MoveNext() As BooleanByte
+    Function GetMany(ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("ED0C6E08-E22F-5AC2-BA14-E0FF1DF3467F")]
+Interface IIterable_MseTimeRange Extends IInspectable
+    Function First() As IIterator_MseTimeRange
+End Interface
+
+[InterfaceId("87FF1DD1-7EC3-5BC5-B558-0425D806BF4B")]
+Interface IVectorView_MseTimeRange Extends IInspectable
+    Function GetAt(ByVal Index As Long) As MseTimeRange
+    Property Get Size() As Long
+    Function IndexOf(ByVal Value As MseTimeRange, Index As Long) As BooleanByte
+    Function GetMany(ByVal StartIndex As Long, ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("187FD3D7-BB9D-541A-94FD-43C31DD84A67")]
+Interface ITypedEventHandlerMseSourceBufferIInspectable Extends IUnknown
+    Sub Invoke(ByVal Sender As IMseSourceBuffer, ByVal Args As IInspectable)
+End Interface
+
+[InterfaceId("0C1AA3E3-DF8D-4079-A3FE-6849184B4E2F")]
+Interface IMseSourceBuffer Extends IInspectable
+    [PreserveSig]
+    Function AddUpdateStarting(ByVal Handler As ITypedEventHandlerMseSourceBufferIInspectable, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveUpdateStarting(ByVal Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function AddUpdated(ByVal Handler As ITypedEventHandlerMseSourceBufferIInspectable, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveUpdated(ByVal Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function AddUpdateEnded(ByVal Handler As ITypedEventHandlerMseSourceBufferIInspectable, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveUpdateEnded(ByVal Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function AddErrorOccurred(ByVal Handler As ITypedEventHandlerMseSourceBufferIInspectable, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveErrorOccurred(ByVal Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function AddAborted(ByVal Handler As ITypedEventHandlerMseSourceBufferIInspectable, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveAborted(ByVal Token As EventRegistrationToken) As HRESULT
+    Property Get Mode() As MseAppendMode
+    Property Let Mode(ByVal Value As MseAppendMode)
+    Property Get IsUpdating() As BooleanByte
+    Property Get Buffered() As IVectorView_MseTimeRange
+    Property Get TimestampOffset() As TimeSpan
+    Property Let TimestampOffset(ByVal Value As TimeSpan)
+    Property Get AppendWindowStart() As TimeSpan
+    Property Let AppendWindowStart(ByVal Value As TimeSpan)
+    Property Get AppendWindowEnd() As IReference_TimeSpan
+    Property Set AppendWindowEnd(ByVal Value As IReference_TimeSpan)
+    [PreserveSig]
+    Function AppendBuffer(ByVal Buffer As IBuffer) As HRESULT
+    [PreserveSig]
+    Function AppendStream(ByVal Stream As IInputStream) As HRESULT
+    [PreserveSig]
+    Function AppendStreamMaxSize(ByVal Stream As IInputStream, ByVal MaxSize As UInt64) As HRESULT
+    [PreserveSig]
+    Function Abort() As HRESULT
+    [PreserveSig]
+    Function Remove(ByVal Start As TimeSpan, ByVal End As IReference_TimeSpan) As HRESULT
+End Interface
+
+[InterfaceId("53076581-01A9-51B9-98CC-5265504CD352")]
+Interface IIterator_IMseSourceBuffer Extends IInspectable
+    Property Get Current() As IMseSourceBuffer
+    Property Get HasCurrent() As BooleanByte
+    Function MoveNext() As BooleanByte
+    Function GetMany(ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("5CA0DA86-6307-558A-865F-3A1EF9FE56B3")]
+Interface IIterable_IMseSourceBuffer Extends IInspectable
+    Function First() As IIterator_IMseSourceBuffer
+End Interface
+
+[InterfaceId("85318263-1360-5C78-B0AD-52D6B45B19F3")]
+Interface IVectorView_IMseSourceBuffer Extends IInspectable
+    Function GetAt(ByVal Index As Long) As IMseSourceBuffer
+    Property Get Size() As Long
+    Function IndexOf(ByVal Value As IMseSourceBuffer, Index As Long) As BooleanByte
+    Function GetMany(ByVal StartIndex As Long, ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("0FF01695-FBB2-5E95-8EC7-DA17D8E99F16")]
+Interface ITypedEventHandlerMseSourceBufferListIInspectable Extends IUnknown
+    Sub Invoke(ByVal Sender As IMseSourceBufferList, ByVal Args As IInspectable)
+End Interface
+
+[InterfaceId("95FAE8E7-A8E7-4EBF-8927-145E940BA511")]
+Interface IMseSourceBufferList Extends IInspectable
+    [PreserveSig]
+    Function AddSourceBufferAdded(ByVal Handler As ITypedEventHandlerMseSourceBufferListIInspectable, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveSourceBufferAdded(ByVal Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function AddSourceBufferRemoved(ByVal Handler As ITypedEventHandlerMseSourceBufferListIInspectable, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveSourceBufferRemoved(ByVal Token As EventRegistrationToken) As HRESULT
+    Property Get Buffers() As IVectorView_IMseSourceBuffer
+End Interface
+
+[InterfaceId("724BF4EF-DE7A-5DBD-815E-522A87BC3344")]
+Interface ITypedEventHandlerMseStreamSourceIInspectable Extends IUnknown
+    Sub Invoke(ByVal Sender As IMseStreamSource, ByVal Args As IInspectable)
+End Interface
+
+[InterfaceId("B0B4198D-02F4-4923-88DD-81BC3F360FFA")]
+Interface IMseStreamSource Extends IInspectable ' requires IMediaSource
+    [PreserveSig]
+    Function AddOpened(ByVal Handler As ITypedEventHandlerMseStreamSourceIInspectable, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveOpened(ByVal Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function AddEnded(ByVal Handler As ITypedEventHandlerMseStreamSourceIInspectable, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveEnded(ByVal Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function AddClosed(ByVal Handler As ITypedEventHandlerMseStreamSourceIInspectable, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveClosed(ByVal Token As EventRegistrationToken) As HRESULT
+    Property Get SourceBuffers() As IMseSourceBufferList
+    Property Get ActiveSourceBuffers() As IMseSourceBufferList
+    Property Get ReadyState() As MseReadyState
+    Property Get Duration() As IReference_TimeSpan
+    Property Set Duration(ByVal Value As IReference_TimeSpan)
+    Function AddSourceBuffer(ByVal MimeType As LongPtr) As IMseSourceBuffer
+    [PreserveSig]
+    Function RemoveSourceBuffer(ByVal Buffer As IMseSourceBuffer) As HRESULT
+    [PreserveSig]
+    Function EndOfStream(ByVal Status As MseEndOfStreamStatus) As HRESULT
+End Interface
+
+[InterfaceId("66F57D37-F9E7-418A-9CDE-A020E956552B")]
+Interface IMseStreamSource2 Extends IInspectable
+    Property Get LiveSeekableRange() As IReference_MseTimeRange
+    Property Set LiveSeekableRange(ByVal Value As IReference_MseTimeRange)
+End Interface
+
+[InterfaceId("465C679D-D570-43CE-BA21-0BFF5F3FBD0A")]
+Interface IMseStreamSourceStatics Extends IInspectable
+    Function IsContentTypeSupported(ByVal ContentType As LongPtr) As BooleanByte
+End Interface
+
+[InterfaceId("48630F8C-DBDE-569E-A0C8-7588D1D2BD03")]
+Interface ITypedEventHandlerSceneAnalysisEffectSceneAnalyzed Extends IUnknown
+    Sub Invoke(ByVal Sender As ISceneAnalysisEffect, ByVal Args As ISceneAnalyzedEventArgs)
+End Interface
+
+[InterfaceId("C04BA319-CA41-4813-BFFD-7B08B0ED2557")]
+Interface ISceneAnalysisEffect Extends IInspectable ' requires IMediaExtension
+    Property Get HighDynamicRangeAnalyzer() As IHighDynamicRangeControl
+    Property Let DesiredAnalysisInterval(ByVal Value As TimeSpan)
+    Property Get DesiredAnalysisInterval() As TimeSpan
+    [PreserveSig]
+    Function AddSceneAnalyzed(ByVal Handler As ITypedEventHandlerSceneAnalysisEffectSceneAnalyzed, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveSceneAnalyzed(ByVal Token As EventRegistrationToken) As HRESULT
+End Interface
+
+[InterfaceId("D8B10E4C-7FD9-42E1-85EB-6572C297C987")]
+Interface ISceneAnalysisEffectFrame Extends IInspectable ' requires IClosable, IMediaFrame
+    Property Get FrameControlValues() As ICapturedFrameControlValues
+    Property Get HighDynamicRange() As IHighDynamicRangeOutput
+End Interface
+
+[InterfaceId("2D4E29BE-061F-47AE-9915-02524B5F9A5F")]
+Interface ISceneAnalysisEffectFrame2 Extends IInspectable ' requires IClosable, IMediaFrame
+    Property Get AnalysisRecommendation() As SceneAnalysisRecommendation
+End Interface
+
+[InterfaceId("146B9588-2851-45E4-AD55-44CF8DF8DB4D")]
+Interface ISceneAnalyzedEventArgs Extends IInspectable
+    Property Get ResultFrame() As ISceneAnalysisEffectFrame
+End Interface
+
+[InterfaceId("21EB6E39-728A-56A9-8DCE-062BA4C81BF5")]
+Interface ITypedEventHandlerSingleSelectMediaTrackListSelectedIndexChanged Extends IUnknown
+    Sub Invoke(ByVal Sender As ISingleSelectMediaTrackList, ByVal Args As IInspectable)
+End Interface
+
+[InterfaceId("77206F1F-C34F-494F-8077-2BAD9FF4ECF1")]
+Interface ISingleSelectMediaTrackList Extends IInspectable
+    [PreserveSig]
+    Function AddSelectedIndexChanged(ByVal Handler As ITypedEventHandlerSingleSelectMediaTrackListSelectedIndexChanged, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveSelectedIndexChanged(ByVal Token As EventRegistrationToken) As HRESULT
+    Property Let SelectedIndex(ByVal Value As Long)
+    Property Get SelectedIndex() As Long
+End Interface
+
+[InterfaceId("AEE254DC-1725-4BAD-8043-A98499B017A2")]
+Interface ISpeechCue Extends IInspectable ' requires IMediaCue
+    Property Get Text() As LongPtr
+    Property Let Text(ByVal Value As LongPtr)
+    Property Get StartPositionInInput() As IReference_Int32
+    Property Set StartPositionInInput(ByVal Value As IReference_Int32)
+    Property Get EndPositionInInput() As IReference_Int32
+    Property Set EndPositionInInput(ByVal Value As IReference_Int32)
+End Interface
+
+[InterfaceId("133336BF-296A-463E-9FF9-01CD25691408")]
+Interface ITimedMetadataStreamDescriptor Extends IInspectable
+    Property Get EncodingProperties() As ITimedMetadataEncodingProperties
+    Function Copy() As ITimedMetadataStreamDescriptor
+End Interface
+
+[InterfaceId("C027DE30-7362-4FF9-98B1-2DFD0B8D1CAE")]
+Interface ITimedMetadataStreamDescriptorFactory Extends IInspectable
+    Function Create(ByVal EncodingProperties As ITimedMetadataEncodingProperties) As ITimedMetadataStreamDescriptor
+End Interface
+
+[InterfaceId("1A594DC8-A64B-55ED-9B34-7B274E1D5C70")]
+Interface IIterator_IMediaCue Extends IInspectable
+    Property Get Current() As IMediaCue
+    Property Get HasCurrent() As BooleanByte
+    Function MoveNext() As BooleanByte
+    Function GetMany(ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("737A2098-41BF-5D9F-A1D2-2F171C578B3C")]
+Interface IIterable_IMediaCue Extends IInspectable
+    Function First() As IIterator_IMediaCue
+End Interface
+
+[InterfaceId("996421A1-625C-5D92-AD68-8B3911D294B0")]
+Interface IVectorView_IMediaCue Extends IInspectable
+    Function GetAt(ByVal Index As Long) As IMediaCue
+    Property Get Size() As Long
+    Function IndexOf(ByVal Value As IMediaCue, Index As Long) As BooleanByte
+    Function GetMany(ByVal StartIndex As Long, ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("4AAC9411-C355-5C95-8C78-5A0F5CA1A54D")]
+Interface ITypedEventHandlerTimedMetadataTrackMediaCue Extends IUnknown
+    Sub Invoke(ByVal Sender As ITimedMetadataTrack, ByVal Args As IMediaCueEventArgs)
+End Interface
+
+[InterfaceId("8DC73162-255B-532E-B0C7-9A6D70B4BB9E")]
+Interface ITypedEventHandlerTimedMetadataTrackFailed Extends IUnknown
+    Sub Invoke(ByVal Sender As ITimedMetadataTrack, ByVal Args As ITimedMetadataTrackFailedEventArgs)
+End Interface
+
+[InterfaceId("9E6AED9E-F67A-49A9-B330-CF03B0E9CF07")]
+Interface ITimedMetadataTrack Extends IInspectable ' requires IMediaTrack
+    [PreserveSig]
+    Function AddCueEntered(ByVal Handler As ITypedEventHandlerTimedMetadataTrackMediaCue, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveCueEntered(ByVal Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function AddCueExited(ByVal Handler As ITypedEventHandlerTimedMetadataTrackMediaCue, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveCueExited(ByVal Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function AddTrackFailed(ByVal Handler As ITypedEventHandlerTimedMetadataTrackFailed, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveTrackFailed(ByVal Token As EventRegistrationToken) As HRESULT
+    Property Get Cues() As IVectorView_IMediaCue
+    Property Get ActiveCues() As IVectorView_IMediaCue
+    Property Get TimedMetadataKind() As TimedMetadataKind
+    Property Get DispatchType() As LongPtr
+    [PreserveSig]
+    Function AddCue(ByVal Cue As IMediaCue) As HRESULT
+    [PreserveSig]
+    Function RemoveCue(ByVal Cue As IMediaCue) As HRESULT
+End Interface
+
+[InterfaceId("21B4B648-9F9D-40BA-A8F3-1A92753AEF0B")]
+Interface ITimedMetadataTrack2 Extends IInspectable ' requires IMediaTrack, ITimedMetadataTrack
+    Property Get PlaybackItem() As IMediaPlaybackItem
+    Property Get Name() As LongPtr
+End Interface
+
+[InterfaceId("B3767915-4114-4819-B9D9-DD76089E72F8")]
+Interface ITimedMetadataTrackError Extends IInspectable
+    Property Get ErrorCode() As TimedMetadataTrackErrorCode
+    Property Get ExtendedError() As HRESULT
+End Interface
+
+[InterfaceId("8DD57611-97B3-4E1F-852C-0F482C81AD26")]
+Interface ITimedMetadataTrackFactory Extends IInspectable
+    Function Create(ByVal Id As LongPtr, ByVal Language As LongPtr, ByVal Kind As TimedMetadataKind) As ITimedMetadataTrack
+End Interface
+
+[InterfaceId("A57FC9D1-6789-4D4D-B07F-84B4F31ACB70")]
+Interface ITimedMetadataTrackFailedEventArgs Extends IInspectable
+    Property Get Error() As ITimedMetadataTrackError
+End Interface
+
+[InterfaceId("3B7F2024-F74E-4ADE-93C5-219DA05B6856")]
+Interface ITimedMetadataTrackProvider Extends IInspectable
+    Property Get TimedMetadataTracks() As IVectorView_ITimedMetadataTrack
+End Interface
+
+[InterfaceId("D9062783-5597-5092-820C-8F738E0F774A")]
+Interface ITimedTextBouten Extends IInspectable
+    Property Get Type() As TimedTextBoutenType
+    Property Let Type(ByVal Value As TimedTextBoutenType)
+    Property Get Color() As Color
+    Property Let Color(ByVal Value As Color)
+    Property Get Position() As TimedTextBoutenPosition
+    Property Let Position(ByVal Value As TimedTextBoutenPosition)
+End Interface
+
+[InterfaceId("84C4FCAC-86D8-5C74-A138-D9BF37B749EC")]
+Interface IIterator_ITimedTextLine Extends IInspectable
+    Property Get Current() As ITimedTextLine
+    Property Get HasCurrent() As BooleanByte
+    Function MoveNext() As BooleanByte
+    Function GetMany(ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("AEC710AD-3BD8-5A59-AE77-E7FC46FB105B")]
+Interface IIterable_ITimedTextLine Extends IInspectable
+    Function First() As IIterator_ITimedTextLine
+End Interface
+
+[InterfaceId("9532B5CC-73FC-5E3A-8531-794C30D7A1AE")]
+Interface IVectorView_ITimedTextLine Extends IInspectable
+    Function GetAt(ByVal Index As Long) As ITimedTextLine
+    Property Get Size() As Long
+    Function IndexOf(ByVal Value As ITimedTextLine, Index As Long) As BooleanByte
+    Function GetMany(ByVal StartIndex As Long, ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("284F0441-E96D-58AD-9188-7BF46514DFCC")]
+Interface IVector_ITimedTextLine Extends IInspectable
+    Function GetAt(ByVal Index As Long) As ITimedTextLine
+    Property Get Size() As Long
+    Function GetView() As IVectorView_ITimedTextLine
+    Function IndexOf(ByVal Value As ITimedTextLine, Index As Long) As BooleanByte
+    [PreserveSig]
+    Function SetAt(ByVal Index As Long, ByVal Value As ITimedTextLine) As HRESULT
+    [PreserveSig]
+    Function InsertAt(ByVal Index As Long, ByVal Value As ITimedTextLine) As HRESULT
+    [PreserveSig]
+    Function RemoveAt(ByVal Index As Long) As HRESULT
+    [PreserveSig]
+    Function Append(ByVal Value As ITimedTextLine) As HRESULT
+    [PreserveSig]
+    Function RemoveAtEnd() As HRESULT
+    [PreserveSig]
+    Function Clear() As HRESULT
+    Function GetMany(ByVal StartIndex As Long, ByVal Length As Long, Items As Any) As Long
+    [PreserveSig]
+    Function ReplaceAll(ByVal Length As Long, Items As Any) As HRESULT
+End Interface
+
+[InterfaceId("51C79E51-3B86-494D-B359-BB2EA7ACA9A9")]
+Interface ITimedTextCue Extends IInspectable ' requires IMediaCue
+    Property Get CueRegion() As ITimedTextRegion
+    Property Set CueRegion(ByVal Value As ITimedTextRegion)
+    Property Get CueStyle() As ITimedTextStyle
+    Property Set CueStyle(ByVal Value As ITimedTextStyle)
+    Property Get Lines() As IVector_ITimedTextLine
+End Interface
+
+[InterfaceId("65105E50-865C-591D-9BF4-96237DE2533F")]
+Interface IIterator_ITimedTextSubformat Extends IInspectable
+    Property Get Current() As ITimedTextSubformat
+    Property Get HasCurrent() As BooleanByte
+    Function MoveNext() As BooleanByte
+    Function GetMany(ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("CEE3AE43-C93C-56F7-8C55-9024DED72C76")]
+Interface IIterable_ITimedTextSubformat Extends IInspectable
+    Function First() As IIterator_ITimedTextSubformat
+End Interface
+
+[InterfaceId("411A0E26-42E2-5E65-B9C4-980C4C3F31F7")]
+Interface IVectorView_ITimedTextSubformat Extends IInspectable
+    Function GetAt(ByVal Index As Long) As ITimedTextSubformat
+    Property Get Size() As Long
+    Function IndexOf(ByVal Value As ITimedTextSubformat, Index As Long) As BooleanByte
+    Function GetMany(ByVal StartIndex As Long, ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("8786F392-F369-57EA-A16E-75870246A8C9")]
+Interface IVector_ITimedTextSubformat Extends IInspectable
+    Function GetAt(ByVal Index As Long) As ITimedTextSubformat
+    Property Get Size() As Long
+    Function GetView() As IVectorView_ITimedTextSubformat
+    Function IndexOf(ByVal Value As ITimedTextSubformat, Index As Long) As BooleanByte
+    [PreserveSig]
+    Function SetAt(ByVal Index As Long, ByVal Value As ITimedTextSubformat) As HRESULT
+    [PreserveSig]
+    Function InsertAt(ByVal Index As Long, ByVal Value As ITimedTextSubformat) As HRESULT
+    [PreserveSig]
+    Function RemoveAt(ByVal Index As Long) As HRESULT
+    [PreserveSig]
+    Function Append(ByVal Value As ITimedTextSubformat) As HRESULT
+    [PreserveSig]
+    Function RemoveAtEnd() As HRESULT
+    [PreserveSig]
+    Function Clear() As HRESULT
+    Function GetMany(ByVal StartIndex As Long, ByVal Length As Long, Items As Any) As Long
+    [PreserveSig]
+    Function ReplaceAll(ByVal Length As Long, Items As Any) As HRESULT
+End Interface
+
+[InterfaceId("978D7CE2-7308-4C66-BE50-65777289F5DF")]
+Interface ITimedTextLine Extends IInspectable
+    Property Get Text() As LongPtr
+    Property Let Text(ByVal Value As LongPtr)
+    Property Get Subformats() As IVector_ITimedTextSubformat
+End Interface
+
+[InterfaceId("1ED0881F-8A06-4222-9F59-B21BF40124B4")]
+Interface ITimedTextRegion Extends IInspectable
+    Property Get Name() As LongPtr
+    Property Let Name(ByVal Value As LongPtr)
+    Property Get Position() As TimedTextPoint
+    Property Let Position(ByVal Value As TimedTextPoint)
+    Property Get Extent() As TimedTextSize
+    Property Let Extent(ByVal Value As TimedTextSize)
+    Property Get Background() As Long
+    Property Let Background(ByVal Value As Long)
+    Property Get WritingMode() As TimedTextWritingMode
+    Property Let WritingMode(ByVal Value As TimedTextWritingMode)
+    Property Get DisplayAlignment() As TimedTextDisplayAlignment
+    Property Let DisplayAlignment(ByVal Value As TimedTextDisplayAlignment)
+    Property Get LineHeight() As TimedTextDouble
+    Property Let LineHeightLet(ByVal Value As TimedTextDouble)
+    Property Get IsOverflowClipped() As BooleanByte
+    Property Let IsOverflowClipped(ByVal Value As BooleanByte)
+    Property Get Padding() As TimedTextPadding
+    Property Let Padding(ByVal Value As TimedTextPadding)
+    Property Get TextWrapping() As TimedTextWrapping
+    Property Let TextWrapping(ByVal Value As TimedTextWrapping)
+    Property Get ZIndex() As Long
+    Property Let ZIndex(ByVal Value As Long)
+    Property Get ScrollMode() As TimedTextScrollMode
+    Property Let ScrollMode(ByVal Value As TimedTextScrollMode)
+End Interface
+
+[InterfaceId("10335C29-5B3C-5693-9959-D05A0BD24628")]
+Interface ITimedTextRuby Extends IInspectable
+    Property Get Text() As LongPtr
+    Property Let Text(ByVal Value As LongPtr)
+    Property Get Position() As TimedTextRubyPosition
+    Property Let Position(ByVal Value As TimedTextRubyPosition)
+    Property Get Align() As TimedTextRubyAlign
+    Property Let Align(ByVal Value As TimedTextRubyAlign)
+    Property Get Reserve() As TimedTextRubyReserve
+    Property Let Reserve(ByVal Value As TimedTextRubyReserve)
+End Interface
+
+[InterfaceId("0220562A-5DE4-5AD2-AC20-6CD26F111745")]
+Interface ITypedEventHandlerTimedTextSourceResolved Extends IUnknown
+    Sub Invoke(ByVal Sender As ITimedTextSource, ByVal Args As ITimedTextSourceResolveResultEventArgs)
+End Interface
+
+[InterfaceId("C4ED9BA6-101F-404D-A949-82F33FCD93B7")]
+Interface ITimedTextSource Extends IInspectable
+    [PreserveSig]
+    Function AddResolved(ByVal Handler As ITypedEventHandlerTimedTextSourceResolved, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveResolved(ByVal Token As EventRegistrationToken) As HRESULT
+End Interface
+
+[InterfaceId("48907C9C-DCD8-4C33-9AD3-6CDCE7B1C566")]
+Interface ITimedTextSourceResolveResultEventArgs Extends IInspectable
+    Property Get Error() As ITimedMetadataTrackError
+    Property Get Tracks() As IVectorView_ITimedMetadataTrack
+End Interface
+
+[InterfaceId("7E311853-9ABA-4AC4-BB98-2FB176C3BFDD")]
+Interface ITimedTextSourceStatics Extends IInspectable
+    Function CreateFromStream(ByVal Stream As IRandomAccessStream) As ITimedTextSource
+    Function CreateFromUri(ByVal Uri As IUri) As ITimedTextSource
+    Function CreateFromStreamWithLanguage(ByVal Stream As IRandomAccessStream, ByVal DefaultLanguage As LongPtr) As ITimedTextSource
+    Function CreateFromUriWithLanguage(ByVal Uri As IUri, ByVal DefaultLanguage As LongPtr) As ITimedTextSource
+End Interface
+
+[InterfaceId("B66B7602-923E-43FA-9633-587075812DB5")]
+Interface ITimedTextSourceStatics2 Extends IInspectable
+    Function CreateFromStreamWithIndex(ByVal Stream As IRandomAccessStream, ByVal IndexStream As IRandomAccessStream) As ITimedTextSource
+    Function CreateFromUriWithIndex(ByVal Uri As IUri, ByVal IndexUri As IUri) As ITimedTextSource
+    Function CreateFromStreamWithIndexAndLanguage(ByVal Stream As IRandomAccessStream, ByVal IndexStream As IRandomAccessStream, ByVal DefaultLanguage As LongPtr) As ITimedTextSource
+    Function CreateFromUriWithIndexAndLanguage(ByVal Uri As IUri, ByVal IndexUri As IUri, ByVal DefaultLanguage As LongPtr) As ITimedTextSource
+End Interface
+
+[InterfaceId("1BB2384D-A825-40C2-A7F5-281EAEDF3B55")]
+Interface ITimedTextStyle Extends IInspectable
+    Property Get Name() As LongPtr
+    Property Let Name(ByVal Value As LongPtr)
+    Property Get FontFamily() As LongPtr
+    Property Let FontFamily(ByVal Value As LongPtr)
+    Property Get FontSize() As TimedTextDouble
+    Property Let FontSize(ByVal Value As TimedTextDouble)
+    Property Get FontWeight() As TimedTextWeight
+    Property Let FontWeight(ByVal Value As TimedTextWeight)
+    Property Get Foreground() As Long
+    Property Let Foreground(ByVal Value As Long)
+    Property Get Background() As Long
+    Property Let Background(ByVal Value As Long)
+    Property Get IsBackgroundAlwaysShown() As BooleanByte
+    Property Let IsBackgroundAlwaysShown(ByVal Value As BooleanByte)
+    Property Get FlowDirection() As TimedTextFlowDirection
+    Property Let FlowDirection(ByVal Value As TimedTextFlowDirection)
+    Property Get LineAlignment() As TimedTextLineAlignment
+    Property Let LineAlignment(ByVal Value As TimedTextLineAlignment)
+    Property Get OutlineColor() As Color
+    Property Let OutlineColor(ByVal Value As Color)
+    Property Get OutlineThickness() As TimedTextDouble
+    Property Let OutlineThickness(ByVal Value As TimedTextDouble)
+    Property Get OutlineRadius() As TimedTextDouble
+    Property Let OutlineRadius(ByVal Value As TimedTextDouble)
+End Interface
+
+[InterfaceId("655F492D-6111-4787-89CC-686FECE57E14")]
+Interface ITimedTextStyle2 Extends IInspectable
+    Property Get FontStyle() As TimedTextFontStyle
+    Property Let FontStyle(ByVal Value As TimedTextFontStyle)
+    Property Get IsUnderlineEnabled() As BooleanByte
+    Property Let IsUnderlineEnabled(ByVal Value As BooleanByte)
+    Property Get IsLineThroughEnabled() As BooleanByte
+    Property Let IsLineThroughEnabled(ByVal Value As BooleanByte)
+    Property Get IsOverlineEnabled() As BooleanByte
+    Property Let IsOverlineEnabled(ByVal Value As BooleanByte)
+End Interface
+
+[InterfaceId("F803F93B-3E99-595E-BBB7-78A2FA13C270")]
+Interface ITimedTextStyle3 Extends IInspectable
+    Property Get Ruby() As ITimedTextRuby
+    Property Get Bouten() As ITimedTextBouten
+    Property Get IsTextCombined() As BooleanByte
+    Property Let IsTextCombined(ByVal Value As BooleanByte)
+    Property Get FontAngleInDegrees() As Double
+    Property Let FontAngleInDegrees(ByVal Value As Double)
+End Interface
+
+[InterfaceId("D713502F-3261-4722-A0C2-B937B2390F14")]
+Interface ITimedTextSubformat Extends IInspectable
+    Property Get StartIndex() As Long
+    Property Let StartIndex(ByVal Value As Long)
+    Property Get Length() As Long
+    Property Let Length(ByVal Value As Long)
+    Property Get SubformatStyle() As ITimedTextStyle
+    Property Set SubformatStyle(ByVal Value As ITimedTextStyle)
+End Interface
+
+[InterfaceId("897592E2-BFCC-5F16-8834-2C9C4F20559B")]
+Interface ITypedEventHandlerVideoStabilizationEffectEnabledChanged Extends IUnknown
+    Sub Invoke(ByVal Sender As IVideoStabilizationEffect, ByVal Args As IVideoStabilizationEffectEnabledChangedEventArgs)
+End Interface
+
+[InterfaceId("0808A650-9698-4E57-877B-BD7CB2EE0F8A")]
+Interface IVideoStabilizationEffect Extends IInspectable
+    Property Let Enabled(ByVal Value As BooleanByte)
+    Property Get Enabled() As BooleanByte
+    [PreserveSig]
+    Function AddEnabledChanged(ByVal Handler As ITypedEventHandlerVideoStabilizationEffectEnabledChanged, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveEnabledChanged(ByVal Token As EventRegistrationToken) As HRESULT
+    Function GetRecommendedStreamConfiguration(ByVal Controller As IVideoDeviceController, ByVal DesiredProperties As IVideoEncodingProperties) As IVideoStreamConfiguration
+End Interface
+
+[InterfaceId("187EFF28-67BB-4713-B900-4168DA164529")]
+Interface IVideoStabilizationEffectEnabledChangedEventArgs Extends IInspectable
+    Property Get Reason() As VideoStabilizationEffectEnabledChangedReason
+End Interface
+
+[InterfaceId("12EE0D55-9C2B-4440-8057-2C7A90F0CBEC")]
+Interface IVideoStreamDescriptor Extends IInspectable
+    Property Get EncodingProperties() As IVideoEncodingProperties
+End Interface
+
+[InterfaceId("8B306E10-453E-4088-832D-C36FA4F94AF3")]
+Interface IVideoStreamDescriptor2 Extends IInspectable
+    Function Copy() As IVideoStreamDescriptor
+End Interface
+
+[InterfaceId("494EF6D1-BB75-43D2-9E5E-7B79A3AFCED4")]
+Interface IVideoStreamDescriptorFactory Extends IInspectable
+    Function Create(ByVal EncodingProperties As IVideoEncodingProperties) As IVideoStreamDescriptor
+End Interface
+
+[InterfaceId("B1E4BD43-541B-53F3-AD6C-DDAAC4813023")]
+Interface ITypedEventHandlerVideoTrackOpenFailed Extends IUnknown
+    Sub Invoke(ByVal Sender As IVideoTrack, ByVal Args As IVideoTrackOpenFailedEventArgs)
+End Interface
+
+[InterfaceId("99F3B7F3-E298-4396-BB6A-A51BE6A2A20A")]
+Interface IVideoTrack Extends IInspectable
+    [PreserveSig]
+    Function AddOpenFailed(ByVal Handler As ITypedEventHandlerVideoTrackOpenFailed, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveOpenFailed(ByVal Token As EventRegistrationToken) As HRESULT
+    Function GetEncodingProperties() As IVideoEncodingProperties
+    Property Get PlaybackItem() As IMediaPlaybackItem
+    Property Get Name() As LongPtr
+    Property Get SupportInfo() As IVideoTrackSupportInfo
+End Interface
+
+[InterfaceId("7679E231-04F9-4C82-A4EE-8602C8BB4754")]
+Interface IVideoTrackOpenFailedEventArgs Extends IInspectable
+    Property Get ExtendedError() As HRESULT
+End Interface
+
+[InterfaceId("4BB534A0-FC5F-450D-8FF0-778D590486DE")]
+Interface IVideoTrackSupportInfo Extends IInspectable
+    Property Get DecoderStatus() As MediaDecoderStatus
+    Property Get MediaSourceStatus() As MediaSourceStatus
+End Interface
+
+Module mdlMediaCore
+
+Public Enum AudioDecoderDegradation
+    AudioDecoderDegradation_None
+    AudioDecoderDegradation_DownmixTo2Channels
+    AudioDecoderDegradation_DownmixTo6Channels
+    AudioDecoderDegradation_DownmixTo8Channels
+End Enum
+
+Public Enum AudioDecoderDegradationReason
+    AudioDecoderDegradationReason_None
+    AudioDecoderDegradationReason_LicensingRequirement
+    AudioDecoderDegradationReason_SpatialAudioNotSupported
+End Enum
+
+Public Enum CodecCategory
+    CodecCategory_Encoder
+    CodecCategory_Decoder
+End Enum
+
+Public Enum CodecKind
+    CodecKind_Audio
+    CodecKind_Video
+End Enum
+
+Public Enum FaceDetectionMode
+    FaceDetectionMode_HighPerformance
+    FaceDetectionMode_Balanced
+    FaceDetectionMode_HighQuality
+End Enum
+
+Public Enum MediaDecoderStatus
+    MediaDecoderStatus_FullySupported
+    MediaDecoderStatus_UnsupportedSubtype
+    MediaDecoderStatus_UnsupportedEncoderProperties
+    MediaDecoderStatus_Degraded
+End Enum
+
+Public Enum MediaSourceState
+    MediaSourceState_Initial
+    MediaSourceState_Opening
+    MediaSourceState_Opened
+    MediaSourceState_Failed
+    MediaSourceState_Closed
+End Enum
+
+Public Enum MediaSourceStatus
+    MediaSourceStatus_FullySupported
+    MediaSourceStatus_Unknown
+End Enum
+
+Public Enum MediaStreamSourceClosedReason
+    MediaStreamSourceClosedReason_Done
+    MediaStreamSourceClosedReason_UnknownError
+    MediaStreamSourceClosedReason_AppReportedError
+    MediaStreamSourceClosedReason_UnsupportedProtectionSystem
+    MediaStreamSourceClosedReason_ProtectionSystemFailure
+    MediaStreamSourceClosedReason_UnsupportedEncodingFormat
+    MediaStreamSourceClosedReason_MissingSampleRequestedEventHandler
+End Enum
+
+Public Enum MediaStreamSourceErrorStatus
+    MediaStreamSourceErrorStatus_Other
+    MediaStreamSourceErrorStatus_OutOfMemory
+    MediaStreamSourceErrorStatus_FailedToOpenFile
+    MediaStreamSourceErrorStatus_FailedToConnectToServer
+    MediaStreamSourceErrorStatus_ConnectionToServerLost
+    MediaStreamSourceErrorStatus_UnspecifiedNetworkError
+    MediaStreamSourceErrorStatus_DecodeError
+    MediaStreamSourceErrorStatus_UnsupportedMediaFormat
+End Enum
+
+Public Enum MediaTrackKind
+    MediaTrackKind_Audio
+    MediaTrackKind_Video
+    MediaTrackKind_TimedMetadata
+End Enum
+
+Public Enum MseAppendMode
+    MseAppendMode_Segments
+    MseAppendMode_Sequence
+End Enum
+
+Public Enum MseEndOfStreamStatus
+    MseEndOfStreamStatus_Success
+    MseEndOfStreamStatus_NetworkError
+    MseEndOfStreamStatus_DecodeError
+    MseEndOfStreamStatus_UnknownError
+End Enum
+
+Public Enum MseReadyState
+    MseReadyState_Closed
+    MseReadyState_Open
+    MseReadyState_Ended
+End Enum
+
+Public Enum SceneAnalysisRecommendation
+    SceneAnalysisRecommendation_Standard
+    SceneAnalysisRecommendation_Hdr
+    SceneAnalysisRecommendation_LowLight
+End Enum
+
+Public Enum TimedMetadataKind
+    TimedMetadataKind_Caption
+    TimedMetadataKind_Chapter
+    TimedMetadataKind_Custom
+    TimedMetadataKind_Data
+    TimedMetadataKind_Description
+    TimedMetadataKind_Subtitle
+    TimedMetadataKind_ImageSubtitle
+    TimedMetadataKind_Speech
+End Enum
+
+Public Enum TimedMetadataTrackErrorCode
+    TimedMetadataTrackErrorCode_None
+    TimedMetadataTrackErrorCode_DataFormatError
+    TimedMetadataTrackErrorCode_NetworkError
+    TimedMetadataTrackErrorCode_InternalError
+End Enum
+
+Public Enum TimedTextBoutenPosition
+    TimedTextBoutenPosition_Before
+    TimedTextBoutenPosition_After
+    TimedTextBoutenPosition_Outside
+End Enum
+
+Public Enum TimedTextBoutenType
+    TimedTextBoutenType_None
+    TimedTextBoutenType_Auto
+    TimedTextBoutenType_FilledCircle
+    TimedTextBoutenType_OpenCircle
+    TimedTextBoutenType_FilledDot
+    TimedTextBoutenType_OpenDot
+    TimedTextBoutenType_FilledSesame
+    TimedTextBoutenType_OpenSesame
+End Enum
+
+Public Enum TimedTextDisplayAlignment
+    TimedTextDisplayAlignment_Before
+    TimedTextDisplayAlignment_After
+    TimedTextDisplayAlignment_Center
+End Enum
+
+Public Enum TimedTextFlowDirection
+    TimedTextFlowDirection_LeftToRight
+    TimedTextFlowDirection_RightToLeft
+End Enum
+
+Public Enum TimedTextFontStyle
+    TimedTextFontStyle_Normal
+    TimedTextFontStyle_Oblique
+    TimedTextFontStyle_Italic
+End Enum
+
+Public Enum TimedTextLineAlignment
+    TimedTextLineAlignment_Start
+    TimedTextLineAlignment_End
+    TimedTextLineAlignment_Center
+End Enum
+
+Public Enum TimedTextRubyAlign
+    TimedTextRubyAlign_Center
+    TimedTextRubyAlign_Start
+    TimedTextRubyAlign_End
+    TimedTextRubyAlign_SpaceAround
+    TimedTextRubyAlign_SpaceBetween
+    TimedTextRubyAlign_WithBase
+End Enum
+
+Public Enum TimedTextRubyPosition
+    TimedTextRubyPosition_Before
+    TimedTextRubyPosition_After
+    TimedTextRubyPosition_Outside
+End Enum
+
+Public Enum TimedTextRubyReserve
+    TimedTextRubyReserve_None
+    TimedTextRubyReserve_Before
+    TimedTextRubyReserve_After
+    TimedTextRubyReserve_Both
+    TimedTextRubyReserve_Outside
+End Enum
+
+Public Enum TimedTextScrollMode
+    TimedTextScrollMode_Popon
+    TimedTextScrollMode_Rollup
+End Enum
+
+Public Enum TimedTextUnit
+    TimedTextUnit_Pixels
+    TimedTextUnit_Percentage
+End Enum
+
+Public Enum TimedTextWeight
+    TimedTextWeight_Normal = 400
+    TimedTextWeight_Bold = 700
+End Enum
+
+Public Enum TimedTextWrapping
+    TimedTextWrapping_NoWrap
+    TimedTextWrapping_Wrap
+End Enum
+
+Public Enum TimedTextWritingMode
+    TimedTextWritingMode_LeftRightTopBottom
+    TimedTextWritingMode_RightLeftTopBottom
+    TimedTextWritingMode_TopBottomRightLeft
+    TimedTextWritingMode_TopBottomLeftRight
+    TimedTextWritingMode_LeftRight
+    TimedTextWritingMode_RightLeft
+    TimedTextWritingMode_TopBottom
+End Enum
+
+Public Enum VideoStabilizationEffectEnabledChangedReason
+    VideoStabilizationEffectEnabledChangedReason_Programmatic
+    VideoStabilizationEffectEnabledChangedReason_PixelRateTooHigh
+    VideoStabilizationEffectEnabledChangedReason_RunningSlowly
+End Enum
+
+Public Type MseTimeRange
+    Start As TimeSpan
+    End As TimeSpan
+End Type
+
+Public Type TimedTextDouble
+    Value As Double
+    Unit As TimedTextUnit
+End Type
+
+Public Type TimedTextPadding
+    Before As Double
+    After As Double
+    Start As Double
+    End As Double
+    Unit As TimedTextUnit
+End Type
+
+Public Type TimedTextPoint
+    X As Double
+    Y As Double
+    Unit As TimedTextUnit
+End Type
+
+Public Type TimedTextSize
+    Height As Double
+    Width As Double
+    Unit As TimedTextUnit
+End Type
+
+End Module

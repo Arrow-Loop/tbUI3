@@ -1,0 +1,111 @@
+' A part of the GDI+ Package for TwinBasic  https://github.com/kubao/GdiPlus
+' Licensed under the MIT license. (c) 2026 Sunderland Ober Consulting.
+' "Windows" is a trademark of the Microsoft Corporation.
+' Modeled after code and descriptions (c) Microsoft, taken from SDK headers and official documentation.
+' Certain flat API function and type declarations taken from WinDevLib by fafalone, with thanks.
+
+Module Native
+    Function GetNative(for As GraphicsPath) As GpPath
+        If for IsNot Nothing Then GetNative = UnprotectedAccess(for).Native
+    End Function
+    
+    Function GetNative(for As Graphics) As GpGraphics
+        If for IsNot Nothing Then GetNative = UnprotectedAccess(for).Native
+    End Function
+    
+    Public Function GetNative(for As Region) As GpRegion
+        If for IsNot Nothing Then GetNative = UnprotectedAccess(for).Native
+    End Function
+    
+    Function GetNative(for As Matrix) As GpMatrix
+        If for IsNot Nothing Then GetNative = UnprotectedAccess(for).Native
+    End Function
+    
+    Function GetNative(for As Effect) As GpEffect
+        If for IsNot Nothing Then GetNative = UnprotectedAccess(for).Native
+    End Function
+
+    Function GetNative(for As Metafile) As GpMetafile
+        If for IsNot Nothing Then GetNative = UnprotectedAccess(for).Native
+    End Function
+    
+    Function GetNative(for As Brush) As GpBrush
+        If for IsNot Nothing Then GetNative = UnprotectedAccess(for).NativeBrush
+    End Function
+    
+    Public Function GetNative(for As Font) As GpFont
+        If for IsNot Nothing Then GetNative = UnprotectedAccess(for).Native
+    End Function
+    
+    Public Function GetNative(for As TextureBrush) As GpTexture
+        If for IsNot Nothing Then GetNative = UnprotectedAccess(for).Native
+    End Function
+    
+    Public Function GetNative(for As SolidBrush) As GpSolidFill
+        If for IsNot Nothing Then GetNative = UnprotectedAccess(for).Native
+    End Function
+    
+    Public Function GetNative(for As LinearGradientBrush) As GpLineGradient
+        If for IsNot Nothing Then GetNative = UnprotectedAccess(for).Native
+    End Function
+    
+    Public Function GetNative(for As PathGradientBrush) As GpPathGradient
+        If for IsNot Nothing Then GetNative = UnprotectedAccess(for).Native
+    End Function
+    
+    Public Function GetNative(for As HatchBrush) As GpHatch
+        If for IsNot Nothing Then GetNative = UnprotectedAccess(for).Native
+    End Function
+    
+    Public Function GetNative(for As CustomLineCap) As GpCustomLineCap
+        If for IsNot Nothing Then GetNative = UnprotectedAccess(for).Native
+    End Function
+    
+    Public Function GetNative(for As ArrowCap) As GpArrowCap
+        If for IsNot Nothing Then GetNative = UnprotectedAccess(for).Native
+    End Function
+    
+    Public Function GetNative(for As Bitmap) As GpBitmap
+        If for IsNot Nothing Then GetNative = UnprotectedAccess(for).Native
+    End Function
+    
+    Public Function GetNative(for As PathIterator) As GpPathIterator
+        If for IsNot Nothing Then GetNative = UnprotectedAccess(for).Native
+    End Function
+    
+    Public Function GetNative(for As FontCollection) As GpFontCollection
+        If for IsNot Nothing Then GetNative = UnprotectedAccess(for).Native
+    End Function
+    
+    Public Function GetNative(for As InstalledFontCollection) As GpInstalledFontCollection
+        If for IsNot Nothing Then GetNative = UnprotectedAccess(for).Native
+    End Function
+    
+    Public Function GetNative(for As PrivateFontCollection) As GpPrivateFontCollection
+        If for IsNot Nothing Then GetNative = UnprotectedAccess(for).Native
+    End Function
+    
+    Public Function GetNative(for As FontFamily) As GpFontFamily
+        If for IsNot Nothing Then GetNative = UnprotectedAccess(for).Native
+    End Function
+    
+    Public Function GetNative(for As StringFormat) As GpStringFormat
+        If for IsNot Nothing Then GetNative = UnprotectedAccess(for).Native
+    End Function
+    
+    Function GetNative(image As Image) As GpImage
+        If image IsNot Nothing Then GetNative = UnprotectedAccess(image).Native
+    End Function
+    
+    Public Function GetNative(for As ImageAttributes) As GpImageAttributes
+        If for IsNot Nothing Then GetNative = UnprotectedAccess(for).Native
+    End Function
+    
+    Public Function GetNative(for As Pen) As GpPen
+        If for IsNot Nothing Then GetNative = UnprotectedAccess(for).Native
+    End Function
+    
+    Public Function GetNative(for As CachedBitmap) As GpCachedBitmap
+        If for IsNot Nothing Then GetNative = UnprotectedAccess(for).Native
+    End Function
+End Module

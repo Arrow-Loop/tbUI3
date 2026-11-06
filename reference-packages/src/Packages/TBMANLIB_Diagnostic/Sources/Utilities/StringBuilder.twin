@@ -1,0 +1,141 @@
+' =====================================================
+' StringBuilder.twin - 高效字符串构建器
+' Twinbasic Diagnostic Tool
+' =====================================================
+
+' 高效字符串构建器类
+' 用于避免频繁字符串拼接的性能问题
+[ ClassId ("E5F6A7B8-C9D0-E1F2-A3B4-C5D6E7F8A9B0") ]
+[ InterfaceId ("E5F6A7B8-C9D0-E1F2-A3B4-C5D6E7F8A9B1") ]
+Public Class StringBuilder
+
+    Private m_Buffer As String
+    Private m_Length As Long
+    Private m_Capacity As Long
+    Private Const INITIAL_CAPACITY As Long = 256
+    Private Const GROWTH_FACTOR As Long = 2
+
+    ' 构造函数
+    Public Sub New()
+        m_Capacity = INITIAL_CAPACITY
+        m_Buffer = Space$(m_Capacity)
+        m_Length = 0
+    End Sub
+
+    ' 带初始容量的构造函数
+    Public Sub New(ByVal initialCapacity As Long)
+        If initialCapacity < 16 Then initialCapacity = 16
+        m_Capacity = initialCapacity
+        m_Buffer = Space$(m_Capacity)
+        m_Length = 0
+    End Sub
+
+    ' 追加字符串
+    Public Function Append(ByVal text As String) As StringBuilder
+        If Len(text) = 0 Then Return Me
+
+        Dim textLen As Long = Len(text)
+        EnsureCapacity m_Length + textLen
+
+        Mid$(m_Buffer, m_Length + 1, textLen) = text
+        m_Length = m_Length + textLen
+
+        Return Me
+    End Function
+
+    ' 追加一行（带换行符）
+    Public Function AppendLine(Optional ByVal text As String = "") As StringBuilder
+        Append text
+        Append vbCrLf
+        Return Me
+    End Function
+
+    ' 追加格式化字符串（简单替换）
+    Public Function AppendFormat(ByVal format As String, ParamArray args() As Variant) As StringBuilder
+        Dim result As String = format
+        Dim i As Long
+
+        For i = LBound(args) To UBound(args)
+            result = Replace(result, "{" & i & "}", CStr(args(i)))
+        Next i
+
+        Append result
+        Return Me
+    End Function
+
+    ' 追加重复字符
+    Public Function AppendRepeat(ByVal char As String, ByVal count As Long) As StringBuilder
+        If count <= 0 Then Return Me
+        Append String$(count, char)
+        Return Me
+    End Function
+
+    ' 插入字符串
+    Public Function Insert(ByVal index As Long, ByVal text As String) As StringBuilder
+        If index < 0 Or index > m_Length Then
+            Err.Raise 9, "StringBuilder.Insert", "Index out of range"
+        End If
+
+        If Len(text) = 0 Then Return Me
+
+        Dim textLen As Long = Len(text)
+        EnsureCapacity m_Length + textLen
+
+        ' 移动后面的内容
+        If index < m_Length Then
+            Mid$(m_Buffer, index + textLen + 1) = Mid$(m_Buffer, index + 1, m_Length - index)
+        End If
+
+        ' 插入新内容
+        Mid$(m_Buffer, index + 1, textLen) = text
+        m_Length = m_Length + textLen
+
+        Return Me
+    End Function
+
+    ' 清空内容
+    Public Sub Clear()
+        m_Length = 0
+    End Sub
+
+    ' 获取长度
+    Public Property Get Length() As Long
+        Return m_Length
+    End Property
+
+    ' 设置长度（可用于截断）
+    Public Property Let Length(ByVal value As Long)
+        If value < 0 Then value = 0
+        If value > m_Length Then
+            EnsureCapacity value
+        End If
+        m_Length = value
+    End Property
+
+    ' 获取容量
+    Public Property Get Capacity() As Long
+        Return m_Capacity
+    End Property
+
+    ' 转换为字符串
+    Public Function ToString() As String
+        If m_Length = 0 Then Return ""
+        Return Left$(m_Buffer, m_Length)
+    End Function
+
+    ' 确保容量足够
+    Private Sub EnsureCapacity(ByVal minCapacity As Long)
+        If minCapacity > m_Capacity Then
+            Dim newCapacity As Long = m_Capacity * GROWTH_FACTOR
+            If newCapacity < minCapacity Then newCapacity = minCapacity
+            m_Capacity = newCapacity
+
+            Dim newBuffer As String = Space$(m_Capacity)
+            If m_Length > 0 Then
+                Mid$(newBuffer, 1, m_Length) = Left$(m_Buffer, m_Length)
+            End If
+            m_Buffer = newBuffer
+        End If
+    End Sub
+
+End Class

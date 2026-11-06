@@ -1,0 +1,270 @@
+[InterfaceId("F97000F6-A6FC-4D03-9B2F-72F992131D48")]
+Interface IHSTRING Extends IUnknown
+    Property Get hStringPtr(Optional ByVal bReplace As Boolean) As LongPtr
+    Property Let hStringPtr(Optional ByVal bReplace As Boolean, ByVal Value As LongPtr)
+    Property Get Length() As Long
+    Function GetString() As String
+    Function GetStringReplace(ByVal hNewString As LongPtr) As String
+    Function Compare(ByVal hCompareString As LongPtr) As Long
+    Function Concat(ByVal hConcatString As LongPtr, Optional ByVal bReverse As Boolean) As LongPtr
+    Function Duplicate() As LongPtr
+    Function Substring(ByVal StartIndex As Long, Optional ByVal bReplace As Boolean) As LongPtr
+    Function SubstringLen(ByVal StartIndex As Long, ByVal Length As Long, Optional ByVal bReplace As Boolean) As LongPtr
+End Interface
+
+Module mdlHSTRING
+
+Public Type VTable
+    pVTable As LongPtr
+    VTable() As LongPtr
+End Type
+
+Public Type HSTRING_HEADER
+    Reserved1 As Long
+    Reserved2 As Long
+    Reserved3 As Long
+    Reserved4 As Long
+    Reserved5 As Long
+    Reserved6 As Long
+End Type
+
+Private Type HSTRING_OBJECT
+    pVTable As LongPtr
+    cRefs As Integer
+    hStringPtr As LongPtr
+End Type
+
+Public Type HSTRING
+    hStringPtr As LongPtr
+
+    [UseGetLastError(False), DLLStackCheck(False)]
+    Private Declare PtrSafe Function CompareString Lib "combase" Alias "WindowsCompareStringOrdinal" (ByVal Me As HSTRING, ByVal hCompareWith As HSTRING, lResult As Long) As HRESULT
+    [UseGetLastError(False), DLLStackCheck(False)]
+    Private Declare PtrSafe Function ConcatString Lib "combase" Alias "WindowsConcatString" (ByVal hString1 As HSTRING, ByVal hString2 As HSTRING, hNewString As LongPtr) As HRESULT
+    [UseGetLastError(False), DLLStackCheck(False)]
+    Private Declare PtrSafe Function CreateString Lib "combase" Alias "WindowsCreateString" (ByVal SourceString As LongPtr, ByVal Length As Long, hNewString As LongPtr) As HRESULT
+    [UseGetLastError(False), DLLStackCheck(False)]
+    Private Declare PtrSafe Function Delete Lib "combase" Alias "WindowsDeleteString" (ByVal Me As HSTRING) As HRESULT
+    [UseGetLastError(False), DLLStackCheck(False)]
+    Private Declare PtrSafe Function DuplicateString Lib "combase" Alias "WindowsDuplicateString" (ByVal Me As HSTRING, hNewString As LongPtr) As HRESULT
+    [UseGetLastError(False), DLLStackCheck(False)]
+    Private Declare PtrSafe Function GetLength Lib "combase" Alias "WindowsGetStringLen" (ByVal Me As HSTRING) As Long
+    [UseGetLastError(False), DLLStackCheck(False)]
+    Private Declare PtrSafe Function GetStringRawBuffer Lib "combase" Alias "WindowsGetStringRawBuffer" (ByVal Me As HSTRING, Optional Length As Long) As LongPtr
+    [UseGetLastError(False), DLLStackCheck(False)]
+    Private Declare PtrSafe Function GetSubstring Lib "combase" Alias "WindowsSubstring" (ByVal Me As HSTRING, ByVal StartIndex As Long, Substring As LongPtr) As HRESULT
+    [UseGetLastError(False), DLLStackCheck(False)]
+    Private Declare PtrSafe Function GetSubstringLen Lib "combase" Alias "WindowsSubstringWithSpecifiedLength" (ByVal Me As HSTRING, ByVal StartIndex As Long, ByVal Length As Long, Substring As LongPtr) As HRESULT
+    
+    Private Sub Type_Assignment(RHS As Variant): Me.Delete: Me.hStringPtr = StrRef(RHS): End Sub
+    
+    Private Sub Type_Assignment(ByVal RHS As LongPtr): Me.Delete: Me.hStringPtr = RHS: End Sub
+    
+    Private Function Type_Conversion() As String: SysReAllocString VarPtr(Type_Conversion), Me.GetStringRawBuffer: End Function
+    
+    Private Function Type_DebugView() As String
+        Dim sPreview As String
+        sPreview = Replace$(Me.GetValue, vbNewLine, " "): If Len(sPreview) > 64 Then sPreview = Left$(sPreview, 64) & "..."
+        Type_DebugView = "HSTRING (Len = " & Me.Length & ", Ptr = " & Hex$(Me.hStringPtr) & ", Text = """ & sPreview & """)"
+    End Function
+    
+    Private Sub Type_Terminate(): Me.hStringPtr = Me.Delete: End Sub
+
+    Function Compare(ByVal hCompareWith As HSTRING) As Long: Me.CompareString hCompareWith, Compare: End Function
+    
+    Sub Concat(ByVal hConcatWith As HSTRING, Optional ByVal bReverseConcat As Boolean)
+    Dim hNewString As LongPtr
+        If Not bReverseConcat Then Me.ConcatString Me, hConcatWith, hNewString Else Me.ConcatString hConcatWith, Me, hNewString
+        Me = hNewString
+    End Sub
+    
+    Function Detach() As LongPtr: Detach = Me.hStringPtr: Me.hStringPtr = vbNullPtr: End Function
+    
+    Function Duplicate() As LongPtr: Me.DuplicateString Duplicate: End Function
+    
+    Function GetValue() As String: SysReAllocString VarPtr(GetValue), Me.GetStringRawBuffer: End Function
+    
+    Function Length() As Long: Length = Me.GetLength: End Function
+    
+    Sub SetValue(Value As Variant)
+        Me.Delete
+        Select Case VarType(Value)
+            Case vbString: Me.CreateString StrPtr(CStr(Value)), CLng(Len(Value)), Me.hStringPtr
+            Case Else: Me.hStringPtr = CType(Of LongPtr)(Value)
+        End Select
+    End Sub
+    
+    Function SubString(ByVal StartIndex As Long) As LongPtr: Me.GetSubstring StartIndex, SubString: End Function
+
+    Function SubStringLen(ByVal StartIndex As Long, ByVal Length As Long) As LongPtr: Me.GetSubstringLen StartIndex, Length, SubStringLen: End Function
+    
+End Type
+
+Private Const MaxConcurrentStringRefs As Long = 1024
+
+[UseGetLastError(False), DLLStackCheck(False)]
+Public Declare PtrSafe Function CoTaskMemAlloc Lib "combase" (ByVal cbMem As LongPtr) As LongPtr
+[UseGetLastError(False), DLLStackCheck(False)]
+Public Declare PtrSafe Sub CoTaskMemFree Lib "combase" (ByVal lpMem As LongPtr)
+[UseGetLastError(False), DLLStackCheck(False)]
+Private Declare PtrSafe Function WindowsCompareStringOrdinal Lib "combase" (ByVal hStringPtr1 As LongPtr, ByVal hStringPtr2 As LongPtr, lResult As Long) As HRESULT
+[UseGetLastError(False), DLLStackCheck(False)]
+Private Declare PtrSafe Function WindowsConcatString Lib "combase" (ByVal hStringPtr1 As LongPtr, ByVal hStringPtr2 As LongPtr, hNewStringPtr As LongPtr) As HRESULT
+[UseGetLastError(False), DLLStackCheck(False)]
+Private Declare PtrSafe Function WindowsCreateString Lib "combase" (ByVal SourceString As LongPtr, ByVal Length As Long, hStringPtr As LongPtr) As HRESULT
+[UseGetLastError(False), DLLStackCheck(False)]
+Private Declare PtrSafe Function WindowsCreateStringReference Lib "combase" (ByVal SourceString As LongPtr, ByVal Length As Long, ByVal hStringHeader As LongPtr, hStringPtr As LongPtr) As HRESULT
+[UseGetLastError(False), DLLStackCheck(False)]
+Private Declare PtrSafe Function WindowsDeleteString Lib "combase" (ByVal hStringPtr As LongPtr) As HRESULT
+[UseGetLastError(False), DLLStackCheck(False)]
+Private Declare PtrSafe Function WindowsDuplicateString Lib "combase" (ByVal hStringPtr As LongPtr, hNewStringPtr As LongPtr) As HRESULT
+[UseGetLastError(False), DLLStackCheck(False)]
+Private Declare PtrSafe Function WindowsGetStringLen Lib "combase" (ByVal hStringPtr As LongPtr) As Long
+[UseGetLastError(False), DLLStackCheck(False)]
+Private Declare PtrSafe Function WindowsGetStringRawBuffer Lib "combase" (ByVal hStringPtr As LongPtr, Optional Length As Long) As LongPtr
+[UseGetLastError(False), DLLStackCheck(False)]
+Private Declare PtrSafe Function WindowsSubstring Lib "combase" (ByVal hStringPtr As LongPtr, ByVal StartIndex As Long, hNewStringPtr As LongPtr) As HRESULT
+[UseGetLastError(False), DLLStackCheck(False)]
+Private Declare PtrSafe Function WindowsSubstringWithSpecifiedLength Lib "combase" (ByVal hStringPtr As LongPtr, ByVal StartIndex As Long, ByVal Length As Long, hNewStringPtr As LongPtr) As HRESULT
+
+Private m_VTableHSTRING As VTable, StringHeaders(0 To MaxConcurrentStringRefs) As HSTRING_HEADER, lCountStringRefs As Long, m_IID_IUnknown As UUID, m_IID_IHSTRING As UUID
+
+Public Function NewString(Optional vString As Variant) As IHSTRING
+Dim This As HSTRING_OBJECT
+    With This
+        If Not IsMissing(vString) Then If VarType(vString) = vbString Then WindowsCreateString StrPtr(vString), Len(vString), .hStringPtr Else .hStringPtr = vString
+        .pVTable = m_VTableHSTRING.pVTable: .cRefs = 1
+        If .pVTable = vbNullPtr Then
+            If m_IID_IUnknown.IsEmpty Then m_IID_IUnknown = MakeUUID(, , &HC0, &H46000000)
+            m_IID_IHSTRING = MakeUUID(&HF97000F6, &H4D03A6FC, &HF9722F9B, &H481D1392)
+            .pVTable = GetVTablePointer(m_VTableHSTRING, AddressOf QueryInterfaceString, AddressOf AddRefString, AddressOf ReleaseString, AddressOf hStringGet, AddressOf hStringLet, _
+                       AddressOf GetLength, AddressOf GetString, AddressOf GetStringReplace, AddressOf Compare, AddressOf Concat, AddressOf Detach, AddressOf Duplicate, AddressOf Substring, _
+                       AddressOf SubstringLen)
+        End If
+        PutMemPtr ByVal VarPtr(NewString), vbaCopyBytes(LenB(This), ByVal CoTaskMemAlloc(LenB(This)), ByVal VarPtr(.pVTable))
+    End With
+End Function
+
+Public Function GetStr(ByVal hStringPtr As LongPtr, Optional ByVal bPersistString As Boolean) As String
+    SysReAllocString VarPtr(GetStr), WindowsGetStringRawBuffer(hStringPtr)
+    If Not bPersistString Then WindowsDeleteString hStringPtr
+End Function
+
+Public Function StrRef(vString As Variant, Optional ByVal StringHeaderPtr As LongPtr) As LongPtr
+    If StringHeaderPtr = vbNullPtr Then
+        If lCountStringRefs > MaxConcurrentStringRefs Then lCountStringRefs = 0
+        StringHeaderPtr = VarPtr(StringHeaders(lCountStringRefs)): lCountStringRefs = lCountStringRefs + 1
+    End If
+    WindowsCreateStringReference StrPtr(vString), Len(vString), StringHeaderPtr, StrRef
+End Function
+
+Public Function StrRefPtr(ByVal StringPtr As LongPtr, ByVal StringLength As Long, Optional ByVal StringHeaderPtr As LongPtr) As LongPtr
+    If StringHeaderPtr = vbNullPtr Then
+        If lCountStringRefs > MaxConcurrentStringRefs Then lCountStringRefs = 0
+        StringHeaderPtr = VarPtr(StringHeaders(lCountStringRefs)): lCountStringRefs = lCountStringRefs + 1
+    End If
+    WindowsCreateStringReference StringPtr, StringLength, StringHeaderPtr, StrRefPtr
+End Function
+
+[ArrayBoundsChecks(False), IntegerOverflowChecks(False)]
+Public Function GetVTablePointer(VTable As VTable, ParamArray vaVTableAddresses() As Variant) As LongPtr
+    GetVTablePointer = UBound(vaVTableAddresses) + 1
+    If GetVTablePointer > 0 Then
+        With VTable
+            ReDim .VTable(0 To CLng(GetVTablePointer) - 1)
+            For GetVTablePointer = 0 To GetVTablePointer - 1: .VTable(GetVTablePointer) = vaVTableAddresses(GetVTablePointer): Next GetVTablePointer
+            .pVTable = VarPtr(.VTable(0)): GetVTablePointer = .pVTable
+        End With
+    End If
+End Function
+
+Public Function MakeUUID(Optional ByVal Data1 As Long, Optional ByVal Data2 As Long, Optional ByVal Data3 As Long, Optional ByVal Data4 As Long) As UUID
+    With MakeUUID
+        .Data1 = Data1: .Data2 = Data2: .Data3 = Data3: .Data4 = Data4
+    End With
+End Function
+
+Private Function QueryInterfaceString(This As HSTRING_OBJECT, Guid As UUID, ppvObj As LongPtr) As HRESULT
+    With This
+        If Guid.IsEqual(m_IID_IHSTRING) Then
+            .cRefs = .cRefs + 1: ppvObj = VarPtr(.pVTable)
+        ElseIf Guid.IsEqual(m_IID_IUnknown) Then
+            .cRefs = .cRefs + 1: ppvObj = VarPtr(.pVTable)
+        Else
+            ppvObj = vbNullPtr: QueryInterfaceString = E_NOINTERFACE
+        End If
+    End With
+End Function
+
+Private Function AddRefString(This As HSTRING_OBJECT) As Long
+    AddRefString = This.cRefs + 1: This.cRefs = AddRefString
+End Function
+
+Private Function ReleaseString(This As HSTRING_OBJECT) As Long
+    With This
+        .cRefs = .cRefs - 1: ReleaseString = .cRefs
+        If .cRefs = 0 Then WindowsDeleteString .hStringPtr: CoTaskMemFree VarPtr(.pVTable)
+    End With
+End Function
+
+Private Function hStringGet(This As HSTRING_OBJECT, ByVal bReplace As Boolean, hStringPtr As LongPtr) As HRESULT
+    hStringPtr = This.hStringPtr
+End Function
+
+Private Function hStringLet(This As HSTRING_OBJECT, ByVal bReplace As Boolean, ByVal hStringPtr As LongPtr) As HRESULT
+    With This
+        If bReplace Then WindowsDeleteString .hStringPtr
+        .hStringPtr = hStringPtr
+    End With
+End Function
+
+Private Function GetLength(This As HSTRING_OBJECT, Length As Long) As HRESULT
+    Length = WindowsGetStringLen(This.hStringPtr)
+End Function
+
+Private Function GetString(This As HSTRING_OBJECT, pStr As LongPtr) As HRESULT
+    pStr = SysAllocString(WindowsGetStringRawBuffer(This.hStringPtr))
+End Function
+
+Private Function GetStringReplace(This As HSTRING_OBJECT, ByVal hNewString As LongPtr, pStr As LongPtr) As HRESULT
+    With This
+        WindowsDeleteString .hStringPtr: .hStringPtr = hNewString: pStr = SysAllocString(WindowsGetStringRawBuffer(.hStringPtr))
+    End With
+End Function
+
+Private Function Compare(This As HSTRING_OBJECT, ByVal hCompareString As LongPtr, lResult As Long) As HRESULT
+    WindowsCompareStringOrdinal This.hStringPtr, hCompareString, lResult: WindowsDeleteString hCompareString
+End Function
+
+Private Function Concat(This As HSTRING_OBJECT, ByVal hConcatString As LongPtr, ByVal bReverse As Boolean, hNewString As LongPtr) As HRESULT
+    With This
+        If Not bReverse Then WindowsConcatString .hStringPtr, hConcatString, hNewString Else WindowsConcatString hConcatString, .hStringPtr, hNewString
+        WindowsDeleteString .hStringPtr: WindowsDeleteString hConcatString: .hStringPtr = hNewString
+    End With
+End Function
+
+Private Function Detach(This As HSTRING_OBJECT, hStringPtr As LongPtr) As HRESULT
+    With This
+        hStringPtr = .hStringPtr: .hStringPtr = vbNullPtr
+    End With
+End Function
+
+Private Function Duplicate(This As HSTRING_OBJECT, hNewString As LongPtr) As HRESULT
+    WindowsDuplicateString This.hStringPtr, hNewString
+End Function
+
+Private Function Substring(This As HSTRING_OBJECT, ByVal StartIndex As Long, ByVal bReplace As Boolean, hNewString As LongPtr) As HRESULT
+    With This
+        WindowsSubstring .hStringPtr, StartIndex, hNewString
+        If bReplace Then WindowsDeleteString .hStringPtr: .hStringPtr = hNewString
+    End With
+End Function
+
+Private Function SubstringLen(This As HSTRING_OBJECT, ByVal StartIndex As Long, ByVal Length As Long, ByVal bReplace As Boolean, hNewString As LongPtr) As HRESULT
+    With This
+        WindowsSubstringWithSpecifiedLength .hStringPtr, StartIndex, Length, hNewString
+        If bReplace Then WindowsDeleteString .hStringPtr: .hStringPtr = hNewString
+    End With
+End Function
+
+End Module

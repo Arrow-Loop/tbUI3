@@ -1,0 +1,120 @@
+[InterfaceId("1AEB1103-E4D4-41AA-A4F6-C4A276E79EAC")]
+Interface IAppDisplayInfo Extends IInspectable
+    Property Get DisplayName() As LongPtr
+    Property Get Description() As LongPtr
+    Function GetLogo(ByVal Width As Single, ByVal Height As Single) As IRandomAccessStreamReference
+End Interface
+
+[InterfaceId("CF7F59B3-6A09-4DE8-A6C0-5792D56880D1")]
+Interface IAppInfo Extends IInspectable
+    Property Get Id() As LongPtr
+    Property Get AppUserModelId() As LongPtr
+    Property Get DisplayInfo() As IAppDisplayInfo
+    Property Get PackageFamilyName() As LongPtr
+End Interface
+
+[InterfaceId("F722DCC2-9827-403D-AAED-ECCA9AC17398")]
+Interface IEnteredBackgroundEventArgs Extends IInspectable
+    Function GetDeferral() As IDeferral
+End Interface
+
+[InterfaceId("39C6EC9A-AE6E-46F9-A07A-CFC23F88733E")]
+Interface ILeavingBackgroundEventArgs Extends IInspectable
+    Function GetDeferral() As IDeferral
+End Interface
+
+[InterfaceId("59140509-8BC9-4EB4-B636-DABDC4F46F66")]
+Interface ISuspendingDeferral Extends IInspectable
+    [PreserveSig]
+    Function Complete() As HRESULT
+End Interface
+
+[InterfaceId("96061C05-2DBA-4D08-B0BD-2B30A131C6AA")]
+Interface ISuspendingEventArgs Extends IInspectable
+    Property Get SuspendingOperation() As ISuspendingOperation
+End Interface
+
+[InterfaceId("9DA4CA41-20E1-4E9B-9F65-A9F435340C3A")]
+Interface ISuspendingOperation Extends IInspectable
+    Function GetDeferral() As ISuspendingDeferral
+    Property Get Deadline() As DateTime
+End Interface
+
+Module mdlApplicationModel
+
+Public Enum AddResourcePackageOptions
+    AddResourcePackageOptions_None
+    AddResourcePackageOptions_ForceTargetAppShutdown
+    AddResourcePackageOptions_ApplyUpdateIfAvailable
+End Enum
+
+Public Enum AppExecutionContext
+    AppExecutionContext_Unknown
+    AppExecutionContext_Host
+    AppExecutionContext_Guest
+End Enum
+
+Public Enum AppInstallerPolicySource
+    AppInstallerPolicySource_Default
+    AppInstallerPolicySource_System
+End Enum
+
+Public Enum FullTrustLaunchResult
+    FullTrustLaunchResult_Success
+    FullTrustLaunchResult_AccessDenied
+    FullTrustLaunchResult_FileNotFound
+    FullTrustLaunchResult_Unknown
+End Enum
+
+Public Enum LimitedAccessFeatureStatus
+    LimitedAccessFeatureStatus_Unavailable
+    LimitedAccessFeatureStatus_Available
+    LimitedAccessFeatureStatus_AvailableWithoutToken
+    LimitedAccessFeatureStatus_Unknown
+End Enum
+
+Public Enum PackageContentGroupState
+    PackageContentGroupState_NotStaged
+    PackageContentGroupState_Queued
+    PackageContentGroupState_Staging
+    PackageContentGroupState_Staged
+End Enum
+
+Public Enum PackageRelationship
+    PackageRelationship_Dependencies
+    PackageRelationship_Dependents
+    PackageRelationship_All
+End Enum
+
+Public Enum PackageSignatureKind
+    PackageSignatureKind_None
+    PackageSignatureKind_Developer
+    PackageSignatureKind_Enterprise
+    PackageSignatureKind_Store
+    PackageSignatureKind_System
+End Enum
+
+Public Enum PackageUpdateAvailability
+    PackageUpdateAvailability_Unknown
+    PackageUpdateAvailability_NoUpdates
+    PackageUpdateAvailability_Available
+    PackageUpdateAvailability_Required
+    PackageUpdateAvailability_Error
+End Enum
+
+Public Enum StartupTaskState
+    StartupTaskState_Disabled
+    StartupTaskState_DisabledByUser
+    StartupTaskState_Enabled
+    StartupTaskState_DisabledByPolicy
+    StartupTaskState_EnabledByPolicy
+End Enum
+
+Public Type PackageVersion
+    Major As Integer
+    Minor As Integer
+    Build As Integer
+    Revision As Integer
+End Type
+
+End Module

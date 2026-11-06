@@ -1,0 +1,34 @@
+[InterfaceId("803736F5-CF44-4D97-83B3-7A089E9AB663")]
+Interface IPlaylist Extends IInspectable
+    Property Get Files() As IVector_IStorageFile
+    Function SaveAsync() As IAsyncAction
+    Function SaveAsAsync(ByVal SaveLocation As IStorageFolder, ByVal DesiredName As LongPtr, ByVal Option As NameCollisionOption) As IAsyncOperationIStorageFile
+    Function SaveAsWithFormatAsync(ByVal SaveLocation As IStorageFolder, ByVal DesiredName As LongPtr, ByVal Option As NameCollisionOption, ByVal PlaylistFormat As PlaylistFormat) As IAsyncOperationIStorageFile
+End Interface
+
+[InterfaceId("8FFB74AB-912F-5BC1-87FA-2865F673CBFC")]
+Interface IAsyncOperationIPlayList Extends IInspectable
+    Property Set Completed(ByVal Handler As IAsyncOperationCompletedHandlerIPlayList)
+    Property Get Completed() As IAsyncOperationCompletedHandlerIPlayList
+    Function GetResults() As IPlaylist
+End Interface
+
+[InterfaceId("427DEAFD-B226-5EF0-9320-C9F325E37474")]
+Interface IAsyncOperationCompletedHandlerIPlayList Extends IUnknown
+    Sub Invoke(ByVal AsyncOperation As IAsyncOperationIPlayList, ByVal AsyncStatus As AsyncStatus)
+End Interface
+
+[InterfaceId("C5C331CD-81F9-4FF3-95B9-70B6FF046B68")]
+Interface IPlaylistStatics Extends IInspectable
+    Function LoadAsync(ByVal File As IStorageFile) As IAsyncOperationIPlayList
+End Interface
+
+Module mdlMediaPlaylists
+
+Public Enum PlaylistFormat
+    PlaylistFormat_WindowsMedia
+    PlaylistFormat_Zune
+    PlaylistFormat_M3u
+End Enum
+
+End Module

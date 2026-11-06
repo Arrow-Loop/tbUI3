@@ -1,0 +1,383 @@
+[InterfaceId("AF5C0E81-788B-52D4-82A2-1ED28C66A05E")]
+Interface IIterator_IBluetoothLEAdvertisementDataSection Extends IInspectable
+    Property Get Current() As IBluetoothLEAdvertisementDataSection
+    Property Get HasCurrent() As BooleanByte
+    Function MoveNext() As BooleanByte
+    Function GetMany(ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("DB98B5D1-897E-59CC-B86A-7B8855AC98AF")]
+Interface IIterable_IBluetoothLEAdvertisementDataSection Extends IInspectable
+    Function First() As IIterator_IBluetoothLEAdvertisementDataSection
+End Interface
+
+[InterfaceId("C4F2B8EA-11A8-5109-9013-4047E12C72E8")]
+Interface IVectorView_IBluetoothLEAdvertisementDataSection Extends IInspectable
+    Function GetAt(ByVal Index As Long) As IBluetoothLEAdvertisementDataSection
+    Property Get Size() As Long
+    Function IndexOf(ByVal Value As IBluetoothLEAdvertisementDataSection, Index As Long) As BooleanByte
+    Function GetMany(ByVal StartIndex As Long, ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("B6F71AD2-E2CF-5D54-B6F1-90964EE5D4DA")]
+Interface IVector_IBluetoothLEAdvertisementDataSection Extends IInspectable
+    Function GetAt(ByVal Index As Long) As IBluetoothLEAdvertisementDataSection
+    Property Get Size() As Long
+    Function GetView() As IVectorView_IBluetoothLEAdvertisementDataSection
+    Function IndexOf(ByVal Value As IBluetoothLEAdvertisementDataSection, Index As Long) As BooleanByte
+    [PreserveSig]
+    Function SetAt(ByVal Index As Long, ByVal Value As IBluetoothLEAdvertisementDataSection) As HRESULT
+    [PreserveSig]
+    Function InsertAt(ByVal Index As Long, ByVal Value As IBluetoothLEAdvertisementDataSection) As HRESULT
+    [PreserveSig]
+    Function RemoveAt(ByVal Index As Long) As HRESULT
+    [PreserveSig]
+    Function Append(ByVal Value As IBluetoothLEAdvertisementDataSection) As HRESULT
+    [PreserveSig]
+    Function RemoveAtEnd() As HRESULT
+    [PreserveSig]
+    Function Clear() As HRESULT
+    Function GetMany(ByVal StartIndex As Long, ByVal Length As Long, Items As Any) As Long
+    [PreserveSig]
+    Function ReplaceAll(ByVal Length As Long, Items As Any) As HRESULT
+End Interface
+
+[InterfaceId("12F158DD-7016-5338-AC5C-7D5503D73274")]
+Interface IIterator_IBluetoothLEManufacturerData Extends IInspectable
+    Property Get Current() As IBluetoothLEManufacturerData
+    Property Get HasCurrent() As BooleanByte
+    Function MoveNext() As BooleanByte
+    Function GetMany(ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("834A4CAC-BB8B-5F0F-9F28-4DBC98C17907")]
+Interface IIterable_IBluetoothLEManufacturerData Extends IInspectable
+    Function First() As IIterator_IBluetoothLEManufacturerData
+End Interface
+
+[InterfaceId("78AB070E-AD7E-5912-A4F1-7BE33E4560AF")]
+Interface IVectorView_IBluetoothLEManufacturerData Extends IInspectable
+    Function GetAt(ByVal Index As Long) As IBluetoothLEManufacturerData
+    Property Get Size() As Long
+    Function IndexOf(ByVal Value As IBluetoothLEManufacturerData, Index As Long) As BooleanByte
+    Function GetMany(ByVal StartIndex As Long, ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("52D75B45-1D24-5EEB-BABB-65EFFAE45E46")]
+Interface IVector_IBluetoothLEManufacturerData Extends IInspectable
+    Function GetAt(ByVal Index As Long) As IBluetoothLEManufacturerData
+    Property Get Size() As Long
+    Function GetView() As IVectorView_IBluetoothLEManufacturerData
+    Function IndexOf(ByVal Value As IBluetoothLEManufacturerData, Index As Long) As BooleanByte
+    [PreserveSig]
+    Function SetAt(ByVal Index As Long, ByVal Value As IBluetoothLEManufacturerData) As HRESULT
+    [PreserveSig]
+    Function InsertAt(ByVal Index As Long, ByVal Value As IBluetoothLEManufacturerData) As HRESULT
+    [PreserveSig]
+    Function RemoveAt(ByVal Index As Long) As HRESULT
+    [PreserveSig]
+    Function Append(ByVal Value As IBluetoothLEManufacturerData) As HRESULT
+    [PreserveSig]
+    Function RemoveAtEnd() As HRESULT
+    [PreserveSig]
+    Function Clear() As HRESULT
+    Function GetMany(ByVal StartIndex As Long, ByVal Length As Long, Items As Any) As Long
+    [PreserveSig]
+    Function ReplaceAll(ByVal Length As Long, Items As Any) As HRESULT
+End Interface
+
+[InterfaceId("066FB2B7-33D1-4E7D-8367-CF81D0F79653")]
+Interface IBluetoothLEAdvertisement Extends IInspectable
+    Property Get Flags() As IReference_BluetoothLEAdvertisementFlags
+    Property Set Flags(ByVal Value As IReference_BluetoothLEAdvertisementFlags)
+    Property Get LocalName() As LongPtr
+    Property Let LocalName(ByVal Value As LongPtr)
+    Property Get ServiceUuids() As IVector_UUID
+    Property Get ManufacturerData() As IVector_IBluetoothLEManufacturerData
+    Property Get DataSections() As IVector_IBluetoothLEAdvertisementDataSection
+    Function GetManufacturerDataByCompanyId(ByVal CompanyId As Integer) As IVectorView_IBluetoothLEManufacturerData
+    Function GetSectionsByType(ByVal Type As Byte) As IVectorView_IBluetoothLEAdvertisementDataSection
+End Interface
+
+[InterfaceId("FBFAD7F2-B9C5-4A08-BC51-502F8EF68A79")]
+Interface IBluetoothLEAdvertisementBytePattern Extends IInspectable
+    Property Get DataType() As Byte
+    Property Let DataType(ByVal Value As Byte)
+    Property Get Offset() As Integer
+    Property Let Offset(ByVal Value As Integer)
+    Property Get Data() As IBuffer
+    Property Set Data(ByVal Value As IBuffer)
+End Interface
+
+[InterfaceId("C2E24D73-FD5C-4EC3-BE2A-9CA6FA11B7BD")]
+Interface IBluetoothLEAdvertisementBytePatternFactory Extends IInspectable
+    Function Create(ByVal DataType As Byte, ByVal Offset As Integer, ByVal Data As IBuffer) As IBluetoothLEAdvertisementBytePattern
+End Interface
+
+[InterfaceId("D7213314-3A43-40F9-B6F0-92BFEFC34AE3")]
+Interface IBluetoothLEAdvertisementDataSection Extends IInspectable
+    Property Get DataType() As Byte
+    Property Let DataType(ByVal Value As Byte)
+    Property Get Data() As IBuffer
+    Property Set Data(ByVal Value As IBuffer)
+End Interface
+
+[InterfaceId("E7A40942-A845-4045-BF7E-3E9971DB8A6B")]
+Interface IBluetoothLEAdvertisementDataSectionFactory Extends IInspectable
+    Function Create(ByVal DataType As Byte, ByVal Data As IBuffer) As IBluetoothLEAdvertisementDataSection
+End Interface
+
+[InterfaceId("3BB6472F-0606-434B-A76E-74159F0684D3")]
+Interface IBluetoothLEAdvertisementDataTypesStatics Extends IInspectable
+    Property Get Flags() As Byte
+    Property Get IncompleteService16BitUuids() As Byte
+    Property Get CompleteService16BitUuids() As Byte
+    Property Get IncompleteService32BitUuids() As Byte
+    Property Get CompleteService32BitUuids() As Byte
+    Property Get IncompleteService128BitUuids() As Byte
+    Property Get CompleteService128BitUuids() As Byte
+    Property Get ShortenedLocalName() As Byte
+    Property Get CompleteLocalName() As Byte
+    Property Get TxPowerLevel() As Byte
+    Property Get PeripheralConnectionIntervalRange() As Byte
+    Property Get ServiceSolicitation16BitUuids() As Byte
+    Property Get ServiceSolicitation32BitUuids() As Byte
+    Property Get ServiceSolicitation128BitUuids() As Byte
+    Property Get ServiceData16BitUuids() As Byte
+    Property Get ServiceData32BitUuids() As Byte
+    Property Get ServiceData128BitUuids() As Byte
+    Property Get PublicTargetAddress() As Byte
+    Property Get RandomTargetAddress() As Byte
+    Property Get Appearance() As Byte
+    Property Get AdvertisingInterval() As Byte
+    Property Get ManufacturerSpecificData() As Byte
+End Interface
+
+[InterfaceId("B33E103A-1A61-5107-8813-C0E905C05486")]
+Interface IIterator_IBluetoothLEAdvertisementBytePattern Extends IInspectable
+    Property Get Current() As IBluetoothLEAdvertisementBytePattern
+    Property Get HasCurrent() As BooleanByte
+    Function MoveNext() As BooleanByte
+    Function GetMany(ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("1E3FADEE-54AC-538B-8777-351AFB78CB74")]
+Interface IIterable_IBluetoothLEAdvertisementBytePattern Extends IInspectable
+    Function First() As IIterator_IBluetoothLEAdvertisementBytePattern
+End Interface
+
+[InterfaceId("A7D9983A-A11F-572E-89FB-683EA429BCBC")]
+Interface IVectorView_IBluetoothLEAdvertisementBytePattern Extends IInspectable
+    Function GetAt(ByVal Index As Long) As IBluetoothLEAdvertisementBytePattern
+    Property Get Size() As Long
+    Function IndexOf(ByVal Value As IBluetoothLEAdvertisementBytePattern, Index As Long) As BooleanByte
+    Function GetMany(ByVal StartIndex As Long, ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("8DD461B7-9775-5E82-A0A6-6627ABD0D010")]
+Interface IVector_IBluetoothLEAdvertisementBytePattern Extends IInspectable
+    Function GetAt(ByVal Index As Long) As IBluetoothLEAdvertisementBytePattern
+    Property Get Size() As Long
+    Function GetView() As IVectorView_IBluetoothLEAdvertisementBytePattern
+    Function IndexOf(ByVal Value As IBluetoothLEAdvertisementBytePattern, Index As Long) As BooleanByte
+    [PreserveSig]
+    Function SetAt(ByVal Index As Long, ByVal Value As IBluetoothLEAdvertisementBytePattern) As HRESULT
+    [PreserveSig]
+    Function InsertAt(ByVal Index As Long, ByVal Value As IBluetoothLEAdvertisementBytePattern) As HRESULT
+    [PreserveSig]
+    Function RemoveAt(ByVal Index As Long) As HRESULT
+    [PreserveSig]
+    Function Append(ByVal Value As IBluetoothLEAdvertisementBytePattern) As HRESULT
+    [PreserveSig]
+    Function RemoveAtEnd() As HRESULT
+    [PreserveSig]
+    Function Clear() As HRESULT
+    Function GetMany(ByVal StartIndex As Long, ByVal Length As Long, Items As Any) As Long
+    [PreserveSig]
+    Function ReplaceAll(ByVal Length As Long, Items As Any) As HRESULT
+End Interface
+
+[InterfaceId("131EB0D3-D04E-47B1-837E-49405BF6F80F")]
+Interface IBluetoothLEAdvertisementFilter Extends IInspectable
+    Property Get Advertisement() As IBluetoothLEAdvertisement
+    Property Set Advertisement(ByVal Value As IBluetoothLEAdvertisement)
+    Property Get BytePatterns() As IVector_IBluetoothLEAdvertisementBytePattern
+End Interface
+
+[InterfaceId("C2FFA4F1-5893-54A8-BD94-AA1198B05D07")]
+Interface ITypedEventHandlerBluetoothLEAdvertisementPublisherStatusChanged Extends IUnknown
+    Sub Invoke(ByVal Sender As IBluetoothLEAdvertisementPublisher, ByVal Args As IBluetoothLEAdvertisementPublisherStatusChangedEventArgs)
+End Interface
+
+[InterfaceId("CDE820F9-D9FA-43D6-A264-DDD8B7DA8B78")]
+Interface IBluetoothLEAdvertisementPublisher Extends IInspectable
+    Property Get Status() As BluetoothLEAdvertisementPublisherStatus
+    Property Get Advertisement() As IBluetoothLEAdvertisement
+    [PreserveSig]
+    Function Start() As HRESULT
+    [PreserveSig]
+    Function Stop() As HRESULT
+    [PreserveSig]
+    Function AddStatusChanged(ByVal Handler As ITypedEventHandlerBluetoothLEAdvertisementPublisherStatusChanged, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveStatusChanged(ByVal Token As EventRegistrationToken) As HRESULT
+End Interface
+
+[InterfaceId("FBDB545E-56F1-510F-A434-217FBD9E7BD2")]
+Interface IBluetoothLEAdvertisementPublisher2 Extends IInspectable
+    Property Get PreferredTransmitPowerLevelInDBm() As IReference_Int16
+    Property Set PreferredTransmitPowerLevelInDBm(ByVal Value As IReference_Int16)
+    Property Get UseExtendedAdvertisement() As BooleanByte
+    Property Let UseExtendedAdvertisement(ByVal Value As BooleanByte)
+    Property Get IsAnonymous() As BooleanByte
+    Property Let IsAnonymous(ByVal Value As BooleanByte)
+    Property Get IncludeTransmitPowerLevel() As BooleanByte
+    Property Let IncludeTransmitPowerLevel(ByVal Value As BooleanByte)
+End Interface
+
+[InterfaceId("5C5F065E-B863-4981-A1AF-1C544D8B0C0D")]
+Interface IBluetoothLEAdvertisementPublisherFactory Extends IInspectable
+    Function Create(ByVal Advertisement As IBluetoothLEAdvertisement) As IBluetoothLEAdvertisementPublisher
+End Interface
+
+[InterfaceId("09C2BD9F-2DFF-4B23-86EE-0D14FB94AEAE")]
+Interface IBluetoothLEAdvertisementPublisherStatusChangedEventArgs Extends IInspectable
+    Property Get Status() As BluetoothLEAdvertisementPublisherStatus
+    Property Get Error() As BluetoothError
+End Interface
+
+[InterfaceId("8F62790E-DC88-5C8B-B34E-10B321850F88")]
+Interface IBluetoothLEAdvertisementPublisherStatusChangedEventArgs2 Extends IInspectable
+    Property Get SelectedTransmitPowerLevelInDBm() As IReference_Int16
+End Interface
+
+[InterfaceId("27987DDF-E596-41BE-8D43-9E6731D4A913")]
+Interface IBluetoothLEAdvertisementReceivedEventArgs Extends IInspectable
+    Property Get RawSignalStrengthInDBm() As Integer
+    Property Get BluetoothAddress() As UInt64
+    Property Get AdvertisementType() As BluetoothLEAdvertisementType
+    Property Get Timestamp() As DateTime
+    Property Get Advertisement() As IBluetoothLEAdvertisement
+End Interface
+
+[InterfaceId("12D9C87B-0399-5F0E-A348-53B02B6B162E")]
+Interface IBluetoothLEAdvertisementReceivedEventArgs2 Extends IInspectable
+    Property Get BluetoothAddressType() As BluetoothAddressType
+    Property Get TransmitPowerLevelInDBm() As IReference_Int16
+    Property Get IsAnonymous() As BooleanByte
+    Property Get IsConnectable() As BooleanByte
+    Property Get IsScannable() As BooleanByte
+    Property Get IsDirected() As BooleanByte
+    Property Get IsScanResponse() As BooleanByte
+End Interface
+
+[InterfaceId("90EB4ECA-D465-5EA0-A61C-033C8C5ECEF2")]
+Interface ITypedEventHandlerBluetoothLEAdvertisementWatcherReceived Extends IUnknown
+    Sub Invoke(ByVal Sender As IBluetoothLEAdvertisementWatcher, ByVal Args As IBluetoothLEAdvertisementReceivedEventArgs)
+End Interface
+
+[InterfaceId("9936A4DB-DC99-55C3-9E9B-BF4854BD9EAB")]
+Interface ITypedEventHandlerBluetoothLEAdvertisementWatcherStopped Extends IUnknown
+    Sub Invoke(ByVal Sender As IBluetoothLEAdvertisementWatcher, ByVal Args As IBluetoothLEAdvertisementWatcherStoppedEventArgs)
+End Interface
+
+[InterfaceId("A6AC336F-F3D3-4297-8D6C-C81EA6623F40")]
+Interface IBluetoothLEAdvertisementWatcher Extends IInspectable
+    Property Get MinSamplingInterval() As TimeSpan
+    Property Get MaxSamplingInterval() As TimeSpan
+    Property Get MinOutOfRangeTimeout() As TimeSpan
+    Property Get MaxOutOfRangeTimeout() As TimeSpan
+    Property Get Status() As BluetoothLEAdvertisementWatcherStatus
+    Property Get ScanningMode() As BluetoothLEScanningMode
+    Property Let ScanningMode(ByVal Value As BluetoothLEScanningMode)
+    Property Get SignalStrengthFilter() As IBluetoothSignalStrengthFilter
+    Property Set SignalStrengthFilter(ByVal Value As IBluetoothSignalStrengthFilter)
+    Property Get AdvertisementFilter() As IBluetoothLEAdvertisementFilter
+    Property Set AdvertisementFilter(ByVal Value As IBluetoothLEAdvertisementFilter)
+    [PreserveSig]
+    Function Start() As HRESULT
+    [PreserveSig]
+    Function Stop() As HRESULT
+    [PreserveSig]
+    Function AddReceived(ByVal Handler As ITypedEventHandlerBluetoothLEAdvertisementWatcherReceived, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveReceived(ByVal Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function AddStopped(ByVal Handler As ITypedEventHandlerBluetoothLEAdvertisementWatcherStopped, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveStopped(ByVal Token As EventRegistrationToken) As HRESULT
+End Interface
+
+[InterfaceId("01BF26BC-B164-5805-90A3-E8A7997FF225")]
+Interface IBluetoothLEAdvertisementWatcher2 Extends IInspectable
+    Property Get AllowExtendedAdvertisements() As BooleanByte
+    Property Let AllowExtendedAdvertisements(ByVal Value As BooleanByte)
+End Interface
+
+[InterfaceId("9AAF2D56-39AC-453E-B32A-85C657E017F1")]
+Interface IBluetoothLEAdvertisementWatcherFactory Extends IInspectable
+    Function Create(ByVal AdvertisementFilter As IBluetoothLEAdvertisementFilter) As IBluetoothLEAdvertisementWatcher
+End Interface
+
+[InterfaceId("DD40F84D-E7B9-43E3-9C04-0685D085FD8C")]
+Interface IBluetoothLEAdvertisementWatcherStoppedEventArgs Extends IInspectable
+    Property Get Error() As BluetoothError
+End Interface
+
+[InterfaceId("912DBA18-6963-4533-B061-4694DAFB34E5")]
+Interface IBluetoothLEManufacturerData Extends IInspectable
+    Property Get CompanyId() As Integer
+    Property Let CompanyId(ByVal Value As Integer)
+    Property Get Data() As IBuffer
+    Property Set Data(ByVal Value As IBuffer)
+End Interface
+
+[InterfaceId("C09B39F8-319A-441E-8DE5-66A81E877A6C")]
+Interface IBluetoothLEManufacturerDataFactory Extends IInspectable
+    Function Create(ByVal CompanyId As Integer, ByVal Data As IBuffer) As IBluetoothLEManufacturerData
+End Interface
+
+Module mdlDevicesBluetoothAdvertisement
+
+Public Enum BluetoothLEAdvertisementFlags
+    BluetoothLEAdvertisementFlags_None = &H0
+    BluetoothLEAdvertisementFlags_LimitedDiscoverableMode = &H1
+    BluetoothLEAdvertisementFlags_GeneralDiscoverableMode = &H2
+    BluetoothLEAdvertisementFlags_ClassicNotSupported = &H4
+    BluetoothLEAdvertisementFlags_DualModeControllerCapable = &H8
+    BluetoothLEAdvertisementFlags_DualModeHostCapable = &H10
+End Enum
+
+Public Enum BluetoothLEAdvertisementPublisherStatus
+    BluetoothLEAdvertisementPublisherStatus_Created
+    BluetoothLEAdvertisementPublisherStatus_Waiting
+    BluetoothLEAdvertisementPublisherStatus_Started
+    BluetoothLEAdvertisementPublisherStatus_Stopping
+    BluetoothLEAdvertisementPublisherStatus_Stopped
+    BluetoothLEAdvertisementPublisherStatus_Aborted
+End Enum
+
+Public Enum BluetoothLEAdvertisementType
+    BluetoothLEAdvertisementType_ConnectableUndirected
+    BluetoothLEAdvertisementType_ConnectableDirected
+    BluetoothLEAdvertisementType_ScannableUndirected
+    BluetoothLEAdvertisementType_NonConnectableUndirected
+    BluetoothLEAdvertisementType_ScanResponse
+    BluetoothLEAdvertisementType_Extended
+End Enum
+
+Public Enum BluetoothLEAdvertisementWatcherStatus
+    BluetoothLEAdvertisementWatcherStatus_Created
+    BluetoothLEAdvertisementWatcherStatus_Started
+    BluetoothLEAdvertisementWatcherStatus_Stopping
+    BluetoothLEAdvertisementWatcherStatus_Stopped
+    BluetoothLEAdvertisementWatcherStatus_Aborted
+End Enum
+
+Public Enum BluetoothLEScanningMode
+    BluetoothLEScanningMode_Passive
+    BluetoothLEScanningMode_Active
+    BluetoothLEScanningMode_None
+End Enum
+
+End Module

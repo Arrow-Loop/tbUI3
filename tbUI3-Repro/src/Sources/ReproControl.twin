@@ -1,0 +1,42 @@
+[Description("")]
+[FormDesignerId("35F34836-4C27-4753-BE0B-304B1B9B164C")]
+[ClassId("2F8EB7DB-7D3E-4509-B203-2B46EFC14928")]
+[InterfaceId("2C7DFBDD-83C6-4543-8D3B-38F03AB489BD")]
+[EventInterfaceId("DA871FB0-397C-4554-8B03-60D060D19717")]
+[COMControl]
+Class ReproControl
+
+	Sub New()
+	End Sub
+
+    Private m_Value As Long
+
+    [PropertyPage("ReproPage")]
+    Public Property Get Value() As Long
+        Value = m_Value
+    End Property
+
+    Public Property Let Value(ByVal NewValue As Long)
+        m_Value = NewValue
+        PropertyChanged "Value"
+        UserControl.Refresh
+    End Property
+
+    Private Sub UserControl_InitProperties()
+        m_Value = 1
+    End Sub
+
+    Private Sub UserControl_ReadProperties(PropBag As PropertyBag)
+        m_Value = PropBag.ReadProperty("Value", 1)
+    End Sub
+
+    Private Sub UserControl_WriteProperties(PropBag As PropertyBag)
+        PropBag.WriteProperty "Value", m_Value, 1
+    End Sub
+
+    Private Sub UserControl_Paint()
+        UserControl.Cls
+        UserControl.Print "Value = " & m_Value
+    End Sub
+
+End Class

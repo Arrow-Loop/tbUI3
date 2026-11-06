@@ -1,0 +1,742 @@
+[InterfaceId("7D1431A7-EE96-40E8-A199-8703CD969EC3")]
+Interface IControlChannelTrigger Extends IInspectable ' requires IClosable
+    Property Get ControlChannelTriggerId() As LongPtr
+    Property Get ServerKeepAliveIntervalInMinutes() As Long
+    Property Let ServerKeepAliveIntervalInMinutes(ByVal Value As Long)
+    Property Get CurrentKeepAliveIntervalInMinutes() As Long
+    Property Get TransportObject() As IInspectable
+    Property Get KeepAliveTrigger() As IBackgroundTrigger
+    Property Get PushNotificationTrigger() As IBackgroundTrigger
+    [PreserveSig]
+    Function UsingTransport(ByVal Transport As IInspectable) As HRESULT
+    Function WaitForPushEnabled() As ControlChannelTriggerStatus
+    [PreserveSig]
+    Function DecreaseNetworkKeepAliveInterval() As HRESULT
+    [PreserveSig]
+    Function FlushTransport() As HRESULT
+End Interface
+
+[InterfaceId("AF00D237-51BE-4514-9725-3556E1879580")]
+Interface IControlChannelTrigger2 Extends IInspectable
+    Property Get IsWakeFromLowPowerSupported() As BooleanByte
+End Interface
+
+[InterfaceId("1B36E047-89BB-4236-96AC-71D012BB4869")]
+Interface IControlChannelTriggerEventDetails Extends IInspectable
+    Property Get ControlChannelTrigger() As IControlChannelTrigger
+End Interface
+
+[InterfaceId("DA4B7CF0-8D71-446F-88C3-B95184A2D6CD")]
+Interface IControlChannelTriggerFactory Extends IInspectable
+    Function CreateControlChannelTrigger(ByVal ChannelId As LongPtr, ByVal ServerKeepAliveIntervalInMinutes As Long) As IControlChannelTrigger
+    Function CreateControlChannelTriggerEx(ByVal ChannelId As LongPtr, ByVal ServerKeepAliveIntervalInMinutes As Long, ByVal ResourceRequestType As ControlChannelTriggerResourceType) As IControlChannelTrigger
+End Interface
+
+[InterfaceId("6851038E-8EC4-42FE-9BB2-21E91B7BFCB1")]
+Interface IControlChannelTriggerResetEventDetails Extends IInspectable
+    Property Get ResetReason() As ControlChannelTriggerResetReason
+    Property Get HardwareSlotReset() As BooleanByte
+    Property Get SoftwareSlotReset() As BooleanByte
+End Interface
+
+[InterfaceId("E8736833-D013-5361-977D-C5E99934680E")]
+Interface IAsyncOperationIOutputStream Extends IInspectable
+    Property Set Completed(ByVal Handler As IAsyncOperationCompletedHandlerIOutputStream)
+    Property Get Completed() As IAsyncOperationCompletedHandlerIOutputStream
+    Function GetResults() As IOutputStream
+End Interface
+
+[InterfaceId("BCB37F4F-3AF4-561C-A9E3-EEF1738494D7")]
+Interface IAsyncOperationCompletedHandlerIOutputStream Extends IUnknown
+    Sub Invoke(ByVal AsyncOperation As IAsyncOperationIOutputStream, ByVal AsyncStatus As AsyncStatus)
+End Interface
+
+[InterfaceId("4482E19B-2389-5767-9B0B-8D7A8EF55743")]
+Interface ITypedEventHandlerDatagramSocketMessageReceived Extends IUnknown
+    Sub Invoke(ByVal Sender As IDatagramSocket, ByVal Args As IDatagramSocketMessageReceivedEventArgs)
+End Interface
+
+[InterfaceId("7FE25BBB-C3BC-4677-8446-CA28A465A3AF")]
+Interface IDatagramSocket Extends IInspectable ' requires IClosable
+    Property Get Control() As IDatagramSocketControl
+    Property Get Information() As IDatagramSocketInformation
+    Property Get OutputStream() As IOutputStream
+    Function ConnectAsync(ByVal RemoteHostName As IHostName, ByVal RemoteServiceName As LongPtr) As IAsyncAction
+    Function ConnectWithEndpointPairAsync(ByVal EndpointPair As IEndpointPair) As IAsyncAction
+    Function BindServiceNameAsync(ByVal LocalServiceName As LongPtr) As IAsyncAction
+    Function BindEndpointAsync(ByVal LocalHostName As IHostName, ByVal LocalServiceName As LongPtr) As IAsyncAction
+    [PreserveSig]
+    Function JoinMulticastGroup(ByVal Host As IHostName) As HRESULT
+    Function GetOutputStreamAsync(ByVal RemoteHostName As IHostName, ByVal RemoteServiceName As LongPtr) As IAsyncOperationIOutputStream
+    Function GetOutputStreamWithEndpointPairAsync(ByVal EndpointPair As IEndpointPair) As IAsyncOperationIOutputStream
+    [PreserveSig]
+    Function AddMessageReceived(ByVal EventHandler As ITypedEventHandlerDatagramSocketMessageReceived, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveMessageReceived(ByVal Token As EventRegistrationToken) As HRESULT
+End Interface
+
+[InterfaceId("D83BA354-9A9D-4185-A20A-1424C9C2A7CD")]
+Interface IDatagramSocket2 Extends IInspectable ' requires IClosable
+    Function BindServiceNameAndAdapterAsync(ByVal LocalServiceName As LongPtr, ByVal Adapter As INetworkAdapter) As IAsyncAction
+End Interface
+
+[InterfaceId("37544F09-AB92-4306-9AC1-0C381283D9C6")]
+Interface IDatagramSocket3 Extends IInspectable
+    Function CancelIOAsync() As IAsyncAction
+    [PreserveSig]
+    Function EnableTransferOwnership(ByVal TaskId As UUID) As HRESULT
+    [PreserveSig]
+    Function EnableTransferOwnershipWithConnectedStandbyAction(ByVal TaskId As UUID, ByVal ConnectedStandbyAction As SocketActivityConnectedStandbyAction) As HRESULT
+    [PreserveSig]
+    Function TransferOwnership(ByVal SocketId As LongPtr) As HRESULT
+    [PreserveSig]
+    Function TransferOwnershipWithContext(ByVal SocketId As LongPtr, ByVal Data As ISocketActivityContext) As HRESULT
+    [PreserveSig]
+    Function TransferOwnershipWithContextAndKeepAliveTime(ByVal SocketId As LongPtr, ByVal Data As ISocketActivityContext, ByVal KeepAliveTime As TimeSpan) As HRESULT
+End Interface
+
+[InterfaceId("52AC3F2E-349A-4135-BB58-B79B2647D390")]
+Interface IDatagramSocketControl Extends IInspectable
+    Property Get QualityOfService() As SocketQualityOfService
+    Property Let QualityOfService(ByVal Value As SocketQualityOfService)
+    Property Get OutboundUnicastHopLimit() As BooleanByte
+    Property Set OutboundUnicastHopLimit(ByVal Value As BooleanByte)
+End Interface
+
+[InterfaceId("33EAD5C2-979C-4415-82A1-3CFAF646C192")]
+Interface IDatagramSocketControl2 Extends IInspectable
+    Property Get InboundBufferSizeInBytes() As Long
+    Property Let InboundBufferSizeInBytes(ByVal Value As Long)
+    Property Get DontFragment() As BooleanByte
+    Property Let DontFragment(ByVal Value As BooleanByte)
+End Interface
+
+[InterfaceId("D4EB8256-1F6D-4598-9B57-D42A001DF349")]
+Interface IDatagramSocketControl3 Extends IInspectable
+    Property Get MulticastOnly() As BooleanByte
+    Property Let MulticastOnly(ByVal Value As BooleanByte)
+End Interface
+
+[InterfaceId("5F1A569A-55FB-48CD-9706-7A974F7B1585")]
+Interface IDatagramSocketInformation Extends IInspectable
+    Property Get LocalAddress() As IHostName
+    Property Get LocalPort() As LongPtr
+    Property Get RemoteAddress() As IHostName
+    Property Get RemotePort() As LongPtr
+End Interface
+
+[InterfaceId("9E2DDCA2-1712-4CE4-B179-8C652C6D107E")]
+Interface IDatagramSocketMessageReceivedEventArgs Extends IInspectable
+    Property Get RemoteAddress() As IHostName
+    Property Get RemotePort() As LongPtr
+    Property Get LocalAddress() As IHostName
+    Function GetDataReader() As IDataReader
+    Function GetDataStream() As IInputStream
+End Interface
+
+[InterfaceId("AFC2FF8E-E393-566A-89C4-D043E940050D")]
+Interface IAsyncOperationIVectorView_IEndpointPair Extends IInspectable
+    Property Set Completed(ByVal Handler As IAsyncOperationCompletedHandlerIVectorView_IEndpointPair)
+    Property Get Completed() As IAsyncOperationCompletedHandlerIVectorView_IEndpointPair
+    Function GetResults() As IVectorView_IEndpointPair
+End Interface
+
+[InterfaceId("20D6FAAB-3B8E-5A1F-8397-B01CB219A18D")]
+Interface IAsyncOperationCompletedHandlerIVectorView_IEndpointPair Extends IUnknown
+    Sub Invoke(ByVal AsyncOperation As IAsyncOperationIVectorView_IEndpointPair, ByVal AsyncStatus As AsyncStatus)
+End Interface
+
+[InterfaceId("E9C62AEE-1494-4A21-BB7E-8589FC751D9D")]
+Interface IDatagramSocketStatics Extends IInspectable
+    Function GetEndpointPairsAsync(ByVal RemoteHostName As IHostName, ByVal RemoteServiceName As LongPtr) As IAsyncOperationIVectorView_IEndpointPair
+    Function GetEndpointPairsWithSortOptionsAsync(ByVal RemoteHostName As IHostName, ByVal RemoteServiceName As LongPtr, ByVal SortOptions As HostNameSortOptions) As IAsyncOperationIVectorView_IEndpointPair
+End Interface
+
+[InterfaceId("DE980538-6DCD-52B0-802F-4B6CF59A01AB")]
+Interface ITypedEventHandlerMessageWebSocketMessageReceived Extends IUnknown
+    Sub Invoke(ByVal Sender As IMessageWebSocket, ByVal Args As IMessageWebSocketMessageReceivedEventArgs)
+End Interface
+
+[InterfaceId("33727D08-34D5-4746-AD7B-8DDE5BC2EF88")]
+Interface IMessageWebSocket Extends IInspectable ' requires IClosable
+    Property Get Control() As IMessageWebSocketControl
+    Property Get Information() As IWebSocketInformation
+    [PreserveSig]
+    Function AddMessageReceived(ByVal EventHandler As ITypedEventHandlerMessageWebSocketMessageReceived, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveMessageReceived(ByVal Token As EventRegistrationToken) As HRESULT
+End Interface
+
+[InterfaceId("2C34C585-9CF6-56C7-8DD1-5DA26E322078")]
+Interface ITypedEventHandlerMessageWebSocketServerCustomValidationRequested Extends IUnknown
+    Sub Invoke(ByVal Sender As IMessageWebSocket, ByVal Args As IWebSocketServerCustomValidationRequestedEventArgs)
+End Interface
+
+[InterfaceId("BED0CEE7-F9C8-440A-9AD5-737281D9742E")]
+Interface IMessageWebSocket2 Extends IInspectable ' requires IClosable
+    [PreserveSig]
+    Function AddServerCustomValidationRequested(ByVal Handler As ITypedEventHandlerMessageWebSocketServerCustomValidationRequested, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveServerCustomValidationRequested(ByVal Token As EventRegistrationToken) As HRESULT
+End Interface
+
+[InterfaceId("59D9DEFB-71AF-4349-8487-911FCF681597")]
+Interface IMessageWebSocket3 Extends IInspectable
+    Function SendNonfinalFrameAsync(ByVal Data As IBuffer) As IAsyncOperationWithProgressUInt32UInt32
+    Function SendFinalFrameAsync(ByVal Data As IBuffer) As IAsyncOperationWithProgressUInt32UInt32
+End Interface
+
+[InterfaceId("8118388A-C629-4F0A-80FB-81FC05538862")]
+Interface IMessageWebSocketControl Extends IInspectable
+    Property Get MaxMessageSize() As Long
+    Property Let MaxMessageSize(ByVal Value As Long)
+    Property Get MessageType() As SocketMessageType
+    Property Let MessageType(ByVal Value As SocketMessageType)
+End Interface
+
+[InterfaceId("E30FD791-080C-400A-A712-27DFA9E744D8")]
+Interface IMessageWebSocketControl2 Extends IInspectable
+    Property Get DesiredUnsolicitedPongInterval() As TimeSpan
+    Property Let DesiredUnsolicitedPongInterval(ByVal Value As TimeSpan)
+    Property Get ActualUnsolicitedPongInterval() As TimeSpan
+    Property Get ReceiveMode() As MessageWebSocketReceiveMode
+    Property Let ReceiveMode(ByVal Value As MessageWebSocketReceiveMode)
+    Property Get ClientCertificate() As ICertificate
+    Property Set ClientCertificate(ByVal Value As ICertificate)
+End Interface
+
+[InterfaceId("478C22AC-4C4B-42ED-9ED7-1EF9F94FA3D5")]
+Interface IMessageWebSocketMessageReceivedEventArgs Extends IInspectable
+    Property Get MessageType() As SocketMessageType
+    Function GetDataReader() As IDataReader
+    Function GetDataStream() As IInputStream
+End Interface
+
+[InterfaceId("89CE06FD-DD6F-4A07-87F9-F9EB4D89D83D")]
+Interface IMessageWebSocketMessageReceivedEventArgs2 Extends IInspectable
+    Property Get IsMessageComplete() As BooleanByte
+End Interface
+
+[InterfaceId("6E66714B-94D1-5C08-B2B3-10B891D08747")]
+Interface ITypedEventHandlerServerMessageWebSocketMessageReceived Extends IUnknown
+    Sub Invoke(ByVal Sender As IServerMessageWebSocket, ByVal Args As IMessageWebSocketMessageReceivedEventArgs)
+End Interface
+
+[InterfaceId("CAE65204-B986-5CF3-87EA-B67B00FBA78D")]
+Interface ITypedEventHandlerServerMessageWebSocketClosed Extends IUnknown
+    Sub Invoke(ByVal Sender As IServerMessageWebSocket, ByVal Args As IWebSocketClosedEventArgs)
+End Interface
+
+[InterfaceId("E3AC9240-813B-5EFD-7E11-AE2305FC77F1")]
+Interface IServerMessageWebSocket Extends IInspectable ' requires IClosable
+    [PreserveSig]
+    Function AddMessageReceived(ByVal Handler As ITypedEventHandlerServerMessageWebSocketMessageReceived, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveMessageReceived(ByVal Token As EventRegistrationToken) As HRESULT
+    Property Get Control() As IServerMessageWebSocketControl
+    Property Get Information() As IServerMessageWebSocketInformation
+    Property Get OutputStream() As IOutputStream
+    [PreserveSig]
+    Function AddClosed(ByVal Handler As ITypedEventHandlerServerMessageWebSocketClosed, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveClosed(ByVal Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function CloseWithStatus(ByVal Code As Integer, ByVal Reason As LongPtr) As HRESULT
+End Interface
+
+[InterfaceId("69C2F051-1C1F-587A-4519-2181610192B7")]
+Interface IServerMessageWebSocketControl Extends IInspectable
+    Property Get MessageType() As SocketMessageType
+    Property Let MessageType(ByVal Value As SocketMessageType)
+End Interface
+
+[InterfaceId("FC32B45F-4448-5505-6CC9-09AFA8915F5D")]
+Interface IServerMessageWebSocketInformation Extends IInspectable
+    Property Get BandwidthStatistics() As BandwidthStatistics
+    Property Get Protocol() As LongPtr
+    Property Get LocalAddress() As IHostName
+End Interface
+
+[InterfaceId("B51C5B3B-161B-559E-A553-0059336329CC")]
+Interface ITypedEventHandlerServerStreamWebSocketClosed Extends IUnknown
+    Sub Invoke(ByVal Sender As IServerStreamWebSocket, ByVal Args As IWebSocketClosedEventArgs)
+End Interface
+
+[InterfaceId("2CED5BBF-74F6-55E4-79DF-9132680DFEE8")]
+Interface IServerStreamWebSocket Extends IInspectable ' requires IClosable
+    Property Get Information() As IServerStreamWebSocketInformation
+    Property Get InputStream() As IInputStream
+    Property Get OutputStream() As IOutputStream
+    [PreserveSig]
+    Function AddClosed(ByVal Handler As ITypedEventHandlerServerStreamWebSocketClosed, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveClosed(ByVal Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function CloseWithStatus(ByVal Code As Integer, ByVal Reason As LongPtr) As HRESULT
+End Interface
+
+[InterfaceId("FC32B45F-4448-5505-6CC9-09ABA8915F5D")]
+Interface IServerStreamWebSocketInformation Extends IInspectable
+    Property Get BandwidthStatistics() As BandwidthStatistics
+    Property Get Protocol() As LongPtr
+    Property Get LocalAddress() As IHostName
+End Interface
+
+[InterfaceId("43B04D64-4C85-4396-A637-1D973F6EBD49")]
+Interface ISocketActivityContext Extends IInspectable
+    Property Get Data() As IBuffer
+End Interface
+
+[InterfaceId("B99FC3C3-088C-4388-83AE-2525138E049A")]
+Interface ISocketActivityContextFactory Extends IInspectable
+    Function Create(ByVal Data As IBuffer) As ISocketActivityContext
+End Interface
+
+[InterfaceId("8D8A42E4-A87E-4B74-9968-185B2511DEFE")]
+Interface ISocketActivityInformation Extends IInspectable
+    Property Get TaskId() As UUID
+    Property Get Id() As LongPtr
+    Property Get SocketKind() As SocketActivityKind
+    Property Get Context() As ISocketActivityContext
+    Property Get DatagramSocket() As IDatagramSocket
+    Property Get StreamSocket() As IStreamSocket
+    Property Get StreamSocketListener() As IStreamSocketListener
+End Interface
+
+[InterfaceId("F656F7A2-264B-5CFD-8288-64EB89455157")]
+Interface IIterator_KVP_ISocketActivityInformation Extends IInspectable
+    Property Get Current() As KVP_ISocketActivityInformation
+    Property Get HasCurrent() As BooleanByte
+    Function MoveNext() As BooleanByte
+    Function GetMany(ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("3E43FA16-7AF1-51DF-A0D3-DA81B321639D")]
+Interface IIterable_KVP_ISocketActivityInformation Extends IInspectable
+    Function First() As IIterator_KVP_ISocketActivityInformation
+End Interface
+
+[InterfaceId("7E4BDA2C-0125-587D-8806-1285060F3B2D")]
+Interface KVP_ISocketActivityInformation Extends IInspectable
+    Property Get Key() As LongPtr
+    Property Get Value() As ISocketActivityInformation
+End Interface
+
+[InterfaceId("E6AC8BEE-A31C-5AF2-9227-5BE2F9E80763")]
+Interface IMapView_ISocketActivityInformation Extends IInspectable
+    Function Lookup(ByVal Key As LongPtr) As ISocketActivityInformation
+    Property Get Size() As Long
+    Function HasKey(ByVal Key As LongPtr) As BooleanByte
+    Sub Split(First As IMapView_ISocketActivityInformation, Second As IMapView_ISocketActivityInformation)
+End Interface
+
+[InterfaceId("8570B47A-7E7D-4736-8041-1327A6543C56")]
+Interface ISocketActivityInformationStatics Extends IInspectable
+    Property Get AllSockets() As IMapView_ISocketActivityInformation
+End Interface
+
+[InterfaceId("45F406A7-FC9F-4F81-ACAD-355FEF51E67B")]
+Interface ISocketActivityTriggerDetails Extends IInspectable
+    Property Get Reason() As SocketActivityTriggerReason
+    Property Get SocketInformation() As ISocketActivityInformation
+End Interface
+
+[InterfaceId("828337F4-7D56-4D8E-B7B4-A07DD7C1BCA9")]
+Interface ISocketErrorStatics Extends IInspectable
+    Function GetStatus(ByVal Hresult As Long) As SocketErrorStatus
+End Interface
+
+[InterfaceId("69A22CF3-FC7B-4857-AF38-F6E7DE6A5B49")]
+Interface IStreamSocket Extends IInspectable ' requires IClosable
+    Property Get Control() As IStreamSocketControl
+    Property Get Information() As IStreamSocketInformation
+    Property Get InputStream() As IInputStream
+    Property Get OutputStream() As IOutputStream
+    Function ConnectWithEndpointPairAsync(ByVal EndpointPair As IEndpointPair) As IAsyncAction
+    Function ConnectAsync(ByVal RemoteHostName As IHostName, ByVal RemoteServiceName As LongPtr) As IAsyncAction
+    Function ConnectWithEndpointPairAndProtectionLevelAsync(ByVal EndpointPair As IEndpointPair, ByVal ProtectionLevel As SocketProtectionLevel) As IAsyncAction
+    Function ConnectWithProtectionLevelAsync(ByVal RemoteHostName As IHostName, ByVal RemoteServiceName As LongPtr, ByVal ProtectionLevel As SocketProtectionLevel) As IAsyncAction
+    Function UpgradeToSslAsync(ByVal ProtectionLevel As SocketProtectionLevel, ByVal ValidationHostName As IHostName) As IAsyncAction
+End Interface
+
+[InterfaceId("29D0E575-F314-4D09-ADF0-0FBD967FBD9F")]
+Interface IStreamSocket2 Extends IInspectable ' requires IClosable
+    Function ConnectWithProtectionLevelAndAdapterAsync(ByVal RemoteHostName As IHostName, ByVal RemoteServiceName As LongPtr, ByVal ProtectionLevel As SocketProtectionLevel, ByVal Adapter As INetworkAdapter) As IAsyncAction
+End Interface
+
+[InterfaceId("3F430B00-9D28-4854-BAC3-2301941EC223")]
+Interface IStreamSocket3 Extends IInspectable
+    Function CancelIOAsync() As IAsyncAction
+    [PreserveSig]
+    Function EnableTransferOwnership(ByVal TaskId As UUID) As HRESULT
+    [PreserveSig]
+    Function EnableTransferOwnershipWithConnectedStandbyAction(ByVal TaskId As UUID, ByVal ConnectedStandbyAction As SocketActivityConnectedStandbyAction) As HRESULT
+    [PreserveSig]
+    Function TransferOwnership(ByVal SocketId As LongPtr) As HRESULT
+    [PreserveSig]
+    Function TransferOwnershipWithContext(ByVal SocketId As LongPtr, ByVal Data As ISocketActivityContext) As HRESULT
+    [PreserveSig]
+    Function TransferOwnershipWithContextAndKeepAliveTime(ByVal SocketId As LongPtr, ByVal Data As ISocketActivityContext, ByVal KeepAliveTime As TimeSpan) As HRESULT
+End Interface
+
+[InterfaceId("FE25ADF1-92AB-4AF3-9992-0F4C85E36CC4")]
+Interface IStreamSocketControl Extends IInspectable
+    Property Get NoDelay() As BooleanByte
+    Property Let NoDelay(ByVal Value As BooleanByte)
+    Property Get KeepAlive() As BooleanByte
+    Property Let KeepAlive(ByVal Value As BooleanByte)
+    Property Get OutboundBufferSizeInBytes() As Long
+    Property Let OutboundBufferSizeInBytes(ByVal Value As Long)
+    Property Get QualityOfService() As SocketQualityOfService
+    Property Let QualityOfService(ByVal Value As SocketQualityOfService)
+    Property Get OutboundUnicastHopLimit() As BooleanByte
+    Property Set OutboundUnicastHopLimit(ByVal Value As BooleanByte)
+End Interface
+
+[InterfaceId("C2D09A56-060F-44C1-B8E2-1FBF60BD62C5")]
+Interface IStreamSocketControl2 Extends IInspectable
+    Property Get IgnorableServerCertificateErrors() As IVector_ChainValidationResult
+End Interface
+
+[InterfaceId("C56A444C-4E74-403E-894C-B31CAE5C7342")]
+Interface IStreamSocketControl3 Extends IInspectable
+    Property Get SerializeConnectionAttempts() As BooleanByte
+    Property Let SerializeConnectionAttempts(ByVal Value As BooleanByte)
+    Property Get ClientCertificate() As ICertificate
+    Property Set ClientCertificate(ByVal Value As ICertificate)
+End Interface
+
+[InterfaceId("964E2B3D-EC27-4888-B3CE-C74B418423AD")]
+Interface IStreamSocketControl4 Extends IInspectable
+    Property Get MinProtectionLevel() As SocketProtectionLevel
+    Property Let MinProtectionLevel(ByVal Value As SocketProtectionLevel)
+End Interface
+
+[InterfaceId("3B80AE30-5E68-4205-88F0-DC85D2E25DED")]
+Interface IStreamSocketInformation Extends IInspectable
+    Property Get LocalAddress() As IHostName
+    Property Get LocalPort() As LongPtr
+    Property Get RemoteHostName() As IHostName
+    Property Get RemoteAddress() As IHostName
+    Property Get RemoteServiceName() As LongPtr
+    Property Get RemotePort() As LongPtr
+    Property Get RoundTripTimeStatistics() As RoundTripTimeStatistics
+    Property Get BandwidthStatistics() As BandwidthStatistics
+    Property Get ProtectionLevel() As SocketProtectionLevel
+    Property Get SessionKey() As IBuffer
+End Interface
+
+[InterfaceId("12C28452-4BDC-4EE4-976A-CF130E9D92E3")]
+Interface IStreamSocketInformation2 Extends IInspectable
+    Property Get ServerCertificateErrorSeverity() As SocketSslErrorSeverity
+    Property Get ServerCertificateErrors() As IVectorView_ChainValidationResult
+    Property Get ServerCertificate() As ICertificate
+    Property Get ServerIntermediateCertificates() As IVectorView_ICertificate
+End Interface
+
+[InterfaceId("33D00D41-C94F-5A61-9AB7-280DCEFA0B08")]
+Interface ITypedEventHandlerStreamSocketListenerConnectionReceived Extends IUnknown
+    Sub Invoke(ByVal Sender As IStreamSocketListener, ByVal Args As IStreamSocketListenerConnectionReceivedEventArgs)
+End Interface
+
+[InterfaceId("FF513437-DF9F-4DF0-BF82-0EC5D7B35AAE")]
+Interface IStreamSocketListener Extends IInspectable ' requires IClosable
+    Property Get Control() As IStreamSocketListenerControl
+    Property Get Information() As IStreamSocketListenerInformation
+    Function BindServiceNameAsync(ByVal LocalServiceName As LongPtr) As IAsyncAction
+    Function BindEndpointAsync(ByVal LocalHostName As IHostName, ByVal LocalServiceName As LongPtr) As IAsyncAction
+    [PreserveSig]
+    Function AddConnectionReceived(ByVal Handler As ITypedEventHandlerStreamSocketListenerConnectionReceived, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveConnectionReceived(ByVal Token As EventRegistrationToken) As HRESULT
+End Interface
+
+[InterfaceId("658DC13E-BB3E-4458-B232-ED1088694B98")]
+Interface IStreamSocketListener2 Extends IInspectable ' requires IClosable
+    Function BindServiceNameWithProtectionLevelAsync(ByVal LocalServiceName As LongPtr, ByVal ProtectionLevel As SocketProtectionLevel) As IAsyncAction
+    Function BindServiceNameWithProtectionLevelAndAdapterAsync(ByVal LocalServiceName As LongPtr, ByVal ProtectionLevel As SocketProtectionLevel, ByVal Adapter As INetworkAdapter) As IAsyncAction
+End Interface
+
+[InterfaceId("4798201C-BDF8-4919-8542-28D450E74507")]
+Interface IStreamSocketListener3 Extends IInspectable
+    Function CancelIOAsync() As IAsyncAction
+    [PreserveSig]
+    Function EnableTransferOwnership(ByVal TaskId As UUID) As HRESULT
+    [PreserveSig]
+    Function EnableTransferOwnershipWithConnectedStandbyAction(ByVal TaskId As UUID, ByVal ConnectedStandbyAction As SocketActivityConnectedStandbyAction) As HRESULT
+    [PreserveSig]
+    Function TransferOwnership(ByVal SocketId As LongPtr) As HRESULT
+    [PreserveSig]
+    Function TransferOwnershipWithContext(ByVal SocketId As LongPtr, ByVal Data As ISocketActivityContext) As HRESULT
+End Interface
+
+[InterfaceId("0C472EA9-373F-447B-85B1-DDD4548803BA")]
+Interface IStreamSocketListenerConnectionReceivedEventArgs Extends IInspectable
+    Property Get Socket() As IStreamSocket
+End Interface
+
+[InterfaceId("20D8C576-8D8A-4DBA-9722-A16C4D984980")]
+Interface IStreamSocketListenerControl Extends IInspectable
+    Property Get QualityOfService() As SocketQualityOfService
+    Property Let QualityOfService(ByVal Value As SocketQualityOfService)
+End Interface
+
+[InterfaceId("948BB665-2C3E-404B-B8B0-8EB249A2B0A1")]
+Interface IStreamSocketListenerControl2 Extends IInspectable
+    Property Get NoDelay() As BooleanByte
+    Property Let NoDelay(ByVal Value As BooleanByte)
+    Property Get KeepAlive() As BooleanByte
+    Property Let KeepAlive(ByVal Value As BooleanByte)
+    Property Get OutboundBufferSizeInBytes() As Long
+    Property Let OutboundBufferSizeInBytes(ByVal Value As Long)
+    Property Get OutboundUnicastHopLimit() As BooleanByte
+    Property Let OutboundUnicastHopLimit(ByVal Value As BooleanByte)
+End Interface
+
+[InterfaceId("E62BA82F-A63A-430B-BF62-29E93E5633B4")]
+Interface IStreamSocketListenerInformation Extends IInspectable
+    Property Get LocalPort() As LongPtr
+End Interface
+
+[InterfaceId("A420BC4A-6E2E-4AF5-B556-355AE0CD4F29")]
+Interface IStreamSocketStatics Extends IInspectable
+    Function GetEndpointPairsAsync(ByVal RemoteHostName As IHostName, ByVal RemoteServiceName As LongPtr) As IAsyncOperationIVectorView_IEndpointPair
+    Function GetEndpointPairsWithSortOptionsAsync(ByVal RemoteHostName As IHostName, ByVal RemoteServiceName As LongPtr, ByVal SortOptions As HostNameSortOptions) As IAsyncOperationIVectorView_IEndpointPair
+End Interface
+
+[InterfaceId("BD4A49D8-B289-45BB-97EB-C7525205A843")]
+Interface IStreamWebSocket Extends IInspectable ' requires IClosable
+    Property Get Control() As IStreamWebSocketControl
+    Property Get Information() As IWebSocketInformation
+    Property Get InputStream() As IInputStream
+End Interface
+
+[InterfaceId("18B143D3-897E-595E-ACC1-EF35614B4CEC")]
+Interface ITypedEventHandlerStreamWebSocketServerCustomValidationRequested Extends IUnknown
+    Sub Invoke(ByVal Sender As IStreamWebSocket, ByVal Args As IWebSocketServerCustomValidationRequestedEventArgs)
+End Interface
+
+[InterfaceId("AA4D08CB-93F5-4678-8236-57CCE5417ED5")]
+Interface IStreamWebSocket2 Extends IInspectable ' requires IClosable
+    [PreserveSig]
+    Function AddServerCustomValidationRequested(ByVal Handler As ITypedEventHandlerStreamWebSocketServerCustomValidationRequested, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveServerCustomValidationRequested(ByVal Token As EventRegistrationToken) As HRESULT
+End Interface
+
+[InterfaceId("B4F478B1-A45A-48DB-953A-645B7D964C07")]
+Interface IStreamWebSocketControl Extends IInspectable
+    Property Get NoDelay() As BooleanByte
+    Property Let NoDelay(ByVal Value As BooleanByte)
+End Interface
+
+[InterfaceId("215D9F7E-FA58-40DA-9F11-A48DAFE95037")]
+Interface IStreamWebSocketControl2 Extends IInspectable
+    Property Get DesiredUnsolicitedPongInterval() As TimeSpan
+    Property Let DesiredUnsolicitedPongInterval(ByVal Value As TimeSpan)
+    Property Get ActualUnsolicitedPongInterval() As TimeSpan
+    Property Get ClientCertificate() As ICertificate
+    Property Set ClientCertificate(ByVal Value As ICertificate)
+End Interface
+
+[InterfaceId("03CF8F90-1669-5F4D-9404-2B784678E6DD")]
+Interface ITypedEventHandlerWebSocketClosed Extends IUnknown
+    Sub Invoke(ByVal Sender As IWebSocket, ByVal Args As IWebSocketClosedEventArgs)
+End Interface
+
+[InterfaceId("F877396F-99B1-4E18-BC08-850C9ADF156E")]
+Interface IWebSocket Extends IInspectable ' requires IClosable
+    Property Get OutputStream() As IOutputStream
+    Function ConnectAsync(ByVal Uri As IUri) As IAsyncAction
+    [PreserveSig]
+    Function SetRequestHeader(ByVal HeaderName As LongPtr, ByVal HeaderValue As LongPtr) As HRESULT
+    [PreserveSig]
+    Function AddClosed(ByVal Handler As ITypedEventHandlerWebSocketClosed, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveClosed(ByVal Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function CloseWithStatus(ByVal Code As Integer, ByVal Reason As LongPtr) As HRESULT
+End Interface
+
+[InterfaceId("CEB78D07-D0A8-4703-A091-C8C2C0915BC3")]
+Interface IWebSocketClosedEventArgs Extends IInspectable
+    Property Get Code() As Integer
+    Property Get Reason() As LongPtr
+End Interface
+
+[InterfaceId("2EC4BDC3-D9A5-455A-9811-DE24D45337E9")]
+Interface IWebSocketControl Extends IInspectable
+    Property Get OutboundBufferSizeInBytes() As Long
+    Property Let OutboundBufferSizeInBytes(ByVal Value As Long)
+    Property Get ServerCredential() As IPasswordCredential
+    Property Set ServerCredential(ByVal Value As IPasswordCredential)
+    Property Get ProxyCredential() As IPasswordCredential
+    Property Set ProxyCredential(ByVal Value As IPasswordCredential)
+    Property Get SupportedProtocols() As IVector_HSTRING
+End Interface
+
+[InterfaceId("79C3BE03-F2CA-461E-AF4E-9665BC2D0620")]
+Interface IWebSocketControl2 Extends IInspectable
+    Property Get IgnorableServerCertificateErrors() As IVector_ChainValidationResult
+End Interface
+
+[InterfaceId("27CDF35B-1F61-4709-8E02-61283ADA4E9D")]
+Interface IWebSocketErrorStatics Extends IInspectable
+    Function GetStatus(ByVal Hresult As Long) As WebErrorStatus
+End Interface
+
+[InterfaceId("5E01E316-C92A-47A5-B25F-07847639D181")]
+Interface IWebSocketInformation Extends IInspectable
+    Property Get LocalAddress() As IHostName
+    Property Get BandwidthStatistics() As BandwidthStatistics
+    Property Get Protocol() As LongPtr
+End Interface
+
+[InterfaceId("CE1D39CE-A1B7-4D43-8269-8D5B981BD47A")]
+Interface IWebSocketInformation2 Extends IInspectable
+    Property Get ServerCertificate() As ICertificate
+    Property Get ServerCertificateErrorSeverity() As SocketSslErrorSeverity
+    Property Get ServerCertificateErrors() As IVectorView_ChainValidationResult
+    Property Get ServerIntermediateCertificates() As IVectorView_ICertificate
+End Interface
+
+[InterfaceId("FFEFFE48-022A-4AB7-8B36-E10AF4640E6B")]
+Interface IWebSocketServerCustomValidationRequestedEventArgs Extends IInspectable
+    Property Get ServerCertificate() As ICertificate
+    Property Get ServerCertificateErrorSeverity() As SocketSslErrorSeverity
+    Property Get ServerCertificateErrors() As IVectorView_ChainValidationResult
+    Property Get ServerIntermediateCertificates() As IVectorView_ICertificate
+    [PreserveSig]
+    Function Reject() As HRESULT
+    Function GetDeferral() As IDeferral
+End Interface
+
+Module mdlNetworkingSockets
+
+Public Enum ControlChannelTriggerResetReason
+    ControlChannelTriggerResetReason_FastUserSwitched
+    ControlChannelTriggerResetReason_LowPowerExit
+    ControlChannelTriggerResetReason_QuietHoursExit
+    ControlChannelTriggerResetReason_ApplicationRestart
+End Enum
+
+Public Enum ControlChannelTriggerResourceType
+    ControlChannelTriggerResourceType_RequestSoftwareSlot
+    ControlChannelTriggerResourceType_RequestHardwareSlot
+End Enum
+
+Public Enum ControlChannelTriggerStatus
+    ControlChannelTriggerStatus_HardwareSlotRequested
+    ControlChannelTriggerStatus_SoftwareSlotAllocated
+    ControlChannelTriggerStatus_HardwareSlotAllocated
+    ControlChannelTriggerStatus_PolicyError
+    ControlChannelTriggerStatus_SystemError
+    ControlChannelTriggerStatus_TransportDisconnected
+    ControlChannelTriggerStatus_ServiceUnavailable
+End Enum
+
+Public Enum MessageWebSocketReceiveMode
+    MessageWebSocketReceiveMode_FullMessage
+    MessageWebSocketReceiveMode_PartialMessage
+End Enum
+
+Public Enum SocketActivityConnectedStandbyAction
+    SocketActivityConnectedStandbyAction_DoNotWake
+    SocketActivityConnectedStandbyAction_Wake
+End Enum
+
+Public Enum SocketActivityKind
+    SocketActivityKind_None
+    SocketActivityKind_StreamSocketListener
+    SocketActivityKind_DatagramSocket
+    SocketActivityKind_StreamSocket
+End Enum
+
+Public Enum SocketActivityTriggerReason
+    SocketActivityTriggerReason_None
+    SocketActivityTriggerReason_SocketActivity
+    SocketActivityTriggerReason_ConnectionAccepted
+    SocketActivityTriggerReason_KeepAliveTimerExpired
+    SocketActivityTriggerReason_SocketClosed
+End Enum
+
+Public Enum SocketErrorStatus
+    SocketErrorStatus_Unknown
+    SocketErrorStatus_OperationAborted
+    SocketErrorStatus_HttpInvalidServerResponse
+    SocketErrorStatus_ConnectionTimedOut
+    SocketErrorStatus_AddressFamilyNotSupported
+    SocketErrorStatus_SocketTypeNotSupported
+    SocketErrorStatus_HostNotFound
+    SocketErrorStatus_NoDataRecordOfRequestedType
+    SocketErrorStatus_NonAuthoritativeHostNotFound
+    SocketErrorStatus_ClassTypeNotFound
+    SocketErrorStatus_AddressAlreadyInUse
+    SocketErrorStatus_CannotAssignRequestedAddress
+    SocketErrorStatus_ConnectionRefused
+    SocketErrorStatus_NetworkIsUnreachable
+    SocketErrorStatus_UnreachableHost
+    SocketErrorStatus_NetworkIsDown
+    SocketErrorStatus_NetworkDroppedConnectionOnReset
+    SocketErrorStatus_SoftwareCausedConnectionAbort
+    SocketErrorStatus_ConnectionResetByPeer
+    SocketErrorStatus_HostIsDown
+    SocketErrorStatus_NoAddressesFound
+    SocketErrorStatus_TooManyOpenFiles
+    SocketErrorStatus_MessageTooLong
+    SocketErrorStatus_CertificateExpired
+    SocketErrorStatus_CertificateUntrustedRoot
+    SocketErrorStatus_CertificateCommonNameIsIncorrect
+    SocketErrorStatus_CertificateWrongUsage
+    SocketErrorStatus_CertificateRevoked
+    SocketErrorStatus_CertificateNoRevocationCheck
+    SocketErrorStatus_CertificateRevocationServerOffline
+    SocketErrorStatus_CertificateIsInvalid
+End Enum
+
+Public Enum SocketMessageType
+    SocketMessageType_Binary
+    SocketMessageType_Utf8
+End Enum
+
+Public Enum SocketProtectionLevel
+    SocketProtectionLevel_PlainSocket
+    SocketProtectionLevel_Ssl
+    SocketProtectionLevel_SslAllowNullEncryption
+    SocketProtectionLevel_BluetoothEncryptionAllowNullAuthentication
+    SocketProtectionLevel_BluetoothEncryptionWithAuthentication
+    SocketProtectionLevel_Ssl3AllowWeakEncryption
+    SocketProtectionLevel_Tls10
+    SocketProtectionLevel_Tls11
+    SocketProtectionLevel_Tls12
+    SocketProtectionLevel_Unspecified
+End Enum
+
+Public Enum SocketQualityOfService
+    SocketQualityOfService_Normal
+    SocketQualityOfService_LowLatency
+End Enum
+
+Public Enum SocketSslErrorSeverity
+    SocketSslErrorSeverity_None
+    SocketSslErrorSeverity_Ignorable
+    SocketSslErrorSeverity_Fatal
+End Enum
+
+Public Type BandwidthStatistics
+    OutboundBitsPerSecond As UInt64
+    InboundBitsPerSecond As UInt64
+    OutboundBitsPerSecondInstability As UInt64
+    InboundBitsPerSecondInstability As UInt64
+    OutboundBandwidthPeaked As BooleanByte
+    InboundBandwidthPeaked As BooleanByte
+End Type
+
+Public Type RoundTripTimeStatistics
+    Variance As Long
+    Max As Long
+    Min As Long
+    Sum As Long
+End Type
+
+End Module

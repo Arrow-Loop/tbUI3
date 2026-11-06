@@ -1,0 +1,846 @@
+[InterfaceId("00000000-0000-0000-C000-000000000046")]
+Interface IUnknown Extends Nothing
+[PreserveSig] Function QueryInterface(rIID As Any, ppvObj As Any) As HRESULT
+[PreserveSig] Function AddRef() As Long
+[PreserveSig] Function Release() As Long
+End Interface
+
+[InterfaceId("AF86E2E0-B12D-4C6A-9C5A-D7AA65101E90"), Hidden]
+Interface IInspectable Extends IUnknown
+    [PreserveSig, Restricted]
+    Function GetIIDs(iidCount As Long, iidPtr As Any) As HRESULT ' Use CoTaskMemFree on iidPtr
+    [PreserveSig, Restricted]
+    Function GetRuntimeClassName(ClassName As LongPtr) As HRESULT
+    [PreserveSig, Restricted]
+    Function GetTrustLevel(TrustLevel As TrustLevel) As HRESULT
+End Interface
+
+[InterfaceId("AF86E2E0-B12D-4C6A-9C5A-D7AA65101E90"), Hidden]
+Interface IInspectableUnrestricted Extends IUnknown
+    Sub GetIIDs(iidCount As Long, iidPtr As LongPtr) ' Use CoTaskMemFree on iidPtr
+    Function GetRuntimeClassName() As LongPtr
+    Function GetTrustLevel() As TrustLevel
+End Interface
+
+[InterfaceId("00000035-0000-0000-C000-000000000046")]
+Interface IActivationFactory Extends IInspectable
+    [PreserveSig]
+    Function ActivateInstance(Instance As IInspectable) As HRESULT
+End Interface
+
+[InterfaceId("94EA2B94-E9CC-49E0-C0FF-EE64CA8F5B90")]
+Interface IAgileObject Extends IUnknown
+    
+End Interface
+
+[InterfaceId("00000036-0000-0000-C000-000000000046")]
+Interface IAsyncInfo Extends IInspectable
+    Property Get Id() As Long
+    Property Get Status() As AsyncStatus
+    Property Get ErrorCode() As HRESULT
+    [PreserveSig]
+    Function Cancel() As HRESULT
+    [PreserveSig]
+    Function Close() As HRESULT
+End Interface
+
+[InterfaceId("5A648006-843A-4DA9-865B-9D26E5DFAD7B")]
+Interface IAsyncAction Extends IInspectable ' requires IAsyncInfo
+    Property Set Completed(ByVal Handler As IAsyncActionCompletedHandler)
+    Property Get Completed() As IAsyncActionCompletedHandler
+    [PreserveSig]
+    Function GetResults() As HRESULT
+End Interface
+
+[InterfaceId("A4ED5C81-76C9-40BD-8BE6-B1D90FB20AE7")]
+Interface IAsyncActionCompletedHandler Extends IUnknown
+    Sub Invoke(ByVal AsyncAction As IAsyncAction, ByVal AsyncStatus As AsyncStatus)
+End Interface
+
+[InterfaceId("30D5A829-7FA4-4026-83BB-D75BAE4EA99E")]
+Interface IClosable Extends IInspectable
+    [PreserveSig]
+    Function Close() As HRESULT
+End Interface
+
+[InterfaceId("D6269732-3B7F-46A7-B40B-4FDCA2A2C693")]
+Interface IDeferral Extends IInspectable ' requires IClosable
+    [PreserveSig]
+    Function Complete() As HRESULT
+End Interface
+
+[InterfaceId("ED32A372-F3C8-4FAA-9CFB-470148DA3888")]
+Interface IDeferralCompletedHandler Extends IUnknown
+    Sub Invoke()
+End Interface
+
+[InterfaceId("65A1ECC5-3FB5-4832-8CA9-F061B281D13A")]
+Interface IDeferralFactory Extends IInspectable
+    Function Create(ByVal Handler As IDeferralCompletedHandler) As IDeferral
+End Interface
+
+[InterfaceId("4EDB8EE2-96DD-49A7-94F7-4607DDAB8E3C")]
+Interface IGetActivationFactory Extends IInspectable
+    Function GetActivationFactory(ByVal ActivatableClassId As LongPtr) As IInspectable
+End Interface
+
+[InterfaceId("59C7966B-AE52-5283-AD7F-A1B9E9678ADD")]
+Interface IGuidHelperStatics Extends IInspectable
+    [PreserveSig]
+    Function CreateNewGuid(rIID As Any) As HRESULT
+    [PreserveSig]
+    Property Get Empty(rIID As Any) As HRESULT
+    Function Equals(rTarget As Any, rIID As Any) As BooleanByte
+End Interface
+
+[InterfaceId("05EB86F1-7140-5517-B88D-CBAEBE57E6B1")]
+Interface IIterator_KVP_HSTRING Extends IInspectable
+    Property Get Current() As KVP_HSTRING
+    Property Get HasCurrent() As BooleanByte
+    Function MoveNext() As BooleanByte
+    Function GetMany(ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("E9BDAAF0-CBF6-5C72-BE90-29CBF3A1319B")]
+Interface IIterable_KVP_HSTRING Extends IInspectable
+    Function First() As IIterator_KVP_HSTRING
+End Interface
+
+[InterfaceId("60310303-49C5-52E6-ABC6-A9B36ECCC716")]
+Interface KVP_HSTRING Extends IInspectable
+    Property Get Key() As LongPtr
+    Property Get Value() As LongPtr
+End Interface
+
+[InterfaceId("AC7F26F2-FEB7-5B2A-8AC4-345BC62CAEDE")]
+Interface IMapView_HSTRING Extends IInspectable
+    Function Lookup(ByVal Key As LongPtr) As LongPtr
+    Property Get Size() As Long
+    Function HasKey(ByVal Key As LongPtr) As BooleanByte
+    Sub Split(First As IMapView_HSTRING, Second As IMapView_HSTRING)
+End Interface
+
+[InterfaceId("F6D1F700-49C2-52AE-8154-826F9908773C")]
+Interface IMap_HSTRING Extends IInspectable
+    Function Lookup(ByVal Key As LongPtr) As LongPtr
+    Property Get Size() As Long
+    Function HasKey(ByVal Key As LongPtr) As BooleanByte
+    Function GetView() As IMapView_HSTRING
+    Function Insert(ByVal Key As LongPtr, ByVal Value As LongPtr) As BooleanByte
+    [PreserveSig]
+    Function Remove(ByVal Key As LongPtr) As HRESULT
+    [PreserveSig]
+    Function Clear() As HRESULT
+End Interface
+
+[InterfaceId("5DB5FA32-707C-5849-A06B-91C8EB9D10E8")]
+Interface IIterator_KVP_IInspectable Extends IInspectable
+    Property Get Current() As KVP_IInspectable
+    Property Get HasCurrent() As BooleanByte
+    Function MoveNext() As BooleanByte
+    Function GetMany(ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("FE2F3D47-5D47-5499-8374-430C7CDA0204")]
+Interface IIterable_KVP_IInspectable Extends IInspectable
+    Function First() As IIterator_KVP_IInspectable
+End Interface
+
+[InterfaceId("09335560-6C6B-5A26-9348-97B781132B20")]
+Interface KVP_IInspectable Extends IInspectable
+    Property Get Key() As LongPtr
+    Property Get Value() As IInspectable
+End Interface
+
+[InterfaceId("BB78502A-F79D-54FA-92C9-90C5039FDF7E")]
+Interface IMapView_IInspectable Extends IInspectable
+    Function Lookup(ByVal Key As LongPtr) As IInspectable
+    Property Get Size() As Long
+    Function HasKey(ByVal Key As LongPtr) As BooleanByte
+    Sub Split(First As IMapView_IInspectable, Second As IMapView_IInspectable)
+End Interface
+
+[InterfaceId("1B0D3570-0877-5EC2-8A2C-3B9539506ACA")]
+Interface IMap_IInspectable Extends IInspectable
+    Function Lookup(ByVal Key As LongPtr) As IInspectable
+    Property Get Size() As Long
+    Function HasKey(ByVal Key As LongPtr) As BooleanByte
+    Function GetView() As IMapView_IInspectable
+    Function Insert(ByVal Key As LongPtr, ByVal Value As IInspectable) As BooleanByte
+    [PreserveSig]
+    Function Remove(ByVal Key As LongPtr) As HRESULT
+    [PreserveSig]
+    Function Clear() As HRESULT
+End Interface
+
+[InterfaceId("FBC4DD2A-245B-11E4-AF98-689423260CF8")]
+Interface IMemoryBuffer Extends IInspectable ' requires IClosable
+    Function CreateReference() As IMemoryBufferReference
+End Interface
+
+[InterfaceId("FBC4DD2B-245B-11E4-AF98-689423260CF8")]
+Interface IMemoryBufferFactory Extends IInspectable
+    Function Create(ByVal Capacity As Long) As IMemoryBuffer
+End Interface
+
+[InterfaceId("F4637D4A-0760-5431-BFC0-24EB1D4F6C4F")]
+Interface ITypedEventHandlerMemoryBufferReferenceClosed Extends IUnknown
+    Sub Invoke(ByVal Sender As IMemoryBufferReference, ByVal Args As IInspectable)
+End Interface
+
+[InterfaceId("FBC4DD29-245B-11E4-AF98-689423260CF8")]
+Interface IMemoryBufferReference Extends IInspectable ' requires IClosable
+    Property Get Capacity() As Long
+    [PreserveSig]
+    Function AddClosed(ByVal Handler As ITypedEventHandlerMemoryBufferReferenceClosed, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveClosed(ByVal Token As EventRegistrationToken) As HRESULT
+End Interface
+
+[InterfaceId("5B0D3235-4DBA-4D44-865E-8F1D0E4FD04D")]
+Interface IMemoryBufferByteAccess Extends IUnknown
+    [PreserveSig]
+    Function GetBuffer(BufferPtr As Any, Capacity As Long) As HRESULT
+End Interface
+
+[InterfaceId("60141EFB-F2F9-5377-96FD-F8C60D9558B5")]
+Interface IMapChangedEventArgs Extends IInspectable
+    Property Get ChangeType() As CollectionChange
+    Property Get Key() As LongPtr
+End Interface
+
+[InterfaceId("E2663F37-2E1B-500C-AD68-C3ED7A8F74C8")]
+Interface IMapChangedEventHandlerIMapHSTRING Extends IUnknown
+    Sub Invoke(ByVal Sender As IObservableMap_HSTRING, ByVal Args As IMapChangedEventArgs)
+End Interface
+
+[InterfaceId("1E036276-2F60-55F6-B7F3-F86079E6900B")]
+Interface IObservableMap_HSTRING Extends IInspectable
+    [PreserveSig]
+    Function AddMapChanged(ByVal Handler As IMapChangedEventHandlerIMapHSTRING, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveMapChanged(ByVal Token As EventRegistrationToken) As HRESULT
+End Interface
+
+[InterfaceId("24F981E5-DDCA-538D-AADA-A59906084CF1")]
+Interface IMapChangedEventHandlerIMapIInspectable Extends IUnknown
+    Sub Invoke(ByVal Sender As IObservableMap_IInspectable, ByVal Args As IMapChangedEventArgs)
+End Interface
+
+[InterfaceId("236AAC9D-FB12-5C4D-A41C-9E445FB4D7EC")]
+Interface IObservableMap_IInspectable Extends IInspectable
+    [PreserveSig]
+    Function AddMapChanged(ByVal Handler As IMapChangedEventHandlerIMapIInspectable, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveMapChanged(ByVal Token As EventRegistrationToken) As HRESULT
+End Interface
+
+[InterfaceId("8A43ED9F-F4E6-4421-ACF9-1DAB2986820C")]
+Interface IPropertySet Extends IInspectable ' requires IObservableMap_IInspectable, IMap_IInspectable, IIterable_KVP_IInspectable
+
+End Interface
+
+[InterfaceId("4BD682DD-7554-40E9-9A9B-82654EDE7E62")]
+Interface IPropertyValue Extends IInspectable ' requires IReference_***
+    Property Get Type() As PropertyType
+    Property Get IsNumericScalar() As BooleanByte
+    Function GetUInt8() As UInt8
+    Function GetInt16() As Int16
+    Function GetUInt16() As UInt16
+    Function GetInt32() As Int32
+    Function GetUInt32() As UInt32
+    Function GetInt64() As Int64
+    Function GetUInt64() As UInt64
+    Function GetSingle() As Single
+    Function GetDouble() As Double
+    Function GetChar16() As Char16
+    Function GetBoolean() As BooleanByte
+    Function GetString() As LongPtr
+    Function GetGuid() As UUID
+    Function GetDateTime() As DateTime
+    Function GetTimeSpan() As TimeSpan
+    Function GetPoint() As POINTF
+    Function GetSize() As SIZEF
+    Function GetRect() As RECTF
+    [PreserveSig]
+    Function GetUInt8Array(Length As Long, BytePtr As Any) As HRESULT ' Call CoTaskMemFree on BytePtr
+    [PreserveSig]
+    Function GetInt16Array(Length As Long, IntegerPtr As Any) As HRESULT
+    [PreserveSig]
+    Function GetUInt16Array(Length As Long, IntegerPtr As Any) As HRESULT
+    [PreserveSig]
+    Function GetInt32Array(Length As Long, LongPtr As Any) As HRESULT
+    [PreserveSig]
+    Function GetUInt32Array(Length As Long, LongPtr As Any) As HRESULT
+    [PreserveSig]
+    Function GetInt64Array(Length As Long, CurrencyPtr As Any) As HRESULT
+    [PreserveSig]
+    Function GetUInt64Array(Length As Long, CurrencyPtr As Any) As HRESULT
+    [PreserveSig]
+    Function GetSingleArray(Length As Long, SinglePtr As Any) As HRESULT
+    [PreserveSig]
+    Function GetDoubleArray(Length As Long, DoublePtr As Any) As HRESULT
+    [PreserveSig]
+    Function GetChar16Array(Length As Long, IntegerPtr As Any) As HRESULT
+    [PreserveSig]
+    Function GetBooleanArray(Length As Long, BooleanPtr As Any) As HRESULT
+    [PreserveSig]
+    Function GetStringArray(Length As Long, HSTRINGPtr As Any) As HRESULT
+    [PreserveSig]
+    Function GetInspectableArray(Length As Long, IInspectablePtr As Any) As HRESULT
+    [PreserveSig]
+    Function GetGuidArray(Length As Long, GuidPtr As Any) As HRESULT
+    [PreserveSig]
+    Function GetDateTimeArray(Length As Long, CurrencyPtr As Any) As HRESULT
+    [PreserveSig]
+    Function GetTimeSpanArray(Length As Long, CurrencyPtr As Any) As HRESULT
+    [PreserveSig]
+    Function GetPointArray(Length As Long, PointPtr As Any) As HRESULT
+    [PreserveSig]
+    Function GetSizeArray(Length As Long, SizePtr As Any) As HRESULT
+    [PreserveSig]
+    Function GetRectArray(Length As Long, RectPtr As Any) As HRESULT
+End Interface
+
+[InterfaceId("629BDBC8-D932-4FF4-96B9-8D96C5C1E858")]
+Interface IPropertyValueStatics Extends IInspectable
+    Function CreateEmpty() As IPropertyValue
+    Function CreateUInt8(ByVal Value As UInt8) As IPropertyValue
+    Function CreateInt16(ByVal Value As Int16) As IPropertyValue
+    Function CreateUInt16(ByVal Value As UInt16) As IPropertyValue
+    Function CreateInt32(ByVal Value As Int32) As IPropertyValue
+    Function CreateUInt32(ByVal Value As UInt32) As IPropertyValue
+    Function CreateInt64(ByVal Value As Int64) As IPropertyValue
+    Function CreateUInt64(ByVal Value As UInt64) As IPropertyValue
+    Function CreateSingle(ByVal Value As Single) As IPropertyValue
+    Function CreateDouble(ByVal Value As Double) As IPropertyValue
+    Function CreateChar16(ByVal Value As Char16) As IPropertyValue
+    Function CreateBoolean(ByVal Value As BooleanByte) As IPropertyValue
+    Function CreateString(ByVal Value As LongPtr) As IPropertyValue
+    Function CreateInspectable(ByVal Value As IInspectable) As IInspectable
+    Function CreateGuid(ByVal Value As UUID) As IPropertyValue
+    Function CreateDateTime(ByVal Value As DateTime) As IPropertyValue
+    Function CreateTimeSpan(ByVal Value As TimeSpan) As IPropertyValue
+    Function CreatePoint(ByVal Value As POINTF) As IPropertyValue
+    Function CreateSize(ByVal Value As SIZEF) As IPropertyValue
+    Function CreateRect(ByVal Value As RECTF) As IPropertyValue
+    Function CreateUInt8Array(ByVal Length As Long, BytePtr As Any) As IPropertyValue
+    Function CreateInt16Array(ByVal Length As Long, IntegerPtr As Any) As IPropertyValue
+    Function CreateUInt16Array(ByVal Length As Long, IntegerPtr As Any) As IPropertyValue
+    Function CreateInt32Array(ByVal Length As Long, LongPtr As Any) As IPropertyValue
+    Function CreateUInt32Array(ByVal Length As Long, LongPtr As Any) As IPropertyValue
+    Function CreateInt64Array(ByVal Length As Long, CurrencyPtr As Any) As IPropertyValue
+    Function CreateUInt64Array(ByVal Length As Long, CurrencyPtr As Any) As IPropertyValue
+    Function CreateSingleArray(ByVal Length As Long, SinglePtr As Any) As IPropertyValue
+    Function CreateDoubleArray(ByVal Length As Long, DoublePtr As Any) As IPropertyValue
+    Function CreateChar16Array(ByVal Length As Long, IntegerPtr As Any) As IPropertyValue
+    Function CreateBooleanArray(ByVal Length As Long, BooleanPtr As Any) As IPropertyValue
+    Function CreateStringArray(ByVal Length As Long, HSTRINGPtr As Any) As IPropertyValue
+    Function CreateInspectableArray(ByVal Length As Long, IInspectablePtr As Any) As IInspectable
+    Function CreateGuidArray(ByVal Length As Long, GuidPtr As Any) As IPropertyValue
+    Function CreateDateTimeArray(ByVal Length As Long, CurrencyPtr As Any) As IPropertyValue
+    Function CreateTimeSpanArray(ByVal Length As Long, CurrencyPtr As Any) As IPropertyValue
+    Function CreatePointArray(ByVal Length As Long, PointPtr As Any) As IPropertyValue
+    Function CreateSizeArray(ByVal Length As Long, SizePtr As Any) As IPropertyValue
+    Function CreateRectArray(ByVal Length As Long, RectPtr As Any) As IPropertyValue
+End Interface
+
+[InterfaceId("74C8C3AA-DE03-5BF0-AAE8-AA8B692066B3")]
+Interface IReference_AdaptiveMediaSourceResourceType Extends IInspectable
+    Property Get Value() As AdaptiveMediaSourceResourceType
+End Interface
+
+[InterfaceId("AA19DA70-DEE6-5B42-B562-2FCD218C34CA")]
+Interface IReference_BitmapBounds Extends IInspectable
+    Property Get Value() As BitmapBounds
+End Interface
+
+[InterfaceId("91C0BA96-9E69-5B82-BF1D-83AB2A509C53")]
+Interface IReference_BluetoothLEAdvertisementFlags Extends IInspectable
+    Property Get Value() As BluetoothLEAdvertisementFlags
+End Interface
+
+[InterfaceId("3C00FD60-2950-5939-A21A-2D12C5A01B8A")]
+Interface IReference_Boolean Extends IInspectable
+    Property Get Value() As BooleanByte
+End Interface
+
+[InterfaceId("E5198CC8-2873-55F5-B0A1-84FF9E4AAD62")]
+Interface IReference_Byte Extends IInspectable
+    Property Get Value() As Byte
+End Interface
+
+[InterfaceId("E20596AA-0BBE-5203-BE6B-6B71FF5B0843")]
+Interface IReference_CaptureSceneMode Extends IInspectable
+    Property Get Value() As CaptureSceneMode
+End Interface
+
+[InterfaceId("AB8E5D11-B0C1-5A21-95AE-F16BF3A37624")]
+Interface IReference_Color Extends IInspectable
+    Property Get Value() As Color
+End Interface
+
+[InterfaceId("5541D8A7-497C-5AA4-86FC-7713ADBF2A2C")]
+Interface IReference_DateTime Extends IInspectable
+    Property Get Value() As DateTime
+End Interface
+
+[InterfaceId("2F2D6C29-5473-5F3E-92E7-96572BB990E2")]
+Interface IReference_Double Extends IInspectable
+    Property Get Value() As Double
+End Interface
+
+[InterfaceId("7D50F649-632C-51F9-849A-EE49428933EA")]
+Interface IReference_GUID Extends IInspectable
+    Property Get Value() As UUID
+End Interface
+
+[InterfaceId("8E330979-2FEF-5D68-88AA-A9EE6697D117")]
+Interface IReference_HdcpProtection Extends IInspectable
+    Property Get Value() As HdcpProtection
+End Interface
+
+[InterfaceId("6EC9E41B-6709-5647-9918-A1270110FC4E")]
+Interface IReference_Int16 Extends IInspectable
+    Property Get Value() As Int16
+End Interface
+
+[InterfaceId("548CEFBD-BC8A-5FA0-8DF2-957440FC8BF4")]
+Interface IReference_Int32 Extends IInspectable
+    Property Get Value() As Int32
+End Interface
+
+[InterfaceId("4DDA9E24-E69F-5C6A-A0A6-93427365AF2A")]
+Interface IReference_Int64 Extends IInspectable
+    Property Get Value() As Int64
+End Interface
+
+[InterfaceId("DACBFFDC-68EF-5FD0-B657-782D0AC9807E")]
+Interface IReference_Matrix4x4 Extends IInspectable
+    Property Get Value() As Matrix4x4
+End Interface
+
+[InterfaceId("B0060B8A-1105-5AD4-963D-F6CF1905D349")]
+Interface IReference_ManualFocusDistance Extends IInspectable
+    Property Get Value() As ManualFocusDistance
+End Interface
+
+[InterfaceId("58820185-5DA0-5FAA-86DA-9BD9F03974FA")]
+Interface IReference_MediaCaptureFocusState Extends IInspectable
+    Property Get Value() As MediaCaptureFocusState
+End Interface
+
+[InterfaceId("2FFFD101-16F8-596D-A88E-659B6F584641")]
+Interface IReference_MseTimeRange Extends IInspectable
+    Property Get Value() As MseTimeRange
+End Interface
+
+[InterfaceId("84F14C22-A00A-5272-8D3D-82112E66DF00")]
+Interface IReference_Point Extends IInspectable
+    Property Get Value() As POINTF
+End Interface
+
+[InterfaceId("80423F11-054F-5EAC-AFD3-63B6CE15E77B")]
+Interface IReference_Rect Extends IInspectable
+    Property Get Value() As RECTF
+End Interface
+
+[InterfaceId("719CC2BA-3E76-5DEF-9F1A-38D85A145EA8")]
+Interface IReference_Single Extends IInspectable
+    Property Get Value() As Single
+End Interface
+
+[InterfaceId("61723086-8E53-5276-9F36-2A4BB93E2B75")]
+Interface IReference_Size Extends IInspectable
+    Property Get Value() As SIZEF
+End Interface
+
+[InterfaceId("B77AA86D-2D6E-55F1-8F99-64AC5C05328B")]
+Interface IReference_SizeInt32 Extends IInspectable
+    Property Get Value() As SizeInt32
+End Interface
+
+[InterfaceId("A19F7BA8-D8CD-5DF2-AB44-FEFD26644484")]
+Interface IReference_Thickness Extends IInspectable
+    Property Get Value() As Thickness
+End Interface
+
+[InterfaceId("604D0C4C-91DE-5C2A-935F-362F13EAF800")]
+Interface IReference_TimeSpan Extends IInspectable
+    Property Get Value() As TimeSpan
+End Interface
+
+[InterfaceId("E17E08C9-7DEB-51D1-8487-334EB3FE4691")]
+Interface IReference_UIElementType Extends IInspectable
+    Property Get Value() As UIElementType
+End Interface
+
+[InterfaceId("513EF3AF-E784-5325-A91E-97C2B8111CF3")]
+Interface IReference_UInt32 Extends IInspectable
+    Property Get Value() As UInt32
+End Interface
+
+[InterfaceId("6755E376-53BB-568B-A11D-17239868309E")]
+Interface IReference_UInt64 Extends IInspectable
+    Property Get Value() As UInt64
+End Interface
+
+[InterfaceId("1B63EC17-7B2B-59FE-AB9D-B60EA4F9C9B8")]
+Interface IReference_UnderlineType Extends IInspectable
+    Property Get Value() As UnderlineType
+End Interface
+
+[InterfaceId("48F6A69E-8465-57AE-9400-9764087F65AD")]
+Interface IReference_Vector2 Extends IInspectable
+    Property Get Value() As Vector2
+End Interface
+
+[InterfaceId("1EE770FF-C954-59CA-A754-6199A9BE282C")]
+Interface IReference_Vector3 Extends IInspectable
+    Property Get Value() As Vector3
+End Interface
+
+[InterfaceId("F2B26336-6A9D-54DE-8ECA-00D6C871E469")]
+Interface IReference_WebErrorStatus Extends IInspectable
+    Property Get Value() As WebErrorStatus
+End Interface
+
+[InterfaceId("79C7838A-39E2-5287-AC3B-B118DB251002")]
+Interface IReference_WhiteBalanceGain Extends IInspectable
+    Property Get Value() As WhiteBalanceGain
+End Interface
+
+[InterfaceId("96369F54-8EB6-48F0-ABCE-C1B211E627C3")]
+Interface IStringable Extends IInspectable
+    Function ToString() As LongPtr
+End Interface
+
+[InterfaceId("C1D432BA-C824-4452-A7FD-512BC3BBE9A1")]
+Interface IUriEscapeStatics Extends IInspectable
+    Function UnescapeComponent(ByVal ToUnescape As LongPtr) As LongPtr
+    Function EscapeComponent(ByVal ToEscape As LongPtr) As LongPtr
+End Interface
+
+[InterfaceId("9E365E57-48B2-4160-956F-C7385120BBFC")]
+Interface IUri Extends IInspectable
+    Property Get AbsoluteUri() As LongPtr
+    Property Get DisplayUri() As LongPtr
+    Property Get Domain() As LongPtr
+    Property Get Extension() As LongPtr
+    Property Get Fragment() As LongPtr
+    Property Get Host() As LongPtr
+    Property Get Password() As LongPtr
+    Property Get Path() As LongPtr
+    Property Get Query() As LongPtr
+    Property Get QueryParsed() As IWwwFormUrlDecoder
+    Property Get RawUri() As LongPtr
+    Property Get SchemeName() As LongPtr
+    Property Get UserName() As LongPtr
+    Property Get Port() As Long
+    Property Get Suspicious() As BooleanByte
+    Function Equals(ByVal Uri As IUri) As BooleanByte
+    Function CombineUri(ByVal RelativeUri As LongPtr) As IUri
+End Interface
+
+[InterfaceId("44A9796F-723E-4FDF-A218-033E75B0C084")]
+Interface IUriFactory Extends IInspectable
+    Function CreateUri(ByVal Uri As LongPtr) As IUri
+    Function CreateWithRelativeUri(ByVal BaseUri As LongPtr, ByVal RelativeUri As LongPtr) As IUri
+End Interface
+
+[InterfaceId("758D9661-221C-480F-A339-50656673F46F")]
+Interface IUriWithAbsoluteCanonicalUri Extends IInspectable
+    Property Get AbsoluteCanonicalUri() As LongPtr
+    Property Get DisplayIri() As LongPtr
+End Interface
+
+[InterfaceId("575933DF-34FE-4480-AF15-07691F3D5D9B")]
+Interface IVectorChangedEventArgs Extends IInspectable
+    Property Get ChangeType() As CollectionChange
+    Property Get Index() As Long
+End Interface
+
+[InterfaceId("32E54295-373C-50CB-80A1-468A990CA780")]
+Interface IIterator_IWwwFormUrlDecoderEntry Extends IInspectable
+    Property Get Current() As IWwwFormUrlDecoderEntry
+    Property Get HasCurrent() As BooleanByte
+    Function MoveNext() As BooleanByte
+    Function GetMany(ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("876BE83B-7218-5BFB-A169-83152EF7E146")]
+Interface IIterable_IWwwFormUrlDecoderEntry Extends IInspectable
+    Function First() As IIterator_IWwwFormUrlDecoderEntry
+End Interface
+
+[InterfaceId("B1F00D3B-1F06-5117-93EA-2A0D79116701")]
+Interface IVectorView_IWwwFormUrlDecoderEntry Extends IInspectable
+    Function GetAt(ByVal Index As Long) As IWwwFormUrlDecoderEntry
+    Property Get Size() As Long
+    Function IndexOf(ByVal Value As IWwwFormUrlDecoderEntry, Index As Long) As BooleanByte
+    Function GetMany(ByVal StartIndex As Long, ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("D45A0451-F225-4542-9296-0E1DF5D254DF")]
+Interface IWwwFormUrlDecoder Extends IInspectable
+    Function GetFirstValueByName(ByVal Name As LongPtr) As LongPtr
+End Interface
+
+[InterfaceId("125E7431-F678-4E8E-B670-20A9B06C512D")]
+Interface IWwwFormUrlDecoderEntry Extends IInspectable
+    Property Get Name() As LongPtr
+    Property Get Value() As LongPtr
+End Interface
+
+[InterfaceId("5B8C6B3D-24AE-41B5-A1BF-F0C3D544845B")]
+Interface IWwwFormUrlDecoderFactory Extends IInspectable
+    Function CreateWwwFormUrlDecoder(ByVal Query As LongPtr) As IWwwFormUrlDecoder
+End Interface
+
+[InterfaceId("00000038-0000-0000-C000-000000000046")]
+Interface IWeakReferenceSource Extends IUnknown
+    Function GetWeakReference() As IWeakReference
+End Interface
+
+[InterfaceId("00000037-0000-0000-C000-000000000046")]
+Interface IWeakReference Extends IUnknown
+    Function Resolve(rIID As Any) As IInspectable
+End Interface
+
+Module mdlFoundation
+
+Public Enum HRESULT
+    S_OK = 0
+    ERROR_SUCCESS = 0
+    ERROR_CANCELLED = &H800704C7
+    S_FALSE = 1
+    E_NOTIMPL = &H80004001
+    E_NOINTERFACE = &H80004002
+    E_POINTER = &H80004003
+    E_ABORT = &H80004004
+    E_FAIL = &H80004005
+    E_UNEXPECTED = &H8000FFFF
+    E_FILENOTFOUND = &H80070002
+    E_PATHNOTFOUND = &H80070003
+    E_ACCESSDENIED = &H80070005
+    E_HANDLE = &H80070006
+    E_INVALID_DATA = &H8007000D
+    E_OUTOFMEMORY = &H8007000E
+    E_INVALIDARG = &H80070057
+    E_NOTFOUND = &H80070490
+    E_UNSUPPORTED_TYPE = &H8007065E
+    E_PENDING = &H8000000A
+    E_BOUNDS = &H8000000B
+    E_CHANGED_STATE = &H8000000C
+    E_ILLEGAL_STATE_CHANGE = &H8000000D
+    E_ILLEGAL_METHOD_CALL = &H8000000E
+    E_STRING_NOT_NULL_TERMINATED = &H80000017
+    E_APPLICATION_EXITING = &H8000001A
+    E_APPLICATION_VIEW_EXITING = &H8000001B
+    E_ELEMENT_NOT_FOUND = &H80070490
+    E_NOT_SET = &H80000490
+    E_NOT_VALID_STATE = &H8000139F
+    E_INSUFFICIENT_BUFFER = &H8000007A
+    E_TIME_SENSITIVE_THREAD = &H800001A6
+    E_NO_TASK_QUEUE = &H800001AB
+    E_CLASSNOTAVAILABLE = &H80040111
+    E_CLASSNOTREG = &H80040154
+End Enum
+
+Public Enum TrustLevel
+    TrustLevel_BaseTrust
+    TrustLevel_PartialTrust
+    TrustLevel_FullTrust
+End Enum
+
+Public Enum AsyncStatus
+    AsyncStatus_Started
+    AsyncStatus_Completed
+    AsyncStatus_Canceled
+    AsyncStatus_Error
+End Enum
+
+Public Enum CollectionChange
+    CollectionChange_Reset
+    CollectionChange_ItemInserted
+    CollectionChange_ItemRemoved
+    CollectionChange_ItemChanged
+End Enum
+
+Public Enum PropertyType
+    PropertyType_Empty
+    PropertyType_UInt8
+    PropertyType_Int16
+    PropertyType_UInt16
+    PropertyType_Int32
+    PropertyType_UInt32
+    PropertyType_Int64
+    PropertyType_UInt64
+    PropertyType_Single
+    PropertyType_Double
+    PropertyType_Char16
+    PropertyType_Boolean
+    PropertyType_String
+    PropertyType_Inspectable
+    PropertyType_DateTime
+    PropertyType_TimeSpan
+    PropertyType_Guid
+    PropertyType_Point
+    PropertyType_Size
+    PropertyType_Rect
+    PropertyType_OtherType
+    PropertyType_UInt8Array = 1025
+    PropertyType_Int16Array
+    PropertyType_UInt16Array
+    PropertyType_Int32Array
+    PropertyType_UInt32Array
+    PropertyType_Int64Array
+    PropertyType_UInt64Array
+    PropertyType_SingleArray
+    PropertyType_DoubleArray
+    PropertyType_Char16Array
+    PropertyType_BooleanArray
+    PropertyType_StringArray
+    PropertyType_InspectableArray
+    PropertyType_DateTimeArray
+    PropertyType_TimeSpanArray
+    PropertyType_GuidArray
+    PropertyType_PointArray
+    PropertyType_SizeArray
+    PropertyType_RectArray
+    PropertyType_OtherTypeArray
+End Enum
+
+Public Enum BOOL
+    APIFALSE
+    APITRUE
+    CFALSE = 0
+    CTRUE
+End Enum
+
+Public Type Matrix3x2
+    M11 As Single
+    M12 As Single
+    M21 As Single
+    M22 As Single
+    M31 As Single
+    M32 As Single
+    Function FromElements(ByVal M11 As Single, ByVal M12 As Single, ByVal M21 As Single, ByVal M22 As Single, ByVal M31 As Single, ByVal M32 As Single) As Matrix3x2
+        With FromElements: .M11 = M11: .M12 = M12: .M21 = M21: .M22 = M22: .M31 = M31: .M32 = M32: End With
+        Me = FromElements
+    End Function
+End Type
+
+Public Type Matrix4x4
+    M11 As Single
+    M12 As Single
+    M13 As Single
+    M14 As Single
+    M21 As Single
+    M22 As Single
+    M23 As Single
+    M24 As Single
+    M31 As Single
+    M32 As Single
+    M33 As Single
+    M34 As Single
+    M41 As Single
+    M42 As Single
+    M43 As Single
+    M44 As Single
+    Function FromElements(ByVal M11 As Single, ByVal M12 As Single, ByVal M13 As Single, ByVal M14 As Single, ByVal M21 As Single, ByVal M22 As Single, ByVal M23 As Single, ByVal M24 As Single, ByVal M31 As Single, ByVal M32 As Single, ByVal M33 As Single, ByVal M34 As Single, ByVal M41 As Single, ByVal M42 As Single, ByVal M43 As Single, ByVal M44 As Single) As Matrix4x4
+        With FromElements
+            .M11 = M11: .M12 = M12: .M13 = M13: .M14 = M14
+            .M21 = M21: .M22 = M22: .M23 = M23: .M24 = M24
+            .M31 = M31: .M32 = M32: .M33 = M33: .M34 = M34
+            .M41 = M41: .M42 = M42: .M43 = M43: .M44 = M44
+        End With
+        Me = FromElements
+    End Function
+End Type
+
+Public Type Plane
+    Normal As Vector3
+    D As Single
+End Type
+
+Public Type POINTF
+    X As Single
+    Y As Single
+    Function FromCoordinates(ByVal X As Single, ByVal Y As Single) As POINTF: FromCoordinates = PointHelperStatics.FromCoordinates(X, Y): Me = FromCoordinates: End Function
+End Type
+
+Public Type Quaternion
+    X As Single
+    Y As Single
+    Z As Single
+    W As Single
+    Function FromCoordinates(Optional ByVal X As Single, Optional ByVal Y As Single, Optional ByVal Z As Single, Optional ByVal W As Single) As Quaternion: FromCoordinates.X = X: FromCoordinates.Y = Y: FromCoordinates.Z = Z: FromCoordinates.W = W: Me = FromCoordinates: End Function
+End Type
+
+Public Type Rational
+    Numerator As Long
+    Denominator As Long
+    Function FromOperands(ByVal Numerator As Long, ByVal Denominator As Long) As Rational: FromOperands.Numerator = Numerator: FromOperands.Denominator = Denominator: Me = FromOperands: End Function
+End Type
+
+Public Type RECTF
+    X As Single
+    Y As Single
+    Width As Single
+    Height As Single
+    Function Bottom() As Single: Bottom = RectHelperStatics.GetBottom(Me): End Function
+    Function Contains(ByVal Point As POINTF) As Boolean: Contains = RectHelperStatics.Contains(Me, Point) = APITRUE: End Function
+    Function Empty() As RECTF: Me = RectHelperStatics.Empty: Return CType(Of RECTF)(VarPtr(Me)): End Function
+    Function Equals(ByVal TargetValue As RECTF) As Boolean: Equals = RectHelperStatics.Equals(Me, TargetValue) = APITRUE: End Function
+    Function FromCoordinatesAndDimensions(ByVal X As Single, ByVal Y As Single, ByVal Width As Single, ByVal Height As Single) As RECTF: FromCoordinatesAndDimensions = RectHelperStatics.FromCoordinatesAndDimensions(X, Y, Width, Height): Me = FromCoordinatesAndDimensions: End Function
+    Function FromLocationAndSize(ByVal Location As POINTF, ByVal Size As SIZEF) As RECTF: FromLocationAndSize = RectHelperStatics.FromLocationAndSize(Location, Size): Me = FromLocationAndSize: End Function
+    Function FromPoints(ByVal Point1 As POINTF, ByVal Point2 As POINTF) As RECTF: FromPoints = RectHelperStatics.FromPoints(Point1, Point2): Me = FromPoints: End Function
+    Function Intersect(ByVal Rect As RECTF) As RECTF: Intersect = RectHelperStatics.Intersect(Me, Rect): End Function
+    Function IsEmpty() As Boolean: IsEmpty = RectHelperStatics.GetIsEmpty(Me) = APITRUE: End Function
+    Function Left() As Single: Left = RectHelperStatics.GetLeft(Me): End Function
+    Function Right() As Single: Right = RectHelperStatics.GetRight(Me): End Function
+    Function Top() As Single: Top = RectHelperStatics.GetTop(Me): End Function
+    Function UnionWithPoint(ByVal Point As POINTF) As RECTF: UnionWithPoint = RectHelperStatics.UnionWithPoint(Me, Point): End Function
+    Function UnionWithRect(ByVal Rect As RECTF) As RECTF: UnionWithRect = RectHelperStatics.UnionWithRect(Me, Rect): End Function
+End Type
+
+Public Type RECTL
+    Left As Long
+    Top As Long
+    Right As Long
+    Bottom As Long
+    Function FromCoordinates(ByVal Left As Long, ByVal Top As Long, ByVal Right As Long, ByVal Bottom As Long) As RECTL: FromCoordinates.Left = Left: FromCoordinates.Top = Top: FromCoordinates.Right = Right: FromCoordinates.Bottom = Bottom: Me = FromCoordinates: End Function
+End Type
+
+Public Type SIZEF
+    Width As Single
+    Height As Single
+    Function Empty() As SIZEF: Me = SizeHelperStatics.Empty: Return CType(Of SIZEF)(VarPtr(Me)): End Function
+    Function Equals(ByVal TargetValue As SIZEF) As Boolean: Equals = SizeHelperStatics.Equals(Me, TargetValue) = APITRUE: End Function
+    Function FromDimensions(ByVal Width As Single, ByVal Height As Single) As SIZEF: FromDimensions = SizeHelperStatics.FromDimensions(Width, Height): Me = FromDimensions: End Function
+    Function IsEmpty() As Boolean: IsEmpty = SizeHelperStatics.GetIsEmpty(Me) = APITRUE: End Function
+End Type
+
+Public Type Vector2
+    X As Single
+    Y As Single
+    Function FromCoordinates(Optional ByVal X As Single, Optional ByVal Y As Single) As Vector2: FromCoordinates.X = X: FromCoordinates.Y = Y: Me = FromCoordinates: End Function
+End Type
+
+Public Type Vector3
+    X As Single
+    Y As Single
+    Z As Single
+    Function FromCoordinates(Optional ByVal X As Single, Optional ByVal Y As Single, Optional ByVal Z As Single) As Vector3: FromCoordinates.X = X: FromCoordinates.Y = Y: FromCoordinates.Z = Z: Me = FromCoordinates: End Function
+End Type
+
+Public Type Vector4
+    X As Single
+    Y As Single
+    Z As Single
+    W As Single
+    Function FromCoordinates(Optional ByVal X As Single, Optional ByVal Y As Single, Optional ByVal Z As Single, Optional ByVal W As Single) As Vector4: FromCoordinates.X = X: FromCoordinates.Y = Y: FromCoordinates.Z = Z: FromCoordinates.W = W: Me = FromCoordinates: End Function
+End Type
+
+End Module

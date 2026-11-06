@@ -1,0 +1,243 @@
+[InterfaceId("49C6C658-1BD2-581E-A385-6EB3FD9BFEE3")]
+Interface IAsyncOperationIDesignerAppView Extends IInspectable
+    Property Set Completed(ByVal Handler As IAsyncOperationCompletedHandlerIDesignerAppView)
+    Property Get Completed() As IAsyncOperationCompletedHandlerIDesignerAppView
+    Function GetResults() As IDesignerAppView
+End Interface
+
+[InterfaceId("AEEB272E-A814-5981-A2C3-623E226E4A71")]
+Interface IAsyncOperationCompletedHandlerIDesignerAppView Extends IUnknown
+    Sub Invoke(ByVal AsyncOperation As IAsyncOperationIDesignerAppView, ByVal AsyncStatus As AsyncStatus)
+End Interface
+
+[InterfaceId("3772CE98-9BA0-504B-8A0D-36B7F816A1C2")]
+Interface ITypedEventHandlerDesignerAppManagerDesignerAppExited Extends IUnknown
+    Sub Invoke(ByVal Sender As IDesignerAppManager, ByVal Args As IDesignerAppExitedEventArgs)
+End Interface
+
+[InterfaceId("F6AAC86A-0CAD-410C-8F62-DC2936151C74")]
+Interface IDesignerAppExitedEventArgs Extends IInspectable
+    Property Get ExitCode() As Long
+End Interface
+
+[InterfaceId("A6272CAA-D5C6-40CB-ABD9-27BA43831BB7")]
+Interface IDesignerAppManager Extends IInspectable
+    Property Get AppUserModelId() As LongPtr
+    [PreserveSig]
+    Function AddDesignerAppExited(ByVal Handler As ITypedEventHandlerDesignerAppManagerDesignerAppExited, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveDesignerAppExited(ByVal Token As EventRegistrationToken) As HRESULT
+    Function CreateNewViewAsync(ByVal InitialViewState As DesignerAppViewState, ByVal InitialViewSize As SIZEF) As IAsyncOperationIDesignerAppView
+    Function LoadObjectIntoAppAsync(ByVal DllName As LongPtr, ByVal ClassId As UUID, ByVal InitializationData As LongPtr) As IAsyncAction
+End Interface
+
+[InterfaceId("8F9D633B-1266-4C0E-8499-0DB85BBD4C43")]
+Interface IDesignerAppManagerFactory Extends IInspectable
+    Function Create(ByVal AppUserModelId As LongPtr) As IDesignerAppManager
+End Interface
+
+[InterfaceId("5C777CEA-DD71-4A84-A56F-DACB4B14706F")]
+Interface IDesignerAppView Extends IInspectable
+    Property Get ApplicationViewId() As Long
+    Property Get AppUserModelId() As LongPtr
+    Property Get ViewState() As DesignerAppViewState
+    Property Get ViewSize() As SIZEF
+    Function UpdateViewAsync(ByVal ViewState As DesignerAppViewState, ByVal ViewSize As SIZEF) As IAsyncAction
+End Interface
+
+[InterfaceId("A77F0E84-CED7-5681-B140-8C18A55CEB1D")]
+Interface ITypedEventHandlerDesktopWindowXamlSourceGotFocus Extends IUnknown
+    Sub Invoke(ByVal Sender As IDesktopWindowXamlSource, ByVal Args As IDesktopWindowXamlSourceGotFocusEventArgs)
+End Interface
+
+[InterfaceId("9E79EAFE-C7FE-54A5-96FF-7ABE02E05418")]
+Interface ITypedEventHandlerDesktopWindowXamlSourceTakeFocusRequested Extends IUnknown
+    Sub Invoke(ByVal Sender As IDesktopWindowXamlSource, ByVal Args As IDesktopWindowXamlSourceTakeFocusRequestedEventArgs)
+End Interface
+
+[InterfaceId("D585BFE1-00FF-51BE-BA1D-A1329956EA0A")]
+Interface IDesktopWindowXamlSource Extends IInspectable ' requires IClosable
+    Property Get Content() As IUIElement
+    Property Set Content(ByVal Value As IUIElement)
+    Property Get HasFocus() As BooleanByte
+    [PreserveSig]
+    Function AddTakeFocusRequested(ByVal Handler As ITypedEventHandlerDesktopWindowXamlSourceTakeFocusRequested, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveTakeFocusRequested(ByVal Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function AddGotFocus(ByVal Handler As ITypedEventHandlerDesktopWindowXamlSourceGotFocus, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveGotFocus(ByVal Token As EventRegistrationToken) As HRESULT
+    Function NavigateFocus(ByVal Request As IXamlSourceFocusNavigationRequest) As IXamlSourceFocusNavigationResult
+End Interface
+
+[InterfaceId("3CBCF1BF-2F76-4E9C-96AB-E84B37972554")]
+Interface IDesktopWindowXamlSourceNative Extends IUnknown
+    [PreserveSig]
+    Function AttachToWindow(ByVal ParentWnd As LongPtr) As HRESULT
+    Property Get WindowHandle() As LongPtr
+End Interface
+
+[InterfaceId("E3DCD8C7-3057-4692-99C3-7B7720AFDA31")]
+Interface IDesktopWindowXamlSourceNative2 Extends IDesktopWindowXamlSourceNative
+    Function PreTranslateMessage(Message As MSG) As BooleanByte
+End Interface
+
+[InterfaceId("5CD61DC0-2561-56E1-8E75-6E44173805E3")]
+Interface IDesktopWindowXamlSourceFactory Extends IInspectable
+    Function CreateInstance(Optional ByVal BaseInterface As IInspectable, Optional InnerInterface As IInspectable) As IDesktopWindowXamlSource
+End Interface
+
+[InterfaceId("39BE4849-D9CC-5B70-8F05-1AD9A4AAA342")]
+Interface IDesktopWindowXamlSourceGotFocusEventArgs Extends IInspectable
+    Function Request() As IXamlSourceFocusNavigationRequest
+End Interface
+
+[InterfaceId("FE61E4B9-A7AF-52B3-BDB9-C3305C0B8DF2")]
+Interface IDesktopWindowXamlSourceTakeFocusRequestedEventArgs Extends IInspectable
+    Function Request() As IXamlSourceFocusNavigationRequest
+End Interface
+
+[InterfaceId("B6F1A676-CFE6-46AC-ACF6-C4687BB65E60")]
+Interface IElementCompositionPreview Extends IInspectable
+
+End Interface
+
+[InterfaceId("08C92B38-EC99-4C55-BC85-A1C180B27646")]
+Interface IElementCompositionPreviewStatics Extends IInspectable
+    Function GetElementVisual(ByVal Element As IUIElement) As IVisual
+    Function GetElementChildVisual(ByVal Element As IUIElement) As IVisual
+    [PreserveSig]
+    Function SetElementChildVisual(ByVal Element As IUIElement, ByVal Visual As IVisual) As HRESULT
+    Function GetScrollViewerManipulationPropertySet(ByVal ScrollViewer As IScrollViewer) As ICompositionPropertySet
+End Interface
+
+[InterfaceId("24148FBB-23D6-4F37-BA0C-0733E799722D")]
+Interface IElementCompositionPreviewStatics2 Extends IInspectable
+    [PreserveSig]
+    Function SetImplicitShowAnimation(ByVal Element As IUIElement, ByVal Animation As ICompositionAnimationBase) As HRESULT
+    [PreserveSig]
+    Function SetImplicitHideAnimation(ByVal Element As IUIElement, ByVal Animation As ICompositionAnimationBase) As HRESULT
+    [PreserveSig]
+    Function SetIsTranslationEnabled(ByVal Element As IUIElement, ByVal Value As BooleanByte) As HRESULT
+    Function GetPointerPositionPropertySet(ByVal TargetElement As IUIElement) As ICompositionPropertySet
+End Interface
+
+[InterfaceId("843BC4C3-C105-59FE-A3D1-373C1D3E6FBC")]
+Interface IElementCompositionPreviewStatics3 Extends IInspectable
+    [PreserveSig]
+    Function SetAppWindowContent(ByVal AppWindow As IAppWindow, ByVal XamlContent As IUIElement) As HRESULT
+    Function GetAppWindowContent(ByVal AppWindow As IAppWindow) As IUIElement
+End Interface
+
+[InterfaceId("56096C31-1AA0-5288-8818-6E74A2DCAFF5")]
+Interface IWindowsXamlManager Extends IInspectable
+
+End Interface
+
+[InterfaceId("28258A12-7D82-505B-B210-712B04A58882")]
+Interface IWindowsXamlManagerStatics Extends IInspectable
+    [PreserveSig]
+    Function InitializeForCurrentThread(WindowsXamlManager As IWindowsXamlManager) As HRESULT
+End Interface
+
+[InterfaceId("FBB93BB5-1496-5A80-AC00-E757359755E6")]
+Interface IXamlSourceFocusNavigationRequest Extends IInspectable
+    Property Get Reason() As XamlSourceFocusNavigationReason
+    Property Get HintRect() As RECTF
+    Property Get CorrelationId() As UUID
+End Interface
+
+[InterfaceId("E746AB8F-B4EF-5390-97E5-CC0A2779C574")]
+Interface IXamlSourceFocusNavigationRequestFactory Extends IInspectable
+    Function CreateInstance(ByVal Reason As XamlSourceFocusNavigationReason) As IXamlSourceFocusNavigationRequest
+    Function CreateInstanceWithHintRect(ByVal Reason As XamlSourceFocusNavigationReason, ByVal HintRectX As Single, ByVal HintRectY As Single, ByVal HintRectWidth As Single, ByVal HintRectHeight As Single) As IXamlSourceFocusNavigationRequest
+    Function CreateInstanceWithHintRectAndCorrelationId(ByVal Reason As XamlSourceFocusNavigationReason, ByVal HintRectX As Single, ByVal HintRectY As Single, ByVal HintRectWidth As Single, ByVal HintRectHeight As Single, ByVal CorrelationIdData1 As Long, ByVal CorrelationIdData2 As Long, ByVal CorrelationIdData3 As Long, ByVal CorrelationIdData4 As Long) As IXamlSourceFocusNavigationRequest
+End Interface
+
+[InterfaceId("88D55A5F-9603-5D8F-9CC7-D1C4070D9801")]
+Interface IXamlSourceFocusNavigationResult Extends IInspectable
+    Property Get WasFocusMoved() As BooleanByte
+End Interface
+
+[InterfaceId("43BBADBF-F9E1-5527-B8C5-09339FF2CA76")]
+Interface IXamlSourceFocusNavigationResultFactory Extends IInspectable
+    Function CreateInstance(ByVal FocusMoved As BooleanByte) As IXamlSourceFocusNavigationResult
+End Interface
+
+[InterfaceId("A714944A-1619-4FC6-B31B-89512EF022A2")]
+Interface IXamlUIPresenter Extends IInspectable
+    Property Get RootElement() As IUIElement
+    Property Set RootElement(ByVal Value As IUIElement)
+    Property Get ThemeKey() As LongPtr
+    Property Let ThemeKey(ByVal Value As LongPtr)
+    Property Get ThemeResourcesXaml() As LongPtr
+    Property Let ThemeResourcesXaml(ByVal Value As LongPtr)
+    [PreserveSig]
+    Function SetSize(ByVal Width As Long, ByVal Height As Long) As HRESULT
+    [PreserveSig]
+    Function Render() As HRESULT
+    [PreserveSig]
+    Function Present() As HRESULT
+End Interface
+
+[InterfaceId("AAFB84CD-9F6D-4F80-AC2C-0E6CB9F31659")]
+Interface IXamlUIPresenterHost Extends IInspectable
+    Function ResolveFileResource(ByVal Path As LongPtr) As LongPtr
+End Interface
+
+[InterfaceId("61595672-7CA4-4A21-B56A-88F4812388CA")]
+Interface IXamlUIPresenterHost2 Extends IInspectable
+    Function GetGenericXamlFilePath() As LongPtr
+End Interface
+
+[InterfaceId("B14292BF-7320-41BB-9F26-4D6FD34DB45A")]
+Interface IXamlUIPresenterHost3 Extends IInspectable
+    Function ResolveDictionaryResource(ByVal Dictionary As IResourceDictionary, ByVal DictionaryKey As IInspectable, ByVal SuggestedValue As IInspectable) As IInspectable
+End Interface
+
+[InterfaceId("71EAEAC8-45E1-4192-85AA-3A422EDD23CF")]
+Interface IXamlUIPresenterStatics Extends IInspectable
+    Property Get CompleteTimelinesAutomatically() As BooleanByte
+    Property Let CompleteTimelinesAutomatically(ByVal Value As BooleanByte)
+    [PreserveSig]
+    Function SetHost(ByVal Host As IXamlUIPresenterHost) As HRESULT
+    [PreserveSig]
+    Function NotifyWindowSizeChanged() As HRESULT
+End Interface
+
+[InterfaceId("5C6B68D2-CF1C-4F53-BF09-6A745F7A9703")]
+Interface IXamlUIPresenterStatics2 Extends IInspectable
+    Function GetFlyoutPlacementTargetInfo(ByVal PlacementTarget As IFrameworkElement, ByVal PreferredPlacement As FlyoutPlacementMode, TargetPreferredPlacement As FlyoutPlacementMode, AllowFallbacks As BooleanByte) As RECTF
+    Function GetFlyoutPlacement(ByVal PlacementTargetBounds As RECTF, ByVal ControlSize As SIZEF, ByVal MinControlSize As SIZEF, ByVal ContainerRect As RECTF, ByVal TargetPreferredPlacement As FlyoutPlacementMode, ByVal AllowFallbacks As BooleanByte, ChosenPlacement As FlyoutPlacementMode) As RECTF
+End Interface
+
+Module mdlUIXamlHosting
+
+Public Enum DesignerAppViewState
+    DesignerAppViewState_Visible
+    DesignerAppViewState_Hidden
+End Enum
+
+Public Enum XamlSourceFocusNavigationReason
+    XamlSourceFocusNavigationReason_Programmatic = 0
+    XamlSourceFocusNavigationReason_Restore = 1
+    XamlSourceFocusNavigationReason_First = 3
+    XamlSourceFocusNavigationReason_Last = 4
+    XamlSourceFocusNavigationReason_Left = 7
+    XamlSourceFocusNavigationReason_Up = 8
+    XamlSourceFocusNavigationReason_Right = 9
+    XamlSourceFocusNavigationReason_Down = 10
+End Enum
+
+Public Type MSG
+    hWnd As LongPtr
+    Message As Long
+    wParam As LongPtr
+    lParam As LongPtr
+    Time As Long
+    Point As PointInt32
+    lPrivate As Long
+End Type
+
+End Module

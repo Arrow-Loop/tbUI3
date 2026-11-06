@@ -1,0 +1,37 @@
+[InterfaceId("E49C90AC-2FF3-5805-718C-B725EE07650F")]
+Interface ICompositionDebugHeatMaps Extends IInspectable
+    [PreserveSig]
+    Function Hide(ByVal Subtree As IVisual) As HRESULT
+    [PreserveSig]
+    Function ShowMemoryUsage(ByVal Subtree As IVisual) As HRESULT
+    [PreserveSig]
+    Function ShowOverdraw(ByVal Subtree As IVisual, ByVal ContentKinds As CompositionDebugOverdrawContentKinds) As HRESULT
+    [PreserveSig]
+    Function ShowRedraw(ByVal Subtree As IVisual) As HRESULT
+End Interface
+
+[InterfaceId("2831987E-1D82-4D38-B7B7-EFD11C7BC3D1")]
+Interface ICompositionDebugSettings Extends IInspectable
+    Property Get HeatMaps() As ICompositionDebugHeatMaps
+End Interface
+
+[InterfaceId("64EC1F1E-6AF8-4AF8-B814-C870FD5A9505")]
+Interface ICompositionDebugSettingsStatics Extends IInspectable
+    Function TryGetSettings(ByVal Compositor As ICompositor) As ICompositionDebugSettings
+End Interface
+
+Module mdlUICompositionDiagnostics
+
+Public Enum CompositionDebugOverdrawContentKinds
+    CompositionDebugOverdrawContentKinds_None = &H0
+    CompositionDebugOverdrawContentKinds_OffscreenRendered = &H1
+    CompositionDebugOverdrawContentKinds_Colors = &H2
+    CompositionDebugOverdrawContentKinds_Effects = &H4
+    CompositionDebugOverdrawContentKinds_Shadows = &H8
+    CompositionDebugOverdrawContentKinds_Lights = &H10
+    CompositionDebugOverdrawContentKinds_Surfaces = &H20
+    CompositionDebugOverdrawContentKinds_SwapChains = &H40
+    CompositionDebugOverdrawContentKinds_All = &HFFFFFFFF
+End Enum
+
+End Module

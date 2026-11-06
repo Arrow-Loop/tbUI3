@@ -1,0 +1,801 @@
+' Segoe Fluent icon catalog.
+'
+' A UI3Icon value is the glyph's own code point in Segoe Fluent Icons, the font WinUI's
+' FontIcon draws (FontIcon.Glyph). The names, codes and search tags come from the WinUI
+' Gallery's Iconography data; see tools/gen-icons.mjs for the source commit and licence.
+' Segoe MDL2 Assets, the Windows 10 icon font, uses the same code points but lacks some
+' newer glyphs (FluentOnly below); the picker hides those when only MDL2 is installed.
+'
+' Before 1.0.0.25 a UI3Icon value was WinUI's Symbol enum value, converted to a glyph through
+' icon.cpp's table. That table is gone: every Symbol icon is in this catalog under its Gallery name.
+
+Private Module UI3Icons
+
+    Private Const FLUENT_ICON_FONT As String = "Segoe Fluent Icons"
+    Private Const LEGACY_ICON_FONT As String = "Segoe MDL2 Assets"
+
+    Public Function SystemIconFontFamily() As String
+        If FontFamilyExists(FLUENT_ICON_FONT) Then
+            SystemIconFontFamily = FLUENT_ICON_FONT
+        Else
+            SystemIconFontFamily = LEGACY_ICON_FONT
+        End If
+    End Function
+
+    ' The glyph drawn for an icon: its value is its code point.
+    Public Function SemanticIconGlyph(ByVal Icon As UI3Icon) As String
+        If Icon = ui3IconNone Then Exit Function
+        SemanticIconGlyph = ChrW$(Icon And &HFFFF&)
+    End Function
+
+    ' --- Icon catalog, used by the UI3IconPage picker ---
+    ' Name, value, search tags and Fluent-only flag for every icon, alphabetical by name.
+    ' Built once on first use. Icons missing from Segoe MDL2 Assets are left out when
+    ' Segoe Fluent Icons is not installed, so the picker never offers a blank glyph.
+    Private m_CatalogNames() As String
+    Private m_CatalogValues() As Long
+    Private m_CatalogTags() As String
+    Private m_CatalogFluentOnly() As Boolean
+    Private m_CatalogCount As Long
+
+    Private Sub EnsureCatalog()
+        If m_CatalogCount > 0 Then Exit Sub
+        Dim s As String
+        CatalogData s
+        Dim entries() As String
+        entries = Split(s, ";")
+        ReDim m_CatalogNames(0 To UBound(entries))
+        ReDim m_CatalogValues(0 To UBound(entries))
+        ReDim m_CatalogTags(0 To UBound(entries))
+        ReDim m_CatalogFluentOnly(0 To UBound(entries))
+        Dim legacyOnly As Boolean
+        legacyOnly = (SystemIconFontFamily() <> FLUENT_ICON_FONT)
+        Dim fields() As String
+        Dim fluentOnly As Boolean
+        Dim i As Long
+        For i = 0 To UBound(entries)
+            ' Name|Code|F (Fluent only) or empty|tags separated by spaces
+            fields = Split(entries(i), "|")
+            If UBound(fields) = 3 Then
+                fluentOnly = (fields(2) = "F")
+                If Not (fluentOnly And legacyOnly) Then
+                    m_CatalogNames(m_CatalogCount) = fields(0)
+                    ' The mask keeps a 4-digit hex string from reading as a negative Integer.
+                    m_CatalogValues(m_CatalogCount) = CLng("&H" & fields(1)) And &HFFFF&
+                    m_CatalogFluentOnly(m_CatalogCount) = fluentOnly
+                    m_CatalogTags(m_CatalogCount) = fields(3)
+                    m_CatalogCount = m_CatalogCount + 1
+                End If
+            End If
+        Next
+    End Sub
+
+    ' Number of icons in the catalog (ui3IconNone is not counted).
+    Public Function IconCatalogCount() As Long
+        EnsureCatalog
+        IconCatalogCount = m_CatalogCount
+    End Function
+
+    ' Name of catalog entry Index (0-based), for example "Accept".
+    Public Function IconCatalogName(ByVal Index As Long) As String
+        EnsureCatalog
+        IconCatalogName = m_CatalogNames(Index)
+    End Function
+
+    ' UI3Icon value of catalog entry Index (0-based).
+    Public Function IconCatalogValue(ByVal Index As Long) As UI3Icon
+        EnsureCatalog
+        IconCatalogValue = m_CatalogValues(Index)
+    End Function
+
+    ' Search tags of catalog entry Index (0-based), separated by spaces.
+    Public Function IconCatalogTags(ByVal Index As Long) As String
+        EnsureCatalog
+        IconCatalogTags = m_CatalogTags(Index)
+    End Function
+
+    ' True when catalog entry Index (0-based) is in Segoe Fluent Icons but not Segoe MDL2 Assets.
+    Public Function IconCatalogFluentOnly(ByVal Index As Long) As Boolean
+        EnsureCatalog
+        IconCatalogFluentOnly = m_CatalogFluentOnly(Index)
+    End Function
+
+    ' <generated:CatalogData> Written by tools/gen-icons.mjs; do not edit by hand.
+    ' Name|Code|F when Fluent only|tags;  Source: microsoft/WinUI-Gallery commit 05939cc7d48fc0d7288ff3c89ced86cf1a08eb9d, WinUIGallery/Samples/Iconography/IconsData.json (MIT).
+    Private Sub CatalogData(ByRef s As String)
+        s = s & "Accept|E8FB||check agree approve confirm symbol-icon;AcceptMedium|F78C||check agree approve confirm;Accident|E81F||car;AccidentSolid|EA8E||car;"
+        s = s & "Accounts|E910||@ at email address symbol communication symbol-icon;ActionCenter|E91C||notification message settings control quick access system configuration;"
+        s = s & "ActionCenterAsterisk|EA21||* notification alert;ActionCenterMirrored|ED0D||message notification chat;"
+        s = s & "ActionCenterNotification|E7E7||message alert reminder warning update;ActionCenterNotificationMirrored|ED0C||message alert reminder warning update;"
+        s = s & "ActionCenterQuiet|EE79||night moon;ActionCenterQuietNotification|EE7A||night moon;ActionFramework|F277|F|action framework ai;"
+        s = s & "Add|E710||+ plus addition new symbol-icon;AddBold|F8AA||+ plus addition new;AddFriend|E8FA||person user connect social relationship symbol-icon;"
+        s = s & "AddNewLine|F7B7||text insert edit content paragraph;AddNewLineFill|F7B8||text insert edit content paragraph;AddRemoteDevice|E836||connect remote pair;"
+        s = s & "AddSurfaceHub|ECC4||+ device physical product screen touch screen presentation;AddTo|ECC8||+ new create;"
+        s = s & "AdjustHologram|EBD2||3D cube projection virtual illusion tech interactive;Admin|E7EF||elevated permissions control rights symbol-icon;"
+        s = s & "AdvancedPaste|F03E|F|advanced paste clipboard;Airplane|E709||flight vehicle travel;AirplaneSolid|EB4C||flight vehicle travel;"
+        s = s & "AlertUrgent|F6C5|F|alert urgent alarm notification;AlignCenter|E8E3||text justify position middle symbol-icon;AlignLeft|E8E4||text justify position symbol-icon;"
+        s = s & "AlignRight|E8E2||text justify position symbol-icon;AllApps|E71D||plugin square stack symbol-icon;AllAppsMirrored|EA40||plugin square stack;"
+        s = s & "Annotation|E924||cut edit scissors mark highlight;AppIconDefault|ECAA||application;AppIconDefaultAdd|EFDA|F|app icon default add application;"
+        s = s & "ApplicationGuard|F0EF||defender shield security protection safety;Apps|ED35||applications;AreaChart|E9D2||graph data visual analysis statistics representation;"
+        s = s & "ArrowDown8|F0AE||arrow down;ArrowLeft8|F0B0||arrow left;ArrowRight8|F0AF||arrow right;ArrowUp8|F0AD||arrow up;AspectRatio|E799||aspect ratio size;"
+        s = s & "Asterisk|EA38||* star symbol wildcard mark notation;AsteriskBadge12|EDAD||* star symbol wildcard mark notation;"
+        s = s & "Attach|E723||image photography picture symbol-icon;AttachCamera|E8A2||image photography picture symbol-icon;Audio|E8D6||music sound note play symbol-icon;"
+        s = s & "Back|E72B||arrow previous return left rewind symbol-icon;BackgroundToggle|EF1F||switch mode settings configuration;"
+        s = s & "BackMirrored|F0D2||arrow previous return left rewind;BackSolidBold|F8AC||arrow previous return left rewind;"
+        s = s & "BackSpaceQWERTY|E750||delete backward remove keyboard;BackSpaceQWERTYLg|EB96||delete backward remove keyboard;"
+        s = s & "BackSpaceQWERTYMd|E926||delete backward remove keyboard;BackSpaceQWERTYSm|E925||delete backward remove keyboard;"
+        s = s & "BackToWindow|E73F||arrow restore window return symbol-icon;Badge|EC1B||badge award achievement medal recognition;BandBattery0|ECB9||charge power;"
+        s = s & "BandBattery1|ECBA||charge power;BandBattery2|ECBB||charge power;BandBattery3|ECBC||charge power;BandBattery4|ECBD||charge power;BandBattery5|ECBE||charge power;"
+        s = s & "BandBattery6|ECBF||charge power;Bank|E825||finance money account deposit institution;BarcodeScanner|EC5A||inventory product retail checkout pointofsale;"
+        s = s & "Battery0|E850||charge power;Battery1|E851||charge power;Battery10|E83F||charge power;Battery2|E852||charge power;Battery3|E853||charge power;"
+        s = s & "Battery4|E854||charge power;Battery5|E855||charge power;Battery6|E856||charge power;Battery7|E857||charge power;Battery8|E858||charge power;"
+        s = s & "Battery9|E859||charge power;BatteryCharging0|E85A||power;BatteryCharging1|E85B||power;BatteryCharging10|EA93||power;BatteryCharging2|E85C||power;"
+        s = s & "BatteryCharging3|E85D||power;BatteryCharging4|E85E||power;BatteryCharging5|E85F||power;BatteryCharging6|E860||power;BatteryCharging7|E861||power;"
+        s = s & "BatteryCharging8|E862||power;BatteryCharging9|E83E||charge power;BatterySaver|F432|F|battery saver;BatterySaver0|E863||charge power eco friendly;"
+        s = s & "BatterySaver1|E864||charge power eco friendly;BatterySaver10|EA95||charge power eco friendly;BatterySaver2|E865||charge power eco friendly;"
+        s = s & "BatterySaver3|E866||charge power eco friendly;BatterySaver4|E867||charge power eco friendly;BatterySaver5|E868||charge power eco friendly;"
+        s = s & "BatterySaver6|E869||charge power eco friendly;BatterySaver7|E86A||charge power eco friendly;BatterySaver8|E86B||charge power eco friendly;"
+        s = s & "BatterySaver9|EA94||charge power eco friendly;BatteryUnknown|E996||charge power status;BatteryUnknownCharging|EB1A|F|battery unknown charging empty;"
+        s = s & "Beaker|F196|F|beaker test experiment lab;Beta|EA24||symbol letter math;BidiLtr|E9AA||text left direction language alignment;"
+        s = s & "BidiRtl|E9AB||text right direction language alignment;BlockContact|E8F8||person user restrict privacy remove symbol-icon;Blocked|E733||blocked cancel stop;"
+        s = s & "Blocked2|ECE4||- rejected ignored aborted;BlueLight|F08C||brightness sun dark;Bluetooth|E702||device connection;BodyCam|EC80||camera body recording security;"
+        s = s & "Bold|E8DD||text style strong font emphasis symbol-icon;Bookmarks|E8A4||read list bullet points formatting symbol-icon;"
+        s = s & "BookmarksMirrored|EA41||read list bullet points formatting;Brightness|E706||sun light dark;Broom|EA99||sweep clean brush;"
+        s = s & "BrowsePhotos|E7C5||magnifying glass zoom inspect review gallery images pictures search symbol-icon;BrushSize|EDA8||draw tool paint editing;"
+        s = s & "Bug|EBE8||error debug issue problem glitch software report code;BuildingEnergy|EC0B||sustainability efficiency green power eco friendly renewable;"
+        s = s & "BulletedList|E8FD||organize items points symbol-icon;BulletedList2|F2C7|F|bulleted list;BulletedList2Mirrored|F2C8|F|bulleted list mirrored;"
+        s = s & "BulletedListMirrored|EA42||organize items points;Bullseye|F272||goal target objective achievement focus precision aim success;"
+        s = s & "BumperLeft|F10C||controller gamepad joystick input navigation buttons gaming;BumperRight|F10D||controller gamepad joystick input navigation buttons gaming;"
+        s = s & "Bus|E806||vehicle transportation public travel;BusSolid|EB47||vehicle transportation public travel;ButtonA|F093||button a controller xbox;"
+        s = s & "ButtonB|F094||button b controller xbox;ButtonMenu|EDE3||navigation hamburger line three options;ButtonView2|EECA||interface UI toggle;"
+        s = s & "ButtonX|F096||button x controller xbox;ButtonY|F095||button y controller xbox;Cafe|EC32||coffee cup restaurant beverage break snack;"
+        s = s & "Calculator|E8EF||math formulas add subtract multiply divde symbol-icon;CalculatorAddition|E948||+ math operation symbol arithmetic;"
+        s = s & "CalculatorBackspace|E94F||math operation symbol arithmetic;CalculatorDivide|E94A||/ math operation symbol arithmetic;"
+        s = s & "CalculatorEqualTo|E94E||= math operation symbol arithmetic;CalculatorMultiply|E947||x math operation symbol arithmetic;"
+        s = s & "CalculatorNegate|E94D||- math operation symbol arithmetic;CalculatorPercentage|E94C||% math operation symbol arithmetic;"
+        s = s & "CalculatorSquareroot|E94B||math operation symbol arithmetic;CalculatorSubtract|E949||- math operation symbol arithmetic;"
+        s = s & "Calendar|E787||time date planning symbol-icon;CalendarDay|E8BF||time date planning symbol-icon;CalendarMirrored|ED28||time date planning;"
+        s = s & "CalendarReply|E8F5||time date planning symbol-icon;CalendarSolid|EA89||time date planning;CalendarWeek|E8C0||time date planning symbol-icon;"
+        s = s & "CallControl|E80B||phone handset audio;CallForwarding|E7F2||phone handset audio;CallForwardingMirrored|EA97||phone handset audio;"
+        s = s & "CallForwardInternational|E87A||triangle;CallForwardInternationalMirrored|EA43||triangle;CallForwardRoaming|E87B||triangle;"
+        s = s & "CallForwardRoamingMirrored|EA44||triangle;CalligraphyFill|F0C7||writing ink pen art design brush stylus;"
+        s = s & "CalligraphyPen|EDFB||writing ink art design brush stylus;Calories|ECAD||fire;Camera|E722||image photography picture symbol-icon;"
+        s = s & "Cancel|E711||x close stop exit abort reject symbol-icon;CancelMedium|F78A||x close stop exit abort reject;"
+        s = s & "Caption|E8BA||image photo snapshot portrait frame gallery canvas visual view label text symbol-icon;Car|E804||vehicle transportation drive automobile road;"
+        s = s & "CaretBottomRightSolidCenter8|F169||triangle;CaretDown8|EDD8||triangle;CaretDownSolid8|EDDC||triangle;CaretLeft8|EDD5||triangle;CaretLeftSolid8|EDD9||triangle;"
+        s = s & "CaretRight8|EDD6||triangle;CaretRightSolid8|EDDA||triangle;CaretSolidDown|F08E||triangle;CaretSolidLeft|F08D||triangle;CaretSolidRight|F08F||triangle;"
+        s = s & "CaretSolidUp|F090||triangle;CaretUp8|EDD7||triangle;CaretUpSolid8|EDDB||triangle;CashDrawer|EC59||register money payment transaction pointofsale;"
+        s = s & "CC|E7F0||subtitles text caption speech accessibility symbol-icon;CellFlowVertical|EABB|F|cell flow vertical wireframe;"
+        s = s & "CellPhone|E8EA||device mobile small screen cellular telephone apple android symbol-icon;Certificate|EB95||diploma education ribbon;"
+        s = s & "CharacterAppearance|F17F||font style text lettering typography;Characters|E8C1||letters symbols alphabet writing glyphs symbol-icon;"
+        s = s & "ChatBubbles|E8F2||message text conversation talk;ChatSparkle|EAB7|F|chat sparkle ai;Checkbox|E739||selection check checkmark;"
+        s = s & "Checkbox14|F16B||selection check checkmark;CheckboxComposite|E73A||selection check checkmark;CheckboxComposite14|F16C||selection check checkmark;"
+        s = s & "CheckboxCompositeReversed|E73D||selection check checkmark;CheckboxFill|E73B||selection check checkmark;CheckboxIndeterminate|E73C||selection check checkmark;"
+        s = s & "CheckboxIndeterminateCombo|F16E||selection check checkmark;CheckboxIndeterminateCombo14|F16D||selection check checkmark;"
+        s = s & "CheckList|E9D5||tasks items organize progress completion;ChecklistMirrored|F0B5||tasks items organize progress completion;CheckMark|E73E||approval selected;"
+        s = s & "Chess|F5B5|F|chess game;ChevronDown|E70D||arrow dropdown direction expand contract;ChevronDownMed|E972||arrow direction navigation;"
+        s = s & "ChevronDownSmall|E96E||arrow direction navigation;ChevronLeft|E76B||arrow dropdown direction expand contract;ChevronLeft20|F743||arrow direction navigation;"
+        s = s & "ChevronLeft32|F744||arrow direction navigation;ChevronLeftMed|E973||arrow direction navigation;ChevronLeftSmall|E96F||arrow direction navigation;"
+        s = s & "ChevronRight|E76C||arrow dropdown direction expand contract;ChevronRight20|F745||arrow direction navigation;ChevronRight32|F746||arrow direction navigation;"
+        s = s & "ChevronRightMed|E974||arrow direction navigation;ChevronRightSmall|E970||arrow direction navigation;"
+        s = s & "ChevronUp|E70E||arrow dropdown direction expand contract dropup;ChevronUpMed|E971||arrow direction navigation;ChevronUpSmall|E96D||arrow direction navigation;"
+        s = s & "ChineseBoPoMoFo|E989||character language;ChineseChangjie|E981||input method characters;ChinesePinyin|E98A||character language;"
+        s = s & "ChinesePunctuation|F111||symbol character keyboard;ChineseQuick|E984||character language;ChipCardCreditCardReader|EF40||payment transaction secure banking;"
+        s = s & "ChromeAnnotate|E931||cut edit scissors mark highlight;ChromeAnnotateContrast|F0F9||rating score evaluation feedback review;"
+        s = s & "ChromeBack|E830||arrow back navigate browser;ChromeBackContrast|F0D5||arrow back navigate browser;ChromeBackContrastMirrored|F0D6||arrow back navigate browser;"
+        s = s & "ChromeBackMirrored|EA47||arrow back navigate browser;ChromeBackToWindow|E92C||arrow restore return minimize;"
+        s = s & "ChromeBackToWindowContrast|F0D7||arrow back navigate browser;ChromeClose|E8BB||x exit cancel shut dismiss;ChromeCloseContrast|EF2C||x exit cancel shut dismiss;"
+        s = s & "ChromeFullScreen|E92D||arrow expand maximize window view;ChromeFullScreenContrast|F0D8||arrow expand maximize maximise window view;"
+        s = s & "ChromeMaximize|E922||window expand full screen enlarge width height resize fill fit;"
+        s = s & "ChromeMaximizeContrast|EF2E||window expand full screen enlarge width height resize fill fit maximise;ChromeMinimize|E921||window shrink small collapse resize;"
+        s = s & "ChromeMinimizeContrast|EF2D||- window shrink small collapse resize minimise;ChromeRestore|E923||window resize default revert;"
+        s = s & "ChromeRestoreContrast|EF2F||window resize default revert;ChromeSwitch|F1CB||arrow change swap toggle shift alternate;"
+        s = s & "ChromeSwitchContast|F1CC||arrow change swap toggle shift alternate;CHTLanguageBar|F69E||input keyboard settings switch selection configuration;"
+        s = s & "CircleFill|EA3B||shape geometry;CircleFillBadge12|EDB0||shape geometry;CirclePause|F2D9|F|circle pause stop;CircleRing|EA3A||shape geometry;"
+        s = s & "CircleRingBadge12|EDAF||shape geometry;CircleShapeSolid|F63C||circle shape solid;CityNext|EC06||building skyline urban metropolis architecture downtown;"
+        s = s & "CityNext2|EC07||building skyline urban metropolis architecture downtown;Clear|E894||x close cancel delete remove exit symbol-icon;"
+        s = s & "ClearAllInk|ED62||reset erase drawing eraser rubber;ClearAllInkMirrored|EF19||reset erase drawing eraser rubber;"
+        s = s & "ClearSelection|E8E6||check checkmark check multiple symbol-icon;ClearSelectionMirrored|EA48||check checkmark check multiple;"
+        s = s & "Click|E8B0||pointer tap press select activate choose;ClickedOutLoudSolidBold|F8B3||sound audio action press interaction notification;"
+        s = s & "ClickSolid|F8AF||pointer tap press select activate choose;ClicktoDo|EB1D|F|clickto do ai rectangle selection;ClicktoDoOff|EB19|F|clickto do off ai selection;"
+        s = s & "ClipboardList|F0E3||copy paste data items records;ClipboardListMirrored|F0E4||copy paste data items records;"
+        s = s & "ClippingTool|F406||cut scissors crop capture screenshot screen snapshot image;Clock|E917|F|clock time;"
+        s = s & "ClosedCaptionsInternational|F15F||text dialogue speech language cc subtitles;ClosePane|E89F||sidebar hide exit collapse symbol-icon;"
+        s = s & "ClosePaneMirrored|EA49||sidebar hide exit collapse;Cloud|E753||storage upload download save sync remote;CloudDownload|EBD3||storage upload save sync remote;"
+        s = s & "CloudNotSynced|EC9C|F|cloud not synced cancel;CloudPrinter|EDA6||online remote document;"
+        s = s & "CloudSearch|EDE4||data online storage magnifying glass zoom inspect review;Code|E943||bracket slash;CollapseContent|F165||- shrink small hide resize;"
+        s = s & "CollapseContentSingle|F166||- shrink small hide resize;CollateLandscape|F57B||document pages layout orientation printing;"
+        s = s & "CollateLandscapeSeparated|F5AC||document pages layout orientation printing;CollatePortrait|F57C||document pages layout orientation printing;"
+        s = s & "CollatePortraitSeparated|F57D||document pages layout orientation printing;Color|E790||theme palette art edit paint colour;ColorOff|F570||palette theme colour;"
+        s = s & "ColorSolid|F354||palette theme colour;CommaKey|E9AD||` punctuation symbol character keyboard;CommandPrompt|E756||terminal console cmd;"
+        s = s & "Comment|E90A||chat message mention discussion symbol-icon;Communications|E95A||cast connect wifi share wlan lan;CompanionApp|EC64||check;"
+        s = s & "CompanionDeviceFramework|ED5D||lock connection integration;Completed|E930||check finished done achieved success;"
+        s = s & "CompletedSolid|EC61||check finished done achieved success;Component|E950||chip semiconductor processor circuit electronics technology hardware;"
+        s = s & "ComposeMode|F6A9||create writing email message text draft;Connect|E703||device connection;ConnectApp|ED5C||pair devices;"
+        s = s & "Connected|F0B9||network connection online linked paired access communication status;Construction|E822||person user work;"
+        s = s & "ConstructionCone|E98F||warning caution barrier;ConstructionSolid|EA8D||person user work;Contact|E77B||person user symbol-icon;"
+        s = s & "Contact2|E8D4||person user symbol-icon;ContactInfo|E779||person user details symbol-icon;ContactInfoMirrored|EA4A||person user details;"
+        s = s & "ContactPresence|E8CF||status availability online symbol-icon;ContactSolid|EA8C||person user details;Contrast|E7A1|F|contrast brightness black white;"
+        s = s & "CopilotVoice|F8B4|F|copilot voice ai microphone audio;Copy|E8C8||share paste clipboard symbol-icon;CopyTo|F413||share paste clipboard;"
+        s = s & "Courthouse|EC08||law government justice court legal building;CPU|EEA1|F|cpu processor;CRMScheduleReports|EFFF|F|crm schedule reports;Crop|E7A8||cut symbol-icon;"
+        s = s & "CtrlSpatialLeft|F3E7||ctrl spatial left controller;CtrlSpatialRight|F11B||ctrl spatial right controller;"
+        s = s & "Cut|E8C6||copy paste share move transfer clipboard clip edit trim divide scissors symbol-icon;DashKey|E9AE||- punctuation symbol character keyboard;"
+        s = s & "DataSense|E791||bars;DataSenseBar|E7A5||bars;DateTime|EC92||planning;DateTimeMirrored|EE93||clock planning;"
+        s = s & "DeclineCall|F405||phone reject communication hang up contact;DefaultAPN|F080||network settings connection mobile provider internet configuration;"
+        s = s & "DefenderApp|E83D||shield security protection safety;DefenderBadge12|F0FB||shield security protection safety;"
+        s = s & "Delete|E74D||bin trash can remove edit byee symbol-icon;DeleteLines|F7AF||remove text edit backspace content clear;"
+        s = s & "DeleteLinesFill|F7B0||remove text edit backspace content clear;DeleteWord|F7AD||remove text edit backspace typing content;"
+        s = s & "DeleteWordFill|F7AE||remove text edit backspace typing content;DeliveryOptimization|F785||network update performance data speed efficiency;"
+        s = s & "Design|EB3C||ruler triangle measurement drafting geometry sketch precision;DesktopLeafTwo|EAC7|F|desktop leaf two computer pc device energy;"
+        s = s & "DetachablePC|F103||device laptop tablet removable portable screen;DeveloperTools|EC7A||debugging coding software;"
+        s = s & "DeviceDiscovery|EBDE||search scan connect network pair;DeviceLaptopNoPic|E7F8||projection present presentation view slide lecture;"
+        s = s & "DeviceLaptopPic|E7F7||projection present presentation view slide lecture;DeviceMonitorLeftPic|E7FA||projection present presentation view slide lecture;"
+        s = s & "DeviceMonitorNoPic|E7FB||projection present presentation view slide lecture;DeviceMonitorRightPic|E7F9||projection present presentation view slide lecture;"
+        s = s & "Devices|E772||hardware connections peripherals electronics gadgets;Devices2|E975||hardware connections peripherals electronics gadgets;"
+        s = s & "Devices3|EA6C||hardware connections peripherals electronics gadgets;Devices4|EB66||hardware connections peripherals electronics gadgets;"
+        s = s & "DevUpdate|ECC5||arrow clock time;Diagnostic|E9D9||analysis assessment evaluation rate heart beat;Dial1|F146||number;Dial10|F14F||number;Dial11|F150||number;"
+        s = s & "Dial12|F151||number;Dial13|F152||number;Dial14|F153||number;Dial15|F154||number;Dial16|F155||number;Dial2|F147||number;Dial3|F148||number;Dial4|F149||number;"
+        s = s & "Dial5|F14A||number;Dial6|F14B||number;Dial7|F14C||number;Dial8|F14D||number;Dial9|F14E||number;Dialpad|E75F||dots phone call number;"
+        s = s & "DialShape1|F156||stack overlap levels structure;DialShape2|F157||pyramid 3D geometry structure;DialShape3|F158||cube 3D geometry block;"
+        s = s & "DialShape4|F159||octahedron 3D geometry shape polygon;DialUp|E83C||phone call number;Dictionary|E82D||book reference;DictionaryAdd|E82E||+ plus book reference;"
+        s = s & "DictionaryCloud|EBC3||book reference storage upload download save sync remote;DirectAccess|E83B||direct access database;Directions|E8F0||arrow symbol-icon;"
+        s = s & "DisableUpdates|E8D8||arrow settings off pause symbol-icon configuration;DisconnectDisplay|EA14||screen monitor remove;"
+        s = s & "DisconnectDrive|E8CD||remove unmount eject symbol-icon;Dislike|E8E0||thumb positive approve favor agree symbol-icon;DislikeSolid|F3C0|F|dislike solid;"
+        s = s & "DMC|E951||control remote device access operate;Dock|E952||device;DockBottom|E90E||position side panel symbol-icon;"
+        s = s & "DockLeft|E90C||position side panel symbol-icon;DockLeftMirrored|EA4C||position side panel;DockRight|E90D||position side panel symbol-icon;"
+        s = s & "DockRightMirrored|EA4B||position side panel;Document|E8A5||page file sheet paper text symbol-icon;"
+        s = s & "DocumentApproval|F28B||page file sheet paper text verification confirmation success approval completed done;DoublePinyin|F085||alphabet translation;"
+        s = s & "Down|E74B||arrow decrease drop;Download|E896||arrow file save retrieve transfer symbol-icon;DownloadMap|E826||travel navigation;"
+        s = s & "DownShiftKey|E84A||abc lowercase;Dpad|F10E||controller gamepad joystick input navigation buttons gaming;Draw|EC87||edit create pencil;"
+        s = s & "DrawSolid|EC88||edit create pencil;DrivingMode|E7EC||car;Drop|EB42||water liquid spill paint;DullSound|E911||dull sound;DullSoundKey|E9AF||japanese;"
+        s = s & "DuplexLandscapeOneSided|F57E||printing pages layout orientation;DuplexLandscapeOneSidedMirrored|F57F||printing pages layout orientation;"
+        s = s & "DuplexLandscapeTwoSidedLongEdge|F580||printing pages layout orientation;DuplexLandscapeTwoSidedLongEdgeMirrored|F581||printing pages layout orientation;"
+        s = s & "DuplexLandscapeTwoSidedShortEdge|F582||printing pages layout orientation;DuplexLandscapeTwoSidedShortEdgeMirrored|F583||printing pages layout orientation;"
+        s = s & "DuplexPortraitOneSided|F584||printing pages layout orientation;DuplexPortraitOneSidedMirrored|F585||printing pages layout orientation;"
+        s = s & "DuplexPortraitTwoSidedLongEdge|F586||printing pages layout orientation;DuplexPortraitTwoSidedLongEdgeMirrored|F587||printing pages layout orientation;"
+        s = s & "DuplexPortraitTwoSidedShortEdge|F588||printing pages layout orientation;DuplexPortraitTwoSidedShortEdgeMirrored|F589||printing pages layout orientation;"
+        s = s & "DynamicLock|F439||private security access protected safety permission protection;Ear|F270||hearing sound audio earphone listening;"
+        s = s & "Earbud|F4C0||sound audio music volume;Earbudsingle|F27C|F|earbuds audio;EaseOfAccess|E776||person inclusive;Edit|E70F||pencil update create draw symbol-icon;"
+        s = s & "EditMirrored|EB7E||pencil update create draw;Education|E7BE||learning knowledge school study college university graduation;EducationIcon|F7BB||pencil write;"
+        s = s & "Effects|E794|F|AI Filters Visuals Rendering;Eject|F847||remove disk media device hardware storage button;"
+        s = s & "EMI|E731||company building office enterprise corporate business;Emoji|E899||face smiley emote feeling symbol-icon;"
+        s = s & "Emoji2|E76E||face smiley emote feeling symbol-icon;Emoji4|F353|F|emoji add;EmojiBrush|EAD5|F|emoji brush;EmojiEdit|EAAA|F|emoji edit smiley;"
+        s = s & "Emojiplay|EAD4|F|emoji play;EmojiSwatch|ED5B||circle colors colours palette emoji design;EmojiTabCelebrationObjects|ED55||balloon party objects festive joy;"
+        s = s & "EmojiTabFavorites|ED5A||clock saved liked common favourite;EmojiTabFoodPlants|ED56||pizza meals;"
+        s = s & "EmojiTabMoreSymbols|F6BA||keyboard expression characters emoticons input;EmojiTabPeople|ED53||face expressions emotions human;"
+        s = s & "EmojiTabSmilesAnimals|ED54||face smiley cute pets happy;EmojiTabSymbols|ED58||shapes icons signs patterns;EmojiTabTextSmiles|ED59||faces emotions characters;"
+        s = s & "EmojiTabTransitPlaces|ED57||car places travel locations journey;EndPoint|E81B||flag map travel navigation;EndPointSolid|EB4B||flag map travel navigation;"
+        s = s & "EnglishPunctuation|F110||symbol character keyboard;Equalizer|E9E9||sound audio music volume;EraseTool|E75C||undo remove delete eraser rubber;"
+        s = s & "EraseToolFill|E82B||undo remove delete eraser rubber;EraseToolFill2|E82C||undo remove delete eraser rubber;Error|E783||! exclamation alert;"
+        s = s & "ErrorBadge|EA39||x warning alert problem notification;ErrorBadge12|EDAE||x warning alert problem notification;"
+        s = s & "eSIM|F61B||virtual SIM mobile connection network technology;eSIMBusy|F61E||active mobile network connection status;"
+        s = s & "eSIMLocked|F61D||security mobile network restriction protection;eSIMNoProfile|F61C||missing mobile network connection problem;"
+        s = s & "Ethernet|E839||cable network connection wired internet;EthernetAni1|EAA4|F|ethernet ani1 internet connectivity;EthernetError|EB55||x network connection cable;"
+        s = s & "EthernetVPN|F8CC|F|ethernet vpn internet computer pc;EthernetWarning|EB56||! network connection cable;"
+        s = s & "Event12|F763||calendar date schedule meeting reminder occasion activity;ExpandTile|E976||maximize view window;ExpandTileMirrored|EA4E||maximize view window;"
+        s = s & "ExploitProtection|F8A6||security vulnerability threat shield software defense;ExploitProtectionSettings|F259||security configuration defense;"
+        s = s & "ExploreContent|ECCD||+ discover browse navigate;ExploreContentSingle|F164||+ discover browse navigate;Export|EDE1||arrow share save transfer download output;"
+        s = s & "ExportMirrored|EDE2||arrow share save transfer download output;ExpressiveInputEntry|F6B8||heart;Eyedropper|EF3C||color colour picker sample paint tool;"
+        s = s & "EyeGaze|F19D||focus tracking vision;EyeTracking|EAD6|F|eye tracking hello identity;EyeTrackingText|EAD7|F|eye tracking text identity;"
+        s = s & "Family|EBDA||people person user;FastForward|EB9D||video speed arrow;Favicon|E737||logo icon brand shortcut symbol;"
+        s = s & "Favicon2|EC6C||logo icon brand shortcut symbol;FavoriteList|E728||star like favourite;"
+        s = s & "FavoriteStar|E734||star favorite favourite highlight bookmark like symbol-icon;"
+        s = s & "FavoriteStarFill|E735||star favorite favourite highlight bookmark like symbol-icon;Feedback|ED15||person user;"
+        s = s & "FeedbackApp|E939||person user review response evaluation;Ferry|E7E3||boat ship ocean travel;FerrySolid|EB48||boat ship ocean travel;"
+        s = s & "FIDOPasskey|EE7E|F|fido passkey;FileExplorer|EC50||application manager browser documents folder;"
+        s = s & "FileExplorerApp|EC51||application manager browser documents folder;Filter|E71C||dropdown sort line symbol-icon;"
+        s = s & "FingerInking|ED5F||touch draw handwriting ink gesture;Fingerprint|E928||scan security hand;FitPage|E9A6||resize view adjust;"
+        s = s & "Flag|E7C1||urgent important look symbol-icon;Flashlight|E754||torch lamp;FlickDown|E935||triangle gesture swipe scroll move;"
+        s = s & "FlickLeft|E937||triangle gesture swipe scroll navigate;FlickRight|E938||triangle gesture swipe scroll navigate;FlickUp|E936||triangle gesture swipe scroll move;"
+        s = s & "Flow|EF90||movement stream direction process continuity sequence fluid;Folder|E8B7||collection directory file storage symbol-icon;"
+        s = s & "FolderFill|E8D5||collection directory file storage;FolderHorizontal|F12B||collection directory file storage;FolderOpen|E838||collection directory file storage;"
+        s = s & "FolderSelect|F89A||file directory choose browse system storage;Font|E8D2||text style size lettering typography symbol-icon;"
+        s = s & "FontColor|E8D3||text style size lettering typography symbol-icon colour;FontDecrease|E8E7||text size smaller reduce adjust symbol-icon;"
+        s = s & "FontIncrease|E8E8||text size larger enlarge adjust symbol-icon;FontSize|E8E9||text adjust symbol-icon;FormatText|EC34||format text font;"
+        s = s & "Forward|E72A||arrow next send right proceed symbol-icon;ForwardCall|EAC2||arrow phone;ForwardMirrored|F0D3||arrow next send right proceed;"
+        s = s & "ForwardSm|E9AC||arrow next send right proceed;ForwardSolidBold|F8AD||arrow next send right proceed;"
+        s = s & "FourBars|E908||full signal excellent connection strong maximum symbol-icon;FreeFormClipping|F408||capture screenshot screen snapshot image;"
+        s = s & "Frigid|E9CA||temperature thermometer measurement heat;Full20|F741||keyboard phone gesture adjustment mode easy;FullAlpha|E97F||letter character symbol;"
+        s = s & "FullAlphaPrivateMode|EE45|F|full alpha private mode shield;FullCircleMask|E91F||shape round border;FullHiragana|E986||japanese character language;"
+        s = s & "FullHiraganaPrivateMode|EE41|F|full hiragana private mode shield;FullKatakana|E987||japanese character language;"
+        s = s & "FullKatakanaPrivateMode|EE42|F|full katakana private mode shield;FullScreen|E740||arrow expand maximize view screen zoom symbol-icon;"
+        s = s & "FuzzyReading|F5EF||blurred unclear vision focus interpretation;Game|E7FC||videogame controller;GameConsole|E967||device entertainment;"
+        s = s & "GatewayRouter|EB77||network connection internet;GenericApp|EB3B|F|generic app widget application title bar window;GenericScan|EE6F||device document scanner;"
+        s = s & "GIF|F4A9||animation image loop graphic motion picture media;GiftboxOpen|F133||present unpack;Glasses2|EB25|F|glasses read;"
+        s = s & "GlobalNavButton|E700||menu hamburger line three symbol-icon;Globe|E774||web world earth global symbol-icon;Globe2|F49A||world earth international global;"
+        s = s & "Go|E8AD||arrow start move launch begin symbol-icon;GoMirrored|EA4F||arrow start move launch begin;"
+        s = s & "GoToMessage|F716||chat notification communication app jump shortcut;GoToStart|E8FC||home begin windows navigate symbol-icon;"
+        s = s & "GotoToday|E8D1||calendar date time planning jump current symbol-icon;GridView|F0E2||layout design display structure applications menu apps programs;"
+        s = s & "GridviewGroup|F207|F|gridview group grid selection;GridViewSmall|F232|F|grid view small square;GripperBarHorizontal|E76F||drag handle;"
+        s = s & "GripperBarVertical|E784||drag handle;GripperResize|E788||triangle drag handle;GripperResizeMirrored|EA50||triangle drag handle;GripperTool|E75E||drag handle;"
+        s = s & "Groceries|EC09||groceries bag;Group|E902||person user people team crowd community;GroupList|F168||items collection organization;GuestUser|EE57||person login;"
+        s = s & "HalfAlpha|E97E||letter character symbol;HalfAlphaPrivateMode|EE43|F|half alpha private mode shield;HalfDullSound|E9B0||japanese;"
+        s = s & "HalfKatakana|E988||japanese character language;HalfKatakanaPrivateMode|EE44|F|half katakana private mode shield;HalfStarLeft|E7C6||rating score;"
+        s = s & "HalfStarRight|E7C7||rating score;Handwriting|E929||write pen gesture scribble draw;Handwriting20|F742||pen input write stylus note draw sketch;"
+        s = s & "HangUp|E778||phone symbol-icon;HardDrive|EDA2||storage disk data backup memory;HeadlessDevice|F191||server device remote management network;"
+        s = s & "Headphone|E7F6||audio sound volume device;Headphone0|ED30||audio sound volume device;Headphone1|ED31||audio sound volume device;"
+        s = s & "Headphone2|ED32||audio sound volume device;Headphone3|ED33||audio sound volume device;Headset|E95B||audio sound volume device support help;"
+        s = s & "Health|E95E||heart health medical care wellness fitness;HearingAid|F27F|F|hearing aid;Heart|EB51||love emotion like;"
+        s = s & "HeartBroken|EA92||love emotion sadness dislike;HeartFill|EB52||love emotion like;Help|E897||? question support guide assistance info symbol-icon;"
+        s = s & "HelpMirrored|EA51||? question support guide assistance info;Hide|ED1A||eye password conceal view privacy;"
+        s = s & "HideBcc|E8C5||email bcc hide privacy recipient symbol-icon;Highlight|E7E6||marker edit draw focus symbol-icon;HighlightFill|E891||marker edit draw focus;"
+        s = s & "HighlightFill2|E82A||marker edit draw focus;History|E81C||clock time arrow back undo recent circle;HMD|F119||headset VR virtual display device;"
+        s = s & "HolePunchLandscapeBottom|F597||binding document paper;HolePunchLandscapeLeft|F594||binding document paper;HolePunchLandscapeRight|F595||binding document paper;"
+        s = s & "HolePunchLandscapeTop|F596||binding document paper;HolePunchOff|F58F||pages printing layout orientation;HolePunchPortraitBottom|F593||binding document paper;"
+        s = s & "HolePunchPortraitLeft|F590||binding document paper office;HolePunchPortraitRight|F591||binding document paper office;"
+        s = s & "HolePunchPortraitTop|F592||binding document paper office;HoloLens|EC94||augmented reality mixed virtual headset;"
+        s = s & "HoloLensSelected|F4BF||augmented reality mixed virtual headset checked;Home|E80F||house safety location space wfh symbol-icon;"
+        s = s & "HomeGroup|EC26||network sharing devices chemical formaldehyde;HomeSolid|EA8A||house safety location space wfh;HorizontalTabKey|E7FD||arrow keyboard;"
+        s = s & "HWPInsert|F461||insert add place input;HWPJoin|F460||combine merge stroke;HWPNewLine|F465||enter continue paragraph space;"
+        s = s & "HWPOverwrite|F466||replace modify edit correction;HWPScratchOut|F463||erase remove delete correction eraser rubber;HWPSplit|F464||divide separate line;"
+        s = s & "HWPStrikeThrough|F462||delete edit mark;IBeam|E933||cursor text select pointer edit;IBeamOutline|E934||cursor text select pointer edit;"
+        s = s & "IDBadge|F427||person user;ImageExport|EE71||picture share save;Import|E8B5||arrow upload file add transfer symbol-icon;"
+        s = s & "ImportAll|E8B6||arrow upload file add transfer symbol-icon;ImportAllMirrored|EA53||arrow upload file add transfer;"
+        s = s & "Important|E8C9||! priority highlight urgent attention critical symbol-icon;ImportantBadge12|EDB1||! priority highlight urgent attention critical;"
+        s = s & "ImportMirrored|EA52||arrow upload file add transfer;IncidentTriangle|E814||! error warning alert exclamation issue;IncomingCall|E77E||phone receive;"
+        s = s & "Info|E946||information details content;Info2|EA1F||information details content;InfoSolid|F167||information details content;"
+        s = s & "InkingCaret|ED65||text cursor writing;InkingColorFill|ED67||circle ink paint design colour;InkingColorOutline|ED66||circle border outline draw colour;"
+        s = s & "InkingTool|E76D||pen edit create draw;InkingToolFill|E88F||draw paint sketch;InkingToolFill2|E829||draw paint sketch;"
+        s = s & "InPrivate|E727||private mode browser person;Input|E961||keyboard mouse hardware;InsiderHubApp|EC24||announcement beta program preview early access;"
+        s = s & "InstertWords|F7B1||text add edit content typing keyboard;InstertWordsFill|F7B2||text add edit content typing keyboard;"
+        s = s & "InteractiveDashboard|F404||interface data visualization monitoring;InternetSharing|E704||network wifi connection signal wlan lan;"
+        s = s & "IOT|F22C||internet devices network automation sensors connectivity smart chemical formaldehyde;Italic|E8DB||text style slant font emphasis symbol-icon;"
+        s = s & "Japanese|E985||Kanji character language;JoinWords|F7B3||combine text merge edit content typing;JoinWordsFill|F7B4||combine text merge edit content typing;"
+        s = s & "JpnRomanji|E87C||english Japanese transliteration alphabet language;JpnRomanjiLock|E87D||english Japanese transliteration alphabet language;"
+        s = s & "JpnRomanjiShift|E87E||english Japanese transliteration alphabet language;JpnRomanjiShiftLock|E87F||Japanese transliteration alphabet language;"
+        s = s & "Key12On|E980||language Korean hangul;Keyboard12Key|F261||numeric layout compact keypad numbers;KeyboardBrightness|ED39||keyboard light control adjust;"
+        s = s & "KeyboardClassic|E765||keyboard type key device digital symbol-icon;KeyboardDismiss|E92F||type key device hardware close hide exit;"
+        s = s & "KeyboardDock|F26B||attachment mount position connection setup;KeyboardFull|EC31||keyboard type key device;"
+        s = s & "KeyboardLeftAligned|F20C||position layout left-align design;KeyboardLeftDock|F26D||attachment position alignment setup;"
+        s = s & "KeyboardLeftHanded|E763||keyboard type key device;KeyboardLowerBrightness|ED3A||keyboard light control adjust;"
+        s = s & "KeyboardNarrow|F260||compact size layout space-saving design;KeyboardOneHanded|ED4C||typing compact mobile input ergonomic;"
+        s = s & "KeyboardRightAligned|F20D||position layout right-align design;KeyboardRightDock|F26E||attachment position alignment setup;"
+        s = s & "KeyboardRightHanded|E764||keyboard type key device;KeyboardSettings|F210||preferences adjust controls configuration customization;"
+        s = s & "Keyboardsettings20|F73D||preferences adjust controls configuration customization;KeyboardShortcut|EDA7||keys command;"
+        s = s & "KeyboardSplit|E766||keyboard type key device;KeyboardStandard|E92E||type key device hardware;KeyboardUndock|F26C||detachment release disconnection mobile;"
+        s = s & "Kiosk|F712||machine interactive self service display screen stand service;KnowledgeArticle|F000||page document;Korean|E97D||language Korean hangul alphabet;"
+        s = s & "Label|E932||edit tag identifier caption name marker;LandscapeOrientation|EF6B||screen display view horizontal wide;"
+        s = s & "LandscapeOrientationMirrored|F56F||screen display view horizontal wide;LangJPN|E7DE||language kanji japan;"
+        s = s & "LanguageChs|E88D||chinese transliteration alphabet language;LanguageCht|E88C||chinese transliteration alphabet language;"
+        s = s & "LanguageJpn|EC45||japanese Kanji character language;LanguageKor|E88B||korean transliteration alphabet language;"
+        s = s & "LaptopSecure|F552||protection shield security device privacy;LaptopSelected|EC76||notebook device portable checked;"
+        s = s & "LargeErase|F12A||delete drawing correction eraser rubber;Lasso|F1BE|F|lasso selection;LassoSparkle|F1B9|F|lasso sparkle ai selection;"
+        s = s & "Leaf|E8BE||nature eco environment sustainability green;LeafTwo|F1E8|F|leaf energy battery;LearningTools|F7DB|F|learning tools book;"
+        s = s & "LeaveChat|E89B||exit leave message conversation disconnect symbol-icon;LeaveChatMirrored|EA54||exit leave message conversation disconnect;"
+        s = s & "LEDLight|E781||light illuminate;LeftArrowKeyTime0|EC52||navigation previous rewind;LeftDoubleQuote|E9B2||punctuation key symbol character keyboard;"
+        s = s & "LeftQuote|E848||opening text symbol mark;LeftStick|F108||controller gamepad joystick input navigation buttons gaming;Lexicon|F180||person user book;"
+        s = s & "Library|E8F1||books collection library archive resources symbol-icon;Light|E793||brightness sun dark theme toggle;"
+        s = s & "Lightbulb|EA80||light illuminate knowledge smart idea tip;LightningBolt|E945||thunder energy power electricity shock storm;"
+        s = s & "Like|E8E1||thumb negative reject disapprove oppose symbol-icon;LikeDislike|E8DF||reaction feedback vote symbol-icon;LikeSolid|F3BF|F|like solid;"
+        s = s & "LineDisplay|EF3D||screen output visual price checkout transaction purchase receipt;Link|E71B||link share web internet symbol-icon;"
+        s = s & "List|EA37||text line view symbol-icon;ListMirrored|EA55||text line view;LiveCaptionsSparkle|EAD8|F|live captions sparkle ai;"
+        s = s & "LocaleLanguage|F2B7||region localization translation culture setting preferences;Location|E81D||pin marker map travel;"
+        s = s & "Lock|E72E||private security access protected safety permission protection secure;LockFeedback|EBDB||message;LockscreenDesktop|EE3F||desktop security privacy;"
+        s = s & "LockScreenGlance|EE65||display quickview preview eye;LowerBrightness|EC8A||sun day;MagStripeReader|EC5C||card payment swipe transaction;"
+        s = s & "Mail|E715||envelope email delivery message letter symbol-icon;MailBadge12|EDB3||envelope email delivery message letter;MailFill|E8A8||email message symbol-icon;"
+        s = s & "MailForward|E89C||send arrow envelope email delivery message letter symbol-icon;MailForwardMirrored|EA56||send arrow envelope email delivery message letter;"
+        s = s & "MailReply|E8CA||envelope email delivery message respond letter symbol-icon;MailReplyAll|E8C2||envelope email delivery message respond letter symbol-icon;"
+        s = s & "MailReplyAllMirrored|EA58||envelope email delivery message respond letter;MailReplyMirrored|EA57||envelope email delivery message respond letter;"
+        s = s & "Manage|E912||bag handbag briefcase control organize administer oversee handle symbol-icon;MapCompassBottom|E813||triangle down;MapCompassTop|E812||triangle up;"
+        s = s & "MapDirections|E816||travel navigation;MapDrive|E8CE||network connect link symbol-icon;MapLayers|E81E||travel navigation;"
+        s = s & "MapPin|E707||location marker destination place position symbol-icon;MapPin2|E7B7||location marker destination place position symbol-icon;"
+        s = s & "Marker|ED64||highlight color colour draw ink tool;Market|EAFC||arrow stocks finance trading investment;MarketDown|EF42||arrow decrease decline fall stock;"
+        s = s & "Marquee|EF20||capture screenshot screen snapshot image;Media|EA69||audio video content entertainment streaming;MediaStorageTower|E965||device backup;"
+        s = s & "Megaphone|E789||announcement shout;Memo|E77C||voicemail tape playback audio recording message symbol-icon;MergeCall|EA3C||arrow combine conference phone;"
+        s = s & "Message|E8BD||chat message text notification bubble symbol-icon;MicClipping|EC72||microphone audio distortion overload volume peak;"
+        s = s & "MicError|EC56||x microphone audio issue fault problem;MicLocationCombo|F47F||microphone audio;MicOff|EC54||microphone mute audio silent disabled;"
+        s = s & "MicOff2|F781||microphone mute audio silent disabled;MicOn|EC71||microphone audio active sound enabled recording;"
+        s = s & "Microphone|E720||audio voice record sound speech symbol-icon;MicrophoneListening|F12E||audio active sound enabled recording;"
+        s = s & "MicrophoneSolidBold|F8B1||audio voice record sound speech;MicSleep|EC55||microphone audio idle standby inactive;"
+        s = s & "MiniContract2Mirrored|EE49||collapse view minimize minimise document;MiniExpand|E93A|F|mini expand fullscreen;"
+        s = s & "MiniExpand2Mirrored|EE47||maximize maximise view minimize minimise document;MiracastLogoLarge|EC16||wireless display screen;"
+        s = s & "MiracastLogoSmall|EC15||wireless display screen;MixedMediaBadge|EA0D||shield window;MixVolumes|F4C3||sound audio music Equalizer;"
+        s = s & "MobActionCenter|EC42||message notification;MobAirplane|EC40||flight vehicle travel;MobBattery0|EBA0||phone charge power;MobBattery1|EBA1||phone charge power;"
+        s = s & "MobBattery10|EBAA||phone charge power;MobBattery2|EBA2||phone charge power;MobBattery3|EBA3||phone charge power;MobBattery4|EBA4||phone charge power;"
+        s = s & "MobBattery5|EBA5||phone charge power;MobBattery6|EBA6||phone charge power;MobBattery7|EBA7||phone charge power;MobBattery8|EBA8||phone charge power;"
+        s = s & "MobBattery9|EBA9||phone charge power;MobBatteryCharging0|EBAB||phone charge power;MobBatteryCharging1|EBAC||phone charge power;"
+        s = s & "MobBatteryCharging10|EBB5||phone charge power;MobBatteryCharging2|EBAD||phone charge power;MobBatteryCharging3|EBAE||phone charge power;"
+        s = s & "MobBatteryCharging4|EBAF||phone charge power;MobBatteryCharging5|EBB0||phone charge power;MobBatteryCharging6|EBB1||phone charge power;"
+        s = s & "MobBatteryCharging7|EBB2||phone charge power;MobBatteryCharging8|EBB3||phone charge power;MobBatteryCharging9|EBB4||phone charge power;"
+        s = s & "MobBatterySaver0|EBB6||phone charge power eco friendly;MobBatterySaver1|EBB7||phone charge power eco friendly;"
+        s = s & "MobBatterySaver10|EBC0||phone charge power eco friendly;MobBatterySaver2|EBB8||phone charge power eco friendly;"
+        s = s & "MobBatterySaver3|EBB9||phone charge power eco friendly;MobBatterySaver4|EBBA||phone charge power eco friendly;"
+        s = s & "MobBatterySaver5|EBBB||phone charge power eco friendly;MobBatterySaver6|EBBC||phone charge power eco friendly;"
+        s = s & "MobBatterySaver7|EBBD||phone charge power eco friendly;MobBatterySaver8|EBBE||phone charge power eco friendly;"
+        s = s & "MobBatterySaver9|EBBF||phone charge power eco friendly;MobBatteryUnknown|EC02||charge power status phone;"
+        s = s & "MobBatteryUnknownCharging|EB17|F|mob battery unknown charging empty;MobBluetooth|EC41||device connection;MobCallForwarding|EC7E||phone handset audio;"
+        s = s & "MobCallForwardingMirrored|EC7F||phone handset audio;MobDrivingMode|EC47||car;MobeSIM|ED2A||mobile network cellular status;"
+        s = s & "MobeSIMBusy|ED2D||mobile network cellular status;MobeSIMLocked|ED2C||mobile network cellular status;MobeSIMNoProfile|ED2B||mobile network cellular status;"
+        s = s & "MobileLocked|EC20||security phone device protection restricted;MobileSelected|EC75||phone smartphone device checked;"
+        s = s & "MobileTablet|E8CC||device screen physical watch view video phone;MobLocation|EC43||pin marker map travel;MobNotificationBell|F2A3|F|mob notification bell;"
+        s = s & "MobNotificationBellFilled|F2A5|F|mob notification bell filled;MobQuietHours|EC46||moon night;MobSignal1|EC37||bar network coverage cellular;"
+        s = s & "MobSignal2|EC38||bar network coverage cellular;MobSignal3|EC39||bar network coverage cellular;MobSignal4|EC3A||bar network coverage cellular;"
+        s = s & "MobSignal5|EC3B||bar network coverage cellular;MobSIMError|F5AB||x problem failure alert;MobSIMLock|E875||security phone restricted;"
+        s = s & "MobSIMMissing|E876||error phone absent;MobSnooze|F285|F|mob snooze;MobSnoozeFilled|F2A8|F|mob snooze filled;"
+        s = s & "MobWifi1|EC3C||wireless fidelity connect internet web connection network wlan lan;"
+        s = s & "MobWifi2|EC3D||wireless fidelity connect internet web connection network wlan lan;"
+        s = s & "MobWifi3|EC3E||wireless fidelity connect internet web connection network wlan lan;"
+        s = s & "MobWifi4|EC3F||wireless fidelity connect internet web connection network wlan lan;"
+        s = s & "MobWifiCall0|EBD5||bars signal network connection communication phone wlan lan;MobWifiCall1|EBD6||bars signal network connection communication phone wlan lan;"
+        s = s & "MobWifiCall2|EBD7||bars signal network connection communication phone wlan lan;MobWifiCall3|EBD8||bars signal network connection communication phone wlan lan;"
+        s = s & "MobWifiCall4|EBD9||bars signal network connection communication phone wlan lan;MobWifiCallBars|EBD4||signal network wlan lan;"
+        s = s & "MobWifiHotspot|EC44||connection network share wlan lan;MobWifiWarning1|F473||! connection network share wlan lan;"
+        s = s & "MobWifiWarning2|F474||! connection network share wlan lan;MobWifiWarning3|F475||! connection network share wlan lan;"
+        s = s & "MobWifiWarning4|F476||! connection network share alert exclamation triangle issue wlan lan;More|E712||... dots overflow menu navigation symbol-icon options;"
+        s = s & "Mouse|E962||pointer device input click;Move|E7C2||arrow drag handle;MoveToFolder|E8DE||file organize transfer symbol-icon;"
+        s = s & "Movies|E8B2||cinema entertainment video screen;MultimediaDMP|ED47||device playback streaming content network;MultimediaDMS|E953||server stream share content;"
+        s = s & "MultimediaDVR|E954||record video tv capture;MultimediaPMP|E955||player portable music device;MultiSelect|E762||checkmark task list type;"
+        s = s & "MultiSelectMirrored|EA98||checkmark task list type;MusicAlbum|E93C||collection tracks playlist;"
+        s = s & "MusicInfo|E90B||musician art music info song track details symbol-icon;MusicNote|EC4F||concert musician art event;"
+        s = s & "MusicSharing|F623||audio streaming sound media connect;MusicSharingOff|F624||audio streaming sound media disconnect;Mute|E74F||sound silence volume symbol-icon;"
+        s = s & "MyNetwork|EC27||connection devices shared local;Narrator|ED4D||accessibility voice audio screen reader text assistive;"
+        s = s & "NarratorApp|F83B||accessibility voice screen reader assistive text to speech reading;"
+        s = s & "NarratorForward|EDA9||accessibility voice audio screen reader text assistive;"
+        s = s & "NarratorForwardMirrored|EDAA||accessibility voice audio screen reader text assistive;Nav2DMapView|E800|F|map navigation;"
+        s = s & "NearbySharing|F3E2||transfer devices connect send bluetooth;Network|E968||remote network adapter hardware device;"
+        s = s & "NetworkAdapter|EDA3||connection Wifi Ethernet internet device wlan lan;NetworkConnected|F385||connection status online signal;"
+        s = s & "NetworkConnectedCheckmark|F386||connection status online signal;NetworkOffline|F384||connection status signal;"
+        s = s & "NetworkPhysical|F211||connection hardware cable data wireless;NetworkPrinter|EDA5||print wireless office device;NetworkSharing|F193||printer folder connection;"
+        s = s & "NetworkTower|EC05||signal cell communication coverage internet;NewFolder|E8F4||collection directory file storage plus new + symbol-icon;"
+        s = s & "NewWindow|E78B||open launch symbol-icon;Next|E893||video skip jump fast forward play symbol-icon;NFCBadge|F39B|F|nfc badge connectivity;"
+        s = s & "NoiseCancelation|F61F||sound quiet audio filter technology;NoiseCancelationOff|F620||sound quiet audio filter technology;NUIFace|EB68||emoji smiley;"
+        s = s & "NUIFPContinueSlideAction|EB85||nuifp continue slide action;NUIFPContinueSlideHand|EB84||nuifp continue slide hand;NUIFPPressAction|EB8B||nuifp press action;"
+        s = s & "NUIFPPressHand|EB8A||nuifp press hand;NUIFPPressRepeatAction|EB8D||nuifp press repeat action;NUIFPPressRepeatHand|EB8C||nuifp press repeat hand;"
+        s = s & "NUIFPRollLeftAction|EB89||nuifp roll left action;NUIFPRollLeftHand|EB88||nuifp roll left hand;NUIFPRollRightHand|EB86||nuifp roll right hand;"
+        s = s & "NUIFPRollRightHandAction|EB87||nuifp roll right hand action;NUIFPStartSlideAction|EB83||nuifp start slide action;"
+        s = s & "NUIFPStartSlideHand|EB82||nuifp start slide hand;NUIIris|EB67||eye password;OEM|E74C||brand manufacturer original;"
+        s = s & "OneBar|E905||weak signal connection low signal poor symbol-icon;OneHandedLeft20|F73F||keyboard phone gesture adjustment mode easy;"
+        s = s & "OneHandedRight20|F73E||keyboard phone gesture adjustment mode easy;OpenFile|E8E5||document page view access symbol-icon;"
+        s = s & "OpenFolderHorizontal|ED25||collection directory file storage;OpenInNewWindow|E8A7||expand external launch view shortcut;"
+        s = s & "OpenLocal|E8DA||folder directory file symbol-icon;OpenPane|E8A0||sidebar expand menu show symbol-icon;OpenPaneMirrored|EA5B||sidebar expand menu show;"
+        s = s & "OpenWith|E7AC||application program associate file choose viewer symbol-icon;OpenWithMirrored|EA5C||application program associate file choose viewer;"
+        s = s & "Orientation|E8B4||rotate horizontal vertical symbol-icon;OtherUser|E7EE||person symbol-icon;OutlineHalfStarLeft|F0E7||rating score evaluation feedback review;"
+        s = s & "OutlineHalfStarRight|F0E8||rating score evaluation feedback review;OutlineQuarterStarLeft|F0E5||rating score evaluation feedback review;"
+        s = s & "OutlineQuarterStarRight|F0E6||rating score evaluation feedback review;OutlineStarLeftHalf|F0F7||rating score evaluation feedback review;"
+        s = s & "OutlineStarRightHalf|F0F8||rating score evaluation feedback review;OutlineThreeQuarterStarLeft|F0E9||rating score evaluation feedback review;"
+        s = s & "OutlineThreeQuarterStarRight|F0EA||rating score evaluation feedback review;OverwriteWords|F7B5||text replace edit content typing keyboard;"
+        s = s & "OverwriteWordsFill|F7B6||text replace edit content typing keyboard;OverwriteWordsFillKorean|F7BA||text replace edit content typing;"
+        s = s & "OverwriteWordsKorean|F7B9||text replace edit content typing;Package|E7B8||archive bundle file collection install;"
+        s = s & "Page|E7C3||document file sheet paper text symbol-icon;PageLeft|E760||arrow previous back;PageMarginLandscapeModerate|F579||layout document balanced;"
+        s = s & "PageMarginLandscapeNarrow|F577||layout document balanced;PageMarginLandscapeNormal|F578||layout document balanced;"
+        s = s & "PageMarginLandscapeWide|F57A||layout document balanced;PageMarginPortraitModerate|F575||layout document balanced;"
+        s = s & "PageMarginPortraitNarrow|F573||layout document balanced;PageMarginPortraitNormal|F574||layout document balanced;"
+        s = s & "PageMarginPortraitWide|F576||layout document balanced;PageMirrored|F56E||document file sheet paper text;PageRight|E761||arrow next forward;"
+        s = s & "PageSolid|E729||document file sheet paper text symbol-icon;PaginationDotOutline10|F126||circle;PaginationDotSolid10|F127||circle;"
+        s = s & "PanMode|ECE9||window view layout section;ParkingLocation|E811||car spot space;ParkingLocationMirrored|EA5E||car spot space;"
+        s = s & "ParkingLocationSolid|EA8B||car spot space;PartyLeader|ECA7||person user Badge;"
+        s = s & "PassiveAuthentication|F32A||security verification identity login access privacy checkmark;PasswordKeyHide|E9A9||conceal security visibility protection access;"
+        s = s & "PasswordKeyShow|E9A8||reveal security visibility protection access;Paste|E77F||clipboard copy memory symbol-icon;PasteSparkle|F03D|F|paste sparkle ai clipboard;"
+        s = s & "Pause|E769||control playback freeze symbol-icon media video audio;PauseBadge12|EDB4||control playback freeze;PauseBold|F8AE||control playback freeze;"
+        s = s & "PauseDurationVoice|EF91|F|pause duration voice clock time;PaymentCard|E8C7||currency money credit card;PC1|E977||computer personal device desktop technology;"
+        s = s & "PDF|EA90||document file portable format view;Pen|F67B|F|pen ink write;Pencil|ED63||write draw sketch tool creative;"
+        s = s & "PencilFill|F0C6||write draw sketch tool creative;PenPalette|EE56||color colour drawing art;PenPaletteMirrored|EF16||color colour drawing art;"
+        s = s & "PenSparkle|F6C7|F|pen sparkle ai write;PenTips|F45E||stylus writing touch input tool;PenTipsMirrored|F45F||stylus writing touch input tool;"
+        s = s & "PenWorkspace|EDC6||inking drawing stylus workspace;PenWorkspaceMirrored|EF15||inking drawing stylus workspace;"
+        s = s & "People|E716||person user group team organization contact guest symbol-icon;PeriodKey|E843||dot keyboard punctuation;"
+        s = s & "Permissions|E8D7||key security password access symbol-icon;PersonalFolder|EC25||user documents files storage private directory;"
+        s = s & "Personalize|E771||brush customize color colour;Phone|E717||device mobile small screen cellular telephone apple android symbol-icon;"
+        s = s & "PhoneBook|E780||contacts directory list symbol-icon;PhoneDesktop|F6C6|F|phone desktop pc computer device;PhoneResumeAlert|F470|F|phone resume alert;"
+        s = s & "PhoneScreen|F6C4|F|phone screen device share;Photo|E91B||image picture snapshot portrait frame gallery canvas visual view;"
+        s = s & "Photo2|EB9F||image picture snapshot portrait frame gallery canvas visual view;PhotoCollection|E7AA|F|photo collection photos image;"
+        s = s & "Picture|E8B9||image photo snapshot portrait frame gallery canvas visual view symbol-icon;"
+        s = s & "PieSingle|EB05||chart graph data visual analysis statistics representation;Pin|E718||save share post favorite favourite symbol-icon;"
+        s = s & "PinFill|E841||save share post favorite favourite;Pinned|E840||save share post favorite favourite;PinnedFill|E842||save share post favorite favourite;"
+        s = s & "PINPad|EF3E||payment transaction security card;PinyinIMELogo|EDE5||pinyin ime logo;PinyinIMELogo2|F698|F|pinyin ime;"
+        s = s & "PLAP|EC19||lock key security access safety permission protection password;Play|E768||control playback start begin symbol-icon media video audio;"
+        s = s & "Play36|EE4A||control playback start begin;PlaybackRate1x|EC57||normal speed video audio standard;PlaybackRateOther|EC58||normal speed video audio standard;"
+        s = s & "PlayBadge12|EDB5||control playback start begin;PlayerSettings|EF58||person user configuration;PlaySolid|F5B0||control playback start begin;"
+        s = s & "POI|ECAF||Point Interest location landmark destination map;POILocationFound|F5CA|F|poi location found;PointErase|ED61||remove spot dot edit eraser rubber;"
+        s = s & "PointEraseMirrored|EF18||remove spot dot edit eraser rubber;PointerHand|F271||cursor click select interaction gesture touch;"
+        s = s & "PoliceCar|EC81||vehicle emergency law;PortraitBlur|EABE|F|portrait blur filter photo video;PortraitLight|F06C|F|portrait light filter photo video;"
+        s = s & "PostUpdate|E8F3||symbol-icon;PowerButton|E7E8||on off;PowerButtonUpdate|F83D||on off restart settings system computer device configuration;"
+        s = s & "PowerButtonUpdate2|F1B1|F|power button update shutdown;PPSFourLandscape|F58D||printing pages layout orientation;"
+        s = s & "PPSFourPortrait|F58E||pages printing layout orientation;PPSOneLandscape|F58A||printing pages layout orientation;"
+        s = s & "PPSOnePortrait|F5AD||printing pages layout orientation;PPSTwoLandscape|F58B||printing pages layout orientation;"
+        s = s & "PPSTwoPortrait|F58C||printing pages layout orientation;PresenceChicklet|E978||stop pause end cease interrupt;"
+        s = s & "PresenceChickletVideo|E979||camera image photography picture;Preview|E8FF||document preview view file read page symbol-icon;"
+        s = s & "PreviewLink|E8A1||content block symbol-icon;Previous|E892||control playback start begin symbol-icon;Print|E749||printer paper copy fax office ink symbol-icon;"
+        s = s & "PrintAllPages|F571||printer document settings paper output device configuration;"
+        s = s & "PrintCustomRange|F572||printer document settings paper output device configuration;"
+        s = s & "PrintDefault|F56D||checked printer document settings paper output device configuration;Printer3D|E914||design model fabricate technology create;"
+        s = s & "PrintfaxPrinterFile|E956||document page;Priority|E8D0||! arrow importance urgent priority focus high symbol-icon;"
+        s = s & "PrivateCall|EA3D||arrow secure confidential phone;Process|E9F3||arrow workflow operation;Processing|E9F5||settings workflow operation configuration;"
+        s = s & "ProductivityMode|F71E||focus efficiency work task performance organization;ProgressRingDots|F16A||loading indicator status waiting;"
+        s = s & "Project|EBC6||present presentation view slide lecture;Projector|E95D||screen display project visual presentation;"
+        s = s & "ProjectToDevice|F117|F|project device share screen;ProtectedDocument|E8A6||page file sheet paper text secure lock symbol-icon;"
+        s = s & "Protractor|F0B4||measurement angle geometry tool math;ProvisioningPackage|E835||configuration settings;PuncKey|E844||symbol keyboard punctuation;"
+        s = s & "PuncKey0|E84C||symbol keyboard punctuation;PuncKey1|E9B4||@ & # punctuation symbol character keyboard;PuncKey2|E9B5||\ / punctuation symbol character keyboard;"
+        s = s & "PuncKey3|E9B6||+ = - punctuation symbol character keyboard;PuncKey4|E9B7||. * & punctuation symbol character keyboard;"
+        s = s & "PuncKey5|E9B8||< ^ > punctuation symbol character keyboard;PuncKey6|E9B9||~ punctuation symbol character keyboard;"
+        s = s & "PuncKey7|E9BB||$ punctuation symbol character keyboard;PuncKey8|E9BC||x math punctuation symbol character keyboard;"
+        s = s & "PuncKey9|E9BA||: _ punctuation symbol character keyboard;PuncKeyLeftBottom|E84D||symbol keyboard punctuation;PuncKeyRightBottom|E9B3||. ,;"
+        s = s & "Puzzle|EA86||piece game solution challenge;QRCode|ED14||scanner barcode matrix;QuarentinedItems|F0B2||security protection virus malware threat files safety;"
+        s = s & "QuarentinedItemsMirrored|F0B3||security protection virus malware threat files safety;QuarterStarLeft|F0CA||rating score evaluation feedback review;"
+        s = s & "QuarterStarRight|F0CB||rating score evaluation feedback review;QuickNote|E70B||note sticky note sketch reminder;QuietHours|E708||night moon;"
+        s = s & "QuietHoursBadge12|F0CE||moon night;QWERTYOff|E983||chinese english;QWERTYOn|E982||chinese;Radar|EB44||signal tracking detection monitoring;"
+        s = s & "RadioBtnOff|ECCA||dot circle;RadioBtnOn|ECCB||dot circle selected;RadioBullet|E915||dot circle;RadioBullet2|ECCC||dot circle;RAM|EEA0|F|ram memory device;"
+        s = s & "Read|E8C3||mail envelope email delivery message letter symbol-icon;ReadingList|E7BC||read list content collection news;"
+        s = s & "ReadingMode|E736||read list content collection news;ReadOutLoud|F112|F|read out loud;"
+        s = s & "ReceiptPrinter|EC5B||paper receiptpaper transaction purchase sale pointofsale;Recent|E823||clock time history latest new update symbol-icon;"
+        s = s & "Record|E7C8||circle control playback wait stop transcribe;Record2|EA3F||circle control playback wait stop transcribe;"
+        s = s & "RectangularClipping|F407||capture screenshot screen snapshot image;RedEye|E7B3||blink pupil show hide password;Redo|E7A6||arrow restore forward symbol-icon;"
+        s = s & "RefineSparkle|F1D5|F|refine sparkle ai list;ReformatSparkle|F1D6|F|reformat sparkle ai grid;Refresh|E72C||reload update restart circle sync symbol-icon;"
+        s = s & "Relationship|F003||data link connection association schema model structure dependency;RememberedDevice|E70C||device memory trusted saved access;"
+        s = s & "Reminder|EB50||light illuminate knowledge smart idea tip alert notification task prompt;"
+        s = s & "ReminderFill|EB4F||light illuminate knowledge smart idea tip alert notification task prompt;Remote|E8AF||cloud connect device symbol-icon;"
+        s = s & "Remove|E738||- delete symbol-icon;RemoveFrom|ECC9||- delete;Rename|E8AC||input text type info ui box form edit change modify label update symbol-icon;"
+        s = s & "Repair|E90F||wrench tool fix restore correct symbol-icon;RepeatAll|E8EE||arrow loop song track playlist continuous symbol-icon;"
+        s = s & "RepeatOff|F5E7||arrow audio music playback control media;RepeatOne|E8ED||arrow single loop song track symbol-icon;Replay|EF3B||arrow repeat;"
+        s = s & "Reply|E97A||arrow respond answer return;ReplyMirrored|EE35||arrow respond answer return;ReportDocument|E9F9||summary file analysis;"
+        s = s & "ReportHacked|E730||! security alert breach shield warning symbol-icon;ResetDevice|ED10||factoryreset reboot restore restart settings configuration;"
+        s = s & "ResetDrive|EBC4||storage reboot refresh;Reshare|E8EB||arrow repost forward distribute spread symbol-icon;"
+        s = s & "ResizeMouseLarge|E747||drag resize adjust pointer handle;ResizeMouseMedium|E744||drag resize adjust pointer handle;"
+        s = s & "ResizeMouseMediumMirrored|EA5F||drag resize adjust pointer handle;ResizeMouseSmall|E743||drag resize adjust pointer handle;"
+        s = s & "ResizeMouseSmallMirrored|EA60||drag resize adjust pointer handle;ResizeMouseTall|E746||drag resize adjust pointer handle;"
+        s = s & "ResizeMouseTallMirrored|EA61||drag resize adjust pointer handle;ResizeMouseWide|E745||drag resize adjust pointer handle;"
+        s = s & "ResizeTouchLarger|E741||arrow expand grow touch increase size;ResizeTouchNarrower|E7EA||arrow;"
+        s = s & "ResizeTouchNarrowerMirrored|EA62||arrow drag resize adjust pointer handle;ResizeTouchShorter|E7EB||arrow;"
+        s = s & "ResizeTouchSmaller|E742||arrow shrink reduce decrease minimize touch;Restart3|F305|F|restart reboot refresh;"
+        s = s & "RestartUpdate|F83E||arrow refresh system reboot settings install software configuration;RestartUpdate2|ED21|F|restart update refresh;"
+        s = s & "ReturnKey|E751||arrow enter submit keyboard;ReturnKeyLg|EB97||arrow enter submit keyboard;ReturnKeySm|E966||arrow enter submit keyboard;"
+        s = s & "ReturnToCall|F71A||arrow communication phone resume connect audio ongoing;ReturnToWindow|E944||arrow restore back minimize;"
+        s = s & "RevealPasswordMedium|F78D||security visibility protection access;RevToggleKey|E845||arrow reverse keyboard;Rewind|EB9E||control playback back;"
+        s = s & "RightArrowKeyTime0|EBE7||navigate forward progress;RightArrowKeyTime1|E846||navigate forward progress;RightArrowKeyTime2|E847||navigate forward progress;"
+        s = s & "RightArrowKeyTime3|E84E||navigate forward progress;RightArrowKeyTime4|E84F||navigate forward progress;"
+        s = s & "RightDoubleQuote|E9B1||punctuation key symbol character keyboard;RightQuote|E849||ending text symbol mark;"
+        s = s & "RightStick|F109||controller gamepad joystick input navigation buttons gaming;Ringer|EA8F||bell notification alert;RingerBadge12|EDAC||bell notification alert;"
+        s = s & "RingerSilent|E7ED||bell sound mute volume;RoamingDomestic|E879||triangle;RoamingInternational|E878||triangle;"
+        s = s & "Robot|E99A||automation machine technology AI Artificial intelligence;Rotate|E7AD||arrow edit create canvas horizontal vertical flip symbol-icon;"
+        s = s & "RotateCamera|E89E||image photography picture flip switch direction symbol-icon;"
+        s = s & "RotateMapLeft|E80D||arrow edit create canvas horizontal vertical travel navigation flip;"
+        s = s & "RotateMapRight|E80C||arrow edit create canvas horizontal vertical travel navigation flip;"
+        s = s & "RotationLock|E755||arrow security access protected safety permission protection;RTTLogo|F714||telecommunication relay service call;"
+        s = s & "Ruler|ED5E||measure length straight tool precision;Safe|F540||security protection lock fireproof valuable bank;Save|E74E||floppy disk device old symbol-icon;"
+        s = s & "SaveAs|E792||floppy disk device old;SaveCopy|EA35||floppy floppy disk device old;SaveLocal|E78C||floppy disk device old symbol-icon;"
+        s = s & "Scan|E8FE||camera aperture image picture symbol-icon scanner;ScreenTime|F182||clock monitor usage device;ScrollMode|ECE7||movement vertical navigate;"
+        s = s & "ScrollUpDown|EC8F||navigate vertical move;SDCard|E7F1||storage memory external device;Search|E721||magnifying glass zoom inspect review symbol-icon;"
+        s = s & "SearchAndApps|E773||magnifying glass zoom inspect review;SearchMedium|F78B||magnifying glass zoom inspect review;"
+        s = s & "SearchSparkle|ED37|F|search sparkle looking glass;SelectAll|E8B3||selection check checkmark check multiple symbol-icon;"
+        s = s & "Send|E724||paper plane mail message email symbol-icon;SendFill|E725||paper plane mail message email;SendFillMirrored|EA64||paper plane mail message email;"
+        s = s & "SendMirrored|EA63||paper plane mail message email;Sensor|E957||device measurement detection technology input;"
+        s = s & "Set|F5ED||configuration settings option control adjustment;SetHistoryStatus|F738||clock update record track log change;"
+        s = s & "SetHistoryStatus2|F739||clock update record track log change;SetlockScreen|E7B5||symbol-icon;SetSolid|F5EE||configuration settings option control adjustment;"
+        s = s & "SetTile|E97B||arrow symbol-icon;Settings|E713||gear options cog symbol-icon configuration;SettingsBattery|EE63||power charge configuration;"
+        s = s & "SettingsDisplaySound|E7F3||volume sound audio device wave configuration;SettingsSolid|F8B0||gear options cog configuration;"
+        s = s & "Share|E72D||arrow square forward right send symbol-icon;ShareBroadband|E83A||arrow;Shield|EA18||security protection safety;ShieldLock|F5B4|F|shield lock;"
+        s = s & "ShieldTask|F760|F|shield task check;Shop|E719||collection purchase retail cart online currency product symbol-icon;"
+        s = s & "ShoppingCart|E7BF||collection purchase retail online currency product;ShowBcc|E8C4||email recipient hidden symbol-icon;"
+        s = s & "ShowResults|E8BC||list bullet points formatting display view symbol-icon;ShowResultsMirrored|EA65||list bullet points formatting display view;"
+        s = s & "Shuffle|E8B1||arrow random mix rearrange order symbol-icon;SignalBars1|E86C||network connection;SignalBars2|E86D||network connection;"
+        s = s & "SignalBars3|E86E||network connection;SignalBars4|E86F||network connection;SignalBars5|E870||network connection;SignalBarsAni1|EAA1|F|signal bars ani1;"
+        s = s & "SignalBarsAni2|EAA2|F|signal bars ani2;SignalBarsAni3|EAA3|F|signal bars ani3;SignalBarsVPN2|F8C5|F|signal bars vpn;SignalBarsVPN3|F8C6|F|signal bars vpn;"
+        s = s & "SignalBarsVPN4|F8C7|F|signal bars vpn;SignalBarsVPN5|F8C8|F|signal bars vpn;SignalBarsVPNRoaming3|F8C9|F|signal bars vpn roaming;"
+        s = s & "SignalBarsVPNRoaming4|F8CA|F|signal bars vpn roaming;SignalBarsVPNRoaming5|F8CB|F|signal bars vpn roaming;"
+        s = s & "SignalError|ED2E||x SIM mobile network cellular status;SignalNotConnected|E871||network connection;SignalRoaming|EC1E||triangle network coverage mobile;"
+        s = s & "SignatureCapture|EF3F||authentication verification agreement document;SignOut|F3B1||logout exit disconnect leave account session user;"
+        s = s & "SIMError|F618||problem connection mobile network issue;SIMLock|F61A||security mobile network protection restriction;"
+        s = s & "SIMMissing|F619||absent connection mobile network problem;SIPMove|E759||sip move;SIPRedock|E75B||sip redock taskbar dock;SIPUndock|E75A||sip undock redock;"
+        s = s & "SkipBack10|ED3C||number seek time navigation media video;SkipForward30|ED3D||number seek time navigation media video;SliderThumb|EC13||control handle adjust;"
+        s = s & "Slideshow|E786||images presentation gallery photos show symbol-icon;SlowMotionOn|EA79||playback video effect speed;"
+        s = s & "SmallErase|F129||delete drawing correction eraser rubber;Smartcard|E963||chip security payment;SmartcardVirtual|E964||virtual security digital chip;"
+        s = s & "SmartScreen|F8A5||protection security filter safe web browser;Snooze|F4BD|F|snooze alarm alert mute;"
+        s = s & "Sort|E8CB||arrow arrange order filter organize organise sequence symbol-icon;SpatialVolume0|F0EB||volume sound audio mute;"
+        s = s & "SpatialVolume1|F0EC||volume sound audio low;SpatialVolume2|F0ED||volume sound audio medium;SpatialVolume3|F0EE||volume sound audio hight;"
+        s = s & "Speakers|E7F5||audio sound volume;SpecialEffectSize|F4A5||stars shine twinkle glitter sparkle glow magic AI;Speech|EFA9||person user audio talking;"
+        s = s & "SpeechSolidBold|F8B2||person user audio talking;SpeedHigh|EC4A||fast quick maximum performance;SpeedHigh2|F42F|F|speed high speedometer;"
+        s = s & "SpeedMedium|EC49||average moderate balance performance;SpeedOff|EC48||disabled inactive pause performance;"
+        s = s & "Spelling|F87B||check text correction language grammar proofreading editor;SpellingChinese|F87E||abc check text correction language grammar proofreading editor;"
+        s = s & "SpellingKorean|F87C||check text correction language grammar proofreading editor;"
+        s = s & "SpellingSerbian|F87D||check text correction language grammar proofreading editor;Split20|F740||keyboard phone gesture adjustment mode easy;"
+        s = s & "SquareSparkle|F1BA|F|square sparkle ai selection;StaplingLandscapeBookBinding|F5A9||binding document paper;"
+        s = s & "StaplingLandscapeBottomLeft|F5A3||binding document paper;StaplingLandscapeBottomRight|F5A4||binding document paper;"
+        s = s & "StaplingLandscapeTopLeft|F5A1||binding document paper;StaplingLandscapeTopRight|F5A2||binding document paper;"
+        s = s & "StaplingLandscapeTwoBottom|F5A8||binding document paper;StaplingLandscapeTwoLeft|F5A5||binding document paper;"
+        s = s & "StaplingLandscapeTwoRight|F5A6||binding document paper;StaplingLandscapeTwoTop|F5A7||binding document paper;StaplingOff|F598||binding document paper;"
+        s = s & "StaplingPortraitBookBinding|F5A0||binding document paper;StaplingPortraitBottomLeft|F5AE||binding document paper;"
+        s = s & "StaplingPortraitBottomRight|F59B||binding document paper;StaplingPortraitTopLeft|F599||binding document paper;"
+        s = s & "StaplingPortraitTopRight|F59A||binding document paper;StaplingPortraitTwoBottom|F59F||binding document paper;"
+        s = s & "StaplingPortraitTwoLeft|F59C||binding document paper;StaplingPortraitTwoRight|F59D||binding document paper;StaplingPortraitTwoTop|F59E||binding document paper;"
+        s = s & "StartPoint|E819||map travel navigation;StartPointSolid|EB49||map travel navigation;StartPresenting|F71C||share screen display show presentation startshare;"
+        s = s & "StatusCheckmark|F1D8||verification confirmation success approval completed done;"
+        s = s & "StatusCheckmark7|F0B7||verification confirmation success approval completed done;"
+        s = s & "StatusCheckmarkLeft|F1D9||verification confirmation success approval completed done;StatusCircle|EA81||indicator circle check signal;"
+        s = s & "StatusCircle7|F0B6||indicator circle check signal;StatusCircleBlock|F140||restrict stop cancel end;StatusCircleBlock2|F141||restrict;"
+        s = s & "StatusCircleCheckmark|F13E||verification confirmation success approval completed done;StatusCircleErrorX|F13D||x problem failure alert;"
+        s = s & "StatusCircleExclamation|F13C||! indicator progress caution attention;StatusCircleInfo|F13F||information details content;"
+        s = s & "StatusCircleInner|F137||status circle inner filled;StatusCircleLeft|EBFD||indicator progress;StatusCircleOuter|F136||status circle outer filled;"
+        s = s & "StatusCircleQuestionMark|F142||? help support guide assistance info;StatusCircleRing|F138||status circle ring;StatusCircleSync|F143||arrow;"
+        s = s & "StatusConnecting1|EB57||network connection loading;StatusConnecting2|EB58||network connection loading;StatusDataTransfer|E880||network connection;"
+        s = s & "StatusDataTransferRoaming|F5AA||connection mobile network signal;StatusDataTransferVPN|E881||secure network connection;"
+        s = s & "StatusDiamondInner|F179|F|status diamond inner;StatusDiamondOuter|F178|F|status diamond outer;StatusDualSIM1|E884||number network connection;"
+        s = s & "StatusDualSIM1VPN|E885||secure network connection;StatusDualSIM2|E882||number connection network;StatusDualSIM2VPN|E883||secure network connection;"
+        s = s & "StatusError|EA83||x problem failure alert;StatusErrorCircle7|F0B8||x problem failure alert;StatusErrorFull|EB90||x problem failure alert;"
+        s = s & "StatusErrorLeft|EBFF||x indicator progress problem issue;StatusExclamationCircle7|F12F||! indicator progress caution attention;"
+        s = s & "StatusInfo|F3CC||information details content;StatusInfoLeft|F3CD||information details content;StatusPause7|F175||halted interrupted delay standby;"
+        s = s & "StatusSecured|F809||lock security protected safe encrypted access;StatusSGLTE|E886||network connection;StatusSGLTECell|E887||phone network connection;"
+        s = s & "StatusSGLTEDataVPN|E888||secure network connection;StatusSquareOuter|EB33|F|status square outer rectangle;StatusSquarePause|EB34|F|status square pause;"
+        s = s & "StatusTriangle|EA82||indicator warning alert;StatusTriangleExclamation|F13B||! indicator progress caution attention;"
+        s = s & "StatusTriangleInner|F13A||status triangle inner filled;StatusTriangleLeft|EBFE||indicator progress alert warning;"
+        s = s & "StatusTriangleOuter|F139||status triangle outer filled;StatusUnsecure|EB59||warning connection risk alert shield;StatusVPN|E889||lock secure network connection;"
+        s = s & "StatusWarning|EA84||! caution alert attention;StatusWarningLeft|EC00||! indicator progress caution attention;"
+        s = s & "Sticker2|F4AA||emoji expression decoration image note sticky smiley face;StockDown|EB11||arrow decrease decline fall market;"
+        s = s & "StockUp|EB0F||arrow increase growth rise market;Stop|E71A||control playback start begin symbol-icon media video audio;StopPoint|E81A||map travel navigation;"
+        s = s & "StopPointSolid|EB4A||map travel navigation;StopPresenting|F71D||share screen end presentation finish shareend;"
+        s = s & "StopSolid|EE95|F|stop solid square rectangle filled;Stopwatch|E916||time clock timer;StorageNetworkWireless|E969||remote data connection;"
+        s = s & "StorageOptical|E958||disk media drive;StorageTape|E96A||cassette backup media archival;Streaming|E93E||media live video broadcast online;"
+        s = s & "StreamingEnterprise|ED2F||media live video online work business;Street|E913||road address location avenue way symbol-icon;StreetsideSplitExpand|E803||view map;"
+        s = s & "StreetsideSplitMinimize|E802||view map;Strikethrough|EDE0||strikethrough text font;StrokeErase|ED60||delete drawing line correction eraser rubber;"
+        s = s & "StrokeErase2|F128||delete drawing line correction eraser rubber;StrokeEraseMirrored|EF17||delete drawing line correction eraser rubber;SubscriptionAdd|ED0E||+;"
+        s = s & "SubscriptionAddMirrored|ED11||+;Subtitles|ED1E||caption text dialogue speech language cc;SubtitlesAudio|ED1F||caption text dialogue speech language cc;"
+        s = s & "SubtractBold|F8AB||-;SummarizeSparkle|EB78|F|summarize sparkle ai;SurfaceHub|E8AE||device physical product screen touch screen presentation;"
+        s = s & "SurfaceHubSelected|F4BE||checked device physical product screen touch screen presentation;SurfaceTypecover|EAAE|F|surface typecover keyboard;"
+        s = s & "Sustainable|EC0A||leaf green power eco friendly renewable;Swipe|E927||gesture touch screen mobile tablet;SwipeRevealArt|EC6D||swipe reveal art;"
+        s = s & "Switch|E8AB||arrow change swap toggle shift alternate symbol-icon;SwitchApps|E8F9||change transition symbol-icon;"
+        s = s & "SwitchUser|E748||person user switch profile account login;Sync|E895||arrow update refresh sync symbol-icon;SyncBadge12|EDAB||arrow update refresh sync;"
+        s = s & "SyncError|EA6A||arrow ! failure problem update;SyncFolder|E8F7||collection directory file storage connect update refresh symbol-icon;"
+        s = s & "System|E770||rectangle shape;SystemInPrivate|EBC8|F|system in private;SystemInPrivateFilled|EBC9|F|system in private filled;"
+        s = s & "Tablet|E70A||device screen physical watch view video computer pc;TabletMode|EBFC||touchscreen convertible device;"
+        s = s & "TabletSelected|EC74||device touchscreen display checked;Tag|E8EC||label price information detail metadata purchase sort symbol-icon;"
+        s = s & "TapAndSend|E9A1||hand touch gesture physical paper plane mail message;Task|F7EC|F|task clipboard;TaskbarPhone|EE64||mobile connect device;"
+        s = s & "TaskManagerApp|F120|F|task manager app performance;TaskView|E7C4||document file sheet paper text;TaskViewExpanded|EB91||overview window;"
+        s = s & "TaskViewSettings|EE40||multitasking management configuration;TextBulletListSquare|E9A4|F|text bullet list square check;"
+        s = s & "TextBulletListSquareSparkle|E9A3|F|text bullet list square sparkle ai;TextCursor2|F1BB|F|text cursor mouse;TextEdit|EF60|F|text edit font;"
+        s = s & "TextNavigate|F684|F|text navigate pan;TextSelect|F683|F|text select;ThisPC|EC4E||computer device files explorer desktop;"
+        s = s & "ThoughtBubble|EA91||cloud idea concept conversation;ThreeBars|E907||good signal connection strong stable high symbol-icon;"
+        s = s & "ThreeQuarterStarLeft|F0CC||rating score evaluation feedback review;ThreeQuarterStarRight|F0CD||rating score evaluation feedback review;"
+        s = s & "Tiles|ECA5||grid layout dashboard pattern;TiltDown|E80A||angle rotate elevation;TiltUp|E809||angle rotate elevation;TimeLanguage|E775||clock region;"
+        s = s & "ToggleBorder|EC12||switch off inactive;ToggleFilled|EC11||switch on active;ToggleLeft|F19E||switch off inactive;ToggleRight|F19F||switch off inactive;"
+        s = s & "ToggleThumb|EC14||circle switch knob control;TollSolid|F161||payment road fee bridge;ToolTip|E82F||light lightbulb illuminate knowledge smart idea;"
+        s = s & "Touch|E815||finger tap gesture screen touchscreen;Touchpad|EFA5||input gesture control navigation interface trackpad device;"
+        s = s & "TouchPointer|E7C9||arrow interact click hand symbol-icon;Touchscreen|EDA4||display interactive tablet;Trackers|EADF||check monitor progress list;"
+        s = s & "TrackersMirrored|EE92||check monitor progress list;TrafficCongestionSolid|F163||car jam road delay;TrafficLight|EF31||signal control stop road;"
+        s = s & "Train|E7C0||rail transport travel track station;TrainSolid|EB4D||rail transport travel track station;TranslateSparkle|F1D4|F|translate sparkle ai language;"
+        s = s & "TreeFolderFolder|ED41||collection directory file storage;TreeFolderFolderFill|ED42||collection directory file storage;"
+        s = s & "TreeFolderFolderOpen|ED43||collection directory file storage;TreeFolderFolderOpenFill|ED44||collection directory file storage;"
+        s = s & "TriggerLeft|F10A||controller gamepad joystick input navigation buttons gaming;TriggerRight|F10B||controller gamepad joystick input navigation buttons gaming;"
+        s = s & "Trim|E78A||cut edit shorten clip crop symbol-icon;TVMonitor|E7F4||screen display television view;TVMonitorSelected|EC77||selected display screen checked;"
+        s = s & "TwoBars|E906||signal connection fair moderate average symbol-icon;TwoPage|E89A||2 document file sheet paper text symbol-icon;"
+        s = s & "Type|E97C||type orientation rotate square rectangle;Underline|E8DC||text style font emphasis symbol-icon;UnderscoreSpace|E75D||separation;"
+        s = s & "Undo|E7A7||arrow revert back cancel symbol-icon;Unfavorite|E8D9||star remove unlike delete symbol-icon unfavourite;Uninstall|EC91|F|uninstall app application;"
+        s = s & "Unit|ECC6||ruler;Unknown|E9CE||? question uncertain;UnknownMirrored|F22E||? question uncertain;"
+        s = s & "Unlock|E785||security access protected safety permission protection secure;Unpin|E77A||remove delete unattach clear disengage symbol-icon;"
+        s = s & "UnsyncFolder|E8F6||collection directory file storage disconnect offline remove symbol-icon;Up|E74A||arrow increase rise symbol-icon;"
+        s = s & "UpArrowShiftKey|E752||keyboard;UpdateRestore|E777||arrow refresh recover repair;UpdateStatusDot|F83F||notification install progress indicator software;"
+        s = s & "UpdateStatusDot2|EC83|F|update status dot2;Upload|E898||file send transfer cloud symbol-icon;UpShiftKey|E84B||abc uppercase;"
+        s = s & "USB|E88E||device universal series bus storage drive;USBSafeConnect|ECF3||USB secure connect protection;"
+        s = s & "UserAPN|F081||person network settings connection mobile provider internet configuration;UserRemove|F69B|F|user remove person cancel;"
+        s = s & "VerticalBattery0|F5F2||charge power;VerticalBattery1|F5F3||charge power;VerticalBattery10|F5FC||charge power;VerticalBattery2|F5F4||charge power;"
+        s = s & "VerticalBattery3|F5F5||charge power;VerticalBattery4|F5F6||charge power;VerticalBattery5|F5F7||charge power;VerticalBattery6|F5F8||charge power;"
+        s = s & "VerticalBattery7|F5F9||charge power;VerticalBattery8|F5FA||charge power;VerticalBattery9|F5FB||charge power;VerticalBatteryCharging0|F5FD||charge power;"
+        s = s & "VerticalBatteryCharging1|F5FE||charge power;VerticalBatteryCharging10|F607||charge power;VerticalBatteryCharging2|F5FF||charge power;"
+        s = s & "VerticalBatteryCharging3|F600||charge power;VerticalBatteryCharging4|F601||charge power;VerticalBatteryCharging5|F602||charge power;"
+        s = s & "VerticalBatteryCharging6|F603||charge power;VerticalBatteryCharging7|F604||charge power;VerticalBatteryCharging8|F605||charge power;"
+        s = s & "VerticalBatteryCharging9|F606||charge power;VerticalBatteryUnknown|F608||charge power status;Vibrate|E877||phone notification alert silent;"
+        s = s & "Video|E714||film clip media content camera recording capture symbol-icon;Video360|F131||immersive VR panorama;"
+        s = s & "VideoCapture|F7EE||record camera film content media capture;VideoChat|E8AA||call camera conversation meeting connect symbol-icon;"
+        s = s & "VideoSolid|EA0C||camera image photography picture;View|E890||vision see eye focus look password symbol-icon;ViewAll|E8A9||list browse expand symbol-icon;"
+        s = s & "ViewDashboard|F246||interface data visualization monitoring;VirtualMachineGroup|EEA3||cloud computing;"
+        s = s & "VoiceCall|F715||phone communication audio telephone talk voicechat;Volume|E767||sound audio level speaker symbol-icon;Volume0|E992||sound audio level speaker;"
+        s = s & "Volume1|E993||sound audio level speaker;Volume2|E994||sound audio level speaker;Volume3|E995||sound audio level speaker;VolumeBars|EBC5||sound level audio;"
+        s = s & "VolumeDisabled|EA85||volume disabled audio speaker;VPN|E705||shield privacy security lock protection secure;VPNOverlay|F8C0|F|vpn;"
+        s = s & "VPNRoamingOverly|F8C1|F|vpn roaming;Walk|E805||person user movement step pedestrian journey foot way;"
+        s = s & "WalkSolid|E726||person user movement step pedestrian journey foot way;Warning|E7BA||! alert exclamation triangle issue;WarningSolid|F736|F|warning solid error;"
+        s = s & "Webcam|E8B8||capture stream meeting symbol-icon;Webcam2|E960||camera capture stream meeting;WebSearch|F6FA||browser internet query find explore online;"
+        s = s & "Website|EB41||web internet site online page;Wheel|EE94||wheel database circle;Widget|F034|F|widget app card;WidgetAdd|F036|F|widget add;"
+        s = s & "WidgetGear|F035|F|widget gear settings;Wifi|E701||wireless fidelity connect internet web connection network wlan lan;"
+        s = s & "Wifi1|E872||wireless fidelity connect internet web connection network wlan lan;Wifi2|E873||wireless fidelity connect internet web connection network wlan lan;"
+        s = s & "Wifi3|E874||wireless fidelity connect internet web connection network wlan lan;WifiAni1|EAA5|F|wifi ani1 connectivity;WifiAni2|EAA8|F|wifi ani2 connectivity;"
+        s = s & "WifiAttentionOverlay|E998||! warning wireless fidelity connect internet web connection network wlan lan;"
+        s = s & "WifiCall0|F658||bars signal network connection communication wlan lan;WifiCall1|F659||bars signal network connection communication wlan lan;"
+        s = s & "WifiCall2|F65A||bars signal network connection communication wlan lan;WifiCall3|F65B||bars signal network connection communication wlan lan;"
+        s = s & "WifiCall4|F65C||bars signal network connection communication wlan lan;WifiCallBars|F657||signal network connection communication wlan lan;"
+        s = s & "WifiError0|EB5A||x connection failed network wlan lan;WifiError1|EB5B||x connection failed network wlan lan;"
+        s = s & "WifiError2|EB5C||x connection failed network wlan lan;WifiError3|EB5D||x connection failed network wlan lan;"
+        s = s & "WifiError4|EB5E||x connection failed network wlan lan;WifiEthernet|EE77||network connection internet wlan lan;"
+        s = s & "WifiHotspot|E88A||connection network share wlan lan;WifiVPN3|F8C2|F|wifi vpn;WifiVPN4|F8C3|F|wifi vpn;WifiVPN5|F8C4|F|wifi vpn;"
+        s = s & "WifiWarning0|EB5F||! signal connection alert network wlan lan;WifiWarning1|EB60||! signal connection alert network wlan lan;"
+        s = s & "WifiWarning2|EB61||! signal connection alert network wlan lan;WifiWarning3|EB62||! signal connection alert network wlan lan;"
+        s = s & "WifiWarning4|EB63||! signal connection alert network wlan lan;WindDirection|EBE6||weather compass forecast breeze navigation;"
+        s = s & "WindowsInsider|F1AD||program beta preview;WindowSnipping|F7ED||screenshot capture image edit select tool;WindowsStudioEffects|EABC|F|windows studio effects ai;"
+        s = s & "Wire|E95F||plug electricity connection power cord;WiredUSB|ECF0||USB cable connection port;WirelessUSB|ECF1||USB bluetooth connection adapter port;"
+        s = s & "Work|E821||bag handbag briefcase office;WorkSolid|EB4E||bag handbag briefcase office;World|E909||globe earth international global symbol-icon;"
+        s = s & "XboxOneConsole|E990||device videogame game symbol-icon;ZeroBars|E904||no signal connection lost weak empty symbol-icon;"
+        s = s & "ZipFolder|F012||compress archive zip package file storage extract;Zoom|E71E||zoom in zoom out magnifying glass search symbol-icon;"
+        s = s & "ZoomIn|E8A3||zoom out magnifying glass search symbol-icon;ZoomMode|ECE8||+ - shrink scale;ZoomOut|E71F||zoom in zoom out magnifying glass search symbol-icon;"
+    End Sub
+    ' </generated:CatalogData>
+
+    ' --- Designer bridge for UI3IconPage (workaround, twinBASIC BETA 997) ---
+    ' Earlier builds lost a value the property page set: the designer kept the old Icon. While the
+    ' page applies, UI3Button records the new Icon here under the control's design-time name, and a
+    ' later design-time ReadProperties for that name re-applies it. In the 2026-10-07 test this build
+    ' saved the picked icon, but through the live control's WriteProperties, not this fallback; why
+    ' it now works is not understood, so keep this code unchanged until that is (see CHANGELOG).
+
+    Private m_PageApplying As Boolean
+    Private m_PendingIcons As Collection
+
+    Public Property Get IconPageApplying() As Boolean
+        IconPageApplying = m_PageApplying
+    End Property
+
+    Public Property Let IconPageApplying(ByVal Value As Boolean)
+        m_PageApplying = Value
+    End Property
+
+    Public Sub SetPendingIcon(ByVal ControlName As String, ByVal Icon As UI3Icon)
+        If Len(ControlName) = 0 Then Exit Sub
+        If m_PendingIcons Is Nothing Then Set m_PendingIcons = New Collection
+        On Error Resume Next
+        m_PendingIcons.Remove LCase$(ControlName)
+        m_PendingIcons.Add CLng(Icon), LCase$(ControlName)
+        DesignLog "pending set " & ControlName & " = " & CLng(Icon)
+    End Sub
+
+    ' Returns True and sets Icon when a pending value exists for ControlName, then forgets it.
+    Public Function TakePendingIcon(ByVal ControlName As String, ByRef Icon As UI3Icon) As Boolean
+        If m_PendingIcons Is Nothing Or Len(ControlName) = 0 Then Exit Function
+        Dim value As Long
+        On Error Resume Next
+        value = m_PendingIcons.Item(LCase$(ControlName))
+        If Err.Number <> 0 Then Exit Function
+        m_PendingIcons.Remove LCase$(ControlName)
+        On Error GoTo 0
+        Icon = value
+        TakePendingIcon = True
+        DesignLog "pending taken " & ControlName & " = " & value
+    End Function
+
+    ' --- Library slot (pass 5c) ---
+    ' The same workaround for an SVG or PNG applied from the picker's library tabs: while the page
+    ' applies, the control records the file and its name here, and its next design-time
+    ' ReadProperties takes them. Added beside the members above, which stay as they are.
+
+    Private m_PendingLibrary As Collection
+
+    Public Sub SetPendingLibraryIcon(ByVal ControlName As String, ByRef Data() As Byte, ByVal Source As String)
+        If Len(ControlName) = 0 Then Exit Sub
+        If m_PendingLibrary Is Nothing Then Set m_PendingLibrary = New Collection
+        On Error Resume Next
+        m_PendingLibrary.Remove LCase$(ControlName)
+        m_PendingLibrary.Add Array(Data, Source), LCase$(ControlName)
+        DesignLog "pending library set " & ControlName & " = " & Source
+    End Sub
+
+    ' Returns True and sets Data and Source when a pending library icon exists for ControlName, then
+    ' forgets it.
+    Public Function TakePendingLibraryIcon(ByVal ControlName As String, ByRef Data() As Byte, ByRef Source As String) As Boolean
+        If m_PendingLibrary Is Nothing Or Len(ControlName) = 0 Then Exit Function
+        Dim item As Variant
+        On Error Resume Next
+        item = m_PendingLibrary.Item(LCase$(ControlName))
+        If Err.Number <> 0 Then Exit Function
+        m_PendingLibrary.Remove LCase$(ControlName)
+        On Error GoTo 0
+        Data = item(0)
+        Source = item(1)
+        TakePendingLibraryIcon = True
+        DesignLog "pending library taken " & ControlName & " = " & Source
+    End Function
+
+    ' Forgets a pending library icon for ControlName (a Segoe icon was applied after it).
+    Public Sub ClearPendingLibraryIcon(ByVal ControlName As String)
+        If m_PendingLibrary Is Nothing Or Len(ControlName) = 0 Then Exit Sub
+        On Error Resume Next
+        m_PendingLibrary.Remove LCase$(ControlName)
+    End Sub
+
+    ' Set True to append designer events to %TEMP%\tbUI3-design.log while diagnosing the picker.
+    Private Const DESIGN_LOG_ENABLED As Boolean = False
+
+    Public Sub DesignLog(ByVal Text As String)
+        If Not DESIGN_LOG_ENABLED Then Exit Sub
+        On Error Resume Next
+        Dim f As Integer
+        f = FreeFile
+        Open Environ$("TEMP") & "\tbUI3-design.log" For Append As #f
+        Print #f, Format$(Now, "hh:nn:ss") & "  " & Text
+        Close #f
+    End Sub
+
+End Module

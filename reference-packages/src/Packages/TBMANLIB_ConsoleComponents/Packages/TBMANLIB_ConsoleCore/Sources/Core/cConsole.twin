@@ -1,0 +1,961 @@
+' =====================================================
+' cConsole.twin - Modern Console Class
+' Modern Console Library for TwinBASIC
+' Supports: UTF-8, Colors, Full-screen mode, Resize events
+' =====================================================
+[PredeclaredId]
+[COMCreatable(False)]
+Public Class cConsole
+
+    ' === Private Members ===
+    Private m_hStdIn As LongPtr
+    Private m_hStdOut As LongPtr
+    Private m_hStdErr As LongPtr
+    Private m_hWindow As LongPtr
+
+    Private m_OriginalInputMode As Long
+    Private m_OriginalOutputMode As Long
+    Private m_OriginalAttributes As Integer
+    Private m_OriginalCodePage As Long
+    Private m_OriginalOutputCP As Long
+
+    Private m_CurrentForeColor As ConsoleColor
+    Private m_CurrentBackColor As ConsoleColor
+    Private m_CurrentStyle As ConsoleTextStyle
+
+    Private m_VTEnabled As Boolean
+    Private m_FullScreenMode As Boolean
+    Private m_InputBuffer As String
+    Private m_InputBufferSize As Long
+
+    Private m_LastWidth As Long
+    Private m_LastHeight As Long
+
+    Private m_Buffer As cConsoleBuffer
+    Private m_Initialized As Boolean
+
+    ' Performance monitoring
+    Private m_LastRenderTime As Long
+    Private m_FrameCount As Long
+    Private m_FrameStartTime As Long
+
+    ' Event handlers (using LongPtr for delegate storage)
+    Private m_OnResize As LongPtr
+    Private m_OnKey As LongPtr
+    Private m_OnMouse As LongPtr
+    Private m_OnCtrl As LongPtr
+    Private m_OnRender As LongPtr
+
+    ' Flags to check if handlers are set
+    Private m_HasResizeHandler As Boolean
+    Private m_HasKeyHandler As Boolean
+    Private m_HasMouseHandler As Boolean
+    Private m_HasCtrlHandler As Boolean
+
+    ' === Constructor ===
+    Public Sub New(Optional ByVal inputBufferSize As Long = 4096)
+        m_InputBufferSize = inputBufferSize
+        m_InputBuffer = String$(inputBufferSize, vbNullChar)
+        Initialize
+    End Sub
+
+    ' === Destructor ===
+    Private Sub Class_Terminate()
+        Restore
+    End Sub
+
+    ' === Initialization ===
+    Private Sub Initialize()
+        If m_Initialized Then Exit Sub
+
+        ' Get standard handles
+        m_hStdIn = GetStdHandle(STD_INPUT_HANDLE)
+        m_hStdOut = GetStdHandle(STD_OUTPUT_HANDLE)
+        m_hStdErr = GetStdHandle(STD_ERROR_HANDLE)
+        m_hWindow = GetConsoleWindow()
+
+        ' Save original modes
+        GetConsoleMode m_hStdIn, m_OriginalInputMode
+        GetConsoleMode m_hStdOut, m_OriginalOutputMode
+
+        ' Save original attributes
+        Dim csbi As mConsoleAPI.CONSOLE_SCREEN_BUFFER_INFO
+        If GetConsoleScreenBufferInfo(m_hStdOut, csbi) <> 0 Then
+            m_OriginalAttributes = csbi.wAttributes
+            m_LastWidth = csbi.dwSize.X
+            m_LastHeight = csbi.srWindow.Bottom - csbi.srWindow.Top + 1
+        Else
+            m_OriginalAttributes = ColorAttribute(ConsoleColor.Gray, ConsoleColor.Black)
+            m_LastWidth = 80
+            m_LastHeight = 25
+        End If
+
+        ' Save original code pages
+        m_OriginalCodePage = GetConsoleCP()
+        m_OriginalOutputCP = GetConsoleOutputCP()
+
+        ' Set default colors
+        m_CurrentForeColor = ConsoleColor.Gray
+        m_CurrentBackColor = ConsoleColor.Black
+        m_CurrentStyle = ConsoleTextStyle.StyleNone
+
+        m_Initialized = True
+    End Sub
+
+    ' === UTF-8 Support ===
+
+    ' Enable UTF-8 encoding for input and output
+    Public Sub EnableUTF8()
+        SetConsoleCP CP_UTF8
+        SetConsoleOutputCP CP_UTF8
+    End Sub
+
+    ' Disable UTF-8, restore original code pages
+    Public Sub DisableUTF8()
+        SetConsoleCP m_OriginalCodePage
+        SetConsoleOutputCP m_OriginalOutputCP
+    End Sub
+
+    ' Get current output code page
+    Public Property Get OutputCodePage() As Long
+        Return GetConsoleOutputCP()
+    End Property
+
+    ' Set output code page
+    Public Property Let OutputCodePage(ByVal value As Long)
+        SetConsoleOutputCP value
+    End Property
+
+    ' Get current input code page
+    Public Property Get InputCodePage() As Long
+        Return GetConsoleCP()
+    End Property
+
+    ' Set input code page
+    Public Property Let InputCodePage(ByVal value As Long)
+        SetConsoleCP value
+    End Property
+
+    ' === Virtual Terminal (ANSI) Support ===
+
+    ' Enable VT100/ANSI escape sequence processing
+    Public Function EnableVirtualTerminal() As Boolean
+        Dim mode As Long
+
+        ' Enable for output
+        GetConsoleMode m_hStdOut, mode
+        mode = mode Or ENABLE_VIRTUAL_TERMINAL_PROCESSING
+        If SetConsoleMode(m_hStdOut, mode) = 0 Then Return False
+
+        ' Enable for input
+        GetConsoleMode m_hStdIn, mode
+        mode = mode Or ENABLE_VIRTUAL_TERMINAL_INPUT
+        SetConsoleMode m_hStdIn, mode
+
+        m_VTEnabled = True
+        Return True
+    End Function
+
+    ' Disable VT processing
+    Public Sub DisableVirtualTerminal()
+        SetConsoleMode m_hStdOut, m_OriginalOutputMode
+        SetConsoleMode m_hStdIn, m_OriginalInputMode
+        m_VTEnabled = False
+    End Sub
+
+    ' Check if VT is enabled
+    Public Property Get VirtualTerminalEnabled() As Boolean
+        Return m_VTEnabled
+    End Property
+
+    ' === Color Support ===
+
+    ' Set foreground color
+    Public Property Get ForeColor() As ConsoleColor
+        Return m_CurrentForeColor
+    End Property
+
+    Public Property Let ForeColor(ByVal value As ConsoleColor)
+        m_CurrentForeColor = value
+        ApplyColors
+    End Property
+
+    ' Set background color
+    Public Property Get BackColor() As ConsoleColor
+        Return m_CurrentBackColor
+    End Property
+
+    Public Property Let BackColor(ByVal value As ConsoleColor)
+        m_CurrentBackColor = value
+        ApplyColors
+    End Property
+
+    ' Set both colors at once
+    Public Sub SetColors(ByVal fore As ConsoleColor, Optional ByVal back As ConsoleColor = ConsoleColor.Black)
+        m_CurrentForeColor = fore
+        m_CurrentBackColor = back
+        ApplyColors
+    End Sub
+
+    ' Reset to original colors
+    Public Sub ResetColors()
+        SetConsoleTextAttribute m_hStdOut, m_OriginalAttributes
+        m_CurrentForeColor = CType(Of ConsoleColor)(m_OriginalAttributes And &HF)
+        m_CurrentBackColor = CType(Of ConsoleColor)((m_OriginalAttributes >> 4) And &HF)
+    End Sub
+
+    Private Sub ApplyColors()
+        SetConsoleTextAttribute m_hStdOut, ColorAttribute(m_CurrentForeColor, m_CurrentBackColor)
+    End Sub
+
+    ' === Basic Output Functions ===
+
+    ' Write text without newline
+    Public Sub WriteTo(ByVal text As String)
+        Dim written As Long
+        WriteConsoleW m_hStdOut, StrPtr(text), Len(text), written, 0
+    End Sub
+
+    ' Write text with newline
+    Public Sub WriteLine(Optional ByVal text As String = "")
+        WriteTo text & vbLf
+    End Sub
+
+    ' Write formatted text (like Printf)
+    Public Sub WriteF(ByVal format As String, ParamArray args() As Variant)
+        Dim result As String = format
+        Dim i As Long
+
+        For i = LBound(args) To UBound(args)
+            result = Replace(result, "{" & i & "}", CStr(args(i)))
+        Next i
+
+        WriteTo result
+    End Sub
+
+    ' Write line with format
+    Public Sub WriteLineF(ByVal format As String, ParamArray args() As Variant)
+        Dim result As String = format
+        Dim i As Long
+
+        For i = LBound(args) To UBound(args)
+            result = Replace(result, "{" & i & "}", CStr(args(i)))
+        Next i
+
+        WriteLine result
+    End Sub
+
+    ' Write with color (restores previous color after)
+    Public Sub WriteColored(ByVal text As String, ByVal fore As ConsoleColor, _
+                            Optional ByVal back As ConsoleColor = ConsoleColor.Black)
+        Dim oldFore As ConsoleColor = m_CurrentForeColor
+        Dim oldBack As ConsoleColor = m_CurrentBackColor
+        SetColors fore, back
+        WriteTo text
+        SetColors oldFore, oldBack
+    End Sub
+
+    ' Write line with color
+    Public Sub WriteLineColored(ByVal text As String, ByVal fore As ConsoleColor, _
+                                Optional ByVal back As ConsoleColor = ConsoleColor.Black)
+        WriteColored text & vbLf, fore, back
+    End Sub
+
+    ' Write to stderr
+    Public Sub WriteError(ByVal text As String)
+        Dim written As Long
+        WriteConsoleW m_hStdErr, StrPtr(text), Len(text), written, 0
+    End Sub
+
+    ' Write line to stderr
+    Public Sub WriteErrorLine(ByVal text As String)
+        WriteError text & vbLf
+    End Sub
+
+    ' === Input Functions ===
+
+    ' Read a line of input
+    Public Function ReadLine(Optional ByVal prompt As String = "") As String
+        If Len(prompt) > 0 Then WriteTo prompt
+
+        Dim readChars As Long
+        ReadConsoleW m_hStdIn, StrPtr(m_InputBuffer), m_InputBufferSize, readChars, 0
+
+        ' Remove trailing CR/LF
+        Dim result As String = Left$(m_InputBuffer, readChars)
+        result = Replace(result, vbCr, "")
+        result = Replace(result, vbLf, "")
+        Return result
+    End Function
+
+    ' Read a single key
+    Public Function ReadKey(Optional ByVal intercept As Boolean = False) As ConsoleKeyInfo
+        Dim result As ConsoleKeyInfo
+        Dim ir As INPUT_RECORD
+        Dim eventsRead As Long
+        Dim oldMode As Long
+
+        ' Save and modify input mode
+        GetConsoleMode m_hStdIn, oldMode
+        SetConsoleMode m_hStdIn, 0
+
+        Do
+            ReadConsoleInputW m_hStdIn, ir, 1, eventsRead
+            If ir.EventType = KEY_EVENT Then
+                ' Parse KEY_EVENT_RECORD from Event bytes
+                Dim keyDown As Long
+                Dim repeatCount As Integer
+                Dim vkCode As Integer
+                Dim scanCode As Integer
+                Dim uChar As Integer
+                Dim ctrlState As Long
+
+                CopyMemory VarPtr(keyDown), VarPtr(ir.Event(0)), 4
+                CopyMemory VarPtr(repeatCount), VarPtr(ir.Event(4)), 2
+                CopyMemory VarPtr(vkCode), VarPtr(ir.Event(6)), 2
+                CopyMemory VarPtr(scanCode), VarPtr(ir.Event(8)), 2
+                CopyMemory VarPtr(uChar), VarPtr(ir.Event(10)), 2
+                CopyMemory VarPtr(ctrlState), VarPtr(ir.Event(12)), 4
+
+                If keyDown <> 0 Then
+                    result.KeyCode = vkCode
+                    result.KeyChar = ChrW$(uChar)
+                    result.IsAltPressed = (ctrlState And (LEFT_ALT_PRESSED Or RIGHT_ALT_PRESSED)) <> 0
+                    result.IsCtrlPressed = (ctrlState And (LEFT_CTRL_PRESSED Or RIGHT_CTRL_PRESSED)) <> 0
+                    result.IsShiftPressed = (ctrlState And SHIFT_PRESSED) <> 0
+
+                    If Not intercept Then
+                        WriteTo result.KeyChar
+                    End If
+                    Exit Do
+                End If
+            End If
+        Loop
+
+        ' Restore input mode
+        SetConsoleMode m_hStdIn, oldMode
+        Return result
+    End Function
+
+    ' Check if a key is available
+    Public Function KeyAvailable() As Boolean
+        Dim events As Long
+        GetNumberOfConsoleInputEvents m_hStdIn, events
+        Return events > 0
+    End Function
+
+    ' Peek at next key without consuming it (non-blocking)
+    Public Function PeekEvent() As ConsoleKeyInfo
+        Dim result As ConsoleKeyInfo
+        Dim ir As INPUT_RECORD
+        Dim eventsRead As Long
+
+        PeekConsoleInputW m_hStdIn, ir, 1, eventsRead
+        If eventsRead > 0 AndAlso ir.EventType = KEY_EVENT Then
+            Dim keyDown As Long
+            Dim vkCode As Integer
+            Dim uChar As Integer
+            Dim ctrlState As Long
+
+            CopyMemory VarPtr(keyDown), VarPtr(ir.Event(0)), 4
+            CopyMemory VarPtr(vkCode), VarPtr(ir.Event(6)), 2
+            CopyMemory VarPtr(uChar), VarPtr(ir.Event(10)), 2
+            CopyMemory VarPtr(ctrlState), VarPtr(ir.Event(12)), 4
+
+            If keyDown <> 0 Then
+                result.KeyCode = vkCode
+                result.KeyChar = ChrW$(uChar)
+                result.IsAltPressed = (ctrlState And (LEFT_ALT_PRESSED Or RIGHT_ALT_PRESSED)) <> 0
+                result.IsCtrlPressed = (ctrlState And (LEFT_CTRL_PRESSED Or RIGHT_CTRL_PRESSED)) <> 0
+                result.IsShiftPressed = (ctrlState And SHIFT_PRESSED) <> 0
+            End If
+        End If
+
+        Return result
+    End Function
+
+    ' Flush input buffer
+    Public Sub FlushInput()
+        FlushConsoleInputBuffer m_hStdIn
+    End Sub
+
+    ' Read password (masked input)
+    Public Function ReadPassword(Optional ByVal prompt As String = "", _
+                                 Optional ByVal maskChar As String = "*") As String
+        If Len(prompt) > 0 Then WriteTo prompt
+
+        Dim result As String = ""
+        Dim key As ConsoleKeyInfo
+
+        Do
+            key = ReadKey(True)
+            Select Case key.KeyCode
+                Case 13 ' Enter
+                    WriteLine
+                    Exit Do
+                Case 8  ' Backspace
+                    If Len(result) > 0 Then
+                        result = Left$(result, Len(result) - 1)
+                        WriteTo vbBack & " " & vbBack
+                    End If
+                Case 27 ' Escape
+                    result = ""
+                    Exit Do
+                Case Else
+                    If Len(key.KeyChar) > 0 AndAlso Asc(key.KeyChar) >= 32 Then
+                        result = result & key.KeyChar
+                        If Len(maskChar) > 0 Then
+                            WriteTo maskChar
+                        End If
+                    End If
+            End Select
+        Loop
+
+        Return result
+    End Function
+
+    ' Read key with timeout (non-blocking after timeout)
+    Public Function ReadKeyTimeout(ByVal timeoutMs As Long, _
+                                   Optional ByVal intercept As Boolean = False) As ConsoleKeyInfo
+        Dim result As ConsoleKeyInfo
+        Dim startTime As Long = mConsoleAPI.GetTickCount()
+
+        Do While mConsoleAPI.GetTickCount() - startTime < timeoutMs
+            If KeyAvailable() Then
+                Return ReadKey(intercept)
+            End If
+            ' Small sleep to avoid busy waiting
+            mConsoleAPI.Sleep 1
+        Loop
+
+        Return result  ' Returns empty structure on timeout
+    End Function
+
+    ' Check if a specific key is currently pressed (async)
+    Public Function IsKeyPressed(ByVal keyCode As Long) As Boolean
+        Dim state As Integer = mConsoleAPI.GetAsyncKeyState(keyCode)
+        Return (state And &H8000) <> 0
+    End Function
+
+    ' === Cursor Functions ===
+
+    ' Get cursor position
+    Public Function GetCursorPosition() As ConsolePosition
+        Dim result As ConsolePosition
+        Dim csbi As mConsoleAPI.CONSOLE_SCREEN_BUFFER_INFO
+        If GetConsoleScreenBufferInfo(m_hStdOut, csbi) <> 0 Then
+            result.Col = csbi.dwCursorPosition.X
+            result.Row = csbi.dwCursorPosition.Y
+        End If
+        Return result
+    End Function
+
+    ' Set cursor position
+    Public Sub SetCursorPosition(ByVal col As Long, ByVal row As Long)
+        SetConsoleCursorPosition m_hStdOut, MakeCOORD(CInt(col), CInt(row))
+    End Sub
+
+    ' Cursor visibility
+    Public Property Get CursorVisible() As Boolean
+        Dim cci As CONSOLE_CURSOR_INFO
+        GetConsoleCursorInfo m_hStdOut, cci
+        Return cci.bVisible <> 0
+    End Property
+
+    Public Property Let CursorVisible(ByVal value As Boolean)
+        Dim cci As CONSOLE_CURSOR_INFO
+        GetConsoleCursorInfo m_hStdOut, cci
+        cci.bVisible = IIf(value, 1, 0)
+        SetConsoleCursorInfo m_hStdOut, cci
+    End Property
+
+    ' Cursor size (1-100)
+    Public Property Get CursorSize() As Long
+        Dim cci As CONSOLE_CURSOR_INFO
+        GetConsoleCursorInfo m_hStdOut, cci
+        Return cci.dwSize
+    End Property
+
+    Public Property Let CursorSize(ByVal value As Long)
+        Dim cci As CONSOLE_CURSOR_INFO
+        GetConsoleCursorInfo m_hStdOut, cci
+        If value < 1 Then value = 1
+        If value > 100 Then value = 100
+        cci.dwSize = value
+        SetConsoleCursorInfo m_hStdOut, cci
+    End Property
+
+    ' === Screen Functions ===
+
+    ' Clear the screen
+    Public Sub Clear()
+        Dim csbi As mConsoleAPI.CONSOLE_SCREEN_BUFFER_INFO
+        If GetConsoleScreenBufferInfo(m_hStdOut, csbi) = 0 Then Exit Sub
+
+        Dim size As Long = CLng(csbi.dwSize.X) * CLng(csbi.dwSize.Y)
+        Dim written As Long
+        Dim attr As Integer = ColorAttribute(m_CurrentForeColor, m_CurrentBackColor)
+
+        FillConsoleOutputCharacterW m_hStdOut, 32, size, 0, written
+        FillConsoleOutputAttribute m_hStdOut, attr, size, 0, written
+        SetCursorPosition 0, 0
+    End Sub
+
+    ' Clear to end of line
+    Public Sub ClearLine()
+        Dim csbi As mConsoleAPI.CONSOLE_SCREEN_BUFFER_INFO
+        If GetConsoleScreenBufferInfo(m_hStdOut, csbi) = 0 Then Exit Sub
+
+        Dim remaining As Long = csbi.dwSize.X - csbi.dwCursorPosition.X
+        Dim written As Long
+        Dim coord As Long = MakeCOORD(csbi.dwCursorPosition.X, csbi.dwCursorPosition.Y)
+        Dim attr As Integer = ColorAttribute(m_CurrentForeColor, m_CurrentBackColor)
+
+        FillConsoleOutputCharacterW m_hStdOut, 32, remaining, coord, written
+        FillConsoleOutputAttribute m_hStdOut, attr, remaining, coord, written
+    End Sub
+
+    ' Get console size
+    Public Function GetSize() As ConsoleSize
+        Dim result As ConsoleSize
+        Dim csbi As mConsoleAPI.CONSOLE_SCREEN_BUFFER_INFO
+        If GetConsoleScreenBufferInfo(m_hStdOut, csbi) <> 0 Then
+            result.Width = csbi.srWindow.Right - csbi.srWindow.Left + 1
+            result.Height = csbi.srWindow.Bottom - csbi.srWindow.Top + 1
+        Else
+            result.Width = 80
+            result.Height = 25
+        End If
+        Return result
+    End Function
+
+    ' Get buffer size
+    Public Function GetBufferSize() As ConsoleSize
+        Dim result As ConsoleSize
+        Dim csbi As mConsoleAPI.CONSOLE_SCREEN_BUFFER_INFO
+        If GetConsoleScreenBufferInfo(m_hStdOut, csbi) <> 0 Then
+            result.Width = csbi.dwSize.X
+            result.Height = csbi.dwSize.Y
+        Else
+            result.Width = 80
+            result.Height = 300
+        End If
+        Return result
+    End Function
+
+    ' Set buffer size
+    Public Sub SetBufferSize(ByVal width As Long, ByVal height As Long)
+        SetConsoleScreenBufferSize m_hStdOut, MakeCOORD(CInt(width), CInt(height))
+    End Sub
+
+    ' Width property
+    Public Property Get Width() As Long
+        Return GetSize().Width
+    End Property
+
+    ' Height property
+    Public Property Get Height() As Long
+        Return GetSize().Height
+    End Property
+
+    ' === Title Functions ===
+
+    ' Get console title
+    Public Property Get Title() As String
+        Dim buffer As String = String$(260, vbNullChar)
+        Dim length As Long = GetConsoleTitleW(StrPtr(buffer), 260)
+        Return Left$(buffer, length)
+    End Property
+
+    ' Set console title
+    Public Property Let Title(ByVal value As String)
+        SetConsoleTitleW StrPtr(value)
+    End Property
+
+    ' === Window Handle ===
+
+    Public Property Get WindowHandle() As LongPtr
+        Return m_hWindow
+    End Property
+
+    ' === Full Screen Mode ===
+
+    ' Enter full-screen single-buffer mode
+    Public Sub EnterFullScreenMode()
+        If m_FullScreenMode Then Exit Sub
+
+        Dim size As ConsoleSize = GetSize()
+        Set m_Buffer = New cConsoleBuffer(size.Width, size.Height)
+        m_FullScreenMode = True
+
+        ' Hide cursor in full-screen mode
+        CursorVisible = False
+
+        ' Enable window input for resize events
+        Dim mode As Long
+        GetConsoleMode m_hStdIn, mode
+        mode = mode Or ENABLE_WINDOW_INPUT
+        SetConsoleMode m_hStdIn, mode
+    End Sub
+
+    ' Exit full-screen mode
+    Public Sub ExitFullScreenMode()
+        If Not m_FullScreenMode Then Exit Sub
+
+        Set m_Buffer = Nothing
+        m_FullScreenMode = False
+        CursorVisible = True
+
+        ' Restore original input mode
+        SetConsoleMode m_hStdIn, m_OriginalInputMode
+    End Sub
+
+    ' Check if in full-screen mode
+    Public Property Get FullScreenMode() As Boolean
+        Return m_FullScreenMode
+    End Property
+
+    ' Get the screen buffer (for full-screen mode)
+    Public Property Get Buffer() As cConsoleBuffer
+        Return m_Buffer
+    End Property
+
+    ' Refresh the screen (flush buffer)
+    Public Sub Refresh()
+        If m_FullScreenMode AndAlso m_Buffer IsNot Nothing Then
+            Dim startTime As Long = mConsoleAPI.GetTickCount()
+            m_Buffer.Flush m_hStdOut
+            m_LastRenderTime = mConsoleAPI.GetTickCount() - startTime
+
+            ' FPS calculation
+            m_FrameCount += 1
+            If m_FrameStartTime = 0 Then m_FrameStartTime = startTime
+            Dim elapsed As Long = startTime - m_FrameStartTime
+            If elapsed >= 1000 Then
+                ' Reset every second
+                m_FrameCount = 0
+                m_FrameStartTime = startTime
+            End If
+        End If
+    End Sub
+
+    ' Force refresh entire buffer
+    Public Sub RefreshAll()
+        If m_FullScreenMode AndAlso m_Buffer IsNot Nothing Then
+            Dim startTime As Long = mConsoleAPI.GetTickCount()
+            m_Buffer.Flush m_hStdOut, True
+            m_LastRenderTime = mConsoleAPI.GetTickCount() - startTime
+
+            m_FrameCount += 1
+            If m_FrameStartTime = 0 Then m_FrameStartTime = mConsoleAPI.GetTickCount()
+        End If
+    End Sub
+
+    ' Get estimated FPS (based on last second of frames)
+    Public Property Get FPS() As Double
+        If m_FrameStartTime = 0 Then Return 0
+        Dim elapsed As Long = mConsoleAPI.GetTickCount() - m_FrameStartTime
+        If elapsed = 0 Then Return 0
+        Return (m_FrameCount * 1000.0) / elapsed
+    End Property
+
+    ' Get last render time in milliseconds
+    Public Property Get LastRenderTime() As Long
+        Return m_LastRenderTime
+    End Property
+
+    ' === Event Processing ===
+
+    ' Process pending events (call this in your main loop)
+    Public Sub ProcessEvents()
+        Dim ir As INPUT_RECORD
+        Dim eventsRead As Long
+
+        Do While KeyAvailable()
+            PeekConsoleInputW m_hStdIn, ir, 1, eventsRead
+            If eventsRead = 0 Then Exit Do
+
+            Select Case ir.EventType
+                Case WINDOW_BUFFER_SIZE_EVENT
+                    ReadConsoleInputW m_hStdIn, ir, 1, eventsRead
+                    HandleResizeEvent ir
+
+                Case KEY_EVENT
+                    If m_HasKeyHandler Then
+                        ReadConsoleInputW m_hStdIn, ir, 1, eventsRead
+                        HandleKeyEvent ir
+                    Else
+                        Exit Do
+                    End If
+
+                Case MOUSE_EVENT
+                    If m_HasMouseHandler Then
+                        ReadConsoleInputW m_hStdIn, ir, 1, eventsRead
+                        HandleMouseEvent ir
+                    Else
+                        ReadConsoleInputW m_hStdIn, ir, 1, eventsRead
+                    End If
+
+                Case Else
+                    ReadConsoleInputW m_hStdIn, ir, 1, eventsRead
+            End Select
+        Loop
+    End Sub
+
+    Private Sub HandleResizeEvent(ByRef ir As INPUT_RECORD)
+        Dim newWidth As Integer
+        Dim newHeight As Integer
+        CopyMemory VarPtr(newWidth), VarPtr(ir.Event(0)), 2
+        CopyMemory VarPtr(newHeight), VarPtr(ir.Event(2)), 2
+
+        If newWidth <> m_LastWidth OrElse newHeight <> m_LastHeight Then
+            m_LastWidth = newWidth
+            m_LastHeight = newHeight
+
+            ' Resize buffer if in full-screen mode
+            If m_FullScreenMode AndAlso m_Buffer IsNot Nothing Then
+                m_Buffer.Resize newWidth, newHeight
+            End If
+
+            ' Call resize handler via delegate
+            If m_HasResizeHandler AndAlso m_OnResize <> 0 Then
+                Dim handler As ConsoleResizeHandler = CType(Of ConsoleResizeHandler)(m_OnResize)
+                handler(newWidth, newHeight)
+            End If
+        End If
+    End Sub
+
+    Private Sub HandleKeyEvent(ByRef ir As INPUT_RECORD)
+        Dim keyInfo As ConsoleKeyInfo
+        Dim keyDown As Long
+        Dim vkCode As Integer
+        Dim uChar As Integer
+        Dim ctrlState As Long
+
+        CopyMemory VarPtr(keyDown), VarPtr(ir.Event(0)), 4
+        CopyMemory VarPtr(vkCode), VarPtr(ir.Event(6)), 2
+        CopyMemory VarPtr(uChar), VarPtr(ir.Event(10)), 2
+        CopyMemory VarPtr(ctrlState), VarPtr(ir.Event(12)), 4
+
+        If keyDown <> 0 Then
+            keyInfo.KeyCode = vkCode
+            keyInfo.KeyChar = ChrW$(uChar)
+            keyInfo.IsAltPressed = (ctrlState And (LEFT_ALT_PRESSED Or RIGHT_ALT_PRESSED)) <> 0
+            keyInfo.IsCtrlPressed = (ctrlState And (LEFT_CTRL_PRESSED Or RIGHT_CTRL_PRESSED)) <> 0
+            keyInfo.IsShiftPressed = (ctrlState And SHIFT_PRESSED) <> 0
+
+            If m_HasKeyHandler AndAlso m_OnKey <> 0 Then
+                Dim handled As Boolean = False
+                Dim handler As ConsoleKeyHandler = CType(Of ConsoleKeyHandler)(m_OnKey)
+                handler(keyInfo, handled)
+            End If
+        End If
+    End Sub
+
+    Private Sub HandleMouseEvent(ByRef ir As INPUT_RECORD)
+        Dim mouseInfo As ConsoleMouseInfo
+        Dim posX As Integer
+        Dim posY As Integer
+        Dim buttonState As Long
+        Dim eventFlags As Long
+
+        CopyMemory VarPtr(posX), VarPtr(ir.Event(0)), 2
+        CopyMemory VarPtr(posY), VarPtr(ir.Event(2)), 2
+        CopyMemory VarPtr(buttonState), VarPtr(ir.Event(4)), 4
+        CopyMemory VarPtr(eventFlags), VarPtr(ir.Event(12)), 4
+
+        mouseInfo.Col = posX
+        mouseInfo.Row = posY
+        mouseInfo.Button = buttonState
+        mouseInfo.IsDoubleClick = (eventFlags And 2) <> 0
+
+        If m_HasMouseHandler AndAlso m_OnMouse <> 0 Then
+            Dim handled As Boolean = False
+            Dim handler As ConsoleMouseHandler = CType(Of ConsoleMouseHandler)(m_OnMouse)
+            handler(mouseInfo, handled)
+        End If
+    End Sub
+
+    ' === Event Handlers ===
+
+    ' Set resize handler
+    Public Property Let OnResize(ByVal handler As ConsoleResizeHandler)
+        m_OnResize = CLngPtr(handler)
+        m_HasResizeHandler = (handler <> 0)
+    End Property
+
+    ' Set key handler
+    Public Property Let OnKeyPress(ByVal handler As ConsoleKeyHandler)
+        m_OnKey = CLngPtr(handler)
+        m_HasKeyHandler = (handler <> 0)
+    End Property
+
+    ' Set mouse handler
+    Public Property Let OnMouseClick(ByVal handler As ConsoleMouseHandler)
+        m_OnMouse = CLngPtr(handler)
+        m_HasMouseHandler = (handler <> 0)
+
+        ' Enable mouse input if handler is set
+        If m_HasMouseHandler Then
+            Dim mode As Long
+            GetConsoleMode m_hStdIn, mode
+            mode = mode Or ENABLE_MOUSE_INPUT Or ENABLE_EXTENDED_FLAGS
+            mode = mode And Not ENABLE_QUICK_EDIT_MODE
+            SetConsoleMode m_hStdIn, mode
+        End If
+    End Property
+
+    ' Set ctrl handler (Note: This registers with Windows directly)
+    Public Property Let OnCtrlEvent(ByVal handler As ConsoleCtrlHandler)
+        m_OnCtrl = CLngPtr(handler)
+        m_HasCtrlHandler = (handler <> 0)
+        If m_HasCtrlHandler Then
+            SetConsoleCtrlHandler m_OnCtrl, 1
+        End If
+    End Property
+
+    ' === Utility Functions ===
+
+    ' Write at specific position
+    Public Sub WriteAt(ByVal col As Long, ByVal row As Long, ByVal text As String)
+        SetCursorPosition col, row
+        WriteTo text
+    End Sub
+
+    ' Write at position with color
+    Public Sub WriteAtColored(ByVal col As Long, ByVal row As Long, ByVal text As String, _
+                              ByVal fore As ConsoleColor, Optional ByVal back As ConsoleColor = ConsoleColor.Black)
+        SetCursorPosition col, row
+        WriteColored text, fore, back
+    End Sub
+
+    ' Draw a box
+    Public Sub DrawBox(ByVal left As Long, ByVal top As Long, _
+                       ByVal right As Long, ByVal bottom As Long, _
+                       Optional ByVal doubleLine As Boolean = False)
+        Dim topLeft As String, topRight As String
+        Dim bottomLeft As String, bottomRight As String
+        Dim horizontal As String, vertical As String
+
+        If doubleLine Then
+            topLeft = ChrW$(&H2554)
+            topRight = ChrW$(&H2557)
+            bottomLeft = ChrW$(&H255A)
+            bottomRight = ChrW$(&H255D)
+            horizontal = ChrW$(&H2550)
+            vertical = ChrW$(&H2551)
+        Else
+            topLeft = ChrW$(&H250C)
+            topRight = ChrW$(&H2510)
+            bottomLeft = ChrW$(&H2514)
+            bottomRight = ChrW$(&H2518)
+            horizontal = ChrW$(&H2500)
+            vertical = ChrW$(&H2502)
+        End If
+
+        ' Draw corners
+        WriteAt left, top, topLeft
+        WriteAt right, top, topRight
+        WriteAt left, bottom, bottomLeft
+        WriteAt right, bottom, bottomRight
+
+        ' Draw horizontal lines
+        Dim hLine As String = String$(right - left - 1, horizontal)
+        WriteAt left + 1, top, hLine
+        WriteAt left + 1, bottom, hLine
+
+        ' Draw vertical lines
+        Dim row As Long
+        For row = top + 1 To bottom - 1
+            WriteAt left, row, vertical
+            WriteAt right, row, vertical
+        Next row
+    End Sub
+
+    ' Draw a progress bar
+    Public Sub DrawProgressBar(ByVal col As Long, ByVal row As Long, _
+                               ByVal width As Long, ByVal percent As Double, _
+                               Optional ByVal usedColor As ConsoleColor = ConsoleColor.Green, _
+                               Optional ByVal freeColor As ConsoleColor = ConsoleColor.DarkGray)
+        If percent < 0 Then percent = 0
+        If percent > 100 Then percent = 100
+
+        Dim filledWidth As Long = CLng((percent / 100) * width)
+        Dim emptyWidth As Long = width - filledWidth
+
+        SetCursorPosition col, row
+        WriteTo "["
+        WriteColored String$(filledWidth, ChrW$(&H2588)), usedColor
+        WriteColored String$(emptyWidth, ChrW$(&H2591)), freeColor
+        WriteTo "] " & Format$(percent, "0") & "%"
+    End Sub
+
+    ' Beep
+    Public Sub Beep()
+        WriteTo Chr$(7)  ' Bell character
+    End Sub
+
+    ' ========== Layout Helper Methods ==========
+
+    ' Calculate center position for text of given width
+    Public Function CenterX(ByVal textWidth As Long) As Long
+        Return (Width - textWidth) \ 2
+    End Function
+
+    ' Calculate center position for text of given height
+    Public Function CenterY(ByVal textHeight As Long) As Long
+        Return (Height - textHeight) \ 2
+    End Function
+
+    ' Calculate horizontal position by percentage
+    Public Function PercentX(ByVal percent As Double) As Long
+        If percent < 0 Then percent = 0
+        If percent > 100 Then percent = 100
+        Return CLng((Width * percent) / 100)
+    End Function
+
+    ' Calculate vertical position by percentage
+    Public Function PercentY(ByVal percent As Double) As Long
+        If percent < 0 Then percent = 0
+        If percent > 100 Then percent = 100
+        Return CLng((Height * percent) / 100)
+    End Function
+
+    ' Calculate centered rect for content
+    Public Function CenterRect(ByVal contentWidth As Long, ByVal contentHeight As Long) As ConsoleRect
+        Dim result As ConsoleRect
+        result.Left = CenterX(contentWidth)
+        result.Top = CenterY(contentHeight)
+        result.Right = result.Left + contentWidth - 1
+        result.Bottom = result.Top + contentHeight - 1
+        Return result
+    End Function
+
+    ' ========== Restore Original State ==========
+
+    Public Sub Restore()
+        If Not m_Initialized Then Exit Sub
+
+        ' Exit full-screen mode if active
+        If m_FullScreenMode Then
+            ExitFullScreenMode
+        End If
+
+        ' Restore original modes
+        SetConsoleMode m_hStdIn, m_OriginalInputMode
+        SetConsoleMode m_hStdOut, m_OriginalOutputMode
+
+        ' Restore original attributes
+        SetConsoleTextAttribute m_hStdOut, m_OriginalAttributes
+
+        ' Restore original code pages
+        SetConsoleCP m_OriginalCodePage
+        SetConsoleOutputCP m_OriginalOutputCP
+    End Sub
+
+    ' === Private Helper ===
+
+    Private Declare PtrSafe Sub CopyMemory Lib "kernel32" Alias "RtlMoveMemory" ( _
+        ByVal Destination As LongPtr, ByVal Source As LongPtr, ByVal Length As LongPtr)
+
+End Class

@@ -1,0 +1,145 @@
+' A part of the GDI+ Package for TwinBasic  https://github.com/kubao/GdiPlus
+' Licensed under the MIT license. (c) 2026 Sunderland Ober Consulting.
+' "Windows" is a trademark of the Microsoft Corporation.
+' Modeled after code and descriptions (c) Microsoft, taken from SDK headers and official documentation.
+' Certain flat API function and type declarations taken from WinDevLib by fafalone, with thanks.
+
+Module GdipPixelFormats
+    ' In-memory pixel data formats:
+    ' bits 0-7 = format index
+    ' bits 8-15 = pixel size (in bits)
+    ' bits 16-23 = flags
+    ' bits 24-31 = reserved
+    
+    Enum PixelFormat
+        PixelFormatIndexed = &h00010000 ' Indexes into a palette
+        PixelFormatGDI = &h00020000 ' Is a GDI-supported format
+        PixelFormatAlpha = &h00040000 ' Has an alpha component
+        PixelFormatPAlpha = &h00080000 ' Pre-multiplied alpha
+        PixelFormatExtended = &h00100000 ' Extended color 16 bits/channel
+        PixelFormatCanonical = &h00200000
+
+        PixelFormatUndefined = 0
+        PixelFormatDontCare = 0
+
+        PixelFormat1bppIndexed = (1 Or (1 << 8) Or PixelFormatIndexed Or PixelFormatGDI)
+        PixelFormat4bppIndexed = (2 Or (4 << 8) Or PixelFormatIndexed Or PixelFormatGDI)
+        PixelFormat8bppIndexed = (3 Or (8 << 8) Or PixelFormatIndexed Or PixelFormatGDI)
+        PixelFormat16bppGrayScale = (4 Or (16 << 8) Or PixelFormatExtended)
+        PixelFormat16bppRGB555 = (5 Or (16 << 8) Or PixelFormatGDI)
+        PixelFormat16bppRGB565 = (6 Or (16 << 8) Or PixelFormatGDI)
+        PixelFormat16bppARGB1555 = (7 Or (16 << 8) Or PixelFormatAlpha Or PixelFormatGDI)
+        PixelFormat24bppRGB = (8 Or (24 << 8) Or PixelFormatGDI)
+        PixelFormat32bppRGB = (9 Or (32 << 8) Or PixelFormatGDI)
+        PixelFormat32bppARGB = (10 Or (32 << 8) Or PixelFormatAlpha Or PixelFormatGDI Or PixelFormatCanonical)
+        PixelFormat32bppPARGB = (11 Or (32 << 8) Or PixelFormatAlpha Or PixelFormatPAlpha Or PixelFormatGDI)
+        PixelFormat48bppRGB = (12 Or (48 << 8) Or PixelFormatExtended)
+        PixelFormat64bppARGB = (13 Or (64 << 8) Or PixelFormatAlpha Or PixelFormatCanonical Or PixelFormatExtended)
+        PixelFormat64bppPARGB = (14 Or (64 << 8) Or PixelFormatAlpha Or PixelFormatPAlpha Or PixelFormatExtended)
+        PixelFormat32bppCMYK = (15 Or (32 << 8))
+        PixelFormatMax = 16
+    End Enum
+    
+            
+    Function GetPixelFormatSize(pixfmt As PixelFormat) As UINT
+        Return (pixfmt >> 8) And &hff&
+    End Function
+    
+    Function IsIndexedPixelFormat(pixfmt As PixelFormat) As Boolean
+        Return (pixfmt And PixelFormatIndexed) <> 0
+    End Function
+    
+    Function IsAlphaPixelFormat(pixfmt As PixelFormat) As Boolean
+        Return (pixfmt And PixelFormatAlpha) <> 0
+    End Function
+    
+    Function IsExtendedPixelFormat(pixfmt As PixelFormat) As Boolean
+        Return (pixfmt And PixelFormatExtended) <> 0
+    End Function
+    
+    '--------------------------------------------------------------------------
+    ' Determine if the Pixel Format is Canonical format:
+    '   PixelFormat32bppARGB
+    '   PixelFormat32bppPARGB
+    '   PixelFormat64bppARGB
+    '   PixelFormat64bppPARGB
+    '--------------------------------------------------------------------------
+    
+    Function IsCanonicalPixelFormat(pixfmt As PixelFormat) As Boolean
+        Return (pixfmt And PixelFormatCanonical) <> 0
+    End Function
+    
+    '#If (GDIPVER >= 0x0110)
+    '----------------------------------------------------------------------------
+    ' Color format conversion parameters
+    '----------------------------------------------------------------------------
+    
+    Enum PaletteType
+        ' Arbitrary custom palette provided by caller.
+            
+        PaletteTypeCustom = 0
+            
+        ' Optimal palette generated using a median-cut algorithm.
+            
+        PaletteTypeOptimal = 1
+            
+        ' Black and white palette.
+            
+        PaletteTypeFixedBW = 2
+            
+        ' Symmetric halftone palettes.
+        ' Each of these halftone palettes will be a superset of the system palette.
+        ' E.g. Halftone8 will have it's 8-color on-off primaries and the 16 system
+        ' colors added. With duplicates removed, that leaves 16 colors.
+            
+        PaletteTypeFixedHalftone8 = 3 ' 8-color, on-off primaries
+        PaletteTypeFixedHalftone27 = 4 ' 3 intensity levels of each color
+        PaletteTypeFixedHalftone64 = 5 ' 4 intensity levels of each color
+        PaletteTypeFixedHalftone125 = 6 ' 5 intensity levels of each color
+        PaletteTypeFixedHalftone216 = 7 ' 6 intensity levels of each color
+
+        ' Assymetric halftone palettes.
+        ' These are somewhat less useful than the symmetric ones, but are 
+        ' included for completeness. These do not include all of the system
+        ' colors.
+            
+        PaletteTypeFixedHalftone252 = 8 ' 6-red, 7-green, 6-blue intensities
+        PaletteTypeFixedHalftone256 = 9 ' 8-red, 8-green, 4-blue intensities
+    End Enum
+    
+    Enum DitherType
+        DitherTypeNone = 0
+            
+        ' Solid color - picks the nearest matching color with no attempt to 
+        ' halftone or dither. May be used on an arbitrary palette.
+            
+        DitherTypeSolid = 1
+            
+        ' Ordered dithers and spiral dithers must be used with a fixed palette.
+            
+        ' NOTE: DitherOrdered4x4 is unique in that it may apply to 16bpp 
+        ' conversions also.
+            
+        DitherTypeOrdered4x4 = 2
+            
+        DitherTypeOrdered8x8 = 3
+        DitherTypeOrdered16x16 = 4
+        DitherTypeSpiral4x4 = 5
+        DitherTypeSpiral8x8 = 6
+        DitherTypeDualSpiral4x4 = 7
+        DitherTypeDualSpiral8x8 = 8
+            
+        ' Error diffusion. May be used with any palette.
+            
+        DitherTypeErrorDiffusion = 9
+
+        DitherTypeMax = 10
+    End Enum
+    '#endif '(GDIPVER >= 0x0110)
+    
+    Enum PaletteFlags
+        PaletteFlagsHasAlpha = &h0001
+        PaletteFlagsGrayScale = &h0002
+        PaletteFlagsHalftone = &h0004
+    End Enum
+End Module

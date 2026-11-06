@@ -1,0 +1,124 @@
+[InterfaceId("FA50C623-38DA-4B32-ACF3-FA9734AD800E")]
+Interface IDirect3D11CaptureFrame Extends IInspectable ' requires IClosable
+    Property Get Surface() As IDirect3DSurface
+    Property Get SystemRelativeTime() As TimeSpan
+    Property Get ContentSize() As SizeInt32
+End Interface
+
+[InterfaceId("51A947F7-79CF-5A3E-A3A5-1289CFA6DFE8")]
+Interface ITypedEventHandlerDirect3D11CaptureFramePoolFrameArrived Extends IUnknown
+    Sub Invoke(ByVal Sender As IDirect3D11CaptureFramePool, ByVal Args As IInspectable)
+End Interface
+
+[InterfaceId("24EB6D22-1975-422E-82E7-780DBD8DDF24")]
+Interface IDirect3D11CaptureFramePool Extends IInspectable ' requires IClosable
+    [PreserveSig]
+    Function Recreate(ByVal Device As IDirect3DDevice, ByVal PixelFormat As DirectXPixelFormat, ByVal NumberOfBuffers As Long, ByVal Size As SizeInt32) As HRESULT
+    Function TryGetNextFrame() As IDirect3D11CaptureFrame
+    [PreserveSig]
+    Function AddFrameArrived(ByVal Handler As ITypedEventHandlerDirect3D11CaptureFramePoolFrameArrived, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveFrameArrived(ByVal Token As EventRegistrationToken) As HRESULT
+    Function CreateCaptureSession(ByVal GraphicsCaptureItem As IGraphicsCaptureItem) As IGraphicsCaptureSession
+    Property Get DispatcherQueue() As IDispatcherQueue
+End Interface
+
+[InterfaceId("7784056A-67AA-4D53-AE54-1088D5A8CA21")]
+Interface IDirect3D11CaptureFramePoolStatics Extends IInspectable
+    [PreserveSig]
+    Function Create(ByVal Device As IDirect3DDevice, ByVal PixelFormat As DirectXPixelFormat, ByVal NumberOfBuffers As Long, ByVal Size As SizeInt32, Direct3D11CaptureFramePool As IDirect3D11CaptureFramePool) As HRESULT
+End Interface
+
+[InterfaceId("589B103F-6BBC-5DF5-A991-02E28B3B66D5")]
+Interface IDirect3D11CaptureFramePoolStatics2 Extends IInspectable
+    [PreserveSig]
+    Function CreateFreeThreaded(ByVal Device As IDirect3DDevice, ByVal PixelFormat As DirectXPixelFormat, ByVal NumberOfBuffers As Long, ByVal Size As SizeInt32, Direct3D11CaptureFramePool As IDirect3D11CaptureFramePool) As HRESULT
+End Interface
+
+' [InterfaceId("743ED370-06EC-5040-A58A-901F0F757095")]
+' Interface IGraphicsCaptureAccessStatics Extends IInspectable
+'     Function RequestAccessAsync(ByVal Request As GraphicsCaptureAccessKind) As IAsyncOperationAppCapabilityAccessStatus
+' End Interface
+
+[InterfaceId("E9C610C0-A68C-5BD9-8021-8589346EEEE2")]
+Interface ITypedEventHandlerGraphicsCaptureItemClosed Extends IUnknown
+    Sub Invoke(ByVal Sender As IGraphicsCaptureItem, ByVal Args As IInspectable)
+End Interface
+
+[InterfaceId("79C3F95B-31F7-4EC2-A464-632EF5D30760")]
+Interface IGraphicsCaptureItem Extends IInspectable
+    Property Get DisplayName() As LongPtr
+    Property Get Size() As SizeInt32
+    [PreserveSig]
+    Function AddClosed(ByVal Handler As ITypedEventHandlerGraphicsCaptureItemClosed, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveClosed(ByVal Token As EventRegistrationToken) As HRESULT
+End Interface
+
+[InterfaceId("3628E81B-3CAC-4C60-B7F4-23CE0E0C3356")]
+Interface IGraphicsCaptureItemInterop Extends IUnknown
+    [PreserveSig]
+    Function CreateForWindow(ByVal hWnd As LongPtr, rIID As Any, GraphicsCaptureItem As IGraphicsCaptureItem) As HRESULT
+    [PreserveSig]
+    Function CreateForMonitor(ByVal hMonitor As LongPtr, rIID As Any, GraphicsCaptureItem As IGraphicsCaptureItem) As HRESULT
+End Interface
+
+[InterfaceId("A87EBEA5-457C-5788-AB47-0CF1D3637E74")]
+Interface IGraphicsCaptureItemStatics Extends IInspectable
+    Function CreateFromVisual(ByVal Visual As IVisual) As IGraphicsCaptureItem
+End Interface
+
+[InterfaceId("3B92ACC9-E584-5862-BF5C-9C316C6D2DBB")]
+Interface IGraphicsCaptureItemStatics2 Extends IInspectable
+    Function TryCreateFromWindowId(ByVal WindowId As WindowId) As IGraphicsCaptureItem
+    Function TryCreateFromDisplayId(ByVal DisplayId As DisplayId) As IGraphicsCaptureItem
+End Interface
+
+[InterfaceId("01CCF2AE-1059-5D57-A805-0A1DFC54CAB9")]
+Interface IAsyncOperationIGraphicsCaptureItem Extends IInspectable
+    Property Set Completed(ByVal Handler As IAsyncOperationCompletedHandlerIGraphicsCaptureItem)
+    Property Get Completed() As IAsyncOperationCompletedHandlerIGraphicsCaptureItem
+    Function GetResults() As IGraphicsCaptureItem
+End Interface
+
+[InterfaceId("43004A3C-FFE7-5352-85A6-7BC41B782FCA")]
+Interface IAsyncOperationCompletedHandlerIGraphicsCaptureItem Extends IUnknown
+    Sub Invoke(ByVal AsyncOperation As IAsyncOperationIGraphicsCaptureItem, ByVal AsyncStatus As AsyncStatus)
+End Interface
+
+[InterfaceId("5A1711B3-AD79-4B4A-9336-1318FDDE3539")]
+Interface IGraphicsCapturePicker Extends IInspectable
+    Function PickSingleItemAsync() As IAsyncOperationIGraphicsCaptureItem
+End Interface
+
+[InterfaceId("814E42A9-F70F-4AD7-939B-FDDCC6EB880D")]
+Interface IGraphicsCaptureSession Extends IInspectable ' requires IClosable
+    [PreserveSig]
+    Function StartCapture() As HRESULT
+End Interface
+
+[InterfaceId("2C39AE40-7D2E-5044-804E-8B6799D4CF9E")]
+Interface IGraphicsCaptureSession2 Extends IInspectable
+    Property Get IsCursorCaptureEnabled() As BooleanByte
+    Property Let IsCursorCaptureEnabled(ByVal Value As BooleanByte)
+End Interface
+
+[InterfaceId("F2CDD966-22AE-5EA1-9596-3A289344C3BE")]
+Interface IGraphicsCaptureSession3 Extends IInspectable ' Windows 11+
+    Property Get IsBorderRequired() As BooleanByte
+    Property Let IsBorderRequired(ByVal Value As BooleanByte)
+End Interface
+
+[InterfaceId("2224A540-5974-49AA-B232-0882536F4CB5")]
+Interface IGraphicsCaptureSessionStatics Extends IInspectable
+    Property Get IsSupported() As BooleanByte
+End Interface
+
+Module mdlGraphicsCapture
+
+Public Enum GraphicsCaptureAccessKind
+    GraphicsCaptureAccessKind_Borderless
+    GraphicsCaptureAccessKind_Programmatic
+End Enum
+
+End Module

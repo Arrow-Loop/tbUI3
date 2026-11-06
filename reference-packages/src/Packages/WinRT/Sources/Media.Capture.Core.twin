@@ -1,0 +1,41 @@
+[InterfaceId("D1EB4C5C-1B53-4E4A-8B5C-DB7887AC949B")]
+Interface IVariablePhotoCapturedEventArgs Extends IInspectable
+    Property Get Frame() As ICapturedFrame
+    Property Get CaptureTimeOffset() As TimeSpan
+    Property Get UsedFrameControllerIndex() As IReference_UInt32
+    Property Get CapturedFrameControlValues() As ICapturedFrameControlValues
+End Interface
+
+[InterfaceId("2210A640-0E7B-5E8F-A617-2CBB10314A5A")]
+Interface ITypedEventHandlerVariablePhotoSequenceCaptureStopped Extends IUnknown
+    Sub Invoke(ByVal Sender As IVariablePhotoSequenceCapture, ByVal Args As IInspectable)
+End Interface
+
+[InterfaceId("BAB30230-3DCD-58E2-AAC5-A45F3E6F8097")]
+Interface ITypedEventHandlerVariablePhotoSequenceCapturePhotoCaptured Extends IUnknown
+    Sub Invoke(ByVal Sender As IVariablePhotoSequenceCapture, ByVal Args As IVariablePhotoCapturedEventArgs)
+End Interface
+
+[InterfaceId("D0112D1D-031E-4041-A6D6-BD742476A8EE")]
+Interface IVariablePhotoSequenceCapture Extends IInspectable
+    Function StartAsync() As IAsyncAction
+    Function StopAsync() As IAsyncAction
+    Function FinishAsync() As IAsyncAction
+    [PreserveSig]
+    Function AddPhotoCaptured(ByVal Handler As ITypedEventHandlerVariablePhotoSequenceCapturePhotoCaptured, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemovePhotoCaptured(ByVal Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function AddStopped(ByVal Handler As ITypedEventHandlerVariablePhotoSequenceCaptureStopped, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveStopped(ByVal Token As EventRegistrationToken) As HRESULT
+End Interface
+
+[InterfaceId("FE2C62BC-50B0-43E3-917C-E3B92798942F")]
+Interface IVariablePhotoSequenceCapture2 Extends IInspectable
+    Function UpdateSettingsAsync() As IAsyncAction
+End Interface
+
+Module mdlMediaCaptureCore
+
+End Module

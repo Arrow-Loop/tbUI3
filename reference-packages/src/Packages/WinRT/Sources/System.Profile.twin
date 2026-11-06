@@ -1,0 +1,205 @@
+[InterfaceId("1D5EE066-188D-5BA9-4387-ACAEB0E7E305")]
+Interface IAnalyticsInfoStatics Extends IInspectable
+    Property Get VersionInfo() As IAnalyticsVersionInfo
+    Property Get DeviceForm() As LongPtr
+End Interface
+
+[InterfaceId("817944B6-F046-5391-BB0B-4CC34D8040F3")]
+Interface IAsyncOperationIMapView_HSTRING Extends IInspectable
+    Property Set Completed(ByVal Handler As IAsyncOperationCompletedHandlerIMapView_HSTRING)
+    Property Get Completed() As IAsyncOperationCompletedHandlerIMapView_HSTRING
+    Function GetResults() As IMapView_HSTRING
+End Interface
+
+[InterfaceId("75E3182C-E6E1-589C-AB73-E8644BC285BF")]
+Interface IAsyncOperationCompletedHandlerIMapView_HSTRING Extends IUnknown
+    Sub Invoke(ByVal AsyncOperation As IAsyncOperationIMapView_HSTRING, ByVal AsyncStatus As AsyncStatus)
+End Interface
+
+[InterfaceId("101704EA-A7F9-46D2-AB94-016865AFDB25")]
+Interface IAnalyticsInfoStatics2 Extends IInspectable
+    Function GetSystemPropertiesAsync(ByVal AttributeNames As IIterable_HSTRING) As IAsyncOperationIMapView_HSTRING
+End Interface
+
+[InterfaceId("926130B8-9955-4C74-BDC1-7CD0DECF9B03")]
+Interface IAnalyticsVersionInfo Extends IInspectable
+    Property Get DeviceFamily() As LongPtr
+    Property Get DeviceFamilyVersion() As LongPtr
+End Interface
+
+[InterfaceId("76E915B1-FF36-407C-9F57-160D3E540747")]
+Interface IAnalyticsVersionInfo2 Extends IInspectable
+    Property Get ProductName() As LongPtr
+End Interface
+
+[InterfaceId("10956160-6437-5430-9322-DF0D6AB2EBE6")]
+Interface IIterator_IUnsupportedAppRequirement Extends IInspectable
+    Property Get Current() As IUnsupportedAppRequirement
+    Property Get HasCurrent() As BooleanByte
+    Function MoveNext() As BooleanByte
+    Function GetMany(ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("BD9DED1D-0379-5143-A490-168B6B8413A3")]
+Interface IIterable_IUnsupportedAppRequirement Extends IInspectable
+    Function First() As IIterator_IUnsupportedAppRequirement
+End Interface
+
+[InterfaceId("5B638C58-9D04-5D1A-92FB-860852C3E4D0")]
+Interface IVectorView_IUnsupportedAppRequirement Extends IInspectable
+    Function GetAt(ByVal Index As Long) As IUnsupportedAppRequirement
+    Property Get Size() As Long
+    Function IndexOf(ByVal Value As IUnsupportedAppRequirement, Index As Long) As BooleanByte
+    Function GetMany(ByVal StartIndex As Long, ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("1664A082-0F38-5C99-83E4-48995970861C")]
+Interface IAppApplicabilityStatics Extends IInspectable
+    Function GetUnsupportedAppRequirements(ByVal Capabilities As IIterable_HSTRING) As IVectorView_IUnsupportedAppRequirement
+End Interface
+
+[InterfaceId("FC53F0EF-4D3E-4E13-9B23-505F4D091E92")]
+Interface IEducationSettingsStatics Extends IInspectable
+    Property Get IsEducationEnvironment() As BooleanByte
+End Interface
+
+[InterfaceId("971260E0-F170-4A42-BD55-A900B212DAE2")]
+Interface IHardwareIdentificationStatics Extends IInspectable
+    Function GetPackageSpecificToken(ByVal Nonce As IBuffer) As IHardwareToken
+End Interface
+
+[InterfaceId("28F6D4C0-FB12-40A4-8167-7F4E03D2724C")]
+Interface IHardwareToken Extends IInspectable
+    Property Get Id() As IBuffer
+    Property Get Signature() As IBuffer
+    Property Get Certificate() As IBuffer
+End Interface
+
+[InterfaceId("99571178-500F-487E-8E75-29E551728712")]
+Interface IKnownRetailInfoPropertiesStatics Extends IInspectable
+    Property Get RetailAccessCode() As LongPtr
+    Property Get ManufacturerName() As LongPtr
+    Property Get ModelName() As LongPtr
+    Property Get DisplayModelName() As LongPtr
+    Property Get Price() As LongPtr
+    Property Get IsFeatured() As LongPtr
+    Property Get FormFactor() As LongPtr
+    Property Get ScreenSize() As LongPtr
+    Property Get Weight() As LongPtr
+    Property Get DisplayDescription() As LongPtr
+    Property Get BatteryLifeDescription() As LongPtr
+    Property Get ProcessorDescription() As LongPtr
+    Property Get Memory() As LongPtr
+    Property Get StorageDescription() As LongPtr
+    Property Get GraphicsDescription() As LongPtr
+    Property Get FrontCameraDescription() As LongPtr
+    Property Get RearCameraDescription() As LongPtr
+    Property Get HasNfc() As LongPtr
+    Property Get HasSdSlot() As LongPtr
+    Property Get HasOpticalDrive() As LongPtr
+    Property Get IsOfficeInstalled() As LongPtr
+    Property Get WindowsEdition() As LongPtr
+End Interface
+
+[InterfaceId("B6E24C1B-7B1C-4B32-8C62-A66597CE723A")]
+Interface IPlatformDiagnosticsAndUsageDataSettingsStatics Extends IInspectable
+    Property Get CollectionLevel() As PlatformDataCollectionLevel
+    [PreserveSig]
+    Function AddCollectionLevelChanged(ByVal Handler As IEventHandlerIInspectable, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveCollectionLevelChanged(ByVal Token As EventRegistrationToken) As HRESULT
+    Function CanCollectDiagnostics(ByVal Level As PlatformDataCollectionLevel) As BooleanByte
+End Interface
+
+[InterfaceId("0712C6B8-8B92-4F2A-8499-031F1798D6EF")]
+Interface IRetailInfoStatics Extends IInspectable
+    Property Get IsDemoModeEnabled() As BooleanByte
+    Property Get Properties() As IMapView_IInspectable
+End Interface
+
+[InterfaceId("893DF40E-CAD6-4D50-8C49-6FCFC03EDB29")]
+Interface ISharedModeSettingsStatics Extends IInspectable
+    Property Get IsEnabled() As BooleanByte
+End Interface
+
+[InterfaceId("608988A4-CCF1-4EE8-A5E2-FD6A1D0CFAC8")]
+Interface ISharedModeSettingsStatics2 Extends IInspectable
+    Property Get ShouldAvoidLocalStorage() As BooleanByte
+End Interface
+
+[InterfaceId("5FF8C75B-073E-5015-8D98-5FF224180A0B")]
+Interface ISmartAppControlPolicyStatics Extends IInspectable
+    Property Get IsEnabled() As BooleanByte
+    [PreserveSig]
+    Function AddChanged(ByVal Handler As IEventHandlerIInspectable, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveChanged(ByVal Token As EventRegistrationToken) As HRESULT
+End Interface
+
+[InterfaceId("0C659E7D-C3C2-4D33-A2DF-21BC41916EB3")]
+Interface ISystemIdentificationInfo Extends IInspectable
+    Property Get Id() As IBuffer
+    Property Get Source() As SystemIdentificationSource
+End Interface
+
+[InterfaceId("5581F42A-D3DF-4D93-A37D-C41A616C6D01")]
+Interface ISystemIdentificationStatics Extends IInspectable
+    Function GetSystemIdForPublisher() As ISystemIdentificationInfo
+    Function GetSystemIdForUser(ByVal User As IUser) As ISystemIdentificationInfo
+End Interface
+
+[InterfaceId("B8366A4B-FB6A-4571-BE0A-9A0F67954123")]
+Interface ISystemSetupInfoStatics Extends IInspectable
+    Property Get OutOfBoxExperienceState() As SystemOutOfBoxExperienceState
+    [PreserveSig]
+    Function AddOutOfBoxExperienceStateChanged(ByVal Handler As IEventHandlerIInspectable, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveOutOfBoxExperienceStateChanged(ByVal Token As EventRegistrationToken) As HRESULT
+End Interface
+
+[InterfaceId("6182445C-894B-5CBC-8976-A98E0A9B998D")]
+Interface IUnsupportedAppRequirement Extends IInspectable
+    Property Get Requirement() As LongPtr
+    Property Get Reasons() As UnsupportedAppRequirementReasons
+End Interface
+
+[InterfaceId("7D1D81DB-8D63-4789-9EA5-DDCF65A94F3C")]
+Interface IWindowsIntegrityPolicyStatics Extends IInspectable
+    Property Get IsEnabled() As BooleanByte
+    Property Get IsEnabledForTrial() As BooleanByte
+    Property Get CanDisable() As BooleanByte
+    Property Get IsDisableSupported() As BooleanByte
+    [PreserveSig]
+    Function AddPolicyChanged(ByVal Handler As IEventHandlerIInspectable, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemovePolicyChanged(ByVal Token As EventRegistrationToken) As HRESULT
+End Interface
+
+Module mdlSystemProfile
+
+Public Enum PlatformDataCollectionLevel
+    PlatformDataCollectionLevel_Security
+    PlatformDataCollectionLevel_Basic
+    PlatformDataCollectionLevel_Enhanced
+    PlatformDataCollectionLevel_Full
+End Enum
+
+Public Enum SystemIdentificationSource
+    SystemIdentificationSource_None
+    SystemIdentificationSource_Tpm
+    SystemIdentificationSource_Uefi
+    SystemIdentificationSource_Registry
+End Enum
+
+Public Enum SystemOutOfBoxExperienceState
+    SystemOutOfBoxExperienceState_NotStarted
+    SystemOutOfBoxExperienceState_InProgress
+    SystemOutOfBoxExperienceState_Completed
+End Enum
+
+Public Enum UnsupportedAppRequirementReasons
+    UnsupportedAppRequirementReasons_Unknown
+    UnsupportedAppRequirementReasons_DeniedBySystem
+End Enum
+
+End Module

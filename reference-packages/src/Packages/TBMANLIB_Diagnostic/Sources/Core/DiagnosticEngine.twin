@@ -1,0 +1,296 @@
+' =====================================================
+' DiagnosticEngine.twin - 核心诊断引擎
+' Twinbasic Diagnostic Tool
+' =====================================================
+
+' 核心诊断引擎类
+' 完全独立，不依赖任何 UI，可用于控制台、窗体、服务等任何场景
+[ ClassId ("F6A7B8C9-D0E1-F2A3-B4C5-D6E7F8A9B0C1") ]
+[ InterfaceId ("F6A7B8C9-D0E1-F2A3-B4C5-D6E7F8A9B0C2") ]
+Public Class DiagnosticEngine
+
+    ' === 私有成员 ===
+    Private m_Collectors As List(Of IDiagnosticCollector)
+    Private m_Results As List(Of DiagnosticResult(Of KeyValuePair(Of String, String)))
+    Private m_IsRunning As Boolean
+    Private m_CancelRequested As Boolean
+
+    ' === 委托回调 ===
+    Private m_OnCollectorStarted As DiagnosticCompleteHandler
+    Private m_OnCollectorCompleted As DiagnosticCompleteHandler
+    Private m_OnProgress As DiagnosticProgressHandler
+    Private m_OnError As DiagnosticErrorHandler
+
+    ' === 传统事件 ===
+    Public Event CollectorStarted(ByVal category As String)
+    Public Event CollectorCompleted(ByVal category As String, ByVal success As Boolean, ByVal itemCount As Long)
+    Public Event Progress(ByVal percent As Long, ByVal message As String)
+    Public Event Error(ByVal category As String, ByVal errorMessage As String)
+    Public Event AllCompleted(ByVal results As List(Of DiagnosticResult(Of KeyValuePair(Of String, String))))
+
+    ' 构造函数
+    Public Sub New()
+        Set m_Collectors = New List(Of IDiagnosticCollector)
+        Set m_Results = New List(Of DiagnosticResult(Of KeyValuePair(Of String, String)))
+        m_IsRunning = False
+        m_CancelRequested = False
+    End Sub
+
+    ' === 收集器管理 ===
+
+    ' 注册收集器
+    Public Sub RegisterCollector(ByVal collector As IDiagnosticCollector)
+        If collector Is Nothing Then
+            Err.Raise 5, "DiagnosticEngine.RegisterCollector", "Collector cannot be Nothing"
+        End If
+
+        ' 检查是否已存在同名收集器
+        Dim i As Long
+        For i = 0 To m_Collectors.Count - 1
+            If m_Collectors.Item(i).CategoryName = collector.CategoryName Then
+                Err.Raise 5, "DiagnosticEngine.RegisterCollector", "Collector already exists: " & collector.CategoryName
+            End If
+        Next i
+
+        m_Collectors.Add collector
+    End Sub
+
+    ' 注销收集器
+    Public Sub UnregisterCollector(ByVal categoryName As String)
+        Dim i As Long
+        For i = 0 To m_Collectors.Count - 1
+            If m_Collectors.Item(i).CategoryName = categoryName Then
+                m_Collectors.RemoveAt i
+                Exit Sub
+            End If
+        Next i
+    End Sub
+
+    ' 获取所有收集器
+    Public Property Get Collectors() As List(Of IDiagnosticCollector)
+        Return m_Collectors
+    End Property
+
+    ' 获取收集器数量
+    Public Property Get CollectorCount() As Long
+        Return m_Collectors.Count
+    End Property
+
+    ' === 同步方法 ===
+
+    ' 运行所有收集器（同步）
+    Public Function RunAll(Optional ByVal useSummary As Boolean = False) As List(Of DiagnosticResult(Of KeyValuePair(Of String, String)))
+        m_Results.Clear
+        m_IsRunning = True
+        m_CancelRequested = False
+
+        Dim i As Long
+        Dim collector As IDiagnosticCollector
+        Dim result As DiagnosticResult(Of KeyValuePair(Of String, String))
+        Dim total As Long = m_Collectors.Count
+
+        For i = 0 To m_Collectors.Count - 1
+            If m_CancelRequested Then Exit For
+
+            Set collector = m_Collectors.Item(i)
+
+            ' 触发开始事件
+            RaiseCollectorStarted collector.CategoryName
+
+            ' 更新进度
+            RaiseProgress CLng((i * 100) / total), "Collecting: " & collector.CategoryName
+
+            ' 收集数据
+            On Error Resume Next
+            If useSummary And collector.SupportsSummary Then
+                Set result = collector.CollectSummary()
+            Else
+                Set result = collector.Collect()
+            End If
+
+            If Err.Number <> 0 Then
+                Set result = New DiagnosticResult(Of KeyValuePair(Of String, String))(collector.CategoryName)
+                result.SetError Err.Description
+                RaiseError collector.CategoryName, Err.Description
+                Err.Clear
+            End If
+            On Error GoTo 0
+
+            m_Results.Add result
+
+            ' 触发完成事件
+            RaiseCollectorCompleted collector.CategoryName, result.Success, result.ItemCount
+        Next i
+
+        m_IsRunning = False
+
+        ' 完成进度
+        RaiseProgress 100, "Complete"
+
+        ' 触发全部完成事件
+        RaiseEvent AllCompleted(m_Results)
+
+        Return m_Results
+    End Function
+
+    ' 运行单个类别（同步）
+    Public Function RunCategory(ByVal categoryName As String, Optional ByVal useSummary As Boolean = False) As DiagnosticResult(Of KeyValuePair(Of String, String))
+        Dim i As Long
+        Dim collector As IDiagnosticCollector
+
+        For i = 0 To m_Collectors.Count - 1
+            Set collector = m_Collectors.Item(i)
+            If collector.CategoryName = categoryName Then
+                m_IsRunning = True
+
+                RaiseCollectorStarted categoryName
+
+                Dim result As DiagnosticResult(Of KeyValuePair(Of String, String))
+
+                On Error Resume Next
+                If useSummary And collector.SupportsSummary Then
+                    Set result = collector.CollectSummary()
+                Else
+                    Set result = collector.Collect()
+                End If
+
+                If Err.Number <> 0 Then
+                    Set result = New DiagnosticResult(Of KeyValuePair(Of String, String))(categoryName)
+                    result.SetError Err.Description
+                    RaiseError categoryName, Err.Description
+                    Err.Clear
+                End If
+                On Error GoTo 0
+
+                m_IsRunning = False
+
+                RaiseCollectorCompleted categoryName, result.Success, result.ItemCount
+
+                Return result
+            End If
+        Next i
+
+        ' 未找到收集器
+        Dim errorResult As DiagnosticResult(Of KeyValuePair(Of String, String))
+        Set errorResult = New DiagnosticResult(Of KeyValuePair(Of String, String))(categoryName)
+        errorResult.SetError "Collector not found: " & categoryName
+        Return errorResult
+    End Function
+
+    ' 按刷新模式运行（同步）
+    Public Function RunByRefreshMode(ByVal mode As RefreshMode, Optional ByVal useSummary As Boolean = False) As List(Of DiagnosticResult(Of KeyValuePair(Of String, String)))
+        Dim results As List(Of DiagnosticResult(Of KeyValuePair(Of String, String)))
+        Set results = New List(Of DiagnosticResult(Of KeyValuePair(Of String, String)))
+        Dim i As Long
+        Dim collector As IDiagnosticCollector
+        Dim result As DiagnosticResult(Of KeyValuePair(Of String, String))
+
+        m_IsRunning = True
+        m_CancelRequested = False
+
+        For i = 0 To m_Collectors.Count - 1
+            If m_CancelRequested Then Exit For
+
+            Set collector = m_Collectors.Item(i)
+            If collector.RefreshMode = mode Then
+                RaiseCollectorStarted collector.CategoryName
+
+                On Error Resume Next
+                If useSummary And collector.SupportsSummary Then
+                    Set result = collector.CollectSummary()
+                Else
+                    Set result = collector.Collect()
+                End If
+
+                If Err.Number <> 0 Then
+                    Set result = New DiagnosticResult(Of KeyValuePair(Of String, String))(collector.CategoryName)
+                    result.SetError Err.Description
+                    RaiseError collector.CategoryName, Err.Description
+                    Err.Clear
+                End If
+                On Error GoTo 0
+
+                results.Add result
+
+                RaiseCollectorCompleted collector.CategoryName, result.Success, result.ItemCount
+            End If
+        Next i
+
+        m_IsRunning = False
+
+        Return results
+    End Function
+
+    ' === 异步控制 ===
+
+    ' 取消运行
+    Public Sub Cancel()
+        m_CancelRequested = True
+    End Sub
+
+    ' 是否正在运行
+    Public Property Get IsRunning() As Boolean
+        Return m_IsRunning
+    End Property
+
+    ' === 委托属性 ===
+
+    Public Property Let OnCollectorStarted(ByVal handler As DiagnosticCompleteHandler)
+        m_OnCollectorStarted = handler
+    End Property
+
+    Public Property Let OnCollectorCompleted(ByVal handler As DiagnosticCompleteHandler)
+        m_OnCollectorCompleted = handler
+    End Property
+
+    Public Property Let OnProgress(ByVal handler As DiagnosticProgressHandler)
+        m_OnProgress = handler
+    End Property
+
+    Public Property Let OnError(ByVal handler As DiagnosticErrorHandler)
+        m_OnError = handler
+    End Property
+
+    ' === 辅助方法 ===
+
+    ' 检查是否以管理员权限运行
+    Public Function IsElevated() As Boolean
+        Return WinAPI.IsUserAnAdmin() <> 0
+    End Function
+
+    ' 获取最近的结果
+    Public Property Get Results() As List(Of DiagnosticResult(Of KeyValuePair(Of String, String)))
+        Return m_Results
+    End Property
+
+    ' === 私有方法：触发事件和回调 ===
+
+    Private Sub RaiseCollectorStarted(ByVal category As String)
+        RaiseEvent CollectorStarted(category)
+        If m_OnCollectorStarted <> 0 Then
+            m_OnCollectorStarted(category, True, 0)
+        End If
+    End Sub
+
+    Private Sub RaiseCollectorCompleted(ByVal category As String, ByVal success As Boolean, ByVal itemCount As Long)
+        RaiseEvent CollectorCompleted(category, success, itemCount)
+        If m_OnCollectorCompleted <> 0 Then
+            m_OnCollectorCompleted(category, success, itemCount)
+        End If
+    End Sub
+
+    Private Sub RaiseProgress(ByVal percent As Long, ByVal message As String)
+        RaiseEvent Progress(percent, message)
+        If m_OnProgress <> 0 Then
+            m_OnProgress(percent, message)
+        End If
+    End Sub
+
+    Private Sub RaiseError(ByVal category As String, ByVal errorMessage As String)
+        RaiseEvent Error(category, errorMessage)
+        If m_OnError <> 0 Then
+            m_OnError(category, errorMessage)
+        End If
+    End Sub
+
+End Class

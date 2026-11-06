@@ -1,0 +1,40 @@
+[InterfaceId("CAFF7902-670C-4181-A624-DA977203B845")]
+Interface IGeometrySource2D Extends IInspectable
+
+End Interface
+
+Module mdlGraphics
+
+Public Type DisplayAdapterId
+    LowPart As Long
+    HighPart As Long
+    Function FromParts(ByVal LowPart As Long, ByVal HighPart As Long) As DisplayAdapterId: FromParts.LowPart = LowPart: FromParts.HighPart = HighPart: Me = FromParts: End Function
+End Type
+
+Public Type DisplayId
+    Value As Currency
+    Private Sub Type_Assignment(ByVal RHS As Currency): Me.Value = RHS: End Sub
+    Private Function Type_Conversion() As Currency: Type_Conversion = Me.Value: End Function
+End Type
+
+Public Type PointInt32
+    X As Long
+    Y As Long
+    Function FromCoordinates(ByVal X As Long, ByVal Y As Long) As PointInt32: FromCoordinates.X = X: FromCoordinates.Y = Y: Me = FromCoordinates: End Function
+End Type
+
+Public Type RectInt32
+    X As Long
+    Y As Long
+    Width As Long
+    Height As Long
+    Function FromCoordinatesAndDimensions(ByVal X As Long, ByVal Y As Long, ByVal Width As Long, ByVal Height As Long) As RectInt32: FromCoordinatesAndDimensions.X = X: FromCoordinatesAndDimensions.Y = Y: FromCoordinatesAndDimensions.Width = Width: FromCoordinatesAndDimensions.Height = Height: Me = FromCoordinatesAndDimensions: End Function
+End Type
+
+Public Type SizeInt32
+    Width As Long
+    Height As Long
+    Function FromDimensions(ByVal Width As Long, ByVal Height As Long) As SizeInt32: FromDimensions.Width = Width: FromDimensions.Height = Height: Me = FromDimensions: End Function
+End Type
+
+End Module

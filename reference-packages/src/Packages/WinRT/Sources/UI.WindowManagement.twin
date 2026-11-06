@@ -1,0 +1,422 @@
+[InterfaceId("110D4D7E-2F29-51B8-9691-8B206AD1D73B")]
+Interface IIterator_IDisplayRegion Extends IInspectable
+    Property Get Current() As IDisplayRegion
+    Property Get HasCurrent() As BooleanByte
+    Function MoveNext() As BooleanByte
+    Function GetMany(ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("026730AB-250D-503C-A876-43BBB754AD44")]
+Interface IIterable_IDisplayRegion Extends IInspectable
+    Function First() As IIterator_IDisplayRegion
+End Interface
+
+[InterfaceId("9460DEBB-A0D6-5AB8-84F5-9087F2A6BB67")]
+Interface IVectorView_IDisplayRegion Extends IInspectable
+    Function GetAt(ByVal Index As Long) As IDisplayRegion
+    Property Get Size() As Long
+    Function IndexOf(ByVal Value As IDisplayRegion, Index As Long) As BooleanByte
+    Function GetMany(ByVal StartIndex As Long, ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("C6A30887-6F60-597F-B918-757CAB5F3A76")]
+Interface ITypedEventHandlerAppWindowChanged Extends IUnknown
+    Sub Invoke(ByVal Sender As IAppWindow, ByVal Args As IAppWindowChangedEventArgs)
+End Interface
+
+[InterfaceId("C0359718-173D-5F19-B76A-91929B2B0451")]
+Interface ITypedEventHandlerAppWindowCloseRequested Extends IUnknown
+    Sub Invoke(ByVal Sender As IAppWindow, ByVal Args As IAppWindowCloseRequestedEventArgs)
+End Interface
+
+[InterfaceId("7F62C430-89B3-5873-93CA-BB4D71A390E4")]
+Interface ITypedEventHandlerAppWindowClosed Extends IUnknown
+    Sub Invoke(ByVal Sender As IAppWindow, ByVal Args As IAppWindowClosedEventArgs)
+End Interface
+
+[InterfaceId("663014A6-B75E-5DBD-995C-F0117FA3FB61")]
+Interface IAppWindow Extends IInspectable
+    Property Get Content() As IUIContentRoot
+    Property Get DispatcherQueue() As IDispatcherQueue
+    Property Get Frame() As IAppWindowFrame
+    Property Get IsVisible() As BooleanByte
+    Property Get PersistedStateId() As LongPtr
+    Property Let PersistedStateId(ByVal Value As LongPtr)
+    Property Get Presenter() As IAppWindowPresenter
+    Property Get Title() As LongPtr
+    Property Let Title(ByVal Value As LongPtr)
+    Property Get TitleBar() As IAppWindowTitleBar
+    Property Get UIContext() As IUIContext
+    Property Get WindowingEnvironment() As IWindowingEnvironment
+    Function CloseAsync() As IAsyncAction
+    Function GetPlacement() As IAppWindowPlacement
+    Function GetDisplayRegions() As IVectorView_IDisplayRegion
+    [PreserveSig]
+    Function RequestMoveToDisplayRegion(ByVal DisplayRegion As IDisplayRegion) As HRESULT
+    [PreserveSig]
+    Function RequestMoveAdjacentToCurrentView() As HRESULT
+    [PreserveSig]
+    Function RequestMoveAdjacentToWindow(ByVal AnchorWindow As IAppWindow) As HRESULT
+    [PreserveSig]
+    Function RequestMoveRelativeToWindowContent(ByVal AnchorWindow As IAppWindow, ByVal ContentOffset As POINTF) As HRESULT
+    [PreserveSig]
+    Function RequestMoveRelativeToCurrentViewContent(ByVal ContentOffset As POINTF) As HRESULT
+    [PreserveSig]
+    Function RequestMoveRelativeToDisplayRegion(ByVal DisplayRegion As IDisplayRegion, ByVal DisplayRegionOffset As POINTF) As HRESULT
+    [PreserveSig]
+    Function RequestSize(ByVal FrameSize As SIZEF) As HRESULT
+    Function TryShowAsync() As IAsyncOperationBoolean
+    [PreserveSig]
+    Function AddChanged(ByVal Handler As ITypedEventHandlerAppWindowChanged, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveChanged(ByVal Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function AddClosed(ByVal Handler As ITypedEventHandlerAppWindowClosed, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveClosed(ByVal Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function AddCloseRequested(ByVal Handler As ITypedEventHandlerAppWindowCloseRequested, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveCloseRequested(ByVal Token As EventRegistrationToken) As HRESULT
+End Interface
+
+[InterfaceId("1DE1F3BE-A655-55AD-B2B6-EB240F880356")]
+Interface IAppWindowChangedEventArgs Extends IInspectable
+    Property Get DidAvailableWindowPresentationsChange() As BooleanByte
+    Property Get DidDisplayRegionsChange() As BooleanByte
+    Property Get DidFrameChange() As BooleanByte
+    Property Get DidSizeChange() As BooleanByte
+    Property Get DidTitleBarChange() As BooleanByte
+    Property Get DidVisibilityChange() As BooleanByte
+    Property Get DidWindowingEnvironmentChange() As BooleanByte
+    Property Get DidWindowPresentationChange() As BooleanByte
+End Interface
+
+[InterfaceId("E9FF01DA-E7A2-57A8-8B5E-39C4003AFDBB")]
+Interface IAppWindowCloseRequestedEventArgs Extends IInspectable
+    Property Get Cancel() As BooleanByte
+    Property Let Cancel(ByVal Value As BooleanByte)
+    Function GetDeferral() As IDeferral
+End Interface
+
+[InterfaceId("CC7DF816-9520-5A06-821E-456AD8B358AA")]
+Interface IAppWindowClosedEventArgs Extends IInspectable
+    Property Get Reason() As AppWindowClosedReason
+End Interface
+
+[InterfaceId("3142FDB3-4110-5819-B966-9C2A172E209F")]
+Interface IIterator_IVisualElement Extends IInspectable
+    Property Get Current() As IVisualElement
+    Property Get HasCurrent() As BooleanByte
+    Function MoveNext() As BooleanByte
+    Function GetMany(ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("A0394077-1A66-589C-997D-2ACBA9051F77")]
+Interface IIterable_IVisualElement Extends IInspectable
+    Function First() As IIterator_IVisualElement
+End Interface
+
+[InterfaceId("48E605A6-1FA6-5B4B-A802-17F54C4BCCCC")]
+Interface IVectorView_IVisualElement Extends IInspectable
+    Function GetAt(ByVal Index As Long) As IVisualElement
+    Property Get Size() As Long
+    Function IndexOf(ByVal Value As IVisualElement, Index As Long) As BooleanByte
+    Function GetMany(ByVal StartIndex As Long, ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("CF59C70B-6D34-55FB-9313-9781433E778A")]
+Interface IVector_IVisualElement Extends IInspectable
+    Function GetAt(ByVal Index As Long) As IVisualElement
+    Property Get Size() As Long
+    Function GetView() As IVectorView_IVisualElement
+    Function IndexOf(ByVal Value As IVisualElement, Index As Long) As BooleanByte
+    [PreserveSig]
+    Function SetAt(ByVal Index As Long, ByVal Value As IVisualElement) As HRESULT
+    [PreserveSig]
+    Function InsertAt(ByVal Index As Long, ByVal Value As IVisualElement) As HRESULT
+    [PreserveSig]
+    Function RemoveAt(ByVal Index As Long) As HRESULT
+    [PreserveSig]
+    Function Append(ByVal Value As IVisualElement) As HRESULT
+    [PreserveSig]
+    Function RemoveAtEnd() As HRESULT
+    [PreserveSig]
+    Function Clear() As HRESULT
+    Function GetMany(ByVal StartIndex As Long, ByVal Length As Long, Items As Any) As Long
+    [PreserveSig]
+    Function ReplaceAll(ByVal Length As Long, Items As Any) As HRESULT
+End Interface
+
+[InterfaceId("9EE22601-7E5D-52AF-846B-01DC6C296567")]
+Interface IAppWindowFrame Extends IInspectable
+    Property Get DragRegionVisuals() As IVector_IVisualElement
+End Interface
+
+[InterfaceId("AC412946-E1AC-5230-944A-C60873DCF4A9")]
+Interface IAppWindowFrameStyle Extends IInspectable
+    Function GetFrameStyle() As AppWindowFrameStyle
+    [PreserveSig]
+    Function SetFrameStyle(ByVal FrameStyle As AppWindowFrameStyle) As HRESULT
+End Interface
+
+[InterfaceId("03DC815E-E7A9-5857-9C03-7D670594410E")]
+Interface IAppWindowPlacement Extends IInspectable
+    Property Get DisplayRegion() As IDisplayRegion
+    Property Get Offset() As POINTF
+    Property Get Size() As SIZEF
+End Interface
+
+[InterfaceId("B5A43EE3-DF33-5E67-BD31-1072457300DF")]
+Interface IAppWindowPresentationConfiguration Extends IInspectable
+    Property Get Kind() As AppWindowPresentationKind
+End Interface
+
+[InterfaceId("FD3606A6-7875-5DE8-84FF-6351EE13DD0D")]
+Interface IAppWindowPresentationConfigurationFactory Extends IInspectable
+
+End Interface
+
+[InterfaceId("5AE9ED73-E1FD-5317-AD78-5A3ED271BBDE")]
+Interface IAppWindowPresenter Extends IInspectable
+    Function GetConfiguration() As IAppWindowPresentationConfiguration
+    Function IsPresentationSupported(ByVal PresentationKind As AppWindowPresentationKind) As BooleanByte
+    Function RequestPresentation(ByVal Configuration As IAppWindowPresentationConfiguration) As BooleanByte
+    Function RequestPresentationByKind(ByVal PresentationKind As AppWindowPresentationKind) As BooleanByte
+End Interface
+
+[InterfaceId("4167727A-5DF0-5ED3-B624-167C81BEFF6B")]
+Interface IAsyncOperationIAppWindow Extends IInspectable
+    Property Set Completed(ByVal Handler As IAsyncOperationCompletedHandlerIAppWindow)
+    Property Get Completed() As IAsyncOperationCompletedHandlerIAppWindow
+    Function GetResults() As IAppWindow
+End Interface
+
+[InterfaceId("3BBEA3E6-34B8-5EF0-A093-9CC71FA40B6E")]
+Interface IAsyncOperationCompletedHandlerIAppWindow Extends IUnknown
+    Sub Invoke(ByVal AsyncOperation As IAsyncOperationIAppWindow, ByVal AsyncStatus As AsyncStatus)
+End Interface
+
+[InterfaceId("FF1F3EA3-B769-50EF-9873-108CD0E89746")]
+Interface IAppWindowStatics Extends IInspectable
+    Function TryCreateAsync() As IAsyncOperationIAppWindow
+    [PreserveSig]
+    Function ClearAllPersistedState() As HRESULT
+    [PreserveSig]
+    Function ClearPersistedState(ByVal Key As LongPtr) As HRESULT
+End Interface
+
+[InterfaceId("13E952DB-F553-5C43-8FD2-0E1B9DF3EE3F")]
+Interface IIterator_IAppWindowTitleBarOcclusion Extends IInspectable
+    Property Get Current() As IAppWindowTitleBarOcclusion
+    Property Get HasCurrent() As BooleanByte
+    Function MoveNext() As BooleanByte
+    Function GetMany(ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("3503C7C3-D036-5152-92DD-DE9732205420")]
+Interface IIterable_IAppWindowTitleBarOcclusion Extends IInspectable
+    Function First() As IIterator_IAppWindowTitleBarOcclusion
+End Interface
+
+[InterfaceId("586D5577-7D02-5C77-BB43-39522F80972E")]
+Interface IVectorView_IAppWindowTitleBarOcclusion Extends IInspectable
+    Function GetAt(ByVal Index As Long) As IAppWindowTitleBarOcclusion
+    Property Get Size() As Long
+    Function IndexOf(ByVal Value As IAppWindowTitleBarOcclusion, Index As Long) As BooleanByte
+    Function GetMany(ByVal StartIndex As Long, ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("6E932C84-F644-541D-A2D7-0C262437842D")]
+Interface IAppWindowTitleBar Extends IInspectable
+    Property Get BackgroundColor() As IReference_Color
+    Property Set BackgroundColor(ByVal Value As IReference_Color)
+    Property Get ButtonBackgroundColor() As IReference_Color
+    Property Set ButtonBackgroundColor(ByVal Value As IReference_Color)
+    Property Get ButtonForegroundColor() As IReference_Color
+    Property Set ButtonForegroundColor(ByVal Value As IReference_Color)
+    Property Get ButtonHoverBackgroundColor() As IReference_Color
+    Property Set ButtonHoverBackgroundColor(ByVal Value As IReference_Color)
+    Property Get ButtonHoverForegroundColor() As IReference_Color
+    Property Set ButtonHoverForegroundColor(ByVal Value As IReference_Color)
+    Property Get ButtonInactiveBackgroundColor() As IReference_Color
+    Property Set ButtonInactiveBackgroundColor(ByVal Value As IReference_Color)
+    Property Get ButtonInactiveForegroundColor() As IReference_Color
+    Property Set ButtonInactiveForegroundColor(ByVal Value As IReference_Color)
+    Property Get ButtonPressedBackgroundColor() As IReference_Color
+    Property Set ButtonPressedBackgroundColor(ByVal Value As IReference_Color)
+    Property Get ButtonPressedForegroundColor() As IReference_Color
+    Property Set ButtonPressedForegroundColor(ByVal Value As IReference_Color)
+    Property Get ExtendsContentIntoTitleBar() As BooleanByte
+    Property Let ExtendsContentIntoTitleBar(ByVal Value As BooleanByte)
+    Property Get ForegroundColor() As IReference_Color
+    Property Set ForegroundColor(ByVal Value As IReference_Color)
+    Property Get InactiveBackgroundColor() As IReference_Color
+    Property Set InactiveBackgroundColor(ByVal Value As IReference_Color)
+    Property Get InactiveForegroundColor() As IReference_Color
+    Property Set InactiveForegroundColor(ByVal Value As IReference_Color)
+    Property Get IsVisible() As BooleanByte
+    Function GetTitleBarOcclusions() As IVectorView_IAppWindowTitleBarOcclusion
+End Interface
+
+[InterfaceId("FEA3CFFD-2CCF-5FC3-AEAE-F843876BF37E")]
+Interface IAppWindowTitleBarOcclusion Extends IInspectable
+    Property Get OccludingRect() As RECTF
+End Interface
+
+[InterfaceId("A215A4E3-6E7E-5651-8C3B-624819528154")]
+Interface IAppWindowTitleBarVisibility Extends IInspectable
+    Function GetPreferredVisibility() As AppWindowTitleBarVisibility
+    [PreserveSig]
+    Function SetPreferredVisibility(ByVal VisibilityMode As AppWindowTitleBarVisibility) As HRESULT
+End Interface
+
+[InterfaceId("A7E5750F-5730-56C6-8E1F-D63FF4D7980D")]
+Interface ICompactOverlayPresentationConfiguration Extends IInspectable
+
+End Interface
+
+[InterfaceId("D8C2B53B-2168-5703-A853-D525589FE2B9")]
+Interface IDefaultPresentationConfiguration Extends IInspectable
+
+End Interface
+
+[InterfaceId("2C40D18B-7438-5EB4-9359-7897FCE7E3FC")]
+Interface ITypedEventHandlerDisplayRegionChanged Extends IUnknown
+    Sub Invoke(ByVal Sender As IDisplayRegion, ByVal Args As IInspectable)
+End Interface
+
+[InterfaceId("DB50C3A2-4094-5F47-8CB1-EA01DDAFAA94")]
+Interface IDisplayRegion Extends IInspectable
+    Property Get DisplayMonitorDeviceId() As LongPtr
+    Property Get IsVisible() As BooleanByte
+    Property Get WorkAreaOffset() As POINTF
+    Property Get WorkAreaSize() As SIZEF
+    Property Get WindowingEnvironment() As IWindowingEnvironment
+    [PreserveSig]
+    Function AddChanged(ByVal Handler As ITypedEventHandlerDisplayRegionChanged, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveChanged(ByVal Token As EventRegistrationToken) As HRESULT
+End Interface
+
+[InterfaceId("43D3DCD8-D2A8-503D-A626-15533D6D5F62")]
+Interface IFullScreenPresentationConfiguration Extends IInspectable
+    Property Get IsExclusive() As BooleanByte
+    Property Let IsExclusive(ByVal Value As BooleanByte)
+End Interface
+
+[InterfaceId("BA0A30A1-C082-5671-AC07-7AAA4F269670")]
+Interface IIterator_WindowId Extends IInspectable
+    Property Get Current() As WindowId
+    Property Get HasCurrent() As BooleanByte
+    Function MoveNext() As BooleanByte
+    Function GetMany(ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("745698BF-22AD-5C0D-B0E0-07D35A1C9719")]
+Interface IIterable_WindowId Extends IInspectable
+    Function First() As IIterator_WindowId
+End Interface
+
+[InterfaceId("F49E7371-B31A-5620-A42E-7E969003F0FF")]
+Interface IVectorView_WindowId Extends IInspectable
+    Function GetAt(ByVal Index As Long) As WindowId
+    Property Get Size() As Long
+    Function IndexOf(ByVal Value As WindowId, Index As Long) As BooleanByte
+    Function GetMany(ByVal StartIndex As Long, ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("CFF4D519-50A6-5C64-97F6-C2D96ADD7F42")]
+Interface IWindowServicesStatics Extends IInspectable
+    Function FindAllTopLevelWindowIds() As IVectorView_WindowId
+End Interface
+
+[InterfaceId("3AF2BD46-4225-5A93-85ED-73A01E91D0B5")]
+Interface ITypedEventHandlerWindowingEnvironmentChanged Extends IUnknown
+    Sub Invoke(ByVal Sender As IWindowingEnvironment, ByVal Args As IWindowingEnvironmentChangedEventArgs)
+End Interface
+
+[InterfaceId("264363C0-2A49-5417-B3AE-48A71C63A3BD")]
+Interface IWindowingEnvironment Extends IInspectable
+    Property Get IsEnabled() As BooleanByte
+    Property Get Kind() As WindowingEnvironmentKind
+    Function GetDisplayRegions() As IVectorView_IDisplayRegion
+    [PreserveSig]
+    Function AddChanged(ByVal Handler As ITypedEventHandlerWindowingEnvironmentChanged, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveChanged(ByVal Token As EventRegistrationToken) As HRESULT
+End Interface
+
+[InterfaceId("FF2A5B7F-F183-5C66-99B2-429082069299")]
+Interface IWindowingEnvironmentAddedEventArgs Extends IInspectable
+    Property Get WindowingEnvironment() As IWindowingEnvironment
+End Interface
+
+[InterfaceId("4160CFC6-023D-5E9A-B431-350E67DC978A")]
+Interface IWindowingEnvironmentChangedEventArgs Extends IInspectable
+
+End Interface
+
+[InterfaceId("2E5B5473-BEFF-5E53-9316-7E775FE568B3")]
+Interface IWindowingEnvironmentRemovedEventArgs Extends IInspectable
+    Property Get WindowingEnvironment() As IWindowingEnvironment
+End Interface
+
+[InterfaceId("A35C192A-9459-5BCC-9DB3-23243716197F")]
+Interface IIterator_IWindowingEnvironment Extends IInspectable
+    Property Get Current() As IWindowingEnvironment
+    Property Get HasCurrent() As BooleanByte
+    Function MoveNext() As BooleanByte
+    Function GetMany(ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("626A6481-0174-5A56-84C9-E8D4C48CFB1B")]
+Interface IIterable_IWindowingEnvironment Extends IInspectable
+    Function First() As IIterator_IWindowingEnvironment
+End Interface
+
+[InterfaceId("C833C1C0-79C6-522E-B71B-D845E0F6668E")]
+Interface IVectorView_IWindowingEnvironment Extends IInspectable
+    Function GetAt(ByVal Index As Long) As IWindowingEnvironment
+    Property Get Size() As Long
+    Function IndexOf(ByVal Value As IWindowingEnvironment, Index As Long) As BooleanByte
+    Function GetMany(ByVal StartIndex As Long, ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("874E9FB7-C642-55AB-8AA2-162F734A9A72")]
+Interface IWindowingEnvironmentStatics Extends IInspectable
+    Function FindAll() As IVectorView_IWindowingEnvironment
+    Function FindAllWithKind(ByVal Kind As WindowingEnvironmentKind) As IVectorView_IWindowingEnvironment
+End Interface
+
+Module mdlUIWindowManagement
+
+Public Enum AppWindowClosedReason
+    AppWindowClosedReason_Other
+    AppWindowClosedReason_AppInitiated
+    AppWindowClosedReason_UserInitiated
+End Enum
+
+Public Enum AppWindowFrameStyle
+    AppWindowFrameStyle_Default
+    AppWindowFrameStyle_NoFrame
+End Enum
+
+Public Enum AppWindowPresentationKind
+    AppWindowPresentationKind_Default
+    AppWindowPresentationKind_CompactOverlay
+    AppWindowPresentationKind_FullScreen
+End Enum
+
+Public Enum AppWindowTitleBarVisibility
+    AppWindowTitleBarVisibility_Default
+    AppWindowTitleBarVisibility_AlwaysHidden
+End Enum
+
+Public Enum WindowingEnvironmentKind
+    WindowingEnvironmentKind_Unknown
+    WindowingEnvironmentKind_Overlapped
+    WindowingEnvironmentKind_Tiled
+End Enum
+
+End Module

@@ -1,0 +1,1053 @@
+[InterfaceId("9A586B89-D5D0-4FBE-BD9D-B5B3636811B4")]
+Interface IHttpCacheDirectiveHeaderValueCollection Extends IInspectable
+    Property Get MaxAge() As IReference_TimeSpan
+    Property Set MaxAge(ByVal Value As IReference_TimeSpan)
+    Property Get MaxStale() As IReference_TimeSpan
+    Property Set MaxStale(ByVal Value As IReference_TimeSpan)
+    Property Get MinFresh() As IReference_TimeSpan
+    Property Set MinFresh(ByVal Value As IReference_TimeSpan)
+    Property Get SharedMaxAge() As IReference_TimeSpan
+    Property Set SharedMaxAge(ByVal Value As IReference_TimeSpan)
+    [PreserveSig]
+    Function ParseAdd(ByVal Input As LongPtr) As HRESULT
+    Function TryParseAdd(ByVal Input As LongPtr) As BooleanByte
+End Interface
+
+[InterfaceId("393361AF-0F7D-4820-9FDD-A2B956EEAEAB")]
+Interface IHttpChallengeHeaderValue Extends IInspectable ' requires IStringable
+    Property Get Parameters() As IVector_IHttpNameValueHeaderValue
+    Property Get Scheme() As LongPtr
+    Property Get Token() As LongPtr
+End Interface
+
+[InterfaceId("6BC05705-2C6F-57E8-BF96-56A761E90E8F")]
+Interface IIterator_IHttpChallengeHeaderValue Extends IInspectable
+    Property Get Current() As IHttpChallengeHeaderValue
+    Property Get HasCurrent() As BooleanByte
+    Function MoveNext() As BooleanByte
+    Function GetMany(ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("17847E58-F0CF-52E7-81C0-9D06A081569F")]
+Interface IIterable_IHttpChallengeHeaderValue Extends IInspectable
+    Function First() As IIterator_IHttpChallengeHeaderValue
+End Interface
+
+[InterfaceId("8B79423F-B4A3-501D-BAC2-B88E78E13A21")]
+Interface IVectorView_IHttpChallengeHeaderValue Extends IInspectable
+    Function GetAt(ByVal Index As Long) As IHttpChallengeHeaderValue
+    Property Get Size() As Long
+    Function IndexOf(ByVal Value As IHttpChallengeHeaderValue, Index As Long) As BooleanByte
+    Function GetMany(ByVal StartIndex As Long, ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("3737FC5E-0B27-52A3-9E40-CBB9844E6AB7")]
+Interface IVector_IHttpChallengeHeaderValue Extends IInspectable
+    Function GetAt(ByVal Index As Long) As IHttpChallengeHeaderValue
+    Property Get Size() As Long
+    Function GetView() As IVectorView_IHttpChallengeHeaderValue
+    Function IndexOf(ByVal Value As IHttpChallengeHeaderValue, Index As Long) As BooleanByte
+    [PreserveSig]
+    Function SetAt(ByVal Index As Long, ByVal Value As IHttpChallengeHeaderValue) As HRESULT
+    [PreserveSig]
+    Function InsertAt(ByVal Index As Long, ByVal Value As IHttpChallengeHeaderValue) As HRESULT
+    [PreserveSig]
+    Function RemoveAt(ByVal Index As Long) As HRESULT
+    [PreserveSig]
+    Function Append(ByVal Value As IHttpChallengeHeaderValue) As HRESULT
+    [PreserveSig]
+    Function RemoveAtEnd() As HRESULT
+    [PreserveSig]
+    Function Clear() As HRESULT
+    Function GetMany(ByVal StartIndex As Long, ByVal Length As Long, Items As Any) As Long
+    [PreserveSig]
+    Function ReplaceAll(ByVal Length As Long, Items As Any) As HRESULT
+End Interface
+
+[InterfaceId("CA9E5F81-AEE0-4353-A10B-E625BABD64C2")]
+Interface IHttpChallengeHeaderValueCollection Extends IInspectable ' requires IVector_IHttpChallengeHeaderValue, IStringable
+    [PreserveSig]
+    Function ParseAdd(ByVal Input As LongPtr) As HRESULT
+    Function TryParseAdd(ByVal Input As LongPtr) As BooleanByte
+End Interface
+
+[InterfaceId("C452C451-D99C-40AA-9399-90EEB98FC613")]
+Interface IHttpChallengeHeaderValueFactory Extends IInspectable
+    Function CreateFromScheme(ByVal Scheme As LongPtr) As IHttpChallengeHeaderValue
+    Function CreateFromSchemeWithToken(ByVal Scheme As LongPtr, ByVal Token As LongPtr) As IHttpChallengeHeaderValue
+End Interface
+
+[InterfaceId("F3D38A72-FC01-4D01-A008-FCB7C459D635")]
+Interface IHttpChallengeHeaderValueStatics Extends IInspectable
+    Function Parse(ByVal Input As LongPtr) As IHttpChallengeHeaderValue
+    Function TryParse(ByVal Input As LongPtr, ChallengeHeaderValue As IHttpChallengeHeaderValue) As BooleanByte
+End Interface
+
+[InterfaceId("CB4AF27A-4E90-45EB-8DCD-FD1408F4C44F")]
+Interface IHttpConnectionOptionHeaderValue Extends IInspectable ' requires IStringable
+    Property Get Token() As LongPtr
+End Interface
+
+[InterfaceId("E95057BE-E8BD-53DF-A2F6-865A66A07C6B")]
+Interface IIterator_IHttpConnectionOptionHeaderValue Extends IInspectable
+    Property Get Current() As IHttpConnectionOptionHeaderValue
+    Property Get HasCurrent() As BooleanByte
+    Function MoveNext() As BooleanByte
+    Function GetMany(ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("1AFC512F-DFA2-5528-8AEF-6E6A37789B3C")]
+Interface IIterable_IHttpConnectionOptionHeaderValue Extends IInspectable
+    Function First() As IIterator_IHttpConnectionOptionHeaderValue
+End Interface
+
+[InterfaceId("1BEAE481-9D30-5AC8-942C-49A5F8737ADF")]
+Interface IVectorView_IHttpConnectionOptionHeaderValue Extends IInspectable
+    Function GetAt(ByVal Index As Long) As IHttpConnectionOptionHeaderValue
+    Property Get Size() As Long
+    Function IndexOf(ByVal Value As IHttpConnectionOptionHeaderValue, Index As Long) As BooleanByte
+    Function GetMany(ByVal StartIndex As Long, ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("C312DA8D-C82F-51C9-B705-5A26D52FBEE6")]
+Interface IVector_IHttpConnectionOptionHeaderValue Extends IInspectable
+    Function GetAt(ByVal Index As Long) As IHttpConnectionOptionHeaderValue
+    Property Get Size() As Long
+    Function GetView() As IVectorView_IHttpConnectionOptionHeaderValue
+    Function IndexOf(ByVal Value As IHttpConnectionOptionHeaderValue, Index As Long) As BooleanByte
+    [PreserveSig]
+    Function SetAt(ByVal Index As Long, ByVal Value As IHttpConnectionOptionHeaderValue) As HRESULT
+    [PreserveSig]
+    Function InsertAt(ByVal Index As Long, ByVal Value As IHttpConnectionOptionHeaderValue) As HRESULT
+    [PreserveSig]
+    Function RemoveAt(ByVal Index As Long) As HRESULT
+    [PreserveSig]
+    Function Append(ByVal Value As IHttpConnectionOptionHeaderValue) As HRESULT
+    [PreserveSig]
+    Function RemoveAtEnd() As HRESULT
+    [PreserveSig]
+    Function Clear() As HRESULT
+    Function GetMany(ByVal StartIndex As Long, ByVal Length As Long, Items As Any) As Long
+    [PreserveSig]
+    Function ReplaceAll(ByVal Length As Long, Items As Any) As HRESULT
+End Interface
+
+[InterfaceId("E4F56C1D-5142-4E00-8E0F-019509337629")]
+Interface IHttpConnectionOptionHeaderValueCollection Extends IInspectable ' requires IVector_IHttpConnectionOptionHeaderValue, IStringable
+    [PreserveSig]
+    Function ParseAdd(ByVal Input As LongPtr) As HRESULT
+    Function TryParseAdd(ByVal Input As LongPtr) As BooleanByte
+End Interface
+
+[InterfaceId("D93CCC1E-0B7D-4C3F-A58D-A2A1BDEABC0A")]
+Interface IHttpConnectionOptionHeaderValueFactory Extends IInspectable
+    Function Create(ByVal Token As LongPtr) As IHttpConnectionOptionHeaderValue
+End Interface
+
+[InterfaceId("AAA75D37-A946-4B1F-85AF-48B68B3C50BD")]
+Interface IHttpConnectionOptionHeaderValueStatics Extends IInspectable
+    Function Parse(ByVal Input As LongPtr) As IHttpConnectionOptionHeaderValue
+    Function TryParse(ByVal Input As LongPtr, ConnectionOptionHeaderValue As IHttpConnectionOptionHeaderValue) As BooleanByte
+End Interface
+
+[InterfaceId("BCF7F92A-9376-4D85-BCCC-9F4F9ACAB434")]
+Interface IHttpContentCodingHeaderValue Extends IInspectable ' requires IStringable
+    Property Get ContentCoding() As LongPtr
+End Interface
+
+[InterfaceId("E21AD0B2-C893-5360-A4FE-F083B308A9CD")]
+Interface IIterator_IHttpContentCodingHeaderValue Extends IInspectable
+    Property Get Current() As IHttpContentCodingHeaderValue
+    Property Get HasCurrent() As BooleanByte
+    Function MoveNext() As BooleanByte
+    Function GetMany(ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("0E8960C2-76E5-56C1-9FE6-8CD9018A6786")]
+Interface IIterable_IHttpContentCodingHeaderValue Extends IInspectable
+    Function First() As IIterator_IHttpContentCodingHeaderValue
+End Interface
+
+[InterfaceId("DCDF2620-B6D0-5835-8BEC-D3B946A50F55")]
+Interface IVectorView_IHttpContentCodingHeaderValue Extends IInspectable
+    Function GetAt(ByVal Index As Long) As IHttpContentCodingHeaderValue
+    Property Get Size() As Long
+    Function IndexOf(ByVal Value As IHttpContentCodingHeaderValue, Index As Long) As BooleanByte
+    Function GetMany(ByVal StartIndex As Long, ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("B94E539F-44B6-54C6-9AD4-E2844B3E0BE1")]
+Interface IVector_IHttpContentCodingHeaderValue Extends IInspectable
+    Function GetAt(ByVal Index As Long) As IHttpContentCodingHeaderValue
+    Property Get Size() As Long
+    Function GetView() As IVectorView_IHttpContentCodingHeaderValue
+    Function IndexOf(ByVal Value As IHttpContentCodingHeaderValue, Index As Long) As BooleanByte
+    [PreserveSig]
+    Function SetAt(ByVal Index As Long, ByVal Value As IHttpContentCodingHeaderValue) As HRESULT
+    [PreserveSig]
+    Function InsertAt(ByVal Index As Long, ByVal Value As IHttpContentCodingHeaderValue) As HRESULT
+    [PreserveSig]
+    Function RemoveAt(ByVal Index As Long) As HRESULT
+    [PreserveSig]
+    Function Append(ByVal Value As IHttpContentCodingHeaderValue) As HRESULT
+    [PreserveSig]
+    Function RemoveAtEnd() As HRESULT
+    [PreserveSig]
+    Function Clear() As HRESULT
+    Function GetMany(ByVal StartIndex As Long, ByVal Length As Long, Items As Any) As Long
+    [PreserveSig]
+    Function ReplaceAll(ByVal Length As Long, Items As Any) As HRESULT
+End Interface
+
+[InterfaceId("7D221721-A6DB-436E-8E83-91596192819C")]
+Interface IHttpContentCodingHeaderValueCollection Extends IInspectable ' requires IVector_IHttpContentCodingHeaderValue, IStringable
+    [PreserveSig]
+    Function ParseAdd(ByVal Input As LongPtr) As HRESULT
+    Function TryParseAdd(ByVal Input As LongPtr) As BooleanByte
+End Interface
+
+[InterfaceId("C53D2BD7-332B-4350-8510-2E67A2289A5A")]
+Interface IHttpContentCodingHeaderValueFactory Extends IInspectable
+    Function Create(ByVal ContentCoding As LongPtr) As IHttpContentCodingHeaderValue
+End Interface
+
+[InterfaceId("94D8602E-F9BF-42F7-AA46-ED272A41E212")]
+Interface IHttpContentCodingHeaderValueStatics Extends IInspectable
+    Function Parse(ByVal Input As LongPtr) As IHttpContentCodingHeaderValue
+    Function TryParse(ByVal Input As LongPtr, ContentCodingHeaderValue As IHttpContentCodingHeaderValue) As BooleanByte
+End Interface
+
+[InterfaceId("94531CD5-8B13-4D73-8651-F76B38F88495")]
+Interface IHttpContentCodingWithQualityHeaderValue Extends IInspectable ' requires IStringable
+    Property Get ContentCoding() As LongPtr
+    Property Get Quality() As IReference_Double
+End Interface
+
+[InterfaceId("3780C808-8B98-5327-84C7-055363FE32AD")]
+Interface IIterator_IHttpContentCodingWithQualityHeaderValue Extends IInspectable
+    Property Get Current() As IHttpContentCodingWithQualityHeaderValue
+    Property Get HasCurrent() As BooleanByte
+    Function MoveNext() As BooleanByte
+    Function GetMany(ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("916E6271-CEF6-53B8-B93F-DC8DCA559E50")]
+Interface IIterable_IHttpContentCodingWithQualityHeaderValue Extends IInspectable
+    Function First() As IIterator_IHttpContentCodingWithQualityHeaderValue
+End Interface
+
+[InterfaceId("EB18569B-A7AB-58BB-8880-DD022F755B51")]
+Interface IVectorView_IHttpContentCodingWithQualityHeaderValue Extends IInspectable
+    Function GetAt(ByVal Index As Long) As IHttpContentCodingWithQualityHeaderValue
+    Property Get Size() As Long
+    Function IndexOf(ByVal Value As IHttpContentCodingWithQualityHeaderValue, Index As Long) As BooleanByte
+    Function GetMany(ByVal StartIndex As Long, ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("33F9653D-0EED-5368-A51E-98385191F86F")]
+Interface IVector_IHttpContentCodingWithQualityHeaderValue Extends IInspectable
+    Function GetAt(ByVal Index As Long) As IHttpContentCodingWithQualityHeaderValue
+    Property Get Size() As Long
+    Function GetView() As IVectorView_IHttpContentCodingWithQualityHeaderValue
+    Function IndexOf(ByVal Value As IHttpContentCodingWithQualityHeaderValue, Index As Long) As BooleanByte
+    [PreserveSig]
+    Function SetAt(ByVal Index As Long, ByVal Value As IHttpContentCodingWithQualityHeaderValue) As HRESULT
+    [PreserveSig]
+    Function InsertAt(ByVal Index As Long, ByVal Value As IHttpContentCodingWithQualityHeaderValue) As HRESULT
+    [PreserveSig]
+    Function RemoveAt(ByVal Index As Long) As HRESULT
+    [PreserveSig]
+    Function Append(ByVal Value As IHttpContentCodingWithQualityHeaderValue) As HRESULT
+    [PreserveSig]
+    Function RemoveAtEnd() As HRESULT
+    [PreserveSig]
+    Function Clear() As HRESULT
+    Function GetMany(ByVal StartIndex As Long, ByVal Length As Long, Items As Any) As Long
+    [PreserveSig]
+    Function ReplaceAll(ByVal Length As Long, Items As Any) As HRESULT
+End Interface
+
+[InterfaceId("7C0D753E-E899-4378-B5C8-412D820711CC")]
+Interface IHttpContentCodingWithQualityHeaderValueCollection Extends IInspectable ' requires IVector_IHttpContentCodingWithQualityHeaderValue, IStringable
+    [PreserveSig]
+    Function ParseAdd(ByVal Input As LongPtr) As HRESULT
+    Function TryParseAdd(ByVal Input As LongPtr) As BooleanByte
+End Interface
+
+[InterfaceId("C45EEE1A-C553-46FC-ADE2-D75C1D53DF7B")]
+Interface IHttpContentCodingWithQualityHeaderValueFactory Extends IInspectable
+    Function CreateFromValue(ByVal ContentCoding As LongPtr) As IHttpContentCodingWithQualityHeaderValue
+    Function CreateFromValueWithQuality(ByVal ContentCoding As LongPtr, ByVal Quality As Double) As IHttpContentCodingWithQualityHeaderValue
+End Interface
+
+[InterfaceId("E8C9357C-8F89-4801-8E75-4C9ABFC3DE71")]
+Interface IHttpContentCodingWithQualityHeaderValueStatics Extends IInspectable
+    Function Parse(ByVal Input As LongPtr) As IHttpContentCodingWithQualityHeaderValue
+    Function TryParse(ByVal Input As LongPtr, ContentCodingWithQualityHeaderValue As IHttpContentCodingWithQualityHeaderValue) As BooleanByte
+End Interface
+
+[InterfaceId("F2A2EEDC-2629-4B49-9908-96A168E9365E")]
+Interface IHttpContentDispositionHeaderValue Extends IInspectable
+    Property Get DispositionType() As LongPtr
+    Property Let DispositionType(ByVal Value As LongPtr)
+    Property Get FileName() As LongPtr
+    Property Let FileName(ByVal Value As LongPtr)
+    Property Get FileNameStar() As LongPtr
+    Property Let FileNameStar(ByVal Value As LongPtr)
+    Property Get Name() As LongPtr
+    Property Let Name(ByVal Value As LongPtr)
+    Property Get Parameters() As IVector_IHttpNameValueHeaderValue
+    Property Get Size() As IReference_UInt64
+    Property Set Size(ByVal Value As IReference_UInt64)
+End Interface
+
+[InterfaceId("9915BBC4-456C-4E81-8295-B2AB3CBCF545")]
+Interface IHttpContentDispositionHeaderValueFactory Extends IInspectable
+    Function Create(ByVal DispositionType As LongPtr) As IHttpContentDispositionHeaderValue
+End Interface
+
+[InterfaceId("29C56067-5A37-46E4-B074-C5177D69CA66")]
+Interface IHttpContentDispositionHeaderValueStatics Extends IInspectable
+    Function Parse(ByVal Input As LongPtr) As IHttpContentDispositionHeaderValue
+    Function TryParse(ByVal Input As LongPtr, ContentDispositionHeaderValue As IHttpContentDispositionHeaderValue) As BooleanByte
+End Interface
+
+[InterfaceId("40612A44-47AE-4B7E-9124-69628B64AA18")]
+Interface IHttpContentHeaderCollection Extends IInspectable
+    Property Get ContentDisposition() As IHttpContentDispositionHeaderValue
+    Property Set ContentDisposition(ByVal Value As IHttpContentDispositionHeaderValue)
+    Property Get ContentEncoding() As IHttpContentCodingHeaderValueCollection
+    Property Get ContentLanguage() As IHttpLanguageHeaderValueCollection
+    Property Get ContentLength() As IReference_UInt64
+    Property Set ContentLength(ByVal Value As IReference_UInt64)
+    Property Get ContentLocation() As IUri
+    Property Set ContentLocation(ByVal Value As IUri)
+    Property Get ContentMD5() As IBuffer
+    Property Set ContentMD5(ByVal Value As IBuffer)
+    Property Get ContentRange() As IHttpContentRangeHeaderValue
+    Property Set ContentRange(ByVal Value As IHttpContentRangeHeaderValue)
+    Property Get ContentType() As IHttpMediaTypeHeaderValue
+    Property Set ContentType(ByVal Value As IHttpMediaTypeHeaderValue)
+    Property Get Expires() As IReference_DateTime
+    Property Set Expires(ByVal Value As IReference_DateTime)
+    Property Get LastModified() As IReference_DateTime
+    Property Set LastModified(ByVal Value As IReference_DateTime)
+    [PreserveSig]
+    Function Append(ByVal Name As LongPtr, ByVal Value As LongPtr) As HRESULT
+    Function TryAppendWithoutValidation(ByVal Name As LongPtr, ByVal Value As LongPtr) As BooleanByte
+End Interface
+
+[InterfaceId("04D967D3-A4F6-495C-9530-8579FCBA8AA9")]
+Interface IHttpContentRangeHeaderValue Extends IInspectable
+    Property Get FirstBytePosition() As IReference_UInt64
+    Property Get LastBytePosition() As IReference_UInt64
+    Property Get Length() As IReference_UInt64
+    Property Get Unit() As LongPtr
+    Property Let Unit(ByVal Value As LongPtr)
+End Interface
+
+[InterfaceId("3F5BD691-A03C-4456-9A6F-EF27ECD03CAE")]
+Interface IHttpContentRangeHeaderValueFactory Extends IInspectable
+    Function CreateFromLength(ByVal Length As UInt64) As IHttpContentRangeHeaderValue
+    Function CreateFromRange(ByVal From As UInt64, ByVal To As UInt64) As IHttpContentRangeHeaderValue
+    Function CreateFromRangeWithLength(ByVal From As UInt64, ByVal To As UInt64, ByVal Length As UInt64) As IHttpContentRangeHeaderValue
+End Interface
+
+[InterfaceId("80A346CA-174C-4FAE-821C-134CD294AA38")]
+Interface IHttpContentRangeHeaderValueStatics Extends IInspectable
+    Function Parse(ByVal Input As LongPtr) As IHttpContentRangeHeaderValue
+    Function TryParse(ByVal Input As LongPtr, ContentRangeHeaderValue As IHttpContentRangeHeaderValue) As BooleanByte
+End Interface
+
+[InterfaceId("CBD46217-4B29-412B-BD90-B3D814AB8E1B")]
+Interface IHttpCookiePairHeaderValue Extends IInspectable ' requires IStringable
+    Property Get Name() As LongPtr
+    Property Get Value() As LongPtr
+    Property Let Value(ByVal Value As LongPtr)
+End Interface
+
+[InterfaceId("ED3B6323-B1C3-558B-9917-0826C4A9E8C0")]
+Interface IIterator_IHttpCookiePairHeaderValue Extends IInspectable
+    Property Get Current() As IHttpCookiePairHeaderValue
+    Property Get HasCurrent() As BooleanByte
+    Function MoveNext() As BooleanByte
+    Function GetMany(ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("16773244-5011-5244-BB00-14DB4CF71005")]
+Interface IIterable_IHttpCookiePairHeaderValue Extends IInspectable
+    Function First() As IIterator_IHttpCookiePairHeaderValue
+End Interface
+
+[InterfaceId("AD89192D-6EF8-56B5-A4DC-E48D0E85D569")]
+Interface IVectorView_IHttpCookiePairHeaderValue Extends IInspectable
+    Function GetAt(ByVal Index As Long) As IHttpCookiePairHeaderValue
+    Property Get Size() As Long
+    Function IndexOf(ByVal Value As IHttpCookiePairHeaderValue, Index As Long) As BooleanByte
+    Function GetMany(ByVal StartIndex As Long, ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("BC196ACE-8A56-5FD0-9878-C807EDD8645A")]
+Interface IVector_IHttpCookiePairHeaderValue Extends IInspectable
+    Function GetAt(ByVal Index As Long) As IHttpCookiePairHeaderValue
+    Property Get Size() As Long
+    Function GetView() As IVectorView_IHttpCookiePairHeaderValue
+    Function IndexOf(ByVal Value As IHttpCookiePairHeaderValue, Index As Long) As BooleanByte
+    [PreserveSig]
+    Function SetAt(ByVal Index As Long, ByVal Value As IHttpCookiePairHeaderValue) As HRESULT
+    [PreserveSig]
+    Function InsertAt(ByVal Index As Long, ByVal Value As IHttpCookiePairHeaderValue) As HRESULT
+    [PreserveSig]
+    Function RemoveAt(ByVal Index As Long) As HRESULT
+    [PreserveSig]
+    Function Append(ByVal Value As IHttpCookiePairHeaderValue) As HRESULT
+    [PreserveSig]
+    Function RemoveAtEnd() As HRESULT
+    [PreserveSig]
+    Function Clear() As HRESULT
+    Function GetMany(ByVal StartIndex As Long, ByVal Length As Long, Items As Any) As Long
+    [PreserveSig]
+    Function ReplaceAll(ByVal Length As Long, Items As Any) As HRESULT
+End Interface
+
+[InterfaceId("F3F44350-581E-4ECC-9F59-E507D04F06E6")]
+Interface IHttpCookiePairHeaderValueCollection Extends IInspectable ' requires IVector_IHttpCookiePairHeaderValue, IStringable
+    [PreserveSig]
+    Function ParseAdd(ByVal Input As LongPtr) As HRESULT
+    Function TryParseAdd(ByVal Input As LongPtr) As BooleanByte
+End Interface
+
+[InterfaceId("635E326F-146F-4F56-AA21-2CB7D6D58B1E")]
+Interface IHttpCookiePairHeaderValueFactory Extends IInspectable
+    Function CreateFromName(ByVal Name As LongPtr) As IHttpCookiePairHeaderValue
+    Function CreateFromNameWithValue(ByVal Name As LongPtr, ByVal Value As LongPtr) As IHttpCookiePairHeaderValue
+End Interface
+
+[InterfaceId("6E866D48-06AF-4462-8158-99388D5DCA81")]
+Interface IHttpCookiePairHeaderValueStatics Extends IInspectable
+    Function Parse(ByVal Input As LongPtr) As IHttpCookiePairHeaderValue
+    Function TryParse(ByVal Input As LongPtr, CookiePairHeaderValue As IHttpCookiePairHeaderValue) As BooleanByte
+End Interface
+
+[InterfaceId("C34CC3CB-542E-4177-A6C7-B674CE193FBF")]
+Interface IHttpCredentialsHeaderValue Extends IInspectable
+    Property Get Parameters() As IVector_IHttpNameValueHeaderValue
+    Property Get Scheme() As LongPtr
+    Property Get Token() As LongPtr
+End Interface
+
+[InterfaceId("F21D9E91-4D1C-4182-BFD1-34470A62F950")]
+Interface IHttpCredentialsHeaderValueFactory Extends IInspectable
+    Function CreateFromScheme(ByVal Scheme As LongPtr) As IHttpCredentialsHeaderValue
+    Function CreateFromSchemeWithToken(ByVal Scheme As LongPtr, ByVal Token As LongPtr) As IHttpCredentialsHeaderValue
+End Interface
+
+[InterfaceId("A69B2BE6-CE8C-4443-A35A-1B727B131036")]
+Interface IHttpCredentialsHeaderValueStatics Extends IInspectable
+    Function Parse(ByVal Input As LongPtr) As IHttpCredentialsHeaderValue
+    Function TryParse(ByVal Input As LongPtr, CredentialsHeaderValue As IHttpCredentialsHeaderValue) As BooleanByte
+End Interface
+
+[InterfaceId("EAFCAA6A-C4DC-49E2-A27D-043ADF5867A3")]
+Interface IHttpDateOrDeltaHeaderValue Extends IInspectable
+    Property Get Date() As IReference_DateTime
+    Property Get Delta() As IReference_TimeSpan
+End Interface
+
+[InterfaceId("7C2659A8-6672-4E90-9A9A-F39766F7F576")]
+Interface IHttpDateOrDeltaHeaderValueStatics Extends IInspectable
+    Function Parse(ByVal Input As LongPtr) As IHttpDateOrDeltaHeaderValue
+    Function TryParse(ByVal Input As LongPtr, DateOrDeltaHeaderValue As IHttpDateOrDeltaHeaderValue) As BooleanByte
+End Interface
+
+[InterfaceId("4CE585CD-3A99-43AF-A2E6-EC232FEA9658")]
+Interface IHttpExpectationHeaderValue Extends IInspectable ' requires IStringable
+    Property Get Name() As LongPtr
+    Property Get Value() As LongPtr
+    Property Let Value(ByVal Value As LongPtr)
+    Property Get Parameters() As IVector_IHttpNameValueHeaderValue
+End Interface
+
+[InterfaceId("6B72326A-46B1-5D80-A162-C5F45BE02E2B")]
+Interface IIterator_IHttpExpectationHeaderValue Extends IInspectable
+    Property Get Current() As IHttpExpectationHeaderValue
+    Property Get HasCurrent() As BooleanByte
+    Function MoveNext() As BooleanByte
+    Function GetMany(ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("0A391C2B-13C3-59B8-8662-13AFFB9D1754")]
+Interface IIterable_IHttpExpectationHeaderValue Extends IInspectable
+    Function First() As IIterator_IHttpExpectationHeaderValue
+End Interface
+
+[InterfaceId("71A22F32-A3C0-574B-87B4-127199CC7D5E")]
+Interface IVectorView_IHttpExpectationHeaderValue Extends IInspectable
+    Function GetAt(ByVal Index As Long) As IHttpExpectationHeaderValue
+    Property Get Size() As Long
+    Function IndexOf(ByVal Value As IHttpExpectationHeaderValue, Index As Long) As BooleanByte
+    Function GetMany(ByVal StartIndex As Long, ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("18E138EE-FEC7-527D-8693-DEEBCA4F3DCD")]
+Interface IVector_IHttpExpectationHeaderValue Extends IInspectable
+    Function GetAt(ByVal Index As Long) As IHttpExpectationHeaderValue
+    Property Get Size() As Long
+    Function GetView() As IVectorView_IHttpExpectationHeaderValue
+    Function IndexOf(ByVal Value As IHttpExpectationHeaderValue, Index As Long) As BooleanByte
+    [PreserveSig]
+    Function SetAt(ByVal Index As Long, ByVal Value As IHttpExpectationHeaderValue) As HRESULT
+    [PreserveSig]
+    Function InsertAt(ByVal Index As Long, ByVal Value As IHttpExpectationHeaderValue) As HRESULT
+    [PreserveSig]
+    Function RemoveAt(ByVal Index As Long) As HRESULT
+    [PreserveSig]
+    Function Append(ByVal Value As IHttpExpectationHeaderValue) As HRESULT
+    [PreserveSig]
+    Function RemoveAtEnd() As HRESULT
+    [PreserveSig]
+    Function Clear() As HRESULT
+    Function GetMany(ByVal StartIndex As Long, ByVal Length As Long, Items As Any) As Long
+    [PreserveSig]
+    Function ReplaceAll(ByVal Length As Long, Items As Any) As HRESULT
+End Interface
+
+[InterfaceId("E78521B3-A0E2-4AC4-9E66-79706CB9FD58")]
+Interface IHttpExpectationHeaderValueCollection Extends IInspectable ' requires IVector_IHttpExpectationHeaderValue, IStringable
+    [PreserveSig]
+    Function ParseAdd(ByVal Input As LongPtr) As HRESULT
+    Function TryParseAdd(ByVal Input As LongPtr) As BooleanByte
+End Interface
+
+[InterfaceId("4EA275CB-D53E-4868-8856-1E21A5030DC0")]
+Interface IHttpExpectationHeaderValueFactory Extends IInspectable
+    Function CreateFromName(ByVal Name As LongPtr) As IHttpExpectationHeaderValue
+    Function CreateFromNameWithValue(ByVal Name As LongPtr, ByVal Value As LongPtr) As IHttpExpectationHeaderValue
+End Interface
+
+[InterfaceId("3019ABE2-CFE5-473B-A57F-FBA5B14EB257")]
+Interface IHttpExpectationHeaderValueStatics Extends IInspectable
+    Function Parse(ByVal Input As LongPtr) As IHttpExpectationHeaderValue
+    Function TryParse(ByVal Input As LongPtr, ExpectationHeaderValue As IHttpExpectationHeaderValue) As BooleanByte
+End Interface
+
+[InterfaceId("DCF2525A-42C0-501D-9FCB-471FAE060396")]
+Interface IVector_ILanguage Extends IInspectable
+    Function GetAt(ByVal Index As Long) As ILanguage
+    Property Get Size() As Long
+    Function GetView() As IVectorView_ILanguage
+    Function IndexOf(ByVal Value As ILanguage, Index As Long) As BooleanByte
+    [PreserveSig]
+    Function SetAt(ByVal Index As Long, ByVal Value As ILanguage) As HRESULT
+    [PreserveSig]
+    Function InsertAt(ByVal Index As Long, ByVal Value As ILanguage) As HRESULT
+    [PreserveSig]
+    Function RemoveAt(ByVal Index As Long) As HRESULT
+    [PreserveSig]
+    Function Append(ByVal Value As ILanguage) As HRESULT
+    [PreserveSig]
+    Function RemoveAtEnd() As HRESULT
+    [PreserveSig]
+    Function Clear() As HRESULT
+    Function GetMany(ByVal StartIndex As Long, ByVal Length As Long, Items As Any) As Long
+    [PreserveSig]
+    Function ReplaceAll(ByVal Length As Long, Items As Any) As HRESULT
+End Interface
+
+[InterfaceId("9EBD7CA3-8219-44F6-9902-8C56DFD3340C")]
+Interface IHttpLanguageHeaderValueCollection Extends IInspectable ' requires IVector_ILanguage, IStringable
+    [PreserveSig]
+    Function ParseAdd(ByVal Input As LongPtr) As HRESULT
+    Function TryParseAdd(ByVal Input As LongPtr) As BooleanByte
+End Interface
+
+[InterfaceId("7256E102-0080-4DB4-A083-7DE7B2E5BA4C")]
+Interface IHttpLanguageRangeWithQualityHeaderValue Extends IInspectable ' requires IStringable
+    Property Get LanguageRange() As LongPtr
+    Property Get Quality() As IReference_Double
+End Interface
+
+[InterfaceId("A25503DE-4AEF-5EF4-9F06-5DF4094051BE")]
+Interface IIterator_IHttpLanguageRangeWithQualityHeaderValue Extends IInspectable
+    Property Get Current() As IHttpLanguageRangeWithQualityHeaderValue
+    Property Get HasCurrent() As BooleanByte
+    Function MoveNext() As BooleanByte
+    Function GetMany(ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("0C5A4A0D-DBB7-5ABF-A5FD-C3B98D9C1487")]
+Interface IIterable_IHttpLanguageRangeWithQualityHeaderValue Extends IInspectable
+    Function First() As IIterator_IHttpLanguageRangeWithQualityHeaderValue
+End Interface
+
+[InterfaceId("551FB7FB-CE42-5FFD-A2E0-2A6CE1698070")]
+Interface IVectorView_IHttpLanguageRangeWithQualityHeaderValue Extends IInspectable
+    Function GetAt(ByVal Index As Long) As IHttpLanguageRangeWithQualityHeaderValue
+    Property Get Size() As Long
+    Function IndexOf(ByVal Value As IHttpLanguageRangeWithQualityHeaderValue, Index As Long) As BooleanByte
+    Function GetMany(ByVal StartIndex As Long, ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("B6DF6DA2-8D92-5270-9584-D6A9A931586D")]
+Interface IVector_IHttpLanguageRangeWithQualityHeaderValue Extends IInspectable
+    Function GetAt(ByVal Index As Long) As IHttpLanguageRangeWithQualityHeaderValue
+    Property Get Size() As Long
+    Function GetView() As IVectorView_IHttpLanguageRangeWithQualityHeaderValue
+    Function IndexOf(ByVal Value As IHttpLanguageRangeWithQualityHeaderValue, Index As Long) As BooleanByte
+    [PreserveSig]
+    Function SetAt(ByVal Index As Long, ByVal Value As IHttpLanguageRangeWithQualityHeaderValue) As HRESULT
+    [PreserveSig]
+    Function InsertAt(ByVal Index As Long, ByVal Value As IHttpLanguageRangeWithQualityHeaderValue) As HRESULT
+    [PreserveSig]
+    Function RemoveAt(ByVal Index As Long) As HRESULT
+    [PreserveSig]
+    Function Append(ByVal Value As IHttpLanguageRangeWithQualityHeaderValue) As HRESULT
+    [PreserveSig]
+    Function RemoveAtEnd() As HRESULT
+    [PreserveSig]
+    Function Clear() As HRESULT
+    Function GetMany(ByVal StartIndex As Long, ByVal Length As Long, Items As Any) As Long
+    [PreserveSig]
+    Function ReplaceAll(ByVal Length As Long, Items As Any) As HRESULT
+End Interface
+
+[InterfaceId("885D5ABD-4B4F-480A-89CE-8AEDCEE6E3A0")]
+Interface IHttpLanguageRangeWithQualityHeaderValueCollection Extends IInspectable ' requires IVector_IHttpLanguageRangeWithQualityHeaderValue, IStringable
+    [PreserveSig]
+    Function ParseAdd(ByVal Input As LongPtr) As HRESULT
+    Function TryParseAdd(ByVal Input As LongPtr) As BooleanByte
+End Interface
+
+[InterfaceId("7BB83970-780F-4C83-9FE4-DC3087F6BD55")]
+Interface IHttpLanguageRangeWithQualityHeaderValueFactory Extends IInspectable
+    Function CreateFromLanguageRange(ByVal LanguageRange As LongPtr) As IHttpLanguageRangeWithQualityHeaderValue
+    Function CreateFromLanguageRangeWithQuality(ByVal LanguageRange As LongPtr, ByVal Quality As Double) As IHttpLanguageRangeWithQualityHeaderValue
+End Interface
+
+[InterfaceId("2541E146-F308-46F5-B695-42F54024EC68")]
+Interface IHttpLanguageRangeWithQualityHeaderValueStatics Extends IInspectable
+    Function Parse(ByVal Input As LongPtr) As IHttpLanguageRangeWithQualityHeaderValue
+    Function TryParse(ByVal Input As LongPtr, LanguageRangeWithQualityHeaderValue As IHttpLanguageRangeWithQualityHeaderValue) As BooleanByte
+End Interface
+
+[InterfaceId("16B28533-E728-4FCB-BDB0-08A431A14844")]
+Interface IHttpMediaTypeHeaderValue Extends IInspectable
+    Property Get CharSet() As LongPtr
+    Property Let CharSet(ByVal Value As LongPtr)
+    Property Get MediaType() As LongPtr
+    Property Let MediaType(ByVal Value As LongPtr)
+    Property Get Parameters() As IVector_IHttpNameValueHeaderValue
+End Interface
+
+[InterfaceId("BED747A8-CD17-42DD-9367-AB9C5B56DD7D")]
+Interface IHttpMediaTypeHeaderValueFactory Extends IInspectable
+    Function Create(ByVal MediaType As LongPtr) As IHttpMediaTypeHeaderValue
+End Interface
+
+[InterfaceId("E04D83DF-1D41-4D8C-A2DE-6FD2ED87399B")]
+Interface IHttpMediaTypeHeaderValueStatics Extends IInspectable
+    Function Parse(ByVal Input As LongPtr) As IHttpMediaTypeHeaderValue
+    Function TryParse(ByVal Input As LongPtr, MediaTypeHeaderValue As IHttpMediaTypeHeaderValue) As BooleanByte
+End Interface
+
+[InterfaceId("188D5E32-76BE-44A0-B1CD-2074BDED2DDE")]
+Interface IHttpMediaTypeWithQualityHeaderValue Extends IInspectable ' requires IStringable
+    Property Get CharSet() As LongPtr
+    Property Let CharSet(ByVal Value As LongPtr)
+    Property Get MediaType() As LongPtr
+    Property Let MediaType(ByVal Value As LongPtr)
+    Property Get Parameters() As IVector_IHttpNameValueHeaderValue
+    Property Get Quality() As IReference_Double
+    Property Set Quality(ByVal Value As IReference_Double)
+End Interface
+
+[InterfaceId("6A2084A3-941A-5528-A2EC-28CF1FF9B1A9")]
+Interface IIterator_IHttpMediaTypeWithQualityHeaderValue Extends IInspectable
+    Property Get Current() As IHttpMediaTypeWithQualityHeaderValue
+    Property Get HasCurrent() As BooleanByte
+    Function MoveNext() As BooleanByte
+    Function GetMany(ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("FFC7DFDE-58B8-51E9-B33B-65A5D6A4E24C")]
+Interface IIterable_IHttpMediaTypeWithQualityHeaderValue Extends IInspectable
+    Function First() As IIterator_IHttpMediaTypeWithQualityHeaderValue
+End Interface
+
+[InterfaceId("F1C1E9BD-01A6-5BD3-AF7B-C14220A645C0")]
+Interface IVectorView_IHttpMediaTypeWithQualityHeaderValue Extends IInspectable
+    Function GetAt(ByVal Index As Long) As IHttpMediaTypeWithQualityHeaderValue
+    Property Get Size() As Long
+    Function IndexOf(ByVal Value As IHttpMediaTypeWithQualityHeaderValue, Index As Long) As BooleanByte
+    Function GetMany(ByVal StartIndex As Long, ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("C18538F7-C256-5666-8868-2225AF3574B6")]
+Interface IVector_IHttpMediaTypeWithQualityHeaderValue Extends IInspectable
+    Function GetAt(ByVal Index As Long) As IHttpMediaTypeWithQualityHeaderValue
+    Property Get Size() As Long
+    Function GetView() As IVectorView_IHttpMediaTypeWithQualityHeaderValue
+    Function IndexOf(ByVal Value As IHttpMediaTypeWithQualityHeaderValue, Index As Long) As BooleanByte
+    [PreserveSig]
+    Function SetAt(ByVal Index As Long, ByVal Value As IHttpMediaTypeWithQualityHeaderValue) As HRESULT
+    [PreserveSig]
+    Function InsertAt(ByVal Index As Long, ByVal Value As IHttpMediaTypeWithQualityHeaderValue) As HRESULT
+    [PreserveSig]
+    Function RemoveAt(ByVal Index As Long) As HRESULT
+    [PreserveSig]
+    Function Append(ByVal Value As IHttpMediaTypeWithQualityHeaderValue) As HRESULT
+    [PreserveSig]
+    Function RemoveAtEnd() As HRESULT
+    [PreserveSig]
+    Function Clear() As HRESULT
+    Function GetMany(ByVal StartIndex As Long, ByVal Length As Long, Items As Any) As Long
+    [PreserveSig]
+    Function ReplaceAll(ByVal Length As Long, Items As Any) As HRESULT
+End Interface
+
+[InterfaceId("3C0C6B73-1342-4587-A056-18D02FF67165")]
+Interface IHttpMediaTypeWithQualityHeaderValueCollection Extends IInspectable ' requires IVector_IHttpMediaTypeWithQualityHeaderValue, IStringable
+    [PreserveSig]
+    Function ParseAdd(ByVal Input As LongPtr) As HRESULT
+    Function TryParseAdd(ByVal Input As LongPtr) As BooleanByte
+End Interface
+
+[InterfaceId("4C6D20F4-9457-44E6-A323-D122B958780B")]
+Interface IHttpMediaTypeWithQualityHeaderValueFactory Extends IInspectable
+    Function CreateFromMediaType(ByVal MediaType As LongPtr) As IHttpMediaTypeWithQualityHeaderValue
+    Function CreateFromMediaTypeWithQuality(ByVal MediaType As LongPtr, ByVal Quality As Double) As IHttpMediaTypeWithQualityHeaderValue
+End Interface
+
+[InterfaceId("5B070CD9-B560-4FC8-9835-7E6C0A657B24")]
+Interface IHttpMediaTypeWithQualityHeaderValueStatics Extends IInspectable
+    Function Parse(ByVal Input As LongPtr) As IHttpMediaTypeWithQualityHeaderValue
+    Function TryParse(ByVal Input As LongPtr, MediaTypeWithQualityHeaderValue As IHttpMediaTypeWithQualityHeaderValue) As BooleanByte
+End Interface
+
+[InterfaceId("D13A880F-D612-50CF-A6F9-DD96F916F491")]
+Interface IIterator_IHttpMethod Extends IInspectable
+    Property Get Current() As IHttpMethod
+    Property Get HasCurrent() As BooleanByte
+    Function MoveNext() As BooleanByte
+    Function GetMany(ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("C088BB1A-DC61-57E1-B967-78DAB3541DA5")]
+Interface IIterable_IHttpMethod Extends IInspectable
+    Function First() As IIterator_IHttpMethod
+End Interface
+
+[InterfaceId("EF132FB7-D286-5327-B38A-BE7D008328FE")]
+Interface IVectorView_IHttpMethod Extends IInspectable
+    Function GetAt(ByVal Index As Long) As IHttpMethod
+    Property Get Size() As Long
+    Function IndexOf(ByVal Value As IHttpMethod, Index As Long) As BooleanByte
+    Function GetMany(ByVal StartIndex As Long, ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("228A73A2-A509-5A78-BD7F-DB94BA0BEF21")]
+Interface IVector_IHttpMethod Extends IInspectable
+    Function GetAt(ByVal Index As Long) As IHttpMethod
+    Property Get Size() As Long
+    Function GetView() As IVectorView_IHttpMethod
+    Function IndexOf(ByVal Value As IHttpMethod, Index As Long) As BooleanByte
+    [PreserveSig]
+    Function SetAt(ByVal Index As Long, ByVal Value As IHttpMethod) As HRESULT
+    [PreserveSig]
+    Function InsertAt(ByVal Index As Long, ByVal Value As IHttpMethod) As HRESULT
+    [PreserveSig]
+    Function RemoveAt(ByVal Index As Long) As HRESULT
+    [PreserveSig]
+    Function Append(ByVal Value As IHttpMethod) As HRESULT
+    [PreserveSig]
+    Function RemoveAtEnd() As HRESULT
+    [PreserveSig]
+    Function Clear() As HRESULT
+    Function GetMany(ByVal StartIndex As Long, ByVal Length As Long, Items As Any) As Long
+    [PreserveSig]
+    Function ReplaceAll(ByVal Length As Long, Items As Any) As HRESULT
+End Interface
+
+[InterfaceId("43BC3FF4-6119-4ADF-938C-34BFFFCF92ED")]
+Interface IHttpMethodHeaderValueCollection Extends IInspectable ' requires IVector_IHttpMethod, IStringable
+    [PreserveSig]
+    Function ParseAdd(ByVal Input As LongPtr) As HRESULT
+    Function TryParseAdd(ByVal Input As LongPtr) As BooleanByte
+End Interface
+
+[InterfaceId("3BB0C8FA-5F1F-5C70-9950-5D1D1A703DD4")]
+Interface IIterator_IHttpNameValueHeaderValue Extends IInspectable
+    Property Get Current() As IHttpNameValueHeaderValue
+    Property Get HasCurrent() As BooleanByte
+    Function MoveNext() As BooleanByte
+    Function GetMany(ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("5838A126-B617-5417-B32E-DED2D27D40A3")]
+Interface IIterable_IHttpNameValueHeaderValue Extends IInspectable
+    Function First() As IIterator_IHttpNameValueHeaderValue
+End Interface
+
+[InterfaceId("1EF903C8-8EEF-5E9E-B938-B9E428A77672")]
+Interface IVectorView_IHttpNameValueHeaderValue Extends IInspectable
+    Function GetAt(ByVal Index As Long) As IHttpNameValueHeaderValue
+    Property Get Size() As Long
+    Function IndexOf(ByVal Value As IHttpNameValueHeaderValue, Index As Long) As BooleanByte
+    Function GetMany(ByVal StartIndex As Long, ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("2CF800D4-35D0-545C-AB82-F6793BE74CBA")]
+Interface IVector_IHttpNameValueHeaderValue Extends IInspectable
+    Function GetAt(ByVal Index As Long) As IHttpNameValueHeaderValue
+    Property Get Size() As Long
+    Function GetView() As IVectorView_IHttpNameValueHeaderValue
+    Function IndexOf(ByVal Value As IHttpNameValueHeaderValue, Index As Long) As BooleanByte
+    [PreserveSig]
+    Function SetAt(ByVal Index As Long, ByVal Value As IHttpNameValueHeaderValue) As HRESULT
+    [PreserveSig]
+    Function InsertAt(ByVal Index As Long, ByVal Value As IHttpNameValueHeaderValue) As HRESULT
+    [PreserveSig]
+    Function RemoveAt(ByVal Index As Long) As HRESULT
+    [PreserveSig]
+    Function Append(ByVal Value As IHttpNameValueHeaderValue) As HRESULT
+    [PreserveSig]
+    Function RemoveAtEnd() As HRESULT
+    [PreserveSig]
+    Function Clear() As HRESULT
+    Function GetMany(ByVal StartIndex As Long, ByVal Length As Long, Items As Any) As Long
+    [PreserveSig]
+    Function ReplaceAll(ByVal Length As Long, Items As Any) As HRESULT
+End Interface
+
+[InterfaceId("D8BA7463-5B9A-4D1B-93F9-AA5B44ECFDDF")]
+Interface IHttpNameValueHeaderValue Extends IInspectable ' requires IStringable
+    Property Get Name() As LongPtr
+    Property Get Value() As LongPtr
+    Property Let Value(ByVal Value As LongPtr)
+End Interface
+
+[InterfaceId("770E2267-CBF8-4736-A925-93FBE10C7CA8")]
+Interface IHttpNameValueHeaderValueFactory Extends IInspectable
+    Function CreateFromName(ByVal Name As LongPtr) As IHttpNameValueHeaderValue
+    Function CreateFromNameWithValue(ByVal Name As LongPtr, ByVal Value As LongPtr) As IHttpNameValueHeaderValue
+End Interface
+
+[InterfaceId("FFD4030F-1130-4152-8659-256909A9D115")]
+Interface IHttpNameValueHeaderValueStatics Extends IInspectable
+    Function Parse(ByVal Input As LongPtr) As IHttpNameValueHeaderValue
+    Function TryParse(ByVal Input As LongPtr, NameValueHeaderValue As IHttpNameValueHeaderValue) As BooleanByte
+End Interface
+
+[InterfaceId("F4FEEE03-EBD4-4160-B9FF-807C5183B6E6")]
+Interface IHttpProductHeaderValue Extends IInspectable
+    Property Get Name() As LongPtr
+    Property Get Version() As LongPtr
+End Interface
+
+[InterfaceId("611AA4F5-82BC-42FB-977B-DC00536E5E86")]
+Interface IHttpProductHeaderValueFactory Extends IInspectable
+    Function CreateFromName(ByVal ProductName As LongPtr) As IHttpProductHeaderValue
+    Function CreateFromNameWithVersion(ByVal ProductName As LongPtr, ByVal ProductVersion As LongPtr) As IHttpProductHeaderValue
+End Interface
+
+[InterfaceId("90C33E29-BEFC-4337-BE62-49F097975F53")]
+Interface IHttpProductHeaderValueStatics Extends IInspectable
+    Function Parse(ByVal Input As LongPtr) As IHttpProductHeaderValue
+    Function TryParse(ByVal Input As LongPtr, ProductHeaderValue As IHttpProductHeaderValue) As BooleanByte
+End Interface
+
+[InterfaceId("1B1A8732-4C35-486A-966F-646489198E4D")]
+Interface IHttpProductInfoHeaderValue Extends IInspectable ' requires IStringable
+    Property Get Product() As IHttpProductHeaderValue
+    Property Get Comment() As LongPtr
+End Interface
+
+[InterfaceId("4F785951-B59C-5108-B0CD-1437578AF49C")]
+Interface IIterator_IHttpProductInfoHeaderValue Extends IInspectable
+    Property Get Current() As IHttpProductInfoHeaderValue
+    Property Get HasCurrent() As BooleanByte
+    Function MoveNext() As BooleanByte
+    Function GetMany(ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("BF97CF99-E614-5765-BAD7-161AE3A93AE9")]
+Interface IIterable_IHttpProductInfoHeaderValue Extends IInspectable
+    Function First() As IIterator_IHttpProductInfoHeaderValue
+End Interface
+
+[InterfaceId("82FEF9F0-E283-5279-AA50-F0B3E5726A86")]
+Interface IVectorView_IHttpProductInfoHeaderValue Extends IInspectable
+    Function GetAt(ByVal Index As Long) As IHttpProductInfoHeaderValue
+    Property Get Size() As Long
+    Function IndexOf(ByVal Value As IHttpProductInfoHeaderValue, Index As Long) As BooleanByte
+    Function GetMany(ByVal StartIndex As Long, ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("69392060-6C0F-5DE6-8CED-F14FC1B83376")]
+Interface IVector_IHttpProductInfoHeaderValue Extends IInspectable
+    Function GetAt(ByVal Index As Long) As IHttpProductInfoHeaderValue
+    Property Get Size() As Long
+    Function GetView() As IVectorView_IHttpProductInfoHeaderValue
+    Function IndexOf(ByVal Value As IHttpProductInfoHeaderValue, Index As Long) As BooleanByte
+    [PreserveSig]
+    Function SetAt(ByVal Index As Long, ByVal Value As IHttpProductInfoHeaderValue) As HRESULT
+    [PreserveSig]
+    Function InsertAt(ByVal Index As Long, ByVal Value As IHttpProductInfoHeaderValue) As HRESULT
+    [PreserveSig]
+    Function RemoveAt(ByVal Index As Long) As HRESULT
+    [PreserveSig]
+    Function Append(ByVal Value As IHttpProductInfoHeaderValue) As HRESULT
+    [PreserveSig]
+    Function RemoveAtEnd() As HRESULT
+    [PreserveSig]
+    Function Clear() As HRESULT
+    Function GetMany(ByVal StartIndex As Long, ByVal Length As Long, Items As Any) As Long
+    [PreserveSig]
+    Function ReplaceAll(ByVal Length As Long, Items As Any) As HRESULT
+End Interface
+
+[InterfaceId("877DF74A-D69B-44F8-AD4F-453AF9C42ED0")]
+Interface IHttpProductInfoHeaderValueCollection Extends IInspectable ' requires IVector_IHttpProductInfoHeaderValue, IStringable
+    [PreserveSig]
+    Function ParseAdd(ByVal Input As LongPtr) As HRESULT
+    Function TryParseAdd(ByVal Input As LongPtr) As BooleanByte
+End Interface
+
+[InterfaceId("24220FBE-EABE-4464-B460-EC010B7C41E2")]
+Interface IHttpProductInfoHeaderValueFactory Extends IInspectable
+    Function CreateFromComment(ByVal ProductComment As LongPtr) As IHttpProductInfoHeaderValue
+    Function CreateFromNameWithVersion(ByVal ProductName As LongPtr, ByVal ProductVersion As LongPtr) As IHttpProductInfoHeaderValue
+End Interface
+
+[InterfaceId("DB7FD857-327A-4E73-81E5-7059A302B042")]
+Interface IHttpProductInfoHeaderValueStatics Extends IInspectable
+    Function Parse(ByVal Input As LongPtr) As IHttpProductInfoHeaderValue
+    Function TryParse(ByVal Input As LongPtr, ProductInfoHeaderValue As IHttpProductInfoHeaderValue) As BooleanByte
+End Interface
+
+[InterfaceId("AF40329B-B544-469B-86B9-AC3D466FEA36")]
+Interface IHttpRequestHeaderCollection Extends IInspectable
+    Property Get Accept() As IHttpMediaTypeWithQualityHeaderValueCollection
+    Property Get AcceptEncoding() As IHttpContentCodingWithQualityHeaderValueCollection
+    Property Get AcceptLanguage() As IHttpLanguageRangeWithQualityHeaderValueCollection
+    Property Get Authorization() As IHttpCredentialsHeaderValue
+    Property Set Authorization(ByVal Value As IHttpCredentialsHeaderValue)
+    Property Get CacheControl() As IHttpCacheDirectiveHeaderValueCollection
+    Property Get Connection() As IHttpConnectionOptionHeaderValueCollection
+    Property Get Cookie() As IHttpCookiePairHeaderValueCollection
+    Property Get Date() As IReference_DateTime
+    Property Set Date(ByVal Value As IReference_DateTime)
+    Property Get Expect() As IHttpExpectationHeaderValueCollection
+    Property Get From() As LongPtr
+    Property Let From(ByVal Value As LongPtr)
+    Property Get Host() As IHostName
+    Property Set Host(ByVal Value As IHostName)
+    Property Get IfModifiedSince() As IReference_DateTime
+    Property Set IfModifiedSince(ByVal Value As IReference_DateTime)
+    Property Get IfUnmodifiedSince() As IReference_DateTime
+    Property Set IfUnmodifiedSince(ByVal Value As IReference_DateTime)
+    Property Get MaxForwards() As IReference_UInt32
+    Property Set MaxForwards(ByVal Value As IReference_UInt32)
+    Property Get ProxyAuthorization() As IHttpCredentialsHeaderValue
+    Property Set ProxyAuthorization(ByVal Value As IHttpCredentialsHeaderValue)
+    Property Get Referer() As IUri
+    Property Set Referer(ByVal Value As IUri)
+    Property Get TransferEncoding() As IHttpTransferCodingHeaderValueCollection
+    Property Get UserAgent() As IHttpProductInfoHeaderValueCollection
+    [PreserveSig]
+    Function Append(ByVal Name As LongPtr, ByVal Value As LongPtr) As HRESULT
+    Function TryAppendWithoutValidation(ByVal Name As LongPtr, ByVal Value As LongPtr) As BooleanByte
+End Interface
+
+[InterfaceId("7A990969-FA3F-41ED-AAC6-BF957975C16B")]
+Interface IHttpResponseHeaderCollection Extends IInspectable
+    Property Get Age() As IReference_TimeSpan
+    Property Set Age(ByVal Value As IReference_TimeSpan)
+    Property Get Allow() As IHttpMethodHeaderValueCollection
+    Property Get CacheControl() As IHttpCacheDirectiveHeaderValueCollection
+    Property Get Connection() As IHttpConnectionOptionHeaderValueCollection
+    Property Get Date() As IReference_DateTime
+    Property Set Date(ByVal Value As IReference_DateTime)
+    Property Get Location() As IUri
+    Property Set Location(ByVal Value As IUri)
+    Property Get ProxyAuthenticate() As IHttpChallengeHeaderValueCollection
+    Property Get RetryAfter() As IHttpDateOrDeltaHeaderValue
+    Property Set RetryAfter(ByVal Value As IHttpDateOrDeltaHeaderValue)
+    Property Get TransferEncoding() As IHttpTransferCodingHeaderValueCollection
+    Property Get WwwAuthenticate() As IHttpChallengeHeaderValueCollection
+    [PreserveSig]
+    Function Append(ByVal Name As LongPtr, ByVal Value As LongPtr) As HRESULT
+    Function TryAppendWithoutValidation(ByVal Name As LongPtr, ByVal Value As LongPtr) As BooleanByte
+End Interface
+
+[InterfaceId("436F32F9-3DED-42BD-B38A-5496A2511CE6")]
+Interface IHttpTransferCodingHeaderValue Extends IInspectable ' requires IStringable
+    Property Get Parameters() As IVector_IHttpNameValueHeaderValue
+    Property Get Value() As LongPtr
+End Interface
+
+[InterfaceId("49E58DEC-B5CD-5BA4-A603-365D1588AD4C")]
+Interface IIterator_IHttpTransferCodingHeaderValue Extends IInspectable
+    Property Get Current() As IHttpTransferCodingHeaderValue
+    Property Get HasCurrent() As BooleanByte
+    Function MoveNext() As BooleanByte
+    Function GetMany(ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("57402048-38BF-5055-ACB6-5C4DA765E388")]
+Interface IIterable_IHttpTransferCodingHeaderValue Extends IInspectable
+    Function First() As IIterator_IHttpTransferCodingHeaderValue
+End Interface
+
+[InterfaceId("25C1A8D6-229B-5421-B3B3-B7EF078FAD7F")]
+Interface IVectorView_IHttpTransferCodingHeaderValue Extends IInspectable
+    Function GetAt(ByVal Index As Long) As IHttpTransferCodingHeaderValue
+    Property Get Size() As Long
+    Function IndexOf(ByVal Value As IHttpTransferCodingHeaderValue, Index As Long) As BooleanByte
+    Function GetMany(ByVal StartIndex As Long, ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("38E72562-E17C-5D68-AAD1-8E8A860B8969")]
+Interface IVector_IHttpTransferCodingHeaderValue Extends IInspectable
+    Function GetAt(ByVal Index As Long) As IHttpTransferCodingHeaderValue
+    Property Get Size() As Long
+    Function GetView() As IVectorView_IHttpTransferCodingHeaderValue
+    Function IndexOf(ByVal Value As IHttpTransferCodingHeaderValue, Index As Long) As BooleanByte
+    [PreserveSig]
+    Function SetAt(ByVal Index As Long, ByVal Value As IHttpTransferCodingHeaderValue) As HRESULT
+    [PreserveSig]
+    Function InsertAt(ByVal Index As Long, ByVal Value As IHttpTransferCodingHeaderValue) As HRESULT
+    [PreserveSig]
+    Function RemoveAt(ByVal Index As Long) As HRESULT
+    [PreserveSig]
+    Function Append(ByVal Value As IHttpTransferCodingHeaderValue) As HRESULT
+    [PreserveSig]
+    Function RemoveAtEnd() As HRESULT
+    [PreserveSig]
+    Function Clear() As HRESULT
+    Function GetMany(ByVal StartIndex As Long, ByVal Length As Long, Items As Any) As Long
+    [PreserveSig]
+    Function ReplaceAll(ByVal Length As Long, Items As Any) As HRESULT
+End Interface
+
+[InterfaceId("202C8C34-2C03-49B8-9665-73E27CB2FC79")]
+Interface IHttpTransferCodingHeaderValueCollection Extends IInspectable ' requires IVector_IHttpTransferCodingHeaderValue, IStringable
+    [PreserveSig]
+    Function ParseAdd(ByVal Input As LongPtr) As HRESULT
+    Function TryParseAdd(ByVal Input As LongPtr) As BooleanByte
+End Interface
+
+[InterfaceId("BB62DFFC-E361-4F08-8E4F-C9E723DE703B")]
+Interface IHttpTransferCodingHeaderValueFactory Extends IInspectable
+    Function Create(ByVal Input As LongPtr) As IHttpTransferCodingHeaderValue
+End Interface
+
+[InterfaceId("6AB8892A-1A98-4D32-A906-7470A9875CE5")]
+Interface IHttpTransferCodingHeaderValueStatics Extends IInspectable
+    Function Parse(ByVal Input As LongPtr) As IHttpTransferCodingHeaderValue
+    Function TryParse(ByVal Input As LongPtr, TransferCodingHeaderValue As IHttpTransferCodingHeaderValue) As BooleanByte
+End Interface
+
+Module mdlWebHttpHeaders
+
+End Module

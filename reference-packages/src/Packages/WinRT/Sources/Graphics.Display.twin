@@ -1,0 +1,346 @@
+[InterfaceId("DBDD8B01-F1A1-46D1-9EE3-543BCC995980")]
+Interface IDisplayPropertiesEventHandler Extends IUnknown
+    Sub Invoke(ByVal Sender As IInspectable)
+End Interface
+
+[InterfaceId("8797DCFB-B229-4081-AE9A-2CC85E34AD6A")]
+Interface IAdvancedColorInfo Extends IInspectable
+    Property Get CurrentAdvancedColorKind() As AdvancedColorKind
+    Property Get RedPrimary() As POINTF
+    Property Get GreenPrimary() As POINTF
+    Property Get BluePrimary() As POINTF
+    Property Get WhitePoint() As POINTF
+    Property Get MaxLuminanceInNits() As Single
+    Property Get MinLuminanceInNits() As Single
+    Property Get MaxAverageFullFrameLuminanceInNits() As Single
+    Property Get SdrWhiteLevelInNits() As Single
+    Function IsHdrMetadataFormatCurrentlySupported(ByVal Format As HdrMetadataFormat) As BooleanByte
+    Function IsAdvancedColorKindAvailable(ByVal Kind As AdvancedColorKind) As BooleanByte
+End Interface
+
+[InterfaceId("A460214E-6620-521D-9CB9-A0A0F732CE90")]
+Interface ITypedEventHandlerBrightnessOverrideIInspectable Extends IUnknown
+    Sub Invoke(ByVal Sender As IBrightnessOverride, ByVal Args As IInspectable)
+End Interface
+
+[InterfaceId("96C9621A-C143-4392-BEDD-4A7E9574C8FD")]
+Interface IBrightnessOverride Extends IInspectable
+    Property Get IsSupported() As BooleanByte
+    Property Get IsOverrideActive() As BooleanByte
+    Property Get BrightnessLevel() As Double
+    [PreserveSig]
+    Function SetBrightnessLevel(ByVal BrightnessLevel As Double, ByVal Options As DisplayBrightnessOverrideOptions) As HRESULT
+    [PreserveSig]
+    Function SetBrightnessScenario(ByVal Scenario As DisplayBrightnessScenario, ByVal Options As DisplayBrightnessOverrideOptions) As HRESULT
+    Function GetLevelForScenario(ByVal Scenario As DisplayBrightnessScenario) As Double
+    [PreserveSig]
+    Function StartOverride() As HRESULT
+    [PreserveSig]
+    Function StopOverride() As HRESULT
+    [PreserveSig]
+    Function AddIsSupportedChanged(ByVal Handler As ITypedEventHandlerBrightnessOverrideIInspectable, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveIsSupportedChanged(ByVal Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function AddIsOverrideActiveChanged(ByVal Handler As ITypedEventHandlerBrightnessOverrideIInspectable, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveIsOverrideActiveChanged(ByVal Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function AddBrightnessLevelChanged(ByVal Handler As ITypedEventHandlerBrightnessOverrideIInspectable, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveBrightnessLevelChanged(ByVal Token As EventRegistrationToken) As HRESULT
+End Interface
+
+[InterfaceId("D112AB2A-7604-4DBA-BCF8-4B6F49502CB0")]
+Interface IBrightnessOverrideSettings Extends IInspectable
+    Property Get DesiredLevel() As Double
+    Property Get DesiredNits() As Single
+End Interface
+
+[InterfaceId("D487DC90-6F74-440B-B383-5FE96CF00B0F")]
+Interface IBrightnessOverrideSettingsStatics Extends IInspectable
+    Function CreateFromLevel(ByVal Level As Double) As IBrightnessOverrideSettings
+    Function CreateFromNits(ByVal Nits As Single) As IBrightnessOverrideSettings
+    Function CreateFromDisplayBrightnessOverrideScenario(ByVal OverrideScenario As DisplayBrightnessOverrideScenario) As IBrightnessOverrideSettings
+End Interface
+
+[InterfaceId("03A7B9ED-E1F1-4A68-A11F-946AD8CE5393")]
+Interface IBrightnessOverrideStatics Extends IInspectable
+    Function GetDefaultForSystem() As IBrightnessOverride
+    Function GetForCurrentView() As IBrightnessOverride
+    Function SaveForSystemAsync(ByVal Value As IBrightnessOverride) As IAsyncOperationBoolean
+End Interface
+
+[InterfaceId("FBEFA134-4A81-4C4D-A5B6-7D1B5C4BD00B")]
+Interface IColorOverrideSettings Extends IInspectable
+    Property Get DesiredDisplayColorOverrideScenario() As DisplayColorOverrideScenario
+End Interface
+
+[InterfaceId("B068E05F-C41F-4AC9-AFAB-827AB6248F9A")]
+Interface IColorOverrideSettingsStatics Extends IInspectable
+    Function CreateFromDisplayColorOverrideScenario(ByVal OverrideScenario As DisplayColorOverrideScenario) As IColorOverrideSettings
+End Interface
+
+[InterfaceId("3247B54B-7F00-5555-81DF-AFAE022F0796")]
+Interface ITypedEventHandlerDisplayEnhancementOverrideIInspectable Extends IUnknown
+    Sub Invoke(ByVal Sender As IDisplayEnhancementOverride, ByVal Args As IInspectable)
+End Interface
+
+[InterfaceId("7E61AF14-3E29-5039-92EE-3F2472B99E43")]
+Interface ITypedEventHandlerDisplayEnhancementOverrideCapabilitiesChanged Extends IUnknown
+    Sub Invoke(ByVal Sender As IDisplayEnhancementOverride, ByVal Args As IDisplayEnhancementOverrideCapabilitiesChangedEventArgs)
+End Interface
+
+[InterfaceId("429594CF-D97A-4B02-A428-5C4292F7F522")]
+Interface IDisplayEnhancementOverride Extends IInspectable
+    Property Get ColorOverrideSettings() As IColorOverrideSettings
+    Property Set ColorOverrideSettings(ByVal Value As IColorOverrideSettings)
+    Property Get BrightnessOverrideSettings() As IBrightnessOverrideSettings
+    Property Set BrightnessOverrideSettings(ByVal Value As IBrightnessOverrideSettings)
+    Property Get CanOverride() As BooleanByte
+    Property Get IsOverrideActive() As BooleanByte
+    Function GetCurrentDisplayEnhancementOverrideCapabilities() As IDisplayEnhancementOverrideCapabilities
+    [PreserveSig]
+    Function RequestOverride() As HRESULT
+    [PreserveSig]
+    Function StopOverride() As HRESULT
+    [PreserveSig]
+    Function AddCanOverrideChanged(ByVal Handler As ITypedEventHandlerDisplayEnhancementOverrideIInspectable, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveCanOverrideChanged(ByVal Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function AddIsOverrideActiveChanged(ByVal Handler As ITypedEventHandlerDisplayEnhancementOverrideIInspectable, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveIsOverrideActiveChanged(ByVal Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function AddDisplayEnhancementOverrideCapabilitiesChanged(ByVal Handler As ITypedEventHandlerDisplayEnhancementOverrideCapabilitiesChanged, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveDisplayEnhancementOverrideCapabilitiesChanged(ByVal Token As EventRegistrationToken) As HRESULT
+End Interface
+
+[InterfaceId("6BE92993-D069-5A99-B9E8-200CF5C8A060")]
+Interface IIterator_NitRange Extends IInspectable
+    Property Get Current() As NitRange
+    Property Get HasCurrent() As BooleanByte
+    Function MoveNext() As BooleanByte
+    Function GetMany(ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("7FB7A783-CE2D-552D-BEE3-BC1442DB0409")]
+Interface IIterable_NitRange Extends IInspectable
+    Function First() As IIterator_NitRange
+End Interface
+
+[InterfaceId("CC8EF226-50C1-5EFA-98C4-1043D0BF5B35")]
+Interface IVectorView_NitRange Extends IInspectable
+    Function GetAt(ByVal Index As Long) As NitRange
+    Property Get Size() As Long
+    Function IndexOf(ByVal Value As NitRange, Index As Long) As BooleanByte
+    Function GetMany(ByVal StartIndex As Long, ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("457060DE-EE5A-47B7-9918-1E51E812CCC8")]
+Interface IDisplayEnhancementOverrideCapabilities Extends IInspectable
+    Property Get IsBrightnessControlSupported() As BooleanByte
+    Property Get IsBrightnessNitsControlSupported() As BooleanByte
+    Function GetSupportedNitRanges() As IVectorView_NitRange
+End Interface
+
+[InterfaceId("DB61E664-15FA-49DA-8B77-07DBD2AF585D")]
+Interface IDisplayEnhancementOverrideCapabilitiesChangedEventArgs Extends IInspectable
+    Property Get Capabilities() As IDisplayEnhancementOverrideCapabilities
+End Interface
+
+[InterfaceId("CF5B7EC1-9791-4453-B013-29B6F778E519")]
+Interface IDisplayEnhancementOverrideStatics Extends IInspectable
+    Function GetForCurrentView() As IDisplayEnhancementOverride
+End Interface
+
+[InterfaceId("86C4F619-67B6-51C7-B30D-D8CF13625327")]
+Interface ITypedEventHandlerDisplayInformationIInspectable Extends IUnknown
+    Sub Invoke(ByVal Sender As IDisplayInformation, ByVal Args As IInspectable)
+End Interface
+
+[InterfaceId("BED112AE-ADC3-4DC9-AE65-851F4D7D4799")]
+Interface IDisplayInformation Extends IInspectable
+    Property Get CurrentOrientation() As DisplayOrientations
+    Property Get NativeOrientation() As DisplayOrientations
+    [PreserveSig]
+    Function AddOrientationChanged(ByVal Handler As ITypedEventHandlerDisplayInformationIInspectable, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveOrientationChanged(ByVal Token As EventRegistrationToken) As HRESULT
+    Property Get ResolutionScale() As ResolutionScale
+    Property Get LogicalDpi() As Single
+    Property Get RawDpiX() As Single
+    Property Get RawDpiY() As Single
+    [PreserveSig]
+    Function AddDpiChanged(ByVal Handler As ITypedEventHandlerDisplayInformationIInspectable, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveDpiChanged(ByVal Token As EventRegistrationToken) As HRESULT
+    Property Get StereoEnabled() As BooleanByte
+    [PreserveSig]
+    Function AddStereoEnabledChanged(ByVal Handler As ITypedEventHandlerDisplayInformationIInspectable, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveStereoEnabledChanged(ByVal Token As EventRegistrationToken) As HRESULT
+    Function GetColorProfileAsync() As IAsyncOperationIRandomAccessStream
+    [PreserveSig]
+    Function AddColorProfileChanged(ByVal Handler As ITypedEventHandlerDisplayInformationIInspectable, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveColorProfileChanged(ByVal Token As EventRegistrationToken) As HRESULT
+End Interface
+
+[InterfaceId("4DCD0021-FAD1-4B8E-8EDF-775887B8BF19")]
+Interface IDisplayInformation2 Extends IInspectable
+    Property Get RawPixelsPerViewPixel() As Double
+End Interface
+
+[InterfaceId("DB15011D-0F09-4466-8FF3-11DE9A3C929A")]
+Interface IDisplayInformation3 Extends IInspectable
+    Property Get DiagonalSizeInInches() As IReference_Double
+End Interface
+
+[InterfaceId("C972CE2F-1242-46BE-B536-E1AAFE9E7ACF")]
+Interface IDisplayInformation4 Extends IInspectable
+    Property Get ScreenWidthInRawPixels() As Long
+    Property Get ScreenHeightInRawPixels() As Long
+End Interface
+
+[InterfaceId("3A5442DC-2CDE-4A8D-80D1-21DC5ADCC1AA")]
+Interface IDisplayInformation5 Extends IInspectable
+    Function GetAdvancedColorInfo() As IAdvancedColorInfo
+    [PreserveSig]
+    Function AddAdvancedColorInfoChanged(ByVal Handler As ITypedEventHandlerDisplayInformationIInspectable, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveAdvancedColorInfoChanged(ByVal Token As EventRegistrationToken) As HRESULT
+End Interface
+
+[InterfaceId("C6A02A6C-D452-44DC-BA07-96F3C6ADF9D1")]
+Interface IDisplayInformationStatics Extends IInspectable
+    Function GetForCurrentView() As IDisplayInformation
+    Property Get AutoRotationPreferences() As DisplayOrientations
+    Property Let AutoRotationPreferences(ByVal Value As DisplayOrientations)
+    [PreserveSig]
+    Function AddDisplayContentsInvalidated(ByVal Handler As ITypedEventHandlerDisplayInformationIInspectable, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveDisplayContentsInvalidated(ByVal Token As EventRegistrationToken) As HRESULT
+End Interface
+
+[InterfaceId("7449121C-382B-4705-8DA7-A795BA482013")]
+Interface IDisplayInformationStaticsInterop Extends IInspectable
+    Function GetForWindow(ByVal hWnd As LongPtr, rIID As Any) As IDisplayInformation
+    Function GetForMonitor(ByVal hMonitor As LongPtr, rIID As Any) As IDisplayInformation
+End Interface
+
+[InterfaceId("6937ED8D-30EA-4DED-8271-4553FF02F68A")]
+Interface IDisplayPropertiesStatics Extends IInspectable
+    Property Get CurrentOrientation() As DisplayOrientations
+    Property Get NativeOrientation() As DisplayOrientations
+    Property Get AutoRotationPreferences() As DisplayOrientations
+    Property Let AutoRotationPreferences(ByVal Value As DisplayOrientations)
+    [PreserveSig]
+    Function AddOrientationChanged(ByVal Handler As IDisplayPropertiesEventHandler, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveOrientationChanged(ByVal Token As EventRegistrationToken) As HRESULT
+    Property Get ResolutionScale() As ResolutionScale
+    Property Get LogicalDpi() As Single
+    [PreserveSig]
+    Function AddLogicalDpiChanged(ByVal Handler As IDisplayPropertiesEventHandler, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveLogicalDpiChanged(ByVal Token As EventRegistrationToken) As HRESULT
+    Property Get StereoEnabled() As BooleanByte
+    [PreserveSig]
+    Function AddStereoEnabledChanged(ByVal Handler As IDisplayPropertiesEventHandler, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveStereoEnabledChanged(ByVal Token As EventRegistrationToken) As HRESULT
+    Function GetColorProfileAsync() As IAsyncOperationIRandomAccessStream
+    [PreserveSig]
+    Function AddColorProfileChanged(ByVal Handler As IDisplayPropertiesEventHandler, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveColorProfileChanged(ByVal Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function AddDisplayContentsInvalidated(ByVal Handler As IDisplayPropertiesEventHandler, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveDisplayContentsInvalidated(ByVal Token As EventRegistrationToken) As HRESULT
+End Interface
+
+[InterfaceId("1B54F32B-890D-5747-BD26-FDBDEB0C8A71")]
+Interface IDisplayServices Extends IInspectable
+
+End Interface
+
+[InterfaceId("DC2096BF-730A-5560-B461-91C13D692E0C")]
+Interface IDisplayServicesStatics Extends IInspectable
+    [PreserveSig]
+    Function FindAll(ByVal ResultSize As Long, ResultDisplayIdPtr As Any) As HRESULT
+End Interface
+
+Module mdlGraphicsDisplay
+
+Public Enum AdvancedColorKind
+    AdvancedColorKind_StandardDynamicRange
+    AdvancedColorKind_WideColorGamut
+    AdvancedColorKind_HighDynamicRange
+End Enum
+
+Public Enum DisplayBrightnessOverrideOptions
+    DisplayBrightnessOverrideOptions_None
+    DisplayBrightnessOverrideOptions_UseDimmedPolicyWhenBatteryIsLow
+End Enum
+
+Public Enum DisplayBrightnessOverrideScenario
+    DisplayBrightnessOverrideScenario_IdleBrightness
+    DisplayBrightnessOverrideScenario_BarcodeReadingBrightness
+    DisplayBrightnessOverrideScenario_FullBrightness
+End Enum
+
+Public Enum DisplayBrightnessScenario
+    DisplayBrightnessScenario_DefaultBrightness
+    DisplayBrightnessScenario_IdleBrightness
+    DisplayBrightnessScenario_BarcodeReadingBrightness
+    DisplayBrightnessScenario_FullBrightness
+End Enum
+
+Public Enum DisplayColorOverrideScenario
+    DisplayColorOverrideScenario_Accurate
+End Enum
+
+Public Enum DisplayOrientations
+    DisplayOrientations_None = &H0
+    DisplayOrientations_Landscape = &H1
+    DisplayOrientations_Portrait = &H2
+    DisplayOrientations_LandscapeFlipped = &H4
+    DisplayOrientations_PortraitFlipped = &H8
+End Enum
+
+Public Enum HdrMetadataFormat
+    HdrMetadataFormat_Hdr10
+    HdrMetadataFormat_Hdr10Plus
+End Enum
+
+Public Enum ResolutionScale
+    ResolutionScale_Invalid
+    ResolutionScale_Scale100Percent = 100
+    ResolutionScale_Scale120Percent = 120
+    ResolutionScale_Scale125Percent = 125
+    ResolutionScale_Scale140Percent = 140
+    ResolutionScale_Scale150Percent = 150
+    ResolutionScale_Scale160Percent = 160
+    ResolutionScale_Scale175Percent = 175
+    ResolutionScale_Scale180Percent = 180
+    ResolutionScale_Scale200Percent = 200
+    ResolutionScale_Scale225Percent = 225
+    ResolutionScale_Scale250Percent = 250
+    ResolutionScale_Scale300Percent = 300
+    ResolutionScale_Scale350Percent = 350
+    ResolutionScale_Scale400Percent = 400
+    ResolutionScale_Scale450Percent = 450
+    ResolutionScale_Scale500Percent = 500
+End Enum
+
+Public Type NitRange
+    MinNits As Single
+    MaxNits As Single
+    StepSizeNits As Single
+End Type
+
+End Module

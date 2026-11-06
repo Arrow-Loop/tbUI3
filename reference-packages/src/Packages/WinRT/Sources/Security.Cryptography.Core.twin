@@ -1,0 +1,339 @@
+[InterfaceId("CAF6FCE4-67C0-46AA-84F9-752E77449F9B")]
+Interface IAsymmetricAlgorithmNamesStatics Extends IInspectable
+    Property Get RsaPkcs1() As LongPtr
+    Property Get RsaOaepSha1() As LongPtr
+    Property Get RsaOaepSha256() As LongPtr
+    Property Get RsaOaepSha384() As LongPtr
+    Property Get RsaOaepSha512() As LongPtr
+    Property Get EcdsaP256Sha256() As LongPtr
+    Property Get EcdsaP384Sha384() As LongPtr
+    Property Get EcdsaP521Sha512() As LongPtr
+    Property Get DsaSha1() As LongPtr
+    Property Get DsaSha256() As LongPtr
+    Property Get RsaSignPkcs1Sha1() As LongPtr
+    Property Get RsaSignPkcs1Sha256() As LongPtr
+    Property Get RsaSignPkcs1Sha384() As LongPtr
+    Property Get RsaSignPkcs1Sha512() As LongPtr
+    Property Get RsaSignPssSha1() As LongPtr
+    Property Get RsaSignPssSha256() As LongPtr
+    Property Get RsaSignPssSha384() As LongPtr
+    Property Get RsaSignPssSha512() As LongPtr
+End Interface
+
+[InterfaceId("F141C0D6-4BFF-4F23-BA66-6045B137D5DF")]
+Interface IAsymmetricAlgorithmNamesStatics2 Extends IInspectable
+    Property Get EcdsaSha256() As LongPtr
+    Property Get EcdsaSha384() As LongPtr
+    Property Get EcdsaSha512() As LongPtr
+End Interface
+
+[InterfaceId("E8D2FF37-6259-4E88-B7E0-94191FDE699E")]
+Interface IAsymmetricKeyAlgorithmProvider Extends IInspectable
+    Property Get AlgorithmName() As LongPtr
+    Function CreateKeyPair(ByVal KeySize As Long) As ICryptographicKey
+    Function ImportDefaultPrivateKeyBlob(ByVal KeyBlob As IBuffer) As ICryptographicKey
+    Function ImportKeyPairWithBlobType(ByVal KeyBlob As IBuffer, ByVal BlobType As CryptographicPrivateKeyBlobType) As ICryptographicKey
+    Function ImportDefaultPublicKeyBlob(ByVal KeyBlob As IBuffer) As ICryptographicKey
+    Function ImportPublicKeyWithBlobType(ByVal KeyBlob As IBuffer, ByVal BlobType As CryptographicPublicKeyBlobType) As ICryptographicKey
+End Interface
+
+[InterfaceId("4E322A7E-7C4D-4997-AC4F-1B848B36306E")]
+Interface IAsymmetricKeyAlgorithmProvider2 Extends IInspectable
+    Function CreateKeyPairWithCurveName(ByVal CurveName As LongPtr) As ICryptographicKey
+    Function CreateKeyPairWithCurveParameters(ByVal ParametersSize As Long, Parameters As Any) As ICryptographicKey
+End Interface
+
+[InterfaceId("425BDE18-A7F3-47A6-A8D2-C48D6033A65C")]
+Interface IAsymmetricKeyAlgorithmProviderStatics Extends IInspectable
+    Function OpenAlgorithm(ByVal Algorithm As LongPtr) As IAsymmetricKeyAlgorithmProvider
+End Interface
+
+[InterfaceId("9FEA0639-6FF7-4C85-A095-95EB31715EB9")]
+Interface ICryptographicEngineStatics Extends IInspectable
+    Function Encrypt(ByVal Key As ICryptographicKey, ByVal Data As IBuffer, ByVal Iv As IBuffer) As IBuffer
+    Function Decrypt(ByVal Key As ICryptographicKey, ByVal Data As IBuffer, ByVal Iv As IBuffer) As IBuffer
+    Function EncryptAndAuthenticate(ByVal Key As ICryptographicKey, ByVal Data As IBuffer, ByVal Nonce As IBuffer, ByVal AuthenticatedData As IBuffer) As IEncryptedAndAuthenticatedData
+    Function DecryptAndAuthenticate(ByVal Key As ICryptographicKey, ByVal Data As IBuffer, ByVal Nonce As IBuffer, ByVal AuthenticationTag As IBuffer, ByVal AuthenticatedData As IBuffer) As IBuffer
+    Function Sign(ByVal Key As ICryptographicKey, ByVal Data As IBuffer) As IBuffer
+    Function VerifySignature(ByVal Key As ICryptographicKey, ByVal Data As IBuffer, ByVal Signature As IBuffer) As BooleanByte
+    Function DeriveKeyMaterial(ByVal Key As ICryptographicKey, ByVal Parameters As IKeyDerivationParameters, ByVal DesiredKeySize As Long) As IBuffer
+End Interface
+
+[InterfaceId("675948FE-DF9F-4191-92C7-6CE6F58420E0")]
+Interface ICryptographicEngineStatics2 Extends IInspectable
+    Function SignHashedData(ByVal Key As ICryptographicKey, ByVal Data As IBuffer) As IBuffer
+    Function VerifySignatureWithHashInput(ByVal Key As ICryptographicKey, ByVal Data As IBuffer, ByVal Signature As IBuffer) As BooleanByte
+    Function DecryptAsync(ByVal Key As ICryptographicKey, ByVal Data As IBuffer, ByVal Iv As IBuffer) As IAsyncOperationIBuffer
+    Function SignAsync(ByVal Key As ICryptographicKey, ByVal Data As IBuffer) As IAsyncOperationIBuffer
+    Function SignHashedDataAsync(ByVal Key As ICryptographicKey, ByVal Data As IBuffer) As IAsyncOperationIBuffer
+End Interface
+
+[InterfaceId("ED2A3B70-8E7B-4009-8401-FFD1A62EEB27")]
+Interface ICryptographicKey Extends IInspectable
+    Property Get KeySize() As Long
+    Function ExportDefaultPrivateKeyBlobType() As IBuffer
+    Function ExportPrivateKeyWithBlobType(ByVal BlobType As CryptographicPrivateKeyBlobType) As IBuffer
+    Function ExportDefaultPublicKeyBlobType() As IBuffer
+    Function ExportPublicKeyWithBlobType(ByVal BlobType As CryptographicPublicKeyBlobType) As IBuffer
+End Interface
+
+[InterfaceId("B3FF930C-AEEB-409E-B7D4-9B95295AAECF")]
+Interface IEccCurveNamesStatics Extends IInspectable
+    Property Get BrainpoolP160r1() As LongPtr
+    Property Get BrainpoolP160t1() As LongPtr
+    Property Get BrainpoolP192r1() As LongPtr
+    Property Get BrainpoolP192t1() As LongPtr
+    Property Get BrainpoolP224r1() As LongPtr
+    Property Get BrainpoolP224t1() As LongPtr
+    Property Get BrainpoolP256r1() As LongPtr
+    Property Get BrainpoolP256t1() As LongPtr
+    Property Get BrainpoolP320r1() As LongPtr
+    Property Get BrainpoolP320t1() As LongPtr
+    Property Get BrainpoolP384r1() As LongPtr
+    Property Get BrainpoolP384t1() As LongPtr
+    Property Get BrainpoolP512r1() As LongPtr
+    Property Get BrainpoolP512t1() As LongPtr
+    Property Get Curve25519() As LongPtr
+    Property Get Ec192wapi() As LongPtr
+    Property Get NistP192() As LongPtr
+    Property Get NistP224() As LongPtr
+    Property Get NistP256() As LongPtr
+    Property Get NistP384() As LongPtr
+    Property Get NistP521() As LongPtr
+    Property Get NumsP256t1() As LongPtr
+    Property Get NumsP384t1() As LongPtr
+    Property Get NumsP512t1() As LongPtr
+    Property Get SecP160k1() As LongPtr
+    Property Get SecP160r1() As LongPtr
+    Property Get SecP160r2() As LongPtr
+    Property Get SecP192k1() As LongPtr
+    Property Get SecP192r1() As LongPtr
+    Property Get SecP224k1() As LongPtr
+    Property Get SecP224r1() As LongPtr
+    Property Get SecP256k1() As LongPtr
+    Property Get SecP256r1() As LongPtr
+    Property Get SecP384r1() As LongPtr
+    Property Get SecP521r1() As LongPtr
+    Property Get Wtls7() As LongPtr
+    Property Get Wtls9() As LongPtr
+    Property Get Wtls12() As LongPtr
+    Property Get X962P192v1() As LongPtr
+    Property Get X962P192v2() As LongPtr
+    Property Get X962P192v3() As LongPtr
+    Property Get X962P239v1() As LongPtr
+    Property Get X962P239v2() As LongPtr
+    Property Get X962P239v3() As LongPtr
+    Property Get X962P256v1() As LongPtr
+    Property Get AllEccCurveNames() As IVectorView_HSTRING
+End Interface
+
+[InterfaceId("6FA42FE7-1ECB-4B00-BEA5-60B83F862F17")]
+Interface IEncryptedAndAuthenticatedData Extends IInspectable
+    Property Get EncryptedData() As IBuffer
+    Property Get AuthenticationTag() As IBuffer
+End Interface
+
+[InterfaceId("6B5E0516-DE96-4F0A-8D57-DCC9DAE36C76")]
+Interface IHashAlgorithmNamesStatics Extends IInspectable
+    Property Get Md5() As LongPtr
+    Property Get Sha1() As LongPtr
+    Property Get Sha256() As LongPtr
+    Property Get Sha384() As LongPtr
+    Property Get Sha512() As LongPtr
+End Interface
+
+[InterfaceId("BE9B3080-B2C3-422B-BCE1-EC90EFB5D7B5")]
+Interface IHashAlgorithmProvider Extends IInspectable
+    Property Get AlgorithmName() As LongPtr
+    Property Get HashLength() As Long
+    Function HashData(ByVal Data As IBuffer) As IBuffer
+    Function CreateHash() As IHashComputation
+End Interface
+
+[InterfaceId("9FAC9741-5CC4-4336-AE38-6212B75A915A")]
+Interface IHashAlgorithmProviderStatics Extends IInspectable
+    Function OpenAlgorithm(ByVal Algorithm As LongPtr) As IHashAlgorithmProvider
+End Interface
+
+[InterfaceId("5904D1B6-AD31-4603-A3A4-B1BDA98E2562")]
+Interface IHashComputation Extends IInspectable
+    [PreserveSig]
+    Function Append(ByVal Data As IBuffer) As HRESULT
+    Function GetValueAndReset() As IBuffer
+End Interface
+
+[InterfaceId("7B6E363E-94D2-4739-A57B-022E0C3A402A")]
+Interface IKeyDerivationAlgorithmNamesStatics Extends IInspectable
+    Property Get Pbkdf2Md5() As LongPtr
+    Property Get Pbkdf2Sha1() As LongPtr
+    Property Get Pbkdf2Sha256() As LongPtr
+    Property Get Pbkdf2Sha384() As LongPtr
+    Property Get Pbkdf2Sha512() As LongPtr
+    Property Get Sp800108CtrHmacMd5() As LongPtr
+    Property Get Sp800108CtrHmacSha1() As LongPtr
+    Property Get Sp800108CtrHmacSha256() As LongPtr
+    Property Get Sp800108CtrHmacSha384() As LongPtr
+    Property Get Sp800108CtrHmacSha512() As LongPtr
+    Property Get Sp80056aConcatMd5() As LongPtr
+    Property Get Sp80056aConcatSha1() As LongPtr
+    Property Get Sp80056aConcatSha256() As LongPtr
+    Property Get Sp80056aConcatSha384() As LongPtr
+    Property Get Sp80056aConcatSha512() As LongPtr
+End Interface
+
+[InterfaceId("57953FAB-6044-466F-97F4-337B7808384D")]
+Interface IKeyDerivationAlgorithmNamesStatics2 Extends IInspectable
+    Property Get CapiKdfMd5() As LongPtr
+    Property Get CapiKdfSha1() As LongPtr
+    Property Get CapiKdfSha256() As LongPtr
+    Property Get CapiKdfSha384() As LongPtr
+    Property Get CapiKdfSha512() As LongPtr
+End Interface
+
+[InterfaceId("E1FBA83B-4671-43B7-9158-763AAA98B6BF")]
+Interface IKeyDerivationAlgorithmProvider Extends IInspectable
+    Property Get AlgorithmName() As LongPtr
+    Function CreateKey(ByVal KeyMaterial As IBuffer) As ICryptographicKey
+End Interface
+
+[InterfaceId("0A22097A-0A1C-443B-9418-B9498AEB1603")]
+Interface IKeyDerivationAlgorithmProviderStatics Extends IInspectable
+    Function OpenAlgorithm(ByVal Algorithm As LongPtr) As IKeyDerivationAlgorithmProvider
+End Interface
+
+[InterfaceId("7BF05967-047B-4A8C-964A-469FFD5522E2")]
+Interface IKeyDerivationParameters Extends IInspectable
+    Property Get KdfGenericBinary() As IBuffer
+    Property Set KdfGenericBinary(ByVal Value As IBuffer)
+    Property Get IterationCount() As Long
+End Interface
+
+[InterfaceId("CD4166D1-417E-4F4C-B666-C0D879F3F8E0")]
+Interface IKeyDerivationParameters2 Extends IInspectable
+    Property Get Capi1KdfTargetAlgorithm() As Capi1KdfTargetAlgorithm
+    Property Let Capi1KdfTargetAlgorithm(ByVal Value As Capi1KdfTargetAlgorithm)
+End Interface
+
+[InterfaceId("EA961FBE-F37F-4146-9DFE-A456F1735F4B")]
+Interface IKeyDerivationParametersStatics Extends IInspectable
+    Function BuildForPbkdf2(ByVal Pbkdf2Salt As IBuffer, ByVal IterationCount As Long) As IKeyDerivationParameters
+    Function BuildForSP800108(ByVal Label As IBuffer, ByVal Context As IBuffer) As IKeyDerivationParameters
+    Function BuildForSP80056a(ByVal AlgorithmId As IBuffer, ByVal PartyUInfo As IBuffer, ByVal PartyVInfo As IBuffer, ByVal SuppPubInfo As IBuffer, ByVal SuppPrivInfo As IBuffer) As IKeyDerivationParameters
+End Interface
+
+[InterfaceId("A5783DD5-58E3-4EFB-B283-A1653126E1BE")]
+Interface IKeyDerivationParametersStatics2 Extends IInspectable
+    Function BuildForCapi1Kdf(ByVal Capi1KdfTargetAlgorithm As Capi1KdfTargetAlgorithm) As IKeyDerivationParameters
+End Interface
+
+[InterfaceId("41412678-FB1E-43A4-895E-A9026E4390A3")]
+Interface IMacAlgorithmNamesStatics Extends IInspectable
+    Property Get HmacMd5() As LongPtr
+    Property Get HmacSha1() As LongPtr
+    Property Get HmacSha256() As LongPtr
+    Property Get HmacSha384() As LongPtr
+    Property Get HmacSha512() As LongPtr
+    Property Get AesCmac() As LongPtr
+End Interface
+
+[InterfaceId("4A3FC5C3-1CBD-41CE-A092-AA0BC5D2D2F5")]
+Interface IMacAlgorithmProvider Extends IInspectable
+    Property Get AlgorithmName() As LongPtr
+    Property Get MacLength() As Long
+    Function CreateKey(ByVal KeyMaterial As IBuffer) As ICryptographicKey
+End Interface
+
+[InterfaceId("6DA32A15-D931-42ED-8E7E-C301CAEE119C")]
+Interface IMacAlgorithmProvider2 Extends IInspectable
+    Function CreateHash(ByVal KeyMaterial As IBuffer) As IHashComputation
+End Interface
+
+[InterfaceId("C9BDC147-CC77-4DF0-9E4E-B921E080644C")]
+Interface IMacAlgorithmProviderStatics Extends IInspectable
+    Function OpenAlgorithm(ByVal Algorithm As LongPtr) As IMacAlgorithmProvider
+End Interface
+
+[InterfaceId("81CA789B-98DF-5C6A-9531-966238E3E7AE")]
+Interface IAsyncOperationICryptographicKey Extends IInspectable
+    Property Set Completed(ByVal Handler As IAsyncOperationCompletedHandlerICryptographicKey)
+    Property Get Completed() As IAsyncOperationCompletedHandlerICryptographicKey
+    Function GetResults() As ICryptographicKey
+End Interface
+
+[InterfaceId("3A0B522D-98D0-5D34-ACE6-2C7346613F1D")]
+Interface IAsyncOperationCompletedHandlerICryptographicKey Extends IUnknown
+    Sub Invoke(ByVal AsyncOperation As IAsyncOperationICryptographicKey, ByVal AsyncStatus As AsyncStatus)
+End Interface
+
+[InterfaceId("77274814-D9D4-4CF5-B668-E0457DF30894")]
+Interface IPersistedKeyProviderStatics Extends IInspectable
+    Function OpenKeyPairFromCertificateAsync(ByVal Certificate As ICertificate, ByVal HashAlgorithmName As LongPtr, ByVal Padding As CryptographicPadding) As IAsyncOperationICryptographicKey
+    Function OpenPublicKeyFromCertificate(ByVal Certificate As ICertificate, ByVal HashAlgorithmName As LongPtr, ByVal Padding As CryptographicPadding) As ICryptographicKey
+End Interface
+
+[InterfaceId("6870727B-C996-4EAE-84D7-79B2AEB73B9C")]
+Interface ISymmetricAlgorithmNamesStatics Extends IInspectable
+    Property Get DesCbc() As LongPtr
+    Property Get DesEcb() As LongPtr
+    Property Get TripleDesCbc() As LongPtr
+    Property Get TripleDesEcb() As LongPtr
+    Property Get Rc2Cbc() As LongPtr
+    Property Get Rc2Ecb() As LongPtr
+    Property Get AesCbc() As LongPtr
+    Property Get AesEcb() As LongPtr
+    Property Get AesGcm() As LongPtr
+    Property Get AesCcm() As LongPtr
+    Property Get AesCbcPkcs7() As LongPtr
+    Property Get AesEcbPkcs7() As LongPtr
+    Property Get DesCbcPkcs7() As LongPtr
+    Property Get DesEcbPkcs7() As LongPtr
+    Property Get TripleDesCbcPkcs7() As LongPtr
+    Property Get TripleDesEcbPkcs7() As LongPtr
+    Property Get Rc2CbcPkcs7() As LongPtr
+    Property Get Rc2EcbPkcs7() As LongPtr
+    Property Get Rc4() As LongPtr
+End Interface
+
+[InterfaceId("3D7E4A33-3BD0-4902-8AC8-470D50D21376")]
+Interface ISymmetricKeyAlgorithmProvider Extends IInspectable
+    Property Get AlgorithmName() As LongPtr
+    Property Get BlockLength() As Long
+    Function CreateSymmetricKey(ByVal KeyMaterial As IBuffer) As ICryptographicKey
+End Interface
+
+[InterfaceId("8D3B2326-1F37-491F-B60E-F5431B26B483")]
+Interface ISymmetricKeyAlgorithmProviderStatics Extends IInspectable
+    Function OpenAlgorithm(ByVal Algorithm As LongPtr) As ISymmetricKeyAlgorithmProvider
+End Interface
+
+Module mdlSecurityCryptographyCore
+
+Public Enum Capi1KdfTargetAlgorithm
+    Capi1KdfTargetAlgorithm_NotAes
+    Capi1KdfTargetAlgorithm_Aes
+End Enum
+
+Public Enum CryptographicPadding
+    CryptographicPadding_None
+    CryptographicPadding_RsaOaep
+    CryptographicPadding_RsaPkcs1V15
+    CryptographicPadding_RsaPss
+End Enum
+
+Public Enum CryptographicPrivateKeyBlobType
+    CryptographicPrivateKeyBlobType_Pkcs8RawPrivateKeyInfo
+    CryptographicPrivateKeyBlobType_Pkcs1RsaPrivateKey
+    CryptographicPrivateKeyBlobType_BCryptPrivateKey
+    CryptographicPrivateKeyBlobType_Capi1PrivateKey
+    CryptographicPrivateKeyBlobType_BCryptEccFullPrivateKey
+End Enum
+
+Public Enum CryptographicPublicKeyBlobType
+    CryptographicPublicKeyBlobType_X509SubjectPublicKeyInfo
+    CryptographicPublicKeyBlobType_Pkcs1RsaPublicKey
+    CryptographicPublicKeyBlobType_BCryptPublicKey
+    CryptographicPublicKeyBlobType_Capi1PublicKey
+    CryptographicPublicKeyBlobType_BCryptEccFullPublicKey
+End Enum
+
+End Module

@@ -1,0 +1,80 @@
+[InterfaceId("624CD4E1-D007-43B1-9C03-AF4D3E6258C4")]
+Interface IBindableVectorChangedEventHandler Extends IUnknown
+    Sub Invoke(ByVal Sender As IBindableObservableVector, ByVal Args As IInspectable)
+End Interface
+
+[InterfaceId("CA10B37C-F382-4591-8557-5E24965279B0")]
+Interface INotifyCollectionChangedEventHandler Extends IUnknown
+    Sub Invoke(ByVal Sender As IInspectable, ByVal Args As INotifyCollectionChangedEventArgs)
+End Interface
+
+[InterfaceId("036D2C08-DF29-41AF-8AA2-D774BE62BA6F")]
+Interface IBindableIterable Extends IInspectable
+    Function First() As IBindableIterator
+End Interface
+
+[InterfaceId("6A1D6C07-076D-49F2-8314-F52C9C9A8331")]
+Interface IBindableIterator Extends IInspectable
+    Property Get Current() As IInspectable
+    Property Get HasCurrent() As BooleanByte
+    Function MoveNext() As BooleanByte
+End Interface
+
+[InterfaceId("FE1EB536-7E7F-4F90-AC9A-474984AAE512")]
+Interface IBindableObservableVector Extends IInspectable
+    Sub AddVectorChanged(ByVal Handler As IBindableVectorChangedEventHandler, Optional Token As EventRegistrationToken)
+    Sub RemoveVectorChanged(ByVal Token As EventRegistrationToken)
+End Interface
+
+[InterfaceId("393DE7DE-6FD0-4C0D-BB71-47244A113E93")]
+Interface IBindableVector Extends IInspectable
+    Function GetAt(ByVal Index As Long) As IInspectable
+    Property Get Size() As Long
+    Function GetView() As IBindableVectorView
+    Function IndexOf(ByVal Value As IInspectable, Index As Long) As BooleanByte
+    Sub SetAt(ByVal Index As Long, ByVal Value As IInspectable)
+    Sub InsertAt(ByVal Index As Long, ByVal Value As IInspectable)
+    Sub RemoveAt(ByVal Index As Long)
+    Sub Append(ByVal Value As IInspectable)
+    Sub RemoveAtEnd()
+    Sub Clear()
+End Interface
+
+[InterfaceId("346DD6E7-976E-4BC3-815D-ECE243BC0F33")]
+Interface IBindableVectorView Extends IInspectable
+    Function GetAt(ByVal Index As Long) As IInspectable
+    Property Get Size() As Long
+    Function IndexOf(ByVal Value As IInspectable, Index As Long) As BooleanByte
+End Interface
+
+[InterfaceId("28B167D5-1A31-465B-9B25-D5C3AE686C40")]
+Interface INotifyCollectionChanged Extends IInspectable
+    Sub AddCollectionChanged(ByVal Handler As INotifyCollectionChangedEventHandler, Token As EventRegistrationToken)
+    Sub RemoveCollectionChanged(ByVal Token As EventRegistrationToken)
+End Interface
+
+[InterfaceId("4CF68D33-E3F2-4964-B85E-945B4F7E2F21")]
+Interface INotifyCollectionChangedEventArgs Extends IInspectable
+    Property Get Action() As NotifyCollectionChangedAction
+    Property Get NewItems() As IBindableVector
+    Property Get OldItems() As IBindableVector
+    Property Get NewStartingIndex() As Long
+    Property Get OldStartingIndex() As Long
+End Interface
+
+[InterfaceId("B30C3E3A-DF8D-44A5-9A38-7AC0D08CE63D")]
+Interface INotifyCollectionChangedEventArgsFactory Extends IInspectable
+    Function CreateInstanceWithAllParameters(ByVal Action As NotifyCollectionChangedAction, ByVal NewItems As IBindableVector, ByVal OldItems As IBindableVector, ByVal NewIndex As Long, ByVal OldIndex As Long, Optional ByVal BaseInterface As IInspectable, Optional InnerInterface As IInspectable) As INotifyCollectionChangedEventArgs
+End Interface
+
+Module mdlUIXamlInterop
+
+Public Enum NotifyCollectionChangedAction
+    NotifyCollectionChangedAction_Add
+    NotifyCollectionChangedAction_Remove
+    NotifyCollectionChangedAction_Replace
+    NotifyCollectionChangedAction_Move
+    NotifyCollectionChangedAction_Reset
+End Enum
+
+End Module

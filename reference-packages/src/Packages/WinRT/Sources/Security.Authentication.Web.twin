@@ -1,0 +1,61 @@
+[InterfaceId("B34952AC-265E-5947-8735-E9318F4301FF")]
+Interface IAsyncOperationIWebAuthenticationResult Extends IInspectable
+    Property Set Completed(ByVal Handler As IAsyncOperationCompletedHandlerIWebAuthenticationResult)
+    Property Get Completed() As IAsyncOperationCompletedHandlerIWebAuthenticationResult
+    Function GetResults() As IWebAuthenticationResult
+End Interface
+
+[InterfaceId("3C1EC44C-E942-54E5-BCD3-E329C951F595")]
+Interface IAsyncOperationCompletedHandlerIWebAuthenticationResult Extends IUnknown
+    Sub Invoke(ByVal AsyncOperation As IAsyncOperationIWebAuthenticationResult, ByVal AsyncStatus As AsyncStatus)
+End Interface
+
+[InterfaceId("2F149F1A-E673-40B5-BC22-201A6864A37B")]
+Interface IWebAuthenticationBrokerStatics Extends IInspectable
+    Function AuthenticateWithCallbackUriAsync(ByVal Options As WebAuthenticationOptions, ByVal RequestUri As IUri, ByVal CallbackUri As IUri) As IAsyncOperationIWebAuthenticationResult
+    Function AuthenticateWithoutCallbackUriAsync(ByVal Options As WebAuthenticationOptions, ByVal RequestUri As IUri) As IAsyncOperationIWebAuthenticationResult
+    Function GetCurrentApplicationCallbackUri() As IUri
+End Interface
+
+[InterfaceId("73CDFB9E-14E7-41DA-A971-AAF4410B621E")]
+Interface IWebAuthenticationBrokerStatics2 Extends IInspectable
+    [PreserveSig]
+    Function AuthenticateAndContinue(ByVal RequestUri As IUri) As HRESULT
+    [PreserveSig]
+    Function AuthenticateWithCallbackUriAndContinue(ByVal RequestUri As IUri, ByVal CallbackUri As IUri) As HRESULT
+    [PreserveSig]
+    Function AuthenticateWithCallbackUriContinuationDataAndOptionsAndContinue(ByVal RequestUri As IUri, ByVal CallbackUri As IUri, ByVal ContinuationData As IPropertySet, ByVal Options As WebAuthenticationOptions) As HRESULT
+    Function AuthenticateSilentlyAsync(ByVal RequestUri As IUri) As IAsyncOperationIWebAuthenticationResult
+    Function AuthenticateSilentlyWithOptionsAsync(ByVal RequestUri As IUri, ByVal Options As WebAuthenticationOptions) As IAsyncOperationIWebAuthenticationResult
+End Interface
+
+[InterfaceId("64002B4B-EDE9-470A-A5CD-0323FAF6E262")]
+Interface IWebAuthenticationResult Extends IInspectable
+    Property Get ResponseData() As LongPtr
+    Property Get ResponseStatus() As WebAuthenticationStatus
+    Property Get ResponseErrorDetail() As Long
+End Interface
+
+Module mdlSecurityAuthenticationWeb
+
+Public Enum TokenBindingKeyType
+    TokenBindingKeyType_Rsa2048
+    TokenBindingKeyType_EcdsaP256
+    TokenBindingKeyType_AnyExisting
+End Enum
+
+Public Enum WebAuthenticationOptions
+    WebAuthenticationOptions_None = &H0
+    WebAuthenticationOptions_SilentMode = &H1
+    WebAuthenticationOptions_UseTitle = &H2
+    WebAuthenticationOptions_UseHttpPost = &H4
+    WebAuthenticationOptions_UseCorporateNetwork = &H8
+End Enum
+
+Public Enum WebAuthenticationStatus
+    WebAuthenticationStatus_Success
+    WebAuthenticationStatus_UserCancel
+    WebAuthenticationStatus_ErrorHttp
+End Enum
+
+End Module

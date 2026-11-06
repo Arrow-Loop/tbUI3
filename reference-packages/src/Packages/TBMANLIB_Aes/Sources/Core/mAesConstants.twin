@@ -1,0 +1,117 @@
+' =====================================================
+' mAesConstants.twin - AES Encryption Constants Module
+' TwinBASIC Project - Crypto Module - AES
+' =====================================================
+' Function: Define AES encryption constants and enums
+' 功能：定义AES加密相关的常量和枚举
+' Author: woeoo (邓伟)
+' Email: 215879458@qq.com
+' Site: https://vb6.pro
+' Date: 2026-02-04
+' Version: 1.0.0
+' =====================================================
+
+Option Explicit
+
+Public Module mAesConstants
+
+    ' =====================================================
+    ' Windows CryptoAPI Constants
+    ' =====================================================
+
+    ' Crypto Provider Types
+    Public Const PROV_RSA_AES As Long = 24
+    Public Const PROV_RSA_FULL As Long = 1
+
+    ' Exportable Key Flag
+    Public Const CRYPT_EXPORTABLE As Long = &H1
+
+    ' Key Generation Flags
+    Public Const CRYPT_NEWKEYSET As Long = &H8
+
+    ' AES Algorithm IDs
+    Public Const CALG_AES_128 As Long = 26126
+    Public Const CALG_AES_192 As Long = 26127
+    Public Const CALG_AES_256 As Long = 26128
+
+    ' Encryption Modes
+    Public Const CRYPT_MODE_ECB As Long = 1
+    Public Const CRYPT_MODE_CBC As Long = 2
+    Public Const CRYPT_MODE_CFB As Long = 3
+    Public Const CRYPT_MODE_OFB As Long = 4
+
+    ' Padding Modes
+    Public Const PKCS5_PADDING As Long = 1
+    Public Const ZERO_PADDING As Long = 2
+
+    ' Hash Parameters
+    Public Const HP_HASHVAL As Long = 2
+    Public Const HP_HASHSIZE As Long = 4
+
+    ' Key Parameters
+    Public Const KP_IV As Long = 1
+    Public Const KP_MODE As Long = 4
+    Public Const KP_PADDING As Long = 3
+    Public Const KP_BLOCKLEN As Long = 8
+
+    ' Key Exchange Keys
+    Public Const AT_KEYEXCHANGE As Long = 1
+    Public Const AT_SIGNATURE As Long = 2
+
+    ' Hash Algorithms
+    Public Const CALG_SHA_256 As Long = 32780
+    Public Const CALG_MD5 As Long = 32771
+
+    ' Base64 Encoding Flags
+    Public Const CRYPT_STRING_BASE64 As Long = &H1
+    Public Const CRYPT_STRING_NOCRLF As Long = &H40000000
+
+    ' =====================================================
+    ' AES Specific Constants
+    ' =====================================================
+
+    ' Block Size: AES always uses 128-bit (16 bytes) blocks
+    Public Const BLOCK_SIZE_128 As Long = 16
+
+    ' Key Sizes in bytes
+    Public Const KEY_SIZE_128 As Long = 16    ' 128-bit key
+    Public Const KEY_SIZE_192 As Long = 24    ' 192-bit key
+    Public Const KEY_SIZE_256 As Long = 32    ' 256-bit key
+
+    ' Version
+    Public Const VERSION As String = "1.0.0"
+
+    ' =====================================================
+    ' AES Key Size Enum
+    ' =====================================================
+    Public Enum AesKeySize
+        KeySize_128 = 128    ' 128-bit key (16 bytes)
+        KeySize_192 = 192    ' 192-bit key (24 bytes)
+        KeySize_256 = 256    ' 256-bit key (32 bytes)
+    End Enum
+
+    ' =====================================================
+    ' AES Cipher Mode Enum
+    ' =====================================================
+    ' CryptoAPI 支持: ECB, CBC
+    ' CNG 支持: CFB, OFB, CTR, GCM
+    Public Enum AesCipherMode
+        ECB = 1      ' Electronic Codebook - CryptoAPI
+        CBC = 2      ' Cipher Block Chaining - CryptoAPI
+        CFB = 3      ' Cipher Feedback - CNG
+        OFB = 4      ' Output Feedback - CNG
+        CTR = 5      ' Counter - CNG
+        GCM = 6      ' Galois/Counter Mode (AEAD) - CNG
+    End Enum
+
+    ' =====================================================
+    ' AES Padding Mode Enum
+    ' =====================================================
+    Public Enum AesPaddingMode
+        PKCS7 = 1         ' PKCS#7 padding (default, most common)
+        ZeroPadding = 2    ' Zero padding
+        NoPadding = 3      ' No padding
+        ISO10126 = 4       ' ISO/IEC 7816-4 padding
+    End Enum
+
+End Module

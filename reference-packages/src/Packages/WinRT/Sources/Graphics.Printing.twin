@@ -1,0 +1,624 @@
+[InterfaceId("6C109FA8-5CB6-4B3A-8663-F39CB02DC9B4")]
+Interface IPrintTaskSourceRequestedHandler Extends IUnknown
+    Sub Invoke(ByVal Args As IPrintTaskSourceRequestedArgs)
+End Interface
+
+[InterfaceId("DEDC0C30-F1EB-47DF-AAE6-ED5427511F01")]
+Interface IPrintDocumentSource Extends IInspectable
+
+End Interface
+
+[InterfaceId("8A8CB877-70C5-54CE-8B42-D790E2914859")]
+Interface ITypedEventHandlerPrintManagerPrintTaskRequested Extends IUnknown
+    Sub Invoke(ByVal Sender As IPrintManager, ByVal Args As IPrintTaskRequestedEventArgs)
+End Interface
+
+[InterfaceId("FF2A9694-8C99-44FD-AE4A-19D9AA9A0F0A")]
+Interface IPrintManager Extends IInspectable
+    [PreserveSig]
+    Function AddPrintTaskRequested(ByVal Handler As ITypedEventHandlerPrintManagerPrintTaskRequested, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemovePrintTaskRequested(ByVal Token As EventRegistrationToken) As HRESULT
+End Interface
+
+[InterfaceId("C5435A42-8D43-4E7B-A68A-EF311E392087")]
+Interface IPrintManagerInterop Extends IInspectable
+    Function GetForWindow(ByVal hWnd As LongPtr, rIID As Any) As IPrintManager
+    Function ShowPrintUIForWindowAsync(ByVal hWnd As LongPtr, rIID As Any) As IAsyncOperationBoolean
+End Interface
+
+[InterfaceId("58185DCD-E634-4654-84F0-E0152A8217AC")]
+Interface IPrintManagerStatics Extends IInspectable
+    Function GetForCurrentView() As IPrintManager
+    Function ShowPrintUIAsync() As IAsyncOperationBoolean
+End Interface
+
+[InterfaceId("35A99955-E6AB-4139-9ABD-B86A729B3598")]
+Interface IPrintManagerStatics2 Extends IInspectable
+    Function IsSupported() As BooleanByte
+End Interface
+
+[InterfaceId("DD4BE9C9-A6A1-4ADA-930E-DA872A4F23D3")]
+Interface IPrintPageInfo Extends IInspectable
+    Property Let MediaSize(ByVal Value As PrintMediaSize)
+    Property Get MediaSize() As PrintMediaSize
+    Property Let PageSize(ByVal Value As SIZEF)
+    Property Get PageSize() As SIZEF
+    Property Let DpiX(ByVal Value As Long)
+    Property Get DpiX() As Long
+    Property Let DpiY(ByVal Value As Long)
+    Property Get DpiY() As Long
+    Property Let Orientation(ByVal Value As PrintOrientation)
+    Property Get Orientation() As PrintOrientation
+End Interface
+
+[InterfaceId("F8A06C54-6E7C-51C5-57FD-0660C2D71513")]
+Interface IPrintPageRange Extends IInspectable
+    Property Get FirstPageNumber() As Long
+    Property Get LastPageNumber() As Long
+End Interface
+
+[InterfaceId("408FD45F-E047-5F85-7129-FB085A4FAD14")]
+Interface IPrintPageRangeFactory Extends IInspectable
+    Function Create(ByVal FirstPage As Long, ByVal LastPage As Long) As IPrintPageRange
+    Function CreateWithSinglePage(ByVal Page As Long) As IPrintPageRange
+End Interface
+
+[InterfaceId("CE6DB728-1357-46B2-A923-79F995F448FC")]
+Interface IPrintPageRangeOptions Extends IInspectable
+    Property Let AllowAllPages(ByVal Value As BooleanByte)
+    Property Get AllowAllPages() As BooleanByte
+    Property Let AllowCurrentPage(ByVal Value As BooleanByte)
+    Property Get AllowCurrentPage() As BooleanByte
+    Property Let AllowCustomSetOfPages(ByVal Value As BooleanByte)
+    Property Get AllowCustomSetOfPages() As BooleanByte
+End Interface
+
+[InterfaceId("4CC141D4-C0D9-5220-B1CE-80FFF3BD2D44")]
+Interface ITypedEventHandlerPrintTaskIInspectable Extends IUnknown
+    Sub Invoke(ByVal Sender As IPrintTask, ByVal Args As IInspectable)
+End Interface
+
+[InterfaceId("B0B02549-B9AD-5226-898A-7B563B46640C")]
+Interface ITypedEventHandlerPrintTaskCompleted Extends IUnknown
+    Sub Invoke(ByVal Sender As IPrintTask, ByVal Args As IPrintTaskCompletedEventArgs)
+End Interface
+
+[InterfaceId("C08D0524-5899-536C-8F46-55FDAA4CF78B")]
+Interface ITypedEventHandlerPrintTaskProgressing Extends IUnknown
+    Sub Invoke(ByVal Sender As IPrintTask, ByVal Args As IPrintTaskProgressingEventArgs)
+End Interface
+
+[InterfaceId("61D80247-6CF6-4FAD-84E2-A5E82E2D4CEB")]
+Interface IPrintTask Extends IInspectable
+    Property Get Properties() As IDataPackagePropertySet
+    Property Get Source() As IPrintDocumentSource
+    Property Get Options() As IPrintTaskOptions
+    [PreserveSig]
+    Function AddPreviewing(ByVal Handler As ITypedEventHandlerPrintTaskIInspectable, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemovePreviewing(ByVal Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function AddSubmitting(ByVal Handler As ITypedEventHandlerPrintTaskIInspectable, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveSubmitting(ByVal Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function AddProgressing(ByVal Handler As ITypedEventHandlerPrintTaskProgressing, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveProgressing(ByVal Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function AddCompleted(ByVal Handler As ITypedEventHandlerPrintTaskCompleted, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveCompleted(ByVal Token As EventRegistrationToken) As HRESULT
+End Interface
+
+[InterfaceId("36234877-3E53-4D9D-8F5E-316AC8DEDAE1")]
+Interface IPrintTask2 Extends IInspectable
+    Property Let IsPreviewEnabled(ByVal Value As BooleanByte)
+    Property Get IsPreviewEnabled() As BooleanByte
+End Interface
+
+[InterfaceId("5BCD34AF-24E9-4C10-8D07-14C346BA3FCE")]
+Interface IPrintTaskCompletedEventArgs Extends IInspectable
+    Property Get Completion() As PrintTaskCompletion
+End Interface
+
+[InterfaceId("5A0A66BB-D289-41BB-96DD-57E28338AE3F")]
+Interface IPrintTaskOptions Extends IInspectable
+    Property Let Bordering(ByVal Value As PrintBordering)
+    Property Get Bordering() As PrintBordering
+    Function GetPagePrintTicket(ByVal PrintPageInfo As IPrintPageInfo) As IRandomAccessStream
+End Interface
+
+[InterfaceId("38F75665-FB40-53E2-A916-15BA754A6A9E")]
+Interface IIterator_IPrintPageRange Extends IInspectable
+    Property Get Current() As IPrintPageRange
+    Property Get HasCurrent() As BooleanByte
+    Function MoveNext() As BooleanByte
+    Function GetMany(ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("ED6DDF38-34CF-5A2F-B9AC-413DFFCE7F81")]
+Interface IIterable_IPrintPageRange Extends IInspectable
+    Function First() As IIterator_IPrintPageRange
+End Interface
+
+[InterfaceId("0063B11E-2098-5EFF-9652-08A3516C99A6")]
+Interface IVectorView_IPrintPageRange Extends IInspectable
+    Function GetAt(ByVal Index As Long) As IPrintPageRange
+    Property Get Size() As Long
+    Function IndexOf(ByVal Value As IPrintPageRange, Index As Long) As BooleanByte
+    Function GetMany(ByVal StartIndex As Long, ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("1D314A18-2A16-542F-A986-1B7841B878AA")]
+Interface IVector_IPrintPageRange Extends IInspectable
+    Function GetAt(ByVal Index As Long) As IPrintPageRange
+    Property Get Size() As Long
+    Function GetView() As IVectorView_IPrintPageRange
+    Function IndexOf(ByVal Value As IPrintPageRange, Index As Long) As BooleanByte
+    [PreserveSig]
+    Function SetAt(ByVal Index As Long, ByVal Value As IPrintPageRange) As HRESULT
+    [PreserveSig]
+    Function InsertAt(ByVal Index As Long, ByVal Value As IPrintPageRange) As HRESULT
+    [PreserveSig]
+    Function RemoveAt(ByVal Index As Long) As HRESULT
+    [PreserveSig]
+    Function Append(ByVal Value As IPrintPageRange) As HRESULT
+    [PreserveSig]
+    Function RemoveAtEnd() As HRESULT
+    [PreserveSig]
+    Function Clear() As HRESULT
+    Function GetMany(ByVal StartIndex As Long, ByVal Length As Long, Items As Any) As Long
+    [PreserveSig]
+    Function ReplaceAll(ByVal Length As Long, Items As Any) As HRESULT
+End Interface
+
+[InterfaceId("EB9B1606-9A36-4B59-8617-B217849262E1")]
+Interface IPrintTaskOptions2 Extends IInspectable
+    Property Get PageRangeOptions() As IPrintPageRangeOptions
+    Property Get CustomPageRanges() As IVector_IPrintPageRange
+End Interface
+
+[InterfaceId("1BDBB474-4ED1-41EB-BE3C-72D18ED67337")]
+Interface IPrintTaskOptionsCore Extends IInspectable
+    Function GetPageDescription(ByVal JobPageNumber As Long) As PrintPageDescription
+End Interface
+
+[InterfaceId("C1B71832-9E93-4E55-814B-3326A59EFCE1")]
+Interface IPrintTaskOptionsCoreProperties Extends IInspectable
+    Property Let MediaSize(ByVal Value As PrintMediaSize)
+    Property Get MediaSize() As PrintMediaSize
+    Property Let MediaType(ByVal Value As PrintMediaType)
+    Property Get MediaType() As PrintMediaType
+    Property Let Orientation(ByVal Value As PrintOrientation)
+    Property Get Orientation() As PrintOrientation
+    Property Let PrintQuality(ByVal Value As PrintQuality)
+    Property Get PrintQuality() As PrintQuality
+    Property Let ColorMode(ByVal Value As PrintColorMode)
+    Property Get ColorMode() As PrintColorMode
+    Property Let Duplex(ByVal Value As PrintDuplex)
+    Property Get Duplex() As PrintDuplex
+    Property Let Collation(ByVal Value As PrintCollation)
+    Property Get Collation() As PrintCollation
+    Property Let Staple(ByVal Value As PrintStaple)
+    Property Get Staple() As PrintStaple
+    Property Let HolePunch(ByVal Value As PrintHolePunch)
+    Property Get HolePunch() As PrintHolePunch
+    Property Let Binding(ByVal Value As PrintBinding)
+    Property Get Binding() As PrintBinding
+    Property Get MinCopies() As Long
+    Property Get MaxCopies() As Long
+    Property Let NumberOfCopies(ByVal Value As Long)
+    Property Get NumberOfCopies() As Long
+End Interface
+
+[InterfaceId("62E69E23-9A1E-4336-B74F-3CC7F4CFF709")]
+Interface IPrintTaskOptionsCoreUIConfiguration Extends IInspectable
+    Property Get DisplayedOptions() As IVector_HSTRING
+End Interface
+
+[InterfaceId("810CD3CB-B410-4282-A073-5AC378234174")]
+Interface IPrintTaskProgressingEventArgs Extends IInspectable
+    Property Get DocumentPageCount() As Long
+End Interface
+
+[InterfaceId("6FF61E2E-2722-4240-A67C-F364849A17F3")]
+Interface IPrintTaskRequest Extends IInspectable
+    Property Get Deadline() As DateTime
+    Function CreatePrintTask(ByVal Title As LongPtr, ByVal Handler As IPrintTaskSourceRequestedHandler) As IPrintTask
+    Function GetDeferral() As IPrintTaskRequestedDeferral
+End Interface
+
+[InterfaceId("CFEFB3F0-CE3E-42C7-9496-64800C622C44")]
+Interface IPrintTaskRequestedDeferral Extends IInspectable
+    [PreserveSig]
+    Function Complete() As HRESULT
+End Interface
+
+[InterfaceId("D0AFF924-A31B-454C-A7B6-5D0CC522FC16")]
+Interface IPrintTaskRequestedEventArgs Extends IInspectable
+    Property Get Request() As IPrintTaskRequest
+End Interface
+
+[InterfaceId("F9F067BE-F456-41F0-9C98-5CE73E851410")]
+Interface IPrintTaskSourceRequestedArgs Extends IInspectable
+    Property Get Deadline() As DateTime
+    [PreserveSig]
+    Function SetSource(ByVal Source As IPrintDocumentSource) As HRESULT
+    Function GetDeferral() As IPrintTaskSourceRequestedDeferral
+End Interface
+
+[InterfaceId("4A1560D1-6992-4D9D-8555-4CA4563FB166")]
+Interface IPrintTaskSourceRequestedDeferral Extends IInspectable
+    [PreserveSig]
+    Function Complete() As HRESULT
+End Interface
+
+[InterfaceId("295D70C0-C2CB-4B7D-B0EA-93095091A220")]
+Interface IPrintTaskTargetDeviceSupport Extends IInspectable
+    Property Let IsPrinterTargetEnabled(ByVal Value As BooleanByte)
+    Property Get IsPrinterTargetEnabled() As BooleanByte
+    Property Let Is3DManufacturingTargetEnabled(ByVal Value As BooleanByte)
+    Property Get Is3DManufacturingTargetEnabled() As BooleanByte
+End Interface
+
+[InterfaceId("B4483D26-0DD0-4CD4-BAFF-930FC7D6A574")]
+Interface IStandardPrintTaskOptionsStatics Extends IInspectable
+    Property Get MediaSize() As LongPtr
+    Property Get MediaType() As LongPtr
+    Property Get Orientation() As LongPtr
+    Property Get PrintQuality() As LongPtr
+    Property Get ColorMode() As LongPtr
+    Property Get Duplex() As LongPtr
+    Property Get Collation() As LongPtr
+    Property Get Staple() As LongPtr
+    Property Get HolePunch() As LongPtr
+    Property Get Binding() As LongPtr
+    Property Get Copies() As LongPtr
+    Property Get NUp() As LongPtr
+    Property Get InputBin() As LongPtr
+End Interface
+
+[InterfaceId("3BE38BF4-7A44-4269-9A52-81261E289EE9")]
+Interface IStandardPrintTaskOptionsStatics2 Extends IInspectable
+    Property Get Bordering() As LongPtr
+End Interface
+
+[InterfaceId("BBF68E86-3858-41B3-A799-55DD9888D475")]
+Interface IStandardPrintTaskOptionsStatics3 Extends IInspectable
+    Property Get CustomPageRanges() As LongPtr
+End Interface
+
+Module mdlGraphicsPrinting
+
+Public Enum PrintBinding
+    PrintBinding_Default
+    PrintBinding_NotAvailable
+    PrintBinding_PrinterCustom
+    PrintBinding_None
+    PrintBinding_Bale
+    PrintBinding_BindBottom
+    PrintBinding_BindLeft
+    PrintBinding_BindRight
+    PrintBinding_BindTop
+    PrintBinding_Booklet
+    PrintBinding_EdgeStitchBottom
+    PrintBinding_EdgeStitchLeft
+    PrintBinding_EdgeStitchRight
+    PrintBinding_EdgeStitchTop
+    PrintBinding_Fold
+    PrintBinding_JogOffset
+    PrintBinding_Trim
+End Enum
+
+Public Enum PrintBordering
+    PrintBordering_Default
+    PrintBordering_NotAvailable
+    PrintBordering_PrinterCustom
+    PrintBordering_Bordered
+    PrintBordering_Borderless
+End Enum
+
+Public Enum PrintCollation
+    PrintCollation_Default
+    PrintCollation_NotAvailable
+    PrintCollation_PrinterCustom
+    PrintCollation_Collated
+    PrintCollation_Uncollated
+End Enum
+
+Public Enum PrintColorMode
+    PrintColorMode_Default
+    PrintColorMode_NotAvailable
+    PrintColorMode_PrinterCustom
+    PrintColorMode_Color
+    PrintColorMode_Grayscale
+    PrintColorMode_Monochrome
+End Enum
+
+Public Enum PrintDuplex
+    PrintDuplex_Default
+    PrintDuplex_NotAvailable
+    PrintDuplex_PrinterCustom
+    PrintDuplex_OneSided
+    PrintDuplex_TwoSidedShortEdge
+    PrintDuplex_TwoSidedLongEdge
+End Enum
+
+Public Enum PrintHolePunch
+    PrintHolePunch_Default
+    PrintHolePunch_NotAvailable
+    PrintHolePunch_PrinterCustom
+    PrintHolePunch_None
+    PrintHolePunch_LeftEdge
+    PrintHolePunch_RightEdge
+    PrintHolePunch_TopEdge
+    PrintHolePunch_BottomEdge
+End Enum
+
+Public Enum PrintMediaSize
+    PrintMediaSize_Default
+    PrintMediaSize_NotAvailable
+    PrintMediaSize_PrinterCustom
+    PrintMediaSize_BusinessCard
+    PrintMediaSize_CreditCard
+    PrintMediaSize_IsoA0
+    PrintMediaSize_IsoA1
+    PrintMediaSize_IsoA10
+    PrintMediaSize_IsoA2
+    PrintMediaSize_IsoA3
+    PrintMediaSize_IsoA3Extra
+    PrintMediaSize_IsoA3Rotated
+    PrintMediaSize_IsoA4
+    PrintMediaSize_IsoA4Extra
+    PrintMediaSize_IsoA4Rotated
+    PrintMediaSize_IsoA5
+    PrintMediaSize_IsoA5Extra
+    PrintMediaSize_IsoA5Rotated
+    PrintMediaSize_IsoA6
+    PrintMediaSize_IsoA6Rotated
+    PrintMediaSize_IsoA7
+    PrintMediaSize_IsoA8
+    PrintMediaSize_IsoA9
+    PrintMediaSize_IsoB0
+    PrintMediaSize_IsoB1
+    PrintMediaSize_IsoB10
+    PrintMediaSize_IsoB2
+    PrintMediaSize_IsoB3
+    PrintMediaSize_IsoB4
+    PrintMediaSize_IsoB4Envelope
+    PrintMediaSize_IsoB5Envelope
+    PrintMediaSize_IsoB5Extra
+    PrintMediaSize_IsoB7
+    PrintMediaSize_IsoB8
+    PrintMediaSize_IsoB9
+    PrintMediaSize_IsoC0
+    PrintMediaSize_IsoC1
+    PrintMediaSize_IsoC10
+    PrintMediaSize_IsoC2
+    PrintMediaSize_IsoC3
+    PrintMediaSize_IsoC3Envelope
+    PrintMediaSize_IsoC4
+    PrintMediaSize_IsoC4Envelope
+    PrintMediaSize_IsoC5
+    PrintMediaSize_IsoC5Envelope
+    PrintMediaSize_IsoC6
+    PrintMediaSize_IsoC6C5Envelope
+    PrintMediaSize_IsoC6Envelope
+    PrintMediaSize_IsoC7
+    PrintMediaSize_IsoC8
+    PrintMediaSize_IsoC9
+    PrintMediaSize_IsoDLEnvelope
+    PrintMediaSize_IsoDLEnvelopeRotated
+    PrintMediaSize_IsoSRA3
+    PrintMediaSize_Japan2LPhoto
+    PrintMediaSize_JapanChou3Envelope
+    PrintMediaSize_JapanChou3EnvelopeRotated
+    PrintMediaSize_JapanChou4Envelope
+    PrintMediaSize_JapanChou4EnvelopeRotated
+    PrintMediaSize_JapanDoubleHagakiPostcard
+    PrintMediaSize_JapanDoubleHagakiPostcardRotated
+    PrintMediaSize_JapanHagakiPostcard
+    PrintMediaSize_JapanHagakiPostcardRotated
+    PrintMediaSize_JapanKaku2Envelope
+    PrintMediaSize_JapanKaku2EnvelopeRotated
+    PrintMediaSize_JapanKaku3Envelope
+    PrintMediaSize_JapanKaku3EnvelopeRotated
+    PrintMediaSize_JapanLPhoto
+    PrintMediaSize_JapanQuadrupleHagakiPostcard
+    PrintMediaSize_JapanYou1Envelope
+    PrintMediaSize_JapanYou2Envelope
+    PrintMediaSize_JapanYou3Envelope
+    PrintMediaSize_JapanYou4Envelope
+    PrintMediaSize_JapanYou4EnvelopeRotated
+    PrintMediaSize_JapanYou6Envelope
+    PrintMediaSize_JapanYou6EnvelopeRotated
+    PrintMediaSize_JisB0
+    PrintMediaSize_JisB1
+    PrintMediaSize_JisB10
+    PrintMediaSize_JisB2
+    PrintMediaSize_JisB3
+    PrintMediaSize_JisB4
+    PrintMediaSize_JisB4Rotated
+    PrintMediaSize_JisB5
+    PrintMediaSize_JisB5Rotated
+    PrintMediaSize_JisB6
+    PrintMediaSize_JisB6Rotated
+    PrintMediaSize_JisB7
+    PrintMediaSize_JisB8
+    PrintMediaSize_JisB9
+    PrintMediaSize_NorthAmerica10x11
+    PrintMediaSize_NorthAmerica10x12
+    PrintMediaSize_NorthAmerica10x14
+    PrintMediaSize_NorthAmerica11x17
+    PrintMediaSize_NorthAmerica14x17
+    PrintMediaSize_NorthAmerica4x6
+    PrintMediaSize_NorthAmerica4x8
+    PrintMediaSize_NorthAmerica5x7
+    PrintMediaSize_NorthAmerica8x10
+    PrintMediaSize_NorthAmerica9x11
+    PrintMediaSize_NorthAmericaArchitectureASheet
+    PrintMediaSize_NorthAmericaArchitectureBSheet
+    PrintMediaSize_NorthAmericaArchitectureCSheet
+    PrintMediaSize_NorthAmericaArchitectureDSheet
+    PrintMediaSize_NorthAmericaArchitectureESheet
+    PrintMediaSize_NorthAmericaCSheet
+    PrintMediaSize_NorthAmericaDSheet
+    PrintMediaSize_NorthAmericaESheet
+    PrintMediaSize_NorthAmericaExecutive
+    PrintMediaSize_NorthAmericaGermanLegalFanfold
+    PrintMediaSize_NorthAmericaGermanStandardFanfold
+    PrintMediaSize_NorthAmericaLegal
+    PrintMediaSize_NorthAmericaLegalExtra
+    PrintMediaSize_NorthAmericaLetter
+    PrintMediaSize_NorthAmericaLetterExtra
+    PrintMediaSize_NorthAmericaLetterPlus
+    PrintMediaSize_NorthAmericaLetterRotated
+    PrintMediaSize_NorthAmericaMonarchEnvelope
+    PrintMediaSize_NorthAmericaNote
+    PrintMediaSize_NorthAmericaNumber10Envelope
+    PrintMediaSize_NorthAmericaNumber10EnvelopeRotated
+    PrintMediaSize_NorthAmericaNumber11Envelope
+    PrintMediaSize_NorthAmericaNumber12Envelope
+    PrintMediaSize_NorthAmericaNumber14Envelope
+    PrintMediaSize_NorthAmericaNumber9Envelope
+    PrintMediaSize_NorthAmericaPersonalEnvelope
+    PrintMediaSize_NorthAmericaQuarto
+    PrintMediaSize_NorthAmericaStatement
+    PrintMediaSize_NorthAmericaSuperA
+    PrintMediaSize_NorthAmericaSuperB
+    PrintMediaSize_NorthAmericaTabloid
+    PrintMediaSize_NorthAmericaTabloidExtra
+    PrintMediaSize_OtherMetricA3Plus
+    PrintMediaSize_OtherMetricA4Plus
+    PrintMediaSize_OtherMetricFolio
+    PrintMediaSize_OtherMetricInviteEnvelope
+    PrintMediaSize_OtherMetricItalianEnvelope
+    PrintMediaSize_Prc10Envelope
+    PrintMediaSize_Prc10EnvelopeRotated
+    PrintMediaSize_Prc16K
+    PrintMediaSize_Prc16KRotated
+    PrintMediaSize_Prc1Envelope
+    PrintMediaSize_Prc1EnvelopeRotated
+    PrintMediaSize_Prc2Envelope
+    PrintMediaSize_Prc2EnvelopeRotated
+    PrintMediaSize_Prc32K
+    PrintMediaSize_Prc32KBig
+    PrintMediaSize_Prc32KRotated
+    PrintMediaSize_Prc3Envelope
+    PrintMediaSize_Prc3EnvelopeRotated
+    PrintMediaSize_Prc4Envelope
+    PrintMediaSize_Prc4EnvelopeRotated
+    PrintMediaSize_Prc5Envelope
+    PrintMediaSize_Prc5EnvelopeRotated
+    PrintMediaSize_Prc6Envelope
+    PrintMediaSize_Prc6EnvelopeRotated
+    PrintMediaSize_Prc7Envelope
+    PrintMediaSize_Prc7EnvelopeRotated
+    PrintMediaSize_Prc8Envelope
+    PrintMediaSize_Prc8EnvelopeRotated
+    PrintMediaSize_Prc9Envelope
+    PrintMediaSize_Prc9EnvelopeRotated
+    PrintMediaSize_Roll04Inch
+    PrintMediaSize_Roll06Inch
+    PrintMediaSize_Roll08Inch
+    PrintMediaSize_Roll12Inch
+    PrintMediaSize_Roll15Inch
+    PrintMediaSize_Roll18Inch
+    PrintMediaSize_Roll22Inch
+    PrintMediaSize_Roll24Inch
+    PrintMediaSize_Roll30Inch
+    PrintMediaSize_Roll36Inch
+    PrintMediaSize_Roll54Inch
+End Enum
+
+Public Enum PrintMediaType
+    PrintMediaType_Default
+    PrintMediaType_NotAvailable
+    PrintMediaType_PrinterCustom
+    PrintMediaType_AutoSelect
+    PrintMediaType_Archival
+    PrintMediaType_BackPrintFilm
+    PrintMediaType_Bond
+    PrintMediaType_CardStock
+    PrintMediaType_Continuous
+    PrintMediaType_EnvelopePlain
+    PrintMediaType_EnvelopeWindow
+    PrintMediaType_Fabric
+    PrintMediaType_HighResolution
+    PrintMediaType_Label
+    PrintMediaType_MultiLayerForm
+    PrintMediaType_MultiPartForm
+    PrintMediaType_Photographic
+    PrintMediaType_PhotographicFilm
+    PrintMediaType_PhotographicGlossy
+    PrintMediaType_PhotographicHighGloss
+    PrintMediaType_PhotographicMatte
+    PrintMediaType_PhotographicSatin
+    PrintMediaType_PhotographicSemiGloss
+    PrintMediaType_Plain
+    PrintMediaType_Screen
+    PrintMediaType_ScreenPaged
+    PrintMediaType_Stationery
+    PrintMediaType_TabStockFull
+    PrintMediaType_TabStockPreCut
+    PrintMediaType_Transparency
+    PrintMediaType_TShirtTransfer
+    PrintMediaType_None
+End Enum
+
+Public Enum PrintOrientation
+    PrintOrientation_Default
+    PrintOrientation_NotAvailable
+    PrintOrientation_PrinterCustom
+    PrintOrientation_Portrait
+    PrintOrientation_PortraitFlipped
+    PrintOrientation_Landscape
+    PrintOrientation_LandscapeFlipped
+End Enum
+
+Public Enum PrintQuality
+    PrintQuality_Default
+    PrintQuality_NotAvailable
+    PrintQuality_PrinterCustom
+    PrintQuality_Automatic
+    PrintQuality_Draft
+    PrintQuality_Fax
+    PrintQuality_High
+    PrintQuality_Normal
+    PrintQuality_Photographic
+    PrintQuality_Text
+End Enum
+
+Public Enum PrintStaple
+    PrintStaple_Default
+    PrintStaple_NotAvailable
+    PrintStaple_PrinterCustom
+    PrintStaple_None
+    PrintStaple_StapleTopLeft
+    PrintStaple_StapleTopRight
+    PrintStaple_StapleBottomLeft
+    PrintStaple_StapleBottomRight
+    PrintStaple_StapleDualLeft
+    PrintStaple_StapleDualRight
+    PrintStaple_StapleDualTop
+    PrintStaple_StapleDualBottom
+    PrintStaple_SaddleStitch
+End Enum
+
+Public Enum PrintTaskCompletion
+    PrintTaskCompletion_Abandoned
+    PrintTaskCompletion_Canceled
+    PrintTaskCompletion_Failed
+    PrintTaskCompletion_Submitted
+End Enum
+
+Public Type PrintPageDescription
+    PageSize As SIZEF
+    ImageableRect As RECTF
+    DpiX As Long
+    DpiY As Long
+End Type
+
+End Module

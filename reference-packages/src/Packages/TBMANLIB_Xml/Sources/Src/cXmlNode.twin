@@ -1,0 +1,158 @@
+' =====================================================
+' cXmlNode.twin - XML Node Class
+' TwinBASIC Project - XML Library
+' =====================================================
+' Function: Represents a single XML node with attributes and children
+' 功能：表示单个 XML 节点，包含属性和子节点
+' Author: woeoo (邓伟)
+' Email: 215879458@qq.com
+' Site: https://vb6.pro
+' Date: 2026-02-06
+' Version: 1.0.0
+' =====================================================
+
+[COMCreatable(False)]
+Public Class cXmlNode
+
+    ' Public properties
+    Public Name As String
+    Public NodeType As mXml.XmlNodeType
+    Public Value As String
+    Public Attributes As Collection
+    Public ChildNodes As Collection
+    Public Parent As cXmlNode
+
+    ' Constructor
+    Public Sub New()
+        Set Attributes = New Collection
+        Set ChildNodes = New Collection
+    End Sub
+
+    ' Get attribute value by name
+    Public Function GetAttribute(ByVal attrName As String) As String
+        Dim i As Long
+        For i = 1 To Attributes.Count Step 2
+            If StrComp(Attributes(i), attrName, vbTextCompare) = 0 Then
+                Return Attributes(i + 1)
+            End If
+        Next i
+        Return ""
+    End Function
+
+    ' Set attribute value
+    Public Sub SetAttribute(ByVal attrName As String, ByVal attrValue As String)
+        Dim i As Long
+        For i = 1 To Attributes.Count Step 2
+            If StrComp(Attributes(i), attrName, vbTextCompare) = 0 Then
+                Attributes.Remove i
+                Attributes.Remove i
+                Exit For
+            End If
+        Next i
+        Attributes.Add attrName
+        Attributes.Add attrValue
+    End Sub
+
+    ' Remove attribute by name
+    Public Sub RemoveAttribute(ByVal attrName As String)
+        Dim i As Long
+        For i = 1 To Attributes.Count Step 2
+            If StrComp(Attributes(i), attrName, vbTextCompare) = 0 Then
+                Attributes.Remove i
+                Attributes.Remove i
+                Exit For
+            End If
+        Next i
+    End Sub
+
+    ' Get child node by name
+    Public Function GetChildNode(ByVal nodeName As String) As cXmlNode
+        Dim node As cXmlNode
+        For Each node In ChildNodes
+            If StrComp(node.Name, nodeName, vbTextCompare) = 0 Then
+                Return node
+            End If
+        Next node
+        Return Nothing
+    End Function
+
+    ' Get all child nodes by name
+    Public Function GetChildNodesByName(ByVal nodeName As String) As Collection
+        Dim result As New Collection
+        Dim node As cXmlNode
+        For Each node In ChildNodes
+            If StrComp(node.Name, nodeName, vbTextCompare) = 0 Then
+                result.Add node
+            End If
+        Next node
+        Return result
+    End Function
+
+    ' Get text content of this element (convenience property)
+    Public Property Get Text() As String
+        Dim result As String
+        result = ""
+        Dim child As cXmlNode
+        For Each child In ChildNodes
+            If child.NodeType = mXml.XmlNodeType.Text Or child.NodeType = mXml.XmlNodeType.CData Then
+                result = result & child.Value
+            End If
+        Next child
+        Return result
+    End Property
+
+    ' ==================== XPath Query Methods ====================
+
+    ' Execute XPath query from this node and return all matching nodes
+    ' 从当前节点执行 XPath 查询并返回所有匹配的节点
+    '
+    ' Example usage:
+    '   Dim items As Collection
+    '   Set items = node.XPath("./item[@type='active']")
+    '   Set items = node.XPath(".//child")
+    '
+    Public Function XPath(ByVal path As String) As Collection
+        On Error GoTo ErrorHandler
+        Return mXPath.SelectNodes(Me, path)
+        Exit Function
+
+ErrorHandler:
+        Debug.Print "Node.XPath query failed: " & Err.Description
+        Return New Collection
+    End Function
+
+    ' Execute XPath query from this node and return first matching node
+    ' 从当前节点执行 XPath 查询并返回第一个匹配的节点
+    Public Function XPathSingle(ByVal xpath As String) As cXmlNode
+        On Error GoTo ErrorHandler
+        Return mXPath.SelectSingleNode(Me, xpath)
+        Exit Function
+
+ErrorHandler:
+        Debug.Print "Node.XPathSingle query failed: " & Err.Description
+        Return Nothing
+    End Function
+
+    ' Get text content using XPath relative to this node
+    ' 使用相对于当前节点的 XPath 获取文本内容
+    Public Function XPathText(ByVal xpath As String) As String
+        Dim node As cXmlNode
+        Set node = XPathSingle(xpath)
+        If Not node Is Nothing Then
+            Return node.Text
+        End If
+        Return ""
+    End Function
+
+    ' Get attribute value using XPath relative to this node
+    ' 使用相对于当前节点的 XPath 获取属性值
+    Public Function XPathAttribute(ByVal xpath As String, ByVal attrName As String) As String
+        Dim node As cXmlNode
+        Set node = XPathSingle(xpath)
+        If Not node Is Nothing Then
+            Return node.GetAttribute(attrName)
+        End If
+        Return ""
+    End Function
+
+End Class

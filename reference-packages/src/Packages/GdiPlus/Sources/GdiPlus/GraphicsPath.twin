@@ -1,0 +1,827 @@
+' A part of the GDI+ Package for TwinBasic  https://github.com/kubao/GdiPlus
+' Licensed under the MIT license. (c) 2026 Sunderland Ober Consulting.
+' "Windows" is a trademark of the Microsoft Corporation.
+' Modeled after code and descriptions (c) Microsoft, taken from SDK headers and official documentation.
+' Certain flat API function and type declarations taken from WinDevLib by fafalone, with thanks.
+
+[COMCreatable(False)]
+Class GraphicsPath
+    Inherits GdiPlusBase
+    Protected pa As GpPath
+            
+    Sub New(ByVal fillMode As GpFillmode = FillModeAlternate)
+        SetStatus(pa.CreateInto(fillMode, pa))
+    End Sub
+    
+    Sub New(pathData As PathData, ByVal fillMode As GpFillmode = FillModeAlternate)
+        SetStatus(pa.CreateInto(ByVal pathData.PointsPtr, ByVal pathData.TypesPtr, pathData.Count, fillMode, pa))
+    End Sub
+
+    Sub New(typedPoints() As TypedPoint, ByVal fillMode As GpFillmode = FillModeAlternate)
+        Dim pd As PathData = GdipPathData.PathData(typedPoints)
+        SetStatus(pa.CreateInto(ByVal pd.PointsPtr, ByVal pd.TypesPtr, pd.Count, fillMode, pa))
+    End Sub
+    
+    Sub New(points() As GpPointF, types() As PathPointType, ByVal fillMode As GpFillmode = FillModeAlternate)
+        Debug.Assert ArrayLen(points) = ArrayLen(types)
+        SetStatus(pa.CreateInto(ByVal ArrayPtr(points), ByVal ArrayPtr(types), ArrayLen(points), fillMode, pa))
+    End Sub
+
+    Sub New(points() As GpPoint, types() As PathPointType, ByVal fillMode As GpFillmode = FillModeAlternate)
+        Debug.Assert ArrayLen(points) = ArrayLen(types)
+        SetStatus(pa.CreateIntoI(ByVal ArrayPtr(points), ByVal ArrayPtr(types), ArrayLen(points), fillMode, pa))
+    End Sub
+
+    Function Clone() As GraphicsPath
+        Return CloneImpl(Of GraphicsPath)(pa)
+    End Function
+    
+    Sub Class_Terminate()
+        pa.Delete()
+    End Sub
+    
+    [Description("Reset the path object to empty (and fill mode to FillModeAlternate)")]
+    Function Reset() As GpStatus
+        Return SetStatus(pa.Reset())
+    End Function
+    
+    Property Get FillMode() As GpFillmode
+        SetStatus(pa.GetFillMode(FillMode))
+    End Property
+    
+    Property Let FillMode(ByVal fillMode As GpFillmode)
+        SetStatus(pa.SetFillMode(fillMode))
+    End Property
+    
+    Property Get PathData() As PathData
+        Dim pd As GpPathData
+        SetStatus(pa.GetData(pd))
+        If LastResult = Ok Then Set PathData = New PathData(pd)
+    End Property
+    
+    Function StartFigure() As GpStatus
+        Return SetStatus(pa.StartFigure())
+    End Function
+    
+    Function CloseFigure() As GpStatus
+        Return SetStatus(pa.CloseFigure())
+    End Function
+    
+    Function CloseAllFigures() As GpStatus
+        Return SetStatus(pa.CloseFigures())
+    End Function
+    
+    Function SetMarker() As GpStatus
+        Return SetStatus(pa.SetMarker())
+    End Function
+
+    Function ClearMarkers() As GpStatus
+        Return SetStatus(pa.ClearMarkers())
+    End Function
+    
+    Function Reverse() As GpStatus
+        Return SetStatus(pa.Reverse())
+    End Function
+    
+    Property Get LastPoint() As GpPointF
+        SetStatus(pa.GetPathLastPoint(LastPoint))
+    End Property
+    
+    Function AddLine(ByVal pt1 As GpPointF, ByVal pt2 As GpPointF) As GpStatus
+        Return SetStatus(pa.AddLineP(pt1, pt2))
+    End Function
+    
+    Function AddLine(ByVal x1!, ByVal y1!, ByVal x2!, ByVal y2!) As GpStatus
+        Return SetStatus(pa.AddLine(x1, y1, x2, y2))
+    End Function
+    
+    Function AddLines(points() As GpPointF) As GpStatus
+        Return SetStatus(pa.AddLines(points))
+    End Function
+
+    Function AddLine(pt1 As GpPoint, pt2 As GpPoint) As GpStatus
+        Return SetStatus(pa.AddLineI(pt1.X, pt1.Y, pt2.X, pt2.Y))
+    End Function
+    
+    Function AddLineI(ByVal x1&, ByVal y1&, ByVal x2&, ByVal y2&) As GpStatus
+        Return SetStatus(pa.AddLineI(x1, y1, x2, y2))
+    End Function
+    
+    Function AddLines(points() As GpPoint) As GpStatus
+        Return SetStatus(pa.AddLinesI(points))
+    End Function
+        
+    Function AddArc(rect As GpRectF, ByVal startAngle!, ByVal sweepAngle!) As GpStatus
+        Return SetStatus(pa.AddArcR(rect, startAngle, sweepAngle))
+    End Function
+
+    Function AddArc(ByVal x!, ByVal y!, ByVal width!, ByVal height!, ByVal startAngle!, ByVal sweepAngle!) As GpStatus
+        Return SetStatus(pa.AddArc(x, y, width, height, startAngle, sweepAngle))
+    End Function
+
+    Function AddArc(rect As GpRect, ByVal startAngle!, ByVal sweepAngle!) As GpStatus
+        Return SetStatus(pa.AddArcRI(rect, startAngle, sweepAngle))
+    End Function
+
+    Function AddArcI(ByVal x&, ByVal y&, ByVal width&, ByVal height&, ByVal startAngle!, ByVal sweepAngle!) As GpStatus
+        Return SetStatus(pa.AddArcI(x, y, width, height, startAngle, sweepAngle))
+    End Function
+    
+    Function AddBezier(ByVal pt1 As GpPointF, ByVal pt2 As GpPointF, ByVal pt3 As GpPointF, ByVal pt4 As GpPointF) As GpStatus
+        Return SetStatus(pa.AddBezierP(pt1, pt2, pt3, pt4))
+    End Function
+    
+    Function AddBezier(ByVal x1!, ByVal y1!, ByVal x2!, ByVal y2!, ByVal x3!, ByVal y3!, ByVal x4!, ByVal y4!) As GpStatus
+        Return SetStatus(pa.AddBezier(x1, y1, x2, y2, x3, y3, x4, y4))
+    End Function
+
+    Function AddBeziers(points() As GpPointF) As GpStatus
+        Return SetStatus(pa.AddBeziers(points))
+    End Function
+        
+    Function AddBezier(ByVal pt1 As GpPoint, ByVal pt2 As GpPoint, ByVal pt3 As GpPoint, ByVal pt4 As GpPoint) As GpStatus
+        Return SetStatus(pa.AddBezierPI(pt1, pt2, pt3, pt4))
+    End Function
+    
+    Function AddBezierI(ByVal x1&, ByVal y1&, ByVal x2&, ByVal y2&, ByVal x3&, ByVal y3&, ByVal x4&, ByVal y4&) As GpStatus
+        Return SetStatus(pa.AddBezierI(x1, y1, x2, y2, x3, y3, x4, y4))
+    End Function
+
+    Function AddBeziers(points() As GpPoint) As GpStatus
+        Return SetStatus(pa.AddBeziersI(points))
+    End Function
+        
+    Function AddCurve(points() As GpPointF) As GpStatus
+        Return SetStatus(pa.AddCurve(points))
+    End Function
+        
+    Function AddCurve(points() As GpPointF, ByVal tension!) As GpStatus
+        Return SetStatus(pa.AddCurve2(points, tension))
+    End Function
+
+    Function AddCurve(points() As GpPointF, ByVal offset&, ByVal numberOfSegments&, ByVal tension!) As GpStatus
+        Return SetStatus(pa.AddCurve3(points, offset, numberOfSegments, tension))
+    End Function
+        
+    Function AddCurve(points() As GpPoint) As GpStatus
+        Return SetStatus(pa.AddCurveI(points))
+    End Function
+        
+    Function AddCurve(points() As GpPoint, ByVal tension!) As GpStatus
+        Return SetStatus(pa.AddCurve2I(points, tension))
+    End Function
+    
+    Function AddCurve(points() As GpPoint, ByVal offset&, ByVal numberOfSegments&, ByVal tension!) As GpStatus
+        Return SetStatus(pa.AddCurve3I(points, offset, numberOfSegments, tension))
+    End Function
+        
+    Function AddClosedCurve(points() As GpPointF) As GpStatus
+        Return SetStatus(pa.AddClosedCurve(points))
+    End Function
+        
+    Function AddClosedCurve(points() As GpPointF, ByVal tension!) As GpStatus
+        Return SetStatus(pa.AddClosedCurve2(points, tension))
+    End Function
+    
+    Function AddClosedCurve(points() As GpPoint) As GpStatus
+        Return SetStatus(pa.AddClosedCurveI(points))
+    End Function
+        
+    Function AddClosedCurve(points() As GpPoint, ByVal tension!) As GpStatus
+        Return SetStatus(pa.AddClosedCurve2I(points, tension))
+    End Function
+        
+    Function AddRectangle(rect As GpRectF) As GpStatus
+        Return SetStatus(pa.AddRectangleR(rect))
+    End Function
+    
+    Function AddRectangle(ByVal x!, ByVal y!, ByVal width!, ByVal height!) As GpStatus
+        Return SetStatus(pa.AddRectangle(x, y, width, height))
+    End Function
+        
+    Function AddRectangles(rects() As GpRectF) As GpStatus
+        Return SetStatus(pa.AddRectangles(rects))
+    End Function
+    
+    Function AddRectangle(rect As GpRect) As GpStatus
+        Return SetStatus(pa.AddRectangleRI(rect))
+    End Function
+
+    Function AddRectangleI(ByVal x&, ByVal y&, ByVal width&, ByVal height&) As GpStatus
+        Return SetStatus(pa.AddRectangleI(x, y, width, height))
+    End Function
+    
+    Function AddRectangles(rects() As GpRect) As GpStatus
+        Return SetStatus(pa.AddRectanglesI(rects))
+    End Function
+        
+    Function AddEllipse(rect As GpRectF) As GpStatus
+        Return SetStatus(pa.AddEllipseR(rect))
+    End Function
+
+    Function AddEllipse(ByVal x!, ByVal y!, ByVal width!, ByVal height!) As GpStatus
+        Return SetStatus(pa.AddEllipse(x, y, width, height))
+    End Function
+    
+    Function AddEllipse(rect As GpRect) As GpStatus
+        Return SetStatus(pa.AddEllipseRI(rect))
+    End Function
+
+    Function AddEllipseI(ByVal x&, ByVal y&, ByVal width&, ByVal height&) As GpStatus
+        Return SetStatus(pa.AddEllipseI(x, y, width, height))
+    End Function
+    
+    Function AddPie(rect As GpRectF, ByVal startAngle!, ByVal sweepAngle!) As GpStatus
+        Return SetStatus(pa.AddPieR(rect, startAngle, sweepAngle))
+    End Function
+    
+    Function AddPie(ByVal x!, ByVal y!, ByVal width!, ByVal height!, ByVal startAngle!, ByVal sweepAngle!) As GpStatus
+        Return SetStatus(pa.AddPie(x, y, width, height, startAngle, sweepAngle))
+    End Function
+
+    Function AddPie(rect As GpRect, ByVal startAngle!, ByVal sweepAngle!) As GpStatus
+        Return SetStatus(pa.AddPieRI(rect, startAngle, sweepAngle))
+    End Function
+        
+    Function AddPieI(ByVal x&, ByVal y&, ByVal width&, ByVal height&, ByVal startAngle!, ByVal sweepAngle!) As GpStatus
+        Return SetStatus(pa.AddPieI(x, y, width, height, startAngle, sweepAngle))
+    End Function
+    
+    Function AddPolygon(points() As GpPointF) As GpStatus
+        Return SetStatus(pa.AddPolygon(points))
+    End Function
+
+    Function AddPolygon(points() As GpPoint) As GpStatus
+        Return SetStatus(pa.AddPolygonI(points))
+    End Function
+    
+    Function AddPath(addingPath As GraphicsPath, ByVal connect As Boolean) As GpStatus
+        Return SetStatus(pa.AddPath(GetNative(addingPath), connect))
+    End Function
+    
+    Function AddString(ByVal string$, family As FontFamily, ByVal style&, ByVal emSize!, origin As GpPointF, format As StringFormat) As GpStatus
+        Return SetStatus(pa.AddString(string, GetNative(family), style, emSize, origin, GetNative(format)))
+    End Function
+    
+    Function AddString(ByVal string$, family As FontFamily, ByVal style&, ByVal emSize!, layoutRect As GpRectF, format As StringFormat) As GpStatus
+        Return SetStatus(pa.AddString2(string, GetNative(family), style, emSize, layoutRect, GetNative(format)))
+    End Function
+
+    Function AddString(ByVal string$, family As FontFamily, ByVal style&, ByVal emSize!, origin As GpPoint, format As StringFormat) As GpStatus
+        Return SetStatus(pa.AddStringI(string, GetNative(family), style, emSize, origin, GetNative(format)))
+    End Function
+    
+    Function AddString(ByVal string$, family As FontFamily, ByVal style&, ByVal emSize!, layoutRect As GpRect, format As StringFormat) As GpStatus
+        Return SetStatus(pa.AddString2I(string, GetNative(family), style, emSize, layoutRect, GetNative(format)))
+    End Function
+    
+    Function Transform(matrix As Matrix) As GpStatus
+        If matrix IsNot Nothing Then
+            Return SetStatus(pa.Transform(GetNative(matrix)))
+        Else
+            Return Ok
+        End If
+    End Function
+    
+    'The GetWorldBounds rectangle may not be the tightest bounds.
+    
+    Function GetWorldBounds(bounds As GpRectF, matrix As Matrix, pen As Pen) As GpStatus
+        Return SetStatus(pa.GetWorldBounds(bounds, GetNative(matrix), GetNative(pen)))
+    End Function
+    
+    Function GetWorldBounds(bounds As GpRect, matrix As Matrix, pen As Pen) As GpStatus
+        Return SetStatus(pa.GetWorldBoundsI(bounds, GetNative(matrix), GetNative(pen)))
+    End Function
+
+    ' Once flattened, the resultant path is made of line segments and
+    ' the original path information is lost.  When matrix is NULL the
+    ' identity matrix is assumed.
+    
+    Function Flatten(Optional matrix As Matrix, Optional flatness! = FlatnessDefault) As GpStatus
+        Return SetStatus(pa.Flatten(GetNative(matrix), flatness))
+    End Function
+    
+    Function Widen(pen As Pen, Optional matrix As Matrix, Optional flatness! = FlatnessDefault) As GpStatus
+        Return SetStatus(pa.Widen(GetNative(pen), GetNative(matrix), flatness))
+    End Function
+    
+    Function Outline(Optional matrix As Matrix, Optional flatness! = FlatnessDefault) As GpStatus
+        Return SetStatus(pa.Outline(GetNative(matrix), flatness))
+    End Function
+    
+    ' Once this is called, the resultant path is made of line segments and
+    ' the original path information is lost.  When matrix is NULL, the 
+    ' identity matrix is assumed.
+    
+    Function Warp(destPoints() As GpPointF, srcRect As GpRectF, Optional matrix As Matrix, _
+            Optional warpMode As GpWarpMode = WarpModePerspective, Optional flatness! = FlatnessDefault) As GpStatus
+        Return SetStatus(pa.WarpR(destPoints, srcRect, GetNative(matrix), warpMode, flatness))
+    End Function
+
+    Function Warp(destPoints() As GpPointF, ByVal srcX!, ByVal srcY!, ByVal srcWidth!, ByVal srcHeight!, Optional matrix As Matrix, _
+            Optional warpMode As GpWarpMode = WarpModePerspective, Optional flatness! = FlatnessDefault) As GpStatus
+        Return SetStatus(pa.Warp(destPoints, srcX, srcY, srcWidth, srcHeight, GetNative(matrix), warpMode, flatness))
+    End Function
+    
+    Property Get PointCount() As Long
+        SetStatus(pa.GetPointCount(PointCount))
+    End Property
+    
+    Function GetTypes(types() As PathPointType) As GpStatus
+        Return SetStatus(pa.GetTypes(types))
+    End Function
+
+    Function GetPoints(points() As GpPointF) As GpStatus
+        Return SetStatus(pa.GetPoints(points))
+    End Function
+        
+    Function GetPoints(points() As GpPoint) As GpStatus
+        Return SetStatus(pa.GetPointsI(points))
+    End Function
+            
+    Function IsVisible(ByVal point As GpPointF, Optional g As Graphics) As Boolean
+        SetStatus(pa.IsVisibleP(point, GetNative(g), IsVisible))
+    End Function
+    
+    Function IsVisible(ByVal x!, ByVal y!, Optional g As Graphics) As Boolean
+        SetStatus(pa.IsVisible(x, y, GetNative(g), IsVisible))
+    End Function
+
+    Function IsVisible(ByVal point As GpPoint, Optional g As Graphics) As Boolean
+        SetStatus(pa.IsVisiblePI(point, GetNative(g), IsVisible))
+    End Function
+    
+    Function IsVisibleI(ByVal x&, ByVal y&, Optional g As Graphics) As Boolean
+        SetStatus(pa.IsVisibleI(x, y, GetNative(g), IsVisibleI))
+    End Function
+        
+    Function IsOutlineVisible(ByVal point As GpPointF, pen As Pen, Optional g As Graphics) As Boolean
+        SetStatus(pa.IsOutlineVisibleP(point, GetNative(pen), GetNative(g), IsOutlineVisible))
+    End Function
+    
+    Function IsOutlineVisible(ByVal x!, ByVal y!, pen As Pen, Optional g As Graphics) As Boolean
+        SetStatus(pa.IsOutlineVisible(x, y, GetNative(pen), GetNative(g), IsOutlineVisible))
+    End Function
+    
+    Function IsOutlineVisible(ByVal point As GpPoint, pen As Pen, Optional g As Graphics) As Boolean
+        SetStatus(pa.IsOutlineVisiblePI(point, GetNative(pen), GetNative(g), IsOutlineVisible))
+    End Function
+    
+    Function IsOutlineVisibleI(ByVal x&, ByVal y&, pen As Pen, Optional g As Graphics) As Boolean
+        SetStatus(pa.IsOutlineVisibleI(x, y, GetNative(pen), GetNative(g), IsOutlineVisibleI))
+    End Function
+    
+    Protected Property Get Native() As GpPath
+        Return pa
+    End Property
+    
+    [IgnoreWarnings(TB0025)]
+    Protected Sub New(_path As GraphicsPath)
+        Dim clonepath As GpPath
+        SetStatus(pa.Clone(clonepath))
+        SetNativePath(clonepath)
+    End Sub
+    
+    ' Used by PathGradientBrush
+    Public Sub New(ByVal nativePath As GpPath)
+        SetNativePath(nativePath)
+    End Sub
+    
+    Protected Sub SetNativePath(ByVal nativePath As GpPath)
+        pa = nativePath
+    End Sub
+End Class
+
+Module GdipGraphicsPath
+    Function GraphicsPath(pathData As PathData, ByVal fillMode As GpFillmode = FillModeAlternate) As GraphicsPath
+        Return New GraphicsPath(pathData, fillMode)
+    End Function
+
+    Function GraphicsPath(typedPoints() As TypedPoint, ByVal fillMode As GpFillmode = FillModeAlternate) As GraphicsPath
+        Return New GraphicsPath(typedPoints, fillMode)
+    End Function
+    
+    Function GraphicsPath(ByVal fillMode As GpFillmode = FillModeAlternate) As GraphicsPath
+        Return New GraphicsPath(fillMode)
+    End Function
+    
+    Function GraphicsPath(points() As GpPointF, types() As PathPointType, ByVal fillMode As GpFillmode = FillModeAlternate) As GraphicsPath
+        Return New GraphicsPath(points, types, fillMode)
+    End Function
+    
+    Function GraphicsPath(points() As GpPoint, types() As PathPointType, ByVal fillMode As GpFillmode = FillModeAlternate) As GraphicsPath
+        Return New GraphicsPath(points, types, fillMode)
+    End Function
+            
+    Type GpPath
+        Native As LongPtr
+        
+        Function Create(ByVal brushmode As GpFillmode) As GpStatus
+            Return Me.CreateInto(brushmode, Me)
+        End Function
+        
+        Function Create(pathData As PathData, ByVal fillMode As GpFillmode = FillModeAlternate) As GpStatus
+            Return Me.CreateInto(ByVal pathData.PointsPtr, ByVal pathData.TypesPtr, pathData.Count, fillMode, Me)
+        End Function
+        
+        Function Create(typedPoints() As TypedPoint, ByVal fillMode As GpFillmode = FillModeAlternate) As GpStatus
+            Dim pd As PathData = GdipPathData.PathData(typedPoints)
+            Return Me.CreateInto(ByVal pd.PointsPtr, ByVal pd.TypesPtr, pd.Count, fillMode, Me)
+        End Function
+    
+        Function Create(points() As GpPointF, types() As PathPointType, ByVal fillMode As GpFillmode = FillModeAlternate) As GpStatus
+            Debug.Assert ArrayLen(points) = ArrayLen(types)
+            Return Me.CreateInto(ByVal ArrayPtr(points), ByVal ArrayPtr(types), ArrayLen(points), fillMode, Me)
+        End Function
+    
+        Function Create(points As GpPointF, types As PathPointType, ByVal count&, ByVal fillMode As GpFillmode = FillModeAlternate) As GpStatus
+            Return Me.CreateInto(points, types, count, fillMode, Me)
+        End Function
+
+        Function Create(points() As GpPoint, types() As PathPointType, ByVal fillMode As GpFillmode = FillModeAlternate) As GpStatus
+            Debug.Assert ArrayLen(points) = ArrayLen(types)
+            Return Me.CreateIntoI(ByVal ArrayPtr(points), ByVal ArrayPtr(types), ArrayLen(points), fillMode, Me)
+        End Function
+    
+        Function Create(points As GpPoint, types As PathPointType, ByVal count&, ByVal fillMode As GpFillmode = FillModeAlternate) As GpStatus
+            Return Me.CreateIntoI(points, types, count, fillMode, Me)
+        End Function
+        
+        [UseGetLastError(False)]
+        Declare PtrSafe Function CreateInto Lib "gdiplus" Alias "GdipCreatePath" (ByVal brushmode As GpFillmode, Path As GpPath) As GpStatus
+        [UseGetLastError(False)]
+        Declare PtrSafe Function CreateInto Lib "gdiplus" Alias "GdipCreatePath2" (pt As GpPointF, bt As Any, int As Long, ByVal fillmode As GpFillmode, Path As GpPath) As GpStatus
+        [UseGetLastError(False)]
+        Declare PtrSafe Function CreateIntoI Lib "gdiplus" Alias "GdipCreatePath2I" (pt As GpPoint, bt As Any, int As Long, ByVal fillmode As GpFillmode, Path As GpPath) As GpStatus
+        
+        [UseGetLastError(False)]
+        Declare PtrSafe Function Delete Lib "gdiplus" Alias "GdipDeletePath" (ByVal Me As GpPath) As GpStatus
+        [UseGetLastError(False)]
+        Declare PtrSafe Function Clone Lib "gdiplus" Alias "GdipClonePath" (ByVal Me As GpPath, clonePath As GpPath) As GpStatus
+        
+        [UseGetLastError(False)]
+        Declare PtrSafe Function GetWorldBounds Lib "gdiplus" Alias "GdipGetPathWorldBounds" (ByVal Me As GpPath, bounds As GpRectF, ByVal matrix As GpMatrix, ByVal pen As GpPen) As GpStatus
+        [UseGetLastError(False)]
+        Declare PtrSafe Function GetWorldBoundsI Lib "gdiplus" Alias "GdipGetPathWorldBoundsI" (ByVal Me As GpPath, bounds As GpRect, ByVal matrix As GpMatrix, ByVal pen As GpPen) As GpStatus
+        [UseGetLastError(False)]
+        Declare PtrSafe Function Reset Lib "gdiplus" Alias "GdipResetPath" (ByVal Me As GpPath) As GpStatus
+        [UseGetLastError(False)]
+        Declare PtrSafe Function Transform Lib "gdiplus" Alias "GdipTransformPath" (ByVal Me As GpPath, ByVal matrix As GpMatrix) As GpStatus
+        [UseGetLastError(False)]
+        Declare PtrSafe Function Widen Lib "gdiplus" Alias "GdipWidenPath" (ByVal Me As GpPath, ByVal pen As GpPen, ByVal matrix As GpMatrix, Optional ByVal flatness! = 0.25) As GpStatus
+        [UseGetLastError(False)]
+        Declare PtrSafe Function Flatten Lib "gdiplus" Alias "GdipFlattenPath" (ByVal Me As GpPath, ByVal matrix As GpMatrix, Optional ByVal flatness! = 0.25) As GpStatus
+        
+        Function WarpR(destPoints() As GpPointF, srcRect As GpRectF, matrix As GpMatrix, _
+                Optional warpMode As GpWarpMode = WarpModePerspective, Optional flatness! = FlatnessDefault) As GpStatus
+            Return Me.Warp2(matrix, ByVal ArrayPtr(destPoints), ArrayLen(destPoints), _
+                    srcRect.X, srcRect.Y, srcRect.Width, srcRect.Height, warpMode, flatness)
+        End Function
+        
+        Function Warp(destPoints() As GpPointF, ByVal srcx!, ByVal srcy!, ByVal srcwidth!, ByVal srcheight!, matrix As GpMatrix, _
+                Optional warpMode As GpWarpMode = WarpModePerspective, Optional flatness! = FlatnessDefault) As GpStatus
+            Return Me.Warp2(matrix, ByVal ArrayPtr(destPoints), ArrayLen(destPoints), _
+                    srcx, srcy, srcwidth, srcheight, warpMode, flatness)
+        End Function
+        
+        [UseGetLastError(False)]
+        Declare PtrSafe Function Warp2 Lib "gdiplus" Alias "GdipWarpPath" (ByVal Me As GpPath, ByVal matrix As GpMatrix, points As GpPointF, ByVal count&, ByVal srcx!, ByVal srcy!, ByVal srcwidth!, ByVal srcheight!, ByVal warpMode As GpWarpMode, ByVal flatness!) As GpStatus
+        [UseGetLastError(False)]
+        Declare PtrSafe Function Reverse Lib "gdiplus" Alias "GdipReversePath" (ByVal Me As GpPath) As GpStatus
+        
+        [UseGetLastError(False)]
+        Declare PtrSafe Function GetFillMode Lib "gdiplus" Alias "GdipGetPathFillMode" (ByVal Me As GpPath, fillmode As GpFillmode) As GpStatus
+        [UseGetLastError(False)]
+        Declare PtrSafe Function SetFillMode Lib "gdiplus" Alias "GdipSetPathFillMode" (ByVal Me As GpPath, ByVal fillmode As GpFillmode) As GpStatus
+        
+        [UseGetLastError(False)]
+        Declare PtrSafe Function GetData Lib "gdiplus" Alias "GdipGetPathData" (ByVal Me As GpPath, pathData As GpPathData) As GpStatus
+        
+        Function GetTypes(types() As PathPointType) As GpStatus
+            Dim count&
+            Dim status As Any = Me.GetPointCount(count)
+            If status = Ok Then
+                ReDim types(1 To count)
+                status = Me.GetTypes2(types(1), count)
+            End If
+            Return status
+        End Function
+
+        Function GetPoints(points() As GpPointF) As GpStatus
+            Dim count&
+            Dim status As Any = Me.GetPointCount(count)
+            If status = Ok Then
+                ReDim points(1 To count)
+                status = Me.GetPoints2(points(1), count)
+            End If
+            Return status
+        End Function
+
+        Function GetPointsI(points() As GpPoint) As GpStatus
+            Dim count&
+            Dim status As Any = Me.GetPointCount(count)
+            If status = Ok Then
+                ReDim points(1 To count)
+                status = Me.GetPoints2I(points(1), count)
+            End If
+            Return status
+        End Function
+        
+        [UseGetLastError(False)]
+        Declare PtrSafe Function GetTypes2 Lib "gdiplus" Alias "GdipGetPathTypes" (ByVal Me As GpPath, types As Any, ByVal count&) As GpStatus
+        [UseGetLastError(False)]
+        Declare PtrSafe Function GetPoints2 Lib "gdiplus" Alias "GdipGetPathPoints" (ByVal Me As GpPath, Points As GpPointF, ByVal count&) As GpStatus
+        [UseGetLastError(False)]
+        Declare PtrSafe Function GetPoints2I Lib "gdiplus" Alias "GdipGetPathPointsI" (ByVal Me As GpPath, Points As GpPoint, ByVal count&) As GpStatus
+        
+        [UseGetLastError(False)]
+        Declare PtrSafe Function StartFigure Lib "gdiplus" Alias "GdipStartPathFigure" (ByVal Me As GpPath) As GpStatus
+        [UseGetLastError(False)]
+        Declare PtrSafe Function CloseFigure Lib "gdiplus" Alias "GdipClosePathFigure" (ByVal Me As GpPath) As GpStatus
+        [UseGetLastError(False)]
+        Declare PtrSafe Function CloseFigures Lib "gdiplus" Alias "GdipClosePathFigures" (ByVal Me As GpPath) As GpStatus
+        
+        [UseGetLastError(False)]
+        Declare PtrSafe Function SetMarker Lib "gdiplus" Alias "GdipSetPathMarker" (ByVal Me As GpPath) As GpStatus
+        [UseGetLastError(False)]
+        Declare PtrSafe Function ClearMarkers Lib "gdiplus" Alias "GdipClearPathMarkers" (ByVal Me As GpPath) As GpStatus
+        
+        [UseGetLastError(False)]
+        Declare PtrSafe Function GetPointCount Lib "gdiplus" Alias "GdipGetPointCount" (ByVal Me As GpPath, count&) As GpStatus
+        [UseGetLastError(False)]
+        Declare PtrSafe Function GetPathLastPoint Lib "gdiplus" Alias "GdipGetPathLastPoint" (ByVal Me As GpPath, lastPoint As GpPointF) As GpStatus
+        
+        Function AddLineP(ByVal pt1 As GpPointF, ByVal pt2 As GpPointF) As GpStatus
+            Return Me.AddLine(pt1.X, pt1.Y, pt2.X, pt2.Y)
+        End Function
+        
+        Function AddLines(points() As GpPointF) As GpStatus
+            Return Me.AddLines2(ByVal ArrayPtr(points), ArrayLen(points))
+        End Function
+
+        Function AddLinePI(ByVal pt1 As GpPoint, ByVal pt2 As GpPoint) As GpStatus
+            Return Me.AddLineI(pt1.X, pt1.Y, pt2.X, pt2.Y)
+        End Function
+        
+        Function AddLinesI(points() As GpPoint) As GpStatus
+            Return Me.AddLines2I(ByVal ArrayPtr(points), ArrayLen(points))
+        End Function
+        
+        [UseGetLastError(False)]
+        Declare PtrSafe Function AddLine Lib "gdiplus" Alias "GdipAddPathLine" (ByVal Me As GpPath, ByVal X1!, ByVal Y1!, ByVal X2!, ByVal Y2!) As GpStatus
+        [UseGetLastError(False)]
+        Declare PtrSafe Function AddLines2 Lib "gdiplus" Alias "GdipAddPathLine2" (ByVal Me As GpPath, Points As GpPointF, ByVal count&) As GpStatus
+        [UseGetLastError(False)]
+        Declare PtrSafe Function AddLineI Lib "gdiplus" Alias "GdipAddPathLineI" (ByVal Me As GpPath, ByVal X1&, ByVal Y1&, ByVal X2&, ByVal Y2&) As GpStatus
+        [UseGetLastError(False)]
+        Declare PtrSafe Function AddLines2I Lib "gdiplus" Alias "GdipAddPathLine2I" (ByVal Me As GpPath, Points As GpPoint, ByVal count&) As GpStatus
+        
+        Function AddArcR(rect As GpRectF, ByVal startAngle!, ByVal sweepAngle!) As GpStatus
+            Return Me.AddArc(rect.X, rect.Y, rect.Width, rect.Height, startAngle, sweepAngle)
+        End Function
+
+        Function AddArcRI(rect As GpRect, ByVal startAngle!, ByVal sweepAngle!) As GpStatus
+            Return Me.AddArcI(rect.X, rect.Y, rect.Width, rect.Height, startAngle, sweepAngle)
+        End Function
+        
+        [UseGetLastError(False)]
+        Declare PtrSafe Function AddArc Lib "gdiplus" Alias "GdipAddPathArc" (ByVal Me As GpPath, ByVal X!, ByVal Y!, ByVal Width!, ByVal Height!, ByVal startAngle!, ByVal sweepAngle!) As GpStatus
+        [UseGetLastError(False)]
+        Declare PtrSafe Function AddArcI Lib "gdiplus" Alias "GdipAddPathArcI" (ByVal Me As GpPath, ByVal X&, ByVal Y&, ByVal Width&, ByVal Height&, ByVal startAngle!, ByVal sweepAngle!) As GpStatus
+        
+        Function AddBezierP(ByVal pt1 As GpPointF, ByVal pt2 As GpPointF, ByVal pt3 As GpPointF, ByVal pt4 As GpPointF) As GpStatus
+            Return Me.AddBezier(pt1.X, pt1.Y, pt2.X, pt2.Y, pt3.X, pt3.Y, pt4.X, pt4.Y)
+        End Function
+
+        Function AddBezierPI(ByVal pt1 As GpPoint, ByVal pt2 As GpPoint, ByVal pt3 As GpPoint, ByVal pt4 As GpPoint) As GpStatus
+            Return Me.AddBezierI(pt1.X, pt1.Y, pt2.X, pt2.Y, pt3.X, pt3.Y, pt4.X, pt4.Y)
+        End Function
+        
+        [UseGetLastError(False)]
+        Declare PtrSafe Function AddBezier Lib "gdiplus" Alias "GdipAddPathBezier" (ByVal Me As GpPath, ByVal x1!, ByVal y1!, ByVal x2!, ByVal y2!, ByVal x3!, ByVal y3!, ByVal x4!, ByVal y4!) As GpStatus
+        [UseGetLastError(False)]
+        Declare PtrSafe Function AddBezierI Lib "gdiplus" Alias "GdipAddPathBezierI" (ByVal Me As GpPath, ByVal x1&, ByVal y1&, ByVal x2&, ByVal y2&, ByVal x3&, ByVal y3&, ByVal x4&, ByVal y4&) As GpStatus
+        
+        Function AddBeziers(points() As GpPointF) As GpStatus
+            Return Me.AddBeziers2(ByVal ArrayPtr(points), ArrayLen(points))
+        End Function
+        
+        Function AddBeziersI(points() As GpPoint) As GpStatus
+            Return Me.AddBeziers2I(ByVal ArrayPtr(points), ArrayLen(points))
+        End Function
+        
+        [UseGetLastError(False)]
+        Declare PtrSafe Function AddBeziers2 Lib "gdiplus" Alias "GdipAddPathBeziers" (ByVal Me As GpPath, Points As GpPointF, ByVal count&) As GpStatus
+        [UseGetLastError(False)]
+        Declare PtrSafe Function AddBeziers2I Lib "gdiplus" Alias "GdipAddPathBeziersI" (ByVal Me As GpPath, Points As GpPoint, ByVal count&) As GpStatus
+        
+        Function AddCurve(points() As GpPointF) As GpStatus
+            Return Me.AddCurveX1(ByVal ArrayPtr(points), ArrayLen(points))
+        End Function
+        
+        Function AddCurveI(points() As GpPoint) As GpStatus
+            Return Me.AddCurveX1I(ByVal ArrayPtr(points), ArrayLen(points))
+        End Function
+        
+        Function AddCurve2(points() As GpPointF, ByVal tension!) As GpStatus
+            Return Me.AddCurveX2(ByVal ArrayPtr(points), ArrayLen(points), tension)
+        End Function
+        
+        Function AddCurve2I(points() As GpPoint, ByVal tension!) As GpStatus
+            Return Me.AddCurveX2I(ByVal ArrayPtr(points), ArrayLen(points), tension)
+        End Function
+        
+        Function AddCurve3(points() As GpPointF, ByVal offset&, ByVal numberOfSegments&, ByVal tension!) As GpStatus
+            Return Me.AddCurveX3(ByVal ArrayPtr(points), ArrayLen(points), offset, numberOfSegments, tension)
+        End Function
+        
+        Function AddCurve3I(points() As GpPoint, ByVal offset&, ByVal numberOfSegments&, ByVal tension!) As GpStatus
+            Return Me.AddCurveX3I(ByVal ArrayPtr(points), ArrayLen(points), offset, numberOfSegments, tension)
+        End Function
+        
+        [UseGetLastError(False)]
+        Declare PtrSafe Function AddCurveX1 Lib "gdiplus" Alias "GdipAddPathCurve" (ByVal Me As GpPath, Points As GpPointF, ByVal count&) As GpStatus
+        [UseGetLastError(False)]
+        Declare PtrSafe Function AddCurveX2 Lib "gdiplus" Alias "GdipAddPathCurve2" (ByVal Me As GpPath, Points As GpPointF, ByVal count&, ByVal tension!) As GpStatus
+        [UseGetLastError(False)]
+        Declare PtrSafe Function AddCurveX3 Lib "gdiplus" Alias "GdipAddPathCurve3" (ByVal Me As GpPath, Points As GpPointF, ByVal count&, ByVal offset&, ByVal numberOfSegments&, ByVal tension!) As GpStatus
+        [UseGetLastError(False)]
+        Declare PtrSafe Function AddCurveX1I Lib "gdiplus" Alias "GdipAddPathCurveI" (ByVal Me As GpPath, Points As GpPoint, ByVal count&) As GpStatus
+        [UseGetLastError(False)]
+        Declare PtrSafe Function AddCurveX2I Lib "gdiplus" Alias "GdipAddPathCurve2I" (ByVal Me As GpPath, Points As GpPoint, ByVal count&, ByVal tension!) As GpStatus
+        [UseGetLastError(False)]
+        Declare PtrSafe Function AddCurveX3I Lib "gdiplus" Alias "GdipAddPathCurve3I" (ByVal Me As GpPath, Points As GpPoint, ByVal count&, ByVal offset&, ByVal numberOfSegments&, ByVal tension!) As GpStatus
+                
+        Function AddClosedCurve(points() As GpPointF) As GpStatus
+            Return Me.AddClosedCurveX1(ByVal ArrayPtr(points), ArrayLen(points))
+        End Function
+
+        Function AddClosedCurve2(points() As GpPointF, ByVal tension!) As GpStatus
+            Return Me.AddClosedCurveX2(ByVal ArrayPtr(points), ArrayLen(points), tension)
+        End Function
+        
+        Function AddClosedCurveI(points() As GpPoint) As GpStatus
+            Return Me.AddClosedCurveX1I(ByVal ArrayPtr(points), ArrayLen(points))
+        End Function
+
+        Function AddClosedCurve2I(points() As GpPoint, ByVal tension!) As GpStatus
+            Return Me.AddClosedCurveX2I(ByVal ArrayPtr(points), ArrayLen(points), tension)
+        End Function
+        
+        [UseGetLastError(False)]
+        Declare PtrSafe Function AddClosedCurveX1 Lib "gdiplus" Alias "GdipAddPathClosedCurve" (ByVal Me As GpPath, Points As GpPointF, ByVal count&) As GpStatus
+        [UseGetLastError(False)]
+        Declare PtrSafe Function AddClosedCurveX2 Lib "gdiplus" Alias "GdipAddPathClosedCurve2" (ByVal Me As GpPath, Points As GpPointF, ByVal count&, ByVal tension!) As GpStatus
+        [UseGetLastError(False)]
+        Declare PtrSafe Function AddClosedCurveX1I Lib "gdiplus" Alias "GdipAddPathClosedCurveI" (ByVal Me As GpPath, Points As GpPoint, ByVal count&) As GpStatus
+        [UseGetLastError(False)]
+        Declare PtrSafe Function AddClosedCurveX2I Lib "gdiplus" Alias "GdipAddPathClosedCurve2I" (ByVal Me As GpPath, Points As GpPoint, ByVal count&, ByVal tension!) As GpStatus
+        
+        Function AddRectangleR(rect As GpRectF) As GpStatus
+            Return Me.AddRectangle(rect.X, rect.Y, rect.Width, rect.Height)
+        End Function
+
+        Function AddRectangles(rects() As GpRectF) As GpStatus
+            Return Me.AddRectangles2(ByVal ArrayPtr(rects), ArrayLen(rects))
+        End Function
+        
+        Function AddRectangleRI(rect As GpRect) As GpStatus
+            Return Me.AddRectangleI(rect.X, rect.Y, rect.Width, rect.Height)
+        End Function
+
+        Function AddRectanglesI(rects() As GpRect) As GpStatus
+            Return Me.AddRectangles2I(ByVal ArrayPtr(rects), ArrayLen(rects))
+        End Function
+        
+        [UseGetLastError(False)]
+        Declare PtrSafe Function AddRectangle Lib "gdiplus" Alias "GdipAddPathRectangle" (ByVal Me As GpPath, ByVal X!, ByVal Y!, ByVal Width!, ByVal Height!) As GpStatus
+        [UseGetLastError(False)]
+        Declare PtrSafe Function AddRectangles2 Lib "gdiplus" Alias "GdipAddPathRectangles" (ByVal Me As GpPath, rects As GpRectF, ByVal count&) As GpStatus
+        [UseGetLastError(False)]
+        Declare PtrSafe Function AddRectangleI Lib "gdiplus" Alias "GdipAddPathRectangleI" (ByVal Me As GpPath, ByVal X&, ByVal Y&, ByVal Width&, ByVal Height&) As GpStatus
+        [UseGetLastError(False)]
+        Declare PtrSafe Function AddRectangles2I Lib "gdiplus" Alias "GdipAddPathRectanglesI" (ByVal Me As GpPath, rects As GpRect, ByVal count&) As GpStatus
+        
+        Function AddEllipseR(rect As GpRectF) As GpStatus
+            Return Me.AddEllipse(rect.X, rect.Y, rect.Width, rect.Height)
+        End Function
+
+        Function AddEllipseRI(rect As GpRect) As GpStatus
+            Return Me.AddEllipseI(rect.X, rect.Y, rect.Width, rect.Height)
+        End Function
+        
+        [UseGetLastError(False)]
+        Declare PtrSafe Function AddEllipse Lib "gdiplus" Alias "GdipAddPathEllipse" (ByVal Me As GpPath, ByVal X!, ByVal Y!, ByVal Width!, ByVal Height!) As GpStatus
+        [UseGetLastError(False)]
+        Declare PtrSafe Function AddEllipseI Lib "gdiplus" Alias "GdipAddPathEllipseI" (ByVal Me As GpPath, ByVal X&, ByVal Y&, ByVal Width&, ByVal Height&) As GpStatus
+        
+        Function AddPieR(rect As GpRectF, ByVal startAngle!, ByVal sweepAngle!) As GpStatus
+            Return Me.AddPie(rect.X, rect.Y, rect.Width, rect.Height, startAngle, sweepAngle)
+        End Function
+
+        Function AddPieRI(rect As GpRect, ByVal startAngle!, ByVal sweepAngle!) As GpStatus
+            Return Me.AddPieI(rect.X, rect.Y, rect.Width, rect.Height, startAngle, sweepAngle)
+        End Function
+        
+        [UseGetLastError(False)]
+        Declare PtrSafe Function AddPie Lib "gdiplus" Alias "GdipAddPathPie" (ByVal Me As GpPath, ByVal X!, ByVal Y!, ByVal Width!, ByVal Height!, ByVal startAngle!, ByVal sweepAngle!) As GpStatus
+        [UseGetLastError(False)]
+        Declare PtrSafe Function AddPieI Lib "gdiplus" Alias "GdipAddPathPieI" (ByVal Me As GpPath, ByVal X&, ByVal Y&, ByVal Width&, ByVal Height&, ByVal startAngle!, ByVal sweepAngle!) As GpStatus
+        
+        Function AddPolygon(points() As GpPointF) As GpStatus
+            Return Me.AddPolygon2(ByVal ArrayPtr(points), ArrayLen(points))
+        End Function
+
+        Function AddPolygonI(points() As GpPoint) As GpStatus
+            Return Me.AddPolygon2I(ByVal ArrayPtr(points), ArrayLen(points))
+        End Function
+        
+        [UseGetLastError(False)]
+        Declare PtrSafe Function AddPolygon2 Lib "gdiplus" Alias "GdipAddPathPolygon" (ByVal Me As GpPath, Points As GpPointF, ByVal count&) As GpStatus
+        [UseGetLastError(False)]
+        Declare PtrSafe Function AddPolygon2I Lib "gdiplus" Alias "GdipAddPathPolygonI" (ByVal Me As GpPath, Points As GpPoint, ByVal count&) As GpStatus
+        
+        [UseGetLastError(False)]
+        Declare PtrSafe Function AddPath Lib "gdiplus" Alias "GdipAddPathPath" (ByVal Me As GpPath, ByVal addingPath As GpPath, ByVal bConnect&) As GpStatus
+        
+        Function AddString(ByVal string$, family As GpFontFamily, ByVal style&, ByVal emSize!, ByVal origin As GpPointF, format As GpStringFormat) As GpStatus
+            Dim rect As GpRectF = GpRectF(origin.X, origin.Y, 0.0!, 0.0!)
+            Return Me.AddStringX(string, Len(string), family, style, emSize, rect, format)
+        End Function
+
+        Function AddString2(ByVal string$, family As GpFontFamily, ByVal style&, ByVal emSize!, layoutRect As GpRectF, format As GpStringFormat) As GpStatus
+            Return Me.AddStringX(string, Len(string), family, style, emSize, layoutRect, format)
+        End Function
+        
+        Function AddStringI(ByVal string$, family As GpFontFamily, ByVal style&, ByVal emSize!, ByVal origin As GpPoint, format As GpStringFormat) As GpStatus
+            Dim rect As GpRect = GpRect(origin.X, origin.Y, 0, 0)
+            Return Me.AddStringXI(string, Len(string), family, style, emSize, rect, format)
+        End Function
+
+        Function AddString2I(ByVal string$, family As GpFontFamily, ByVal style&, ByVal emSize!, layoutRect As GpRect, format As GpStringFormat) As GpStatus
+            Return Me.AddStringXI(string, Len(string), family, style, emSize, layoutRect, format)
+        End Function
+        
+        [UseGetLastError(False)]
+        DeclareWide PtrSafe Function AddStringX Lib "gdiplus" Alias "GdipAddPathString" (ByVal Me As GpPath, ByVal str$, ByVal length&, ByVal family As GpFontFamily, ByVal style&, ByVal emSize!, layoutRect As GpRectF, ByVal StringFormat As GpStringFormat) As GpStatus
+        [UseGetLastError(False)]
+        DeclareWide PtrSafe Function AddStringXI Lib "gdiplus" Alias "GdipAddPathStringI" (ByVal Me As GpPath, ByVal str$, ByVal length&, ByVal family As GpFontFamily, ByVal style&, ByVal emSize!, layoutRect As GpRect, ByVal StringFormat As GpStringFormat) As GpStatus
+        
+        [UseGetLastError(False)]
+        Declare PtrSafe Function Outline Lib "gdiplus" Alias "GdipWindingModeOutline" (ByVal Me As GpPath, ByVal matrix As GpMatrix, Optional ByVal flatness! = 0.25) As GpStatus
+        
+        Function IsVisibleP(ByVal point As GpPointF, ByVal g As GpGraphics, result As Boolean) As GpStatus
+            Return Me.IsVisible(point.X, point.Y, g, result)
+        End Function
+
+        Function IsVisible(ByVal x!, ByVal y!, ByVal g As GpGraphics, result As Boolean) As GpStatus
+            Dim booln As GDIP_BOOL
+            Dim status As Any = Me.IsVisiblePoint(x, y, g, booln)
+            result = booln
+            Return status
+        End Function
+
+        Function IsVisiblePI(ByVal point As GpPoint, ByVal g As GpGraphics, result As Boolean) As GpStatus
+            Return Me.IsVisibleI(point.X, point.Y, g, result)
+        End Function
+
+        Function IsVisibleI(ByVal x&, ByVal y&, ByVal g As GpGraphics, result As Boolean) As GpStatus
+            Dim booln As GDIP_BOOL
+            Dim status As Any = Me.IsVisiblePointI(x, y, g, booln)
+            result = booln
+            Return status
+        End Function
+        
+        [UseGetLastError(False)]
+        Declare PtrSafe Function IsVisiblePoint Lib "gdiplus" Alias "GdipIsVisiblePathPoint" (ByVal Me As GpPath, ByVal X!, ByVal Y!, ByVal Graphics As GpGraphics, result As GDIP_BOOL) As GpStatus
+        [UseGetLastError(False)]
+        Declare PtrSafe Function IsVisiblePointI Lib "gdiplus" Alias "GdipIsVisiblePathPointI" (ByVal Me As GpPath, ByVal X&, ByVal Y&, ByVal Graphics As GpGraphics, result As GDIP_BOOL) As GpStatus
+
+        Function IsOutlineVisibleP(ByVal pt As GpPointF, pen As GpPen, gr As GpGraphics, result As Boolean) As GpStatus
+            Return Me.IsOutlineVisible(pt.X, pt.Y, pen, gr, result)
+        End Function
+
+        Function IsOutlineVisible(ByVal x!, ByVal y!, pen As GpPen, gr As GpGraphics, result As Boolean) As GpStatus
+            Dim booln As GDIP_BOOL
+            Dim status As Any = Me.IsOutlineVisiblePoint(x, y, pen, gr, booln)
+            result = booln
+            Return status
+        End Function
+
+        Function IsOutlineVisiblePI(ByVal pt As GpPoint, pen As GpPen, gr As GpGraphics, result As Boolean) As GpStatus
+            Return Me.IsOutlineVisibleI(pt.X, pt.Y, pen, gr, result)
+        End Function
+
+        Function IsOutlineVisibleI(ByVal x&, ByVal y&, pen As GpPen, gr As GpGraphics, result As Boolean) As GpStatus
+            Dim booln As GDIP_BOOL
+            Dim status As Any = Me.IsOutlineVisiblePointI(x, y, pen, gr, booln)
+            result = booln
+            Return status
+        End Function
+        
+        [UseGetLastError(False)]
+        Declare PtrSafe Function IsOutlineVisiblePoint Lib "gdiplus" Alias "GdipIsOutlineVisiblePathPoint" (ByVal Me As GpPath, ByVal X!, ByVal Y!, ByVal pen As GpPen, ByVal Graphics As GpGraphics, result As GDIP_BOOL) As GpStatus
+        [UseGetLastError(False)]
+        Declare PtrSafe Function IsOutlineVisiblePointI Lib "gdiplus" Alias "GdipIsOutlineVisiblePathPointI" (ByVal Me As GpPath, ByVal X&, ByVal Y&, ByVal pen As GpPen, ByVal Graphics As GpGraphics, result As GDIP_BOOL) As GpStatus
+    End Type
+End Module

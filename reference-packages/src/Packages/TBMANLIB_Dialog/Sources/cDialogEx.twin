@@ -1,0 +1,1574 @@
+' =====================================================
+' cDialogEx.twin - Enhanced Windows Dialog Class
+' TBMANLIB Dialog Library
+' =====================================================
+' 功能：使用 IFileOpenDialog/IFileSaveDialog (Vista+) 实现现代化对话框
+'       支持文件打开（含多选）、文件保存、文件夹选择
+'       支持过滤器、初始目录、自定义图标
+'
+' 作者：邓伟
+' 联系：215879458@qq.com
+' 网站：https://vb6.pro
+' 日期：2026-02-03
+' 版本：1.3.0
+' =====================================================
+' 注意：COMDLG_FILTERSPEC 和 GUID 类型定义在 mDialog 模块中
+' =====================================================
+
+' =====================================================
+' IOleWindow Interface Definition（获取对话框窗口句柄）
+' =====================================================
+[ComImport]
+[InterfaceId("00000114-0000-0000-C000-000000000046")]
+Interface IOleWindow Extends IUnknown
+    [PreserveSig]
+    Function GetWindow(ByRef phwnd As LongPtr) As Long
+    Sub ContextSensitiveHelp(ByVal fEnterMode As Long)
+End Interface
+
+' =====================================================
+' IModalWindow Interface Definition
+' =====================================================
+[ComImport]
+[InterfaceId("b4db1657-70d7-485e-8e3e-6fcb5a5c1802")]
+Interface IModalWindow Extends IUnknown
+    [PreserveSig]
+    Function Show(ByVal hwndOwner As LongPtr) As Long
+End Interface
+
+' =====================================================
+' IShellItem Interface Definition（前置，供 IFileDialog 引用）
+' =====================================================
+[ComImport]
+[InterfaceId("43826d1e-e718-42ee-bc55-a1e261c37bfe")]
+Interface IShellItem Extends IUnknown
+    Sub BindToHandler(ByRef pbc As Any, ByRef bhid As GUID, ByRef ppv As LongPtr)
+    Sub GetParent(ByRef ppsi As Any)
+    Sub GetDisplayName(ByVal sigdnName As Long, ByRef ppszName As LongPtr)
+    Sub GetAttributes(ByVal sfgaoMask As Long, ByRef psfgaoAttribs As Long)
+    Sub Compare(ByRef psi As Any, ByVal hint As Long, ByRef piOrder As Long)
+End Interface
+
+' =====================================================
+' IShellItemArray Interface Definition
+' vtable 顺序必须严格匹配 Windows SDK shobjidl_core.h
+' IShellItemArray = {B63EA76D-1F85-456F-A19C-48159EFA858B}
+' =====================================================
+[ComImport]
+[InterfaceId("B63EA76D-1F85-456F-A19C-48159EFA858B")]
+Interface IShellItemArray Extends IUnknown
+    Sub BindToHandler(ByRef pbc As Any, ByRef bhid As GUID, ByRef riid As GUID, ByRef ppvOut As LongPtr)
+    Sub GetPropertyStore(ByVal flags As Long, ByRef riid As GUID, ByRef ppv As LongPtr)
+    Sub GetPropertyDescriptionList(ByRef keyType As Any, ByRef riid As GUID, ByRef ppv As LongPtr)
+    Sub GetAttributes(ByVal AttribFlags As Long, ByVal sfgaoMask As Long, ByRef psfgaoAttribs As Long)
+    Sub GetCount(ByRef pdwNumItems As Long)
+    Sub GetItemAt(ByVal dwIndex As Long, ByRef ppsi As IShellItem)
+    Sub EnumItems(ByRef ppenumShellItems As Any)
+End Interface
+
+' =====================================================
+' IFileDialog Interface Definition
+' =====================================================
+[ComImport]
+[InterfaceId("42f85136-db7e-439c-85f1-e4075d135fc8")]
+Interface IFileDialog Extends IModalWindow
+    Sub SetFileTypes(ByVal cFileTypes As Long, ByRef rgFilterTypes As COMDLG_FILTERSPEC)
+    Sub SetFileTypeIndex(ByVal iFileType As Long)
+    Sub GetFileTypeIndex(ByRef piFileType As Long)
+    [PreserveSig]
+    Function Advise(ByVal pfde As LongPtr, ByRef pdwCookie As LongPtr) As Long
+    [PreserveSig]
+    Function Unadvise(ByVal dwCookie As LongPtr) As Long
+    Sub SetOptions(ByVal fos As Long)
+    Sub GetOptions(ByRef pfos As Long)
+    Sub SetDefaultFolder(ByRef psi As IShellItem)
+    Sub SetFolder(ByRef psi As IShellItem)
+    Sub GetFolder(ByRef ppsi As Any)
+    Sub GetCurrentSelection(ByRef ppsi As Any)
+    Sub SetFileName(ByVal pszName As String)
+    Sub GetFileName(ByRef pszName As String)
+    Sub SetTitle(ByVal pszTitle As String)
+    Sub SetOkButtonLabel(ByVal pszText As String)
+    Sub SetFileNameLabel(ByVal pszLabel As String)
+    Sub GetResult(ByRef ppsi As IShellItem)
+    [PreserveSig]
+    Function AddPlace(ByRef psi As Any, ByVal fdap As Long) As Long
+    Sub SetDefaultExtension(ByVal pszDefaultExtension As String)
+    Sub Close(ByVal hr As Long)
+    Sub SetClientGuid(ByRef guid As GUID)
+    Sub ClearClientData()
+    Sub SetFilter(ByRef pFilter As Any)
+End Interface
+
+' =====================================================
+' IFileOpenDialog Interface Definition (Vista+)
+' =====================================================
+[ComImport]
+[InterfaceId("d57c7288-d4ad-4768-be02-9d969532d960")]
+Interface IFileOpenDialog Extends IFileDialog
+    Sub GetResults(ByRef ppenum As IShellItemArray)
+    Sub GetSelectedItems(ByRef ppsi As IShellItemArray)
+End Interface
+
+' =====================================================
+' IFileSaveDialog Interface Definition (Vista+)
+' 注意：必须完整声明所有5个独有方法，否则 vtable 偏移错误
+' =====================================================
+[ComImport]
+[InterfaceId("84bccd23-5fde-4cdb-aea4-af64b83d78ab")]
+Interface IFileSaveDialog Extends IFileDialog
+    Sub SetSaveAsItem(ByRef psi As IShellItem)
+    Sub SetProperties(ByRef pStore As Any)
+    Sub SetCollectedProperties(ByRef pList As Any, ByVal fAppendDefault As Long)
+    Sub GetProperties(ByRef ppStore As Any)
+    Sub ApplyProperties(ByRef psi As IShellItem, ByRef pStore As Any, ByVal hwnd As LongPtr, ByRef pSink As Any)
+End Interface
+
+
+' =====================================================
+' Class Definition
+' =====================================================
+[COMCreatable(False)]
+Class cDialogEx
+
+    Option Explicit
+
+    ' =====================================================
+    ' Windows API 声明
+    ' =====================================================
+    Private Declare PtrSafe Function CoCreateInstance Lib "ole32" ( _
+        ByRef rclsid As GUID, _
+        ByVal pUnkOuter As LongPtr, _
+        ByVal dwClsContext As Long, _
+        ByRef riid As GUID, _
+        ByRef ppv As Any _
+    ) As Long
+
+    Private Declare PtrSafe Function CoInitialize Lib "ole32" ( _
+        ByVal pvReserved As LongPtr _
+    ) As Long
+
+    Private Declare PtrSafe Sub CoUninitialize Lib "ole32" ()
+
+    Private Declare PtrSafe Sub CopyMemory Lib "kernel32" Alias "RtlMoveMemory" ( _
+        ByRef Destination As Any, _
+        ByRef Source As Any, _
+        ByVal Length As Long _
+    )
+
+    Private Declare PtrSafe Function lstrlenW Lib "kernel32" ( _
+        ByVal lpString As LongPtr _
+    ) As Long
+
+    Private Declare PtrSafe Sub MemCopy Lib "kernel32" Alias "RtlMoveMemory" ( _
+        ByVal Destination As LongPtr, _
+        ByRef Source As Any, _
+        ByVal Length As Long _
+    )
+
+    Private Declare PtrSafe Function SHCreateItemFromParsingName Lib "shell32" ( _
+        ByVal pszPath As LongPtr, _
+        ByVal pbc As LongPtr, _
+        ByRef riid As GUID, _
+        ByRef ppv As Any _
+    ) As Long
+
+    Private Declare PtrSafe Sub CoTaskMemFree Lib "ole32" ( _
+        ByVal pv As LongPtr _
+    )
+
+    Private Declare PtrSafe Function ShellExecute Lib "shell32.dll" Alias "ShellExecuteW" ( _
+        ByVal hwnd As LongPtr, _
+        ByVal lpOperation As LongPtr, _
+        ByVal lpFile As LongPtr, _
+        ByVal lpParameters As LongPtr, _
+        ByVal lpDirectory As LongPtr, _
+        ByVal nShowCmd As Long _
+    ) As LongPtr
+
+    Private Declare PtrSafe Function SendMessageW Lib "user32" Alias "SendMessageW" ( _
+        ByVal hwnd As LongPtr, _
+        ByVal wMsg As Long, _
+        ByVal wParam As LongPtr, _
+        ByVal lParam As LongPtr _
+    ) As LongPtr
+
+    Private Declare PtrSafe Function DestroyIcon Lib "user32" ( _
+        ByVal hIcon As LongPtr _
+    ) As Long
+
+    Private Type SHSTOCKICONINFO
+        cbSize As Long
+        hIcon As LongPtr
+        iSysIconIndex As Long
+        iIconIndex As Long
+        szPath(0 To 519) As Byte  ' MAX_PATH * 2 (Unicode)
+    End Type
+
+    Private Declare PtrSafe Function SHGetStockIconInfo Lib "shell32" ( _
+        ByVal siid As Long, _
+        ByVal uFlags As Long, _
+        ByRef psii As SHSTOCKICONINFO _
+    ) As Long
+
+    ' =====================================================
+    ' 常量定义
+    ' =====================================================
+    Private Const CLSCTX_INPROC_SERVER As Long = 1
+    Private Const S_OK As Long = 0
+    Private Const S_FALSE As Long = 1
+
+    ' FILEOPENDIALOGOPTIONS
+    Private Const FOS_OVERWRITEPROMPT As Long = &H2
+    Private Const FOS_STRICTFILETYPES As Long = &H4
+    Private Const FOS_NOCHANGEDIR As Long = &H8
+    Private Const FOS_PICKFOLDERS As Long = &H20
+    Private Const FOS_FORCEFILESYSTEM As Long = &H40
+    Private Const FOS_ALLNONSTORAGEITEMS As Long = &H80
+    Private Const FOS_NOVALIDATE As Long = &H100
+    Private Const FOS_ALLOWMULTISELECT As Long = &H200
+    Private Const FOS_PATHMUSTEXIST As Long = &H800
+    Private Const FOS_FILEMUSTEXIST As Long = &H1000
+    Private Const FOS_CREATEPROMPT As Long = &H2000
+    Private Const FOS_SHAREAWARE As Long = &H4000
+    Private Const FOS_NOREADONLYRETURN As Long = &H8000&
+    Private Const FOS_NOTESTFILECREATE As Long = &H10000
+    Private Const FOS_HIDEMRUPLACES As Long = &H20000
+    Private Const FOS_HIDEPINNEDPLACES As Long = &H40000
+    Private Const FOS_NODEREFERENCELINKS As Long = &H100000
+    Private Const FOS_DONTADDTORECENT As Long = &H2000000
+    Private Const FOS_FORCESHOWHIDDEN As Long = &H10000000
+    Private Const FOS_DEFAULTNOMINIMODE As Long = &H20000000
+
+    ' WM_SETICON 常量（用于设置对话框图标）
+    Private Const WM_SETICON As Long = &H80
+    Private Const ICON_SMALL As LongPtr = 0
+    Private Const ICON_BIG As LongPtr = 1
+
+    ' SHGetStockIconInfo 标志
+    Private Const SHGSI_ICON As Long = &H100
+    Private Const SHGSI_LARGEICON As Long = &H0
+    Private Const SHGSI_SMALLICON As Long = &H1
+
+    ' COM 错误码
+    Private Const E_NOTIMPL As Long = &H80004001
+    Private Const E_NOINTERFACE As Long = &H80004002
+
+    ' IFileDialogEvents vtable 槽位数量
+    ' IUnknown(3) + IFileDialogEvents(7) = 10
+    Private Const FDE_VTABLE_SLOTS As Long = 10
+
+    ' SIGDN
+    Private Const SIGDN_DESKTOPABSOLUTEPARSING As Long = &H80028000
+    Private Const SIGDN_FILESYSPATH As Long = &H80058001
+    Private Const SIGDN_NORMALDISPLAY As Long = &H0
+
+    '=====================================================================
+    ' 私有成员变量
+    '=====================================================================
+    Private m_DialogTitle As String
+    Private m_InitialDir As String
+    Private m_FileName As String
+    Private m_DefaultExt As String
+    Private m_Filter As String
+    Private m_FilterIndex As Long
+    Private m_OverwritePrompt As Boolean
+    Private m_PathMustExist As Boolean
+    Private m_FileMustExist As Boolean
+    Private m_CreatePrompt As Boolean
+    Private m_NoChangeDir As Boolean
+    Private m_MultiSelect As Boolean
+    Private m_PickFolders As Boolean
+    Private m_OwnerHwnd As LongPtr
+    Private m_IconHandle As LongPtr
+    Private m_IconType As Long
+    Private m_LoadedIconHandle As LongPtr   ' 通过 SHGetStockIconInfo 加载的系统图标句柄（需在 Terminate 时释放）
+    Private m_AdviseCookie As LongPtr       ' IFileDialog::Advise 注册回调的 cookie
+    Private m_pVTable As LongPtr            ' 手动构建的 IFileDialogEvents vtable 内存地址
+    Private m_pSinkObj As LongPtr           ' 手动构建的 COM 事件接收器对象内存地址
+    Private m_IconApplied As Boolean        ' 图标是否已应用（防止 OnFolderChange 重复设置）
+    Private m_pFileDialog As IFileDialog    ' IFileDialog 接口引用（回调中使用，通过 QI 获取 HWND）
+
+    '=====================================================================
+    ' 系统图标ID枚举
+    '=====================================================================
+    Public Enum SystemIconId
+        SIID_INVALID = -1
+        SIID_DOCUMENT = 0
+        SIID_FOLDER = 3
+        SIID_DISK = 6
+        SIID_SERVER = 15
+        SIID_DRIVEFIXED = 8
+        SIID_DRIVECD = 10
+        SIID_DRIVEHD = 11
+        SIID_FOLDEROPEN = 5
+        SIID_STAROFFILE = 30
+        SIID_SHARE = 28
+    End Enum
+
+    '=====================================================================
+    ' 类初始化/终止
+    '=====================================================================
+    Private Sub Class_Initialize()
+        m_IconHandle = 0
+        m_IconType = 0
+        m_LoadedIconHandle = 0
+        m_AdviseCookie = 0
+        m_pVTable = 0
+        m_pSinkObj = 0
+        m_IconApplied = False
+        Call CoInitialize(0)
+    End Sub
+
+    Private Sub Class_Terminate()
+        ' 释放通过 SHGetStockIconInfo 加载的系统图标
+        If m_LoadedIconHandle <> 0 Then
+            DestroyIcon m_LoadedIconHandle
+            m_LoadedIconHandle = 0
+        End If
+        ' 释放 IFileDialog 引用
+        Set m_pFileDialog = Nothing
+        ' 清理可能残留的事件接收器
+        If m_pSinkObj <> 0 Then
+            DestroyEventSink
+        End If
+        Call CoUninitialize()
+    End Sub
+
+    '=====================================================================
+    ' 公共属性
+    '=====================================================================
+
+    Public Property Get DialogTitle() As String
+        DialogTitle = m_DialogTitle
+    End Property
+
+    Public Property Let DialogTitle(ByVal value As String)
+        m_DialogTitle = value
+    End Property
+
+    Public Property Get InitialDir() As String
+        InitialDir = m_InitialDir
+    End Property
+
+    Public Property Let InitialDir(ByVal value As String)
+        m_InitialDir = value
+    End Property
+
+    Public Property Get FileName() As String
+        FileName = m_FileName
+    End Property
+
+    Public Property Let FileName(ByVal value As String)
+        m_FileName = value
+    End Property
+
+    Public Property Get DefaultExt() As String
+        DefaultExt = m_DefaultExt
+    End Property
+
+    Public Property Let DefaultExt(ByVal value As String)
+        m_DefaultExt = value
+    End Property
+
+    Public Property Get Filter() As String
+        Filter = m_Filter
+    End Property
+
+    Public Property Let Filter(ByVal value As String)
+        m_Filter = value
+    End Property
+
+    Public Property Get FilterIndex() As Long
+        FilterIndex = m_FilterIndex
+    End Property
+
+    Public Property Let FilterIndex(ByVal value As Long)
+        m_FilterIndex = value
+    End Property
+
+    Public Property Get OverwritePrompt() As Boolean
+        OverwritePrompt = m_OverwritePrompt
+    End Property
+
+    Public Property Let OverwritePrompt(ByVal value As Boolean)
+        m_OverwritePrompt = value
+    End Property
+
+    Public Property Get PathMustExist() As Boolean
+        PathMustExist = m_PathMustExist
+    End Property
+
+    Public Property Let PathMustExist(ByVal value As Boolean)
+        m_PathMustExist = value
+    End Property
+
+    Public Property Get FileMustExist() As Boolean
+        FileMustExist = m_FileMustExist
+    End Property
+
+    Public Property Let FileMustExist(ByVal value As Boolean)
+        m_FileMustExist = value
+    End Property
+
+    Public Property Get CreatePrompt() As Boolean
+        CreatePrompt = m_CreatePrompt
+    End Property
+
+    Public Property Let CreatePrompt(ByVal value As Boolean)
+        m_CreatePrompt = value
+    End Property
+
+    Public Property Get NoChangeDir() As Boolean
+        NoChangeDir = m_NoChangeDir
+    End Property
+
+    Public Property Let NoChangeDir(ByVal value As Boolean)
+        m_NoChangeDir = value
+    End Property
+
+    Public Property Get MultiSelect() As Boolean
+        MultiSelect = m_MultiSelect
+    End Property
+
+    Public Property Let MultiSelect(ByVal value As Boolean)
+        m_MultiSelect = value
+    End Property
+
+    Public Property Get PickFolders() As Boolean
+        PickFolders = m_PickFolders
+    End Property
+
+    Public Property Let PickFolders(ByVal value As Boolean)
+        m_PickFolders = value
+    End Property
+
+    Public Property Get OwnerHwnd() As LongPtr
+        OwnerHwnd = m_OwnerHwnd
+    End Property
+
+    Public Property Let OwnerHwnd(ByVal value As LongPtr)
+        m_OwnerHwnd = value
+    End Property
+
+    '=====================================================================
+    ' 公共方法
+    '=====================================================================
+
+    ' 显示打开文件对话框（支持多选，返回 Variant：String 或 String 数组）
+    Public Function ShowOpen() As Variant
+        On Error GoTo ErrorHandler
+
+        If m_PickFolders Then
+            ShowOpen = ShowFolderDialog()
+        Else
+            ShowOpen = ShowFileOpenDialog()
+        End If
+
+        Exit Function
+
+ErrorHandler:
+        Debug.Print "ShowOpen Error: " & Err.Description
+        ShowOpen = ""
+    End Function
+
+    ' 显示保存文件对话框
+    Public Function ShowSave() As String
+        On Error GoTo ErrorHandler
+
+        ShowSave = ShowFileSaveDialog()
+        Exit Function
+
+ErrorHandler:
+        Debug.Print "ShowSave Error: " & Err.Description
+        ShowSave = ""
+    End Function
+
+    ' 显示文件夹选择对话框（使用 IFileOpenDialog + FOS_PICKFOLDERS）
+    Public Function ShowBrowseForFolder() As String
+        On Error GoTo ErrorHandler
+
+        ShowBrowseForFolder = ShowFolderDialog()
+        Exit Function
+
+ErrorHandler:
+        Debug.Print "ShowBrowseForFolder Error: " & Err.Description
+        ShowBrowseForFolder = ""
+    End Function
+
+    ' 获取选择的文件列表，返回 Collection（多选由 MultiSelect 属性控制）
+    Public Function SelectFiles() As Collection
+        Dim colFiles As Collection
+        Dim varResult As Variant
+        Dim i As Long
+
+        Set colFiles = New Collection
+
+        ' 调用 ShowOpen 获取结果（多选由 MultiSelect 属性控制）
+        varResult = Me.ShowOpen()
+
+        If VarType(varResult) = vbString Then
+            ' 单选文件（或多选模式下只选了1个）
+            If varResult <> "" Then
+                colFiles.Add varResult
+            End If
+        ElseIf IsArray(varResult) Then
+            ' 多选文件
+            For i = LBound(varResult) To UBound(varResult)
+                If varResult(i) <> "" Then
+                    colFiles.Add varResult(i)
+                End If
+            Next i
+        End If
+
+        Set SelectFiles = colFiles
+    End Function
+
+    ' 设置系统图标（通过 SHGetStockIconInfo 加载 Vista+ 系统图标）
+    ' 图标在对话框显示时通过 IFileDialogEvents::OnFolderChange 回调自动应用到标题栏
+    Public Sub SetSystemIcon(ByVal iconId As SystemIconId)
+        ' 释放之前加载的系统图标
+        If m_LoadedIconHandle <> 0 Then
+            DestroyIcon m_LoadedIconHandle
+            m_LoadedIconHandle = 0
+        End If
+
+        Dim sii As SHSTOCKICONINFO
+        sii.cbSize = LenB(sii)
+
+        Dim hr As Long
+        hr = SHGetStockIconInfo(iconId, SHGSI_ICON Or SHGSI_LARGEICON, sii)
+        If hr = S_OK And sii.hIcon <> 0 Then
+            m_LoadedIconHandle = sii.hIcon
+            m_IconHandle = sii.hIcon
+            m_IconType = 1
+        Else
+            ' 加载大图标失败，尝试小图标
+            sii.cbSize = LenB(sii)
+            hr = SHGetStockIconInfo(iconId, SHGSI_ICON Or SHGSI_SMALLICON, sii)
+            If hr = S_OK And sii.hIcon <> 0 Then
+                m_LoadedIconHandle = sii.hIcon
+                m_IconHandle = sii.hIcon
+                m_IconType = 1
+            Else
+                m_IconHandle = 0
+                m_IconType = 0
+            End If
+        End If
+    End Sub
+
+    ' 设置自定义图标（传入 HICON 句柄，用户自行管理图标生命周期）
+    ' 图标在对话框显示时通过 IFileDialogEvents::OnFolderChange 回调自动应用到标题栏
+    Public Sub SetCustomIcon(ByVal iconHandle As LongPtr)
+        ' 自定义图标不由我们释放，只保存句柄
+        m_IconType = 2
+        m_IconHandle = iconHandle
+    End Sub
+
+    ' 清除图标设置
+    Public Sub ClearIcon()
+        ' 释放通过 SHGetStockIconInfo 加载的系统图标
+        If m_LoadedIconHandle <> 0 Then
+            DestroyIcon m_LoadedIconHandle
+            m_LoadedIconHandle = 0
+        End If
+        m_IconHandle = 0
+        m_IconType = 0
+    End Sub
+
+    ' 获取预设过滤器
+    Public Function GetPresetFilter(ByVal filterName As String) As String
+        Select Case LCase$(Trim$(filterName))
+            Case "all"
+                GetPresetFilter = "All Files|*.*"
+            Case "text"
+                GetPresetFilter = "Text Files|*.txt"
+            Case "images", "image"
+                GetPresetFilter = "Image Files|*.bmp;*.jpg;*.jpeg;*.png;*.gif"
+            Case "documents", "document"
+                GetPresetFilter = "Documents|*.doc;*.docx;*.pdf;*.txt;*.rtf"
+            Case "executables", "executable"
+                GetPresetFilter = "Executables|*.exe;*.bat;*.cmd;*.ps1"
+            Case Else
+                GetPresetFilter = ""
+        End Select
+    End Function
+
+    '=====================================================================
+    ' 私有方法 - 辅助函数
+    '=====================================================================
+
+    ' 解析 VB 式过滤器字符串 "Name1|Spec1|Name2|Spec2" 为 COMDLG_FILTERSPEC 数组
+    Private Function ParseFilter(ByRef arrFilters() As COMDLG_FILTERSPEC, _
+                                  ByRef arrNames() As String, _
+                                  ByRef arrSpecs() As String) As Long
+        Dim strFilter As String
+        Dim nPairCount As Long
+        Dim nPipeCount As Long
+        Dim nPos As Long
+        Dim i As Long
+        Dim nStart As Long
+        Dim nPipePos As Long
+
+        strFilter = m_Filter
+        If Len(strFilter) = 0 Then
+            ParseFilter = 0
+            Exit Function
+        End If
+
+        ' 统计 | 分隔符数量
+        nPipeCount = 0
+        nPos = 1
+        Do
+            nPos = InStr(nPos, strFilter, "|")
+            If nPos = 0 Then Exit Do
+            nPipeCount = nPipeCount + 1
+            nPos = nPos + 1
+        Loop
+
+        ' 每个过滤器对需要 2 个 |（Name|Spec），所以总数必须是偶数
+        If nPipeCount = 0 Or nPipeCount Mod 2 <> 0 Then
+            ParseFilter = 0
+            Exit Function
+        End If
+
+        nPairCount = nPipeCount / 2
+        ReDim arrNames(0 To nPairCount - 1)
+        ReDim arrSpecs(0 To nPairCount - 1)
+        ReDim arrFilters(0 To nPairCount - 1)
+
+        ' 解析每个过滤器对
+        nStart = 1
+        For i = 0 To nPairCount - 1
+            ' 提取 Name（第一个 | 之前）
+            nPipePos = InStr(nStart, strFilter, "|")
+            arrNames(i) = Mid$(strFilter, nStart, nPipePos - nStart)
+            nStart = nPipePos + 1
+
+            ' 提取 Spec（第二个 | 之前，或到字符串末尾）
+            nPipePos = InStr(nStart, strFilter, "|")
+            If nPipePos = 0 Then
+                ' 最后一个 Spec，到末尾
+                arrSpecs(i) = Mid$(strFilter, nStart)
+            Else
+                arrSpecs(i) = Mid$(strFilter, nStart, nPipePos - nStart)
+                nStart = nPipePos + 1
+            End If
+
+            ' 设置 COMDLG_FILTERSPEC 指针（StrPtr 返回 BSTR 的字符数据指针 = LPCWSTR）
+            arrFilters(i).pszName = StrPtr(arrNames(i))
+            arrFilters(i).pszSpec = StrPtr(arrSpecs(i))
+        Next i
+
+        ParseFilter = nPairCount
+    End Function
+
+    ' 从 IShellItem 获取显示名称，自动释放 COM 内存
+    Private Function GetDisplayNameFromShellItem(ByVal pShellItem As IShellItem, ByVal sigdnName As Long) As String
+        On Error GoTo ErrorHandler
+        
+        Dim ppszName As LongPtr
+        Dim strLen As Long
+        
+        pShellItem.GetDisplayName sigdnName, ppszName
+        
+        If ppszName = 0 Then
+            GetDisplayNameFromShellItem = ""
+            Exit Function
+        End If
+        
+        ' 获取字符串长度
+        strLen = lstrlenW(ppszName)
+        
+        If strLen > 0 Then
+            ' 分配缓冲区并复制字符串
+            GetDisplayNameFromShellItem = Space$(strLen)
+            MemCopy StrPtr(GetDisplayNameFromShellItem), ByVal ppszName, strLen * 2
+        Else
+            GetDisplayNameFromShellItem = ""
+        End If
+        
+        ' 释放 COM 分配的字符串内存（GetDisplayName 返回 CoTaskMemAlloc 分配的字符串）
+        CoTaskMemFree ppszName
+        
+        Exit Function
+        
+ErrorHandler:
+        Debug.Print "GetDisplayNameFromShellItem Error: " & Err.Description
+        If ppszName <> 0 Then CoTaskMemFree ppszName
+        GetDisplayNameFromShellItem = ""
+    End Function
+
+    '=====================================================================
+    ' 私有方法 - IFileOpenDialog 实现
+    '=====================================================================
+    Private Function ShowFileOpenDialog() As Variant
+        On Error GoTo ErrorHandler
+
+        Dim hr As Long
+        Dim pFileOpenDialog As IFileOpenDialog
+        Dim pShellItem As IShellItem
+
+        ' 创建 IFileOpenDialog 实例
+        hr = CoCreateInstance(GetCLSID_FileOpenDialog(), 0, CLSCTX_INPROC_SERVER, GetIID_IFileOpenDialog(), pFileOpenDialog)
+        If hr <> S_OK Then
+            ShowFileOpenDialog = ""
+            Exit Function
+        End If
+
+        ' 设置标题
+        If Len(m_DialogTitle) > 0 Then
+            pFileOpenDialog.SetTitle m_DialogTitle
+        End If
+
+        ' 设置文件名（预填）
+        If Len(m_FileName) > 0 Then
+            pFileOpenDialog.SetFileName m_FileName
+        End If
+
+        ' 设置过滤器
+        If Len(m_Filter) > 0 Then
+            Dim arrFilters() As COMDLG_FILTERSPEC
+            Dim arrNames() As String
+            Dim arrSpecs() As String
+            Dim nFilterCount As Long
+
+            nFilterCount = ParseFilter(arrFilters, arrNames, arrSpecs)
+            If nFilterCount > 0 Then
+                pFileOpenDialog.SetFileTypes nFilterCount, arrFilters(0)
+
+                ' 设置默认过滤器索引（1-based）
+                If m_FilterIndex > 0 Then
+                    pFileOpenDialog.SetFileTypeIndex m_FilterIndex
+                End If
+            End If
+        End If
+
+        ' 设置初始目录
+        If Len(m_InitialDir) > 0 Then
+            ApplyInitialDir pFileOpenDialog
+        End If
+
+        ' 设置选项
+        Dim options As Long
+        options = FOS_FORCEFILESYSTEM
+
+        If m_OverwritePrompt Then options = options Or FOS_OVERWRITEPROMPT
+        If m_PathMustExist Then options = options Or FOS_PATHMUSTEXIST
+        If m_FileMustExist Then options = options Or FOS_FILEMUSTEXIST
+        If m_CreatePrompt Then options = options Or FOS_CREATEPROMPT
+        If m_NoChangeDir Then options = options Or FOS_NOCHANGEDIR
+        If m_MultiSelect Then options = options Or FOS_ALLOWMULTISELECT
+
+        pFileOpenDialog.SetOptions options
+
+        ' 存储 IFileDialog 引用（回调中通过 interface 赋值 QI 获取 IOleWindow）
+        Set m_pFileDialog = pFileOpenDialog
+
+        ' 注册事件回调（用于设置自定义图标）
+        SetupIconSink
+
+        ' 显示对话框
+        hr = pFileOpenDialog.Show(m_OwnerHwnd)
+
+        ' 注销事件回调
+        CleanupIconSink
+
+        ' 释放 IFileDialog 引用
+        Set m_pFileDialog = Nothing
+
+        If hr <> S_OK Then
+            ' 用户取消或出错
+            ShowFileOpenDialog = ""
+            Exit Function
+        End If
+
+        ' 获取结果
+        If m_MultiSelect Then
+            ' 多选模式 - 使用 GetResults 获取 IShellItemArray
+            Dim pShellItemArray As IShellItemArray
+            Dim nItemCount As Long
+            Dim arrPaths() As String
+            Dim i As Long
+
+            pFileOpenDialog.GetResults pShellItemArray
+
+            ' 检查 IShellItemArray 是否有效（防止空指针 ACCESS_VIOLATION）
+            If pShellItemArray Is Nothing Then
+                ' GetResults 失败，退回单选模式获取
+                pFileOpenDialog.GetResult pShellItem
+                ShowFileOpenDialog = GetDisplayNameFromShellItem(pShellItem, SIGDN_FILESYSPATH)
+                m_FileName = ShowFileOpenDialog
+                Exit Function
+            End If
+
+            pShellItemArray.GetCount nItemCount
+
+            If nItemCount = 0 Then
+                ShowFileOpenDialog = ""
+                Exit Function
+            ElseIf nItemCount = 1 Then
+                ' 多选模式下只选了 1 个文件 - 返回 String
+                pFileOpenDialog.GetResult pShellItem
+                ShowFileOpenDialog = GetDisplayNameFromShellItem(pShellItem, SIGDN_FILESYSPATH)
+                m_FileName = ShowFileOpenDialog
+            Else
+                ' 多选 - 返回 String 数组
+                ReDim arrPaths(0 To nItemCount - 1)
+                For i = 0 To nItemCount - 1
+                    Dim pSelectedItem As IShellItem
+                    pShellItemArray.GetItemAt i, pSelectedItem
+                    arrPaths(i) = GetDisplayNameFromShellItem(pSelectedItem, SIGDN_FILESYSPATH)
+                Next i
+                ShowFileOpenDialog = arrPaths
+                m_FileName = arrPaths(0)
+            End If
+        Else
+            ' 单选模式 - 使用 GetResult（直接传递接口变量）
+            pFileOpenDialog.GetResult pShellItem
+            ShowFileOpenDialog = GetDisplayNameFromShellItem(pShellItem, SIGDN_FILESYSPATH)
+            m_FileName = ShowFileOpenDialog
+        End If
+
+        Exit Function
+
+ErrorHandler:
+        Debug.Print "ShowFileOpenDialog Error: " & Err.Description
+        ShowFileOpenDialog = ""
+    End Function
+
+    '=====================================================================
+    ' 私有方法 - IFileSaveDialog 实现
+    '=====================================================================
+    Private Function ShowFileSaveDialog() As String
+        On Error GoTo ErrorHandler
+
+        Dim hr As Long
+        Dim pFileSaveDialog As IFileSaveDialog
+        Dim pShellItem As IShellItem
+
+        ' 创建 IFileSaveDialog 实例
+        hr = CoCreateInstance(GetCLSID_FileSaveDialog(), 0, CLSCTX_INPROC_SERVER, GetIID_IFileSaveDialog(), pFileSaveDialog)
+        If hr <> S_OK Then
+            Debug.Print "ShowFileSaveDialog: CoCreateInstance failed hr=" & Hex(hr)
+            ShowFileSaveDialog = ""
+            Exit Function
+        End If
+
+        ' 设置标题
+        If Len(m_DialogTitle) > 0 Then
+            pFileSaveDialog.SetTitle m_DialogTitle
+        End If
+
+        ' 设置文件名（预填）
+        If Len(m_FileName) > 0 Then
+            pFileSaveDialog.SetFileName m_FileName
+        End If
+
+        ' 设置默认扩展名
+        If Len(m_DefaultExt) > 0 Then
+            pFileSaveDialog.SetDefaultExtension m_DefaultExt
+        End If
+
+        ' 设置过滤器
+        If Len(m_Filter) > 0 Then
+            Dim arrFilters() As COMDLG_FILTERSPEC
+            Dim arrNames() As String
+            Dim arrSpecs() As String
+            Dim nFilterCount As Long
+
+            nFilterCount = ParseFilter(arrFilters, arrNames, arrSpecs)
+            If nFilterCount > 0 Then
+                pFileSaveDialog.SetFileTypes nFilterCount, arrFilters(0)
+
+                If m_FilterIndex > 0 Then
+                    pFileSaveDialog.SetFileTypeIndex m_FilterIndex
+                End If
+            End If
+        End If
+
+        ' 设置初始目录
+        If Len(m_InitialDir) > 0 Then
+            ApplyInitialDir pFileSaveDialog
+        End If
+
+        ' 设置选项
+        Dim options As Long
+        options = FOS_FORCEFILESYSTEM
+
+        If m_OverwritePrompt Then options = options Or FOS_OVERWRITEPROMPT
+        If m_PathMustExist Then options = options Or FOS_PATHMUSTEXIST
+        If m_NoChangeDir Then options = options Or FOS_NOCHANGEDIR
+
+        pFileSaveDialog.SetOptions options
+
+        ' 存储 IFileDialog 引用（回调中通过 interface 赋值 QI 获取 IOleWindow）
+        Set m_pFileDialog = pFileSaveDialog
+
+        ' 注册事件回调（用于设置自定义图标）
+        SetupIconSink
+
+        ' 显示对话框
+        hr = pFileSaveDialog.Show(m_OwnerHwnd)
+
+        ' 注销事件回调
+        CleanupIconSink
+
+        ' 释放 IFileDialog 引用
+        Set m_pFileDialog = Nothing
+
+        If hr <> S_OK Then
+            Debug.Print "ShowFileSaveDialog: Show returned hr=" & Hex(hr)
+            ' 用户取消
+            ShowFileSaveDialog = ""
+            Exit Function
+        End If
+
+        ' 获取结果（直接传递接口变量）
+        pFileSaveDialog.GetResult pShellItem
+
+        ' 获取文件名
+        ShowFileSaveDialog = GetDisplayNameFromShellItem(pShellItem, SIGDN_FILESYSPATH)
+        
+        ' 保存结果
+        m_FileName = ShowFileSaveDialog
+
+        Exit Function
+
+ErrorHandler:
+        Debug.Print "ShowFileSaveDialog Error: " & Err.Description
+        ShowFileSaveDialog = ""
+    End Function
+
+    '=====================================================================
+    ' 私有方法 - 文件夹对话框实现
+    '=====================================================================
+    Private Function ShowFolderDialog() As String
+        On Error GoTo ErrorHandler
+
+        Dim hr As Long
+        Dim pFileOpenDialog As IFileOpenDialog
+        Dim pShellItem As IShellItem
+
+        ' 创建 IFileOpenDialog 实例
+        hr = CoCreateInstance(GetCLSID_FileOpenDialog(), 0, CLSCTX_INPROC_SERVER, GetIID_IFileOpenDialog(), pFileOpenDialog)
+        If hr <> S_OK Then
+            ShowFolderDialog = ""
+            Exit Function
+        End If
+
+        ' 设置标题
+        If Len(m_DialogTitle) > 0 Then
+            pFileOpenDialog.SetTitle m_DialogTitle
+        Else
+            pFileOpenDialog.SetTitle "选择文件夹"
+        End If
+
+        ' 设置初始目录
+        If Len(m_InitialDir) > 0 Then
+            ApplyInitialDir pFileOpenDialog
+        End If
+
+        ' 设置选项 - 使用 FOS_PICKFOLDERS 实现文件夹选择
+        Dim options As Long
+        options = FOS_PICKFOLDERS Or FOS_FORCEFILESYSTEM Or FOS_PATHMUSTEXIST
+
+        If m_NoChangeDir Then options = options Or FOS_NOCHANGEDIR
+
+        pFileOpenDialog.SetOptions options
+
+        ' 存储 IFileDialog 引用（回调中通过 interface 赋值 QI 获取 IOleWindow）
+        Set m_pFileDialog = pFileOpenDialog
+
+        ' 注册事件回调（用于设置自定义图标）
+        SetupIconSink
+
+        ' 显示对话框
+        hr = pFileOpenDialog.Show(m_OwnerHwnd)
+
+        ' 注销事件回调
+        CleanupIconSink
+
+        ' 释放 IFileDialog 引用
+        Set m_pFileDialog = Nothing
+
+        If hr <> S_OK Then
+            ' 用户取消
+            ShowFolderDialog = ""
+            Exit Function
+        End If
+
+        ' 获取结果（直接传递接口变量）
+        pFileOpenDialog.GetResult pShellItem
+
+        ' 获取文件夹路径
+        ShowFolderDialog = GetDisplayNameFromShellItem(pShellItem, SIGDN_FILESYSPATH)
+        
+        ' 保存结果
+        m_FileName = ShowFolderDialog
+
+        Exit Function
+
+ErrorHandler:
+        Debug.Print "ShowFolderDialog Error: " & Err.Description
+        ShowFolderDialog = ""
+    End Function
+
+    '=====================================================================
+    ' 私有方法 - 设置初始目录（通过 SHCreateItemFromParsingName）
+    '=====================================================================
+    Private Sub ApplyInitialDir(ByRef pFileDialog As IFileDialog)
+        On Error Resume Next
+
+        Dim hr As Long
+        Dim pFolderItem As IShellItem
+
+        hr = SHCreateItemFromParsingName(StrPtr(m_InitialDir), 0, GetIID_IShellItem(), pFolderItem)
+        If hr = S_OK Then
+            pFileDialog.SetDefaultFolder pFolderItem
+        End If
+    End Sub
+
+    '=====================================================================
+    ' 公共方法 - 过滤器与工具函数（与 cDialog API 对齐）
+    '=====================================================================
+
+    ' 添加过滤器条目
+    Public Sub AddFilter(ByVal strDescription As String, ByVal strExtension As String)
+        If m_Filter <> "" Then
+            m_Filter = m_Filter & "|"
+        End If
+        m_Filter = m_Filter & strDescription & "|" & strExtension
+    End Sub
+
+    ' 清除过滤器
+    Public Sub ClearFilter()
+        m_Filter = ""
+    End Sub
+
+    ' 重置为默认设置
+    Public Sub Reset()
+        m_DialogTitle = ""
+        m_InitialDir = ""
+        m_FileName = ""
+        m_DefaultExt = ""
+        m_Filter = ""
+        m_FilterIndex = 0
+        m_OverwritePrompt = False
+        m_PathMustExist = False
+        m_FileMustExist = False
+        m_CreatePrompt = False
+        m_NoChangeDir = False
+        m_MultiSelect = False
+        m_PickFolders = False
+        m_OwnerHwnd = 0
+        m_AdviseCookie = 0
+        m_IconApplied = False
+        ClearIcon
+    End Sub
+
+    ' 打开文件（使用 ShellExecute）
+    Public Function OpenFile(ByVal strFilePath As String, Optional ByVal strOperation As String = "open") As LongPtr
+        OpenFile = ShellExecute(0, StrPtr(strOperation), StrPtr(strFilePath), 0, 0, 1)
+    End Function
+
+    ' 选择文件并打开
+    Public Function SelectAndOpenFile() As LongPtr
+        Dim strFile As Variant
+        Dim i As Long
+
+        strFile = Me.ShowOpen()
+
+        If VarType(strFile) = vbString Then
+            If strFile <> "" Then
+                SelectAndOpenFile = Me.OpenFile(strFile)
+            Else
+                SelectAndOpenFile = 0
+            End If
+        ElseIf IsArray(strFile) Then
+            For i = LBound(strFile) To UBound(strFile)
+                If strFile(i) <> "" Then
+                    Me.OpenFile strFile(i)
+                End If
+            Next i
+            SelectAndOpenFile = 1
+        Else
+            SelectAndOpenFile = 0
+        End If
+    End Function
+
+    ' 获取文件路径（不带文件名）
+    Public Function GetFilePath(ByVal strFullPath As String) As String
+        Dim nPos As Long
+        nPos = InStrRev(strFullPath, "\")
+        If nPos > 0 Then
+            GetFilePath = Left$(strFullPath, nPos - 1)
+        Else
+            GetFilePath = strFullPath
+        End If
+    End Function
+
+    ' 获取文件名（不带路径）
+    Public Function GetFileName(ByVal strFullPath As String) As String
+        Dim nPos As Long
+        nPos = InStrRev(strFullPath, "\")
+        If nPos > 0 Then
+            GetFileName = Mid$(strFullPath, nPos + 1)
+        Else
+            GetFileName = strFullPath
+        End If
+    End Function
+
+    ' 获取文件扩展名（包括点号）
+    Public Function GetFileExtension(ByVal strFullPath As String) As String
+        Dim nPos As Long
+        nPos = InStrRev(strFullPath, ".")
+        If nPos > 0 Then
+            GetFileExtension = Mid$(strFullPath, nPos)
+        Else
+            GetFileExtension = ""
+        End If
+    End Function
+
+    ' 获取文件名（不带扩展名）
+    Public Function GetFileNameWithoutExt(ByVal strFullPath As String) As String
+        Dim strFileName As String
+        Dim nPos As Long
+
+        strFileName = Me.GetFileName(strFullPath)
+        nPos = InStrRev(strFileName, ".")
+        If nPos > 0 Then
+            GetFileNameWithoutExt = Left$(strFileName, nPos - 1)
+        Else
+            GetFileNameWithoutExt = strFileName
+        End If
+    End Function
+
+
+    '=====================================================================
+    ' Method: PathCombine - 智能拼接两个路径，自动处理反斜杠
+    '=====================================================================
+    Public Function PathCombine(ByVal strPath1 As String, ByVal strPath2 As String) As String
+        ' 空路径处理
+        If strPath1 = "" Then
+            PathCombine = strPath2
+            Exit Function
+        End If
+        If strPath2 = "" Then
+            PathCombine = strPath1
+            Exit Function
+        End If
+
+        ' 如果 path2 是绝对路径（X:\ 或 \\），直接返回 path2
+        If Len(strPath2) >= 3 Then
+            If Mid$(strPath2, 2, 1) = ":" And Mid$(strPath2, 3, 1) = "\" Then
+                PathCombine = strPath2
+                Exit Function
+            End If
+        End If
+        If Left$(strPath2, 2) = "\\" Then
+            PathCombine = strPath2
+            Exit Function
+        End If
+
+        ' 去除 path1 末尾的反斜杠
+        If Right$(strPath1, 1) = "\" Then
+            strPath1 = Left$(strPath1, Len(strPath1) - 1)
+        End If
+
+        ' 去除 path2 开头的反斜杠
+        If Left$(strPath2, 1) = "\" Then
+            strPath2 = Mid$(strPath2, 2)
+        End If
+
+        PathCombine = strPath1 & "\" & strPath2
+    End Function
+
+    ' 预设过滤器 - 常用文件
+    Public Sub SetCommonFilters()
+        Me.ClearFilter
+        Me.AddFilter "Text Files (*.txt)", "*.txt"
+        Me.AddFilter "All Files (*.*)", "*.*"
+    End Sub
+
+    ' 预设过滤器 - 图片文件
+    Public Sub SetImageFilters()
+        Me.ClearFilter
+        Me.AddFilter "Bitmap Files (*.bmp)", "*.bmp"
+        Me.AddFilter "JPEG Files (*.jpg;*.jpeg)", "*.jpg;*.jpeg"
+        Me.AddFilter "PNG Files (*.png)", "*.png"
+        Me.AddFilter "GIF Files (*.gif)", "*.gif"
+        Me.AddFilter "All Image Files (*.bmp;*.jpg;*.jpeg;*.png;*.gif)", "*.bmp;*.jpg;*.jpeg;*.png;*.gif"
+        Me.AddFilter "All Files (*.*)", "*.*"
+    End Sub
+
+    ' 预设过滤器 - 文档文件
+    Public Sub SetDocumentFilters()
+        Me.ClearFilter
+        Me.AddFilter "Word Documents (*.doc;*.docx)", "*.doc;*.docx"
+        Me.AddFilter "Excel Workbooks (*.xls;*.xlsx)", "*.xls;*.xlsx"
+        Me.AddFilter "PowerPoint Presentations (*.ppt;*.pptx)", "*.ppt;*.pptx"
+        Me.AddFilter "PDF Documents (*.pdf)", "*.pdf"
+        Me.AddFilter "Text Files (*.txt)", "*.txt"
+        Me.AddFilter "All Files (*.*)", "*.*"
+    End Sub
+
+    ' 预设过滤器 - 代码文件
+    Public Sub SetCodeFilters()
+        Me.ClearFilter
+        Me.AddFilter "Basic Files (*.bas;*.vba)", "*.bas;*.vba"
+        Me.AddFilter "C/C++ Files (*.c;*.cpp;*.h;*.hpp)", "*.c;*.cpp;*.h;*.hpp"
+        Me.AddFilter "C# Files (*.cs)", "*.cs"
+        Me.AddFilter "Java Files (*.java)", "*.java"
+        Me.AddFilter "Python Files (*.py)", "*.py"
+        Me.AddFilter "JavaScript Files (*.js)", "*.js"
+        Me.AddFilter "HTML Files (*.html;*.htm)", "*.html;*.htm"
+        Me.AddFilter "XML Files (*.xml)", "*.xml"
+        Me.AddFilter "All Files (*.*)", "*.*"
+    End Sub
+
+    '=====================================================================
+    ' 私有方法 - GUID 辅助函数（消除内联 GUID 构造冗余）
+    '=====================================================================
+
+    ' CLSID_FileOpenDialog = {DC1C5A9C-E88A-4DDE-A5A1-60F82A20AEF7}
+    Private Function GetCLSID_FileOpenDialog() As GUID
+        Dim g As GUID
+        g.Data1 = &HDC1C5A9C
+        g.Data2 = &HE88A
+        g.Data3 = &H4DDE
+        g.Data4(0) = &HA5: g.Data4(1) = &HA1: g.Data4(2) = &H60: g.Data4(3) = &HF8
+        g.Data4(4) = &H2A: g.Data4(5) = &H20: g.Data4(6) = &HAE: g.Data4(7) = &HF7
+        GetCLSID_FileOpenDialog = g
+    End Function
+
+    ' IID_IFileOpenDialog = {D57C7288-D4AD-4768-BE02-9D969532D960}
+    Private Function GetIID_IFileOpenDialog() As GUID
+        Dim g As GUID
+        g.Data1 = &HD57C7288
+        g.Data2 = &HD4AD
+        g.Data3 = &H4768
+        g.Data4(0) = &HBE: g.Data4(1) = &H2: g.Data4(2) = &H9D: g.Data4(3) = &H96
+        g.Data4(4) = &H95: g.Data4(5) = &H32: g.Data4(6) = &HD9: g.Data4(7) = &H60
+        GetIID_IFileOpenDialog = g
+    End Function
+
+    ' CLSID_FileSaveDialog = {C0B4E2F3-BA21-4773-8DBA-335EC946EB8B}
+    Private Function GetCLSID_FileSaveDialog() As GUID
+        Dim g As GUID
+        g.Data1 = &HC0B4E2F3
+        g.Data2 = &HBA21
+        g.Data3 = &H4773
+        g.Data4(0) = &H8D: g.Data4(1) = &HBA: g.Data4(2) = &H33: g.Data4(3) = &H5E
+        g.Data4(4) = &HC9: g.Data4(5) = &H46: g.Data4(6) = &HEB: g.Data4(7) = &H8B
+        GetCLSID_FileSaveDialog = g
+    End Function
+
+    ' IID_IFileSaveDialog = {84BCCD23-5FDE-4CDB-AEA4-AF64B83D78AB}
+    Private Function GetIID_IFileSaveDialog() As GUID
+        Dim g As GUID
+        g.Data1 = &H84BCCD23
+        g.Data2 = &H5FDE
+        g.Data3 = &H4CDB
+        g.Data4(0) = &HAE: g.Data4(1) = &HA4: g.Data4(2) = &HAF: g.Data4(3) = &H64
+        g.Data4(4) = &HB8: g.Data4(5) = &H3D: g.Data4(6) = &H78: g.Data4(7) = &HAB
+        GetIID_IFileSaveDialog = g
+    End Function
+
+    ' IID_IOleWindow = {00000114-0000-0000-C000-000000000046}
+    Private Function GetIID_IOleWindow() As GUID
+        Dim g As GUID
+        g.Data1 = &H114
+        g.Data2 = &H0
+        g.Data3 = &H0
+        g.Data4(0) = &HC0: g.Data4(1) = &H0: g.Data4(2) = &H0: g.Data4(3) = &H0
+        g.Data4(4) = &H0: g.Data4(5) = &H0: g.Data4(6) = &H0: g.Data4(7) = &H46
+        GetIID_IOleWindow = g
+    End Function
+
+    ' IID_IShellItem = {43826d1e-e718-42ee-bc55-a1e261c37bfe}
+    Private Function GetIID_IShellItem() As GUID
+        Dim g As GUID
+        g.Data1 = &H43826D1E
+        g.Data2 = &HE718
+        g.Data3 = &H42EE
+        g.Data4(0) = &HBC: g.Data4(1) = &H55: g.Data4(2) = &HA1: g.Data4(3) = &HE2
+        g.Data4(4) = &H61: g.Data4(5) = &HC3: g.Data4(6) = &H37: g.Data4(7) = &HFE
+        GetIID_IShellItem = g
+    End Function
+
+    '=====================================================================
+    ' 私有方法 - IFileDialogEvents COM 事件接收器（手动 vtable 构建）
+    '=====================================================================
+
+    ' IID_IUnknown = {00000000-0000-0000-C000-000000000046}
+    Private Function GetIID_IUnknown() As GUID
+        Dim g As GUID
+        g.Data1 = &H0
+        g.Data2 = &H0
+        g.Data3 = &H0
+        g.Data4(0) = &H0: g.Data4(1) = &H0: g.Data4(2) = &H0: g.Data4(3) = &HC0
+        g.Data4(4) = &H0: g.Data4(5) = &H0: g.Data4(6) = &H0: g.Data4(7) = &H46
+        GetIID_IUnknown = g
+    End Function
+
+    ' IID_IFileDialogEvents = {9732ECAC-5184-4A3E-9A27-62E2CE1CE3D2}
+    Private Function GetIID_IFileDialogEvents() As GUID
+        Dim g As GUID
+        g.Data1 = &H9732ECAC
+        g.Data2 = &H5184
+        g.Data3 = &H4A3E
+        g.Data4(0) = &H9A: g.Data4(1) = &H27: g.Data4(2) = &H62: g.Data4(3) = &HE2
+        g.Data4(4) = &HCE: g.Data4(5) = &H1C: g.Data4(6) = &HE3: g.Data4(7) = &HD2
+        GetIID_IFileDialogEvents = g
+    End Function
+
+    ' 比较 two GUID 是否相等
+    Private Function IsEqualGUID(ByRef g1 As GUID, ByRef g2 As GUID) As Boolean
+        IsEqualGUID = (g1.Data1 = g2.Data1) AndAlso _
+                      (g1.Data2 = g2.Data2) AndAlso _
+                      (g1.Data3 = g2.Data3) AndAlso _
+                      (g1.Data4(0) = g2.Data4(0)) AndAlso _
+                      (g1.Data4(1) = g2.Data4(1)) AndAlso _
+                      (g1.Data4(2) = g2.Data4(2)) AndAlso _
+                      (g1.Data4(3) = g2.Data4(3)) AndAlso _
+                      (g1.Data4(4) = g2.Data4(4)) AndAlso _
+                      (g1.Data4(5) = g2.Data4(5)) AndAlso _
+                      (g1.Data4(6) = g2.Data4(6)) AndAlso _
+                      (g1.Data4(7) = g2.Data4(7))
+    End Function
+
+    '=====================================================================
+    ' COM 事件接收器 - 创建与销毁
+    ' 手动构建 vtable + 对象结构，模拟 COM IFileDialogEvents 接口实现
+    '=====================================================================
+
+    ' 创建 COM 事件接收器
+    ' 对象布局：[vtable_ptr (LongPtr)] [hIcon (LongPtr)] [cRef (Long, 对齐到 PtrSize)]
+    Private Sub CreateEventSink()
+        On Error Resume Next
+
+        ' 分配 vtable（10 个指针槽位）
+        m_pVTable = AllocMem(FDE_VTABLE_SLOTS * LenB(Of LongPtr))
+        If m_pVTable = 0 Then Exit Sub
+
+        ' 填充 vtable 槽位（IUnknown 3 + IFileDialogEvents 7）
+        ' 使用 AddressOf Me.method 创建绑定到当前实例的回调 thunk
+        PutMemPtr m_pVTable + 0 * LenB(Of LongPtr), AddressOf Me.Sink_QueryInterface
+        PutMemPtr m_pVTable + 1 * LenB(Of LongPtr), AddressOf Me.Sink_AddRef
+        PutMemPtr m_pVTable + 2 * LenB(Of LongPtr), AddressOf Me.Sink_Release
+        PutMemPtr m_pVTable + 3 * LenB(Of LongPtr), AddressOf Me.Sink_OnFileOk
+        PutMemPtr m_pVTable + 4 * LenB(Of LongPtr), AddressOf Me.Sink_OnFolderChanging
+        PutMemPtr m_pVTable + 5 * LenB(Of LongPtr), AddressOf Me.Sink_OnFolderChange
+        PutMemPtr m_pVTable + 6 * LenB(Of LongPtr), AddressOf Me.Sink_OnSelectionChange
+        PutMemPtr m_pVTable + 7 * LenB(Of LongPtr), AddressOf Me.Sink_OnShareViolation
+        PutMemPtr m_pVTable + 8 * LenB(Of LongPtr), AddressOf Me.Sink_OnTypeChange
+        PutMemPtr m_pVTable + 9 * LenB(Of LongPtr), AddressOf Me.Sink_OnOverwrite
+
+        ' 分配对象内存（3 个指针大小的槽位，确保对齐）
+        ' [0] vtable_ptr, [PtrSize] hIcon, [2*PtrSize] cRef(padded)
+        m_pSinkObj = AllocMem(3 * LenB(Of LongPtr))
+        If m_pSinkObj = 0 Then
+            FreeMem m_pVTable
+            m_pVTable = 0
+            Exit Sub
+        End If
+
+        ' 填充对象字段
+        PutMemPtr m_pSinkObj, m_pVTable           ' offset 0: vtable 指针
+        PutMemPtr m_pSinkObj + LenB(Of LongPtr), m_IconHandle  ' offset PtrSize: 图标句柄
+        PutMem4 m_pSinkObj + 2 * LenB(Of LongPtr), 1           ' offset 2*PtrSize: 引用计数 = 1
+
+        m_IconApplied = False
+    End Sub
+
+    ' 销毁 COM 事件接收器
+    Private Sub DestroyEventSink()
+        On Error Resume Next
+        If m_pSinkObj <> 0 Then
+            FreeMem m_pSinkObj
+            m_pSinkObj = 0
+        End If
+        If m_pVTable <> 0 Then
+            FreeMem m_pVTable
+            m_pVTable = 0
+        End If
+        m_AdviseCookie = 0
+        m_IconApplied = False
+    End Sub
+
+    '=====================================================================
+    ' COM 事件接收器 - Advise/Unadvise 生命周期管理
+    ' 通过 IFileDialog ComImport 接口直接调用 Advise/Unadvise
+    '=====================================================================
+
+    ' 注册事件回调（在 Show 之前调用）
+    Private Sub SetupIconSink()
+        On Error Resume Next
+        If m_IconHandle = 0 Then Exit Sub
+
+        ' 创建事件接收器
+        CreateEventSink
+        If m_pSinkObj = 0 Then Exit Sub
+
+        ' 通过 ComImport 接口调用 Advise（参数 ByVal LongPtr 直接传递接收器指针）
+        Dim hr As Long
+        hr = m_pFileDialog.Advise(m_pSinkObj, m_AdviseCookie)
+        If hr <> S_OK Then
+            ' Advise 失败，销毁接收器
+            DestroyEventSink
+        End If
+    End Sub
+
+    ' 注销事件回调（在 Show 之后调用）
+    Private Sub CleanupIconSink()
+        On Error Resume Next
+        If m_AdviseCookie = 0 Then
+            ' 未注册过回调，直接销毁接收器
+            If m_pSinkObj <> 0 Then DestroyEventSink
+            Exit Sub
+        End If
+
+        ' 通过 ComImport 接口调用 Unadvise
+        m_pFileDialog.Unadvise(m_AdviseCookie)
+
+        ' 销毁接收器
+        DestroyEventSink
+    End Sub
+
+    '=====================================================================
+    ' COM 事件接收器 - IFileDialogEvents 回调方法实现
+    ' 这些方法通过 AddressOf Me.method 填入 vtable
+    ' COM 调用约定：第一个参数 this 是接收器对象指针（不是 cDialogEx 实例）
+    ' AddressOf Me.method 会自动绑定当前 cDialogEx 实例（"remembers the instance"）
+    '=====================================================================
+
+    ' IUnknown::QueryInterface - 返回 IUnknown 或 IFileDialogEvents 接口指针
+    Private Function Sink_QueryInterface(ByVal this As LongPtr, ByRef riid As GUID, ByRef ppvObj As LongPtr) As Long
+        On Error Resume Next
+
+        Dim iidUnk As GUID = GetIID_IUnknown()
+        Dim iidFDE As GUID = GetIID_IFileDialogEvents()
+
+        If IsEqualGUID(riid, iidUnk) OrElse IsEqualGUID(riid, iidFDE) Then
+            ' 返回同一个对象指针（支持 IUnknown 和 IFileDialogEvents）
+            ppvObj = this
+            Sink_AddRef this
+            Sink_QueryInterface = S_OK
+        Else
+            ppvObj = 0
+            Sink_QueryInterface = E_NOINTERFACE
+        End If
+    End Function
+
+    ' IUnknown::AddRef - 伪引用计数（始终返回 2，不需要真正管理生命周期）
+    Private Function Sink_AddRef(ByVal this As LongPtr) As Long
+        On Error Resume Next
+        Dim cRef As Long
+        GetMem4 this + 2 * LenB(Of LongPtr), cRef
+        cRef = cRef + 1
+        PutMem4 this + 2 * LenB(Of LongPtr), cRef
+        Sink_AddRef = cRef
+    End Function
+
+    ' IUnknown::Release - 伪引用计数（对象由 cDialogEx 外部管理，不自动释放）
+    Private Function Sink_Release(ByVal this As LongPtr) As Long
+        On Error Resume Next
+        Dim cRef As Long
+        GetMem4 this + 2 * LenB(Of LongPtr), cRef
+        If cRef > 0 Then
+            cRef = cRef - 1
+            PutMem4 this + 2 * LenB(Of LongPtr), cRef
+        End If
+        Sink_Release = cRef
+    End Function
+
+    ' IFileDialogEvents::OnFileOk - 不实现
+    Private Function Sink_OnFileOk(ByVal this As LongPtr, ByVal pfd As LongPtr) As Long
+        On Error Resume Next
+        Sink_OnFileOk = E_NOTIMPL
+    End Function
+
+    ' IFileDialogEvents::OnFolderChanging - 不实现
+    Private Function Sink_OnFolderChanging(ByVal this As LongPtr, ByVal pfd As LongPtr, ByVal psiFolder As LongPtr) As Long
+        On Error Resume Next
+        Sink_OnFolderChanging = E_NOTIMPL
+    End Function
+
+    ' IFileDialogEvents::OnFolderChange - 核心：获取对话框 HWND 并设置图标
+    ' 使用 m_pFileDialog（通过 AddressOf thunk 可访问 Me）进行 QI 获取 IOleWindow
+    Private Function Sink_OnFolderChange(ByVal this As LongPtr, ByVal pfd As LongPtr) As Long
+        On Error Resume Next
+
+        ' 检查是否已应用图标（避免重复设置）
+        If m_IconApplied Then
+            Sink_OnFolderChange = S_OK
+            Exit Function
+        End If
+
+        ' 从接收器对象中读取图标句柄
+        Dim hIcon As LongPtr
+        GetMemPtr this + LenB(Of LongPtr), hIcon
+        If hIcon = 0 Then
+            Sink_OnFolderChange = S_OK
+            Exit Function
+        End If
+
+        ' 通过 interface 赋值实现 QI：将 IFileDialog 转为 IOleWindow
+        ' twinBASIC 自动调用 QueryInterface 进行接口转换
+        Dim pOleWindow As IOleWindow
+        Set pOleWindow = m_pFileDialog  ' 自动 QI 获取 IOleWindow 接口
+
+        If pOleWindow Is Nothing Then
+            Sink_OnFolderChange = S_OK
+            Exit Function
+        End If
+
+        ' 调用 IOleWindow::GetWindow 获取对话框窗口句柄
+        Dim hwndDlg As LongPtr
+        Dim hr As Long
+        hr = pOleWindow.GetWindow(hwndDlg)
+
+        ' 释放 IOleWindow 引用（赋值 Nothing 自动调用 Release）
+        Set pOleWindow = Nothing
+
+        If hr <> S_OK OrElse hwndDlg = 0 Then
+            Sink_OnFolderChange = S_OK
+            Exit Function
+        End If
+
+        ' 设置对话框图标（大图标和小图标）
+        SendMessageW hwndDlg, WM_SETICON, ICON_BIG, hIcon
+        SendMessageW hwndDlg, WM_SETICON, ICON_SMALL, hIcon
+
+        ' 标记图标已应用
+        m_IconApplied = True
+
+        Sink_OnFolderChange = S_OK
+    End Function
+
+    ' IFileDialogEvents::OnSelectionChange - 不实现
+    Private Function Sink_OnSelectionChange(ByVal this As LongPtr, ByVal pfd As LongPtr) As Long
+        On Error Resume Next
+        Sink_OnSelectionChange = E_NOTIMPL
+    End Function
+
+    ' IFileDialogEvents::OnShareViolation - 不实现
+    Private Function Sink_OnShareViolation(ByVal this As LongPtr, ByVal pfd As LongPtr, ByVal psi As LongPtr, ByRef pResponse As Long) As Long
+        On Error Resume Next
+        Sink_OnShareViolation = E_NOTIMPL
+    End Function
+
+    ' IFileDialogEvents::OnTypeChange - 不实现
+    Private Function Sink_OnTypeChange(ByVal this As LongPtr, ByVal pfd As LongPtr) As Long
+        On Error Resume Next
+        Sink_OnTypeChange = E_NOTIMPL
+    End Function
+
+    ' IFileDialogEvents::OnOverwrite - 不实现
+    Private Function Sink_OnOverwrite(ByVal this As LongPtr, ByVal pfd As LongPtr, ByVal psi As LongPtr, ByRef pResponse As Long) As Long
+        On Error Resume Next
+        Sink_OnOverwrite = E_NOTIMPL
+    End Function
+
+End Class

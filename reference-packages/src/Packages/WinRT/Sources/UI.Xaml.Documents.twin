@@ -1,0 +1,954 @@
+[InterfaceId("798D518E-A9F8-5FC7-8CCC-2A49069ABA05")]
+Interface IIterator_IBlock Extends IInspectable
+    Property Get Current() As IBlock
+    Property Get HasCurrent() As BooleanByte
+    Function MoveNext() As BooleanByte
+    Function GetMany(ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("F7023B9A-E6D1-5E2D-8F41-B28C33323E04")]
+Interface IIterable_IBlock Extends IInspectable
+    Function First() As IIterator_IBlock
+End Interface
+
+[InterfaceId("995F73C4-7CF8-5B59-A0FB-7E0C6477172E")]
+Interface IVectorView_IBlock Extends IInspectable
+    Function GetAt(ByVal Index As Long) As IBlock
+    Property Get Size() As Long
+    Function IndexOf(ByVal Value As IBlock, Index As Long) As BooleanByte
+    Function GetMany(ByVal StartIndex As Long, ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("3EE78A34-160E-50FF-B5AA-09F263A669F8")]
+Interface IVector_IBlock Extends IInspectable
+    Function GetAt(ByVal Index As Long) As IBlock
+    Property Get Size() As Long
+    Function GetView() As IVectorView_IBlock
+    Function IndexOf(ByVal Value As IBlock, Index As Long) As BooleanByte
+    [PreserveSig]
+    Function SetAt(ByVal Index As Long, ByVal Value As IBlock) As HRESULT
+    [PreserveSig]
+    Function InsertAt(ByVal Index As Long, ByVal Value As IBlock) As HRESULT
+    [PreserveSig]
+    Function RemoveAt(ByVal Index As Long) As HRESULT
+    [PreserveSig]
+    Function Append(ByVal Value As IBlock) As HRESULT
+    [PreserveSig]
+    Function RemoveAtEnd() As HRESULT
+    [PreserveSig]
+    Function Clear() As HRESULT
+    Function GetMany(ByVal StartIndex As Long, ByVal Length As Long, Items As Any) As Long
+    [PreserveSig]
+    Function ReplaceAll(ByVal Length As Long, Items As Any) As HRESULT
+End Interface
+
+[InterfaceId("4BCE0016-DD47-4350-8CB0-E171600AC896")]
+Interface IBlock Extends IInspectable
+    Property Get TextAlignment() As TextAlignment
+    Property Let TextAlignment(ByVal Value As TextAlignment)
+    Property Get LineHeight() As Double
+    Property Let LineHeight(ByVal Value As Double)
+    Property Get LineStackingStrategy() As LineStackingStrategy
+    Property Let LineStackingStrategy(ByVal Value As LineStackingStrategy)
+    Property Get Margin() As Thickness
+    Property Let Margin(ByVal MarginThickness As Thickness)
+End Interface
+
+[InterfaceId("5EC7BDF3-1333-4A92-8318-6CAEDC12EF89")]
+Interface IBlock2 Extends IInspectable
+    Property Get HorizontalTextAlignment() As TextAlignment
+    Property Let HorizontalTextAlignment(ByVal Value As TextAlignment)
+End Interface
+
+[InterfaceId("07110532-4F59-4F3B-9CE5-25784C430507")]
+Interface IBlockFactory Extends IInspectable
+    Function CreateInstance(Optional ByVal BaseInterface As IInspectable, Optional InnerInterface As IInspectable) As IBlock
+End Interface
+
+[InterfaceId("F86A8C34-8D18-4C53-AEBD-91E610A5E010")]
+Interface IBlockStatics Extends IInspectable
+    Property Get TextAlignmentProperty() As IDependencyProperty
+    Property Get LineHeightProperty() As IDependencyProperty
+    Property Get LineStackingStrategyProperty() As IDependencyProperty
+    Property Get MarginProperty() As IDependencyProperty
+End Interface
+
+[InterfaceId("AF01A4D6-03E3-4CEE-9B02-2BFC308B27A9")]
+Interface IBlockStatics2 Extends IInspectable
+    Property Get HorizontalTextAlignmentProperty() As IDependencyProperty
+End Interface
+
+[InterfaceId("ADE73784-1B59-4DA4-BB23-0F20E885B4BF")]
+Interface IBold Extends IInspectable
+
+End Interface
+
+[InterfaceId("F92FD29B-589B-4ABD-9D37-35A1468F021E")]
+Interface IContactContentLinkProvider Extends IInspectable
+
+End Interface
+
+[InterfaceId("51BA1AF0-354E-5868-B10B-8748E55A6370")]
+Interface ITypedEventHandlerContentLinkInvoked Extends IUnknown
+    Sub Invoke(ByVal Sender As IContentLink, ByVal Args As IContentLinkInvokedEventArgs)
+End Interface
+
+[InterfaceId("6C60C3E1-528C-42F8-92BE-34B8C68BE304")]
+Interface IContentLink Extends IInspectable
+    Property Get Info() As IContentLinkInfo
+    Property Set Info(ByVal Value As IContentLinkInfo)
+    Property Get Background() As IBrush
+    Property Set Background(ByVal Value As IBrush)
+    Property Get Cursor() As CoreCursorType
+    Property Let Cursor(ByVal Value As CoreCursorType)
+    Property Get XYFocusLeft() As IDependencyObject
+    Property Set XYFocusLeft(ByVal Value As IDependencyObject)
+    Property Get XYFocusRight() As IDependencyObject
+    Property Set XYFocusRight(ByVal Value As IDependencyObject)
+    Property Get XYFocusUp() As IDependencyObject
+    Property Set XYFocusUp(ByVal Value As IDependencyObject)
+    Property Get XYFocusDown() As IDependencyObject
+    Property Set XYFocusDown(ByVal Value As IDependencyObject)
+    Property Get ElementSoundMode() As ElementSoundMode
+    Property Let ElementSoundMode(ByVal Value As ElementSoundMode)
+    Property Get FocusState() As FocusState
+    Property Get XYFocusUpNavigationStrategy() As XYFocusNavigationStrategy
+    Property Let XYFocusUpNavigationStrategy(ByVal Value As XYFocusNavigationStrategy)
+    Property Get XYFocusDownNavigationStrategy() As XYFocusNavigationStrategy
+    Property Let XYFocusDownNavigationStrategy(ByVal Value As XYFocusNavigationStrategy)
+    Property Get XYFocusLeftNavigationStrategy() As XYFocusNavigationStrategy
+    Property Let XYFocusLeftNavigationStrategy(ByVal Value As XYFocusNavigationStrategy)
+    Property Get XYFocusRightNavigationStrategy() As XYFocusNavigationStrategy
+    Property Let XYFocusRightNavigationStrategy(ByVal Value As XYFocusNavigationStrategy)
+    Property Get IsTabStop() As BooleanByte
+    Property Let IsTabStop(ByVal Value As BooleanByte)
+    Property Get TabIndex() As Long
+    Property Let TabIndex(ByVal Value As Long)
+    [PreserveSig]
+    Function AddInvoked(ByVal Handler As ITypedEventHandlerContentLinkInvoked, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveInvoked(ByVal Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function AddGotFocus(ByVal Handler As IRoutedEventHandler, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveGotFocus(ByVal Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function AddLostFocus(ByVal Handler As IRoutedEventHandler, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveLostFocus(ByVal Token As EventRegistrationToken) As HRESULT
+    Function Focus(ByVal Value As FocusState) As BooleanByte
+End Interface
+
+[InterfaceId("546717C1-E8DF-4593-9639-97595FDF8310")]
+Interface IContentLinkInvokedEventArgs Extends IInspectable
+    Property Get ContentLinkInfo() As IContentLinkInfo
+    Property Get Handled() As BooleanByte
+    Property Let Handled(ByVal Value As BooleanByte)
+End Interface
+
+[InterfaceId("730587FD-BFDC-4CB3-904D-B65AB339BBF5")]
+Interface IContentLinkProvider Extends IInspectable
+
+End Interface
+
+[InterfaceId("63E9B404-2FC1-59B1-AB76-CDB9A4530C0D")]
+Interface IIterator_IContentLinkProvider Extends IInspectable
+    Property Get Current() As IContentLinkProvider
+    Property Get HasCurrent() As BooleanByte
+    Function MoveNext() As BooleanByte
+    Function GetMany(ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("193A81BB-D85C-5CD3-A130-A1D08EAAF4BE")]
+Interface IIterable_IContentLinkProvider Extends IInspectable
+    Function First() As IIterator_IContentLinkProvider
+End Interface
+
+[InterfaceId("6548AA5F-3FD4-5BEA-9BD5-138B5BD899FE")]
+Interface IVectorView_IContentLinkProvider Extends IInspectable
+    Function GetAt(ByVal Index As Long) As IContentLinkProvider
+    Property Get Size() As Long
+    Function IndexOf(ByVal Value As IContentLinkProvider, Index As Long) As BooleanByte
+    Function GetMany(ByVal StartIndex As Long, ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("E69EF1B6-2EB1-5E9C-BC41-B94D396281E4")]
+Interface IVector_IContentLinkProvider Extends IInspectable
+    Function GetAt(ByVal Index As Long) As IContentLinkProvider
+    Property Get Size() As Long
+    Function GetView() As IVectorView_IContentLinkProvider
+    Function IndexOf(ByVal Value As IContentLinkProvider, Index As Long) As BooleanByte
+    [PreserveSig]
+    Function SetAt(ByVal Index As Long, ByVal Value As IContentLinkProvider) As HRESULT
+    [PreserveSig]
+    Function InsertAt(ByVal Index As Long, ByVal Value As IContentLinkProvider) As HRESULT
+    [PreserveSig]
+    Function RemoveAt(ByVal Index As Long) As HRESULT
+    [PreserveSig]
+    Function Append(ByVal Value As IContentLinkProvider) As HRESULT
+    [PreserveSig]
+    Function RemoveAtEnd() As HRESULT
+    [PreserveSig]
+    Function Clear() As HRESULT
+    Function GetMany(ByVal StartIndex As Long, ByVal Length As Long, Items As Any) As Long
+    [PreserveSig]
+    Function ReplaceAll(ByVal Length As Long, Items As Any) As HRESULT
+End Interface
+
+[InterfaceId("F5B84D0C-A9F4-4D1A-A13C-10DEF1843734")]
+Interface IContentLinkProviderCollection Extends IInspectable
+
+End Interface
+
+[InterfaceId("57D60D3B-EF1A-4E8E-839B-D36EF3A503E0")]
+Interface IContentLinkProviderFactory Extends IInspectable
+    Function CreateInstance(Optional ByVal BaseInterface As IInspectable, Optional InnerInterface As IInspectable) As IContentLinkProvider
+End Interface
+
+[InterfaceId("A34E3063-EB16-484E-A3DF-522B9A832E6E")]
+Interface IContentLinkStatics Extends IInspectable
+    Property Get BackgroundProperty() As IDependencyProperty
+    Property Get CursorProperty() As IDependencyProperty
+    Property Get XYFocusLeftProperty() As IDependencyProperty
+    Property Get XYFocusRightProperty() As IDependencyProperty
+    Property Get XYFocusUpProperty() As IDependencyProperty
+    Property Get XYFocusDownProperty() As IDependencyProperty
+    Property Get ElementSoundModeProperty() As IDependencyProperty
+    Property Get FocusStateProperty() As IDependencyProperty
+    Property Get XYFocusUpNavigationStrategyProperty() As IDependencyProperty
+    Property Get XYFocusDownNavigationStrategyProperty() As IDependencyProperty
+    Property Get XYFocusLeftNavigationStrategyProperty() As IDependencyProperty
+    Property Get XYFocusRightNavigationStrategyProperty() As IDependencyProperty
+    Property Get IsTabStopProperty() As IDependencyProperty
+    Property Get TabIndexProperty() As IDependencyProperty
+End Interface
+
+[InterfaceId("D079498B-F2B1-4281-99A2-E4D05932B2B5")]
+Interface IGlyphs Extends IInspectable
+    Property Get UnicodeString() As LongPtr
+    Property Let UnicodeString(ByVal Value As LongPtr)
+    Property Get Indices() As LongPtr
+    Property Let Indices(ByVal Value As LongPtr)
+    Property Get FontUri() As IUri
+    Property Set FontUri(ByVal Value As IUri)
+    Property Get StyleSimulations() As StyleSimulations
+    Property Let StyleSimulations(ByVal Value As StyleSimulations)
+    Property Get FontRenderingEmSize() As Double
+    Property Let FontRenderingEmSize(ByVal Value As Double)
+    Property Get OriginX() As Double
+    Property Let OriginX(ByVal Value As Double)
+    Property Get OriginY() As Double
+    Property Let OriginY(ByVal Value As Double)
+    Property Get Fill() As IBrush
+    Property Set Fill(ByVal Value As IBrush)
+End Interface
+
+[InterfaceId("AA8BFE5C-3754-4BEE-BBE1-4403EE9B86F0")]
+Interface IGlyphs2 Extends IInspectable
+    Property Get IsColorFontEnabled() As BooleanByte
+    Property Let IsColorFontEnabled(ByVal Value As BooleanByte)
+    Property Get ColorFontPaletteIndex() As Long
+    Property Let ColorFontPaletteIndex(ByVal Value As Long)
+End Interface
+
+[InterfaceId("225CF4C5-FDF1-43ED-958F-414E86F103F2")]
+Interface IGlyphsStatics Extends IInspectable
+    Property Get UnicodeStringProperty() As IDependencyProperty
+    Property Get IndicesProperty() As IDependencyProperty
+    Property Get FontUriProperty() As IDependencyProperty
+    Property Get StyleSimulationsProperty() As IDependencyProperty
+    Property Get FontRenderingEmSizeProperty() As IDependencyProperty
+    Property Get OriginXProperty() As IDependencyProperty
+    Property Get OriginYProperty() As IDependencyProperty
+    Property Get FillProperty() As IDependencyProperty
+End Interface
+
+[InterfaceId("10489AA7-1615-4A33-AA02-D7EF2AEFC739")]
+Interface IGlyphsStatics2 Extends IInspectable
+    Property Get IsColorFontEnabledProperty() As IDependencyProperty
+    Property Get ColorFontPaletteIndexProperty() As IDependencyProperty
+End Interface
+
+[InterfaceId("5FEAD0D2-E657-5AEF-A91B-7F52EAD17FE3")]
+Interface ITypedEventHandlerHyperlinkClick Extends IUnknown
+    Sub Invoke(ByVal Sender As IHyperlink, ByVal Args As IHyperlinkClickEventArgs)
+End Interface
+
+[InterfaceId("0FE2363B-14E9-4152-9E58-5AEA5B21F08D")]
+Interface IHyperlink Extends IInspectable
+    Property Get NavigateUri() As IUri
+    Property Set NavigateUri(ByVal Value As IUri)
+    [PreserveSig]
+    Function AddClick(ByVal Handler As ITypedEventHandlerHyperlinkClick, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveClick(ByVal Token As EventRegistrationToken) As HRESULT
+End Interface
+
+[InterfaceId("4CE9DA5F-7CFF-4291-B78F-DFEC72490576")]
+Interface IHyperlink2 Extends IInspectable
+    Property Get UnderlineStyle() As UnderlineStyle
+    Property Let UnderlineStyle(ByVal Value As UnderlineStyle)
+End Interface
+
+[InterfaceId("C3F157D9-E5D3-4FB7-8702-4F6D85DD9E0A")]
+Interface IHyperlink3 Extends IInspectable
+    Property Get XYFocusLeft() As IDependencyObject
+    Property Set XYFocusLeft(ByVal Value As IDependencyObject)
+    Property Get XYFocusRight() As IDependencyObject
+    Property Set XYFocusRight(ByVal Value As IDependencyObject)
+    Property Get XYFocusUp() As IDependencyObject
+    Property Set XYFocusUp(ByVal Value As IDependencyObject)
+    Property Get XYFocusDown() As IDependencyObject
+    Property Set XYFocusDown(ByVal Value As IDependencyObject)
+    Property Get ElementSoundMode() As ElementSoundMode
+    Property Let ElementSoundMode(ByVal Value As ElementSoundMode)
+End Interface
+
+[InterfaceId("F7D02959-82FB-400A-A407-5A4EE677988A")]
+Interface IHyperlink4 Extends IInspectable
+    Property Get FocusState() As FocusState
+    Property Get XYFocusUpNavigationStrategy() As XYFocusNavigationStrategy
+    Property Let XYFocusUpNavigationStrategy(ByVal Value As XYFocusNavigationStrategy)
+    Property Get XYFocusDownNavigationStrategy() As XYFocusNavigationStrategy
+    Property Let XYFocusDownNavigationStrategy(ByVal Value As XYFocusNavigationStrategy)
+    Property Get XYFocusLeftNavigationStrategy() As XYFocusNavigationStrategy
+    Property Let XYFocusLeftNavigationStrategy(ByVal Value As XYFocusNavigationStrategy)
+    Property Get XYFocusRightNavigationStrategy() As XYFocusNavigationStrategy
+    Property Let XYFocusRightNavigationStrategy(ByVal Value As XYFocusNavigationStrategy)
+    [PreserveSig]
+    Function AddGotFocus(ByVal Handler As IRoutedEventHandler, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveGotFocus(ByVal Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function AddLostFocus(ByVal Handler As IRoutedEventHandler, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveLostFocus(ByVal Token As EventRegistrationToken) As HRESULT
+    Function Focus(ByVal Value As FocusState) As BooleanByte
+End Interface
+
+[InterfaceId("607DD7D2-0945-4328-91EE-94CCEC2EA6C3")]
+Interface IHyperlink5 Extends IInspectable
+    Property Get IsTabStop() As BooleanByte
+    Property Let IsTabStop(ByVal Value As BooleanByte)
+    Property Get TabIndex() As Long
+    Property Let TabIndex(ByVal Value As Long)
+End Interface
+
+[InterfaceId("C755916B-7BDC-4BE7-B373-9240A503D870")]
+Interface IHyperlinkClickEventArgs Extends IInspectable
+
+End Interface
+
+[InterfaceId("3A44D3D4-FD41-41DB-8C72-3B790ACD9FD3")]
+Interface IHyperlinkStatics Extends IInspectable
+    Property Get NavigateUriProperty() As IDependencyProperty
+End Interface
+
+[InterfaceId("5028D8B7-7ADF-43EE-A4AE-9C925F755716")]
+Interface IHyperlinkStatics2 Extends IInspectable
+    Property Get UnderlineStyleProperty() As IDependencyProperty
+End Interface
+
+[InterfaceId("3E15DEA0-205E-4947-99A5-74E757E8E1B4")]
+Interface IHyperlinkStatics3 Extends IInspectable
+    Property Get XYFocusLeftProperty() As IDependencyProperty
+    Property Get XYFocusRightProperty() As IDependencyProperty
+    Property Get XYFocusUpProperty() As IDependencyProperty
+    Property Get XYFocusDownProperty() As IDependencyProperty
+    Property Get ElementSoundModeProperty() As IDependencyProperty
+End Interface
+
+[InterfaceId("0476B378-8FAA-4E24-B3B6-E9DE4D3C708C")]
+Interface IHyperlinkStatics4 Extends IInspectable
+    Property Get FocusStateProperty() As IDependencyProperty
+    Property Get XYFocusUpNavigationStrategyProperty() As IDependencyProperty
+    Property Get XYFocusDownNavigationStrategyProperty() As IDependencyProperty
+    Property Get XYFocusLeftNavigationStrategyProperty() As IDependencyProperty
+    Property Get XYFocusRightNavigationStrategyProperty() As IDependencyProperty
+End Interface
+
+[InterfaceId("59308CEA-1E49-4921-BD88-A2878D07E30E")]
+Interface IHyperlinkStatics5 Extends IInspectable
+    Property Get IsTabStopProperty() As IDependencyProperty
+    Property Get TabIndexProperty() As IDependencyProperty
+End Interface
+
+[InterfaceId("0C92712D-1BC9-4931-8CB1-1AEADF1CC685")]
+Interface IInline Extends IInspectable
+
+End Interface
+
+[InterfaceId("4058ACD1-2F90-4B8F-99DD-4218EF5F03DE")]
+Interface IInlineFactory Extends IInspectable
+    Function CreateInstance(Optional ByVal BaseInterface As IInspectable, Optional InnerInterface As IInspectable) As IInline
+End Interface
+
+[InterfaceId("1416CE81-28EE-452E-B121-5FC4F60B86A6")]
+Interface IInlineUIContainer Extends IInspectable
+    Property Get Child() As IUIElement
+    Property Set Child(ByVal Value As IUIElement)
+End Interface
+
+[InterfaceId("91F4619C-FCBB-4157-802C-76F63B5FB657")]
+Interface IItalic Extends IInspectable
+
+End Interface
+
+[InterfaceId("645589C4-F769-41ED-895B-8A1B2FB31562")]
+Interface ILineBreak Extends IInspectable
+
+End Interface
+
+[InterfaceId("F80DC964-2542-5C6A-BA65-B04824B5ED75")]
+Interface IIterator_IInline Extends IInspectable
+    Property Get Current() As IInline
+    Property Get HasCurrent() As BooleanByte
+    Function MoveNext() As BooleanByte
+    Function GetMany(ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("E1D2B910-18C2-5906-8F8A-D62A63F93F18")]
+Interface IIterable_IInline Extends IInspectable
+    Function First() As IIterator_IInline
+End Interface
+
+[InterfaceId("C2DD082F-8CB4-51D6-B91B-7E2377780CEE")]
+Interface IVectorView_IInline Extends IInspectable
+    Function GetAt(ByVal Index As Long) As IInline
+    Property Get Size() As Long
+    Function IndexOf(ByVal Value As IInline, Index As Long) As BooleanByte
+    Function GetMany(ByVal StartIndex As Long, ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("92EC9252-8EE3-55D6-84B4-30B635077778")]
+Interface IVector_IInline Extends IInspectable
+    Function GetAt(ByVal Index As Long) As IInline
+    Property Get Size() As Long
+    Function GetView() As IVectorView_IInline
+    Function IndexOf(ByVal Value As IInline, Index As Long) As BooleanByte
+    [PreserveSig]
+    Function SetAt(ByVal Index As Long, ByVal Value As IInline) As HRESULT
+    [PreserveSig]
+    Function InsertAt(ByVal Index As Long, ByVal Value As IInline) As HRESULT
+    [PreserveSig]
+    Function RemoveAt(ByVal Index As Long) As HRESULT
+    [PreserveSig]
+    Function Append(ByVal Value As IInline) As HRESULT
+    [PreserveSig]
+    Function RemoveAtEnd() As HRESULT
+    [PreserveSig]
+    Function Clear() As HRESULT
+    Function GetMany(ByVal StartIndex As Long, ByVal Length As Long, Items As Any) As Long
+    [PreserveSig]
+    Function ReplaceAll(ByVal Length As Long, Items As Any) As HRESULT
+End Interface
+
+[InterfaceId("F83EF59A-FA61-4BEF-AE33-0B0AD756A84D")]
+Interface IParagraph Extends IInspectable
+    Property Get Inlines() As IVector_IInline
+    Property Get TextIndent() As Double
+    Property Let TextIndent(ByVal Value As Double)
+End Interface
+
+[InterfaceId("EF08889A-535B-4E4C-8D84-283B33E98A37")]
+Interface IParagraphStatics Extends IInspectable
+    Property Get TextIndentProperty() As IDependencyProperty
+End Interface
+
+[InterfaceId("10348A4C-2366-41BE-90C8-3258B53B5483")]
+Interface IPlaceContentLinkProvider Extends IInspectable
+
+End Interface
+
+[InterfaceId("59553C83-0E14-49BD-B84B-C526F3034349")]
+Interface IRun Extends IInspectable
+    Property Get Text() As LongPtr
+    Property Let Text(ByVal Value As LongPtr)
+    Property Get FlowDirection() As FlowDirection
+    Property Let FlowDirection(ByVal Value As FlowDirection)
+End Interface
+
+[InterfaceId("E9303CEF-65A0-4B8D-A7F7-8FDB287B46F3")]
+Interface IRunStatics Extends IInspectable
+    Property Get FlowDirectionProperty() As IDependencyProperty
+End Interface
+
+[InterfaceId("9839D4A9-02AF-4811-AA15-6BEF3ACAC97A")]
+Interface ISpan Extends IInspectable
+    Property Get Inlines() As IVector_IInline
+    Property Set Inlines(ByVal Value As IVector_IInline)
+End Interface
+
+[InterfaceId("5B916F5C-CD2D-40C0-956A-386448322F79")]
+Interface ISpanFactory Extends IInspectable
+    Function CreateInstance(Optional ByVal BaseInterface As IInspectable, Optional InnerInterface As IInspectable) As ISpan
+End Interface
+
+[InterfaceId("E83B0062-D776-4F92-BAEA-40E77D4791D5")]
+Interface ITextElement Extends IInspectable
+    Property Get Name() As LongPtr
+    Property Get FontSize() As Double
+    Property Let FontSize(ByVal Value As Double)
+    Property Get FontFamily() As IFontFamily
+    Property Set FontFamily(ByVal Value As IFontFamily)
+    Property Get FontWeight() As FontWeight
+    Property Let FontWeight(ByVal Value As FontWeight)
+    Property Get FontStyle() As FontStyle
+    Property Let FontStyle(ByVal Value As FontStyle)
+    Property Get FontStretch() As FontStretch
+    Property Let FontStretch(ByVal Value As FontStretch)
+    Property Get CharacterSpacing() As Long
+    Property Let CharacterSpacing(ByVal Value As Long)
+    Property Get Foreground() As IBrush
+    Property Set Foreground(ByVal Value As IBrush)
+    Property Get Language() As LongPtr
+    Property Let Language(ByVal Value As LongPtr)
+    Property Get ContentStart() As ITextPointer
+    Property Get ContentEnd() As ITextPointer
+    Property Get ElementStart() As ITextPointer
+    Property Get ElementEnd() As ITextPointer
+    Function FindName(ByVal Name As LongPtr) As IInspectable
+End Interface
+
+[InterfaceId("A8076AA8-F892-49F6-8CD2-89ADDAF06D2D")]
+Interface ITextElement2 Extends IInspectable
+    Property Get IsTextScaleFactorEnabled() As BooleanByte
+    Property Let IsTextScaleFactorEnabled(ByVal Value As BooleanByte)
+End Interface
+
+[InterfaceId("D1DB340F-1BC4-4CA8-BCF7-770BFF9B27AB")]
+Interface ITextElement3 Extends IInspectable
+    Property Get AllowFocusOnInteraction() As BooleanByte
+    Property Let AllowFocusOnInteraction(ByVal Value As BooleanByte)
+    Property Get AccessKey() As LongPtr
+    Property Let AccessKey(ByVal Value As LongPtr)
+    Property Get ExitDisplayModeOnAccessKeyInvoked() As BooleanByte
+    Property Let ExitDisplayModeOnAccessKeyInvoked(ByVal Value As BooleanByte)
+End Interface
+
+[InterfaceId("A8C9544B-7078-5316-BEB6-D9EC916AB88A")]
+Interface ITypedEventHandlerTextElementAccessKeyDisplayDismissed Extends IUnknown
+    Sub Invoke(ByVal Sender As ITextElement, ByVal Args As IAccessKeyDisplayDismissedEventArgs)
+End Interface
+
+[InterfaceId("39AD7708-254E-560A-9E2E-73B1DB31F935")]
+Interface ITypedEventHandlerTextElementAccessKeyDisplayRequested Extends IUnknown
+    Sub Invoke(ByVal Sender As ITextElement, ByVal Args As IAccessKeyDisplayRequestedEventArgs)
+End Interface
+
+[InterfaceId("A72C6B01-2E3C-57B5-9EC4-948F6C6D930A")]
+Interface ITypedEventHandlerTextElementAccessKeyInvoked Extends IUnknown
+    Sub Invoke(ByVal Sender As ITextElement, ByVal Args As IAccessKeyInvokedEventArgs)
+End Interface
+
+[InterfaceId("B196E222-CA0E-48A9-83BC-36CE50566AC7")]
+Interface ITextElement4 Extends IInspectable
+    Property Get TextDecorations() As TextDecorations
+    Property Let TextDecorations(ByVal Value As TextDecorations)
+    Property Get IsAccessKeyScope() As BooleanByte
+    Property Let IsAccessKeyScope(ByVal Value As BooleanByte)
+    Property Get AccessKeyScopeOwner() As IDependencyObject
+    Property Set AccessKeyScopeOwner(ByVal Value As IDependencyObject)
+    Property Get KeyTipPlacementMode() As KeyTipPlacementMode
+    Property Let KeyTipPlacementMode(ByVal Value As KeyTipPlacementMode)
+    Property Get KeyTipHorizontalOffset() As Double
+    Property Let KeyTipHorizontalOffset(ByVal Value As Double)
+    Property Get KeyTipVerticalOffset() As Double
+    Property Let KeyTipVerticalOffset(ByVal Value As Double)
+    [PreserveSig]
+    Function AddAccessKeyDisplayRequested(ByVal Handler As ITypedEventHandlerTextElementAccessKeyDisplayRequested, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveAccessKeyDisplayRequested(ByVal Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function AddAccessKeyDisplayDismissed(ByVal Handler As ITypedEventHandlerTextElementAccessKeyDisplayDismissed, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveAccessKeyDisplayDismissed(ByVal Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function AddAccessKeyInvoked(ByVal Handler As ITypedEventHandlerTextElementAccessKeyInvoked, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveAccessKeyInvoked(ByVal Token As EventRegistrationToken) As HRESULT
+End Interface
+
+[InterfaceId("BD9552F3-540D-58BF-B6A8-07556AEDA2EA")]
+Interface ITextElement5 Extends IInspectable
+    Property Get XamlRoot() As IXamlRoot
+    Property Set XamlRoot(ByVal Value As IXamlRoot)
+End Interface
+
+[InterfaceId("35007285-CF47-4BFE-B1BC-39C93AF4AE80")]
+Interface ITextElementFactory Extends IInspectable
+
+End Interface
+
+[InterfaceId("0CE21EE7-4F76-4DD9-BF91-163BECCF84BC")]
+Interface ITextElementOverrides Extends IInspectable
+    [PreserveSig]
+    Function OnDisconnectVisualChildren() As HRESULT
+End Interface
+
+[InterfaceId("0A2F9B98-6C03-4470-A79B-3298A10482CE")]
+Interface ITextElementStatics Extends IInspectable
+    Property Get FontSizeProperty() As IDependencyProperty
+    Property Get FontFamilyProperty() As IDependencyProperty
+    Property Get FontWeightProperty() As IDependencyProperty
+    Property Get FontStyleProperty() As IDependencyProperty
+    Property Get FontStretchProperty() As IDependencyProperty
+    Property Get CharacterSpacingProperty() As IDependencyProperty
+    Property Get ForegroundProperty() As IDependencyProperty
+    Property Get LanguageProperty() As IDependencyProperty
+End Interface
+
+[InterfaceId("164297B2-982B-49E1-8C03-CA43BC4D5B6D")]
+Interface ITextElementStatics2 Extends IInspectable
+    Property Get IsTextScaleFactorEnabledProperty() As IDependencyProperty
+End Interface
+
+[InterfaceId("CFEFCFAF-0FA1-45EC-9A4E-9B33664DC8B1")]
+Interface ITextElementStatics3 Extends IInspectable
+    Property Get AllowFocusOnInteractionProperty() As IDependencyProperty
+    Property Get AccessKeyProperty() As IDependencyProperty
+    Property Get ExitDisplayModeOnAccessKeyInvokedProperty() As IDependencyProperty
+End Interface
+
+[InterfaceId("FD8F641E-6B12-40D5-B6EF-D1BD12AC9066")]
+Interface ITextElementStatics4 Extends IInspectable
+    Property Get TextDecorationsProperty() As IDependencyProperty
+    Property Get IsAccessKeyScopeProperty() As IDependencyProperty
+    Property Get AccessKeyScopeOwnerProperty() As IDependencyProperty
+    Property Get KeyTipPlacementModeProperty() As IDependencyProperty
+    Property Get KeyTipHorizontalOffsetProperty() As IDependencyProperty
+    Property Get KeyTipVerticalOffsetProperty() As IDependencyProperty
+End Interface
+
+[InterfaceId("71F63622-C0FE-5423-914E-D319D25BCC84")]
+Interface IIterator_TextRange Extends IInspectable
+    Property Get Current() As TextRange
+    Property Get HasCurrent() As BooleanByte
+    Function MoveNext() As BooleanByte
+    Function GetMany(ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("2AD42FDB-56DB-500B-8EA8-3D57EDFADFC6")]
+Interface IIterable_TextRange Extends IInspectable
+    Function First() As IIterator_TextRange
+End Interface
+
+[InterfaceId("C824D1D0-771A-5123-90CC-52281F0F287A")]
+Interface IVectorView_TextRange Extends IInspectable
+    Function GetAt(ByVal Index As Long) As TextRange
+    Property Get Size() As Long
+    Function IndexOf(ByVal Value As TextRange, Index As Long) As BooleanByte
+    Function GetMany(ByVal StartIndex As Long, ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("EE9D4CDA-0750-5C1F-93AA-59ADD8C1421B")]
+Interface IVector_TextRange Extends IInspectable
+    Function GetAt(ByVal Index As Long) As TextRange
+    Property Get Size() As Long
+    Function GetView() As IVectorView_TextRange
+    Function IndexOf(ByVal Value As TextRange, Index As Long) As BooleanByte
+    [PreserveSig]
+    Function SetAt(ByVal Index As Long, ByVal Value As TextRange) As HRESULT
+    [PreserveSig]
+    Function InsertAt(ByVal Index As Long, ByVal Value As TextRange) As HRESULT
+    [PreserveSig]
+    Function RemoveAt(ByVal Index As Long) As HRESULT
+    [PreserveSig]
+    Function Append(ByVal Value As TextRange) As HRESULT
+    [PreserveSig]
+    Function RemoveAtEnd() As HRESULT
+    [PreserveSig]
+    Function Clear() As HRESULT
+    Function GetMany(ByVal StartIndex As Long, ByVal Length As Long, Items As Any) As Long
+    [PreserveSig]
+    Function ReplaceAll(ByVal Length As Long, Items As Any) As HRESULT
+End Interface
+
+[InterfaceId("FE6F1EED-E66F-5236-A41F-817544E1E7BD")]
+Interface IIterator_ITextHighlighter Extends IInspectable
+    Property Get Current() As ITextHighlighter
+    Property Get HasCurrent() As BooleanByte
+    Function MoveNext() As BooleanByte
+    Function GetMany(ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("4D7E043F-6697-599A-A13B-8DDE71D5537D")]
+Interface IIterable_ITextHighlighter Extends IInspectable
+    Function First() As IIterator_ITextHighlighter
+End Interface
+
+[InterfaceId("A74372D7-45E1-55F0-A29C-15CA0992EB78")]
+Interface IVectorView_ITextHighlighter Extends IInspectable
+    Function GetAt(ByVal Index As Long) As ITextHighlighter
+    Property Get Size() As Long
+    Function IndexOf(ByVal Value As ITextHighlighter, Index As Long) As BooleanByte
+    Function GetMany(ByVal StartIndex As Long, ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("64905558-D062-5F31-84AF-4A5FA896AE50")]
+Interface IVector_ITextHighlighter Extends IInspectable
+    Function GetAt(ByVal Index As Long) As ITextHighlighter
+    Property Get Size() As Long
+    Function GetView() As IVectorView_ITextHighlighter
+    Function IndexOf(ByVal Value As ITextHighlighter, Index As Long) As BooleanByte
+    [PreserveSig]
+    Function SetAt(ByVal Index As Long, ByVal Value As ITextHighlighter) As HRESULT
+    [PreserveSig]
+    Function InsertAt(ByVal Index As Long, ByVal Value As ITextHighlighter) As HRESULT
+    [PreserveSig]
+    Function RemoveAt(ByVal Index As Long) As HRESULT
+    [PreserveSig]
+    Function Append(ByVal Value As ITextHighlighter) As HRESULT
+    [PreserveSig]
+    Function RemoveAtEnd() As HRESULT
+    [PreserveSig]
+    Function Clear() As HRESULT
+    Function GetMany(ByVal StartIndex As Long, ByVal Length As Long, Items As Any) As Long
+    [PreserveSig]
+    Function ReplaceAll(ByVal Length As Long, Items As Any) As HRESULT
+End Interface
+
+[InterfaceId("BA6CB54B-7D75-4535-B30D-A81A00B637A4")]
+Interface ITextHighlighter Extends IInspectable
+    Property Get Ranges() As IVector_TextRange
+    Property Get Foreground() As IBrush
+    Property Set Foreground(ByVal Value As IBrush)
+    Property Get Background() As IBrush
+    Property Set Background(ByVal Value As IBrush)
+End Interface
+
+[InterfaceId("D957601A-5F0D-4CDF-9758-97E0EB95C8FA")]
+Interface ITextHighlighterBase Extends IInspectable
+
+End Interface
+
+[InterfaceId("9592B2D0-EADC-4C74-92C8-6E896E22506D")]
+Interface ITextHighlighterBaseFactory Extends IInspectable
+
+End Interface
+
+[InterfaceId("70125461-9A8F-4FA0-B235-8FFAA507BEF2")]
+Interface ITextHighlighterFactory Extends IInspectable
+    Function CreateInstance(Optional ByVal BaseInterface As IInspectable, Optional InnerInterface As IInspectable) As ITextHighlighter
+End Interface
+
+[InterfaceId("B3B009C4-3A7E-49CC-AB84-29C405488765")]
+Interface ITextHighlighterStatics Extends IInspectable
+    Property Get ForegroundProperty() As IDependencyProperty
+    Property Get BackgroundProperty() As IDependencyProperty
+End Interface
+
+[InterfaceId("AC687AA1-6A41-43FF-851E-45348AA2CF7B")]
+Interface ITextPointer Extends IInspectable
+    Property Get Parent() As IDependencyObject
+    Property Get VisualParent() As IFrameworkElement
+    Property Get LogicalDirection() As LogicalDirection
+    Property Get Offset() As Long
+    Function GetCharacterRect(ByVal Direction As LogicalDirection) As RECTF
+    Function GetPositionAtOffset(ByVal Offset As Long, ByVal Direction As LogicalDirection) As ITextPointer
+End Interface
+
+[InterfaceId("866F65D5-EA97-42AB-9288-9C01AEBC7A97")]
+Interface ITypography Extends IInspectable
+
+End Interface
+
+[InterfaceId("67B9EC88-6C57-4CE0-95F1-D4B9ED632FB4")]
+Interface ITypographyStatics Extends IInspectable
+    Property Get AnnotationAlternatesProperty() As IDependencyProperty
+    Function GetAnnotationAlternates(ByVal Element As IDependencyObject) As Long
+    [PreserveSig]
+    Function SetAnnotationAlternates(ByVal Element As IDependencyObject, ByVal Value As Long) As HRESULT
+    Property Get EastAsianExpertFormsProperty() As IDependencyProperty
+    Function GetEastAsianExpertForms(ByVal Element As IDependencyObject) As BooleanByte
+    [PreserveSig]
+    Function SetEastAsianExpertForms(ByVal Element As IDependencyObject, ByVal Value As BooleanByte) As HRESULT
+    Property Get EastAsianLanguageProperty() As IDependencyProperty
+    Function GetEastAsianLanguage(ByVal Element As IDependencyObject) As FontEastAsianLanguage
+    [PreserveSig]
+    Function SetEastAsianLanguage(ByVal Element As IDependencyObject, ByVal Value As FontEastAsianLanguage) As HRESULT
+    Property Get EastAsianWidthsProperty() As IDependencyProperty
+    Function GetEastAsianWidths(ByVal Element As IDependencyObject) As FontEastAsianWidths
+    [PreserveSig]
+    Function SetEastAsianWidths(ByVal Element As IDependencyObject, ByVal Value As FontEastAsianWidths) As HRESULT
+    Property Get StandardLigaturesProperty() As IDependencyProperty
+    Function GetStandardLigatures(ByVal Element As IDependencyObject) As BooleanByte
+    [PreserveSig]
+    Function SetStandardLigatures(ByVal Element As IDependencyObject, ByVal Value As BooleanByte) As HRESULT
+    Property Get ContextualLigaturesProperty() As IDependencyProperty
+    Function GetContextualLigatures(ByVal Element As IDependencyObject) As BooleanByte
+    [PreserveSig]
+    Function SetContextualLigatures(ByVal Element As IDependencyObject, ByVal Value As BooleanByte) As HRESULT
+    Property Get DiscretionaryLigaturesProperty() As IDependencyProperty
+    Function GetDiscretionaryLigatures(ByVal Element As IDependencyObject) As BooleanByte
+    [PreserveSig]
+    Function SetDiscretionaryLigatures(ByVal Element As IDependencyObject, ByVal Value As BooleanByte) As HRESULT
+    Property Get HistoricalLigaturesProperty() As IDependencyProperty
+    Function GetHistoricalLigatures(ByVal Element As IDependencyObject) As BooleanByte
+    [PreserveSig]
+    Function SetHistoricalLigatures(ByVal Element As IDependencyObject, ByVal Value As BooleanByte) As HRESULT
+    Property Get StandardSwashesProperty() As IDependencyProperty
+    Function GetStandardSwashes(ByVal Element As IDependencyObject) As Long
+    [PreserveSig]
+    Function SetStandardSwashes(ByVal Element As IDependencyObject, ByVal Value As Long) As HRESULT
+    Property Get ContextualSwashesProperty() As IDependencyProperty
+    Function GetContextualSwashes(ByVal Element As IDependencyObject) As Long
+    [PreserveSig]
+    Function SetContextualSwashes(ByVal Element As IDependencyObject, ByVal Value As Long) As HRESULT
+    Property Get ContextualAlternatesProperty() As IDependencyProperty
+    Function GetContextualAlternates(ByVal Element As IDependencyObject) As BooleanByte
+    [PreserveSig]
+    Function SetContextualAlternates(ByVal Element As IDependencyObject, ByVal Value As BooleanByte) As HRESULT
+    Property Get StylisticAlternatesProperty() As IDependencyProperty
+    Function GetStylisticAlternates(ByVal Element As IDependencyObject) As Long
+    [PreserveSig]
+    Function SetStylisticAlternates(ByVal Element As IDependencyObject, ByVal Value As Long) As HRESULT
+    Property Get StylisticSet1Property() As IDependencyProperty
+    Function GetStylisticSet1(ByVal Element As IDependencyObject) As BooleanByte
+    [PreserveSig]
+    Function SetStylisticSet1(ByVal Element As IDependencyObject, ByVal Value As BooleanByte) As HRESULT
+    Property Get StylisticSet2Property() As IDependencyProperty
+    Function GetStylisticSet2(ByVal Element As IDependencyObject) As BooleanByte
+    [PreserveSig]
+    Function SetStylisticSet2(ByVal Element As IDependencyObject, ByVal Value As BooleanByte) As HRESULT
+    Property Get StylisticSet3Property() As IDependencyProperty
+    Function GetStylisticSet3(ByVal Element As IDependencyObject) As BooleanByte
+    [PreserveSig]
+    Function SetStylisticSet3(ByVal Element As IDependencyObject, ByVal Value As BooleanByte) As HRESULT
+    Property Get StylisticSet4Property() As IDependencyProperty
+    Function GetStylisticSet4(ByVal Element As IDependencyObject) As BooleanByte
+    [PreserveSig]
+    Function SetStylisticSet4(ByVal Element As IDependencyObject, ByVal Value As BooleanByte) As HRESULT
+    Property Get StylisticSet5Property() As IDependencyProperty
+    Function GetStylisticSet5(ByVal Element As IDependencyObject) As BooleanByte
+    [PreserveSig]
+    Function SetStylisticSet5(ByVal Element As IDependencyObject, ByVal Value As BooleanByte) As HRESULT
+    Property Get StylisticSet6Property() As IDependencyProperty
+    Function GetStylisticSet6(ByVal Element As IDependencyObject) As BooleanByte
+    [PreserveSig]
+    Function SetStylisticSet6(ByVal Element As IDependencyObject, ByVal Value As BooleanByte) As HRESULT
+    Property Get StylisticSet7Property() As IDependencyProperty
+    Function GetStylisticSet7(ByVal Element As IDependencyObject) As BooleanByte
+    [PreserveSig]
+    Function SetStylisticSet7(ByVal Element As IDependencyObject, ByVal Value As BooleanByte) As HRESULT
+    Property Get StylisticSet8Property() As IDependencyProperty
+    Function GetStylisticSet8(ByVal Element As IDependencyObject) As BooleanByte
+    [PreserveSig]
+    Function SetStylisticSet8(ByVal Element As IDependencyObject, ByVal Value As BooleanByte) As HRESULT
+    Property Get StylisticSet9Property() As IDependencyProperty
+    Function GetStylisticSet9(ByVal Element As IDependencyObject) As BooleanByte
+    [PreserveSig]
+    Function SetStylisticSet9(ByVal Element As IDependencyObject, ByVal Value As BooleanByte) As HRESULT
+    Property Get StylisticSet10Property() As IDependencyProperty
+    Function GetStylisticSet10(ByVal Element As IDependencyObject) As BooleanByte
+    [PreserveSig]
+    Function SetStylisticSet10(ByVal Element As IDependencyObject, ByVal Value As BooleanByte) As HRESULT
+    Property Get StylisticSet11Property() As IDependencyProperty
+    Function GetStylisticSet11(ByVal Element As IDependencyObject) As BooleanByte
+    [PreserveSig]
+    Function SetStylisticSet11(ByVal Element As IDependencyObject, ByVal Value As BooleanByte) As HRESULT
+    Property Get StylisticSet12Property() As IDependencyProperty
+    Function GetStylisticSet12(ByVal Element As IDependencyObject) As BooleanByte
+    [PreserveSig]
+    Function SetStylisticSet12(ByVal Element As IDependencyObject, ByVal Value As BooleanByte) As HRESULT
+    Property Get StylisticSet13Property() As IDependencyProperty
+    Function GetStylisticSet13(ByVal Element As IDependencyObject) As BooleanByte
+    [PreserveSig]
+    Function SetStylisticSet13(ByVal Element As IDependencyObject, ByVal Value As BooleanByte) As HRESULT
+    Property Get StylisticSet14Property() As IDependencyProperty
+    Function GetStylisticSet14(ByVal Element As IDependencyObject) As BooleanByte
+    [PreserveSig]
+    Function SetStylisticSet14(ByVal Element As IDependencyObject, ByVal Value As BooleanByte) As HRESULT
+    Property Get StylisticSet15Property() As IDependencyProperty
+    Function GetStylisticSet15(ByVal Element As IDependencyObject) As BooleanByte
+    [PreserveSig]
+    Function SetStylisticSet15(ByVal Element As IDependencyObject, ByVal Value As BooleanByte) As HRESULT
+    Property Get StylisticSet16Property() As IDependencyProperty
+    Function GetStylisticSet16(ByVal Element As IDependencyObject) As BooleanByte
+    [PreserveSig]
+    Function SetStylisticSet16(ByVal Element As IDependencyObject, ByVal Value As BooleanByte) As HRESULT
+    Property Get StylisticSet17Property() As IDependencyProperty
+    Function GetStylisticSet17(ByVal Element As IDependencyObject) As BooleanByte
+    [PreserveSig]
+    Function SetStylisticSet17(ByVal Element As IDependencyObject, ByVal Value As BooleanByte) As HRESULT
+    Property Get StylisticSet18Property() As IDependencyProperty
+    Function GetStylisticSet18(ByVal Element As IDependencyObject) As BooleanByte
+    [PreserveSig]
+    Function SetStylisticSet18(ByVal Element As IDependencyObject, ByVal Value As BooleanByte) As HRESULT
+    Property Get StylisticSet19Property() As IDependencyProperty
+    Function GetStylisticSet19(ByVal Element As IDependencyObject) As BooleanByte
+    [PreserveSig]
+    Function SetStylisticSet19(ByVal Element As IDependencyObject, ByVal Value As BooleanByte) As HRESULT
+    Property Get StylisticSet20Property() As IDependencyProperty
+    Function GetStylisticSet20(ByVal Element As IDependencyObject) As BooleanByte
+    [PreserveSig]
+    Function SetStylisticSet20(ByVal Element As IDependencyObject, ByVal Value As BooleanByte) As HRESULT
+    Property Get CapitalsProperty() As IDependencyProperty
+    Function GetCapitals(ByVal Element As IDependencyObject) As FontCapitals
+    [PreserveSig]
+    Function SetCapitals(ByVal Element As IDependencyObject, ByVal Value As FontCapitals) As HRESULT
+    Property Get CapitalSpacingProperty() As IDependencyProperty
+    Function GetCapitalSpacing(ByVal Element As IDependencyObject) As BooleanByte
+    [PreserveSig]
+    Function SetCapitalSpacing(ByVal Element As IDependencyObject, ByVal Value As BooleanByte) As HRESULT
+    Property Get KerningProperty() As IDependencyProperty
+    Function GetKerning(ByVal Element As IDependencyObject) As BooleanByte
+    [PreserveSig]
+    Function SetKerning(ByVal Element As IDependencyObject, ByVal Value As BooleanByte) As HRESULT
+    Property Get CaseSensitiveFormsProperty() As IDependencyProperty
+    Function GetCaseSensitiveForms(ByVal Element As IDependencyObject) As BooleanByte
+    [PreserveSig]
+    Function SetCaseSensitiveForms(ByVal Element As IDependencyObject, ByVal Value As BooleanByte) As HRESULT
+    Property Get HistoricalFormsProperty() As IDependencyProperty
+    Function GetHistoricalForms(ByVal Element As IDependencyObject) As BooleanByte
+    [PreserveSig]
+    Function SetHistoricalForms(ByVal Element As IDependencyObject, ByVal Value As BooleanByte) As HRESULT
+    Property Get FractionProperty() As IDependencyProperty
+    Function GetFraction(ByVal Element As IDependencyObject) As FontFraction
+    [PreserveSig]
+    Function SetFraction(ByVal Element As IDependencyObject, ByVal Value As FontFraction) As HRESULT
+    Property Get NumeralStyleProperty() As IDependencyProperty
+    Function GetNumeralStyle(ByVal Element As IDependencyObject) As FontNumeralStyle
+    [PreserveSig]
+    Function SetNumeralStyle(ByVal Element As IDependencyObject, ByVal Value As FontNumeralStyle) As HRESULT
+    Property Get NumeralAlignmentProperty() As IDependencyProperty
+    Function GetNumeralAlignment(ByVal Element As IDependencyObject) As FontNumeralAlignment
+    [PreserveSig]
+    Function SetNumeralAlignment(ByVal Element As IDependencyObject, ByVal Value As FontNumeralAlignment) As HRESULT
+    Property Get SlashedZeroProperty() As IDependencyProperty
+    Function GetSlashedZero(ByVal Element As IDependencyObject) As BooleanByte
+    [PreserveSig]
+    Function SetSlashedZero(ByVal Element As IDependencyObject, ByVal Value As BooleanByte) As HRESULT
+    Property Get MathematicalGreekProperty() As IDependencyProperty
+    Function GetMathematicalGreek(ByVal Element As IDependencyObject) As BooleanByte
+    [PreserveSig]
+    Function SetMathematicalGreek(ByVal Element As IDependencyObject, ByVal Value As BooleanByte) As HRESULT
+    Property Get VariantsProperty() As IDependencyProperty
+    Function GetVariants(ByVal Element As IDependencyObject) As FontVariants
+    [PreserveSig]
+    Function SetVariants(ByVal Element As IDependencyObject, ByVal Value As FontVariants) As HRESULT
+End Interface
+
+[InterfaceId("A5FA8202-61C0-47D7-93EF-BC0B577C5F26")]
+Interface IUnderline Extends IInspectable
+
+End Interface
+
+Module mdlUIXamlDocuments
+
+Public Enum LogicalDirection
+    LogicalDirection_Backward
+    LogicalDirection_Forward
+End Enum
+
+Public Enum UnderlineStyle
+    UnderlineStyle_None
+    UnderlineStyle_Single
+End Enum
+
+Public Type TextRange
+    StartIndex As Long
+    Length As Long
+End Type
+
+End Module

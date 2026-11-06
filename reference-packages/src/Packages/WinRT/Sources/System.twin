@@ -1,0 +1,1532 @@
+[InterfaceId("DFA2DC9C-1A2D-4917-98F2-939AF1D6E0C8")]
+Interface IDispatcherQueueHandler Extends IUnknown
+    Sub Invoke()
+End Interface
+
+[InterfaceId("6B528900-F46E-4EB0-AA6C-38AF557CF9ED")]
+Interface IAppActivationResult Extends IInspectable
+    Property Get ExtendedError() As HRESULT
+    Property Get AppResourceGroupInfo() As IAppResourceGroupInfo
+End Interface
+
+[InterfaceId("E348A69A-8889-4CA3-BE07-D5FFFF5F0804")]
+Interface IAppDiagnosticInfo Extends IInspectable
+    Property Get AppInfo() As IAppInfo
+End Interface
+
+[InterfaceId("E44D5851-E4BC-50B9-A898-6903137D8A99")]
+Interface IIterator_IAppResourceGroupInfo Extends IInspectable
+    Property Get Current() As IAppResourceGroupInfo
+    Property Get HasCurrent() As BooleanByte
+    Function MoveNext() As BooleanByte
+    Function GetMany(ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("8B640948-C0D3-5B7E-A99C-5956190D5408")]
+Interface IIterable_IAppResourceGroupInfo Extends IInspectable
+    Function First() As IIterator_IAppResourceGroupInfo
+End Interface
+
+[InterfaceId("0480079C-FD03-59E3-ABA3-96F9F9206070")]
+Interface IVectorView_IAppResourceGroupInfo Extends IInspectable
+    Function GetAt(ByVal Index As Long) As IAppResourceGroupInfo
+    Property Get Size() As Long
+    Function IndexOf(ByVal Value As IAppResourceGroupInfo, Index As Long) As BooleanByte
+    Function GetMany(ByVal StartIndex As Long, ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("BD7D69A0-0D57-5148-8B23-49A08654F0C7")]
+Interface IVector_IAppResourceGroupInfo Extends IInspectable
+    Function GetAt(ByVal Index As Long) As IAppResourceGroupInfo
+    Property Get Size() As Long
+    Function GetView() As IVectorView_IAppResourceGroupInfo
+    Function IndexOf(ByVal Value As IAppResourceGroupInfo, Index As Long) As BooleanByte
+    [PreserveSig]
+    Function SetAt(ByVal Index As Long, ByVal Value As IAppResourceGroupInfo) As HRESULT
+    [PreserveSig]
+    Function InsertAt(ByVal Index As Long, ByVal Value As IAppResourceGroupInfo) As HRESULT
+    [PreserveSig]
+    Function RemoveAt(ByVal Index As Long) As HRESULT
+    [PreserveSig]
+    Function Append(ByVal Value As IAppResourceGroupInfo) As HRESULT
+    [PreserveSig]
+    Function RemoveAtEnd() As HRESULT
+    [PreserveSig]
+    Function Clear() As HRESULT
+    Function GetMany(ByVal StartIndex As Long, ByVal Length As Long, Items As Any) As Long
+    [PreserveSig]
+    Function ReplaceAll(ByVal Length As Long, Items As Any) As HRESULT
+End Interface
+
+[InterfaceId("DF46FBD7-191A-446C-9473-8FBC2374A354")]
+Interface IAppDiagnosticInfo2 Extends IInspectable
+    Function GetResourceGroups() As IVector_IAppResourceGroupInfo
+    Function CreateResourceGroupWatcher() As IAppResourceGroupInfoWatcher
+End Interface
+
+[InterfaceId("B6F373B8-BD4D-50BF-82B4-5B1D452A5F83")]
+Interface IAsyncOperationIAppActivationResult Extends IInspectable
+    Property Set Completed(ByVal Handler As IAsyncOperationCompletedHandlerIAppActivationResult)
+    Property Get Completed() As IAsyncOperationCompletedHandlerIAppActivationResult
+    Function GetResults() As IAppActivationResult
+End Interface
+
+[InterfaceId("966E2307-D529-50EA-9872-8DFB35CFEFFD")]
+Interface IAsyncOperationCompletedHandlerIAppActivationResult Extends IUnknown
+    Sub Invoke(ByVal AsyncOperation As IAsyncOperationIAppActivationResult, ByVal AsyncStatus As AsyncStatus)
+End Interface
+
+[InterfaceId("C895C63D-DD61-4C65-BABD-81A10B4F9815")]
+Interface IAppDiagnosticInfo3 Extends IInspectable
+    Function LaunchAsync() As IAsyncOperationIAppActivationResult
+End Interface
+
+[InterfaceId("183F1E4A-2224-5FE4-B064-68869C53E361")]
+Interface IIterator_IAppDiagnosticInfo Extends IInspectable
+    Property Get Current() As IAppDiagnosticInfo
+    Property Get HasCurrent() As BooleanByte
+    Function MoveNext() As BooleanByte
+    Function GetMany(ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("8118DE8F-3AE3-55E1-80A8-25453CDBA894")]
+Interface IIterable_IAppDiagnosticInfo Extends IInspectable
+    Function First() As IIterator_IAppDiagnosticInfo
+End Interface
+
+[InterfaceId("B0C2C7A4-78BA-50FD-84FE-00E02A6C1D42")]
+Interface IVectorView_IAppDiagnosticInfo Extends IInspectable
+    Function GetAt(ByVal Index As Long) As IAppDiagnosticInfo
+    Property Get Size() As Long
+    Function IndexOf(ByVal Value As IAppDiagnosticInfo, Index As Long) As BooleanByte
+    Function GetMany(ByVal StartIndex As Long, ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("9CFFA2C3-7EEB-599C-B94D-C794B11F807F")]
+Interface IVector_IAppDiagnosticInfo Extends IInspectable
+    Function GetAt(ByVal Index As Long) As IAppDiagnosticInfo
+    Property Get Size() As Long
+    Function GetView() As IVectorView_IAppDiagnosticInfo
+    Function IndexOf(ByVal Value As IAppDiagnosticInfo, Index As Long) As BooleanByte
+    [PreserveSig]
+    Function SetAt(ByVal Index As Long, ByVal Value As IAppDiagnosticInfo) As HRESULT
+    [PreserveSig]
+    Function InsertAt(ByVal Index As Long, ByVal Value As IAppDiagnosticInfo) As HRESULT
+    [PreserveSig]
+    Function RemoveAt(ByVal Index As Long) As HRESULT
+    [PreserveSig]
+    Function Append(ByVal Value As IAppDiagnosticInfo) As HRESULT
+    [PreserveSig]
+    Function RemoveAtEnd() As HRESULT
+    [PreserveSig]
+    Function Clear() As HRESULT
+    Function GetMany(ByVal StartIndex As Long, ByVal Length As Long, Items As Any) As Long
+    [PreserveSig]
+    Function ReplaceAll(ByVal Length As Long, Items As Any) As HRESULT
+End Interface
+
+[InterfaceId("D6A9D3B9-F63C-59BE-A096-3E9557C41182")]
+Interface IAsyncOperationIVector_IAppDiagnosticInfo Extends IInspectable
+    Property Set Completed(ByVal Handler As IAsyncOperationCompletedHandlerIVector_IAppDiagnosticInfo)
+    Property Get Completed() As IAsyncOperationCompletedHandlerIVector_IAppDiagnosticInfo
+    Function GetResults() As IVector_IAppDiagnosticInfo
+End Interface
+
+[InterfaceId("CC3F5F7E-4160-567F-A0F6-AA9AEB187AF3")]
+Interface IAsyncOperationCompletedHandlerIVector_IAppDiagnosticInfo Extends IUnknown
+    Sub Invoke(ByVal AsyncOperation As IAsyncOperationIVector_IAppDiagnosticInfo, ByVal AsyncStatus As AsyncStatus)
+End Interface
+
+[InterfaceId("CE6925BF-10CA-40C8-A9CA-C5C96501866E")]
+Interface IAppDiagnosticInfoStatics Extends IInspectable
+    Function RequestInfoAsync() As IAsyncOperationIVector_IAppDiagnosticInfo
+End Interface
+
+[InterfaceId("61C11BBE-2618-588A-A7CA-F60691272324")]
+Interface IAsyncOperationDiagnosticAccessStatus Extends IInspectable
+    Property Set Completed(ByVal Handler As IAsyncOperationCompletedHandlerDiagnosticAccessStatus)
+    Property Get Completed() As IAsyncOperationCompletedHandlerDiagnosticAccessStatus
+    Function GetResults() As DiagnosticAccessStatus
+End Interface
+
+[InterfaceId("5D1302D7-5497-5A92-BF43-EB8B50679AAB")]
+Interface IAsyncOperationCompletedHandlerDiagnosticAccessStatus Extends IUnknown
+    Sub Invoke(ByVal AsyncOperation As IAsyncOperationDiagnosticAccessStatus, ByVal AsyncStatus As AsyncStatus)
+End Interface
+
+[InterfaceId("05B24B86-1000-4C90-BB9F-7235071C50FE")]
+Interface IAppDiagnosticInfoStatics2 Extends IInspectable
+    Function CreateWatcher() As IAppDiagnosticInfoWatcher
+    Function RequestAccessAsync() As IAsyncOperationDiagnosticAccessStatus
+    Function RequestInfoForPackageAsync(ByVal PackageFamilyName As LongPtr) As IAsyncOperationIVector_IAppDiagnosticInfo
+    Function RequestInfoForAppAsync() As IAsyncOperationIVector_IAppDiagnosticInfo
+    Function RequestInfoForAppUserModelId(ByVal AppUserModelId As LongPtr) As IAsyncOperationIVector_IAppDiagnosticInfo
+End Interface
+
+[InterfaceId("7C8C6F9F-D6BF-5566-B013-39C141E0FF8C")]
+Interface ITypedEventHandlerAppDiagnosticInfoWatcher Extends IUnknown
+    Sub Invoke(ByVal Sender As IAppDiagnosticInfoWatcher, ByVal Args As IAppDiagnosticInfoWatcherEventArgs)
+End Interface
+
+[InterfaceId("895DEE2F-E0F2-5304-A40E-1C67A2C058AA")]
+Interface ITypedEventHandlerAppDiagnosticInfoWatcherIInspectable Extends IUnknown
+    Sub Invoke(ByVal Sender As IAppDiagnosticInfoWatcher, ByVal Args As IInspectable)
+End Interface
+
+[InterfaceId("75575070-01D3-489A-9325-52F9CC6EDE0A")]
+Interface IAppDiagnosticInfoWatcher Extends IInspectable
+    [PreserveSig]
+    Function AddAdded(ByVal Handler As ITypedEventHandlerAppDiagnosticInfoWatcher, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveAdded(ByVal Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function AddRemoved(ByVal Handler As ITypedEventHandlerAppDiagnosticInfoWatcher, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveRemoved(ByVal Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function AddEnumerationCompleted(ByVal Handler As ITypedEventHandlerAppDiagnosticInfoWatcherIInspectable, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveEnumerationCompleted(ByVal Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function AddStopped(ByVal Handler As ITypedEventHandlerAppDiagnosticInfoWatcherIInspectable, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveStopped(ByVal Token As EventRegistrationToken) As HRESULT
+    Property Get Status() As AppDiagnosticInfoWatcherStatus
+    [PreserveSig]
+    Function Start() As HRESULT
+    [PreserveSig]
+    Function Stop() As HRESULT
+End Interface
+
+[InterfaceId("7017C716-E1DA-4C65-99DF-046DFF5BE71A")]
+Interface IAppDiagnosticInfoWatcherEventArgs Extends IInspectable
+    Property Get AppDiagnosticInfo() As IAppDiagnosticInfo
+End Interface
+
+[InterfaceId("6F039BF0-F91B-4DF8-AE77-3033CCB69114")]
+Interface IAppExecutionStateChangeResult Extends IInspectable
+    Property Get ExtendedError() As HRESULT
+End Interface
+
+[InterfaceId("6D65339B-4D6F-45BC-9C5E-E49B3FF2758D")]
+Interface IAppMemoryReport Extends IInspectable
+    Property Get PrivateCommitUsage() As UInt64
+    Property Get PeakPrivateCommitUsage() As UInt64
+    Property Get TotalCommitUsage() As UInt64
+    Property Get TotalCommitLimit() As UInt64
+End Interface
+
+[InterfaceId("5F7F3738-51B7-42DC-B7ED-79BA46D28857")]
+Interface IAppMemoryReport2 Extends IInspectable
+    Property Get ExpectedTotalCommitLimit() As UInt64
+End Interface
+
+[InterfaceId("79F86664-FECA-4DA5-9E40-2BC63EFDC979")]
+Interface IAppMemoryUsageLimitChangingEventArgs Extends IInspectable
+    Property Get OldLimit() As UInt64
+    Property Get NewLimit() As UInt64
+End Interface
+
+[InterfaceId("2566E74E-B05D-40C2-9DC1-1A4F039EA120")]
+Interface IAppResourceGroupBackgroundTaskReport Extends IInspectable
+    Property Get TaskId() As UUID
+    Property Get Name() As LongPtr
+    Property Get Trigger() As LongPtr
+    Property Get EntryPoint() As LongPtr
+End Interface
+
+[InterfaceId("00C2180A-08E5-5EED-A08D-56A356CC004F")]
+Interface IIterator_IAppResourceGroupBackgroundTaskReport Extends IInspectable
+    Property Get Current() As IAppResourceGroupBackgroundTaskReport
+    Property Get HasCurrent() As BooleanByte
+    Function MoveNext() As BooleanByte
+    Function GetMany(ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("3E7DCBCA-1804-5672-AD3B-58D944BB044C")]
+Interface IIterable_IAppResourceGroupBackgroundTaskReport Extends IInspectable
+    Function First() As IIterator_IAppResourceGroupBackgroundTaskReport
+End Interface
+
+[InterfaceId("4E917DA3-45AB-51C3-B9E1-E7D4E7A1B4E5")]
+Interface IVectorView_IAppResourceGroupBackgroundTaskReport Extends IInspectable
+    Function GetAt(ByVal Index As Long) As IAppResourceGroupBackgroundTaskReport
+    Property Get Size() As Long
+    Function IndexOf(ByVal Value As IAppResourceGroupBackgroundTaskReport, Index As Long) As BooleanByte
+    Function GetMany(ByVal StartIndex As Long, ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("80F1820A-DB02-5CB2-A128-5172151D1444")]
+Interface IVector_IAppResourceGroupBackgroundTaskReport Extends IInspectable
+    Function GetAt(ByVal Index As Long) As IAppResourceGroupBackgroundTaskReport
+    Property Get Size() As Long
+    Function GetView() As IVectorView_IAppResourceGroupBackgroundTaskReport
+    Function IndexOf(ByVal Value As IAppResourceGroupBackgroundTaskReport, Index As Long) As BooleanByte
+    [PreserveSig]
+    Function SetAt(ByVal Index As Long, ByVal Value As IAppResourceGroupBackgroundTaskReport) As HRESULT
+    [PreserveSig]
+    Function InsertAt(ByVal Index As Long, ByVal Value As IAppResourceGroupBackgroundTaskReport) As HRESULT
+    [PreserveSig]
+    Function RemoveAt(ByVal Index As Long) As HRESULT
+    [PreserveSig]
+    Function Append(ByVal Value As IAppResourceGroupBackgroundTaskReport) As HRESULT
+    [PreserveSig]
+    Function RemoveAtEnd() As HRESULT
+    [PreserveSig]
+    Function Clear() As HRESULT
+    Function GetMany(ByVal StartIndex As Long, ByVal Length As Long, Items As Any) As Long
+    [PreserveSig]
+    Function ReplaceAll(ByVal Length As Long, Items As Any) As HRESULT
+End Interface
+
+[InterfaceId("A89B4418-4C3B-5F49-B957-785697C99ABF")]
+Interface IIterator_IProcessDiagnosticInfo Extends IInspectable
+    Property Get Current() As IProcessDiagnosticInfo
+    Property Get HasCurrent() As BooleanByte
+    Function MoveNext() As BooleanByte
+    Function GetMany(ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("97B73627-B296-5076-B8CD-6BD8A240E966")]
+Interface IIterable_IProcessDiagnosticInfo Extends IInspectable
+    Function First() As IIterator_IProcessDiagnosticInfo
+End Interface
+
+[InterfaceId("74AB2473-9624-5A06-9025-6D91E622BF8E")]
+Interface IVectorView_IProcessDiagnosticInfo Extends IInspectable
+    Function GetAt(ByVal Index As Long) As IProcessDiagnosticInfo
+    Property Get Size() As Long
+    Function IndexOf(ByVal Value As IProcessDiagnosticInfo, Index As Long) As BooleanByte
+    Function GetMany(ByVal StartIndex As Long, ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("F62E2D01-C1DD-5B60-B5DA-16518CBA0BB0")]
+Interface IVector_IProcessDiagnosticInfo Extends IInspectable
+    Function GetAt(ByVal Index As Long) As IProcessDiagnosticInfo
+    Property Get Size() As Long
+    Function GetView() As IVectorView_IProcessDiagnosticInfo
+    Function IndexOf(ByVal Value As IProcessDiagnosticInfo, Index As Long) As BooleanByte
+    [PreserveSig]
+    Function SetAt(ByVal Index As Long, ByVal Value As IProcessDiagnosticInfo) As HRESULT
+    [PreserveSig]
+    Function InsertAt(ByVal Index As Long, ByVal Value As IProcessDiagnosticInfo) As HRESULT
+    [PreserveSig]
+    Function RemoveAt(ByVal Index As Long) As HRESULT
+    [PreserveSig]
+    Function Append(ByVal Value As IProcessDiagnosticInfo) As HRESULT
+    [PreserveSig]
+    Function RemoveAtEnd() As HRESULT
+    [PreserveSig]
+    Function Clear() As HRESULT
+    Function GetMany(ByVal StartIndex As Long, ByVal Length As Long, Items As Any) As Long
+    [PreserveSig]
+    Function ReplaceAll(ByVal Length As Long, Items As Any) As HRESULT
+End Interface
+
+[InterfaceId("B913F77A-E807-49F4-845E-7B8BDCFE8EE7")]
+Interface IAppResourceGroupInfo Extends IInspectable
+    Property Get InstanceId() As UUID
+    Property Get IsShared() As BooleanByte
+    Function GetBackgroundTaskReports() As IVector_IAppResourceGroupBackgroundTaskReport
+    Function GetMemoryReport() As IAppResourceGroupMemoryReport
+    Function GetProcessDiagnosticInfos() As IVector_IProcessDiagnosticInfo
+    Function GetStateReport() As IAppResourceGroupStateReport
+End Interface
+
+[InterfaceId("C251CC22-ABA9-59B8-BF87-20677FC4924E")]
+Interface IAsyncOperationIAppExecutionStateChangeResult Extends IInspectable
+    Property Set Completed(ByVal Handler As IAsyncOperationCompletedHandlerIAppExecutionStateChangeResult)
+    Property Get Completed() As IAsyncOperationCompletedHandlerIAppExecutionStateChangeResult
+    Function GetResults() As IAppExecutionStateChangeResult
+End Interface
+
+[InterfaceId("C162B59A-BDD2-5E4D-A309-B476EB97B823")]
+Interface IAsyncOperationCompletedHandlerIAppExecutionStateChangeResult Extends IUnknown
+    Sub Invoke(ByVal AsyncOperation As IAsyncOperationIAppExecutionStateChangeResult, ByVal AsyncStatus As AsyncStatus)
+End Interface
+
+[InterfaceId("EE9B236D-D305-4D6B-92F7-6AFDAD72DEDC")]
+Interface IAppResourceGroupInfo2 Extends IInspectable
+    Function StartSuspendAsync() As IAsyncOperationIAppExecutionStateChangeResult
+    Function StartResumeAsync() As IAsyncOperationIAppExecutionStateChangeResult
+    Function StartTerminateAsync() As IAsyncOperationIAppExecutionStateChangeResult
+End Interface
+
+[InterfaceId("E23A2901-197A-5867-8728-9C9DB9498D76")]
+Interface ITypedEventHandlerAppResourceGroupInfoWatcherIInspectable Extends IUnknown
+    Sub Invoke(ByVal Sender As IAppResourceGroupInfoWatcher, ByVal Args As IInspectable)
+End Interface
+
+[InterfaceId("A7E14BAE-C778-5661-A41C-1AC3AC635F79")]
+Interface ITypedEventHandlerAppResourceGroupInfoWatcher Extends IUnknown
+    Sub Invoke(ByVal Sender As IAppResourceGroupInfoWatcher, ByVal Args As IAppResourceGroupInfoWatcherEventArgs)
+End Interface
+
+[InterfaceId("93F9724C-17F8-5DF5-A6CF-2F0AB90C0A27")]
+Interface ITypedEventHandlerAppResourceGroupInfoWatcherExecutionStateChanged Extends IUnknown
+    Sub Invoke(ByVal Sender As IAppResourceGroupInfoWatcher, ByVal Args As IAppResourceGroupInfoWatcherExecutionStateChangedEventArgs)
+End Interface
+
+[InterfaceId("D9B0A0FD-6E5A-4C72-8B17-09FEC4A212BD")]
+Interface IAppResourceGroupInfoWatcher Extends IInspectable
+    [PreserveSig]
+    Function AddAdded(ByVal Handler As ITypedEventHandlerAppResourceGroupInfoWatcher, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveAdded(ByVal Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function AddRemoved(ByVal Handler As ITypedEventHandlerAppResourceGroupInfoWatcher, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveRemoved(ByVal Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function AddEnumerationCompleted(ByVal Handler As ITypedEventHandlerAppResourceGroupInfoWatcherIInspectable, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveEnumerationCompleted(ByVal Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function AddStopped(ByVal Handler As ITypedEventHandlerAppResourceGroupInfoWatcherIInspectable, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveStopped(ByVal Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function AddExecutionStateChanged(ByVal Handler As ITypedEventHandlerAppResourceGroupInfoWatcherExecutionStateChanged, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveExecutionStateChanged(ByVal Token As EventRegistrationToken) As HRESULT
+    Property Get Status() As AppResourceGroupInfoWatcherStatus
+    [PreserveSig]
+    Function Start() As HRESULT
+    [PreserveSig]
+    Function Stop() As HRESULT
+End Interface
+
+[InterfaceId("7A787637-6302-4D2F-BF89-1C12D0B2A6B9")]
+Interface IAppResourceGroupInfoWatcherEventArgs Extends IInspectable
+    Property Get AppDiagnosticInfos() As IVectorView_IAppDiagnosticInfo
+    Property Get AppResourceGroupInfo() As IAppResourceGroupInfo
+End Interface
+
+[InterfaceId("1BDBEDD7-FEE6-4FD4-98DD-E92A2CC299F3")]
+Interface IAppResourceGroupInfoWatcherExecutionStateChangedEventArgs Extends IInspectable
+    Property Get AppDiagnosticInfos() As IVectorView_IAppDiagnosticInfo
+    Property Get AppResourceGroupInfo() As IAppResourceGroupInfo
+End Interface
+
+[InterfaceId("2C8C06B1-7DB1-4C51-A225-7FAE2D49E431")]
+Interface IAppResourceGroupMemoryReport Extends IInspectable
+    Property Get CommitUsageLimit() As UInt64
+    Property Get CommitUsageLevel() As AppMemoryUsageLevel
+    Property Get PrivateCommitUsage() As UInt64
+    Property Get TotalCommitUsage() As UInt64
+End Interface
+
+[InterfaceId("52849F18-2F70-4236-AB40-D04DB0C7B931")]
+Interface IAppResourceGroupStateReport Extends IInspectable
+    Property Get ExecutionState() As AppResourceGroupExecutionState
+    Property Get EnergyQuotaState() As AppResourceGroupEnergyQuotaState
+End Interface
+
+[InterfaceId("5D50CAC5-92D2-5409-B56F-7F73E10EA4C3")]
+Interface IAppUriHandlerHost Extends IInspectable
+    Property Get Name() As LongPtr
+    Property Let Name(ByVal Value As LongPtr)
+End Interface
+
+[InterfaceId("3A0BEE95-29E4-51BF-8095-A3C068E3C72A")]
+Interface IAppUriHandlerHost2 Extends IInspectable
+    Property Get IsEnabled() As BooleanByte
+    Property Let IsEnabled(ByVal Value As BooleanByte)
+End Interface
+
+[InterfaceId("257C3C96-CE04-5F98-96BB-3EBD3E9275BB")]
+Interface IAppUriHandlerHostFactory Extends IInspectable
+    Function CreateInstance(ByVal Name As LongPtr) As IAppUriHandlerHost
+End Interface
+
+[InterfaceId("66078237-A994-50DE-B1EA-338D7CF89A2C")]
+Interface IIterator_IAppUriHandlerHost Extends IInspectable
+    Property Get Current() As IAppUriHandlerHost
+    Property Get HasCurrent() As BooleanByte
+    Function MoveNext() As BooleanByte
+    Function GetMany(ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("F6E575BD-EAB7-5981-BA01-49FF976CA186")]
+Interface IIterable_IAppUriHandlerHost Extends IInspectable
+    Function First() As IIterator_IAppUriHandlerHost
+End Interface
+
+[InterfaceId("B5B07811-1C9E-5F97-BB56-17C80B1B1A45")]
+Interface IVectorView_IAppUriHandlerHost Extends IInspectable
+    Function GetAt(ByVal Index As Long) As IAppUriHandlerHost
+    Property Get Size() As Long
+    Function IndexOf(ByVal Value As IAppUriHandlerHost, Index As Long) As BooleanByte
+    Function GetMany(ByVal StartIndex As Long, ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("4A226614-2197-526A-A9FF-03025D18E322")]
+Interface IVector_IAppUriHandlerHost Extends IInspectable
+    Function GetAt(ByVal Index As Long) As IAppUriHandlerHost
+    Property Get Size() As Long
+    Function GetView() As IVectorView_IAppUriHandlerHost
+    Function IndexOf(ByVal Value As IAppUriHandlerHost, Index As Long) As BooleanByte
+    [PreserveSig]
+    Function SetAt(ByVal Index As Long, ByVal Value As IAppUriHandlerHost) As HRESULT
+    [PreserveSig]
+    Function InsertAt(ByVal Index As Long, ByVal Value As IAppUriHandlerHost) As HRESULT
+    [PreserveSig]
+    Function RemoveAt(ByVal Index As Long) As HRESULT
+    [PreserveSig]
+    Function Append(ByVal Value As IAppUriHandlerHost) As HRESULT
+    [PreserveSig]
+    Function RemoveAtEnd() As HRESULT
+    [PreserveSig]
+    Function Clear() As HRESULT
+    Function GetMany(ByVal StartIndex As Long, ByVal Length As Long, Items As Any) As Long
+    [PreserveSig]
+    Function ReplaceAll(ByVal Length As Long, Items As Any) As HRESULT
+End Interface
+
+[InterfaceId("A87E4877-F690-5883-B2BD-9E3C2AB66413")]
+Interface IAsyncOperationIVector_IAppUriHandlerHost Extends IInspectable
+    Property Set Completed(ByVal Handler As IAsyncOperationCompletedHandlerIVector_IAppUriHandlerHost)
+    Property Get Completed() As IAsyncOperationCompletedHandlerIVector_IAppUriHandlerHost
+    Function GetResults() As IVector_IAppUriHandlerHost
+End Interface
+
+[InterfaceId("D725228C-1DCD-5748-A84A-E5B03C41E397")]
+Interface IAsyncOperationCompletedHandlerIVector_IAppUriHandlerHost Extends IUnknown
+    Sub Invoke(ByVal AsyncOperation As IAsyncOperationIVector_IAppUriHandlerHost, ByVal AsyncStatus As AsyncStatus)
+End Interface
+
+[InterfaceId("6F73AEB1-4569-5C3F-9BA0-99123EEA32C3")]
+Interface IAppUriHandlerRegistration Extends IInspectable
+    Property Get Name() As LongPtr
+    Property Get User() As IUser
+    Function GetAppAddedHostsAsync() As IAsyncOperationIVector_IAppUriHandlerHost
+    Function SetAppAddedHostsAsync(ByVal Hosts As IIterable_IAppUriHandlerHost) As IAsyncAction
+End Interface
+
+[InterfaceId("D54DAC97-CB39-5F1F-883E-01853730BD6D")]
+Interface IAppUriHandlerRegistration2 Extends IInspectable
+    Function GetAllHosts() As IVector_IAppUriHandlerHost
+    [PreserveSig]
+    Function UpdateHosts(ByVal Hosts As IIterable_IAppUriHandlerHost) As HRESULT
+    Property Get PackageFamilyName() As LongPtr
+End Interface
+
+[InterfaceId("E62C9A52-AC94-5750-AC1B-6CFB6F250263")]
+Interface IAppUriHandlerRegistrationManager Extends IInspectable
+    Property Get User() As IUser
+    Function TryGetRegistration(ByVal Name As LongPtr) As IAppUriHandlerRegistration
+End Interface
+
+[InterfaceId("BDDFCAF1-B51A-5E69-AEFD-7088D9F2B123")]
+Interface IAppUriHandlerRegistrationManager2 Extends IInspectable
+    Property Get PackageFamilyName() As LongPtr
+End Interface
+
+[InterfaceId("D5CEDD9F-5729-5B76-A1D4-0285F295C124")]
+Interface IAppUriHandlerRegistrationManagerStatics Extends IInspectable
+    Function GetDefault() As IAppUriHandlerRegistrationManager
+    Function GetForUser(ByVal User As IUser) As IAppUriHandlerRegistrationManager
+End Interface
+
+[InterfaceId("14F78379-6890-5080-90A7-98824A7F079E")]
+Interface IAppUriHandlerRegistrationManagerStatics2 Extends IInspectable
+    Function GetForPackage(ByVal PackageFamilyName As LongPtr) As IAppUriHandlerRegistrationManager
+    Function GetForPackageForUser(ByVal PackageFamilyName As LongPtr, ByVal User As IUser) As IAppUriHandlerRegistrationManager
+End Interface
+
+[InterfaceId("ABF53C57-EE50-5342-B52A-26E3B8CC024F")]
+Interface IAsyncOperationIInspectable Extends IInspectable
+    Property Set Completed(ByVal Handler As IAsyncOperationCompletedHandlerIInspectable)
+    Property Get Completed() As IAsyncOperationCompletedHandlerIInspectable
+    Function GetResults() As IInspectable
+End Interface
+
+[InterfaceId("3F08262E-A2E1-5134-9297-E9211F481A2D")]
+Interface IAsyncOperationCompletedHandlerIInspectable Extends IUnknown
+    Sub Invoke(ByVal AsyncOperation As IAsyncOperationIInspectable, ByVal AsyncStatus As AsyncStatus)
+End Interface
+
+[InterfaceId("490B0686-AFD7-5037-9647-D8FE248F182C")]
+Interface IAsyncOperationIPropertySet Extends IInspectable
+    Property Set Completed(ByVal Handler As IAsyncOperationCompletedHandlerIPropertySet)
+    Property Get Completed() As IAsyncOperationCompletedHandlerIPropertySet
+    Function GetResults() As IPropertySet
+End Interface
+
+[InterfaceId("5075A55F-68BA-56F2-97E6-9B1CBFA2C5F2")]
+Interface IAsyncOperationCompletedHandlerIPropertySet Extends IUnknown
+    Sub Invoke(ByVal AsyncOperation As IAsyncOperationIPropertySet, ByVal AsyncStatus As AsyncStatus)
+End Interface
+
+[InterfaceId("65178D50-E6A2-5D16-B244-65E9725E5A0C")]
+Interface IAsyncOperationIRandomAccessStreamReference Extends IInspectable
+    Property Set Completed(ByVal Handler As IAsyncOperationCompletedHandlerIRandomAccessStreamReference)
+    Property Get Completed() As IAsyncOperationCompletedHandlerIRandomAccessStreamReference
+    Function GetResults() As IRandomAccessStreamReference
+End Interface
+
+[InterfaceId("60847289-EA0B-5DF6-89DF-F2C62CBA9693")]
+Interface IAsyncOperationCompletedHandlerIRandomAccessStreamReference Extends IUnknown
+    Sub Invoke(ByVal AsyncOperation As IAsyncOperationIRandomAccessStreamReference, ByVal AsyncStatus As AsyncStatus)
+End Interface
+
+[InterfaceId("A895D2F9-2399-5104-A532-5BA44AB4B165")]
+Interface IAsyncOperationIUser Extends IInspectable
+    Property Set Completed(ByVal Handler As IAsyncOperationCompletedHandlerIUser)
+    Property Get Completed() As IAsyncOperationCompletedHandlerIUser
+    Function GetResults() As IUser
+End Interface
+
+[InterfaceId("F913E3A2-D1C5-5308-BECF-4C2D8167824A")]
+Interface IAsyncOperationCompletedHandlerIUser Extends IUnknown
+    Sub Invoke(ByVal AsyncOperation As IAsyncOperationIUser, ByVal AsyncStatus As AsyncStatus)
+End Interface
+
+[InterfaceId("B58B5E24-E1C6-528E-9D99-07EC8829DEA5")]
+Interface ITypedEventHandlerDispatcherQueueShutdownStarting Extends IUnknown
+    Sub Invoke(ByVal Sender As IDispatcherQueue, ByVal Args As IDispatcherQueueShutdownStartingEventArgs)
+End Interface
+
+[InterfaceId("FE79F855-2F40-5B88-A0C3-4C042A05DD05")]
+Interface ITypedEventHandlerDispatcherQueueShutdownCompleted Extends IUnknown
+    Sub Invoke(ByVal Sender As IDispatcherQueue, ByVal Args As IInspectable)
+End Interface
+
+[InterfaceId("5D2150D1-47EE-48AB-A52B-9F1954278D82")]
+Interface IDateTimeSettingsStatics Extends IInspectable
+    [PreserveSig]
+    Function SetSystemDateTime(ByVal UtcDateTime As DateTime) As HRESULT
+End Interface
+
+[InterfaceId("603E88E4-A338-4FFE-A457-A5CFB9CEB899")]
+Interface IDispatcherQueue Extends IInspectable
+    Function CreateTimer() As IDispatcherQueueTimer
+    Function TryEnqueue(ByVal Callback As IDispatcherQueueHandler) As BooleanByte
+    Function TryEnqueueWithPriority(ByVal Priority As DispatcherQueuePriority, ByVal Callback As IDispatcherQueueHandler) As BooleanByte
+    Function AddShutdownStarting(ByVal Handler As ITypedEventHandlerDispatcherQueueShutdownStarting, Optional Token As EventRegistrationToken) As HRESULT
+    Function RemoveShutdownStarting(ByVal Token As EventRegistrationToken) As HRESULT
+    Function AddShutdownCompleted(ByVal Handler As ITypedEventHandlerDispatcherQueueShutdownCompleted, Optional Token As EventRegistrationToken) As HRESULT
+    Function RemoveShutdownCompleted(ByVal Token As EventRegistrationToken) As HRESULT
+End Interface
+
+[InterfaceId("C822C647-30EF-506E-BD1E-A647AE6675FF")]
+Interface IDispatcherQueue2 Extends IInspectable
+    Property Get HasThreadAccess() As BooleanByte
+End Interface
+
+[InterfaceId("22F34E66-50DB-4E36-A98D-61C01B384D20")]
+Interface IDispatcherQueueController Extends IInspectable
+    Property Get DispatcherQueue() As IDispatcherQueue
+    Function ShutdownQueueAsync() As IAsyncAction
+End Interface
+
+[InterfaceId("0A6C98E0-5198-49A2-A313-3F70D1F13C27")]
+Interface IDispatcherQueueControllerStatics Extends IInspectable
+    Function CreateOnDedicatedThread() As IDispatcherQueueController
+End Interface
+
+[InterfaceId("C4724C4C-FF97-40C0-A226-CC0AAA545E89")]
+Interface IDispatcherQueueShutdownStartingEventArgs Extends IInspectable
+    Function GetDeferral() As IDeferral
+End Interface
+
+[InterfaceId("A96D83D7-9371-4517-9245-D0824AC12C74")]
+Interface IDispatcherQueueStatics Extends IInspectable
+    Function GetForCurrentThread() As IDispatcherQueue
+End Interface
+
+[InterfaceId("8B5644C8-8B57-50CE-8933-7AB2CC5A14EF")]
+Interface ITypedEventHandlerDispatcherQueueTimerTick Extends IUnknown
+    Sub Invoke(ByVal Sender As IDispatcherQueueTimer, ByVal Args As IInspectable)
+End Interface
+
+[InterfaceId("5FEABB1D-A31C-4727-B1AC-37454649D56A")]
+Interface IDispatcherQueueTimer Extends IInspectable
+    Property Get Interval() As TimeSpan
+    Property Let Interval(ByVal Value As TimeSpan)
+    Property Get IsRunning() As BooleanByte
+    Property Get IsRepeating() As BooleanByte
+    Property Let IsRepeating(ByVal Value As BooleanByte)
+    [PreserveSig]
+    Function Start() As HRESULT
+    [PreserveSig]
+    Function Stop() As HRESULT
+    [PreserveSig]
+    Function AddTick(ByVal Handler As ITypedEventHandlerDispatcherQueueTimerTick, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveTick(ByVal Token As EventRegistrationToken) As HRESULT
+End Interface
+
+[InterfaceId("BB91C27D-6B87-432A-BD04-776C6F5FB2AB")]
+Interface IFolderLauncherOptions Extends IInspectable
+    Property Get ItemsToSelect() As IVector_IStorageItem
+End Interface
+
+[InterfaceId("7755911A-70C5-48E5-B637-5BA3441E4EE4")]
+Interface IKnownUserPropertiesStatics Extends IInspectable
+    Property Get DisplayName() As LongPtr
+    Property Get FirstName() As LongPtr
+    Property Get LastName() As LongPtr
+    Property Get ProviderName() As LongPtr
+    Property Get AccountName() As LongPtr
+    Property Get GuestHost() As LongPtr
+    Property Get PrincipalName() As LongPtr
+    Property Get DomainName() As LongPtr
+    Property Get SessionInitiationProtocolUri() As LongPtr
+End Interface
+
+[InterfaceId("5B450782-F620-577E-B1B3-DD56644D79B1")]
+Interface IKnownUserPropertiesStatics2 Extends IInspectable
+    Property Get AgeEnforcementRegion() As LongPtr
+End Interface
+
+[InterfaceId("EC27A8DF-F6D5-45CA-913A-70A40C5C8221")]
+Interface ILaunchUriResult Extends IInspectable
+    Property Get Status() As LaunchUriStatus
+    Property Get Result() As IPropertySet
+End Interface
+
+[InterfaceId("BAFA21D8-B071-4CD8-853E-341203E557D3")]
+Interface ILauncherOptions Extends IInspectable
+    Property Get TreatAsUntrusted() As BooleanByte
+    Property Let TreatAsUntrusted(ByVal Value As BooleanByte)
+    Property Get DisplayApplicationPicker() As BooleanByte
+    Property Let DisplayApplicationPicker(ByVal Value As BooleanByte)
+    Property Get UI() As ILauncherUIOptions
+    Property Get PreferredApplicationPackageFamilyName() As LongPtr
+    Property Let PreferredApplicationPackageFamilyName(ByVal Value As LongPtr)
+    Property Get PreferredApplicationDisplayName() As LongPtr
+    Property Let PreferredApplicationDisplayName(ByVal Value As LongPtr)
+    Property Get FallbackUri() As IUri
+    Property Set FallbackUri(ByVal Value As IUri)
+    Property Get ContentType() As LongPtr
+    Property Let ContentType(ByVal Value As LongPtr)
+End Interface
+
+[InterfaceId("3BA08EB4-6E40-4DCE-A1A3-2F53950AFB49")]
+Interface ILauncherOptions2 Extends IInspectable
+    Property Get TargetApplicationPackageFamilyName() As LongPtr
+    Property Let TargetApplicationPackageFamilyName(ByVal Value As LongPtr)
+    Property Get NeighboringFilesQuery() As IStorageFileQueryResult
+    Property Set NeighboringFilesQuery(ByVal Value As IStorageFileQueryResult)
+End Interface
+
+[InterfaceId("F0770655-4B63-4E3A-9107-4E687841923A")]
+Interface ILauncherOptions3 Extends IInspectable
+    Property Get IgnoreAppUriHandlers() As BooleanByte
+    Property Let IgnoreAppUriHandlers(ByVal Value As BooleanByte)
+End Interface
+
+[InterfaceId("EF6FD10E-E6FB-4814-A44E-57E8B9D9A01B")]
+Interface ILauncherOptions4 Extends IInspectable
+    Property Get LimitPickerToCurrentAppAndAppUriHandlers() As BooleanByte
+    Property Let LimitPickerToCurrentAppAndAppUriHandlers(ByVal Value As BooleanByte)
+End Interface
+
+[InterfaceId("277151C3-9E3E-42F6-91A4-5DFDEB232451")]
+Interface ILauncherStatics Extends IInspectable
+    Function LaunchFileAsync(ByVal File As IStorageFile) As IAsyncOperationBoolean
+    Function LaunchFileWithOptionsAsync(ByVal File As IStorageFile, ByVal Options As ILauncherOptions) As IAsyncOperationBoolean
+    Function LaunchUriAsync(ByVal Uri As IUri) As IAsyncOperationBoolean
+    Function LaunchUriWithOptionsAsync(ByVal Uri As IUri, ByVal Options As ILauncherOptions) As IAsyncOperationBoolean
+End Interface
+
+[InterfaceId("E7539992-2220-5D2D-82C4-3D44F8750D91")]
+Interface IAsyncOperationLaunchQuerySupportStatus Extends IInspectable
+    Property Set Completed(ByVal Handler As IAsyncOperationCompletedHandlerLaunchQuerySupportStatus)
+    Property Get Completed() As IAsyncOperationCompletedHandlerLaunchQuerySupportStatus
+    Function GetResults() As LaunchQuerySupportStatus
+End Interface
+
+[InterfaceId("198CAC52-ABCD-5529-933F-071CC93FD635")]
+Interface IAsyncOperationCompletedHandlerLaunchQuerySupportStatus Extends IUnknown
+    Sub Invoke(ByVal AsyncOperation As IAsyncOperationLaunchQuerySupportStatus, ByVal AsyncStatus As AsyncStatus)
+End Interface
+
+[InterfaceId("7F97FC15-1CD6-54B7-A290-ACB60DBA81A1")]
+Interface IAsyncOperationILaunchUriResult Extends IInspectable
+    Property Set Completed(ByVal Handler As IAsyncOperationCompletedHandlerILaunchUriResult)
+    Property Get Completed() As IAsyncOperationCompletedHandlerILaunchUriResult
+    Function GetResults() As ILaunchUriResult
+End Interface
+
+[InterfaceId("70A97BF8-E0A5-59BB-9174-812A131D85A0")]
+Interface IAsyncOperationCompletedHandlerILaunchUriResult Extends IUnknown
+    Sub Invoke(ByVal AsyncOperation As IAsyncOperationILaunchUriResult, ByVal AsyncStatus As AsyncStatus)
+End Interface
+
+[InterfaceId("59BA2FBB-24CB-4C02-A4C4-8294569D54F1")]
+Interface ILauncherStatics2 Extends IInspectable
+    Function LaunchUriForResultsAsync(ByVal Uri As IUri, ByVal Options As ILauncherOptions) As IAsyncOperationILaunchUriResult
+    Function LaunchUriForResultsWithDataAsync(ByVal Uri As IUri, ByVal Options As ILauncherOptions, ByVal InputData As IPropertySet) As IAsyncOperationILaunchUriResult
+    Function LaunchUriWithDataAsync(ByVal Uri As IUri, ByVal Options As ILauncherOptions, ByVal InputData As IPropertySet) As IAsyncOperationBoolean
+    Function QueryUriSupportAsync(ByVal Uri As IUri, ByVal LaunchQuerySupportType As LaunchQuerySupportType) As IAsyncOperationLaunchQuerySupportStatus
+    Function QueryUriSupportWithPackageFamilyNameAsync(ByVal Uri As IUri, ByVal LaunchQuerySupportType As LaunchQuerySupportType, ByVal PackageFamilyName As LongPtr) As IAsyncOperationLaunchQuerySupportStatus
+    Function QueryFileSupportAsync(ByVal File As IStorageFile) As IAsyncOperationLaunchQuerySupportStatus
+    Function QueryFileSupportWithPackageFamilyNameAsync(ByVal File As IStorageFile, ByVal PackageFamilyName As LongPtr) As IAsyncOperationLaunchQuerySupportStatus
+    Function FindUriSchemeHandlersAsync(ByVal Scheme As LongPtr) As IAsyncOperationIVectorView_IAppInfo
+    Function FindUriSchemeHandlersWithLaunchUriTypeAsync(ByVal Scheme As LongPtr, ByVal LaunchQuerySupportType As LaunchQuerySupportType) As IAsyncOperationIVectorView_IAppInfo
+    Function FindFileHandlersAsync(ByVal Extension As LongPtr) As IAsyncOperationIVectorView_IAppInfo
+End Interface
+
+[InterfaceId("234261A8-9DB3-4683-AA42-DC6F51D33847")]
+Interface ILauncherStatics3 Extends IInspectable
+    Function LaunchFolderAsync(ByVal Folder As IStorageFolder) As IAsyncOperationBoolean
+    Function LaunchFolderWithOptionsAsync(ByVal Folder As IStorageFolder, ByVal Options As IFolderLauncherOptions) As IAsyncOperationBoolean
+End Interface
+
+[InterfaceId("AB3D721B-A4F3-5861-B034-030B15233C52")]
+Interface IAsyncOperationLaunchUriStatus Extends IInspectable
+    Property Set Completed(ByVal Handler As IAsyncOperationCompletedHandlerLaunchUriStatus)
+    Property Get Completed() As IAsyncOperationCompletedHandlerLaunchUriStatus
+    Function GetResults() As LaunchUriStatus
+End Interface
+
+[InterfaceId("520AA58E-40D6-5A57-A6DC-CB5FAEA5CCA5")]
+Interface IAsyncOperationCompletedHandlerLaunchUriStatus Extends IUnknown
+    Sub Invoke(ByVal AsyncOperation As IAsyncOperationLaunchUriStatus, ByVal AsyncStatus As AsyncStatus)
+End Interface
+
+[InterfaceId("B9EC819F-B5A5-41C6-B3B3-DD1B3178BCF2")]
+Interface ILauncherStatics4 Extends IInspectable
+    Function QueryAppUriSupportAsync(ByVal Uri As IUri) As IAsyncOperationLaunchQuerySupportStatus
+    Function QueryAppUriSupportWithPackageFamilyNameAsync(ByVal Uri As IUri, ByVal PackageFamilyName As LongPtr) As IAsyncOperationLaunchQuerySupportStatus
+    Function FindAppUriHandlersAsync(ByVal Uri As IUri) As IAsyncOperationIVectorView_IAppInfo
+    Function LaunchUriForUserAsync(ByVal User As IUser, ByVal Uri As IUri) As IAsyncOperationLaunchUriStatus
+    Function LaunchUriWithOptionsForUserAsync(ByVal User As IUser, ByVal Uri As IUri, ByVal Options As ILauncherOptions) As IAsyncOperationLaunchUriStatus
+    Function LaunchUriWithDataForUserAsync(ByVal User As IUser, ByVal Uri As IUri, ByVal Options As ILauncherOptions, ByVal InputData As IPropertySet) As IAsyncOperationLaunchUriStatus
+    Function LaunchUriForResultsForUserAsync(ByVal User As IUser, ByVal Uri As IUri, ByVal Options As ILauncherOptions) As IAsyncOperationILaunchUriResult
+    Function LaunchUriForResultsWithDataForUserAsync(ByVal User As IUser, ByVal Uri As IUri, ByVal Options As ILauncherOptions, ByVal InputData As IPropertySet) As IAsyncOperationILaunchUriResult
+End Interface
+
+[InterfaceId("5B24EF84-D895-5FEA-9153-1AC49AED9BA9")]
+Interface ILauncherStatics5 Extends IInspectable
+    Function LaunchFolderPathAsync(ByVal Path As LongPtr) As IAsyncOperationBoolean
+    Function LaunchFolderPathWithOptionsAsync(ByVal Path As LongPtr, ByVal Options As IFolderLauncherOptions) As IAsyncOperationBoolean
+    Function LaunchFolderPathForUserAsync(ByVal User As IUser, ByVal Path As LongPtr) As IAsyncOperationBoolean
+    Function LaunchFolderPathWithOptionsForUserAsync(ByVal User As IUser, ByVal Path As LongPtr, ByVal Options As IFolderLauncherOptions) As IAsyncOperationBoolean
+End Interface
+
+[InterfaceId("1B25DA6E-8AA6-41E9-8251-4165F5985F49")]
+Interface ILauncherUIOptions Extends IInspectable
+    Property Get InvocationPoint() As IReference_Point
+    Property Set InvocationPoint(ByVal Value As IReference_Point)
+    Property Get SelectionRect() As IReference_Rect
+    Property Set SelectionRect(ByVal Value As IReference_Rect)
+    Property Get PreferredPlacement() As Placement
+    Property Let PreferredPlacement(ByVal Value As Placement)
+End Interface
+
+[InterfaceId("8A9B29F1-7CA7-49DE-9BD3-3C5B7184F616")]
+Interface ILauncherViewOptions Extends IInspectable
+    Property Get DesiredRemainingView() As ViewSizePreference
+    Property Let DesiredRemainingView(ByVal Value As ViewSizePreference)
+End Interface
+
+[InterfaceId("6030E7C3-F93F-5E9C-9BA2-9A018D2B09C0")]
+Interface IEventHandlerAppMemoryUsageLimitChanging Extends IUnknown
+    Sub Invoke(ByVal Sender As IInspectable, ByVal Args As IAppMemoryUsageLimitChangingEventArgs)
+End Interface
+
+[InterfaceId("5C6C279C-D7CA-4779-9188-4057219CE64C")]
+Interface IMemoryManagerStatics Extends IInspectable
+    Property Get AppMemoryUsage() As UInt64
+    Property Get AppMemoryUsageLimit() As UInt64
+    Property Get AppMemoryUsageLevel() As AppMemoryUsageLevel
+    Function AddAppMemoryUsageIncreased(ByVal Handler As IEventHandlerIInspectable, Optional Token As EventRegistrationToken) As HRESULT
+    Function RemoveAppMemoryUsageIncreased(ByVal Token As EventRegistrationToken) As HRESULT
+    Function AddAppMemoryUsageDecreased(ByVal Handler As IEventHandlerIInspectable, Optional Token As EventRegistrationToken) As HRESULT
+    Function RemoveAppMemoryUsageDecreased(ByVal Token As EventRegistrationToken) As HRESULT
+    Function AddAppMemoryUsageLimitChanging(ByVal Handler As IEventHandlerAppMemoryUsageLimitChanging, Optional Token As EventRegistrationToken) As HRESULT
+    Function RemoveAppMemoryUsageLimitChanging(ByVal Token As EventRegistrationToken) As HRESULT
+End Interface
+
+[InterfaceId("6EEE351F-6D62-423F-9479-B01F9C9F7669")]
+Interface IMemoryManagerStatics2 Extends IInspectable
+    Function GetAppMemoryReport() As IAppMemoryReport
+    Function GetProcessMemoryReport() As IProcessMemoryReport
+End Interface
+
+[InterfaceId("149B59CE-92AD-4E35-89EB-50DFB4C0D91C")]
+Interface IMemoryManagerStatics3 Extends IInspectable
+    Function TrySetAppMemoryUsageLimit(ByVal Value As UInt64) As BooleanByte
+End Interface
+
+[InterfaceId("C5A94828-E84E-4886-8A0D-44B3190E3B72")]
+Interface IMemoryManagerStatics4 Extends IInspectable
+    Property Get ExpectedAppMemoryUsageLimit() As UInt64
+End Interface
+
+[InterfaceId("3080B9CF-F444-4A83-BEAF-A549A0F3229C")]
+Interface IProcessLauncherOptions Extends IInspectable
+    Property Get StandardInput() As IInputStream
+    Property Set StandardInput(ByVal Value As IInputStream)
+    Property Get StandardOutput() As IOutputStream
+    Property Set StandardOutput(ByVal Value As IOutputStream)
+    Property Get StandardError() As IOutputStream
+    Property Set StandardError(ByVal Value As IOutputStream)
+    Property Get WorkingDirectory() As LongPtr
+    Property Let WorkingDirectory(ByVal Value As LongPtr)
+End Interface
+
+[InterfaceId("544C8934-86D8-4991-8E75-ECE8A43B6B6D")]
+Interface IProcessLauncherResult Extends IInspectable
+    Property Get ExitCode() As Long
+End Interface
+
+[InterfaceId("E6827240-7A8D-51BE-8D21-E093268CCC15")]
+Interface IAsyncOperationIProcessLauncherResult Extends IInspectable
+    Property Set Completed(ByVal Handler As IAsyncOperationCompletedHandlerIProcessLauncherResult)
+    Property Get Completed() As IAsyncOperationCompletedHandlerIProcessLauncherResult
+    Function GetResults() As IProcessLauncherResult
+End Interface
+
+[InterfaceId("8D787EE6-07E4-5DCE-8FE5-B503A1F6368C")]
+Interface IAsyncOperationCompletedHandlerIProcessLauncherResult Extends IUnknown
+    Sub Invoke(ByVal AsyncOperation As IAsyncOperationIProcessLauncherResult, ByVal AsyncStatus As AsyncStatus)
+End Interface
+
+[InterfaceId("33AB66E7-2D0E-448B-A6A0-C13C3836D09C")]
+Interface IProcessLauncherStatics Extends IInspectable
+    Function RunToCompletionAsync(ByVal FileName As LongPtr, ByVal Args As LongPtr) As IAsyncOperationIProcessLauncherResult
+    Function RunToCompletionAsyncWithOptions(ByVal FileName As LongPtr, ByVal Args As LongPtr, ByVal Options As IProcessLauncherOptions) As IAsyncOperationIProcessLauncherResult
+End Interface
+
+[InterfaceId("087305A8-9B70-4782-8741-3A982B6CE5E4")]
+Interface IProcessMemoryReport Extends IInspectable
+    Property Get PrivateWorkingSetUsage() As UInt64
+    Property Get TotalWorkingSetUsage() As UInt64
+End Interface
+
+[InterfaceId("D581293A-6DE9-4D28-9378-F86782E182BB")]
+Interface IProtocolForResultsOperation Extends IInspectable
+    [PreserveSig]
+    Function ReportCompleted(ByVal Data As IPropertySet) As HRESULT
+End Interface
+
+[InterfaceId("9E3A2788-2891-4CDF-A2D6-9DFF7D02E693")]
+Interface IRemoteLauncherOptions Extends IInspectable
+    Property Get FallbackUri() As IUri
+    Property Set FallbackUri(ByVal Value As IUri)
+    Property Get PreferredAppIds() As IVector_HSTRING
+End Interface
+
+[InterfaceId("BB70E5CD-62C2-5F78-AC8D-F4B973981DA4")]
+Interface IAsyncOperationRemoteLaunchUriStatus Extends IInspectable
+    Property Set Completed(ByVal Handler As IAsyncOperationCompletedHandlerRemoteLaunchUriStatus)
+    Property Get Completed() As IAsyncOperationCompletedHandlerRemoteLaunchUriStatus
+    Function GetResults() As RemoteLaunchUriStatus
+End Interface
+
+[InterfaceId("3F8F4B1B-CD54-543C-817F-2630487F1878")]
+Interface IAsyncOperationCompletedHandlerRemoteLaunchUriStatus Extends IUnknown
+    Sub Invoke(ByVal AsyncOperation As IAsyncOperationRemoteLaunchUriStatus, ByVal AsyncStatus As AsyncStatus)
+End Interface
+
+[InterfaceId("D7DB7A93-A30C-48B7-9F21-051026A4E517")]
+Interface IRemoteLauncherStatics Extends IInspectable
+    Function LaunchUriAsync(ByVal RemoteSystemConnectionRequest As IRemoteSystemConnectionRequest, ByVal Uri As IUri) As IAsyncOperationRemoteLaunchUriStatus
+    Function LaunchUriWithOptionsAsync(ByVal RemoteSystemConnectionRequest As IRemoteSystemConnectionRequest, ByVal Uri As IUri, ByVal Options As IRemoteLauncherOptions) As IAsyncOperationRemoteLaunchUriStatus
+    Function LaunchUriWithDataAsync(ByVal RemoteSystemConnectionRequest As IRemoteSystemConnectionRequest, ByVal Uri As IUri, ByVal Options As IRemoteLauncherOptions, ByVal InputData As IPropertySet) As IAsyncOperationRemoteLaunchUriStatus
+End Interface
+
+[InterfaceId("72E247ED-DD5B-4D6C-B1D0-C57A7BBB5F94")]
+Interface IShutdownManagerStatics Extends IInspectable
+    [PreserveSig]
+    Function BeginShutdown(ByVal ShutdownKind As ShutdownKind, ByVal Timeout As TimeSpan) As HRESULT
+    [PreserveSig]
+    Function CancelShutdown() As HRESULT
+End Interface
+
+[InterfaceId("0F69A02F-9C34-43C7-A8C3-70B30A7F7504")]
+Interface IShutdownManagerStatics2 Extends IInspectable
+    Function IsPowerStateSupported(ByVal PowerState As PowerState) As BooleanByte
+    [PreserveSig]
+    Function EnterPowerState(ByVal PowerState As PowerState) As HRESULT
+    [PreserveSig]
+    Function EnterPowerStateWithTimeSpan(ByVal PowerState As PowerState, ByVal WakeUpAfter As TimeSpan) As HRESULT
+End Interface
+
+[InterfaceId("9B3B2BEA-A101-41AE-9FBD-028728BAB73D")]
+Interface ITimeZoneSettingsStatics Extends IInspectable
+    Property Get CurrentTimeZoneDisplayName() As LongPtr
+    Property Get SupportedTimeZoneDisplayNames() As IVectorView_HSTRING
+    Property Get CanChangeTimeZone() As BooleanByte
+    [PreserveSig]
+    Function ChangeTimeZoneByDisplayName(ByVal TimeZoneDisplayName As LongPtr) As HRESULT
+End Interface
+
+[InterfaceId("B69475AC-A5D4-53D7-A53A-BB01B69620FA")]
+Interface IAsyncOperationAutoUpdateTimeZoneStatus Extends IInspectable
+    Property Set Completed(ByVal Handler As IAsyncOperationCompletedHandlerAutoUpdateTimeZoneStatus)
+    Property Get Completed() As IAsyncOperationCompletedHandlerAutoUpdateTimeZoneStatus
+    Function GetResults() As AutoUpdateTimeZoneStatus
+End Interface
+
+[InterfaceId("C2B7624C-9F35-5074-8021-0633184899A7")]
+Interface IAsyncOperationCompletedHandlerAutoUpdateTimeZoneStatus Extends IUnknown
+    Sub Invoke(ByVal AsyncOperation As IAsyncOperationAutoUpdateTimeZoneStatus, ByVal AsyncStatus As AsyncStatus)
+End Interface
+
+[InterfaceId("555C0DB8-39A8-49FA-B4F6-A2C7FC2842EC")]
+Interface ITimeZoneSettingsStatics2 Extends IInspectable
+    Function AutoUpdateTimeZoneAsync(ByVal Timeout As TimeSpan) As IAsyncOperationAutoUpdateTimeZoneStatus
+End Interface
+
+[InterfaceId("DF9A26C6-E746-4BCD-B5D4-120103C4209B")]
+Interface IUser Extends IInspectable
+    Property Get NonRoamableId() As LongPtr
+    Property Get AuthenticationStatus() As UserAuthenticationStatus
+    Property Get Type() As UserType
+    Function GetPropertyAsync(ByVal PropertyName As LongPtr) As IAsyncOperationIInspectable
+    Function GetPropertiesAsync(ByVal Values As IVectorView_HSTRING) As IAsyncOperationIPropertySet
+    Function GetPictureAsync(ByVal DesiredSize As UserPictureSize) As IAsyncOperationIRandomAccessStreamReference
+End Interface
+
+[InterfaceId("D4DF0010-0172-5EFA-BD5C-6444DE94AF74")]
+Interface IAsyncOperationUserAgeConsentResult Extends IInspectable
+    Property Set Completed(ByVal Handler As IAsyncOperationCompletedHandlerUserAgeConsentResult)
+    Property Get Completed() As IAsyncOperationCompletedHandlerUserAgeConsentResult
+    Function GetResults() As UserAgeConsentResult
+End Interface
+
+[InterfaceId("5FF26075-034F-5186-8FD3-9EDA8DA3E739")]
+Interface IAsyncOperationCompletedHandlerUserAgeConsentResult Extends IUnknown
+    Sub Invoke(ByVal AsyncOperation As IAsyncOperationUserAgeConsentResult, ByVal AsyncStatus As AsyncStatus)
+End Interface
+
+[InterfaceId("98BA5628-A6E3-518E-89D9-D3B2B1991A10")]
+Interface IUser2 Extends IInspectable
+    Function CheckUserAgeConsentGroupAsync(ByVal ConsentGroup As UserAgeConsentGroup) As IAsyncOperationUserAgeConsentResult
+End Interface
+
+[InterfaceId("88B59568-BB30-42FB-A270-E9902E40EFA7")]
+Interface IUserAuthenticationStatusChangeDeferral Extends IInspectable
+    [PreserveSig]
+    Function Complete() As HRESULT
+End Interface
+
+[InterfaceId("8C030F28-A711-4C1E-AB48-04179C15938F")]
+Interface IUserAuthenticationStatusChangingEventArgs Extends IInspectable
+    Function GetDeferral() As IUserAuthenticationStatusChangeDeferral
+    Property Get User() As IUser
+    Property Get NewStatus() As UserAuthenticationStatus
+    Property Get CurrentStatus() As UserAuthenticationStatus
+End Interface
+
+[InterfaceId("086459DC-18C6-48DB-BC99-724FB9203CCC")]
+Interface IUserChangedEventArgs Extends IInspectable
+    Property Get User() As IUser
+End Interface
+
+[InterfaceId("99011E6C-3047-5BCA-B932-E1D1EB8A937F")]
+Interface IIterator_UserWatcherUpdateKind Extends IInspectable
+    Property Get Current() As UserWatcherUpdateKind
+    Property Get HasCurrent() As BooleanByte
+    Function MoveNext() As BooleanByte
+    Function GetMany(ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("89342B56-EB84-54E7-98C1-BAEE448BDCED")]
+Interface IIterable_UserWatcherUpdateKind Extends IInspectable
+    Function First() As IIterator_UserWatcherUpdateKind
+End Interface
+
+[InterfaceId("92B358CD-C1CA-5552-9E2E-67E2D6EAD4D1")]
+Interface IVectorView_UserWatcherUpdateKind Extends IInspectable
+    Function GetAt(ByVal Index As Long) As UserWatcherUpdateKind
+    Property Get Size() As Long
+    Function IndexOf(ByVal Value As UserWatcherUpdateKind, Index As Long) As BooleanByte
+    Function GetMany(ByVal StartIndex As Long, ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("6B2CCB44-6F01-560C-97AD-FC7F32EC581F")]
+Interface IUserChangedEventArgs2 Extends IInspectable
+    Property Get ChangedPropertyKinds() As IVectorView_UserWatcherUpdateKind
+End Interface
+
+[InterfaceId("BD1F6F6C-BB5D-4D7B-A5F0-C8CD11A38D42")]
+Interface IUserDeviceAssociationChangedEventArgs Extends IInspectable
+    Property Get DeviceId() As LongPtr
+    Property Get NewUser() As IUser
+    Property Get OldUser() As IUser
+End Interface
+
+[InterfaceId("D3A3D4C5-D8B6-5A0E-88ED-A5499C377BE3")]
+Interface IEventHandlerUserDeviceAssociationChanged Extends IUnknown
+    Sub Invoke(ByVal Sender As IInspectable, ByVal Args As IUserDeviceAssociationChangedEventArgs)
+End Interface
+
+[InterfaceId("7E491E14-F85A-4C07-8DA9-7FE3D0542343")]
+Interface IUserDeviceAssociationStatics Extends IInspectable
+    Function FindUserFromDeviceId(ByVal DeviceId As LongPtr) As IUser
+    [PreserveSig]
+    Function AddUserDeviceAssociationChanged(ByVal Handler As IEventHandlerUserDeviceAssociationChanged, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveUserDeviceAssociationChanged(ByVal Token As EventRegistrationToken) As HRESULT
+End Interface
+
+[InterfaceId("7D548008-F1E3-4A6C-8DDC-A9BB0F488AED")]
+Interface IUserPicker Extends IInspectable
+    Property Get AllowGuestAccounts() As BooleanByte
+    Property Let AllowGuestAccounts(ByVal Value As BooleanByte)
+    Property Get SuggestedSelectedUser() As IUser
+    Property Set SuggestedSelectedUser(ByVal Value As IUser)
+    Function PickSingleUserAsync() As IAsyncOperationIUser
+End Interface
+
+[InterfaceId("DE3290DC-7E73-4DF6-A1AE-4D7ECA82B40D")]
+Interface IUserPickerStatics Extends IInspectable
+    Function IsSupported() As BooleanByte
+End Interface
+
+[InterfaceId("326FE162-582B-5659-B8A4-68FF0F525745")]
+Interface IIterator_IUser Extends IInspectable
+    Property Get Current() As IUser
+    Property Get HasCurrent() As BooleanByte
+    Function MoveNext() As BooleanByte
+    Function GetMany(ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("D1BACD1F-0376-5823-8C29-1D45B9F4C191")]
+Interface IIterable_IUser Extends IInspectable
+    Function First() As IIterator_IUser
+End Interface
+
+[InterfaceId("8CBD762A-1222-5EE5-B745-489E7A42C6EC")]
+Interface IVectorView_IUser Extends IInspectable
+    Function GetAt(ByVal Index As Long) As IUser
+    Property Get Size() As Long
+    Function IndexOf(ByVal Value As IUser, Index As Long) As BooleanByte
+    Function GetMany(ByVal StartIndex As Long, ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("E44EA1DF-BB85-5A8C-BDDC-C8E960C355C9")]
+Interface IAsyncOperationIVectorView_IUser Extends IInspectable
+    Property Set Completed(ByVal Handler As IAsyncOperationCompletedHandlerIVectorView_IUser)
+    Property Get Completed() As IAsyncOperationCompletedHandlerIVectorView_IUser
+    Function GetResults() As IVectorView_IUser
+End Interface
+
+[InterfaceId("09870533-F7CB-569C-B797-DCB48DEBD709")]
+Interface IAsyncOperationCompletedHandlerIVectorView_IUser Extends IUnknown
+    Sub Invoke(ByVal AsyncOperation As IAsyncOperationIVectorView_IUser, ByVal AsyncStatus As AsyncStatus)
+End Interface
+
+[InterfaceId("155EB23B-242A-45E0-A2E9-3171FC6A7FDD")]
+Interface IUserStatics Extends IInspectable
+    Function CreateWatcher() As IUserWatcher
+    Function FindAllAsync() As IAsyncOperationIVectorView_IUser
+    Function FindAllAsyncByType(ByVal Type As UserType) As IAsyncOperationIVectorView_IUser
+    Function FindAllAsyncByTypeAndStatus(ByVal Type As UserType, ByVal Status As UserAuthenticationStatus) As IAsyncOperationIVectorView_IUser
+    Function GetFromId(ByVal NonRoamableId As LongPtr) As IUser
+End Interface
+
+[InterfaceId("74A37E11-2EB5-4487-B0D5-2C6790E013E9")]
+Interface IUserStatics2 Extends IInspectable
+    Function GetDefault() As IUser
+End Interface
+
+[InterfaceId("EB9D0454-25DB-5620-98B8-BE4C5D0DBC67")]
+Interface ITypedEventHandlerUserWatcherUserChanged Extends IUnknown
+    Sub Invoke(ByVal Sender As IUserWatcher, ByVal Args As IUserChangedEventArgs)
+End Interface
+
+[InterfaceId("9EC3D9D5-B413-51DF-8C64-640E3356E351")]
+Interface ITypedEventHandlerUserWatcherAuthenticationStatusChanging Extends IUnknown
+    Sub Invoke(ByVal Sender As IUserWatcher, ByVal Args As IUserAuthenticationStatusChangingEventArgs)
+End Interface
+
+[InterfaceId("F155E0FF-DBB5-5C34-AC0C-7E291E3300AB")]
+Interface ITypedEventHandlerUserWatcherIInspectable Extends IUnknown
+    Sub Invoke(ByVal Sender As IUserWatcher, ByVal Args As IInspectable)
+End Interface
+
+[InterfaceId("155EB23B-242A-45E0-A2E9-3171FC6A7FBB")]
+Interface IUserWatcher Extends IInspectable
+    Property Get Status() As UserWatcherStatus
+    [PreserveSig]
+    Function Start() As HRESULT
+    [PreserveSig]
+    Function Stop() As HRESULT
+    Function AddAdded(ByVal Handler As ITypedEventHandlerUserWatcherUserChanged, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveAdded(ByVal Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function AddRemoved(ByVal Handler As ITypedEventHandlerUserWatcherUserChanged, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveRemoved(ByVal Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function AddUpdated(ByVal Handler As ITypedEventHandlerUserWatcherUserChanged, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveUpdated(ByVal Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function AddAuthenticationStatusChanged(ByVal Handler As ITypedEventHandlerUserWatcherUserChanged, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveAuthenticationStatusChanged(ByVal Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function AddAuthenticationStatusChanging(ByVal Handler As ITypedEventHandlerUserWatcherAuthenticationStatusChanging, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveAuthenticationStatusChanging(ByVal Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function AddEnumerationCompleted(ByVal Handler As ITypedEventHandlerUserWatcherIInspectable, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveEnumerationCompleted(ByVal Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function AddStopped(ByVal Handler As ITypedEventHandlerUserWatcherIInspectable, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveStopped(ByVal Token As EventRegistrationToken) As HRESULT
+End Interface
+
+Module mdlSystem
+
+Public Enum AppDiagnosticInfoWatcherStatus
+    AppDiagnosticInfoWatcherStatus_Created
+    AppDiagnosticInfoWatcherStatus_Started
+    AppDiagnosticInfoWatcherStatus_EnumerationCompleted
+    AppDiagnosticInfoWatcherStatus_Stopping
+    AppDiagnosticInfoWatcherStatus_Stopped
+    AppDiagnosticInfoWatcherStatus_Aborted
+End Enum
+
+Public Enum AppMemoryUsageLevel
+    AppMemoryUsageLevel_Low
+    AppMemoryUsageLevel_Medium
+    AppMemoryUsageLevel_High
+    AppMemoryUsageLevel_OverLimit
+End Enum
+
+Public Enum AppResourceGroupEnergyQuotaState
+    AppResourceGroupEnergyQuotaState_Unknown
+    AppResourceGroupEnergyQuotaState_Over
+    AppResourceGroupEnergyQuotaState_Under
+End Enum
+
+Public Enum AppResourceGroupExecutionState
+    AppResourceGroupExecutionState_Unknown
+    AppResourceGroupExecutionState_Running
+    AppResourceGroupExecutionState_Suspending
+    AppResourceGroupExecutionState_Suspended
+    AppResourceGroupExecutionState_NotRunning
+End Enum
+
+Public Enum AppResourceGroupInfoWatcherStatus
+    AppResourceGroupInfoWatcherStatus_Created
+    AppResourceGroupInfoWatcherStatus_Started
+    AppResourceGroupInfoWatcherStatus_EnumerationCompleted
+    AppResourceGroupInfoWatcherStatus_Stopping
+    AppResourceGroupInfoWatcherStatus_Stopped
+    AppResourceGroupInfoWatcherStatus_Aborted
+End Enum
+
+Public Enum AutoUpdateTimeZoneStatus
+    AutoUpdateTimeZoneStatus_Attempted
+    AutoUpdateTimeZoneStatus_TimedOut
+    AutoUpdateTimeZoneStatus_Failed
+End Enum
+
+Public Enum DiagnosticAccessStatus
+    DiagnosticAccessStatus_Unspecified
+    DiagnosticAccessStatus_Denied
+    DiagnosticAccessStatus_Limited
+    DiagnosticAccessStatus_Allowed
+End Enum
+
+Public Enum DispatcherQueuePriority
+    DispatcherQueuePriority_Low = -10
+    DispatcherQueuePriority_Normal = 0
+    DispatcherQueuePriority_High = 10
+End Enum
+
+Public Enum LaunchFileStatus
+    LaunchFileStatus_Success
+    LaunchFileStatus_AppUnavailable
+    LaunchFileStatus_DeniedByPolicy
+    LaunchFileStatus_FileTypeNotSupported
+    LaunchFileStatus_Unknown
+End Enum
+
+Public Enum LaunchQuerySupportStatus
+    LaunchQuerySupportStatus_Available
+    LaunchQuerySupportStatus_AppNotInstalled
+    LaunchQuerySupportStatus_AppUnavailable
+    LaunchQuerySupportStatus_NotSupported
+    LaunchQuerySupportStatus_Unknown
+End Enum
+
+Public Enum LaunchQuerySupportType
+    LaunchQuerySupportType_Uri
+    LaunchQuerySupportType_UriForResults
+End Enum
+
+Public Enum LaunchUriStatus
+    LaunchUriStatus_Success
+    LaunchUriStatus_AppUnavailable
+    LaunchUriStatus_ProtocolUnavailable
+    LaunchUriStatus_Unknown
+End Enum
+
+Public Enum PowerState
+    PowerState_ConnectedStandby
+    PowerState_SleepS3
+End Enum
+
+Public Enum ProcessorArchitecture
+    ProcessorArchitecture_X86
+    ProcessorArchitecture_Arm = 5
+    ProcessorArchitecture_X64 = 9
+    ProcessorArchitecture_Neutral = 11
+    ProcessorArchitecture_Arm64 = 12
+    ProcessorArchitecture_X86OnArm64 = 14
+    ProcessorArchitecture_Unknown = 65535
+End Enum
+
+Public Enum RemoteLaunchUriStatus
+    RemoteLaunchUriStatus_Unknown
+    RemoteLaunchUriStatus_Success
+    RemoteLaunchUriStatus_AppUnavailable
+    RemoteLaunchUriStatus_ProtocolUnavailable
+    RemoteLaunchUriStatus_RemoteSystemUnavailable
+    RemoteLaunchUriStatus_ValueSetTooLarge
+    RemoteLaunchUriStatus_DeniedByLocalSystem
+    RemoteLaunchUriStatus_DeniedByRemoteSystem
+End Enum
+
+Public Enum ShutdownKind
+    ShutdownKind_Shutdown
+    ShutdownKind_Restart
+End Enum
+
+Public Enum UserAgeConsentGroup
+    UserAgeConsentGroup_Child
+    UserAgeConsentGroup_Minor
+    UserAgeConsentGroup_Adult
+End Enum
+
+Public Enum UserAgeConsentResult
+    UserAgeConsentResult_NotEnforced
+    UserAgeConsentResult_Included
+    UserAgeConsentResult_NotIncluded
+    UserAgeConsentResult_Unknown
+    UserAgeConsentResult_Ambiguous
+End Enum
+
+Public Enum UserAuthenticationStatus
+    UserAuthenticationStatus_Unauthenticated
+    UserAuthenticationStatus_LocallyAuthenticated
+    UserAuthenticationStatus_RemotelyAuthenticated
+End Enum
+
+Public Enum UserPictureSize
+    UserPictureSize_Size64x64
+    UserPictureSize_Size208x208
+    UserPictureSize_Size424x424
+    UserPictureSize_Size1080x1080
+End Enum
+
+Public Enum UserType
+    UserType_LocalUser
+    UserType_RemoteUser
+    UserType_LocalGuest
+    UserType_RemoteGuest
+    UserType_SystemManaged
+End Enum
+
+Public Enum UserWatcherStatus
+    UserWatcherStatus_Created
+    UserWatcherStatus_Started
+    UserWatcherStatus_EnumerationCompleted
+    UserWatcherStatus_Stopping
+    UserWatcherStatus_Stopped
+    UserWatcherStatus_Aborted
+End Enum
+
+Public Enum UserWatcherUpdateKind
+    UserWatcherUpdateKind_Properties
+    UserWatcherUpdateKind_Picture
+End Enum
+
+Public Enum VirtualKey
+    VirtualKey_None
+    VirtualKey_LeftButton
+    VirtualKey_RightButton
+    VirtualKey_Cancel
+    VirtualKey_MiddleButton
+    VirtualKey_XButton1
+    VirtualKey_XButton2
+    VirtualKey_Back = 8
+    VirtualKey_Tab
+    VirtualKey_Clear = 12
+    VirtualKey_Enter
+    VirtualKey_Shift = 16
+    VirtualKey_Control
+    VirtualKey_Menu
+    VirtualKey_Pause
+    VirtualKey_CapitalLock
+    VirtualKey_Kana
+    VirtualKey_Hangul = 21
+    VirtualKey_ImeOn
+    VirtualKey_Junja
+    VirtualKey_Final
+    VirtualKey_Hanja
+    VirtualKey_Kanji = 25
+    VirtualKey_ImeOff
+    VirtualKey_Escape
+    VirtualKey_Convert
+    VirtualKey_NonConvert
+    VirtualKey_Accept
+    VirtualKey_ModeChange
+    VirtualKey_Space
+    VirtualKey_PageUp
+    VirtualKey_PageDown
+    VirtualKey_End
+    VirtualKey_Home
+    VirtualKey_Left
+    VirtualKey_Up
+    VirtualKey_Right
+    VirtualKey_Down
+    VirtualKey_Select
+    VirtualKey_Print
+    VirtualKey_Execute
+    VirtualKey_Snapshot
+    VirtualKey_Insert
+    VirtualKey_Delete
+    VirtualKey_Help
+    VirtualKey_Number0
+    VirtualKey_Number1
+    VirtualKey_Number2
+    VirtualKey_Number3
+    VirtualKey_Number4
+    VirtualKey_Number5
+    VirtualKey_Number6
+    VirtualKey_Number7
+    VirtualKey_Number8
+    VirtualKey_Number9
+    VirtualKey_A = 65
+    VirtualKey_B
+    VirtualKey_C
+    VirtualKey_D
+    VirtualKey_E
+    VirtualKey_F
+    VirtualKey_G
+    VirtualKey_H
+    VirtualKey_I
+    VirtualKey_J
+    VirtualKey_K
+    VirtualKey_L
+    VirtualKey_M
+    VirtualKey_N
+    VirtualKey_O
+    VirtualKey_P
+    VirtualKey_Q
+    VirtualKey_R
+    VirtualKey_S
+    VirtualKey_T
+    VirtualKey_U
+    VirtualKey_V
+    VirtualKey_W
+    VirtualKey_X
+    VirtualKey_Y
+    VirtualKey_Z
+    VirtualKey_LeftWindows
+    VirtualKey_RightWindows
+    VirtualKey_Application
+    VirtualKey_Sleep = 95
+    VirtualKey_NumberPad0
+    VirtualKey_NumberPad1
+    VirtualKey_NumberPad2
+    VirtualKey_NumberPad3
+    VirtualKey_NumberPad4
+    VirtualKey_NumberPad5
+    VirtualKey_NumberPad6
+    VirtualKey_NumberPad7
+    VirtualKey_NumberPad8
+    VirtualKey_NumberPad9
+    VirtualKey_Multiply
+    VirtualKey_Add
+    VirtualKey_Separator
+    VirtualKey_Subtract
+    VirtualKey_Decimal
+    VirtualKey_Divide
+    VirtualKey_F1
+    VirtualKey_F2
+    VirtualKey_F3
+    VirtualKey_F4
+    VirtualKey_F5
+    VirtualKey_F6
+    VirtualKey_F7
+    VirtualKey_F8
+    VirtualKey_F9
+    VirtualKey_F10
+    VirtualKey_F11
+    VirtualKey_F12
+    VirtualKey_F13
+    VirtualKey_F14
+    VirtualKey_F15
+    VirtualKey_F16
+    VirtualKey_F17
+    VirtualKey_F18
+    VirtualKey_F19
+    VirtualKey_F20
+    VirtualKey_F21
+    VirtualKey_F22
+    VirtualKey_F23
+    VirtualKey_F24
+    VirtualKey_NavigationView
+    VirtualKey_NavigationMenu
+    VirtualKey_NavigationUp
+    VirtualKey_NavigationDown
+    VirtualKey_NavigationLeft
+    VirtualKey_NavigationRight
+    VirtualKey_NavigationAccept
+    VirtualKey_NavigationCancel
+    VirtualKey_NumberKeyLock
+    VirtualKey_Scroll
+    VirtualKey_LeftShift = 160
+    VirtualKey_RightShift
+    VirtualKey_LeftControl
+    VirtualKey_RightControl
+    VirtualKey_LeftMenu
+    VirtualKey_RightMenu
+    VirtualKey_GoBack
+    VirtualKey_GoForward
+    VirtualKey_Refresh
+    VirtualKey_Stop
+    VirtualKey_Search
+    VirtualKey_Favorites
+    VirtualKey_GoHome
+    VirtualKey_GamepadA = 195
+    VirtualKey_GamepadB
+    VirtualKey_GamepadX
+    VirtualKey_GamepadY
+    VirtualKey_GamepadRightShoulder
+    VirtualKey_GamepadLeftShoulder
+    VirtualKey_GamepadLeftTrigger
+    VirtualKey_GamepadRightTrigger
+    VirtualKey_GamepadDPadUp
+    VirtualKey_GamepadDPadDown
+    VirtualKey_GamepadDPadLeft
+    VirtualKey_GamepadDPadRight
+    VirtualKey_GamepadMenu
+    VirtualKey_GamepadView
+    VirtualKey_GamepadLeftThumbstickButton
+    VirtualKey_GamepadRightThumbstickButton
+    VirtualKey_GamepadLeftThumbstickUp
+    VirtualKey_GamepadLeftThumbstickDown
+    VirtualKey_GamepadLeftThumbstickRight
+    VirtualKey_GamepadLeftThumbstickLeft
+    VirtualKey_GamepadRightThumbstickUp
+    VirtualKey_GamepadRightThumbstickDown
+    VirtualKey_GamepadRightThumbstickRight
+    VirtualKey_GamepadRightThumbstickLeft
+End Enum
+
+Public Enum VirtualKeyModifiers
+    VirtualKeyModifiers_None = &H0
+    VirtualKeyModifiers_Control = &H1
+    VirtualKeyModifiers_Menu = &H2
+    VirtualKeyModifiers_Shift = &H4
+    VirtualKeyModifiers_Windows = &H8
+End Enum
+
+End Module

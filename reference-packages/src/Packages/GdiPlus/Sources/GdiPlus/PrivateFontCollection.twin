@@ -1,0 +1,73 @@
+' A part of the GDI+ Package for TwinBasic  https://github.com/kubao/GdiPlus
+' Licensed under the MIT license. (c) 2026 Sunderland Ober Consulting.
+' "Windows" is a trademark of the Microsoft Corporation.
+' Modeled after code and descriptions (c) Microsoft, taken from SDK headers and official documentation.
+' Certain flat API function and type declarations taken from WinDevLib by fafalone, with thanks.
+
+[COMCreatable(False)]
+Class PrivateFontCollection
+    Inherits FontCollection
+    
+    Sub New()
+        SetStatus(Native.Create())
+    End Sub
+    
+    Sub Class_Terminate()
+        Native.Delete
+    End Sub
+    
+    Function AddFontFile(ByVal filename As String) As GpStatus
+        Return SetStatus(Native.AddFontFile(filename))
+    End Function
+    
+    Function AddMemoryFont(ByVal memAddress As LongPtr, ByVal length&) As GpStatus
+        Return SetStatus(Native.AddMemoryFont(ByVal memAddress, length))
+    End Function
+    
+    Protected Property Get Native() As GpPrivateFontCollection
+        Debug.Assert TypeOf (Me) Is PrivateFontCollection
+        Native.Native = fc.Native
+    End Property
+    
+    Protected Sub New(ByVal nativeCollection As GpPrivateFontCollection, ByVal status As GpStatus = Ok)
+        SetStatus(status)
+        fc.Native = nativeCollection.Native
+    End Sub
+End Class
+
+Module GdipPrivateFontCollection
+    Function PrivateFontCollection() As PrivateFontCollection
+        Return New PrivateFontCollection
+    End Function
+    
+    Type GpPrivateFontCollection
+        ' Inherits GpFontCollection
+        Native As LongPtr
+        
+        Function Create() As GpStatus
+            Return Me.CreateInto(Me)
+        End Function
+        
+        [UseGetLastError(False)]
+        Public Declare PtrSafe Function CreateInto Lib "gdiplus" Alias "GdipNewPrivateFontCollection" (pf As GpPrivateFontCollection) As GpStatus
+        [UseGetLastError(False)]
+        Public Declare PtrSafe Function Delete Lib "gdiplus" Alias "GdipDeletePrivateFontCollection" (ByVal Me As GpPrivateFontCollection) As GpStatus
+        [UseGetLastError(False)]
+        Public DeclareWide PtrSafe Function AddFontFile Lib "gdiplus" Alias "GdipPrivateAddFontFile" (ByVal Me As GpPrivateFontCollection, ByVal FileName$) As GpStatus
+        [UseGetLastError(False)]
+        Public Declare PtrSafe Function AddMemoryFont Lib "gdiplus" Alias "GdipPrivateAddMemoryFont" (ByVal Me As GpPrivateFontCollection, memory As Any, ByVal length&) As GpStatus
+        
+        ' Inherited from GpFontCollection
+        
+        Function GetFamilyList(list() As GpFontFamily) As GpStatus
+            Return GetFamilyListImpl(Me.Native, list)
+        End Function
+        
+        [UseGetLastError(False)]
+        Public Declare PtrSafe Function GetFamilyCount Lib "gdiplus" Alias "GdipGetFontCollectionFamilyCount" (ByVal Me As GpPrivateFontCollection, numFound&) As GpStatus
+    End Type
+    
+    Function GpPrivateFontCollection() As GpPrivateFontCollection
+        GpPrivateFontCollection.Native = 0
+    End Function
+End Module

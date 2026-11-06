@@ -1,0 +1,79 @@
+' A part of the GDI+ Package for TwinBasic  https://github.com/kubao/GdiPlus
+' Licensed under the MIT license. (c) 2026 Sunderland Ober Consulting.
+' "Windows" is a trademark of the Microsoft Corporation.
+' Modeled after code and descriptions (c) Microsoft, taken from SDK headers and official documentation.
+' Certain flat API function and type declarations taken from WinDevLib by fafalone, with thanks.
+
+[COMCreatable(False)]
+Class FontCollection
+    Inherits GdiPlusBase
+    Protected fc As GpFontCollection
+   
+    Sub New()
+        ' empty by design
+    End Sub
+    
+    Overridable Sub Class_Terminate()
+        ' empty by design
+    End Sub
+    
+    Property Get FamilyCount() As Long
+        SetStatus(fc.GetFamilyCount(FamilyCount&))
+    End Property
+    
+    Function Families() As FontFamily()
+        Dim nativeFamilies() As GpFontFamily
+        SetStatus(fc.GetFamilyList(nativeFamilies))
+        If LastResult = Ok Then Return GpArrayToObjArray(Of FontFamily)(nativeFamilies)
+    End Function
+    
+    Protected Property Get Native() As GpFontCollection
+        Return fc
+    End Property
+    
+    Protected Sub New(ByVal nativeCollection As GpFontCollection, ByVal status As GpStatus = Ok)
+        SetStatus(status)
+        fc = nativeCollection
+    End Sub
+End Class
+
+Module GdipFontCollection
+    Type GpFontCollection
+        Native As LongPtr
+        
+        Function GetFamilyList(list() As GpFontFamily) As GpStatus
+            Return GetFamilyListImpl(Me.Native, list)
+        End Function
+        
+        [UseGetLastError(False)]
+        Public Declare PtrSafe Function GetFamilyCount Lib "gdiplus" Alias "GdipGetFontCollectionFamilyCount" (ByVal Me As GpFontCollection, numFound&) As GpStatus
+    End Type
+    
+    Function GpFontCollection() As GpFontCollection
+        GpFontCollection.Native = 0
+    End Function
+    
+    Function GetFamilyListImpl(ByVal Me As LongPtr, list() As GpFontFamily) As GpStatus
+        Dim numSought&, numFound&
+
+        GdipGetFontCollectionFamilyCount(Me, numSought)
+        ReDim list(1 To numSought)
+        Dim status As Any = GdipGetFontCollectionFamilyList(Me, numSought, list(1), numFound)
+        If status = Ok Then
+            ReDim Preserve list(1 To numFound)
+        Else
+            Erase list
+        End If
+        Return status
+    End Function
+    [UseGetLastError(False)]
+    Public Declare PtrSafe Function GdipGetFontCollectionFamilyCount Lib "gdiplus" (ByVal Me As LongPtr, numFound&) As GpStatus
+    [UseGetLastError(False)]
+    Public Declare PtrSafe Function GdipGetFontCollectionFamilyList Lib "gdiplus" (ByVal Me As LongPtr, ByVal numSought&, gpfamilies As GpFontFamily, numFound&) As GpStatus
+    
+    ' The functions below are redundant and don't need to be used.
+    [UseGetLastError(False)]
+    Public Declare PtrSafe Function GdipFontCollectionEnumerable Lib "gdiplus" (ByVal fontCollection As LongPtr, ByVal graphics As LongPtr, numFound As Long) As GpStatus
+    [UseGetLastError(False)]
+    Public Declare PtrSafe Function GdipFontCollectionEnumerate Lib "gdiplus" (ByVal fontCollection As LongPtr, ByVal numSought As Long, gpfamilies As LongPtr, numFound As Long, ByVal Graphics As LongPtr) As GpStatus
+End Module

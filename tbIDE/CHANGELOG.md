@@ -1,0 +1,74 @@
+# Changelog: tbIDE (WinUI 3 look for the twinBASIC IDE)
+
+## 2026-11-01: designer bridge probe (research, no add-in change)
+
+Validated by Shane on BETA 1033 with a throwaway add-in (`../docs/research/2026-11-01-multipage-designer/probes/DesignerBridgeProbe/`):
+- `ownerDocument.defaultView.eval(js)` runs in the IDE page and returns its value synchronously. A `<script>` element appended through the bridge did not run, and an inline `onerror` handler ran, but only asynchronously.
+- The form designer's functions are page globals (`addControl`, `preparePaste`, `deserializeControls`, `doPaste`, `executeIdeCommand` and others). The open designer's state is `getCurrentFormEditorGlobals()`.
+- Inserting a page control's JSON through the designer's own insert steps, plus `undoPoint`, created a real control inside the selected container: named, selectable, one-step undo, and kept after save and reopen.
+
+## 2026-10-30: moved into tbUI3, WinUI3 IDE Style add-in spike
+
+Added
+- This `tbIDE/` folder in tbUI3, holding the two themes and their generator (moved from the project's shared files; regenerating gives byte-identical .theme files) and the new add-in.
+- `WinUI3IdeStyle` add-in spike, written in twinBASIC against the IDE Extensibility Package (`tbIDE`). It adds one stylesheet to the IDE page while a theme whose name starts with `WinUI3` is active and empties it for any other theme. The stylesheet has 18 rules for WinUI Button hover and pressed states on dialog buttons, a WinUI ProgressBar for the progress dialog, and WinUI MenuBarItem hover on the menu and status bars. Values come from microsoft-ui-xaml `Button_themeresources.xaml`, `ProgressBar_themeresources.xaml` and `MenuBar_themeresources.xaml` (main branch, read 2026-10-30).
+- `tools/build-addin-project.mjs`, which built the first `WinUI3IdeStyle.twinproj` from `src/` using the IDE's Sample 11 add-in project as the binary container.
+
+Findings (from BETA 1033's `ide/main.js`)
+- An add-in tool window's body is in a shadow root attached to an element on the main IDE page, so `ownerDocument` from its `RootDomElement` is the IDE page.
+- `toolWindowElementGetProperty` and `toolWindowElementSetProperty` walk any property path from the element and call functions along the way, so a late-bound path such as `.Properties.ownerDocument.getElementById(id).textContent = css` reaches the page.
+
+Validated
+- `twinproj-src.mjs compare` shows the built project and `src/` match (4 of 4 files the same).
+- The 18 rules parse in Chromium and, layered on BETA 1033's `styles.css` in a mock page, win over the IDE's rules in both dark and light: hovered dialog button #323232 (dark) and #F6F6F6 (light) with no filter, progress indicator 3px at #60CDFF or #005FB8 on a 1px track, menu fills as listed.
+- Not yet compiled or run. Shane builds it in the IDE (win32 and win64) using the check list in README.md.
+
+
+## 2026-10-30: BETA 1033, after Shane's first look
+
+Fixed
+- New Project cards: every card had a blue outline, because 1033 draws all cards with `FrontPageSelectedItemBorder`. It is now a faint stroke, so only the selected card (fixed white border and blue outline) stands out.
+- WinUI3 Dark progress bar track is dark (#2D2D2D) with white text instead of white.
+
+Found (hard-coded in 1033, not reachable by a theme)
+- Dialog button hover is a fixed near-white `#ebeff5`, which is why hovers flash white in WinUI3 Dark.
+- The progress bar fill is a fixed green gradient with a white text glow and a grey outline.
+- Panel headers are fixed bold.
+
+## 2026-10-30: BETA 1033
+
+Changed
+- Both themes now target BETA 1033 (Dark 228 properties, Light 225).
+- Dialogs follow WinUI's ContentDialog using 1033's new dialog properties: 8px corners, SurfaceStroke border, content and command-area colours, 4px-rounded buttons with elevation borders and a focus ring, accent tab underline, themed text inputs, lists, nav rail and dialog scrollbars. WinUI3 Dark's dialogs are now dark (previously forced light).
+- Docked panels are rounded cards: `DockContainerBorderRadius` 8px, `DockContainerMargin` 2px (4px gaps), a faint outline, layer background; `DockBorder` and the panel borders are now 0.
+- Code editor text area set with the new `MonacoBackground` (#1C1C1C dark, #FFFFFF light), and the gutter matches it.
+- New Project front page: rounded cards, accent selected border and icon colour.
+- Removed the `Light_scroll*` lines, which 1033 dropped in favour of `DialogScroll*`.
+
+Findings (from twinBASIC BETA 1033's `ide/main.js` and stylesheets)
+- 1033 adds 51 theme properties (dialogs, modal border and radius, dock container radius, margin and outline, `MonacoBackground`, progress bar, front page, tick icons) and removes 3. The theme parser is unchanged.
+- Still hard-coded in 1033: context menu item text, code navigation drop-down text, title and dialog title text, menu bar hover, property category text, and a few Options-page texts.
+- The new front page builds its CSS in `main.js` and reads `DialogNavBarBackColor`, `DialogNavButtonBackColorSelected`, `FrontPageIconColor` and `FrontPageSelectedItemBorder` there. `FrontPageListBackground` is no longer used.
+
+Validated
+- Both files parse with a copy of 1033's `applyThemeData`: no dropped lines; every property is used by 1033's CSS or main.js.
+- Every value passes Chromium's `CSS.supports` for its CSS property, except the six used only in main.js-built CSS and the two indent-guide colours, which were checked by hand.
+- Not yet tested inside the IDE.
+
+## 2026-10-20
+
+Added
+- `themes/WinUI3 Dark.theme` (inherits Dark, 182 properties) and `themes/WinUI3 Light.theme` (inherits Light, 180 properties), using WinUI 3 colour tokens from `Common_themeresources_any.xaml` with the default blue accent.
+- `tools/build-themes.mjs`, which generates both files with a token comment on each line and refuses values the IDE parser would mangle.
+- `README.md` with how IDE themes work, install steps, a check list and known limits.
+
+Findings (from twinBASIC BETA 1015's `ide/main.js` and stylesheets)
+- Each theme property becomes a `--theme<Name>` CSS variable. Themes load from the IDE's `themes` folder and from `%APPDATA%\twinBASIC\themes`.
+- Context menu item text, code navigation drop-down text, dialog contents, title text, caption buttons and property category text are hard-coded, which is why some surfaces stay light or dark regardless of theme.
+- The shipped Dark and Light themes lose `DiagnosticsGroupFontSize` and `DiagnosticsGroupFontWeight` to a missing semicolon; both new themes set them again.
+- The shipped Light theme draws debug console suggestions in near-white text on a near-white pop-up (`GeneralTextColorProminent`); WinUI3 Light fixes that.
+
+Validated
+- Both files parse with a copy of the IDE's own `applyThemeData` parser: no dropped lines, and every property name exists in the shipped themes.
+- Every value passes Chromium's `CSS.supports` for the CSS property it feeds (the two indent-guide colours are used inside a larger `box-shadow`, so they were checked by hand).
+- Not yet tested inside the IDE. Shane's check on his PC is pending.

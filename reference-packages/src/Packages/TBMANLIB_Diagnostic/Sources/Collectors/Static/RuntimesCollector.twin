@@ -1,0 +1,262 @@
+' =====================================================
+' RuntimesCollector.twin - 已安装运行时收集器
+' Twinbasic Diagnostic Tool
+' =====================================================
+
+' 已安装运行时收集器
+' 刷新模式：Static（只获取一次）
+' 支持摘要：是
+' 检测 .NET Framework, .NET Core/.NET, VC++ Redistributable
+[ ClassId ("05A2B3C4-D5E6-F7A8-B9C0-D1E2F3A4B5C6") ]
+[ InterfaceId ("05A2B3C4-D5E6-F7A8-B9C0-D1E2F3A4B5C7") ]
+Public Class RuntimesCollector
+    Implements IDiagnosticCollector
+
+    ' === IDiagnosticCollector 实现 ===
+
+    Public Property Get IDiagnosticCollector_CategoryName() As String
+        Return "Runtimes"
+    End Property
+
+    Public Property Get IDiagnosticCollector_Description() As String
+        Return "Installed .NET, VC++ and other runtimes"
+    End Property
+
+    Public Property Get IDiagnosticCollector_RefreshMode() As RefreshMode
+        Return RefreshMode.Static
+    End Property
+
+    Public Property Get IDiagnosticCollector_RequiresElevation() As Boolean
+        Return False
+    End Property
+
+    Public Property Get IDiagnosticCollector_SupportsSummary() As Boolean
+        Return True
+    End Property
+
+    Public Function IDiagnosticCollector_Collect() As DiagnosticResult(Of KeyValuePair(Of String, String))
+        Dim result As DiagnosticResult(Of KeyValuePair(Of String, String))
+        Set result = New DiagnosticResult(Of KeyValuePair(Of String, String))("Runtimes")
+
+        ' 检测 .NET Framework
+        CollectDotNetFramework result
+
+        ' 检测 .NET Core / .NET 5+
+        CollectDotNetCore result
+
+        ' 检测 VC++ Redistributable
+        CollectVCRedist result
+
+        Return result
+    End Function
+
+    Public Function IDiagnosticCollector_CollectSummary() As DiagnosticResult(Of KeyValuePair(Of String, String))
+        Dim result As DiagnosticResult(Of KeyValuePair(Of String, String))
+        Set result = New DiagnosticResult(Of KeyValuePair(Of String, String))("Runtimes")
+        result.IsSummary = True
+
+        ' 摘要只显示最新版本
+        Dim netFxVersion As String = GetLatestDotNetFramework()
+        If Len(netFxVersion) > 0 Then
+            result.AddItem New KeyValuePair(Of String, String)(".NET Framework", netFxVersion)
+        End If
+
+        Dim netCoreVersion As String = GetLatestDotNetCore()
+        If Len(netCoreVersion) > 0 Then
+            result.AddItem New KeyValuePair(Of String, String)(".NET", netCoreVersion)
+        End If
+
+        Dim vcVersion As String = GetLatestVCRedist()
+        If Len(vcVersion) > 0 Then
+            result.AddItem New KeyValuePair(Of String, String)("VC++ Redist", vcVersion)
+        End If
+
+        Return result
+    End Function
+
+    ' === 私有方法 ===
+
+    Private Sub CollectDotNetFramework(ByRef result As DiagnosticResult(Of KeyValuePair(Of String, String)))
+        Dim hKey As LongPtr
+        Dim subKey As String = "SOFTWARE\Microsoft\NET Framework Setup\NDP\v4\Full"
+        Dim bufSize As Long
+        Dim regType As Long
+
+        If RegOpenKeyExW(HKEY_LOCAL_MACHINE, StrPtr(subKey), 0, KEY_READ Or KEY_WOW64_64KEY, hKey) = 0 Then
+            Dim releaseValue As Long
+            bufSize = 4
+
+            If RegQueryValueExW(hKey, StrPtr("Release"), 0, regType, VarPtr(releaseValue), bufSize) = 0 Then
+                Dim version As String = GetDotNetVersionFromRelease(releaseValue)
+                result.AddItem New KeyValuePair(Of String, String)(".NET Framework 4.x", version)
+            End If
+
+            RegCloseKey hKey
+        End If
+
+        ' 检查 .NET Framework 3.5
+        subKey = "SOFTWARE\Microsoft\NET Framework Setup\NDP\v3.5"
+        If RegOpenKeyExW(HKEY_LOCAL_MACHINE, StrPtr(subKey), 0, KEY_READ Or KEY_WOW64_64KEY, hKey) = 0 Then
+            Dim installed As Long
+            bufSize = 4
+
+            If RegQueryValueExW(hKey, StrPtr("Install"), 0, regType, VarPtr(installed), bufSize) = 0 Then
+                If installed = 1 Then
+                    result.AddItem New KeyValuePair(Of String, String)(".NET Framework 3.5", "Installed")
+                End If
+            End If
+
+            RegCloseKey hKey
+        End If
+    End Sub
+
+    Private Sub CollectDotNetCore(ByRef result As DiagnosticResult(Of KeyValuePair(Of String, String)))
+        ' 检查 .NET Core / .NET 5+ 安装路径
+        Dim programFiles As String = Environ$("ProgramFiles")
+        Dim dotnetPath As String = programFiles & "\dotnet\shared\Microsoft.NETCore.App"
+
+        ' 通过注册表检查
+        Dim hKey As LongPtr
+        Dim subKey As String = "SOFTWARE\dotnet\Setup\InstalledVersions\x64\sharedhost"
+
+        If RegOpenKeyExW(HKEY_LOCAL_MACHINE, StrPtr(subKey), 0, KEY_READ Or KEY_WOW64_64KEY, hKey) = 0 Then
+            Dim buffer As String = Space$(256)
+            Dim bufSize As Long = 512
+            Dim regType As Long
+
+            If RegQueryValueExW(hKey, StrPtr("Version"), 0, regType, StrPtr(buffer), bufSize) = 0 Then
+                Dim version As String = Trim$(Left$(buffer, bufSize \ 2 - 1))
+                If Len(version) > 0 Then
+                    result.AddItem New KeyValuePair(Of String, String)(".NET SDK", version)
+                End If
+            End If
+
+            RegCloseKey hKey
+        End If
+    End Sub
+
+    Private Sub CollectVCRedist(ByRef result As DiagnosticResult(Of KeyValuePair(Of String, String)))
+        Dim hKey As LongPtr
+        Dim subKey As String
+        Dim majorValue As Long
+        Dim minorValue As Long
+        Dim bufSize As Long
+        Dim regType As Long
+
+        ' 检查 VC++ 2015-2022 (x64)
+        subKey = "SOFTWARE\Microsoft\VisualStudio\14.0\VC\Runtimes\x64"
+
+        If RegOpenKeyExW(HKEY_LOCAL_MACHINE, StrPtr(subKey), 0, KEY_READ Or KEY_WOW64_64KEY, hKey) = 0 Then
+            bufSize = 4
+            RegQueryValueExW hKey, StrPtr("Major"), 0, regType, VarPtr(majorValue), bufSize
+            bufSize = 4
+            RegQueryValueExW hKey, StrPtr("Minor"), 0, regType, VarPtr(minorValue), bufSize
+
+            If majorValue > 0 Then
+                result.AddItem New KeyValuePair(Of String, String)("VC++ Redist (x64)", _
+                    majorValue & "." & minorValue)
+            End If
+
+            RegCloseKey hKey
+        End If
+
+        ' 检查 VC++ 2015-2022 (x86)
+        subKey = "SOFTWARE\WOW6432Node\Microsoft\VisualStudio\14.0\VC\Runtimes\x86"
+
+        If RegOpenKeyExW(HKEY_LOCAL_MACHINE, StrPtr(subKey), 0, KEY_READ Or KEY_WOW64_64KEY, hKey) = 0 Then
+            bufSize = 4
+            majorValue = 0
+            minorValue = 0
+            RegQueryValueExW hKey, StrPtr("Major"), 0, regType, VarPtr(majorValue), bufSize
+            bufSize = 4
+            RegQueryValueExW hKey, StrPtr("Minor"), 0, regType, VarPtr(minorValue), bufSize
+
+            If majorValue > 0 Then
+                result.AddItem New KeyValuePair(Of String, String)("VC++ Redist (x86)", _
+                    majorValue & "." & minorValue)
+            End If
+
+            RegCloseKey hKey
+        End If
+    End Sub
+
+    Private Function GetDotNetVersionFromRelease(ByVal release As Long) As String
+        Select Case release
+            Case Is >= 533320: Return "4.8.1"
+            Case Is >= 528040: Return "4.8"
+            Case Is >= 461808: Return "4.7.2"
+            Case Is >= 461308: Return "4.7.1"
+            Case Is >= 460798: Return "4.7"
+            Case Is >= 394802: Return "4.6.2"
+            Case Is >= 394254: Return "4.6.1"
+            Case Is >= 393295: Return "4.6"
+            Case Is >= 379893: Return "4.5.2"
+            Case Is >= 378675: Return "4.5.1"
+            Case Is >= 378389: Return "4.5"
+            Case Else: Return "4.x (Release " & release & ")"
+        End Select
+    End Function
+
+    Private Function GetLatestDotNetFramework() As String
+        Dim hKey As LongPtr
+        Dim subKey As String = "SOFTWARE\Microsoft\NET Framework Setup\NDP\v4\Full"
+
+        If RegOpenKeyExW(HKEY_LOCAL_MACHINE, StrPtr(subKey), 0, KEY_READ Or KEY_WOW64_64KEY, hKey) = 0 Then
+            Dim releaseValue As Long
+            Dim bufSize As Long = 4
+            Dim regType As Long
+
+            If RegQueryValueExW(hKey, StrPtr("Release"), 0, regType, VarPtr(releaseValue), bufSize) = 0 Then
+                RegCloseKey hKey
+                Return GetDotNetVersionFromRelease(releaseValue)
+            End If
+
+            RegCloseKey hKey
+        End If
+
+        Return ""
+    End Function
+
+    Private Function GetLatestDotNetCore() As String
+        Dim hKey As LongPtr
+        Dim subKey As String = "SOFTWARE\dotnet\Setup\InstalledVersions\x64\sharedhost"
+
+        If RegOpenKeyExW(HKEY_LOCAL_MACHINE, StrPtr(subKey), 0, KEY_READ Or KEY_WOW64_64KEY, hKey) = 0 Then
+            Dim buffer As String = Space$(256)
+            Dim bufSize As Long = 512
+            Dim regType As Long
+
+            If RegQueryValueExW(hKey, StrPtr("Version"), 0, regType, StrPtr(buffer), bufSize) = 0 Then
+                RegCloseKey hKey
+                Return Trim$(Left$(buffer, bufSize \ 2 - 1))
+            End If
+
+            RegCloseKey hKey
+        End If
+
+        Return ""
+    End Function
+
+    Private Function GetLatestVCRedist() As String
+        Dim hKey As LongPtr
+        Dim subKey As String = "SOFTWARE\Microsoft\VisualStudio\14.0\VC\Runtimes\x64"
+
+        If RegOpenKeyExW(HKEY_LOCAL_MACHINE, StrPtr(subKey), 0, KEY_READ Or KEY_WOW64_64KEY, hKey) = 0 Then
+            Dim majorValue As Long
+            Dim bufSize As Long = 4
+            Dim regType As Long
+
+            If RegQueryValueExW(hKey, StrPtr("Major"), 0, regType, VarPtr(majorValue), bufSize) = 0 Then
+                If majorValue >= 14 Then
+                    RegCloseKey hKey
+                    Return "2015-2022"
+                End If
+            End If
+
+            RegCloseKey hKey
+        End If
+
+        Return ""
+    End Function
+
+End Class

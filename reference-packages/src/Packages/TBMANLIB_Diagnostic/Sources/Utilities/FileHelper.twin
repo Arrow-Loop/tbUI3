@@ -1,0 +1,414 @@
+' =====================================================
+' FileHelper.twin - 文件操作辅助模块
+' Twinbasic Diagnostic Tool
+' =====================================================
+
+' 文件操作辅助模块
+' 提供文件读写、路径处理等常用函数
+Public Module FileHelper
+
+
+    ' 写入内容到文件
+    ' @param content 要写入的内容
+    ' @param filePath 文件路径（相对或绝对）
+    ' @return 操作是否成功，失败时返回错误描述
+    Public Function WriteFile(ByVal content As String, ByVal filePath As String) As Variant
+        On Error GoTo ErrorHandler
+
+        ' 获取完整路径
+        Dim fullPath As String
+        fullPath = GetFullPath(filePath)
+
+        ' 确保目录存在
+        Dim dirPath As String
+        dirPath = GetDirectoryName(fullPath)
+        If Len(dirPath) > 0 Then
+            EnsureDirectoryExists dirPath
+        End If
+
+        ' 写入文件（使用 UTF-8 with BOM 编码）
+        Dim fileNum As Long
+        fileNum = FreeFile
+
+        ' 使用二进制模式写入 UTF-8 BOM 和内容
+        Open fullPath For Binary As #fileNum
+
+        ' 写入 UTF-8 BOM (EF BB BF)
+        Dim bom(0 To 2) As Byte
+        bom(0) = &HEF
+        bom(1) = &HBB
+        bom(2) = &HBF
+        Put #fileNum, , bom()
+
+        ' 将字符串转换为 UTF-8 字节数组（使用 TwinBASIC 原生方法）
+        Dim utf8Bytes() As Byte
+        utf8Bytes = StrConv(content, vbUTF8)
+
+        ' 写入 UTF-8 内容
+        Put #fileNum, , utf8Bytes()
+
+        Close #fileNum
+
+        WriteFile = True
+        Exit Function
+
+ErrorHandler:
+        WriteFile = "Error " & Err.Number & ": " & Err.Description & " (File: " & filePath & ")"
+    End Function
+
+    ' 写入内容到文件（追加模式，使用 UTF-8 编码）
+    ' @param content 要写入的内容
+    ' @param filePath 文件路径（相对或绝对）
+    ' @return 操作是否成功，失败时返回错误描述
+    Public Function AppendFile(ByVal content As String, ByVal filePath As String) As Variant
+        On Error GoTo ErrorHandler
+
+        ' 获取完整路径
+        Dim fullPath As String
+        fullPath = GetFullPath(filePath)
+
+        ' 确保目录存在
+        Dim dirPath As String
+        dirPath = GetDirectoryName(fullPath)
+        If Len(dirPath) > 0 Then
+            EnsureDirectoryExists dirPath
+        End If
+
+        ' 追加到文件（使用 UTF-8 编码）
+        Dim fileNum As Long
+        fileNum = FreeFile
+
+        ' 使用二进制模式以确保 UTF-8 编码正确
+        Open fullPath For Binary As #fileNum
+
+        ' 获取文件大小，将文件指针移到末尾
+        Dim fileSize As Long
+        fileSize = LOF(fileNum)
+
+        ' 如果文件为空，写入 UTF-8 BOM
+        If fileSize = 0 Then
+            Dim bom(0 To 2) As Byte
+            bom(0) = &HEF
+            bom(1) = &HBB
+            bom(2) = &HBF
+            Put #fileNum, , bom()
+            fileSize = fileSize + 3
+        End If
+
+        ' 将字符串转换为 UTF-8 字节数组
+        Dim utf8Bytes() As Byte
+        utf8Bytes = StrConv(content, vbUTF8)
+
+        ' 追加 UTF-8 内容到文件末尾
+        Put #fileNum, fileSize + 1, utf8Bytes()
+
+        Close #fileNum
+
+        AppendFile = True
+        Exit Function
+
+ErrorHandler:
+        AppendFile = "Error " & Err.Number & ": " & Err.Description & " (File: " & filePath & ")"
+    End Function
+
+    ' 读取文件内容
+    ' @param filePath 文件路径（相对或绝对）
+    ' @return 文件内容，失败时返回错误描述
+    Public Function ReadFile(ByVal filePath As String) As Variant
+        On Error GoTo ErrorHandler
+
+        Dim fullPath As String
+        fullPath = GetFullPath(filePath)
+
+        Dim fileNum As Long
+        fileNum = FreeFile
+
+        Open fullPath For Binary As #fileNum
+        Dim fileSize As Long
+        fileSize = LOF(fileNum)
+
+        If fileSize = 0 Then
+            Close #fileNum
+            ReadFile = ""
+            Exit Function
+        End If
+
+        Dim content As String
+        content = Space$(fileSize)
+        Get #fileNum, , content
+        Close #fileNum
+
+        ReadFile = content
+        Exit Function
+
+ErrorHandler:
+        ReadFile = "Error " & Err.Number & ": " & Err.Description & " (File: " & filePath & ")"
+    End Function
+
+    ' 获取完整路径
+    ' @param path 文件路径（相对或绝对）
+    ' @return 完整路径
+    Public Function GetFullPath(ByVal path As String) As String
+        path = Trim$(path)
+
+        ' 如果是空路径，使用当前目录
+        If Len(path) = 0 Then
+            path = ".\"
+        End If
+
+        ' 如果是相对路径，转换为绝对路径
+        If Not IsAbsolutePath(path) Then
+            path = App.Path & "\" & path
+        End If
+
+        ' 规范化路径（去除多余的斜杠）
+        GetFullPath = NormalizePath(path)
+    End Function
+
+    ' 获取目录名
+    ' @param path 文件或目录路径
+    ' @return 目录路径
+    Public Function GetDirectoryName(ByVal path As String) As String
+        path = Trim$(path)
+
+        ' 去除尾部分隔符
+        If Right$(path, 1) = "\" Or Right$(path, 1) = "/" Then
+            path = Left$(path, Len(path) - 1)
+        End If
+
+        ' 查找最后一个分隔符
+        Dim lastSlash As Long
+        lastSlash = InStrRev(path, "\")
+        If lastSlash = 0 Then lastSlash = InStrRev(path, "/")
+
+        If lastSlash > 0 Then
+            GetDirectoryName = Left$(path, lastSlash - 1)
+        Else
+            GetDirectoryName = ""
+        End If
+    End Function
+
+    ' 获取文件名（含扩展名）
+    ' @param path 文件路径
+    ' @return 文件名
+    Public Function GetFileName(ByVal path As String) As String
+        path = Trim$(path)
+
+        ' 查找最后一个分隔符
+        Dim lastSlash As Long
+        lastSlash = InStrRev(path, "\")
+        If lastSlash = 0 Then lastSlash = InStrRev(path, "/")
+
+        If lastSlash > 0 Then
+            GetFileName = Mid$(path, lastSlash + 1)
+        Else
+            GetFileName = path
+        End If
+    End Function
+
+    ' 获取文件名（不含扩展名）
+    ' @param path 文件路径
+    ' @return 文件名（不含扩展名）
+    Public Function GetFileNameWithoutExtension(ByVal path As String) As String
+        Dim fileName As String
+        fileName = GetFileName(path)
+
+        ' 查找最后一个点
+        Dim lastDot As Long
+        lastDot = InStrRev(fileName, ".")
+
+        If lastDot > 0 Then
+            GetFileNameWithoutExtension = Left$(fileName, lastDot - 1)
+        Else
+            GetFileNameWithoutExtension = fileName
+        End If
+    End Function
+
+    ' 获取文件扩展名
+    ' @param path 文件路径
+    ' @return 扩展名（含点，如 ".txt"）
+    Public Function GetExtension(ByVal path As String) As String
+        Dim fileName As String
+        fileName = GetFileName(path)
+
+        ' 查找最后一个点
+        Dim lastDot As Long
+        lastDot = InStrRev(fileName, ".")
+
+        If lastDot > 0 Then
+            GetExtension = Mid$(fileName, lastDot)
+        Else
+            GetExtension = ""
+        End If
+    End Function
+
+    ' 检查是否为绝对路径
+    ' @param path 路径
+    ' @return 是否为绝对路径
+    Public Function IsAbsolutePath(ByVal path As String) As Boolean
+        path = LCase$(Trim$(path))
+
+        ' Windows 驱动器盘符检查（如 C:\）
+        If Len(path) >= 2 And Mid$(path, 2, 1) = ":" Then
+            IsAbsolutePath = True
+            Exit Function
+        End If
+
+        ' UNC 路径检查（如 \\server\share）
+        If Len(path) >= 2 And Left$(path, 2) = "\\" Then
+            IsAbsolutePath = True
+            Exit Function
+        End If
+
+        IsAbsolutePath = False
+    End Function
+
+    ' 规范化路径（统一分隔符，去除冗余）
+    ' @param path 原始路径
+    ' @return 规范化后的路径
+    Public Function NormalizePath(ByVal path As String) As String
+        ' 统一分隔符为反斜杠
+        path = Replace(path, "/", "\")
+
+        ' 替换连续的分隔符为单个
+        Do While InStr(path, "\\") > 0
+            path = Replace(path, "\\", "\")
+        Loop
+
+        ' 处理 . 和 ..
+        Dim parts() As String
+        parts = Split(path, "\")
+
+        Dim i As Long
+        Dim resultParts() As String
+        ReDim resultParts(0 To UBound(parts))
+
+        Dim resultIndex As Long = 0
+
+        For i = 0 To UBound(parts)
+            Dim part As String
+            part = Trim$(parts(i))
+
+            ' 跳过空部分和当前目录
+            If Len(part) = 0 Or part = "." Then
+                ' 跳过
+            ElseIf part = ".." Then
+                ' 返回上一级
+                If resultIndex > 0 Then
+                    resultIndex = resultIndex - 1
+                End If
+            Else
+                ' 添加部分
+                resultParts(resultIndex) = part
+                resultIndex = resultIndex + 1
+            End If
+        Next i
+
+        ' 重新组装路径
+        If resultIndex = 0 Then
+            NormalizePath = ""
+        Else
+            Dim result As String
+            result = resultParts(0)
+            For i = 1 To resultIndex - 1
+                result = result & "\" & resultParts(i)
+            Next i
+            NormalizePath = result
+        End If
+    End Function
+
+    ' 确保目录存在
+    ' @param path 目录路径
+    Public Sub EnsureDirectoryExists(ByVal path As String)
+        On Error Resume Next
+
+        path = Trim$(path)
+        If Len(path) = 0 Then Exit Sub
+
+        ' 移除尾部分隔符
+        If Right$(path, 1) = "\" Then
+            path = Left$(path, Len(path) - 1)
+        End If
+
+        ' 尝试创建目录（如果已存在会忽略）
+        MkDir path
+    End Sub
+
+    ' 检查文件是否存在
+    ' @param filePath 文件路径
+    ' @return 文件是否存在
+    Public Function FileExists(ByVal filePath As String) As Boolean
+        On Error Resume Next
+
+        filePath = GetFullPath(filePath)
+
+        Dim attr As Long
+        attr = GetAttr(filePath)
+
+        If Err.Number = 0 Then
+            ' 检查不是目录
+            FileExists = (attr And vbDirectory) = 0
+        Else
+            FileExists = False
+        End If
+    End Function
+
+    ' 检查目录是否存在
+    ' @param dirPath 目录路径
+    ' @return 目录是否存在
+    Public Function DirectoryExists(ByVal dirPath As String) As Boolean
+        On Error Resume Next
+
+        dirPath = GetFullPath(dirPath)
+
+        Dim attr As Long
+        attr = GetAttr(dirPath)
+
+        If Err.Number = 0 Then
+            ' 检查是目录
+            DirectoryExists = (attr And vbDirectory) <> 0
+        Else
+            DirectoryExists = False
+        End If
+    End Function
+
+    ' 获取文件大小
+    ' @param filePath 文件路径
+    ' @return 文件大小（字节），失败返回 -1
+    Public Function GetFileSize(ByVal filePath As String) As LongLong
+        On Error GoTo ErrorHandler
+
+        filePath = GetFullPath(filePath)
+
+        Dim fileNum As Long
+        fileNum = FreeFile
+
+        Open filePath For Binary As #fileNum
+        Dim size As LongLong
+        size = LOF(fileNum)
+        Close #fileNum
+
+        GetFileSize = size
+        Exit Function
+
+ErrorHandler:
+        GetFileSize = -1
+    End Function
+
+    ' 删除文件
+    ' @param filePath 文件路径
+    ' @return 操作是否成功
+    Public Function DeleteFile(ByVal filePath As String) As Boolean
+        On Error GoTo ErrorHandler
+
+        filePath = GetFullPath(filePath)
+
+        Kill filePath
+        DeleteFile = True
+        Exit Function
+
+ErrorHandler:
+        DeleteFile = False
+    End Function
+
+End Module

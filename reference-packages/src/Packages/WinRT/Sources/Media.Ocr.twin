@@ -1,0 +1,112 @@
+[InterfaceId("C7D7118E-AE36-59C0-AC76-7BADEE711C8B")]
+Interface IAsyncOperationIOcrResult Extends IInspectable
+    Property Set Completed(ByVal Handler As IAsyncOperationCompletedHandlerIOcrResult)
+    Property Get Completed() As IAsyncOperationCompletedHandlerIOcrResult
+    Function GetResults() As IOcrResult
+End Interface
+
+[InterfaceId("989C1371-444A-5E7E-B197-9EAAF9D2829A")]
+Interface IAsyncOperationCompletedHandlerIOcrResult Extends IUnknown
+    Sub Invoke(ByVal AsyncOperation As IAsyncOperationIOcrResult, ByVal AsyncStatus As AsyncStatus)
+End Interface
+
+[InterfaceId("30E99AE6-F414-5243-8DB2-AAB38EA3F1F1")]
+Interface IIterator_ILanguage Extends IInspectable
+    Property Get Current() As ILanguage
+    Property Get HasCurrent() As BooleanByte
+    Function MoveNext() As BooleanByte
+    Function GetMany(ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("48409A10-61B6-5DB1-A69D-8ABC46AC608A")]
+Interface IIterable_ILanguage Extends IInspectable
+    Function First() As IIterator_ILanguage
+End Interface
+
+[InterfaceId("144B0F3D-2D59-5DD2-B012-908EC3E06435")]
+Interface IVectorView_ILanguage Extends IInspectable
+    Function GetAt(ByVal Index As Long) As ILanguage
+    Property Get Size() As Long
+    Function IndexOf(ByVal Language As ILanguage, Index As Long) As BooleanByte
+    Function GetMany(ByVal StartIndex As Long, ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("52CA0F8A-5788-5695-B905-46B8D8171D88")]
+Interface IIterator_IOcrLine Extends IInspectable
+    Property Get Current() As IOcrLine
+    Property Get HasCurrent() As BooleanByte
+    Function MoveNext() As BooleanByte
+    Function GetMany(ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("6AFA94A2-60D7-5DBE-942D-81AA3929C85E")]
+Interface IIterable_IOcrLine Extends IInspectable
+    Function First() As IIterator_IOcrLine
+End Interface
+
+[InterfaceId("60C76EAC-8875-5DDB-A19B-65A3936279EA")]
+Interface IVectorView_IOcrLine Extends IInspectable
+    Function GetAt(ByVal Index As Long) As IOcrLine
+    Property Get Size() As Long
+    Function IndexOf(ByVal OcrLine As IOcrLine, Index As Long) As BooleanByte
+    Function GetMany(ByVal StartIndex As Long, ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("0ED4317A-9964-51C6-ACBE-02512A069082")]
+Interface IIterator_IOcrWord Extends IInspectable
+    Property Get Current() As IOcrWord
+    Property Get HasCurrent() As BooleanByte
+    Function MoveNext() As BooleanByte
+    Function GetMany(ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("A0CE663A-46D0-55E5-928E-251EB67A1E99")]
+Interface IIterable_IOcrWord Extends IInspectable
+    Function First() As IIterator_IOcrWord
+End Interface
+
+[InterfaceId("805A60C7-DF4F-527C-86B2-E29E439A83D2")]
+Interface IVectorView_IOcrWord Extends IInspectable
+    Function GetAt(ByVal Index As Long) As IOcrWord
+    Property Get Size() As Long
+    Function IndexOf(ByVal OcrWord As IOcrWord, Index As Long) As BooleanByte
+    Function GetMany(ByVal StartIndex As Long, ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("5A14BC41-5B76-3140-B680-8825562683AC")]
+Interface IOcrEngine Extends IInspectable
+    Function RecognizeAsync(ByVal SoftwareBitmap As ISoftwareBitmap) As IAsyncOperationIOcrResult
+    Property Get RecognizerLanguage() As ILanguage
+End Interface
+
+[InterfaceId("5BFFA85A-3384-3540-9940-699120D428A8")]
+Interface IOcrEngineStatics Extends IInspectable
+    Property Get MaxImageDimension() As Long
+    Property Get AvailableRecognizerLanguages() As IVectorView_ILanguage
+    Function IsLanguageSupported(ByVal Language As ILanguage) As BooleanByte
+    Function TryCreateFromLanguage(ByVal Language As ILanguage) As IOcrEngine
+    Function TryCreateFromUserProfileLanguages() As IOcrEngine
+End Interface
+
+[InterfaceId("0043A16F-E31F-3A24-899C-D444BD088124")]
+Interface IOcrLine Extends IInspectable
+    Property Get Words() As IVectorView_IOcrWord
+    Property Get Text() As LongPtr
+End Interface
+
+[InterfaceId("9BD235B2-175B-3D6A-92E2-388C206E2F63")]
+Interface IOcrResult Extends IInspectable
+    Property Get Lines() As IVectorView_IOcrLine
+    Property Get TextAngle() As IReference_Double
+    Property Get Text() As LongPtr
+End Interface
+
+[InterfaceId("3C2A477A-5CD9-3525-BA2A-23D1E0A68A1D")]
+Interface IOcrWord Extends IInspectable
+    Property Get BoundingRect() As RECTF
+    Property Get Text() As LongPtr
+End Interface
+
+Module mdlMediaOcr
+
+End Module

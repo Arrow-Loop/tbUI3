@@ -1,0 +1,105 @@
+[InterfaceId("71C89B09-E131-4B54-A53C-EB43FF37E9BB")]
+Interface IHttpBaseProtocolFilter Extends IInspectable
+    Property Get AllowAutoRedirect() As BooleanByte
+    Property Let AllowAutoRedirect(ByVal Value As BooleanByte)
+    Property Get AllowUI() As BooleanByte
+    Property Let AllowUI(ByVal Value As BooleanByte)
+    Property Get AutomaticDecompression() As BooleanByte
+    Property Let AutomaticDecompression(ByVal Value As BooleanByte)
+    Property Get CacheControl() As IHttpCacheControl
+    Property Get CookieManager() As IHttpCookieManager
+    Property Get ClientCertificate() As ICertificate
+    Property Set ClientCertificate(ByVal Value As ICertificate)
+    Property Get IgnorableServerCertificateErrors() As IVector_ChainValidationResult
+    Property Get MaxConnectionsPerServer() As Long
+    Property Let MaxConnectionsPerServer(ByVal Value As Long)
+    Property Get ProxyCredential() As IPasswordCredential
+    Property Set ProxyCredential(ByVal Value As IPasswordCredential)
+    Property Get ServerCredential() As IPasswordCredential
+    Property Set ServerCredential(ByVal Value As IPasswordCredential)
+    Property Get UseProxy() As BooleanByte
+    Property Let UseProxy(ByVal Value As BooleanByte)
+End Interface
+
+[InterfaceId("2EC30013-9427-4900-A017-FA7DA3B5C9AE")]
+Interface IHttpBaseProtocolFilter2 Extends IInspectable
+    Property Get MaxVersion() As HttpVersion
+    Property Let MaxVersion(ByVal Value As HttpVersion)
+End Interface
+
+[InterfaceId("D43F4D4C-BD42-43AE-8717-AD2C8F4B2937")]
+Interface IHttpBaseProtocolFilter3 Extends IInspectable
+    Property Get CookieUsageBehavior() As HttpCookieUsageBehavior
+    Property Let CookieUsageBehavior(ByVal Value As HttpCookieUsageBehavior)
+End Interface
+
+[InterfaceId("ED0260C6-41F2-5A04-9A8B-2930D7FF8A9E")]
+Interface ITypedEventHandlerHttpBaseProtocolFilterServerCustomValidationRequested Extends IUnknown
+    Sub Invoke(ByVal Sender As IHttpBaseProtocolFilter, ByVal Args As IHttpServerCustomValidationRequestedEventArgs)
+End Interface
+
+[InterfaceId("9FE36CCF-2983-4893-941F-EB518CA8CEF9")]
+Interface IHttpBaseProtocolFilter4 Extends IInspectable
+    [PreserveSig]
+    Function AddServerCustomValidationRequested(ByVal Handler As ITypedEventHandlerHttpBaseProtocolFilterServerCustomValidationRequested, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveServerCustomValidationRequested(ByVal Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function ClearAuthenticationCache() As HRESULT
+End Interface
+
+[InterfaceId("416E4993-31E3-4816-BF09-E018EE8DC1F5")]
+Interface IHttpBaseProtocolFilter5 Extends IInspectable
+    Property Get User() As IUser
+End Interface
+
+[InterfaceId("6D4DEE0C-E908-494E-B5A3-1263C9B8242A")]
+Interface IHttpBaseProtocolFilterStatics Extends IInspectable
+    Function CreateForUser(ByVal User As IUser) As IHttpBaseProtocolFilter
+End Interface
+
+[InterfaceId("C77E1CB4-3CEA-4EB5-AC85-04E186E63AB7")]
+Interface IHttpCacheControl Extends IInspectable
+    Property Get ReadBehavior() As HttpCacheReadBehavior
+    Property Let ReadBehavior(ByVal Value As HttpCacheReadBehavior)
+    Property Get WriteBehavior() As HttpCacheWriteBehavior
+    Property Let WriteBehavior(ByVal Value As HttpCacheWriteBehavior)
+End Interface
+
+[InterfaceId("A4CB6DD5-0902-439E-BFD7-E12552B165CE")]
+Interface IHttpFilter Extends IInspectable ' requires IClosable
+    Function SendRequestAsync(ByVal Request As IHttpRequestMessage) As IAsyncOperationWithProgressIHttpResponseMessageHttpProgress
+End Interface
+
+[InterfaceId("3165FE32-E7DD-48B7-A361-939C750E63CC")]
+Interface IHttpServerCustomValidationRequestedEventArgs Extends IInspectable
+    Property Get RequestMessage() As IHttpRequestMessage
+    Property Get ServerCertificate() As ICertificate
+    Property Get ServerCertificateErrorSeverity() As SocketSslErrorSeverity
+    Property Get ServerCertificateErrors() As IVectorView_ChainValidationResult
+    Property Get ServerIntermediateCertificates() As IVectorView_ICertificate
+    [PreserveSig]
+    Function Reject() As HRESULT
+    Function GetDeferral() As IDeferral
+End Interface
+
+Module mdlWebHttpFilters
+
+Public Enum HttpCacheReadBehavior
+    HttpCacheReadBehavior_Default
+    HttpCacheReadBehavior_MostRecent
+    HttpCacheReadBehavior_OnlyFromCache
+    HttpCacheReadBehavior_NoCache
+End Enum
+
+Public Enum HttpCacheWriteBehavior
+    HttpCacheWriteBehavior_Default
+    HttpCacheWriteBehavior_NoCache
+End Enum
+
+Public Enum HttpCookieUsageBehavior
+    HttpCookieUsageBehavior_Default
+    HttpCookieUsageBehavior_NoCookies
+End Enum
+
+End Module

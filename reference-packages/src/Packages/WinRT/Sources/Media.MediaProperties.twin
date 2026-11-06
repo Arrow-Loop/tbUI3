@@ -1,0 +1,561 @@
+[InterfaceId("62BC7A16-005C-4B3B-8A0B-0A090E9687F3")]
+Interface IAudioEncodingProperties Extends IInspectable
+    Property Let Bitrate(ByVal Value As Long)
+    Property Get Bitrate() As Long
+    Property Let ChannelCount(ByVal Value As Long)
+    Property Get ChannelCount() As Long
+    Property Let SampleRate(ByVal Value As Long)
+    Property Get SampleRate() As Long
+    Property Let BitsPerSample(ByVal Value As Long)
+    Property Get BitsPerSample() As Long
+End Interface
+
+[InterfaceId("C45D54DA-80BD-4C23-80D5-72D4A181E894")]
+Interface IAudioEncodingProperties2 Extends IInspectable
+    Property Get IsSpatial() As BooleanByte
+End Interface
+
+[InterfaceId("87600341-748C-4F8D-B0FD-10CAF08FF087")]
+Interface IAudioEncodingProperties3 Extends IInspectable
+    Function Copy() As IAudioEncodingProperties
+End Interface
+
+[InterfaceId("0CAD332C-EBE9-4527-B36D-E42A13CF38DB")]
+Interface IAudioEncodingPropertiesStatics Extends IInspectable
+    Function CreateAac(ByVal SampleRate As Long, ByVal ChannelCount As Long, ByVal Bitrate As Long) As IAudioEncodingProperties
+    Function CreateAacAdts(ByVal SampleRate As Long, ByVal ChannelCount As Long, ByVal Bitrate As Long) As IAudioEncodingProperties
+    Function CreateMp3(ByVal SampleRate As Long, ByVal ChannelCount As Long, ByVal Bitrate As Long) As IAudioEncodingProperties
+    Function CreatePcm(ByVal SampleRate As Long, ByVal ChannelCount As Long, ByVal BitsPerSample As Long) As IAudioEncodingProperties
+    Function CreateWma(ByVal SampleRate As Long, ByVal ChannelCount As Long, ByVal Bitrate As Long) As IAudioEncodingProperties
+End Interface
+
+[InterfaceId("7489316F-77A0-433D-8ED5-4040280E8665")]
+Interface IAudioEncodingPropertiesStatics2 Extends IInspectable
+    Function CreateAlac(ByVal SampleRate As Long, ByVal ChannelCount As Long, ByVal BitsPerSample As Long) As IAudioEncodingProperties
+    Function CreateFlac(ByVal SampleRate As Long, ByVal ChannelCount As Long, ByVal BitsPerSample As Long) As IAudioEncodingProperties
+End Interface
+
+[InterfaceId("98F10D79-13EA-49FF-BE70-2673DB69702C")]
+Interface IAudioEncodingPropertiesWithFormatUserData Extends IInspectable
+    [PreserveSig]
+    Function SetFormatUserData(ByVal ValueSize As Long, Value As Any) As HRESULT
+    [PreserveSig]
+    Function GetFormatUserData(ValueSize As Long, Value As Any) As HRESULT
+End Interface
+
+[InterfaceId("59AC2A57-B32A-479E-8A61-4B7F2E9E7EA0")]
+Interface IContainerEncodingProperties Extends IInspectable ' requires IMediaEncodingProperties
+
+End Interface
+
+[InterfaceId("B272C029-AE26-4819-BAAD-AD7A49B0A876")]
+Interface IContainerEncodingProperties2 Extends IInspectable
+    Function Copy() As IContainerEncodingProperties
+End Interface
+
+[InterfaceId("38654CA7-846A-4F97-A2E5-C3A15BBF70FD")]
+Interface IH264ProfileIdsStatics Extends IInspectable
+    Property Get ConstrainedBaseline() As Long
+    Property Get Baseline() As Long
+    Property Get Extended() As Long
+    Property Get Main() As Long
+    Property Get High() As Long
+    Property Get High10() As Long
+    Property Get High422() As Long
+    Property Get High444() As Long
+    Property Get StereoHigh() As Long
+    Property Get MultiviewHigh() As Long
+End Interface
+
+[InterfaceId("78625635-F331-4189-B1C3-B48D5AE034F1")]
+Interface IImageEncodingProperties Extends IInspectable ' requires IMediaEncodingProperties
+    Property Let Width(ByVal Value As Long)
+    Property Get Width() As Long
+    Property Let Height(ByVal Value As Long)
+    Property Get Height() As Long
+End Interface
+
+[InterfaceId("C854A2DF-C923-469B-AC8E-6A9F3C1CD9E3")]
+Interface IImageEncodingProperties2 Extends IInspectable
+    Function Copy() As IImageEncodingProperties
+End Interface
+
+[InterfaceId("257C68DC-8B99-439E-AA59-913A36161297")]
+Interface IImageEncodingPropertiesStatics Extends IInspectable
+    Function CreateJpeg() As IImageEncodingProperties
+    Function CreatePng() As IImageEncodingProperties
+    Function CreateJpegXR() As IImageEncodingProperties
+End Interface
+
+[InterfaceId("F6C25B29-3824-46B0-956E-501329E1BE3C")]
+Interface IImageEncodingPropertiesStatics2 Extends IInspectable
+    Function CreateUncompressed(ByVal Format As MediaPixelFormat) As IImageEncodingProperties
+    Function CreateBmp() As IImageEncodingProperties
+End Interface
+
+[InterfaceId("48F4814D-A2FF-48DC-8EA0-E90680663656")]
+Interface IImageEncodingPropertiesStatics3 Extends IInspectable
+    Function CreateHeif() As IImageEncodingProperties
+End Interface
+
+[InterfaceId("E7DBF5A8-1DB9-4783-876B-3DFE12ACFDB3")]
+Interface IMediaEncodingProfile Extends IInspectable
+    Property Set Audio(ByVal Value As IAudioEncodingProperties)
+    Property Get Audio() As IAudioEncodingProperties
+    Property Set Video(ByVal Value As IVideoEncodingProperties)
+    Property Get Video() As IVideoEncodingProperties
+    Property Set Container(ByVal Value As IContainerEncodingProperties)
+    Property Get Container() As IContainerEncodingProperties
+End Interface
+
+[InterfaceId("A61A11CD-B32E-518B-A6A7-5472CBE00E83")]
+Interface IIterator_IAudioStreamDescriptor Extends IInspectable
+    Property Get Current() As IAudioStreamDescriptor
+    Property Get HasCurrent() As BooleanByte
+    Function MoveNext() As BooleanByte
+    Function GetMany(ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("A3E2C972-A171-5B94-8389-E983EBC3F3B9")]
+Interface IIterable_IAudioStreamDescriptor Extends IInspectable
+    Function First() As IIterator_IAudioStreamDescriptor
+End Interface
+
+[InterfaceId("340F4FED-1288-5B89-BE7C-C355FE1CE4D9")]
+Interface IVectorView_IAudioStreamDescriptor Extends IInspectable
+    Function GetAt(ByVal Index As Long) As IAudioStreamDescriptor
+    Property Get Size() As Long
+    Function IndexOf(ByVal Value As IAudioStreamDescriptor, Index As Long) As BooleanByte
+    Function GetMany(ByVal StartIndex As Long, ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("45AFC129-988C-5F1E-9C17-6E34B917CD1B")]
+Interface IVector_IAudioStreamDescriptor Extends IInspectable
+    Function GetAt(ByVal Index As Long) As IAudioStreamDescriptor
+    Property Get Size() As Long
+    Function GetView() As IVectorView_IAudioStreamDescriptor
+    Function IndexOf(ByVal Value As IAudioStreamDescriptor, Index As Long) As BooleanByte
+    [PreserveSig]
+    Function SetAt(ByVal Index As Long, ByVal Value As IAudioStreamDescriptor) As HRESULT
+    [PreserveSig]
+    Function InsertAt(ByVal Index As Long, ByVal Value As IAudioStreamDescriptor) As HRESULT
+    [PreserveSig]
+    Function RemoveAt(ByVal Index As Long) As HRESULT
+    [PreserveSig]
+    Function Append(ByVal Value As IAudioStreamDescriptor) As HRESULT
+    [PreserveSig]
+    Function RemoveAtEnd() As HRESULT
+    [PreserveSig]
+    Function Clear() As HRESULT
+    Function GetMany(ByVal StartIndex As Long, ByVal Length As Long, Items As Any) As Long
+    [PreserveSig]
+    Function ReplaceAll(ByVal Length As Long, Items As Any) As HRESULT
+End Interface
+
+[InterfaceId("DA51AB3C-3C64-545C-A3F4-F9B055AAF7D9")]
+Interface IIterator_IVideoStreamDescriptor Extends IInspectable
+    Property Get Current() As IVideoStreamDescriptor
+    Property Get HasCurrent() As BooleanByte
+    Function MoveNext() As BooleanByte
+    Function GetMany(ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("3ACBF03C-0A79-5823-AAA9-D88BC3F8F594")]
+Interface IIterable_IVideoStreamDescriptor Extends IInspectable
+    Function First() As IIterator_IVideoStreamDescriptor
+End Interface
+
+[InterfaceId("E965C8AF-D211-52F0-838B-4637469DA7AF")]
+Interface IVectorView_IVideoStreamDescriptor Extends IInspectable
+    Function GetAt(ByVal Index As Long) As IVideoStreamDescriptor
+    Property Get Size() As Long
+    Function IndexOf(ByVal Value As IVideoStreamDescriptor, Index As Long) As BooleanByte
+    Function GetMany(ByVal StartIndex As Long, ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("1FB064B3-636C-5988-9C97-02A9B76150F6")]
+Interface IVector_IVideoStreamDescriptor Extends IInspectable
+    Function GetAt(ByVal Index As Long) As IVideoStreamDescriptor
+    Property Get Size() As Long
+    Function GetView() As IVectorView_IVideoStreamDescriptor
+    Function IndexOf(ByVal Value As IVideoStreamDescriptor, Index As Long) As BooleanByte
+    [PreserveSig]
+    Function SetAt(ByVal Index As Long, ByVal Value As IVideoStreamDescriptor) As HRESULT
+    [PreserveSig]
+    Function InsertAt(ByVal Index As Long, ByVal Value As IVideoStreamDescriptor) As HRESULT
+    [PreserveSig]
+    Function RemoveAt(ByVal Index As Long) As HRESULT
+    [PreserveSig]
+    Function Append(ByVal Value As IVideoStreamDescriptor) As HRESULT
+    [PreserveSig]
+    Function RemoveAtEnd() As HRESULT
+    [PreserveSig]
+    Function Clear() As HRESULT
+    Function GetMany(ByVal StartIndex As Long, ByVal Length As Long, Items As Any) As Long
+    [PreserveSig]
+    Function ReplaceAll(ByVal Length As Long, Items As Any) As HRESULT
+End Interface
+
+[InterfaceId("349B3E0A-4035-488E-9877-85632865ED10")]
+Interface IMediaEncodingProfile2 Extends IInspectable
+    [PreserveSig]
+    Function SetAudioTracks(ByVal Value As IIterable_IAudioStreamDescriptor) As HRESULT
+    Function GetAudioTracks() As IVector_IAudioStreamDescriptor
+    [PreserveSig]
+    Function SetVideoTracks(ByVal Value As IIterable_IVideoStreamDescriptor) As HRESULT
+    Function GetVideoTracks() As IVector_IVideoStreamDescriptor
+End Interface
+
+[InterfaceId("68475671-F53B-57FF-92AC-28BFD46573D7")]
+Interface IIterator_ITimedMetadataStreamDescriptor Extends IInspectable
+    Property Get Current() As ITimedMetadataStreamDescriptor
+    Property Get HasCurrent() As BooleanByte
+    Function MoveNext() As BooleanByte
+    Function GetMany(ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("F3D07841-3852-509D-A12B-A9F2AC89DA93")]
+Interface IIterable_ITimedMetadataStreamDescriptor Extends IInspectable
+    Function First() As IIterator_ITimedMetadataStreamDescriptor
+End Interface
+
+[InterfaceId("62E7B4ED-0C95-5743-A142-054F4BDEA0A4")]
+Interface IVectorView_ITimedMetadataStreamDescriptor Extends IInspectable
+    Function GetAt(ByVal Index As Long) As ITimedMetadataStreamDescriptor
+    Property Get Size() As Long
+    Function IndexOf(ByVal Value As ITimedMetadataStreamDescriptor, Index As Long) As BooleanByte
+    Function GetMany(ByVal StartIndex As Long, ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("1EBDBBCF-4F75-5645-B8BC-31A716978BCC")]
+Interface IVector_ITimedMetadataStreamDescriptor Extends IInspectable
+    Function GetAt(ByVal Index As Long) As ITimedMetadataStreamDescriptor
+    Property Get Size() As Long
+    Function GetView() As IVectorView_ITimedMetadataStreamDescriptor
+    Function IndexOf(ByVal Value As ITimedMetadataStreamDescriptor, Index As Long) As BooleanByte
+    [PreserveSig]
+    Function SetAt(ByVal Index As Long, ByVal Value As ITimedMetadataStreamDescriptor) As HRESULT
+    [PreserveSig]
+    Function InsertAt(ByVal Index As Long, ByVal Value As ITimedMetadataStreamDescriptor) As HRESULT
+    [PreserveSig]
+    Function RemoveAt(ByVal Index As Long) As HRESULT
+    [PreserveSig]
+    Function Append(ByVal Value As ITimedMetadataStreamDescriptor) As HRESULT
+    [PreserveSig]
+    Function RemoveAtEnd() As HRESULT
+    [PreserveSig]
+    Function Clear() As HRESULT
+    Function GetMany(ByVal StartIndex As Long, ByVal Length As Long, Items As Any) As Long
+    [PreserveSig]
+    Function ReplaceAll(ByVal Length As Long, Items As Any) As HRESULT
+End Interface
+
+[InterfaceId("BA6EBE88-7570-4E69-ACCF-5611AD015F88")]
+Interface IMediaEncodingProfile3 Extends IInspectable
+    [PreserveSig]
+    Function SetTimedMetadataTracks(ByVal Value As IIterable_ITimedMetadataStreamDescriptor) As HRESULT
+    Function GetTimedMetadataTracks() As IVector_ITimedMetadataStreamDescriptor
+End Interface
+
+[InterfaceId("D4F86F16-C6CF-57C8-9743-5EC20C31AB79")]
+Interface IAsyncOperationIMediaEncodingProfile Extends IInspectable
+    Property Set Completed(ByVal Handler As IAsyncOperationCompletedHandlerIMediaEncodingProfile)
+    Property Get Completed() As IAsyncOperationCompletedHandlerIMediaEncodingProfile
+    Function GetResults() As IMediaEncodingProfile
+End Interface
+
+[InterfaceId("37296FC1-86DA-58A0-90C0-C807BD94395E")]
+Interface IAsyncOperationCompletedHandlerIMediaEncodingProfile Extends IUnknown
+    Sub Invoke(ByVal AsyncOperation As IAsyncOperationIMediaEncodingProfile, ByVal AsyncStatus As AsyncStatus)
+End Interface
+
+[InterfaceId("197F352C-2EDE-4A45-A896-817A4854F8FE")]
+Interface IMediaEncodingProfileStatics Extends IInspectable
+    Function CreateM4a(ByVal Quality As AudioEncodingQuality) As IMediaEncodingProfile
+    Function CreateMp3(ByVal Quality As AudioEncodingQuality) As IMediaEncodingProfile
+    Function CreateWma(ByVal Quality As AudioEncodingQuality) As IMediaEncodingProfile
+    Function CreateMp4(ByVal Quality As VideoEncodingQuality) As IMediaEncodingProfile
+    Function CreateWmv(ByVal Quality As VideoEncodingQuality) As IMediaEncodingProfile
+    Function CreateFromFileAsync(ByVal File As IStorageFile) As IAsyncOperationIMediaEncodingProfile
+    Function CreateFromStreamAsync(ByVal Stream As IRandomAccessStream) As IAsyncOperationIMediaEncodingProfile
+End Interface
+
+[InterfaceId("CE8DE74F-6AF4-4288-8FE2-79ADF1F79A43")]
+Interface IMediaEncodingProfileStatics2 Extends IInspectable
+    Function CreateWav(ByVal Quality As AudioEncodingQuality) As IMediaEncodingProfile
+    Function CreateAvi(ByVal Quality As VideoEncodingQuality) As IMediaEncodingProfile
+End Interface
+
+[InterfaceId("90DAC5AA-CF76-4294-A9ED-1A1420F51F6B")]
+Interface IMediaEncodingProfileStatics3 Extends IInspectable
+    Function CreateAlac(ByVal Quality As AudioEncodingQuality) As IMediaEncodingProfile
+    Function CreateFlac(ByVal Quality As AudioEncodingQuality) As IMediaEncodingProfile
+    Function CreateHevc(ByVal Quality As VideoEncodingQuality) As IMediaEncodingProfile
+End Interface
+
+[InterfaceId("4F25059A-0B9A-5F25-9B9E-4B9F1D22FF65")]
+Interface IIterator_KVP_GUID_IInspectable Extends IInspectable
+    Property Get Current() As KVP_GUID_IInspectable
+    Property Get HasCurrent() As BooleanByte
+    Function MoveNext() As BooleanByte
+    Function GetMany(ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("F3B20528-E3B3-5331-B2D0-0C2623AEE785")]
+Interface IIterable_KVP_GUID_IInspectable Extends IInspectable
+    Function First() As IIterator_KVP_GUID_IInspectable
+End Interface
+
+[InterfaceId("3BDA1540-D089-5A1A-8F0D-94EBA8068E58")]
+Interface KVP_GUID_IInspectable Extends IInspectable
+    Property Get Key() As UUID
+    Property Get Value() As IInspectable
+End Interface
+
+[InterfaceId("E4D2C732-BBC1-5EF4-869F-5007CEB55F6E")]
+Interface IMapView_GUID_IInspectable Extends IInspectable
+    Function Lookup(ByVal Key As UUID) As IInspectable
+    Property Get Size() As Long
+    Function HasKey(ByVal Key As UUID) As BooleanByte
+    Sub Split(First As IMapView_GUID_IInspectable, Second As IMapView_GUID_IInspectable)
+End Interface
+
+[InterfaceId("5EE3189C-7DBF-5998-AD07-5414FB82567C")]
+Interface IMap_GUID_IInspectable Extends IInspectable
+    Function Lookup(ByVal Key As UUID) As IInspectable
+    Property Get Size() As Long
+    Function HasKey(ByVal Key As UUID) As BooleanByte
+    Function GetView() As IMapView_GUID_IInspectable
+    Function Insert(ByVal Key As UUID, ByVal Value As IInspectable) As BooleanByte
+    [PreserveSig]
+    Function Remove(ByVal Key As UUID) As HRESULT
+    [PreserveSig]
+    Function Clear() As HRESULT
+End Interface
+
+[InterfaceId("B4002AF6-ACD4-4E5A-A24B-5D7498A8B8C4")]
+Interface IMediaEncodingProperties Extends IInspectable
+    Property Get Properties() As IMap_GUID_IInspectable
+    Property Get Type() As LongPtr
+    Property Let Subtype(ByVal Value As LongPtr)
+    Property Get Subtype() As LongPtr
+End Interface
+
+[InterfaceId("37B6580E-A171-4464-BA5A-53189E48C1C8")]
+Interface IMediaEncodingSubtypesStatics Extends IInspectable
+    Property Get Aac() As LongPtr
+    Property Get AacAdts() As LongPtr
+    Property Get Ac3() As LongPtr
+    Property Get AmrNb() As LongPtr
+    Property Get AmrWb() As LongPtr
+    Property Get Argb32() As LongPtr
+    Property Get Asf() As LongPtr
+    Property Get Avi() As LongPtr
+    Property Get Bgra8() As LongPtr
+    Property Get Bmp() As LongPtr
+    Property Get Eac3() As LongPtr
+    Property Get Float() As LongPtr
+    Property Get Gif() As LongPtr
+    Property Get H263() As LongPtr
+    Property Get H264() As LongPtr
+    Property Get H264Es() As LongPtr
+    Property Get Hevc() As LongPtr
+    Property Get HevcEs() As LongPtr
+    Property Get Iyuv() As LongPtr
+    Property Get Jpeg() As LongPtr
+    Property Get JpegXr() As LongPtr
+    Property Get Mjpg() As LongPtr
+    Property Get Mpeg() As LongPtr
+    Property Get Mpeg1() As LongPtr
+    Property Get Mpeg2() As LongPtr
+    Property Get Mp3() As LongPtr
+    Property Get Mpeg4() As LongPtr
+    Property Get Nv12() As LongPtr
+    Property Get Pcm() As LongPtr
+    Property Get Png() As LongPtr
+    Property Get Rgb24() As LongPtr
+    Property Get Rgb32() As LongPtr
+    Property Get Tiff() As LongPtr
+    Property Get Wave() As LongPtr
+    Property Get Wma8() As LongPtr
+    Property Get Wma9() As LongPtr
+    Property Get Wmv3() As LongPtr
+    Property Get Wvc1() As LongPtr
+    Property Get Yuy2() As LongPtr
+    Property Get Yv12() As LongPtr
+End Interface
+
+[InterfaceId("4B7CD23D-42FF-4D33-8531-0626BEE4B52D")]
+Interface IMediaEncodingSubtypesStatics2 Extends IInspectable
+    Property Get Vp9() As LongPtr
+    Property Get L8() As LongPtr
+    Property Get L16() As LongPtr
+    Property Get D16() As LongPtr
+End Interface
+
+[InterfaceId("BA2414E4-883D-464E-A44F-097DA08EF7FF")]
+Interface IMediaEncodingSubtypesStatics3 Extends IInspectable
+    Property Get Alac() As LongPtr
+    Property Get Flac() As LongPtr
+End Interface
+
+[InterfaceId("DDECE58A-3949-4644-8A2C-59EF02C642FA")]
+Interface IMediaEncodingSubtypesStatics4 Extends IInspectable
+    Property Get P010() As LongPtr
+End Interface
+
+[InterfaceId("5AD4A007-FFCE-4760-9828-5D0C99637E6A")]
+Interface IMediaEncodingSubtypesStatics5 Extends IInspectable
+    Property Get Heif() As LongPtr
+End Interface
+
+[InterfaceId("A1252973-A984-5912-93BB-54E7E569E053")]
+Interface IMediaEncodingSubtypesStatics6 Extends IInspectable
+    Property Get Pgs() As LongPtr
+    Property Get Srt() As LongPtr
+    Property Get Ssa() As LongPtr
+    Property Get VobSub() As LongPtr
+End Interface
+
+[InterfaceId("D2D0FEE5-8929-401D-AC78-7D357E378163")]
+Interface IMediaRatio Extends IInspectable
+    Property Let Numerator(ByVal Value As Long)
+    Property Get Numerator() As Long
+    Property Let Denominator(ByVal Value As Long)
+    Property Get Denominator() As Long
+End Interface
+
+[InterfaceId("A461FF85-E57A-4128-9B21-D5331B04235C")]
+Interface IMpeg2ProfileIdsStatics Extends IInspectable
+    Property Get Simple() As Long
+    Property Get Main() As Long
+    Property Get SignalNoiseRatioScalable() As Long
+    Property Get SpatiallyScalable() As Long
+    Property Get High() As Long
+End Interface
+
+[InterfaceId("51CD30D3-D690-4CFA-97F4-4A398E9DB420")]
+Interface ITimedMetadataEncodingProperties Extends IInspectable
+    [PreserveSig]
+    Function SetFormatUserData(ByVal ValueSize As Long, Value As Any) As HRESULT
+    [PreserveSig]
+    Function GetFormatUserData(ValueSize As Long, Value As Any) As HRESULT
+    Function Copy() As ITimedMetadataEncodingProperties
+End Interface
+
+[InterfaceId("6629BB67-6E55-5643-89A0-7A7E8D85B52C")]
+Interface ITimedMetadataEncodingPropertiesStatics Extends IInspectable
+    Function CreatePgs() As ITimedMetadataEncodingProperties
+    Function CreateSrt() As ITimedMetadataEncodingProperties
+    Function CreateSsa(ByVal FormatUserDataSize As Long, FormatUserData As Any) As ITimedMetadataEncodingProperties
+    Function CreateVobSub(ByVal FormatUserDataSize As Long, FormatUserData As Any) As ITimedMetadataEncodingProperties
+End Interface
+
+[InterfaceId("76EE6C9A-37C2-4F2A-880A-1282BBB4373D")]
+Interface IVideoEncodingProperties Extends IInspectable ' requires IMediaEncodingProperties
+    Property Let Bitrate(ByVal Value As Long)
+    Property Get Bitrate() As Long
+    Property Let Width(ByVal Value As Long)
+    Property Get Width() As Long
+    Property Let Height(ByVal Value As Long)
+    Property Get Height() As Long
+    Property Get FrameRate() As IMediaRatio
+    Property Get PixelAspectRatio() As IMediaRatio
+End Interface
+
+[InterfaceId("F743A1EF-D465-4290-A94B-EF0F1528F8E3")]
+Interface IVideoEncodingProperties2 Extends IInspectable
+    [PreserveSig]
+    Function SetFormatUserData(ByVal ValueSize As Long, Value As Any) As HRESULT
+    [PreserveSig]
+    Function GetFormatUserData(ValueSize As Long, Value As Any) As HRESULT
+    Property Let ProfileId(ByVal Value As Long)
+    Property Get ProfileId() As Long
+End Interface
+
+[InterfaceId("386BCDC4-873A-479F-B3EB-56C1FCBEC6D7")]
+Interface IVideoEncodingProperties3 Extends IInspectable
+    Property Get StereoscopicVideoPackingMode() As StereoscopicVideoPackingMode
+End Interface
+
+[InterfaceId("724EF014-C10C-40F2-9D72-3EE13B45FA8E")]
+Interface IVideoEncodingProperties4 Extends IInspectable
+    Property Get SphericalVideoFrameFormat() As SphericalVideoFrameFormat
+End Interface
+
+[InterfaceId("4959080F-272F-4ECE-A4DF-C0CCDB33D840")]
+Interface IVideoEncodingProperties5 Extends IInspectable
+    Function Copy() As IVideoEncodingProperties
+End Interface
+
+[InterfaceId("3CE14D44-1DC5-43DB-9F38-EBEBF90152CB")]
+Interface IVideoEncodingPropertiesStatics Extends IInspectable
+    Function CreateH264() As IVideoEncodingProperties
+    Function CreateMpeg2() As IVideoEncodingProperties
+    Function CreateUncompressed(ByVal Subtype As LongPtr, ByVal Width As Long, ByVal Height As Long) As IVideoEncodingProperties
+End Interface
+
+[InterfaceId("CF1EBD5D-49FE-4D00-B59A-CFA4DFC51944")]
+Interface IVideoEncodingPropertiesStatics2 Extends IInspectable
+    Function CreateHevc() As IVideoEncodingProperties
+End Interface
+
+Module mdlMediaMediaProperties
+
+Public Enum AudioEncodingQuality
+    AudioEncodingQuality_Auto
+    AudioEncodingQuality_High
+    AudioEncodingQuality_Medium
+    AudioEncodingQuality_Low
+End Enum
+    
+Public Enum MediaMirroringOptions
+    MediaMirroringOptions_None
+    MediaMirroringOptions_Horizontal
+    MediaMirroringOptions_Vertical
+End Enum
+
+Public Enum MediaPixelFormat
+    MediaPixelFormat_Nv12
+    MediaPixelFormat_Bgra8
+    MediaPixelFormat_P010
+End Enum
+
+Public Enum MediaRotation
+    MediaRotation_None
+    MediaRotation_Clockwise90Degrees
+    MediaRotation_Clockwise180Degrees
+    MediaRotation_Clockwise270Degrees
+End Enum
+
+Public Enum MediaThumbnailFormat
+    MediaThumbnailFormat_Bmp
+    MediaThumbnailFormat_Bgra8
+End Enum
+
+Public Enum SphericalVideoFrameFormat
+    SphericalVideoFrameFormat_None
+    SphericalVideoFrameFormat_Unsupported
+    SphericalVideoFrameFormat_Equirectangular
+End Enum
+
+Public Enum StereoscopicVideoPackingMode
+    StereoscopicVideoPackingMode_None
+    StereoscopicVideoPackingMode_SideBySide
+    StereoscopicVideoPackingMode_TopBottom
+End Enum
+
+Public Enum VideoEncodingQuality
+    VideoEncodingQuality_Auto
+    VideoEncodingQuality_HD1080p
+    VideoEncodingQuality_HD720p
+    VideoEncodingQuality_Wvga
+    VideoEncodingQuality_Ntsc
+    VideoEncodingQuality_Pal
+    VideoEncodingQuality_Vga
+    VideoEncodingQuality_Qvga
+    VideoEncodingQuality_Uhd2160p
+    VideoEncodingQuality_Uhd4320p
+End Enum
+
+End Module

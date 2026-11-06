@@ -1,0 +1,357 @@
+[InterfaceId("905A0FE0-BC53-11DF-8C49-001E4FC686DA")]
+Interface IBuffer Extends IInspectable
+    Property Get Capacity() As Long
+    Property Get Length() As Long
+    Property Let Length(ByVal Value As Long)
+End Interface
+
+[InterfaceId("71AF914D-C10F-484B-BC50-14BC623B3A27")]
+Interface IBufferFactory Extends IInspectable
+    Function Create(ByVal Capacity As Long) As IBuffer
+End Interface
+
+[InterfaceId("E901E65B-D716-475A-A90A-AF7229B1E741")]
+Interface IBufferStatics Extends IInspectable
+    Function CreateCopyFromMemoryBuffer(ByVal MemoryBuffer As IMemoryBuffer) As IBuffer
+    Function CreateMemoryBufferOverIBuffer(ByVal Buffer As IBuffer) As IMemoryBuffer
+End Interface
+
+[InterfaceId("905A0FEF-BC53-11DF-8C49-001E4FC686DA")]
+Interface IBufferByteAccess Extends IUnknown
+    Function Buffer() As LongPtr
+End Interface
+
+[InterfaceId("EF60385F-BE78-584B-AAEF-7829ADA2B0DE")]
+Interface IAsyncOperationUInt32 Extends IInspectable
+    Property Set Completed(ByVal Handler As IAsyncOperationCompletedHandlerUInt32)
+    Property Get Completed() As IAsyncOperationCompletedHandlerUInt32
+    Function GetResults() As Long
+End Interface
+
+[InterfaceId("9343B6E7-E3D2-5E4A-AB2D-2BCE4919A6A4")]
+Interface IAsyncOperationCompletedHandlerUInt32 Extends IUnknown
+    Sub Invoke(ByVal AsyncOperation As IAsyncOperationUInt32, ByVal AsyncStatus As AsyncStatus)
+End Interface
+
+[InterfaceId("CDB5EFB3-5788-509D-9BE1-71CCB8A3362A")]
+Interface IAsyncOperationBoolean Extends IInspectable
+    Property Set Completed(ByVal Handler As IAsyncOperationCompletedHandlerBoolean)
+    Property Get Completed() As IAsyncOperationCompletedHandlerBoolean
+    Function GetResults() As BooleanByte
+End Interface
+
+[InterfaceId("C1D3D1A2-AE17-5A5F-B5A2-BDCC8844889A")]
+Interface IAsyncOperationCompletedHandlerBoolean Extends IUnknown
+    Sub Invoke(ByVal AsyncOperation As IAsyncOperationBoolean, ByVal AsyncStatus As AsyncStatus)
+End Interface
+
+[InterfaceId("A8FE0732-556D-5841-B7EE-B3450FB52666")]
+Interface IAsyncOperationIInputStream Extends IInspectable
+    Property Set Completed(ByVal Handler As IAsyncOperationCompletedHandlerIInputStream)
+    Property Get Completed() As IAsyncOperationCompletedHandlerIInputStream
+    Function GetResults() As IInputStream
+End Interface
+
+[InterfaceId("D0BD0125-9049-57A3-BD66-E2525D98C814")]
+Interface IAsyncOperationCompletedHandlerIInputStream Extends IUnknown
+    Sub Invoke(ByVal AsyncOperation As IAsyncOperationIInputStream, ByVal AsyncStatus As AsyncStatus)
+End Interface
+
+[InterfaceId("D26B2819-897F-5C7D-84D6-56D796561431")]
+Interface IAsyncOperationWithProgressIBufferUInt32 Extends IInspectable
+    Property Set Progress(ByVal Handler As IAsyncOperationProgressHandlerIBufferUInt32)
+    Property Get Progress() As IAsyncOperationProgressHandlerIBufferUInt32
+    Property Set Completed(ByVal Handler As IAsyncOperationWithProgressCompletedHandlerIBufferUInt32)
+    Property Get Completed() As IAsyncOperationWithProgressCompletedHandlerIBufferUInt32
+    Function GetResults() As IBuffer
+End Interface
+
+[InterfaceId("BF666554-7605-5D9A-B14E-18D8C8472AFE")]
+Interface IAsyncOperationProgressHandlerIBufferUInt32 Extends IUnknown
+    Sub Invoke(ByVal AsyncOperation As IAsyncOperationWithProgressIBufferUInt32, ByVal ProgressInfo As UInt32)
+End Interface
+
+[InterfaceId("06386A7A-E009-5B0B-AB68-A8E48B516647")]
+Interface IAsyncOperationWithProgressCompletedHandlerIBufferUInt32 Extends IUnknown
+    Sub Invoke(ByVal AsyncOperation As IAsyncOperationWithProgressIBufferUInt32, ByVal AsyncStatus As AsyncStatus)
+End Interface
+
+[InterfaceId("ECCB574A-C684-5572-A679-6B0842CFB57F")]
+Interface IAsyncOperationWithProgressUInt32UInt32 Extends IInspectable
+    Property Set Progress(ByVal Handler As IAsyncOperationProgressHandlerUInt32UInt32)
+    Property Get Progress() As IAsyncOperationProgressHandlerUInt32UInt32
+    Property Set Completed(ByVal Handler As IAsyncOperationWithProgressCompletedHandlerUInt32UInt32)
+    Property Get Completed() As IAsyncOperationWithProgressCompletedHandlerUInt32UInt32
+    Function GetResults() As UInt32
+End Interface
+
+[InterfaceId("EA0FE405-D432-5AC7-9EF8-5A65E1F97D7E")]
+Interface IAsyncOperationProgressHandlerUInt32UInt32 Extends IUnknown
+    Sub Invoke(ByVal AsyncOperation As IAsyncOperationWithProgressUInt32UInt32, ByVal ProgressInfo As UInt32)
+End Interface
+
+[InterfaceId("1E466DC5-840F-54F9-B877-5E3A9F4B6C74")]
+Interface IAsyncOperationWithProgressCompletedHandlerUInt32UInt32 Extends IUnknown
+    Sub Invoke(ByVal AsyncOperation As IAsyncOperationWithProgressUInt32UInt32, ByVal AsyncStatus As AsyncStatus)
+End Interface
+
+[InterfaceId("8F1DB6E3-6556-5516-825C-1021EE27CD0C")]
+Interface IAsyncOperationWithProgressUInt64UInt64 Extends IInspectable
+    Property Set Progress(ByVal Handler As IAsyncOperationProgressHandlerUInt64UInt64)
+    Property Get Progress() As IAsyncOperationProgressHandlerUInt64UInt64
+    Property Set Completed(ByVal Handler As IAsyncOperationWithProgressCompletedHandlerUInt64UInt64)
+    Property Get Completed() As IAsyncOperationWithProgressCompletedHandlerUInt64UInt64
+    Function GetResults() As UInt64
+End Interface
+
+[InterfaceId("FFB2B65D-4120-5D13-826D-107851E6BB1C")]
+Interface IAsyncOperationProgressHandlerUInt64UInt64 Extends IUnknown
+    Sub Invoke(ByVal AsyncOperation As IAsyncOperationWithProgressUInt64UInt64, ByVal ProgressInfo As UInt64)
+End Interface
+
+[InterfaceId("D2024E41-5500-5B5A-BA46-CB7009596A2F")]
+Interface IAsyncOperationWithProgressCompletedHandlerUInt64UInt64 Extends IUnknown
+    Sub Invoke(ByVal AsyncOperation As IAsyncOperationWithProgressUInt64UInt64, ByVal AsyncStatus As AsyncStatus)
+End Interface
+
+[InterfaceId("430ECECE-1418-5D19-81B2-5DDB381603CC")]
+Interface IAsyncOperationIRandomAccessStream Extends IInspectable
+    Property Set Completed(ByVal Handler As IAsyncOperationCompletedHandlerIRandomAccessStream)
+    Property Get Completed() As IAsyncOperationCompletedHandlerIRandomAccessStream
+    Function GetResults() As IRandomAccessStream
+End Interface
+
+[InterfaceId("398C4183-793D-5B00-819B-4AEF92485E94")]
+Interface IAsyncOperationCompletedHandlerIRandomAccessStream Extends IUnknown
+    Sub Invoke(ByVal AsyncOperation As IAsyncOperationIRandomAccessStream, ByVal AsyncStatus As AsyncStatus)
+End Interface
+
+[InterfaceId("C4A57C5E-32B0-55B3-AD13-CE1C23041ED6")]
+Interface IAsyncOperationIRandomAccessStreamWithContentType Extends IInspectable
+    Property Set Completed(ByVal Handler As IAsyncOperationCompletedHandlerIRandomAccessStreamWithContentType)
+    Property Get Completed() As IAsyncOperationCompletedHandlerIRandomAccessStreamWithContentType
+    Function GetResults() As IRandomAccessStreamWithContentType
+End Interface
+
+[InterfaceId("3DDDECF4-1D39-58E8-83B1-DBED541C7F35")]
+Interface IAsyncOperationCompletedHandlerIRandomAccessStreamWithContentType Extends IUnknown
+    Sub Invoke(ByVal AsyncOperation As IAsyncOperationIRandomAccessStreamWithContentType, ByVal AsyncStatus As AsyncStatus)
+End Interface
+
+[InterfaceId("0D81405A-9BD3-5E87-82F4-9B4128A887EB")]
+Interface IAsyncOperationIStorageStreamTransaction Extends IInspectable
+    Property Set Completed(ByVal Handler As IAsyncOperationCompletedHandlerIStorageStreamTransaction)
+    Property Get Completed() As IAsyncOperationCompletedHandlerIStorageStreamTransaction
+    Function GetResults() As IStorageStreamTransaction
+End Interface
+
+[InterfaceId("D11739E6-2995-5D33-BFFF-51B6041F68C1")]
+Interface IAsyncOperationCompletedHandlerIStorageStreamTransaction Extends IUnknown
+    Sub Invoke(ByVal AsyncOperation As IAsyncOperationIStorageStreamTransaction, ByVal AsyncStatus As AsyncStatus)
+End Interface
+
+[InterfaceId("97D098A5-3B99-4DE9-88A5-E11D2F50C795")]
+Interface IContentTypeProvider Extends IInspectable
+    Property Get ContentType() As LongPtr
+End Interface
+
+[InterfaceId("E2B50029-B4C1-4314-A4B8-FB813A2F275E")]
+Interface IDataReader Extends IInspectable ' requires IClosable
+    Property Get UnconsumedBufferLength() As Long
+    Property Get UnicodeEncoding() As UnicodeEncoding
+    Property Let UnicodeEncoding(ByVal Value As UnicodeEncoding)
+    Property Get ByteOrder() As ByteOrder
+    Property Let ByteOrder(ByVal Value As ByteOrder)
+    Property Get InputStreamOptions() As InputStreamOptions
+    Property Let InputStreamOptions(ByVal Value As InputStreamOptions)
+    Function ReadByte() As Byte
+    [PreserveSig]
+    Function ReadBytes(ByVal Length As Long, ByVal BytePtr As LongPtr) As HRESULT
+    Function ReadBuffer(ByVal Length As Long) As IBuffer
+    Function ReadBoolean() As BooleanByte
+    [PreserveSig]
+    Function ReadGuid(rIID As Any) As HRESULT
+    Function ReadInt16() As Int16
+    Function ReadInt32() As Int32
+    Function ReadInt64() As Int64
+    Function ReadUInt16() As UInt16
+    Function ReadUInt32() As UInt32
+    Function ReadUInt64() As UInt64
+    Function ReadSingle() As Single
+    Function ReadDouble() As Double
+    Function ReadString(ByVal Length As Long) As LongPtr
+    Function ReadDateTime() As DateTime
+    Function ReadTimeSpan() As TimeSpan
+    Function LoadAsync(ByVal Length As Long) As IAsyncOperationUInt32
+    Function DetachBuffer() As IBuffer
+    Function DetachStream() As IInputStream
+End Interface
+
+[InterfaceId("D7527847-57DA-4E15-914C-06806699A098")]
+Interface IDataReaderFactory Extends IInspectable
+    Function CreateDataReader(ByVal InputStream As IInputStream) As IDataReader
+End Interface
+
+[InterfaceId("11FCBFC8-F93A-471B-B121-F379E349313C")]
+Interface IDataReaderStatics Extends IInspectable
+    Function FromBuffer(ByVal Buffer As IBuffer) As IDataReader
+End Interface
+
+[InterfaceId("64B89265-D341-4922-B38A-DD4AF8808C4E")]
+Interface IDataWriter Extends IInspectable ' requires IClosable
+    Property Get UnstoredBufferLength() As Long
+    Property Get UnicodeEncoding() As UnicodeEncoding
+    Property Let UnicodeEncoding(ByVal Value As UnicodeEncoding)
+    Property Get ByteOrder() As ByteOrder
+    Property Let ByteOrder(ByVal Value As ByteOrder)
+    [PreserveSig]
+    Function WriteByte(ByVal Value As Byte) As HRESULT
+    [PreserveSig]
+    Function WriteBytes(ByVal Length As Long, ByVal BytePtr As LongPtr) As HRESULT
+    [PreserveSig]
+    Function WriteBuffer(ByVal Buffer As IBuffer) As HRESULT
+    [PreserveSig]
+    Function WriteBufferRange(ByVal Buffer As IBuffer, ByVal Start As Long, ByVal Length As Long) As HRESULT
+    [PreserveSig]
+    Function WriteBoolean(ByVal Value As BooleanByte) As HRESULT
+    [PreserveSig]
+    Function WriteGuid(ByVal Value As UUID) As HRESULT
+    [PreserveSig]
+    Function WriteInt16(ByVal Value As Int16) As HRESULT
+    [PreserveSig]
+    Function WriteInt32(ByVal Value As Int32) As HRESULT
+    [PreserveSig]
+    Function WriteInt64(ByVal Value As Int64) As HRESULT
+    [PreserveSig]
+    Function WriteUInt16(ByVal Value As UInt16) As HRESULT
+    [PreserveSig]
+    Function WriteUInt32(ByVal Value As UInt32) As HRESULT
+    [PreserveSig]
+    Function WriteUInt64(ByVal Value As UInt64) As HRESULT
+    [PreserveSig]
+    Function WriteSingle(ByVal Value As Single) As HRESULT
+    [PreserveSig]
+    Function WriteDouble(ByVal Value As Double) As HRESULT
+    [PreserveSig]
+    Function WriteDateTime(ByVal Value As DateTime) As HRESULT
+    [PreserveSig]
+    Function WriteTimeSpan(ByVal Value As TimeSpan) As HRESULT
+    Function WriteString(ByVal hStringPtr As LongPtr) As Long
+    Function MeasureString(ByVal hStringPtr As LongPtr) As Long
+    Function StoreAsync() As IAsyncOperationUInt32
+    Function FlushAsync() As IAsyncOperationBoolean
+    Function DetachBuffer() As IBuffer
+    Function DetachStream() As IOutputStream
+End Interface
+
+[InterfaceId("338C67C2-8B84-4C2B-9C50-7B8767847A1F")]
+Interface IDataWriterFactory Extends IInspectable
+    Function CreateDataWriter(ByVal OutputStream As IOutputStream) As IDataWriter
+End Interface
+
+[InterfaceId("73550107-3B57-4B5D-8345-554D2FC621F0")]
+Interface IFileRandomAccessStreamStatics Extends IInspectable
+    Function OpenAsync(ByVal FilePath As LongPtr, ByVal AccessMode As FileAccessMode) As IAsyncOperationIRandomAccessStream
+    Function OpenWithOptionsAsync(ByVal FilePath As LongPtr, ByVal AccessMode As FileAccessMode, ByVal SharingOptions As StorageOpenOptions, ByVal OpenDisposition As FileOpenDisposition) As IAsyncOperationIRandomAccessStream
+    Function OpenTransactedWriteAsync(ByVal FilePath As LongPtr) As IAsyncOperationIStorageStreamTransaction
+    Function OpenTransactedWriteWithOptionsAsync(ByVal FilePath As LongPtr, ByVal AccessMode As FileAccessMode, ByVal OpenOptions As StorageOpenOptions, ByVal OpenDisposition As FileOpenDisposition) As IAsyncOperationIStorageStreamTransaction
+    Function OpenForUserAsync(ByVal User As IUser, ByVal FilePath As LongPtr, ByVal AccessMode As FileAccessMode) As IAsyncOperationIRandomAccessStream
+    Function OpenForUserWithOptionsAsync(ByVal User As IUser, ByVal FilePath As LongPtr, ByVal AccessMode As FileAccessMode, ByVal SharingOptions As StorageOpenOptions, ByVal OpenDisposition As FileOpenDisposition) As IAsyncOperationIRandomAccessStream
+    Function OpenTransactedWriteForUserAsync(ByVal User As IUser, ByVal FilePath As LongPtr) As IAsyncOperationIStorageStreamTransaction
+    Function OpenTransactedWriteForUserWithOptionsAsync(ByVal User As IUser, ByVal FilePath As LongPtr, ByVal OpenOptions As StorageOpenOptions, ByVal OpenDisposition As FileOpenDisposition) As IAsyncOperationIStorageStreamTransaction
+End Interface
+
+[InterfaceId("905A0FE2-BC53-11DF-8C49-001E4FC686DA")]
+Interface IInputStream Extends IInspectable ' requires IClosable
+    Function ReadAsync(ByVal Buffer As IBuffer, ByVal Length As Long, ByVal Options As InputStreamOptions) As IAsyncOperationWithProgressIBufferUInt32
+End Interface
+
+[InterfaceId("43929D18-5EC9-4B5A-919C-4205B0C804B6")]
+Interface IInputStreamReference Extends IInspectable
+    Function OpenSequentialReadAsync() As IAsyncOperationIInputStream
+End Interface
+
+[InterfaceId("905A0FE6-BC53-11DF-8C49-001E4FC686DA")]
+Interface IOutputStream Extends IInspectable ' requires IClosable
+    Function WriteAsync(ByVal Buffer As IBuffer) As IAsyncOperationWithProgressUInt32UInt32
+    Function FlushAsync() As IAsyncOperationBoolean
+End Interface
+
+[InterfaceId("6E8EBF1C-EF3D-4376-B20E-5BE638AEAC77")]
+Interface IPropertySetSerializer Extends IInspectable
+    Function Serialize(ByVal PropertySet As IPropertySet) As IBuffer
+    [PreserveSig]
+    Function Deserialize(ByVal PropertySet As IPropertySet, ByVal Buffer As IBuffer) As HRESULT
+End Interface
+
+[InterfaceId("905A0FE1-BC53-11DF-8C49-001E4FC686DA")]
+Interface IRandomAccessStream Extends IInspectable ' requires IClosable
+    Property Get Size() As UInt64
+    Property Let Size(ByVal Value As UInt64)
+    Function GetInputStreamAt(ByVal Position As UInt64) As IInputStream
+    Function GetOutputStreamAt(ByVal Position As UInt64) As IOutputStream
+    Property Get Position() As UInt64
+    [PreserveSig]
+    Function Seek(ByVal Position As UInt64) As HRESULT
+    Function CloneStream() As IRandomAccessStream
+    Property Get CanRead() As BooleanByte
+    Property Get CanWrite() As BooleanByte
+End Interface
+
+[InterfaceId("33EE3134-1DD6-4E3A-8067-D1C162E8642B")]
+Interface IRandomAccessStreamReference Extends IInspectable
+    Function OpenReadAsync() As IAsyncOperationIRandomAccessStreamWithContentType
+End Interface
+
+[InterfaceId("857309DC-3FBF-4E7D-986F-EF3B1A07A964")]
+Interface IRandomAccessStreamReferenceStatics Extends IInspectable
+    Function CreateFromFile(ByVal StorageFile As IStorageFile) As IRandomAccessStreamReference
+    Function CreateFromUri(ByVal Uri As IUri) As IRandomAccessStreamReference
+    Function CreateFromStream(ByVal RandomAccessStream As IRandomAccessStream) As IRandomAccessStreamReference
+End Interface
+
+[InterfaceId("524CEDCF-6E29-4CE5-9573-6B753DB66C3A")]
+Interface IRandomAccessStreamStatics Extends IInspectable
+    Function CopyAsync(ByVal Source As IInputStream, ByVal Destination As IOutputStream) As IAsyncOperationWithProgressUInt64UInt64
+    Function CopySizeAsync(ByVal Source As IInputStream, ByVal Destination As IOutputStream, ByVal BytesToCopy As UInt64) As IAsyncOperationWithProgressUInt64UInt64
+    Function CopyAndCloseAsync(ByVal Source As IInputStream, ByVal Destination As IOutputStream) As IAsyncOperationWithProgressUInt64UInt64
+End Interface
+
+[InterfaceId("CC254827-4B3D-438F-9232-10C76BC7E038")]
+Interface IRandomAccessStreamWithContentType Extends IInspectable ' requires IClosable, IRandomAccessStream, IInputStream, IOutputStream, IContentTypeProvider
+    
+End Interface
+
+Module mdlStorageStreams
+
+Public Enum ByteOrder
+    ByteOrder_LittleEndian
+    ByteOrder_BigEndian
+End Enum
+
+Public Enum FileAccessMode
+    FileAccessMode_Read
+    FileAccessMode_Write
+End Enum
+
+Public Enum FileOpenDisposition
+    FileOpenDisposition_OpenExisting
+    FileOpenDisposition_OpenAlways
+    FileOpenDisposition_CreateNew
+    FileOpenDisposition_CreateAlways
+    FileOpenDisposition_TruncateExisting
+End Enum
+
+Public Enum InputStreamOptions
+    InputStreamOptions_None
+    InputStreamOptions_Partial
+    InputStreamOptions_ReadAhead
+End Enum
+
+Public Enum UnicodeEncoding
+    UnicodeEncoding_UTF8
+    UnicodeEncoding_UTF16LE
+    UnicodeEncoding_UTF16BE
+End Enum
+    
+End Module

@@ -1,0 +1,113 @@
+' A part of the GDI+ Package for TwinBasic  https://github.com/kubao/GdiPlus
+' Licensed under the MIT license. (c) 2026 Sunderland Ober Consulting.
+' "Windows" is a trademark of the Microsoft Corporation.
+' Modeled after code and descriptions (c) Microsoft, taken from SDK headers and official documentation.
+' Certain flat API function and type declarations taken from WinDevLib by fafalone, with thanks.
+
+[COMCreatable(False)]
+[Description("Hatch Brush Object")]
+Class HatchBrush
+    Inherits GdiPlusBase
+    Implements IBrush
+    Protected br As GpHatch
+    
+    Sub New(ByVal hatchStyle As GpHatchStyle, ByVal foreRgb&, ByVal backRgb&)
+        SetStatus(br.CreateInto(hatchStyle, FromCOLORREF(foreRgb), FromCOLORREF(backRgb), br))
+    End Sub
+    
+    Sub New(ByVal hatchStyle As GpHatchStyle, ByVal foreColor As Color, ByVal backColor As Color)
+        SetStatus(br.CreateInto(hatchStyle, foreColor, backColor, br))
+    End Sub
+    
+    Public Function Clone() As HatchBrush
+        Return CloneImpl(Of HatchBrush)(br)
+    End Function
+    
+    Property Get NativeBrush() As GpBrush Implements IBrush.NativeBrush
+        NativeBrush.Native = br.Native
+    End Property
+    
+    Private Sub Class_Terminate()
+        br.Delete
+    End Sub
+    
+    Function CloneBrush() As IBrush Implements IBrush.CloneBrush
+        Return Clone()
+    End Function
+    
+    Property Get Type() As GpBrushType Implements IBrush.Type
+        Dim ty As GpBrushType
+        SetStatus(br.GetType(ty))
+        Debug.Assert ty = BrushTypeHatchFill OrElse LastResult <> Ok
+        Return ty
+    End Property
+        
+    Property Get HatchStyle() As GpHatchStyle
+        SetStatus(br.GetStyle(HatchStyle))
+    End Property
+    
+    Property Get ForegroundColor() As Color
+        SetStatus(br.GetForegroundColor(ForegroundColor))
+    End Property
+    
+    Property Get BackgroundColor() As Color
+        SetStatus(br.GetBackgroundColor(BackgroundColor))
+    End Property
+    
+    Sub New(ByVal nativeBrush As GpHatch, ByVal status As GpStatus = ok)
+        SetStatus(status)
+        br = nativeBrush
+    End Sub
+    
+    Protected Property Get Native() As GpHatch
+        Native.Native = br.Native
+    End Property
+End Class
+
+Module GdipHatch
+    Function HatchBrush(ByVal hatchStyle As GpHatchStyle, ByVal foreRgb&, ByVal backRgb&) As HatchBrush
+        Return HatchBrush(hatchStyle, foreRgb&, backRgb&)
+    End Function
+    
+    Function HatchBrush(ByVal hatchStyle As GpHatchStyle, ByVal foreColor As Color, ByVal backColor As Color) As HatchBrush
+        Return HatchBrush(hatchStyle, foreColor, backColor)
+    End Function
+
+    Type GpHatch
+        'Inherits GpBrush
+        Native As LongPtr
+        
+        Function Create(ByVal style As GpHatchStyle, ByVal forecolr As Color, ByVal backcolr As Color) As GpStatus
+            Return Me.CreateInto(style, forecolr, backcolr, Me)
+        End Function
+        
+        Function Release() As GpHatch
+            Release.Native = Me.Native
+            Me.Native = 0
+        End Function
+        
+        [UseGetLastError(False)]
+        Declare PtrSafe Function CreateInto Lib "gdiplus" Alias "GdipCreateHatchBrush" (ByVal style As GpHatchStyle, ByVal forecolr As Color, ByVal backcolr As Color, Brush As GpHatch) As GpStatus
+        [UseGetLastError(False)]
+        Declare PtrSafe Function Delete Lib "gdiplus" Alias "GdipDeleteBrush" (ByVal Me As GpHatch) As GpStatus
+        [UseGetLastError(False)]
+        Declare PtrSafe Function Clone Lib "gdiplus" Alias "GdipCloneBrush" (ByVal Me As GpHatch, cloneBrush As GpHatch) As GpStatus
+        [UseGetLastError(False)]
+        Declare PtrSafe Function GetType Lib "gdiplus" Alias "GdipGetBrushType" (ByVal Me As GpHatch, type As GpBrushType) As GpStatus
+        
+        [UseGetLastError(False)]
+        Declare PtrSafe Function GetStyle Lib "gdiplus" Alias "GdipGetHatchStyle" (ByVal Me As GpHatch, style As GpHatchStyle) As GpStatus
+        [UseGetLastError(False)]
+        Declare PtrSafe Function GetForegroundColor Lib "gdiplus" Alias "GdipGetHatchForegroundColor" (ByVal Me As GpHatch, forecol As Color) As GpStatus
+        [UseGetLastError(False)]
+        Declare PtrSafe Function GetBackgroundColor Lib "gdiplus" Alias "GdipGetHatchBackgroundColor" (ByVal Me As GpHatch, backcol As Color) As GpStatus
+    End Type
+    
+    Function GpHatch() As GpHatch
+        GpHatch.Native = 0
+    End Function
+    
+    Function GpHatch(nativeBrush As GpBrush) As GpHatch
+        GpHatch.Native = nativeBrush.Native
+    End Function
+End Module

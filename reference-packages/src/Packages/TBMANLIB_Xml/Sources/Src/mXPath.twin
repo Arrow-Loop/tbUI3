@@ -1,0 +1,950 @@
+' =====================================================
+' mXPath.twin - XPath Query Engine Module
+' TwinBASIC Project - XML Library
+' =====================================================
+' Function: Provides XPath query support for XML documents
+' 功能：为 XML 文档提供 XPath 查询支持
+' Author: woeoo (邓伟)
+' Email: 215879458@qq.com
+' Site: https://vb6.pro
+' Date: 2026-02-08
+' Version: 1.0.0
+' =====================================================
+'
+' Supported XPath Syntax (支持的XPath语法):
+'   - Basic path: /root/child, root/child
+'   - Descendant: //item (matches at any depth)
+'   - Wildcard: /root/*, //*
+'   - Index: /root/item[1], /root/item[last()]
+'   - Attribute exists: /root/item[@id]
+'   - Attribute equals: /root/item[@id='value']
+'   - Attribute comparison: /root/item[@price>10]
+'   - Text matching: /root/item[text()='value']
+'   - Multiple predicates: /root/item[@id='1'][@name='test']
+'   - Parent axis: ..
+'   - Current node: .
+'
+' =====================================================
+
+Public Module mXPath
+
+    ' XPath token types
+    Public Enum XPathTokenType
+        TokenNone = 0
+        TokenSlash = 1          ' /
+        TokenDoubleSlash = 2    ' //
+        TokenDot = 3            ' .
+        TokenDoubleDot = 4      ' ..
+        TokenStar = 5           ' *
+        TokenAt = 6             ' @
+        TokenLeftBracket = 7    ' [
+        TokenRightBracket = 8   ' ]
+        TokenLeftParen = 9      ' (
+        TokenRightParen = 10    ' )
+        TokenEquals = 11        ' =
+        TokenNotEquals = 12     ' !=
+        TokenLessThan = 13      ' <
+        TokenGreaterThan = 14   ' >
+        TokenLessOrEqual = 15   ' <=
+        TokenGreaterOrEqual = 16 ' >=
+        TokenName = 17          ' element name
+        TokenNumber = 18        ' numeric value
+        TokenString = 19        ' quoted string
+        TokenFunction = 20      ' function name followed by (
+        TokenAnd = 21           ' and
+        TokenOr = 22            ' or
+    End Enum
+
+    ' XPath step axis type
+    Public Enum XPathAxisType
+        AxisChild = 0           ' child::
+        AxisDescendant = 1      ' descendant::
+        AxisParent = 2          ' parent::
+        AxisSelf = 3            ' self::
+        AxisAttribute = 4       ' attribute::
+    End Enum
+
+    ' XPath predicate operator
+    Public Enum XPathOperator
+        OpNone = 0
+        OpEquals = 1
+        OpNotEquals = 2
+        OpLessThan = 3
+        OpGreaterThan = 4
+        OpLessOrEqual = 5
+        OpGreaterOrEqual = 6
+        OpExists = 7            ' attribute exists check
+    End Enum
+
+    ' XPath step structure
+    Public Type XPathStep
+        Axis As XPathAxisType
+        NodeTest As String      ' element name, *, or node()
+        Predicates() As String  ' array of predicate expressions
+        PredicateCount As Long
+    End Type
+
+    ' XPath predicate structure
+    Public Type XPathPredicate
+        PredicateType As Long   ' 0=index, 1=attribute, 2=text, 3=function
+        AttributeName As String
+        Operator As XPathOperator
+        CompareValue As String
+        IndexValue As Long
+        FunctionName As String
+    End Type
+
+    ' ==================== Main XPath Query Functions ====================
+
+    ' Execute XPath query and return matching nodes
+    Public Function SelectNodes(ByRef contextNode As cXmlNode, ByVal xpath As String) As Collection
+        Dim result As New Collection
+
+        If contextNode Is Nothing Or Len(xpath) = 0 Then
+            Return result
+        End If
+
+        ' Parse XPath into steps
+        Dim steps() As XPathStep
+        Dim stepCount As Long
+        stepCount = ParseXPath(xpath, steps)
+
+        If stepCount = 0 Then
+            Return result
+        End If
+
+        ' Execute query
+        Dim currentNodes As New Collection
+        currentNodes.Add contextNode
+
+        Dim i As Long
+        Dim nextNodes As Collection
+        For i = 0 To stepCount - 1
+            Set nextNodes = New Collection
+            EvaluateStep steps(i), currentNodes, nextNodes
+            Set currentNodes = nextNodes
+            If currentNodes.Count = 0 Then
+                Exit For
+            End If
+        Next i
+
+        Return currentNodes
+    End Function
+
+    ' Execute XPath query and return first matching node
+    Public Function SelectSingleNode(ByRef contextNode As cXmlNode, ByVal xpath As String) As cXmlNode
+        Dim nodes As Collection
+        Set nodes = SelectNodes(contextNode, xpath)
+
+        If nodes.Count > 0 Then
+            Return nodes(1)
+        End If
+
+        Return Nothing
+    End Function
+
+    ' ==================== XPath Parsing Functions ====================
+
+    ' Parse XPath expression into steps
+    Private Function ParseXPath(ByVal xpath As String, ByRef steps() As XPathStep) As Long
+        Dim stepCount As Long
+        stepCount = 0
+
+        ' Trim and normalize
+        xpath = Trim$(xpath)
+        If Len(xpath) = 0 Then
+            Return 0
+        End If
+
+        Dim pos As Long
+        pos = 1
+        Dim xpathLen As Long
+        xpathLen = Len(xpath)
+
+        ' Handle leading /
+        Dim isAbsolute As Boolean
+        isAbsolute = False
+        Dim isDescendant As Boolean
+        isDescendant = False
+
+        If Left$(xpath, 2) = "//" Then
+            isDescendant = True
+            pos = 3
+        ElseIf Left$(xpath, 1) = "/" Then
+            isAbsolute = True
+            pos = 2
+        End If
+
+        ' Parse each step
+        Do While pos <= xpathLen
+            ' Skip whitespace
+            Do While pos <= xpathLen And Mid$(xpath, pos, 1) = " "
+                pos = pos + 1
+            Loop
+
+            If pos > xpathLen Then
+                Exit Do
+            End If
+
+            ' Find end of this step (next / not inside brackets)
+            Dim stepEnd As Long
+            stepEnd = FindStepEnd(xpath, pos)
+
+            If stepEnd > pos Then
+                Dim stepStr As String
+                stepStr = Mid$(xpath, pos, stepEnd - pos)
+
+                ' Parse this step
+                Dim newStep As XPathStep
+                If ParseStep(stepStr, newStep, isDescendant) Then
+                    ReDim Preserve steps(0 To stepCount)
+                    steps(stepCount) = newStep
+                    stepCount = stepCount + 1
+                End If
+
+                pos = stepEnd
+                isDescendant = False
+
+                ' Check for // or /
+                If pos <= xpathLen Then
+                    If Mid$(xpath, pos, 2) = "//" Then
+                        isDescendant = True
+                        pos = pos + 2
+                    ElseIf Mid$(xpath, pos, 1) = "/" Then
+                        pos = pos + 1
+                    End If
+                End If
+            Else
+                Exit Do
+            End If
+        Loop
+
+        Return stepCount
+    End Function
+
+    ' Find the end position of current step
+    Private Function FindStepEnd(ByVal xpath As String, ByVal startPos As Long) As Long
+        Dim pos As Long
+        pos = startPos
+
+        Dim xpathLen As Long
+        xpathLen = Len(xpath)
+
+        Dim bracketDepth As Long
+        bracketDepth = 0
+
+        Do While pos <= xpathLen
+            Dim ch As String
+            ch = Mid$(xpath, pos, 1)
+
+            Select Case ch
+                Case "["
+                    bracketDepth = bracketDepth + 1
+                Case "]"
+                    bracketDepth = bracketDepth - 1
+                Case "/"
+                    If bracketDepth = 0 Then
+                        Return pos
+                    End If
+            End Select
+
+            pos = pos + 1
+        Loop
+
+        Return pos
+    End Function
+
+    ' Parse a single XPath step
+    Private Function ParseStep(ByVal stepStr As String, ByRef step As XPathStep, ByVal isDescendant As Boolean) As Boolean
+        stepStr = Trim$(stepStr)
+
+        If Len(stepStr) = 0 Then
+            Return False
+        End If
+
+        ' Initialize step
+        If isDescendant Then
+            step.Axis = XPathAxisType.AxisDescendant
+        Else
+            step.Axis = XPathAxisType.AxisChild
+        End If
+        step.PredicateCount = 0
+
+        ' Check for special cases
+        If stepStr = "." Then
+            step.Axis = XPathAxisType.AxisSelf
+            step.NodeTest = "."
+            Return True
+        ElseIf stepStr = ".." Then
+            step.Axis = XPathAxisType.AxisParent
+            step.NodeTest = ".."
+            Return True
+        End If
+
+        ' Find node test (before first [)
+        Dim bracketPos As Long
+        bracketPos = InStr(stepStr, "[")
+
+        Dim nodeTest As String
+        If bracketPos > 0 Then
+            nodeTest = Trim$(Left$(stepStr, bracketPos - 1))
+        Else
+            nodeTest = stepStr
+        End If
+
+        ' Check for axis prefix
+        Dim colonPos As Long
+        colonPos = InStr(nodeTest, "::")
+        If colonPos > 0 Then
+            Dim axisName As String
+            axisName = LCase$(Left$(nodeTest, colonPos - 1))
+            nodeTest = Mid$(nodeTest, colonPos + 2)
+
+            Select Case axisName
+                Case "child"
+                    step.Axis = XPathAxisType.AxisChild
+                Case "descendant"
+                    step.Axis = XPathAxisType.AxisDescendant
+                Case "parent"
+                    step.Axis = XPathAxisType.AxisParent
+                Case "self"
+                    step.Axis = XPathAxisType.AxisSelf
+                Case "attribute"
+                    step.Axis = XPathAxisType.AxisAttribute
+            End Select
+        End If
+
+        step.NodeTest = nodeTest
+
+        ' Parse predicates
+        If bracketPos > 0 Then
+            ParsePredicates stepStr, bracketPos, step
+        End If
+
+        Return True
+    End Function
+
+    ' Parse predicates from step string
+    Private Sub ParsePredicates(ByVal stepStr As String, ByVal startPos As Long, ByRef step As XPathStep)
+        Dim pos As Long
+        pos = startPos
+
+        Dim stepLen As Long
+        stepLen = Len(stepStr)
+
+        Do While pos <= stepLen
+            ' Find opening bracket
+            Dim bracketStart As Long
+            bracketStart = InStr(pos, stepStr, "[")
+
+            If bracketStart = 0 Then
+                Exit Do
+            End If
+
+            ' Find matching closing bracket
+            Dim bracketEnd As Long
+            bracketEnd = FindMatchingBracket(stepStr, bracketStart)
+
+            If bracketEnd > bracketStart Then
+                Dim predicate As String
+                predicate = Mid$(stepStr, bracketStart + 1, bracketEnd - bracketStart - 1)
+
+                ReDim Preserve step.Predicates(0 To step.PredicateCount)
+                step.Predicates(step.PredicateCount) = Trim$(predicate)
+                step.PredicateCount = step.PredicateCount + 1
+
+                pos = bracketEnd + 1
+            Else
+                Exit Do
+            End If
+        Loop
+    End Sub
+
+    ' Find matching closing bracket
+    Private Function FindMatchingBracket(ByVal str As String, ByVal openPos As Long) As Long
+        Dim pos As Long
+        pos = openPos + 1
+
+        Dim strLen As Long
+        strLen = Len(str)
+
+        Dim depth As Long
+        depth = 1
+
+        Dim inString As Boolean
+        inString = False
+        Dim stringChar As String
+        stringChar = ""
+
+        Do While pos <= strLen And depth > 0
+            Dim ch As String
+            ch = Mid$(str, pos, 1)
+
+            If inString Then
+                If ch = stringChar Then
+                    inString = False
+                End If
+            Else
+                Select Case ch
+                    Case """", "'"
+                        inString = True
+                        stringChar = ch
+                    Case "["
+                        depth = depth + 1
+                    Case "]"
+                        depth = depth - 1
+                End Select
+            End If
+
+            pos = pos + 1
+        Loop
+
+        If depth = 0 Then
+            Return pos - 1
+        Else
+            Return 0
+        End If
+    End Function
+
+    ' ==================== XPath Evaluation Functions ====================
+
+    ' Evaluate a single step against current nodes
+    Private Sub EvaluateStep(ByRef step As XPathStep, ByRef currentNodes As Collection, ByRef resultNodes As Collection)
+        Dim node As cXmlNode
+        Dim candidates As Collection
+        Dim filtered As Collection
+        Dim candidate As cXmlNode
+
+        For Each node In currentNodes
+            Set candidates = New Collection
+
+            ' Get candidate nodes based on axis
+            Select Case step.Axis
+                Case XPathAxisType.AxisChild
+                    GetChildCandidates node, step.NodeTest, candidates
+                Case XPathAxisType.AxisDescendant
+                    GetDescendantCandidates node, step.NodeTest, candidates
+                Case XPathAxisType.AxisParent
+                    If Not node.Parent Is Nothing Then
+                        If MatchesNodeTest(node.Parent, step.NodeTest) Then
+                            candidates.Add node.Parent
+                        End If
+                    End If
+                Case XPathAxisType.AxisSelf
+                    If MatchesNodeTest(node, step.NodeTest) Or step.NodeTest = "." Then
+                        candidates.Add node
+                    End If
+            End Select
+
+            ' Apply predicates
+            Set filtered = ApplyPredicates(candidates, step)
+
+            ' Add to results (avoid duplicates)
+            For Each candidate In filtered
+                If Not ContainsNode(resultNodes, candidate) Then
+                    resultNodes.Add candidate
+                End If
+            Next candidate
+        Next node
+    End Sub
+
+    ' Get child nodes matching node test
+    Private Sub GetChildCandidates(ByRef parentNode As cXmlNode, ByVal nodeTest As String, ByRef candidates As Collection)
+        Dim child As cXmlNode
+
+        For Each child In parentNode.ChildNodes
+            If MatchesNodeTest(child, nodeTest) Then
+                candidates.Add child
+            End If
+        Next child
+    End Sub
+
+    ' Get descendant nodes matching node test
+    Private Sub GetDescendantCandidates(ByRef parentNode As cXmlNode, ByVal nodeTest As String, ByRef candidates As Collection)
+        Dim child As cXmlNode
+
+        For Each child In parentNode.ChildNodes
+            ' Check if already in candidates to avoid duplicates and potential cycles
+            If Not ContainsNode(candidates, child) Then
+                If MatchesNodeTest(child, nodeTest) Then
+                    candidates.Add child
+                End If
+                ' Recurse into children (only if not a text node to optimize)
+                If child.NodeType <> mXml.XmlNodeType.Text And _
+                   child.NodeType <> mXml.XmlNodeType.CData Then
+                    GetDescendantCandidates child, nodeTest, candidates
+                End If
+            End If
+        Next child
+    End Sub
+
+    ' Check if node matches node test
+    Private Function MatchesNodeTest(ByRef node As cXmlNode, ByVal nodeTest As String) As Boolean
+        If nodeTest = "*" Then
+            ' Wildcard matches any element
+            Return node.NodeType = mXml.XmlNodeType.Element
+        ElseIf LCase$(nodeTest) = "node()" Then
+            ' node() matches any node
+            Return True
+        ElseIf LCase$(nodeTest) = "text()" Then
+            ' text() matches text nodes
+            Return node.NodeType = mXml.XmlNodeType.Text
+        ElseIf LCase$(nodeTest) = "comment()" Then
+            ' comment() matches comment nodes
+            Return node.NodeType = mXml.XmlNodeType.Comment
+        Else
+            ' Name match (case-insensitive)
+            Return StrComp(node.Name, nodeTest, vbTextCompare) = 0
+        End If
+    End Function
+
+    ' Apply predicates to filter candidates
+    Private Function ApplyPredicates(ByRef candidates As Collection, ByRef step As XPathStep) As Collection
+        Dim result As New Collection
+
+        ' Copy all candidates to result
+        Dim node As cXmlNode
+        For Each node In candidates
+            result.Add node
+        Next node
+
+        Dim i As Long
+        Dim c As Long = step.PredicateCount
+        Dim filtered As Collection
+        For i = 0 To c - 1
+            Set filtered = New Collection
+            ' Pass result as candidates (input) and filtered as output (new empty collection)
+            EvaluatePredicate result, step.Predicates(i), filtered
+            Set result = filtered
+        Next i
+
+        Return result
+    End Function
+
+    ' Evaluate a single predicate
+    Private Sub EvaluatePredicate(ByRef candidates As Collection, ByVal predicate As String, ByRef result As Collection)
+        predicate = Trim$(predicate)
+
+        ' Check if it's a numeric index
+        If IsNumeric(predicate) Then
+            Dim idx As Long
+            idx = CLng(predicate)
+            If idx >= 1 And idx <= candidates.Count Then
+                result.Add candidates(idx)
+            End If
+            Exit Sub
+        End If
+
+        ' Check for last() function
+        If LCase$(predicate) = "last()" Then
+            If candidates.Count > 0 Then
+                result.Add candidates(candidates.Count)
+            End If
+            Exit Sub
+        End If
+
+        ' Check for position() function
+        Dim posMatch As Boolean
+        posMatch = False
+        If Left$(LCase$(predicate), 11) = "position()=" Then
+            Dim posValue As String
+            posValue = Trim$(Mid$(predicate, 12))
+            If IsNumeric(posValue) Then
+                Dim posIdx As Long
+                posIdx = CLng(posValue)
+                If posIdx >= 1 And posIdx <= candidates.Count Then
+                    result.Add candidates(posIdx)
+                End If
+            End If
+            Exit Sub
+        End If
+
+        ' Evaluate each candidate
+        Dim node As cXmlNode
+        Dim nodeIndex As Long
+        nodeIndex = 0
+
+        For Each node In candidates
+            nodeIndex = nodeIndex + 1
+            If EvaluatePredicateForNode(node, predicate, nodeIndex, candidates.Count) Then
+                result.Add node
+            End If
+        Next node
+    End Sub
+
+    ' Evaluate predicate for a single node
+    Private Function EvaluatePredicateForNode(ByRef node As cXmlNode, ByVal predicate As String, ByVal position As Long, ByVal total As Long) As Boolean
+        predicate = Trim$(predicate)
+
+        ' Handle 'and' operator
+        Dim andPos As Long
+        andPos = InStrCaseInsensitive(predicate, " and ")
+        If andPos > 0 Then
+            Dim leftPred As String
+            Dim rightPred As String
+            leftPred = Trim$(Left$(predicate, andPos - 1))
+            rightPred = Trim$(Mid$(predicate, andPos + 5))
+            Return EvaluatePredicateForNode(node, leftPred, position, total) And _
+                   EvaluatePredicateForNode(node, rightPred, position, total)
+        End If
+
+        ' Handle 'or' operator
+        Dim orPos As Long
+        orPos = InStrCaseInsensitive(predicate, " or ")
+        If orPos > 0 Then
+            Dim leftPred2 As String
+            Dim rightPred2 As String
+            leftPred2 = Trim$(Left$(predicate, orPos - 1))
+            rightPred2 = Trim$(Mid$(predicate, orPos + 4))
+            Return EvaluatePredicateForNode(node, leftPred2, position, total) Or _
+                   EvaluatePredicateForNode(node, rightPred2, position, total)
+        End If
+
+        ' Check for attribute predicate: @attr or @attr='value' or @attr!='value' etc.
+        If Left$(predicate, 1) = "@" Then
+            Return EvaluateAttributePredicate(node, Mid$(predicate, 2))
+        End If
+
+        ' Check for text() predicate
+        If Left$(LCase$(predicate), 7) = "text()=" Or Left$(LCase$(predicate), 6) = "text()" Then
+            Return EvaluateTextPredicate(node, predicate)
+        End If
+
+        ' Check for contains() function
+        If Left$(LCase$(predicate), 9) = "contains(" Then
+            Return EvaluateContainsFunction(node, predicate)
+        End If
+
+        ' Check for starts-with() function
+        If Left$(LCase$(predicate), 12) = "starts-with(" Then
+            Return EvaluateStartsWithFunction(node, predicate)
+        End If
+
+        ' Check for not() function
+        If Left$(LCase$(predicate), 4) = "not(" Then
+            Dim innerPred As String
+            innerPred = ExtractFunctionArg(predicate)
+            Return Not EvaluatePredicateForNode(node, innerPred, position, total)
+        End If
+
+        ' Default: try as element name existence check
+        Dim child As cXmlNode
+        Set child = node.GetChildNode(predicate)
+        Return Not (child Is Nothing)
+    End Function
+
+    ' Evaluate attribute predicate
+    Private Function EvaluateAttributePredicate(ByRef node As cXmlNode, ByVal attrExpr As String) As Boolean
+        On Error GoTo ErrorHandler
+        attrExpr = Trim$(attrExpr)
+
+        ' Parse operator and value
+        Dim op As XPathOperator
+        Dim opPos As Long
+        Dim attrName As String
+        Dim compareValue As String
+
+        ' Check for != first (before =)
+        opPos = InStr(attrExpr, "!=")
+        If opPos > 0 Then
+            op = XPathOperator.OpNotEquals
+            attrName = Trim$(Left$(attrExpr, opPos - 1))
+            compareValue = ExtractQuotedValue(Mid$(attrExpr, opPos + 2))
+        Else
+            opPos = InStr(attrExpr, ">=")
+            If opPos > 0 Then
+                op = XPathOperator.OpGreaterOrEqual
+                attrName = Trim$(Left$(attrExpr, opPos - 1))
+                compareValue = ExtractQuotedValue(Mid$(attrExpr, opPos + 2))
+            Else
+                opPos = InStr(attrExpr, "<=")
+                If opPos > 0 Then
+                    op = XPathOperator.OpLessOrEqual
+                    attrName = Trim$(Left$(attrExpr, opPos - 1))
+                    compareValue = ExtractQuotedValue(Mid$(attrExpr, opPos + 2))
+                Else
+                    opPos = InStr(attrExpr, ">")
+                    If opPos > 0 Then
+                        op = XPathOperator.OpGreaterThan
+                        attrName = Trim$(Left$(attrExpr, opPos - 1))
+                        compareValue = ExtractQuotedValue(Mid$(attrExpr, opPos + 1))
+                    Else
+                        opPos = InStr(attrExpr, "<")
+                        If opPos > 0 Then
+                            op = XPathOperator.OpLessThan
+                            attrName = Trim$(Left$(attrExpr, opPos - 1))
+                            compareValue = ExtractQuotedValue(Mid$(attrExpr, opPos + 1))
+                        Else
+                            opPos = InStr(attrExpr, "=")
+                            If opPos > 0 Then
+                                op = XPathOperator.OpEquals
+                                attrName = Trim$(Left$(attrExpr, opPos - 1))
+                                compareValue = ExtractQuotedValue(Mid$(attrExpr, opPos + 1))
+                            Else
+                                ' Just attribute existence check
+                                op = XPathOperator.OpExists
+                                attrName = attrExpr
+                                compareValue = ""
+                            End If
+                        End If
+                    End If
+                End If
+            End If
+        End If
+
+        ' Remove @ prefix from attribute name if present
+        If Left$(attrName, 1) = "@" Then
+            attrName = Mid$(attrName, 2)
+        End If
+
+        ' Get attribute value
+        Dim attrValue As String
+        attrValue = node.GetAttribute(attrName)
+
+        ' Evaluate based on operator
+        Select Case op
+            Case XPathOperator.OpExists
+                Return Len(attrValue) > 0 Or HasAttribute(node, attrName)
+            Case XPathOperator.OpEquals
+                Return StrComp(attrValue, compareValue, vbTextCompare) = 0
+            Case XPathOperator.OpNotEquals
+                Return StrComp(attrValue, compareValue, vbTextCompare) <> 0
+            Case XPathOperator.OpLessThan
+                If IsNumeric(attrValue) And IsNumeric(compareValue) Then
+                    Return CDbl(attrValue) < CDbl(compareValue)
+                End If
+                Return StrComp(attrValue, compareValue, vbTextCompare) < 0
+            Case XPathOperator.OpGreaterThan
+                If IsNumeric(attrValue) And IsNumeric(compareValue) Then
+                    Return CDbl(attrValue) > CDbl(compareValue)
+                End If
+                Return StrComp(attrValue, compareValue, vbTextCompare) > 0
+            Case XPathOperator.OpLessOrEqual
+                If IsNumeric(attrValue) And IsNumeric(compareValue) Then
+                    Return CDbl(attrValue) <= CDbl(compareValue)
+                End If
+                Return StrComp(attrValue, compareValue, vbTextCompare) <= 0
+            Case XPathOperator.OpGreaterOrEqual
+                If IsNumeric(attrValue) And IsNumeric(compareValue) Then
+                    Return CDbl(attrValue) >= CDbl(compareValue)
+                End If
+                Return StrComp(attrValue, compareValue, vbTextCompare) >= 0
+        End Select
+
+        Return False
+        Exit Function
+
+ErrorHandler:
+        Debug.Print "EvaluateAttributePredicate error: " & Err.Description
+        Return False
+    End Function
+
+    ' Check if node has attribute (even if empty)
+    Private Function HasAttribute(ByRef node As cXmlNode, ByVal attrName As String) As Boolean
+        Dim i As Long
+        For i = 1 To node.Attributes.Count Step 2
+            If StrComp(node.Attributes(i), attrName, vbTextCompare) = 0 Then
+                Return True
+            End If
+        Next i
+        Return False
+    End Function
+
+    ' Evaluate text() predicate
+    Private Function EvaluateTextPredicate(ByRef node As cXmlNode, ByVal predicate As String) As Boolean
+        ' Get text content
+        Dim textContent As String
+        textContent = GetNodeTextContent(node)
+
+        ' Parse operator and value
+        Dim opPos As Long
+        opPos = InStr(predicate, "=")
+
+        If opPos > 0 Then
+            Dim compareValue As String
+            compareValue = ExtractQuotedValue(Mid$(predicate, opPos + 1))
+            Return StrComp(textContent, compareValue, vbTextCompare) = 0
+        End If
+
+        ' Just check if has text
+        Return Len(textContent) > 0
+    End Function
+
+    ' Evaluate contains() function
+    Private Function EvaluateContainsFunction(ByRef node As cXmlNode, ByVal predicate As String) As Boolean
+        ' Extract arguments: contains(arg1, arg2)
+        Dim args As String
+        args = ExtractFunctionArg(predicate)
+
+        Dim commaPos As Long
+        commaPos = FindCommaOutsideQuotes(args)
+
+        If commaPos > 0 Then
+            Dim arg1 As String
+            Dim arg2 As String
+            arg1 = Trim$(Left$(args, commaPos - 1))
+            arg2 = Trim$(Mid$(args, commaPos + 1))
+
+            ' Resolve arg1
+            Dim value1 As String
+            If Left$(arg1, 1) = "@" Then
+                value1 = node.GetAttribute(Mid$(arg1, 2))
+            ElseIf LCase$(arg1) = "text()" Or arg1 = "." Then
+                value1 = GetNodeTextContent(node)
+            Else
+                value1 = ExtractQuotedValue(arg1)
+            End If
+
+            ' Resolve arg2
+            Dim value2 As String
+            value2 = ExtractQuotedValue(arg2)
+
+            Return InStr(1, value1, value2, vbTextCompare) > 0
+        End If
+
+        Return False
+    End Function
+
+    ' Evaluate starts-with() function
+    Private Function EvaluateStartsWithFunction(ByRef node As cXmlNode, ByVal predicate As String) As Boolean
+        ' Extract arguments: starts-with(arg1, arg2)
+        Dim args As String
+        args = ExtractFunctionArg(predicate)
+
+        Dim commaPos As Long
+        commaPos = FindCommaOutsideQuotes(args)
+
+        If commaPos > 0 Then
+            Dim arg1 As String
+            Dim arg2 As String
+            arg1 = Trim$(Left$(args, commaPos - 1))
+            arg2 = Trim$(Mid$(args, commaPos + 1))
+
+            ' Resolve arg1
+            Dim value1 As String
+            If Left$(arg1, 1) = "@" Then
+                value1 = node.GetAttribute(Mid$(arg1, 2))
+            ElseIf LCase$(arg1) = "text()" Or arg1 = "." Then
+                value1 = GetNodeTextContent(node)
+            Else
+                value1 = ExtractQuotedValue(arg1)
+            End If
+
+            ' Resolve arg2
+            Dim value2 As String
+            value2 = ExtractQuotedValue(arg2)
+
+            If Len(value2) <= Len(value1) Then
+                Return StrComp(Left$(value1, Len(value2)), value2, vbTextCompare) = 0
+            End If
+        End If
+
+        Return False
+    End Function
+
+    ' ==================== Helper Functions ====================
+
+    ' Extract quoted value from string
+    Private Function ExtractQuotedValue(ByVal str As String) As String
+        str = Trim$(str)
+
+        If Len(str) >= 2 Then
+            Dim firstChar As String
+            firstChar = Left$(str, 1)
+            If firstChar = """" Or firstChar = "'" Then
+                Dim lastChar As String
+                lastChar = Right$(str, 1)
+                If lastChar = firstChar Then
+                    Return Mid$(str, 2, Len(str) - 2)
+                End If
+            End If
+        End If
+
+        Return str
+    End Function
+
+    ' Extract function argument (content between parentheses)
+    Private Function ExtractFunctionArg(ByVal funcCall As String) As String
+        Dim openParen As Long
+        openParen = InStr(funcCall, "(")
+
+        If openParen > 0 Then
+            Dim closeParen As Long
+            closeParen = InStrRev(funcCall, ")")
+            If closeParen > openParen Then
+                Return Trim$(Mid$(funcCall, openParen + 1, closeParen - openParen - 1))
+            End If
+        End If
+
+        Return ""
+    End Function
+
+    ' Find comma outside quotes
+    Private Function FindCommaOutsideQuotes(ByVal str As String) As Long
+        Dim pos As Long
+        Dim strLen As Long
+        strLen = Len(str)
+
+        Dim inString As Boolean
+        inString = False
+        Dim stringChar As String
+        stringChar = ""
+
+        For pos = 1 To strLen
+            Dim ch As String
+            ch = Mid$(str, pos, 1)
+
+            If inString Then
+                If ch = stringChar Then
+                    inString = False
+                End If
+            Else
+                Select Case ch
+                    Case """", "'"
+                        inString = True
+                        stringChar = ch
+                    Case ","
+                        Return pos
+                End Select
+            End If
+        Next pos
+
+        Return 0
+    End Function
+
+    ' Case-insensitive InStr
+    Private Function InStrCaseInsensitive(ByVal str As String, ByVal search As String) As Long
+        Return InStr(1, str, search, vbTextCompare)
+    End Function
+
+    ' Get text content of a node
+    Private Function GetNodeTextContent(ByRef node As cXmlNode) As String
+        If node.NodeType = mXml.XmlNodeType.Text Or node.NodeType = mXml.XmlNodeType.CData Then
+            Return node.Value
+        End If
+
+        Dim result As String
+        result = ""
+
+        Dim child As cXmlNode
+        For Each child In node.ChildNodes
+            If child.NodeType = mXml.XmlNodeType.Text Or child.NodeType = mXml.XmlNodeType.CData Then
+                result = result & child.Value
+            End If
+        Next child
+
+        Return result
+    End Function
+
+    ' Check if collection contains node
+    Private Function ContainsNode(ByRef coll As Collection, ByRef node As cXmlNode) As Boolean
+        Dim item As cXmlNode
+        For Each item In coll
+            If item Is node Then
+                Return True
+            End If
+        Next item
+        Return False
+    End Function
+
+End Module

@@ -1,0 +1,173 @@
+' =====================================================
+' FormatHelper.twin - 格式化辅助函数
+' Twinbasic Diagnostic Tool
+' =====================================================
+
+' 格式化辅助模块
+' 提供字节、时间等常用格式化函数
+Public Module FormatHelper
+
+    ' 格式化字节大小为人类可读格式
+    ' @param bytes 字节数
+    ' @param decimals 小数位数，默认为1
+    ' @return 格式化后的字符串，如 "1.5 GB"
+    Public Function FormatBytes(ByVal bytes As LongLong, Optional ByVal decimals As Long = 1) As String
+        Const KB As LongLong = 1024
+        Const MB As LongLong = KB * 1024
+        Const GB As LongLong = MB * 1024
+        Const TB As LongLong = GB * 1024
+
+        Dim value As Double
+        Dim suffix As String
+
+        Select Case bytes
+            Case Is >= TB
+                value = CDbl(bytes) / CDbl(TB)
+                suffix = " TB"
+            Case Is >= GB
+                value = CDbl(bytes) / CDbl(GB)
+                suffix = " GB"
+            Case Is >= MB
+                value = CDbl(bytes) / CDbl(MB)
+                suffix = " MB"
+            Case Is >= KB
+                value = CDbl(bytes) / CDbl(KB)
+                suffix = " KB"
+            Case Else
+                Return CStr(bytes) & " B"
+        End Select
+
+        Return Format$(value, "0." & String$(decimals, "0")) & suffix
+    End Function
+
+    ' 格式化运行时间（毫秒）为人类可读格式
+    ' @param milliseconds 毫秒数
+    ' @return 格式化后的字符串，如 "3d 12h 45m 32s"
+    Public Function FormatUptime(ByVal milliseconds As LongLong) As String
+        Dim seconds As LongLong = milliseconds \ 1000
+        Dim minutes As LongLong = seconds \ 60
+        Dim hours As LongLong = minutes \ 60
+        Dim days As LongLong = hours \ 24
+
+        seconds = seconds Mod 60
+        minutes = minutes Mod 60
+        hours = hours Mod 24
+
+        Dim result As String = ""
+
+        If days > 0 Then result = result & days & "d "
+        If hours > 0 Or days > 0 Then result = result & hours & "h "
+        If minutes > 0 Or hours > 0 Or days > 0 Then result = result & minutes & "m "
+        result = result & seconds & "s"
+
+        Return Trim$(result)
+    End Function
+
+    ' 格式化百分比
+    ' @param value 当前值
+    ' @param total 总值
+    ' @param decimals 小数位数，默认为0
+    ' @return 格式化后的字符串，如 "42%"
+    Public Function FormatPercent(ByVal value As Double, ByVal total As Double, Optional ByVal decimals As Long = 0) As String
+        If total = 0 Then Return "0%"
+        Dim percent As Double = (value / total) * 100
+        If decimals = 0 Then
+            Return CStr(CLng(percent)) & "%"
+        Else
+            Return Format$(percent, "0." & String$(decimals, "0")) & "%"
+        End If
+    End Function
+
+    ' 格式化百分比值
+    ' @param percent 百分比值 (0-100)
+    ' @param decimals 小数位数，默认为0
+    ' @return 格式化后的字符串，如 "42%"
+    Public Function FormatPercentValue(ByVal percent As Double, Optional ByVal decimals As Long = 0) As String
+        If decimals = 0 Then
+            Return CStr(CLng(percent)) & "%"
+        Else
+            Return Format$(percent, "0." & String$(decimals, "0")) & "%"
+        End If
+    End Function
+
+    ' 格式化日期时间
+    ' @param dt 日期时间值
+    ' @return 格式化后的字符串，如 "2026-01-04 15:30:00"
+    Public Function FormatDateTime(ByVal dt As Date) As String
+        Return Format$(dt, "yyyy-mm-dd hh:nn:ss")
+    End Function
+
+    ' 格式化时间
+    ' @param dt 日期时间值
+    ' @return 格式化后的字符串，如 "15:30:45"
+    Public Function FormatTime(ByVal dt As Date) As String
+        Return Format$(dt, "hh:nn:ss")
+    End Function
+
+    ' 格式化日期（ISO 格式）
+    ' @param dt 日期时间值
+    ' @return 格式化后的字符串，如 "2026-01-04T15:30:00"
+    Public Function FormatDateTimeISO(ByVal dt As Date) As String
+        Return Format$(dt, "yyyy-mm-dd") & "T" & Format$(dt, "hh:nn:ss")
+    End Function
+
+    ' 右对齐填充字符串
+    ' @param text 原始字符串
+    ' @param width 目标宽度
+    ' @param padChar 填充字符，默认为空格
+    ' @return 填充后的字符串
+    Public Function PadLeft(ByVal text As String, ByVal width As Long, Optional ByVal padChar As String = " ") As String
+        Dim textLen As Long = Len(text)
+        If textLen >= width Then Return text
+        Return String$(width - textLen, padChar) & text
+    End Function
+
+    ' 左对齐填充字符串
+    ' @param text 原始字符串
+    ' @param width 目标宽度
+    ' @param padChar 填充字符，默认为空格
+    ' @return 填充后的字符串
+    Public Function PadRight(ByVal text As String, ByVal width As Long, Optional ByVal padChar As String = " ") As String
+        Dim textLen As Long = Len(text)
+        If textLen >= width Then Return text
+        Return text & String$(width - textLen, padChar)
+    End Function
+
+    ' 截断字符串到指定长度
+    ' @param text 原始字符串
+    ' @param maxLength 最大长度
+    ' @param ellipsis 省略符，默认为 "..."
+    ' @return 截断后的字符串
+    Public Function Truncate(ByVal text As String, ByVal maxLength As Long, Optional ByVal ellipsis As String = "...") As String
+        If Len(text) <= maxLength Then Return text
+        If maxLength <= Len(ellipsis) Then Return Left$(ellipsis, maxLength)
+        Return Left$(text, maxLength - Len(ellipsis)) & ellipsis
+    End Function
+
+    ' 转义 JSON 字符串
+    ' @param text 原始字符串
+    ' @return 转义后的字符串
+    Public Function EscapeJson(ByVal text As String) As String
+        Dim result As String = text
+        result = Replace(result, "\", "\\")
+        result = Replace(result, """", "\""")
+        result = Replace(result, vbCr, "\r")
+        result = Replace(result, vbLf, "\n")
+        result = Replace(result, vbTab, "\t")
+        Return result
+    End Function
+
+    ' 转义 HTML 字符串
+    ' @param text 原始字符串
+    ' @return 转义后的字符串
+    Public Function EscapeHtml(ByVal text As String) As String
+        Dim result As String = text
+        result = Replace(result, "&", "&amp;")
+        result = Replace(result, "<", "&lt;")
+        result = Replace(result, ">", "&gt;")
+        result = Replace(result, """", "&quot;")
+        result = Replace(result, "'", "&#39;")
+        Return result
+    End Function
+
+End Module

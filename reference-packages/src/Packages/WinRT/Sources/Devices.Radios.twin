@@ -1,0 +1,95 @@
+[InterfaceId("21FB30EF-072F-502C-9898-D0C3B2CD9AC5")]
+Interface IAsyncOperationRadioAccessStatus Extends IInspectable
+    Property Set Completed(ByVal Handler As IAsyncOperationCompletedHandlerRadioAccessStatus)
+    Property Get Completed() As IAsyncOperationCompletedHandlerRadioAccessStatus
+    Function GetResults() As RadioAccessStatus
+End Interface
+
+[InterfaceId("BD248E73-F05F-574C-AE3D-9B95C4BF282A")]
+Interface IAsyncOperationCompletedHandlerRadioAccessStatus Extends IUnknown
+    Sub Invoke(ByVal AsyncOperation As IAsyncOperationRadioAccessStatus, ByVal AsyncStatus As AsyncStatus)
+End Interface
+
+[InterfaceId("FC6AA329-B586-5EBB-9E85-3F6B84EBDF18")]
+Interface ITypedEventHandlerRadioStateChanged Extends IUnknown
+    Sub Invoke(ByVal Sender As IRadio, ByVal Args As IInspectable)
+End Interface
+
+[InterfaceId("252118DF-B33E-416A-875F-1CF38AE2D83E")]
+Interface IRadio Extends IInspectable
+    Function SetStateAsync(ByVal Value As RadioState) As IAsyncOperationRadioAccessStatus
+    [PreserveSig]
+    Function AddStateChanged(ByVal Handler As ITypedEventHandlerRadioStateChanged, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveStateChanged(ByVal Token As EventRegistrationToken) As HRESULT
+    Property Get State() As RadioState
+    Property Get Name() As LongPtr
+    Property Get Kind() As RadioKind
+End Interface
+
+[InterfaceId("CF37EDE7-EAEC-5B8F-AD31-4D51ABD9DB05")]
+Interface IIterator_IRadio Extends IInspectable
+    Property Get Current() As IRadio
+    Property Get HasCurrent() As BooleanByte
+    Function MoveNext() As BooleanByte
+    Function GetMany(ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("E82500AF-1F53-504E-B8BE-DAC4FBB69084")]
+Interface IIterable_IRadio Extends IInspectable
+    Function First() As IIterator_IRadio
+End Interface
+
+[InterfaceId("65066C36-090B-5466-B8E5-E7565DC34175")]
+Interface IVectorView_IRadio Extends IInspectable
+    Function GetAt(ByVal Index As Long) As IRadio
+    Property Get Size() As Long
+    Function IndexOf(ByVal Value As IRadio, Index As Long) As BooleanByte
+    Function GetMany(ByVal StartIndex As Long, ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("040B54A1-203E-58F5-943F-C1CCA86BD532")]
+Interface IAsyncOperationIVectorView_IRadio Extends IInspectable
+    Property Set Completed(ByVal Handler As IAsyncOperationCompletedHandlerIVectorView_IRadio)
+    Property Get Completed() As IAsyncOperationCompletedHandlerIVectorView_IRadio
+    Function GetResults() As IVectorView_IRadio
+End Interface
+
+[InterfaceId("D30691E6-60A0-59C9-8965-5BBE282E8208")]
+Interface IAsyncOperationCompletedHandlerIVectorView_IRadio Extends IUnknown
+    Sub Invoke(ByVal AsyncOperation As IAsyncOperationIVectorView_IRadio, ByVal AsyncStatus As AsyncStatus)
+End Interface
+
+[InterfaceId("5FB6A12E-67CB-46AE-AAE9-65919F86EFF4")]
+Interface IRadioStatics Extends IInspectable
+    Function GetRadiosAsync() As IAsyncOperationIVectorView_IRadio
+    Function GetDeviceSelector() As LongPtr
+    Function FromIdAsync(ByVal DeviceId As LongPtr) As IAsyncOperationIRadio
+    Function RequestAccessAsync() As IAsyncOperationRadioAccessStatus
+End Interface
+
+Module mdlDevicesRadios
+
+Public Enum RadioAccessStatus
+    RadioAccessStatus_Unspecified
+    RadioAccessStatus_Allowed
+    RadioAccessStatus_DeniedByUser
+    RadioAccessStatus_DeniedBySystem
+End Enum
+
+Public Enum RadioKind
+    RadioKind_Other
+    RadioKind_WiFi
+    RadioKind_MobileBroadband
+    RadioKind_Bluetooth
+    RadioKind_FM
+End Enum
+
+Public Enum RadioState
+    RadioState_Unknown
+    RadioState_On
+    RadioState_Off
+    RadioState_Disabled
+End Enum
+
+End Module

@@ -1,0 +1,401 @@
+' =====================================================
+' cAesHelper.twin - AES Encryption Helper Class
+' TwinBASIC Project - Crypto Module - AES
+' =====================================================
+' Function: Provide helper functions for AES encryption (Base64, UTF-8, padding)
+' 功能：提供AES加密的辅助函数（Base64、UTF-8、填充）
+' Author: woeoo (邓伟)
+' Email: 215879458@qq.com
+' Site: https://vb6.pro
+' Date: 2026-02-04
+' Version: 1.0.0
+' =====================================================
+
+Option Explicit
+
+[COMCreatable(False)]
+Public Class cAesHelper
+
+    ' =====================================================
+    ' Private Members
+    ' =====================================================
+    Private m_LastError As String
+
+    ' =====================================================
+    ' Constructor
+    ' =====================================================
+    Public Sub New()
+        m_LastError = ""
+    End Sub
+
+    ' =====================================================
+    ' Properties
+    ' =====================================================
+
+    ' Get last error message
+    ' 获取最后错误信息
+    Public Property Get LastError() As String
+        LastError = m_LastError
+    End Property
+
+    ' =====================================================
+    ' Public Methods
+    ' =====================================================
+
+    ' Base64 encode byte array
+    '
+    ' @param data Byte array to encode
+    ' @return Base64 encoded string, empty string on failure
+    Public Function Base64Encode(ByRef data() As Byte) As String
+        On Error GoTo ErrorHandler
+
+        If IsArrayEmpty(data) Then
+            Base64Encode = ""
+            Exit Function
+        End If
+
+        Dim dataLen As Long
+        dataLen = UBound(data) - LBound(data) + 1
+
+        If dataLen = 0 Then
+            Base64Encode = ""
+            Exit Function
+        End If
+
+        ' Get required buffer size
+        Dim strLen As Long
+        strLen = 0
+
+        Dim ret As Long
+        ret = mWin32CryptoAPI.AES_CryptBinaryToString(VarPtr(data(0)), dataLen, _
+            mAesConstants.CRYPT_STRING_BASE64 Or mAesConstants.CRYPT_STRING_NOCRLF, 0, strLen)
+
+        If ret = 0 Or strLen = 0 Then
+            m_LastError = "Failed to get Base64 encoding length"
+            Base64Encode = ""
+            Exit Function
+        End If
+
+        ' Allocate buffer and encode
+        Dim result As String
+        result = Space$(strLen)
+
+        ret = mWin32CryptoAPI.AES_CryptBinaryToString(VarPtr(data(0)), dataLen, _
+            mAesConstants.CRYPT_STRING_BASE64 Or mAesConstants.CRYPT_STRING_NOCRLF, StrPtr(result), strLen)
+
+        If ret = 0 Then
+            m_LastError = "Base64 encoding failed"
+            Base64Encode = ""
+            Exit Function
+        End If
+
+        ' CryptBinaryToString returns length including null terminator for WideChar versions
+        ' But for the W version (Unicode), strLen is the number of characters
+        Base64Encode = Left$(result, strLen)
+        Exit Function
+
+ErrorHandler:
+        m_LastError = "Base64 encoding exception: " & Err.Description
+        Base64Encode = ""
+    End Function
+
+    ' Base64 decode string
+    '
+    ' @param base64 Base64 encoded string
+    ' @return Decoded byte array, Nothing on failure
+    Public Function Base64Decode(ByVal base64 As String) As Byte()
+        On Error GoTo ErrorHandler
+
+        Dim strLen As Long
+        strLen = Len(base64)
+
+        If strLen = 0 Then
+            Base64Decode = Nothing
+            Exit Function
+        End If
+
+        ' Get required buffer size
+        Dim dataLen As Long
+        dataLen = 0
+
+        Dim ret As Long
+        ret = mWin32CryptoAPI.AES_CryptStringToBinary(StrPtr(base64), strLen, _
+            mAesConstants.CRYPT_STRING_BASE64, 0, dataLen, 0, 0)
+
+        If ret = 0 Or dataLen = 0 Then
+            m_LastError = "Failed to get Base64 decoding length"
+            Base64Decode = Nothing
+            Exit Function
+        End If
+
+        ' Allocate buffer and decode
+        Dim data() As Byte
+        ReDim data(dataLen - 1)
+
+        ret = mWin32CryptoAPI.AES_CryptStringToBinary(StrPtr(base64), strLen, _
+            mAesConstants.CRYPT_STRING_BASE64, VarPtr(data(0)), dataLen, 0, 0)
+
+        If ret = 0 Then
+            m_LastError = "Base64 decoding failed"
+            Base64Decode = Nothing
+            Exit Function
+        End If
+
+        Base64Decode = data
+        Exit Function
+
+ErrorHandler:
+        m_LastError = "Base64 decoding exception: " & Err.Description
+        Base64Decode = Nothing
+    End Function
+
+    ' Convert string to UTF-8 byte array
+    '
+    ' @param text Input string
+    ' @return UTF-8 encoded byte array
+    Public Function StringToUtf8Bytes(ByVal text As String) As Byte()
+        On Error GoTo ErrorHandler
+
+        StringToUtf8Bytes = mWin32CryptoAPI.WideStringToUtf8Bytes(text)
+        Exit Function
+
+ErrorHandler:
+        m_LastError = "String conversion exception: " & Err.Description
+        StringToUtf8Bytes = Nothing
+    End Function
+
+    ' Convert UTF-8 byte array to string
+    '
+    ' @param bytes UTF-8 encoded byte array
+    ' @return Decoded string
+    Public Function Utf8BytesToString(ByRef bytes() As Byte) As String
+        On Error GoTo ErrorHandler
+
+        Utf8BytesToString = mWin32CryptoAPI.Utf8BytesToWideString(bytes)
+        Exit Function
+
+ErrorHandler:
+        m_LastError = "Byte conversion exception: " & Err.Description
+        Utf8BytesToString = ""
+    End Function
+
+    ' Apply PKCS7 padding
+    '
+    ' @param data Original data
+    ' @param blockSize Block size in bytes
+    ' @return Padded data
+    Public Function ApplyPKCS7Padding(ByRef data() As Byte, ByVal blockSize As Long) As Byte()
+        On Error GoTo ErrorHandler
+
+        If IsArrayEmpty(data) Then
+            ApplyPKCS7Padding = Nothing
+            Exit Function
+        End If
+
+        Dim dataLen As Long
+        dataLen = UBound(data) - LBound(data) + 1
+
+        Dim paddingLen As Long
+        paddingLen = blockSize - (dataLen Mod blockSize)
+
+        Dim result() As Byte
+        ReDim result(dataLen + paddingLen - 1)
+
+        ' Copy original data
+        Dim i As Long
+        For i = 0 To dataLen - 1
+            result(i) = data(i)
+        Next i
+
+        ' Add PKCS7 padding
+        For i = dataLen To dataLen + paddingLen - 1
+            result(i) = paddingLen
+        Next i
+
+        ApplyPKCS7Padding = result
+        Exit Function
+
+ErrorHandler:
+        m_LastError = "PKCS7 padding exception: " & Err.Description
+        ApplyPKCS7Padding = Nothing
+    End Function
+
+    ' Remove PKCS7 padding
+    '
+    ' @param data Padded data
+    ' @return Data with padding removed
+    Public Function RemovePKCS7Padding(ByRef data() As Byte) As Byte()
+        On Error GoTo ErrorHandler
+
+        If IsArrayEmpty(data) Then
+            RemovePKCS7Padding = Nothing
+            Exit Function
+        End If
+
+        Dim dataLen As Long
+        dataLen = UBound(data) - LBound(data) + 1
+
+        If dataLen = 0 Then
+            RemovePKCS7Padding = Nothing
+            Exit Function
+        End If
+
+        ' Get padding length from last byte
+        Dim paddingLen As Long
+        paddingLen = data(dataLen - 1)
+
+        ' Validate padding length
+        If paddingLen < 1 Or paddingLen > mAesConstants.BLOCK_SIZE_128 Then
+            m_LastError = "Invalid PKCS7 padding length: " & paddingLen
+            RemovePKCS7Padding = Nothing
+            Exit Function
+        End If
+
+        If paddingLen > dataLen Then
+            m_LastError = "Padding length exceeds data length"
+            RemovePKCS7Padding = Nothing
+            Exit Function
+        End If
+
+        ' Verify all padding bytes are correct
+        Dim i As Long
+        For i = dataLen - paddingLen To dataLen - 1
+            If data(i) <> paddingLen Then
+                m_LastError = "PKCS7 padding validation failed"
+                RemovePKCS7Padding = Nothing
+                Exit Function
+            End If
+        Next i
+
+        ' Remove padding
+        Dim resultLen As Long
+        resultLen = dataLen - paddingLen
+
+        If resultLen = 0 Then
+            RemovePKCS7Padding = Nothing
+            Exit Function
+        End If
+
+        Dim result() As Byte
+        ReDim result(resultLen - 1)
+
+        For i = 0 To resultLen - 1
+            result(i) = data(i)
+        Next i
+
+        RemovePKCS7Padding = result
+        Exit Function
+
+ErrorHandler:
+        m_LastError = "PKCS7 unpadding exception: " & Err.Description
+        RemovePKCS7Padding = Nothing
+    End Function
+
+    ' Apply zero padding
+    '
+    ' @param data Original data
+    ' @param blockSize Block size in bytes
+    ' @return Padded data
+    Public Function ApplyZeroPadding(ByRef data() As Byte, ByVal blockSize As Long) As Byte()
+        On Error GoTo ErrorHandler
+
+        If IsArrayEmpty(data) Then
+            ' Return a block of zeros
+            Dim emptyBlock() As Byte
+            ReDim emptyBlock(blockSize - 1)
+            ApplyZeroPadding = emptyBlock
+            Exit Function
+        End If
+
+        Dim dataLen As Long
+        dataLen = UBound(data) - LBound(data) + 1
+
+        Dim paddingLen As Long
+        paddingLen = blockSize - (dataLen Mod blockSize)
+
+        Dim result() As Byte
+        ReDim result(dataLen + paddingLen - 1)
+
+        ' Copy original data
+        Dim i As Long
+        For i = 0 To dataLen - 1
+            result(i) = data(i)
+        Next i
+
+        ' Add zero padding
+        For i = dataLen To dataLen + paddingLen - 1
+            result(i) = 0
+        Next i
+
+        ApplyZeroPadding = result
+        Exit Function
+
+ErrorHandler:
+        m_LastError = "Zero padding exception: " & Err.Description
+        ApplyZeroPadding = Nothing
+    End Function
+
+    ' Remove zero padding
+    '
+    ' @param data Padded data
+    ' @return Data with padding removed
+    Public Function RemoveZeroPadding(ByRef data() As Byte) As Byte()
+        On Error GoTo ErrorHandler
+
+        If IsArrayEmpty(data) Then
+            RemoveZeroPadding = Nothing
+            Exit Function
+        End If
+
+        Dim dataLen As Long
+        dataLen = UBound(data) - LBound(data) + 1
+
+        If dataLen = 0 Then
+            RemoveZeroPadding = Nothing
+            Exit Function
+        End If
+
+        ' Find last non-zero byte
+        Dim i As Long
+        For i = dataLen - 1 To 0 Step -1
+            If data(i) <> 0 Then
+                Exit For
+            End If
+        Next i
+
+        ' If all zeros, return empty
+        If i < 0 Then
+            RemoveZeroPadding = Nothing
+            Exit Function
+        End If
+
+        Dim resultLen As Long
+        resultLen = i + 1
+
+        Dim result() As Byte
+        ReDim result(resultLen - 1)
+
+        Dim j As Long
+        For j = 0 To resultLen - 1
+            result(j) = data(j)
+        Next j
+
+        RemoveZeroPadding = result
+        Exit Function
+
+ErrorHandler:
+        m_LastError = "Zero unpadding exception: " & Err.Description
+        RemoveZeroPadding = Nothing
+    End Function
+
+    ' Check if array is empty
+    '
+    ' @param arr Array to check
+    ' @return True if array is empty
+    Public Function IsArrayEmpty(ByRef arr() As Byte) As Boolean
+        On Error Resume Next
+        IsArrayEmpty = (UBound(arr) < LBound(arr))
+        If Err.Number <> 0 Then IsArrayEmpty = True
+    End Function
+
+End Class

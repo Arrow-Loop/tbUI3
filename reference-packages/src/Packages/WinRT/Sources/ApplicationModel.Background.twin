@@ -1,0 +1,217 @@
+[InterfaceId("AB14BEE0-E760-440E-A91C-44796DE3A92D")]
+Interface IBackgroundActivatedEventArgs Extends IInspectable
+    Property Get TaskInstance() As IBackgroundTaskInstance
+End Interface
+
+[InterfaceId("7D13D534-FD12-43CE-8C22-EA1FF13C06DF")]
+Interface IBackgroundTask Extends IInspectable
+    [PreserveSig]
+    Function Run(ByVal TaskInstance As IBackgroundTaskInstance) As HRESULT
+End Interface
+
+[InterfaceId("93CC156D-AF27-4DD3-846E-24EE40CADD25")]
+Interface IBackgroundTaskDeferral Extends IInspectable
+    [PreserveSig]
+    Function Complete() As HRESULT
+End Interface
+
+[InterfaceId("A6C4BAC0-51F8-4C57-AC3F-156DD1680C4F")]
+Interface IBackgroundTaskCanceledEventHandler Extends IUnknown
+    Sub Invoke(ByVal Sender As IBackgroundTaskInstance, ByVal Args As BackgroundTaskCancellationReason)
+End Interface
+
+[InterfaceId("5B38E929-A086-46A7-A678-439135822BCF")]
+Interface IBackgroundTaskCompletedEventHandler Extends IUnknown
+    Sub Invoke(ByVal Sender As IBackgroundTaskRegistration, ByVal Args As IBackgroundTaskCompletedEventArgs)
+End Interface
+
+[InterfaceId("46E0683C-8A88-4C99-804C-76897F6277A6")]
+Interface IBackgroundTaskProgressEventHandler Extends IUnknown
+    Sub Invoke(ByVal Sender As IBackgroundTaskRegistration, ByVal Args As IBackgroundTaskProgressEventArgs)
+End Interface
+
+[InterfaceId("565D25CF-F209-48F4-9967-2B184F7BFBF0")]
+Interface IBackgroundTaskCompletedEventArgs Extends IInspectable
+    Property Get InstanceId() As UUID
+    [PreserveSig]
+    Function CheckResult() As HRESULT
+End Interface
+
+[InterfaceId("FB1468AC-8332-4D0A-9532-03EAE684DA31")]
+Interface IBackgroundTaskProgressEventArgs Extends IInspectable
+    Property Get InstanceId() As UUID
+    Property Get Progress() As Long
+End Interface
+
+[InterfaceId("865BDA7A-21D8-4573-8F32-928A1B0641F6")]
+Interface IBackgroundTaskInstance Extends IInspectable
+    Property Get InstanceId() As UUID
+    Property Get Task() As IBackgroundTaskRegistration
+    Property Get Progress() As Long
+    Property Let Progress(ByVal Value As Long)
+    Property Get TriggerDetails() As IInspectable
+    [PreserveSig]
+    Function AddCanceled(ByVal CancelHandler As IBackgroundTaskCanceledEventHandler, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveCanceled(ByVal Token As EventRegistrationToken) As HRESULT
+    Property Get SuspendedCount() As Long
+    Function GetDeferral() As IBackgroundTaskDeferral
+End Interface
+
+[InterfaceId("10654CC2-A26E-43BF-8C12-1FB40DBFBFA0")]
+Interface IBackgroundTaskRegistration Extends IInspectable
+    Property Get TaskId() As UUID
+    Property Get Name() As LongPtr
+    [PreserveSig]
+    Function AddProgress(ByVal Handler As IBackgroundTaskProgressEventHandler, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveProgress(ByVal Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function AddCompleted(ByVal Handler As IBackgroundTaskCompletedEventHandler, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveCompleted(ByVal Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function Unregister(ByVal CancelTask As BooleanByte) As HRESULT
+End Interface
+
+[InterfaceId("6138C703-BB86-4112-AFC3-7F939B166E3B")]
+Interface IBackgroundTaskRegistration2 Extends IInspectable
+    Property Get Trigger() As IBackgroundTrigger
+End Interface
+
+
+
+
+
+
+
+[InterfaceId("84B3A058-6027-4B87-9790-BDF3F757DBD7")]
+Interface IBackgroundTrigger Extends IInspectable
+
+End Interface
+
+
+
+
+
+
+
+
+
+[InterfaceId("A4617FDD-8573-4260-BEFC-5BEC89CB693D")]
+Interface IDeviceWatcherTrigger Extends IInspectable ' requires IBackgroundTrigger
+
+End Interface
+
+
+
+
+
+
+Module mdlApplicationModelBackground
+
+    Public Enum AlarmAccessStatus
+    AlarmAccessStatus_Unspecified
+    AlarmAccessStatus_AllowedWithWakeupCapability
+    AlarmAccessStatus_AllowedWithoutWakeupCapability
+    AlarmAccessStatus_Denied
+End Enum
+
+Public Enum ApplicationTriggerResult
+    ApplicationTriggerResult_Allowed
+    ApplicationTriggerResult_CurrentlyRunning
+    ApplicationTriggerResult_DisabledByPolicy
+    ApplicationTriggerResult_UnknownError
+End Enum
+
+Public Enum BackgroundAccessRequestKind
+    BackgroundAccessRequestKind_AlwaysAllowed
+    BackgroundAccessRequestKind_AllowedSubjectToSystemPolicy
+End Enum
+
+Public Enum BackgroundAccessStatus
+    BackgroundAccessStatus_Unspecified
+    BackgroundAccessStatus_AllowedWithAlwaysOnRealTimeConnectivity
+    BackgroundAccessStatus_AllowedMayUseActiveRealTimeConnectivity
+    BackgroundAccessStatus_Denied
+    BackgroundAccessStatus_AlwaysAllowed
+    BackgroundAccessStatus_AllowedSubjectToSystemPolicy
+    BackgroundAccessStatus_DeniedBySystemPolicy
+    BackgroundAccessStatus_DeniedByUser
+End Enum
+
+Public Enum BackgroundTaskCancellationReason
+    BackgroundTaskCancellationReason_Abort
+    BackgroundTaskCancellationReason_Terminating
+    BackgroundTaskCancellationReason_LoggingOff
+    BackgroundTaskCancellationReason_ServicingUpdate
+    BackgroundTaskCancellationReason_IdleTask
+    BackgroundTaskCancellationReason_Uninstall
+    BackgroundTaskCancellationReason_ConditionLoss
+    BackgroundTaskCancellationReason_SystemPolicy
+    BackgroundTaskCancellationReason_QuietHoursEntered
+    BackgroundTaskCancellationReason_ExecutionTimeExceeded
+    BackgroundTaskCancellationReason_ResourceRevocation
+    BackgroundTaskCancellationReason_EnergySaver
+End Enum
+
+Public Enum BackgroundTaskThrottleCounter
+    BackgroundTaskThrottleCounter_All
+    BackgroundTaskThrottleCounter_Cpu
+    BackgroundTaskThrottleCounter_Network
+End Enum
+
+Public Enum BackgroundWorkCostValue
+    BackgroundWorkCostValue_Low
+    BackgroundWorkCostValue_Medium
+    BackgroundWorkCostValue_High
+End Enum
+
+Public Enum CustomSystemEventTriggerRecurrence
+    CustomSystemEventTriggerRecurrence_Once
+    CustomSystemEventTriggerRecurrence_Always
+End Enum
+
+Public Enum DeviceTriggerResult
+    DeviceTriggerResult_Allowed
+    DeviceTriggerResult_DeniedByUser
+    DeviceTriggerResult_DeniedBySystem
+    DeviceTriggerResult_LowBattery
+End Enum
+
+Public Enum LocationTriggerType
+    LocationTriggerType_Geofence
+End Enum
+
+Public Enum SystemConditionType
+    SystemConditionType_Invalid
+    SystemConditionType_UserPresent
+    SystemConditionType_UserNotPresent
+    SystemConditionType_InternetAvailable
+    SystemConditionType_InternetNotAvailable
+    SystemConditionType_SessionConnected
+    SystemConditionType_SessionDisconnected
+    SystemConditionType_FreeNetworkAvailable
+    SystemConditionType_BackgroundWorkCostNotHigh
+End Enum
+
+Public Enum SystemTriggerType
+    SystemTriggerType_Invalid
+    SystemTriggerType_SmsReceived
+    SystemTriggerType_UserPresent
+    SystemTriggerType_UserAway
+    SystemTriggerType_NetworkStateChange
+    SystemTriggerType_ControlChannelReset
+    SystemTriggerType_InternetAvailable
+    SystemTriggerType_SessionConnected
+    SystemTriggerType_ServicingComplete
+    SystemTriggerType_LockScreenApplicationAdded
+    SystemTriggerType_LockScreenApplicationRemoved
+    SystemTriggerType_TimeZoneChange
+    SystemTriggerType_OnlineIdConnectedStateChange
+    SystemTriggerType_BackgroundWorkCostChange
+    SystemTriggerType_PowerStateChange
+    SystemTriggerType_DefaultSignInAccountChange
+End Enum
+
+End Module

@@ -1,0 +1,105 @@
+' =====================================================
+' DiagnosticResult.twin - 泛型诊断结果容器
+' Twinbasic Diagnostic Tool
+' =====================================================
+
+' 泛型诊断结果类
+' 用于存储收集器返回的诊断数据
+[COMCreatable(False)]
+[ClassId("B2C3D4E5-F6A7-B8C9-D0E1-F2A3B4C5D6E7")]
+[InterfaceId("B2C3D4E5-F6A7-B8C9-D0E1-F2A3B4C5D6E8")]
+Public Class DiagnosticResult(Of T)
+
+    Private m_Category As String
+    Private m_Items As List(Of T)
+    Private m_CollectedAt As Date
+    Private m_Success As Boolean
+    Private m_ErrorMessage As String
+    Private m_IsSummary As Boolean
+
+    ' 构造函数
+    Public Sub New()
+        Set m_Items = New List(Of T)
+        m_CollectedAt = Now
+        m_Success = True
+        m_ErrorMessage = ""
+        m_IsSummary = False
+    End Sub
+
+    ' 带类别名称的构造函数
+    Public Sub New(ByVal categoryName As String)
+        m_Category = categoryName
+        Set m_Items = New List(Of T)
+        m_CollectedAt = Now
+        m_Success = True
+        m_ErrorMessage = ""
+        m_IsSummary = False
+    End Sub
+
+    ' 获取/设置类别名称
+    Public Property Get Category() As String
+        Return m_Category
+    End Property
+
+    Public Property Let Category(ByVal value As String)
+        m_Category = value
+    End Property
+
+    ' 获取数据项列表
+    Public Property Get Items() As List(Of T)
+        Return m_Items
+    End Property
+
+    ' 获取收集时间
+    Public Property Get CollectedAt() As Date
+        Return m_CollectedAt
+    End Property
+
+    Public Property Let CollectedAt(ByVal value As Date)
+        m_CollectedAt = value
+    End Property
+
+    ' 获取/设置是否成功
+    Public Property Get Success() As Boolean
+        Return m_Success
+    End Property
+
+    Public Property Let Success(ByVal value As Boolean)
+        m_Success = value
+    End Property
+
+    ' 获取/设置错误消息
+    Public Property Get ErrorMessage() As String
+        Return m_ErrorMessage
+    End Property
+
+    Public Property Let ErrorMessage(ByVal value As String)
+        m_ErrorMessage = value
+    End Property
+
+    ' 获取/设置是否为摘要数据
+    Public Property Get IsSummary() As Boolean
+        Return m_IsSummary
+    End Property
+
+    Public Property Let IsSummary(ByVal value As Boolean)
+        m_IsSummary = value
+    End Property
+
+    ' 添加数据项
+    Public Sub AddItem(ByVal item As T)
+        m_Items.Add item
+    End Sub
+
+    ' 获取项目数量
+    Public Property Get ItemCount() As Long
+        Return m_Items.Count
+    End Property
+
+    ' 设置错误状态
+    Public Sub SetError(ByVal errMsg As String)
+        m_Success = False
+        m_ErrorMessage = errMsg
+    End Sub
+
+End Class

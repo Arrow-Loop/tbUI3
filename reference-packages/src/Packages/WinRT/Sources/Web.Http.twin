@@ -1,0 +1,596 @@
+[InterfaceId("BC20C193-C41F-4FF7-9123-6435736EADC2")]
+Interface IHttpBufferContentFactory Extends IInspectable
+    Function CreateFromBuffer(ByVal Content As IBuffer) As IHttpContent
+    Function CreateFromBufferWithOffset(ByVal Content As IBuffer, ByVal Offset As Long, ByVal Count As Long) As IHttpContent
+End Interface
+
+[InterfaceId("5D144364-77D7-5ECA-8B09-936A69446652")]
+Interface IAsyncOperationWithProgressIHttpResponseMessageHttpProgress Extends IInspectable
+    Property Set Progress(ByVal Handler As IAsyncOperationProgressHandlerIHttpResponseMessageHttpProgress)
+    Property Get Progress() As IAsyncOperationProgressHandlerIHttpResponseMessageHttpProgress
+    Property Set Completed(ByVal Handler As IAsyncOperationWithProgressCompletedHandlerIHttpResponseMessageHttpProgress)
+    Property Get Completed() As IAsyncOperationWithProgressCompletedHandlerIHttpResponseMessageHttpProgress
+    Function GetResults() As IHttpResponseMessage
+End Interface
+
+[InterfaceId("68E4606A-76EC-5816-B2FE-A04ECDE4126A")]
+Interface IAsyncOperationProgressHandlerIHttpResponseMessageHttpProgress Extends IUnknown
+    #If Win64 Then
+    Sub Invoke(ByVal AsyncOperation As IAsyncOperationWithProgressIHttpResponseMessageHttpProgress, ProgressInfo As HttpProgress)
+    #Else
+    Sub Invoke(ByVal AsyncOperation As IAsyncOperationWithProgressIHttpResponseMessageHttpProgress, ByVal Stage As HttpProgressStage, ByVal Padding1 As Long, ByVal BytesSent As UInt64, ByVal TotalBytesToSend As IReference_UInt64, ByVal Padding2 As Long, ByVal BytesReceived As UInt64, ByVal TotalBytesToReceive As IReference_UInt64, ByVal Retries As Long)
+    #End If
+End Interface
+
+[InterfaceId("BEADB572-F9A3-5E93-B6CA-E311B65933FC")]
+Interface IAsyncOperationWithProgressCompletedHandlerIHttpResponseMessageHttpProgress Extends IUnknown
+    Sub Invoke(ByVal AsyncOperation As IAsyncOperationWithProgressIHttpResponseMessageHttpProgress, ByVal AsyncStatus As AsyncStatus)
+End Interface
+
+[InterfaceId("7FDA1151-3574-4880-A8BA-E6B1E0061F3D")]
+Interface IHttpClient Extends IInspectable ' requires IClosable, IStringable
+    Function DeleteAsync(ByVal Uri As IUri) As IAsyncOperationWithProgressIHttpResponseMessageHttpProgress
+    Function GetAsync(ByVal Uri As IUri) As IAsyncOperationWithProgressIHttpResponseMessageHttpProgress
+    Function GetWithOptionAsync(ByVal Uri As IUri, ByVal CompletionOption As HttpCompletionOption) As IAsyncOperationWithProgressIHttpResponseMessageHttpProgress
+    Function GetBufferAsync(ByVal Uri As IUri) As IAsyncOperationWithProgressIHttpResponseMessageHttpProgress
+    Function GetInputStreamAsync(ByVal Uri As IUri) As IAsyncOperationWithProgressIHttpResponseMessageHttpProgress
+    Function GetStringAsync(ByVal Uri As IUri) As IAsyncOperationWithProgressIHttpResponseMessageHttpProgress
+    Function PostAsync(ByVal Uri As IUri, ByVal Content As IHttpContent) As IAsyncOperationWithProgressIHttpResponseMessageHttpProgress
+    Function PutAsync(ByVal Uri As IUri, ByVal Content As IHttpContent) As IAsyncOperationWithProgressIHttpResponseMessageHttpProgress
+    Function SendRequestAsync(ByVal Request As IHttpRequestMessage) As IAsyncOperationWithProgressIHttpResponseMessageHttpProgress
+    Function SendRequestWithOptionAsync(ByVal Request As IHttpRequestMessage, ByVal CompletionOption As HttpCompletionOption) As IAsyncOperationWithProgressIHttpResponseMessageHttpProgress
+    Property Get DefaultRequestHeaders() As IHttpRequestHeaderCollection
+End Interface
+
+[InterfaceId("B128FBC4-19C0-5FE1-AEC6-D2E64BD22862")]
+Interface IAsyncOperationWithProgressIHttpGetBufferResultHttpProgress Extends IInspectable
+    Property Set Progress(ByVal Handler As IAsyncOperationProgressHandlerIHttpGetBufferResultHttpProgress)
+    Property Get Progress() As IAsyncOperationProgressHandlerIHttpGetBufferResultHttpProgress
+    Property Set Completed(ByVal Handler As IAsyncOperationWithProgressCompletedHandlerIHttpGetBufferResultHttpProgress)
+    Property Get Completed() As IAsyncOperationWithProgressCompletedHandlerIHttpGetBufferResultHttpProgress
+    Function GetResults() As IHttpGetBufferResult
+End Interface
+
+[InterfaceId("43624279-9A68-5052-A9DE-19569B54818A")]
+Interface IAsyncOperationProgressHandlerIHttpGetBufferResultHttpProgress Extends IUnknown
+    #If Win64 Then
+    Sub Invoke(ByVal AsyncOperation As IAsyncOperationWithProgressIHttpGetBufferResultHttpProgress, ProgressInfo As HttpProgress)
+    #Else
+    Sub Invoke(ByVal AsyncOperation As IAsyncOperationWithProgressIHttpGetBufferResultHttpProgress, ByVal Stage As HttpProgressStage, ByVal Padding1 As Long, ByVal BytesSent As UInt64, ByVal TotalBytesToSend As IReference_UInt64, ByVal Padding2 As Long, ByVal BytesReceived As UInt64, ByVal TotalBytesToReceive As IReference_UInt64, ByVal Retries As Long)
+    #End If
+End Interface
+
+[InterfaceId("6BEC534A-1901-5FA2-9686-9A510F6B1217")]
+Interface IAsyncOperationWithProgressCompletedHandlerIHttpGetBufferResultHttpProgress Extends IUnknown
+    Sub Invoke(ByVal AsyncOperation As IAsyncOperationWithProgressIHttpGetBufferResultHttpProgress, ByVal AsyncStatus As AsyncStatus)
+End Interface
+
+[InterfaceId("6E1CE5AC-C10B-5D09-AD43-F4DDEADA857A")]
+Interface IAsyncOperationWithProgressIHttpGetInputStreamResultHttpProgress Extends IInspectable
+    Property Set Progress(ByVal Handler As IAsyncOperationProgressHandlerIHttpGetInputStreamResultHttpProgress)
+    Property Get Progress() As IAsyncOperationProgressHandlerIHttpGetInputStreamResultHttpProgress
+    Property Set Completed(ByVal Handler As IAsyncOperationWithProgressCompletedHandlerIHttpGetInputStreamResultHttpProgress)
+    Property Get Completed() As IAsyncOperationWithProgressCompletedHandlerIHttpGetInputStreamResultHttpProgress
+    Function GetResults() As IHttpGetInputStreamResult
+End Interface
+
+[InterfaceId("5D399E45-63AA-52F7-BBB6-C718CA64BD2A")]
+Interface IAsyncOperationProgressHandlerIHttpGetInputStreamResultHttpProgress Extends IUnknown
+    #If Win64 Then
+    Sub Invoke(ByVal AsyncOperation As IAsyncOperationWithProgressIHttpGetInputStreamResultHttpProgress, ProgressInfo As HttpProgress)
+    #Else
+    Sub Invoke(ByVal AsyncOperation As IAsyncOperationWithProgressIHttpGetInputStreamResultHttpProgress, ByVal Stage As HttpProgressStage, ByVal Padding1 As Long, ByVal BytesSent As UInt64, ByVal TotalBytesToSend As IReference_UInt64, ByVal Padding2 As Long, ByVal BytesReceived As UInt64, ByVal TotalBytesToReceive As IReference_UInt64, ByVal Retries As Long)
+    #End If
+End Interface
+
+[InterfaceId("789B1519-4AE1-5475-BB01-6734CAD478FF")]
+Interface IAsyncOperationWithProgressCompletedHandlerIHttpGetInputStreamResultHttpProgress Extends IUnknown
+    Sub Invoke(ByVal AsyncOperation As IAsyncOperationWithProgressIHttpGetInputStreamResultHttpProgress, ByVal AsyncStatus As AsyncStatus)
+End Interface
+
+[InterfaceId("7382F299-BBBD-5BD3-B143-8887C627929B")]
+Interface IAsyncOperationWithProgressIHttpGetStringResultHttpProgress Extends IInspectable
+    Property Set Progress(ByVal Handler As IAsyncOperationProgressHandlerIHttpGetStringResultHttpProgress)
+    Property Get Progress() As IAsyncOperationProgressHandlerIHttpGetStringResultHttpProgress
+    Property Set Completed(ByVal Handler As IAsyncOperationWithProgressCompletedHandlerIHttpGetStringResultHttpProgress)
+    Property Get Completed() As IAsyncOperationWithProgressCompletedHandlerIHttpGetStringResultHttpProgress
+    Function GetResults() As IHttpGetStringResult
+End Interface
+
+[InterfaceId("43516920-BBFC-5BA6-9D59-8AF34FC97B4E")]
+Interface IAsyncOperationProgressHandlerIHttpGetStringResultHttpProgress Extends IUnknown
+    #If Win64 Then
+    Sub Invoke(ByVal AsyncOperation As IAsyncOperationWithProgressIHttpGetStringResultHttpProgress, ProgressInfo As HttpProgress)
+    #Else
+    Sub Invoke(ByVal AsyncOperation As IAsyncOperationWithProgressIHttpGetStringResultHttpProgress, ByVal Stage As HttpProgressStage, ByVal Padding1 As Long, ByVal BytesSent As UInt64, ByVal TotalBytesToSend As IReference_UInt64, ByVal Padding2 As Long, ByVal BytesReceived As UInt64, ByVal TotalBytesToReceive As IReference_UInt64, ByVal Retries As Long)
+    #End If
+End Interface
+
+[InterfaceId("625DF3B5-BFF7-517A-9359-1DC28FB0F586")]
+Interface IAsyncOperationWithProgressCompletedHandlerIHttpGetStringResultHttpProgress Extends IUnknown
+    Sub Invoke(ByVal AsyncOperation As IAsyncOperationWithProgressIHttpGetStringResultHttpProgress, ByVal AsyncStatus As AsyncStatus)
+End Interface
+
+[InterfaceId("97388336-2EAC-5D76-B228-D32EF9A38175")]
+Interface IAsyncOperationWithProgressIHttpRequestResultHttpProgress Extends IInspectable
+    Property Set Progress(ByVal Handler As IAsyncOperationProgressHandlerIHttpRequestResultHttpProgress)
+    Property Get Progress() As IAsyncOperationProgressHandlerIHttpRequestResultHttpProgress
+    Property Set Completed(ByVal Handler As IAsyncOperationWithProgressCompletedHandlerIHttpRequestResultHttpProgress)
+    Property Get Completed() As IAsyncOperationWithProgressCompletedHandlerIHttpRequestResultHttpProgress
+    Function GetResults() As IHttpRequestResult
+End Interface
+
+[InterfaceId("167F8EDA-2A7A-56A2-BBA3-76D78E24F13D")]
+Interface IAsyncOperationProgressHandlerIHttpRequestResultHttpProgress Extends IUnknown
+    #If Win64 Then
+    Sub Invoke(ByVal AsyncOperation As IAsyncOperationWithProgressIHttpRequestResultHttpProgress, ProgressInfo As HttpProgress)
+    #Else
+    Sub Invoke(ByVal AsyncOperation As IAsyncOperationWithProgressIHttpRequestResultHttpProgress, ByVal Stage As HttpProgressStage, ByVal Padding1 As Long, ByVal BytesSent As UInt64, ByVal TotalBytesToSend As IReference_UInt64, ByVal Padding2 As Long, ByVal BytesReceived As UInt64, ByVal TotalBytesToReceive As IReference_UInt64, ByVal Retries As Long)
+    #End If
+End Interface
+
+[InterfaceId("FDFC3D8F-08BB-5D82-BFDE-AE092E7E3FE1")]
+Interface IAsyncOperationWithProgressCompletedHandlerIHttpRequestResultHttpProgress Extends IUnknown
+    Sub Invoke(ByVal AsyncOperation As IAsyncOperationWithProgressIHttpRequestResultHttpProgress, ByVal AsyncStatus As AsyncStatus)
+End Interface
+
+[InterfaceId("CDD83348-E8B7-4CEC-B1B0-DC455FE72C92")]
+Interface IHttpClient2 Extends IInspectable ' requires IClosable, IStringable
+    Function TryDeleteAsync(ByVal Uri As IUri) As IAsyncOperationWithProgressIHttpRequestResultHttpProgress
+    Function TryGetAsync(ByVal Uri As IUri) As IAsyncOperationWithProgressIHttpRequestResultHttpProgress
+    Function TryGetAsync2(ByVal Uri As IUri, ByVal CompletionOption As HttpCompletionOption) As IAsyncOperationWithProgressIHttpRequestResultHttpProgress
+    Function TryGetBufferAsync(ByVal Uri As IUri) As IAsyncOperationWithProgressIHttpGetBufferResultHttpProgress
+    Function TryGetInputStreamAsync(ByVal Uri As IUri) As IAsyncOperationWithProgressIHttpGetInputStreamResultHttpProgress
+    Function TryGetStringAsync(ByVal Uri As IUri) As IAsyncOperationWithProgressIHttpGetStringResultHttpProgress
+    Function TryPostAsync(ByVal Uri As IUri, ByVal Content As IHttpContent) As IAsyncOperationWithProgressIHttpRequestResultHttpProgress
+    Function TryPutAsync(ByVal Uri As IUri, ByVal Content As IHttpContent) As IAsyncOperationWithProgressIHttpRequestResultHttpProgress
+    Function TrySendRequestAsync(ByVal Request As IHttpRequestMessage) As IAsyncOperationWithProgressIHttpRequestResultHttpProgress
+    Function TrySendRequestAsync2(ByVal Request As IHttpRequestMessage, ByVal CompletionOption As HttpCompletionOption) As IAsyncOperationWithProgressIHttpRequestResultHttpProgress
+End Interface
+
+[InterfaceId("1172FD01-9899-4194-963F-8F9D72A7EC15")]
+Interface IHttpClient3 Extends IInspectable
+    Property Get DefaultPrivacyAnnotation() As LongPtr
+    Property Let DefaultPrivacyAnnotation(ByVal Value As LongPtr)
+End Interface
+
+[InterfaceId("C30C4ECA-E3FA-4F99-AFB4-63CC65009462")]
+Interface IHttpClientFactory Extends IInspectable
+    Function Create(ByVal Filter As IHttpFilter) As IHttpClient
+End Interface
+
+[InterfaceId("C8BBCB29-6B64-5CE2-A831-038F6E02199E")]
+Interface IAsyncOperationWithProgressHSTRINGUInt64 Extends IInspectable
+    Property Set Progress(ByVal Handler As IAsyncOperationProgressHandlerHSTRINGUInt64)
+    Property Get Progress() As IAsyncOperationProgressHandlerHSTRINGUInt64
+    Property Set Completed(ByVal Handler As IAsyncOperationWithProgressCompletedHandlerHSTRINGUInt64)
+    Property Get Completed() As IAsyncOperationWithProgressCompletedHandlerHSTRINGUInt64
+    Function GetResults() As LongPtr
+End Interface
+
+[InterfaceId("14DA7DE7-40DF-5D4C-823F-CF310625AD39")]
+Interface IAsyncOperationProgressHandlerHSTRINGUInt64 Extends IUnknown
+    Sub Invoke(ByVal AsyncOperation As IAsyncOperationWithProgressHSTRINGUInt64, ByVal ProgressInfo As UInt64)
+End Interface
+
+[InterfaceId("BD75EEBE-E7B5-5AF6-8415-A4B9C9045202")]
+Interface IAsyncOperationWithProgressCompletedHandlerHSTRINGUInt64 Extends IUnknown
+    Sub Invoke(ByVal AsyncOperation As IAsyncOperationWithProgressHSTRINGUInt64, ByVal AsyncStatus As AsyncStatus)
+End Interface
+
+[InterfaceId("AD960E7F-D73B-56E4-A58C-6EC7678CFD88")]
+Interface IAsyncOperationWithProgressIBufferUInt64 Extends IInspectable
+    Property Set Progress(ByVal Handler As IAsyncOperationProgressHandlerIBufferUInt64)
+    Property Get Progress() As IAsyncOperationProgressHandlerIBufferUInt64
+    Property Set Completed(ByVal Handler As IAsyncOperationWithProgressCompletedHandlerIBufferUInt64)
+    Property Get Completed() As IAsyncOperationWithProgressCompletedHandlerIBufferUInt64
+    Function GetResults() As IBuffer
+End Interface
+
+[InterfaceId("D17F5EB6-B422-5E26-A817-7E0FD08F75D5")]
+Interface IAsyncOperationProgressHandlerIBufferUInt64 Extends IUnknown
+    Sub Invoke(ByVal AsyncOperation As IAsyncOperationWithProgressIBufferUInt64, ByVal ProgressInfo As UInt64)
+End Interface
+
+[InterfaceId("ABC81235-39C7-59BF-9948-2D14A93D40FD")]
+Interface IAsyncOperationWithProgressCompletedHandlerIBufferUInt64 Extends IUnknown
+    Sub Invoke(ByVal AsyncOperation As IAsyncOperationWithProgressIBufferUInt64, ByVal AsyncStatus As AsyncStatus)
+End Interface
+
+[InterfaceId("455AA601-F13E-5DEE-B9CB-16B531996327")]
+Interface IAsyncOperationWithProgressIInputStreamUInt64 Extends IInspectable
+    Property Set Progress(ByVal Handler As IAsyncOperationProgressHandlerIInputStreamUInt64)
+    Property Get Progress() As IAsyncOperationProgressHandlerIInputStreamUInt64
+    Property Set Completed(ByVal Handler As IAsyncOperationWithProgressCompletedHandlerIInputStreamUInt64)
+    Property Get Completed() As IAsyncOperationWithProgressCompletedHandlerIInputStreamUInt64
+    Function GetResults() As IInputStream
+End Interface
+
+[InterfaceId("F9B2E7F6-762F-50DB-95DD-7F6C6EC47090")]
+Interface IAsyncOperationProgressHandlerIInputStreamUInt64 Extends IUnknown
+    Sub Invoke(ByVal AsyncOperation As IAsyncOperationWithProgressIInputStreamUInt64, ByVal ProgressInfo As UInt64)
+End Interface
+
+[InterfaceId("8DB69706-3DD1-5A28-986A-93BE0776D9C3")]
+Interface IAsyncOperationWithProgressCompletedHandlerIInputStreamUInt64 Extends IUnknown
+    Sub Invoke(ByVal AsyncOperation As IAsyncOperationWithProgressIInputStreamUInt64, ByVal AsyncStatus As AsyncStatus)
+End Interface
+
+[InterfaceId("6B14A441-FBA7-4BD2-AF0A-839DE7C295DA")]
+Interface IHttpContent Extends IInspectable ' requires IClosable
+    Property Get Headers() As IHttpContentHeaderCollection
+    Function BufferAllAsync() As IAsyncOperationWithProgressUInt64UInt64
+    Function ReadAsBufferAsync() As IAsyncOperationWithProgressIBufferUInt64
+    Function ReadAsInputStreamAsync() As IAsyncOperationWithProgressIInputStreamUInt64
+    Function ReadAsStringAsync() As IAsyncOperationWithProgressHSTRINGUInt64
+    Function TryComputeLength(Length As UInt64) As BooleanByte
+    Function WriteToStreamAsync(ByVal OutputStream As IOutputStream) As IAsyncOperationWithProgressUInt64UInt64
+End Interface
+
+[InterfaceId("1F5488E2-CC2D-4779-86A7-88F10687D249")]
+Interface IHttpCookie Extends IInspectable ' requires IStringable
+    Property Get Name() As LongPtr
+    Property Get Domain() As LongPtr
+    Property Get Path() As LongPtr
+    Property Get Expires() As IReference_DateTime
+    Property Set Expires(ByVal Value As IReference_DateTime)
+    Property Get HttpOnly() As BooleanByte
+    Property Let HttpOnly(ByVal Value As BooleanByte)
+    Property Get Secure() As BooleanByte
+    Property Let Secure(ByVal Value As BooleanByte)
+    Property Get Value() As LongPtr
+    Property Let Value(ByVal Value As LongPtr)
+End Interface
+
+[InterfaceId("6A0585A9-931C-4CD1-A96D-C21701785C5F")]
+Interface IHttpCookieFactory Extends IInspectable
+    Function Create(ByVal Name As LongPtr, ByVal Domain As LongPtr, ByVal Path As LongPtr) As IHttpCookie
+End Interface
+
+[InterfaceId("626BC177-8403-5030-A88C-7485CC89D730")]
+Interface IIterator_IHttpCookie Extends IInspectable
+    Property Get Current() As IHttpCookie
+    Property Get HasCurrent() As BooleanByte
+    Function MoveNext() As BooleanByte
+    Function GetMany(ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("0EB9FA36-88DE-590D-8EA0-B613D0AB015F")]
+Interface IIterable_IHttpCookie Extends IInspectable
+    Function First() As IIterator_IHttpCookie
+End Interface
+
+[InterfaceId("0064C4F6-3FCA-5823-9D92-86C40B28ADBC")]
+Interface IVectorView_IHttpCookie Extends IInspectable
+    Function GetAt(ByVal Index As Long) As IHttpCookie
+    Property Get Size() As Long
+    Function IndexOf(ByVal Value As IHttpCookie, Index As Long) As BooleanByte
+    Function GetMany(ByVal StartIndex As Long, ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("7A431780-CD4F-4E57-A84A-5B0A53D6BB96")]
+Interface IHttpCookieManager Extends IInspectable
+    Function SetCookie(ByVal Cookie As IHttpCookie) As BooleanByte
+    Function SetCookieWithThirdParty(ByVal Cookie As IHttpCookie, ByVal ThirdParty As BooleanByte) As BooleanByte
+    [PreserveSig]
+    Function DeleteCookie(ByVal Cookie As IHttpCookie) As HRESULT
+    Function GetCookies(ByVal Uri As IUri) As IVectorView_IHttpCookie
+End Interface
+
+[InterfaceId("43F0138C-2F73-4302-B5F3-EAE9238A5E01")]
+Interface IHttpFormUrlEncodedContentFactory Extends IInspectable
+    Function Create(ByVal Content As IIterable_KVP_HSTRING) As IHttpContent
+End Interface
+
+[InterfaceId("53D08E7C-E209-404E-9A49-742D8236FD3A")]
+Interface IHttpGetBufferResult Extends IInspectable ' requires IClosable, IStringable
+    Property Get ExtendedError() As HRESULT
+    Property Get RequestMessage() As IHttpRequestMessage
+    Property Get ResponseMessage() As IHttpResponseMessage
+    Property Get Succeeded() As BooleanByte
+    Property Get Value() As IBuffer
+End Interface
+
+[InterfaceId("D5D63463-13AA-4EE0-BE95-A0C39FE91203")]
+Interface IHttpGetInputStreamResult Extends IInspectable ' requires IClosable, IStringable
+    Property Get ExtendedError() As HRESULT
+    Property Get RequestMessage() As IHttpRequestMessage
+    Property Get ResponseMessage() As IHttpResponseMessage
+    Property Get Succeeded() As BooleanByte
+    Property Get Value() As IInputStream
+End Interface
+
+[InterfaceId("9BAC466D-8509-4775-B16D-8953F47A7F5F")]
+Interface IHttpGetStringResult Extends IInspectable ' requires IClosable, IStringable
+    Property Get ExtendedError() As HRESULT
+    Property Get RequestMessage() As IHttpRequestMessage
+    Property Get ResponseMessage() As IHttpResponseMessage
+    Property Get Succeeded() As BooleanByte
+    Property Get Value() As LongPtr
+End Interface
+
+[InterfaceId("728D4022-700D-4FE0-AFA5-40299C58DBFD")]
+Interface IHttpMethod Extends IInspectable ' requires IStringable
+    Property Get Method() As LongPtr
+End Interface
+
+[InterfaceId("3C51D10D-36D7-40F8-A86D-E759CAF2F83F")]
+Interface IHttpMethodFactory Extends IInspectable
+    Function Create(ByVal Method As LongPtr) As IHttpMethod
+End Interface
+
+[InterfaceId("64D171F0-D99A-4153-8DC6-D68CC4CCE317")]
+Interface IHttpMethodStatics Extends IInspectable
+    Property Get Delete() As IHttpMethod
+    Property Get Get() As IHttpMethod
+    Property Get Head() As IHttpMethod
+    Property Get Options() As IHttpMethod
+    Property Get Patch() As IHttpMethod
+    Property Get Post() As IHttpMethod
+    Property Get Put() As IHttpMethod
+End Interface
+
+[InterfaceId("59F44F31-695E-5AF7-A3C5-85C01939CEC8")]
+Interface IIterator_IHttpContent Extends IInspectable
+    Property Get Current() As IHttpContent
+    Property Get HasCurrent() As BooleanByte
+    Function MoveNext() As BooleanByte
+    Function GetMany(ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("F102157F-B482-5736-9D12-C683BC494942")]
+Interface IIterable_IHttpContent Extends IInspectable
+    Function First() As IIterator_IHttpContent
+End Interface
+
+[InterfaceId("DF916AFF-9926-4AC9-AAF1-E0D04EF09BB9")]
+Interface IHttpMultipartContent Extends IInspectable ' requires IClosable, IIterable_IHttpContent
+    [PreserveSig]
+    Function Add(ByVal Content As IHttpContent) As HRESULT
+End Interface
+
+[InterfaceId("7EB42E62-0222-4F20-B372-47D5DB5D33B4")]
+Interface IHttpMultipartContentFactory Extends IInspectable
+    Function CreateWithSubtype(ByVal Subtype As LongPtr) As IHttpMultipartContent
+    Function CreateWithSubtypeAndBoundary(ByVal Subtype As LongPtr, ByVal Boundary As LongPtr) As IHttpMultipartContent
+End Interface
+
+[InterfaceId("64D337E2-E967-4624-B6D1-CF74604A4A42")]
+Interface IHttpMultipartFormDataContent Extends IInspectable ' requires IClosable, IIterable_IHttpContent, IStringable
+    [PreserveSig]
+    Function Add(ByVal Content As IHttpContent) As HRESULT
+    [PreserveSig]
+    Function AddWithName(ByVal Content As IHttpContent, ByVal Name As LongPtr) As HRESULT
+    [PreserveSig]
+    Function AddWithNameAndFileName(ByVal Content As IHttpContent, ByVal Name As LongPtr, ByVal FileName As LongPtr) As HRESULT
+End Interface
+
+[InterfaceId("A04D7311-5017-4622-93A8-49B24A4FCBFC")]
+Interface IHttpMultipartFormDataContentFactory Extends IInspectable
+    Function CreateWithBoundary(ByVal Boundary As LongPtr) As IHttpMultipartFormDataContent
+End Interface
+
+[InterfaceId("F5762B3C-74D4-4811-B5DC-9F8B4E2F9ABF")]
+Interface IHttpRequestMessage Extends IInspectable ' requires IClosable, IStringable
+    Property Get Content() As IHttpContent
+    Property Set Content(ByVal Value As IHttpContent)
+    Property Get Headers() As IHttpRequestHeaderCollection
+    Property Get Method() As IHttpMethod
+    Property Set Method(ByVal Value As IHttpMethod)
+    Property Get Properties() As IMap_IInspectable
+    Property Get RequestUri() As IUri
+    Property Set RequestUri(ByVal Value As IUri)
+    Property Get TransportInformation() As IHttpTransportInformation
+End Interface
+
+[InterfaceId("C3C60489-62C2-4A3F-9554-226E7C60BD96")]
+Interface IHttpRequestMessage2 Extends IInspectable
+    Property Get PrivacyAnnotation() As LongPtr
+    Property Let PrivacyAnnotation(ByVal Value As LongPtr)
+End Interface
+
+[InterfaceId("5BAC994E-3886-412E-AEC3-52EC7F25616F")]
+Interface IHttpRequestMessageFactory Extends IInspectable
+    Function Create(ByVal Method As IHttpMethod, ByVal Uri As IUri) As IHttpRequestMessage
+End Interface
+
+[InterfaceId("6ACF4DA8-B5EB-4A35-A902-4217FBE820C5")]
+Interface IHttpRequestResult Extends IInspectable ' requires IClosable, IStringable
+    Property Get ExtendedError() As HRESULT
+    Property Get RequestMessage() As IHttpRequestMessage
+    Property Get ResponseMessage() As IHttpResponseMessage
+    Property Get Succeeded() As BooleanByte
+End Interface
+
+[InterfaceId("FEE200FB-8664-44E0-95D9-42696199BFFC")]
+Interface IHttpResponseMessage Extends IInspectable ' requires IClosable, IStringable
+    Property Get Content() As IHttpContent
+    Property Set Content(ByVal Value As IHttpContent)
+    Property Get Headers() As IHttpResponseHeaderCollection
+    Property Get IsSuccessStatusCode() As BooleanByte
+    Property Get ReasonPhrase() As LongPtr
+    Property Let ReasonPhrase(ByVal Value As LongPtr)
+    Property Get RequestMessage() As IHttpRequestMessage
+    Property Set RequestMessage(ByVal Value As IHttpRequestMessage)
+    Property Get Source() As HttpResponseMessageSource
+    Property Let Source(ByVal Value As HttpResponseMessageSource)
+    Property Get StatusCode() As HttpStatusCode
+    Property Let StatusCode(ByVal Value As HttpStatusCode)
+    Property Get Version() As HttpVersion
+    Property Let Version(ByVal Value As HttpVersion)
+    Function EnsureSuccessStatusCode() As IHttpResponseMessage
+End Interface
+
+[InterfaceId("52A8AF99-F095-43DA-B60F-7CFC2BC7EA2F")]
+Interface IHttpResponseMessageFactory Extends IInspectable
+    Function Create(ByVal StatusCode As HttpStatusCode) As IHttpResponseMessage
+End Interface
+
+[InterfaceId("F3E64D9D-F725-407E-942F-0EDA189809F4")]
+Interface IHttpStreamContentFactory Extends IInspectable
+    Function CreateFromInputStream(ByVal Content As IInputStream) As IHttpContent
+End Interface
+
+[InterfaceId("46649D5B-2E93-48EB-8E61-19677878E57F")]
+Interface IHttpStringContentFactory Extends IInspectable
+    Function CreateFromString(ByVal Content As LongPtr) As IHttpContent
+    Function CreateFromStringWithEncoding(ByVal Content As LongPtr, ByVal Encoding As UnicodeEncoding) As IHttpContent
+    Function CreateFromStringWithEncodingAndMediaType(ByVal Content As LongPtr, ByVal Encoding As UnicodeEncoding, ByVal MediaType As LongPtr) As IHttpContent
+End Interface
+
+[InterfaceId("8BCAD2B7-0E3B-5EAE-BF69-E1F6D9C888F8")]
+Interface IIterator_ChainValidationResult Extends IInspectable
+    Property Get Current() As ChainValidationResult
+    Property Get HasCurrent() As BooleanByte
+    Function MoveNext() As BooleanByte
+    Function GetMany(ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("2628F58F-3F02-54F2-808F-E1117709D6D0")]
+Interface IIterable_ChainValidationResult Extends IInspectable
+    Function First() As IIterator_ChainValidationResult
+End Interface
+
+[InterfaceId("CB383486-C2BC-5756-912D-6A708A07E5BD")]
+Interface IVectorView_ChainValidationResult Extends IInspectable
+    Function GetAt(ByVal Index As Long) As ChainValidationResult
+    Property Get Size() As Long
+    Function IndexOf(ByVal Value As ChainValidationResult, Index As Long) As BooleanByte
+    Function GetMany(ByVal StartIndex As Long, ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("D7828CF7-4301-58D3-AAB5-06E5EEFCF79F")]
+Interface IVector_ChainValidationResult Extends IInspectable
+    Function GetAt(ByVal Index As Long) As ChainValidationResult
+    Property Get Size() As Long
+    Function GetView() As IVectorView_ChainValidationResult
+    Function IndexOf(ByVal Value As ChainValidationResult, Index As Long) As BooleanByte
+    [PreserveSig]
+    Function SetAt(ByVal Index As Long, ByVal Value As ChainValidationResult) As HRESULT
+    [PreserveSig]
+    Function InsertAt(ByVal Index As Long, ByVal Value As ChainValidationResult) As HRESULT
+    [PreserveSig]
+    Function RemoveAt(ByVal Index As Long) As HRESULT
+    [PreserveSig]
+    Function Append(ByVal Value As ChainValidationResult) As HRESULT
+    [PreserveSig]
+    Function RemoveAtEnd() As HRESULT
+    [PreserveSig]
+    Function Clear() As HRESULT
+    Function GetMany(ByVal StartIndex As Long, ByVal Length As Long, Items As Any) As Long
+    [PreserveSig]
+    Function ReplaceAll(ByVal Length As Long, Items As Any) As HRESULT
+End Interface
+
+[InterfaceId("70127198-C6A7-4ED0-833A-83FD8B8F178D")]
+Interface IHttpTransportInformation Extends IInspectable ' requires IStringable
+    Property Get ServerCertificate() As ICertificate
+    Property Get ServerCertificateErrorSeverity() As SocketSslErrorSeverity
+    Property Get ServerCertificateErrors() As IVectorView_ChainValidationResult
+    Property Get ServerIntermediateCertificates() As IVectorView_ICertificate
+End Interface
+
+Module mdlWebHttp
+
+Public Enum HttpCompletionOption
+    HttpCompletionOption_ResponseContentRead
+    HttpCompletionOption_ResponseHeadersRead
+End Enum
+
+Public Enum HttpProgressStage
+    HttpProgressStage_None
+    HttpProgressStage_DetectingProxy = 10
+    HttpProgressStage_ResolvingName = 20
+    HttpProgressStage_ConnectingToServer = 30
+    HttpProgressStage_NegotiatingSsl = 40
+    HttpProgressStage_SendingHeaders = 50
+    HttpProgressStage_SendingContent = 60
+    HttpProgressStage_WaitingForResponse = 70
+    HttpProgressStage_ReceivingHeaders = 80
+    HttpProgressStage_ReceivingContent = 90
+End Enum
+
+Public Enum HttpResponseMessageSource
+    HttpResponseMessageSource_None
+    HttpResponseMessageSource_Cache
+    HttpResponseMessageSource_Network
+End Enum
+
+Public Enum HttpStatusCode
+    HttpStatusCode_None
+    HttpStatusCode_Continue = 100
+    HttpStatusCode_SwitchingProtocols
+    HttpStatusCode_Processing
+    HttpStatusCode_Ok = 200
+    HttpStatusCode_Created
+    HttpStatusCode_Accepted
+    HttpStatusCode_NonAuthoritativeInformation
+    HttpStatusCode_NoContent
+    HttpStatusCode_ResetContent
+    HttpStatusCode_PartialContent
+    HttpStatusCode_MultiStatus
+    HttpStatusCode_AlreadyReported
+    HttpStatusCode_IMUsed = 226
+    HttpStatusCode_MultipleChoices = 300
+    HttpStatusCode_MovedPermanently
+    HttpStatusCode_Found
+    HttpStatusCode_SeeOther
+    HttpStatusCode_NotModified
+    HttpStatusCode_UseProxy
+    HttpStatusCode_TemporaryRedirect = 307
+    HttpStatusCode_PermanentRedirect
+    HttpStatusCode_BadRequest = 400
+    HttpStatusCode_Unauthorized
+    HttpStatusCode_PaymentRequired
+    HttpStatusCode_Forbidden
+    HttpStatusCode_NotFound
+    HttpStatusCode_MethodNotAllowed
+    HttpStatusCode_NotAcceptable
+    HttpStatusCode_ProxyAuthenticationRequired
+    HttpStatusCode_RequestTimeout
+    HttpStatusCode_Conflict
+    HttpStatusCode_Gone
+    HttpStatusCode_LengthRequired
+    HttpStatusCode_PreconditionFailed
+    HttpStatusCode_RequestEntityTooLarge
+    HttpStatusCode_RequestUriTooLong
+    HttpStatusCode_UnsupportedMediaType
+    HttpStatusCode_RequestedRangeNotSatisfiable
+    HttpStatusCode_ExpectationFailed
+    HttpStatusCode_UnprocessableEntity = 422
+    HttpStatusCode_Locked
+    HttpStatusCode_FailedDependency
+    HttpStatusCode_UpgradeRequired = 426
+    HttpStatusCode_PreconditionRequired = 428
+    HttpStatusCode_TooManyRequests
+    HttpStatusCode_RequestHeaderFieldsTooLarge = 431
+    HttpStatusCode_InternalServerError = 500
+    HttpStatusCode_NotImplemented
+    HttpStatusCode_BadGateway
+    HttpStatusCode_ServiceUnavailable
+    HttpStatusCode_GatewayTimeout
+    HttpStatusCode_HttpVersionNotSupported
+    HttpStatusCode_VariantAlsoNegotiates
+    HttpStatusCode_InsufficientStorage
+    HttpStatusCode_LoopDetected
+    HttpStatusCode_NotExtended = 510
+    HttpStatusCode_NetworkAuthenticationRequired
+End Enum
+
+Public Enum HttpVersion
+    HttpVersion_None
+    HttpVersion_Http10
+    HttpVersion_Http11
+    HttpVersion_Http20
+End Enum
+
+Public Type HttpProgress
+    Stage As HttpProgressStage
+    BytesSent As UInt64
+    TotalBytesToSend As IReference_UInt64
+    BytesReceived As UInt64
+    TotalBytesToReceive As IReference_UInt64
+    Retries As Long
+End Type
+
+End Module

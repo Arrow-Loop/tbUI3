@@ -1,0 +1,110 @@
+' =====================================================
+' DiskInfoCollector.twin - 磁盘信息收集器
+' Twinbasic Diagnostic Tool
+' =====================================================
+
+' 磁盘信息收集器
+' 刷新模式：SemiDynamic（可选刷新，变化较慢）
+' 使用 GetDiskFreeSpaceEx 获取磁盘空间
+[ ClassId ("10A2B3C4-D5E6-F7A8-B9C0-D1E2F3A4B5C6") ]
+[ InterfaceId ("10A2B3C4-D5E6-F7A8-B9C0-D1E2F3A4B5C7") ]
+Public Class DiskInfoCollector
+    Implements IDiagnosticCollector
+
+    ' === IDiagnosticCollector 实现 ===
+
+    Public Property Get IDiagnosticCollector_CategoryName() As String
+        Return "Disk"
+    End Property
+
+    Public Property Get IDiagnosticCollector_Description() As String
+        Return "Disk drives and space information"
+    End Property
+
+    Public Property Get IDiagnosticCollector_RefreshMode() As RefreshMode
+        Return RefreshMode.SemiDynamic
+    End Property
+
+    Public Property Get IDiagnosticCollector_RequiresElevation() As Boolean
+        Return False
+    End Property
+
+    Public Property Get IDiagnosticCollector_SupportsSummary() As Boolean
+        Return False
+    End Property
+
+    Public Function IDiagnosticCollector_Collect() As DiagnosticResult(Of KeyValuePair(Of String, String))
+        Dim result As DiagnosticResult(Of KeyValuePair(Of String, String))
+        Set result = New DiagnosticResult(Of KeyValuePair(Of String, String))("Disk")
+
+        ' 获取逻辑驱动器位掩码
+        Dim driveMask As Long = GetLogicalDrives()
+
+        If driveMask = 0 Then
+            result.SetError "Failed to get logical drives"
+            Return result
+        End If
+
+        Dim driveIndex As Long
+        Dim driveLetter As String
+        Dim rootPath As String
+
+        For driveIndex = 0 To 25
+            If (driveMask And (2 ^ driveIndex)) <> 0 Then
+                driveLetter = Chr$(65 + driveIndex)
+                rootPath = driveLetter & ":\"
+
+                ' 获取驱动器类型
+                Dim driveType As Long = GetDriveTypeW(StrPtr(rootPath))
+
+                ' 只处理固定磁盘和可移动磁盘
+                If driveType = DRIVE_FIXED Or driveType = DRIVE_REMOVABLE Then
+                    ' 获取磁盘空间
+                    Dim freeBytesAvailable As LongLong
+                    Dim totalBytes As LongLong
+                    Dim totalFreeBytes As LongLong
+
+                    If GetDiskFreeSpaceExW(StrPtr(rootPath), freeBytesAvailable, totalBytes, totalFreeBytes) <> 0 Then
+                        Dim usedBytes As LongLong = totalBytes - totalFreeBytes
+                        Dim usedPercent As Double = 0
+                        If totalBytes > 0 Then
+                            usedPercent = (CDbl(usedBytes) / CDbl(totalBytes)) * 100
+                        End If
+
+                        ' 驱动器类型描述
+                        Dim typeDesc As String
+                        Select Case driveType
+                            Case DRIVE_FIXED: typeDesc = "Fixed"
+                            Case DRIVE_REMOVABLE: typeDesc = "Removable"
+                            Case DRIVE_REMOTE: typeDesc = "Network"
+                            Case DRIVE_CDROM: typeDesc = "CD-ROM"
+                            Case DRIVE_RAMDISK: typeDesc = "RAM Disk"
+                            Case Else: typeDesc = "Unknown"
+                        End Select
+
+                        ' 添加驱动器信息
+                        result.AddItem New KeyValuePair(Of String, String)( _
+                            "Drive " & driveLetter, typeDesc)
+
+                        result.AddItem New KeyValuePair(Of String, String)( _
+                            driveLetter & ": Total", FormatHelper.FormatBytes(totalBytes))
+
+                        result.AddItem New KeyValuePair(Of String, String)( _
+                            driveLetter & ": Free", FormatHelper.FormatBytes(totalFreeBytes))
+
+                        result.AddItem New KeyValuePair(Of String, String)( _
+                            driveLetter & ": Used", FormatHelper.FormatBytes(usedBytes) & _
+                            " (" & Format$(usedPercent, "0.0") & "%)")
+                    End If
+                End If
+            End If
+        Next driveIndex
+
+        Return result
+    End Function
+
+    Public Function IDiagnosticCollector_CollectSummary() As DiagnosticResult(Of KeyValuePair(Of String, String))
+        Return IDiagnosticCollector_Collect()
+    End Function
+
+End Class

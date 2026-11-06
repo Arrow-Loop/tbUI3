@@ -1,0 +1,36 @@
+[InterfaceId("923C402E-4721-440E-9DDA-55B6F2E07710")]
+Interface ISignalHandler Extends IUnknown
+    Sub Invoke(ByVal Sender As ISignalNotifier, ByVal TimedOut As BooleanByte)
+End Interface
+
+[InterfaceId("B6DAA9FC-BC5B-401A-A8B2-6E754D14DAA6")]
+Interface IPreallocatedWorkItem Extends IInspectable
+    Function RunAsync() As IAsyncAction
+End Interface
+
+[InterfaceId("E3D32B45-DFEA-469B-82C5-F6E3CEFDEAFB")]
+Interface IPreallocatedWorkItemFactory Extends IInspectable
+    Function CreateWorkItem(ByVal Handler As IWorkItemHandler) As IPreallocatedWorkItem
+    Function CreateWorkItemWithPriority(ByVal Handler As IWorkItemHandler, ByVal Priority As WorkItemPriority) As IPreallocatedWorkItem
+    Function CreateWorkItemWithPriorityAndOptions(ByVal Handler As IWorkItemHandler, ByVal Priority As WorkItemPriority, ByVal Options As WorkItemOptions) As IPreallocatedWorkItem
+End Interface
+
+[InterfaceId("14285E06-63A7-4713-B6D9-62F64B56FB8B")]
+Interface ISignalNotifier Extends IInspectable
+    [PreserveSig]
+    Function Enable() As HRESULT
+    [PreserveSig]
+    Function Terminate() As HRESULT
+End Interface
+
+[InterfaceId("1C4E4566-8400-46D3-A115-7D0C0DFC9F62")]
+Interface ISignalNotifierStatics Extends IInspectable
+    Function AttachToEvent(ByVal Name As LongPtr, ByVal Handler As ISignalHandler) As ISignalNotifier
+    Function AttachToEventWithTimeout(ByVal Name As LongPtr, ByVal Handler As ISignalHandler, ByVal Timeout As TimeSpan) As ISignalNotifier
+    Function AttachToSemaphore(ByVal Name As LongPtr, ByVal Handler As ISignalHandler) As ISignalNotifier
+    Function AttachToSemaphoreWithTimeout(ByVal Name As LongPtr, ByVal Handler As ISignalHandler, ByVal Timeout As TimeSpan) As ISignalNotifier
+End Interface
+
+Module mdlSystemThreadingCore
+
+End Module

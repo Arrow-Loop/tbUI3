@@ -1,0 +1,432 @@
+[InterfaceId("43250538-EB73-4561-A71D-1A43EAEB7A9B")]
+Interface ICompositionConditionalValue Extends IInspectable
+    Property Get Condition() As IExpressionAnimation
+    Property Set Condition(ByVal Value As IExpressionAnimation)
+    Property Get Value() As IExpressionAnimation
+    Property Set Value(ByVal Value As IExpressionAnimation)
+End Interface
+
+[InterfaceId("090C4B72-8467-4D0A-9065-AC46B80A5522")]
+Interface ICompositionConditionalValueStatics Extends IInspectable
+    Function Create(ByVal Compositor As ICompositor) As ICompositionConditionalValue
+End Interface
+
+[InterfaceId("20259EF3-9F4B-5257-8581-6D3EABBBD690")]
+Interface IIterator_ICompositionInteractionSource Extends IInspectable
+    Property Get Current() As ICompositionInteractionSource
+    Property Get HasCurrent() As BooleanByte
+    Function MoveNext() As BooleanByte
+    Function GetMany(ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("17C50E21-CB70-5A2B-B797-A8DC01A99113")]
+Interface IIterable_ICompositionInteractionSource Extends IInspectable
+    Function First() As IIterator_ICompositionInteractionSource
+End Interface
+
+[InterfaceId("043B2431-06E3-495A-BA54-409F0017FAC0")]
+Interface ICompositionInteractionSource Extends IInspectable
+
+End Interface
+
+[InterfaceId("1B468E4B-A5BF-47D8-A547-3894155A158C")]
+Interface ICompositionInteractionSourceCollection Extends IInspectable
+    Property Get Count() As Long
+    [PreserveSig]
+    Function Add(ByVal Value As ICompositionInteractionSource) As HRESULT
+    [PreserveSig]
+    Function Remove(ByVal Value As ICompositionInteractionSource) As HRESULT
+    [PreserveSig]
+    Function RemoveAll() As HRESULT
+End Interface
+
+[InterfaceId("A78347E5-A9D1-4D02-985E-B930CD0B9DA4")]
+Interface IInteractionSourceConfiguration Extends IInspectable
+    Property Get PositionXSourceMode() As InteractionSourceRedirectionMode
+    Property Let PositionXSourceMode(ByVal Value As InteractionSourceRedirectionMode)
+    Property Get PositionYSourceMode() As InteractionSourceRedirectionMode
+    Property Let PositionYSourceMode(ByVal Value As InteractionSourceRedirectionMode)
+    Property Get ScaleSourceMode() As InteractionSourceRedirectionMode
+    Property Let ScaleSourceMode(ByVal Value As InteractionSourceRedirectionMode)
+End Interface
+
+[InterfaceId("46617D87-2CD2-5E31-9A30-EA86F8AA7CA1")]
+Interface IIterator_IInteractionTrackerInertiaModifier Extends IInspectable
+    Property Get Current() As IInteractionTrackerInertiaModifier
+    Property Get HasCurrent() As BooleanByte
+    Function MoveNext() As BooleanByte
+    Function GetMany(ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("9A245C40-AAE6-59FB-87F5-4BB05599F0B1")]
+Interface IIterable_IInteractionTrackerInertiaModifier Extends IInspectable
+    Function First() As IIterator_IInteractionTrackerInertiaModifier
+End Interface
+
+[InterfaceId("2A8E8CB1-1000-4416-8363-CC27FB877308")]
+Interface IInteractionTracker Extends IInspectable
+    Property Get InteractionSources() As ICompositionInteractionSourceCollection
+    Property Get IsPositionRoundingSuggested() As BooleanByte
+    Property Get MaxPosition() As Vector3
+    Property Let MaxPosition(ByVal Value As Vector3)
+    Property Get MaxScale() As Single
+    Property Let MaxScale(ByVal Value As Single)
+    Property Get MinPosition() As Vector3
+    Property Let MinPosition(ByVal Value As Vector3)
+    Property Get MinScale() As Single
+    Property Let MinScale(ByVal Value As Single)
+    Property Get NaturalRestingPosition() As Vector3
+    Property Get NaturalRestingScale() As Single
+    Property Get Owner() As IInteractionTrackerOwner
+    Property Get Position() As Vector3
+    Property Get PositionInertiaDecayRate() As IReference_Vector3
+    Property Set PositionInertiaDecayRate(ByVal Value As IReference_Vector3)
+    Property Get PositionVelocityInPixelsPerSecond() As Vector3
+    Property Get Scale() As Single
+    Property Get ScaleInertiaDecayRate() As IReference_Single
+    Property Set ScaleInertiaDecayRate(ByVal Value As IReference_Single)
+    Property Get ScaleVelocityInPercentPerSecond() As Single
+    [PreserveSig]
+    Function AdjustPositionXIfGreaterThanThreshold(ByVal Adjustment As Single, ByVal PositionThreshold As Single) As HRESULT
+    [PreserveSig]
+    Function AdjustPositionYIfGreaterThanThreshold(ByVal Adjustment As Single, ByVal PositionThreshold As Single) As HRESULT
+    [PreserveSig]
+    Function ConfigurePositionXInertiaModifiers(ByVal Modifiers As IIterable_IInteractionTrackerInertiaModifier) As HRESULT
+    [PreserveSig]
+    Function ConfigurePositionYInertiaModifiers(ByVal Modifiers As IIterable_IInteractionTrackerInertiaModifier) As HRESULT
+    [PreserveSig]
+    Function ConfigureScaleInertiaModifiers(ByVal Modifiers As IIterable_IInteractionTrackerInertiaModifier) As HRESULT
+    Function TryUpdatePosition(ByVal Value As Vector3) As Long
+    Function TryUpdatePositionBy(ByVal Amount As Vector3) As Long
+    Function TryUpdatePositionWithAnimation(ByVal Animation As ICompositionAnimation) As Long
+    Function TryUpdatePositionWithAdditionalVelocity(ByVal VelocityInPixelsPerSecond As Vector3) As Long
+    Function TryUpdateScale(ByVal Value As Single, ByVal CenterPoint As Vector3) As Long
+    Function TryUpdateScaleWithAnimation(ByVal Animation As ICompositionAnimation, ByVal CenterPoint As Vector3) As Long
+    Function TryUpdateScaleWithAdditionalVelocity(ByVal VelocityInPercentPerSecond As Single, ByVal CenterPoint As Vector3) As Long
+End Interface
+
+[InterfaceId("8A75B02D-3991-55A6-BFE2-82CB7DD65B98")]
+Interface IIterator_ICompositionConditionalValue Extends IInspectable
+    Property Get Current() As ICompositionConditionalValue
+    Property Get HasCurrent() As BooleanByte
+    Function MoveNext() As BooleanByte
+    Function GetMany(ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("B268447B-F519-5CE5-89CD-B7E1BC5652EE")]
+Interface IIterable_ICompositionConditionalValue Extends IInspectable
+    Function First() As IIterator_ICompositionConditionalValue
+End Interface
+
+[InterfaceId("25769A3E-CE6D-448C-8386-92620D240756")]
+Interface IInteractionTracker2 Extends IInspectable
+    [PreserveSig]
+    Function ConfigureCenterPointXInertiaModifiers(ByVal ConditionalValues As IIterable_ICompositionConditionalValue) As HRESULT
+    [PreserveSig]
+    Function ConfigureCenterPointYInertiaModifiers(ByVal ConditionalValues As IIterable_ICompositionConditionalValue) As HRESULT
+End Interface
+
+[InterfaceId("7762CAAB-5B42-5958-9F49-06AEFD43AD75")]
+Interface IIterator_IInteractionTrackerVector2InertiaModifier Extends IInspectable
+    Property Get Current() As IInteractionTrackerVector2InertiaModifier
+    Property Get HasCurrent() As BooleanByte
+    Function MoveNext() As BooleanByte
+    Function GetMany(ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("3AEACFD8-C7F1-580C-A23B-99666E42E62B")]
+Interface IIterable_IInteractionTrackerVector2InertiaModifier Extends IInspectable
+    Function First() As IIterator_IInteractionTrackerVector2InertiaModifier
+End Interface
+
+[InterfaceId("E6C5D7A2-5C4B-42C6-84B7-F69441B18091")]
+Interface IInteractionTracker3 Extends IInspectable
+    [PreserveSig]
+    Function ConfigureVector2PositionInertiaModifiers(ByVal Modifiers As IIterable_IInteractionTrackerVector2InertiaModifier) As HRESULT
+End Interface
+
+[InterfaceId("EBD222BC-04AF-4AC7-847D-06EA36E80A16")]
+Interface IInteractionTracker4 Extends IInspectable
+    Function TryUpdatePositionWithOption(ByVal Value As Vector3, ByVal Option As InteractionTrackerClampingOption) As Long
+    Function TryUpdatePositionByWithOption(ByVal Amount As Vector3, ByVal Option As InteractionTrackerClampingOption) As Long
+    Property Get IsInertiaFromImpulse() As BooleanByte
+End Interface
+
+[InterfaceId("D3EF5DA2-A254-40E4-88D5-44E4E16B5809")]
+Interface IInteractionTracker5 Extends IInspectable
+    Function TryUpdatePositionWithOption(ByVal Value As Vector3, ByVal Option As InteractionTrackerClampingOption, ByVal PosUpdateOption As InteractionTrackerPositionUpdateOption) As Long
+End Interface
+
+[InterfaceId("8D1C8CF1-D7B0-434C-A5D2-2D7611864834")]
+Interface IInteractionTrackerCustomAnimationStateEnteredArgs Extends IInspectable
+    Property Get RequestId() As Long
+End Interface
+
+[InterfaceId("47D579B7-0985-5E99-B024-2F32C380C1A4")]
+Interface IInteractionTrackerCustomAnimationStateEnteredArgs2 Extends IInspectable
+    Property Get IsFromBinding() As BooleanByte
+End Interface
+
+[InterfaceId("50012FAA-1510-4142-A1A5-019B09F8857B")]
+Interface IInteractionTrackerIdleStateEnteredArgs Extends IInspectable
+    Property Get RequestId() As Long
+End Interface
+
+[InterfaceId("F2E771ED-B803-5137-9435-1C96E48721E9")]
+Interface IInteractionTrackerIdleStateEnteredArgs2 Extends IInspectable
+    Property Get IsFromBinding() As BooleanByte
+End Interface
+
+[InterfaceId("A0E2C920-26B4-4DA2-8B61-5E683979BBE2")]
+Interface IInteractionTrackerInertiaModifier Extends IInspectable
+
+End Interface
+
+[InterfaceId("993818FE-C94E-4B86-87F3-922665BA46B9")]
+Interface IInteractionTrackerInertiaModifierFactory Extends IInspectable
+
+End Interface
+
+[InterfaceId("04922FDC-F154-4CB8-BF33-CC1BA611E6DB")]
+Interface IInteractionTrackerInertiaMotion Extends IInspectable
+    Property Get Condition() As IExpressionAnimation
+    Property Set Condition(ByVal Value As IExpressionAnimation)
+    Property Get Motion() As IExpressionAnimation
+    Property Set Motion(ByVal Value As IExpressionAnimation)
+End Interface
+
+[InterfaceId("8CC83DD6-BA7B-431A-844B-6EAC9130F99A")]
+Interface IInteractionTrackerInertiaMotionStatics Extends IInspectable
+    Function Create(ByVal Compositor As ICompositor) As IInteractionTrackerInertiaMotion
+End Interface
+
+[InterfaceId("70ACDAAE-27DC-48ED-A3C3-6D61C9A029D2")]
+Interface IInteractionTrackerInertiaNaturalMotion Extends IInspectable
+    Property Get Condition() As IExpressionAnimation
+    Property Set Condition(ByVal Value As IExpressionAnimation)
+    Property Get NaturalMotion() As IScalarNaturalMotionAnimation
+    Property Set NaturalMotion(ByVal Value As IScalarNaturalMotionAnimation)
+End Interface
+
+[InterfaceId("CFDA55B0-5E3E-4289-932D-EE5F50E74283")]
+Interface IInteractionTrackerInertiaNaturalMotionStatics Extends IInspectable
+    Function Create(ByVal Compositor As ICompositor) As IInteractionTrackerInertiaNaturalMotion
+End Interface
+
+[InterfaceId("86F7EC09-5096-4170-9CC8-DF2FE101BB93")]
+Interface IInteractionTrackerInertiaRestingValue Extends IInspectable
+    Property Get Condition() As IExpressionAnimation
+    Property Set Condition(ByVal Value As IExpressionAnimation)
+    Property Get RestingValue() As IExpressionAnimation
+    Property Set RestingValue(ByVal Value As IExpressionAnimation)
+End Interface
+
+[InterfaceId("18ED4699-0745-4096-BCAB-3A4E99569BCF")]
+Interface IInteractionTrackerInertiaRestingValueStatics Extends IInspectable
+    Function Create(ByVal Compositor As ICompositor) As IInteractionTrackerInertiaRestingValue
+End Interface
+
+[InterfaceId("87108CF2-E7FF-4F7D-9FFD-D72F1E409B63")]
+Interface IInteractionTrackerInertiaStateEnteredArgs Extends IInspectable
+    Property Get ModifiedRestingPosition() As IReference_Vector3
+    Property Get ModifiedRestingScale() As IReference_Single
+    Property Get NaturalRestingPosition() As Vector3
+    Property Get NaturalRestingScale() As Single
+    Property Get PositionVelocityInPixelsPerSecond() As Vector3
+    Property Get RequestId() As Long
+    Property Get ScaleVelocityInPercentPerSecond() As Single
+End Interface
+
+[InterfaceId("B1EB32F6-C26C-41F6-A189-FABC22B323CC")]
+Interface IInteractionTrackerInertiaStateEnteredArgs2 Extends IInspectable
+    Property Get IsInertiaFromImpulse() As BooleanByte
+End Interface
+
+[InterfaceId("48AC1C2F-47BD-59AF-A58C-79BD2EB9EF71")]
+Interface IInteractionTrackerInertiaStateEnteredArgs3 Extends IInspectable
+    Property Get IsFromBinding() As BooleanByte
+End Interface
+
+[InterfaceId("A7263939-A17B-4011-99FD-B5C24F143748")]
+Interface IInteractionTrackerInteractingStateEnteredArgs Extends IInspectable
+    Property Get RequestId() As Long
+End Interface
+
+[InterfaceId("509652D6-D488-59CD-819F-F52310295B11")]
+Interface IInteractionTrackerInteractingStateEnteredArgs2 Extends IInspectable
+    Property Get IsFromBinding() As BooleanByte
+End Interface
+
+[InterfaceId("DB2E8AF3-4DEB-4E53-B29C-B06C9F96D651")]
+Interface IInteractionTrackerOwner Extends IInspectable
+    [PreserveSig]
+    Function CustomAnimationStateEntered(ByVal Sender As IInteractionTracker, ByVal Args As IInteractionTrackerCustomAnimationStateEnteredArgs) As HRESULT
+    [PreserveSig]
+    Function IdleStateEntered(ByVal Sender As IInteractionTracker, ByVal Args As IInteractionTrackerIdleStateEnteredArgs) As HRESULT
+    [PreserveSig]
+    Function InertiaStateEntered(ByVal Sender As IInteractionTracker, ByVal Args As IInteractionTrackerInertiaStateEnteredArgs) As HRESULT
+    [PreserveSig]
+    Function InteractingStateEntered(ByVal Sender As IInteractionTracker, ByVal Args As IInteractionTrackerInteractingStateEnteredArgs) As HRESULT
+    [PreserveSig]
+    Function RequestIgnored(ByVal Sender As IInteractionTracker, ByVal Args As IInteractionTrackerRequestIgnoredArgs) As HRESULT
+    [PreserveSig]
+    Function ValuesChanged(ByVal Sender As IInteractionTracker, ByVal Args As IInteractionTrackerValuesChangedArgs) As HRESULT
+End Interface
+
+[InterfaceId("80DD82F1-CE25-488F-91DD-CB6455CCFF2E")]
+Interface IInteractionTrackerRequestIgnoredArgs Extends IInspectable
+    Property Get RequestId() As Long
+End Interface
+
+[InterfaceId("BBA5D7B7-6590-4498-8D6C-EB62B514C92A")]
+Interface IInteractionTrackerStatics Extends IInspectable
+    Function Create(ByVal Compositor As ICompositor) As IInteractionTracker
+    Function CreateWithOwner(ByVal Compositor As ICompositor, ByVal Owner As IInteractionTrackerOwner) As IInteractionTracker
+End Interface
+
+[InterfaceId("35E53720-46B7-5CB0-B505-F3D6884A6163")]
+Interface IInteractionTrackerStatics2 Extends IInspectable
+    [PreserveSig]
+    Function SetBindingMode(ByVal BoundTracker1 As IInteractionTracker, ByVal BoundTracker2 As IInteractionTracker, ByVal AxisMode As InteractionBindingAxisModes) As HRESULT
+    Function GetBindingMode(ByVal BoundTracker1 As IInteractionTracker, ByVal BoundTracker2 As IInteractionTracker) As InteractionBindingAxisModes
+End Interface
+
+[InterfaceId("CF1578EF-D3DF-4501-B9E6-F02FB22F73D0")]
+Interface IInteractionTrackerValuesChangedArgs Extends IInspectable
+    Property Get Position() As Vector3
+    Property Get RequestId() As Long
+    Property Get Scale() As Single
+End Interface
+
+[InterfaceId("87E08AB0-3086-4853-A4B7-77882AD5D7E3")]
+Interface IInteractionTrackerVector2InertiaModifier Extends IInspectable
+
+End Interface
+
+[InterfaceId("7401D6C4-6C6D-48DF-BC3E-171E227E7D7F")]
+Interface IInteractionTrackerVector2InertiaModifierFactory Extends IInspectable
+
+End Interface
+
+[InterfaceId("5F17695C-162D-4C07-9400-C282B28276CA")]
+Interface IInteractionTrackerVector2InertiaNaturalMotion Extends IInspectable
+    Property Get Condition() As IExpressionAnimation
+    Property Set Condition(ByVal Value As IExpressionAnimation)
+    Property Get NaturalMotion() As IVector2NaturalMotionAnimation
+    Property Set NaturalMotion(ByVal Value As IVector2NaturalMotionAnimation)
+End Interface
+
+[InterfaceId("82001A48-09C0-434F-8189-141C66DF362F")]
+Interface IInteractionTrackerVector2InertiaNaturalMotionStatics Extends IInspectable
+    Function Create(ByVal Compositor As ICompositor) As IInteractionTrackerVector2InertiaNaturalMotion
+End Interface
+
+[InterfaceId("CA0E8A86-D8D6-4111-B088-70347BD2B0ED")]
+Interface IVisualInteractionSource Extends IInspectable
+    Property Get IsPositionXRailsEnabled() As BooleanByte
+    Property Let IsPositionXRailsEnabled(ByVal Value As BooleanByte)
+    Property Get IsPositionYRailsEnabled() As BooleanByte
+    Property Let IsPositionYRailsEnabled(ByVal Value As BooleanByte)
+    Property Get ManipulationRedirectionMode() As VisualInteractionSourceRedirectionMode
+    Property Let ManipulationRedirectionMode(ByVal Value As VisualInteractionSourceRedirectionMode)
+    Property Get PositionXChainingMode() As InteractionChainingMode
+    Property Let PositionXChainingMode(ByVal Value As InteractionChainingMode)
+    Property Get PositionXSourceMode() As InteractionSourceMode
+    Property Let PositionXSourceMode(ByVal Value As InteractionSourceMode)
+    Property Get PositionYChainingMode() As InteractionChainingMode
+    Property Let PositionYChainingMode(ByVal Value As InteractionChainingMode)
+    Property Get PositionYSourceMode() As InteractionSourceMode
+    Property Let PositionYSourceMode(ByVal Value As InteractionSourceMode)
+    Property Get ScaleChainingMode() As InteractionChainingMode
+    Property Let ScaleChainingMode(ByVal Value As InteractionChainingMode)
+    Property Get ScaleSourceMode() As InteractionSourceMode
+    Property Let ScaleSourceMode(ByVal Value As InteractionSourceMode)
+    Property Get Source() As IVisual
+    [PreserveSig]
+    Function TryRedirectForManipulation(ByVal PointerPoint As IPointerPoint) As HRESULT
+End Interface
+
+[InterfaceId("AA914893-A73C-414D-80D0-249BAD2FBD93")]
+Interface IVisualInteractionSource2 Extends IInspectable
+    Property Get DeltaPosition() As Vector3
+    Property Get DeltaScale() As Single
+    Property Get Position() As Vector3
+    Property Get PositionVelocity() As Vector3
+    Property Get Scale() As Single
+    Property Get ScaleVelocity() As Single
+    [PreserveSig]
+    Function ConfigureCenterPointXModifiers(ByVal ConditionalValues As IIterable_ICompositionConditionalValue) As HRESULT
+    [PreserveSig]
+    Function ConfigureCenterPointYModifiers(ByVal ConditionalValues As IIterable_ICompositionConditionalValue) As HRESULT
+    [PreserveSig]
+    Function ConfigureDeltaPositionXModifiers(ByVal ConditionalValues As IIterable_ICompositionConditionalValue) As HRESULT
+    [PreserveSig]
+    Function ConfigureDeltaPositionYModifiers(ByVal ConditionalValues As IIterable_ICompositionConditionalValue) As HRESULT
+    [PreserveSig]
+    Function ConfigureDeltaScaleModifiers(ByVal ConditionalValues As IIterable_ICompositionConditionalValue) As HRESULT
+End Interface
+
+[InterfaceId("D941EF2A-0D5C-4057-92D7-C9711533204F")]
+Interface IVisualInteractionSource3 Extends IInspectable
+    Property Get PointerWheelConfig() As IInteractionSourceConfiguration
+End Interface
+
+[InterfaceId("B2CA917C-E98A-41F2-B3C9-891C9266C8F6")]
+Interface IVisualInteractionSourceObjectFactory Extends IInspectable
+
+End Interface
+
+[InterfaceId("369965E1-8645-4F75-BA00-6479CD10C8E6")]
+Interface IVisualInteractionSourceStatics Extends IInspectable
+    Function Create(ByVal Source As IVisual) As IVisualInteractionSource
+End Interface
+
+[InterfaceId("A979C032-5764-55E0-BC1F-0778786DCFDE")]
+Interface IVisualInteractionSourceStatics2 Extends IInspectable
+    Function CreateFromIVisualElement(ByVal Source As IVisualElement) As IVisualInteractionSource
+End Interface
+
+Module mdlUICompositionInteractions
+
+Public Enum InteractionBindingAxisModes
+    InteractionBindingAxisModes_None = &H0
+    InteractionBindingAxisModes_PositionX = &H1
+    InteractionBindingAxisModes_PositionY = &H2
+    InteractionBindingAxisModes_Scale = &H4
+End Enum
+
+Public Enum InteractionChainingMode
+    InteractionChainingMode_Auto
+    InteractionChainingMode_Always
+    InteractionChainingMode_Never
+End Enum
+
+Public Enum InteractionSourceMode
+    InteractionSourceMode_Disabled
+    InteractionSourceMode_EnabledWithInertia
+    InteractionSourceMode_EnabledWithoutInertia
+End Enum
+
+Public Enum InteractionSourceRedirectionMode
+    InteractionSourceRedirectionMode_Disabled
+    InteractionSourceRedirectionMode_Enabled
+End Enum
+
+Public Enum InteractionTrackerClampingOption
+    InteractionTrackerClampingOption_Auto
+    InteractionTrackerClampingOption_Disabled
+End Enum
+
+Public Enum InteractionTrackerPositionUpdateOption
+    InteractionTrackerPositionUpdateOption_Default
+    InteractionTrackerPositionUpdateOption_AllowActiveCustomScaleAnimation
+End Enum
+
+Public Enum VisualInteractionSourceRedirectionMode
+    VisualInteractionSourceRedirectionMode_Off
+    VisualInteractionSourceRedirectionMode_CapableTouchpadOnly
+    VisualInteractionSourceRedirectionMode_PointerWheelOnly
+    VisualInteractionSourceRedirectionMode_CapableTouchpadAndPointerWheel
+End Enum
+
+End Module

@@ -1,0 +1,170 @@
+[InterfaceId("CF651713-CD08-4FD8-B697-A281B6544E2E")]
+Interface IActivatedEventArgs Extends IInspectable
+    Property Get Kind() As ActivationKind
+    Property Get PreviousExecutionState() As ApplicationExecutionState
+    Property Get SplashScreen() As ISplashScreen
+End Interface
+
+[InterfaceId("1CF09B9E-9962-4936-80FF-AFC8E8AE5C8C")]
+Interface IActivatedEventArgsWithUser Extends IInspectable
+    Property Get User() As IUser
+End Interface
+
+[InterfaceId("930CEF4B-B829-40FC-88F4-8513E8A64738")]
+Interface IApplicationViewActivatedEventArgs Extends IInspectable
+    Property Get CurrentlyShownApplicationViewId() As Long
+End Interface
+
+[InterfaceId("3364C405-933C-4E7D-A034-500FB8DCD9F3")]
+Interface IAppointmentsProviderActivatedEventArgs Extends IInspectable ' requires IActivatedEventArgs
+    Property Get Verb() As LongPtr
+End Interface
+
+[InterfaceId("D06EB1C7-3805-4ECB-B757-6CF15E26FEF3")]
+Interface ICachedFileUpdaterActivatedEventArgs Extends IInspectable ' requires IActivatedEventArgs
+    Property Get CachedFileUpdaterUI() As ICachedFileUpdaterUI
+End Interface
+
+[InterfaceId("BB2AFC33-93B1-42ED-8B26-236DD9C78496")]
+Interface IFileActivatedEventArgs Extends IInspectable ' requires IActivatedEventArgs
+    Property Get Files() As IVectorView_IStorageItem
+    Property Get Verb() As LongPtr
+End Interface
+
+[InterfaceId("72827082-5525-4BF2-BC09-1F5095D4964D")]
+Interface IFileOpenPickerActivatedEventArgs Extends IInspectable ' requires IActivatedEventArgs
+    Property Get FileOpenPickerUI() As IFileOpenPickerUI
+End Interface
+
+[InterfaceId("81C19CF1-74E6-4387-82EB-BB8FD64B4346")]
+Interface IFileSavePickerActivatedEventArgs Extends IInspectable
+    Property Get FileSavePickerUI() As IFileSavePickerUI
+End Interface
+
+[InterfaceId("FBC93E26-A14A-4B4F-82B0-33BED920AF52")]
+Interface ILaunchActivatedEventArgs Extends IInspectable ' requires IActivatedEventArgs
+    Property Get Arguments() As LongPtr
+    Property Get TileId() As LongPtr
+End Interface
+
+[InterfaceId("8CB36951-58C8-43E3-94BC-41D33F8B630E")]
+Interface ISearchActivatedEventArgs Extends IInspectable ' requires IActivatedEventArgs
+    Property Get QueryText() As LongPtr
+    Property Get Language() As LongPtr
+End Interface
+
+[InterfaceId("603E4308-F0BE-4ADC-ACC9-8B27AB9CF556")]
+Interface IQuickLink Extends IInspectable
+    Property Get Title() As LongPtr
+    Property Let Title(ByVal Value As LongPtr)
+    Property Get Thumbnail() As IRandomAccessStreamReference
+    Property Set Thumbnail(ByVal Value As IRandomAccessStreamReference)
+    Property Get Id() As LongPtr
+    Property Let Id(ByVal Value As LongPtr)
+    Property Get SupportedDataFormats() As IVector_HSTRING
+    Property Get SupportedFileTypes() As IVector_HSTRING
+End Interface
+
+[InterfaceId("2246BAB8-D0F8-41C1-A82A-4137DB6504FB")]
+Interface IShareOperation Extends IInspectable
+    Property Get Data() As IDataPackageView
+    Property Get QuickLinkId() As LongPtr
+    [PreserveSig]
+    Function RemoveThisQuickLink() As HRESULT
+    [PreserveSig]
+    Function ReportStarted() As HRESULT
+    [PreserveSig]
+    Function ReportDataRetrieved() As HRESULT
+    [PreserveSig]
+    Function ReportSubmittedBackgroundTask() As HRESULT
+    [PreserveSig]
+    Function ReportCompletedWithQuickLink(ByVal Quicklink As IQuickLink) As HRESULT
+    [PreserveSig]
+    Function ReportCompleted() As HRESULT
+    [PreserveSig]
+    Function ReportError(ByVal Value As LongPtr) As HRESULT
+End Interface
+
+[InterfaceId("0FFB97C1-9778-4A09-8E5B-CB5E482D0555")]
+Interface IShareOperation2 Extends IInspectable
+    [PreserveSig]
+    Function DismissUI() As HRESULT
+End Interface
+
+[InterfaceId("4BDAF9C8-CDB2-4ACB-BFC3-6648563378EC")]
+Interface IShareTargetActivatedEventArgs Extends IInspectable ' requires IActivatedEventArgs
+    Property Get ShareOperation() As IShareOperation
+End Interface
+
+[InterfaceId("7725B2A5-287D-5ED2-A789-2A6A2673C7FE")]
+Interface ITypedEventHandlerSplashScreenDismissed Extends IUnknown
+    Sub Invoke(ByVal Sender As ISplashScreen, ByVal Args As IInspectable)
+End Interface
+
+[InterfaceId("CA4D975C-D4D6-43F0-97C0-0833C6391C24")]
+Interface ISplashScreen Extends IInspectable
+    Property Get ImageLocation() As RECTF
+    [PreserveSig]
+    Function AddDismissed(ByVal Handler As ITypedEventHandlerSplashScreenDismissed, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveDismissed(ByVal Token As EventRegistrationToken) As HRESULT
+End Interface
+
+Module mdlApplicationModelActivation
+
+Public Enum ActivationKind
+    ActivationKind_Launch
+    ActivationKind_Search
+    ActivationKind_ShareTarget
+    ActivationKind_File
+    ActivationKind_Protocol
+    ActivationKind_FileOpenPicker
+    ActivationKind_FileSavePicker
+    ActivationKind_CachedFileUpdater
+    ActivationKind_ContactPicker
+    ActivationKind_Device
+    ActivationKind_PrintTaskSettings
+    ActivationKind_CameraSettings
+    ActivationKind_RestrictedLaunch
+    ActivationKind_AppointmentsProvider
+    ActivationKind_Contact
+    ActivationKind_LockScreenCall
+    ActivationKind_VoiceCommand
+    ActivationKind_LockScreen
+    ActivationKind_PickerReturned = 1000
+    ActivationKind_WalletAction
+    ActivationKind_PickFileContinuation
+    ActivationKind_PickSaveFileContinuation
+    ActivationKind_PickFolderContinuation
+    ActivationKind_WebAuthenticationBrokerContinuation
+    ActivationKind_WebAccountProvider
+    ActivationKind_ComponentUI
+    ActivationKind_ProtocolForResults = 1009
+    ActivationKind_ToastNotification
+    ActivationKind_Print3DWorkflow
+    ActivationKind_DialReceiver
+    ActivationKind_DevicePairing
+    ActivationKind_UserDataAccountsProvider
+    ActivationKind_FilePickerExperience
+    ActivationKind_LockScreenComponent
+    ActivationKind_ContactPanel
+    ActivationKind_PrintWorkflowForegroundTask
+    ActivationKind_GameUIProvider
+    ActivationKind_StartupTask
+    ActivationKind_CommandLineLaunch
+    ActivationKind_BarcodeScannerProvider
+    ActivationKind_PrintSupportJobUI
+    ActivationKind_PrintSupportSettingsUI
+    ActivationKind_PhoneCallActivation
+    ActivationKind_VpnForeground
+End Enum
+
+Public Enum ApplicationExecutionState
+    ApplicationExecutionState_NotRunning
+    ApplicationExecutionState_Running
+    ApplicationExecutionState_Suspended
+    ApplicationExecutionState_Terminated
+    ApplicationExecutionState_ClosedByUser
+End Enum
+
+End Module

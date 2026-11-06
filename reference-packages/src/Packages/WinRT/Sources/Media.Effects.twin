@@ -1,0 +1,321 @@
+[InterfaceId("673CE717-A3CF-5D68-A80B-5ED3E7B93FED")]
+Interface IIterator_IAudioEffect Extends IInspectable
+    Property Get Current() As IAudioEffect
+    Property Get HasCurrent() As BooleanByte
+    Function MoveNext() As BooleanByte
+    Function GetMany(ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("07AF9AFD-25B8-579D-BE7E-8ACC03418D0B")]
+Interface IIterable_IAudioEffect Extends IInspectable
+    Function First() As IIterator_IAudioEffect
+End Interface
+
+[InterfaceId("CDCBC9E7-53D8-5E66-9E45-31D5A23FD01D")]
+Interface IVectorView_IAudioEffect Extends IInspectable
+    Function GetAt(ByVal Index As Long) As IAudioEffect
+    Property Get Size() As Long
+    Function IndexOf(ByVal Value As IAudioEffect, Index As Long) As BooleanByte
+    Function GetMany(ByVal StartIndex As Long, ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("A1C5E803-A275-5BB1-9D44-2AC8AE9FFB89")]
+Interface ITypedEventHandlerAudioCaptureEffectsManagerAudioCaptureEffectsChanged Extends IUnknown
+    Sub Invoke(ByVal Sender As IAudioCaptureEffectsManager, ByVal Args As IInspectable)
+End Interface
+
+[InterfaceId("8F85C271-038D-4393-8298-540110608EEF")]
+Interface IAudioCaptureEffectsManager Extends IInspectable
+    [PreserveSig]
+    Function AddAudioCaptureEffectsChanged(ByVal Handler As ITypedEventHandlerAudioCaptureEffectsManagerAudioCaptureEffectsChanged, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveAudioCaptureEffectsChanged(ByVal Token As EventRegistrationToken) As HRESULT
+    Function GetAudioCaptureEffects() As IVectorView_IAudioEffect
+End Interface
+
+[InterfaceId("34AAFA51-9207-4055-BE93-6E5734A86AE4")]
+Interface IAudioEffect Extends IInspectable
+    Property Get AudioEffectType() As AudioEffectType
+End Interface
+
+[InterfaceId("E4D7F974-7D80-4F73-9089-E31C9DB9C294")]
+Interface IAudioEffectDefinition Extends IInspectable
+    Property Get ActivatableClassId() As LongPtr
+    Property Get Properties() As IPropertySet
+End Interface
+
+[InterfaceId("8E1DA646-E705-45ED-8A2B-FC4E4F405A97")]
+Interface IAudioEffectDefinitionFactory Extends IInspectable
+    Function Create(ByVal ActivatableClassId As LongPtr) As IAudioEffectDefinition
+    Function CreateWithProperties(ByVal ActivatableClassId As LongPtr, ByVal Props As IPropertySet) As IAudioEffectDefinition
+End Interface
+
+[InterfaceId("66406C04-86FA-47CC-A315-F489D8C3FE10")]
+Interface IAudioEffectsManagerStatics Extends IInspectable
+    Function CreateAudioRenderEffectsManager(ByVal DeviceId As LongPtr, ByVal Category As AudioRenderCategory) As IAudioRenderEffectsManager
+    Function CreateAudioRenderEffectsManagerWithMode(ByVal DeviceId As LongPtr, ByVal Category As AudioRenderCategory, ByVal Mode As AudioProcessing) As IAudioRenderEffectsManager
+    Function CreateAudioCaptureEffectsManager(ByVal DeviceId As LongPtr, ByVal Category As MediaCategory) As IAudioCaptureEffectsManager
+    Function CreateAudioCaptureEffectsManagerWithMode(ByVal DeviceId As LongPtr, ByVal Category As MediaCategory, ByVal Mode As AudioProcessing) As IAudioCaptureEffectsManager
+End Interface
+
+[InterfaceId("4BE29C7E-449C-576E-A7B8-3A40F2F01DC8")]
+Interface ITypedEventHandlerAudioRenderEffectsManagerAudioRenderEffectsChanged Extends IUnknown
+    Sub Invoke(ByVal Sender As IAudioRenderEffectsManager, ByVal Args As IInspectable)
+End Interface
+
+[InterfaceId("4DC98966-8751-42B2-BFCB-39CA7864BD47")]
+Interface IAudioRenderEffectsManager Extends IInspectable
+    [PreserveSig]
+    Function AddAudioRenderEffectsChanged(ByVal Handler As ITypedEventHandlerAudioRenderEffectsManagerAudioRenderEffectsChanged, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveAudioRenderEffectsChanged(ByVal Token As EventRegistrationToken) As HRESULT
+    Function GetAudioRenderEffects() As IVectorView_IAudioEffect
+End Interface
+
+[InterfaceId("A844CD09-5ECC-44B3-BB4E-1DB07287139C")]
+Interface IAudioRenderEffectsManager2 Extends IInspectable
+    Property Get EffectsProviderThumbnail() As IRandomAccessStreamWithContentType
+    Property Get EffectsProviderSettingsLabel() As LongPtr
+    [PreserveSig]
+    Function ShowSettingsUI() As HRESULT
+End Interface
+
+[InterfaceId("064B6AEF-3BD0-5463-8450-72C6169AF5D4")]
+Interface IIterator_IAudioEncodingProperties Extends IInspectable
+    Property Get Current() As IAudioEncodingProperties
+    Property Get HasCurrent() As BooleanByte
+    Function MoveNext() As BooleanByte
+    Function GetMany(ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("00939468-25D8-533F-854E-4F20F36C51DC")]
+Interface IIterable_IAudioEncodingProperties Extends IInspectable
+    Function First() As IIterator_IAudioEncodingProperties
+End Interface
+
+[InterfaceId("64AC506C-CCD0-56CB-B088-B1A36E8755DF")]
+Interface IVectorView_IAudioEncodingProperties Extends IInspectable
+    Function GetAt(ByVal Index As Long) As IAudioEncodingProperties
+    Property Get Size() As Long
+    Function IndexOf(ByVal Value As IAudioEncodingProperties, Index As Long) As BooleanByte
+    Function GetMany(ByVal StartIndex As Long, ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("8C062C53-6BC0-48B8-A99A-4B41550F1359")]
+Interface IBasicAudioEffect Extends IInspectable ' requires IMediaExtension
+    Property Get UseInputFrameForOutput() As BooleanByte
+    Property Get SupportedEncodingProperties() As IVectorView_IAudioEncodingProperties
+    [PreserveSig]
+    Function SetEncodingProperties(ByVal EncodingProperties As IAudioEncodingProperties) As HRESULT
+    [PreserveSig]
+    Function ProcessFrame(ByVal Context As IProcessAudioFrameContext) As HRESULT
+    [PreserveSig]
+    Function Close(ByVal Reason As MediaEffectClosedReason) As HRESULT
+    [PreserveSig]
+    Function DiscardQueuedFrames() As HRESULT
+End Interface
+
+[InterfaceId("094166EF-AE5F-5315-A3BF-FE54E8C35FCD")]
+Interface IIterator_IVideoEncodingProperties Extends IInspectable
+    Property Get Current() As IVideoEncodingProperties
+    Property Get HasCurrent() As BooleanByte
+    Function MoveNext() As BooleanByte
+    Function GetMany(ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("73C7317C-8682-5F81-84A2-30C425FA2D24")]
+Interface IIterable_IVideoEncodingProperties Extends IInspectable
+    Function First() As IIterator_IVideoEncodingProperties
+End Interface
+
+[InterfaceId("04C7BABA-04D7-51DB-A4E3-5147963EC5FF")]
+Interface IVectorView_IVideoEncodingProperties Extends IInspectable
+    Function GetAt(ByVal Index As Long) As IVideoEncodingProperties
+    Property Get Size() As Long
+    Function IndexOf(ByVal Value As IVideoEncodingProperties, Index As Long) As BooleanByte
+    Function GetMany(ByVal StartIndex As Long, ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("8262C7EF-B360-40BE-949B-2FF42FF35693")]
+Interface IBasicVideoEffect Extends IInspectable
+    Property Get IsReadOnly() As BooleanByte
+    Property Get SupportedMemoryTypes() As MediaMemoryTypes
+    Property Get TimeIndependent() As BooleanByte
+    Property Get SupportedEncodingProperties() As IVectorView_IVideoEncodingProperties
+    [PreserveSig]
+    Function SetEncodingProperties(ByVal EncodingProperties As IVideoEncodingProperties, ByVal Device As IDirect3DDevice) As HRESULT
+    [PreserveSig]
+    Function ProcessFrame(ByVal Context As IProcessVideoFrameContext) As HRESULT
+    [PreserveSig]
+    Function Close(ByVal Reason As MediaEffectClosedReason) As HRESULT
+    [PreserveSig]
+    Function DiscardQueuedFrames() As HRESULT
+End Interface
+
+[InterfaceId("BDFB6D0B-E785-5D5A-ABD2-FE1B18C43257")]
+Interface IIterator_IDirect3DSurface Extends IInspectable
+    Property Get Current() As IDirect3DSurface
+    Property Get HasCurrent() As BooleanByte
+    Function MoveNext() As BooleanByte
+    Function GetMany(ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("CC63BF9C-E16A-5A75-A5AA-2B53F975B0B0")]
+Interface IIterable_IDirect3DSurface Extends IInspectable
+    Function First() As IIterator_IDirect3DSurface
+End Interface
+
+[InterfaceId("1A81EC3E-5AFB-5E10-92BB-C843FEC70887")]
+Interface IVectorView_IDirect3DSurface Extends IInspectable
+    Function GetAt(ByVal Index As Long) As IDirect3DSurface
+    Property Get Size() As Long
+    Function IndexOf(ByVal Value As IDirect3DSurface, Index As Long) As BooleanByte
+    Function GetMany(ByVal StartIndex As Long, ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("6C30024B-F514-4278-A5F7-B9188049D110")]
+Interface ICompositeVideoFrameContext Extends IInspectable
+    Property Get SurfacesToOverlay() As IVectorView_IDirect3DSurface
+    Property Get BackgroundFrame() As IVideoFrame
+    Property Get OutputFrame() As IVideoFrame
+    Function GetOverlayForSurface(ByVal SurfaceToOverlay As IDirect3DSurface) As IMediaOverlay
+End Interface
+
+[InterfaceId("4CD92946-1222-4A27-A586-FB3E20273255")]
+Interface IProcessAudioFrameContext Extends IInspectable
+    Property Get InputFrame() As IAudioFrame
+    Property Get OutputFrame() As IAudioFrame
+End Interface
+
+[InterfaceId("276F0E2B-6461-401E-BA78-0FDAD6114EEC")]
+Interface IProcessVideoFrameContext Extends IInspectable
+    Property Get InputFrame() As IVideoFrame
+    Property Get OutputFrame() As IVideoFrame
+End Interface
+
+[InterfaceId("8510B43E-420C-420F-96C7-7C98BBA1FC55")]
+Interface IVideoCompositor Extends IInspectable ' requires IMediaExtension
+    Property Get TimeIndependent() As BooleanByte
+    [PreserveSig]
+    Function SetEncodingProperties(ByVal BackgroundProperties As IVideoEncodingProperties, ByVal Device As IDirect3DDevice) As HRESULT
+    [PreserveSig]
+    Function CompositeFrame(ByVal Context As ICompositeVideoFrameContext) As HRESULT
+    [PreserveSig]
+    Function Close(ByVal Reason As MediaEffectClosedReason) As HRESULT
+    [PreserveSig]
+    Function DiscardQueuedFrames() As HRESULT
+End Interface
+
+[InterfaceId("7946B8D0-2010-4AE3-9AB2-2CEF42EDD4D2")]
+Interface IVideoCompositorDefinition Extends IInspectable
+    Property Get ActivatableClassId() As LongPtr
+    Property Get Properties() As IPropertySet
+End Interface
+
+[InterfaceId("4366FD10-68B8-4D52-89B6-02A968CCA899")]
+Interface IVideoCompositorDefinitionFactory Extends IInspectable
+    Function Create(ByVal ActivatableClassId As LongPtr) As IVideoCompositorDefinition
+    Function CreateWithProperties(ByVal ActivatableClassId As LongPtr, ByVal Props As IPropertySet) As IVideoCompositorDefinition
+End Interface
+
+[InterfaceId("39F38CF0-8D0F-4F3E-84FC-2D46A5297943")]
+Interface IVideoEffectDefinition Extends IInspectable
+    Property Get ActivatableClassId() As LongPtr
+    Property Get Properties() As IPropertySet
+End Interface
+
+[InterfaceId("81439B4E-6E33-428F-9D21-B5AAFEF7617C")]
+Interface IVideoEffectDefinitionFactory Extends IInspectable
+    Function Create(ByVal ActivatableClassId As LongPtr) As IVideoEffectDefinition
+    Function CreateWithProperties(ByVal ActivatableClassId As LongPtr, ByVal Props As IPropertySet) As IVideoEffectDefinition
+End Interface
+
+[InterfaceId("9664BB6A-1EA6-4AA6-8074-ABE8851ECAE2")]
+Interface IVideoTransformEffectDefinition Extends IInspectable ' requires IVideoEffectDefinition
+    Property Get PaddingColor() As Color
+    Property Let PaddingColor(ByVal Value As Color)
+    Property Get OutputSize() As SIZEF
+    Property Let OutputSize(ByVal Value As SIZEF)
+    Property Get CropRectangle() As RECTF
+    Property Let CropRectangle(ByVal Value As RECTF)
+    Property Get Rotation() As MediaRotation
+    Property Let Rotation(ByVal Value As MediaRotation)
+    Property Get Mirror() As MediaMirroringOptions
+    Property Let Mirror(ByVal Value As MediaMirroringOptions)
+    Property Let ProcessingAlgorithm(ByVal Value As MediaVideoProcessingAlgorithm)
+    Property Get ProcessingAlgorithm() As MediaVideoProcessingAlgorithm
+End Interface
+
+[InterfaceId("F0A8089F-66C8-4694-9FD9-1136ABF7444A")]
+Interface IVideoTransformEffectDefinition2 Extends IInspectable
+    Property Get SphericalProjection() As IVideoTransformSphericalProjection
+End Interface
+
+[InterfaceId("CF4401F0-9BF2-4C39-9F41-E022514A8468")]
+Interface IVideoTransformSphericalProjection Extends IInspectable
+    Property Get IsEnabled() As BooleanByte
+    Property Let IsEnabled(ByVal Value As BooleanByte)
+    Property Get FrameFormat() As SphericalVideoFrameFormat
+    Property Let FrameFormat(ByVal Value As SphericalVideoFrameFormat)
+    Property Get ProjectionMode() As SphericalVideoProjectionMode
+    Property Let ProjectionMode(ByVal Value As SphericalVideoProjectionMode)
+    Property Get HorizontalFieldOfViewInDegrees() As Double
+    Property Let HorizontalFieldOfViewInDegrees(ByVal Value As Double)
+    Property Get ViewOrientation() As Quaternion
+    Property Let ViewOrientation(ByVal Value As Quaternion)
+End Interface
+
+Module mdlMediaEffects
+
+Public Enum AudioEffectType
+    AudioEffectType_Other
+    AudioEffectType_AcousticEchoCancellation
+    AudioEffectType_NoiseSuppression
+    AudioEffectType_AutomaticGainControl
+    AudioEffectType_BeamForming
+    AudioEffectType_ConstantToneRemoval
+    AudioEffectType_Equalizer
+    AudioEffectType_LoudnessEqualizer
+    AudioEffectType_BassBoost
+    AudioEffectType_VirtualSurround
+    AudioEffectType_VirtualHeadphones
+    AudioEffectType_SpeakerFill
+    AudioEffectType_RoomCorrection
+    AudioEffectType_BassManagement
+    AudioEffectType_EnvironmentalEffects
+    AudioEffectType_SpeakerProtection
+    AudioEffectType_SpeakerCompensation
+    AudioEffectType_DynamicRangeCompression
+    AudioEffectType_FarFieldBeamForming
+    AudioEffectType_DeepNoiseSuppression
+End Enum
+
+Public Enum AudioRenderCategory
+    AudioRenderCategory_Other
+    AudioRenderCategory_ForegroundOnlyMedia
+    AudioRenderCategory_BackgroundCapableMedia
+    AudioRenderCategory_Communications
+    AudioRenderCategory_Alerts
+    AudioRenderCategory_SoundEffects
+    AudioRenderCategory_GameEffects
+    AudioRenderCategory_GameMedia
+    AudioRenderCategory_GameChat
+    AudioRenderCategory_Speech
+    AudioRenderCategory_Movie
+    AudioRenderCategory_Media
+End Enum
+
+Public Enum MediaEffectClosedReason
+    MediaEffectClosedReason_Done
+    MediaEffectClosedReason_UnknownError
+    MediaEffectClosedReason_UnsupportedEncodingFormat
+    MediaEffectClosedReason_EffectCurrentlyUnloaded
+End Enum
+
+Public Enum MediaMemoryTypes
+    MediaMemoryTypes_Gpu
+    MediaMemoryTypes_Cpu
+    MediaMemoryTypes_GpuAndCpu
+End Enum
+    
+End Module

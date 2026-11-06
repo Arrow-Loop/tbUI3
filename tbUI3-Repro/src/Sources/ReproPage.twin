@@ -1,0 +1,32 @@
+[Description("")]
+[FormDesignerId("55106F39-8DCC-4E25-80F6-F770EBD26AE0")]
+[ClassId("A8F1FC99-E808-49A3-9930-6A18B4DF81D8")]
+[InterfaceId("C52A0255-E977-4D33-ADD1-D534F5E873EA")]
+[EventInterfaceId("DDF517D0-A3BC-490C-AD89-8B72982A52B2")]
+Class ReproPage
+
+	Sub New()
+	End Sub
+
+    ' Filling the box fires Text1_Change; only the user's typing should mark the page changed.
+    Private m_Loading As Boolean
+
+    Private Sub PropertyPage_SelectionChanged()
+        ' The page also gets an empty selection when it closes.
+        If Me.SelectedControls.Count = 0 Then Exit Sub
+        m_Loading = True
+        Text1.Text = CStr(Me.SelectedControls(0).Value)
+        m_Loading = False
+    End Sub
+
+    Private Sub Text1_Change()
+        If m_Loading Then Exit Sub
+        Me.Changed = True
+    End Sub
+
+    Private Sub PropertyPage_ApplyChanges()
+        If Me.SelectedControls.Count = 0 Then Exit Sub
+        Me.SelectedControls(0).Value = CLng(Val(Text1.Text))
+    End Sub
+
+End Class

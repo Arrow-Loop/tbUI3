@@ -1,0 +1,477 @@
+' =====================================================
+' cDialogPrint.twin - Print Dialog Class
+' cDialogPrint.twin - 打印对话框类
+' TBMANLIB Dialog Library
+' =====================================================
+' Function: Provides print dialog using Windows PrintDlg API
+' 功能：使用 Windows PrintDlg API 提供打印对话框
+' Author: woeoo (邓伟)
+' Email: 215879458@qq.com
+' Site: https://vb6.pro
+' Date: 2026-03-11
+' Version: 1.0.0
+' =====================================================
+
+Option Explicit
+
+[COMCreatable(False)]
+Public Class cDialogPrint
+
+    ' =====================================================
+    ' Windows API Declarations
+    ' =====================================================
+    Private Declare PtrSafe Function PrintDlg Lib "comdlg32.dll" Alias "PrintDlgW" (pPrintdlg As PRINTDLG) As Long
+    Private Declare PtrSafe Function CommDlgExtendedError Lib "comdlg32.dll" () As Long
+    Private Declare PtrSafe Function GlobalLock Lib "kernel32" (ByVal hMem As LongPtr) As LongPtr
+    Private Declare PtrSafe Function GlobalUnlock Lib "kernel32" (ByVal hMem As LongPtr) As Long
+    Private Declare PtrSafe Function GlobalFree Lib "kernel32" (ByVal hMem As LongPtr) As LongPtr
+
+    ' =====================================================
+    ' Constants
+    ' =====================================================
+    ' PRINTDLG flags
+    Private Const PD_ALLPAGES = &H0
+    Private Const PD_SELECTION = &H1
+    Private Const PD_PAGENUMS = &H2
+    Private Const PD_NOSELECTION = &H4
+    Private Const PD_NOPAGENUMS = &H8
+    Private Const PD_COLLATE = &H10
+    Private Const PD_PRINTTOFILE = &H20
+    Private Const PD_PRINTSETUP = &H40
+    Private Const PD_NOWARNING = &H80
+    Private Const PD_RETURNDC = &H100
+    Private Const PD_RETURNIC = &H200
+    Private Const PD_RETURNDEFAULT = &H400
+    Private Const PD_SHOWHELP = &H800
+    Private Const PD_ENABLEPRINTHOOK = &H1000
+    Private Const PD_ENABLESETUPHOOK = &H2000
+    Private Const PD_ENABLEPRINTTEMPLATE = &H4000
+    Private Const PD_ENABLESETUPTEMPLATE = &H8000
+    Private Const PD_ENABLEPRINTTEMPLATEHANDLE = &H10000
+    Private Const PD_ENABLESETUPTEMPLATEHANDLE = &H20000
+    Private Const PD_USEDEVMODECOPIES = &H40000
+    Private Const PD_USEDEVMODECOPIESANDCOLLATE = &H40000
+    Private Const PD_DISABLEPRINTTOFILE = &H80000
+    Private Const PD_HIDEPRINTTOFILE = &H100000
+    Private Const PD_NONETWORKBUTTON = &H200000
+
+    ' PRINTDLG struct size (hardcoded because LenB() is wrong on x64)
+    #If Win64 Then
+        Private Const PD_STRUCTSIZE As Long = 120   ' x64: 19 fields with 8-byte pointers
+    #Else
+        Private Const PD_STRUCTSIZE As Long = 66    ' x86: 19 fields with 4-byte pointers
+    #End If
+
+    ' =====================================================
+    ' Types
+    ' =====================================================
+    Private Type PRINTDLG
+        lStructSize As Long
+        hwndOwner As LongPtr
+        hDevMode As LongPtr
+        hDevNames As LongPtr
+        hDC As LongPtr
+        flags As Long
+        nFromPage As Integer
+        nToPage As Integer
+        nMinPage As Integer
+        nMaxPage As Integer
+        nCopies As Integer
+        hInstance As LongPtr
+        lCustData As LongPtr
+        lpfnPrintHook As LongPtr
+        lpfnSetupHook As LongPtr
+        lpPrintTemplateName As LongPtr
+        lpSetupTemplateName As LongPtr
+        hPrintTemplate As LongPtr
+        hSetupTemplate As LongPtr
+    End Type
+
+    ' =====================================================
+    ' Print Range Enum
+    ' =====================================================
+    Public Enum PrintRange
+        AllPages = 0
+        Selection = 1
+        PageRange = 2
+    End Enum
+
+    ' =====================================================
+    ' Class Data
+    ' =====================================================
+    Private Type cDialogPrintData
+        mOwnerHwnd As LongPtr
+        mFromPage As Long
+        mToPage As Long
+        mMinPage As Long
+        mMaxPage As Long
+        mCopies As Long
+        mCollate As Boolean
+        mPrintToFile As Boolean
+        mPrintRange As PrintRange
+        mAllowSelection As Boolean
+        mAllowPageRange As Boolean
+        mAllowPrintToFile As Boolean
+        mHidePrintToFile As Boolean
+        mReturnDC As Boolean
+        mhDC As LongPtr
+        mLastError As Long
+        mCancelled As Boolean
+    End Type
+
+    Private mData As cDialogPrintData
+
+    ' =====================================================
+    ' Class Initialize/Terminate
+    ' =====================================================
+    Private Sub Class_Initialize()
+        mData.mOwnerHwnd = 0
+        mData.mFromPage = 1
+        mData.mToPage = 1
+        mData.mMinPage = 1
+        mData.mMaxPage = 9999
+        mData.mCopies = 1
+        mData.mCollate = False
+        mData.mPrintToFile = False
+        mData.mPrintRange = PrintRange.AllPages
+        mData.mAllowSelection = True
+        mData.mAllowPageRange = True
+        mData.mAllowPrintToFile = True
+        mData.mHidePrintToFile = False
+        mData.mReturnDC = True
+        mData.mhDC = 0
+        mData.mLastError = 0
+        mData.mCancelled = False
+    End Sub
+
+    Private Sub Class_Terminate()
+        ' Note: DC should be deleted by caller if used
+    End Sub
+
+    ' =====================================================
+    ' Property: Owner Window Handle
+    ' =====================================================
+    Public Property Get OwnerHwnd() As LongPtr
+        OwnerHwnd = mData.mOwnerHwnd
+    End Property
+
+    Public Property Let OwnerHwnd(ByVal value As LongPtr)
+        mData.mOwnerHwnd = value
+    End Property
+
+    ' =====================================================
+    ' Property: From Page
+    ' =====================================================
+    Public Property Get FromPage() As Long
+        FromPage = mData.mFromPage
+    End Property
+
+    Public Property Let FromPage(ByVal value As Long)
+        mData.mFromPage = value
+    End Property
+
+    ' =====================================================
+    ' Property: To Page
+    ' =====================================================
+    Public Property Get ToPage() As Long
+        ToPage = mData.mToPage
+    End Property
+
+    Public Property Let ToPage(ByVal value As Long)
+        mData.mToPage = value
+    End Property
+
+    ' =====================================================
+    ' Property: Minimum Page
+    ' =====================================================
+    Public Property Get MinPage() As Long
+        MinPage = mData.mMinPage
+    End Property
+
+    Public Property Let MinPage(ByVal value As Long)
+        mData.mMinPage = value
+    End Property
+
+    ' =====================================================
+    ' Property: Maximum Page
+    ' =====================================================
+    Public Property Get MaxPage() As Long
+        MaxPage = mData.mMaxPage
+    End Property
+
+    Public Property Let MaxPage(ByVal value As Long)
+        mData.mMaxPage = value
+    End Property
+
+    ' =====================================================
+    ' Property: Number of Copies
+    ' =====================================================
+    Public Property Get Copies() As Long
+        Copies = mData.mCopies
+    End Property
+
+    Public Property Let Copies(ByVal value As Long)
+        If value > 0 Then
+            mData.mCopies = value
+        End If
+    End Property
+
+    ' =====================================================
+    ' Property: Collate
+    ' =====================================================
+    Public Property Get Collate() As Boolean
+        Collate = mData.mCollate
+    End Property
+
+    Public Property Let Collate(ByVal value As Boolean)
+        mData.mCollate = value
+    End Property
+
+    ' =====================================================
+    ' Property: Print To File
+    ' =====================================================
+    Public Property Get PrintToFile() As Boolean
+        PrintToFile = mData.mPrintToFile
+    End Property
+
+    Public Property Let PrintToFile(ByVal value As Boolean)
+        mData.mPrintToFile = value
+    End Property
+
+    ' =====================================================
+    ' Property: Print Range Mode
+    ' =====================================================
+    Public Property Get PrintRangeMode() As PrintRange
+        PrintRangeMode = mData.mPrintRange
+    End Property
+
+    Public Property Let PrintRangeMode(ByVal value As PrintRange)
+        mData.mPrintRange = value
+    End Property
+
+    ' =====================================================
+    ' Property: Allow Selection
+    ' =====================================================
+    Public Property Get AllowSelection() As Boolean
+        AllowSelection = mData.mAllowSelection
+    End Property
+
+    Public Property Let AllowSelection(ByVal value As Boolean)
+        mData.mAllowSelection = value
+    End Property
+
+    ' =====================================================
+    ' Property: Allow Page Range
+    ' =====================================================
+    Public Property Get AllowPageRange() As Boolean
+        AllowPageRange = mData.mAllowPageRange
+    End Property
+
+    Public Property Let AllowPageRange(ByVal value As Boolean)
+        mData.mAllowPageRange = value
+    End Property
+
+    ' =====================================================
+    ' Property: Allow Print To File
+    ' =====================================================
+    Public Property Get AllowPrintToFile() As Boolean
+        AllowPrintToFile = mData.mAllowPrintToFile
+    End Property
+
+    Public Property Let AllowPrintToFile(ByVal value As Boolean)
+        mData.mAllowPrintToFile = value
+    End Property
+
+    ' =====================================================
+    ' Property: Hide Print To File
+    ' =====================================================
+    Public Property Get HidePrintToFile() As Boolean
+        HidePrintToFile = mData.mHidePrintToFile
+    End Property
+
+    Public Property Let HidePrintToFile(ByVal value As Boolean)
+        mData.mHidePrintToFile = value
+    End Property
+
+    ' =====================================================
+    ' Property: Return DC
+    ' =====================================================
+    Public Property Get ReturnDC() As Boolean
+        ReturnDC = mData.mReturnDC
+    End Property
+
+    Public Property Let ReturnDC(ByVal value As Boolean)
+        mData.mReturnDC = value
+    End Property
+
+    ' =====================================================
+    ' Property: Printer DC (read-only, after ShowDialog)
+    ' =====================================================
+    Public Property Get hDC() As LongPtr
+        hDC = mData.mhDC
+    End Property
+
+    ' =====================================================
+    ' Property: Last Error (read-only)
+    ' =====================================================
+    Public Property Get LastError() As Long
+        LastError = mData.mLastError
+    End Property
+
+    ' =====================================================
+    ' Property: Cancelled (read-only)
+    ' =====================================================
+    Public Property Get Cancelled() As Boolean
+        Cancelled = mData.mCancelled
+    End Property
+
+    ' =====================================================
+    ' Method: Show the print dialog
+    ' =====================================================
+    Public Function ShowDialog() As Boolean
+        Dim pd As PRINTDLG
+        Dim lngFlags As Long
+
+        ' Build flags
+        lngFlags = 0
+        If mData.mReturnDC Then lngFlags = lngFlags Or PD_RETURNDC
+        If mData.mCollate Then lngFlags = lngFlags Or PD_COLLATE
+        If mData.mPrintToFile Then lngFlags = lngFlags Or PD_PRINTTOFILE
+        If Not mData.mAllowSelection Then lngFlags = lngFlags Or PD_NOSELECTION
+        If Not mData.mAllowPageRange Then lngFlags = lngFlags Or PD_NOPAGENUMS
+        If mData.mHidePrintToFile Then lngFlags = lngFlags Or PD_HIDEPRINTTOFILE
+        If Not mData.mAllowPrintToFile Then lngFlags = lngFlags Or PD_DISABLEPRINTTOFILE
+
+        ' Set print range
+        Select Case mData.mPrintRange
+            Case PrintRange.AllPages
+                ' Default, no flag needed
+            Case PrintRange.Selection
+                lngFlags = lngFlags Or PD_SELECTION
+            Case PrintRange.PageRange
+                lngFlags = lngFlags Or PD_PAGENUMS
+        End Select
+
+        ' Fill PRINTDLG structure
+        ' Note: PD_STRUCTSIZE is hardcoded at class level because LenB() is wrong on x64
+        With pd
+            .lStructSize = PD_STRUCTSIZE
+            .hwndOwner = mData.mOwnerHwnd
+            .hDevMode = 0
+            .hDevNames = 0
+            .hDC = 0
+            .flags = lngFlags
+            .nFromPage = mData.mFromPage
+            .nToPage = mData.mToPage
+            .nMinPage = mData.mMinPage
+            .nMaxPage = mData.mMaxPage
+            .nCopies = mData.mCopies
+            .hInstance = 0
+            .lCustData = 0
+            .lpfnPrintHook = 0
+            .lpfnSetupHook = 0
+            .lpPrintTemplateName = 0
+            .lpSetupTemplateName = 0
+            .hPrintTemplate = 0
+            .hSetupTemplate = 0
+        End With
+
+        ' Show dialog
+        If PrintDlg(pd) <> 0 Then
+            ' User clicked Print
+            mData.mFromPage = pd.nFromPage
+            mData.mToPage = pd.nToPage
+            mData.mCopies = pd.nCopies
+            mData.mhDC = pd.hDC
+
+            ' Extract flags
+            mData.mCollate = (pd.flags And PD_COLLATE) <> 0
+            mData.mPrintToFile = (pd.flags And PD_PRINTTOFILE) <> 0
+
+            If (pd.flags And PD_SELECTION) <> 0 Then
+                mData.mPrintRange = PrintRange.Selection
+            ElseIf (pd.flags And PD_PAGENUMS) <> 0 Then
+                mData.mPrintRange = PrintRange.PageRange
+            Else
+                mData.mPrintRange = PrintRange.AllPages
+            End If
+
+            ' Free device mode and names memory
+            If pd.hDevMode <> 0 Then GlobalFree pd.hDevMode
+            If pd.hDevNames <> 0 Then GlobalFree pd.hDevNames
+
+            ShowDialog = True
+            mData.mCancelled = False
+        Else
+            ' Check if user cancelled or an error occurred
+            Dim errCode As Long
+            errCode = CommDlgExtendedError()
+            If errCode = 0 Then
+                ' User genuinely cancelled the dialog
+                mData.mCancelled = True
+            Else
+                ' An error occurred
+                mData.mCancelled = False
+                mData.mLastError = errCode
+            End If
+            ShowDialog = False
+        End If
+    End Function
+
+    ' =====================================================
+    ' Method: Get print settings description
+    ' =====================================================
+    Public Function ToDescription() As String
+        Dim strResult As String
+
+        Select Case mData.mPrintRange
+            Case PrintRange.AllPages
+                strResult = "All pages"
+            Case PrintRange.Selection
+                strResult = "Selection"
+            Case PrintRange.PageRange
+                strResult = "Pages " & mData.mFromPage & " - " & mData.mToPage
+        End Select
+
+        strResult = strResult & ", " & mData.mCopies & " cop"
+
+        If mData.mCopies > 1 Then
+            strResult = strResult & "ies"
+        Else
+            strResult = strResult & "y"
+        End If
+
+        If mData.mCollate Then
+            strResult = strResult & ", Collated"
+        End If
+
+        If mData.mPrintToFile Then
+            strResult = strResult & ", Print to file"
+        End If
+
+        ToDescription = strResult
+    End Function
+
+    ' =====================================================
+    ' Method: Reset to default settings
+    ' =====================================================
+    Public Sub Reset()
+        mData.mFromPage = 1
+        mData.mToPage = 1
+        mData.mMinPage = 1
+        mData.mMaxPage = 9999
+        mData.mCopies = 1
+        mData.mCollate = False
+        mData.mPrintToFile = False
+        mData.mPrintRange = PrintRange.AllPages
+        mData.mAllowSelection = True
+        mData.mAllowPageRange = True
+        mData.mAllowPrintToFile = True
+        mData.mHidePrintToFile = False
+        mData.mReturnDC = True
+        mData.mhDC = 0
+        mData.mLastError = 0
+        mData.mCancelled = False
+    End Sub
+
+End Class

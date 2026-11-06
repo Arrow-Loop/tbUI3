@@ -1,0 +1,774 @@
+' A part of the GDI+ Package for TwinBasic  https://github.com/kubao/GdiPlus
+' Licensed under the MIT license. (c) 2026 Sunderland Ober Consulting.
+' "Windows" is a trademark of the Microsoft Corporation.
+' Modeled after code and descriptions (c) Microsoft, taken from SDK headers and official documentation.
+' Certain flat API function and type declarations taken from WinDevLib by fafalone, with thanks.
+
+[COMCreatable(False)]
+Class Effect
+    Inherits GdiPlusBase
+    Protected fx As GpEffect
+    Protected _auxDataSize&
+    Protected _auxData As LongPtr
+    Protected _useAuxData As Boolean
+    
+    Sub Class_Terminate()
+        GdipFree(_auxData)
+        fx.Delete
+    End Sub
+    
+    Property Get AuxDataSize() As Long
+        Return _auxDataSize
+    End Property
+        
+    Property Get AuxData() As LongPtr
+        Return _auxData
+    End Property
+    
+    Sub SetAuxData(ByVal auxData As LongPtr, ByVal auxDataSize&)
+        GdipFree(_auxData)
+        _auxData = auxData
+        _auxDataSize = auxDataSize
+    End Sub
+    
+    Property Get UseAuxData() As Boolean
+        Return _useAuxData
+    End Property
+    
+    Property Let UseAuxData(ByVal useAuxDataFlag As Boolean)
+        _useAuxData = useAuxDataFlag
+    End Property
+    
+    Property Get ParameterSize() As UINT
+        Return SetStatus(fx.GetParameterSize(ParameterSize))
+    End Property
+    
+    Protected Property Get Native() As GpEffect
+        Return fx
+    End Property
+        
+    Protected Sub New(ByVal nativeEffect As GpEffect)
+        fx = nativeEffect
+    End Sub
+End Class
+
+[COMCreatable(False)]
+Class Blur
+    Inherits Effect
+    
+    Sub New()
+        SetStatus(fx.Create(BlurEffectGuid))
+    End Sub
+    
+    Sub New(params As BlurParams)
+        SetStatus(fx.Create(BlurEffectGuid))
+        If LastResult = Ok Then Parameters = params
+    End Sub
+    
+    Sub New(ByVal radius!, ByVal expandEdge As Boolean)
+        SetStatus(fx.Create(BlurEffectGuid))
+        If LastResult = Ok Then Parameters = BlurParams(radius, expandEdge)
+    End Sub
+    
+    Property Let Parameters(parameters As BlurParams)
+        SetStatus(SetParameters(fx, parameters))
+    End Property
+    
+    Property Get Parameters(Optional size As UINT) As BlurParams
+        SetStatus(fx.GetParameters(size, Parameters))
+    End Property
+End Class
+
+[COMCreatable(False)]
+Class Sharpen
+    Inherits Effect
+    
+    Sub New()
+        SetStatus(fx.Create(SharpenEffectGuid))
+    End Sub
+    
+    Sub New(params As SharpenParams)
+        SetStatus(fx.Create(SharpenEffectGuid))
+        If LastResult = Ok Then Parameters = params
+    End Sub
+    
+    Sub New(ByVal radius!, ByVal amount!)
+        SetStatus(fx.Create(SharpenEffectGuid))
+        If LastResult = Ok Then Parameters = SharpenParams(radius, amount)
+    End Sub
+    
+    Property Let Parameters(parameters As SharpenParams)
+        SetStatus(SetParameters(fx, parameters))
+    End Property
+    
+    Property Get Parameters(Optional size As UINT) As SharpenParams
+        SetStatus(fx.GetParameters(size, Parameters))
+    End Property
+End Class
+
+[COMCreatable(False)]
+Class RedEyeCorrection
+    Inherits Effect
+    
+    Sub New()
+        SetStatus(fx.Create(RedEyeCorrectionEffectGuid))
+    End Sub
+    
+    Sub New(params As RedEyeCorrectionParams)
+        SetStatus(fx.Create(RedEyeCorrectionEffectGuid))
+        If LastResult = Ok Then Parameters = params
+    End Sub
+    
+    Property Let Parameters(parameters As RedEyeCorrectionParams)
+        Dim size& = LenB(Of RedEyeCorrectionParams) + parameters.numberOfAreas * LenB(Of GDIP_RECT)
+        SetStatus(fx.Create(RedEyeCorrectionEffectGuid))
+        If LastResult = Ok Then SetStatus(fx.SetParameters(parameters, size))
+    End Property
+    
+    Property Get Parameters(Optional size As UINT) As RedEyeCorrectionParams
+        SetStatus(fx.GetParameters(size, Parameters))
+    End Property
+End Class
+
+[COMCreatable(False)]
+Class BrightnessContrast
+    Inherits Effect
+    
+    Sub New()
+        SetStatus(fx.Create(BrightnessContrastEffectGuid))
+    End Sub
+    
+    Sub New(params As BrightnessContrastParams)
+        SetStatus(fx.Create(BrightnessContrastEffectGuid))
+        If LastResult = 0 Then Parameters = params
+    End Sub
+    
+    Sub New(ByVal brightness&, ByVal contrast&)
+        SetStatus(fx.Create(BrightnessContrastEffectGuid))
+        If LastResult = 0 Then Parameters = BrightnessContrastParams(brightness, contrast)
+    End Sub
+    
+    Property Let Parameters(parameters As BrightnessContrastParams)
+        SetStatus(SetParameters(fx, parameters))
+    End Property
+    
+    Property Get Parameters(Optional size As UINT) As BrightnessContrastParams
+        SetStatus(fx.GetParameters(size, Parameters))
+    End Property
+End Class
+
+[COMCreatable(False)]
+Class HueSaturationLightness
+    Inherits Effect
+    
+    Sub New()
+        SetStatus(fx.Create(HueSaturationLightnessEffectGuid))
+    End Sub
+
+    Sub New(params As HueSaturationLightnessParams)
+        SetStatus(fx.Create(HueSaturationLightnessEffectGuid))
+        If LastResult = 0 Then Parameters = params
+    End Sub
+    
+    Sub New(ByVal hue&, ByVal saturation&, ByVal brightness&)
+        SetStatus(fx.Create(HueSaturationLightnessEffectGuid))
+        If LastResult = 0 Then Parameters = HueSaturationLightnessParams(hue, saturation, brightness)
+    End Sub
+    
+    Property Let Parameters(parameters As HueSaturationLightnessParams)
+        SetStatus(SetParameters(fx, parameters))
+    End Property
+    
+    Property Get Parameters(Optional size As UINT) As HueSaturationLightnessParams
+        SetStatus(fx.GetParameters(size, Parameters))
+    End Property
+End Class
+
+[COMCreatable(False)]
+Class Levels
+    Inherits Effect
+    
+    Sub New()
+        SetStatus(fx.Create(LevelsEffectGuid))
+    End Sub
+    
+    Sub New(params As LevelsParams)
+        SetStatus(fx.Create(LevelsEffectGuid))
+        If LastResult = 0 Then Parameters = params
+    End Sub
+    
+    Sub New(ByVal highlight&, ByVal midtone&, ByVal shadow&)
+        SetStatus(fx.Create(LevelsEffectGuid))
+        If LastResult = 0 Then Parameters = LevelsParams(highlight, midtone, shadow)
+    End Sub
+    
+    Property Let Parameters(parameters As LevelsParams)
+        SetStatus(SetParameters(fx, parameters))
+    End Property
+    
+    Property Get Parameters(Optional size As UINT) As LevelsParams
+        SetStatus(fx.GetParameters(size, Parameters))
+    End Property
+End Class
+
+[COMCreatable(False)]
+Class Tint
+    Inherits Effect
+    
+    Sub New()
+        SetStatus(fx.Create(TintEffectGuid))
+    End Sub
+    
+    Sub New(params As TintParams)
+        SetStatus(fx.Create(TintEffectGuid))
+        If LastResult = 0 Then Parameters = params
+    End Sub
+    
+    Sub New(ByVal hue&, ByVal amount&)
+        SetStatus(fx.Create(TintEffectGuid))
+        If LastResult = 0 Then Parameters = TintParams(hue, amount)
+    End Sub
+    
+    Property Let Parameters(parameters As TintParams)
+        SetStatus(SetParameters(fx, parameters))
+    End Property
+    
+    Property Get Parameters(Optional size As UINT) As TintParams
+        SetStatus(fx.GetParameters(size, Parameters))
+    End Property
+End Class
+
+[COMCreatable(False)]
+Class ColorBalance
+    Inherits Effect
+    
+    Sub New()
+        SetStatus(fx.Create(ColorBalanceEffectGuid))
+    End Sub
+    
+    Sub New(params As ColorBalanceParams)
+        SetStatus(fx.Create(ColorBalanceEffectGuid))
+        If LastResult = 0 Then Parameters = params
+    End Sub
+    
+    Sub New(ByVal cyanRed&, ByVal magentaGreen&, ByVal yellowBlue&)
+        SetStatus(fx.Create(ColorBalanceEffectGuid))
+        If LastResult = 0 Then Parameters = ColorBalanceParams(cyanRed, magentaGreen, yellowBlue)
+    End Sub
+    
+    Property Let Parameters(parameters As ColorBalanceParams)
+        SetStatus(SetParameters(fx, parameters))
+    End Property
+    
+    Property Get Parameters(Optional size As UINT) As ColorBalanceParams
+        SetStatus(fx.GetParameters(size, Parameters))
+    End Property
+End Class
+
+[COMCreatable(False)]
+Class ColorMatrixEffect
+    Inherits Effect
+    
+    Sub New()
+        SetStatus(fx.Create(ColorMatrixEffectGuid))
+    End Sub
+    
+    Sub New(params As ColorMatrix)
+        SetStatus(fx.Create(ColorMatrixEffectGuid))
+        If LastResult = 0 Then Parameters = params
+    End Sub
+    
+    Property Let Parameters(parameters As ColorMatrix)
+        SetStatus(SetParameters(fx, parameters))
+    End Property
+    
+    Property Get Parameters(Optional size As UINT) As ColorMatrix
+        SetStatus(fx.GetParameters(size, Parameters))
+    End Property
+End Class
+
+[COMCreatable(False)]
+Class ColorLUT
+    Inherits Effect
+    
+    Sub New()
+        SetStatus(fx.Create(ColorLUTEffectGuid))
+    End Sub
+    
+    Sub New(params As ColorLUTParams)
+        SetStatus(fx.Create(ColorLUTEffectGuid))
+        If LastResult = 0 Then Parameters = params
+    End Sub
+    
+    Sub New(lutB() As Byte, lutG() As Byte, lutR() As Byte, lutA() As Byte)
+        SetStatus(fx.Create(ColorLUTEffectGuid))
+        If LastResult = 0 Then Parameters = ColorLutParams(lutB, lutG, lutR, lutA)
+    End Sub
+    
+    Property Let Parameters(parameters As ColorLUTParams)
+        SetStatus(SetParameters(fx, parameters))
+    End Property
+    
+    Property Get Parameters(Optional size As UINT) As ColorLUTParams
+        SetStatus(fx.GetParameters(size, Parameters))
+    End Property
+End Class
+
+[COMCreatable(False)]
+Class ColorCurve
+    Inherits Effect
+    
+    Sub New()
+        SetStatus(fx.Create(ColorCurveEffectGuid))()
+    End Sub
+    
+    Sub New(params As ColorCurveParams)
+        SetStatus(fx.Create(ColorCurveEffectGuid))
+        If LastResult = 0 Then Parameters = params
+    End Sub
+    
+    Sub New(ByVal adjustment As CurveAdjustments, ByVal channel As CurveChannel, ByVal value&)
+        SetStatus(fx.Create(ColorCurveEffectGuid))
+        If LastResult = 0 Then Parameters = ColorCurveParams(adjustment, channel, value)
+    End Sub
+    
+    Property Let Parameters(parameters As ColorCurveParams)
+        SetStatus(SetParameters(fx, parameters))
+    End Property
+    
+    Property Get Parameters(Optional size As UINT) As ColorCurveParams
+        SetStatus(fx.GetParameters(size, Parameters))
+    End Property
+End Class
+
+Module GdipEffects
+    Function Blur() As Blur
+        Return New Blur
+    End Function
+    
+    Function Blur(params As BlurParams) As Blur
+        Return New Blur(params)
+    End Function
+    
+    Function Blur(ByVal radius!, ByVal expandEdge As Boolean) As Blur
+        Return New Blur(radius, expandEdge)
+    End Function
+    
+    Function Sharpen() As Sharpen
+        Return New Sharpen
+    End Function
+    
+    Function Sharpen(params As SharpenParams) As Sharpen
+        Return New Sharpen(params)
+    End Function
+    
+    Function Sharpen(ByVal radius!, ByVal amount!) As Sharpen
+        Return New Sharpen(radius, amount)
+    End Function
+    
+    Function RedEyeCorrection() As RedEyeCorrection
+        Return New RedEyeCorrection
+    End Function
+    
+    Function RedEyeCorrection(params As RedEyeCorrectionParams) As RedEyeCorrection
+        Return New RedEyeCorrection(params)
+    End Function
+       
+    Function BrightnessContrast() As BrightnessContrast
+        Return New BrightnessContrast
+    End Function
+    
+    Function BrightnessContrast(params As BrightnessContrastParams) As BrightnessContrast
+        Return New BrightnessContrast(params)
+    End Function
+    
+    Function BrightnessContrast(ByVal brightness&, ByVal contrast&) As BrightnessContrast
+        Return New BrightnessContrast(brightness, contrast)
+    End Function
+    
+    Function HueSaturationLightness() As HueSaturationLightness
+        Return New HueSaturationLightness
+    End Function
+    
+    Function HueSaturationLightness(params As HueSaturationLightnessParams) As HueSaturationLightness
+        Return New HueSaturationLightness(params)
+    End Function
+    
+    Function HueSaturationLightness(ByVal hue&, ByVal saturation&, ByVal lightness&) As HueSaturationLightness
+        Return New HueSaturationLightness(hue, saturation, lightness)
+    End Function
+    
+    Function Levels() As Levels
+        Return New Levels
+    End Function
+    
+    Function Levels(params As LevelsParams) As Levels
+        Return New Levels(params)
+    End Function
+    
+    Function Levels(ByVal highlight&, ByVal midtone&, ByVal shadow&) As Levels
+        Return New Levels(highlight, midtone, shadow)
+    End Function
+    
+    Function Tint() As Tint
+        Return New Tint
+    End Function
+    
+    Function Tint(params As TintParams) As Tint
+        Return New Tint(params)
+    End Function
+    
+    Function Tint(ByVal hue&, ByVal amount&) As Tint
+        Return New Tint(hue, amount)
+    End Function
+    
+    Function ColorBalance() As ColorBalance
+        Return New ColorBalance
+    End Function
+    
+    Function ColorBalance(params As ColorBalanceParams) As ColorBalance
+        Return New ColorBalance(params)
+    End Function
+    
+    Function ColorBalance(ByVal cyanRed&, ByVal magentaGreen&, ByVal yellowBlue&) As ColorBalance
+        Return New ColorBalance(cyanRed, magentaGreen, yellowBlue)
+    End Function
+    
+    Function ColorMatrixEffect() As ColorMatrixEffect
+        Return New ColorMatrixEffect
+    End Function
+    
+    Function ColorMatrixEffect(params As ColorMatrix) As ColorMatrixEffect
+        Return New ColorMatrixEffect(params)
+    End Function
+    
+    Function ColorLUT() As ColorLUT
+        Return New ColorLUT
+    End Function
+    
+    Function ColorLUT(params As ColorLUTParams) As ColorLUT
+        Return New ColorLUT(params)
+    End Function
+    
+    Function ColorLUT(lutB() As Byte, lutG() As Byte, lutR() As Byte, lutA() As Byte) As ColorLUT
+        Return New ColorLUT(lutB, lutG, lutR, lutA)
+    End Function
+    
+    Function ColorCurve() As ColorCurve
+        Return New ColorCurve
+    End Function
+    
+    Function ColorCurve(params As ColorCurveParams) As ColorCurve
+        Return New ColorCurve(params)
+    End Function
+    
+    Function ColorCurve(ByVal adjustment As CurveAdjustments, ByVal channel As CurveChannel, ByVal value&) As ColorCurve
+        Return New ColorCurve(adjustment, channel, value)
+    End Function
+    
+    Type GpEffect
+        Native As LongPtr
+        
+        Function Create(ByVal guid As GDIP_UUID) As GpStatus
+            Return Me.CreateInto(guid, Me)
+        End Function
+        
+        [UseGetLastError(False)]
+        Public Declare PtrSafe Function CreateInto Lib "gdiplus" Alias "GdipCreateEffect" (ByVal guid As GDIP_UUID, effect As GpEffect) As GpStatus
+        [UseGetLastError(False)]
+        Public Declare PtrSafe Function Delete Lib "gdiplus" Alias "GdipDeleteEffect" (ByVal Me As GpEffect) As GpStatus
+        [UseGetLastError(False)]
+        Public Declare PtrSafe Function GetParameterSize Lib "gdiplus" Alias "GdipGetEffectParameterSize" (ByVal Me As GpEffect, size As Long) As GpStatus
+        [UseGetLastError(False)]
+        Public Declare PtrSafe Function SetParameters Lib "gdiplus" Alias "GdipSetEffectParameters" (ByVal Me As GpEffect, params As Any, ByVal size As Long) As GpStatus
+        [UseGetLastError(False)]
+        Public Declare PtrSafe Function GetParameters Lib "gdiplus" Alias "GdipGetEffectParameters" (ByVal Me As GpEffect, size As Long, params As Any) As GpStatus
+    End Type
+    
+    Function SetParameters(Of T)(ByVal Me As GpEffect, params As T) As GpStatus
+        Me.SetParameters(params, LenB(Of T))
+    End Function
+    
+    Function GetParameters(Of T)(ByVal Me As GpEffect, params As T) As GpStatus
+        Me.GetParameters(LenB(Of T), params)
+    End Function
+    
+    Function GpEffect() As GpEffect
+    End Function
+
+    Type SharpenParams
+        radius!
+        amount!
+    End Type
+    
+    Function SharpenParams(ByVal radius!, ByVal amount!) As SharpenParams
+        SharpenParams.radius = radius
+        SharpenParams.amount = amount
+    End Function
+    
+    Type BlurParams
+        radius!
+        expandEdge As GDIP_BOOL
+    End Type
+    
+    Function BlurParams(ByVal radius!, ByVal expandEdge As Boolean) As BlurParams
+        BlurParams.radius = radius
+        BlurParams.expandEdge = expandEdge
+    End Function
+    
+    Type BrightnessContrastParams
+        brightness&
+        contrast&
+    End Type
+    
+    Function BrightnessContrastParams(ByVal brightness&, ByVal contrast&) As BrightnessContrastParams
+        BrightnessContrastParams.brightness = brightness&
+        BrightnessContrastParams.contrast = contrast&
+    End Function
+    
+    Type RedEyeCorrectionParams
+        numberOfAreas As UINT
+        areas As LongPtr ' Pointer to GDIP_RECT
+    
+        Sub Free()
+            GdipFree(Me.areas)
+            Me.numberOfAreas = 0
+            Me.areas = 0
+        End Sub
+        
+        Function Allocate(ByVal newCount&) As GpStatus
+            Return AllocateStaticTrailingSA(newCount, LenB(Of GDIP_RECT), Me.areas, Me.numberOfAreas)
+        End Function
+        
+        Property Get Area(ByVal index&) As GpRect
+            If index >= 1 AndAlso index <= Me.numberOfAreas Then
+                Dim rect As GDIP_RECT
+                Dim src As LongPtr = Me.areas + (index - 1) * LenB(Of GDIP_RECT)
+                vbaCopyBytesRef(LenB(Of GDIP_RECT), rect, ByVal src)
+                Area.SetFromRECT(rect)
+            End If
+        End Property
+        
+        Property Set Area(ByVal index&, value As GpRect)
+            If index >= 1 AndAlso index <= Me.numberOfAreas Then
+                Dim rect As GDIP_RECT
+                value.ToRECT(rect)
+                Dim dst As LongPtr = Me.areas + (index - 1) * LenB(Of GDIP_RECT)
+                vbaCopyBytesRef(LenB(Of GDIP_RECT), ByVal dst, rect)
+            End If
+        End Property
+        
+        [Description("Returns a view into the areas array." & vbCrLf & _
+                "The view is valid only as long as the RedEyeCorrectionParams exists.")]
+        Function GetAreas() As GDIP_RECT()
+            Return GetStaticTrailingSA(Of GDIP_RECT)(Me.areas, Me.numberOfAreas)
+        End Function
+
+        Function GetGpAreas() As GpRect()
+            Dim result() As GpRect
+            ReDim result(1 To Me.numberOfAreas)
+            For i As Long = 1 To Me.numberOfAreas
+                result(i) = Me.Area(i)
+            Next
+            Return result
+        End Function
+    End Type
+    
+    Function RedEyeCorrectionParams(areas() As GpRect) As RedEyeCorrectionParams
+        Dim count& = ArrayLen(areas)
+        If count > 0 Then
+            RedEyeCorrectionParams.Allocate(count)
+            Dim dst As LongPtr = RedEyeCorrectionParams.areas
+            For i As Long = LBound(areas) To UBound(areas)
+                areas(i).ToRECT(ByVal dst)
+                dst += LenB(Of GDIP_RECT)
+            Next
+        End If
+        RedEyeCorrectionParams.numberOfAreas = count
+    End Function
+   
+    Type HueSaturationLightnessParams
+        hue&
+        saturation&
+        lightness&
+        
+        ' For compatibility with MS API, these names are too verbose otherwise
+        Property Get hueLevel() As Long
+            Return Me.hue
+        End Property
+        
+        Property Set hueLevel(ByVal level&)
+            Me.hue = level
+        End Property
+        
+        Property Get saturationLevel() As Long
+            Return Me.saturation
+        End Property
+
+        Property Set saturationLevel(ByVal level&)
+            Me.saturation = level
+        End Property
+        
+        Property Get lightnessLevel() As Long
+            Return Me.lightness
+        End Property
+        
+        Property Set lightnessLevel(ByVal level&)
+            Me.lightness = level
+        End Property
+    End Type
+    
+    Function HueSaturationLightnessParams(ByVal hue&, ByVal saturation&, ByVal lightness&) As HueSaturationLightnessParams
+        HueSaturationLightnessParams.hue = hue
+        HueSaturationLightnessParams.saturation = saturation
+        HueSaturationLightnessParams.lightness = lightness
+    End Function
+    
+    Type TintParams
+        hue&
+        amount&
+    End Type
+    
+    Function TintParams(ByVal hue&, ByVal amount&) As TintParams
+        TintParams.hue = hue
+        TintParams.amount = amount
+    End Function
+    
+    Type LevelsParams
+        highight&
+        midtone&
+        shadow&
+    End Type
+    
+    Function LevelsParams(ByVal highlight&, ByVal midtone&, ByVal shadow&) As LevelsParams
+        LevelsParams.highight = highlight
+        LevelsParams.midtone = midtone
+        LevelsParams.shadow = shadow
+    End Function
+    
+    Type ColorBalanceParams
+        cyanRed&
+        magentaGreen&
+        yellowBlue&
+    End Type
+    
+    Function ColorBalanceParams(ByVal cyanRed&, ByVal magentaGreen&, ByVal yellowBlue&) As ColorBalanceParams
+        ColorBalanceParams.cyanRed = cyanRed
+        ColorBalanceParams.magentaGreen = magentaGreen&
+        ColorBalanceParams.yellowBlue = yellowBlue&
+    End Function
+    
+    Type ColorLUTParams
+        lutB As ColorChannelLUT
+        lutG As ColorChannelLUT
+        lutR As ColorChannelLUT
+        lutA As ColorChannelLUT
+    End Type
+    
+    Function ColorLutParams(lutB() As Byte, lutG() As Byte, lutR() As Byte, lutA() As Byte) As ColorLUTParams
+        If ArrayLen(lutB) = 256 And ArrayLen(lutG) = 256 And ArrayLen(lutR) = 256 And ArrayLen(lutA) = 256 Then
+            vbaCopyBytesRef(256, ColorLutParams.lutB, lutB(LBound(lutB)))
+            vbaCopyBytesRef(256, ColorLutParams.lutG, lutG(LBound(lutG)))
+            vbaCopyBytesRef(256, ColorLutParams.lutR, lutR(LBound(lutR)))
+            vbaCopyBytesRef(256, ColorLutParams.lutA, lutB(LBound(lutA)))
+        End If
+    End Function
+    
+    Enum CurveAdjustments
+        AdjustExposure
+        AdjustDensity
+        AdjustContrast
+        AdjustHighlight
+        AdjustShadow
+        AdjustMidtone
+        AdjustWhiteSaturation
+        AdjustBlackSaturation
+    End Enum
+    
+    Enum CurveChannel
+        CurveChannelAll
+        CurveChannelRed
+        CurveChannelGreen
+        CurveChannelBlue
+    End Enum
+    
+    Type ColorCurveParams
+        adjustment As CurveAdjustments
+        channel As CurveChannel
+        value&
+        
+        Property Get adjustValue() As Long
+            Return Me.value
+        End Property
+        
+        Property Let adjustValue(ByVal newValue&)
+            Me.value = newValue
+        End Property
+    End Type
+    
+    Function ColorCurveParams(ByVal adjustment As CurveAdjustments, ByVal channel As CurveChannel, ByVal value&) As ColorCurveParams
+        ColorCurveParams.adjustment = adjustment
+        ColorCurveParams.channel = channel
+        ColorCurveParams.adjustValue = value
+    End Function
+    
+    '-----------------------------------------------------------------------------
+    ' GDI+ effect GUIDs
+    '-----------------------------------------------------------------------------
+    
+    Public Function BlurEffectGuid() As GDIP_UUID
+    Static iid As GDIP_UUID
+        If (iid.Data1 = 0) Then GDIPDEF_UUID(iid, "{633C80A4-1843-482B-9EF2-BE2834C5FDD4}")
+        BlurEffectGuid = iid
+    End Function
+    Public Function SharpenEffectGuid() As GDIP_UUID
+    Static iid As GDIP_UUID
+        If (iid.Data1 = 0) Then GDIPDEF_UUID(iid, "{63CBF3EE-C526-402C-8F71-62C540BF5142}")
+        SharpenEffectGuid = iid
+    End Function
+    Public Function ColorMatrixEffectGuid() As GDIP_UUID
+    Static iid As GDIP_UUID
+        If (iid.Data1 = 0) Then GDIPDEF_UUID(iid, "{718F2615-7933-40E3-A511-5F68FE14DD74}")
+        ColorMatrixEffectGuid = iid
+    End Function
+    Public Function ColorLUTEffectGuid() As GDIP_UUID
+    Static iid As GDIP_UUID
+        If (iid.Data1 = 0) Then GDIPDEF_UUID(iid, "{A7CE72A9-0F7F-40D7-B3CC-D0C02D5C3212}")
+        ColorLUTEffectGuid = iid
+    End Function
+    Public Function BrightnessContrastEffectGuid() As GDIP_UUID
+    Static iid As GDIP_UUID
+        If (iid.Data1 = 0) Then GDIPDEF_UUID(iid, "{D3A1DBE1-8EC4-4C17-9F4C-EA97AD1C343D}")
+        BrightnessContrastEffectGuid = iid
+    End Function
+    Public Function HueSaturationLightnessEffectGuid() As GDIP_UUID
+    Static iid As GDIP_UUID
+        If (iid.Data1 = 0) Then GDIPDEF_UUID(iid, "{8B2DD6C3-EB07-4D87-A5F0-7108E26A9C5F}")
+        HueSaturationLightnessEffectGuid = iid
+    End Function
+    Public Function LevelsEffectGuid() As GDIP_UUID
+    Static iid As GDIP_UUID
+        If (iid.Data1 = 0) Then GDIPDEF_UUID(iid, "{99C354EC-2A31-4F3A-8C34-17A803B33A25}")
+        LevelsEffectGuid = iid
+    End Function
+    Public Function TintEffectGuid() As GDIP_UUID
+    Static iid As GDIP_UUID
+        If (iid.Data1 = 0) Then GDIPDEF_UUID(iid, "{1077AF00-2848-4441-9489-44AD4C2D7A2C}")
+        TintEffectGuid = iid
+    End Function
+    Public Function ColorBalanceEffectGuid() As GDIP_UUID
+    Static iid As GDIP_UUID
+        If (iid.Data1 = 0) Then GDIPDEF_UUID(iid, "{537E597D-251E-48DA-9664-29CA496B70F8}")
+        ColorBalanceEffectGuid = iid
+    End Function
+    Public Function RedEyeCorrectionEffectGuid() As GDIP_UUID
+    Static iid As GDIP_UUID
+        If (iid.Data1 = 0) Then GDIPDEF_UUID(iid, "{74D29D05-69A4-4266-9549-3CC52836B632}")
+        RedEyeCorrectionEffectGuid = iid
+    End Function
+    Public Function ColorCurveEffectGuid() As GDIP_UUID
+    Static iid As GDIP_UUID
+        If (iid.Data1 = 0) Then GDIPDEF_UUID(iid, "{DD6A0022-58E4-4A67-9D9B-D48EB881A53D}")
+        ColorCurveEffectGuid = iid
+    End Function
+End Module

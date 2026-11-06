@@ -1,0 +1,19 @@
+[InterfaceId("320B7E22-3CB0-4CDF-8663-1D28910065EB")]
+Interface ICryptographicBufferStatics Extends IInspectable
+    Function Compare(ByVal Buffer1 As IBuffer, ByVal Buffer2 As IBuffer) As BooleanByte
+    Function GenerateRandom(ByVal Length As Long) As IBuffer
+    Function GenerateRandomNumber() As Long
+    Function CreateFromByteArray(ByVal ValueSize As Long, Value As Any) As IBuffer
+    [PreserveSig]
+    Function CopyToByteArray(ByVal Buffer As IBuffer, ValueSize As Long, Value As Any) As HRESULT ' Call CoTaskMemFree on Value
+    Function DecodeFromHexString(ByVal hStringPtr As LongPtr) As IBuffer
+    Function EncodeToHexString(ByVal Buffer As IBuffer) As LongPtr
+    Function DecodeFromBase64String(ByVal hStringPtr As LongPtr) As IBuffer
+    Function EncodeToBase64String(ByVal Buffer As IBuffer) As LongPtr
+    Function ConvertStringToBinary(ByVal hStringPtr As LongPtr, ByVal Encoding As UnicodeEncoding) As IBuffer
+    Function ConvertBinaryToString(ByVal Encoding As UnicodeEncoding, ByVal Buffer As IBuffer) As LongPtr
+End Interface
+
+Module mdlSecurityCryptography
+
+End Module

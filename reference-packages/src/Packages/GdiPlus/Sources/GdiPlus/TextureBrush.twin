@@ -1,0 +1,249 @@
+' A part of the GDI+ Package for TwinBasic  https://github.com/kubao/GdiPlus
+' Licensed under the MIT license. (c) 2026 Sunderland Ober Consulting.
+' "Windows" is a trademark of the Microsoft Corporation.
+' Modeled after code and descriptions (c) Microsoft, taken from SDK headers and official documentation.
+' Certain flat API function and type declarations taken from WinDevLib by fafalone, with thanks.
+
+[COMCreatable(False)]
+[Description("Texture Brush Fill Object")]
+Class TextureBrush
+    Inherits GdiPlusBase
+    Implements IBrush, ITransformable
+    Protected br As GpTexture
+    
+    Sub New(image As Image, ByVal wrapMode As GpWrapMode = WrapModeTile)
+        SetStatus(br.CreateInto(GetNative(image), wrapMode, br))
+    End Sub
+    
+    ' When creating a texture brush from a metafile image, the dstRect
+    ' is used to specify the size that the metafile image should be
+    ' rendered at in the device units of the destination graphics.
+    ' It is NOT used to crop the metafile image, so only the width 
+    ' and height values matter for metafiles.
+    
+    Sub New(image As Image, ByVal wrapmode As GpWrapMode, dstRect As GpRectF)
+        SetStatus(br.CreateInto(GetNative(image), wrapmode, _
+                dstRect.X, dstRect.Y, dstRect.Width, dstRect.Height, br))
+    End Sub
+    
+    Sub New(image As Image, dstRect As GpRectF, Optional imageAttributes As ImageAttributes)
+        SetStatus(br.CreateIAInto(GetNative(image), GetNative(imageAttributes), _
+                dstRect.X, dstRect.Y, dstRect.Width, dstRect.Height, br))
+    End Sub
+    
+    Sub New(image As Image, dstRect As GpRect, Optional imageAttributes As ImageAttributes)
+        SetStatus(br.CreateIAIntoI(GetNative(image), GetNative(imageAttributes), _
+                dstRect.X, dstRect.Y, dstRect.Width, dstRect.Height, br))
+    End Sub
+    
+    Sub New(image As Image, ByVal wrapmode As GpWrapMode, dstRect As GpRect)
+        SetStatus(br.CreateIntoI(GetNative(image), wrapmode, _
+                dstRect.X, dstRect.Y, dstRect.Width, dstRect.Height, br))
+    End Sub
+    
+    Sub New(image As Image, ByVal wrapmode As GpWrapMode, ByVal dstX!, ByVal dstY!, ByVal dstWidth!, ByVal dstHeight!)
+        SetStatus(br.CreateInto(GetNative(image), wrapmode, _
+                dstX, dstY, dstWidth, dstHeight, br))
+    End Sub
+    
+    ' The dummy is a disambiguator. The New TextureBrush() call will always default to the Single-taking signature above.
+    ' This constructor is called from TextureBrushI, which is disambiguated by a suffix.
+    Sub New(image As Image, ByVal wrapmode As GpWrapMode, ByVal dstX&, ByVal dstY&, ByVal dstWidth&, ByVal dstHeight&, ByVal dummy&)
+        SetStatus(br.CreateIntoI(GetNative(image), wrapmode, _
+                dstX, dstY, dstWidth, dstHeight, br))
+    End Sub
+    
+    Function Clone() As TextureBrush
+        Return CloneImpl(Of TextureBrush)(br)
+    End Function
+    
+    Property Get NativeBrush() As GpBrush Implements IBrush.NativeBrush
+        NativeBrush.Native = br.Native
+    End Property
+    
+    Private Sub Class_Terminate()
+        br.Delete
+    End Sub
+    
+    Function CloneBrush() As IBrush Implements IBrush.CloneBrush
+        Return Clone()
+    End Function
+    
+    Property Get Type() As GpBrushType Implements IBrush.Type
+        Dim ty As GpBrushType
+        SetStatus(br.GetType(ty))
+        Debug.Assert ty = BrushTypeTextureFill OrElse LastResult <> Ok
+        Return ty
+    End Property
+    
+    Property Let Transform(matrix As Matrix) _
+        Implements ITransformable.Transform
+        SetStatus(br.SetTransform(GetNative(matrix)))
+    End Property
+    
+    Property Get Transform() As Matrix _
+        Implements ITransformable.Transform
+        Dim nativeMatrix As GpMatrix
+        SetStatus(br.GetTransform(nativeMatrix))
+        If LastResult = Ok Then Set Transform = New Matrix(nativeMatrix)
+    End Property
+    
+    Function GetTransform(outMatrix As Matrix) As GpStatus _
+        Implements ITransformable.GetTransform
+        Return SetStatus(br.GetTransform(UnprotectedAccess(outMatrix).mx))
+    End Function
+
+    Function ResetTransform() As GpStatus _
+        Implements ITransformable.ResetTransform
+        Return SetStatus(br.ResetTransform())
+    End Function
+    
+    Function MultiplyTransform(matrix As Matrix, ByVal order As GpMatrixOrder = MatrixOrderPrepend) As GpStatus _
+        Implements ITransformable.MultiplyTransform
+        Return SetStatus(br.MultiplyTransform(GetNative(matrix), order))
+    End Function
+    
+    Function TranslateTransform(ByVal delta As GpPointF, ByVal order As GpMatrixOrder = MatrixOrderPrepend) As GpStatus _
+        Implements ITransformable.TranslateTransform
+        Return SetStatus(br.TranslateTransform(delta.X, delta.Y, order))
+    End Function
+    
+    Function TranslateTransform(ByVal dx!, ByVal dy!, ByVal order As GpMatrixOrder = MatrixOrderPrepend) As GpStatus _
+        Implements ITransformable.TranslateTransform
+        Return SetStatus(br.TranslateTransform(dx, dy, order))
+    End Function
+    
+    Function ScaleTransform(ByVal sx!, ByVal sy!, ByVal order As GpMatrixOrder = MatrixOrderPrepend) As GpStatus _
+        Implements ITransformable.ScaleTransform
+        Return SetStatus(br.ScaleTransform(sx, sy, order))
+    End Function
+    
+    Function RotateTransform(ByVal angle!, ByVal order As GpMatrixOrder = MatrixOrderPrepend) As GpStatus _
+        Implements ITransformable.RotateTransform
+        Return SetStatus(br.RotateTransform(angle, order))
+    End Function
+    
+    Function RotateTransformAt(ByVal angle!, ByVal center As GpPointF, ByVal order As GpMatrixOrder = MatrixOrderPrepend) As GpStatus _
+        Implements ITransformable.RotateTransformAt
+        Return SetStatus(br.RotateTransformAt(angle, center, order))
+    End Function
+    
+    Function ShearTransform(ByVal shearX!, ByVal shearY!, ByVal order As GpMatrixOrder = MatrixOrderPrepend) As GpStatus _
+        Implements ITransformable.ShearTransform
+        Return SetStatus(br.ShearTransform(shearX, shearY, order))
+    End Function
+
+    Property Let WrapMode(ByVal wrapMode As GpWrapMode)
+        SetStatus(br.SetWrapMode(wrapMode))
+    End Property
+    
+    Property Get WrapMode() As GpWrapMode
+        SetStatus(br.GetWrapMode(WrapMode))
+    End Property
+    
+    Property Get Image() As Image
+        Dim img As GpImage
+        SetStatus(br.GetImage(img))
+        If LastResult = Ok Then Set Image = New Image(img, LastResult)
+    End Property
+        
+    Public Sub New(ByVal nativeBrush As GpTexture, ByVal status As GpStatus = Ok)
+        SetStatus(status)
+        br = nativeBrush
+    End Sub
+    
+    Protected Property Get Native() As GpTexture
+        Native.Native = br.Native
+    End Property
+End Class
+
+Module GdipTexture
+    Function TextureBrush(image As Image, ByVal wrapMode As GpWrapMode = WrapModeTile) As TextureBrush
+        Return New TextureBrush(image, wrapMode)
+    End Function
+    
+    Function TextureBrush(image As Image, ByVal wrapmode As GpWrapMode, dstRect As GpRectF) As TextureBrush
+        Return New TextureBrush(image, wrapmode, dstRect)
+    End Function
+    
+    Function TextureBrush(image As Image, ByVal wrapmode As GpWrapMode, dstRect As GpRect) As TextureBrush
+        Return New TextureBrush(image, wrapmode, dstRect)
+    End Function
+    
+    Function TextureBrush(image As Image, dstRect As GpRectF, Optional imageAttributes As ImageAttributes) As TextureBrush
+        Return New TextureBrush(image, dstRect, imageAttributes)
+    End Function
+    
+    Function TextureBrush(image As Image, dstRect As GpRect, Optional imageAttributes As ImageAttributes) As TextureBrush
+        Return New TextureBrush(image, dstRect, imageAttributes)
+    End Function
+    
+    Function TextureBrush(image As Image, ByVal wrapmode As GpWrapMode, ByVal dstX!, ByVal dstY!, ByVal dstWidth!, ByVal dstHeight!) As TextureBrush
+        Return New TextureBrush(image, wrapmode, dstX, dstY, dstWidth, dstHeight)
+    End Function
+    
+    Function TextureBrushI(image As Image, ByVal wrapmode As GpWrapMode, ByVal dstX&, ByVal dstY&, ByVal dstWidth&, ByVal dstHeight&) As TextureBrush
+        Return New TextureBrush(image, wrapmode, dstX, dstY, dstWidth, dstHeight, 0)
+    End Function
+    
+    Type GpTexture
+        'Inherits GpBrush
+        Native As LongPtr
+        
+        [UseGetLastError(False)]
+        Declare PtrSafe Function Delete Lib "gdiplus" Alias "GdipDeleteBrush" (ByVal Me As GpTexture) As GpStatus
+        [UseGetLastError(False)]
+        Declare PtrSafe Function Clone Lib "gdiplus" Alias "GdipCloneBrush" (ByVal Me As GpTexture, cloneBrush As GpLineGradient) As GpStatus
+        [UseGetLastError(False)]
+        Declare PtrSafe Function GetType Lib "gdiplus" Alias "GdipGetBrushType" (ByVal Me As GpTexture, type As GpBrushType) As GpStatus
+        
+        [UseGetLastError(False)]
+        Declare PtrSafe Function CreateInto Lib "gdiplus" Alias "GdipCreateTexture" (ByVal Image As GpImage, ByVal wrapMode As GpWrapMode, texture As GpTexture) As GpStatus
+        [UseGetLastError(False)]
+        Declare PtrSafe Function CreateInto Lib "gdiplus" Alias "GdipCreateTexture2" (ByVal Image As GpImage, ByVal wrapMode As GpWrapMode, ByVal x!, ByVal y!, ByVal width!, ByVal height!, texture As GpTexture) As GpStatus
+        [UseGetLastError(False)]
+        Declare PtrSafe Function CreateIntoI Lib "gdiplus" Alias "GdipCreateTexture2I" (ByVal Image As GpImage, ByVal wrapMode As GpWrapMode, ByVal x&, ByVal y&, ByVal width&, ByVal height&, texture As GpTexture) As GpStatus
+        [UseGetLastError(False)]
+        Declare PtrSafe Function CreateIAInto Lib "gdiplus" Alias "GdipCreateTextureIA" (ByVal Image As GpImage, ByVal imageAttributes As GpImageAttributes, ByVal x!, ByVal y!, ByVal width!, ByVal height!, texture As GpTexture) As GpStatus
+        [UseGetLastError(False)]
+        Declare PtrSafe Function CreateIAIntoI Lib "gdiplus" Alias "GdipCreateTextureIAI" (ByVal Image As GpImage, ByVal imageAttributes As GpImageAttributes, ByVal x&, ByVal y&, ByVal width&, ByVal height&, texture As GpTexture) As GpStatus
+        
+        [UseGetLastError(False)]
+        Declare PtrSafe Function SetTransform Lib "gdiplus" Alias "GdipSetTextureTransform" (ByVal Me As GpTexture, ByVal matrix As GpMatrix) As GpStatus
+        [UseGetLastError(False)]
+        Declare PtrSafe Function GetTransform Lib "gdiplus" Alias "GdipGetTextureTransform" (ByVal Me As GpTexture, ByVal matrix As GpMatrix) As GpStatus
+        [UseGetLastError(False)]
+        Declare PtrSafe Function ResetTransform Lib "gdiplus" Alias "GdipResetTextureTransform" (ByVal Me As GpTexture) As GpStatus
+        [UseGetLastError(False)]
+        Declare PtrSafe Function MultiplyTransform Lib "gdiplus" Alias "GdipMultiplyTextureTransform" (ByVal Me As GpTexture, ByVal matrix As GpMatrix, ByVal order As GpMatrixOrder) As GpStatus
+        [UseGetLastError(False)]
+        Declare PtrSafe Function TranslateTransform Lib "gdiplus" Alias "GdipTranslateTextureTransform" (ByVal Me As GpTexture, ByVal Dx!, ByVal Dy!, ByVal order As GpMatrixOrder) As GpStatus
+        [UseGetLastError(False)]
+        Declare PtrSafe Function ScaleTransform Lib "gdiplus" Alias "GdipScaleTextureTransform" (ByVal Me As GpTexture, ByVal sx!, ByVal sy!, ByVal order As GpMatrixOrder) As GpStatus
+        [UseGetLastError(False)]
+        Declare PtrSafe Function RotateTransform Lib "gdiplus" Alias "GdipRotateTextureTransform" (ByVal Me As GpTexture, ByVal angle!, ByVal order As GpMatrixOrder) As GpStatus
+        
+        Function RotateTransformAt(ByVal angle!, ByVal center As GpPointF, ByVal order As GpMatrixOrder = MatrixOrderPrepend) As GpStatus
+            Return RotateAtImpl(Me, angle, center, order)
+        End Function
+        
+        Function ShearTransform(ByVal shearX!, ByVal shearY!, ByVal order As GpMatrixOrder = MatrixOrderPrepend) As GpStatus
+            Return ShearImpl(Me, shearX, shearY, order)
+        End Function
+        
+        [UseGetLastError(False)]
+        Declare PtrSafe Function SetWrapMode Lib "gdiplus" Alias "GdipSetTextureWrapMode" (ByVal Me As GpTexture, ByVal wrapMode As GpWrapMode) As GpStatus
+        [UseGetLastError(False)]
+        Declare PtrSafe Function GetWrapMode Lib "gdiplus" Alias "GdipGetTextureWrapMode" (ByVal Me As GpTexture, wrapMode As GpWrapMode) As GpStatus
+        [UseGetLastError(False)]
+        Declare PtrSafe Function GetImage Lib "gdiplus" Alias "GdipGetTextureImage" (ByVal Me As GpTexture, Image As GpImage) As GpStatus
+    End Type
+    
+    Function GpTexture() As GpTexture
+        GpTexture.Native = 0
+    End Function
+    
+    Function GpTexture(nativeBrush As GpBrush) As GpTexture
+        GpTexture.Native = nativeBrush.Native
+    End Function
+End Module

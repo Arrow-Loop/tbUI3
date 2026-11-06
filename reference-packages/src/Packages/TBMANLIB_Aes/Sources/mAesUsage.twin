@@ -1,0 +1,410 @@
+' =====================================================
+' mAesUsage.twin - AES Usage Examples
+' TwinBASIC Project - Crypto Module - AES
+' =====================================================
+' This module demonstrates how to use the cAes class with
+' all supported cipher modes (ECB, CBC, CFB, OFB, CTR, GCM)
+' using both CryptoAPI and CNG backends.
+' =====================================================
+
+Option Explicit
+
+Public Module mAesUsage
+
+    ' =====================================================
+    ' Local Helper Function: Convert bytes to hex string
+    ' =====================================================
+    Private Function BytesToHex(ByRef bytes() As Byte) As String
+        On Error GoTo ErrorHandler
+        
+        If UBound(bytes) < LBound(bytes) Then
+            BytesToHex = ""
+            Exit Function
+        End If
+        
+        Dim result As String
+        result = ""
+        
+        Dim i As Long
+        For i = LBound(bytes) To UBound(bytes)
+            result = result & Right$("0" & Hex$(bytes(i)), 2)
+        Next i
+        
+        BytesToHex = result
+        Exit Function
+        
+ErrorHandler:
+        BytesToHex = ""
+    End Function
+
+    ' =====================================================
+    ' Example 1: Basic CBC Mode (Most Common)
+    ' Uses CryptoAPI backend
+    ' =====================================================
+    Public Sub Example_CBC_Basic()
+        Debug.Print "=== Example 1: CBC Mode (CryptoAPI) ==="
+        
+        Dim aes As cAes = New cAes
+        
+        ' Set key and IV
+        aes.SetKeyFromString "MySecretKey12345"
+        aes.GenerateRandomIV
+        
+        ' Encrypt
+        Dim plainText As String
+        plainText = "Hello, AES Encryption!"
+        
+        Dim cipherText As String
+        cipherText = aes.EncryptString(plainText)
+        Debug.Print "Encrypted: " & cipherText
+        
+        ' Decrypt
+        Dim decryptedText As String
+        decryptedText = aes.DecryptString(cipherText)
+        Debug.Print "Decrypted: " & decryptedText
+        
+        Set aes = Nothing
+    End Sub
+
+    ' =====================================================
+    ' Example 2: ECB Mode (Not Recommended for Production)
+    ' Uses CryptoAPI backend
+    ' =====================================================
+    Public Sub Example_ECB()
+        Debug.Print "=== Example 2: ECB Mode (CryptoAPI) ==="
+        
+        Dim aes As cAes = New cAes
+        
+        ' Set mode to ECB
+        aes.CipherMode = AesCipherMode.ECB
+        aes.SetKeyFromString "MySecretKey12345"
+        
+        Dim plainText As String
+        plainText = "Hello, AES Encryption!"
+        
+        Dim cipherText As String
+        cipherText = aes.EncryptString(plainText)
+        Debug.Print "Encrypted: " & cipherText
+        
+        Dim decryptedText As String
+        decryptedText = aes.DecryptString(cipherText)
+        Debug.Print "Decrypted: " & decryptedText
+        
+        Set aes = Nothing
+    End Sub
+
+    ' =====================================================
+    ' Example 3: CFB Mode (Requires CNG)
+    ' Uses CNG backend
+    ' =====================================================
+    Public Sub Example_CFB()
+        Debug.Print "=== Example 3: CFB Mode (CNG) ==="
+        
+        ' Check if CNG is available
+        If Not mWin32CNG.IsCNGAvailable() Then
+            Debug.Print "CNG not available (requires Vista or later)"
+            Exit Sub
+        End If
+        
+        Dim aes As cAes = New cAes
+        
+        ' Set mode to CFB
+        aes.CipherMode = AesCipherMode.CFB
+        aes.SetKeyFromString "MySecretKey12345"
+        aes.GenerateRandomIV
+        
+        Dim plainText As String
+        plainText = "Hello, AES CFB Mode!"
+        
+        Dim cipherText As String
+        cipherText = aes.EncryptString(plainText)
+        Debug.Print "Encrypted: " & cipherText
+        
+        Dim decryptedText As String
+        decryptedText = aes.DecryptString(cipherText)
+        Debug.Print "Decrypted: " & decryptedText
+        
+        Set aes = Nothing
+    End Sub
+
+    ' =====================================================
+    ' Example 4: OFB Mode (Requires CNG)
+    ' Uses CNG backend
+    ' =====================================================
+    Public Sub Example_OFB()
+        Debug.Print "=== Example 4: OFB Mode (CNG) ==="
+        
+        If Not mWin32CNG.IsCNGAvailable() Then
+            Debug.Print "CNG not available (requires Vista or later)"
+            Exit Sub
+        End If
+        
+        Dim aes As cAes = New cAes
+        
+        aes.CipherMode = AesCipherMode.OFB
+        aes.SetKeyFromString "MySecretKey12345"
+        aes.GenerateRandomIV
+        
+        Dim plainText As String
+        plainText = "Hello, AES OFB Mode!"
+        
+        Dim cipherText As String
+        cipherText = aes.EncryptString(plainText)
+        Debug.Print "Encrypted: " & cipherText
+        
+        Dim decryptedText As String
+        decryptedText = aes.DecryptString(cipherText)
+        Debug.Print "Decrypted: " & decryptedText
+        
+        Set aes = Nothing
+    End Sub
+
+    ' =====================================================
+    ' Example 5: CTR Mode (Requires CNG)
+    ' Uses CNG backend
+    ' =====================================================
+    Public Sub Example_CTR()
+        Debug.Print "=== Example 5: CTR Mode (CNG) ==="
+        
+        If Not mWin32CNG.IsCNGAvailable() Then
+            Debug.Print "CNG not available (requires Vista or later)"
+            Exit Sub
+        End If
+        
+        Dim aes As cAes = New cAes
+        
+        aes.CipherMode = AesCipherMode.CTR
+        aes.SetKeyFromString "MySecretKey12345"
+        aes.GenerateRandomIV
+        
+        Dim plainText As String
+        plainText = "Hello, AES CTR Mode!"
+        
+        Dim cipherText As String
+        cipherText = aes.EncryptString(plainText)
+        Debug.Print "Encrypted: " & cipherText
+        
+        Dim decryptedText As String
+        decryptedText = aes.DecryptString(cipherText)
+        Debug.Print "Decrypted: " & decryptedText
+        
+        Set aes = Nothing
+    End Sub
+
+    ' =====================================================
+    ' Example 6: GCM Mode with Authentication (Requires CNG)
+    ' Uses CNG backend - Provides both encryption and authentication
+    ' =====================================================
+    Public Sub Example_GCM()
+        Debug.Print "=== Example 6: GCM Mode (CNG - Authenticated Encryption) ==="
+        
+        If Not mWin32CNG.IsCNGAvailable() Then
+            Debug.Print "CNG not available (requires Vista or later)"
+            Exit Sub
+        End If
+        
+        Dim aes As cAes = New cAes
+        
+        aes.CipherMode = AesCipherMode.GCM
+        aes.SetKeyFromString "MySecretKey12345"
+        aes.GenerateRandomIV
+        
+        ' Optional: Set additional authenticated data (AAD)
+        ' This data is authenticated but not encrypted
+        Dim aad() As Byte
+        aad = StrConv("Additional authenticated data", vbFromUnicode)
+        aes.GcmAAD = aad
+        
+        Dim plainText As String
+        plainText = "Hello, AES GCM Mode with Authentication!"
+        
+        ' Encrypt
+        Dim cipherText As String
+        cipherText = aes.EncryptString(plainText)
+        Debug.Print "Encrypted: " & cipherText
+        
+        ' Get the authentication tag
+        Dim tag() As Byte
+        tag = aes.GcmTag
+        Debug.Print "Auth Tag: " & BytesToHex(tag)
+        
+        ' Decrypt
+        aes.GcmTag = tag  ' Set the tag for verification
+        aes.GcmAAD = aad  ' Must use same AAD
+        
+        Dim decryptedText As String
+        decryptedText = aes.DecryptString(cipherText)
+        Debug.Print "Decrypted: " & decryptedText
+        
+        Set aes = Nothing
+    End Sub
+
+    ' =====================================================
+    ' Example 7: Different Key Sizes
+    ' =====================================================
+    Public Sub Example_KeySizes()
+        Debug.Print "=== Example 7: Different Key Sizes ==="
+        
+        Dim keySizes(2) As AesKeySize
+        keySizes(0) = AesKeySize.KeySize_128
+        keySizes(1) = AesKeySize.KeySize_192
+        keySizes(2) = AesKeySize.KeySize_256
+        
+        Dim keyNames(2) As String
+        keyNames(0) = "AES-128"
+        keyNames(1) = "AES-192"
+        keyNames(2) = "AES-256"
+        
+        Dim i As Integer
+        For i = 0 To 2
+            Dim aes As cAes = New cAes(keySizes(i), AesCipherMode.CBC, AesPaddingMode.PKCS7)
+            aes.SetKeyFromString "TestKeyForEncryption1234567890"
+            aes.GenerateRandomIV
+            
+            Dim cipherText As String
+            cipherText = aes.EncryptString("Test message for " & keyNames(i))
+            
+            Debug.Print keyNames(i) & ": " & cipherText
+            
+            Set aes = Nothing
+        Next i
+    End Sub
+
+    ' =====================================================
+    ' Example 8: Different Padding Modes
+    ' =====================================================
+    Public Sub Example_PaddingModes()
+        Debug.Print "=== Example 8: Different Padding Modes ==="
+        
+        Dim paddings(3) As AesPaddingMode
+        paddings(0) = AesPaddingMode.PKCS7
+        paddings(1) = AesPaddingMode.ZeroPadding
+        paddings(2) = AesPaddingMode.NoPadding
+        paddings(3) = AesPaddingMode.ISO10126
+        
+        Dim paddingNames(3) As String
+        paddingNames(0) = "PKCS7"
+        paddingNames(1) = "Zero"
+        paddingNames(2) = "None"
+        paddingNames(3) = "ISO10126"
+        
+        Dim i As Integer
+        For i = 0 To 3
+            Dim aes As cAes = New cAes(AesKeySize.KeySize_256, AesCipherMode.CBC, paddings(i))
+            aes.SetKeyFromString "MySecretKey12345"
+            aes.GenerateRandomIV
+            
+            Dim plainText As String
+            plainText = "Test message"
+            
+            On Error Resume Next
+            Dim cipherText As String
+            cipherText = aes.EncryptString(plainText)
+            
+            If Err.Number = 0 Then
+                Dim decryptedText As String
+                decryptedText = aes.DecryptString(cipherText)
+                Debug.Print paddingNames(i) & ": OK - " & decryptedText
+            Else
+                Debug.Print paddingNames(i) & ": Error - " & Err.Description
+            End If
+            On Error GoTo 0
+            
+            Set aes = Nothing
+        Next i
+    End Sub
+
+    ' =====================================================
+    ' Example 9: Binary Data Encryption
+    ' =====================================================
+    Public Sub Example_BinaryData()
+        Debug.Print "=== Example 9: Binary Data Encryption ==="
+        
+        Dim aes As cAes = New cAes
+        aes.SetKeyFromString "MySecretKey12345"
+        aes.GenerateRandomIV
+        
+        ' Create binary data
+        Dim binaryData(15) As Byte
+        Dim i As Integer
+        For i = 0 To 15
+            binaryData(i) = i * 16
+        Next i
+        
+        ' Encrypt
+        Dim encrypted() As Byte
+        encrypted = aes.EncryptBytes(binaryData)
+        Debug.Print "Encrypted bytes: " & UBound(encrypted) + 1
+        
+        ' Decrypt
+        Dim decrypted() As Byte
+        decrypted = aes.DecryptBytes(encrypted)
+        Debug.Print "Decrypted bytes: " & UBound(decrypted) + 1
+        
+        ' Verify
+        Dim match As Boolean
+        match = True
+        For i = 0 To 15
+            If decrypted(i) <> binaryData(i) Then
+                match = False
+                Exit For
+            End If
+        Next i
+        
+        Debug.Print "Data matches: " & match
+        
+        Set aes = Nothing
+    End Sub
+
+    ' =====================================================
+    ' Example 10: API Backend Detection
+    ' =====================================================
+    Public Sub Example_API_Info()
+        Debug.Print "=== Example 10: API Backend Information ==="
+        
+        Debug.Print "CNG Available: " & mWin32CNG.IsCNGAvailable()
+        
+        Debug.Print "Mode -> API Backend:"
+        Debug.Print "  ECB -> CryptoAPI"
+        Debug.Print "  CBC -> CryptoAPI"
+        Debug.Print "  CFB -> CNG"
+        Debug.Print "  OFB -> CNG"
+        Debug.Print "  CTR -> CNG"
+        Debug.Print "  GCM -> CNG (with authentication)"
+    End Sub
+
+    ' =====================================================
+    ' Run All Examples
+    ' =====================================================
+    Public Sub RunAllExamples()
+        Example_CBC_Basic
+        Debug.Print ""
+        
+        Example_ECB
+        Debug.Print ""
+        
+        Example_CFB
+        Debug.Print ""
+        
+        Example_OFB
+        Debug.Print ""
+        
+        Example_CTR
+        Debug.Print ""
+        
+        Example_GCM
+        Debug.Print ""
+        
+        Example_KeySizes
+        Debug.Print ""
+        
+        Example_PaddingModes
+        Debug.Print ""
+        
+        Example_BinaryData
+        Debug.Print ""
+        
+        Example_API_Info
+    End Sub
+
+End Module

@@ -1,0 +1,1861 @@
+[InterfaceId("2014EFFB-5CD8-4F08-A314-0D360DA59F14")]
+Interface IMediaCaptureFailedEventHandler Extends IUnknown
+    Sub Invoke(ByVal Sender As IMediaCapture, ByVal Args As IMediaCaptureFailedEventArgs)
+End Interface
+
+[InterfaceId("3FAE8F2E-4FE1-4FFD-AABA-E1F1337D4E53")]
+Interface IRecordLimitationExceededEventHandler Extends IUnknown
+    Sub Invoke(ByVal Sender As IMediaCapture)
+End Interface
+
+[InterfaceId("F072728B-B292-4491-9D41-99807A550BBF")]
+Interface IAdvancedCapturedPhoto Extends IInspectable
+    Property Get Frame() As ICapturedFrame
+    Property Get Mode() As AdvancedPhotoMode
+    Property Get Context() As IInspectable
+End Interface
+
+[InterfaceId("18CF6CD8-CFFE-42D8-8104-017BB318F4A1")]
+Interface IAdvancedCapturedPhoto2 Extends IInspectable
+    Property Get FrameBoundsRelativeToReferencePhoto() As IReference_Rect
+End Interface
+
+[InterfaceId("8F71B217-61EC-58AB-A646-EEDE0142D568")]
+Interface IAsyncOperationIAdvancedCapturedPhoto Extends IInspectable
+    Property Set Completed(ByVal Handler As IAsyncOperationCompletedHandlerIAdvancedCapturedPhoto)
+    Property Get Completed() As IAsyncOperationCompletedHandlerIAdvancedCapturedPhoto
+    Function GetResults() As IAdvancedCapturedPhoto
+End Interface
+
+[InterfaceId("EDF3452C-D918-5C95-8E3A-245044DD70DF")]
+Interface IAsyncOperationCompletedHandlerIAdvancedCapturedPhoto Extends IUnknown
+    Sub Invoke(ByVal AsyncOperation As IAsyncOperationIAdvancedCapturedPhoto, ByVal AsyncStatus As AsyncStatus)
+End Interface
+
+[InterfaceId("5CB4A98F-ABF1-5518-9094-26DB326A5F4E")]
+Interface ITypedEventHandlerAdvancedPhotoCaptureAllPhotosCaptured Extends IUnknown
+    Sub Invoke(ByVal Sender As IAdvancedPhotoCapture, ByVal Args As IInspectable)
+End Interface
+
+[InterfaceId("843E69BA-5702-5D97-AB81-EF078DE3F9B1")]
+Interface ITypedEventHandlerAdvancedPhotoCaptureOptionalReferencePhotoCaptured Extends IUnknown
+    Sub Invoke(ByVal Sender As IAdvancedPhotoCapture, ByVal Args As IOptionalReferencePhotoCapturedEventArgs)
+End Interface
+
+[InterfaceId("83FFAAFA-6667-44DC-973C-A6BCE596AA0F")]
+Interface IAdvancedPhotoCapture Extends IInspectable
+    Function CaptureAsync() As IAsyncOperationIAdvancedCapturedPhoto
+    Function CaptureWithContextAsync(ByVal Context As IInspectable) As IAsyncOperationIAdvancedCapturedPhoto
+    [PreserveSig]
+    Function AddOptionalReferencePhotoCaptured(ByVal Handler As ITypedEventHandlerAdvancedPhotoCaptureOptionalReferencePhotoCaptured, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveOptionalReferencePhotoCaptured(ByVal Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function AddAllPhotosCaptured(ByVal Handler As ITypedEventHandlerAdvancedPhotoCaptureAllPhotosCaptured, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveAllPhotosCaptured(ByVal Token As EventRegistrationToken) As HRESULT
+    Function FinishAsync() As IAsyncAction
+End Interface
+
+[InterfaceId("633C91CA-4FDE-5160-9209-3FD3A403A917")]
+Interface ITypedEventHandlerAppBroadcastBackgroundServiceHeartbeatRequested Extends IUnknown
+    Sub Invoke(ByVal Sender As IAppBroadcastBackgroundService, ByVal Args As IAppBroadcastHeartbeatRequestedEventArgs)
+End Interface
+
+[InterfaceId("BAD1E72A-FA94-46F9-95FC-D71511CDA70B")]
+Interface IAppBroadcastBackgroundService Extends IInspectable
+    Property Let PlugInState(ByVal Value As AppBroadcastPlugInState)
+    Property Get PlugInState() As AppBroadcastPlugInState
+    Property Set SignInInfo(ByVal Value As IAppBroadcastBackgroundServiceSignInInfo)
+    Property Get SignInInfo() As IAppBroadcastBackgroundServiceSignInInfo
+    Property Set StreamInfo(ByVal Value As IAppBroadcastBackgroundServiceStreamInfo)
+    Property Get StreamInfo() As IAppBroadcastBackgroundServiceStreamInfo
+    Property Get AppId() As LongPtr
+    Property Get BroadcastTitle() As LongPtr
+    Property Let ViewerCount(ByVal Value As Long)
+    Property Get ViewerCount() As Long
+    [PreserveSig]
+    Function TerminateBroadcast(ByVal Reason As AppBroadcastTerminationReason, ByVal ProviderSpecificReason As Long) As HRESULT
+    [PreserveSig]
+    Function AddHeartbeatRequested(ByVal Handler As ITypedEventHandlerAppBroadcastBackgroundServiceHeartbeatRequested, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveHeartbeatRequested(ByVal Token As EventRegistrationToken) As HRESULT
+    Property Get TitleId() As LongPtr
+End Interface
+
+[InterfaceId("6E820F00-E1E0-5C73-AFD8-A47B9B1C1BED")]
+Interface ITypedEventHandlerAppBroadcastBackgroundServiceIInspectable Extends IUnknown
+    Sub Invoke(ByVal Sender As IAppBroadcastBackgroundService, ByVal Args As IInspectable)
+End Interface
+
+[InterfaceId("FC8CCBBF-5549-4B87-959F-23CA401FD473")]
+Interface IAppBroadcastBackgroundService2 Extends IInspectable
+    Property Let BroadcastTitle(ByVal Value As LongPtr)
+    Property Get BroadcastLanguage() As LongPtr
+    Property Let BroadcastLanguage(ByVal Value As LongPtr)
+    Property Get BroadcastChannel() As LongPtr
+    Property Let BroadcastChannel(ByVal Value As LongPtr)
+    [PreserveSig]
+    Function AddBroadcastTitleChanged(ByVal Handler As ITypedEventHandlerAppBroadcastBackgroundServiceIInspectable, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveBroadcastTitleChanged(ByVal Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function AddBroadcastLanguageChanged(ByVal Handler As ITypedEventHandlerAppBroadcastBackgroundServiceIInspectable, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveBroadcastLanguageChanged(ByVal Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function AddBroadcastChannelChanged(ByVal Handler As ITypedEventHandlerAppBroadcastBackgroundServiceIInspectable, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveBroadcastChannelChanged(ByVal Token As EventRegistrationToken) As HRESULT
+End Interface
+
+[InterfaceId("E2672C1A-A3D9-56F3-8A77-20D30873CE87")]
+Interface ITypedEventHandlerAppBroadcastBackgroundServiceSignInInfoSignInStateChanged Extends IUnknown
+    Sub Invoke(ByVal Sender As IAppBroadcastBackgroundServiceSignInInfo, ByVal Args As IAppBroadcastSignInStateChangedEventArgs)
+End Interface
+
+[InterfaceId("5E735275-88C8-4ECA-89BA-4825985DB880")]
+Interface IAppBroadcastBackgroundServiceSignInInfo Extends IInspectable
+    Property Get SignInState() As AppBroadcastSignInState
+    Property Set OAuthRequestUri(ByVal Value As IUri)
+    Property Get OAuthRequestUri() As IUri
+    Property Set OAuthCallbackUri(ByVal Value As IUri)
+    Property Get OAuthCallbackUri() As IUri
+    Property Get AuthenticationResult() As IWebAuthenticationResult
+    Property Let UserName(ByVal Value As LongPtr)
+    Property Get UserName() As LongPtr
+    [PreserveSig]
+    Function AddSignInStateChanged(ByVal Handler As ITypedEventHandlerAppBroadcastBackgroundServiceSignInInfoSignInStateChanged, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveSignInStateChanged(ByVal Token As EventRegistrationToken) As HRESULT
+End Interface
+
+[InterfaceId("F8715188-EFC7-575C-AD9D-695EB2044524")]
+Interface ITypedEventHandlerAppBroadcastBackgroundServiceSignInInfoUserNameChanged Extends IUnknown
+    Sub Invoke(ByVal Sender As IAppBroadcastBackgroundServiceSignInInfo, ByVal Args As IInspectable)
+End Interface
+
+[InterfaceId("9104285C-62CF-4A3C-A7EE-AEB507404645")]
+Interface IAppBroadcastBackgroundServiceSignInInfo2 Extends IInspectable
+    [PreserveSig]
+    Function AddUserNameChanged(ByVal Handler As ITypedEventHandlerAppBroadcastBackgroundServiceSignInInfoUserNameChanged, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveUserNameChanged(ByVal Token As EventRegistrationToken) As HRESULT
+End Interface
+
+[InterfaceId("73C8EC4B-F104-5536-B8B4-4D9AAD61C9B4")]
+Interface ITypedEventHandlerAppBroadcastBackgroundServiceStreamInfoIInspectable Extends IUnknown
+    Sub Invoke(ByVal Sender As IAppBroadcastBackgroundServiceStreamInfo, ByVal Args As IInspectable)
+End Interface
+
+[InterfaceId("0C110CB8-B08A-5C07-B295-229049A46C22")]
+Interface ITypedEventHandlerAppBroadcastBackgroundServiceStreamInfoStreamStateChanged Extends IUnknown
+    Sub Invoke(ByVal Sender As IAppBroadcastBackgroundServiceStreamInfo, ByVal Args As IAppBroadcastStreamStateChangedEventArgs)
+End Interface
+
+[InterfaceId("31DC02BC-990A-4904-AA96-FE364381F136")]
+Interface IAppBroadcastBackgroundServiceStreamInfo Extends IInspectable
+    Property Get StreamState() As AppBroadcastStreamState
+    Property Let DesiredVideoEncodingBitrate(ByVal Value As UInt64)
+    Property Get DesiredVideoEncodingBitrate() As UInt64
+    Property Let BandwidthTestBitrate(ByVal Value As UInt64)
+    Property Get BandwidthTestBitrate() As UInt64
+    Property Let AudioCodec(ByVal Value As LongPtr)
+    Property Get AudioCodec() As LongPtr
+    Property Get BroadcastStreamReader() As IAppBroadcastStreamReader
+    [PreserveSig]
+    Function AddStreamStateChanged(ByVal Handler As ITypedEventHandlerAppBroadcastBackgroundServiceStreamInfoStreamStateChanged, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveStreamStateChanged(ByVal Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function AddVideoEncodingResolutionChanged(ByVal Handler As ITypedEventHandlerAppBroadcastBackgroundServiceStreamInfoIInspectable, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveVideoEncodingResolutionChanged(ByVal Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function AddVideoEncodingBitrateChanged(ByVal Handler As ITypedEventHandlerAppBroadcastBackgroundServiceStreamInfoIInspectable, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveVideoEncodingBitrateChanged(ByVal Token As EventRegistrationToken) As HRESULT
+End Interface
+
+[InterfaceId("BD1E9F6D-94DC-4FCE-9541-A9F129596334")]
+Interface IAppBroadcastBackgroundServiceStreamInfo2 Extends IInspectable
+    [PreserveSig]
+    Function ReportProblemWithStream() As HRESULT
+End Interface
+
+[InterfaceId("1E334CD0-B882-4B88-8692-05999ACEB70F")]
+Interface IAppBroadcastCameraCaptureStateChangedEventArgs Extends IInspectable
+    Property Get State() As AppBroadcastCameraCaptureState
+    Property Get ErrorCode() As Long
+End Interface
+
+[InterfaceId("B2CB27A5-70FC-4E17-80BD-6BA0FD3FF3A0")]
+Interface IAppBroadcastGlobalSettings Extends IInspectable
+    Property Get IsBroadcastEnabled() As BooleanByte
+    Property Get IsDisabledByPolicy() As BooleanByte
+    Property Get IsGpuConstrained() As BooleanByte
+    Property Get HasHardwareEncoder() As BooleanByte
+    Property Let IsAudioCaptureEnabled(ByVal Value As BooleanByte)
+    Property Get IsAudioCaptureEnabled() As BooleanByte
+    Property Let IsMicrophoneCaptureEnabledByDefault(ByVal Value As BooleanByte)
+    Property Get IsMicrophoneCaptureEnabledByDefault() As BooleanByte
+    Property Let IsEchoCancellationEnabled(ByVal Value As BooleanByte)
+    Property Get IsEchoCancellationEnabled() As BooleanByte
+    Property Let SystemAudioGain(ByVal Value As Double)
+    Property Get SystemAudioGain() As Double
+    Property Let MicrophoneGain(ByVal Value As Double)
+    Property Get MicrophoneGain() As Double
+    Property Let IsCameraCaptureEnabledByDefault(ByVal Value As BooleanByte)
+    Property Get IsCameraCaptureEnabledByDefault() As BooleanByte
+    Property Let SelectedCameraId(ByVal Value As LongPtr)
+    Property Get SelectedCameraId() As LongPtr
+    Property Let CameraOverlayLocation(ByVal Value As AppBroadcastCameraOverlayLocation)
+    Property Get CameraOverlayLocation() As AppBroadcastCameraOverlayLocation
+    Property Let CameraOverlaySize(ByVal Value As AppBroadcastCameraOverlaySize)
+    Property Get CameraOverlaySize() As AppBroadcastCameraOverlaySize
+    Property Let IsCursorImageCaptureEnabled(ByVal Value As BooleanByte)
+    Property Get IsCursorImageCaptureEnabled() As BooleanByte
+End Interface
+
+[InterfaceId("CEA54283-EE51-4DBF-9472-79A9ED4E2165")]
+Interface IAppBroadcastHeartbeatRequestedEventArgs Extends IInspectable
+    Property Let Handled(ByVal Value As BooleanByte)
+    Property Get Handled() As BooleanByte
+End Interface
+
+[InterfaceId("364E018B-1E4E-411F-AB3E-92959844C156")]
+Interface IAppBroadcastManagerStatics Extends IInspectable
+    Function GetGlobalSettings() As IAppBroadcastGlobalSettings
+    [PreserveSig]
+    Function ApplyGlobalSettings(ByVal Value As IAppBroadcastGlobalSettings) As HRESULT
+    Function GetProviderSettings() As IAppBroadcastProviderSettings
+    [PreserveSig]
+    Function ApplyProviderSettings(ByVal Value As IAppBroadcastProviderSettings) As HRESULT
+End Interface
+
+[InterfaceId("A86AD5E9-9440-4908-9D09-65B7E315D795")]
+Interface IAppBroadcastMicrophoneCaptureStateChangedEventArgs Extends IInspectable
+    Property Get State() As AppBroadcastMicrophoneCaptureState
+    Property Get ErrorCode() As Long
+End Interface
+
+[InterfaceId("520C1E66-6513-4574-AC54-23B79729615B")]
+Interface IAppBroadcastPlugIn Extends IInspectable
+    Property Get AppId() As LongPtr
+    Property Get ProviderSettings() As IAppBroadcastProviderSettings
+    Property Get Logo() As IRandomAccessStreamReference
+    Property Get DisplayName() As LongPtr
+End Interface
+
+[InterfaceId("CF667B1A-3BB9-57CE-A38B-1E81471F8CF8")]
+Interface IIterator_IAppBroadcastPlugIn Extends IInspectable
+    Property Get Current() As IAppBroadcastPlugIn
+    Property Get HasCurrent() As BooleanByte
+    Function MoveNext() As BooleanByte
+    Function GetMany(ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("C531C5B0-0223-5C9E-A8FB-20F52EA58D75")]
+Interface IIterable_IAppBroadcastPlugIn Extends IInspectable
+    Function First() As IIterator_IAppBroadcastPlugIn
+End Interface
+
+[InterfaceId("05AFEE04-1168-5677-A05E-9854B46B319B")]
+Interface IVectorView_IAppBroadcastPlugIn Extends IInspectable
+    Function GetAt(ByVal Index As Long) As IAppBroadcastPlugIn
+    Property Get Size() As Long
+    Function IndexOf(ByVal Value As IAppBroadcastPlugIn, Index As Long) As BooleanByte
+    Function GetMany(ByVal StartIndex As Long, ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("E550D979-27A1-49A7-BBF4-D7A9E9D07668")]
+Interface IAppBroadcastPlugInManager Extends IInspectable
+    Property Get IsBroadcastProviderAvailable() As BooleanByte
+    Property Get PlugInList() As IVectorView_IAppBroadcastPlugIn
+    Property Get DefaultPlugIn() As IAppBroadcastPlugIn
+    Property Set DefaultPlugIn(ByVal Value As IAppBroadcastPlugIn)
+End Interface
+
+[InterfaceId("F2645C20-5C76-4CDC-9364-82FE9EB6534D")]
+Interface IAppBroadcastPlugInManagerStatics Extends IInspectable
+    Function GetDefault() As IAppBroadcastPlugInManager
+    Function GetForUser(ByVal User As IUser) As IAppBroadcastPlugInManager
+End Interface
+
+[InterfaceId("4881D0F2-ABC5-4FC6-84B0-89370BB47212")]
+Interface IAppBroadcastPlugInStateChangedEventArgs Extends IInspectable
+    Property Get PlugInState() As AppBroadcastPlugInState
+End Interface
+
+[InterfaceId("41D8B8E1-DCE7-5EBC-940F-DE7DD2A62AB5")]
+Interface ITypedEventHandlerAppBroadcastPreviewPreviewStateChanged Extends IUnknown
+    Sub Invoke(ByVal Sender As IAppBroadcastPreview, ByVal Args As IAppBroadcastPreviewStateChangedEventArgs)
+End Interface
+
+[InterfaceId("14B60F5A-6E4A-4B80-A14F-67EE77D153E7")]
+Interface IAppBroadcastPreview Extends IInspectable
+    [PreserveSig]
+    Function StopPreview() As HRESULT
+    Property Get PreviewState() As AppBroadcastPreviewState
+    Property Get ErrorCode() As IReference_UInt32
+    [PreserveSig]
+    Function AddPreviewStateChanged(ByVal Value As ITypedEventHandlerAppBroadcastPreviewPreviewStateChanged, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemovePreviewStateChanged(ByVal Token As EventRegistrationToken) As HRESULT
+    Property Get PreviewStreamReader() As IAppBroadcastPreviewStreamReader
+End Interface
+
+[InterfaceId("5A57F2DE-8DEA-4E86-90AD-03FC26B9653C")]
+Interface IAppBroadcastPreviewStateChangedEventArgs Extends IInspectable
+    Property Get PreviewState() As AppBroadcastPreviewState
+    Property Get ErrorCode() As Long
+End Interface
+
+[InterfaceId("7918F32C-187F-5F0F-B80E-6FCAAA5E14B9")]
+Interface ITypedEventHandlerAppBroadcastPreviewStreamReaderVideoFrameArrived Extends IUnknown
+    Sub Invoke(ByVal Sender As IAppBroadcastPreviewStreamReader, ByVal Args As IInspectable)
+End Interface
+
+[InterfaceId("92228D50-DB3F-40A8-8CD4-F4E371DDAB37")]
+Interface IAppBroadcastPreviewStreamReader Extends IInspectable
+    Property Get VideoWidth() As Long
+    Property Get VideoHeight() As Long
+    Property Get VideoStride() As Long
+    Property Get VideoBitmapPixelFormat() As BitmapPixelFormat
+    Property Get VideoBitmapAlphaMode() As BitmapAlphaMode
+    Function TryGetNextVideoFrame() As IAppBroadcastPreviewStreamVideoFrame
+    [PreserveSig]
+    Function AddVideoFrameArrived(ByVal Value As ITypedEventHandlerAppBroadcastPreviewStreamReaderVideoFrameArrived, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveVideoFrameArrived(ByVal Token As EventRegistrationToken) As HRESULT
+End Interface
+
+[InterfaceId("010FBEA1-94FE-4499-B8C0-8D244279FB12")]
+Interface IAppBroadcastPreviewStreamVideoFrame Extends IInspectable
+    Property Get VideoHeader() As IAppBroadcastPreviewStreamVideoHeader
+    Property Get VideoBuffer() As IBuffer
+End Interface
+
+[InterfaceId("8BEF6113-DA84-4499-A7AB-87118CB4A157")]
+Interface IAppBroadcastPreviewStreamVideoHeader Extends IInspectable
+    Property Get AbsoluteTimestamp() As DateTime
+    Property Get RelativeTimestamp() As TimeSpan
+    Property Get Duration() As TimeSpan
+    Property Get FrameId() As UInt64
+End Interface
+
+[InterfaceId("C30BDF62-9948-458F-AD50-AA06EC03DA08")]
+Interface IAppBroadcastProviderSettings Extends IInspectable
+    Property Let DefaultBroadcastTitle(ByVal Value As LongPtr)
+    Property Get DefaultBroadcastTitle() As LongPtr
+    Property Let AudioEncodingBitrate(ByVal Value As Long)
+    Property Get AudioEncodingBitrate() As Long
+    Property Let CustomVideoEncodingBitrate(ByVal Value As Long)
+    Property Get CustomVideoEncodingBitrate() As Long
+    Property Let CustomVideoEncodingHeight(ByVal Value As Long)
+    Property Get CustomVideoEncodingHeight() As Long
+    Property Let CustomVideoEncodingWidth(ByVal Value As Long)
+    Property Get CustomVideoEncodingWidth() As Long
+    Property Let VideoEncodingBitrateMode(ByVal Value As AppBroadcastVideoEncodingBitrateMode)
+    Property Get VideoEncodingBitrateMode() As AppBroadcastVideoEncodingBitrateMode
+    Property Let VideoEncodingResolutionMode(ByVal Value As AppBroadcastVideoEncodingResolutionMode)
+    Property Get VideoEncodingResolutionMode() As AppBroadcastVideoEncodingResolutionMode
+End Interface
+
+[InterfaceId("8660B4D6-969B-4E3C-AC3A-8B042EE4EE63")]
+Interface IAppBroadcastServices Extends IInspectable
+    Property Get CaptureTargetType() As AppBroadcastCaptureTargetType
+    Property Let CaptureTargetType(ByVal Value As AppBroadcastCaptureTargetType)
+    Property Get BroadcastTitle() As LongPtr
+    Property Let BroadcastTitle(ByVal Value As LongPtr)
+    Property Get BroadcastLanguage() As LongPtr
+    Property Let BroadcastLanguage(ByVal Value As LongPtr)
+    Property Get UserName() As LongPtr
+    Property Get CanCapture() As BooleanByte
+    Function EnterBroadcastModeAsync(ByVal PlugIn As IAppBroadcastPlugIn) As IAsyncOperationUInt32
+    [PreserveSig]
+    Function ExitBroadcastMode(ByVal Reason As AppBroadcastExitBroadcastModeReason) As HRESULT
+    [PreserveSig]
+    Function StartBroadcast() As HRESULT
+    [PreserveSig]
+    Function PauseBroadcast() As HRESULT
+    [PreserveSig]
+    Function ResumeBroadcast() As HRESULT
+    Function StartPreview(ByVal DesiredSize As SIZEF) As IAppBroadcastPreview
+    Property Get State() As IAppBroadcastState
+End Interface
+
+[InterfaceId("02B692A4-5919-4A9E-8D5E-C9BB0DD3377A")]
+Interface IAppBroadcastSignInStateChangedEventArgs Extends IInspectable
+    Property Get SignInState() As AppBroadcastSignInState
+    Property Get Result() As AppBroadcastSignInResult
+End Interface
+
+[InterfaceId("A9B0513C-D638-5C5F-8051-791D7AA2D566")]
+Interface ITypedEventHandlerAppBroadcastStateCaptureTargetClosed Extends IUnknown
+    Sub Invoke(ByVal Sender As IAppBroadcastState, ByVal Args As IInspectable)
+End Interface
+
+[InterfaceId("B59AA695-B324-5B43-815B-8FFDA6013816")]
+Interface ITypedEventHandlerAppBroadcastStateCameraCaptureStateChanged Extends IUnknown
+    Sub Invoke(ByVal Sender As IAppBroadcastState, ByVal Args As IAppBroadcastCameraCaptureStateChangedEventArgs)
+End Interface
+
+[InterfaceId("F64D996A-3859-5174-97B1-E33D56DFCA3A")]
+Interface ITypedEventHandlerAppBroadcastStateMicrophoneCaptureStateChanged Extends IUnknown
+    Sub Invoke(ByVal Sender As IAppBroadcastState, ByVal Args As IAppBroadcastMicrophoneCaptureStateChangedEventArgs)
+End Interface
+
+[InterfaceId("373D850E-045B-52A5-92DA-C22F924B79FB")]
+Interface ITypedEventHandlerAppBroadcastStatePlugInStateChanged Extends IUnknown
+    Sub Invoke(ByVal Sender As IAppBroadcastState, ByVal Args As IAppBroadcastPlugInStateChangedEventArgs)
+End Interface
+
+[InterfaceId("2545FBD2-3FB6-5004-A475-56C059F3D75A")]
+Interface ITypedEventHandlerAppBroadcastStateStreamStateChanged Extends IUnknown
+    Sub Invoke(ByVal Sender As IAppBroadcastState, ByVal Args As IAppBroadcastStreamStateChangedEventArgs)
+End Interface
+
+[InterfaceId("16A22A27-61C2-56C2-93E5-18D6681CEEB4")]
+Interface ITypedEventHandlerAppBroadcastStateViewerCountChanged Extends IUnknown
+    Sub Invoke(ByVal Sender As IAppBroadcastState, ByVal Args As IAppBroadcastViewerCountChangedEventArgs)
+End Interface
+
+[InterfaceId("EE08056D-8099-4DDD-922E-C56DAC58ABFB")]
+Interface IAppBroadcastState Extends IInspectable
+    Property Get IsCaptureTargetRunning() As BooleanByte
+    Property Get ViewerCount() As Long
+    Property Get ShouldCaptureMicrophone() As BooleanByte
+    Property Let ShouldCaptureMicrophone(ByVal Value As BooleanByte)
+    [PreserveSig]
+    Function RestartMicrophoneCapture() As HRESULT
+    Property Get ShouldCaptureCamera() As BooleanByte
+    Property Let ShouldCaptureCamera(ByVal Value As BooleanByte)
+    [PreserveSig]
+    Function RestartCameraCapture() As HRESULT
+    Property Get EncodedVideoSize() As SIZEF
+    Property Get MicrophoneCaptureState() As AppBroadcastMicrophoneCaptureState
+    Property Get MicrophoneCaptureError() As Long
+    Property Get CameraCaptureState() As AppBroadcastCameraCaptureState
+    Property Get CameraCaptureError() As Long
+    Property Get StreamState() As AppBroadcastStreamState
+    Property Get PlugInState() As AppBroadcastPlugInState
+    Property Get OAuthRequestUri() As IUri
+    Property Get OAuthCallbackUri() As IUri
+    Property Get AuthenticationResult() As IWebAuthenticationResult
+    Property Set AuthenticationResult(ByVal Value As IWebAuthenticationResult)
+    Property Let SignInState(ByVal Value As AppBroadcastSignInState)
+    Property Get SignInState() As AppBroadcastSignInState
+    Property Get TerminationReason() As AppBroadcastTerminationReason
+    Property Get TerminationReasonPlugInSpecific() As Long
+    [PreserveSig]
+    Function AddViewerCountChanged(ByVal Value As ITypedEventHandlerAppBroadcastStateViewerCountChanged, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveViewerCountChanged(ByVal Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function AddMicrophoneCaptureStateChanged(ByVal Value As ITypedEventHandlerAppBroadcastStateMicrophoneCaptureStateChanged, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveMicrophoneCaptureStateChanged(ByVal Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function AddCameraCaptureStateChanged(ByVal Value As ITypedEventHandlerAppBroadcastStateCameraCaptureStateChanged, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveCameraCaptureStateChanged(ByVal Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function AddPlugInStateChanged(ByVal Handler As ITypedEventHandlerAppBroadcastStatePlugInStateChanged, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemovePlugInStateChanged(ByVal Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function AddStreamStateChanged(ByVal Handler As ITypedEventHandlerAppBroadcastStateStreamStateChanged, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveStreamStateChanged(ByVal Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function AddCaptureTargetClosed(ByVal Value As ITypedEventHandlerAppBroadcastStateCaptureTargetClosed, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveCaptureTargetClosed(ByVal Token As EventRegistrationToken) As HRESULT
+End Interface
+
+[InterfaceId("EFAB4AC8-21BA-453F-8BB7-5E938A2E9A74")]
+Interface IAppBroadcastStreamAudioFrame Extends IInspectable
+    Property Get AudioHeader() As IAppBroadcastStreamAudioHeader
+    Property Get AudioBuffer() As IBuffer
+End Interface
+
+[InterfaceId("BF21A570-6B78-4216-9F07-5AFF5256F1B7")]
+Interface IAppBroadcastStreamAudioHeader Extends IInspectable
+    Property Get AbsoluteTimestamp() As DateTime
+    Property Get RelativeTimestamp() As TimeSpan
+    Property Get Duration() As TimeSpan
+    Property Get HasDiscontinuity() As BooleanByte
+    Property Get FrameId() As UInt64
+End Interface
+
+[InterfaceId("66D1378B-0E04-5801-8BDD-FEB1081BBECB")]
+Interface ITypedEventHandlerAppBroadcastStreamReaderIInspectable Extends IUnknown
+    Sub Invoke(ByVal Sender As IAppBroadcastStreamReader, ByVal Args As IInspectable)
+End Interface
+
+[InterfaceId("B338BCF9-3364-4460-B5F1-3CC2796A8AA2")]
+Interface IAppBroadcastStreamReader Extends IInspectable
+    Property Get AudioChannels() As Long
+    Property Get AudioSampleRate() As Long
+    Property Get AudioAacSequence() As IBuffer
+    Property Get AudioBitrate() As Long
+    Function TryGetNextAudioFrame() As IAppBroadcastStreamAudioFrame
+    Property Get VideoWidth() As Long
+    Property Get VideoHeight() As Long
+    Property Get VideoBitrate() As Long
+    Function TryGetNextVideoFrame() As IAppBroadcastStreamVideoFrame
+    [PreserveSig]
+    Function AddAudioFrameArrived(ByVal Value As ITypedEventHandlerAppBroadcastStreamReaderIInspectable, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveAudioFrameArrived(ByVal Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function AddVideoFrameArrived(ByVal Value As ITypedEventHandlerAppBroadcastStreamReaderIInspectable, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveVideoFrameArrived(ByVal Token As EventRegistrationToken) As HRESULT
+End Interface
+
+[InterfaceId("5108A733-D008-4A89-93BE-58AED961374E")]
+Interface IAppBroadcastStreamStateChangedEventArgs Extends IInspectable
+    Property Get StreamState() As AppBroadcastStreamState
+End Interface
+
+[InterfaceId("0F97CF2B-C9E4-4E88-8194-D814CBD585D8")]
+Interface IAppBroadcastStreamVideoFrame Extends IInspectable
+    Property Get VideoHeader() As IAppBroadcastStreamVideoHeader
+    Property Get VideoBuffer() As IBuffer
+End Interface
+
+[InterfaceId("0B9EBECE-7E32-432D-8CA2-36BF10B9F462")]
+Interface IAppBroadcastStreamVideoHeader Extends IInspectable
+    Property Get AbsoluteTimestamp() As DateTime
+    Property Get RelativeTimestamp() As TimeSpan
+    Property Get Duration() As TimeSpan
+    Property Get IsKeyFrame() As BooleanByte
+    Property Get HasDiscontinuity() As BooleanByte
+    Property Get FrameId() As UInt64
+End Interface
+
+[InterfaceId("DEEBAB35-EC5E-4D8F-B1C0-5DA6E8C75638")]
+Interface IAppBroadcastTriggerDetails Extends IInspectable
+    Property Get BackgroundService() As IAppBroadcastBackgroundService
+End Interface
+
+[InterfaceId("E6E11825-5401-4ADE-8BD2-C14ECEE6807D")]
+Interface IAppBroadcastViewerCountChangedEventArgs Extends IInspectable
+    Property Get ViewerCount() As Long
+End Interface
+
+[InterfaceId("F5CB24B5-FF00-58DF-B460-17BBF2CD64D3")]
+Interface ITypedEventHandlerAppCaptureCapturingChanged Extends IUnknown
+    Sub Invoke(ByVal Sender As IAppCapture, ByVal Args As IInspectable)
+End Interface
+
+[InterfaceId("9749D453-A29A-45ED-8F29-22D09942CFF7")]
+Interface IAppCapture Extends IInspectable
+    Property Get IsCapturingAudio() As BooleanByte
+    Property Get IsCapturingVideo() As BooleanByte
+    [PreserveSig]
+    Function AddCapturingChanged(ByVal Handler As ITypedEventHandlerAppCaptureCapturingChanged, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveCapturingChanged(ByVal Token As EventRegistrationToken) As HRESULT
+End Interface
+
+[InterfaceId("19E8E0EF-236C-40F9-B38F-9B7DD65D1CCC")]
+Interface IAppCaptureAlternateShortcutKeys Extends IInspectable
+    Property Let ToggleGameBarKey(ByVal Value As VirtualKey)
+    Property Get ToggleGameBarKey() As VirtualKey
+    Property Let ToggleGameBarKeyModifiers(ByVal Value As VirtualKeyModifiers)
+    Property Get ToggleGameBarKeyModifiers() As VirtualKeyModifiers
+    Property Let SaveHistoricalVideoKey(ByVal Value As VirtualKey)
+    Property Get SaveHistoricalVideoKey() As VirtualKey
+    Property Let SaveHistoricalVideoKeyModifiers(ByVal Value As VirtualKeyModifiers)
+    Property Get SaveHistoricalVideoKeyModifiers() As VirtualKeyModifiers
+    Property Let ToggleRecordingKey(ByVal Value As VirtualKey)
+    Property Get ToggleRecordingKey() As VirtualKey
+    Property Let ToggleRecordingKeyModifiers(ByVal Value As VirtualKeyModifiers)
+    Property Get ToggleRecordingKeyModifiers() As VirtualKeyModifiers
+    Property Let TakeScreenshotKey(ByVal Value As VirtualKey)
+    Property Get TakeScreenshotKey() As VirtualKey
+    Property Let TakeScreenshotKeyModifiers(ByVal Value As VirtualKeyModifiers)
+    Property Get TakeScreenshotKeyModifiers() As VirtualKeyModifiers
+    Property Let ToggleRecordingIndicatorKey(ByVal Value As VirtualKey)
+    Property Get ToggleRecordingIndicatorKey() As VirtualKey
+    Property Let ToggleRecordingIndicatorKeyModifiers(ByVal Value As VirtualKeyModifiers)
+    Property Get ToggleRecordingIndicatorKeyModifiers() As VirtualKeyModifiers
+End Interface
+
+[InterfaceId("C3669090-DD17-47F0-95E5-CE42286CF338")]
+Interface IAppCaptureAlternateShortcutKeys2 Extends IInspectable
+    Property Let ToggleMicrophoneCaptureKey(ByVal Value As VirtualKey)
+    Property Get ToggleMicrophoneCaptureKey() As VirtualKey
+    Property Let ToggleMicrophoneCaptureKeyModifiers(ByVal Value As VirtualKeyModifiers)
+    Property Get ToggleMicrophoneCaptureKeyModifiers() As VirtualKeyModifiers
+End Interface
+
+[InterfaceId("7B81448C-418E-469C-A49A-45B597C826B6")]
+Interface IAppCaptureAlternateShortcutKeys3 Extends IInspectable
+    Property Let ToggleCameraCaptureKey(ByVal Value As VirtualKey)
+    Property Get ToggleCameraCaptureKey() As VirtualKey
+    Property Let ToggleCameraCaptureKeyModifiers(ByVal Value As VirtualKeyModifiers)
+    Property Get ToggleCameraCaptureKeyModifiers() As VirtualKeyModifiers
+    Property Let ToggleBroadcastKey(ByVal Value As VirtualKey)
+    Property Get ToggleBroadcastKey() As VirtualKey
+    Property Let ToggleBroadcastKeyModifiers(ByVal Value As VirtualKeyModifiers)
+    Property Get ToggleBroadcastKeyModifiers() As VirtualKeyModifiers
+End Interface
+
+[InterfaceId("C1F5563B-FFA1-44C9-975F-27FBEB553B35")]
+Interface IAppCaptureDurationGeneratedEventArgs Extends IInspectable
+    Property Get Duration() As TimeSpan
+End Interface
+
+[InterfaceId("4189FBF4-465E-45BF-907F-165B3FB23758")]
+Interface IAppCaptureFileGeneratedEventArgs Extends IInspectable
+    Property Get File() As IStorageFile
+End Interface
+
+[InterfaceId("7D9E3EA7-6282-4735-8D4E-AA45F90F6723")]
+Interface IAppCaptureManagerStatics Extends IInspectable
+    Function GetCurrentSettings() As IAppCaptureSettings
+    [PreserveSig]
+    Function ApplySettings(ByVal AppCaptureSettings As IAppCaptureSettings) As HRESULT
+End Interface
+
+[InterfaceId("1AAED84C-ED87-5F38-A9D1-3553128D4A62")]
+Interface ITypedEventHandlerAppCaptureMetadataWriterMetadataPurged Extends IUnknown
+    Sub Invoke(ByVal Sender As IAppCaptureMetadataWriter, ByVal Args As IInspectable)
+End Interface
+
+[InterfaceId("E0CE4877-9AAF-46B4-AD31-6A60B441C780")]
+Interface IAppCaptureMetadataWriter Extends IInspectable
+    [PreserveSig]
+    Function AddStringEvent(ByVal Name As LongPtr, ByVal Value As LongPtr, ByVal Priority As AppCaptureMetadataPriority) As HRESULT
+    [PreserveSig]
+    Function AddInt32Event(ByVal Name As LongPtr, ByVal Value As Long, ByVal Priority As AppCaptureMetadataPriority) As HRESULT
+    [PreserveSig]
+    Function AddDoubleEvent(ByVal Name As LongPtr, ByVal Value As Double, ByVal Priority As AppCaptureMetadataPriority) As HRESULT
+    [PreserveSig]
+    Function StartStringState(ByVal Name As LongPtr, ByVal Value As LongPtr, ByVal Priority As AppCaptureMetadataPriority) As HRESULT
+    [PreserveSig]
+    Function StartInt32State(ByVal Name As LongPtr, ByVal Value As Long, ByVal Priority As AppCaptureMetadataPriority) As HRESULT
+    [PreserveSig]
+    Function StartDoubleState(ByVal Name As LongPtr, ByVal Value As Double, ByVal Priority As AppCaptureMetadataPriority) As HRESULT
+    [PreserveSig]
+    Function StopState(ByVal Name As LongPtr) As HRESULT
+    [PreserveSig]
+    Function StopAllStates() As HRESULT
+    Property Get RemainingStorageBytesAvailable() As UInt64
+    [PreserveSig]
+    Function AddMetadataPurged(ByVal Handler As ITypedEventHandlerAppCaptureMetadataWriterMetadataPurged, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveMetadataPurged(ByVal Token As EventRegistrationToken) As HRESULT
+End Interface
+
+[InterfaceId("324D249E-45BC-4C35-BC35-E469FC7A69E0")]
+Interface IAppCaptureMicrophoneCaptureStateChangedEventArgs Extends IInspectable
+    Property Get State() As AppCaptureMicrophoneCaptureState
+    Property Get ErrorCode() As Long
+End Interface
+
+[InterfaceId("AB6419B5-9917-5275-9876-9E46B9ABADA7")]
+Interface ITypedEventHandlerAppCaptureRecordOperationDurationGenerated Extends IUnknown
+    Sub Invoke(ByVal Sender As IAppCaptureRecordOperation, ByVal Args As IAppCaptureDurationGeneratedEventArgs)
+End Interface
+
+[InterfaceId("F00F69E5-9EE6-5119-9C39-F279F9FFD908")]
+Interface ITypedEventHandlerAppCaptureRecordOperationFileGenerated Extends IUnknown
+    Sub Invoke(ByVal Sender As IAppCaptureRecordOperation, ByVal Args As IAppCaptureFileGeneratedEventArgs)
+End Interface
+
+[InterfaceId("227CBF02-2DFB-5425-85B1-0D62CE5D1243")]
+Interface ITypedEventHandlerAppCaptureRecordOperationRecordingStateChanged Extends IUnknown
+    Sub Invoke(ByVal Sender As IAppCaptureRecordOperation, ByVal Args As IAppCaptureRecordingStateChangedEventArgs)
+End Interface
+
+[InterfaceId("C66020A9-1538-495C-9BBB-2BA870EC5861")]
+Interface IAppCaptureRecordOperation Extends IInspectable
+    [PreserveSig]
+    Function StopRecording() As HRESULT
+    Property Get State() As AppCaptureRecordingState
+    Property Get ErrorCode() As IReference_UInt32
+    Property Get Duration() As IReference_TimeSpan
+    Property Get File() As IStorageFile
+    Property Get IsFileTruncated() As IReference_Boolean
+    [PreserveSig]
+    Function AddRecordingStateChanged(ByVal Value As ITypedEventHandlerAppCaptureRecordOperationRecordingStateChanged, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveRecordingStateChanged(ByVal Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function AddDurationGenerated(ByVal Value As ITypedEventHandlerAppCaptureRecordOperationDurationGenerated, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveDurationGenerated(ByVal Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function AddFileGenerated(ByVal Value As ITypedEventHandlerAppCaptureRecordOperationFileGenerated, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveFileGenerated(ByVal Token As EventRegistrationToken) As HRESULT
+End Interface
+
+[InterfaceId("24FC8712-E305-490D-B415-6B1C9049736B")]
+Interface IAppCaptureRecordingStateChangedEventArgs Extends IInspectable
+    Property Get State() As AppCaptureRecordingState
+    Property Get ErrorCode() As Long
+End Interface
+
+[InterfaceId("44FEC0B5-34F5-4F18-AE8C-B9123ABBFC0D")]
+Interface IAppCaptureServices Extends IInspectable
+    Function Record() As IAppCaptureRecordOperation
+    Function RecordTimeSpan(ByVal StartTime As DateTime, ByVal Duration As TimeSpan) As IAppCaptureRecordOperation
+    Property Get CanCapture() As BooleanByte
+    Property Get State() As IAppCaptureState
+End Interface
+
+[InterfaceId("14683A86-8807-48D3-883A-970EE4532A39")]
+Interface IAppCaptureSettings Extends IInspectable
+    Property Set AppCaptureDestinationFolder(ByVal Value As IStorageFolder)
+    Property Get AppCaptureDestinationFolder() As IStorageFolder
+    Property Let AudioEncodingBitrate(ByVal Value As Long)
+    Property Get AudioEncodingBitrate() As Long
+    Property Let IsAudioCaptureEnabled(ByVal Value As BooleanByte)
+    Property Get IsAudioCaptureEnabled() As BooleanByte
+    Property Let CustomVideoEncodingBitrate(ByVal Value As Long)
+    Property Get CustomVideoEncodingBitrate() As Long
+    Property Let CustomVideoEncodingHeight(ByVal Value As Long)
+    Property Get CustomVideoEncodingHeight() As Long
+    Property Let CustomVideoEncodingWidth(ByVal Value As Long)
+    Property Get CustomVideoEncodingWidth() As Long
+    Property Let HistoricalBufferLength(ByVal Value As Long)
+    Property Get HistoricalBufferLength() As Long
+    Property Let HistoricalBufferLengthUnit(ByVal Value As AppCaptureHistoricalBufferLengthUnit)
+    Property Get HistoricalBufferLengthUnit() As AppCaptureHistoricalBufferLengthUnit
+    Property Let IsHistoricalCaptureEnabled(ByVal Value As BooleanByte)
+    Property Get IsHistoricalCaptureEnabled() As BooleanByte
+    Property Let IsHistoricalCaptureOnBatteryAllowed(ByVal Value As BooleanByte)
+    Property Get IsHistoricalCaptureOnBatteryAllowed() As BooleanByte
+    Property Let IsHistoricalCaptureOnWirelessDisplayAllowed(ByVal Value As BooleanByte)
+    Property Get IsHistoricalCaptureOnWirelessDisplayAllowed() As BooleanByte
+    Property Let MaximumRecordLength(ByVal Value As TimeSpan)
+    Property Get MaximumRecordLength() As TimeSpan
+    Property Set ScreenshotDestinationFolder(ByVal Value As IStorageFolder)
+    Property Get ScreenshotDestinationFolder() As IStorageFolder
+    Property Let VideoEncodingBitrateMode(ByVal Value As AppCaptureVideoEncodingBitrateMode)
+    Property Get VideoEncodingBitrateMode() As AppCaptureVideoEncodingBitrateMode
+    Property Let VideoEncodingResolutionMode(ByVal Value As AppCaptureVideoEncodingResolutionMode)
+    Property Get VideoEncodingResolutionMode() As AppCaptureVideoEncodingResolutionMode
+    Property Let IsAppCaptureEnabled(ByVal Value As BooleanByte)
+    Property Get IsAppCaptureEnabled() As BooleanByte
+    Property Get IsCpuConstrained() As BooleanByte
+    Property Get IsDisabledByPolicy() As BooleanByte
+    Property Get IsMemoryConstrained() As BooleanByte
+    Property Get HasHardwareEncoder() As BooleanByte
+End Interface
+
+[InterfaceId("FCB8CEE7-E26B-476F-9B1A-EC342D2A8FDE")]
+Interface IAppCaptureSettings2 Extends IInspectable
+    Property Get IsGpuConstrained() As BooleanByte
+    Property Get AlternateShortcutKeys() As IAppCaptureAlternateShortcutKeys
+End Interface
+
+[InterfaceId("A93502FE-88C2-42D6-AAAA-40FEFFD75AEC")]
+Interface IAppCaptureSettings3 Extends IInspectable
+    Property Let IsMicrophoneCaptureEnabled(ByVal Value As BooleanByte)
+    Property Get IsMicrophoneCaptureEnabled() As BooleanByte
+End Interface
+
+[InterfaceId("07C2774C-1A81-482F-A244-049D95F25B0B")]
+Interface IAppCaptureSettings4 Extends IInspectable
+    Property Let IsMicrophoneCaptureEnabledByDefault(ByVal Value As BooleanByte)
+    Property Get IsMicrophoneCaptureEnabledByDefault() As BooleanByte
+    Property Let SystemAudioGain(ByVal Value As Double)
+    Property Get SystemAudioGain() As Double
+    Property Let MicrophoneGain(ByVal Value As Double)
+    Property Get MicrophoneGain() As Double
+    Property Let VideoEncodingFrameRateMode(ByVal Value As AppCaptureVideoEncodingFrameRateMode)
+    Property Get VideoEncodingFrameRateMode() As AppCaptureVideoEncodingFrameRateMode
+End Interface
+
+[InterfaceId("18894522-B0E8-4BA0-8F13-3EAA5FA4013B")]
+Interface IAppCaptureSettings5 Extends IInspectable
+    Property Let IsEchoCancellationEnabled(ByVal Value As BooleanByte)
+    Property Get IsEchoCancellationEnabled() As BooleanByte
+    Property Let IsCursorImageCaptureEnabled(ByVal Value As BooleanByte)
+    Property Get IsCursorImageCaptureEnabled() As BooleanByte
+End Interface
+
+[InterfaceId("B74AE481-777B-5BC9-83DA-562D905A43F1")]
+Interface ITypedEventHandlerAppCaptureStateCaptureTargetClosed Extends IUnknown
+    Sub Invoke(ByVal Sender As IAppCaptureState, ByVal Args As IInspectable)
+End Interface
+
+[InterfaceId("0B28A1A3-372E-50E9-A613-37B97CFD7A68")]
+Interface ITypedEventHandlerAppCaptureStateMicrophoneCaptureStateChanged Extends IUnknown
+    Sub Invoke(ByVal Sender As IAppCaptureState, ByVal Args As IAppCaptureMicrophoneCaptureStateChangedEventArgs)
+End Interface
+
+[InterfaceId("73134372-D4EB-44CE-9538-465F506AC4EA")]
+Interface IAppCaptureState Extends IInspectable
+    Property Get IsTargetRunning() As BooleanByte
+    Property Get IsHistoricalCaptureEnabled() As BooleanByte
+    Property Get ShouldCaptureMicrophone() As BooleanByte
+    Property Let ShouldCaptureMicrophone(ByVal Value As BooleanByte)
+    [PreserveSig]
+    Function RestartMicrophoneCapture() As HRESULT
+    Property Get MicrophoneCaptureState() As AppCaptureMicrophoneCaptureState
+    Property Get MicrophoneCaptureError() As Long
+    [PreserveSig]
+    Function AddMicrophoneCaptureStateChanged(ByVal Value As ITypedEventHandlerAppCaptureStateMicrophoneCaptureStateChanged, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveMicrophoneCaptureStateChanged(ByVal Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function AddCaptureTargetClosed(ByVal Value As ITypedEventHandlerAppCaptureStateCaptureTargetClosed, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveCaptureTargetClosed(ByVal Token As EventRegistrationToken) As HRESULT
+End Interface
+
+[InterfaceId("F922DD6C-0A7E-4E74-8B20-9C1F902D08A1")]
+Interface IAppCaptureStatics Extends IInspectable
+    Function GetForCurrentView() As IAppCapture
+End Interface
+
+[InterfaceId("B2D881D4-836C-4DA4-AFD7-FACC041E1CF3")]
+Interface IAppCaptureStatics2 Extends IInspectable
+    Function SetAllowedAsync(ByVal Allowed As BooleanByte) As IAsyncAction
+End Interface
+
+[InterfaceId("48587540-6F93-4BB4-B8F3-E89E48948C91")]
+Interface ICameraCaptureUI Extends IInspectable
+    Property Get PhotoSettings() As ICameraCaptureUIPhotoCaptureSettings
+    Property Get VideoSettings() As ICameraCaptureUIVideoCaptureSettings
+    Function CaptureFileAsync(ByVal Mode As CameraCaptureUIMode) As IAsyncOperationIStorageFile
+End Interface
+
+[InterfaceId("B9F5BE97-3472-46A8-8A9E-04CE42CCC97D")]
+Interface ICameraCaptureUIPhotoCaptureSettings Extends IInspectable
+    Property Get Format() As CameraCaptureUIPhotoFormat
+    Property Let Format(ByVal Value As CameraCaptureUIPhotoFormat)
+    Property Get MaxResolution() As CameraCaptureUIMaxPhotoResolution
+    Property Let MaxResolution(ByVal Value As CameraCaptureUIMaxPhotoResolution)
+    Property Get CroppedSizeInPixels() As SIZEF
+    Property Let CroppedSizeInPixels(ByVal Value As SIZEF)
+    Property Get CroppedAspectRatio() As SIZEF
+    Property Let CroppedAspectRatio(ByVal Value As SIZEF)
+    Property Get AllowCropping() As BooleanByte
+    Property Let AllowCropping(ByVal Value As BooleanByte)
+End Interface
+
+[InterfaceId("64E92D1F-A28D-425A-B84F-E568335FF24E")]
+Interface ICameraCaptureUIVideoCaptureSettings Extends IInspectable
+    Property Get Format() As CameraCaptureUIVideoFormat
+    Property Let Format(ByVal Value As CameraCaptureUIVideoFormat)
+    Property Get MaxResolution() As CameraCaptureUIMaxVideoResolution
+    Property Let MaxResolution(ByVal Value As CameraCaptureUIMaxVideoResolution)
+    Property Get MaxDurationInSeconds() As Single
+    Property Let MaxDurationInSeconds(ByVal Value As Single)
+    Property Get AllowTrimming() As BooleanByte
+    Property Let AllowTrimming(ByVal Value As BooleanByte)
+End Interface
+
+[InterfaceId("3B0D5E34-3906-4B7D-946C-7BDE844499AE")]
+Interface ICameraOptionsUIStatics Extends IInspectable
+    [PreserveSig]
+    Function Show(ByVal MediaCapture As IMediaCapture) As HRESULT
+End Interface
+
+[InterfaceId("1DD2DE1F-571B-44D8-8E80-A08A1578766E")]
+Interface ICapturedFrame Extends IInspectable ' requires IClosable, IContentTypeProvider, IInputStream, IOutputStream, IRandomAccessStream, IRandomAccessStreamWithContentType
+    Property Get Width() As Long
+    Property Get Height() As Long
+End Interface
+
+[InterfaceId("543FA6D1-BD78-4866-ADDA-24314BC65DEA")]
+Interface ICapturedFrame2 Extends IInspectable
+    Property Get ControlValues() As ICapturedFrameControlValues
+    Property Get BitmapProperties() As IMap_IBitmapTypedValue
+End Interface
+
+[InterfaceId("90C65B7F-4E0D-4CA4-882D-7A144FED0A90")]
+Interface ICapturedFrameControlValues Extends IInspectable
+    Property Get Exposure() As IReference_TimeSpan
+    Property Get ExposureCompensation() As IReference_Single
+    Property Get IsoSpeed() As IReference_UInt32
+    Property Get Focus() As IReference_UInt32
+    Property Get SceneMode() As IReference_CaptureSceneMode
+    Property Get Flashed() As IReference_Boolean
+    Property Get FlashPowerPercent() As IReference_Single
+    Property Get WhiteBalance() As IReference_UInt32
+    Property Get ZoomFactor() As IReference_Single
+End Interface
+
+[InterfaceId("500B2B88-06D2-4AA7-A7DB-D37AF73321D8")]
+Interface ICapturedFrameControlValues2 Extends IInspectable
+    Property Get FocusState() As IReference_MediaCaptureFocusState
+    Property Get IsoDigitalGain() As IReference_Double
+    Property Get IsoAnalogGain() As IReference_Double
+    Property Get SensorFrameRate() As IMediaRatio
+    Property Get WhiteBalanceGain() As IReference_WhiteBalanceGain
+End Interface
+
+[InterfaceId("B58E8B6E-8503-49B5-9E86-897D26A3FF3D")]
+Interface ICapturedFrameWithSoftwareBitmap Extends IInspectable
+    Property Get SoftwareBitmap() As ISoftwareBitmap
+End Interface
+
+[InterfaceId("B0CE7E5A-CFCC-4D6C-8AD1-0869208ACA16")]
+Interface ICapturedPhoto Extends IInspectable
+    Property Get Frame() As ICapturedFrame
+    Property Get Thumbnail() As ICapturedFrame
+End Interface
+
+[InterfaceId("0DAB4F7E-BFEC-59E1-82CF-EBF64B1DB4F3")]
+Interface ITypedEventHandlerGameBarServicesCommandReceived Extends IUnknown
+    Sub Invoke(ByVal Sender As IGameBarServices, ByVal Args As IGameBarServicesCommandEventArgs)
+End Interface
+
+[InterfaceId("2DBEAD57-50A6-499E-8C6C-D330A7311796")]
+Interface IGameBarServices Extends IInspectable
+    Property Get TargetCapturePolicy() As GameBarTargetCapturePolicy
+    [PreserveSig]
+    Function EnableCapture() As HRESULT
+    [PreserveSig]
+    Function DisableCapture() As HRESULT
+    Property Get TargetInfo() As IGameBarServicesTargetInfo
+    Property Get SessionId() As LongPtr
+    Property Get AppBroadcastServices() As IAppBroadcastServices
+    Property Get AppCaptureServices() As IAppCaptureServices
+    [PreserveSig]
+    Function AddCommandReceived(ByVal Value As ITypedEventHandlerGameBarServicesCommandReceived, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveCommandReceived(ByVal Token As EventRegistrationToken) As HRESULT
+End Interface
+
+[InterfaceId("A74226B2-F176-4FCF-8FBB-CF698B2EB8E0")]
+Interface IGameBarServicesCommandEventArgs Extends IInspectable
+    Property Get Command() As GameBarCommand
+    Property Get Origin() As GameBarCommandOrigin
+End Interface
+
+[InterfaceId("2F85B809-7D8B-5BE4-9A69-81386D874C7F")]
+Interface ITypedEventHandlerGameBarServicesManagerGameBarServicesCreated Extends IUnknown
+    Sub Invoke(ByVal Sender As IGameBarServicesManager, ByVal Args As IGameBarServicesManagerGameBarServicesCreatedEventArgs)
+End Interface
+
+[InterfaceId("3A4B9CFA-7F8B-4C60-9DBB-0BCD262DFFC6")]
+Interface IGameBarServicesManager Extends IInspectable
+    [PreserveSig]
+    Function AddGameBarServicesCreated(ByVal Value As ITypedEventHandlerGameBarServicesManagerGameBarServicesCreated, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveGameBarServicesCreated(ByVal Token As EventRegistrationToken) As HRESULT
+End Interface
+
+[InterfaceId("EDEDBD9C-143E-49A3-A5EA-0B1995C8D46E")]
+Interface IGameBarServicesManagerGameBarServicesCreatedEventArgs Extends IInspectable
+    Property Get GameBarServices() As IGameBarServices
+End Interface
+
+[InterfaceId("34C1B616-FF25-4792-98F2-D3753F15AC13")]
+Interface IGameBarServicesManagerStatics Extends IInspectable
+    Function GetDefault() As IGameBarServicesManager
+End Interface
+
+[InterfaceId("B4202F92-1611-4E05-B6EF-DFD737AE33B0")]
+Interface IGameBarServicesTargetInfo Extends IInspectable
+    Property Get DisplayName() As LongPtr
+    Property Get AppId() As LongPtr
+    Property Get TitleId() As LongPtr
+    Property Get DisplayMode() As GameBarServicesDisplayMode
+End Interface
+
+[InterfaceId("41C8BAF7-FF3F-49F0-A477-F195E3CE5108")]
+Interface ILowLagMediaRecording Extends IInspectable
+    Function StartAsync() As IAsyncAction
+    Function StopAsync() As IAsyncAction
+    Function FinishAsync() As IAsyncAction
+End Interface
+
+[InterfaceId("6369C758-5644-41E2-97AF-8EF56A25E225")]
+Interface ILowLagMediaRecording2 Extends IInspectable
+    Function PauseAsync(ByVal Behavior As MediaCapturePauseBehavior) As IAsyncAction
+    Function ResumeAsync() As IAsyncAction
+End Interface
+
+[InterfaceId("202A2618-5478-5EBA-9BD3-9D83F462747E")]
+Interface IAsyncOperationIMediaCapturePauseResult Extends IInspectable
+    Property Set Completed(ByVal Handler As IAsyncOperationCompletedHandlerIMediaCapturePauseResult)
+    Property Get Completed() As IAsyncOperationCompletedHandlerIMediaCapturePauseResult
+    Function GetResults() As IMediaCapturePauseResult
+End Interface
+
+[InterfaceId("FE726311-26BF-51CD-BDEB-F40F8F469D0A")]
+Interface IAsyncOperationCompletedHandlerIMediaCapturePauseResult Extends IUnknown
+    Sub Invoke(ByVal AsyncOperation As IAsyncOperationIMediaCapturePauseResult, ByVal AsyncStatus As AsyncStatus)
+End Interface
+
+[InterfaceId("EB798827-A4A9-533A-9E83-0FB085B2AD36")]
+Interface IAsyncOperationIMediaCaptureStopResult Extends IInspectable
+    Property Set Completed(ByVal Handler As IAsyncOperationCompletedHandlerIMediaCaptureStopResult)
+    Property Get Completed() As IAsyncOperationCompletedHandlerIMediaCaptureStopResult
+    Function GetResults() As IMediaCaptureStopResult
+End Interface
+
+[InterfaceId("5D4E0674-1DF4-5326-BA78-72F6655D2A76")]
+Interface IAsyncOperationCompletedHandlerIMediaCaptureStopResult Extends IUnknown
+    Sub Invoke(ByVal AsyncOperation As IAsyncOperationIMediaCaptureStopResult, ByVal AsyncStatus As AsyncStatus)
+End Interface
+
+[InterfaceId("5C33AB12-48F7-47DA-B41E-90880A5FE0EC")]
+Interface ILowLagMediaRecording3 Extends IInspectable
+    Function PauseWithResultAsync(ByVal Behavior As MediaCapturePauseBehavior) As IAsyncOperationIMediaCapturePauseResult
+    Function StopWithResultAsync() As IAsyncOperationIMediaCaptureStopResult
+End Interface
+
+[InterfaceId("AF5235B1-4778-55E1-B49F-608048EA9BD9")]
+Interface IAsyncOperationICapturedPhoto Extends IInspectable
+    Property Set Completed(ByVal Handler As IAsyncOperationCompletedHandlerICapturedPhoto)
+    Property Get Completed() As IAsyncOperationCompletedHandlerICapturedPhoto
+    Function GetResults() As ICapturedPhoto
+End Interface
+
+[InterfaceId("FDB0AA78-04E1-56B3-B6FC-F4DE79CD41A0")]
+Interface IAsyncOperationCompletedHandlerICapturedPhoto Extends IUnknown
+    Sub Invoke(ByVal AsyncOperation As IAsyncOperationICapturedPhoto, ByVal AsyncStatus As AsyncStatus)
+End Interface
+
+[InterfaceId("A37251B7-6B44-473D-8F24-F703D6C0EC44")]
+Interface ILowLagPhotoCapture Extends IInspectable
+    Function CaptureAsync() As IAsyncOperationICapturedPhoto
+    Function FinishAsync() As IAsyncAction
+End Interface
+
+[InterfaceId("B98AAB3A-FE80-5B27-88C3-E77FF585A96B")]
+Interface ITypedEventHandlerLowLagPhotoSequenceCapturePhotoCaptured Extends IUnknown
+    Sub Invoke(ByVal Sender As ILowLagPhotoSequenceCapture, ByVal Args As IPhotoCapturedEventArgs)
+End Interface
+
+[InterfaceId("7CC346BB-B9A9-4C91-8FFA-287E9C668669")]
+Interface ILowLagPhotoSequenceCapture Extends IInspectable
+    Function StartAsync() As IAsyncAction
+    Function StopAsync() As IAsyncAction
+    Function FinishAsync() As IAsyncAction
+    [PreserveSig]
+    Function AddPhotoCaptured(ByVal Handler As ITypedEventHandlerLowLagPhotoSequenceCapturePhotoCaptured, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemovePhotoCaptured(ByVal Token As EventRegistrationToken) As HRESULT
+End Interface
+
+[InterfaceId("C61AFBB4-FB10-4A34-AC18-CA80D9C8E7EE")]
+Interface IMediaCapture Extends IInspectable
+    Function InitializeAsync() As IAsyncAction
+    Function InitializeWithSettingsAsync(ByVal MediaCaptureInitializationSettings As IMediaCaptureInitializationSettings) As IAsyncAction
+    Function StartRecordToStorageFileAsync(ByVal EncodingProfile As IMediaEncodingProfile, ByVal File As IStorageFile) As IAsyncAction
+    Function StartRecordToStreamAsync(ByVal EncodingProfile As IMediaEncodingProfile, ByVal Stream As IRandomAccessStream) As IAsyncAction
+    Function StartRecordToCustomSinkAsync(ByVal EncodingProfile As IMediaEncodingProfile, ByVal CustomMediaSink As IMediaExtension) As IAsyncAction
+    Function StartRecordToCustomSinkIdAsync(ByVal EncodingProfile As IMediaEncodingProfile, ByVal CustomSinkActivationId As LongPtr, ByVal CustomSinkSettings As IPropertySet) As IAsyncAction
+    Function StopRecordAsync() As IAsyncAction
+    Function CapturePhotoToStorageFileAsync(ByVal Type As IImageEncodingProperties, ByVal File As IStorageFile) As IAsyncAction
+    Function CapturePhotoToStreamAsync(ByVal Type As IImageEncodingProperties, ByVal Stream As IRandomAccessStream) As IAsyncAction
+    Function AddEffectAsync(ByVal MediaStreamType As MediaStreamType, ByVal EffectActivationID As LongPtr, ByVal EffectSettings As IPropertySet) As IAsyncAction
+    Function ClearEffectsAsync(ByVal MediaStreamType As MediaStreamType) As IAsyncAction
+    [PreserveSig]
+    Function SetEncoderProperty(ByVal MediaStreamType As MediaStreamType, ByVal PropertyId As UUID, ByVal PropertyValue As IInspectable) As HRESULT
+    Function GetEncoderProperty(ByVal MediaStreamType As MediaStreamType, ByVal PropertyId As UUID) As IInspectable
+    [PreserveSig]
+    Function AddFailed(ByVal ErrorEventHandler As IMediaCaptureFailedEventHandler, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveFailed(ByVal Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function AddRecordLimitationExceeded(ByVal RecordLimitationExceededEventHandler As IRecordLimitationExceededEventHandler, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveRecordLimitationExceeded(ByVal Token As EventRegistrationToken) As HRESULT
+    Property Get MediaCaptureSettings() As IMediaCaptureSettings
+    Property Get AudioDeviceController() As IAudioDeviceController
+    Property Get VideoDeviceController() As IVideoDeviceController
+    [PreserveSig]
+    Function SetPreviewMirroring(ByVal Value As BooleanByte) As HRESULT
+    Function GetPreviewMirroring() As BooleanByte
+    [PreserveSig]
+    Function SetPreviewRotation(ByVal Value As VideoRotation) As HRESULT
+    Function GetPreviewRotation() As VideoRotation
+    [PreserveSig]
+    Function SetRecordRotation(ByVal Value As VideoRotation) As HRESULT
+    Function GetRecordRotation() As VideoRotation
+End Interface
+
+[InterfaceId("4FEBEFCC-BEC0-5433-A7BA-7603D1EDC7B9")]
+Interface IAsyncOperationILowLagMediaRecording Extends IInspectable
+    Property Set Completed(ByVal Handler As IAsyncOperationCompletedHandlerILowLagMediaRecording)
+    Property Get Completed() As IAsyncOperationCompletedHandlerILowLagMediaRecording
+    Function GetResults() As ILowLagMediaRecording
+End Interface
+
+[InterfaceId("64A8F80C-E646-52BB-8F4B-2A1D6B0B8219")]
+Interface IAsyncOperationCompletedHandlerILowLagMediaRecording Extends IUnknown
+    Sub Invoke(ByVal AsyncOperation As IAsyncOperationILowLagMediaRecording, ByVal AsyncStatus As AsyncStatus)
+End Interface
+
+[InterfaceId("AF24404B-7E0D-5FFE-BBC8-AAF6FFE208FC")]
+Interface IAsyncOperationILowLagPhotoCapture Extends IInspectable
+    Property Set Completed(ByVal Handler As IAsyncOperationCompletedHandlerILowLagPhotoCapture)
+    Property Get Completed() As IAsyncOperationCompletedHandlerILowLagPhotoCapture
+    Function GetResults() As ILowLagPhotoCapture
+End Interface
+
+[InterfaceId("6CEBB368-4E84-500A-9A5F-7B9A1ADE1F44")]
+Interface IAsyncOperationCompletedHandlerILowLagPhotoCapture Extends IUnknown
+    Sub Invoke(ByVal AsyncOperation As IAsyncOperationILowLagPhotoCapture, ByVal AsyncStatus As AsyncStatus)
+End Interface
+
+[InterfaceId("AC9F0460-9D14-5AF0-B17B-37EA2D76A80D")]
+Interface IAsyncOperationILowLagPhotoSequenceCapture Extends IInspectable
+    Property Set Completed(ByVal Handler As IAsyncOperationCompletedHandlerILowLagPhotoSequenceCapture)
+    Property Get Completed() As IAsyncOperationCompletedHandlerILowLagPhotoSequenceCapture
+    Function GetResults() As ILowLagPhotoSequenceCapture
+End Interface
+
+[InterfaceId("767E0FDC-9563-572D-84E1-9CAAB0DEB63F")]
+Interface IAsyncOperationCompletedHandlerILowLagPhotoSequenceCapture Extends IUnknown
+    Sub Invoke(ByVal AsyncOperation As IAsyncOperationILowLagPhotoSequenceCapture, ByVal AsyncStatus As AsyncStatus)
+End Interface
+
+[InterfaceId("9CC68260-7DA1-4043-B652-21B8878DAFF9")]
+Interface IMediaCapture2 Extends IInspectable
+    Function PrepareLowLagRecordToStorageFileAsync(ByVal EncodingProfile As IMediaEncodingProfile, ByVal File As IStorageFile) As IAsyncOperationILowLagMediaRecording
+    Function PrepareLowLagRecordToStreamAsync(ByVal EncodingProfile As IMediaEncodingProfile, ByVal Stream As IRandomAccessStream) As IAsyncOperationILowLagMediaRecording
+    Function PrepareLowLagRecordToCustomSinkAsync(ByVal EncodingProfile As IMediaEncodingProfile, ByVal CustomMediaSink As IMediaExtension) As IAsyncOperationILowLagMediaRecording
+    Function PrepareLowLagRecordToCustomSinkIdAsync(ByVal EncodingProfile As IMediaEncodingProfile, ByVal CustomSinkActivationId As LongPtr, ByVal CustomSinkSettings As IPropertySet) As IAsyncOperationILowLagMediaRecording
+    Function PrepareLowLagPhotoCaptureAsync(ByVal Type As IImageEncodingProperties) As IAsyncOperationILowLagPhotoCapture
+    Function PrepareLowLagPhotoSequenceCaptureAsync(ByVal Type As IImageEncodingProperties) As IAsyncOperationILowLagPhotoSequenceCapture
+    Function SetEncodingPropertiesAsync(ByVal MediaStreamType As MediaStreamType, ByVal MediaEncodingProperties As IMediaEncodingProperties, ByVal EncoderProperties As IMap_GUID_IInspectable) As IAsyncAction
+End Interface
+
+[InterfaceId("0327C8BC-3148-53F3-8A3D-CDB12E49E132")]
+Interface IAsyncOperationIVariablePhotoSequenceCapture Extends IInspectable
+    Property Set Completed(ByVal Handler As IAsyncOperationCompletedHandlerIVariablePhotoSequenceCapture)
+    Property Get Completed() As IAsyncOperationCompletedHandlerIVariablePhotoSequenceCapture
+    Function GetResults() As IVariablePhotoSequenceCapture
+End Interface
+
+[InterfaceId("18A55DD3-01E3-5AE5-9B5E-C84AD40CF6B7")]
+Interface IAsyncOperationCompletedHandlerIVariablePhotoSequenceCapture Extends IUnknown
+    Sub Invoke(ByVal AsyncOperation As IAsyncOperationIVariablePhotoSequenceCapture, ByVal AsyncStatus As AsyncStatus)
+End Interface
+
+[InterfaceId("0561D9E8-0290-5332-B15E-B0D51ABE737C")]
+Interface ITypedEventHandlerMediaCaptureFocusChanged Extends IUnknown
+    Sub Invoke(ByVal Sender As IMediaCapture, ByVal Args As IMediaCaptureFocusChangedEventArgs)
+End Interface
+
+[InterfaceId("37DC3B13-B096-5F43-8104-F0DC4302E2B5")]
+Interface ITypedEventHandlerMediaCapturePhotoConfirmationCaptured Extends IUnknown
+    Sub Invoke(ByVal Sender As IMediaCapture, ByVal Args As IPhotoConfirmationCapturedEventArgs)
+End Interface
+
+[InterfaceId("D4136F30-1564-466E-BC0A-AF94E02AB016")]
+Interface IMediaCapture3 Extends IInspectable
+    Function PrepareVariablePhotoSequenceCaptureAsync(ByVal Type As IImageEncodingProperties) As IAsyncOperationIVariablePhotoSequenceCapture
+    [PreserveSig]
+    Function AddFocusChanged(ByVal Handler As ITypedEventHandlerMediaCaptureFocusChanged, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveFocusChanged(ByVal Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function AddPhotoConfirmationCaptured(ByVal Handler As ITypedEventHandlerMediaCapturePhotoConfirmationCaptured, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemovePhotoConfirmationCaptured(ByVal Token As EventRegistrationToken) As HRESULT
+End Interface
+
+[InterfaceId("8EB156D9-2CE4-5ECD-81F4-A08731FB74CF")]
+Interface IAsyncOperationIAdvancedPhotoCapture Extends IInspectable
+    Property Set Completed(ByVal Handler As IAsyncOperationCompletedHandlerIAdvancedPhotoCapture)
+    Property Get Completed() As IAsyncOperationCompletedHandlerIAdvancedPhotoCapture
+    Function GetResults() As IAdvancedPhotoCapture
+End Interface
+
+[InterfaceId("D1DFAEC8-EED3-5CE3-9832-18344C98FA71")]
+Interface IAsyncOperationCompletedHandlerIAdvancedPhotoCapture Extends IUnknown
+    Sub Invoke(ByVal AsyncOperation As IAsyncOperationIAdvancedPhotoCapture, ByVal AsyncStatus As AsyncStatus)
+End Interface
+
+[InterfaceId("F5CB3303-1C1F-5D30-B402-EFA192E80C49")]
+Interface IAsyncOperationIMediaExtension Extends IInspectable
+    Property Set Completed(ByVal Handler As IAsyncOperationCompletedHandlerIMediaExtension)
+    Property Get Completed() As IAsyncOperationCompletedHandlerIMediaExtension
+    Function GetResults() As IMediaExtension
+End Interface
+
+[InterfaceId("9C1B578E-FB7D-5BAB-BA39-86387FE533B6")]
+Interface IAsyncOperationCompletedHandlerIMediaExtension Extends IUnknown
+    Sub Invoke(ByVal AsyncOperation As IAsyncOperationIMediaExtension, ByVal AsyncStatus As AsyncStatus)
+End Interface
+
+[InterfaceId("F12E515D-AC45-5153-96B2-CE53AB594A57")]
+Interface IAsyncOperationIVideoFrame Extends IInspectable
+    Property Set Completed(ByVal Handler As IAsyncOperationCompletedHandlerIVideoFrame)
+    Property Get Completed() As IAsyncOperationCompletedHandlerIVideoFrame
+    Function GetResults() As IVideoFrame
+End Interface
+
+[InterfaceId("6086F2FB-4A29-54CA-B6A3-F2391A03BC3B")]
+Interface IAsyncOperationCompletedHandlerIVideoFrame Extends IUnknown
+    Sub Invoke(ByVal AsyncOperation As IAsyncOperationIVideoFrame, ByVal AsyncStatus As AsyncStatus)
+End Interface
+
+[InterfaceId("44C588F1-1BB7-5E12-8413-3CF0373C0BC8")]
+Interface ITypedEventHandlerMediaCaptureIInspectable Extends IUnknown
+    Sub Invoke(ByVal Sender As IMediaCapture, ByVal Args As IInspectable)
+End Interface
+
+[InterfaceId("BACD6FD6-FB08-4947-AEA2-CE14EFF0CE13")]
+Interface IMediaCapture4 Extends IInspectable
+    Function AddAudioEffectAsync(ByVal Definition As IAudioEffectDefinition) As IAsyncOperationIMediaExtension
+    Function AddVideoEffectAsync(ByVal Definition As IVideoEffectDefinition, ByVal MediaStreamType As MediaStreamType) As IAsyncOperationIMediaExtension
+    Function PauseRecordAsync(ByVal Behavior As MediaCapturePauseBehavior) As IAsyncAction
+    Function ResumeRecordAsync() As IAsyncAction
+    [PreserveSig]
+    Function AddCameraStreamStateChanged(ByVal Handler As ITypedEventHandlerMediaCaptureIInspectable, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveCameraStreamStateChanged(ByVal Token As EventRegistrationToken) As HRESULT
+    Property Get CameraStreamState() As CameraStreamState
+    Function GetPreviewFrameAsync() As IAsyncOperationIVideoFrame
+    Function GetPreviewFrameCopyAsync(ByVal Destination As IVideoFrame) As IAsyncOperationIVideoFrame
+    [PreserveSig]
+    Function AddThermalStatusChanged(ByVal Handler As ITypedEventHandlerMediaCaptureIInspectable, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveThermalStatusChanged(ByVal Token As EventRegistrationToken) As HRESULT
+    Property Get ThermalStatus() As MediaCaptureThermalStatus
+    Function PrepareAdvancedPhotoCaptureAsync(ByVal EncodingProperties As IImageEncodingProperties) As IAsyncOperationIAdvancedPhotoCapture
+End Interface
+
+[InterfaceId("A10CB14D-7935-5C87-9026-8ABE792A3BE5")]
+Interface IAsyncOperationIMediaFrameReader Extends IInspectable
+    Property Set Completed(ByVal Handler As IAsyncOperationCompletedHandlerIMediaFrameReader)
+    Property Get Completed() As IAsyncOperationCompletedHandlerIMediaFrameReader
+    Function GetResults() As IMediaFrameReader
+End Interface
+
+[InterfaceId("A6214DAD-B917-5C89-A068-E32C9A7037D3")]
+Interface IAsyncOperationCompletedHandlerIMediaFrameReader Extends IUnknown
+    Sub Invoke(ByVal AsyncOperation As IAsyncOperationIMediaFrameReader, ByVal AsyncStatus As AsyncStatus)
+End Interface
+
+[InterfaceId("D8EC36B7-64EB-5675-AD81-62233E483E17")]
+Interface IIterator_KVP_IMediaFrameSource Extends IInspectable
+    Property Get Current() As KVP_IMediaFrameSource
+    Property Get HasCurrent() As BooleanByte
+    Function MoveNext() As BooleanByte
+    Function GetMany(ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("A038E80F-0B3D-5CD4-849D-13036E1F506E")]
+Interface IIterable_KVP_IMediaFrameSource Extends IInspectable
+    Function First() As IIterator_KVP_IMediaFrameSource
+End Interface
+
+[InterfaceId("29F35A95-7EAE-55A7-BC19-ED87BAED4869")]
+Interface KVP_IMediaFrameSource Extends IInspectable
+    Property Get Key() As LongPtr
+    Property Get Value() As IMediaFrameSource
+End Interface
+
+[InterfaceId("534EA61F-8BE7-5E93-B01B-AE1F9DD242A4")]
+Interface IMapView_IMediaFrameSource Extends IInspectable
+    Function Lookup(ByVal Key As LongPtr) As IMediaFrameSource
+    Property Get Size() As Long
+    Function HasKey(ByVal Key As LongPtr) As BooleanByte
+    Sub Split(First As IMapView_IMediaFrameSource, Second As IMapView_IMediaFrameSource)
+End Interface
+
+[InterfaceId("DA787C22-3A9B-4720-A71E-97900A316E5A")]
+Interface IMediaCapture5 Extends IInspectable
+    Function RemoveEffectAsync(ByVal Effect As IMediaExtension) As IAsyncAction
+    Function PauseRecordWithResultAsync(ByVal Behavior As MediaCapturePauseBehavior) As IAsyncOperationIMediaCapturePauseResult
+    Function StopRecordWithResultAsync() As IAsyncOperationIMediaCaptureStopResult
+    Property Get FrameSources() As IMapView_IMediaFrameSource
+    Function CreateFrameReaderAsync(ByVal InputSource As IMediaFrameSource) As IAsyncOperationIMediaFrameReader
+    Function CreateFrameReaderWithSubtypeAsync(ByVal InputSource As IMediaFrameSource, ByVal OutputSubtype As LongPtr) As IAsyncOperationIMediaFrameReader
+    Function CreateFrameReaderWithSubtypeAndSizeAsync(ByVal InputSource As IMediaFrameSource, ByVal OutputSubtype As LongPtr, ByVal OutputSize As BitmapSize) As IAsyncOperationIMediaFrameReader
+End Interface
+
+[InterfaceId("53D56BE8-F110-5226-9CE1-A8C26A572576")]
+Interface IAsyncOperationIMultiSourceMediaFrameReader Extends IInspectable
+    Property Set Completed(ByVal Handler As IAsyncOperationCompletedHandlerIMultiSourceMediaFrameReader)
+    Property Get Completed() As IAsyncOperationCompletedHandlerIMultiSourceMediaFrameReader
+    Function GetResults() As IMultiSourceMediaFrameReader
+End Interface
+
+[InterfaceId("69993778-A48C-50CC-A6F0-5368F58A297A")]
+Interface IAsyncOperationCompletedHandlerIMultiSourceMediaFrameReader Extends IUnknown
+    Sub Invoke(ByVal AsyncOperation As IAsyncOperationIMultiSourceMediaFrameReader, ByVal AsyncStatus As AsyncStatus)
+End Interface
+
+[InterfaceId("D05E53CD-BBEC-5FB7-8E4E-DE86115B5E88")]
+Interface IIterator_IMediaFrameSource Extends IInspectable
+    Property Get Current() As IMediaFrameSource
+    Property Get HasCurrent() As BooleanByte
+    Function MoveNext() As BooleanByte
+    Function GetMany(ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("0D447BE3-8C91-581D-8071-17984B8B5994")]
+Interface IIterable_IMediaFrameSource Extends IInspectable
+    Function First() As IIterator_IMediaFrameSource
+End Interface
+
+[InterfaceId("5C91F8BA-B379-53FF-A288-24E7883BF592")]
+Interface ITypedEventHandlerMediaCaptureCaptureDeviceExclusiveControlStatusChanged Extends IUnknown
+    Sub Invoke(ByVal Sender As IMediaCapture, ByVal Args As IMediaCaptureDeviceExclusiveControlStatusChangedEventArgs)
+End Interface
+
+[InterfaceId("228948BD-4B20-4BB1-9FD6-A583212A1012")]
+Interface IMediaCapture6 Extends IInspectable
+    [PreserveSig]
+    Function AddCaptureDeviceExclusiveControlStatusChanged(ByVal Handler As ITypedEventHandlerMediaCaptureCaptureDeviceExclusiveControlStatusChanged, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveCaptureDeviceExclusiveControlStatusChanged(ByVal Token As EventRegistrationToken) As HRESULT
+    Function CreateMultiSourceFrameReaderAsync(ByVal InputSources As IIterable_IMediaFrameSource) As IAsyncOperationIMultiSourceMediaFrameReader
+End Interface
+
+[InterfaceId("9169F102-8888-541A-95BC-24E4D462542A")]
+Interface IMediaCapture7 Extends IInspectable
+    Function CreateRelativePanelWatcher(ByVal CaptureMode As StreamingCaptureMode, ByVal DisplayRegion As IDisplayRegion) As IMediaCaptureRelativePanelWatcher
+End Interface
+
+[InterfaceId("9D2F920D-A588-43C6-89D6-5AD322AF006A")]
+Interface IMediaCaptureDeviceExclusiveControlStatusChangedEventArgs Extends IInspectable
+    Property Get DeviceId() As LongPtr
+    Property Get Status() As MediaCaptureDeviceExclusiveControlStatus
+End Interface
+
+[InterfaceId("80FDE3F4-54C4-42C0-8D19-CEA1A87CA18B")]
+Interface IMediaCaptureFailedEventArgs Extends IInspectable
+    Property Get Message() As LongPtr
+    Property Get Code() As Long
+End Interface
+
+[InterfaceId("81E1BC7F-2277-493E-ABEE-D3F44FF98C04")]
+Interface IMediaCaptureFocusChangedEventArgs Extends IInspectable
+    Property Get FocusState() As MediaCaptureFocusState
+End Interface
+
+[InterfaceId("9782BA70-EA65-4900-9356-8CA887726884")]
+Interface IMediaCaptureInitializationSettings Extends IInspectable
+    Property Let AudioDeviceId(ByVal Value As LongPtr)
+    Property Get AudioDeviceId() As LongPtr
+    Property Let VideoDeviceId(ByVal Value As LongPtr)
+    Property Get VideoDeviceId() As LongPtr
+    Property Let StreamingCaptureMode(ByVal Value As StreamingCaptureMode)
+    Property Get StreamingCaptureMode() As StreamingCaptureMode
+    Property Let PhotoCaptureSource(ByVal Value As PhotoCaptureSource)
+    Property Get PhotoCaptureSource() As PhotoCaptureSource
+End Interface
+
+[InterfaceId("404E0626-C9DC-43E9-AEE4-E6BF1B57B44C")]
+Interface IMediaCaptureInitializationSettings2 Extends IInspectable
+    Property Let MediaCategory(ByVal Value As MediaCategory)
+    Property Get MediaCategory() As MediaCategory
+    Property Set AudioProcessing(ByVal Value As AudioProcessing)
+    Property Get AudioProcessing() As AudioProcessing
+End Interface
+
+[InterfaceId("F502A537-4CB7-4D28-95ED-4F9F012E0518")]
+Interface IMediaCaptureInitializationSettings4 Extends IInspectable
+    Property Get VideoProfile() As IMediaCaptureVideoProfile
+    Property Set VideoProfile(ByVal Value As IMediaCaptureVideoProfile)
+    Property Get PreviewMediaDescription() As IMediaCaptureVideoProfileMediaDescription
+    Property Set PreviewMediaDescription(ByVal Value As IMediaCaptureVideoProfileMediaDescription)
+    Property Get RecordMediaDescription() As IMediaCaptureVideoProfileMediaDescription
+    Property Set RecordMediaDescription(ByVal Value As IMediaCaptureVideoProfileMediaDescription)
+    Property Get PhotoMediaDescription() As IMediaCaptureVideoProfileMediaDescription
+    Property Set PhotoMediaDescription(ByVal Value As IMediaCaptureVideoProfileMediaDescription)
+End Interface
+
+[InterfaceId("D5A2E3B8-2626-4E94-B7B3-5308A0F64B1A")]
+Interface IMediaCaptureInitializationSettings5 Extends IInspectable
+    Property Get SourceGroup() As IMediaFrameSourceGroup
+    Property Set SourceGroup(ByVal Value As IMediaFrameSourceGroup)
+    Property Get SharingMode() As MediaCaptureSharingMode
+    Property Let SharingMode(ByVal Value As MediaCaptureSharingMode)
+    Property Get MemoryPreference() As MediaCaptureMemoryPreference
+    Property Let MemoryPreference(ByVal Value As MediaCaptureMemoryPreference)
+End Interface
+
+[InterfaceId("B2E26B47-3DB1-4D33-AB63-0FFA09056585")]
+Interface IMediaCaptureInitializationSettings6 Extends IInspectable
+    Property Get AlwaysPlaySystemShutterSound() As BooleanByte
+    Property Let AlwaysPlaySystemShutterSound(ByVal Value As BooleanByte)
+End Interface
+
+[InterfaceId("41546967-F58A-5D82-9EF4-ED572FB5E34E")]
+Interface IMediaCaptureInitializationSettings7 Extends IInspectable
+    Property Get DeviceUriPasswordCredential() As IPasswordCredential
+    Property Set DeviceUriPasswordCredential(ByVal Value As IPasswordCredential)
+    Property Get DeviceUri() As IUri
+    Property Set DeviceUri(ByVal Value As IUri)
+End Interface
+
+[InterfaceId("AEC47CA3-4477-4B04-A06F-2C1C5182FE9D")]
+Interface IMediaCapturePauseResult Extends IInspectable
+    Property Get LastFrame() As IVideoFrame
+    Property Get RecordDuration() As TimeSpan
+End Interface
+
+[InterfaceId("E4314CA0-8288-5965-A0D3-67D0B532BDC5")]
+Interface ITypedEventHandlerMediaCaptureRelativePanelWatcherChanged Extends IUnknown
+    Sub Invoke(ByVal Sender As IMediaCaptureRelativePanelWatcher, ByVal Args As IInspectable)
+End Interface
+
+[InterfaceId("7D896566-04BE-5B89-B30E-BD34A9F12DB0")]
+Interface IMediaCaptureRelativePanelWatcher Extends IInspectable
+    Property Get RelativePanel() As IPanel
+    [PreserveSig]
+    Function AddChanged(ByVal Handler As ITypedEventHandlerMediaCaptureRelativePanelWatcherChanged, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveChanged(ByVal Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function Start() As HRESULT
+    [PreserveSig]
+    Function Stop() As HRESULT
+End Interface
+
+[InterfaceId("1D83AAFE-6D45-4477-8DC4-AC5BC01C4091")]
+Interface IMediaCaptureSettings Extends IInspectable
+    Property Get AudioDeviceId() As LongPtr
+    Property Get VideoDeviceId() As LongPtr
+    Property Get StreamingCaptureMode() As StreamingCaptureMode
+    Property Get PhotoCaptureSource() As PhotoCaptureSource
+    Property Get VideoDeviceCharacteristic() As VideoDeviceCharacteristic
+End Interface
+
+[InterfaceId("6F9E7CFB-FA9F-4B13-9CBE-5AB94F1F3493")]
+Interface IMediaCaptureSettings2 Extends IInspectable
+    Property Get ConcurrentRecordAndPhotoSupported() As BooleanByte
+    Property Get ConcurrentRecordAndPhotoSequenceSupported() As BooleanByte
+    Property Get CameraSoundRequiredForRegion() As BooleanByte
+    Property Get Horizontal35mmEquivalentFocalLength() As IReference_UInt32
+    Property Get PitchOffsetDegrees() As IReference_Int32
+    Property Get Vertical35mmEquivalentFocalLength() As IReference_UInt32
+    Property Get MediaCategory() As MediaCategory
+    Property Get AudioProcessing() As AudioProcessing
+End Interface
+
+[InterfaceId("303C67C2-8058-4B1B-B877-8C2EF3528440")]
+Interface IMediaCaptureSettings3 Extends IInspectable
+    Property Get Direct3D11Device() As IDirect3DDevice
+End Interface
+
+[InterfaceId("ACEF81FF-99ED-4645-965E-1925CFC63834")]
+Interface IMediaCaptureStatics Extends IInspectable
+    Function IsVideoProfileSupported(ByVal VideoDeviceId As LongPtr) As BooleanByte
+    Function FindAllVideoProfiles(ByVal VideoDeviceId As LongPtr) As IVectorView_IMediaCaptureVideoProfile
+    Function FindConcurrentProfiles(ByVal VideoDeviceId As LongPtr) As IVectorView_IMediaCaptureVideoProfile
+    Function FindKnownVideoProfiles(ByVal VideoDeviceId As LongPtr, ByVal Name As KnownVideoProfile) As IVectorView_IMediaCaptureVideoProfile
+End Interface
+
+[InterfaceId("F9DB6A2A-A092-4AD1-97D4-F201F9D082DB")]
+Interface IMediaCaptureStopResult Extends IInspectable
+    Property Get LastFrame() As IVideoFrame
+    Property Get RecordDuration() As TimeSpan
+End Interface
+
+[InterfaceId("27727073-549E-447F-A20A-4F03C479D8C0")]
+Interface IMediaCaptureVideoPreview Extends IInspectable
+    Function StartPreviewAsync() As IAsyncAction
+    Function StartPreviewToCustomSinkAsync(ByVal EncodingProfile As IMediaEncodingProfile, ByVal CustomMediaSink As IMediaExtension) As IAsyncAction
+    Function StartPreviewToCustomSinkIdAsync(ByVal EncodingProfile As IMediaEncodingProfile, ByVal CustomSinkActivationId As LongPtr, ByVal CustomSinkSettings As IPropertySet) As IAsyncAction
+    Function StopPreviewAsync() As IAsyncAction
+End Interface
+
+[InterfaceId("A9BC95F8-B5C0-5108-B9ED-A902339366E9")]
+Interface IIterator_IMediaCaptureVideoProfile Extends IInspectable
+    Property Get Current() As IMediaCaptureVideoProfile
+    Property Get HasCurrent() As BooleanByte
+    Function MoveNext() As BooleanByte
+    Function GetMany(ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("DBD49D71-E07B-5E11-824A-62ACE8BDFC3E")]
+Interface IIterable_IMediaCaptureVideoProfile Extends IInspectable
+    Function First() As IIterator_IMediaCaptureVideoProfile
+End Interface
+
+[InterfaceId("75626CF9-1F99-5E10-BD03-F2961E85AF1F")]
+Interface IVectorView_IMediaCaptureVideoProfile Extends IInspectable
+    Function GetAt(ByVal Index As Long) As IMediaCaptureVideoProfile
+    Property Get Size() As Long
+    Function IndexOf(ByVal Value As IMediaCaptureVideoProfile, Index As Long) As BooleanByte
+    Function GetMany(ByVal StartIndex As Long, ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("21A073BF-A3EE-4ECF-9EF6-50B0BC4E1305")]
+Interface IMediaCaptureVideoProfile Extends IInspectable
+    Property Get Id() As LongPtr
+    Property Get VideoDeviceId() As LongPtr
+    Property Get SupportedPreviewMediaDescription() As IVectorView_IMediaCaptureVideoProfileMediaDescription
+    Property Get SupportedRecordMediaDescription() As IVectorView_IMediaCaptureVideoProfileMediaDescription
+    Property Get SupportedPhotoMediaDescription() As IVectorView_IMediaCaptureVideoProfileMediaDescription
+    Function GetConcurrency() As IVectorView_IMediaCaptureVideoProfile
+End Interface
+
+[InterfaceId("97DDC95F-94CE-468F-9316-FC5BC2638F6B")]
+Interface IMediaCaptureVideoProfile2 Extends IInspectable
+    Property Get FrameSourceInfos() As IVectorView_IMediaFrameSourceInfo
+    Property Get Properties() As IMapView_GUID_IInspectable
+End Interface
+
+[InterfaceId("8012AFEF-B691-49FF-83F2-C1E76EAAEA1B")]
+Interface IMediaCaptureVideoProfileMediaDescription Extends IInspectable
+    Property Get Width() As Long
+    Property Get Height() As Long
+    Property Get FrameRate() As Double
+    Property Get IsVariablePhotoSequenceSupported() As BooleanByte
+    Property Get IsHdrVideoSupported() As BooleanByte
+End Interface
+
+[InterfaceId("C6A6EF13-322D-413A-B85A-68A88E02F4E9")]
+Interface IMediaCaptureVideoProfileMediaDescription2 Extends IInspectable
+    Property Get Subtype() As LongPtr
+    Property Get Properties() As IMapView_GUID_IInspectable
+End Interface
+
+[InterfaceId("470F88B3-1E6D-4051-9C8B-F1D85AF047B7")]
+Interface IOptionalReferencePhotoCapturedEventArgs Extends IInspectable
+    Property Get Frame() As ICapturedFrame
+    Property Get Context() As IInspectable
+End Interface
+
+[InterfaceId("373BFBC1-984E-4FF0-BF85-1C00AABC5A45")]
+Interface IPhotoCapturedEventArgs Extends IInspectable
+    Property Get Frame() As ICapturedFrame
+    Property Get Thumbnail() As ICapturedFrame
+    Property Get CaptureTimeOffset() As TimeSpan
+End Interface
+
+[InterfaceId("AB473672-C28A-4827-8F8D-3636D3BEB51E")]
+Interface IPhotoConfirmationCapturedEventArgs Extends IInspectable
+    Property Get Frame() As ICapturedFrame
+    Property Get CaptureTimeOffset() As TimeSpan
+End Interface
+
+[InterfaceId("D8770A6F-4390-4B5E-AD3E-0F8AF0963490")]
+Interface IVideoStreamConfiguration Extends IInspectable
+    Property Get InputProperties() As IVideoEncodingProperties
+    Property Get OutputProperties() As IVideoEncodingProperties
+End Interface
+
+Module mdlMediaCapture
+
+Public Enum AppBroadcastCameraCaptureState
+    AppBroadcastCameraCaptureState_Stopped
+    AppBroadcastCameraCaptureState_Started
+    AppBroadcastCameraCaptureState_Failed
+End Enum
+
+Public Enum AppBroadcastCameraOverlayLocation
+    AppBroadcastCameraOverlayLocation_TopLeft
+    AppBroadcastCameraOverlayLocation_TopCenter
+    AppBroadcastCameraOverlayLocation_TopRight
+    AppBroadcastCameraOverlayLocation_MiddleLeft
+    AppBroadcastCameraOverlayLocation_MiddleCenter
+    AppBroadcastCameraOverlayLocation_MiddleRight
+    AppBroadcastCameraOverlayLocation_BottomLeft
+    AppBroadcastCameraOverlayLocation_BottomCenter
+    AppBroadcastCameraOverlayLocation_BottomRight
+End Enum
+
+Public Enum AppBroadcastCameraOverlaySize
+    AppBroadcastCameraOverlaySize_Small
+    AppBroadcastCameraOverlaySize_Medium
+    AppBroadcastCameraOverlaySize_Large
+End Enum
+
+Public Enum AppBroadcastCaptureTargetType
+    AppBroadcastCaptureTargetType_AppView
+    AppBroadcastCaptureTargetType_EntireDisplay
+End Enum
+
+Public Enum AppBroadcastExitBroadcastModeReason
+    AppBroadcastExitBroadcastModeReason_NormalExit
+    AppBroadcastExitBroadcastModeReason_UserCanceled
+    AppBroadcastExitBroadcastModeReason_AuthorizationFail
+    AppBroadcastExitBroadcastModeReason_ForegroundAppActivated
+End Enum
+
+Public Enum AppBroadcastMicrophoneCaptureState
+    AppBroadcastMicrophoneCaptureState_Stopped
+    AppBroadcastMicrophoneCaptureState_Started
+    AppBroadcastMicrophoneCaptureState_Failed
+End Enum
+
+Public Enum AppBroadcastPlugInState
+    AppBroadcastPlugInState_Unknown
+    AppBroadcastPlugInState_Initialized
+    AppBroadcastPlugInState_MicrosoftSignInRequired
+    AppBroadcastPlugInState_OAuthSignInRequired
+    AppBroadcastPlugInState_ProviderSignInRequired
+    AppBroadcastPlugInState_InBandwidthTest
+    AppBroadcastPlugInState_ReadyToBroadcast
+End Enum
+
+Public Enum AppBroadcastPreviewState
+    AppBroadcastPreviewState_Started
+    AppBroadcastPreviewState_Stopped
+    AppBroadcastPreviewState_Failed
+End Enum
+
+Public Enum AppBroadcastSignInResult
+    AppBroadcastSignInResult_Success
+    AppBroadcastSignInResult_AuthenticationFailed
+    AppBroadcastSignInResult_Unauthorized
+    AppBroadcastSignInResult_ServiceUnavailable
+    AppBroadcastSignInResult_Unknown
+End Enum
+
+Public Enum AppBroadcastSignInState
+    AppBroadcastSignInState_NotSignedIn
+    AppBroadcastSignInState_MicrosoftSignInInProgress
+    AppBroadcastSignInState_MicrosoftSignInComplete
+    AppBroadcastSignInState_OAuthSignInInProgress
+    AppBroadcastSignInState_OAuthSignInComplete
+End Enum
+
+Public Enum AppBroadcastStreamState
+    AppBroadcastStreamState_Initializing
+    AppBroadcastStreamState_StreamReady
+    AppBroadcastStreamState_Started
+    AppBroadcastStreamState_Paused
+    AppBroadcastStreamState_Terminated
+End Enum
+
+Public Enum AppBroadcastTerminationReason
+    AppBroadcastTerminationReason_NormalTermination
+    AppBroadcastTerminationReason_LostConnectionToService
+    AppBroadcastTerminationReason_NoNetworkConnectivity
+    AppBroadcastTerminationReason_ServiceAbort
+    AppBroadcastTerminationReason_ServiceError
+    AppBroadcastTerminationReason_ServiceUnavailable
+    AppBroadcastTerminationReason_InternalError
+    AppBroadcastTerminationReason_UnsupportedFormat
+    AppBroadcastTerminationReason_BackgroundTaskTerminated
+    AppBroadcastTerminationReason_BackgroundTaskUnresponsive
+End Enum
+
+Public Enum AppBroadcastVideoEncodingBitrateMode
+    AppBroadcastVideoEncodingBitrateMode_Custom
+    AppBroadcastVideoEncodingBitrateMode_Auto
+End Enum
+
+Public Enum AppBroadcastVideoEncodingResolutionMode
+    AppBroadcastVideoEncodingResolutionMode_Custom
+    AppBroadcastVideoEncodingResolutionMode_Auto
+End Enum
+
+Public Enum AppCaptureHistoricalBufferLengthUnit
+    AppCaptureHistoricalBufferLengthUnit_Megabytes
+    AppCaptureHistoricalBufferLengthUnit_Seconds
+End Enum
+
+Public Enum AppCaptureMetadataPriority
+    AppCaptureMetadataPriority_Informational
+    AppCaptureMetadataPriority_Important
+End Enum
+
+Public Enum AppCaptureMicrophoneCaptureState
+    AppCaptureMicrophoneCaptureState_Stopped
+    AppCaptureMicrophoneCaptureState_Started
+    AppCaptureMicrophoneCaptureState_Failed
+End Enum
+
+Public Enum AppCaptureRecordingState
+    AppCaptureRecordingState_InProgress
+    AppCaptureRecordingState_Completed
+    AppCaptureRecordingState_Failed
+End Enum
+
+Public Enum AppCaptureVideoEncodingBitrateMode
+    AppCaptureVideoEncodingBitrateMode_Custom
+    AppCaptureVideoEncodingBitrateMode_High
+    AppCaptureVideoEncodingBitrateMode_Standard
+End Enum
+
+Public Enum AppCaptureVideoEncodingFrameRateMode
+    AppCaptureVideoEncodingFrameRateMode_Standard
+    AppCaptureVideoEncodingFrameRateMode_High
+End Enum
+
+Public Enum AppCaptureVideoEncodingResolutionMode
+    AppCaptureVideoEncodingResolutionMode_Custom
+    AppCaptureVideoEncodingResolutionMode_High
+    AppCaptureVideoEncodingResolutionMode_Standard
+End Enum
+
+Public Enum CameraCaptureUIMaxPhotoResolution
+    CameraCaptureUIMaxPhotoResolution_HighestAvailable
+    CameraCaptureUIMaxPhotoResolution_VerySmallQvga
+    CameraCaptureUIMaxPhotoResolution_SmallVga
+    CameraCaptureUIMaxPhotoResolution_MediumXga
+    CameraCaptureUIMaxPhotoResolution_Large3M
+    CameraCaptureUIMaxPhotoResolution_VeryLarge5M
+End Enum
+
+Public Enum CameraCaptureUIMaxVideoResolution
+    CameraCaptureUIMaxVideoResolution_HighestAvailable
+    CameraCaptureUIMaxVideoResolution_LowDefinition
+    CameraCaptureUIMaxVideoResolution_StandardDefinition
+    CameraCaptureUIMaxVideoResolution_HighDefinition
+End Enum
+
+Public Enum CameraCaptureUIMode
+    CameraCaptureUIMode_PhotoOrVideo
+    CameraCaptureUIMode_Photo
+    CameraCaptureUIMode_Video
+End Enum
+
+Public Enum CameraCaptureUIPhotoFormat
+    CameraCaptureUIPhotoFormat_Jpeg
+    CameraCaptureUIPhotoFormat_Png
+    CameraCaptureUIPhotoFormat_JpegXR
+End Enum
+
+Public Enum CameraCaptureUIVideoFormat
+    CameraCaptureUIVideoFormat_Mp4
+    CameraCaptureUIVideoFormat_Wmv
+End Enum
+
+Public Enum ForegroundActivationArgument
+    ForegroundActivationArgument_SignInRequired
+    ForegroundActivationArgument_MoreSettings
+End Enum
+
+Public Enum GameBarCommand
+    GameBarCommand_OpenGameBar
+    GameBarCommand_RecordHistoricalBuffer
+    GameBarCommand_ToggleStartStopRecord
+    GameBarCommand_StartRecord
+    GameBarCommand_StopRecord
+    GameBarCommand_TakeScreenshot
+    GameBarCommand_StartBroadcast
+    GameBarCommand_StopBroadcast
+    GameBarCommand_PauseBroadcast
+    GameBarCommand_ResumeBroadcast
+    GameBarCommand_ToggleStartStopBroadcast
+    GameBarCommand_ToggleMicrophoneCapture
+    GameBarCommand_ToggleCameraCapture
+    GameBarCommand_ToggleRecordingIndicator
+End Enum
+
+Public Enum GameBarCommandOrigin
+    GameBarCommandOrigin_ShortcutKey
+    GameBarCommandOrigin_Cortana
+    GameBarCommandOrigin_AppCommand
+End Enum
+
+Public Enum GameBarServicesDisplayMode
+    GameBarServicesDisplayMode_Windowed
+    GameBarServicesDisplayMode_FullScreenExclusive
+End Enum
+
+Public Enum GameBarTargetCapturePolicy
+    GameBarTargetCapturePolicy_EnabledBySystem
+    GameBarTargetCapturePolicy_EnabledByUser
+    GameBarTargetCapturePolicy_NotEnabled
+    GameBarTargetCapturePolicy_ProhibitedBySystem
+    GameBarTargetCapturePolicy_ProhibitedByPublisher
+End Enum
+
+Public Enum KnownVideoProfile
+    KnownVideoProfile_VideoRecording
+    KnownVideoProfile_HighQualityPhoto
+    KnownVideoProfile_BalancedVideoAndPhoto
+    KnownVideoProfile_VideoConferencing
+    KnownVideoProfile_PhotoSequence
+    KnownVideoProfile_HighFrameRate
+    KnownVideoProfile_VariablePhotoSequence
+    KnownVideoProfile_HdrWithWcgVideo
+    KnownVideoProfile_HdrWithWcgPhoto
+    KnownVideoProfile_VideoHdr8
+    KnownVideoProfile_CompressedCamera
+End Enum
+
+Public Enum MediaCaptureDeviceExclusiveControlReleaseMode
+    MediaCaptureDeviceExclusiveControlReleaseMode_OnDispose
+    MediaCaptureDeviceExclusiveControlReleaseMode_OnAllStreamsStopped
+End Enum
+
+Public Enum MediaCaptureDeviceExclusiveControlStatus
+    MediaCaptureDeviceExclusiveControlStatus_ExclusiveControlAvailable
+    MediaCaptureDeviceExclusiveControlStatus_SharedReadOnlyAvailable
+End Enum
+
+Public Enum MediaCaptureMemoryPreference
+    MediaCaptureMemoryPreference_Auto
+    MediaCaptureMemoryPreference_Cpu
+End Enum
+
+Public Enum MediaCaptureSharingMode
+    MediaCaptureSharingMode_ExclusiveControl
+    MediaCaptureSharingMode_SharedReadOnly
+End Enum
+
+Public Enum MediaCaptureThermalStatus
+    MediaCaptureThermalStatus_Normal
+    MediaCaptureThermalStatus_Overheated
+End Enum
+
+Public Enum MediaCategory
+    MediaCategory_Other
+    MediaCategory_Communications
+    MediaCategory_Media
+    MediaCategory_GameChat
+    MediaCategory_Speech
+    MediaCategory_FarFieldSpeech
+    MediaCategory_UniformSpeech
+    MediaCategory_VoiceTyping
+End Enum
+
+Public Enum MediaStreamType
+    MediaStreamType_VideoPreview
+    MediaStreamType_VideoRecord
+    MediaStreamType_Audio
+    MediaStreamType_Photo
+    MediaStreamType_Metadata
+End Enum
+
+Public Enum PhotoCaptureSource
+    PhotoCaptureSource_Auto
+    PhotoCaptureSource_VideoPreview
+    PhotoCaptureSource_Photo
+End Enum
+
+Public Enum PowerlineFrequency
+    PowerlineFrequency_Disabled
+    PowerlineFrequency_FiftyHertz
+    PowerlineFrequency_SixtyHertz
+    PowerlineFrequency_Auto
+End Enum
+
+Public Enum StreamingCaptureMode
+StreamingCaptureMode_AudioAndVideo
+StreamingCaptureMode_Audio
+StreamingCaptureMode_Video
+End Enum
+
+Public Enum VideoDeviceCharacteristic
+    VideoDeviceCharacteristic_AllStreamsIndependent
+    VideoDeviceCharacteristic_PreviewRecordStreamsIdentical
+    VideoDeviceCharacteristic_PreviewPhotoStreamsIdentical
+    VideoDeviceCharacteristic_RecordPhotoStreamsIdentical
+    VideoDeviceCharacteristic_AllStreamsIdentical
+End Enum
+
+Public Enum VideoRotation
+    VideoRotation_None
+    VideoRotation_Clockwise90Degrees
+    VideoRotation_Clockwise180Degrees
+    VideoRotation_Clockwise270Degrees
+End Enum
+
+Public Type WhiteBalanceGain
+    R As Double
+    G As Double
+    B As Double
+End Type
+
+End Module

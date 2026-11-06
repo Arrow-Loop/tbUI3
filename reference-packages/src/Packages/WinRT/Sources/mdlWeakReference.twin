@@ -1,0 +1,75 @@
+[InterfaceId("AFD11429-11DF-4500-B784-55F1EFB35671")]
+Interface IWeakRefSrc Extends IUnknown
+    Function GetWeakRef() As IWeakRef
+End Interface
+
+[InterfaceId("D70947F7-46E5-4EFC-B818-B16883060D38")]
+Interface IWeakRef Extends IUnknown
+    Property Get StillAlive() As Boolean
+    Property Let StillAlive(ByVal Value As Boolean)
+    Function Resolve() As IUnknown
+End Interface
+
+Module mdlWeakReference
+
+Private Type WEAKREF_OBJECT
+    pVTable As LongPtr
+    cRefs As Long
+    WeakRef As IUnknown
+End Type
+
+Private m_VTableWeakRef As VTable, m_IID_IUnknown As UUID, m_IID_IWeakRef As UUID
+
+Public Function NewWeakRef(ByVal pWeakReference As LongPtr) As IWeakRef
+Dim This As WEAKREF_OBJECT
+    With This
+        PutMemPtr ByVal VarPtr(.WeakRef), pWeakReference: .pVTable = m_VTableWeakRef.pVTable: .cRefs = 1
+        If .pVTable = vbNullPtr Then
+            If m_IID_IUnknown.IsEmpty Then m_IID_IUnknown = MakeUUID(, , &HC0, &H46000000)
+            m_IID_IWeakRef = MakeUUID(&HD70947F7, &H4EFC46E5, &H68B118B8, &H380D0683)
+            .pVTable = GetVTablePointer(m_VTableWeakRef, AddressOf QueryInterfaceWeakRef, AddressOf AddRefWeakRef, AddressOf ReleaseWeakRef, AddressOf StillAliveGet, AddressOf StillAliveLet, _
+                       AddressOf Resolve)
+        End If
+        PutMemPtr ByVal VarPtr(NewWeakRef), vbaCopyBytesZero(LenB(This), ByVal CoTaskMemAlloc(LenB(This)), ByVal VarPtr(.pVTable))
+    End With
+End Function
+
+Private Function QueryInterfaceWeakRef(This As WEAKREF_OBJECT, Guid As UUID, ppvObj As LongPtr) As HRESULT
+    With This
+        If Guid.IsEqual(m_IID_IWeakRef) Then
+            .cRefs = .cRefs + 1: ppvObj = VarPtr(.pVTable)
+        ElseIf Guid.IsEqual(m_IID_IUnknown) Then
+            .cRefs = .cRefs + 1: ppvObj = VarPtr(.pVTable)
+        Else
+            ppvObj = vbNullPtr: QueryInterfaceWeakRef = E_NOINTERFACE
+        End If
+    End With
+End Function
+
+Private Function AddRefWeakRef(This As WEAKREF_OBJECT) As Long
+    AddRefWeakRef = This.cRefs + 1: This.cRefs = AddRefWeakRef
+End Function
+
+Private Function ReleaseWeakRef(This As WEAKREF_OBJECT) As Long
+    With This
+        ReleaseWeakRef = .cRefs - 1: .cRefs = ReleaseWeakRef
+        If .cRefs = 0 Then
+            If Not .WeakRef Is Nothing Then PutMemPtr ByVal VarPtr(.WeakRef), vbNullPtr
+            CoTaskMemFree VarPtr(.pVTable)
+        End If
+    End With
+End Function
+
+Private Function StillAliveGet(This As WEAKREF_OBJECT, bStillAlive As Boolean) As HRESULT
+    bStillAlive = Not This.WeakRef Is Nothing
+End Function
+
+Private Function StillAliveLet(This As WEAKREF_OBJECT, ByVal bStillAlive As Boolean) As HRESULT
+    If Not bStillAlive Then PutMemPtr ByVal VarPtr(This.WeakRef), vbNullPtr
+End Function
+
+Private Function Resolve(This As WEAKREF_OBJECT, WeakRef As IUnknown) As HRESULT
+    Set WeakRef = This.WeakRef
+End Function
+
+End Module

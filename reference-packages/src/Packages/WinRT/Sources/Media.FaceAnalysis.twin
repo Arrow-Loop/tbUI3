@@ -1,0 +1,102 @@
+[InterfaceId("8200D454-66BC-34DF-9410-E89400195414")]
+Interface IDetectedFace Extends IInspectable
+    Property Get FaceBox() As BitmapBounds
+End Interface
+
+[InterfaceId("0DFD8E09-73F2-505C-A796-A8F031B4EDE0")]
+Interface IVector_IDetectedFace Extends IInspectable
+    Function GetAt(ByVal Index As Long) As IDetectedFace
+    Property Get Size() As Long
+    Function GetView() As IVectorView_IDetectedFace
+    Function IndexOf(ByVal Value As IDetectedFace, Index As Long) As BooleanByte
+    [PreserveSig]
+    Function SetAt(ByVal Index As Long, ByVal Value As IDetectedFace) As HRESULT
+    [PreserveSig]
+    Function InsertAt(ByVal Index As Long, ByVal Value As IDetectedFace) As HRESULT
+    [PreserveSig]
+    Function RemoveAt(ByVal Index As Long) As HRESULT
+    [PreserveSig]
+    Function Append(ByVal Value As IDetectedFace) As HRESULT
+    [PreserveSig]
+    Function RemoveAtEnd() As HRESULT
+    [PreserveSig]
+    Function Clear() As HRESULT
+    Function GetMany(ByVal StartIndex As Long, ByVal Length As Long, Items As Any) As Long
+    [PreserveSig]
+    Function ReplaceAll(ByVal Length As Long, Items As Any) As HRESULT
+End Interface
+
+[InterfaceId("37F1D7DC-A1A4-5A94-B33B-74205A65A1ED")]
+Interface IAsyncOperationIVector_IDetectedFace Extends IInspectable
+    Property Set Completed(ByVal Handler As IAsyncOperationCompletedHandlerIVector_IDetectedFace)
+    Property Get Completed() As IAsyncOperationCompletedHandlerIVector_IDetectedFace
+    Function GetResults() As IVector_IDetectedFace
+End Interface
+
+[InterfaceId("B0A53153-2015-58B3-9DD0-BDF291B856B2")]
+Interface IAsyncOperationCompletedHandlerIVector_IDetectedFace Extends IUnknown
+    Sub Invoke(ByVal AsyncOperation As IAsyncOperationIVector_IDetectedFace, ByVal AsyncStatus As AsyncStatus)
+End Interface
+
+[InterfaceId("16B672DC-FE6F-3117-8D95-C3F04D51630C")]
+Interface IFaceDetector Extends IInspectable
+    Function DetectFacesAsync(ByVal Image As ISoftwareBitmap) As IAsyncOperationIVector_IDetectedFace
+    Function DetectFacesWithSearchAreaAsync(ByVal Image As ISoftwareBitmap, ByVal SearchArea As BitmapBounds) As IAsyncOperationIVector_IDetectedFace
+    Property Get MinDetectableFaceSize() As BitmapSize
+    Property Let MinDetectableFaceSize(ByVal Value As BitmapSize)
+    Property Get MaxDetectableFaceSize() As BitmapSize
+    Property Let MaxDetectableFaceSize(ByVal Value As BitmapSize)
+End Interface
+
+[InterfaceId("C0141CD2-7A65-514C-BFC4-B49E991F03EB")]
+Interface IAsyncOperationIFaceDetector Extends IInspectable
+    Property Set Completed(ByVal Handler As IAsyncOperationCompletedHandlerIFaceDetector)
+    Property Get Completed() As IAsyncOperationCompletedHandlerIFaceDetector
+    Function GetResults() As IFaceDetector
+End Interface
+
+[InterfaceId("3224AEC6-E785-5066-976F-79DD081B75A9")]
+Interface IAsyncOperationCompletedHandlerIFaceDetector Extends IUnknown
+    Sub Invoke(ByVal AsyncOperation As IAsyncOperationIFaceDetector, ByVal AsyncStatus As AsyncStatus)
+End Interface
+
+[InterfaceId("BC042D67-9047-33F6-881B-6746C1B218B8")]
+Interface IFaceDetectorStatics Extends IInspectable
+    Function CreateAsync() As IAsyncOperationIFaceDetector
+    Function GetSupportedBitmapPixelFormats() As IVectorView_BitmapPixelFormat
+    Function IsBitmapPixelFormatSupported(ByVal BitmapPixelFormat As BitmapPixelFormat) As BooleanByte
+    Property Get IsSupported() As BooleanByte
+End Interface
+
+[InterfaceId("6BA67D8C-A841-4420-93E6-2420A1884FCF")]
+Interface IFaceTracker Extends IInspectable
+    Function ProcessNextFrameAsync(ByVal VideoFrame As IVideoFrame) As IAsyncOperationIVector_IDetectedFace
+    Property Get MinDetectableFaceSize() As BitmapSize
+    Property Let MinDetectableFaceSize(ByVal Value As BitmapSize)
+    Property Get MaxDetectableFaceSize() As BitmapSize
+    Property Let MaxDetectableFaceSize(ByVal Value As BitmapSize)
+End Interface
+
+[InterfaceId("7F32C680-E37E-539A-8993-2ABBEA71AFDA")]
+Interface IAsyncOperationIFaceTracker Extends IInspectable
+    Property Set Completed(ByVal Handler As IAsyncOperationCompletedHandlerIFaceTracker)
+    Property Get Completed() As IAsyncOperationCompletedHandlerIFaceTracker
+    Function GetResults() As IFaceTracker
+End Interface
+
+[InterfaceId("57D5163D-9E80-59D2-9366-D2B5248B2724")]
+Interface IAsyncOperationCompletedHandlerIFaceTracker Extends IUnknown
+    Sub Invoke(ByVal AsyncOperation As IAsyncOperationIFaceTracker, ByVal AsyncStatus As AsyncStatus)
+End Interface
+
+[InterfaceId("E9629198-1801-3FA5-932E-31D767AF6C4D")]
+Interface IFaceTrackerStatics Extends IInspectable
+    Function CreateAsync() As IAsyncOperationIFaceTracker
+    Function GetSupportedBitmapPixelFormats() As IVectorView_BitmapPixelFormat
+    Function IsBitmapPixelFormatSupported(ByVal BitmapPixelFormat As BitmapPixelFormat) As BooleanByte
+    Property Get IsSupported() As BooleanByte
+End Interface
+
+Module mdlMediaFaceAnalysis
+
+End Module

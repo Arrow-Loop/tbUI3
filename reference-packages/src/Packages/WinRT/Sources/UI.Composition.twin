@@ -1,0 +1,1923 @@
+[InterfaceId("A48130A1-B7C4-46F7-B9BF-DAF43A44E6EE")]
+Interface IAmbientLight Extends IInspectable
+    Property Get Color() As Color
+    Property Let Color(ByVal Value As Color)
+End Interface
+
+[InterfaceId("3B64A6BF-5F97-4C94-86E5-042DD386B27D")]
+Interface IAmbientLight2 Extends IInspectable
+    Property Get Intensity() As Single
+    Property Let Intensity(ByVal Value As Single)
+End Interface
+
+[InterfaceId("C934EFD2-0722-4F5F-A4E2-9510F3D43BF7")]
+Interface IAnimationController Extends IInspectable
+    Property Get PlaybackRate() As Single
+    Property Let PlaybackRate(ByVal Value As Single)
+    Property Get Progress() As Single
+    Property Let Progress(ByVal Value As Single)
+    Property Get ProgressBehavior() As AnimationControllerProgressBehavior
+    Property Let ProgressBehavior(ByVal Value As AnimationControllerProgressBehavior)
+    [PreserveSig]
+    Function Pause() As HRESULT
+    [PreserveSig]
+    Function Resume() As HRESULT
+End Interface
+
+[InterfaceId("E71164DF-651B-4800-B9E5-6A3BCFED3365")]
+Interface IAnimationControllerStatics Extends IInspectable
+    Property Get MaxPlaybackRate() As Single
+    Property Get MinPlaybackRate() As Single
+End Interface
+
+[InterfaceId("E7141E0A-04B8-4FC5-A4DC-195392E57807")]
+Interface IAnimationObject Extends IInspectable
+    [PreserveSig]
+    Function PopulatePropertyInfo(ByVal PropertyName As LongPtr, ByVal PropertyInfo As IAnimationPropertyInfo) As HRESULT
+End Interface
+
+[InterfaceId("F4716F05-ED77-4E3C-B328-5C3985B3738F")]
+Interface IAnimationPropertyInfo Extends IInspectable
+    Property Get AccessMode() As AnimationPropertyAccessMode
+    Property Let AccessMode(ByVal Value As AnimationPropertyAccessMode)
+End Interface
+
+[InterfaceId("591720B4-7472-5218-8B39-DFFE615AE6DA")]
+Interface IAnimationPropertyInfo2 Extends IInspectable
+    Function GetResolvedCompositionObject() As ICompositionObject
+    Function GetResolvedCompositionObjectProperty() As LongPtr
+End Interface
+
+[InterfaceId("B8560DA4-5E3C-545D-B263-7987A2BD27CB")]
+Interface IBackEasingFunction Extends IInspectable
+    Property Get Mode() As CompositionEasingFunctionMode
+    Property Get Amplitude() As Single
+End Interface
+
+[InterfaceId("95E23A08-D1F4-4972-9770-3EFE68D82E14")]
+Interface IBooleanKeyFrameAnimation Extends IInspectable
+    [PreserveSig]
+    Function InsertKeyFrame(ByVal NormalizedProgressKey As Single, ByVal Value As BooleanByte) As HRESULT
+End Interface
+
+[InterfaceId("E7FDB44B-AAD5-5174-9421-EEF8B75A6A43")]
+Interface IBounceEasingFunction Extends IInspectable
+    Property Get Mode() As CompositionEasingFunctionMode
+    Property Get Bounces() As Long
+    Property Get Bounciness() As Single
+End Interface
+
+[InterfaceId("BAA30DCC-A633-4618-9B06-7F7C72C87CFF")]
+Interface IBounceScalarNaturalMotionAnimation Extends IInspectable
+    Property Get Acceleration() As Single
+    Property Let Acceleration(ByVal Value As Single)
+    Property Get Restitution() As Single
+    Property Let Restitution(ByVal Value As Single)
+End Interface
+
+[InterfaceId("DA344196-2154-4B3C-88AA-47361204ECCD")]
+Interface IBounceVector2NaturalMotionAnimation Extends IInspectable
+    Property Get Acceleration() As Single
+    Property Let Acceleration(ByVal Value As Single)
+    Property Get Restitution() As Single
+    Property Let Restitution(ByVal Value As Single)
+End Interface
+
+[InterfaceId("47DABC31-10D3-4518-86F1-09CAF742D113")]
+Interface IBounceVector3NaturalMotionAnimation Extends IInspectable
+    Property Get Acceleration() As Single
+    Property Let Acceleration(ByVal Value As Single)
+    Property Get Restitution() As Single
+    Property Let Restitution(ByVal Value As Single)
+End Interface
+
+[InterfaceId("1E07222A-6F82-5A28-8748-2E92FC46EE2B")]
+Interface ICircleEasingFunction Extends IInspectable
+    Property Get Mode() As CompositionEasingFunctionMode
+End Interface
+
+[InterfaceId("93ADB5E9-8E05-4593-84A3-DCA152781E56")]
+Interface IColorKeyFrameAnimation Extends IInspectable
+    Property Get InterpolationColorSpace() As CompositionColorSpace
+    Property Let InterpolationColorSpace(ByVal Value As CompositionColorSpace)
+    [PreserveSig]
+    Function InsertKeyFrame(ByVal NormalizedProgressKey As Single, ByVal ColorValue As Color) As HRESULT
+    [PreserveSig]
+    Function InsertKeyFrameWithEasingFunction(ByVal NormalizedProgressKey As Single, ByVal ColorValue As Color, ByVal EasingFunction As ICompositionEasingFunction) As HRESULT
+End Interface
+
+[InterfaceId("464C4C2C-1CAA-4061-9B40-E13FDE1503CA")]
+Interface ICompositionAnimation Extends IInspectable
+    [PreserveSig]
+    Function ClearAllParameters() As HRESULT
+    [PreserveSig]
+    Function ClearParameter(ByVal Key As LongPtr) As HRESULT
+    [PreserveSig]
+    Function SetColorParameter(ByVal Key As LongPtr, ByVal Value As Color) As HRESULT
+    [PreserveSig]
+    Function SetMatrix3x2Parameter(ByVal Key As LongPtr, ByVal Value As Matrix3x2) As HRESULT
+    [PreserveSig]
+    Function SetMatrix4x4Parameter(ByVal Key As LongPtr, ByVal Value As Matrix4x4) As HRESULT
+    [PreserveSig]
+    Function SetQuaternionParameter(ByVal Key As LongPtr, ByVal Value As Quaternion) As HRESULT
+    [PreserveSig]
+    Function SetReferenceParameter(ByVal Key As LongPtr, ByVal CompositionObject As ICompositionObject) As HRESULT
+    [PreserveSig]
+    Function SetScalarParameter(ByVal Key As LongPtr, ByVal Value As Single) As HRESULT
+    [PreserveSig]
+    Function SetVector2Parameter(ByVal Key As LongPtr, ByVal Value As Vector2) As HRESULT
+    [PreserveSig]
+    Function SetVector3Parameter(ByVal Key As LongPtr, ByVal Value As Vector3) As HRESULT
+    [PreserveSig]
+    Function SetVector4Parameter(ByVal Key As LongPtr, ByVal Value As Vector4) As HRESULT
+End Interface
+
+[InterfaceId("369B603E-A80F-4948-93E3-ED23FB38C6CB")]
+Interface ICompositionAnimation2 Extends IInspectable
+    [PreserveSig]
+    Function SetBooleanParameter(ByVal Key As LongPtr, ByVal Value As BooleanByte) As HRESULT
+    Property Get Target() As LongPtr
+    Property Let Target(ByVal Value As LongPtr)
+End Interface
+
+[InterfaceId("D51E030D-7DA4-4BD7-BC2D-F4517529F43A")]
+Interface ICompositionAnimation3 Extends IInspectable
+    Property Get InitialValueExpressions() As IMap_HSTRING
+End Interface
+
+[InterfaceId("770137BE-76BC-4E23-BFED-FE9CC20F6EC9")]
+Interface ICompositionAnimation4 Extends IInspectable
+    [PreserveSig]
+    Function SetExpressionReferenceParameter(ByVal ParameterName As LongPtr, ByVal Source As IAnimationObject) As HRESULT
+End Interface
+
+[InterfaceId("1C2C2999-E818-48D3-A6DD-D78C82F8ACE9")]
+Interface ICompositionAnimationBase Extends IInspectable
+
+End Interface
+
+[InterfaceId("10F6C4FB-6E51-4C25-BBD3-586A9BEC3EF4")]
+Interface ICompositionAnimationFactory Extends IInspectable
+
+End Interface
+
+[InterfaceId("98EFBE55-0A66-556A-9ADC-4AB59C696846")]
+Interface IIterator_ICompositionAnimation Extends IInspectable
+    Property Get Current() As ICompositionAnimation
+    Property Get HasCurrent() As BooleanByte
+    Function MoveNext() As BooleanByte
+    Function GetMany(ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("0CB59942-C6F3-585F-9A92-B47E8DD38EBF")]
+Interface IIterable_ICompositionAnimation Extends IInspectable
+    Function First() As IIterator_ICompositionAnimation
+End Interface
+
+[InterfaceId("5E7CC90C-CD14-4E07-8A55-C72527AABDAC")]
+Interface ICompositionAnimationGroup Extends IInspectable
+    Property Get Count() As Long
+    [PreserveSig]
+    Function Add(ByVal Value As ICompositionAnimation) As HRESULT
+    [PreserveSig]
+    Function Remove(ByVal Value As ICompositionAnimation) As HRESULT
+    [PreserveSig]
+    Function RemoveAll() As HRESULT
+End Interface
+
+[InterfaceId("C5ACAE58-3898-499E-8D7F-224E91286A5D")]
+Interface ICompositionBackdropBrush Extends IInspectable
+
+End Interface
+
+[InterfaceId("0D00DAD0-9464-450A-A562-2E2698B0A812")]
+Interface ICompositionBatchCompletedEventArgs Extends IInspectable
+
+End Interface
+
+[InterfaceId("AB0D7608-30C0-40E9-B568-B60A6BD1FB46")]
+Interface ICompositionBrush Extends IInspectable
+
+End Interface
+
+[InterfaceId("DA53FB4C-4650-47C4-AD76-765379607ED6")]
+Interface ICompositionBrushFactory Extends IInspectable
+
+End Interface
+
+[InterfaceId("6E8CC6F4-6CF5-5994-9447-726171236EA8")]
+Interface ITypedEventHandlerCompositionCapabilitiesChanged Extends IUnknown
+    Sub Invoke(ByVal Sender As ICompositionCapabilities, ByVal Args As IInspectable)
+End Interface
+
+[InterfaceId("8253353E-B517-48BC-B1E8-4B3561A2E181")]
+Interface ICompositionCapabilities Extends IInspectable
+    Function AreEffectsSupported() As BooleanByte
+    Function AreEffectsFast() As BooleanByte
+    [PreserveSig]
+    Function AddChanged(ByVal Handler As ITypedEventHandlerCompositionCapabilitiesChanged, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveChanged(ByVal Token As EventRegistrationToken) As HRESULT
+End Interface
+
+[InterfaceId("F7B7A86E-6416-49E5-8DDF-AFE949E20562")]
+Interface ICompositionCapabilitiesStatics Extends IInspectable
+    Function GetForCurrentView() As ICompositionCapabilities
+End Interface
+
+[InterfaceId("1CCD2A52-CFC7-4ACE-9983-146BB8EB6A3C")]
+Interface ICompositionClip Extends IInspectable
+
+End Interface
+
+[InterfaceId("5893E069-3516-40E1-89E0-5BA924927235")]
+Interface ICompositionClip2 Extends IInspectable
+    Property Get AnchorPoint() As Vector2
+    Property Let AnchorPoint(ByVal Value As Vector2)
+    Property Get CenterPoint() As Vector2
+    Property Let CenterPoint(ByVal Value As Vector2)
+    Property Get Offset() As Vector2
+    Property Let Offset(ByVal Value As Vector2)
+    Property Get RotationAngle() As Single
+    Property Let RotationAngle(ByVal Value As Single)
+    Property Get RotationAngleInDegrees() As Single
+    Property Let RotationAngleInDegrees(ByVal Value As Single)
+    Property Get Scale() As Vector2
+    Property Let Scale(ByVal Value As Vector2)
+    Property Get TransformMatrix() As Matrix3x2
+    Property Let TransformMatrix(ByVal Value As Matrix3x2)
+End Interface
+
+[InterfaceId("B9484CAF-20C7-4AED-AC4A-9C78BA1302CF")]
+Interface ICompositionClipFactory Extends IInspectable
+
+End Interface
+
+[InterfaceId("2B264C5E-BF35-4831-8642-CF70C20FFF2F")]
+Interface ICompositionColorBrush Extends IInspectable
+    Property Get Color() As Color
+    Property Let Color(ByVal Value As Color)
+End Interface
+
+[InterfaceId("6F00CA92-C801-4E41-9A8F-A53E20F57778")]
+Interface ICompositionColorGradientStop Extends IInspectable
+    Property Get Color() As Color
+    Property Let Color(ByVal Value As Color)
+    Property Get Offset() As Single
+    Property Let Offset(ByVal Value As Single)
+End Interface
+
+[InterfaceId("746A0F51-47F4-5395-8EDD-8AE1E93A8183")]
+Interface IIterator_ICompositionColorGradientStop Extends IInspectable
+    Property Get Current() As ICompositionColorGradientStop
+    Property Get HasCurrent() As BooleanByte
+    Function MoveNext() As BooleanByte
+    Function GetMany(ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("0F2CFAC1-CDBC-5C4E-A7D2-A3914FB63426")]
+Interface IIterable_ICompositionColorGradientStop Extends IInspectable
+    Function First() As IIterator_ICompositionColorGradientStop
+End Interface
+
+[InterfaceId("801D95C7-7CE2-55D7-A62F-2FF94C544034")]
+Interface IVectorView_ICompositionColorGradientStop Extends IInspectable
+    Function GetAt(ByVal Index As Long) As ICompositionColorGradientStop
+    Property Get Size() As Long
+    Function IndexOf(ByVal Value As ICompositionColorGradientStop, Index As Long) As BooleanByte
+    Function GetMany(ByVal StartIndex As Long, ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("BF2E107E-F3DB-56CD-91ED-C1129406D552")]
+Interface IVector_ICompositionColorGradientStop Extends IInspectable
+    Function GetAt(ByVal Index As Long) As ICompositionColorGradientStop
+    Property Get Size() As Long
+    Function GetView() As IVectorView_ICompositionColorGradientStop
+    Function IndexOf(ByVal Value As ICompositionColorGradientStop, Index As Long) As BooleanByte
+    [PreserveSig]
+    Function SetAt(ByVal Index As Long, ByVal Value As ICompositionColorGradientStop) As HRESULT
+    [PreserveSig]
+    Function InsertAt(ByVal Index As Long, ByVal Value As ICompositionColorGradientStop) As HRESULT
+    [PreserveSig]
+    Function RemoveAt(ByVal Index As Long) As HRESULT
+    [PreserveSig]
+    Function Append(ByVal Value As ICompositionColorGradientStop) As HRESULT
+    [PreserveSig]
+    Function RemoveAtEnd() As HRESULT
+    [PreserveSig]
+    Function Clear() As HRESULT
+    Function GetMany(ByVal StartIndex As Long, ByVal Length As Long, Items As Any) As Long
+    [PreserveSig]
+    Function ReplaceAll(ByVal Length As Long, Items As Any) As HRESULT
+End Interface
+
+[InterfaceId("9F1D20EC-7B04-4B1D-90BC-9FA32C0CFD26")]
+Interface ICompositionColorGradientStopCollection Extends IInspectable
+
+End Interface
+
+[InterfaceId("9DF03456-3383-508B-9C75-EE840A7E1A39")]
+Interface ITypedEventHandlerCompositionBatchCompleted Extends IUnknown
+    Sub Invoke(ByVal Sender As IInspectable, ByVal Args As ICompositionBatchCompletedEventArgs)
+End Interface
+
+[InterfaceId("0D00DAD0-CA07-4400-8C8E-CB5DB08559CC")]
+Interface ICompositionCommitBatch Extends IInspectable
+    Property Get IsActive() As BooleanByte
+    Property Get IsEnded() As BooleanByte
+    [PreserveSig]
+    Function AddCompleted(ByVal Handler As ITypedEventHandlerCompositionBatchCompleted, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveCompleted(ByVal Token As EventRegistrationToken) As HRESULT
+End Interface
+
+[InterfaceId("4F5E859B-2E5B-44A8-982C-AA0F69C16059")]
+Interface ICompositionContainerShape Extends IInspectable
+    Property Get Shapes() As IVector_ICompositionShape
+End Interface
+
+[InterfaceId("A166C300-FAD0-4D11-9E67-E433162FF49E")]
+Interface ICompositionDrawingSurface Extends IInspectable
+    Property Get AlphaMode() As DirectXAlphaMode
+    Property Get PixelFormat() As DirectXPixelFormat
+    Property Get Size() As SIZEF
+End Interface
+
+[InterfaceId("FAD0E88B-E354-44E8-8E3D-C4880D5A213F")]
+Interface ICompositionDrawingSurface2 Extends IInspectable
+    Property Get SizeInt32() As SizeInt32
+    [PreserveSig]
+    Function Resize(ByVal SizePixels As SizeInt32) As HRESULT
+    [PreserveSig]
+    Function Scroll(ByVal Offset As PointInt32) As HRESULT
+    [PreserveSig]
+    Function ScrollRect(ByVal Offset As PointInt32, ByVal ScrollRect As RectInt32) As HRESULT
+    [PreserveSig]
+    Function ScrollWithClip(ByVal Offset As PointInt32, ByVal ClipRect As RectInt32) As HRESULT
+    [PreserveSig]
+    Function ScrollRectWithClip(ByVal Offset As PointInt32, ByVal ClipRect As RectInt32, ByVal ScrollRect As RectInt32) As HRESULT
+End Interface
+
+[InterfaceId("9497B00A-312D-46B9-9DB3-412FD79464C8")]
+Interface ICompositionDrawingSurfaceFactory Extends IInspectable
+
+End Interface
+
+[InterfaceId("5145E356-BF79-4EA8-8CC2-6B5B472E6C9A")]
+Interface ICompositionEasingFunction Extends IInspectable
+
+End Interface
+
+[InterfaceId("60840774-3DA0-4949-8200-7206C00190A0")]
+Interface ICompositionEasingFunctionFactory Extends IInspectable
+
+End Interface
+
+[InterfaceId("17A766B6-2936-53EA-B5AF-C642F4A61083")]
+Interface ICompositionEasingFunctionStatics Extends IInspectable
+    Function CreateCubicBezierEasingFunction(ByVal Owner As ICompositor, ByVal ControlPoint1 As Vector2, ByVal ControlPoint2 As Vector2) As ICubicBezierEasingFunction
+    Function CreateLinearEasingFunction(ByVal Owner As ICompositor) As ILinearEasingFunction
+    Function CreateStepEasingFunction(ByVal Owner As ICompositor) As IStepEasingFunction
+    Function CreateStepEasingFunctionWithStepCount(ByVal Owner As ICompositor, ByVal StepCount As Long) As IStepEasingFunction
+    Function CreateBackEasingFunction(ByVal Owner As ICompositor, ByVal Mode As CompositionEasingFunctionMode, ByVal Amplitude As Single) As IBackEasingFunction
+    Function CreateBounceEasingFunction(ByVal Owner As ICompositor, ByVal Mode As CompositionEasingFunctionMode, ByVal Bounces As Long, ByVal Bounciness As Single) As IBounceEasingFunction
+    Function CreateCircleEasingFunction(ByVal Owner As ICompositor, ByVal Mode As CompositionEasingFunctionMode) As ICircleEasingFunction
+    Function CreateElasticEasingFunction(ByVal Owner As ICompositor, ByVal Mode As CompositionEasingFunctionMode, ByVal Oscillations As Long, ByVal Springiness As Single) As IElasticEasingFunction
+    Function CreateExponentialEasingFunction(ByVal Owner As ICompositor, ByVal Mode As CompositionEasingFunctionMode, ByVal Exponent As Single) As IExponentialEasingFunction
+    Function CreatePowerEasingFunction(ByVal Owner As ICompositor, ByVal Mode As CompositionEasingFunctionMode, ByVal Power As Single) As IPowerEasingFunction
+    Function CreateSineEasingFunction(ByVal Owner As ICompositor, ByVal Mode As CompositionEasingFunctionMode) As ISineEasingFunction
+End Interface
+
+[InterfaceId("BF7F795E-83CC-44BF-A447-3E3C071789EC")]
+Interface ICompositionEffectBrush Extends IInspectable
+    Function GetSourceParameter(ByVal Name As LongPtr) As ICompositionBrush
+    [PreserveSig]
+    Function SetSourceParameter(ByVal Name As LongPtr, ByVal Source As ICompositionBrush) As HRESULT
+End Interface
+
+[InterfaceId("BE5624AF-BA7E-4510-9850-41C0B4FF74DF")]
+Interface ICompositionEffectFactory Extends IInspectable
+    Function CreateBrush() As ICompositionEffectBrush
+    Property Get ExtendedError() As HRESULT
+    Property Get LoadStatus() As CompositionEffectFactoryLoadStatus
+End Interface
+
+[InterfaceId("858AB13A-3292-4E4E-B3BB-2B6C6544A6EE")]
+Interface ICompositionEffectSourceParameter Extends IInspectable
+    Property Get Name() As LongPtr
+End Interface
+
+[InterfaceId("B3D9F276-ABA3-4724-ACF3-D0397464DB1C")]
+Interface ICompositionEffectSourceParameterFactory Extends IInspectable
+    Function Create(ByVal Name As LongPtr) As ICompositionEffectSourceParameter
+End Interface
+
+[InterfaceId("4801F884-F6AD-4B93-AFA9-897B64E57B1F")]
+Interface ICompositionEllipseGeometry Extends IInspectable
+    Property Get Center() As Vector2
+    Property Let Center(ByVal Value As Vector2)
+    Property Get Radius() As Vector2
+    Property Let Radius(ByVal Value As Vector2)
+End Interface
+
+[InterfaceId("C840B581-81C9-4444-A2C1-CCAECE3A50E5")]
+Interface ICompositionGeometricClip Extends IInspectable
+    Property Get Geometry() As ICompositionGeometry
+    Property Set Geometry(ByVal Value As ICompositionGeometry)
+    Property Get ViewBox() As ICompositionViewBox
+    Property Set ViewBox(ByVal Value As ICompositionViewBox)
+End Interface
+
+[InterfaceId("E985217C-6A17-4207-ABD8-5FD3DD612A9D")]
+Interface ICompositionGeometry Extends IInspectable
+    Property Get TrimEnd() As Single
+    Property Let TrimEnd(ByVal Value As Single)
+    Property Get TrimOffset() As Single
+    Property Let TrimOffset(ByVal Value As Single)
+    Property Get TrimStart() As Single
+    Property Let TrimStart(ByVal Value As Single)
+End Interface
+
+[InterfaceId("BFFEBFE1-8C25-480B-9F56-FED6B288055D")]
+Interface ICompositionGeometryFactory Extends IInspectable
+
+End Interface
+
+[InterfaceId("1D9709E0-FFC6-4C0E-A9AB-34144D4C9098")]
+Interface ICompositionGradientBrush Extends IInspectable
+    Property Get AnchorPoint() As Vector2
+    Property Let AnchorPoint(ByVal Value As Vector2)
+    Property Get CenterPoint() As Vector2
+    Property Let CenterPoint(ByVal Value As Vector2)
+    Property Get ColorStops() As ICompositionColorGradientStopCollection
+    Property Get ExtendMode() As CompositionGradientExtendMode
+    Property Let ExtendMode(ByVal Value As CompositionGradientExtendMode)
+    Property Get InterpolationSpace() As CompositionColorSpace
+    Property Let InterpolationSpace(ByVal Value As CompositionColorSpace)
+    Property Get Offset() As Vector2
+    Property Let Offset(ByVal Value As Vector2)
+    Property Get RotationAngle() As Single
+    Property Let RotationAngle(ByVal Value As Single)
+    Property Get RotationAngleInDegrees() As Single
+    Property Let RotationAngleInDegrees(ByVal Value As Single)
+    Property Get Scale() As Vector2
+    Property Let Scale(ByVal Value As Vector2)
+    Property Get TransformMatrix() As Matrix3x2
+    Property Let TransformMatrix(ByVal Value As Matrix3x2)
+End Interface
+
+[InterfaceId("899DD5A1-B4C7-4B33-A1B6-264ADDC26D10")]
+Interface ICompositionGradientBrush2 Extends IInspectable
+    Property Get MappingMode() As CompositionMappingMode
+    Property Let MappingMode(ByVal Value As CompositionMappingMode)
+End Interface
+
+[InterfaceId("56D765D7-F189-48C9-9C8D-94DAF1BEC010")]
+Interface ICompositionGradientBrushFactory Extends IInspectable
+
+End Interface
+
+[InterfaceId("259B32BE-BD06-53C2-BD51-89E8E0F9E239")]
+Interface ITypedEventHandlerCompositionGraphicsDeviceRenderingDeviceReplaced Extends IUnknown
+    Sub Invoke(ByVal Sender As ICompositionGraphicsDevice, ByVal Args As IRenderingDeviceReplacedEventArgs)
+End Interface
+
+[InterfaceId("FB22C6E1-80A2-4667-9936-DBEAF6EEFE95")]
+Interface ICompositionGraphicsDevice Extends IInspectable
+    Function CreateDrawingSurface(ByVal SizePixels As SIZEF, ByVal PixelFormat As DirectXPixelFormat, ByVal AlphaMode As DirectXAlphaMode) As ICompositionDrawingSurface
+    [PreserveSig]
+    Function AddRenderingDeviceReplaced(ByVal Handler As ITypedEventHandlerCompositionGraphicsDeviceRenderingDeviceReplaced, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveRenderingDeviceReplaced(ByVal Token As EventRegistrationToken) As HRESULT
+End Interface
+
+[InterfaceId("0FB8BDF6-C0F0-4BCC-9FB8-084982490D7D")]
+Interface ICompositionGraphicsDevice2 Extends IInspectable
+    Function CreateDrawingSurface2(ByVal SizePixels As SizeInt32, ByVal PixelFormat As DirectXPixelFormat, ByVal AlphaMode As DirectXAlphaMode) As ICompositionDrawingSurface
+    Function CreateVirtualDrawingSurface(ByVal SizePixels As SizeInt32, ByVal PixelFormat As DirectXPixelFormat, ByVal AlphaMode As DirectXAlphaMode) As ICompositionVirtualDrawingSurface
+End Interface
+
+[InterfaceId("37F67514-D3EF-49D1-B69D-0D8EABEB3626")]
+Interface ICompositionGraphicsDevice3 Extends IInspectable
+    Function CreateMipmapSurface(ByVal SizePixels As SizeInt32, ByVal PixelFormat As DirectXPixelFormat, ByVal AlphaMode As DirectXAlphaMode) As ICompositionMipmapSurface
+    [PreserveSig]
+    Function Trim() As HRESULT
+End Interface
+
+[InterfaceId("66613CDD-5076-50D6-AB32-BA76DF49C410")]
+Interface IAsyncOperationICompositionSurface Extends IInspectable
+    Property Set Completed(ByVal Handler As IAsyncOperationCompletedHandlerICompositionSurface)
+    Property Get Completed() As IAsyncOperationCompletedHandlerICompositionSurface
+    Function GetResults() As ICompositionSurface
+End Interface
+
+[InterfaceId("DAF572EE-035A-594C-B013-84BD618853CC")]
+Interface IAsyncOperationCompletedHandlerICompositionSurface Extends IUnknown
+    Sub Invoke(ByVal AsyncOperation As IAsyncOperationICompositionSurface, ByVal AsyncStatus As AsyncStatus)
+End Interface
+
+[InterfaceId("5A73BFF9-A97F-4CF5-BA46-98EF358E71B1")]
+Interface ICompositionGraphicsDevice4 Extends IInspectable
+    Function CaptureAsync(ByVal CaptureVisual As IVisual, ByVal Size As SizeInt32, ByVal PixelFormat As DirectXPixelFormat, ByVal AlphaMode As DirectXAlphaMode, ByVal SdrBoost As Single) As IAsyncOperationICompositionSurface
+End Interface
+
+[InterfaceId("41A6D7C2-2E5D-4BC1-B09E-8F0A03E3D8D3")]
+Interface ICompositionLight Extends IInspectable
+    Property Get Targets() As IVisualUnorderedCollection
+End Interface
+
+[InterfaceId("A7BCDA72-F35D-425D-9B98-23F4205F6669")]
+Interface ICompositionLight2 Extends IInspectable
+    Property Get ExclusionsFromTargets() As IVisualUnorderedCollection
+End Interface
+
+[InterfaceId("4B0B00E4-DF07-4959-B7A4-4F7E4233F838")]
+Interface ICompositionLight3 Extends IInspectable
+    Property Get IsEnabled() As BooleanByte
+    Property Let IsEnabled(ByVal Value As BooleanByte)
+End Interface
+
+[InterfaceId("069CF306-DA3C-4B44-838A-5E03D51ACE55")]
+Interface ICompositionLightFactory Extends IInspectable
+
+End Interface
+
+[InterfaceId("DD7615A4-0C9A-4B67-8DCE-440A5BF9CDEC")]
+Interface ICompositionLineGeometry Extends IInspectable
+    Property Get Start() As Vector2
+    Property Let Start(ByVal Value As Vector2)
+    Property Get End() As Vector2
+    Property Let End(ByVal Value As Vector2)
+End Interface
+
+[InterfaceId("983BC519-A9DB-413C-A2D8-2A9056FC525E")]
+Interface ICompositionLinearGradientBrush Extends IInspectable
+    Property Get StartPoint() As Vector2
+    Property Let StartPoint(ByVal Value As Vector2)
+    Property Get EndPoint() As Vector2
+    Property Let EndPoint(ByVal Value As Vector2)
+End Interface
+
+[InterfaceId("522CF09E-BE6B-4F41-BE49-F9226D471B4A")]
+Interface ICompositionMaskBrush Extends IInspectable
+    Property Get Mask() As ICompositionBrush
+    Property Set Mask(ByVal Value As ICompositionBrush)
+    Property Get Source() As ICompositionBrush
+    Property Set Source(ByVal Value As ICompositionBrush)
+End Interface
+
+[InterfaceId("4863675C-CF4A-4B1C-9ECE-C5EC0C2B2FE6")]
+Interface ICompositionMipmapSurface Extends IInspectable
+    Property Get LevelCount() As Long
+    Property Get AlphaMode() As DirectXAlphaMode
+    Property Get PixelFormat() As DirectXPixelFormat
+    Property Get SizeInt32() As SizeInt32
+    Function GetDrawingSurfaceForLevel(ByVal Level As Long) As ICompositionDrawingSurface
+End Interface
+
+[InterfaceId("F25154E4-BC8C-4BE7-B80F-8685B83C0186")]
+Interface ICompositionNineGridBrush Extends IInspectable
+    Property Get BottomInset() As Single
+    Property Let BottomInset(ByVal Value As Single)
+    Property Get BottomInsetScale() As Single
+    Property Let BottomInsetScale(ByVal Value As Single)
+    Property Get IsCenterHollow() As BooleanByte
+    Property Let IsCenterHollow(ByVal Value As BooleanByte)
+    Property Get LeftInset() As Single
+    Property Let LeftInset(ByVal Value As Single)
+    Property Get LeftInsetScale() As Single
+    Property Let LeftInsetScale(ByVal Value As Single)
+    Property Get RightInset() As Single
+    Property Let RightInset(ByVal Value As Single)
+    Property Get RightInsetScale() As Single
+    Property Let RightInsetScale(ByVal Value As Single)
+    Property Get Source() As ICompositionBrush
+    Property Set Source(ByVal Value As ICompositionBrush)
+    Property Get TopInset() As Single
+    Property Let TopInset(ByVal Value As Single)
+    Property Get TopInsetScale() As Single
+    Property Let TopInsetScale(ByVal Value As Single)
+    [PreserveSig]
+    Function SetInsets(ByVal Inset As Single) As HRESULT
+    [PreserveSig]
+    Function SetInsetsWithValues(ByVal Left As Single, ByVal Top As Single, ByVal Right As Single, ByVal Bottom As Single) As HRESULT
+    [PreserveSig]
+    Function SetInsetScales(ByVal Scale As Single) As HRESULT
+    [PreserveSig]
+    Function SetInsetScalesWithValues(ByVal Left As Single, ByVal Top As Single, ByVal Right As Single, ByVal Bottom As Single) As HRESULT
+End Interface
+
+[InterfaceId("BCB4AD45-7609-4550-934F-16002A68FDED")]
+Interface ICompositionObject Extends IInspectable ' requires IClosable
+    Property Get Compositor() As ICompositor
+    Property Get Dispatcher() As ICoreDispatcher
+    Property Get Properties() As ICompositionPropertySet
+    [PreserveSig]
+    Function StartAnimation(ByVal PropertyName As LongPtr, ByVal Animation As ICompositionAnimation) As HRESULT
+    [PreserveSig]
+    Function StopAnimation(ByVal PropertyName As LongPtr) As HRESULT
+End Interface
+
+[InterfaceId("EF874EA1-5CFF-4B68-9E30-A1519D08BA03")]
+Interface ICompositionObject2 Extends IInspectable
+    Property Get Comment() As LongPtr
+    Property Let Comment(ByVal Value As LongPtr)
+    Property Get ImplicitAnimations() As IImplicitAnimationCollection
+    Property Set ImplicitAnimations(ByVal Value As IImplicitAnimationCollection)
+    [PreserveSig]
+    Function StartAnimationGroup(ByVal Value As ICompositionAnimationBase) As HRESULT
+    [PreserveSig]
+    Function StopAnimationGroup(ByVal Value As ICompositionAnimationBase) As HRESULT
+End Interface
+
+[InterfaceId("4BC27925-DACD-4CF2-98B1-986B76E7EBE6")]
+Interface ICompositionObject3 Extends IInspectable
+    Property Get DispatcherQueue() As IDispatcherQueue
+End Interface
+
+[InterfaceId("0BB3784C-346B-4A7C-966B-7310966553D5")]
+Interface ICompositionObject4 Extends IInspectable
+    Function TryGetAnimationController(ByVal PropertyName As LongPtr) As IAnimationController
+End Interface
+
+[InterfaceId("1D7F391B-A130-5265-A62B-60B8E668965A")]
+Interface ICompositionObject5 Extends IInspectable
+    [PreserveSig]
+    Function StartAnimationWithController(ByVal PropertyName As LongPtr, ByVal Animation As ICompositionAnimation, ByVal AnimationController As IAnimationController) As HRESULT
+End Interface
+
+[InterfaceId("51205C5E-558A-4F2A-8D39-37BFE1E20DDD")]
+Interface ICompositionObjectFactory Extends IInspectable
+
+End Interface
+
+[InterfaceId("C1ED052F-1BA2-44BA-A904-6A882A0A5ADB")]
+Interface ICompositionObjectStatics Extends IInspectable
+    [PreserveSig]
+    Function StartAnimationWithIAnimationObject(ByVal Target As IAnimationObject, ByVal PropertyName As LongPtr, ByVal Animation As ICompositionAnimation) As HRESULT
+    [PreserveSig]
+    Function StartAnimationGroupWithIAnimationObject(ByVal Target As IAnimationObject, ByVal Animation As ICompositionAnimationBase) As HRESULT
+End Interface
+
+[InterfaceId("66DA1D5F-2E10-4F22-8A06-0A8151919E60")]
+Interface ICompositionPath Extends IInspectable
+
+End Interface
+
+[InterfaceId("9C1E8C6A-0F33-4751-9437-EB3FB9D3AB07")]
+Interface ICompositionPathFactory Extends IInspectable
+    Function Create(ByVal Source As IGeometrySource2D) As ICompositionPath
+End Interface
+
+[InterfaceId("0B6A417E-2C77-4C23-AF5E-6304C147BB61")]
+Interface ICompositionPathGeometry Extends IInspectable
+    Property Get Path() As ICompositionPath
+    Property Set Path(ByVal Value As ICompositionPath)
+End Interface
+
+[InterfaceId("6563B1B1-4B53-53DF-A0C0-D3CA1DBBFE59")]
+Interface IIterator_ICompositionProjectedShadowCaster Extends IInspectable
+    Property Get Current() As ICompositionProjectedShadowCaster
+    Property Get HasCurrent() As BooleanByte
+    Function MoveNext() As BooleanByte
+    Function GetMany(ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("B8301B02-429B-5D71-AB0C-8D1141B12AC3")]
+Interface IIterable_ICompositionProjectedShadowCaster Extends IInspectable
+    Function First() As IIterator_ICompositionProjectedShadowCaster
+End Interface
+
+[InterfaceId("285B8E72-4328-523F-BCF2-5557C52C3B25")]
+Interface ICompositionProjectedShadow Extends IInspectable
+    Property Get BlurRadiusMultiplier() As Single
+    Property Let BlurRadiusMultiplier(ByVal Value As Single)
+    Property Get Casters() As ICompositionProjectedShadowCasterCollection
+    Property Get LightSource() As ICompositionLight
+    Property Set LightSource(ByVal Value As ICompositionLight)
+    Property Get MaxBlurRadius() As Single
+    Property Let MaxBlurRadius(ByVal Value As Single)
+    Property Get MinBlurRadius() As Single
+    Property Let MinBlurRadius(ByVal Value As Single)
+    Property Get Receivers() As ICompositionProjectedShadowReceiverUnorderedCollection
+End Interface
+
+[InterfaceId("B1D7D426-1E36-5A62-BE56-A16112FDD148")]
+Interface ICompositionProjectedShadowCaster Extends IInspectable
+    Property Get Brush() As ICompositionBrush
+    Property Set Brush(ByVal Value As ICompositionBrush)
+    Property Get CastingVisual() As IVisual
+    Property Set CastingVisual(ByVal Value As IVisual)
+End Interface
+
+[InterfaceId("D2525C0C-E07F-58A3-AC91-37F73EE91740")]
+Interface ICompositionProjectedShadowCasterCollection Extends IInspectable
+    Property Get Count() As Long
+    [PreserveSig]
+    Function InsertAbove(ByVal NewCaster As ICompositionProjectedShadowCaster, ByVal Reference As ICompositionProjectedShadowCaster) As HRESULT
+    [PreserveSig]
+    Function InsertAtBottom(ByVal NewCaster As ICompositionProjectedShadowCaster) As HRESULT
+    [PreserveSig]
+    Function InsertAtTop(ByVal NewCaster As ICompositionProjectedShadowCaster) As HRESULT
+    [PreserveSig]
+    Function InsertBelow(ByVal NewCaster As ICompositionProjectedShadowCaster, ByVal Reference As ICompositionProjectedShadowCaster) As HRESULT
+    [PreserveSig]
+    Function Remove(ByVal Caster As ICompositionProjectedShadowCaster) As HRESULT
+    [PreserveSig]
+    Function RemoveAll() As HRESULT
+End Interface
+
+[InterfaceId("56FBB136-E94F-5299-AB5B-6E15E38BD899")]
+Interface ICompositionProjectedShadowCasterCollectionStatics Extends IInspectable
+    Property Get MaxRespectedCasters() As Long
+End Interface
+
+[InterfaceId("1377985A-6A49-536A-9BE4-A96A8E5298A9")]
+Interface ICompositionProjectedShadowReceiver Extends IInspectable
+    Property Get ReceivingVisual() As IVisual
+    Property Set ReceivingVisual(ByVal Value As IVisual)
+End Interface
+
+[InterfaceId("D2452315-9A6E-5033-9E8F-C25941ADBE71")]
+Interface IIterator_ICompositionProjectedShadowReceiver Extends IInspectable
+    Property Get Current() As ICompositionProjectedShadowReceiver
+    Property Get HasCurrent() As BooleanByte
+    Function MoveNext() As BooleanByte
+    Function GetMany(ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("E2775A28-EC48-5CB8-B352-76F7F981D7A4")]
+Interface IIterable_ICompositionProjectedShadowReceiver Extends IInspectable
+    Function First() As IIterator_ICompositionProjectedShadowReceiver
+End Interface
+
+[InterfaceId("02B3E3B7-27D2-599F-AC4B-AB787CDDE6FD")]
+Interface ICompositionProjectedShadowReceiverUnorderedCollection Extends IInspectable
+    [PreserveSig]
+    Function Add(ByVal Value As ICompositionProjectedShadowReceiver) As HRESULT
+    Property Get Count() As Long
+    [PreserveSig]
+    Function Remove(ByVal Value As ICompositionProjectedShadowReceiver) As HRESULT
+    [PreserveSig]
+    Function RemoveAll() As HRESULT
+End Interface
+
+[InterfaceId("C9D6D202-5F67-4453-9117-9EADD430D3C2")]
+Interface ICompositionPropertySet Extends IInspectable
+    [PreserveSig]
+    Function InsertColor(ByVal PropertyName As LongPtr, ByVal Value As Color) As HRESULT
+    [PreserveSig]
+    Function InsertMatrix3x2(ByVal PropertyName As LongPtr, ByVal Value As Matrix3x2) As HRESULT
+    [PreserveSig]
+    Function InsertMatrix4x4(ByVal PropertyName As LongPtr, ByVal Value As Matrix4x4) As HRESULT
+    [PreserveSig]
+    Function InsertQuaternion(ByVal PropertyName As LongPtr, ByVal Value As Quaternion) As HRESULT
+    [PreserveSig]
+    Function InsertScalar(ByVal PropertyName As LongPtr, ByVal Value As Single) As HRESULT
+    [PreserveSig]
+    Function InsertVector2(ByVal PropertyName As LongPtr, ByVal Value As Vector2) As HRESULT
+    [PreserveSig]
+    Function InsertVector3(ByVal PropertyName As LongPtr, ByVal Value As Vector3) As HRESULT
+    [PreserveSig]
+    Function InsertVector4(ByVal PropertyName As LongPtr, ByVal Value As Vector4) As HRESULT
+    Function TryGetColor(ByVal PropertyName As LongPtr, Value As Color) As CompositionGetValueStatus
+    Function TryGetMatrix3x2(ByVal PropertyName As LongPtr, Value As Matrix3x2) As CompositionGetValueStatus
+    Function TryGetMatrix4x4(ByVal PropertyName As LongPtr, Value As Matrix4x4) As CompositionGetValueStatus
+    Function TryGetQuaternion(ByVal PropertyName As LongPtr, Value As Quaternion) As CompositionGetValueStatus
+    Function TryGetScalar(ByVal PropertyName As LongPtr, Value As Single) As CompositionGetValueStatus
+    Function TryGetVector2(ByVal PropertyName As LongPtr, Value As Vector2) As CompositionGetValueStatus
+    Function TryGetVector3(ByVal PropertyName As LongPtr, Value As Vector3) As CompositionGetValueStatus
+    Function TryGetVector4(ByVal PropertyName As LongPtr, Value As Vector4) As CompositionGetValueStatus
+End Interface
+
+[InterfaceId("DE80731E-A211-4455-8880-7D0F3F6A44FD")]
+Interface ICompositionPropertySet2 Extends IInspectable
+    [PreserveSig]
+    Function InsertBoolean(ByVal PropertyName As LongPtr, ByVal Value As BooleanByte) As HRESULT
+    Function TryGetBoolean(ByVal PropertyName As LongPtr, Value As BooleanByte) As CompositionGetValueStatus
+End Interface
+
+[InterfaceId("3D3B50C5-E3FA-4CE2-B9FC-3EE12561788F")]
+Interface ICompositionRadialGradientBrush Extends IInspectable
+    Property Get EllipseCenter() As Vector2
+    Property Let EllipseCenter(ByVal Value As Vector2)
+    Property Get EllipseRadius() As Vector2
+    Property Let EllipseRadius(ByVal Value As Vector2)
+    Property Get GradientOriginOffset() As Vector2
+    Property Let GradientOriginOffset(ByVal Value As Vector2)
+End Interface
+
+[InterfaceId("0CD51428-5356-4246-AECF-7A0B76975400")]
+Interface ICompositionRectangleGeometry Extends IInspectable
+    Property Get Offset() As Vector2
+    Property Let Offset(ByVal Value As Vector2)
+    Property Get Size() As Vector2
+    Property Let Size(ByVal Value As Vector2)
+End Interface
+
+[InterfaceId("8770C822-1D50-4B8B-B013-7C9A0E46935F")]
+Interface ICompositionRoundedRectangleGeometry Extends IInspectable
+    Property Get CornerRadius() As Vector2
+    Property Let CornerRadius(ByVal Value As Vector2)
+    Property Get Offset() As Vector2
+    Property Let Offset(ByVal Value As Vector2)
+    Property Get Size() As Vector2
+    Property Let Size(ByVal Value As Vector2)
+End Interface
+
+[InterfaceId("0D00DAD0-FB07-46FD-8C72-6280D1A3D1DD")]
+Interface ICompositionScopedBatch Extends IInspectable
+    Property Get IsActive() As BooleanByte
+    Property Get IsEnded() As BooleanByte
+    [PreserveSig]
+    Function End() As HRESULT
+    [PreserveSig]
+    Function Resume() As HRESULT
+    [PreserveSig]
+    Function Suspend() As HRESULT
+    [PreserveSig]
+    Function AddCompleted(ByVal Handler As ITypedEventHandlerCompositionBatchCompleted, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveCompleted(ByVal Token As EventRegistrationToken) As HRESULT
+End Interface
+
+[InterfaceId("329E52E2-4335-49CC-B14A-37782D10F0C4")]
+Interface ICompositionShadow Extends IInspectable
+
+End Interface
+
+[InterfaceId("221F492F-DCBA-4B91-999E-1DC217A01530")]
+Interface ICompositionShadowFactory Extends IInspectable
+
+End Interface
+
+[InterfaceId("B47CE2F7-9A88-42C4-9E87-2E500CA8688C")]
+Interface ICompositionShape Extends IInspectable
+    Property Get CenterPoint() As Vector2
+    Property Let CenterPoint(ByVal Value As Vector2)
+    Property Get Offset() As Vector2
+    Property Let Offset(ByVal Value As Vector2)
+    Property Get RotationAngle() As Single
+    Property Let RotationAngle(ByVal Value As Single)
+    Property Get RotationAngleInDegrees() As Single
+    Property Let RotationAngleInDegrees(ByVal Value As Single)
+    Property Get Scale() As Vector2
+    Property Let Scale(ByVal Value As Vector2)
+    Property Get TransformMatrix() As Matrix3x2
+    Property Let TransformMatrix(ByVal Value As Matrix3x2)
+End Interface
+
+[InterfaceId("1DFC36D0-B05A-44EF-82B0-12118BCD4CD0")]
+Interface ICompositionShapeFactory Extends IInspectable
+
+End Interface
+
+[InterfaceId("401B61BB-0007-4363-B1F3-6BCC003FB83E")]
+Interface ICompositionSpriteShape Extends IInspectable
+    Property Get FillBrush() As ICompositionBrush
+    Property Set FillBrush(ByVal Value As ICompositionBrush)
+    Property Get Geometry() As ICompositionGeometry
+    Property Set Geometry(ByVal Value As ICompositionGeometry)
+    Property Get IsStrokeNonScaling() As BooleanByte
+    Property Let IsStrokeNonScaling(ByVal Value As BooleanByte)
+    Property Get StrokeBrush() As ICompositionBrush
+    Property Set StrokeBrush(ByVal Value As ICompositionBrush)
+    Property Get StrokeDashArray() As IVector_Single
+    Property Get StrokeDashCap() As CompositionStrokeCap
+    Property Let StrokeDashCap(ByVal Value As CompositionStrokeCap)
+    Property Get StrokeDashOffset() As Single
+    Property Let StrokeDashOffset(ByVal Value As Single)
+    Property Get StrokeEndCap() As CompositionStrokeCap
+    Property Let StrokeEndCap(ByVal Value As CompositionStrokeCap)
+    Property Get StrokeLineJoin() As CompositionStrokeLineJoin
+    Property Let StrokeLineJoin(ByVal Value As CompositionStrokeLineJoin)
+    Property Get StrokeMiterLimit() As Single
+    Property Let StrokeMiterLimit(ByVal Value As Single)
+    Property Get StrokeStartCap() As CompositionStrokeCap
+    Property Let StrokeStartCap(ByVal Value As CompositionStrokeCap)
+    Property Get StrokeThickness() As Single
+    Property Let StrokeThickness(ByVal Value As Single)
+End Interface
+
+[InterfaceId("397DAFE4-B6C2-5BB9-951D-F5707DE8B7BC")]
+Interface ICompositionSupportsSystemBackdrop Extends IInspectable
+    Property Get SystemBackdrop() As ICompositionBrush
+    Property Set SystemBackdrop(ByVal Value As ICompositionBrush)
+End Interface
+
+[InterfaceId("1527540D-42C7-47A6-A408-668F79A90DFB")]
+Interface ICompositionSurface Extends IInspectable
+
+End Interface
+
+[InterfaceId("AD016D79-1E4C-4C0D-9C29-83338C87C162")]
+Interface ICompositionSurfaceBrush Extends IInspectable
+    Property Get BitmapInterpolationMode() As CompositionBitmapInterpolationMode
+    Property Let BitmapInterpolationMode(ByVal Value As CompositionBitmapInterpolationMode)
+    Property Get HorizontalAlignmentRatio() As Single
+    Property Let HorizontalAlignmentRatio(ByVal Value As Single)
+    Property Get Stretch() As CompositionStretch
+    Property Let Stretch(ByVal Value As CompositionStretch)
+    Property Get Surface() As ICompositionSurface
+    Property Set Surface(ByVal Value As ICompositionSurface)
+    Property Get VerticalAlignmentRatio() As Single
+    Property Let VerticalAlignmentRatio(ByVal Value As Single)
+End Interface
+
+[InterfaceId("D27174D5-64F5-4692-9DC7-71B61D7E5880")]
+Interface ICompositionSurfaceBrush2 Extends IInspectable
+    Property Get AnchorPoint() As Vector2
+    Property Let AnchorPoint(ByVal Value As Vector2)
+    Property Get CenterPoint() As Vector2
+    Property Let CenterPoint(ByVal Value As Vector2)
+    Property Get Offset() As Vector2
+    Property Let Offset(ByVal Value As Vector2)
+    Property Get RotationAngle() As Single
+    Property Let RotationAngle(ByVal Value As Single)
+    Property Get RotationAngleInDegrees() As Single
+    Property Let RotationAngleInDegrees(ByVal Value As Single)
+    Property Get Scale() As Vector2
+    Property Let Scale(ByVal Value As Vector2)
+    Property Get TransformMatrix() As Matrix3x2
+    Property Let TransformMatrix(ByVal Value As Matrix3x2)
+End Interface
+
+[InterfaceId("550BB289-1FE0-42E5-8195-1EEFA87FF08E")]
+Interface ICompositionSurfaceBrush3 Extends IInspectable
+    Property Get SnapToPixels() As BooleanByte
+    Property Let SnapToPixels(ByVal Value As BooleanByte)
+End Interface
+
+[InterfaceId("E01622C8-2332-55C7-8868-A7312C5C229D")]
+Interface ICompositionSurfaceFacade Extends IInspectable
+    Function GetRealSurface() As ICompositionSurface
+End Interface
+
+[InterfaceId("A1BEA8BA-D726-4663-8129-6B5E7927FFA6")]
+Interface ICompositionTarget Extends IInspectable ' requires IClosable
+    Property Get Root() As IVisual
+    Property Set Root(ByVal Value As IVisual)
+End Interface
+
+[InterfaceId("93CD9D2B-8516-4B14-A8CE-F49E2119EC42")]
+Interface ICompositionTargetFactory Extends IInspectable
+
+End Interface
+
+[InterfaceId("7CD54529-FBED-4112-ABC5-185906DD927C")]
+Interface ICompositionTransform Extends IInspectable
+
+End Interface
+
+[InterfaceId("AAAECA26-C149-517A-8F72-6BFF7A65CE08")]
+Interface ICompositionTransformFactory Extends IInspectable
+
+End Interface
+
+[InterfaceId("B440BF07-068F-4537-84C6-4ECBE019E1F4")]
+Interface ICompositionViewBox Extends IInspectable
+    Property Get HorizontalAlignmentRatio() As Single
+    Property Let HorizontalAlignmentRatio(ByVal Value As Single)
+    Property Get Offset() As Vector2
+    Property Let Offset(ByVal Value As Vector2)
+    Property Get Size() As Vector2
+    Property Let Size(ByVal Value As Vector2)
+    Property Get Stretch() As CompositionStretch
+    Property Let Stretch(ByVal Value As CompositionStretch)
+    Property Get VerticalAlignmentRatio() As Single
+    Property Let VerticalAlignmentRatio(ByVal Value As Single)
+End Interface
+
+[InterfaceId("A9C384DB-8740-4F94-8B9D-B68521E7863D")]
+Interface ICompositionVirtualDrawingSurface Extends IInspectable
+    [PreserveSig]
+    Function Trim(ByVal RectsInt32Size As Long, RectsInt32Ptr As Any) As HRESULT
+End Interface
+
+[InterfaceId("6766106C-D56B-4A49-B1DF-5076A0620768")]
+Interface ICompositionVirtualDrawingSurfaceFactory Extends IInspectable
+
+End Interface
+
+[InterfaceId("B224D803-4F6E-4A3F-8CAE-3DC1CDA74FC6")]
+Interface ICompositionVisualSurface Extends IInspectable
+    Property Get SourceVisual() As IVisual
+    Property Set SourceVisual(ByVal Value As IVisual)
+    Property Get SourceOffset() As Vector2
+    Property Let SourceOffset(ByVal Value As Vector2)
+    Property Get SourceSize() As Vector2
+    Property Let SourceSize(ByVal Value As Vector2)
+End Interface
+
+[InterfaceId("B403CA50-7F8C-4E83-985F-CC45060036D8")]
+Interface ICompositor Extends IInspectable ' requires IClosable
+    Function CreateColorKeyFrameAnimation() As IColorKeyFrameAnimation
+    Function CreateColorBrush() As ICompositionColorBrush
+    Function CreateColorBrushWithColor(ByVal Color As Color) As ICompositionColorBrush
+    Function CreateContainerVisual() As IContainerVisual
+    Function CreateCubicBezierEasingFunction(ByVal ControlPoint1 As Vector2, ByVal ControlPoint2 As Vector2) As ICubicBezierEasingFunction
+    Function CreateEffectFactory(ByVal GraphicsEffect As IGraphicsEffect) As ICompositionEffectFactory
+    Function CreateEffectFactoryWithProperties(ByVal GraphicsEffect As IGraphicsEffect, ByVal AnimatableProperties As IIterable_HSTRING) As ICompositionEffectFactory
+    Function CreateExpressionAnimation() As IExpressionAnimation
+    Function CreateExpressionAnimationWithExpression(ByVal Expression As LongPtr) As IExpressionAnimation
+    Function CreateInsetClip() As IInsetClip
+    Function CreateInsetClipWithInsets(ByVal LeftInset As Single, ByVal TopInset As Single, ByVal RightInset As Single, ByVal BottomInset As Single) As IInsetClip
+    Function CreateLinearEasingFunction() As ILinearEasingFunction
+    Function CreatePropertySet() As ICompositionPropertySet
+    Function CreateQuaternionKeyFrameAnimation() As IQuaternionKeyFrameAnimation
+    Function CreateScalarKeyFrameAnimation() As IScalarKeyFrameAnimation
+    Function CreateScopedBatch(ByVal BatchType As CompositionBatchTypes) As ICompositionScopedBatch
+    Function CreateSpriteVisual() As ISpriteVisual
+    Function CreateSurfaceBrush() As ICompositionSurfaceBrush
+    Function CreateSurfaceBrushWithSurface(ByVal Surface As ICompositionSurface) As ICompositionSurfaceBrush
+    Function CreateTargetForCurrentView() As ICompositionTarget
+    Function CreateVector2KeyFrameAnimation() As IVector2KeyFrameAnimation
+    Function CreateVector3KeyFrameAnimation() As IVector3KeyFrameAnimation
+    Function CreateVector4KeyFrameAnimation() As IVector4KeyFrameAnimation
+    Function GetCommitBatch(ByVal BatchType As CompositionBatchTypes) As ICompositionCommitBatch
+End Interface
+
+[InterfaceId("735081DC-5E24-45DA-A38F-E32CC349A9A0")]
+Interface ICompositor2 Extends IInspectable
+    Function CreateAmbientLight() As IAmbientLight
+    Function CreateAnimationGroup() As ICompositionAnimationGroup
+    Function CreateBackdropBrush() As ICompositionBackdropBrush
+    Function CreateDistantLight() As IDistantLight
+    Function CreateDropShadow() As IDropShadow
+    Function CreateImplicitAnimationCollection() As IImplicitAnimationCollection
+    Function CreateLayerVisual() As ILayerVisual
+    Function CreateMaskBrush() As ICompositionMaskBrush
+    Function CreateNineGridBrush() As ICompositionNineGridBrush
+    Function CreatePointLight() As IPointLight
+    Function CreateSpotLight() As ISpotLight
+    Function CreateStepEasingFunction() As IStepEasingFunction
+    Function CreateStepEasingFunctionWithStepCount(ByVal StepCount As Long) As IStepEasingFunction
+End Interface
+
+[InterfaceId("C9DD8EF0-6EB1-4E3C-A658-675D9C64D4AB")]
+Interface ICompositor3 Extends IInspectable
+    Function CreateHostBackdropBrush() As ICompositionBackdropBrush
+End Interface
+
+[InterfaceId("AE47E78A-7910-4425-A482-A05B758ADCE9")]
+Interface ICompositor4 Extends IInspectable
+    Function CreateColorGradientStop() As ICompositionColorGradientStop
+    Function CreateColorGradientStopWithOffsetAndColor(ByVal Offset As Single, ByVal Color As Color) As ICompositionColorGradientStop
+    Function CreateLinearGradientBrush() As ICompositionLinearGradientBrush
+    Function CreateSpringScalarAnimation() As ISpringScalarNaturalMotionAnimation
+    Function CreateSpringVector2Animation() As ISpringVector2NaturalMotionAnimation
+    Function CreateSpringVector3Animation() As ISpringVector3NaturalMotionAnimation
+End Interface
+
+[InterfaceId("48EA31AD-7FCD-4076-A79C-90CC4B852C9B")]
+Interface ICompositor5 Extends IInspectable
+    Property Get Comment() As LongPtr
+    Property Let Comment(ByVal Value As LongPtr)
+    Property Get GlobalPlaybackRate() As Single
+    Property Let GlobalPlaybackRate(ByVal Value As Single)
+    Function CreateBounceScalarAnimation() As IBounceScalarNaturalMotionAnimation
+    Function CreateBounceVector2Animation() As IBounceVector2NaturalMotionAnimation
+    Function CreateBounceVector3Animation() As IBounceVector3NaturalMotionAnimation
+    Function CreateContainerShape() As ICompositionContainerShape
+    Function CreateEllipseGeometry() As ICompositionEllipseGeometry
+    Function CreateLineGeometry() As ICompositionLineGeometry
+    Function CreatePathGeometry() As ICompositionPathGeometry
+    Function CreatePathGeometryWithPath(ByVal Path As ICompositionPath) As ICompositionPathGeometry
+    Function CreatePathKeyFrameAnimation() As IPathKeyFrameAnimation
+    Function CreateRectangleGeometry() As ICompositionRectangleGeometry
+    Function CreateRoundedRectangleGeometry() As ICompositionRoundedRectangleGeometry
+    Function CreateShapeVisual() As IShapeVisual
+    Function CreateSpriteShape() As ICompositionSpriteShape
+    Function CreateSpriteShapeWithGeometry(ByVal Geometry As ICompositionGeometry) As ICompositionSpriteShape
+    Function CreateViewBox() As ICompositionViewBox
+    Function RequestCommitAsync() As IAsyncAction
+End Interface
+
+[InterfaceId("7A38B2BD-CEC8-4EEB-830F-D8D07AEDEBC3")]
+Interface ICompositor6 Extends IInspectable
+    Function CreateGeometricClip() As ICompositionGeometricClip
+    Function CreateGeometricClipWithGeometry(ByVal Geometry As ICompositionGeometry) As ICompositionGeometricClip
+    Function CreateRedirectVisual() As IRedirectVisual
+    Function CreateRedirectVisualWithSourceVisual(ByVal Source As IVisual) As IRedirectVisual
+    Function CreateBooleanKeyFrameAnimation() As IBooleanKeyFrameAnimation
+End Interface
+
+[InterfaceId("D3483FAD-9A12-53BA-BFC8-88B7FF7977C6")]
+Interface ICompositor7 Extends IInspectable
+    Property Get DispatcherQueue() As IDispatcherQueue
+    Function CreateAnimationPropertyInfo() As IAnimationPropertyInfo
+    Function CreateRectangleClip() As IRectangleClip
+    Function CreateRectangleClipWithSides(ByVal Left As Single, ByVal Top As Single, ByVal Right As Single, ByVal Bottom As Single) As IRectangleClip
+    Function CreateRectangleClipWithSidesAndRadius(ByVal Left As Single, ByVal Top As Single, ByVal Right As Single, ByVal Bottom As Single, ByVal TopLeftRadius As Vector2, ByVal TopRightRadius As Vector2, ByVal BottomRightRadius As Vector2, ByVal BottomLeftRadius As Vector2) As IRectangleClip
+End Interface
+
+[InterfaceId("9A0BDEE2-FE7B-5F62-A366-9CF8EFFE2112")]
+Interface ICompositor8 Extends IInspectable
+    Function CreateAnimationController() As IAnimationController
+End Interface
+
+[InterfaceId("080DB93E-121E-4D97-8B74-1DFCF91987EA")]
+Interface ICompositorStatics Extends IInspectable
+    Property Get MaxGlobalPlaybackRate() As Single
+    Property Get MinGlobalPlaybackRate() As Single
+End Interface
+
+[InterfaceId("0D8FB190-F122-5B8D-9FDD-543B0D8EB7F3")]
+Interface ICompositorWithBlurredWallpaperBackdropBrush Extends IInspectable
+    Function TryCreateBlurredWallpaperBackdropBrush() As ICompositionBackdropBrush
+End Interface
+
+[InterfaceId("A2E6330E-8A60-5A38-BB85-B44EA901677C")]
+Interface ICompositorWithProjectedShadow Extends IInspectable
+    Function CreateProjectedShadowCaster() As ICompositionProjectedShadowCaster
+    Function CreateProjectedShadow() As ICompositionProjectedShadow
+    Function CreateProjectedShadowReceiver() As ICompositionProjectedShadowReceiver
+End Interface
+
+[InterfaceId("98B9C1A7-8E71-4B53-B4A8-69BA5D19DC5B")]
+Interface ICompositorWithRadialGradient Extends IInspectable
+    Function CreateRadialGradientBrush() As ICompositionRadialGradientBrush
+End Interface
+
+[InterfaceId("CFA1658B-0123-4551-8891-89BDCC40322B")]
+Interface ICompositorWithVisualSurface Extends IInspectable
+    Function CreateVisualSurface() As ICompositionVisualSurface
+End Interface
+
+[InterfaceId("02F6BC74-ED20-4773-AFE6-D49B4A93DB32")]
+Interface IContainerVisual Extends IInspectable
+    Property Get Children() As IVisualCollection
+End Interface
+
+[InterfaceId("0363A65B-C7DA-4D9A-95F4-69B5C8DF670B")]
+Interface IContainerVisualFactory Extends IInspectable
+
+End Interface
+
+[InterfaceId("32350666-C1E8-44F9-96B8-C98ACF0AE698")]
+Interface ICubicBezierEasingFunction Extends IInspectable
+    Property Get ControlPoint1() As Vector2
+    Property Get ControlPoint2() As Vector2
+End Interface
+
+[InterfaceId("856E60B1-E1AB-5B23-8E3D-D513F221C998")]
+Interface IDelegatedInkTrailVisual Extends IInspectable
+    Function AddTrailPoints(ByVal InkTrailPointsSize As Long, InkTrailPointsPtr As Any) As Long
+    Function AddTrailPointsWithPrediction(ByVal InkTrailPointsSize As Long, InkTrailPointsPtr As Any, ByVal PredictedInkTrailPointsSize As Long, PredictedInkTrailPointsPtr As Any) As Long
+    [PreserveSig]
+    Function RemoveTrailPoints(ByVal GenerationId As Long) As HRESULT
+    [PreserveSig]
+    Function StartNewTrail(ByVal Color As Color) As HRESULT
+End Interface
+
+[InterfaceId("0DAF6BD5-42C6-555C-9267-E0AC663AF836")]
+Interface IDelegatedInkTrailVisualStatics Extends IInspectable
+    Function Create(ByVal Compositor As ICompositor) As IDelegatedInkTrailVisual
+    Function CreateForSwapChain(ByVal Compositor As ICompositor, ByVal SwapChain As ICompositionSurface) As IDelegatedInkTrailVisual
+End Interface
+
+[InterfaceId("318CFAFC-5CE3-4B55-AB5D-07A00353AC99")]
+Interface IDistantLight Extends IInspectable
+    Property Get Color() As Color
+    Property Let Color(ByVal Value As Color)
+    Property Get CoordinateSpace() As IVisual
+    Property Set CoordinateSpace(ByVal Value As IVisual)
+    Property Get Direction() As Vector3
+    Property Let Direction(ByVal Value As Vector3)
+End Interface
+
+[InterfaceId("DBCDAA1C-294B-48D7-B60E-76DF64AA392B")]
+Interface IDistantLight2 Extends IInspectable
+    Property Get Intensity() As Single
+    Property Let Intensity(ByVal Value As Single)
+End Interface
+
+[InterfaceId("CB977C07-A154-4851-85E7-A8924C84FAD8")]
+Interface IDropShadow Extends IInspectable
+    Property Get BlurRadius() As Single
+    Property Let BlurRadius(ByVal Value As Single)
+    Property Get Color() As Color
+    Property Let Color(ByVal Value As Color)
+    Property Get Mask() As ICompositionBrush
+    Property Set Mask(ByVal Value As ICompositionBrush)
+    Property Get Offset() As Vector3
+    Property Let Offset(ByVal Value As Vector3)
+    Property Get Opacity() As Single
+    Property Let Opacity(ByVal Value As Single)
+End Interface
+
+[InterfaceId("6C4218BC-15B9-4C2D-8D4A-0767DF11977A")]
+Interface IDropShadow2 Extends IInspectable
+    Property Get SourcePolicy() As CompositionDropShadowSourcePolicy
+    Property Let SourcePolicy(ByVal Value As CompositionDropShadowSourcePolicy)
+End Interface
+
+[InterfaceId("66DE6285-054E-5594-8475-C22CB51F1BD5")]
+Interface IElasticEasingFunction Extends IInspectable
+    Property Get Mode() As CompositionEasingFunctionMode
+    Property Get Oscillations() As Long
+    Property Get Springiness() As Single
+End Interface
+
+[InterfaceId("6F7D1A51-98D2-5638-A34A-00486554C750")]
+Interface IExponentialEasingFunction Extends IInspectable
+    Property Get Mode() As CompositionEasingFunctionMode
+    Property Get Exponent() As Single
+End Interface
+
+[InterfaceId("6ACC5431-7D3D-4BF3-ABB6-F44BDC4888C1")]
+Interface IExpressionAnimation Extends IInspectable
+    Property Get Expression() As LongPtr
+    Property Let Expression(ByVal Value As LongPtr)
+End Interface
+
+[InterfaceId("85924E77-FC46-5A0D-BDAF-463C4F86C172")]
+Interface IIterator_KVP_ICompositionAnimationBase Extends IInspectable
+    Property Get Current() As KVP_ICompositionAnimationBase
+    Property Get HasCurrent() As BooleanByte
+    Function MoveNext() As BooleanByte
+    Function GetMany(ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("C739C420-64B2-53F2-89B9-05906ABA7CB0")]
+Interface IIterable_KVP_ICompositionAnimationBase Extends IInspectable
+    Function First() As IIterator_KVP_ICompositionAnimationBase
+End Interface
+
+[InterfaceId("3B9A274F-891D-5208-96BB-E3F40C809E9B")]
+Interface KVP_ICompositionAnimationBase Extends IInspectable
+    Property Get Key() As LongPtr
+    Property Get Value() As ICompositionAnimationBase
+End Interface
+
+[InterfaceId("B65E6ECE-D9AF-5D4A-ABAA-C08E34A5F815")]
+Interface IMapView_ICompositionAnimationBase Extends IInspectable
+    Function Lookup(ByVal Key As LongPtr) As ICompositionAnimationBase
+    Property Get Size() As Long
+    Function HasKey(ByVal Key As LongPtr) As BooleanByte
+    Sub Split(First As IMapView_ICompositionAnimationBase, Second As IMapView_ICompositionAnimationBase)
+End Interface
+
+[InterfaceId("4BA9AA1D-57AC-54DE-A807-B52E689BFC04")]
+Interface IMap_ICompositionAnimationBase Extends IInspectable
+    Function Lookup(ByVal Key As LongPtr) As ICompositionAnimationBase
+    Property Get Size() As Long
+    Function HasKey(ByVal Key As LongPtr) As BooleanByte
+    Function GetView() As IMapView_ICompositionAnimationBase
+    Function Insert(ByVal Key As LongPtr, ByVal Value As ICompositionAnimationBase) As BooleanByte
+    [PreserveSig]
+    Function Remove(ByVal Key As LongPtr) As HRESULT
+    [PreserveSig]
+    Function Clear() As HRESULT
+End Interface
+
+[InterfaceId("0598A3FF-0A92-4C9D-A427-B25519250DBF")]
+Interface IImplicitAnimationCollection Extends IInspectable
+
+End Interface
+
+[InterfaceId("1E73E647-84C7-477A-B474-5880E0442E15")]
+Interface IInsetClip Extends IInspectable
+    Property Get BottomInset() As Single
+    Property Let BottomInset(ByVal Value As Single)
+    Property Get LeftInset() As Single
+    Property Let LeftInset(ByVal Value As Single)
+    Property Get RightInset() As Single
+    Property Let RightInset(ByVal Value As Single)
+    Property Get TopInset() As Single
+    Property Let TopInset(ByVal Value As Single)
+End Interface
+
+[InterfaceId("126E7F22-3AE9-4540-9A8A-DEAE8A4A4A84")]
+Interface IKeyFrameAnimation Extends IInspectable
+    Property Get DelayTime() As TimeSpan
+    Property Let DelayTime(ByVal Value As TimeSpan)
+    Property Get Duration() As TimeSpan
+    Property Let Duration(ByVal Value As TimeSpan)
+    Property Get IterationBehavior() As AnimationIterationBehavior
+    Property Let IterationBehavior(ByVal Value As AnimationIterationBehavior)
+    Property Get IterationCount() As Long
+    Property Let IterationCount(ByVal Value As Long)
+    Property Get KeyFrameCount() As Long
+    Property Get StopBehavior() As AnimationStopBehavior
+    Property Let StopBehavior(ByVal Value As AnimationStopBehavior)
+    [PreserveSig]
+    Function InsertExpressionKeyFrame(ByVal NormalizedProgressKey As Single, ByVal Value As LongPtr) As HRESULT
+    [PreserveSig]
+    Function InsertExpressionKeyFrameWithEasingFunction(ByVal NormalizedProgressKey As Single, ByVal Value As LongPtr, ByVal EasingFunction As ICompositionEasingFunction) As HRESULT
+End Interface
+
+[InterfaceId("F4B488BB-2940-4EC0-A41A-EB6D801A2F18")]
+Interface IKeyFrameAnimation2 Extends IInspectable
+    Property Get Direction() As AnimationDirection
+    Property Let Direction(ByVal Value As AnimationDirection)
+End Interface
+
+[InterfaceId("845BF0B4-D8DE-462F-8753-C80D43C6FF5A")]
+Interface IKeyFrameAnimation3 Extends IInspectable
+    Property Get DelayBehavior() As AnimationDelayBehavior
+    Property Let DelayBehavior(ByVal Value As AnimationDelayBehavior)
+End Interface
+
+[InterfaceId("BF0803F8-712A-4FC1-8C87-970859ED8D2E")]
+Interface IKeyFrameAnimationFactory Extends IInspectable
+
+End Interface
+
+[InterfaceId("AF843985-0444-4887-8E83-B40B253F822C")]
+Interface ILayerVisual Extends IInspectable
+    Property Get Effect() As ICompositionEffectBrush
+    Property Set Effect(ByVal Value As ICompositionEffectBrush)
+End Interface
+
+[InterfaceId("98F9AEEB-6F23-49F1-90B1-1F59A14FBCE3")]
+Interface ILayerVisual2 Extends IInspectable
+    Property Get Shadow() As ICompositionShadow
+    Property Set Shadow(ByVal Value As ICompositionShadow)
+End Interface
+
+[InterfaceId("9400975A-C7A6-46B3-ACF7-1A268A0A117D")]
+Interface ILinearEasingFunction Extends IInspectable
+
+End Interface
+
+[InterfaceId("438DE12D-769B-4821-A949-284A6547E873")]
+Interface INaturalMotionAnimation Extends IInspectable
+    Property Get DelayBehavior() As AnimationDelayBehavior
+    Property Let DelayBehavior(ByVal Value As AnimationDelayBehavior)
+    Property Get DelayTime() As TimeSpan
+    Property Let DelayTime(ByVal Value As TimeSpan)
+    Property Get StopBehavior() As AnimationStopBehavior
+    Property Let StopBehavior(ByVal Value As AnimationStopBehavior)
+End Interface
+
+[InterfaceId("F53ACB06-CF6A-4387-A3FE-5221F3E7E0E0")]
+Interface INaturalMotionAnimationFactory Extends IInspectable
+
+End Interface
+
+[InterfaceId("9D0D18C9-1576-4B3F-BE60-1D5031F5E71B")]
+Interface IPathKeyFrameAnimation Extends IInspectable
+    [PreserveSig]
+    Function InsertKeyFrame(ByVal NormalizedProgressKey As Single, ByVal Path As ICompositionPath) As HRESULT
+    [PreserveSig]
+    Function InsertKeyFrameWithEasingFunction(ByVal NormalizedProgressKey As Single, ByVal Path As ICompositionPath, ByVal EasingFunction As ICompositionEasingFunction) As HRESULT
+End Interface
+
+[InterfaceId("B18545B3-0C5A-4AB0-BEDC-4F3546948272")]
+Interface IPointLight Extends IInspectable
+    Property Get Color() As Color
+    Property Let Color(ByVal Value As Color)
+    Property Get ConstantAttenuation() As Single
+    Property Let ConstantAttenuation(ByVal Value As Single)
+    Property Get CoordinateSpace() As IVisual
+    Property Set CoordinateSpace(ByVal Value As IVisual)
+    Property Get LinearAttenuation() As Single
+    Property Let LinearAttenuation(ByVal Value As Single)
+    Property Get Offset() As Vector3
+    Property Let Offset(ByVal Value As Vector3)
+    Property Get QuadraticAttenuation() As Single
+    Property Let QuadraticAttenuation(ByVal Value As Single)
+End Interface
+
+[InterfaceId("EFE98F2C-0678-4F69-B164-A810D995BCB7")]
+Interface IPointLight2 Extends IInspectable
+    Property Get Intensity() As Single
+    Property Let Intensity(ByVal Value As Single)
+End Interface
+
+[InterfaceId("4C0A8367-D4E9-468A-87AE-7BA43AB29485")]
+Interface IPointLight3 Extends IInspectable
+    Property Get MinAttenuationCutoff() As Single
+    Property Let MinAttenuationCutoff(ByVal Value As Single)
+    Property Get MaxAttenuationCutoff() As Single
+    Property Let MaxAttenuationCutoff(ByVal Value As Single)
+End Interface
+
+[InterfaceId("C3FF53D6-138B-5815-891A-B7F615CCC563")]
+Interface IPowerEasingFunction Extends IInspectable
+    Property Get Mode() As CompositionEasingFunctionMode
+    Property Get Power() As Single
+End Interface
+
+[InterfaceId("404E5835-ECF6-4240-8520-671279CF36BC")]
+Interface IQuaternionKeyFrameAnimation Extends IInspectable
+    [PreserveSig]
+    Function InsertKeyFrame(ByVal NormalizedProgressKey As Single, ByVal Value As Quaternion) As HRESULT
+    [PreserveSig]
+    Function InsertKeyFrameWithEasingFunction(ByVal NormalizedProgressKey As Single, ByVal Value As Quaternion, ByVal EasingFunction As ICompositionEasingFunction) As HRESULT
+End Interface
+
+[InterfaceId("B3E7549E-00B4-5B53-8BE8-353F6C433101")]
+Interface IRectangleClip Extends IInspectable
+    Property Get Bottom() As Single
+    Property Let Bottom(ByVal Value As Single)
+    Property Get BottomLeftRadius() As Vector2
+    Property Let BottomLeftRadius(ByVal Value As Vector2)
+    Property Get BottomRightRadius() As Vector2
+    Property Let BottomRightRadius(ByVal Value As Vector2)
+    Property Get Left() As Single
+    Property Let Left(ByVal Value As Single)
+    Property Get Right() As Single
+    Property Let Right(ByVal Value As Single)
+    Property Get Top() As Single
+    Property Let Top(ByVal Value As Single)
+    Property Get TopLeftRadius() As Vector2
+    Property Let TopLeftRadius(ByVal Value As Vector2)
+    Property Get TopRightRadius() As Vector2
+    Property Let TopRightRadius(ByVal Value As Vector2)
+End Interface
+
+[InterfaceId("8CC6E340-8B75-5422-B06F-09FFE9F8617E")]
+Interface IRedirectVisual Extends IInspectable
+    Property Get Source() As IVisual
+    Property Set Source(ByVal Value As IVisual)
+End Interface
+
+[InterfaceId("3A31AC7D-28BF-4E7A-8524-71679D480F38")]
+Interface IRenderingDeviceReplacedEventArgs Extends IInspectable
+    Property Get GraphicsDevice() As ICompositionGraphicsDevice
+End Interface
+
+[InterfaceId("AE288FA9-252C-4B95-A725-BF85E38000A1")]
+Interface IScalarKeyFrameAnimation Extends IInspectable
+    [PreserveSig]
+    Function InsertKeyFrame(ByVal NormalizedProgressKey As Single, ByVal Value As Single) As HRESULT
+    [PreserveSig]
+    Function InsertKeyFrameWithEasingFunction(ByVal NormalizedProgressKey As Single, ByVal Value As Single, ByVal EasingFunction As ICompositionEasingFunction) As HRESULT
+End Interface
+
+[InterfaceId("94A94581-BF92-495B-B5BD-D2C659430737")]
+Interface IScalarNaturalMotionAnimation Extends IInspectable
+    Property Get FinalValue() As IReference_Single
+    Property Set FinalValue(ByVal Value As IReference_Single)
+    Property Get InitialValue() As IReference_Single
+    Property Set InitialValue(ByVal Value As IReference_Single)
+    Property Get InitialVelocity() As Single
+    Property Let InitialVelocity(ByVal Value As Single)
+End Interface
+
+[InterfaceId("835AA4FC-671C-41DD-AF48-AE8DEF8B1529")]
+Interface IScalarNaturalMotionAnimationFactory Extends IInspectable
+
+End Interface
+
+[InterfaceId("FF8D5B3B-AB18-5307-9FFE-E3B5D63452A4")]
+Interface IIterator_ICompositionShape Extends IInspectable
+    Property Get Current() As ICompositionShape
+    Property Get HasCurrent() As BooleanByte
+    Function MoveNext() As BooleanByte
+    Function GetMany(ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("1135ADF5-DB12-55E8-AE0F-BD8D914BD399")]
+Interface IIterable_ICompositionShape Extends IInspectable
+    Function First() As IIterator_ICompositionShape
+End Interface
+
+[InterfaceId("E7E27EF4-4EC6-5B8A-A858-561B9534A885")]
+Interface IVectorView_ICompositionShape Extends IInspectable
+    Function GetAt(ByVal Index As Long) As ICompositionShape
+    Property Get Size() As Long
+    Function IndexOf(ByVal Value As ICompositionShape, Index As Long) As BooleanByte
+    Function GetMany(ByVal StartIndex As Long, ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("42D4219A-BE1B-5091-8F1E-90270840FC2D")]
+Interface IVector_ICompositionShape Extends IInspectable
+    Function GetAt(ByVal Index As Long) As ICompositionShape
+    Property Get Size() As Long
+    Function GetView() As IVectorView_ICompositionShape
+    Function IndexOf(ByVal Value As ICompositionShape, Index As Long) As BooleanByte
+    [PreserveSig]
+    Function SetAt(ByVal Index As Long, ByVal Value As ICompositionShape) As HRESULT
+    [PreserveSig]
+    Function InsertAt(ByVal Index As Long, ByVal Value As ICompositionShape) As HRESULT
+    [PreserveSig]
+    Function RemoveAt(ByVal Index As Long) As HRESULT
+    [PreserveSig]
+    Function Append(ByVal Value As ICompositionShape) As HRESULT
+    [PreserveSig]
+    Function RemoveAtEnd() As HRESULT
+    [PreserveSig]
+    Function Clear() As HRESULT
+    Function GetMany(ByVal StartIndex As Long, ByVal Length As Long, Items As Any) As Long
+    [PreserveSig]
+    Function ReplaceAll(ByVal Length As Long, Items As Any) As HRESULT
+End Interface
+
+[InterfaceId("F2BD13C3-BA7E-4B0F-9126-FFB7536B8176")]
+Interface IShapeVisual Extends IInspectable
+    Property Get Shapes() As IVector_ICompositionShape
+    Property Get ViewBox() As ICompositionViewBox
+    Property Set ViewBox(ByVal Value As ICompositionViewBox)
+End Interface
+
+[InterfaceId("F1B518BF-9563-5474-BD13-44B2DF4B1D58")]
+Interface ISineEasingFunction Extends IInspectable
+    Property Get Mode() As CompositionEasingFunctionMode
+End Interface
+
+[InterfaceId("5A9FE273-44A1-4F95-A422-8FA5116BDB44")]
+Interface ISpotLight Extends IInspectable
+    Property Get ConstantAttenuation() As Single
+    Property Let ConstantAttenuation(ByVal Value As Single)
+    Property Get CoordinateSpace() As IVisual
+    Property Set CoordinateSpace(ByVal Value As IVisual)
+    Property Get Direction() As Vector3
+    Property Let Direction(ByVal Value As Vector3)
+    Property Get InnerConeAngle() As Single
+    Property Let InnerConeAngle(ByVal Value As Single)
+    Property Get InnerConeAngleInDegrees() As Single
+    Property Let InnerConeAngleInDegrees(ByVal Value As Single)
+    Property Get InnerConeColor() As Color
+    Property Let InnerConeColor(ByVal Value As Color)
+    Property Get LinearAttenuation() As Single
+    Property Let LinearAttenuation(ByVal Value As Single)
+    Property Get Offset() As Vector3
+    Property Let Offset(ByVal Value As Vector3)
+    Property Get OuterConeAngle() As Single
+    Property Let OuterConeAngle(ByVal Value As Single)
+    Property Get OuterConeAngleInDegrees() As Single
+    Property Let OuterConeAngleInDegrees(ByVal Value As Single)
+    Property Get OuterConeColor() As Color
+    Property Let OuterConeColor(ByVal Value As Color)
+    Property Get QuadraticAttenuation() As Single
+    Property Let QuadraticAttenuation(ByVal Value As Single)
+End Interface
+
+[InterfaceId("64EE615E-0686-4DEA-A9E8-BC3A8C701459")]
+Interface ISpotLight2 Extends IInspectable
+    Property Get InnerConeIntensity() As Single
+    Property Let InnerConeIntensity(ByVal Value As Single)
+    Property Get OuterConeIntensity() As Single
+    Property Let OuterConeIntensity(ByVal Value As Single)
+End Interface
+
+[InterfaceId("E4D03EEA-131F-480E-859E-B82705B74360")]
+Interface ISpotLight3 Extends IInspectable
+    Property Get MinAttenuationCutoff() As Single
+    Property Let MinAttenuationCutoff(ByVal Value As Single)
+    Property Get MaxAttenuationCutoff() As Single
+    Property Let MaxAttenuationCutoff(ByVal Value As Single)
+End Interface
+
+[InterfaceId("0572A95F-37F9-4FBE-B87B-5CD03A89501C")]
+Interface ISpringScalarNaturalMotionAnimation Extends IInspectable
+    Property Get DampingRatio() As Single
+    Property Let DampingRatio(ByVal Value As Single)
+    Property Get Period() As TimeSpan
+    Property Let Period(ByVal Value As TimeSpan)
+End Interface
+
+[InterfaceId("23F494B5-EE73-4F0F-A423-402B946DF4B3")]
+Interface ISpringVector2NaturalMotionAnimation Extends IInspectable
+    Property Get DampingRatio() As Single
+    Property Let DampingRatio(ByVal Value As Single)
+    Property Get Period() As TimeSpan
+    Property Let Period(ByVal Value As TimeSpan)
+End Interface
+
+[InterfaceId("6C8749DF-D57B-4794-8E2D-CECB11E194E5")]
+Interface ISpringVector3NaturalMotionAnimation Extends IInspectable
+    Property Get DampingRatio() As Single
+    Property Let DampingRatio(ByVal Value As Single)
+    Property Get Period() As TimeSpan
+    Property Let Period(ByVal Value As TimeSpan)
+End Interface
+
+[InterfaceId("08E05581-1AD1-4F97-9757-402D76E4233B")]
+Interface ISpriteVisual Extends IInspectable ' requires IClosable
+    Property Get Brush() As ICompositionBrush
+    Property Set Brush(ByVal Value As ICompositionBrush)
+End Interface
+
+[InterfaceId("588C9664-997A-4850-91FE-53CB58F81CE9")]
+Interface ISpriteVisual2 Extends IInspectable
+    Property Get Shadow() As ICompositionShadow
+    Property Set Shadow(ByVal Value As ICompositionShadow)
+End Interface
+
+[InterfaceId("D0CAA74B-560C-4A0B-A5F6-206CA8C3ECD6")]
+Interface IStepEasingFunction Extends IInspectable
+    Property Get FinalStep() As Long
+    Property Let FinalStep(ByVal Value As Long)
+    Property Get InitialStep() As Long
+    Property Let InitialStep(ByVal Value As Long)
+    Property Get IsFinalStepSingleFrame() As BooleanByte
+    Property Let IsFinalStepSingleFrame(ByVal Value As BooleanByte)
+    Property Get IsInitialStepSingleFrame() As BooleanByte
+    Property Let IsInitialStepSingleFrame(ByVal Value As BooleanByte)
+    Property Get StepCount() As Long
+    Property Let StepCount(ByVal Value As Long)
+End Interface
+
+[InterfaceId("DF414515-4E29-4F11-B55E-BF2A6EB36294")]
+Interface IVector2KeyFrameAnimation Extends IInspectable
+    [PreserveSig]
+    Function InsertKeyFrame(ByVal NormalizedProgressKey As Single, ByVal Value As Vector2) As HRESULT
+    [PreserveSig]
+    Function InsertKeyFrameWithEasingFunction(ByVal NormalizedProgressKey As Single, ByVal Value As Vector2, ByVal EasingFunction As ICompositionEasingFunction) As HRESULT
+End Interface
+
+[InterfaceId("0F3E0B7D-E512-479D-A00C-77C93A30A395")]
+Interface IVector2NaturalMotionAnimation Extends IInspectable
+    Property Get FinalValue() As IReference_Vector2
+    Property Set FinalValue(ByVal Value As IReference_Vector2)
+    Property Get InitialValue() As IReference_Vector2
+    Property Set InitialValue(ByVal Value As IReference_Vector2)
+    Property Get InitialVelocity() As Vector2
+    Property Let InitialVelocity(ByVal Value As Vector2)
+End Interface
+
+[InterfaceId("8C74FF61-0761-48A2-BDDB-6AFCC52B89D8")]
+Interface IVector2NaturalMotionAnimationFactory Extends IInspectable
+
+End Interface
+
+[InterfaceId("C8039DAA-A281-43C2-A73D-B68E3C533C40")]
+Interface IVector3KeyFrameAnimation Extends IInspectable
+    [PreserveSig]
+    Function InsertKeyFrame(ByVal NormalizedProgressKey As Single, ByVal Value As Vector3) As HRESULT
+    [PreserveSig]
+    Function InsertKeyFrameWithEasingFunction(ByVal NormalizedProgressKey As Single, ByVal Value As Vector3, ByVal EasingFunction As ICompositionEasingFunction) As HRESULT
+End Interface
+
+[InterfaceId("9C17042C-E2CA-45AD-969E-4E78B7B9AD41")]
+Interface IVector3NaturalMotionAnimation Extends IInspectable
+    Property Get FinalValue() As IReference_Vector3
+    Property Set FinalValue(ByVal Value As IReference_Vector3)
+    Property Get InitialValue() As IReference_Vector3
+    Property Set InitialValue(ByVal Value As IReference_Vector3)
+    Property Get InitialVelocity() As Vector3
+    Property Let InitialVelocity(ByVal Value As Vector3)
+End Interface
+
+[InterfaceId("21A81D2F-0880-457B-AC87-B609018C876D")]
+Interface IVector3NaturalMotionAnimationFactory Extends IInspectable
+
+End Interface
+
+[InterfaceId("2457945B-ADDD-4385-9606-B6A3D5E4E1B9")]
+Interface IVector4KeyFrameAnimation Extends IInspectable
+    [PreserveSig]
+    Function InsertKeyFrame(ByVal NormalizedProgressKey As Single, ByVal Value As Vector4) As HRESULT
+    [PreserveSig]
+    Function InsertKeyFrameWithEasingFunction(ByVal NormalizedProgressKey As Single, ByVal Value As Vector4, ByVal EasingFunction As ICompositionEasingFunction) As HRESULT
+End Interface
+
+[InterfaceId("117E202D-A859-4C89-873B-C2AA566788E3")]
+Interface IVisual Extends IInspectable ' requires IClosable
+    Property Get AnchorPoint() As Vector2
+    Property Let AnchorPoint(ByVal Value As Vector2)
+    Property Get BackfaceVisibility() As CompositionBackfaceVisibility
+    Property Let BackfaceVisibility(ByVal Value As CompositionBackfaceVisibility)
+    Property Get BorderMode() As CompositionBorderMode
+    Property Let BorderMode(ByVal Value As CompositionBorderMode)
+    Property Get CenterPoint() As Vector3
+    Property Let CenterPoint(ByVal Value As Vector3)
+    Property Get Clip() As ICompositionClip
+    Property Set Clip(ByVal Value As ICompositionClip)
+    Property Get CompositeMode() As CompositionCompositeMode
+    Property Let CompositeMode(ByVal Value As CompositionCompositeMode)
+    Property Get IsVisible() As BooleanByte
+    Property Let IsVisible(ByVal Value As BooleanByte)
+    Property Get Offset() As Vector3
+    Property Let Offset(ByVal Value As Vector3)
+    Property Get Opacity() As Single
+    Property Let Opacity(ByVal Value As Single)
+    Property Get Orientation() As Quaternion
+    Property Let Orientation(ByVal Value As Quaternion)
+    Property Get Parent() As IContainerVisual
+    Property Get RotationAngle() As Single
+    Property Let RotationAngle(ByVal Value As Single)
+    Property Get RotationAngleInDegrees() As Single
+    Property Let RotationAngleInDegrees(ByVal Value As Single)
+    Property Get RotationAxis() As Vector3
+    Property Let RotationAxis(ByVal Value As Vector3)
+    Property Get Scale() As Vector3
+    Property Let Scale(ByVal Value As Vector3)
+    Property Get Size() As Vector2
+    Property Let Size(ByVal Value As Vector2)
+    Property Get TransformMatrix() As Matrix4x4
+    Property Let TransformMatrix(ByVal Value As Matrix4x4)
+End Interface
+
+[InterfaceId("3052B611-56C3-4C3E-8BF3-F6E1AD473F06")]
+Interface IVisual2 Extends IInspectable
+    Property Get ParentForTransform() As IVisual
+    Property Set ParentForTransform(ByVal Value As IVisual)
+    Property Get RelativeOffsetAdjustment() As Vector3
+    Property Let RelativeOffsetAdjustment(ByVal Value As Vector3)
+    Property Get RelativeSizeAdjustment() As Vector2
+    Property Let RelativeSizeAdjustment(ByVal Value As Vector2)
+End Interface
+
+[InterfaceId("30BE580D-F4B6-4AB7-80DD-3738CBAC9F2C")]
+Interface IVisual3 Extends IInspectable
+    Property Get IsHitTestVisible() As BooleanByte
+    Property Let IsHitTestVisible(ByVal Value As BooleanByte)
+End Interface
+
+[InterfaceId("9476BF11-E24B-5BF9-9EBE-6274109B2711")]
+Interface IVisual4 Extends IInspectable
+    Property Get IsPixelSnappingEnabled() As BooleanByte
+    Property Let IsPixelSnappingEnabled(ByVal Value As BooleanByte)
+End Interface
+
+[InterfaceId("ECA15496-DCAA-5095-A898-F8602A40E10A")]
+Interface IIterator_IVisual Extends IInspectable
+    Property Get Current() As IVisual
+    Property Get HasCurrent() As BooleanByte
+    Function MoveNext() As BooleanByte
+    Function GetMany(ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("4EED7DCE-E4AC-5891-9B52-799D70DF47FE")]
+Interface IIterable_IVisual Extends IInspectable
+    Function First() As IIterator_IVisual
+End Interface
+
+[InterfaceId("8B745505-FD3E-4A98-84A8-E949468C6BCB")]
+Interface IVisualCollection Extends IInspectable
+    Property Get Count() As Long
+    [PreserveSig]
+    Function InsertAbove(ByVal NewChild As IVisual, ByVal Sibling As IVisual) As HRESULT
+    [PreserveSig]
+    Function InsertAtBottom(ByVal NewChild As IVisual) As HRESULT
+    [PreserveSig]
+    Function InsertAtTop(ByVal NewChild As IVisual) As HRESULT
+    [PreserveSig]
+    Function InsertBelow(ByVal NewChild As IVisual, ByVal Sibling As IVisual) As HRESULT
+    [PreserveSig]
+    Function Remove(ByVal Child As IVisual) As HRESULT
+    [PreserveSig]
+    Function RemoveAll() As HRESULT
+End Interface
+
+[InterfaceId("01E64612-1D82-42F4-8E3F-A722DED33FC7")]
+Interface IVisualElement Extends IInspectable
+
+End Interface
+
+[InterfaceId("993AE8A0-6057-5E40-918C-E06E0B7E7C64")]
+Interface IVisualElement2 Extends IInspectable
+    Function GetVisualInternal() As IVisual
+End Interface
+
+[InterfaceId("AD0FF93E-B502-4EB5-87B4-9A38A71D0137")]
+Interface IVisualFactory Extends IInspectable
+
+End Interface
+
+[InterfaceId("338FAA70-54C8-40A7-8029-C9CEEB0AA250")]
+Interface IVisualUnorderedCollection Extends IInspectable
+    Property Get Count() As Long
+    [PreserveSig]
+    Function Add(ByVal NewVisual As IVisual) As HRESULT
+    [PreserveSig]
+    Function Remove(ByVal Visual As IVisual) As HRESULT
+    [PreserveSig]
+    Function RemoveAll() As HRESULT
+End Interface
+
+Module mdlUIComposition
+
+Public Enum AnimationControllerProgressBehavior
+    AnimationControllerProgressBehavior_Default
+    AnimationControllerProgressBehavior_IncludesDelayTime
+End Enum
+
+Public Enum AnimationDelayBehavior
+    AnimationDelayBehavior_SetInitialValueAfterDelay
+    AnimationDelayBehavior_SetInitialValueBeforeDelay
+End Enum
+
+Public Enum AnimationIterationBehavior
+    AnimationIterationBehavior_Count
+    AnimationIterationBehavior_Forever
+End Enum
+
+Public Enum AnimationPropertyAccessMode
+    AnimationPropertyAccessMode_None
+    AnimationPropertyAccessMode_ReadOnly
+    AnimationPropertyAccessMode_WriteOnly
+    AnimationPropertyAccessMode_ReadWrite
+End Enum
+
+Public Enum AnimationStopBehavior
+    AnimationStopBehavior_LeaveCurrentValue
+    AnimationStopBehavior_SetToInitialValue
+    AnimationStopBehavior_SetToFinalValue
+End Enum
+
+Public Enum CompositionBackfaceVisibility
+    CompositionBackfaceVisibility_Inherit
+    CompositionBackfaceVisibility_Visible
+    CompositionBackfaceVisibility_Hidden
+End Enum
+
+Public Enum CompositionBatchTypes
+    CompositionBatchTypes_None = &H0
+    CompositionBatchTypes_Animation = &H1
+    CompositionBatchTypes_Effect = &H2
+    CompositionBatchTypes_InfiniteAnimation = &H4
+    CompositionBatchTypes_AllAnimations = &H5
+End Enum
+
+Public Enum CompositionBitmapInterpolationMode
+    CompositionBitmapInterpolationMode_NearestNeighbor
+    CompositionBitmapInterpolationMode_Linear
+    CompositionBitmapInterpolationMode_MagLinearMinLinearMipLinear
+    CompositionBitmapInterpolationMode_MagLinearMinLinearMipNearest
+    CompositionBitmapInterpolationMode_MagLinearMinNearestMipLinear
+    CompositionBitmapInterpolationMode_MagLinearMinNearestMipNearest
+    CompositionBitmapInterpolationMode_MagNearestMinLinearMipLinear
+    CompositionBitmapInterpolationMode_MagNearestMinLinearMipNearest
+    CompositionBitmapInterpolationMode_MagNearestMinNearestMipLinear
+    CompositionBitmapInterpolationMode_MagNearestMinNearestMipNearest
+End Enum
+
+Public Enum CompositionBorderMode
+    CompositionBorderMode_Inherit
+    CompositionBorderMode_Soft
+    CompositionBorderMode_Hard
+End Enum
+
+Public Enum CompositionColorSpace
+    CompositionColorSpace_Auto
+    CompositionColorSpace_Hsl
+    CompositionColorSpace_Rgb
+    CompositionColorSpace_HslLinear
+    CompositionColorSpace_RgbLinear
+End Enum
+
+Public Enum CompositionCompositeMode
+    CompositionCompositeMode_Inherit
+    CompositionCompositeMode_SourceOver
+    CompositionCompositeMode_DestinationInvert
+    CompositionCompositeMode_MinBlend
+End Enum
+
+Public Enum CompositionDropShadowSourcePolicy
+    CompositionDropShadowSourcePolicy_Default
+    CompositionDropShadowSourcePolicy_InheritFromVisualContent
+End Enum
+
+Public Enum CompositionEasingFunctionMode
+    CompositionEasingFunctionMode_In
+    CompositionEasingFunctionMode_Out
+    CompositionEasingFunctionMode_InOut
+End Enum
+
+Public Enum CompositionEffectFactoryLoadStatus
+    CompositionEffectFactoryLoadStatus_Success
+    CompositionEffectFactoryLoadStatus_EffectTooComplex
+    CompositionEffectFactoryLoadStatus_Pending
+    CompositionEffectFactoryLoadStatus_Other = -1
+End Enum
+
+Public Enum CompositionGetValueStatus
+    CompositionGetValueStatus_Succeeded
+    CompositionGetValueStatus_TypeMismatch
+    CompositionGetValueStatus_NotFound
+End Enum
+
+Public Enum CompositionGradientExtendMode
+    CompositionGradientExtendMode_Clamp
+    CompositionGradientExtendMode_Wrap
+    CompositionGradientExtendMode_Mirror
+End Enum
+
+Public Enum CompositionMappingMode
+    CompositionMappingMode_Absolute
+    CompositionMappingMode_Relative
+End Enum
+
+Public Enum CompositionStretch
+    CompositionStretch_None
+    CompositionStretch_Fill
+    CompositionStretch_Uniform
+    CompositionStretch_UniformToFill
+End Enum
+
+Public Enum CompositionStrokeCap
+    CompositionStrokeCap_Flat
+    CompositionStrokeCap_Square
+    CompositionStrokeCap_Round
+    CompositionStrokeCap_Triangle
+End Enum
+
+Public Enum CompositionStrokeLineJoin
+    CompositionStrokeLineJoin_Miter
+    CompositionStrokeLineJoin_Bevel
+    CompositionStrokeLineJoin_Round
+    CompositionStrokeLineJoin_MiterOrBevel
+End Enum
+
+Public Type InkTrailPoint
+    Point As POINTF
+    Radius As Single
+End Type
+
+End Module

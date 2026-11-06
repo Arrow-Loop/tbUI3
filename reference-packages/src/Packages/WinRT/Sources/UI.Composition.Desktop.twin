@@ -1,0 +1,150 @@
+[InterfaceId("6329D6CA-3366-490E-9DB3-25312929AC51")]
+Interface IDesktopWindowTarget Extends IInspectable ' requires IClosable
+    Property Get IsTopmost() As BooleanByte
+End Interface
+
+[InterfaceId("FD04E6E3-FE0C-4C3C-AB19-A07601A576EE")]
+Interface ICompositionDrawingSurfaceInterop Extends IUnknown
+    [PreserveSig]
+    Function BeginDraw(UpdateRect As Any, rIID As Any, UpdateObject As Any, UpdateOffset As Any) As HRESULT
+    [PreserveSig]
+    Function EndDraw() As HRESULT
+    [PreserveSig]
+    Function Resize(ByVal SizePixels As SIZEL) As HRESULT
+    [PreserveSig]
+    Function Scroll(ScrollRect As Any, ClipRect As Any, ByVal OffsetX As Long, ByVal OffsetY As Long) As HRESULT
+    [PreserveSig]
+    Function ResumeDraw() As HRESULT
+    [PreserveSig]
+    Function SuspendDraw() As HRESULT
+End Interface
+
+[InterfaceId("41E64AAE-98C0-4239-8E95-A330DD6AA18B")]
+Interface ICompositionDrawingSurfaceInterop2 Extends ICompositionDrawingSurfaceInterop
+    [PreserveSig]
+    Function CopySurface(ByVal DestinationResource As IUnknown, ByVal OffsetX As Long, ByVal OffsetY As Long, SourceRectangle As Any) As HRESULT
+End Interface
+
+[InterfaceId("A116FF71-F8BF-4C8A-9C98-70779A32A9C8")]
+Interface ICompositionGraphicsDeviceInterop Extends IUnknown
+    Function GetRenderingDevice() As IUnknown
+    [PreserveSig]
+    Function SetRenderingDevice(ByVal Value As IUnknown) As HRESULT
+End Interface
+
+[InterfaceId("25297D5C-3AD4-4C9C-B5CF-E36A38512330")]
+Interface ICompositorInterop Extends IUnknown
+    Function CreateCompositionSurfaceForHandle(ByVal SwapChain As LongPtr) As ICompositionSurface
+    Function CreateCompositionSurfaceForSwapChain(ByVal SwapChain As IUnknown) As ICompositionSurface
+    Function CreateGraphicsDevice(ByVal RenderingDevice As IUnknown) As ICompositionGraphicsDevice
+End Interface
+
+[InterfaceId("11F62CD1-2F9D-42D3-B05F-D6790D9E9F8E")]
+Interface IVisualInteractionSourceInterop Extends IUnknown
+    [PreserveSig]
+    Function TryRedirectForManipulation(PointerInfo As POINTER_INFO) As HRESULT
+End Interface
+
+[InterfaceId("2C9DB356-E70D-4642-8298-BC4AA5B4865C")]
+Interface ICompositionCapabilitiesInteropFactory Extends IInspectable
+    Function GetForWindow(ByVal hWnd As LongPtr) As ICompositionCapabilities
+End Interface
+
+[InterfaceId("29E691FA-4567-4DCA-B319-D0F207EB6807")]
+Interface ICompositorDesktopInterop Extends IUnknown
+    Function CreateDesktopWindowTarget(ByVal hWndTarget As LongPtr, ByVal IsTopmost As BOOL) As IDesktopWindowTarget
+    [PreserveSig]
+    Function EnsureOnThread(ByVal ThreadId As Long) As HRESULT
+End Interface
+
+[InterfaceId("35DBF59E-E3F9-45B0-81E7-FE75F4145DC9")]
+Interface IDesktopWindowTargetInterop Extends IUnknown
+    Property Get hWnd() As LongPtr
+End Interface
+
+Module mdlUICompositionDesktop
+
+[UseGetLastError(False), DLLStackCheck(False)]
+Public Declare PtrSafe Function CreateDispatcherQueueController Lib "coremessaging" (ByVal Options As DispatcherQueueOptions, DispatcherQueueController As IDispatcherQueueController) As HRESULT
+
+Public Enum DISPATCHERQUEUE_THREAD_APARTMENTTYPE
+    DQTAT_COM_NONE
+    DQTAT_COM_ASTA
+    DQTAT_COM_STA
+End Enum
+
+Public Enum DISPATCHERQUEUE_THREAD_TYPE
+    DQTYPE_THREAD_DEDICATED = 1
+    DQTYPE_THREAD_CURRENT
+End Enum
+
+Public Enum POINTER_BUTTON_CHANGE_TYPE
+    POINTER_CHANGE_NONE
+    POINTER_CHANGE_FIRSTBUTTON_DOWN
+    POINTER_CHANGE_FIRSTBUTTON_UP
+    POINTER_CHANGE_SECONDBUTTON_DOWN
+    POINTER_CHANGE_SECONDBUTTON_UP
+    POINTER_CHANGE_THIRDBUTTON_DOWN
+    POINTER_CHANGE_THIRDBUTTON_UP
+    POINTER_CHANGE_FOURTHBUTTON_DOWN
+    POINTER_CHANGE_FOURTHBUTTON_UP
+    POINTER_CHANGE_FIFTHBUTTON_DOWN
+    POINTER_CHANGE_FIFTHBUTTON_UP
+End Enum
+
+Public Enum POINTER_FLAGS
+    POINTER_FLAG_NONE = &H0
+    POINTER_FLAG_NEW = &H1
+    POINTER_FLAG_INRANGE = &H2
+    POINTER_FLAG_INCONTACT = &H4
+    POINTER_FLAG_FIRSTBUTTON = &H10
+    POINTER_FLAG_SECONDBUTTON = &H20
+    POINTER_FLAG_THIRDBUTTON = &H40
+    POINTER_FLAG_FOURTHBUTTON = &H80
+    POINTER_FLAG_FIFTHBUTTON = &H100
+    POINTER_FLAG_PRIMARY = &H2000
+    POINTER_FLAG_CONFIDENCE = &H4000
+    POINTER_FLAG_CANCELED = &H8000&
+    POINTER_FLAG_DOWN = &H10000
+    POINTER_FLAG_UPDATE = &H20000
+    POINTER_FLAG_UP = &H40000
+    POINTER_FLAG_WHEEL = &H80000
+    POINTER_FLAG_HWHEEL = &H100000
+    POINTER_FLAG_CAPTURECHANGED = &H200000
+    POINTER_FLAG_HASTRANSFORM = &H400000
+End Enum
+
+Public Enum POINTER_INPUT_TYPE
+    PT_POINTER = 1
+    PT_TOUCH
+    PT_PEN
+    PT_MOUSE
+    PT_TOUCHPAD
+End Enum
+
+Public Type DispatcherQueueOptions
+    dwSize As Long
+    ThreadType As DISPATCHERQUEUE_THREAD_TYPE
+    ApartmentType As DISPATCHERQUEUE_THREAD_APARTMENTTYPE
+End Type
+
+Public Type POINTER_INFO
+    PointerType As POINTER_INPUT_TYPE
+    PointerId As Long
+    FrameId As Long
+    PointerFlags As POINTER_FLAGS
+    SourceDevice As LongPtr
+    hWndTarget As LongPtr
+    ptPixelLocation As POINTL
+    ptHimetricLocation As POINTL
+    ptPixelLocationRaw As POINTL
+    ptHimetricLocationRaw As POINTL
+    dwTime As Long
+    HistoryCount As Long
+    InputData As Long
+    dwKeyStates As Long
+    PerformanceCount As Currency
+    ButtonChangeType As POINTER_BUTTON_CHANGE_TYPE
+End Type
+    
+End Module

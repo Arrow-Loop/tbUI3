@@ -1,0 +1,16 @@
+import fs from "node:fs"; import crypto from "node:crypto";
+import { index, patch } from "./twinproj-splice.mjs";
+const [src, dst, name, title, desc] = process.argv.slice(2);
+const buf = fs.readFileSync(src); const { files } = index(buf); const td = new TextDecoder();
+const pid = crypto.randomUUID().toUpperCase(), fid = crypto.randomUUID().toUpperCase();
+let settings = td.decode(files["Settings"].content);
+const rep = (s, a, b) => { if (!s.includes(a)) throw new Error("missing " + a); return s.split(a).join(b); };
+settings = rep(settings, '"project.id": "{940B81F2-DACD-4CED-B7C0-13A7FD1A3924}"', `"project.id": "{${pid}}"`);
+settings = rep(settings, '"project.name": "tB_Template"', `"project.name": "${name}"`);
+settings = rep(settings, '"project.appTitle": "tB_Template"', `"project.appTitle": "${title}"`);
+settings = rep(settings, '"project.description": "tB_Template"', `"project.description": "${desc}"`);
+const twin = rep(td.decode(files["Sources/frmMain.twin"].content), '015E52EA-06DF-4874-812F-E5D835653A38', fid);
+const form = rep(td.decode(files["Sources/frmMain.tbform"].content), '{015E52EA-06DF-4874-812F-E5D835653A38}', `{${fid}}`);
+const out = patch(buf, { rootName: name, replace: { "Settings": settings, "Sources/frmMain.twin": twin, "Sources/frmMain.tbform": form } });
+fs.writeFileSync(dst, out);
+console.log(JSON.stringify({ projectId: `{${pid}}`, formDesignerId: fid, bytes: out.length }));

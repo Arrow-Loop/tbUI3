@@ -1,0 +1,452 @@
+' =====================================================
+' mConsoleAPI.twin - Extended Console API Declarations
+' Modern Console Library for TwinBASIC
+' =====================================================
+
+Public Module mConsoleAPI
+
+    ' === Console Handle Functions ===
+
+    Public DeclareWide PtrSafe Function GetStdHandle Lib "kernel32" ( _
+        ByVal nStdHandle As Long) As LongPtr
+
+    Public DeclareWide PtrSafe Function SetStdHandle Lib "kernel32" ( _
+        ByVal nStdHandle As Long, _
+        ByVal hHandle As LongPtr) As Long
+
+    ' === Console Mode Functions ===
+
+    Public DeclareWide PtrSafe Function GetConsoleMode Lib "kernel32" ( _
+        ByVal hConsoleHandle As LongPtr, _
+        ByRef lpMode As Long) As Long
+
+    Public DeclareWide PtrSafe Function SetConsoleMode Lib "kernel32" ( _
+        ByVal hConsoleHandle As LongPtr, _
+        ByVal dwMode As Long) As Long
+
+    ' === Console Output Functions ===
+
+    Public DeclareWide PtrSafe Function WriteConsoleW Lib "kernel32" ( _
+        ByVal hConsoleOutput As LongPtr, _
+        ByVal lpBuffer As LongPtr, _
+        ByVal nNumberOfCharsToWrite As Long, _
+        ByRef lpNumberOfCharsWritten As Long, _
+        ByVal lpReserved As LongPtr) As Long
+
+    Public DeclareWide PtrSafe Function WriteConsoleOutputW Lib "kernel32" ( _
+        ByVal hConsoleOutput As LongPtr, _
+        ByVal lpBuffer As LongPtr, _
+        ByVal dwBufferSize As Long, _
+        ByVal dwBufferCoord As Long, _
+        ByRef lpWriteRegion As SMALL_RECT) As Long
+
+    Public DeclareWide PtrSafe Function WriteConsoleOutputCharacterW Lib "kernel32" ( _
+        ByVal hConsoleOutput As LongPtr, _
+        ByVal lpCharacter As LongPtr, _
+        ByVal nLength As Long, _
+        ByVal dwWriteCoord As Long, _
+        ByRef lpNumberOfCharsWritten As Long) As Long
+
+    Public DeclareWide PtrSafe Function WriteConsoleOutputAttribute Lib "kernel32" ( _
+        ByVal hConsoleOutput As LongPtr, _
+        ByVal lpAttribute As LongPtr, _
+        ByVal nLength As Long, _
+        ByVal dwWriteCoord As Long, _
+        ByRef lpNumberOfAttrsWritten As Long) As Long
+
+    ' === Console Input Functions ===
+
+    Public DeclareWide PtrSafe Function ReadConsoleW Lib "kernel32" ( _
+        ByVal hConsoleInput As LongPtr, _
+        ByVal lpBuffer As LongPtr, _
+        ByVal nNumberOfCharsToRead As Long, _
+        ByRef lpNumberOfCharsRead As Long, _
+        ByVal pInputControl As LongPtr) As Long
+
+    Public DeclareWide PtrSafe Function ReadConsoleInputW Lib "kernel32" ( _
+        ByVal hConsoleInput As LongPtr, _
+        ByRef lpBuffer As INPUT_RECORD, _
+        ByVal nLength As Long, _
+        ByRef lpNumberOfEventsRead As Long) As Long
+
+    Public DeclareWide PtrSafe Function PeekConsoleInputW Lib "kernel32" ( _
+        ByVal hConsoleInput As LongPtr, _
+        ByRef lpBuffer As INPUT_RECORD, _
+        ByVal nLength As Long, _
+        ByRef lpNumberOfEventsRead As Long) As Long
+
+    Public DeclareWide PtrSafe Function GetNumberOfConsoleInputEvents Lib "kernel32" ( _
+        ByVal hConsoleInput As LongPtr, _
+        ByRef lpNumberOfEvents As Long) As Long
+
+    Public DeclareWide PtrSafe Function FlushConsoleInputBuffer Lib "kernel32" ( _
+        ByVal hConsoleInput As LongPtr) As Long
+
+    ' === Console Buffer Functions ===
+
+    Public DeclareWide PtrSafe Function GetConsoleScreenBufferInfo Lib "kernel32" ( _
+        ByVal hConsoleOutput As LongPtr, _
+        ByRef lpConsoleScreenBufferInfo As CONSOLE_SCREEN_BUFFER_INFO) As Long
+
+    Public DeclareWide PtrSafe Function GetConsoleScreenBufferInfoEx Lib "kernel32" ( _
+        ByVal hConsoleOutput As LongPtr, _
+        ByRef lpConsoleScreenBufferInfoEx As CONSOLE_SCREEN_BUFFER_INFOEX) As Long
+
+    Public DeclareWide PtrSafe Function SetConsoleScreenBufferInfoEx Lib "kernel32" ( _
+        ByVal hConsoleOutput As LongPtr, _
+        ByRef lpConsoleScreenBufferInfoEx As CONSOLE_SCREEN_BUFFER_INFOEX) As Long
+
+    Public DeclareWide PtrSafe Function SetConsoleScreenBufferSize Lib "kernel32" ( _
+        ByVal hConsoleOutput As LongPtr, _
+        ByVal dwSize As Long) As Long
+
+    Public DeclareWide PtrSafe Function CreateConsoleScreenBuffer Lib "kernel32" ( _
+        ByVal dwDesiredAccess As Long, _
+        ByVal dwShareMode As Long, _
+        ByVal lpSecurityAttributes As LongPtr, _
+        ByVal dwFlags As Long, _
+        ByVal lpScreenBufferData As LongPtr) As LongPtr
+
+    Public DeclareWide PtrSafe Function SetConsoleActiveScreenBuffer Lib "kernel32" ( _
+        ByVal hConsoleOutput As LongPtr) As Long
+
+    ' === Console Cursor Functions ===
+
+    Public DeclareWide PtrSafe Function SetConsoleCursorPosition Lib "kernel32" ( _
+        ByVal hConsoleOutput As LongPtr, _
+        ByVal dwCursorPosition As Long) As Long
+
+    Public DeclareWide PtrSafe Function GetConsoleCursorInfo Lib "kernel32" ( _
+        ByVal hConsoleOutput As LongPtr, _
+        ByRef lpConsoleCursorInfo As CONSOLE_CURSOR_INFO) As Long
+
+    Public DeclareWide PtrSafe Function SetConsoleCursorInfo Lib "kernel32" ( _
+        ByVal hConsoleOutput As LongPtr, _
+        ByRef lpConsoleCursorInfo As CONSOLE_CURSOR_INFO) As Long
+
+    ' === Console Text Attributes ===
+
+    Public DeclareWide PtrSafe Function SetConsoleTextAttribute Lib "kernel32" ( _
+        ByVal hConsoleOutput As LongPtr, _
+        ByVal wAttributes As Integer) As Long
+
+    Public DeclareWide PtrSafe Function FillConsoleOutputCharacterW Lib "kernel32" ( _
+        ByVal hConsoleOutput As LongPtr, _
+        ByVal cCharacter As Integer, _
+        ByVal nLength As Long, _
+        ByVal dwWriteCoord As Long, _
+        ByRef lpNumberOfCharsWritten As Long) As Long
+
+    Public DeclareWide PtrSafe Function FillConsoleOutputAttribute Lib "kernel32" ( _
+        ByVal hConsoleOutput As LongPtr, _
+        ByVal wAttribute As Integer, _
+        ByVal nLength As Long, _
+        ByVal dwWriteCoord As Long, _
+        ByRef lpNumberOfAttrsWritten As Long) As Long
+
+    ' === Console Scroll Functions ===
+
+    Public DeclareWide PtrSafe Function ScrollConsoleScreenBufferW Lib "kernel32" ( _
+        ByVal hConsoleOutput As LongPtr, _
+        ByRef lpScrollRectangle As SMALL_RECT, _
+        ByVal lpClipRectangle As LongPtr, _
+        ByVal dwDestinationOrigin As Long, _
+        ByRef lpFill As CHAR_INFO) As Long
+
+    ' === Console Title Functions ===
+
+    Public DeclareWide PtrSafe Function GetConsoleTitleW Lib "kernel32" ( _
+        ByVal lpConsoleTitle As LongPtr, _
+        ByVal nSize As Long) As Long
+
+    Public DeclareWide PtrSafe Function SetConsoleTitleW Lib "kernel32" ( _
+        ByVal lpConsoleTitle As LongPtr) As Long
+
+    ' === Console Window Functions ===
+
+    Public DeclareWide PtrSafe Function GetConsoleWindow Lib "kernel32" () As LongPtr
+
+    Public DeclareWide PtrSafe Function SetConsoleWindowInfo Lib "kernel32" ( _
+        ByVal hConsoleOutput As LongPtr, _
+        ByVal bAbsolute As Long, _
+        ByRef lpConsoleWindow As SMALL_RECT) As Long
+
+    ' === Console Font Functions ===
+
+    Public DeclareWide PtrSafe Function GetCurrentConsoleFontEx Lib "kernel32" ( _
+        ByVal hConsoleOutput As LongPtr, _
+        ByVal bMaximumWindow As Long, _
+        ByRef lpConsoleCurrentFontEx As CONSOLE_FONT_INFOEX) As Long
+
+    Public DeclareWide PtrSafe Function SetCurrentConsoleFontEx Lib "kernel32" ( _
+        ByVal hConsoleOutput As LongPtr, _
+        ByVal bMaximumWindow As Long, _
+        ByRef lpConsoleCurrentFontEx As CONSOLE_FONT_INFOEX) As Long
+
+    ' === Console Code Page Functions ===
+
+    Public DeclareWide PtrSafe Function GetConsoleCP Lib "kernel32" () As Long
+
+    Public DeclareWide PtrSafe Function SetConsoleCP Lib "kernel32" ( _
+        ByVal wCodePageID As Long) As Long
+
+    Public DeclareWide PtrSafe Function GetConsoleOutputCP Lib "kernel32" () As Long
+
+    Public DeclareWide PtrSafe Function SetConsoleOutputCP Lib "kernel32" ( _
+        ByVal wCodePageID As Long) As Long
+
+    ' === Console Control Handler ===
+
+    Public DeclareWide PtrSafe Function SetConsoleCtrlHandler Lib "kernel32" ( _
+        ByVal HandlerRoutine As LongPtr, _
+        ByVal Add As Long) As Long
+
+    ' === Allocation Functions ===
+
+    Public DeclareWide PtrSafe Function AllocConsole Lib "kernel32" () As Long
+
+    Public DeclareWide PtrSafe Function FreeConsole Lib "kernel32" () As Long
+
+    Public DeclareWide PtrSafe Function AttachConsole Lib "kernel32" ( _
+        ByVal dwProcessId As Long) As Long
+
+    ' === String Conversion Functions ===
+
+    Public DeclareWide PtrSafe Function MultiByteToWideChar Lib "kernel32" ( _
+        ByVal CodePage As Long, _
+        ByVal dwFlags As Long, _
+        ByVal lpMultiByteStr As LongPtr, _
+        ByVal cbMultiByte As Long, _
+        ByVal lpWideCharStr As LongPtr, _
+        ByVal cchWideChar As Long) As Long
+
+    Public DeclareWide PtrSafe Function WideCharToMultiByte Lib "kernel32" ( _
+        ByVal CodePage As Long, _
+        ByVal dwFlags As Long, _
+        ByVal lpWideCharStr As LongPtr, _
+        ByVal cchWideChar As Long, _
+        ByVal lpMultiByteStr As LongPtr, _
+        ByVal cbMultiByte As Long, _
+        ByVal lpDefaultChar As LongPtr, _
+        ByVal lpUsedDefaultChar As LongPtr) As Long
+
+    Public DeclareWide PtrSafe Function SysAllocStringLen Lib "oleaut32" ( _
+        ByVal olestr As LongPtr, _
+        ByVal cch As Long) As String
+
+    ' === Timer Functions ===
+
+    Public DeclareWide PtrSafe Function GetTickCount Lib "kernel32" () As Long
+
+    Public DeclareWide PtrSafe Function GetAsyncKeyState Lib "user32" (ByVal vKey As Long) As Integer
+
+    Public DeclareWide PtrSafe Function SetTimer Lib "user32" ( _
+        ByVal hwnd As LongPtr, _
+        ByVal nIDEvent As LongPtr, _
+        ByVal uElapse As Long, _
+        ByVal lpTimerFunc As LongPtr) As LongPtr
+
+    Public DeclareWide PtrSafe Function KillTimer Lib "user32" ( _
+        ByVal hwnd As LongPtr, _
+        ByVal uIDEvent As LongPtr) As Long
+
+    ' === Window Functions ===
+
+    Public DeclareWide PtrSafe Function GetWindowRect Lib "user32" ( _
+        ByVal hwnd As LongPtr, _
+        ByRef lpRect As RECT) As Long
+
+    Public DeclareWide PtrSafe Function MoveWindow Lib "user32" ( _
+        ByVal hwnd As LongPtr, _
+        ByVal x As Long, _
+        ByVal y As Long, _
+        ByVal nWidth As Long, _
+        ByVal nHeight As Long, _
+        ByVal bRepaint As Long) As Long
+
+    Public DeclareWide PtrSafe Function ShowWindow Lib "user32" ( _
+        ByVal hwnd As LongPtr, _
+        ByVal nCmdShow As Long) As Long
+
+    ' === Sleep Function ===
+
+    Public DeclareWide PtrSafe Sub Sleep Lib "kernel32" (ByVal dwMilliseconds As Long)
+
+    ' === Structures ===
+
+    ' Basic console screen buffer info (non-extended)
+    Public Type CONSOLE_SCREEN_BUFFER_INFO
+        dwSize As COORD
+        dwCursorPosition As COORD
+        wAttributes As Integer
+        srWindow As SMALL_RECT
+        dwMaximumWindowSize As COORD
+    End Type
+
+    ' Extended console screen buffer info
+    Public Type CONSOLE_SCREEN_BUFFER_INFOEX
+        cbSize As Long
+        dwSize As COORD
+        dwCursorPosition As COORD
+        wAttributes As Integer
+        srWindow As SMALL_RECT
+        dwMaximumWindowSize As COORD
+        wPopupAttributes As Integer
+        bFullscreenSupported As Long
+        ColorTable(0 To 15) As Long
+    End Type
+
+    Public Type CONSOLE_CURSOR_INFO
+        dwSize As Long
+        bVisible As Long
+    End Type
+
+    Public Type CONSOLE_FONT_INFOEX
+        cbSize As Long
+        nFont As Long
+        dwFontSize As COORD
+        FontFamily As Long
+        FontWeight As Long
+        FaceName(0 To 31) As Integer
+    End Type
+
+    Public Type CHAR_INFO
+        UnicodeChar As Integer
+        Attributes As Integer
+    End Type
+
+    Public Type INPUT_RECORD
+        EventType As Integer
+        Padding As Integer
+        Event(0 To 15) As Byte
+    End Type
+
+    Public Type KEY_EVENT_RECORD
+        bKeyDown As Long
+        wRepeatCount As Integer
+        wVirtualKeyCode As Integer
+        wVirtualScanCode As Integer
+        UnicodeChar As Integer
+        dwControlKeyState As Long
+    End Type
+
+    Public Type MOUSE_EVENT_RECORD
+        dwMousePosition As COORD
+        dwButtonState As Long
+        dwControlKeyState As Long
+        dwEventFlags As Long
+    End Type
+
+    Public Type WINDOW_BUFFER_SIZE_RECORD
+        dwSize As COORD
+    End Type
+
+    Public Type RECT
+        Left As Long
+        Top As Long
+        Right As Long
+        Bottom As Long
+    End Type
+
+    Public Type COORD
+        X As Integer
+        Y As Integer
+    End Type
+
+    Public Type SMALL_RECT
+        Left As Integer
+        Top As Integer
+        Right As Integer
+        Bottom As Integer
+    End Type
+
+    ' === Console Mode Constants ===
+
+    ' Input modes
+    Public Const ENABLE_PROCESSED_INPUT As Long = &H1
+    Public Const ENABLE_LINE_INPUT As Long = &H2
+    Public Const ENABLE_ECHO_INPUT As Long = &H4
+    Public Const ENABLE_WINDOW_INPUT As Long = &H8
+    Public Const ENABLE_MOUSE_INPUT As Long = &H10
+    Public Const ENABLE_INSERT_MODE As Long = &H20
+    Public Const ENABLE_QUICK_EDIT_MODE As Long = &H40
+    Public Const ENABLE_EXTENDED_FLAGS As Long = &H80
+    Public Const ENABLE_AUTO_POSITION As Long = &H100
+    Public Const ENABLE_VIRTUAL_TERMINAL_INPUT As Long = &H200
+
+    ' Output modes
+    Public Const ENABLE_PROCESSED_OUTPUT As Long = &H1
+    Public Const ENABLE_WRAP_AT_EOL_OUTPUT As Long = &H2
+    Public Const ENABLE_VIRTUAL_TERMINAL_PROCESSING As Long = &H4
+    Public Const DISABLE_NEWLINE_AUTO_RETURN As Long = &H8
+    Public Const ENABLE_LVB_GRID_WORLDWIDE As Long = &H10
+
+    ' Standard handles
+    Public Const STD_INPUT_HANDLE As Long = -10
+    Public Const STD_OUTPUT_HANDLE As Long = -11
+    Public Const STD_ERROR_HANDLE As Long = -12
+
+    ' Code pages
+    Public Const CP_UTF8 As Long = 65001
+    Public Const CP_UTF7 As Long = 65000
+    Public Const CP_ACP As Long = 0
+    Public Const CP_OEMCP As Long = 1
+
+    ' Event types
+    Public Const KEY_EVENT As Integer = &H1
+    Public Const MOUSE_EVENT As Integer = &H2
+    Public Const WINDOW_BUFFER_SIZE_EVENT As Integer = &H4
+    Public Const MENU_EVENT As Integer = &H8
+    Public Const FOCUS_EVENT As Integer = &H10
+
+    ' Control key states
+    Public Const RIGHT_ALT_PRESSED As Long = &H1
+    Public Const LEFT_ALT_PRESSED As Long = &H2
+    Public Const RIGHT_CTRL_PRESSED As Long = &H4
+    Public Const LEFT_CTRL_PRESSED As Long = &H8
+    Public Const SHIFT_PRESSED As Long = &H10
+    Public Const NUMLOCK_ON As Long = &H20
+    Public Const SCROLLLOCK_ON As Long = &H40
+    Public Const CAPSLOCK_ON As Long = &H80
+    Public Const ENHANCED_KEY As Long = &H100
+
+    ' Console buffer access
+    Public Const GENERIC_READ As Long = &H80000000
+    Public Const GENERIC_WRITE As Long = &H40000000
+    Public Const FILE_SHARE_READ As Long = &H1
+    Public Const FILE_SHARE_WRITE As Long = &H2
+    Public Const CONSOLE_TEXTMODE_BUFFER As Long = &H1
+
+    ' Ctrl handler events
+    Public Const CTRL_C_EVENT As Long = 0
+    Public Const CTRL_BREAK_EVENT As Long = 1
+    Public Const CTRL_CLOSE_EVENT As Long = 2
+    Public Const CTRL_LOGOFF_EVENT As Long = 5
+    Public Const CTRL_SHUTDOWN_EVENT As Long = 6
+
+    ' Attach console
+    Public Const ATTACH_PARENT_PROCESS As Long = -1
+
+    ' === Helper Functions ===
+
+    Public Function MakeCOORD(ByVal x As Integer, ByVal y As Integer) As Long
+        Return CLng(x And &HFFFF&) Or (CLng(y) << 16)
+    End Function
+
+    Public Function MakeDWORD(ByVal loWord As Integer, ByVal hiWord As Integer) As Long
+        Return CLng(loWord And &HFFFF&) Or (CLng(hiWord) << 16)
+    End Function
+
+    Public Function LoWord(ByVal dw As Long) As Integer
+        Return CInt(dw And &HFFFF&)
+    End Function
+
+    Public Function HiWord(ByVal dw As Long) As Integer
+        Return CInt((dw >> 16) And &HFFFF&)
+    End Function
+
+    Public Function ColorAttribute(ByVal fore As ConsoleColor, ByVal back As ConsoleColor) As Integer
+        Return CInt(fore) Or CInt(back << 4)
+    End Function
+
+End Module

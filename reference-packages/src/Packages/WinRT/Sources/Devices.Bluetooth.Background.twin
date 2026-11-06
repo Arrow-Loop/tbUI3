@@ -1,0 +1,150 @@
+[InterfaceId("610ECA86-3480-41C9-A918-7DDADF207E00")]
+Interface IBluetoothLEAdvertisementPublisherTriggerDetails Extends IInspectable
+    Property Get Status() As BluetoothLEAdvertisementPublisherStatus
+    Property Get Error() As BluetoothError
+End Interface
+
+[InterfaceId("D4A3D025-C601-42D6-9829-4CCB3F5CD77F")]
+Interface IBluetoothLEAdvertisementPublisherTriggerDetails2 Extends IInspectable
+    Property Get SelectedTransmitPowerLevelInDBm() As IReference_Int16
+End Interface
+
+[InterfaceId("096EDBB8-ECEF-5724-BE62-240DCFF6ACA9")]
+Interface IIterator_IBluetoothLEAdvertisementReceivedEventArgs Extends IInspectable
+    Property Get Current() As IBluetoothLEAdvertisementReceivedEventArgs
+    Property Get HasCurrent() As BooleanByte
+    Function MoveNext() As BooleanByte
+    Function GetMany(ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("34F6412F-8314-5205-967C-DB357C9A42A7")]
+Interface IIterable_IBluetoothLEAdvertisementReceivedEventArgs Extends IInspectable
+    Function First() As IIterator_IBluetoothLEAdvertisementReceivedEventArgs
+End Interface
+
+[InterfaceId("8AEF9BCA-FE7D-5966-9789-FEDE24CB41C4")]
+Interface IVectorView_IBluetoothLEAdvertisementReceivedEventArgs Extends IInspectable
+    Function GetAt(ByVal Index As Long) As IBluetoothLEAdvertisementReceivedEventArgs
+    Property Get Size() As Long
+    Function IndexOf(ByVal Value As IBluetoothLEAdvertisementReceivedEventArgs, Index As Long) As BooleanByte
+    Function GetMany(ByVal StartIndex As Long, ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("A7DB5AD7-2257-4E69-9784-FEE645C1DCE0")]
+Interface IBluetoothLEAdvertisementWatcherTriggerDetails Extends IInspectable
+    Property Get Error() As BluetoothError
+    Property Get Advertisements() As IVectorView_IBluetoothLEAdvertisementReceivedEventArgs
+    Property Get SignalStrengthFilter() As IBluetoothSignalStrengthFilter
+End Interface
+
+[InterfaceId("9BA03B18-0FEC-436A-93B1-F46C697532A2")]
+Interface IGattCharacteristicNotificationTriggerDetails Extends IInspectable
+    Property Get Characteristic() As IGattCharacteristic
+    Property Get Value() As IBuffer
+End Interface
+
+[InterfaceId("CD20A796-AA22-521D-8E0F-FC6D4A18E287")]
+Interface IIterator_IGattValueChangedEventArgs Extends IInspectable
+    Property Get Current() As IGattValueChangedEventArgs
+    Property Get HasCurrent() As BooleanByte
+    Function MoveNext() As BooleanByte
+    Function GetMany(ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("526A63DF-8827-51B9-9E2C-9D65021A79D7")]
+Interface IIterable_IGattValueChangedEventArgs Extends IInspectable
+    Function First() As IIterator_IGattValueChangedEventArgs
+End Interface
+
+[InterfaceId("3F96E85F-CA51-5303-BD1B-ACEC7773BAF6")]
+Interface IVectorView_IGattValueChangedEventArgs Extends IInspectable
+    Function GetAt(ByVal Index As Long) As IGattValueChangedEventArgs
+    Property Get Size() As Long
+    Function IndexOf(ByVal Value As IGattValueChangedEventArgs, Index As Long) As BooleanByte
+    Function GetMany(ByVal StartIndex As Long, ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("727A50DC-949D-454A-B192-983467E3D50F")]
+Interface IGattCharacteristicNotificationTriggerDetails2 Extends IInspectable
+    Property Get Error() As BluetoothError
+    Property Get EventTriggeringMode() As BluetoothEventTriggeringMode
+    Property Get ValueChangedEvents() As IVectorView_IGattValueChangedEventArgs
+End Interface
+
+[InterfaceId("7FA1B9B9-2F13-40B5-9582-8EB78E98EF13")]
+Interface IGattServiceProviderConnection Extends IInspectable
+    Property Get TriggerId() As LongPtr
+    Property Get Service() As IGattLocalService
+    [PreserveSig]
+    Function Start() As HRESULT
+End Interface
+
+[InterfaceId("6FAF610E-CF1E-50E4-B1CC-F322FCF25036")]
+Interface IIterator_KVP_IGattServiceProviderConnection Extends IInspectable
+    Property Get Current() As KVP_IGattServiceProviderConnection
+    Property Get HasCurrent() As BooleanByte
+    Function MoveNext() As BooleanByte
+    Function GetMany(ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("EB2CECFB-DD6C-5329-8E17-7FB80A84191F")]
+Interface IIterable_KVP_IGattServiceProviderConnection Extends IInspectable
+    Function First() As IIterator_KVP_IGattServiceProviderConnection
+End Interface
+
+[InterfaceId("C0246566-6D14-5AB2-8443-7439A1FC16E2")]
+Interface KVP_IGattServiceProviderConnection Extends IInspectable
+    Property Get Key() As LongPtr
+    Property Get Value() As IGattServiceProviderConnection
+End Interface
+
+[InterfaceId("94ECCB06-19AD-5E4F-953E-12C4AEC054E9")]
+Interface IMapView_IGattServiceProviderConnection Extends IInspectable
+    Function Lookup(ByVal Key As LongPtr) As IGattServiceProviderConnection
+    Property Get Size() As Long
+    Function HasKey(ByVal Key As LongPtr) As BooleanByte
+    Sub Split(First As IMapView_IGattServiceProviderConnection, Second As IMapView_IGattServiceProviderConnection)
+End Interface
+
+[InterfaceId("3D509F4B-0B0E-4466-B8CD-6EBDDA1FA17D")]
+Interface IGattServiceProviderConnectionStatics Extends IInspectable
+    Property Get AllServices() As IMapView_IGattServiceProviderConnection
+End Interface
+
+[InterfaceId("AE8C0625-05FF-4AFB-B16A-DE95F3CF0158")]
+Interface IGattServiceProviderTriggerDetails Extends IInspectable
+    Property Get Connection() As IGattServiceProviderConnection
+End Interface
+
+[InterfaceId("F922734D-2E3C-4EFC-AB59-FC5CF96F97E3")]
+Interface IRfcommConnectionTriggerDetails Extends IInspectable
+    Property Get Socket() As IStreamSocket
+    Property Get Incoming() As BooleanByte
+    Property Get RemoteDevice() As IBluetoothDevice
+End Interface
+
+[InterfaceId("6D3E75A8-5429-4059-92E3-1E8B65528707")]
+Interface IRfcommInboundConnectionInformation Extends IInspectable
+    Property Get SdpRecord() As IBuffer
+    Property Set SdpRecord(ByVal Value As IBuffer)
+    Property Get LocalServiceId() As IRfcommServiceId
+    Property Set LocalServiceId(ByVal Value As IRfcommServiceId)
+    Property Get ServiceCapabilities() As BluetoothServiceCapabilities
+    Property Let ServiceCapabilities(ByVal Value As BluetoothServiceCapabilities)
+End Interface
+
+[InterfaceId("B091227B-F434-4CB0-99B1-4AB8CEDAEDD7")]
+Interface IRfcommOutboundConnectionInformation Extends IInspectable
+    Property Get RemoteServiceId() As IRfcommServiceId
+    Property Set RemoteServiceId(ByVal Value As IRfcommServiceId)
+End Interface
+
+Module mdlDevicesBluetoothBackground
+
+Public Enum BluetoothEventTriggeringMode
+    BluetoothEventTriggeringMode_Serial
+    BluetoothEventTriggeringMode_Batch
+    BluetoothEventTriggeringMode_KeepLatest
+End Enum
+
+End Module

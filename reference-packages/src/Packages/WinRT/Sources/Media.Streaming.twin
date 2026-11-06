@@ -1,0 +1,462 @@
+[InterfaceId("B571C28C-A472-48D5-88D2-8ADCAF1B8813")]
+Interface IConnectionStatusHandler Extends IUnknown
+    Sub Invoke(ByVal Sender As IBasicDevice, ByVal Args As ConnectionStatus)
+End Interface
+
+[InterfaceId("A88A7D06-988C-4403-9D8A-015BED140B34")]
+Interface IDeviceControllerFinderHandler Extends IUnknown
+    Sub Invoke(ByVal Sender As IDeviceController, ByVal UniqueDeviceName As LongPtr, ByVal Device As IBasicDevice)
+End Interface
+
+[InterfaceId("3A2D9D45-72E9-4311-B46C-27C8BB7E6CB3")]
+Interface IRenderingParametersUpdateHandler Extends IUnknown
+    Sub Invoke(ByVal Sender As IMediaRenderer, ByVal Args As RenderingParameters)
+End Interface
+
+[InterfaceId("16FD02D5-DA61-49D7-AAB2-76867DD42DB7")]
+Interface ITransportParametersUpdateHandler Extends IUnknown
+    Sub Invoke(ByVal Sender As IMediaRenderer, ByVal Args As ITransportParameters)
+End Interface
+
+[InterfaceId("B64D6974-6E79-49AF-9933-908B6E9A160C")]
+Interface IActiveBasicDevice Extends IInspectable
+    Property Get MaxVolume() As Long
+    Property Get IsMuteSupported() As BooleanByte
+    Property Get IsSetNextSourceSupported() As BooleanByte
+    Property Get IsAudioSupported() As BooleanByte
+    Property Get IsVideoSupported() As BooleanByte
+    Property Get IsImageSupported() As BooleanByte
+    Property Get IsSearchSupported() As BooleanByte
+    Function GetCachedSinkProtocolInfo() As LongPtr
+    [PreserveSig]
+    Function SetCachedSinkProtocolInfo(ByVal Value As LongPtr) As HRESULT
+    Function GetCachedExtraSinkProtocolInfo() As LongPtr
+    Function GetEffectiveBandwidth(ByVal TransmitSpeed As BooleanByte) As UInt64
+    Function GetCachedBitrateMeasurement(ByVal PhysicalNetworkInterface As UUID) As UInt64
+    [PreserveSig]
+    Function SetCachedBitrateMeasurement(ByVal PhysicalNetworkInterface As UUID, ByVal Bitrate As UInt64) As HRESULT
+    Property Get LogicalNetworkInterface() As UUID
+    Property Get PhysicalNetworkInterface() As UUID
+    [PreserveSig]
+    Function NotifyStreamingStatus(ByVal FIsStreaming As BooleanByte) As HRESULT
+End Interface
+
+[InterfaceId("0C4A4010-9046-5BFF-8CC5-CBCDE4C2D5C1")]
+Interface IAsyncOperationIActiveBasicDevice Extends IInspectable
+    Property Set Completed(ByVal Handler As IAsyncOperationCompletedHandlerIActiveBasicDevice)
+    Property Get Completed() As IAsyncOperationCompletedHandlerIActiveBasicDevice
+    Function GetResults() As IActiveBasicDevice
+End Interface
+
+[InterfaceId("4C0D279C-4B4E-5657-B609-6F15FF54212E")]
+Interface IAsyncOperationCompletedHandlerIActiveBasicDevice Extends IUnknown
+    Sub Invoke(ByVal AsyncOperation As IAsyncOperationIActiveBasicDevice, ByVal AsyncStatus As AsyncStatus)
+End Interface
+
+[InterfaceId("D3D31100-6A6E-5775-AE0B-55CBEB23CACF")]
+Interface IAsyncOperationIDevicePair Extends IInspectable
+    Property Set Completed(ByVal Handler As IAsyncOperationCompletedHandlerIDevicePair)
+    Property Get Completed() As IAsyncOperationCompletedHandlerIDevicePair
+    Function GetResults() As IDevicePair
+End Interface
+
+[InterfaceId("CDE8D503-5136-5CB9-AB04-11502EC5AFEB")]
+Interface IAsyncOperationCompletedHandlerIDevicePair Extends IUnknown
+    Sub Invoke(ByVal AsyncOperation As IAsyncOperationIDevicePair, ByVal AsyncStatus As AsyncStatus)
+End Interface
+
+[InterfaceId("6D33255D-3642-4618-9DB6-43524F4DEADC")]
+Interface IActiveBasicDeviceStatics Extends IInspectable
+    Function CreateBasicDeviceAsync(ByVal DeviceIdentifier As LongPtr, ByVal Type As DeviceTypes) As IAsyncOperationIActiveBasicDevice
+    Function CloneBasicDeviceAsync(ByVal BasicDevice As IBasicDevice) As IAsyncOperationIActiveBasicDevice
+    Function GetDevicesOnMatchingNetworkAsync(ByVal Server As IActiveBasicDevice, ByVal Renderer As IActiveBasicDevice, ByVal OptimizeForProxying As BooleanByte, ByVal AllowChangeRendererNetwork As BooleanByte) As IAsyncOperationIDevicePair
+    Function CreateDevicesOnMatchingNetworkAsync(ByVal ServerUDN As LongPtr, ByVal Renderer As IActiveBasicDevice, ByVal OptimizeForProxying As BooleanByte, ByVal AllowChangeRendererNetwork As BooleanByte) As IAsyncOperationIDevicePair
+End Interface
+
+[InterfaceId("57FD211A-4EF0-58A0-90E2-7C3B816102C9")]
+Interface IIterator_IDeviceIcon Extends IInspectable
+    Property Get Current() As IDeviceIcon
+    Property Get HasCurrent() As BooleanByte
+    Function MoveNext() As BooleanByte
+    Function GetMany(ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("16077EE6-DCFC-53AA-AB0E-D666AC819D6C")]
+Interface IIterable_IDeviceIcon Extends IInspectable
+    Function First() As IIterator_IDeviceIcon
+End Interface
+
+[InterfaceId("FF195E52-48EB-5709-BE50-3A3914C189DB")]
+Interface IVectorView_IDeviceIcon Extends IInspectable
+    Function GetAt(ByVal Index As Long) As IDeviceIcon
+    Property Get Size() As Long
+    Function IndexOf(ByVal Value As IDeviceIcon, Index As Long) As BooleanByte
+    Function GetMany(ByVal StartIndex As Long, ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("A32D7731-05F6-55A2-930F-1CF5A12B19AE")]
+Interface IVector_IDeviceIcon Extends IInspectable
+    Function GetAt(ByVal Index As Long) As IDeviceIcon
+    Property Get Size() As Long
+    Function GetView() As IVectorView_IDeviceIcon
+    Function IndexOf(ByVal Value As IDeviceIcon, Index As Long) As BooleanByte
+    [PreserveSig]
+    Function SetAt(ByVal Index As Long, ByVal Value As IDeviceIcon) As HRESULT
+    [PreserveSig]
+    Function InsertAt(ByVal Index As Long, ByVal Value As IDeviceIcon) As HRESULT
+    [PreserveSig]
+    Function RemoveAt(ByVal Index As Long) As HRESULT
+    [PreserveSig]
+    Function Append(ByVal Value As IDeviceIcon) As HRESULT
+    [PreserveSig]
+    Function RemoveAtEnd() As HRESULT
+    [PreserveSig]
+    Function Clear() As HRESULT
+    Function GetMany(ByVal StartIndex As Long, ByVal Length As Long, Items As Any) As Long
+    [PreserveSig]
+    Function ReplaceAll(ByVal Length As Long, Items As Any) As HRESULT
+End Interface
+
+[InterfaceId("F4F26CBB-7962-48B7-80F7-C3A5D753BCB0")]
+Interface IBasicDevice Extends IInspectable
+    Property Get FriendlyName() As LongPtr
+    Property Let FriendlyName(ByVal Value As LongPtr)
+    Property Get ManufacturerName() As LongPtr
+    Property Get ManufacturerUrl() As LongPtr
+    Property Get UniqueDeviceName() As LongPtr
+    Property Get ModelName() As LongPtr
+    Property Get ModelNumber() As LongPtr
+    Property Get ModelUrl() As LongPtr
+    Property Get Description() As LongPtr
+    Property Get SerialNumber() As LongPtr
+    Property Get PresentationUrl() As LongPtr
+    Property Get RemoteStreamingUrls() As IVector_HSTRING
+    Property Get PhysicalAddresses() As IVector_HSTRING
+    Property Get IpAddresses() As IVector_HSTRING
+    Property Get CanWakeDevices() As BooleanByte
+    Property Get DiscoveredOnCurrentNetwork() As BooleanByte
+    Property Get Type() As DeviceTypes
+    Property Get Icons() As IVector_IDeviceIcon
+    Property Get ConnectionStatus() As ConnectionStatus
+    [PreserveSig]
+    Function AddConnectionStatusChanged(ByVal Handler As IConnectionStatusHandler, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveConnectionStatusChanged(ByVal Token As EventRegistrationToken) As HRESULT
+End Interface
+
+[InterfaceId("84A8C766-4BC5-5757-9F1B-F61CFD9E5693")]
+Interface IIterator_IBasicDevice Extends IInspectable
+    Property Get Current() As IBasicDevice
+    Property Get HasCurrent() As BooleanByte
+    Function MoveNext() As BooleanByte
+    Function GetMany(ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("7D468B5E-763B-59CD-A086-EC6D8BE0D858")]
+Interface IIterable_IBasicDevice Extends IInspectable
+    Function First() As IIterator_IBasicDevice
+End Interface
+
+[InterfaceId("A55CF16B-71A2-5525-AC3B-2F5BC1EEEC46")]
+Interface IVectorView_IBasicDevice Extends IInspectable
+    Function GetAt(ByVal Index As Long) As IBasicDevice
+    Property Get Size() As Long
+    Function IndexOf(ByVal Value As IBasicDevice, Index As Long) As BooleanByte
+    Function GetMany(ByVal StartIndex As Long, ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("4C58BE45-D16F-5B3A-840D-A6B4E20B7088")]
+Interface IVector_IBasicDevice Extends IInspectable
+    Function GetAt(ByVal Index As Long) As IBasicDevice
+    Property Get Size() As Long
+    Function GetView() As IVectorView_IBasicDevice
+    Function IndexOf(ByVal Value As IBasicDevice, Index As Long) As BooleanByte
+    [PreserveSig]
+    Function SetAt(ByVal Index As Long, ByVal Value As IBasicDevice) As HRESULT
+    [PreserveSig]
+    Function InsertAt(ByVal Index As Long, ByVal Value As IBasicDevice) As HRESULT
+    [PreserveSig]
+    Function RemoveAt(ByVal Index As Long) As HRESULT
+    [PreserveSig]
+    Function Append(ByVal Value As IBasicDevice) As HRESULT
+    [PreserveSig]
+    Function RemoveAtEnd() As HRESULT
+    [PreserveSig]
+    Function Clear() As HRESULT
+    Function GetMany(ByVal StartIndex As Long, ByVal Length As Long, Items As Any) As Long
+    [PreserveSig]
+    Function ReplaceAll(ByVal Length As Long, Items As Any) As HRESULT
+End Interface
+
+[InterfaceId("4FEEB26D-50A7-402B-896A-BE95064D6BFF")]
+Interface IDeviceController Extends IInspectable
+    Property Get CachedDevices() As IVector_IBasicDevice
+    [PreserveSig]
+    Function AddDevice(ByVal UniqueDeviceName As LongPtr) As HRESULT
+    [PreserveSig]
+    Function RemoveDevice(ByVal Device As IBasicDevice) As HRESULT
+    [PreserveSig]
+    Function AddDeviceArrival(ByVal Handler As IDeviceControllerFinderHandler, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveDeviceArrival(ByVal Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function AddDeviceDeparture(ByVal Handler As IDeviceControllerFinderHandler, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveDeviceDeparture(ByVal Token As EventRegistrationToken) As HRESULT
+End Interface
+
+[InterfaceId("8FFB1A1E-023D-4DE1-B556-AB5ABF01929C")]
+Interface IDeviceIcon Extends IInspectable
+    Property Get Width() As Long
+    Property Get Height() As Long
+    Property Get ContentType() As LongPtr
+    Property Get Stream() As IRandomAccessStreamWithContentType
+End Interface
+
+[InterfaceId("F1A423F1-B7B4-449C-A90D-AEA8E17C5E5F")]
+Interface IDevicePair Extends IInspectable
+    Property Get Server() As IActiveBasicDevice
+    Property Get Renderer() As IActiveBasicDevice
+End Interface
+
+[InterfaceId("E2B45A37-E1C1-5E80-8962-A134D7F3557C")]
+Interface IAsyncOperationPositionInformation Extends IInspectable
+    Property Set Completed(ByVal Handler As IAsyncOperationCompletedHandlerPositionInformation)
+    Property Get Completed() As IAsyncOperationCompletedHandlerPositionInformation
+    Function GetResults() As PositionInformation
+End Interface
+
+[InterfaceId("F99E7D9C-2274-5F3D-89E7-F5F862BA0334")]
+Interface IAsyncOperationTransportInformation Extends IInspectable
+    Property Set Completed(ByVal Handler As IAsyncOperationCompletedHandlerTransportInformation)
+    Property Get Completed() As IAsyncOperationCompletedHandlerTransportInformation
+    Function GetResults() As TransportInformation
+End Interface
+
+[InterfaceId("9970F463-BCD0-55B9-94CD-8932D42446CA")]
+Interface IAsyncOperationCompletedHandlerTransportInformation Extends IUnknown
+    Sub Invoke(ByVal AsyncOperation As IAsyncOperationTransportInformation, ByVal AsyncStatus As AsyncStatus)
+End Interface
+
+[InterfaceId("ADC7DAF4-9A69-5D0B-AEC8-E2EE3292D178")]
+Interface IAsyncOperationCompletedHandlerPositionInformation Extends IUnknown
+    Sub Invoke(ByVal AsyncOperation As IAsyncOperationPositionInformation, ByVal AsyncStatus As AsyncStatus)
+End Interface
+
+[InterfaceId("2C012EC3-D975-47FB-96AC-A6418B326D2B")]
+Interface IMediaRenderer Extends IInspectable ' requires IBasicDevice
+    Property Get IsAudioSupported() As BooleanByte
+    Property Get IsVideoSupported() As BooleanByte
+    Property Get IsImageSupported() As BooleanByte
+    Property Get ActionInformation() As IMediaRendererActionInformation
+    Function SetSourceFromUriAsync(ByVal URI As LongPtr) As IAsyncOperationUInt32
+    Function SetSourceFromStreamAsync(ByVal Stream As IInspectable) As IAsyncOperationUInt32
+    Function SetSourceFromMediaSourceAsync(ByVal MediaSource As IInspectable) As IAsyncOperationUInt32
+    Function SetNextSourceFromUriAsync(ByVal URI As LongPtr) As IAsyncOperationUInt32
+    Function SetNextSourceFromStreamAsync(ByVal Stream As IInspectable) As IAsyncOperationUInt32
+    Function SetNextSourceFromMediaSourceAsync(ByVal MediaSource As IInspectable) As IAsyncOperationUInt32
+    Function PlayAsync() As IAsyncAction
+    Function PlayAtSpeedAsync(ByVal PlaySpeed As PlaySpeed) As IAsyncAction
+    Function StopAsync() As IAsyncAction
+    Function PauseAsync() As IAsyncAction
+    Function GetMuteAsync() As IAsyncOperationBoolean
+    Function SetMuteAsync(ByVal Mute As BooleanByte) As IAsyncAction
+    Function GetVolumeAsync() As IAsyncOperationUInt32
+    Function SetVolumeAsync(ByVal Volume As Long) As IAsyncAction
+    Function SeekAsync(ByVal Target As TimeSpan) As IAsyncAction
+    Function GetTransportInformationAsync() As IAsyncOperationTransportInformation
+    Function GetPositionInformationAsync() As IAsyncOperationPositionInformation
+    [PreserveSig]
+    Function AddTransportParametersUpdate(ByVal Handler As ITransportParametersUpdateHandler, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveTransportParametersUpdate(ByVal Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function AddRenderingParametersUpdate(ByVal Handler As IRenderingParametersUpdateHandler, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveRenderingParametersUpdate(ByVal Token As EventRegistrationToken) As HRESULT
+    Function NextAsync() As IAsyncAction
+End Interface
+
+[InterfaceId("FD051CD8-25C7-5780-9606-B35062137D21")]
+Interface IIterator_PlaySpeed Extends IInspectable
+    Property Get Current() As PlaySpeed
+    Property Get HasCurrent() As BooleanByte
+    Function MoveNext() As BooleanByte
+    Function GetMany(ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("C4A17A40-8C62-5884-822B-502526970B0D")]
+Interface IIterable_PlaySpeed Extends IInspectable
+    Function First() As IIterator_PlaySpeed
+End Interface
+
+[InterfaceId("1295CAF3-C1DA-54EA-AC66-DA2C044F9EB0")]
+Interface IVectorView_PlaySpeed Extends IInspectable
+    Function GetAt(ByVal Index As Long) As PlaySpeed
+    Property Get Size() As Long
+    Function IndexOf(ByVal Value As PlaySpeed, Index As Long) As BooleanByte
+    Function GetMany(ByVal StartIndex As Long, ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("FDE57C75-5B86-5921-8FFB-101B0A184230")]
+Interface IVector_PlaySpeed Extends IInspectable
+    Function GetAt(ByVal Index As Long) As PlaySpeed
+    Property Get Size() As Long
+    Function GetView() As IVectorView_PlaySpeed
+    Function IndexOf(ByVal Value As PlaySpeed, Index As Long) As BooleanByte
+    [PreserveSig]
+    Function SetAt(ByVal Index As Long, ByVal Value As PlaySpeed) As HRESULT
+    [PreserveSig]
+    Function InsertAt(ByVal Index As Long, ByVal Value As PlaySpeed) As HRESULT
+    [PreserveSig]
+    Function RemoveAt(ByVal Index As Long) As HRESULT
+    [PreserveSig]
+    Function Append(ByVal Value As PlaySpeed) As HRESULT
+    [PreserveSig]
+    Function RemoveAtEnd() As HRESULT
+    [PreserveSig]
+    Function Clear() As HRESULT
+    Function GetMany(ByVal StartIndex As Long, ByVal Length As Long, Items As Any) As Long
+    [PreserveSig]
+    Function ReplaceAll(ByVal Length As Long, Items As Any) As HRESULT
+End Interface
+
+[InterfaceId("66FBBFEE-5AB0-4A4F-8D15-E5056B26BEDA")]
+Interface IMediaRendererActionInformation Extends IInspectable
+    Property Get IsMuteAvailable() As BooleanByte
+    Property Get IsPauseAvailable() As BooleanByte
+    Property Get IsPlayAvailable() As BooleanByte
+    Property Get IsSeekAvailable() As BooleanByte
+    Property Get IsSetNextSourceAvailable() As BooleanByte
+    Property Get IsStopAvailable() As BooleanByte
+    Property Get IsVolumeAvailable() As BooleanByte
+    Property Get PlaySpeeds() As IVector_PlaySpeed
+End Interface
+
+[InterfaceId("557DD3FB-4710-5059-921C-0DEE68361FB5")]
+Interface IAsyncOperationIMediaRenderer Extends IInspectable
+    Property Set Completed(ByVal Handler As IAsyncOperationCompletedHandlerIMediaRenderer)
+    Property Get Completed() As IAsyncOperationCompletedHandlerIMediaRenderer
+    Function GetResults() As IMediaRenderer
+End Interface
+
+[InterfaceId("F0D971AF-E054-5616-9FDF-0903B9CEB182")]
+Interface IAsyncOperationCompletedHandlerIMediaRenderer Extends IUnknown
+    Sub Invoke(ByVal AsyncOperation As IAsyncOperationIMediaRenderer, ByVal AsyncStatus As AsyncStatus)
+End Interface
+
+[InterfaceId("657AB43D-B909-42B2-94D0-E3A0B134E8C9")]
+Interface IMediaRendererFactory Extends IInspectable
+    Function CreateMediaRendererAsync(ByVal DeviceIdentifier As LongPtr) As IAsyncOperationIMediaRenderer
+    Function CreateMediaRendererFromBasicDeviceAsync(ByVal BasicDevice As IBasicDevice) As IAsyncOperationIMediaRenderer
+End Interface
+
+[InterfaceId("D79A75C8-B1D2-544D-9B09-7F7900A34EFB")]
+Interface IIterator_IPropertySet Extends IInspectable
+    Property Get Current() As IPropertySet
+    Property Get HasCurrent() As BooleanByte
+    Function MoveNext() As BooleanByte
+    Function GetMany(ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("489B756D-BE43-5ABB-B9A0-A47254103339")]
+Interface IIterable_IPropertySet Extends IInspectable
+    Function First() As IIterator_IPropertySet
+End Interface
+
+[InterfaceId("C25D9A17-C31E-5311-8122-3C04D28AF9FC")]
+Interface IVectorView_IPropertySet Extends IInspectable
+    Function GetAt(ByVal Index As Long) As IPropertySet
+    Property Get Size() As Long
+    Function IndexOf(ByVal Value As IPropertySet, Index As Long) As BooleanByte
+    Function GetMany(ByVal StartIndex As Long, ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("216F9390-EA3D-5465-A789-6394A47EB4A4")]
+Interface IAsyncOperationIVectorView_IPropertySet Extends IInspectable
+    Property Set Completed(ByVal Handler As IAsyncOperationCompletedHandlerIVectorView_IPropertySet)
+    Property Get Completed() As IAsyncOperationCompletedHandlerIVectorView_IPropertySet
+    Function GetResults() As IVectorView_IPropertySet
+End Interface
+
+[InterfaceId("AF4E2F8A-92CA-5640-865C-9948FBDE4495")]
+Interface IAsyncOperationCompletedHandlerIVectorView_IPropertySet Extends IUnknown
+    Sub Invoke(ByVal AsyncOperation As IAsyncOperationIVectorView_IPropertySet, ByVal AsyncStatus As AsyncStatus)
+End Interface
+
+[InterfaceId("8A4CD4A1-ED85-4E0F-BD68-8A6862E4636D")]
+Interface IStreamSelectorStatics Extends IInspectable
+    Function SelectBestStreamAsync(ByVal StorageFile As IStorageFile, ByVal SelectorProperties As IPropertySet) As IAsyncOperationIRandomAccessStreamWithContentType
+    Function GetStreamPropertiesAsync(ByVal StorageFile As IStorageFile, ByVal SelectorProperties As IPropertySet) As IAsyncOperationIVectorView_IPropertySet
+    Function SelectBestStreamFromStreamAsync(ByVal Stream As IRandomAccessStream, ByVal SelectorProperties As IPropertySet) As IAsyncOperationIRandomAccessStreamWithContentType
+    Function GetStreamPropertiesFromStreamAsync(ByVal Stream As IRandomAccessStream, ByVal SelectorProperties As IPropertySet) As IAsyncOperationIVectorView_IPropertySet
+End Interface
+
+[InterfaceId("EB0C4E24-2283-438D-8FFF-DBE9DF1CB2CC")]
+Interface ITransportParameters Extends IInspectable
+    Property Get ActionInformation() As IMediaRendererActionInformation
+    Property Get TrackInformation() As TrackInformation
+    Property Get TransportInformation() As TransportInformation
+End Interface
+
+Module mdlMediaStreaming
+
+Public Enum ConnectionStatus
+    ConnectionStatus_Online
+    ConnectionStatus_Offline
+    ConnectionStatus_Sleeping
+End Enum
+
+Public Enum DeviceTypes
+    DeviceTypes_Unknown = &H0
+    DeviceTypes_DigitalMediaRenderer = &H1
+    DeviceTypes_DigitalMediaServer = &H2
+    DeviceTypes_DigitalMediaPlayer = &H4
+End Enum
+
+Public Enum TransportState
+    TransportState_Unknown
+    TransportState_Stopped
+    TransportState_Playing
+    TransportState_Transitioning
+    TransportState_Paused
+    TransportState_Recording
+    TransportState_NoMediaPresent
+    TransportState_Last
+End Enum
+
+Public Enum TransportStatus
+    TransportStatus_Unknown
+    TransportStatus_Ok
+    TransportStatus_ErrorOccurred
+    TransportStatus_Last
+End Enum
+
+Public Type PlaySpeed
+    Numerator As Long
+    Denominator As Long
+End Type
+
+Public Type TrackInformation
+    Track As Long
+    TrackId As Long
+    TrackDuration As TimeSpan
+End Type
+
+Public Type PositionInformation
+    TrackInformation As TrackInformation
+    RelativeTime As TimeSpan
+End Type
+
+Public Type RenderingParameters
+    Volume As Long
+    Mute As BooleanByte
+End Type
+
+Public Type TransportInformation
+    CurrentTransportState As TransportState
+    CurrentTransportStatus As TransportStatus
+    CurrentSpeed As PlaySpeed
+End Type
+
+End Module

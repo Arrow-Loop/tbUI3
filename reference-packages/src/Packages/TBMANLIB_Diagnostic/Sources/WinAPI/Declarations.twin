@@ -1,0 +1,249 @@
+' =====================================================
+' Declarations.twin - WinAPI 函数声明
+' Twinbasic Diagnostic Tool
+' =====================================================
+
+Public Module WinAPI
+
+    ' === 版本信息 ===
+
+    ' 获取真实 OS 版本（绕过兼容性层）
+    Public Declare PtrSafe Function RtlGetVersion Lib "ntdll.dll" ( _
+        ByRef lpVersionInformation As OSVERSIONINFOEXW) As Long
+
+    ' === 系统信息 ===
+
+    ' 获取本机系统信息（正确获取 64 位架构）
+    Public Declare PtrSafe Sub GetNativeSystemInfo Lib "kernel32.dll" ( _
+        ByRef lpSystemInfo As SYSTEM_INFO)
+
+    ' 获取计算机名
+    Public Declare PtrSafe Function GetComputerNameW Lib "kernel32.dll" ( _
+        ByVal lpBuffer As LongPtr, _
+        ByRef nSize As Long) As Long
+
+    ' 获取用户名
+    Public Declare PtrSafe Function GetUserNameW Lib "advapi32.dll" ( _
+        ByVal lpBuffer As LongPtr, _
+        ByRef nSize As Long) As Long
+
+    ' === 内存信息 ===
+
+    ' 获取扩展内存状态
+    Public Declare PtrSafe Function GlobalMemoryStatusEx Lib "kernel32.dll" ( _
+        ByRef lpBuffer As MEMORYSTATUSEX) As Long
+
+    ' === CPU 时间 ===
+
+    ' 获取系统时间（用于计算 CPU 使用率）
+    Public Declare PtrSafe Function GetSystemTimes Lib "kernel32.dll" ( _
+        ByRef lpIdleTime As FILETIME, _
+        ByRef lpKernelTime As FILETIME, _
+        ByRef lpUserTime As FILETIME) As Long
+
+    ' === 运行时间 ===
+
+    ' 获取系统运行时间（毫秒，64位）
+    Public Declare PtrSafe Function GetTickCount64 Lib "kernel32.dll" () As LongLong
+
+    ' === 磁盘信息 ===
+
+    ' 获取逻辑驱动器位掩码
+    Public Declare PtrSafe Function GetLogicalDrives Lib "kernel32.dll" () As Long
+
+    ' 获取驱动器类型
+    Public Declare PtrSafe Function GetDriveTypeW Lib "kernel32.dll" ( _
+        ByVal lpRootPathName As LongPtr) As Long
+
+    ' 获取磁盘可用空间（扩展版）
+    Public Declare PtrSafe Function GetDiskFreeSpaceExW Lib "kernel32.dll" ( _
+        ByVal lpDirectoryName As LongPtr, _
+        ByRef lpFreeBytesAvailableToCaller As LongLong, _
+        ByRef lpTotalNumberOfBytes As LongLong, _
+        ByRef lpTotalNumberOfFreeBytes As LongLong) As Long
+
+    ' === 进程枚举 ===
+
+    ' 创建工具帮助快照
+    Public Declare PtrSafe Function CreateToolhelp32Snapshot Lib "kernel32.dll" ( _
+        ByVal dwFlags As Long, _
+        ByVal th32ProcessID As Long) As LongPtr
+
+    ' 获取第一个进程
+    Public Declare PtrSafe Function Process32FirstW Lib "kernel32.dll" ( _
+        ByVal hSnapshot As LongPtr, _
+        ByRef lppe As PROCESSENTRY32W) As Long
+
+    ' 获取下一个进程
+    Public Declare PtrSafe Function Process32NextW Lib "kernel32.dll" ( _
+        ByVal hSnapshot As LongPtr, _
+        ByRef lppe As PROCESSENTRY32W) As Long
+
+    ' 关闭句柄
+    Public Declare PtrSafe Function CloseHandle Lib "kernel32.dll" ( _
+        ByVal hObject As LongPtr) As Long
+
+    ' 获取当前进程 ID
+    Public Declare PtrSafe Function GetCurrentProcessId Lib "kernel32.dll" () As Long
+
+    ' === 网络信息 ===
+
+    ' 获取网络适配器信息
+    Public Declare PtrSafe Function GetAdaptersInfo Lib "iphlpapi.dll" ( _
+        ByVal pAdapterInfo As LongPtr, _
+        ByRef pOutBufLen As Long) As Long
+
+    ' 获取主机名
+    Public Declare PtrSafe Function gethostname Lib "ws2_32.dll" ( _
+        ByVal name As LongPtr, _
+        ByVal namelen As Long) As Long
+
+    ' 初始化 Winsock
+    Public Declare PtrSafe Function WSAStartup Lib "ws2_32.dll" ( _
+        ByVal wVersionRequested As Integer, _
+        ByVal lpWSAData As LongPtr) As Long
+
+    ' 清理 Winsock
+    Public Declare PtrSafe Function WSACleanup Lib "ws2_32.dll" () As Long
+
+    ' === 时区信息 ===
+
+    ' 获取时区信息
+    Public Declare PtrSafe Function GetTimeZoneInformation Lib "kernel32.dll" ( _
+        ByRef lpTimeZoneInformation As TIME_ZONE_INFORMATION) As Long
+
+    ' === 区域设置 ===
+
+    ' 获取 ANSI 代码页
+    Public Declare PtrSafe Function GetACP Lib "kernel32.dll" () As Long
+
+    ' 获取 OEM 代码页
+    Public Declare PtrSafe Function GetOEMCP Lib "kernel32.dll" () As Long
+
+    ' 获取用户默认区域设置 ID
+    Public Declare PtrSafe Function GetUserDefaultLCID Lib "kernel32.dll" () As Long
+
+    ' 获取区域设置信息
+    Public Declare PtrSafe Function GetLocaleInfoW Lib "kernel32.dll" ( _
+        ByVal Locale As Long, _
+        ByVal LCType As Long, _
+        ByVal lpLCData As LongPtr, _
+        ByVal cchData As Long) As Long
+
+    ' === 注册表 ===
+
+    ' 打开注册表键
+    Public Declare PtrSafe Function RegOpenKeyExW Lib "advapi32.dll" ( _
+        ByVal hKey As LongPtr, _
+        ByVal lpSubKey As LongPtr, _
+        ByVal ulOptions As Long, _
+        ByVal samDesired As Long, _
+        ByRef phkResult As LongPtr) As Long
+
+    ' 查询注册表值
+    Public Declare PtrSafe Function RegQueryValueExW Lib "advapi32.dll" ( _
+        ByVal hKey As LongPtr, _
+        ByVal lpValueName As LongPtr, _
+        ByVal lpReserved As LongPtr, _
+        ByRef lpType As Long, _
+        ByVal lpData As LongPtr, _
+        ByRef lpcbData As Long) As Long
+
+    ' 枚举注册表子键
+    Public Declare PtrSafe Function RegEnumKeyExW Lib "advapi32.dll" ( _
+        ByVal hKey As LongPtr, _
+        ByVal dwIndex As Long, _
+        ByVal lpName As LongPtr, _
+        ByRef lpcName As Long, _
+        ByVal lpReserved As LongPtr, _
+        ByVal lpClass As LongPtr, _
+        ByVal lpcClass As LongPtr, _
+        ByVal lpftLastWriteTime As LongPtr) As Long
+
+    ' 关闭注册表键
+    Public Declare PtrSafe Function RegCloseKey Lib "advapi32.dll" ( _
+        ByVal hKey As LongPtr) As Long
+
+    ' === 控制台 ===
+
+    ' 获取标准句柄
+    Public Declare PtrSafe Function GetStdHandle Lib "kernel32.dll" ( _
+        ByVal nStdHandle As Long) As LongPtr
+
+    ' 设置控制台光标位置
+    Public Declare PtrSafe Function SetConsoleCursorPosition Lib "kernel32.dll" ( _
+        ByVal hConsoleOutput As LongPtr, _
+        ByVal dwCursorPosition As Long) As Long
+
+    ' 设置控制台文本属性（颜色）
+    Public Declare PtrSafe Function SetConsoleTextAttribute Lib "kernel32.dll" ( _
+        ByVal hConsoleOutput As LongPtr, _
+        ByVal wAttributes As Integer) As Long
+
+    ' 获取控制台屏幕缓冲区信息
+    Public Declare PtrSafe Function GetConsoleScreenBufferInfo Lib "kernel32.dll" ( _
+        ByVal hConsoleOutput As LongPtr, _
+        ByRef lpConsoleScreenBufferInfo As CONSOLE_SCREEN_BUFFER_INFO) As Long
+
+    ' 设置控制台 Ctrl 处理程序
+    Public Declare PtrSafe Function SetConsoleCtrlHandler Lib "kernel32.dll" ( _
+        ByVal HandlerRoutine As LongPtr, _
+        ByVal Add As Long) As Long
+
+    ' 填充控制台字符
+    Public Declare PtrSafe Function FillConsoleOutputCharacterW Lib "kernel32.dll" ( _
+        ByVal hConsoleOutput As LongPtr, _
+        ByVal cCharacter As Integer, _
+        ByVal nLength As Long, _
+        ByVal dwWriteCoord As Long, _
+        ByRef lpNumberOfCharsWritten As Long) As Long
+
+    ' 填充控制台属性
+    Public Declare PtrSafe Function FillConsoleOutputAttribute Lib "kernel32.dll" ( _
+        ByVal hConsoleOutput As LongPtr, _
+        ByVal wAttribute As Integer, _
+        ByVal nLength As Long, _
+        ByVal dwWriteCoord As Long, _
+        ByRef lpNumberOfAttrsWritten As Long) As Long
+
+    ' === 权限检查 ===
+
+    ' 检查是否以管理员权限运行
+    Public Declare PtrSafe Function IsUserAnAdmin Lib "shell32.dll" () As Long
+
+    ' === 辅助函数 ===
+
+    ' 将 COORD 转换为 Long（用于 SetConsoleCursorPosition）
+    Public Function MakeCOORD(ByVal X As Integer, ByVal Y As Integer) As Long
+        Return CLng(X) Or (CLng(Y) * &H10000)
+    End Function
+
+    ' 将 FILETIME 转换为 LongLong
+    Public Function FileTimeToLongLong(ByRef ft As FILETIME) As LongLong
+        Return CLngLng(ft.dwHighDateTime) * &H100000000 + CLngLng(ft.dwLowDateTime And &H7FFFFFFF) + _
+               IIf(ft.dwLowDateTime < 0, &H80000000^, 0)
+    End Function
+
+    ' 从 Unicode 缓冲区获取字符串
+    Public Function GetStringFromBuffer(ByRef buffer() As Integer) As String
+        Dim result As String = ""
+        Dim i As Long
+        For i = LBound(buffer) To UBound(buffer)
+            If buffer(i) = 0 Then Exit For
+            result = result & ChrW$(buffer(i))
+        Next i
+        Return result
+    End Function
+
+    ' 从 ANSI 缓冲区获取字符串
+    Public Function GetStringFromByteBuffer(ByRef buffer() As Byte) As String
+        Dim result As String = ""
+        Dim i As Long
+        For i = LBound(buffer) To UBound(buffer)
+            If buffer(i) = 0 Then Exit For
+            result = result & Chr$(buffer(i))
+        Next i
+        Return result
+    End Function
+
+End Module

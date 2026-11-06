@@ -1,0 +1,138 @@
+Module mdlNamespaces
+
+Private m_RuntimeClasses As IMap_HSTRING, m_IID_IMetaDataImport As UUID, m_IID_IActivationFactory As UUID
+
+Public Function NewObject(Of T)(ByVal sRuntimeClass As String) As T
+Dim StringHeader As HSTRING_HEADER, TempObject As IInspectable, ActivationFactory As IActivationFactory
+    If m_RuntimeClasses Is Nothing Then InitNamespaces
+    If m_RuntimeClasses.HasKey(StrRef(sRuntimeClass, VarPtr(StringHeader))) = APITRUE Then
+        sRuntimeClass = GetStr(m_RuntimeClasses.Lookup(StrRef(sRuntimeClass, VarPtr(StringHeader))))
+        If RoGetActivationFactory(StrRef(sRuntimeClass, VarPtr(StringHeader)), m_IID_IActivationFactory, ActivationFactory) = S_OK Then
+            If TypeOf ActivationFactory Is T Then
+                Set NewObject = ActivationFactory
+            Else
+                If ActivationFactory.ActivateInstance(TempObject) = S_OK AndAlso TypeOf TempObject Is T Then
+                    Set NewObject = TempObject
+                Else
+                    If App.IsInIDE Then Debug.Print sRuntimeClass, "Class does not implement the requested interface!": Debug.Assert False
+                End If
+            End If
+        End If
+    Else
+        If App.IsInIDE Then Debug.Print sRuntimeClass, "Invalid class name or class does not implement an activation factory or statics interface!": Debug.Assert False
+    End If
+End Function
+
+Public Function NewObject(ByVal sRuntimeClass As String, Optional ByVal bDefaultConstructor As Boolean = True) As IInspectable
+Dim StringHeader As HSTRING_HEADER, ActivationFactory As IActivationFactory
+    If m_RuntimeClasses Is Nothing Then InitNamespaces
+    If m_RuntimeClasses.HasKey(StrRef(sRuntimeClass, VarPtr(StringHeader))) = APITRUE Then
+        sRuntimeClass = GetStr(m_RuntimeClasses.Lookup(StrRef(sRuntimeClass, VarPtr(StringHeader))))
+        If RoGetActivationFactory(StrRef(sRuntimeClass, VarPtr(StringHeader)), m_IID_IActivationFactory, ActivationFactory) = S_OK Then
+            If bDefaultConstructor Then
+                If ActivationFactory.ActivateInstance(NewObject) <> S_OK Then If App.IsInIDE Then Debug.Print sRuntimeClass, "Class does not implement a parameterless constructor!": Debug.Assert False
+            Else
+                Set NewObject = ActivationFactory
+            End If
+        End If
+    Else
+        If App.IsInIDE Then Debug.Print sRuntimeClass, "Invalid class name or class does not implement an activation factory or statics interface!": Debug.Assert False
+    End If
+End Function
+
+[ArrayBoundsChecks(False), IntegerOverflowChecks(False), IgnoreWarnings(TB0016)]
+Public Function GetIID(Of T)() As UUID
+    ReDim vArray(0) As T
+    GetIID = GuidFromArray(vArray)
+End Function
+
+Private Function CreateMetaDataDispenser() As IMetaDataDispenser
+Dim CLSID_CorMetaDataDispenser As UUID, CLSID_CorMetaDataDispenserRuntime As UUID, CLSID_CLRMetaHost As UUID, IID_IMetaDataDispenser As UUID, IID_ICLRMetaHost As UUID, _
+    IID_ICLRRuntimeInfo As UUID, CLRMetaHost As ICLRMetaHost, CLRRuntimeInfo As ICLRRuntimeInfo
+    CLSID_CorMetaDataDispenser.GuidString = "{E5CB7A31-7512-11D2-89CE-0080C792E5D8}": IID_IMetaDataDispenser = GetIID(Of IMetaDataDispenser)
+    If MetaDataGetDispenser(CLSID_CorMetaDataDispenser, IID_IMetaDataDispenser, CreateMetaDataDispenser) <> S_OK Then
+        CLSID_CorMetaDataDispenserRuntime.GuidString = "{1EC2DE53-75CC-11D2-9775-00A0C9B4D50C}"
+        If CoCreateInstance(CLSID_CorMetaDataDispenserRuntime, Nothing, CLSCTX_INPROC_SERVER, IID_IMetaDataDispenser, CreateMetaDataDispenser) <> S_OK Then
+            CLSID_CLRMetaHost.GuidString = "{9280188D-0E8E-4867-B30C-7FA83884E8DE}": IID_ICLRMetaHost = GetIID(Of ICLRMetaHost): IID_ICLRRuntimeInfo = GetIID(Of ICLRRuntimeInfo)
+            If CLRCreateInstance(CLSID_CLRMetaHost, IID_ICLRMetaHost, CLRMetaHost) = S_OK Then
+                If CLRMetaHost.GetRuntime(StrPtr("v4.0.30319"), IID_ICLRRuntimeInfo, CLRRuntimeInfo) = S_OK Then
+                    CLRRuntimeInfo.GetInterface CLSID_CorMetaDataDispenser, IID_IMetaDataDispenser, CreateMetaDataDispenser
+                End If
+            End If
+        End If
+    End If
+End Function
+
+Private Sub InitNamespaces()
+Dim TempObject As IInspectable, StringHeader As HSTRING_HEADER
+    If RoActivateInstance(StrRef("Windows.Foundation.Collections.StringMap", VarPtr(StringHeader)), TempObject) = S_OK Then
+        m_IID_IMetaDataImport = GetIID(Of IMetaDataImport): m_IID_IActivationFactory = GetIID(Of IActivationFactory)
+        Set m_RuntimeClasses = TempObject: ResolveNamespaces CreateMetaDataDispenser
+    End If
+End Sub
+
+Private Function IsClassActivatable(ByVal ptkTypeDef As mdTypeDef, MetaDataImport As IMetaDataImport) As Boolean
+Dim hEnum As HCORENUM, CustomAttributesBuffer(0 To 255) As mdCustomAttribute, sAttributeNameBuffer As String, ptkMethodRef As mdMemberRef, i As Long
+    With MetaDataImport
+        If .EnumCustomAttributes(hEnum, ptkTypeDef, 0&, CustomAttributesBuffer(0), UBound(CustomAttributesBuffer) + 1, i) = S_OK Then
+            sAttributeNameBuffer = String$(256, vbNullChar)
+            For i = 0 To i - 1
+                If .GetCustomAttributeProps(CustomAttributesBuffer(i), 0&, ptkMethodRef, ByVal vbNullPtr, 0&) = S_OK Then
+                    If .GetMemberRefProps(ptkMethodRef, ptkTypeDef, vbNullPtr, 0&, 0&, ByVal vbNullPtr, 0&) = S_OK Then
+                        If .GetTypeRefProps(ptkTypeDef, 0&, StrPtr(sAttributeNameBuffer), Len(sAttributeNameBuffer), 0&) = S_OK Then
+                            Select Case True
+                                Case InStr(sAttributeNameBuffer, ".StaticAttribute") > 0: IsClassActivatable = True: Exit For
+                                Case InStr(sAttributeNameBuffer, ".ActivatableAttribute") > 0: IsClassActivatable = True: Exit For
+                                Case InStr(sAttributeNameBuffer, ".ComposableAttribute") > 0: IsClassActivatable = True: Exit For
+                            End Select
+                        End If
+                    End If
+                End If
+            Next i
+            .CloseEnum hEnum
+        End If
+    End With
+End Function
+
+Private Sub ParseNamespace(MetaDataImport As IMetaDataImport)
+Dim hEnum As HCORENUM, TypeDefsBuffer(0 To 255) As mdTypeDef, i As Long, sTypeNameBuffer As String, lBufferLength As Long, pdwTypeDefFlags As Long, ptkExtends As mdToken, _
+    sTypeName As String, sBaseTypeBuffer As String, StringHeaderKey As HSTRING_HEADER, StringHeaderValue As HSTRING_HEADER
+    sTypeNameBuffer = String$(256, vbNullChar): sBaseTypeBuffer = String$(256, vbNullChar)
+    With MetaDataImport
+        Do
+            .EnumTypeDefs hEnum, TypeDefsBuffer(0), UBound(TypeDefsBuffer) + 1, i
+            For i = 0 To i - 1
+                If .GetTypeDefProps(TypeDefsBuffer(i), StrPtr(sTypeNameBuffer), Len(sTypeNameBuffer), lBufferLength, pdwTypeDefFlags, ptkExtends) = S_OK Then
+                    If (pdwTypeDefFlags And tdClassSemanticsMask) = tdClass Then ' Exclude Interfaces
+                        If .GetTypeRefProps(ptkExtends, 0&, StrPtr(sBaseTypeBuffer), Len(sBaseTypeBuffer), 0&) = S_OK Then
+                            If InStr(sBaseTypeBuffer, "System.Enum") = 0 AndAlso InStr(sBaseTypeBuffer, "System.ValueType") = 0 Then ' Exclude ValueTypes and Enums
+                                If IsClassActivatable(TypeDefsBuffer(i), MetaDataImport) Then
+                                    sTypeName = Left$(sTypeNameBuffer, lBufferLength - 1)
+                                    m_RuntimeClasses.Insert StrRef(Mid$(sTypeName, InStrRev(sTypeName, ChrW$(46)) + 1), VarPtr(StringHeaderKey)), StrRef(sTypeName, VarPtr(StringHeaderValue))
+                                End If
+                            End If
+                        End If
+                    End If
+                End If
+            Next i
+        Loop While i > 0
+        .CloseEnum hEnum
+    End With
+End Sub
+
+Private Sub ResolveNamespaces(MetaDataDispenser As IMetaDataDispenser, Optional sNameSpace As String = "Windows")
+Dim lFileCount As Long, pFiles As LongPtr, lSubNamespaceCount As Long, pSubNamespaces As LongPtr, i As Long, hName As LongPtr, MetaDataImport As IMetaDataImport, StringHeader As HSTRING_HEADER
+    If RoResolveNamespace(StrRef(sNameSpace, VarPtr(StringHeader)), vbNullPtr, 0, vbNullPtr, lFileCount, pFiles, lSubNamespaceCount, pSubNamespaces) = S_OK Then
+        For i = 0 To lFileCount - 1
+            GetMemPtr ByVal pFiles + i * PTR_SIZE, hName
+            If MetaDataDispenser.OpenScope(StrPtr(GetStr(hName)), CorOpenFlags_ofRead, m_IID_IMetaDataImport, MetaDataImport) = S_OK Then ParseNamespace MetaDataImport: Set MetaDataImport = Nothing
+        Next i
+        CoTaskMemFree pFiles
+        For i = 0 To lSubNamespaceCount - 1
+            GetMemPtr ByVal pSubNamespaces + i * PTR_SIZE, hName: ResolveNamespaces MetaDataDispenser, sNameSpace & ChrW$(46) & GetStr(hName)
+        Next i
+        CoTaskMemFree pSubNamespaces
+    End If
+End Sub
+
+End Module

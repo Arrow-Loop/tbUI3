@@ -1,0 +1,96 @@
+/*
+This package substitutes the AutoCompleteGuids.tlb in projects with 64-bit versions, though it can be used in 32-bit as well.
+*/
+
+[InterfaceId("00000101-0000-0000-C000-000000000046")]
+[OleAutomation(False)]
+Interface IEnumString Extends stdole.IUnknown
+    Sub Next(ByVal cElt As Long, ByVal rgElt As LongPtr, ByVal lpcEltFetched As LongPtr)
+    Sub Skip(ByVal cElt As Long)
+    Sub Reset()
+    Sub Clone(ByRef ppEnum As AutoCompleteGuids.IEnumString)
+End Interface
+
+[InterfaceId("E1EEF6A0-0378-11E3-8FFD-0800200C9A66")]
+' [ DualInterface, DispInterface ]
+Interface IEnumStringVB Extends stdole.IDispatch
+    [DispId(1)]
+    Sub Next(ByRef RetVal As Long, ByVal cElt As Long, ByVal rgElt As LongPtr, ByVal lpcEltFetched As LongPtr)
+    [DispId(2)]
+    Sub Skip(ByRef RetVal As Long, ByVal cElt As Long)
+    [DispId(3)]
+    Sub Reset(ByRef RetVal As Long)
+    [DispId(4)]
+    Sub Clone(ByRef RetVal As Long, ByVal lppEnum As LongPtr)
+End Interface
+
+[InterfaceId("00BB2762-6A77-11D0-A535-00C04FD7D062")]
+[OleAutomation(False)]
+Interface IAutoComplete Extends stdole.IUnknown
+    Sub Init(ByVal hWndEdit As LongPtr, ByVal pUnkACL As stdole.IUnknown, ByVal lpwszRegKeyPath As LongPtr, ByVal lpwszQuickComplete As LongPtr)
+    Sub Enable(ByVal fEnable As Long)
+End Interface
+
+[InterfaceId("EAC04BC0-3791-11D2-BB95-0060977B464C")]
+[OleAutomation(False)]
+Interface IAutoComplete2 Extends stdole.IUnknown
+    Sub Init(ByVal hWndEdit As LongPtr, ByVal pUnkACL As stdole.IUnknown, ByVal lpwszRegKeyPath As LongPtr, ByVal lpwszQuickComplete As LongPtr)
+    Sub Enable(ByVal fEnable As Long)
+    Sub SetOptions(ByVal dwFlags As Long)
+    Sub GetOptions(ByRef pdwFlags As Long)
+End Interface
+
+[InterfaceId("77A130B0-94FD-11D0-A544-00C04FD7d062")]
+[OleAutomation(False)]
+Interface IACList Extends stdole.IUnknown
+    Sub Expand(ByVal lpszExpand As LongPtr)
+End Interface
+
+[InterfaceId("470141A0-5186-11D2-BBB6-0060977B464C")]
+[OleAutomation(False)]
+Interface IACList2 Extends stdole.IUnknown
+    Sub Expand(ByVal lpszExpand As LongPtr)
+    Sub SetOptions(ByVal dwFlags As Long)
+    Sub GetOptions(ByRef pdwFlags As Long)
+End Interface
+
+[InterfaceId("3CD141F4-3C6A-11d2-BCAA-00C04FD929DB")]
+[OleAutomation(False)]
+Interface IAutoCompleteDropDown Extends stdole.IUnknown
+    Sub GetDropDownStatus(ByRef pdwFlags As Long, ByVal lppwszString As LongPtr)
+    Sub ResetEnumerator()
+End Interface
+
+[InterfaceId("00BB2761-6A77-11D0-A535-00C04FD7D062")]
+[OleAutomation(False)]
+Interface IObjMgr Extends stdole.IUnknown
+    Sub Append(ByVal pUnk As stdole.IUnknown)
+    Sub Remove(ByVal pUnk As stdole.IUnknown)
+End Interface
+
+Module AutoCompleteGuids
+
+Public Type [_AC_GUID]
+	Data1 As Long
+	Data2 As Integer
+	Data3 As Integer
+	Data4(0 To 7) As Byte
+End Type
+
+End Module
+
+Module [_AC_KERNEL32]
+
+[UseGetLastError(False)]
+Public Declare PtrSafe Sub [_CopyMemory] Lib "KERNEL32.DLL" Alias "RtlMoveMemory" (ByRef Destination As Any, ByRef Source As Any, ByVal Length As Long)
+
+End Module
+
+Module [_AC_OLE32]
+
+[UseGetLastError(False)]
+Public Declare PtrSafe Function [_CoTaskMemAlloc] Lib "OLE32.DLL" Alias "CoTaskMemAlloc" (ByVal cBytes As Long) As LongPtr
+[UseGetLastError(False)]
+Public Declare PtrSafe Sub [_CoTaskMemFree] Lib "OLE32.DLL" Alias "CoTaskMemFree" (ByVal hMem As LongPtr)
+
+End Module

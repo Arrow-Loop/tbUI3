@@ -1,0 +1,124 @@
+[InterfaceId("B8770535-6A4B-52B1-B578-F3CDC5007A1F")]
+Interface IAsyncOperationIUICommand Extends IInspectable
+    Property Set Completed(ByVal Handler As IAsyncOperationCompletedHandlerIUICommand)
+    Property Get Completed() As IAsyncOperationCompletedHandlerIUICommand
+    Function GetResults() As IUICommand
+End Interface
+
+[InterfaceId("DD33FD5B-A24D-5A44-91FE-DD6441770103")]
+Interface IAsyncOperationCompletedHandlerIUICommand Extends IUnknown
+    Sub Invoke(ByVal AsyncOperation As IAsyncOperationIUICommand, ByVal AsyncStatus As AsyncStatus)
+End Interface
+
+[InterfaceId("F45DB3D3-7299-57CE-A73E-297CF0AF3083")]
+Interface IIterator_IUICommand Extends IInspectable
+    Property Get Current() As IUICommand
+    Property Get HasCurrent() As BooleanByte
+    Function MoveNext() As BooleanByte
+    Function GetMany(ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("E63DE42B-53C3-5E07-90D3-98172D545412")]
+Interface IIterable_IUICommand Extends IInspectable
+    Function First() As IIterator_IUICommand
+End Interface
+
+[InterfaceId("ED1165E6-F377-5B00-8172-93C1BD04DEB4")]
+Interface IVectorView_IUICommand Extends IInspectable
+    Function GetAt(ByVal Index As Long) As IUICommand
+    Property Get Size() As Long
+    Function IndexOf(ByVal Value As IUICommand, Index As Long) As BooleanByte
+    Function GetMany(ByVal StartIndex As Long, ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("105139A1-DCB8-5F65-97EF-CB1BF0B75F9D")]
+Interface IVector_IUICommand Extends IInspectable
+    Function GetAt(ByVal Index As Long) As IUICommand
+    Property Get Size() As Long
+    Function GetView() As IVectorView_IUICommand
+    Function IndexOf(ByVal Value As IUICommand, Index As Long) As BooleanByte
+    [PreserveSig]
+    Function SetAt(ByVal Index As Long, ByVal Value As IUICommand) As HRESULT
+    [PreserveSig]
+    Function InsertAt(ByVal Index As Long, ByVal Value As IUICommand) As HRESULT
+    [PreserveSig]
+    Function RemoveAt(ByVal Index As Long) As HRESULT
+    [PreserveSig]
+    Function Append(ByVal Value As IUICommand) As HRESULT
+    [PreserveSig]
+    Function RemoveAtEnd() As HRESULT
+    [PreserveSig]
+    Function Clear() As HRESULT
+    Function GetMany(ByVal StartIndex As Long, ByVal Length As Long, Items As Any) As Long
+    [PreserveSig]
+    Function ReplaceAll(ByVal Length As Long, Items As Any) As HRESULT
+End Interface
+
+[InterfaceId("DAF77A4F-C27A-4298-9AC6-2922C45E7DA6")]
+Interface IUICommandInvokedHandler Extends IUnknown
+    Sub Invoke(ByVal Command As IUICommand)
+End Interface
+
+[InterfaceId("33F59B01-5325-43AB-9AB3-BDAE440E4121")]
+Interface IMessageDialog Extends IInspectable
+    Property Get Title() As LongPtr
+    Property Let Title(ByVal Value As LongPtr)
+    Property Get Commands() As IVector_IUICommand
+    Property Get DefaultCommandIndex() As Long
+    Property Let DefaultCommandIndex(ByVal Value As Long)
+    Property Get CancelCommandIndex() As Long
+    Property Let CancelCommandIndex(ByVal Value As Long)
+    Property Get Content() As LongPtr
+    Property Let Content(ByVal Value As LongPtr)
+    Function ShowAsync() As IAsyncOperationIUICommand
+    Property Get Options() As MessageDialogOptions
+    Property Let Options(ByVal Value As MessageDialogOptions)
+End Interface
+
+[InterfaceId("2D161777-A66F-4EA5-BB87-793FFA4941F2")]
+Interface IMessageDialogFactory Extends IInspectable
+    Function Create(ByVal Content As LongPtr) As IMessageDialog
+    Function CreateWithTitle(ByVal Content As LongPtr, ByVal Title As LongPtr) As IMessageDialog
+End Interface
+
+[InterfaceId("4E9BC6DC-880D-47FC-A0A1-72B639E62559")]
+Interface IPopupMenu Extends IInspectable
+    Property Get Commands() As IVector_IUICommand
+    Function ShowAsync(ByVal InvocationPoint As POINTF) As IAsyncOperationIUICommand
+    Function ShowAsyncWithRect(ByVal Selection As RECTF) As IAsyncOperationIUICommand
+    Function ShowAsyncWithRectAndPlacement(ByVal Selection As RECTF, ByVal PreferredPlacement As Placement) As IAsyncOperationIUICommand
+End Interface
+
+[InterfaceId("4FF93A75-4145-47FF-AC7F-DFF1C1FA5B0F")]
+Interface IUICommand Extends IInspectable
+    Property Get Label() As LongPtr
+    Property Let Label(ByVal Value As LongPtr)
+    Property Get Invoked() As IUICommandInvokedHandler
+    Property Set Invoked(ByVal Value As IUICommandInvokedHandler)
+    Property Get Id() As IInspectable
+    Property Set Id(ByVal Value As IInspectable)
+End Interface
+
+[InterfaceId("A21A8189-26B0-4676-AE94-54041BC125E8")]
+Interface IUICommandFactory Extends IInspectable
+    Function Create(ByVal Label As LongPtr) As IUICommand
+    Function CreateWithHandler(ByVal Label As LongPtr, ByVal Action As IUICommandInvokedHandler) As IUICommand
+    Function CreateWithHandlerAndId(ByVal Label As LongPtr, ByVal Action As IUICommandInvokedHandler, ByVal CommandId As IInspectable) As IUICommand
+End Interface
+
+Module mdlUIPopups
+
+Public Enum MessageDialogOptions
+    MessageDialogOptions_None
+    MessageDialogOptions_AcceptUserInputAfterDelay
+End Enum
+
+Public Enum Placement
+    Placement_Default
+    Placement_Above
+    Placement_Below
+    Placement_Left
+    Placement_Right
+End Enum
+    
+End Module

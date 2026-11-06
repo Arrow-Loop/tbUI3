@@ -1,0 +1,107 @@
+[InterfaceId("DB6F6DDB-AC77-4E88-8253-819DF9BBF140")]
+Interface ID3D11Device Extends IUnknown
+    ' ...
+End Interface
+
+[InterfaceId("C0BFA96C-E089-44FB-8EAF-26F8796190DA")]
+Interface ID3D11DeviceContext Extends IUnknown
+    ' ...
+End Interface
+
+[InterfaceId("A37624AB-8D5F-4650-9D3E-9EAE3D9BC670")]
+Interface IDirect3DDevice Extends IInspectable ' requires IClosable
+    [PreserveSig]
+    Function Trim() As HRESULT
+End Interface
+
+[InterfaceId("A9B3D012-3DF2-4EE3-B8D1-8695F457D3C1")]
+Interface IDirect3DDxgiInterfaceAccess Extends IUnknown
+    [PreserveSig]
+    Function GetInterface(rIID As Any, ppvObject As Any) As HRESULT
+End Interface
+
+[InterfaceId("0BF4A146-13C1-4694-BEE3-7ABF15EAF586")]
+Interface IDirect3DSurface Extends IInspectable ' requires IClosable
+    Property Get Description() As Direct3DSurfaceDescription
+End Interface
+
+Module mdlGraphicsDirectXDirect3D11
+
+[UseGetLastError(False), DLLStackCheck(False)]
+Public Declare PtrSafe Function CreateDirect3D11DeviceFromDXGIDevice Lib "d3d11" (ByVal DXGIDevice As IDXGIDevice, Direct3DDevice As IInspectable) As HRESULT
+[UseGetLastError(False), DLLStackCheck(False)]
+Public Declare PtrSafe Function D3D11CreateDevice Lib "d3d11" (Optional ByVal pAdapter As IDXGIAdapter, Optional ByVal DriverType As D3D_DRIVER_TYPE = D3D_DRIVER_TYPE_HARDWARE, Optional ByVal Software As LongPtr, Optional ByVal Flags As D3D11_CREATE_DEVICE_FLAG = D3D11_CREATE_DEVICE_BGRA_SUPPORT, Optional ByVal pFeatureLevels As LongPtr, Optional ByVal FeatureLevels As Long, Optional ByVal SDKVersion As D3D11_SDK_VERSION = D3D11_SDK_VERSION_VALUE, Optional ppDevice As ID3D11Device, Optional pFeatureLevel As D3D_FEATURE_LEVEL, Optional ppImmediateContext As ID3D11DeviceContext) As HRESULT
+
+Public Enum D3D11_CREATE_DEVICE_FLAG
+    D3D11_CREATE_DEVICE_SINGLETHREADED = &H1
+    D3D11_CREATE_DEVICE_DEBUG = &H2
+    D3D11_CREATE_DEVICE_SWITCH_TO_REF = &H4
+    D3D11_CREATE_DEVICE_PREVENT_INTERNAL_THREADING_OPTIMIZATIONS = &H8
+    D3D11_CREATE_DEVICE_BGRA_SUPPORT = &H20
+    D3D11_CREATE_DEVICE_DEBUGGABLE = &H40
+    D3D11_CREATE_DEVICE_PREVENT_ALTERING_LAYER_SETTINGS_FROM_REGISTRY = &H80
+    D3D11_CREATE_DEVICE_DISABLE_GPU_TIMEOUT = &H100
+    D3D11_CREATE_DEVICE_VIDEO_SUPPORT = &H800
+End Enum
+
+Public Enum D3D11_SDK_VERSION
+    D3D11_SDK_VERSION_VALUE = 7
+End Enum
+
+Public Enum D3D_DRIVER_TYPE
+    D3D_DRIVER_TYPE_UNKNOWN
+    D3D_DRIVER_TYPE_HARDWARE
+    D3D_DRIVER_TYPE_REFERENCE
+    D3D_DRIVER_TYPE_NULL
+    D3D_DRIVER_TYPE_SOFTWARE
+    D3D_DRIVER_TYPE_WARP
+End Enum
+
+Public Enum D3D_FEATURE_LEVEL
+    D3D_FEATURE_LEVEL_1_0_GENERIC = &H100&
+    D3D_FEATURE_LEVEL_1_0_CORE = &H1000&
+    D3D_FEATURE_LEVEL_9_1 = &H9100&
+    D3D_FEATURE_LEVEL_9_2 = &H9200&
+    D3D_FEATURE_LEVEL_9_3 = &H9300&
+    D3D_FEATURE_LEVEL_10_0 = &HA000&
+    D3D_FEATURE_LEVEL_10_1 = &HA100&
+    D3D_FEATURE_LEVEL_11_0 = &HB000&
+    D3D_FEATURE_LEVEL_11_1 = &HB100&
+    D3D_FEATURE_LEVEL_12_0 = &HC000&
+    D3D_FEATURE_LEVEL_12_1 = &HC100&
+    D3D_FEATURE_LEVEL_12_2 = &HC200&
+End Enum
+
+Public Enum Direct3DBindings
+    Direct3DBindings_VertexBuffer = &H1
+    Direct3DBindings_IndexBuffer = &H2
+    Direct3DBindings_ConstantBuffer = &H4
+    Direct3DBindings_ShaderResource = &H8
+    Direct3DBindings_StreamOutput = &H10
+    Direct3DBindings_RenderTarget = &H20
+    Direct3DBindings_DepthStencil = &H40
+    Direct3DBindings_UnorderedAccess = &H80
+    Direct3DBindings_Decoder = &H200
+    Direct3DBindings_VideoEncoder = &H400
+End Enum
+
+Public Enum Direct3DUsage
+    Direct3DUsage_Default
+    Direct3DUsage_Immutable
+    Direct3DUsage_Dynamic
+    Direct3DUsage_Staging
+End Enum
+
+Public Type Direct3DMultisampleDescription
+    Count As Long
+    Quality As Long
+End Type
+
+Public Type Direct3DSurfaceDescription
+    Width As Long
+    Height As Long
+    Format As DirectXPixelFormat
+    MultisampleDescription As Direct3DMultisampleDescription
+End Type
+
+End Module

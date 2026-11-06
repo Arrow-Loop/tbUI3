@@ -1,0 +1,540 @@
+[InterfaceId("35175827-724B-4C6A-B130-F6537F9AE0D0")]
+Interface IAudioBuffer Extends IInspectable ' requires IClosable, IMemoryBuffer
+    Property Get Capacity() As Long
+    Property Get Length() As Long
+    Property Let Length(ByVal Value As Long)
+End Interface
+
+[InterfaceId("E36AC304-AAB2-4277-9ED0-43CEDF8E29C6")]
+Interface IAudioFrame Extends IInspectable
+    Function LockBuffer(ByVal Mode As AudioBufferAccessMode) As IAudioBuffer ' requires IClosable, IMediaFrame
+End Interface
+
+[InterfaceId("91A90ADE-2422-40A6-B9AD-30D02404317D")]
+Interface IAudioFrameFactory Extends IInspectable
+    Function Create(ByVal Capacity As Long) As IAudioFrame
+End Interface
+
+[InterfaceId("EA137EFA-D852-438E-882B-C990109A78F4")]
+Interface IAutoRepeatModeChangeRequestedEventArgs Extends IInspectable
+    Property Get RequestedAutoRepeatMode() As MediaPlaybackAutoRepeatMode
+End Interface
+
+[InterfaceId("CD0BC7EF-54E7-411F-9933-F0E98B0A96D2")]
+Interface IImageDisplayProperties Extends IInspectable
+    Property Get Title() As LongPtr
+    Property Let Title(ByVal Value As LongPtr)
+    Property Get Subtitle() As LongPtr
+    Property Let Subtitle(ByVal Value As LongPtr)
+End Interface
+
+[InterfaceId("98F1FBE1-7A8D-42CB-B6FE-8FE698264F13")]
+Interface IMediaControl Extends IInspectable
+    [PreserveSig]
+    Function AddSoundLevelChanged(ByVal Handler As IEventHandlerIInspectable, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveSoundLevelChanged(ByVal Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function AddPlayPressed(ByVal Handler As IEventHandlerIInspectable, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemovePlayPressed(ByVal Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function AddPausePressed(ByVal Handler As IEventHandlerIInspectable, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemovePausePressed(ByVal Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function AddStopPressed(ByVal Handler As IEventHandlerIInspectable, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveStopPressed(ByVal Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function AddPlayPauseTogglePressed(ByVal Handler As IEventHandlerIInspectable, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemovePlayPauseTogglePressed(ByVal Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function AddRecordPressed(ByVal Handler As IEventHandlerIInspectable, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveRecordPressed(ByVal Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function AddNextTrackPressed(ByVal Handler As IEventHandlerIInspectable, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveNextTrackPressed(ByVal Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function AddPreviousTrackPressed(ByVal Handler As IEventHandlerIInspectable, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemovePreviousTrackPressed(ByVal Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function AddFastForwardPressed(ByVal Handler As IEventHandlerIInspectable, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveFastForwardPressed(ByVal Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function AddRewindPressed(ByVal Handler As IEventHandlerIInspectable, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveRewindPressed(ByVal Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function AddChannelUpPressed(ByVal Handler As IEventHandlerIInspectable, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveChannelUpPressed(ByVal Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function AddChannelDownPressed(ByVal Handler As IEventHandlerIInspectable, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveChannelDownPressed(ByVal Token As EventRegistrationToken) As HRESULT
+    Property Get SoundLevel() As SoundLevel
+    Property Let TrackName(ByVal Value As LongPtr)
+    Property Get TrackName() As LongPtr
+    Property Let ArtistName(ByVal Value As LongPtr)
+    Property Get ArtistName() As LongPtr
+    Property Let IsPlaying(ByVal Value As BooleanByte)
+    Property Get IsPlaying() As BooleanByte
+    Property Set AlbumArt(ByVal Value As IUri)
+    Property Get AlbumArt() As IUri
+End Interface
+
+[InterfaceId("07915118-45DF-442B-8A3F-F7826A6370AB")]
+Interface IMediaExtension Extends IInspectable
+    [PreserveSig]
+    Function SetProperties(ByVal Configuration As IPropertySet) As HRESULT
+End Interface
+
+[InterfaceId("4A25EAF5-242D-4DFB-97F4-69B7C42576FF")]
+Interface IMediaExtensionManager Extends IInspectable
+    [PreserveSig]
+    Function RegisterSchemeHandler(ByVal ActivatableClassId As LongPtr, ByVal Scheme As LongPtr) As HRESULT
+    [PreserveSig]
+    Function RegisterSchemeHandlerWithSettings(ByVal ActivatableClassId As LongPtr, ByVal Scheme As LongPtr, ByVal Configuration As IPropertySet) As HRESULT
+    [PreserveSig]
+    Function RegisterByteStreamHandler(ByVal ActivatableClassId As LongPtr, ByVal FileExtension As LongPtr, ByVal MimeType As LongPtr) As HRESULT
+    [PreserveSig]
+    Function RegisterByteStreamHandlerWithSettings(ByVal ActivatableClassId As LongPtr, ByVal FileExtension As LongPtr, ByVal MimeType As LongPtr, ByVal Configuration As IPropertySet) As HRESULT
+    [PreserveSig]
+    Function RegisterAudioDecoder(ByVal ActivatableClassId As LongPtr, ByVal InputSubtype As UUID, ByVal OutputSubtype As UUID) As HRESULT
+    [PreserveSig]
+    Function RegisterAudioDecoderWithSettings(ByVal ActivatableClassId As LongPtr, ByVal InputSubtype As UUID, ByVal OutputSubtype As UUID, ByVal Configuration As IPropertySet) As HRESULT
+    [PreserveSig]
+    Function RegisterAudioEncoder(ByVal ActivatableClassId As LongPtr, ByVal InputSubtype As UUID, ByVal OutputSubtype As UUID) As HRESULT
+    [PreserveSig]
+    Function RegisterAudioEncoderWithSettings(ByVal ActivatableClassId As LongPtr, ByVal InputSubtype As UUID, ByVal OutputSubtype As UUID, ByVal Configuration As IPropertySet) As HRESULT
+    [PreserveSig]
+    Function RegisterVideoDecoder(ByVal ActivatableClassId As LongPtr, ByVal InputSubtype As UUID, ByVal OutputSubtype As UUID) As HRESULT
+    [PreserveSig]
+    Function RegisterVideoDecoderWithSettings(ByVal ActivatableClassId As LongPtr, ByVal InputSubtype As UUID, ByVal OutputSubtype As UUID, ByVal Configuration As IPropertySet) As HRESULT
+    [PreserveSig]
+    Function RegisterVideoEncoder(ByVal ActivatableClassId As LongPtr, ByVal InputSubtype As UUID, ByVal OutputSubtype As UUID) As HRESULT
+    [PreserveSig]
+    Function RegisterVideoEncoderWithSettings(ByVal ActivatableClassId As LongPtr, ByVal InputSubtype As UUID, ByVal OutputSubtype As UUID, ByVal Configuration As IPropertySet) As HRESULT
+End Interface
+
+[InterfaceId("5BCEBF47-4043-4FED-ACAF-54EC29DFB1F7")]
+Interface IMediaExtensionManager2 Extends IInspectable
+    [PreserveSig]
+    Function RegisterMediaExtensionForAppService(ByVal Extension As IMediaExtension, ByVal Connection As IAppServiceConnection) As HRESULT
+End Interface
+
+[InterfaceId("BFB52F8C-5943-47D8-8E10-05308AA5FBD0")]
+Interface IMediaFrame Extends IInspectable
+    Property Get Type() As LongPtr
+    Property Get IsReadOnly() As BooleanByte
+    Property Set RelativeTime(ByVal Value As IReference_TimeSpan)
+    Property Get RelativeTime() As IReference_TimeSpan
+    Property Set SystemRelativeTime(ByVal Value As IReference_TimeSpan)
+    Property Get SystemRelativeTime() As IReference_TimeSpan
+    Property Set Duration(ByVal Value As IReference_TimeSpan)
+    Property Get Duration() As IReference_TimeSpan
+    Property Let IsDiscontinuous(ByVal Value As BooleanByte)
+    Property Get IsDiscontinuous() As BooleanByte
+    Property Get ExtendedProperties() As IPropertySet
+End Interface
+
+[InterfaceId("1803DEF8-DCA5-4B6F-9C20-E3D3C0643625")]
+Interface IMediaMarker Extends IInspectable
+    Property Get Time() As TimeSpan
+    Property Get MediaMarkerType() As LongPtr
+    Property Get Text() As LongPtr
+End Interface
+
+[InterfaceId("BB198040-482F-4743-8832-45853821ECE0")]
+Interface IMediaMarkerTypesStatics Extends IInspectable
+    Property Get Bookmark() As LongPtr
+End Interface
+
+[InterfaceId("F464661E-88BC-5CEA-93CD-0C123F17D258")]
+Interface IIterator_IMediaMarker Extends IInspectable
+    Property Get Current() As IMediaMarker
+    Property Get HasCurrent() As BooleanByte
+    Function MoveNext() As BooleanByte
+    Function GetMany(ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("A1C0A397-0364-5E4C-9DCA-7CD7011BD114")]
+Interface IIterable_IMediaMarker Extends IInspectable
+    Function First() As IIterator_IMediaMarker
+End Interface
+
+[InterfaceId("B543562C-02B1-5824-80A8-9854130CDADD")]
+Interface IVectorView_IMediaMarker Extends IInspectable
+    Function GetAt(ByVal Index As Long) As IMediaMarker
+    Property Get Size() As Long
+    Function IndexOf(ByVal Value As IMediaMarker, Index As Long) As BooleanByte
+    Function GetMany(ByVal StartIndex As Long, ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("AFEAB189-F8DD-466E-AA10-920B52353FDF")]
+Interface IMediaMarkers Extends IInspectable
+    Property Get Markers() As IVectorView_IMediaMarker
+End Interface
+
+[InterfaceId("EB8564AC-A351-4F4E-B4F0-9BF2408993DB")]
+Interface IMediaProcessingTriggerDetails Extends IInspectable
+    Property Get Arguments() As IPropertySet
+End Interface
+
+[InterfaceId("5C43E195-7D39-5D0D-A309-1991E68ACDB7")]
+Interface ITypedEventHandlerMediaTimelineControllerIInspectable Extends IUnknown
+    Sub Invoke(ByVal Sender As IMediaTimelineController, ByVal Args As IInspectable)
+End Interface
+
+[InterfaceId("8ED361F3-0B78-4360-BF71-0C841999EA1B")]
+Interface IMediaTimelineController Extends IInspectable
+    [PreserveSig]
+    Function Start() As HRESULT
+    [PreserveSig]
+    Function Resume() As HRESULT
+    [PreserveSig]
+    Function Pause() As HRESULT
+    Property Get Position() As TimeSpan
+    Property Let Position(ByVal Value As TimeSpan)
+    Property Get ClockRate() As Double
+    Property Let ClockRate(ByVal Value As Double)
+    Property Get State() As MediaTimelineControllerState
+    [PreserveSig]
+    Function AddPositionChanged(ByVal PositionChangedEventHandler As ITypedEventHandlerMediaTimelineControllerIInspectable, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemovePositionChanged(ByVal Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function AddStateChanged(ByVal StateChangedEventHandler As ITypedEventHandlerMediaTimelineControllerIInspectable, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveStateChanged(ByVal Token As EventRegistrationToken) As HRESULT
+End Interface
+
+[InterfaceId("07CD62FB-578D-56A6-A8EF-E653EB005D1B")]
+Interface ITypedEventHandlerMediaTimelineControllerFailed Extends IUnknown
+    Sub Invoke(ByVal Sender As IMediaTimelineController, ByVal Args As IMediaTimelineControllerFailedEventArgs)
+End Interface
+
+[InterfaceId("EF74EA38-9E72-4DF9-8355-6E90C81BBADD")]
+Interface IMediaTimelineController2 Extends IInspectable
+    Property Get Duration() As IReference_TimeSpan
+    Property Set Duration(ByVal Value As IReference_TimeSpan)
+    Property Get IsLoopingEnabled() As BooleanByte
+    Property Let IsLoopingEnabled(ByVal Value As BooleanByte)
+    [PreserveSig]
+    Function AddFailed(ByVal EventHandler As ITypedEventHandlerMediaTimelineControllerFailed, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveFailed(ByVal Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function AddEnded(ByVal EventHandler As ITypedEventHandlerMediaTimelineControllerIInspectable, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveEnded(ByVal Token As EventRegistrationToken) As HRESULT
+End Interface
+
+[InterfaceId("8821F81D-3E77-43FB-BE26-4FC87A044834")]
+Interface IMediaTimelineControllerFailedEventArgs Extends IInspectable
+    Property Get ExtendedError() As HRESULT
+End Interface
+
+[InterfaceId("6BBF0C59-D0A0-4D26-92A0-F978E1D18E7B")]
+Interface IMusicDisplayProperties Extends IInspectable
+    Property Get Title() As LongPtr
+    Property Let Title(ByVal Value As LongPtr)
+    Property Get AlbumArtist() As LongPtr
+    Property Let AlbumArtist(ByVal Value As LongPtr)
+    Property Get Artist() As LongPtr
+    Property Let Artist(ByVal Value As LongPtr)
+End Interface
+
+[InterfaceId("00368462-97D3-44B9-B00F-008AFCEFAF18")]
+Interface IMusicDisplayProperties2 Extends IInspectable
+    Property Get AlbumTitle() As LongPtr
+    Property Let AlbumTitle(ByVal Value As LongPtr)
+    Property Get TrackNumber() As Long
+    Property Let TrackNumber(ByVal Value As Long)
+    Property Get Genres() As IVector_HSTRING
+End Interface
+
+[InterfaceId("4DB51AC1-0681-4E8C-9401-B8159D9EEFC7")]
+Interface IMusicDisplayProperties3 Extends IInspectable
+    Property Get AlbumTrackCount() As Long
+    Property Let AlbumTrackCount(ByVal Value As Long)
+End Interface
+
+[InterfaceId("B4493F88-EB28-4961-9C14-335E44F3E125")]
+Interface IPlaybackPositionChangeRequestedEventArgs Extends IInspectable
+    Property Get RequestedPlaybackPosition() As TimeSpan
+End Interface
+
+[InterfaceId("2CE2C41F-3CD6-4F77-9BA7-EB27C26A2140")]
+Interface IPlaybackRateChangeRequestedEventArgs Extends IInspectable
+    Property Get RequestedPlaybackRate() As Double
+End Interface
+
+[InterfaceId("49B593FE-4FD0-4666-A314-C0E01940D302")]
+Interface IShuffleEnabledChangeRequestedEventArgs Extends IInspectable
+    Property Get RequestedShuffleEnabled() As BooleanByte
+End Interface
+
+[InterfaceId("0557E996-7B23-5BAE-AA81-EA0D671143A4")]
+Interface ITypedEventHandlerSystemMediaTransportControlsButtonPressed Extends IUnknown
+    Sub Invoke(ByVal Sender As ISystemMediaTransportControls, ByVal Args As ISystemMediaTransportControlsButtonPressedEventArgs)
+End Interface
+
+[InterfaceId("9FD61DAD-1746-5FA1-A908-EF7CB4603C85")]
+Interface ITypedEventHandlerSystemMediaTransportControlsPropertyChanged Extends IUnknown
+    Sub Invoke(ByVal Sender As ISystemMediaTransportControls, ByVal Args As ISystemMediaTransportControlsPropertyChangedEventArgs)
+End Interface
+
+[InterfaceId("99FA3FF4-1742-42A6-902E-087D41F965EC")]
+Interface ISystemMediaTransportControls Extends IInspectable
+    Property Get PlaybackStatus() As MediaPlaybackStatus
+    Property Let PlaybackStatus(ByVal Value As MediaPlaybackStatus)
+    Property Get DisplayUpdater() As ISystemMediaTransportControlsDisplayUpdater
+    Property Get SoundLevel() As SoundLevel
+    Property Get IsEnabled() As BooleanByte
+    Property Let IsEnabled(ByVal Value As BooleanByte)
+    Property Get IsPlayEnabled() As BooleanByte
+    Property Let IsPlayEnabled(ByVal Value As BooleanByte)
+    Property Get IsStopEnabled() As BooleanByte
+    Property Let IsStopEnabled(ByVal Value As BooleanByte)
+    Property Get IsPauseEnabled() As BooleanByte
+    Property Let IsPauseEnabled(ByVal Value As BooleanByte)
+    Property Get IsRecordEnabled() As BooleanByte
+    Property Let IsRecordEnabled(ByVal Value As BooleanByte)
+    Property Get IsFastForwardEnabled() As BooleanByte
+    Property Let IsFastForwardEnabled(ByVal Value As BooleanByte)
+    Property Get IsRewindEnabled() As BooleanByte
+    Property Let IsRewindEnabled(ByVal Value As BooleanByte)
+    Property Get IsPreviousEnabled() As BooleanByte
+    Property Let IsPreviousEnabled(ByVal Value As BooleanByte)
+    Property Get IsNextEnabled() As BooleanByte
+    Property Let IsNextEnabled(ByVal Value As BooleanByte)
+    Property Get IsChannelUpEnabled() As BooleanByte
+    Property Let IsChannelUpEnabled(ByVal Value As BooleanByte)
+    Property Get IsChannelDownEnabled() As BooleanByte
+    Property Let IsChannelDownEnabled(ByVal Value As BooleanByte)
+    [PreserveSig]
+    Function AddButtonPressed(ByVal Handler As ITypedEventHandlerSystemMediaTransportControlsButtonPressed, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveButtonPressed(ByVal Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function AddPropertyChanged(ByVal Handler As ITypedEventHandlerSystemMediaTransportControlsPropertyChanged, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemovePropertyChanged(ByVal Token As EventRegistrationToken) As HRESULT
+End Interface
+
+[InterfaceId("44E34F15-BDC0-50A7-ACE4-39E91FB753F1")]
+Interface ITypedEventHandlerSystemMediaTransportControlsPlaybackPositionChangeRequested Extends IUnknown
+    Sub Invoke(ByVal Sender As ISystemMediaTransportControls, ByVal Args As IPlaybackPositionChangeRequestedEventArgs)
+End Interface
+
+[InterfaceId("15EB0182-6366-5B9F-BD8C-8AB4FA9D7CD9")]
+Interface ITypedEventHandlerSystemMediaTransportControlsPlaybackRateChangeRequested Extends IUnknown
+    Sub Invoke(ByVal Sender As ISystemMediaTransportControls, ByVal Args As IPlaybackRateChangeRequestedEventArgs)
+End Interface
+
+[InterfaceId("17ECEA80-27E4-5DAE-ABB4-C858AD1C5307")]
+Interface ITypedEventHandlerSystemMediaTransportControlsShuffleEnabledChangeRequested Extends IUnknown
+    Sub Invoke(ByVal Sender As ISystemMediaTransportControls, ByVal Args As IShuffleEnabledChangeRequestedEventArgs)
+End Interface
+
+[InterfaceId("A6214BDE-02D5-55B3-AB0D-C6031BE70DA1")]
+Interface ITypedEventHandlerSystemMediaTransportControlsAutoRepeatModeChangeRequested Extends IUnknown
+    Sub Invoke(ByVal Sender As ISystemMediaTransportControls, ByVal Args As IAutoRepeatModeChangeRequestedEventArgs)
+End Interface
+
+[InterfaceId("EA98D2F6-7F3C-4AF2-A586-72889808EFB1")]
+Interface ISystemMediaTransportControls2 Extends IInspectable
+    Property Get AutoRepeatMode() As MediaPlaybackAutoRepeatMode
+    Property Let AutoRepeatMode(ByVal Value As MediaPlaybackAutoRepeatMode)
+    Property Get ShuffleEnabled() As BooleanByte
+    Property Let ShuffleEnabled(ByVal Value As BooleanByte)
+    Property Get PlaybackRate() As Double
+    Property Let PlaybackRate(ByVal Value As Double)
+    [PreserveSig]
+    Function UpdateTimelineProperties(ByVal TimelineProperties As ISystemMediaTransportControlsTimelineProperties) As HRESULT
+    [PreserveSig]
+    Function AddPlaybackPositionChangeRequested(ByVal Handler As ITypedEventHandlerSystemMediaTransportControlsPlaybackPositionChangeRequested, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemovePlaybackPositionChangeRequested(ByVal Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function AddPlaybackRateChangeRequested(ByVal Handler As ITypedEventHandlerSystemMediaTransportControlsPlaybackRateChangeRequested, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemovePlaybackRateChangeRequested(ByVal Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function AddShuffleEnabledChangeRequested(ByVal Handler As ITypedEventHandlerSystemMediaTransportControlsShuffleEnabledChangeRequested, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveShuffleEnabledChangeRequested(ByVal Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function AddAutoRepeatModeChangeRequested(ByVal Handler As ITypedEventHandlerSystemMediaTransportControlsAutoRepeatModeChangeRequested, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveAutoRepeatModeChangeRequested(ByVal Token As EventRegistrationToken) As HRESULT
+End Interface
+
+[InterfaceId("B7F47116-A56F-4DC8-9E11-92031F4A87C2")]
+Interface ISystemMediaTransportControlsButtonPressedEventArgs Extends IInspectable
+    Property Get Button() As SystemMediaTransportControlsButton
+End Interface
+
+[InterfaceId("8ABBC53E-FA55-4ECF-AD8E-C984E5DD1550")]
+Interface ISystemMediaTransportControlsDisplayUpdater Extends IInspectable
+    Property Get Type() As MediaPlaybackType
+    Property Let Type(ByVal Value As MediaPlaybackType)
+    Property Get AppMediaId() As LongPtr
+    Property Let AppMediaId(ByVal Value As LongPtr)
+    Property Get Thumbnail() As IRandomAccessStreamReference
+    Property Set Thumbnail(ByVal Value As IRandomAccessStreamReference)
+    Property Get MusicProperties() As IMusicDisplayProperties
+    Property Get VideoProperties() As IVideoDisplayProperties
+    Property Get ImageProperties() As IImageDisplayProperties
+    Function CopyFromFileAsync(ByVal Type As MediaPlaybackType, ByVal Source As IStorageFile) As IAsyncOperationBoolean
+    [PreserveSig]
+    Function ClearAll() As HRESULT
+    [PreserveSig]
+    Function Update() As HRESULT
+End Interface
+
+[InterfaceId("D0CA0936-339B-4CB3-8EEB-737607F56E08")]
+Interface ISystemMediaTransportControlsPropertyChangedEventArgs Extends IInspectable
+    Property Get Property() As SystemMediaTransportControlsProperty
+End Interface
+
+[InterfaceId("43BA380A-ECA4-4832-91AB-D415FAE484C6")]
+Interface ISystemMediaTransportControlsStatics Extends IInspectable
+    Function GetForCurrentView() As ISystemMediaTransportControls
+End Interface
+
+[InterfaceId("5125316A-C3A2-475B-8507-93534DC88F15")]
+Interface ISystemMediaTransportControlsTimelineProperties Extends IInspectable
+    Property Get StartTime() As TimeSpan
+    Property Let StartTime(ByVal Value As TimeSpan)
+    Property Get EndTime() As TimeSpan
+    Property Let EndTime(ByVal Value As TimeSpan)
+    Property Get MinSeekTime() As TimeSpan
+    Property Let MinSeekTime(ByVal Value As TimeSpan)
+    Property Get MaxSeekTime() As TimeSpan
+    Property Let MaxSeekTime(ByVal Value As TimeSpan)
+    Property Get Position() As TimeSpan
+    Property Let Position(ByVal Value As TimeSpan)
+End Interface
+
+[InterfaceId("5609FDB1-5D2D-4872-8170-45DEE5BC2F5C")]
+Interface IVideoDisplayProperties Extends IInspectable
+    Property Get Title() As LongPtr
+    Property Let Title(ByVal Value As LongPtr)
+    Property Get Subtitle() As LongPtr
+    Property Let Subtitle(ByVal Value As LongPtr)
+End Interface
+
+[InterfaceId("B410E1CE-AB52-41AB-A486-CC10FAB152F9")]
+Interface IVideoDisplayProperties2 Extends IInspectable
+    Property Get Genres() As IVector_HSTRING
+End Interface
+
+[InterfaceId("1FCDA5E8-BAF1-4521-980C-3BCEBB44CF38")]
+Interface IVideoEffectsStatics Extends IInspectable
+    Property Get VideoStabilization() As LongPtr
+End Interface
+
+[InterfaceId("0CC06625-90FC-4C92-BD95-7DED21819D1C")]
+Interface IVideoFrame Extends IInspectable ' requires IClosable, IMediaFrame
+    Property Get SoftwareBitmap() As ISoftwareBitmap
+    Function CopyToAsync(ByVal Frame As IVideoFrame) As IAsyncAction
+    Property Get Direct3DSurface() As IDirect3DSurface
+End Interface
+
+[InterfaceId("3837840D-336C-4366-8D46-060798736C5D")]
+Interface IVideoFrame2 Extends IInspectable
+    Function CopyToWithBoundsAsync(ByVal Frame As IVideoFrame, ByVal SourceBounds As IReference_BitmapBounds, ByVal DestinationBounds As IReference_BitmapBounds) As IAsyncAction
+End Interface
+
+[InterfaceId("014B6D69-2228-4C92-92FF-50C380D3E776")]
+Interface IVideoFrameFactory Extends IInspectable
+    Function Create(ByVal Format As BitmapPixelFormat, ByVal Width As Long, ByVal Height As Long) As IVideoFrame
+    Function CreateWithAlpha(ByVal Format As BitmapPixelFormat, ByVal Width As Long, ByVal Height As Long, ByVal Alpha As BitmapAlphaMode) As IVideoFrame
+End Interface
+
+[InterfaceId("AB2A556F-6111-4B33-8EC3-2B209A02E17A")]
+Interface IVideoFrameStatics Extends IInspectable
+    Function CreateAsDirect3D11SurfaceBacked(ByVal Format As DirectXPixelFormat, ByVal Width As Long, ByVal Height As Long) As IVideoFrame
+    Function CreateAsDirect3D11SurfaceBackedWithDevice(ByVal Format As DirectXPixelFormat, ByVal Width As Long, ByVal Height As Long, ByVal Device As IDirect3DDevice) As IVideoFrame
+    Function CreateWithSoftwareBitmap(ByVal Bitmap As ISoftwareBitmap) As IVideoFrame
+    Function CreateWithDirect3D11Surface(ByVal Surface As IDirect3DSurface) As IVideoFrame
+End Interface
+
+Module mdlMedia
+
+Public Enum AudioBufferAccessMode
+    AudioBufferAccessMode_Read
+    AudioBufferAccessMode_ReadWrite
+    AudioBufferAccessMode_Write
+End Enum
+
+Public Enum AudioProcessing
+    AudioProcessing_Default
+    AudioProcessing_Raw
+End Enum
+
+Public Enum MediaPlaybackAutoRepeatMode
+    MediaPlaybackAutoRepeatMode_None
+    MediaPlaybackAutoRepeatMode_Track
+    MediaPlaybackAutoRepeatMode_List
+End Enum
+
+Public Enum MediaPlaybackStatus
+    MediaPlaybackStatus_Closed
+    MediaPlaybackStatus_Changing
+    MediaPlaybackStatus_Stopped
+    MediaPlaybackStatus_Playing
+    MediaPlaybackStatus_Paused
+End Enum
+
+Public Enum MediaPlaybackType
+    MediaPlaybackType_Unknown
+    MediaPlaybackType_Music
+    MediaPlaybackType_Video
+    MediaPlaybackType_Image
+End Enum
+
+Public Enum MediaTimelineControllerState
+    MediaTimelineControllerState_Paused
+    MediaTimelineControllerState_Running
+    MediaTimelineControllerState_Stalled
+    MediaTimelineControllerState_Error
+End Enum
+
+Public Enum SoundLevel
+    SoundLevel_Muted
+    SoundLevel_Low
+    SoundLevel_Full
+End Enum
+
+Public Enum SystemMediaTransportControlsButton
+    SystemMediaTransportControlsButton_Play
+    SystemMediaTransportControlsButton_Pause
+    SystemMediaTransportControlsButton_Stop
+    SystemMediaTransportControlsButton_Record
+    SystemMediaTransportControlsButton_FastForward
+    SystemMediaTransportControlsButton_Rewind
+    SystemMediaTransportControlsButton_Next
+    SystemMediaTransportControlsButton_Previous
+    SystemMediaTransportControlsButton_ChannelUp
+    SystemMediaTransportControlsButton_ChannelDown
+End Enum
+
+Public Enum SystemMediaTransportControlsProperty
+    SystemMediaTransportControlsProperty_SoundLevel
+End Enum
+
+Public Type MediaTimeRange
+    Start As TimeSpan
+    End As TimeSpan
+End Type
+
+End Module

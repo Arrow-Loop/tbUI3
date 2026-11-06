@@ -1,0 +1,146 @@
+[InterfaceId("BF2F6543-230E-50BF-9C57-9E4BA8635903")]
+Interface IIterator_IFileInformation Extends IInspectable
+    Property Get Current() As IStorageItemInformation
+    Property Get HasCurrent() As BooleanByte
+    Function MoveNext() As BooleanByte
+    Function GetMany(ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("DD96D7E9-892B-5932-B677-5BC32588008F")]
+Interface IIterable_IFileInformation Extends IInspectable
+    Function First() As IIterator_IFileInformation
+End Interface
+
+[InterfaceId("50BCD975-67BA-53B7-A5A7-1FB59F04BBB3")]
+Interface IVectorView_IFileInformation Extends IInspectable
+    Function GetAt(ByVal Index As Long) As IStorageItemInformation
+    Property Get Size() As Long
+    Function IndexOf(ByVal Value As IStorageItemInformation, Index As Long) As BooleanByte
+    Function GetMany(ByVal StartIndex As Long, ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("222F6BB6-E71E-55CB-885D-E051E35995DC")]
+Interface IAsyncOperationIVectorView_IFileInformation Extends IInspectable
+    Property Set Completed(ByVal Handler As IAsyncOperationCompletedHandlerIVectorView_IFileInformation)
+    Property Get Completed() As IAsyncOperationCompletedHandlerIVectorView_IFileInformation
+    Function GetResults() As IVectorView_IFileInformation
+End Interface
+
+[InterfaceId("EBDB2C85-D27A-5C93-A1B3-6CA3651ADA5D")]
+Interface IAsyncOperationCompletedHandlerIVectorView_IFileInformation Extends IUnknown
+    Sub Invoke(ByVal AsyncOperation As IAsyncOperationIVectorView_IFileInformation, ByVal AsyncStatus As AsyncStatus)
+End Interface
+
+[InterfaceId("FF68B5B6-CAAD-553A-9808-95EEA700C9DE")]
+Interface IIterator_IFolderInformation Extends IInspectable
+    Property Get Current() As IStorageItemInformation
+    Property Get HasCurrent() As BooleanByte
+    Function MoveNext() As BooleanByte
+    Function GetMany(ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("5C720BF5-7636-51FD-9EF7-D5F57F071A9B")]
+Interface IIterable_IFolderInformation Extends IInspectable
+    Function First() As IIterator_IFolderInformation
+End Interface
+
+[InterfaceId("506F1329-DBDC-5A37-91D5-B047CB24276D")]
+Interface IVectorView_IFolderInformation Extends IInspectable
+    Function GetAt(ByVal Index As Long) As IStorageItemInformation
+    Property Get Size() As Long
+    Function IndexOf(ByVal Value As IStorageItemInformation, Index As Long) As BooleanByte
+    Function GetMany(ByVal StartIndex As Long, ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("7F10E569-2BF7-5752-8F75-602809A7D304")]
+Interface IAsyncOperationIVectorView_IFolderInformation Extends IInspectable
+    Property Set Completed(ByVal Handler As IAsyncOperationCompletedHandlerIVectorView_IFolderInformation)
+    Property Get Completed() As IAsyncOperationCompletedHandlerIVectorView_IFolderInformation
+    Function GetResults() As IVectorView_IFolderInformation
+End Interface
+
+[InterfaceId("020713EC-604A-5E45-B03F-1B9E65253804")]
+Interface IAsyncOperationCompletedHandlerIVectorView_IFolderInformation Extends IUnknown
+    Sub Invoke(ByVal AsyncOperation As IAsyncOperationIVectorView_IFolderInformation, ByVal AsyncStatus As AsyncStatus)
+End Interface
+
+[InterfaceId("3DA6401D-1279-55A1-962C-25CD23B99B27")]
+Interface IIterator_IStorageItemInformation Extends IInspectable
+    Property Get Current() As IStorageItemInformation
+    Property Get HasCurrent() As BooleanByte
+    Function MoveNext() As BooleanByte
+    Function GetMany(ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("43BC252E-A3D6-5F00-A12C-B088D3B912D4")]
+Interface IIterable_IStorageItemInformation Extends IInspectable
+    Function First() As IIterator_IStorageItemInformation
+End Interface
+
+[InterfaceId("DA3A4EF8-D315-529B-A73B-524490573F7E")]
+Interface IVectorView_IStorageItemInformation Extends IInspectable
+    Function GetAt(ByVal Index As Long) As IStorageItemInformation
+    Property Get Size() As Long
+    Function IndexOf(ByVal Value As IStorageItemInformation, Index As Long) As BooleanByte
+    Function GetMany(ByVal StartIndex As Long, ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("413D160C-3E1A-5603-ACBA-1E176D6A6082")]
+Interface IAsyncOperationIVectorView_IStorageItemInformation Extends IInspectable
+    Property Set Completed(ByVal Handler As IAsyncOperationCompletedHandlerIVectorView_IStorageItemInformation)
+    Property Get Completed() As IAsyncOperationCompletedHandlerIVectorView_IStorageItemInformation
+    Function GetResults() As IVectorView_IStorageItemInformation
+End Interface
+
+[InterfaceId("FF163034-ECE9-55BE-A6F8-08C72AAE56B4")]
+Interface IAsyncOperationCompletedHandlerIVectorView_IStorageItemInformation Extends IUnknown
+    Sub Invoke(ByVal AsyncOperation As IAsyncOperationIVectorView_IStorageItemInformation, ByVal AsyncStatus As AsyncStatus)
+End Interface
+
+[InterfaceId("401D88BE-960F-4D6D-A7D0-1A3861E76C83")]
+Interface IFileInformationFactory Extends IInspectable
+    Function GetItemsAsync(ByVal StartIndex As Long, ByVal MaxItemsToRetrieve As Long) As IAsyncOperationIVectorView_IStorageItemInformation
+    Function GetItemsAsyncDefaultStartAndCount() As IAsyncOperationIVectorView_IStorageItemInformation
+    Function GetFilesAsync(ByVal StartIndex As Long, ByVal MaxItemsToRetrieve As Long) As IAsyncOperationIVectorView_IFileInformation
+    Function GetFilesAsyncDefaultStartAndCount() As IAsyncOperationIVectorView_IFileInformation
+    Function GetFoldersAsync(ByVal StartIndex As Long, ByVal MaxItemsToRetrieve As Long) As IAsyncOperationIVectorView_IFolderInformation
+    Function GetFoldersAsyncDefaultStartAndCount() As IAsyncOperationIVectorView_IFolderInformation
+    Function GetVirtualizedItemsVector() As IInspectable
+    Function GetVirtualizedFilesVector() As IInspectable
+    Function GetVirtualizedFoldersVector() As IInspectable
+End Interface
+
+[InterfaceId("84EA0E7D-E4A2-4F00-8AFA-AF5E0F826BD5")]
+Interface IFileInformationFactoryFactory Extends IInspectable
+    Function CreateWithMode(ByVal QueryResult As IStorageQueryResultBase, ByVal Mode As ThumbnailMode) As IFileInformationFactory
+    Function CreateWithModeAndSize(ByVal QueryResult As IStorageQueryResultBase, ByVal Mode As ThumbnailMode, ByVal RequestedThumbnailSize As Long) As IFileInformationFactory
+    Function CreateWithModeAndSizeAndOptions(ByVal QueryResult As IStorageQueryResultBase, ByVal Mode As ThumbnailMode, ByVal RequestedThumbnailSize As Long, ByVal ThumbnailOptions As ThumbnailOptions) As IFileInformationFactory
+    Function CreateWithModeAndSizeAndOptionsAndFlags(ByVal QueryResult As IStorageQueryResultBase, ByVal Mode As ThumbnailMode, ByVal RequestedThumbnailSize As Long, ByVal ThumbnailOptions As ThumbnailOptions, ByVal DelayLoad As BooleanByte) As IFileInformationFactory
+End Interface
+
+[InterfaceId("5B98B352-E0CF-58DE-B2EC-4FD786BBB5A7")]
+Interface ITypedEventHandlerStorageItemInformationIInspectable Extends IUnknown
+    Sub Invoke(ByVal Sender As IStorageItemInformation, ByVal Args As IInspectable)
+End Interface
+
+[InterfaceId("87A5CB8B-8972-4F40-8DE0-D86FB179D8FA")]
+Interface IStorageItemInformation Extends IInspectable
+    Property Get MusicProperties() As IMusicProperties
+    Property Get VideoProperties() As IVideoProperties
+    Property Get ImageProperties() As IImageProperties
+    Property Get DocumentProperties() As IDocumentProperties
+    Property Get BasicProperties() As IBasicProperties
+    Property Get Thumbnail() As IRandomAccessStreamWithContentType
+    [PreserveSig]
+    Function AddThumbnailUpdated(ByVal Handler As ITypedEventHandlerStorageItemInformationIInspectable, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveThumbnailUpdated(ByVal Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function AddPropertiesUpdated(ByVal Handler As ITypedEventHandlerStorageItemInformationIInspectable, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemovePropertiesUpdated(ByVal Token As EventRegistrationToken) As HRESULT
+End Interface
+
+Module mdlStorageBulkAccess
+
+End Module

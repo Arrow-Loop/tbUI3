@@ -1,0 +1,419 @@
+' A part of the GDI+ Package for TwinBasic  https://github.com/kubao/GdiPlus
+' Licensed under the MIT license. (c) 2026 Sunderland Ober Consulting.
+' "Windows" is a trademark of the Microsoft Corporation.
+' Modeled after code and descriptions (c) Microsoft, taken from SDK headers and official documentation.
+' Certain flat API function and type declarations taken from WinDevLib by fafalone, with thanks.
+
+Private Module GdipImplementation
+    Private Const FADF_STATIC = &H2%
+    Private Const FADF_FIXEDSIZE = &H10%
+
+    [Description("Returns the first dimension of the array.")]
+    Function ArrayLen(Of T)(array() As T) As Long
+        Dim p As LongPtr
+        GetMemPtr(VarPtr(array), p)
+        If p <> 0 Then
+        #If win64 Then
+            GetMem4(p + 24, ArrayLen)
+        #Else
+            GetMem4(p + 16, ArrayLen)
+        #End If
+        End If
+    End Function
+
+    [Description("Returns pointer to the data block of the array")]
+    Function ArrayPtr(Of T)(array() As T) As LongPtr
+        Dim p As LongPtr
+        GetMemPtr(VarPtr(array), p)
+        If p <> 0 Then
+        #If win64 Then
+            GetMemPtr(p + 16, ArrayPtr)
+        #Else
+            GetMemPtr(p + 12, ArrayPtr)
+        #End If
+        End If
+    End Function
+    
+    [Description("Sets sa to be a 1D static view into data. Existing value of sa, if any, is discarded." & vbCrLf _
+        & "If sa was previously pointing to dynamically allocated data, that memory will be leaked.")]
+    Sub SetStaticSA(ByRef sa As GDIP_SAFEARRAY1D, ByVal elementSize&, ByVal data As LongPtr, ByVal count&)
+        sa.cDims = 1
+        sa.fFeatures = FADF_STATIC + FADF_FIXEDSIZE
+        sa.cbElements = elementSize&
+        sa.cLocks = 0
+        sa.pvData = data
+        sa.Bounds.cElements = count
+        sa.Bounds.lLbound = 1
+    End Sub
+    
+    Private Sub SetCElements(ByRef sa As GDIP_SAFEARRAY1D, ByVal count&)
+        sa.Bounds.cElements = count
+    End Sub
+    
+    [Description("Returns a static 1D view of data.")]
+    Function StaticSA(Of T)(ByVal data As LongPtr, ByVal count&) As T()
+        Dim saPtr As LongPtr
+        GdipImplementation.SafeArrayAllocDescriptor(1, StaticSA)
+        GetMemPtr(VarPtr(StaticSA), saPtr)
+        SetStaticSA(ByVal saPtr, LenB(Of T), data, count)
+    End Function
+
+    [Description("Redims an array from lbound to ubound." & vbCrLf & _
+        "Ensures that total allocated size is at least requiredByteSize.")]
+    Sub ReDimOversized(Of T)(array() As T, ByVal lbound&, ByVal ubound&, ByVal requiredByteSize&, ByVal preserve As Boolean = False)
+        Dim numElements& = ubound - lbound + 1
+        Dim itemSize& = LenB(Of T)
+        
+        Dim arrayCount& = ((requiredByteSize + itemSize - 1) / itemSize)
+        If arrayCount < numElements Then arrayCount = numElements
+                
+        If preserve Then
+            ReDim Preserve array(lbound To lbound + arrayCount - 1)
+        Else
+            ReDim array(lbound To lbound + arrayCount - 1)
+        End If
+        Dim arrayAddr As LongPtr
+        GetMemPtr(VarPtr(array), arrayAddr)
+        
+        SetCElements(ByVal arrayAddr, numElements)
+        ' The SAFEARRAY structure's bounds reflect the number of elements.
+        ' The allocated memory for the structure is potentially larger and can hold at 
+        ' least requiredByteSize bytes.
+    End Sub
+    
+    Sub SetOversizedCount(Of T)(array() As T, ByVal count&)
+        Dim arrayAddr As LongPtr
+        GetMemPtr(VarPtr(array), arrayAddr)
+        
+        SetCElements(ByVal arrayAddr, count&)
+        ' The SAFEARRAY structure's bounds reflect the number of elements.
+        ' The allocated memory for the structure is potentially larger.
+    End Sub
+        
+    Function AlignTo(ByVal ptr As LongPtr, ByVal alignment&) As LongPtr
+        Return ((ptr + alignment& - 1) / alignment) * alignment
+    End Function
+    
+    [Description("Sets up a static 1D view of data in the same allocation as the data." & vbCrLf _
+        & "Assumes that there is enough extra space after the data to fit a STATICARRAY1D header." & vbCrLf _
+        & "Does not allocate memory.")]
+    Sub InitStaticTrailingSA(ByVal data As LongPtr, ByVal elementSize&, ByVal count As LongPtr)
+        If data <> 0 And elementSize > 0 And count > 0 Then
+            Dim alignedSize As LongPtr = AlignTo(count * elementSize, 8)
+            SetStaticSA(ByVal (data + alignedSize), elementSize, data, CLng(count))
+        End If
+    End Sub
+    
+    [Description("Returs the static 1D view of data that was previously set up using InitStaticTrailingSA." & vbCrLf _
+        & "Does not allocate memory.")]
+    Function GetStaticTrailingSA(Of T)(ByVal data As LongPtr, ByVal count As LongPtr) As T()
+        If data <> 0 And count > 0 Then
+            Dim alignedSize As LongPtr = AlignTo(count * LenB(Of T), 8)
+            PutMemPtr(VarPtr(GetStaticTrailingSA), data + alignedSize)
+        End If
+    End Function
+    
+    [Description("Allocates an area for data, followed by a trailing static SAFEARRAY describing it." & vbCrLf _
+        & "The allocation is done using GdipAlloc. Any existing data is first freed using GdipFree.")]
+    Function AllocateStaticTrailingSA(ByVal newCount&, ByVal elementSize&, ByRef dataPtr As LongPtr, Optional ByRef count&) As GpStatus
+        GdipFree(dataPtr)
+        dataPtr = 0
+        If Not IsMissing(count) Then count = 0
+        If newCount <> 0 Then ' if newCount is 0 we don't need to do anything more            
+            Dim alignedSize As LongPtr = AlignTo(newCount * elementSize, 8)
+            dataPtr = GdipAlloc(alignedSize + LenB(Of GDIP_SAFEARRAY1D))
+            If dataPtr = 0 Then
+                Return OutOfMemory
+            End If
+            InitStaticTrailingSA(dataPtr, elementSize, newCount)
+            If Not IsMissing(count) Then count = newCount
+        End If
+        Return Ok
+    End Function
+    
+    Function SetFlag(Of T)(ByVal flags As T, ByVal flag As T, ByVal value As Boolean) As T
+        Return If(value, flags Or flag, flags And (Not flag))
+    End Function
+
+    Function GdipMin(ByVal a&, ByVal b&) As Long
+        GdipMin = a
+        If b < GdipMin Then GdipMin = b
+    End Function
+    
+    Function GdipMin(ByVal a!, ByVal b!) As Single
+        GdipMin = a
+        If b < GdipMin Then GdipMin = b
+    End Function
+
+    Function GdipMin(ByVal a#, ByVal b#) As Double
+        GdipMin = a
+        If b < GdipMin Then GdipMin = b
+    End Function
+    
+    Function GdipMin(ByVal a&, ByVal b&, ByVal c&) As Long
+        GdipMin = a
+        If b < GdipMin Then GdipMin = b
+        If c < GdipMin Then GdipMin = c
+    End Function
+    
+    Function GdipMin(ByVal a!, ByVal b!, ByVal c!) As Single
+        GdipMin = a
+        If b < GdipMin Then GdipMin = b
+        If c < GdipMin Then GdipMin = c
+    End Function
+
+    Function GdipMin(ByVal a#, ByVal b#, ByVal c#) As Double
+        GdipMin = a
+        If b < GdipMin Then GdipMin = b
+        If c < GdipMin Then GdipMin = c
+    End Function
+    
+    Function GdipMax(ByVal a&, ByVal b&) As Long
+        GdipMax = a
+        If b > GdipMax Then GdipMax = b
+    End Function
+    
+    Function GdipMax(ByVal a!, ByVal b!) As Single
+        GdipMax = a
+        If b > GdipMax Then GdipMax = b
+    End Function
+    
+    Function GdipMax(ByVal a#, ByVal b#) As Double
+        GdipMax = a
+        If b > GdipMax Then GdipMax = b
+    End Function
+    
+    Function GdipMax(ByVal a&, ByVal b&, ByVal c&) As Long
+        GdipMax = a
+        If b > GdipMax Then GdipMax = b
+        If c > GdipMax Then GdipMax = c
+    End Function
+    
+    Function GdipMax(ByVal a!, ByVal b!, ByVal c!) As Single
+        GdipMax = a
+        If b > GdipMax Then GdipMax = b
+        If c > GdipMax Then GdipMax = c
+    End Function
+    
+    Function GdipMax(ByVal a#, ByVal b#, ByVal c#) As Double
+        GdipMax = a
+        If b > GdipMax Then GdipMax = b
+        If c > GdipMax Then GdipMax = c
+    End Function
+    
+    [DebugOnly]
+    Sub CheckModS()
+        Debug.Print GdipModS(0, 100), GdipModS(10, 100), GdipModS(99, 100), GdipModS(100, 100), GdipModS(599, 100)
+        Debug.Print GdipModS(-0, 100), GdipModS(-10, 100), GdipModS(-99, 100), GdipModS(-100, 100), GdipModS(-599, 100)
+    End Sub
+    
+    [Description("Modulo, but floating point")]
+    Function GdipModS(ByVal a!, ByVal by!) As Single
+        Return a - (CLngLng(a / by) * by)
+    End Function
+    
+    [Description("Modulo, but floating point")]
+    Function GdipModD(ByVal a#, ByVal by#) As Single
+        Return a - (CLng(a / by) * by)
+    End Function
+
+    Function GdipLimitL(ByVal min&, ByVal val&, ByVal max&) As Long
+        If val < min Then Return min
+        If val > max Then Return max
+        Return val
+    End Function
+    
+    Function GdipLimitS(ByVal min!, ByVal val!, ByVal max!) As Single
+        If val < min Then Return min
+        If val > max Then Return max
+        Return val
+    End Function
+    
+    Function GdipLimitD(ByVal min#, ByVal val#, ByVal max#) As Double
+        If val < min Then Return min
+        If val > max Then Return max
+        Return val
+    End Function
+
+    Function RotateAtImpl(Of T)(ByVal obj As T, ByVal angle!, ByVal center As GpPointF, ByVal order As GpMatrixOrder = MatrixOrderPrepend) As GpStatus
+        Dim status As GpStatus
+        If order = MatrixOrderPrepend Then
+            status = obj.TranslateTransform(center.X, center.Y, order)
+            If status = Ok Then status = obj.RotateTransform(angle, order)
+            If status = Ok Then status = obj.TranslateTransform(-center.X, -center.Y, order)
+        Else
+            status = obj.TranslateTransform(-center.X, -center.Y, order)
+            If status = Ok Then status = obj.RotateTransform(angle, order)
+            If status = Ok Then status = obj.TranslateTransform(center.X, center.Y, order)
+        End If
+        Return status
+    End Function
+    
+    Function ShearImpl(Of T)(ByVal obj As T, ByVal shearX!, ByVal shearY!, ByVal order As GpMatrixOrder = MatrixOrderPrepend) As GpStatus
+        Dim status As GpStatus
+        Dim transform As GpMatrix
+        status = obj.GetTransform(transform)
+        If status = Ok Then status = transform.Shear(shearX, shearY, order)
+        If status = Ok Then status = obj.SetTransform(transform)
+        Return status
+    End Function
+    
+    [PreserveSig(False), UseGetLastError(False), DLLStackCheck(False)]
+    [Description("")]
+    Private DeclareWide PtrSafe Sub GTGetMem1 Lib "<hiddenmodule>" Alias "#3" (ByVal Address As LongPtr, ByVal retAddress As LongPtr)
+    [PreserveSig(False), UseGetLastError(False), DLLStackCheck(False)]
+    [Description("")]
+    Private DeclareWide PtrSafe Sub GTGetMem2 Lib "<hiddenmodule>" Alias "#4" (ByVal Address As LongPtr, ByVal retAddress As LongPtr)
+    [PreserveSig(False), UseGetLastError(False), DLLStackCheck(False)]
+    [Description("")]
+    Private DeclareWide PtrSafe Sub GTGetMem4 Lib "<hiddenmodule>" Alias "#5" (ByVal Address As LongPtr, ByVal retAddress As LongPtr)
+    [PreserveSig(False), UseGetLastError(False), DLLStackCheck(False)]
+    [Description("")]
+    Private DeclareWide PtrSafe Sub GTGetMem8 Lib "<hiddenmodule>" Alias "#6" (ByVal Address As LongPtr, ByVal retAddress As LongPtr)
+    [PreserveSig(False), UseGetLastError(False), DLLStackCheck(False)]
+    [Description("")]
+    Private DeclareWide PtrSafe Sub GTGetMemPtr Lib "<hiddenmodule>" Alias "#7" (ByVal Address As LongPtr, ByVal retAddress As LongPtr)
+    
+    Sub TGetMem1(Of T)(ByVal from As LongPtr, ByRef to As T)
+        Debug.Assert LenB(Of T) >= 1
+        GTGetMem1(from, VarPtr(to))
+    End Sub
+    
+    Sub TGetMem2(Of T)(ByVal from As LongPtr, ByRef to As T)
+        Debug.Assert LenB(Of T) >= 2
+        GTGetMem2(from, VarPtr(to))
+    End Sub
+
+    Sub TGetMem4(Of T)(ByVal from As LongPtr, ByRef to As T)
+        Debug.Assert LenB(Of T) >= 4
+        GTGetMem4(from, VarPtr(to))
+    End Sub
+    
+    Sub TGetMem8(Of T)(ByVal from As LongPtr, ByRef to As T)
+        Debug.Assert LenB(Of T) >= 8
+        GTGetMem8(from, VarPtr(to))
+    End Sub
+    
+    Sub TGetMemPtr(Of T)(ByVal from As LongPtr, ByRef to As T)
+        Debug.Assert LenB(Of T) >= LenB(Of LongPtr)
+        GTGetMemPtr(from, ByVal VarPtr(to))
+    End Sub
+    
+    Sub TPutMem1(Of T)(ByVal to As LongPtr, ByVal from As T)
+        Debug.Assert LenB(Of T) >= 1
+        Dim value As Byte
+        GTGetMem1(VarPtr(from), VarPtr(value))
+        PutMem1(to, value)
+    End Sub
+
+    Sub TPutMem2(Of T)(ByVal to As LongPtr, ByVal from As T)
+        Debug.Assert LenB(Of T) >= 2
+        Dim value%
+        GTGetMem2(VarPtr(from), VarPtr(value))
+        PutMem2(to, value)
+    End Sub
+
+    Sub TPutMem4(Of T)(ByVal to As LongPtr, ByVal from As T)
+        Debug.Assert LenB(Of T) >= 4
+        Dim value&
+        GTGetMem4(VarPtr(from), VarPtr(value))
+        PutMem4(to, value)
+    End Sub
+
+    Sub TPutMem8(Of T)(ByVal to As LongPtr, ByVal from As T)
+        Debug.Assert LenB(Of T) >= 8
+        Dim value As currency
+        GTGetMem8(VarPtr(from), VarPtr(value))
+        PutMem8(to, value)
+    End Sub
+
+    Sub TPutMemPtr(Of T)(ByVal to As LongPtr, ByVal from As T)
+        Debug.Assert LenB(Of T) >= LenB(Of LongPtr)
+        Dim value As LongPtr
+        GTGetMemPtr(VarPtr(from), VarPtr(value))
+        PutMemPtr(to, value)
+    End Sub
+    
+    Function ASCIIToString(ByVal address As LongPtr, ByVal length As Long = -1) As String
+        Dim bytes() As Byte
+        If length < 0 Then length = CStrLen(address)
+        ReDim bytes(1 To length + 1)
+        vbaCopyBytes(length, VarPtr(bytes(1)), address)
+        Return StrConv(bytes, vbFromUTF8)
+    End Function
+    
+    Function WCharToString(ByVal address As LongPtr, ByVal length As Long = -1) As String
+        If length < 0 Then length = WCStrLen(address)
+        WCharToString = String$(length, 0)
+        vbaCopyBytes(length * 2, StrPtr(WCharToString), address)
+    End Function
+    
+    Function CStrLen(ByVal address As LongPtr) As Long
+        Dim ch As Byte
+        Dim length As Long = 0
+        While True
+            GetMem1(address, ch)
+            length += 1
+            address += 1
+            If ch = 0 Then Exit While
+        Wend
+        Return length
+    End Function
+    
+    Function WCStrLen(ByVal address As LongPtr) As Long
+        Dim ch%
+        Dim length As Long = 0
+        While True
+            GetMem2(address, ch)
+            length += 1
+            address += 2
+            If ch = 0 Then Exit While
+        Wend
+        Return length
+    End Function
+    
+    Function ObjArrayToGpArray(Of U, T)(objects() As T) As U()
+        Dim natives() As U
+        ReDim natives(LBound(objects) To UBound(objects))
+        For i As Long = LBound(objects) To UBound(objects)
+            natives(i) = GetNative(objects(i))
+        Next i
+        Return natives
+    End Function
+    
+    Function GpArrayToObjArray(Of T, U)(natives() As U) As T()
+        Dim objects() As T
+        ReDim objects(LBound(natives) To UBound(natives))
+        For i As Long = LBound(natives) To UBound(natives)
+            Set objects(i) = New T(natives(i))
+        Next i
+        Return objects
+    End Function
+    
+    Public gdiPlusRefCount& = 0
+    Public gdiPlusToken As GpToken
+    
+    Public GenericSansSerifFF As FontFamily
+    Public GenericSerifFF As FontFamily
+    Public GenericMonospaceFF As FontFamily
+    
+    Public Declare PtrSafe Function SafeArrayAllocDescriptor Lib "oleaut32" (ByVal cDims As Long, ppsaOut As Any) As Long
+    
+    [PreserveSig(False), UseGetLastError(False), DLLStackCheck(False)]
+    [Description("")]
+    Public DeclareWide PtrSafe Function vbaCopyBytesRef Lib "<hiddenmodule>" Alias "#16" (ByVal length As Long, dest As Any, src As Any) As LongPtr
+    
+    Private Type GDIP_SAFEARRAY1D
+        cDims      As Integer
+        fFeatures  As Integer
+        cbElements As Long
+        cLocks     As Long
+        pvData     As LongPtr
+        Bounds     As GDIP_SAFEARRAYBOUND
+    End Type
+    
+    Private Type GDIP_SAFEARRAYBOUND
+        cElements As Long
+        lLbound   As Long
+    End Type
+End Module

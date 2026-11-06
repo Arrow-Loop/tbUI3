@@ -1,0 +1,43 @@
+' =====================================================
+' IOutputFormatter.twin - 格式化器接口
+' Twinbasic Diagnostic Tool
+' =====================================================
+
+' 输出格式化器接口
+' 负责将诊断结果转换为字符串格式
+' 重要：格式化器只负责数据转换，不做任何 I/O 操作
+[ InterfaceId ("D4E5F6A7-B8C9-D0E1-F2A3-B4C5D6E7F8A9") ]
+Public Interface IOutputFormatter
+
+    ' === 格式化方法 ===
+
+    ' 开始格式化
+    ' 初始化格式化器状态，准备接收数据
+    Sub BeginFormat()
+
+    ' 格式化类别标题
+    ' @param categoryName 类别名称
+    Sub FormatCategory(ByVal categoryName As String)
+
+    ' 格式化单个数据项
+    ' @param key 键名
+    ' @param value 值
+    Sub FormatItem(ByVal key As String, ByVal value As String)
+
+    ' 结束当前类别
+    Sub EndCategory()
+
+    ' 结束格式化并返回结果
+    ' @return 格式化后的完整字符串
+    Function EndFormat() As String
+
+    ' === 属性 ===
+
+    ' 获取推荐的文件扩展名
+    ' @return 扩展名（如 ".txt", ".json", ".html"）
+    Property Get FileExtension() As String
+
+    ' 获取格式化器名称
+    Property Get FormatterName() As String
+
+End Interface

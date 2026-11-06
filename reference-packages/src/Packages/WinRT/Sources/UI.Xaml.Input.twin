@@ -1,0 +1,873 @@
+[InterfaceId("3124D025-04A7-4D45-825E-8204A624DBF4")]
+Interface IDoubleTappedEventHandler Extends IUnknown
+    Sub Invoke(ByVal Sender As IInspectable, ByVal Args As IDoubleTappedRoutedEventArgs)
+End Interface
+
+[InterfaceId("ECAE8CCD-8E5E-4FBE-9846-30A6370AFCDF")]
+Interface IHoldingEventHandler Extends IUnknown
+    Sub Invoke(ByVal Sender As IInspectable, ByVal Args As IHoldingRoutedEventArgs)
+End Interface
+
+[InterfaceId("7C63D2E5-7A0E-4E12-B96A-7715AA6FF1C8")]
+Interface IKeyEventHandler Extends IUnknown
+    Sub Invoke(ByVal Sender As IInspectable, ByVal Args As IKeyRoutedEventArgs)
+End Interface
+
+[InterfaceId("38EF4B0F-14F8-42DF-9A1E-A4BCC4AF77F4")]
+Interface IManipulationCompletedEventHandler Extends IUnknown
+    Sub Invoke(ByVal Sender As IInspectable, ByVal Args As IManipulationCompletedRoutedEventArgs)
+End Interface
+
+[InterfaceId("AA1160CB-DFB9-4C56-ABDC-711B63C8EB94")]
+Interface IManipulationDeltaEventHandler Extends IUnknown
+    Sub Invoke(ByVal Sender As IInspectable, ByVal Args As IManipulationDeltaRoutedEventArgs)
+End Interface
+
+[InterfaceId("D39D6322-7C9C-481B-827B-C8B2D9BB6FC7")]
+Interface IManipulationInertiaStartingEventHandler Extends IUnknown
+    Sub Invoke(ByVal Sender As IInspectable, ByVal Args As IManipulationInertiaStartingRoutedEventArgs)
+End Interface
+
+[InterfaceId("F88345F8-E0A3-4BE2-B90C-DC20E6D8BEB0")]
+Interface IManipulationStartedEventHandler Extends IUnknown
+    Sub Invoke(ByVal Sender As IInspectable, ByVal Args As IManipulationStartedRoutedEventArgs)
+End Interface
+
+[InterfaceId("10D0B04E-BFE4-42CB-823C-3FECD8770EF8")]
+Interface IManipulationStartingEventHandler Extends IUnknown
+    Sub Invoke(ByVal Sender As IInspectable, ByVal Args As IManipulationStartingRoutedEventArgs)
+End Interface
+
+[InterfaceId("E4385929-C004-4BCF-8970-359486E39F88")]
+Interface IPointerEventHandler Extends IUnknown
+    Sub Invoke(ByVal Sender As IInspectable, ByVal Args As IPointerRoutedEventArgs)
+End Interface
+
+[InterfaceId("2532A062-F447-4950-9C46-F1E34A2C2238")]
+Interface IRightTappedEventHandler Extends IUnknown
+    Sub Invoke(ByVal Sender As IInspectable, ByVal Args As IRightTappedRoutedEventArgs)
+End Interface
+
+[InterfaceId("68D940CC-9FF0-49CE-B141-3F07EC477B97")]
+Interface ITappedEventHandler Extends IUnknown
+    Sub Invoke(ByVal Sender As IInspectable, ByVal Args As ITappedRoutedEventArgs)
+End Interface
+
+[InterfaceId("8A610DC6-D72D-4CA8-9F66-556F35B513DA")]
+Interface IAccessKeyDisplayDismissedEventArgs Extends IInspectable
+
+End Interface
+
+[InterfaceId("0C079E55-13FE-4D03-A61D-E12F06567286")]
+Interface IAccessKeyDisplayRequestedEventArgs Extends IInspectable
+    Property Get PressedKeys() As LongPtr
+End Interface
+
+[InterfaceId("CFE9CD97-C718-4091-B7DD-ADF1C072B1E1")]
+Interface IAccessKeyInvokedEventArgs Extends IInspectable
+    Property Get Handled() As BooleanByte
+    Property Let Handled(ByVal Value As BooleanByte)
+End Interface
+
+[InterfaceId("ECC973B0-2EE9-4B1C-98D7-6E0E816D334B")]
+Interface IAccessKeyManager Extends IInspectable
+
+End Interface
+
+[InterfaceId("C7E65CE2-FAD5-5E3B-9C58-186CA8C1DD57")]
+Interface ITypedEventHandlerIInspectable Extends IUnknown
+    Sub Invoke(ByVal Sender As IInspectable, ByVal Args As IInspectable)
+End Interface
+
+[InterfaceId("4CA0EFE6-D9C8-4EBC-B4C7-30D1838A81F1")]
+Interface IAccessKeyManagerStatics Extends IInspectable
+    Property Get IsDisplayModeEnabled() As BooleanByte
+    [PreserveSig]
+    Function AddIsDisplayModeEnabledChanged(ByVal Handler As ITypedEventHandlerIInspectable, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveIsDisplayModeEnabledChanged(ByVal Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function ExitDisplayMode() As HRESULT
+End Interface
+
+[InterfaceId("962BB594-2AB3-47C5-954B-7092F355F797")]
+Interface IAccessKeyManagerStatics2 Extends IInspectable
+    Property Get AreKeyTipsEnabled() As BooleanByte
+    Property Let AreKeyTipsEnabled(ByVal Value As BooleanByte)
+End Interface
+
+[InterfaceId("C8E75256-1950-505D-993B-75907EF96830")]
+Interface ICanExecuteRequestedEventArgs Extends IInspectable
+    Property Get Parameter() As IInspectable
+    Property Get CanExecute() As BooleanByte
+    Property Let CanExecute(ByVal Value As BooleanByte)
+End Interface
+
+[InterfaceId("7849FD82-48E4-444D-9419-93AB8892C107")]
+Interface ICharacterReceivedRoutedEventArgs Extends IInspectable
+    Property Get Character() As Integer
+    Property Get KeyStatus() As CorePhysicalKeyStatus
+    Property Get Handled() As BooleanByte
+    Property Let Handled(ByVal Value As BooleanByte)
+End Interface
+
+[InterfaceId("E5AF3542-CA67-4081-995B-709DD13792DF")]
+Interface ICommand Extends IInspectable
+    Sub AddCanExecuteChanged(ByVal Handler As IEventHandlerIInspectable, Optional Token As EventRegistrationToken)
+    Sub RemoveCanExecuteChanged(ByVal Token As EventRegistrationToken)
+    Function CanExecute(Optional ByVal Parameter As IInspectable) As BooleanByte
+    Sub Execute(Optional ByVal Parameter As IInspectable)
+End Interface
+
+[InterfaceId("42618E0A-1CB6-46FB-8374-0AEC68AA5E51")]
+Interface IContextRequestedEventArgs Extends IInspectable
+    Property Get Handled() As BooleanByte
+    Property Let Handled(ByVal Value As BooleanByte)
+    Function TryGetPosition(ByVal RelativeTo As IUIElement, Point As POINTF) As BooleanByte
+End Interface
+
+[InterfaceId("AF404424-26DF-44F4-8714-9359249B62D3")]
+Interface IDoubleTappedRoutedEventArgs Extends IInspectable
+    Property Get PointerDeviceType() As PointerDeviceType
+    Property Get Handled() As BooleanByte
+    Property Let Handled(ByVal Value As BooleanByte)
+    Function GetPosition(ByVal RelativeTo As IUIElement) As POINTF
+End Interface
+
+[InterfaceId("E07FA734-A0B6-5755-9E87-24F54CCA9372")]
+Interface IExecuteRequestedEventArgs Extends IInspectable
+    Property Get Parameter() As IInspectable
+End Interface
+
+[InterfaceId("D88AE22B-46C2-41FC-897E-B5961977B89D")]
+Interface IFindNextElementOptions Extends IInspectable
+    Property Get SearchRoot() As IDependencyObject
+    Property Set SearchRoot(ByVal Value As IDependencyObject)
+    Property Get ExclusionRect() As RECTF
+    Property Let ExclusionRect(ByVal Value As RECTF)
+    Property Get HintRect() As RECTF
+    Property Let HintRect(ByVal Value As RECTF)
+    Property Get XYFocusNavigationStrategyOverride() As XYFocusNavigationStrategyOverride
+    Property Let XYFocusNavigationStrategyOverride(ByVal Value As XYFocusNavigationStrategyOverride)
+End Interface
+
+[InterfaceId("C843F50B-3B83-4DA1-9D6F-557C1169F341")]
+Interface IFocusManager Extends IInspectable
+
+End Interface
+
+[InterfaceId("97AA5D83-535B-507A-868E-62B706F06B61")]
+Interface IFocusManagerGotFocusEventArgs Extends IInspectable
+    Property Get NewFocusedElement() As IDependencyObject
+    Property Get CorrelationId() As UUID
+End Interface
+
+[InterfaceId("3E157E7A-9578-5CD3-AAA8-051B3D391978")]
+Interface IFocusManagerLostFocusEventArgs Extends IInspectable
+    Property Get OldFocusedElement() As IDependencyObject
+    Property Get CorrelationId() As UUID
+End Interface
+
+[InterfaceId("1ECCD326-8182-4482-826A-0918E9ED9AF7")]
+Interface IFocusManagerStatics Extends IInspectable
+    Function GetFocusedElement() As IInspectable
+End Interface
+
+[InterfaceId("A920D761-DD87-4F31-BEDA-EF417FE7C04A")]
+Interface IFocusManagerStatics2 Extends IInspectable
+    Function TryMoveFocus(ByVal FocusNavigationDirection As FocusNavigationDirection) As BooleanByte
+End Interface
+
+[InterfaceId("60805EBF-B149-417D-83F1-BAEB560E2A47")]
+Interface IFocusManagerStatics3 Extends IInspectable
+    Function FindNextFocusableElement(ByVal FocusNavigationDirection As FocusNavigationDirection) As IUIElement
+    Function FindNextFocusableElementWithHint(ByVal FocusNavigationDirection As FocusNavigationDirection, ByVal HintRect As RECTF) As IUIElement
+End Interface
+
+[InterfaceId("29276E9C-1C6C-414A-BA1C-96EFD5962BCD")]
+Interface IFocusManagerStatics4 Extends IInspectable
+    Function TryMoveFocusWithOptions(ByVal FocusNavigationDirection As FocusNavigationDirection, ByVal FocusNavigationOptions As IFindNextElementOptions) As BooleanByte
+    Function FindNextElement(ByVal FocusNavigationDirection As FocusNavigationDirection) As IDependencyObject
+    Function FindFirstFocusableElement(ByVal SearchScope As IDependencyObject) As IDependencyObject
+    Function FindLastFocusableElement(ByVal SearchScope As IDependencyObject) As IDependencyObject
+    Function FindNextElementWithOptions(ByVal FocusNavigationDirection As FocusNavigationDirection, ByVal FocusNavigationOptions As IFindNextElementOptions) As IDependencyObject
+End Interface
+
+[InterfaceId("0EA4496B-37DE-5E58-8B0D-2C3990C4CBB2")]
+Interface IAsyncOperationFocusMovementResult Extends IInspectable
+    Property Set Completed(ByVal Handler As IAsyncOperationCompletedHandlerFocusMovementResult)
+    Property Get Completed() As IAsyncOperationCompletedHandlerFocusMovementResult
+    Function GetResults() As IFocusMovementResult
+End Interface
+
+[InterfaceId("1BA9FB88-FC3D-5A5D-AE84-A745CFB4397B")]
+Interface IAsyncOperationCompletedHandlerFocusMovementResult Extends IUnknown
+    Sub Invoke(ByVal AsyncOperation As IAsyncOperationFocusMovementResult, ByVal AsyncStatus As AsyncStatus)
+End Interface
+
+[InterfaceId("280EDC61-207A-4D7B-B98F-CE165E1B2015")]
+Interface IFocusManagerStatics5 Extends IInspectable
+    Function TryFocusAsync(ByVal Element As IDependencyObject, ByVal Value As FocusState) As IAsyncOperationFocusMovementResult
+    Function TryMoveFocusAsync(ByVal FocusNavigationDirection As FocusNavigationDirection) As IAsyncOperationFocusMovementResult
+    Function TryMoveFocusWithOptionsAsync(ByVal FocusNavigationDirection As FocusNavigationDirection, ByVal FocusNavigationOptions As IFindNextElementOptions) As IAsyncOperationFocusMovementResult
+End Interface
+
+[InterfaceId("76001564-62E8-5A20-BD3D-695CF5A8AD69")]
+Interface IEventHandlerIFocusManagerGotFocusEventArgs Extends IUnknown
+    Sub Invoke(ByVal Sender As IInspectable, ByVal Args As IFocusManagerGotFocusEventArgs)
+End Interface
+
+[InterfaceId("27AB0A3B-68B4-5DD3-86C1-CB0C8C2F3919")]
+Interface IEventHandlerIFocusManagerLostFocusEventArgs Extends IUnknown
+    Sub Invoke(ByVal Sender As IInspectable, ByVal Args As IFocusManagerLostFocusEventArgs)
+End Interface
+
+[InterfaceId("2EFA05AA-BDC0-518D-8276-49A629EFA642")]
+Interface IEventHandlerIGettingFocusEventArgs Extends IUnknown
+    Sub Invoke(ByVal Sender As IInspectable, ByVal Args As IGettingFocusEventArgs)
+End Interface
+
+[InterfaceId("B17A4F5F-1E9F-5DE1-AB5D-6F58DF7D0E47")]
+Interface IEventHandlerILosingFocusEventArgs Extends IUnknown
+    Sub Invoke(ByVal Sender As IInspectable, ByVal Args As ILosingFocusEventArgs)
+End Interface
+
+[InterfaceId("3546A1B6-20BF-5007-929D-E6D32E16AFE4")]
+Interface IFocusManagerStatics6 Extends IInspectable
+    [PreserveSig]
+    Function AddGotFocus(ByVal Handler As IEventHandlerIFocusManagerGotFocusEventArgs, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveGotFocus(ByVal Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function AddLostFocus(ByVal Handler As IEventHandlerIFocusManagerLostFocusEventArgs, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveLostFocus(ByVal Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function AddGettingFocus(ByVal Handler As IEventHandlerIGettingFocusEventArgs, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveGettingFocus(ByVal Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function AddLosingFocus(ByVal Handler As IEventHandlerILosingFocusEventArgs, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveLosingFocus(ByVal Token As EventRegistrationToken) As HRESULT
+End Interface
+
+[InterfaceId("95D6FA97-F0FC-5C32-B29D-07C04EC966B0")]
+Interface IFocusManagerStatics7 Extends IInspectable
+    Function GetFocusedElement(ByVal XamlRoot As IXamlRoot) As IInspectable
+End Interface
+
+[InterfaceId("06DFEAD3-C2AE-44BB-BFAB-9C73DE8407A4")]
+Interface IFocusMovementResult Extends IInspectable
+    Property Get Succeeded() As BooleanByte
+End Interface
+
+[InterfaceId("FA05B9CE-C67C-4BE8-8FD4-C44D67877E0D")]
+Interface IGettingFocusEventArgs Extends IInspectable
+    Property Get OldFocusedElement() As IDependencyObject
+    Property Get NewFocusedElement() As IDependencyObject
+    Property Set NewFocusedElement(ByVal Value As IDependencyObject)
+    Property Get FocusState() As FocusState
+    Property Get Direction() As FocusNavigationDirection
+    Property Get Handled() As BooleanByte
+    Property Let Handled(ByVal Value As BooleanByte)
+    Property Get InputDevice() As FocusInputDeviceKind
+    Property Get Cancel() As BooleanByte
+    Property Let Cancel(ByVal Value As BooleanByte)
+End Interface
+
+[InterfaceId("88754D7B-B4B9-4959-8BCE-89BF212ED4EB")]
+Interface IGettingFocusEventArgs2 Extends IInspectable
+    Function TryCancel() As BooleanByte
+    Function TrySetNewFocusedElement(ByVal Element As IDependencyObject) As BooleanByte
+End Interface
+
+[InterfaceId("4E024891-DB3F-5E78-B75A-62BFC3510735")]
+Interface IGettingFocusEventArgs3 Extends IInspectable
+    Property Get CorrelationId() As UUID
+End Interface
+
+[InterfaceId("C246FF23-D80D-44DE-8DB9-0D815E269AC0")]
+Interface IHoldingRoutedEventArgs Extends IInspectable
+    Property Get PointerDeviceType() As PointerDeviceType
+    Property Get HoldingState() As HoldingState
+    Property Get Handled() As BooleanByte
+    Property Let Handled(ByVal Value As BooleanByte)
+    Function GetPosition(ByVal RelativeTo As IUIElement) As POINTF
+End Interface
+
+[InterfaceId("751D87E5-8D42-44C5-965E-3CD30CC9D6F7")]
+Interface IInertiaExpansionBehavior Extends IInspectable
+    Property Get DesiredDeceleration() As Double
+    Property Let DesiredDeceleration(ByVal Value As Double)
+    Property Get DesiredExpansion() As Double
+    Property Let DesiredExpansion(ByVal Value As Double)
+End Interface
+
+[InterfaceId("424CFB2E-BBFD-4625-AE78-20C65BF1EFAF")]
+Interface IInertiaRotationBehavior Extends IInspectable
+    Property Get DesiredDeceleration() As Double
+    Property Let DesiredDeceleration(ByVal Value As Double)
+    Property Get DesiredRotation() As Double
+    Property Let DesiredRotation(ByVal Value As Double)
+End Interface
+
+[InterfaceId("45D3A512-3B32-4882-A4C2-ECFA2D4B6DF0")]
+Interface IInertiaTranslationBehavior Extends IInspectable
+    Property Get DesiredDeceleration() As Double
+    Property Let DesiredDeceleration(ByVal Value As Double)
+    Property Get DesiredDisplacement() As Double
+    Property Let DesiredDisplacement(ByVal Value As Double)
+End Interface
+
+[InterfaceId("7AC16FF4-5857-5001-B87F-327093F68392")]
+Interface IIterator_IInputScopeName Extends IInspectable
+    Property Get Current() As IInputScopeName
+    Property Get HasCurrent() As BooleanByte
+    Function MoveNext() As BooleanByte
+    Function GetMany(ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("81416296-95D0-5100-B59B-BEA1C27D2002")]
+Interface IIterable_IInputScopeName Extends IInspectable
+    Function First() As IIterator_IInputScopeName
+End Interface
+
+[InterfaceId("FCD65A82-5328-53BC-A884-C209AAFABF78")]
+Interface IVectorView_IInputScopeName Extends IInspectable
+    Function GetAt(ByVal Index As Long) As IInputScopeName
+    Property Get Size() As Long
+    Function IndexOf(ByVal Value As IInputScopeName, Index As Long) As BooleanByte
+    Function GetMany(ByVal StartIndex As Long, ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("703FE123-D766-562F-B210-1980BB2A0D33")]
+Interface IVector_IInputScopeName Extends IInspectable
+    Function GetAt(ByVal Index As Long) As IInputScopeName
+    Property Get Size() As Long
+    Function GetView() As IVectorView_IInputScopeName
+    Function IndexOf(ByVal Value As IInputScopeName, Index As Long) As BooleanByte
+    [PreserveSig]
+    Function SetAt(ByVal Index As Long, ByVal Value As IInputScopeName) As HRESULT
+    [PreserveSig]
+    Function InsertAt(ByVal Index As Long, ByVal Value As IInputScopeName) As HRESULT
+    [PreserveSig]
+    Function RemoveAt(ByVal Index As Long) As HRESULT
+    [PreserveSig]
+    Function Append(ByVal Value As IInputScopeName) As HRESULT
+    [PreserveSig]
+    Function RemoveAtEnd() As HRESULT
+    [PreserveSig]
+    Function Clear() As HRESULT
+    Function GetMany(ByVal StartIndex As Long, ByVal Length As Long, Items As Any) As Long
+    [PreserveSig]
+    Function ReplaceAll(ByVal Length As Long, Items As Any) As HRESULT
+End Interface
+
+[InterfaceId("5C0F85F3-F9D8-4220-B666-045D074D9BFA")]
+Interface IInputScope Extends IInspectable
+    Property Get Names() As IVector_IInputScopeName
+End Interface
+
+[InterfaceId("FD3E6997-08FB-4CBA-A021-792D7589FD5A")]
+Interface IInputScopeName Extends IInspectable
+    Property Get NameValue() As InputScopeNameValue
+    Property Let NameValue(ByVal Value As InputScopeNameValue)
+End Interface
+
+[InterfaceId("4A40BB52-4BD7-4E54-8617-1CDA8A1EDA7F")]
+Interface IInputScopeNameFactory Extends IInspectable
+    Function CreateInstance(ByVal NameValue As InputScopeNameValue) As IInputScopeName
+End Interface
+
+[InterfaceId("D4CD3DFE-4079-42E9-A39A-3095D3F049C6")]
+Interface IKeyRoutedEventArgs Extends IInspectable
+    Property Get Key() As VirtualKey
+    Property Get KeyStatus() As CorePhysicalKeyStatus
+    Property Get Handled() As BooleanByte
+    Property Let Handled(ByVal Value As BooleanByte)
+End Interface
+
+[InterfaceId("1B02D57A-9634-4F14-91B2-133E42FDB3CD")]
+Interface IKeyRoutedEventArgs2 Extends IInspectable
+    Property Get OriginalKey() As VirtualKey
+End Interface
+
+[InterfaceId("2779F5B4-CA41-411B-A8EF-F4FC78E78057")]
+Interface IKeyRoutedEventArgs3 Extends IInspectable
+    Property Get DeviceId() As LongPtr
+End Interface
+
+[InterfaceId("F763F3AE-B1EB-5592-A091-D508F32B0B2C")]
+Interface ITypedEventHandlerKeyboardAcceleratorInvoked Extends IUnknown
+    Sub Invoke(ByVal Sender As IKeyboardAccelerator, ByVal Args As IKeyboardAcceleratorInvokedEventArgs)
+End Interface
+
+[InterfaceId("92E6181E-19AE-465A-9B3C-A71EE9EA7420")]
+Interface IKeyboardAccelerator Extends IInspectable
+    Property Get Key() As VirtualKey
+    Property Let Key(ByVal Value As VirtualKey)
+    Property Get Modifiers() As VirtualKeyModifiers
+    Property Let Modifiers(ByVal Value As VirtualKeyModifiers)
+    Property Get IsEnabled() As BooleanByte
+    Property Let IsEnabled(ByVal Value As BooleanByte)
+    Property Get ScopeOwner() As IDependencyObject
+    Property Set ScopeOwner(ByVal Value As IDependencyObject)
+    [PreserveSig]
+    Function AddInvoked(ByVal Handler As ITypedEventHandlerKeyboardAcceleratorInvoked, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveInvoked(ByVal Token As EventRegistrationToken) As HRESULT
+End Interface
+
+[InterfaceId("44D88A99-4BFD-4A47-A893-515F388623F6")]
+Interface IKeyboardAcceleratorFactory Extends IInspectable
+    Function CreateInstance(Optional ByVal BaseInterface As IInspectable, Optional InnerInterface As IInspectable) As IKeyboardAccelerator
+End Interface
+
+[InterfaceId("C00B03F2-04E7-4415-B17D-D76B9490DE2B")]
+Interface IKeyboardAcceleratorInvokedEventArgs Extends IInspectable
+    Property Get Handled() As BooleanByte
+    Property Let Handled(ByVal Value As BooleanByte)
+    Property Get Element() As IDependencyObject
+End Interface
+
+[InterfaceId("BEFCA4B8-5907-48EE-8E21-9C969078FA11")]
+Interface IKeyboardAcceleratorInvokedEventArgs2 Extends IInspectable
+    Property Get KeyboardAccelerator() As IKeyboardAccelerator
+End Interface
+
+[InterfaceId("3BD43D51-9BB3-456D-BF15-804ADFB86261")]
+Interface IKeyboardAcceleratorStatics Extends IInspectable
+    Property Get KeyProperty() As IDependencyObject
+    Property Get ModifiersProperty() As IDependencyObject
+    Property Get IsEnabledProperty() As IDependencyObject
+    Property Get ScopeOwnerProperty() As IDependencyObject
+End Interface
+
+[InterfaceId("F9F683C7-D789-472B-AA93-6D4105E6DABE")]
+Interface ILosingFocusEventArgs Extends IInspectable
+    Property Get OldFocusedElement() As IDependencyObject
+    Property Get NewFocusedElement() As IDependencyObject
+    Property Set NewFocusedElement(ByVal Value As IDependencyObject)
+    Property Get FocusState() As FocusState
+    Property Get Direction() As FocusNavigationDirection
+    Property Get Handled() As BooleanByte
+    Property Let Handled(ByVal Value As BooleanByte)
+    Property Get InputDevice() As FocusInputDeviceKind
+    Property Get Cancel() As BooleanByte
+    Property Let Cancel(ByVal Value As BooleanByte)
+End Interface
+
+[InterfaceId("0493FAD9-C27F-469F-8E62-52B3A4F7CD54")]
+Interface ILosingFocusEventArgs2 Extends IInspectable
+    Function TryCancel() As BooleanByte
+    Function TrySetNewFocusedElement(ByVal Element As IDependencyObject) As BooleanByte
+End Interface
+
+[InterfaceId("C98900BD-0B79-566E-AD1F-436FA513AE22")]
+Interface ILosingFocusEventArgs3 Extends IInspectable
+    Property Get CorrelationId() As UUID
+End Interface
+
+[InterfaceId("B5AD9B23-2F41-498E-8319-015EE8A75346")]
+Interface IManipulationCompletedRoutedEventArgs Extends IInspectable
+    Property Get Container() As IUIElement
+    Property Get Position() As POINTF
+    Property Get IsInertial() As BooleanByte
+    Property Get Cumulative() As ManipulationDelta
+    Property Get Velocities() As ManipulationVelocities
+    Property Get Handled() As BooleanByte
+    Property Let Handled(ByVal Value As BooleanByte)
+    Property Get PointerDeviceType() As PointerDeviceType
+End Interface
+
+[InterfaceId("400D5794-4C6F-491D-82D6-3517109399C6")]
+Interface IManipulationDeltaRoutedEventArgs Extends IInspectable
+    Property Get Container() As IUIElement
+    Property Get Position() As POINTF
+    Property Get IsInertial() As BooleanByte
+    Property Get Delta() As ManipulationDelta
+    Property Get Cumulative() As ManipulationDelta
+    Property Get Velocities() As ManipulationVelocities
+    Property Get Handled() As BooleanByte
+    Property Let Handled(ByVal Value As BooleanByte)
+    Property Get PointerDeviceType() As PointerDeviceType
+    [PreserveSig]
+    Function Complete() As HRESULT
+End Interface
+
+[InterfaceId("246A91A9-CA43-4C0B-ACEF-81E8B8147520")]
+Interface IManipulationInertiaStartingRoutedEventArgs Extends IInspectable
+    Property Get Container() As IUIElement
+    Property Get ExpansionBehavior() As IInertiaExpansionBehavior
+    Property Set ExpansionBehavior(ByVal Value As IInertiaExpansionBehavior)
+    Property Get RotationBehavior() As IInertiaRotationBehavior
+    Property Set RotationBehavior(ByVal Value As IInertiaRotationBehavior)
+    Property Get TranslationBehavior() As IInertiaTranslationBehavior
+    Property Set TranslationBehavior(ByVal Value As IInertiaTranslationBehavior)
+    Property Get Handled() As BooleanByte
+    Property Let Handled(ByVal Value As BooleanByte)
+    Property Get PointerDeviceType() As PointerDeviceType
+    Property Get Delta() As ManipulationDelta
+    Property Get Cumulative() As ManipulationDelta
+    Property Get Velocities() As ManipulationVelocities
+End Interface
+
+[InterfaceId("2E3838A5-E6C2-4998-82AC-18748B141666")]
+Interface IManipulationPivot Extends IInspectable
+    Property Get Center() As POINTF
+    Property Let Center(ByVal Value As POINTF)
+    Property Get Radius() As Double
+    Property Let Radius(ByVal Value As Double)
+End Interface
+
+[InterfaceId("6D05B039-3702-4396-AD9B-A825EFA63A3B")]
+Interface IManipulationPivotFactory Extends IInspectable
+    Function CreateInstanceWithCenterAndRadius(ByVal Center As POINTF, ByVal Radius As Double) As IManipulationPivot
+End Interface
+
+[InterfaceId("5DB1AA05-9F80-48B6-AE6C-4F119DE8FF13")]
+Interface IManipulationStartedRoutedEventArgs Extends IInspectable
+    Property Get Container() As IUIElement
+    Property Get Position() As POINTF
+    Property Get Handled() As BooleanByte
+    Property Let Handled(ByVal Value As BooleanByte)
+    Property Get PointerDeviceType() As PointerDeviceType
+    Property Get Cumulative() As ManipulationDelta
+    [PreserveSig]
+    Function Complete() As HRESULT
+End Interface
+
+[InterfaceId("84C1DAA7-7272-4463-B6C3-A40B9BA151FC")]
+Interface IManipulationStartedRoutedEventArgsFactory Extends IInspectable
+    Function CreateInstance(Optional ByVal BaseInterface As IInspectable, Optional InnerInterface As IInspectable) As IManipulationStartedRoutedEventArgs
+End Interface
+
+[InterfaceId("18D636B7-53A4-4C15-A498-F3A9CA212A42")]
+Interface IManipulationStartingRoutedEventArgs Extends IInspectable
+    Property Get Mode() As ManipulationModes
+    Property Let Mode(ByVal Value As ManipulationModes)
+    Property Get Container() As IUIElement
+    Property Set Container(ByVal Value As IUIElement)
+    Property Get Pivot() As IManipulationPivot
+    Property Set Pivot(ByVal Value As IManipulationPivot)
+    Property Get Handled() As BooleanByte
+    Property Let Handled(ByVal Value As BooleanByte)
+End Interface
+
+[InterfaceId("EC3601A7-1007-48F9-B6B3-ED0BEA53937D")]
+Interface INoFocusCandidateFoundEventArgs Extends IInspectable
+    Property Get Direction() As FocusNavigationDirection
+    Property Get Handled() As BooleanByte
+    Property Let Handled(ByVal Value As BooleanByte)
+    Property Get InputDevice() As FocusInputDeviceKind
+End Interface
+
+[InterfaceId("5EE8F39F-747D-4171-90E6-CD37A9DFFB11")]
+Interface IPointer Extends IInspectable
+    Property Get PointerId() As Long
+    Property Get PointerDeviceType() As PointerDeviceType
+    Property Get IsInContact() As BooleanByte
+    Property Get IsInRange() As BooleanByte
+End Interface
+
+[InterfaceId("721FE01C-5AD4-5262-B078-3AB345105DB8")]
+Interface IIterator_IPointerPoint Extends IInspectable
+    Property Get Current() As IPointerPoint
+    Property Get HasCurrent() As BooleanByte
+    Function MoveNext() As BooleanByte
+    Function GetMany(ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("F6F2CBA6-7076-5B59-9631-F6AC32B57695")]
+Interface IIterable_IPointerPoint Extends IInspectable
+    Function First() As IIterator_IPointerPoint
+End Interface
+
+[InterfaceId("F0F57411-7786-5174-8752-4C5E834B6DA2")]
+Interface IVectorView_IPointerPoint Extends IInspectable
+    Function GetAt(ByVal Index As Long) As IPointerPoint
+    Property Get Size() As Long
+    Function IndexOf(ByVal Value As IPointerPoint, Index As Long) As BooleanByte
+    Function GetMany(ByVal StartIndex As Long, ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("DFA655CF-FDE7-5048-B4BF-C909231B7EDB")]
+Interface IVector_IPointerPoint Extends IInspectable
+    Function GetAt(ByVal Index As Long) As IPointerPoint
+    Property Get Size() As Long
+    Function GetView() As IVectorView_IPointerPoint
+    Function IndexOf(ByVal Value As IPointerPoint, Index As Long) As BooleanByte
+    [PreserveSig]
+    Function SetAt(ByVal Index As Long, ByVal Value As IPointerPoint) As HRESULT
+    [PreserveSig]
+    Function InsertAt(ByVal Index As Long, ByVal Value As IPointerPoint) As HRESULT
+    [PreserveSig]
+    Function RemoveAt(ByVal Index As Long) As HRESULT
+    [PreserveSig]
+    Function Append(ByVal Value As IPointerPoint) As HRESULT
+    [PreserveSig]
+    Function RemoveAtEnd() As HRESULT
+    [PreserveSig]
+    Function Clear() As HRESULT
+    Function GetMany(ByVal StartIndex As Long, ByVal Length As Long, Items As Any) As Long
+    [PreserveSig]
+    Function ReplaceAll(ByVal Length As Long, Items As Any) As HRESULT
+End Interface
+
+[InterfaceId("DA628F0A-9752-49E2-BDE2-49ECCAB9194D")]
+Interface IPointerRoutedEventArgs Extends IInspectable
+    Property Get Pointer() As IPointer
+    Property Get KeyModifiers() As VirtualKeyModifiers
+    Property Get Handled() As BooleanByte
+    Property Let Handled(ByVal Value As BooleanByte)
+    Function GetCurrentPoint(ByVal RelativeTo As IUIElement) As IPointerPoint
+    Function GetIntermediatePoints(ByVal RelativeTo As IUIElement) As IVector_IPointerPoint
+End Interface
+
+[InterfaceId("0821F294-1DE6-4711-BA7C-8D4B8B0911D0")]
+Interface IPointerRoutedEventArgs2 Extends IInspectable
+    Property Get IsGenerated() As BooleanByte
+End Interface
+
+[InterfaceId("FB79C216-972B-440C-9B83-2B4198DCF09D")]
+Interface IProcessKeyboardAcceleratorEventArgs Extends IInspectable
+    Property Get Key() As VirtualKey
+    Property Get Modifiers() As VirtualKeyModifiers
+    Property Get Handled() As BooleanByte
+    Property Let Handled(ByVal Value As BooleanByte)
+End Interface
+
+[InterfaceId("6834869D-7BD5-4033-B237-172F79ABE393")]
+Interface IRightTappedRoutedEventArgs Extends IInspectable
+    Property Get PointerDeviceType() As PointerDeviceType
+    Property Get Handled() As BooleanByte
+    Property Let Handled(ByVal Value As BooleanByte)
+    Function GetPosition(ByVal RelativeTo As IUIElement) As POINTF
+End Interface
+
+[InterfaceId("D2BF7F43-0504-52D0-8AA6-0CB0F756EB27")]
+Interface IStandardUICommand Extends IInspectable
+    Property Get Kind() As StandardUICommandKind
+End Interface
+
+[InterfaceId("E3666069-F9E4-51EB-885B-7A620A0782EA")]
+Interface IStandardUICommand2 Extends IInspectable
+    Property Let Kind(ByVal Value As StandardUICommandKind)
+End Interface
+
+[InterfaceId("8F1A7590-DCE1-56E4-AB63-F5CE3CE4EBF6")]
+Interface IStandardUICommandFactory Extends IInspectable
+    Function CreateInstance(Optional ByVal BaseInterface As IInspectable, Optional InnerInterface As IInspectable) As IStandardUICommand
+    Function CreateInstanceWithKind(ByVal Kind As StandardUICommandKind, Optional ByVal BaseInterface As IInspectable, Optional InnerInterface As IInspectable) As IStandardUICommand
+End Interface
+
+[InterfaceId("7EA87ED9-2978-5533-9B2E-6759CE88569F")]
+Interface IStandardUICommandStatics Extends IInspectable
+    Property Get KindProperty() As IDependencyProperty
+End Interface
+
+[InterfaceId("A099E6BE-E624-459A-BB1D-E05C73E2CC66")]
+Interface ITappedRoutedEventArgs Extends IInspectable
+    Property Get PointerDeviceType() As PointerDeviceType
+    Property Get Handled() As BooleanByte
+    Property Let Handled(ByVal Value As BooleanByte)
+    Function GetPosition(ByVal RelativeTo As IUIElement) As POINTF
+End Interface
+
+[InterfaceId("BC9F083E-F27F-51E3-847E-620E047B4A0C")]
+Interface ITypedEventHandlerXamlUICommandCanExecuteRequested Extends IUnknown
+    Sub Invoke(ByVal Sender As IXamlUICommand, ByVal Args As ICanExecuteRequestedEventArgs)
+End Interface
+
+[InterfaceId("35FB4834-1B34-541C-BD97-E6C60BE9B4FB")]
+Interface ITypedEventHandlerXamlUICommandExecuteRequested Extends IUnknown
+    Sub Invoke(ByVal Sender As IXamlUICommand, ByVal Args As IExecuteRequestedEventArgs)
+End Interface
+
+[InterfaceId("8494F8D4-EAD1-5F01-AD2E-A8CAD4F9DC0E")]
+Interface IXamlUICommand Extends IInspectable
+    Property Get Label() As LongPtr
+    Property Let Label(ByVal Value As LongPtr)
+    Property Get IconSource() As IIconSource
+    Property Set IconSource(ByVal Value As IIconSource)
+    Property Get KeyboardAccelerators() As IVector_IKeyboardAccelerator
+    Property Get AccessKey() As LongPtr
+    Property Let AccessKey(ByVal Value As LongPtr)
+    Property Get Description() As LongPtr
+    Property Let Description(ByVal Value As LongPtr)
+    Property Get Command() As ICommand
+    Property Set Command(ByVal Value As ICommand)
+    [PreserveSig]
+    Function AddExecuteRequested(ByVal Handler As ITypedEventHandlerXamlUICommandExecuteRequested, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveExecuteRequested(ByVal Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function AddCanExecuteRequested(ByVal Handler As ITypedEventHandlerXamlUICommandCanExecuteRequested, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveCanExecuteRequested(ByVal Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function NotifyCanExecuteChanged() As HRESULT
+End Interface
+
+[InterfaceId("1EEC08C3-E061-5E10-9F2A-2BAA840885C2")]
+Interface IXamlUICommandFactory Extends IInspectable
+    Function CreateInstance(Optional ByVal BaseInterface As IInspectable, Optional InnerInterface As IInspectable) As IXamlUICommand
+End Interface
+
+[InterfaceId("66BC457C-1A0C-58ED-876E-71533F966DB6")]
+Interface IXamlUICommandStatics Extends IInspectable
+    Property Get LabelProperty() As IDependencyProperty
+    Property Get IconSourceProperty() As IDependencyProperty
+    Property Get KeyboardAcceleratorsProperty() As IDependencyProperty
+    Property Get AccessKeyProperty() As IDependencyProperty
+    Property Get DescriptionProperty() As IDependencyProperty
+    Property Get CommandProperty() As IDependencyProperty
+End Interface
+
+Module mdlUIXamlInput
+
+Public Enum FocusInputDeviceKind
+    FocusInputDeviceKind_None
+    FocusInputDeviceKind_Mouse
+    FocusInputDeviceKind_Touch
+    FocusInputDeviceKind_Pen
+    FocusInputDeviceKind_Keyboard
+    FocusInputDeviceKind_GameController
+End Enum
+
+Public Enum FocusNavigationDirection
+    FocusNavigationDirection_Next
+    FocusNavigationDirection_Previous
+    FocusNavigationDirection_Up
+    FocusNavigationDirection_Down
+    FocusNavigationDirection_Left
+    FocusNavigationDirection_Right
+    FocusNavigationDirection_None
+End Enum
+
+Public Enum InputScopeNameValue
+    InputScopeNameValue_Default = 0
+    InputScopeNameValue_Url = 1
+    InputScopeNameValue_EmailSmtpAddress = 5
+    InputScopeNameValue_PersonalFullName = 7
+    InputScopeNameValue_CurrencyAmountAndSymbol = 20
+    InputScopeNameValue_CurrencyAmount = 21
+    InputScopeNameValue_DateMonthNumber = 23
+    InputScopeNameValue_DateDayNumber = 24
+    InputScopeNameValue_DateYear = 25
+    InputScopeNameValue_Digits = 28
+    InputScopeNameValue_Number = 29
+    InputScopeNameValue_Password = 31
+    InputScopeNameValue_TelephoneNumber = 32
+    InputScopeNameValue_TelephoneCountryCode = 33
+    InputScopeNameValue_TelephoneAreaCode = 34
+    InputScopeNameValue_TelephoneLocalNumber = 35
+    InputScopeNameValue_TimeHour = 37
+    InputScopeNameValue_TimeMinutesOrSeconds = 38
+    InputScopeNameValue_NumberFullWidth = 39
+    InputScopeNameValue_AlphanumericHalfWidth = 40
+    InputScopeNameValue_AlphanumericFullWidth = 41
+    InputScopeNameValue_Hiragana = 44
+    InputScopeNameValue_KatakanaHalfWidth
+    InputScopeNameValue_KatakanaFullWidth
+    InputScopeNameValue_Hanja
+    InputScopeNameValue_HangulHalfWidth
+    InputScopeNameValue_HangulFullWidth
+    InputScopeNameValue_Search
+    InputScopeNameValue_Formula
+    InputScopeNameValue_SearchIncremental
+    InputScopeNameValue_ChineseHalfWidth
+    InputScopeNameValue_ChineseFullWidth
+    InputScopeNameValue_NativeScript
+    InputScopeNameValue_Text = 57
+    InputScopeNameValue_Chat
+    InputScopeNameValue_NameOrPhoneNumber
+    InputScopeNameValue_EmailNameOrAddress
+    InputScopeNameValue_Private
+    InputScopeNameValue_Maps
+    InputScopeNameValue_NumericPassword
+    InputScopeNameValue_NumericPin
+    InputScopeNameValue_AlphanumericPin
+    InputScopeNameValue_FormulaNumber = 67
+    InputScopeNameValue_ChatWithoutEmoji
+End Enum
+
+Public Enum KeyTipPlacementMode
+    KeyTipPlacementMode_Auto
+    KeyTipPlacementMode_Bottom
+    KeyTipPlacementMode_Top
+    KeyTipPlacementMode_Left
+    KeyTipPlacementMode_Right
+    KeyTipPlacementMode_Center
+    KeyTipPlacementMode_Hidden
+End Enum
+
+Public Enum KeyboardAcceleratorPlacementMode
+    KeyboardAcceleratorPlacementMode_Auto
+    KeyboardAcceleratorPlacementMode_Hidden
+End Enum
+
+Public Enum KeyboardNavigationMode
+    KeyboardNavigationMode_Local
+    KeyboardNavigationMode_Cycle
+    KeyboardNavigationMode_Once
+End Enum
+
+Public Enum ManipulationModes
+    ManipulationModes_None = &H0
+    ManipulationModes_TranslateX = &H1
+    ManipulationModes_TranslateY = &H2
+    ManipulationModes_TranslateRailsX = &H4
+    ManipulationModes_TranslateRailsY = &H8
+    ManipulationModes_Rotate = &H10
+    ManipulationModes_Scale = &H20
+    ManipulationModes_TranslateInertia = &H40
+    ManipulationModes_RotateInertia = &H80
+    ManipulationModes_ScaleInertia = &H100
+    ManipulationModes_All = &HFFFF&
+    ManipulationModes_System = &H10000
+End Enum
+
+Public Enum StandardUICommandKind
+    StandardUICommandKind_None
+    StandardUICommandKind_Cut
+    StandardUICommandKind_Copy
+    StandardUICommandKind_Paste
+    StandardUICommandKind_SelectAll
+    StandardUICommandKind_Delete
+    StandardUICommandKind_Share
+    StandardUICommandKind_Save
+    StandardUICommandKind_Open
+    StandardUICommandKind_Close
+    StandardUICommandKind_Pause
+    StandardUICommandKind_Play
+    StandardUICommandKind_Stop
+    StandardUICommandKind_Forward
+    StandardUICommandKind_Backward
+    StandardUICommandKind_Undo
+    StandardUICommandKind_Redo
+End Enum
+
+Public Enum XYFocusKeyboardNavigationMode
+    XYFocusKeyboardNavigationMode_Auto
+    XYFocusKeyboardNavigationMode_Enabled
+    XYFocusKeyboardNavigationMode_Disabled
+End Enum
+
+Public Enum XYFocusNavigationStrategy
+    XYFocusNavigationStrategy_Auto
+    XYFocusNavigationStrategy_Projection
+    XYFocusNavigationStrategy_NavigationDirectionDistance
+    XYFocusNavigationStrategy_RectilinearDistance
+End Enum
+
+Public Enum XYFocusNavigationStrategyOverride
+    XYFocusNavigationStrategyOverride_None
+    XYFocusNavigationStrategyOverride_Auto
+    XYFocusNavigationStrategyOverride_Projection
+    XYFocusNavigationStrategyOverride_NavigationDirectionDistance
+    XYFocusNavigationStrategyOverride_RectilinearDistance
+End Enum
+
+End Module

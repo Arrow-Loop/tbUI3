@@ -1,0 +1,585 @@
+[InterfaceId("43EF3A5F-CC7D-566D-A92A-4CAA76B92A1F")]
+Interface IAsyncOperationIDownloadOperation Extends IInspectable
+    Property Set Completed(ByVal Handler As IAsyncOperationCompletedHandlerIDownloadOperation)
+    Property Get Completed() As IAsyncOperationCompletedHandlerIDownloadOperation
+    Function GetResults() As IDownloadOperation
+End Interface
+
+[InterfaceId("2AA63857-FFAF-5CF6-9B2C-0DC597B60A60")]
+Interface IAsyncOperationCompletedHandlerIDownloadOperation Extends IUnknown
+    Sub Invoke(ByVal AsyncOperation As IAsyncOperationIDownloadOperation, ByVal AsyncStatus As AsyncStatus)
+End Interface
+
+[InterfaceId("C1C79333-6649-4B1D-A826-A4B3DD234D0B")]
+Interface IBackgroundDownloader Extends IInspectable ' requires IBackgroundTransferBase
+    Function CreateDownload(ByVal Uri As IUri, ByVal ResultFile As IStorageFile) As IDownloadOperation
+    Function CreateDownloadFromFile(ByVal Uri As IUri, ByVal ResultFile As IStorageFile, ByVal RequestBodyFile As IStorageFile) As IDownloadOperation
+    Function CreateDownloadAsync(ByVal Uri As IUri, ByVal ResultFile As IStorageFile, ByVal RequestBodyStream As IInputStream) As IAsyncOperationIDownloadOperation
+End Interface
+
+[InterfaceId("A94A5847-348D-4A35-890E-8A1EF3798479")]
+Interface IBackgroundDownloader2 Extends IInspectable
+    Property Get TransferGroup() As IBackgroundTransferGroup
+    Property Set TransferGroup(ByVal Value As IBackgroundTransferGroup)
+    Property Get SuccessToastNotification() As IToastNotification
+    Property Set SuccessToastNotification(ByVal Value As IToastNotification)
+    Property Get FailureToastNotification() As IToastNotification
+    Property Set FailureToastNotification(ByVal Value As IToastNotification)
+    Property Get SuccessTileNotification() As ITileNotification
+    Property Set SuccessTileNotification(ByVal Value As ITileNotification)
+    Property Get FailureTileNotification() As ITileNotification
+    Property Set FailureTileNotification(ByVal Value As ITileNotification)
+End Interface
+
+[InterfaceId("D11A8C48-86E8-48E2-B615-6976AABF861D")]
+Interface IBackgroundDownloader3 Extends IInspectable
+    Property Get CompletionGroup() As IBackgroundTransferCompletionGroup
+End Interface
+
+[InterfaceId("26836C24-D89E-46F4-A29A-4F4D4F144155")]
+Interface IBackgroundDownloaderFactory Extends IInspectable
+    Function CreateWithCompletionGroup(ByVal CompletionGroup As IBackgroundTransferCompletionGroup) As IBackgroundDownloader
+End Interface
+
+[InterfaceId("AE42CDDF-3042-5D92-A01E-643C252B8050")]
+Interface IAsyncOperationIVectorView_IDownloadOperation Extends IInspectable
+    Property Set Completed(ByVal Handler As IAsyncOperationCompletedHandlerIVectorView_IDownloadOperation)
+    Property Get Completed() As IAsyncOperationCompletedHandlerIVectorView_IDownloadOperation
+    Function GetResults() As IVectorView_IDownloadOperation
+End Interface
+
+[InterfaceId("1986B372-0DDB-520C-B72D-FB2577E99FF5")]
+Interface IAsyncOperationCompletedHandlerIVectorView_IDownloadOperation Extends IUnknown
+    Sub Invoke(ByVal AsyncOperation As IAsyncOperationIVectorView_IDownloadOperation, ByVal AsyncStatus As AsyncStatus)
+End Interface
+
+[InterfaceId("52A65A35-C64E-426C-9919-540D0D21A650")]
+Interface IBackgroundDownloaderStaticMethods Extends IInspectable
+    Function GetCurrentDownloadsAsync() As IAsyncOperationIVectorView_IDownloadOperation
+    Function GetCurrentDownloadsForGroupAsync(ByVal Group As LongPtr) As IAsyncOperationIVectorView_IDownloadOperation
+End Interface
+
+[InterfaceId("2FAA1327-1AD4-4CA5-B2CD-08DBF0746AFE")]
+Interface IBackgroundDownloaderStaticMethods2 Extends IInspectable
+    Function GetCurrentDownloadsForTransferGroupAsync(ByVal Group As IBackgroundTransferGroup) As IAsyncOperationIVectorView_IDownloadOperation
+End Interface
+
+[InterfaceId("2AB61055-2D0A-59CB-8CBD-056F2D7FB454")]
+Interface IIterator_IDownloadOperation Extends IInspectable
+    Property Get Current() As IDownloadOperation
+    Property Get HasCurrent() As BooleanByte
+    Function MoveNext() As BooleanByte
+    Function GetMany(ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("F6FD69CB-E6E7-56D5-9BE6-E0DC4683FA80")]
+Interface IIterable_IDownloadOperation Extends IInspectable
+    Function First() As IIterator_IDownloadOperation
+End Interface
+
+[InterfaceId("F87D9755-2A7D-59FC-BC92-B48636F4D955")]
+Interface IVectorView_IDownloadOperation Extends IInspectable
+    Function GetAt(ByVal Index As Long) As IDownloadOperation
+    Property Get Size() As Long
+    Function IndexOf(ByVal Value As IDownloadOperation, Index As Long) As BooleanByte
+    Function GetMany(ByVal StartIndex As Long, ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("A8DC2A04-3F44-5046-8182-CD0EC147E17D")]
+Interface IAsyncOperationIUnconstrainedTransferRequestResult Extends IInspectable
+    Property Set Completed(ByVal Handler As IAsyncOperationCompletedHandlerIUnconstrainedTransferRequestResult)
+    Property Get Completed() As IAsyncOperationCompletedHandlerIUnconstrainedTransferRequestResult
+    Function GetResults() As IUnconstrainedTransferRequestResult
+End Interface
+
+[InterfaceId("4F52BFE8-9B0E-5B22-916B-834425B4AB97")]
+Interface IAsyncOperationCompletedHandlerIUnconstrainedTransferRequestResult Extends IUnknown
+    Sub Invoke(ByVal AsyncOperation As IAsyncOperationIUnconstrainedTransferRequestResult, ByVal AsyncStatus As AsyncStatus)
+End Interface
+
+[InterfaceId("5D14E906-9266-4808-BD71-5925F2A3130A")]
+Interface IBackgroundDownloaderUserConsent Extends IInspectable
+    Function RequestUnconstrainedDownloadsAsync(ByVal Operations As IIterable_IDownloadOperation) As IAsyncOperationIUnconstrainedTransferRequestResult
+End Interface
+
+[InterfaceId("2A9DA250-C769-458C-AFE8-FEB8D4D3B2EF")]
+Interface IBackgroundTransferBase Extends IInspectable
+    [PreserveSig]
+    Function SetRequestHeader(ByVal HeaderName As LongPtr, ByVal HeaderValue As LongPtr) As HRESULT
+    Property Get ServerCredential() As IPasswordCredential
+    Property Set ServerCredential(ByVal Credential As IPasswordCredential)
+    Property Get ProxyCredential() As IPasswordCredential
+    Property Set ProxyCredential(ByVal Credential As IPasswordCredential)
+    Property Get Method() As LongPtr
+    Property Let Method(ByVal Value As LongPtr)
+    Property Get Group() As LongPtr
+    Property Let Group(ByVal Value As LongPtr)
+    Property Get CostPolicy() As BackgroundTransferCostPolicy
+    Property Let CostPolicy(ByVal Value As BackgroundTransferCostPolicy)
+End Interface
+
+[InterfaceId("2D930225-986B-574D-7950-0ADD47F5D706")]
+Interface IBackgroundTransferCompletionGroup Extends IInspectable
+    Property Get Trigger() As IBackgroundTrigger
+    Property Get IsEnabled() As BooleanByte
+    [PreserveSig]
+    Function Enable() As HRESULT
+End Interface
+
+[InterfaceId("CAA85133-73D7-5F96-AB2D-FBB4FA00F715")]
+Interface IIterator_IUploadOperation Extends IInspectable
+    Property Get Current() As IUploadOperation
+    Property Get HasCurrent() As BooleanByte
+    Function MoveNext() As BooleanByte
+    Function GetMany(ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("79778799-38CC-5B67-9CD0-043FC47A9EF7")]
+Interface IIterable_IUploadOperation Extends IInspectable
+    Function First() As IIterator_IUploadOperation
+End Interface
+
+[InterfaceId("8E96D4B0-F0AE-51CB-B7C4-024251BD16D8")]
+Interface IVectorView_IUploadOperation Extends IInspectable
+    Function GetAt(ByVal Index As Long) As IUploadOperation
+    Property Get Size() As Long
+    Function IndexOf(ByVal Value As IUploadOperation, Index As Long) As BooleanByte
+    Function GetMany(ByVal StartIndex As Long, ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("3E4C6A3C-48A4-5E22-B29A-3E429469462F")]
+Interface IAsyncOperationIVectorView_IUploadOperation Extends IInspectable
+    Property Set Completed(ByVal Handler As IAsyncOperationCompletedHandlerIVectorView_IUploadOperation)
+    Property Get Completed() As IAsyncOperationCompletedHandlerIVectorView_IUploadOperation
+    Function GetResults() As IVectorView_IUploadOperation
+End Interface
+
+[InterfaceId("608A29A8-BBC5-5EA3-B3F7-87EDC4E7BBBC")]
+Interface IAsyncOperationCompletedHandlerIVectorView_IUploadOperation Extends IUnknown
+    Sub Invoke(ByVal AsyncOperation As IAsyncOperationIVectorView_IUploadOperation, ByVal AsyncStatus As AsyncStatus)
+End Interface
+
+[InterfaceId("7B6BE286-6E47-5136-7FCB-FA4389F46F5B")]
+Interface IBackgroundTransferCompletionGroupTriggerDetails Extends IInspectable
+    Property Get Downloads() As IVectorView_IDownloadOperation
+    Property Get Uploads() As IVectorView_IUploadOperation
+End Interface
+
+[InterfaceId("E8E15657-D7D1-4ED8-838E-674AC217ACE6")]
+Interface IBackgroundTransferContentPart Extends IInspectable
+    [PreserveSig]
+    Function SetHeader(ByVal HeaderName As LongPtr, ByVal HeaderValue As LongPtr) As HRESULT
+    [PreserveSig]
+    Function SetText(ByVal Value As LongPtr) As HRESULT
+    [PreserveSig]
+    Function SetFile(ByVal Value As IStorageFile) As HRESULT
+End Interface
+
+[InterfaceId("90EF98A9-7A01-4A0B-9F80-A0B0BB370F8D")]
+Interface IBackgroundTransferContentPartFactory Extends IInspectable
+    Function CreateWithName(ByVal Name As LongPtr) As IBackgroundTransferContentPart
+    Function CreateWithNameAndFileName(ByVal Name As LongPtr, ByVal FileName As LongPtr) As IBackgroundTransferContentPart
+End Interface
+
+[InterfaceId("AAD33B04-1192-4BF4-8B68-39C5ADD244E2")]
+Interface IBackgroundTransferErrorStaticMethods Extends IInspectable
+    Function GetStatus(ByVal Hresult As Long) As WebErrorStatus
+End Interface
+
+[InterfaceId("D8C3E3E4-6459-4540-85EB-AAA1C8903677")]
+Interface IBackgroundTransferGroup Extends IInspectable
+    Property Get Name() As LongPtr
+    Property Get TransferBehavior() As BackgroundTransferBehavior
+    Property Let TransferBehavior(ByVal Value As BackgroundTransferBehavior)
+End Interface
+
+[InterfaceId("02EC50B2-7D18-495B-AA22-32A97D45D3E2")]
+Interface IBackgroundTransferGroupStatics Extends IInspectable
+    Function CreateGroup(ByVal Name As LongPtr) As IBackgroundTransferGroup
+End Interface
+
+[InterfaceId("DED06846-90CA-44FB-8FB1-124154C0D539")]
+Interface IBackgroundTransferOperation Extends IInspectable
+    Property Get Guid() As UUID
+    Property Get RequestedUri() As IUri
+    Property Get Method() As LongPtr
+    Property Get Group() As LongPtr
+    Property Get CostPolicy() As BackgroundTransferCostPolicy
+    Property Let CostPolicy(ByVal Value As BackgroundTransferCostPolicy)
+    Function GetResultStreamAt(ByVal Position As UInt64) As IInputStream
+    Function GetResponseInformation() As IResponseInformation
+End Interface
+
+[InterfaceId("04854327-5254-4B3A-915E-0AA49275C0F9")]
+Interface IBackgroundTransferOperationPriority Extends IInspectable
+    Property Get Priority() As BackgroundTransferPriority
+    Property Let Priority(ByVal Value As BackgroundTransferPriority)
+End Interface
+
+[InterfaceId("A753D778-8CBB-524A-B8C4-70C515A42782")]
+Interface IIterator_BackgroundTransferFileRange Extends IInspectable
+    Property Get Current() As BackgroundTransferFileRange
+    Property Get HasCurrent() As BooleanByte
+    Function MoveNext() As BooleanByte
+    Function GetMany(ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("2CC2D499-974C-5078-89AE-2D4EE1139721")]
+Interface IIterable_BackgroundTransferFileRange Extends IInspectable
+    Function First() As IIterator_BackgroundTransferFileRange
+End Interface
+
+[InterfaceId("5BE7934B-D9FC-540A-8FFE-5FB9C88C6558")]
+Interface IVectorView_BackgroundTransferFileRange Extends IInspectable
+    Function GetAt(ByVal Index As Long) As BackgroundTransferFileRange
+    Property Get Size() As Long
+    Function IndexOf(ByVal Value As BackgroundTransferFileRange, Index As Long) As BooleanByte
+    Function GetMany(ByVal StartIndex As Long, ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("C73CEEF0-854A-5947-9E7C-527E3915D335")]
+Interface IVector_BackgroundTransferFileRange Extends IInspectable
+    Function GetAt(ByVal Index As Long) As BackgroundTransferFileRange
+    Property Get Size() As Long
+    Function GetView() As IVectorView_BackgroundTransferFileRange
+    Function IndexOf(ByVal Value As BackgroundTransferFileRange, Index As Long) As BooleanByte
+    [PreserveSig]
+    Function SetAt(ByVal Index As Long, ByVal Value As BackgroundTransferFileRange) As HRESULT
+    [PreserveSig]
+    Function InsertAt(ByVal Index As Long, ByVal Value As BackgroundTransferFileRange) As HRESULT
+    [PreserveSig]
+    Function RemoveAt(ByVal Index As Long) As HRESULT
+    [PreserveSig]
+    Function Append(ByVal Value As BackgroundTransferFileRange) As HRESULT
+    [PreserveSig]
+    Function RemoveAtEnd() As HRESULT
+    [PreserveSig]
+    Function Clear() As HRESULT
+    Function GetMany(ByVal StartIndex As Long, ByVal Length As Long, Items As Any) As Long
+    [PreserveSig]
+    Function ReplaceAll(ByVal Length As Long, Items As Any) As HRESULT
+End Interface
+
+[InterfaceId("3EBC7453-BF48-4A88-9248-B0C165184F5C")]
+Interface IBackgroundTransferRangesDownloadedEventArgs Extends IInspectable
+    Property Get WasDownloadRestarted() As BooleanByte
+    Property Get AddedRanges() As IVector_BackgroundTransferFileRange
+    Function GetDeferral() As IDeferral
+End Interface
+
+[InterfaceId("44212EA1-B524-5AEE-A320-7199225381D1")]
+Interface IAsyncOperationIUploadOperation Extends IInspectable
+    Property Set Completed(ByVal Handler As IAsyncOperationCompletedHandlerIUploadOperation)
+    Property Get Completed() As IAsyncOperationCompletedHandlerIUploadOperation
+    Function GetResults() As IUploadOperation
+End Interface
+
+[InterfaceId("EAD68818-0C38-5CDE-AEC1-C6A7618711F7")]
+Interface IAsyncOperationCompletedHandlerIUploadOperation Extends IUnknown
+    Sub Invoke(ByVal AsyncOperation As IAsyncOperationIUploadOperation, ByVal AsyncStatus As AsyncStatus)
+End Interface
+
+[InterfaceId("07FBC351-781D-52C7-9558-A453E5703F29")]
+Interface IIterator_IBackgroundTransferContentPart Extends IInspectable
+    Property Get Current() As IBackgroundTransferContentPart
+    Property Get HasCurrent() As BooleanByte
+    Function MoveNext() As BooleanByte
+    Function GetMany(ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("CF303199-DE3B-5DAC-A703-6C57D80821C4")]
+Interface IIterable_IBackgroundTransferContentPart Extends IInspectable
+    Function First() As IIterator_IBackgroundTransferContentPart
+End Interface
+
+[InterfaceId("C595C9AE-CEAD-465B-8801-C55AC90A01CE")]
+Interface IBackgroundUploader Extends IInspectable ' requires IBackgroundTransferBase
+    Function CreateUpload(ByVal Uri As IUri, ByVal SourceFile As IStorageFile) As IUploadOperation
+    Function CreateUploadFromStreamAsync(ByVal Uri As IUri, ByVal SourceStream As IInputStream) As IAsyncOperationIUploadOperation
+    Function CreateUploadWithFormDataAndAutoBoundaryAsync(ByVal Uri As IUri, ByVal Parts As IIterable_IBackgroundTransferContentPart) As IAsyncOperationIUploadOperation
+    Function CreateUploadWithSubTypeAsync(ByVal Uri As IUri, ByVal Parts As IIterable_IBackgroundTransferContentPart, ByVal SubType As LongPtr) As IAsyncOperationIUploadOperation
+    Function CreateUploadWithSubTypeAndBoundaryAsync(ByVal Uri As IUri, ByVal Parts As IIterable_IBackgroundTransferContentPart, ByVal SubType As LongPtr, ByVal Boundary As LongPtr) As IAsyncOperationIUploadOperation
+End Interface
+
+[InterfaceId("8E0612CE-0C34-4463-807F-198A1B8BD4AD")]
+Interface IBackgroundUploader2 Extends IInspectable
+    Property Get TransferGroup() As IBackgroundTransferGroup
+    Property Set TransferGroup(ByVal Value As IBackgroundTransferGroup)
+    Property Get SuccessToastNotification() As IToastNotification
+    Property Set SuccessToastNotification(ByVal Value As IToastNotification)
+    Property Get FailureToastNotification() As IToastNotification
+    Property Set FailureToastNotification(ByVal Value As IToastNotification)
+    Property Get SuccessTileNotification() As ITileNotification
+    Property Set SuccessTileNotification(ByVal Value As ITileNotification)
+    Property Get FailureTileNotification() As ITileNotification
+    Property Set FailureTileNotification(ByVal Value As ITileNotification)
+End Interface
+
+[InterfaceId("B95E9439-5BF0-4B3A-8C47-2C6199A854B9")]
+Interface IBackgroundUploader3 Extends IInspectable
+    Property Get CompletionGroup() As IBackgroundTransferCompletionGroup
+End Interface
+
+[InterfaceId("736203C7-10E7-48A0-AC3C-1AC71095EC57")]
+Interface IBackgroundUploaderFactory Extends IInspectable
+    Function CreateWithCompletionGroup(ByVal CompletionGroup As IBackgroundTransferCompletionGroup) As IBackgroundUploader
+End Interface
+
+[InterfaceId("F2875CFB-9B05-4741-9121-740A83E247DF")]
+Interface IBackgroundUploaderStaticMethods Extends IInspectable
+    Function GetCurrentUploadsAsync() As IAsyncOperationIVectorView_IUploadOperation
+    Function GetCurrentUploadsForGroupAsync(ByVal Group As LongPtr) As IAsyncOperationIVectorView_IUploadOperation
+End Interface
+
+[InterfaceId("E919AC62-EA08-42F0-A2AC-07E467549080")]
+Interface IBackgroundUploaderStaticMethods2 Extends IInspectable
+    Function GetCurrentUploadsForTransferGroupAsync(ByVal Group As IBackgroundTransferGroup) As IAsyncOperationIVectorView_IUploadOperation
+End Interface
+
+[InterfaceId("3BB384CB-0760-461D-907F-5138F84D44C1")]
+Interface IBackgroundUploaderUserConsent Extends IInspectable
+    Function RequestUnconstrainedUploadsAsync(ByVal Operations As IIterable_IUploadOperation) As IAsyncOperationIUnconstrainedTransferRequestResult
+End Interface
+
+[InterfaceId("A8D6F754-7DC1-4CD9-8810-2A6AA9417E11")]
+Interface IContentPrefetcher Extends IInspectable
+    Property Get ContentUris() As IVector_IUri
+    Property Set IndirectContentUri(ByVal Value As IUri)
+    Property Get IndirectContentUri() As IUri
+End Interface
+
+[InterfaceId("E361FD08-132A-4FDE-A7CC-FCB0E66523AF")]
+Interface IContentPrefetcherTime Extends IInspectable
+    Property Get LastSuccessfulPrefetchTime() As IReference_DateTime
+End Interface
+
+[InterfaceId("E86A4F5D-743A-5F18-9D4C-BC8ED5942659")]
+Interface IAsyncOperationWithProgressIDownloadOperationIDownloadOperation Extends IInspectable
+    Property Set Progress(ByVal Handler As IAsyncOperationProgressHandlerIDownloadOperationIDownloadOperation)
+    Property Get Progress() As IAsyncOperationProgressHandlerIDownloadOperationIDownloadOperation
+    Property Set Completed(ByVal Handler As IAsyncOperationWithProgressCompletedHandlerIDownloadOperationIDownloadOperation)
+    Property Get Completed() As IAsyncOperationWithProgressCompletedHandlerIDownloadOperationIDownloadOperation
+    Function GetResults() As IDownloadOperation
+End Interface
+
+[InterfaceId("B2FF13F1-C743-54F4-BCCC-F08E16A87890")]
+Interface IAsyncOperationProgressHandlerIDownloadOperationIDownloadOperation Extends IUnknown
+    Sub Invoke(ByVal AsyncOperation As IAsyncOperationWithProgressIDownloadOperationIDownloadOperation, ByVal ProgressInfo As IDownloadOperation)
+End Interface
+
+[InterfaceId("781B479C-0207-5D15-A4E5-7837D13BF93D")]
+Interface IAsyncOperationWithProgressCompletedHandlerIDownloadOperationIDownloadOperation Extends IUnknown
+    Sub Invoke(ByVal AsyncOperation As IAsyncOperationWithProgressIDownloadOperationIDownloadOperation, ByVal AsyncStatus As AsyncStatus)
+End Interface
+
+[InterfaceId("BD87EBB0-5714-4E09-BA68-BEF73903B0D7")]
+Interface IDownloadOperation Extends IInspectable ' requires IBackgroundTransferOperation
+    Property Get ResultFile() As IStorageFile
+    Property Get Progress() As BackgroundDownloadProgress
+    Function StartAsync() As IAsyncOperationWithProgressIDownloadOperationIDownloadOperation
+    Function AttachAsync() As IAsyncOperationWithProgressIDownloadOperationIDownloadOperation
+    [PreserveSig]
+    Function Pause() As HRESULT
+    [PreserveSig]
+    Function Resume() As HRESULT
+End Interface
+
+[InterfaceId("A3CCED40-8F9C-4353-9CD4-290DEE387C38")]
+Interface IDownloadOperation2 Extends IInspectable
+    Property Get TransferGroup() As IBackgroundTransferGroup
+End Interface
+
+[InterfaceId("FA704929-0761-5DD6-9675-052A8C61E2C2")]
+Interface IIterator_WebErrorStatus Extends IInspectable
+    Property Get Current() As WebErrorStatus
+    Property Get HasCurrent() As BooleanByte
+    Function MoveNext() As BooleanByte
+    Function GetMany(ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("7B7F182E-A6CE-556B-9A2E-EF97662F2AEE")]
+Interface IIterable_WebErrorStatus Extends IInspectable
+    Function First() As IIterator_WebErrorStatus
+End Interface
+
+[InterfaceId("F5D10D42-A776-533A-8F4B-2E1C6E5BBF24")]
+Interface IVectorView_WebErrorStatus Extends IInspectable
+    Function GetAt(ByVal Index As Long) As WebErrorStatus
+    Property Get Size() As Long
+    Function IndexOf(ByVal Value As WebErrorStatus, Index As Long) As BooleanByte
+    Function GetMany(ByVal StartIndex As Long, ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("61BC06E3-B752-5B56-8374-3B45A214693F")]
+Interface IVector_WebErrorStatus Extends IInspectable
+    Function GetAt(ByVal Index As Long) As WebErrorStatus
+    Property Get Size() As Long
+    Function GetView() As IVectorView_WebErrorStatus
+    Function IndexOf(ByVal Value As WebErrorStatus, Index As Long) As BooleanByte
+    [PreserveSig]
+    Function SetAt(ByVal Index As Long, ByVal Value As WebErrorStatus) As HRESULT
+    [PreserveSig]
+    Function InsertAt(ByVal Index As Long, ByVal Value As WebErrorStatus) As HRESULT
+    [PreserveSig]
+    Function RemoveAt(ByVal Index As Long) As HRESULT
+    [PreserveSig]
+    Function Append(ByVal Value As WebErrorStatus) As HRESULT
+    [PreserveSig]
+    Function RemoveAtEnd() As HRESULT
+    [PreserveSig]
+    Function Clear() As HRESULT
+    Function GetMany(ByVal StartIndex As Long, ByVal Length As Long, Items As Any) As Long
+    [PreserveSig]
+    Function ReplaceAll(ByVal Length As Long, Items As Any) As HRESULT
+End Interface
+
+[InterfaceId("93A20D85-BDFC-5195-90D9-8CB56CBCB3D8")]
+Interface ITypedEventHandlerDownloadOperationRangesDownloaded Extends IUnknown
+    Sub Invoke(ByVal Sender As IDownloadOperation, ByVal Args As IBackgroundTransferRangesDownloadedEventArgs)
+End Interface
+
+[InterfaceId("5027351C-7D5E-4ADC-B8D3-DF5C6031B9CC")]
+Interface IDownloadOperation3 Extends IInspectable
+    Property Get IsRandomAccessRequired() As BooleanByte
+    Property Let IsRandomAccessRequired(ByVal Value As BooleanByte)
+    Function GetResultRandomAccessStreamReference() As IRandomAccessStreamReference
+    Function GetDownloadedRanges() As IVector_BackgroundTransferFileRange
+    [PreserveSig]
+    Function AddRangesDownloaded(ByVal EventHandler As ITypedEventHandlerDownloadOperationRangesDownloaded, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveRangesDownloaded(ByVal Token As EventRegistrationToken) As HRESULT
+    Property Set RequestedUri(ByVal Value As IUri)
+    Property Get RecoverableWebErrorStatuses() As IVector_WebErrorStatus
+    Property Get CurrentWebErrorStatus() As IReference_WebErrorStatus
+End Interface
+
+[InterfaceId("0CDAAEF4-8CEF-404A-966D-F058400BED80")]
+Interface IDownloadOperation4 Extends IInspectable
+    [PreserveSig]
+    Function MakeCurrentInTransferGroup() As HRESULT
+End Interface
+
+[InterfaceId("A699A86F-5590-463A-B8D6-1E491A2760A5")]
+Interface IDownloadOperation5 Extends IInspectable
+    [PreserveSig]
+    Function SetRequestHeader(ByVal HeaderName As LongPtr, ByVal HeaderValue As LongPtr) As HRESULT
+    [PreserveSig]
+    Function RemoveRequestHeader(ByVal HeaderName As LongPtr) As HRESULT
+End Interface
+
+[InterfaceId("F8BB9A12-F713-4792-8B68-D9D297F91D2E")]
+Interface IResponseInformation Extends IInspectable
+    Property Get IsResumable() As BooleanByte
+    Property Get ActualUri() As IUri
+    Property Get StatusCode() As Long
+    [PreserveSig]
+    Property Get Headers() As IMapView_HSTRING
+End Interface
+
+[InterfaceId("4C24B81F-D944-4112-A98E-6A69522B7EBB")]
+Interface IUnconstrainedTransferRequestResult Extends IInspectable
+    Property Get IsUnconstrained() As BooleanByte
+End Interface
+
+[InterfaceId("35DDAEFA-DB6A-5D0D-BA54-A0728401171E")]
+Interface IAsyncOperationWithProgressIUploadOperationIUploadOperation Extends IInspectable
+    Property Set Progress(ByVal Handler As IAsyncOperationProgressHandlerIUploadOperationIUploadOperation)
+    Property Get Progress() As IAsyncOperationProgressHandlerIUploadOperationIUploadOperation
+    Property Set Completed(ByVal Handler As IAsyncOperationWithProgressCompletedHandlerIUploadOperationIUploadOperation)
+    Property Get Completed() As IAsyncOperationWithProgressCompletedHandlerIUploadOperationIUploadOperation
+    Function GetResults() As IUploadOperation
+End Interface
+
+[InterfaceId("CCD13730-FED3-54E8-8471-096E4B64CADD")]
+Interface IAsyncOperationProgressHandlerIUploadOperationIUploadOperation Extends IUnknown
+    Sub Invoke(ByVal AsyncOperation As IAsyncOperationWithProgressIUploadOperationIUploadOperation, ByVal ProgressInfo As IUploadOperation)
+End Interface
+
+[InterfaceId("79FCAE93-53EC-5F66-AB34-826AF78EC11A")]
+Interface IAsyncOperationWithProgressCompletedHandlerIUploadOperationIUploadOperation Extends IUnknown
+    Sub Invoke(ByVal AsyncOperation As IAsyncOperationWithProgressIUploadOperationIUploadOperation, ByVal AsyncStatus As AsyncStatus)
+End Interface
+
+[InterfaceId("3E5624E0-7389-434C-8B35-427FD36BBDAE")]
+Interface IUploadOperation Extends IInspectable ' requires IBackgroundTransferOperation
+    Property Get SourceFile() As IStorageFile
+    Property Get Progress() As BackgroundUploadProgress
+    Function StartAsync() As IAsyncOperationWithProgressIUploadOperationIUploadOperation
+    Function AttachAsync() As IAsyncOperationWithProgressIUploadOperationIUploadOperation
+End Interface
+
+[InterfaceId("556189F2-2774-4DF6-9FA5-209F2BFB12F7")]
+Interface IUploadOperation2 Extends IInspectable
+    Property Get TransferGroup() As IBackgroundTransferGroup
+End Interface
+
+[InterfaceId("42C92CA3-DE39-4546-BC62-3774B4294DE3")]
+Interface IUploadOperation3 Extends IInspectable
+    [PreserveSig]
+    Function MakeCurrentInTransferGroup() As HRESULT
+End Interface
+
+[InterfaceId("50EDEF31-FAC5-41EE-B030-DC77CAEE9FAA")]
+Interface IUploadOperation4 Extends IInspectable
+    [PreserveSig]
+    Function SetRequestHeader(ByVal HeaderName As LongPtr, ByVal HeaderValue As LongPtr) As HRESULT
+    [PreserveSig]
+    Function RemoveRequestHeader(ByVal HeaderName As LongPtr) As HRESULT
+End Interface
+
+Module mdlNetworkingBackgroundTransfer
+
+Public Enum BackgroundTransferBehavior
+    BackgroundTransferBehavior_Parallel
+    BackgroundTransferBehavior_Serialized
+End Enum
+
+Public Enum BackgroundTransferCostPolicy
+    BackgroundTransferCostPolicy_Default
+    BackgroundTransferCostPolicy_UnrestrictedOnly
+    BackgroundTransferCostPolicy_Always
+End Enum
+
+Public Enum BackgroundTransferPriority
+    BackgroundTransferPriority_Default
+    BackgroundTransferPriority_High
+    BackgroundTransferPriority_Low
+End Enum
+
+Public Enum BackgroundTransferStatus
+    BackgroundTransferStatus_Idle
+    BackgroundTransferStatus_Running
+    BackgroundTransferStatus_PausedByApplication
+    BackgroundTransferStatus_PausedCostedNetwork
+    BackgroundTransferStatus_PausedNoNetwork
+    BackgroundTransferStatus_Completed
+    BackgroundTransferStatus_Canceled
+    BackgroundTransferStatus_Error
+    BackgroundTransferStatus_PausedRecoverableWebErrorStatus
+    BackgroundTransferStatus_PausedSystemPolicy = 32
+End Enum
+
+Public Type BackgroundDownloadProgress
+    BytesReceived As UInt64
+    TotalBytesToReceive As UInt64
+    Status As BackgroundTransferStatus
+    HasResponseChanged As BooleanByte
+    HasRestarted As BooleanByte
+End Type
+
+Public Type BackgroundTransferFileRange
+    Offset As UInt64
+    Length As UInt64
+End Type
+
+Public Type BackgroundUploadProgress
+    BytesReceived As UInt64
+    BytesSent As UInt64
+    TotalBytesToReceive As UInt64
+    TotalBytesToSend As UInt64
+    Status As BackgroundTransferStatus
+    HasResponseChanged As BooleanByte
+    HasRestarted As BooleanByte
+End Type
+
+End Module

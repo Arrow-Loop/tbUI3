@@ -1,0 +1,177 @@
+[InterfaceId("08C1DDB6-0CBD-4A9A-B5D3-2F852DC37E81")]
+Interface IJsonArray Extends IInspectable
+    Function GetObjectAt(ByVal Index As Long) As IJsonObject
+    Function GetArrayAt(ByVal Index As Long) As IJsonArray
+    Function GetStringAt(ByVal Index As Long) As LongPtr
+    Function GetNumberAt(ByVal Index As Long) As Double
+    Function GetBooleanAt(ByVal Index As Long) As BooleanByte
+End Interface
+
+[InterfaceId("DB1434A9-E164-499F-93E2-8A8F49BB90BA")]
+Interface IJsonArrayStatics Extends IInspectable
+    Function Parse(ByVal Input As LongPtr) As IJsonArray
+    Function TryParse(ByVal Input As LongPtr, Result As IJsonArray) As BooleanByte
+End Interface
+
+[InterfaceId("404030DA-87D0-436C-83AB-FC7B12C0CC26")]
+Interface IJsonErrorStatics2 Extends IInspectable
+    Function GetJsonStatus(ByVal hResult As Long) As JsonErrorStatus
+End Interface
+
+[InterfaceId("064E24DD-29C2-4F83-9AC1-9EE11578BEB3")]
+Interface IJsonObject Extends IInspectable
+    Function GetNamedValue(ByVal Name As LongPtr) As IJsonValue
+    [PreserveSig]
+    Function SetNamedValue(ByVal Name As LongPtr, ByVal Value As IJsonValue) As HRESULT
+    Function GetNamedObject(ByVal Name As LongPtr) As IJsonObject
+    Function GetNamedArray(ByVal Name As LongPtr) As IJsonArray
+    Function GetNamedString(ByVal Name As LongPtr) As LongPtr
+    Function GetNamedNumber(ByVal Name As LongPtr) As Double
+    Function GetNamedBoolean(ByVal Name As LongPtr) As BooleanByte
+End Interface
+
+[InterfaceId("2289F159-54DE-45D8-ABCC-22603FA066A0")]
+Interface IJsonObjectStatics Extends IInspectable
+    Function Parse(ByVal Input As LongPtr) As IJsonObject
+    Function TryParse(ByVal Input As LongPtr, Result As IJsonObject) As BooleanByte
+End Interface
+
+[InterfaceId("D960D2A2-B7F0-4F00-8E44-D82CF415EA13")]
+Interface IJsonObjectWithDefaultValues Extends IInspectable
+    Function GetNamedValueOrDefault(ByVal Name As LongPtr, ByVal DefaultValue As IJsonValue) As IJsonValue
+    Function GetNamedObjectOrDefault(ByVal Name As LongPtr, ByVal DefaultValue As IJsonObject) As IJsonObject
+    Function GetNamedStringOrDefault(ByVal Name As LongPtr, ByVal DefaultValue As LongPtr) As LongPtr
+    Function GetNamedArrayOrDefault(ByVal Name As LongPtr, ByVal DefaultValue As IJsonArray) As IJsonArray
+    Function GetNamedNumberOrDefault(ByVal Name As LongPtr, ByVal DefaultValue As Double) As Double
+    Function GetNamedBooleanOrDefault(ByVal Name As LongPtr, ByVal DefaultValue As BooleanByte) As BooleanByte
+End Interface
+
+[InterfaceId("A3219ECB-F0B3-4DCD-BEEE-19D48CD3ED1E")]
+Interface IJsonValue Extends IInspectable
+    Property Get ValueType() As JsonValueType
+    Function Stringify() As LongPtr
+    Function GetString() As LongPtr
+    Function GetNumber() As Double
+    Function GetBoolean() As BooleanByte
+    Function GetArray() As IJsonArray
+    Function GetObject() As IJsonObject
+End Interface
+
+[InterfaceId("5F6B544A-2F53-48E1-91A3-F78B50A6345C")]
+Interface IJsonValueStatics Extends IInspectable
+    Function Parse(ByVal Input As LongPtr) As IJsonValue
+    Function TryParse(ByVal Input As LongPtr, Result As IJsonValue) As BooleanByte
+    Function CreateBooleanValue(ByVal Input As BooleanByte) As IJsonValue
+    Function CreateNumberValue(ByVal Input As Double) As IJsonValue
+    Function CreateStringValue(ByVal Input As LongPtr) As IJsonValue
+End Interface
+
+[InterfaceId("1D9ECBE4-3FE8-4335-8392-93D8E36865F0")]
+Interface IJsonValueStatics2 Extends IInspectable
+    Function CreateNullValue() As IJsonValue
+End Interface
+
+[InterfaceId("EECD690C-1FF3-529F-923F-9B1C31FD3D0F")]
+Interface IMapView_IJsonValue Extends IInspectable
+    Function Lookup(ByVal Key As LongPtr) As IJsonValue
+    Property Get Size() As Long
+    Function HasKey(ByVal Key As LongPtr) As BooleanByte
+    Sub Split(First As IMapView_IJsonValue, Second As IMapView_IJsonValue)
+End Interface
+
+[InterfaceId("C9D9A725-786B-5113-B4B7-9B61764C220B")]
+Interface IMap_IJsonValue Extends IInspectable
+    Function Lookup(ByVal Key As LongPtr) As IJsonValue
+    Property Get Size() As Long
+    Function HasKey(ByVal Key As LongPtr) As BooleanByte
+    Function GetView() As IMapView_IJsonValue
+    Function Insert(ByVal Key As LongPtr, ByVal Value As IJsonValue) As BooleanByte
+    [PreserveSig]
+    Function Remove(ByVal Key As LongPtr) As HRESULT
+    [PreserveSig]
+    Function Clear() As HRESULT
+End Interface
+
+[InterfaceId("CFFABB0F-6BC4-5FF6-9B9E-7A9DF6C687C8")]
+Interface IVectorView_IJsonValue Extends IInspectable
+    Function GetAt(ByVal Index As Long) As IJsonValue
+    Property Get Size() As Long
+    Function IndexOf(ByVal JsonValue As IJsonValue, Index As Long) As BooleanByte
+    Function GetMany(ByVal StartIndex As Long, ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("D44662BC-DCE3-59A8-9272-4B210F33908B")]
+Interface IVector_IJsonValue Extends IInspectable
+    Function GetAt(ByVal Index As Long) As IJsonValue
+    Property Get Size() As Long
+    Function GetView() As IVectorView_IJsonValue
+    Function IndexOf(ByVal JsonValue As IJsonValue, Index As Long) As BooleanByte
+    [PreserveSig]
+    Function SetAt(ByVal Index As Long, ByVal JsonValue As IJsonValue) As HRESULT
+    [PreserveSig]
+    Function InsertAt(ByVal Index As Long, ByVal JsonValue As IJsonValue) As HRESULT
+    [PreserveSig]
+    Function RemoveAt(ByVal Index As Long) As HRESULT
+    [PreserveSig]
+    Function Append(ByVal JsonValue As IJsonValue) As HRESULT
+    [PreserveSig]
+    Function RemoveAtEnd() As HRESULT
+    [PreserveSig]
+    Function Clear() As HRESULT
+    Function GetMany(ByVal StartIndex As Long, ByVal Length As Long, Items As Any) As Long
+    [PreserveSig]
+    Function ReplaceAll(ByVal Length As Long, Items As Any) As HRESULT
+End Interface
+
+[InterfaceId("189EB512-5A20-5EC6-9866-60AF96F0D23B")]
+Interface IIterator_IJsonValue Extends IInspectable
+    Property Get Current() As IJsonValue
+    Property Get HasCurrent() As BooleanByte
+    Function MoveNext() As BooleanByte
+    Function GetMany(ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("CB0492B6-4113-55CF-B2C5-99EB428BA493")]
+Interface IIterable_IJsonValue Extends IInspectable
+    Function First() As IIterator_IJsonValue
+End Interface
+
+[InterfaceId("F948EAC5-33EB-50F5-B5AF-E7CECF0E4501")]
+Interface IIterator_KVP_IJsonValue Extends IInspectable
+    Property Get Current() As KVP_IJsonValue
+    Property Get HasCurrent() As BooleanByte
+    Function MoveNext() As BooleanByte
+    Function GetMany(ByVal Length As Long, Items As Any) As Long
+End Interface
+
+[InterfaceId("DFABB6E1-0411-5A8F-AA87-354E7110F099")]
+Interface IIterable_KVP_IJsonValue Extends IInspectable
+    Function First() As IIterator_KVP_IJsonValue
+End Interface
+
+[InterfaceId("4DEECC89-B0B8-5EE8-A51D-1C25AD9A5B01")]
+Interface KVP_IJsonValue Extends IInspectable
+    Property Get Key() As LongPtr
+    Property Get Value() As IJsonValue
+End Interface
+
+Module mdlDataJson
+
+Public Enum JsonErrorStatus
+    JsonErrorStatus_Unknown
+    JsonErrorStatus_InvalidJsonString
+    JsonErrorStatus_InvalidJsonNumber
+    JsonErrorStatus_JsonValueNotFound
+    JsonErrorStatus_ImplementationLimit
+End Enum
+
+Public Enum JsonValueType
+    JsonValueType_Null
+    JsonValueType_Boolean
+    JsonValueType_Number
+    JsonValueType_String
+    JsonValueType_Array
+    JsonValueType_Object
+End Enum
+
+End Module

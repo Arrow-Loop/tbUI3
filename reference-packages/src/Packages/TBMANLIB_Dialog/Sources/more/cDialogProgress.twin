@@ -1,0 +1,440 @@
+' =====================================================
+' cDialogProgress.twin - Progress Dialog Class
+' cDialogProgress.twin - 进度对话框类
+' TBMANLIB Dialog Library
+' =====================================================
+' Function: Provides progress dialog with progress bar and cancel button
+' 功能：提供带进度条和取消按钮的进度对话框
+' Author: woeoo (邓伟)
+' Email: 215879458@qq.com
+' Site: https://vb6.pro
+' Date: 2026-03-11
+' Version: 1.0.0
+' =====================================================
+
+Option Explicit
+
+[COMCreatable(False)]
+Public Class cDialogProgress
+
+    ' =====================================================
+    ' Windows API Declarations
+    ' =====================================================
+    Private Declare PtrSafe Function GetTickCount Lib "kernel32" () As Long
+    Private Declare PtrSafe Function Sleep Lib "kernel32" (ByVal dwMilliseconds As Long) As Long
+
+    ' =====================================================
+    ' Progress Style Enum
+    ' =====================================================
+    Public Enum ProgressStyle
+        ProgressBar = 0      ' Standard progress bar (0-100)
+        Marquee = 1          ' Marquee style (indeterminate)
+        Steps = 2            ' Step-based progress
+    End Enum
+
+    ' =====================================================
+    ' Class Data
+    ' =====================================================
+    Private Type cDialogProgressData
+        mTitle As String
+        mMessage As String
+        mDetailMessage As String
+        mProgress As Long
+        mMin As Long
+        mMax As Long
+        mStep As Long
+        mStyle As ProgressStyle
+        mShowCancel As Boolean
+        mShowElapsedTime As Boolean
+        mShowRemainingTime As Boolean
+        mCancelled As Boolean
+        mStartTime As Long
+        mOwnerHwnd As LongPtr
+    End Type
+
+    Private mData As cDialogProgressData
+
+    ' =====================================================
+    ' Events
+    ' =====================================================
+    Public Event CancelClicked()
+    Public Event ProgressChanged(ByVal value As Long)
+
+    ' =====================================================
+    ' Class Initialize
+    ' =====================================================
+    Private Sub Class_Initialize()
+        mData.mTitle = "Progress"
+        mData.mMessage = "Processing..."
+        mData.mDetailMessage = ""
+        mData.mProgress = 0
+        mData.mMin = 0
+        mData.mMax = 100
+        mData.mStep = 1
+        mData.mStyle = ProgressStyle.ProgressBar
+        mData.mShowCancel = True
+        mData.mShowElapsedTime = True
+        mData.mShowRemainingTime = True
+        mData.mCancelled = False
+        mData.mStartTime = 0
+        mData.mOwnerHwnd = 0
+    End Sub
+
+    ' =====================================================
+    ' Property: Dialog Title
+    ' =====================================================
+    Public Property Get Title() As String
+        Title = mData.mTitle
+    End Property
+
+    Public Property Let Title(ByVal value As String)
+        mData.mTitle = value
+    End Property
+
+    ' =====================================================
+    ' Property: Main Message
+    ' =====================================================
+    Public Property Get Message() As String
+        Message = mData.mMessage
+    End Property
+
+    Public Property Let Message(ByVal value As String)
+        mData.mMessage = value
+    End Property
+
+    ' =====================================================
+    ' Property: Detail Message
+    ' =====================================================
+    Public Property Get DetailMessage() As String
+        DetailMessage = mData.mDetailMessage
+    End Property
+
+    Public Property Let DetailMessage(ByVal value As String)
+        mData.mDetailMessage = value
+    End Property
+
+    ' =====================================================
+    ' Property: Progress Value
+    ' =====================================================
+    Public Property Get Progress() As Long
+        Progress = mData.mProgress
+    End Property
+
+    Public Property Let Progress(ByVal value As Long)
+        If value >= mData.mMin And value <= mData.mMax Then
+            mData.mProgress = value
+            RaiseEvent ProgressChanged(value)
+        End If
+    End Property
+
+    ' =====================================================
+    ' Property: Minimum Value
+    ' =====================================================
+    Public Property Get Min() As Long
+        Min = mData.mMin
+    End Property
+
+    Public Property Let Min(ByVal value As Long)
+        mData.mMin = value
+    End Property
+
+    ' =====================================================
+    ' Property: Maximum Value
+    ' =====================================================
+    Public Property Get Max() As Long
+        Max = mData.mMax
+    End Property
+
+    Public Property Let Max(ByVal value As Long)
+        mData.mMax = value
+    End Property
+
+    ' =====================================================
+    ' Property: Step Value
+    ' =====================================================
+    Public Property Get Step() As Long
+        Step = mData.mStep
+    End Property
+
+    Public Property Let Step(ByVal value As Long)
+        mData.mStep = value
+    End Property
+
+    ' =====================================================
+    ' Property: Progress Style
+    ' =====================================================
+    Public Property Get Style() As ProgressStyle
+        Style = mData.mStyle
+    End Property
+
+    Public Property Let Style(ByVal value As ProgressStyle)
+        mData.mStyle = value
+    End Property
+
+    ' =====================================================
+    ' Property: Show Cancel Button
+    ' =====================================================
+    Public Property Get ShowCancel() As Boolean
+        ShowCancel = mData.mShowCancel
+    End Property
+
+    Public Property Let ShowCancel(ByVal value As Boolean)
+        mData.mShowCancel = value
+    End Property
+
+    ' =====================================================
+    ' Property: Show Elapsed Time
+    ' =====================================================
+    Public Property Get ShowElapsedTime() As Boolean
+        ShowElapsedTime = mData.mShowElapsedTime
+    End Property
+
+    Public Property Let ShowElapsedTime(ByVal value As Boolean)
+        mData.mShowElapsedTime = value
+    End Property
+
+    ' =====================================================
+    ' Property: Show Remaining Time
+    ' =====================================================
+    Public Property Get ShowRemainingTime() As Boolean
+        ShowRemainingTime = mData.mShowRemainingTime
+    End Property
+
+    Public Property Let ShowRemainingTime(ByVal value As Boolean)
+        mData.mShowRemainingTime = value
+    End Property
+
+    ' =====================================================
+    ' Property: Was Cancelled
+    ' =====================================================
+    Public Property Get Cancelled() As Boolean
+        Cancelled = mData.mCancelled
+    End Property
+
+    ' =====================================================
+    ' Property: Owner Window Handle
+    ' =====================================================
+    Public Property Get OwnerHwnd() As LongPtr
+        OwnerHwnd = mData.mOwnerHwnd
+    End Property
+
+    Public Property Let OwnerHwnd(ByVal value As LongPtr)
+        mData.mOwnerHwnd = value
+    End Property
+
+    ' =====================================================
+    ' Property: Percentage (read-only)
+    ' =====================================================
+    Public Property Get Percentage() As Long
+        If mData.mMax > mData.mMin Then
+            Percentage = ((mData.mProgress - mData.mMin) * 100) \ (mData.mMax - mData.mMin)
+        Else
+            Percentage = 0
+        End If
+    End Property
+
+    ' =====================================================
+    ' Method: Start Progress
+    ' =====================================================
+    Public Sub Start()
+        mData.mProgress = mData.mMin
+        mData.mCancelled = False
+        mData.mStartTime = GetTickCount()
+    End Sub
+
+    ' =====================================================
+    ' Method: Increment Progress
+    ' =====================================================
+    Public Sub Increment()
+        Dim newValue As Long
+        newValue = mData.mProgress + mData.mStep
+        If newValue <= mData.mMax Then
+            mData.mProgress = newValue
+            RaiseEvent ProgressChanged(newValue)
+        End If
+    End Sub
+
+    ' =====================================================
+    ' Method: Perform Step
+    ' =====================================================
+    Public Sub PerformStep()
+        Increment()
+    End Sub
+
+    ' =====================================================
+    ' Method: Set Progress Percentage
+    ' =====================================================
+    Public Sub SetPercentage(ByVal percent As Long)
+        If percent >= 0 And percent <= 100 Then
+            mData.mProgress = mData.mMin + ((mData.mMax - mData.mMin) * percent) \ 100
+            RaiseEvent ProgressChanged(mData.mProgress)
+        End If
+    End Sub
+
+    ' =====================================================
+    ' Method: Cancel
+    ' =====================================================
+    Public Sub Cancel()
+        mData.mCancelled = True
+        RaiseEvent CancelClicked()
+    End Sub
+
+    ' =====================================================
+    ' Method: Complete Progress
+    ' =====================================================
+    Public Sub Complete()
+        mData.mProgress = mData.mMax
+        RaiseEvent ProgressChanged(mData.mMax)
+    End Sub
+
+    ' =====================================================
+    ' Method: Get Elapsed Time
+    ' =====================================================
+    Public Function GetElapsedTime() As Long
+        If mData.mStartTime > 0 Then
+            GetElapsedTime = (GetTickCount() - mData.mStartTime) \ 1000
+        Else
+            GetElapsedTime = 0
+        End If
+    End Function
+
+    ' =====================================================
+    ' Method: Get Elapsed Time String
+    ' =====================================================
+    Public Function GetElapsedTimeString() As String
+        Dim seconds As Long
+        seconds = GetElapsedTime()
+        GetElapsedTimeString = FormatTime(seconds)
+    End Function
+
+    ' =====================================================
+    ' Method: Get Remaining Time (estimated)
+    ' =====================================================
+    Public Function GetRemainingTime() As Long
+        If mData.mProgress > mData.mMin And mData.mStartTime > 0 Then
+            Dim elapsed As Long
+            elapsed = GetTickCount() - mData.mStartTime
+            Dim rate As Double
+            rate = (mData.mProgress - mData.mMin) / elapsed
+            If rate > 0 Then
+                GetRemainingTime = CLng((mData.mMax - mData.mProgress) / rate / 1000)
+            Else
+                GetRemainingTime = 0
+            End If
+        Else
+            GetRemainingTime = 0
+        End If
+    End Function
+
+    ' =====================================================
+    ' Method: Get Remaining Time String
+    ' =====================================================
+    Public Function GetRemainingTimeString() As String
+        Dim seconds As Long
+        seconds = GetRemainingTime()
+        GetRemainingTimeString = FormatTime(seconds)
+    End Function
+
+    ' =====================================================
+    ' Helper: Format Time
+    ' =====================================================
+    Private Function FormatTime(ByVal seconds As Long) As String
+        Dim hours As Long
+        Dim minutes As Long
+
+        hours = seconds \ 3600
+        seconds = seconds Mod 3600
+        minutes = seconds \ 60
+        seconds = seconds Mod 60
+
+        If hours > 0 Then
+            FormatTime = Format$(hours, "0") & ":" & Format$(minutes, "00") & ":" & Format$(seconds, "00")
+        Else
+            FormatTime = Format$(minutes, "0") & ":" & Format$(seconds, "00")
+        End If
+    End Function
+
+    ' =====================================================
+    ' Method: Get Progress Description
+    ' =====================================================
+    Public Function GetDescription() As String
+        Dim result As String
+
+        result = mData.mMessage
+
+        If mData.mStyle = ProgressStyle.ProgressBar Then
+            result = result & " (" & Me.Percentage & "%)"
+
+            If mData.mShowElapsedTime Then
+                result = result & " - Elapsed: " & GetElapsedTimeString()
+            End If
+
+            If mData.mShowRemainingTime And mData.mProgress > mData.mMin Then
+                result = result & " - Remaining: " & GetRemainingTimeString()
+            End If
+        End If
+
+        If mData.mDetailMessage <> "" Then
+            result = result & vbCrLf & mData.mDetailMessage
+        End If
+
+        GetDescription = result
+    End Function
+
+    ' =====================================================
+    ' Method: Show Progress (simplified display)
+    ' =====================================================
+    Public Sub ShowProgress()
+        ' Display current progress status
+        Dim status As String
+        status = GetDescription()
+
+        If mData.mShowCancel Then
+            status = status & vbCrLf & vbCrLf & "(Press Ctrl+Break to cancel)"
+        End If
+
+        Debug.Print status
+    End Sub
+
+    ' =====================================================
+    ' Method: Simulate Progress (for testing)
+    ' =====================================================
+    Public Sub SimulateProgress(Optional ByVal delayMs As Long = 100)
+        Me.Start()
+
+        Dim i As Long
+        For i = mData.mMin To mData.mMax Step mData.mStep
+            If mData.mCancelled Then Exit For
+
+            Me.Progress = i
+            Me.ShowProgress()
+
+            ' DoEvents would be needed here for UI update
+            Sleep delayMs
+        Next i
+
+        If Not mData.mCancelled Then
+            Me.Complete()
+        End If
+    End Sub
+
+    ' =====================================================
+    ' Method: Reset to default settings
+    ' =====================================================
+    Public Sub Reset()
+        mData.mTitle = "Progress"
+        mData.mMessage = "Processing..."
+        mData.mDetailMessage = ""
+        mData.mProgress = 0
+        mData.mMin = 0
+        mData.mMax = 100
+        mData.mStep = 1
+        mData.mStyle = ProgressStyle.ProgressBar
+        mData.mShowCancel = True
+        mData.mShowElapsedTime = True
+        mData.mShowRemainingTime = True
+        mData.mCancelled = False
+        mData.mStartTime = 0
+    End Sub
+
+End Class

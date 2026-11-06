@@ -1,0 +1,283 @@
+[InterfaceId("99711324-EDC7-4BF5-91F6-3C8627DB59E5")]
+Interface ICurrentTimeChangeRequestedEventArgs Extends IInspectable
+    Property Get Time() As TimeSpan
+End Interface
+
+[InterfaceId("E4B4F5F6-AF1F-4F1E-B437-7DA32400E1D4")]
+Interface IMuteChangeRequestedEventArgs Extends IInspectable
+    Property Get Mute() As BooleanByte
+End Interface
+
+[InterfaceId("8F599F3D-3655-5993-A119-741EC4EE6E42")]
+Interface ITypedEventHandlerPlayToConnectionError Extends IUnknown
+    Sub Invoke(ByVal Sender As IPlayToConnection, ByVal Args As IPlayToConnectionErrorEventArgs)
+End Interface
+
+[InterfaceId("DEF77C1C-9363-5B47-B9F8-A236C50D372E")]
+Interface ITypedEventHandlerPlayToConnectionStateChanged Extends IUnknown
+    Sub Invoke(ByVal Sender As IPlayToConnection, ByVal Args As IPlayToConnectionStateChangedEventArgs)
+End Interface
+
+[InterfaceId("7278E7F2-0360-5571-8C3E-EA032767C473")]
+Interface ITypedEventHandlerPlayToConnectionTransferred Extends IUnknown
+    Sub Invoke(ByVal Sender As IPlayToConnection, ByVal Args As IPlayToConnectionTransferredEventArgs)
+End Interface
+
+[InterfaceId("112FBFC8-F235-4FDE-8D41-9BF27C9E9A40")]
+Interface IPlayToConnection Extends IInspectable
+    Property Get State() As PlayToConnectionState
+    [PreserveSig]
+    Function AddStateChanged(ByVal Handler As ITypedEventHandlerPlayToConnectionStateChanged, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveStateChanged(ByVal Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function AddTransferred(ByVal Handler As ITypedEventHandlerPlayToConnectionTransferred, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveTransferred(ByVal Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function AddError(ByVal Handler As ITypedEventHandlerPlayToConnectionError, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveError(ByVal Token As EventRegistrationToken) As HRESULT
+End Interface
+
+[InterfaceId("BF5EADA6-88E6-445F-9D40-D9B9F8939896")]
+Interface IPlayToConnectionErrorEventArgs Extends IInspectable
+    Property Get Code() As PlayToConnectionError
+    Property Get Message() As LongPtr
+End Interface
+
+[InterfaceId("68C4B50F-0C20-4980-8602-58C62238D423")]
+Interface IPlayToConnectionStateChangedEventArgs Extends IInspectable
+    Property Get PreviousState() As PlayToConnectionState
+    Property Get CurrentState() As PlayToConnectionState
+End Interface
+
+[InterfaceId("FAE3193A-0683-47D9-8DF0-18CBB48984D8")]
+Interface IPlayToConnectionTransferredEventArgs Extends IInspectable
+    Property Get PreviousSource() As IPlayToSource
+    Property Get CurrentSource() As IPlayToSource
+End Interface
+
+[InterfaceId("6AC9F3A4-39B6-51D8-8E08-F137908E922F")]
+Interface ITypedEventHandlerPlayToManagerSourceRequested Extends IUnknown
+    Sub Invoke(ByVal Sender As IPlayToManager, ByVal Args As IPlayToSourceRequestedEventArgs)
+End Interface
+
+[InterfaceId("BF87431A-7451-52A5-A5E2-BFAF408E0C88")]
+Interface ITypedEventHandlerPlayToManagerSourceSelected Extends IUnknown
+    Sub Invoke(ByVal Sender As IPlayToManager, ByVal Args As IPlayToSourceSelectedEventArgs)
+End Interface
+
+[InterfaceId("F56A206E-1B77-42EF-8F0D-B949F8D9B260")]
+Interface IPlayToManager Extends IInspectable
+    [PreserveSig]
+    Function AddSourceRequested(ByVal Handler As ITypedEventHandlerPlayToManagerSourceRequested, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveSourceRequested(ByVal Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function AddSourceSelected(ByVal Handler As ITypedEventHandlerPlayToManagerSourceSelected, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveSourceSelected(ByVal Token As EventRegistrationToken) As HRESULT
+    Property Let DefaultSourceSelection(ByVal Value As BooleanByte)
+    Property Get DefaultSourceSelection() As BooleanByte
+End Interface
+
+[InterfaceId("64E6A887-3982-4F3B-BA20-6155E435325B")]
+Interface IPlayToManagerStatics Extends IInspectable
+    Function GetForCurrentView() As IPlayToManager
+    [PreserveSig]
+    Function ShowPlayToUI() As HRESULT
+End Interface
+
+[InterfaceId("7A89B9C2-78D4-5866-88F1-4CDC0A0E75B8")]
+Interface ITypedEventHandlerPlayToReceiverIInspectable Extends IUnknown
+    Sub Invoke(ByVal Sender As IPlayToReceiver, ByVal Args As IInspectable)
+End Interface
+
+[InterfaceId("42ABDF9F-14A6-5C1F-839B-86029505B1D0")]
+Interface ITypedEventHandlerPlayToReceiverCurrentTimeChangeRequested Extends IUnknown
+    Sub Invoke(ByVal Sender As IPlayToReceiver, ByVal Args As ICurrentTimeChangeRequestedEventArgs)
+End Interface
+
+[InterfaceId("0674CF85-B6FD-5926-9B72-35FE517A3F44")]
+Interface ITypedEventHandlerPlayToReceiverMuteChangeRequested Extends IUnknown
+    Sub Invoke(ByVal Sender As IPlayToReceiver, ByVal Args As IMuteChangeRequestedEventArgs)
+End Interface
+
+[InterfaceId("E7594396-58C3-5316-BC4F-1D13EADBEFFD")]
+Interface ITypedEventHandlerPlayToReceiverPlaybackRateChangeRequested Extends IUnknown
+    Sub Invoke(ByVal Sender As IPlayToReceiver, ByVal Args As IPlaybackRateChangeRequestedPlayToEventArgs)
+End Interface
+
+[InterfaceId("1466D074-B7B4-5814-B2D7-847C5AE7D87D")]
+Interface ITypedEventHandlerPlayToReceiverSourceChangeRequested Extends IUnknown
+    Sub Invoke(ByVal Sender As IPlayToReceiver, ByVal Args As ISourceChangeRequestedEventArgs)
+End Interface
+
+[InterfaceId("9C3F7C84-9B4D-5CDC-8144-1C2F617B6EDE")]
+Interface ITypedEventHandlerPlayToReceiverVolumeChangeRequested Extends IUnknown
+    Sub Invoke(ByVal Sender As IPlayToReceiver, ByVal Args As IVolumeChangeRequestedEventArgs)
+End Interface
+
+[InterfaceId("AC15CF47-A162-4AA6-AF1B-3AA35F3B9069")]
+Interface IPlayToReceiver Extends IInspectable
+    [PreserveSig]
+    Function AddPlayRequested(ByVal Handler As ITypedEventHandlerPlayToReceiverIInspectable, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemovePlayRequested(ByVal Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function AddPauseRequested(ByVal Handler As ITypedEventHandlerPlayToReceiverIInspectable, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemovePauseRequested(ByVal Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function AddSourceChangeRequested(ByVal Handler As ITypedEventHandlerPlayToReceiverSourceChangeRequested, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveSourceChangeRequested(ByVal Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function AddPlaybackRateChangeRequested(ByVal Handler As ITypedEventHandlerPlayToReceiverPlaybackRateChangeRequested, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemovePlaybackRateChangeRequested(ByVal Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function AddCurrentTimeChangeRequested(ByVal Handler As ITypedEventHandlerPlayToReceiverCurrentTimeChangeRequested, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveCurrentTimeChangeRequested(ByVal Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function AddMuteChangeRequested(ByVal Handler As ITypedEventHandlerPlayToReceiverMuteChangeRequested, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveMuteChangeRequested(ByVal Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function AddVolumeChangeRequested(ByVal Handler As ITypedEventHandlerPlayToReceiverVolumeChangeRequested, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveVolumeChangeRequested(ByVal Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function AddTimeUpdateRequested(ByVal Handler As ITypedEventHandlerPlayToReceiverIInspectable, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveTimeUpdateRequested(ByVal Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function AddStopRequested(ByVal Handler As ITypedEventHandlerPlayToReceiverIInspectable, Optional Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function RemoveStopRequested(ByVal Token As EventRegistrationToken) As HRESULT
+    [PreserveSig]
+    Function NotifyVolumeChange(ByVal Volume As Double, ByVal Mute As BooleanByte) As HRESULT
+    [PreserveSig]
+    Function NotifyRateChange(ByVal Rate As Double) As HRESULT
+    [PreserveSig]
+    Function NotifyLoadedMetadata() As HRESULT
+    [PreserveSig]
+    Function NotifyTimeUpdate(ByVal CurrentTime As TimeSpan) As HRESULT
+    [PreserveSig]
+    Function NotifyDurationChange(ByVal Duration As TimeSpan) As HRESULT
+    [PreserveSig]
+    Function NotifySeeking() As HRESULT
+    [PreserveSig]
+    Function NotifySeeked() As HRESULT
+    [PreserveSig]
+    Function NotifyPaused() As HRESULT
+    [PreserveSig]
+    Function NotifyPlaying() As HRESULT
+    [PreserveSig]
+    Function NotifyEnded() As HRESULT
+    [PreserveSig]
+    Function NotifyError() As HRESULT
+    [PreserveSig]
+    Function NotifyStopped() As HRESULT
+    Property Get FriendlyName() As LongPtr
+    Property Let FriendlyName(ByVal Value As LongPtr)
+    Property Let SupportsImage(ByVal Value As BooleanByte)
+    Property Get SupportsImage() As BooleanByte
+    Property Let SupportsAudio(ByVal Value As BooleanByte)
+    Property Get SupportsAudio() As BooleanByte
+    Property Let SupportsVideo(ByVal Value As BooleanByte)
+    Property Get SupportsVideo() As BooleanByte
+    Property Get Properties() As IPropertySet
+    Function StartAsync() As IAsyncAction
+    Function StopAsync() As IAsyncAction
+End Interface
+
+[InterfaceId("7F138A08-FBB7-4B09-8356-AA5F4E335C31")]
+Interface IPlayToSource Extends IInspectable
+    Property Get Connection() As IPlayToConnection
+    Property Get Next() As IPlayToSource
+    Property Set Next(ByVal Value As IPlayToSource)
+    [PreserveSig]
+    Function PlayNext() As HRESULT
+End Interface
+
+[InterfaceId("4100891D-278E-4F29-859B-A9E501053E7D")]
+Interface IPlayToSourceDeferral Extends IInspectable
+    [PreserveSig]
+    Function Complete() As HRESULT
+End Interface
+
+[InterfaceId("F8584665-64F4-44A0-AC0D-468D2B8FDA83")]
+Interface IPlayToSourceRequest Extends IInspectable
+    Property Get Deadline() As DateTime
+    [PreserveSig]
+    Function DisplayErrorString(ByVal ErrorString As LongPtr) As HRESULT
+    Function GetDeferral() As IPlayToSourceDeferral
+    [PreserveSig]
+    Function SetSource(ByVal Value As IPlayToSource) As HRESULT
+End Interface
+
+[InterfaceId("C5CDC330-29DF-4EC6-9DA9-9FBDFCFC1B3E")]
+Interface IPlayToSourceRequestedEventArgs Extends IInspectable
+    Property Get SourceRequest() As IPlayToSourceRequest
+End Interface
+
+[InterfaceId("0C9D8511-5202-4DCB-8C67-ABDA12BB3C12")]
+Interface IPlayToSourceSelectedEventArgs Extends IInspectable
+    Property Get FriendlyName() As LongPtr
+    Property Get Icon() As IRandomAccessStreamWithContentType
+    Property Get SupportsImage() As BooleanByte
+    Property Get SupportsAudio() As BooleanByte
+    Property Get SupportsVideo() As BooleanByte
+End Interface
+
+[InterfaceId("AAB253EB-3301-4DC4-AFBA-B2F2ED9635A0")]
+Interface IPlayToSourceWithPreferredSourceUri Extends IInspectable
+    Property Get PreferredSourceUri() As IUri
+    Property Set PreferredSourceUri(ByVal Value As IUri)
+End Interface
+
+[InterfaceId("0F5661AE-2C88-4CCA-8540-D586095D13A5")]
+Interface IPlaybackRateChangeRequestedPlayToEventArgs Extends IInspectable
+    Property Get Rate() As Double
+End Interface
+
+[InterfaceId("FB3F3A96-7AA6-4A8B-86E7-54F6C6D34F64")]
+Interface ISourceChangeRequestedEventArgs Extends IInspectable
+    Property Get Stream() As IRandomAccessStreamWithContentType
+    Property Get Title() As LongPtr
+    Property Get Author() As LongPtr
+    Property Get Album() As LongPtr
+    Property Get Genre() As LongPtr
+    Property Get Description() As LongPtr
+    Property Get Date() As IReference_DateTime
+    Property Get Thumbnail() As IRandomAccessStreamReference
+    Property Get Rating() As IReference_UInt32
+    [PreserveSig]
+    Property Get Properties() As IMapView_IInspectable
+End Interface
+
+[InterfaceId("6F026D5C-CF75-4C2B-913E-6D7C6C329179")]
+Interface IVolumeChangeRequestedEventArgs Extends IInspectable
+    Property Get Volume() As Double
+End Interface
+
+Module mdlMediaPlayTo
+
+Public Enum PlayToConnectionError
+    PlayToConnectionError_None
+    PlayToConnectionError_DeviceNotResponding
+    PlayToConnectionError_DeviceError
+    PlayToConnectionError_DeviceLocked
+    PlayToConnectionError_ProtectedPlaybackFailed
+End Enum
+
+Public Enum PlayToConnectionState
+    PlayToConnectionState_Disconnected
+    PlayToConnectionState_Connected
+    PlayToConnectionState_Rendering
+End Enum
+
+End Module

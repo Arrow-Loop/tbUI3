@@ -1,0 +1,1206 @@
+' =====================================================
+' cAes.twin - AES Encryption Core Class
+' TwinBASIC Project - Crypto Module - AES
+' =====================================================
+' Function: Provide AES encryption/decryption with multiple modes and padding
+' 功能：提供AES加密解密功能，支持多种模式和填充方式
+' Author: woeoo (邓伟)
+' Email: 215879458@qq.com
+' Site: https://vb6.pro
+' Date: 2026-02-04
+' Version: 1.0.0
+' =====================================================
+
+Option Explicit
+
+[COMCreatable(False)]
+Public Class cAes
+
+    ' =====================================================
+    ' Private Members
+    ' =====================================================
+    Private m_Key() As Byte
+    Private m_IV() As Byte
+    Private m_KeySize As AesKeySize
+    Private m_CipherMode As AesCipherMode
+    Private m_PaddingMode As AesPaddingMode
+    Private m_Initialized As Boolean
+    Private m_Helper As cAesHelper
+    
+    ' CryptoAPI handles (for ECB/CBC modes)
+    Private m_hProv As LongPtr
+    Private m_hKey As LongPtr
+    
+    ' CNG handles (for CFB/OFB/CTR/GCM modes)
+    Private m_hCNGAlg As LongPtr
+    Private m_hCNGKey As LongPtr
+    
+    ' GCM authentication tag
+    Private m_GcmTag() As Byte
+    Private m_GcmAAD() As Byte
+
+    ' =====================================================
+    ' Constructor
+    ' =====================================================
+
+    ' Default constructor
+    Public Sub New()
+        m_KeySize = AesKeySize.KeySize_256
+        m_CipherMode = AesCipherMode.CBC
+        m_PaddingMode = AesPaddingMode.PKCS7
+        Set m_Helper = New cAesHelper
+    End Sub
+
+    ' Constructor with parameters
+    Public Sub New(ByVal keySize As AesKeySize, _
+                  ByVal cipherMode As AesCipherMode, _
+                  ByVal paddingMode As AesPaddingMode)
+        m_KeySize = keySize
+        m_CipherMode = cipherMode
+        m_PaddingMode = paddingMode
+        Set m_Helper = New cAesHelper
+    End Sub
+
+    ' =====================================================
+    ' Properties
+    ' =====================================================
+
+    ' Get key bytes
+    Public Property Get Key() As Byte()
+        Key = m_Key
+    End Property
+
+    ' Set key bytes
+    Public Property Let Key(ByRef value() As Byte)
+        m_Key = value
+        m_Initialized = False
+    End Property
+
+    ' Get IV bytes
+    Public Property Get IV() As Byte()
+        IV = m_IV
+    End Property
+
+    ' Set IV bytes
+    Public Property Let IV(ByRef value() As Byte)
+        m_IV = value
+        m_Initialized = False
+    End Property
+
+    ' Get key size
+    Public Property Get KeySize() As AesKeySize
+        KeySize = m_KeySize
+    End Property
+
+    ' Set key size
+    Public Property Let KeySize(ByVal value As AesKeySize)
+        m_KeySize = value
+        m_Initialized = False
+    End Property
+
+    ' Get cipher mode
+    Public Property Get CipherMode() As AesCipherMode
+        CipherMode = m_CipherMode
+    End Property
+
+    ' Set cipher mode
+    Public Property Let CipherMode(ByVal value As AesCipherMode)
+        m_CipherMode = value
+        m_Initialized = False
+    End Property
+
+    ' Get padding mode
+    Public Property Get PaddingMode() As AesPaddingMode
+        PaddingMode = m_PaddingMode
+    End Property
+
+    ' Set padding mode
+    Public Property Let PaddingMode(ByVal value As AesPaddingMode)
+        m_PaddingMode = value
+        m_Initialized = False
+    End Property
+
+    ' Get initialization status
+    Public Property Get IsInitialized() As Boolean
+        IsInitialized = m_Initialized
+    End Property
+
+    ' Get last error message
+    Public Property Get LastError() As String
+        If Not m_Helper Is Nothing Then
+            LastError = m_Helper.LastError
+        Else
+            LastError = ""
+        End If
+    End Property
+    
+    ' =====================================================
+    ' GCM Mode Properties (for authenticated encryption)
+    ' =====================================================
+    
+    ' Get/Set GCM authentication tag (for decryption verification)
+    Public Property Get GcmTag() As Byte()
+        GcmTag = m_GcmTag
+    End Property
+
+    Public Property Let GcmTag(ByRef value() As Byte)
+        m_GcmTag = value
+    End Property
+
+    ' Get/Set additional authenticated data (AAD) for GCM
+    Public Property Get GcmAAD() As Byte()
+        GcmAAD = m_GcmAAD
+    End Property
+
+    Public Property Let GcmAAD(ByRef value() As Byte)
+        m_GcmAAD = value
+    End Property
+
+    ' Set AAD from string (convenient wrapper)
+    Public Sub SetGcmAADFromString(ByVal aadString As String, Optional ByVal encoding As Long = vbFromUnicode)
+        On Error GoTo ErrorHandler
+
+        If Len(aadString) = 0 Then
+            ReDim m_GcmAAD(0 To -1)  ' Empty array
+            Exit Sub
+        End If
+
+        ' Convert string to byte array
+        m_GcmAAD = StrConv(aadString, encoding)
+        Exit Sub
+
+ErrorHandler:
+        Debug.Print "SetGcmAADFromString failed: " & Err.Description
+    End Sub
+
+    ' =====================================================
+    ' Public Methods
+    ' =====================================================
+
+    ' Set key from string
+    '
+    ' @param keyString Key string
+    ' @param encoding Text encoding (default: vbFromUnicode)
+    Public Sub SetKeyFromString(ByVal keyString As String, _
+                           Optional ByVal encoding As Long = vbFromUnicode)
+        On Error GoTo ErrorHandler
+
+        If Len(keyString) = 0 Then
+            Err.Raise vbObjectError + 1, "cAes.SetKeyFromString", "Key cannot be empty"
+        End If
+
+        Select Case m_KeySize
+            Case AesKeySize.KeySize_128
+                m_Key = GetKeyBytes(keyString, mAesConstants.KEY_SIZE_128, encoding)
+            Case AesKeySize.KeySize_192
+                m_Key = GetKeyBytes(keyString, mAesConstants.KEY_SIZE_192, encoding)
+            Case AesKeySize.KeySize_256
+                m_Key = GetKeyBytes(keyString, mAesConstants.KEY_SIZE_256, encoding)
+        End Select
+
+        m_Initialized = False
+        Exit Sub
+
+ErrorHandler:
+        m_Initialized = False
+        Err.Raise vbObjectError + 2, "cAes.SetKeyFromString", Err.Description
+    End Sub
+
+    ' Generate random IV
+    '
+    ' @return Random IV byte array
+    Public Function GenerateRandomIV() As Byte()
+        On Error GoTo ErrorHandler
+
+        Dim iv() As Byte
+        ReDim iv(mAesConstants.BLOCK_SIZE_128 - 1)
+
+        ' Use random function (for better randomness, consider using CryptoAPI)
+        Randomize
+        Dim i As Long
+        For i = 0 To mAesConstants.BLOCK_SIZE_128 - 1
+            iv(i) = CByte(Rnd() * 255)
+        Next i
+
+        m_IV = iv
+        GenerateRandomIV = iv
+        Exit Function
+
+ErrorHandler:
+        GenerateRandomIV = Nothing
+    End Function
+
+    ' Encrypt string
+    '
+    ' @param plainText Plain text string
+    ' @return Base64 encoded cipher text
+    Public Function EncryptString(ByVal plainText As String) As String
+        On Error GoTo ErrorHandler
+
+        If Len(plainText) = 0 Then
+            Err.Raise vbObjectError + 3, "cAes.EncryptString", "Plain text cannot be empty"
+        End If
+
+        Dim plainBytes() As Byte
+        plainBytes = m_Helper.StringToUtf8Bytes(plainText)
+
+        If m_Helper.IsArrayEmpty(plainBytes) Then
+            Err.Raise vbObjectError + 4, "cAes.EncryptString", "String conversion failed"
+        End If
+
+        Dim cipherBytes() As Byte
+        cipherBytes = EncryptBytes(plainBytes)
+
+        If Not m_Helper.IsArrayEmpty(cipherBytes) Then
+            EncryptString = m_Helper.Base64Encode(cipherBytes)
+        Else
+            EncryptString = ""
+        End If
+
+        Exit Function
+
+ErrorHandler:
+        EncryptString = ""
+    End Function
+
+    ' Encrypt byte array
+    '
+    ' @param plainBytes Plain text byte array
+    ' @return Encrypted byte array
+    Public Function EncryptBytes(ByRef plainBytes() As Byte) As Byte()
+        On Error GoTo ErrorHandler
+
+        If m_Helper.IsArrayEmpty(plainBytes) Then
+            Err.Raise vbObjectError + 5, "cAes.EncryptBytes", "Plain text cannot be empty"
+        End If
+
+        If m_Helper.IsArrayEmpty(m_Key) Then
+            Err.Raise vbObjectError + 6, "cAes.EncryptBytes", "Key not set"
+        End If
+
+        ' Apply padding
+        Dim paddedData() As Byte
+        Select Case m_PaddingMode
+            Case AesPaddingMode.PKCS7
+                paddedData = m_Helper.ApplyPKCS7Padding(plainBytes, mAesConstants.BLOCK_SIZE_128)
+            Case AesPaddingMode.ZeroPadding
+                paddedData = m_Helper.ApplyZeroPadding(plainBytes, mAesConstants.BLOCK_SIZE_128)
+            Case AesPaddingMode.NoPadding, AesPaddingMode.ISO10126
+                paddedData = plainBytes
+        End Select
+
+        If m_Helper.IsArrayEmpty(paddedData) Then
+            Err.Raise vbObjectError + 7, "cAes.EncryptBytes", "Data padding failed"
+        End If
+
+        ' Execute encryption
+        EncryptBytes = DoEncrypt(paddedData)
+        Exit Function
+
+ErrorHandler:
+        EncryptBytes = Nothing
+    End Function
+
+    ' Decrypt string
+    '
+    ' @param cipherText Base64 encoded cipher text
+    ' @return Decrypted plain text
+    Public Function DecryptString(ByVal cipherText As String) As String
+        On Error GoTo ErrorHandler
+
+        If Len(cipherText) = 0 Then
+            Err.Raise vbObjectError + 8, "cAes.DecryptString", "Cipher text cannot be empty"
+        End If
+
+        Dim cipherBytes() As Byte
+        cipherBytes = m_Helper.Base64Decode(cipherText)
+
+        If m_Helper.IsArrayEmpty(cipherBytes) Then
+            Err.Raise vbObjectError + 9, "cAes.DecryptString", "Base64 decoding failed"
+        End If
+
+        Dim plainBytes() As Byte
+        plainBytes = DecryptBytes(cipherBytes)
+
+        If Not m_Helper.IsArrayEmpty(plainBytes) Then
+            DecryptString = m_Helper.Utf8BytesToString(plainBytes)
+        Else
+            DecryptString = ""
+        End If
+
+        Exit Function
+
+ErrorHandler:
+        Debug.Print "DecryptString error: " & Err.Description
+        DecryptString = ""
+    End Function
+
+    ' Decrypt byte array
+    '
+    ' @param cipherBytes Encrypted byte array
+    ' @return Decrypted byte array
+    Public Function DecryptBytes(ByRef cipherBytes() As Byte) As Byte()
+        On Error GoTo ErrorHandler
+
+        If m_Helper.IsArrayEmpty(cipherBytes) Then
+            Err.Raise vbObjectError + 10, "cAes.DecryptBytes", "Cipher text cannot be empty"
+        End If
+
+        If m_Helper.IsArrayEmpty(m_Key) Then
+            Err.Raise vbObjectError + 11, "cAes.DecryptBytes", "Key not set"
+        End If
+
+        ' Execute decryption
+        Dim plainBytes() As Byte
+        plainBytes = DoDecrypt(cipherBytes)
+
+        If m_Helper.IsArrayEmpty(plainBytes) Then
+            DecryptBytes = Nothing
+            Exit Function
+        End If
+
+        ' Remove padding
+        Select Case m_PaddingMode
+            Case AesPaddingMode.PKCS7
+                DecryptBytes = m_Helper.RemovePKCS7Padding(plainBytes)
+            Case AesPaddingMode.ZeroPadding
+                DecryptBytes = m_Helper.RemoveZeroPadding(plainBytes)
+            Case AesPaddingMode.NoPadding, AesPaddingMode.ISO10126
+                DecryptBytes = plainBytes
+        End Select
+        Exit Function
+
+ErrorHandler:
+        Debug.Print "DecryptBytes error: " & Err.Description
+        DecryptBytes = Nothing
+    End Function
+
+    ' Cleanup resources
+    Public Sub Cleanup()
+        ' Cleanup CryptoAPI resources
+        If m_hKey <> 0 Then
+            mWin32CryptoAPI.AES_CryptDestroyKey m_hKey
+            m_hKey = 0
+        End If
+
+        If m_hProv <> 0 Then
+            mWin32CryptoAPI.AES_CryptReleaseContext m_hProv, 0
+            m_hProv = 0
+        End If
+        
+        ' Cleanup CNG resources
+        If m_hCNGKey <> 0 Then
+            mWin32CNG.BCryptDestroyKey m_hCNGKey
+            m_hCNGKey = 0
+        End If
+        
+        If m_hCNGAlg <> 0 Then
+            mWin32CNG.BCryptCloseAlgorithmProvider m_hCNGAlg, 0
+            m_hCNGAlg = 0
+        End If
+
+        m_Initialized = False
+    End Sub
+
+    ' =====================================================
+    ' Private Helper Methods
+    ' =====================================================
+
+    ' Get key bytes from string
+    Private Function GetKeyBytes(ByVal keyString As String, _
+                           ByVal keySize As Long, _
+                           ByVal encoding As Long) As Byte()
+        On Error GoTo ErrorHandler
+
+        Dim keyBytes() As Byte
+        keyBytes = StrConv(keyString, encoding)
+
+        Dim keyLen As Long
+        keyLen = UBound(keyBytes) - LBound(keyBytes) + 1
+
+        Dim result() As Byte
+        ReDim result(keySize - 1)
+
+        Dim i As Long
+        If keyLen >= keySize Then
+            ' Truncate if too long
+            For i = 0 To keySize - 1
+                result(i) = keyBytes(i)
+            Next i
+        Else
+            ' Copy and pad with zeros if too short
+            For i = 0 To keyLen - 1
+                result(i) = keyBytes(i)
+            Next i
+            For i = keyLen To keySize - 1
+                result(i) = 0
+            Next i
+        End If
+
+        GetKeyBytes = result
+        Exit Function
+
+ErrorHandler:
+        GetKeyBytes = Nothing
+    End Function
+
+    ' Initialize CryptoAPI provider (for ECB/CBC modes)
+    Private Function InitializeCryptoAPIProvider() As Boolean
+        On Error GoTo ErrorHandler
+
+        ' Always cleanup and reinitialize if key or IV changed
+        ' Cleanup existing handles
+        If m_hKey <> 0 Then
+            mWin32CryptoAPI.AES_CryptDestroyKey m_hKey
+            m_hKey = 0
+        End If
+
+        If m_hProv <> 0 Then
+            mWin32CryptoAPI.AES_CryptReleaseContext m_hProv, 0
+            m_hProv = 0
+        End If
+
+        ' Acquire cryptographic context
+        Dim ret As Long
+        ret = mWin32CryptoAPI.AES_CryptAcquireContext(m_hProv, 0, 0, _
+            mAesConstants.PROV_RSA_AES, 0)
+
+        If ret = 0 Then
+            ' Try creating new key container
+            ret = mWin32CryptoAPI.AES_CryptAcquireContext(m_hProv, 0, 0, _
+                mAesConstants.PROV_RSA_AES, mAesConstants.CRYPT_NEWKEYSET)
+            If ret = 0 Then
+                Err.Raise vbObjectError + 100, "cAes.InitializeProvider", "Failed to acquire cryptographic context"
+            End If
+        End If
+
+        ' Create hash from key
+        Dim hHash As LongPtr
+        hHash = 0
+
+        ret = mWin32CryptoAPI.AES_CryptCreateHash(m_hProv, mAesConstants.CALG_SHA_256, 0, 0, hHash)
+
+        If ret = 0 Then
+            mWin32CryptoAPI.AES_CryptReleaseContext m_hProv, 0
+            m_hProv = 0
+            Err.Raise vbObjectError + 101, "cAes.InitializeProvider", "Failed to create hash"
+        End If
+
+        ' Hash the key
+        ret = mWin32CryptoAPI.AES_CryptHashData(hHash, VarPtr(m_Key(0)), _
+            UBound(m_Key) + 1, 0)
+
+        If ret = 0 Then
+            mWin32CryptoAPI.AES_CryptDestroyHash hHash
+            mWin32CryptoAPI.AES_CryptReleaseContext m_hProv, 0
+            m_hProv = 0
+            Err.Raise vbObjectError + 102, "cAes.InitializeProvider", "Failed to hash key"
+        End If
+
+        ' Get AES algorithm ID based on key size
+        Dim algId As Long
+        Select Case m_KeySize
+            Case AesKeySize.KeySize_128
+                algId = mAesConstants.CALG_AES_128
+            Case AesKeySize.KeySize_192
+                algId = mAesConstants.CALG_AES_192
+            Case AesKeySize.KeySize_256
+                algId = mAesConstants.CALG_AES_256
+        End Select
+
+        ' Derive key from hash
+        Dim flags As Long
+        flags = mAesConstants.CRYPT_EXPORTABLE
+
+        ret = mWin32CryptoAPI.AES_CryptDeriveKey(m_hProv, algId, hHash, flags, m_hKey)
+
+        ' Destroy hash (no longer needed)
+        mWin32CryptoAPI.AES_CryptDestroyHash hHash
+
+        If ret = 0 Then
+            mWin32CryptoAPI.AES_CryptReleaseContext m_hProv, 0
+            m_hProv = 0
+            Err.Raise vbObjectError + 103, "cAes.InitializeProvider", "Failed to derive key"
+        End If
+
+        ' Set cipher mode
+        Dim cipherMode As Long
+        Select Case m_CipherMode
+            Case AesCipherMode.ECB
+                cipherMode = mAesConstants.CRYPT_MODE_ECB
+            Case AesCipherMode.CBC
+                cipherMode = mAesConstants.CRYPT_MODE_CBC
+            Case AesCipherMode.CFB
+                cipherMode = mAesConstants.CRYPT_MODE_CFB
+            Case AesCipherMode.OFB
+                cipherMode = mAesConstants.CRYPT_MODE_OFB
+        End Select
+
+        ret = mWin32CryptoAPI.AES_CryptSetKeyParam(m_hKey, _
+            mAesConstants.KP_MODE, VarPtr(cipherMode), 0)
+
+        If ret = 0 Then
+            mWin32CryptoAPI.AES_CryptDestroyKey m_hKey
+            m_hKey = 0
+            mWin32CryptoAPI.AES_CryptReleaseContext m_hProv, 0
+            m_hProv = 0
+            Err.Raise vbObjectError + 104, "cAes.InitializeProvider", "Failed to set cipher mode"
+        End If
+
+        ' Set IV if provided and not ECB mode
+        If m_CipherMode <> AesCipherMode.ECB Then
+            If Not m_Helper.IsArrayEmpty(m_IV) Then
+                ret = mWin32CryptoAPI.AES_CryptSetKeyParam(m_hKey, _
+                    mAesConstants.KP_IV, VarPtr(m_IV(0)), 0)
+
+                If ret = 0 Then
+                    mWin32CryptoAPI.AES_CryptDestroyKey m_hKey
+                    m_hKey = 0
+                    mWin32CryptoAPI.AES_CryptReleaseContext m_hProv, 0
+                    m_hProv = 0
+                    Err.Raise vbObjectError + 105, "cAes.InitializeProvider", "Failed to set IV"
+                End If
+            End If
+        End If
+
+        m_Initialized = True
+        InitializeCryptoAPIProvider = True
+        Exit Function
+
+ErrorHandler:
+        Debug.Print "InitializeCryptoAPIProvider failed: " & Err.Description
+        InitializeCryptoAPIProvider = False
+    End Function
+
+    ' Initialize CNG provider (for CFB/OFB/CTR/GCM modes)
+    Private Function InitializeCNGProvider() As Boolean
+        On Error GoTo ErrorHandler
+
+        ' Cleanup existing CNG handles
+        If m_hCNGKey <> 0 Then
+            mWin32CNG.BCryptDestroyKey m_hCNGKey
+            m_hCNGKey = 0
+        End If
+
+        If m_hCNGAlg <> 0 Then
+            mWin32CNG.BCryptCloseAlgorithmProvider m_hCNGAlg, 0
+            m_hCNGAlg = 0
+        End If
+
+        ' Open algorithm provider
+        Dim ret As Long
+        ret = mWin32CNG.BCryptOpenAlgorithmProvider(m_hCNGAlg, _
+            StrPtr(mWin32CNG.BCRYPT_AES_ALGORITHM), 0, 0)
+
+        If ret <> 0 Then
+            Err.Raise vbObjectError + 400, "cAes.InitializeCNGProvider", _
+                "Failed to open CNG algorithm provider: " & mWin32CNG.CNGErrorMessage(ret)
+        End If
+
+        ' Set chaining mode
+        Dim chainMode As String
+        Select Case m_CipherMode
+            Case AesCipherMode.CFB
+                chainMode = mWin32CNG.BCRYPT_CHAIN_MODE_CFB
+            Case AesCipherMode.GCM
+                chainMode = mWin32CNG.BCRYPT_CHAIN_MODE_GCM
+            Case Else
+                ' For OFB and CTR, use CFB as fallback (CNG doesn't directly support OFB/CTR)
+                ' These modes will need manual implementation
+                chainMode = mWin32CNG.BCRYPT_CHAIN_MODE_CFB
+        End Select
+
+        ' CNG requires the chaining mode as a wide string (Unicode)
+        Dim modeStr As String
+        modeStr = chainMode & vbNullChar
+
+        ret = mWin32CNG.BCryptSetProperty(m_hCNGAlg, _
+            StrPtr(mWin32CNG.BCRYPT_CHAINING_MODE), _
+            StrPtr(modeStr), LenB(modeStr), 0)
+
+        If ret <> 0 Then
+            mWin32CNG.BCryptCloseAlgorithmProvider m_hCNGAlg, 0
+            m_hCNGAlg = 0
+            Err.Raise vbObjectError + 401, "cAes.InitializeCNGProvider", _
+                "Failed to set chaining mode: " & mWin32CNG.CNGErrorMessage(ret)
+        End If
+
+        ' Generate symmetric key
+        Dim keyLen As Long
+        keyLen = UBound(m_Key) + 1
+
+        ret = mWin32CNG.BCryptGenerateSymmetricKey(m_hCNGAlg, m_hCNGKey, _
+            0, 0, VarPtr(m_Key(0)), keyLen, 0)
+
+        If ret <> 0 Then
+            mWin32CNG.BCryptCloseAlgorithmProvider m_hCNGAlg, 0
+            m_hCNGAlg = 0
+            Err.Raise vbObjectError + 402, "cAes.InitializeCNGProvider", _
+                "Failed to generate symmetric key: " & mWin32CNG.CNGErrorMessage(ret)
+        End If
+
+        m_Initialized = True
+        InitializeCNGProvider = True
+        Exit Function
+
+ErrorHandler:
+        Debug.Print "InitializeCNGProvider failed: " & Err.Description
+        InitializeCNGProvider = False
+    End Function
+
+    ' Execute encryption (route to appropriate API based on mode)
+    Private Function DoEncrypt(ByRef data() As Byte) As Byte()
+        On Error GoTo ErrorHandler
+
+        ' Route to appropriate API based on cipher mode
+        Select Case m_CipherMode
+            Case AesCipherMode.ECB, AesCipherMode.CBC
+                ' Use CryptoAPI for ECB/CBC
+                DoEncrypt = DoEncryptCryptoAPI(data)
+            Case AesCipherMode.CFB, AesCipherMode.OFB, AesCipherMode.CTR, AesCipherMode.GCM
+                ' Use CNG for CFB/OFB/CTR/GCM
+                DoEncrypt = DoEncryptCNG(data)
+            Case Else
+                Err.Raise vbObjectError + 200, "cAes.DoEncrypt", "Unsupported cipher mode"
+        End Select
+        Exit Function
+
+ErrorHandler:
+        Debug.Print "DoEncrypt failed: " & Err.Description
+        DoEncrypt = Nothing
+    End Function
+
+    ' Execute decryption (route to appropriate API based on mode)
+    Private Function DoDecrypt(ByRef data() As Byte) As Byte()
+        On Error GoTo ErrorHandler
+
+        ' Route to appropriate API based on cipher mode
+        Select Case m_CipherMode
+            Case AesCipherMode.ECB, AesCipherMode.CBC
+                ' Use CryptoAPI for ECB/CBC
+                DoDecrypt = DoDecryptCryptoAPI(data)
+            Case AesCipherMode.CFB, AesCipherMode.OFB, AesCipherMode.CTR, AesCipherMode.GCM
+                ' Use CNG for CFB/OFB/CTR/GCM
+                DoDecrypt = DoDecryptCNG(data)
+            Case Else
+                Err.Raise vbObjectError + 201, "cAes.DoDecrypt", "Unsupported cipher mode"
+        End Select
+        Exit Function
+
+ErrorHandler:
+        Debug.Print "DoDecrypt failed: " & Err.Description
+        DoDecrypt = Nothing
+    End Function
+
+    ' =====================================================
+    ' CryptoAPI Implementation (ECB/CBC modes)
+    ' =====================================================
+
+    ' Execute encryption using CryptoAPI
+    Private Function DoEncryptCryptoAPI(ByRef data() As Byte) As Byte()
+        On Error GoTo ErrorHandler
+
+        ' Always reinitialize to ensure correct IV
+        m_Initialized = False
+        If Not InitializeCryptoAPIProvider() Then
+            DoEncryptCryptoAPI = Nothing
+            Exit Function
+        End If
+
+        Dim dataLen As Long
+        dataLen = UBound(data) - LBound(data) + 1
+
+        ' Get block size
+        Dim blockSize As Long
+        blockSize = 0
+        mWin32CryptoAPI.AES_CryptGetKeyParam m_hKey, mAesConstants.KP_BLOCKLEN, _
+            VarPtr(blockSize), 4, 0
+        blockSize = blockSize \ 8 ' Convert bits to bytes
+
+        ' Allocate buffer with extra space for padding
+        Dim buffer() As Byte
+        ReDim buffer(dataLen + blockSize - 1)
+
+        ' Copy data to buffer
+        mWin32CryptoAPI.AES_CopyMemory VarPtr(buffer(0)), VarPtr(data(0)), dataLen
+
+        ' Encrypt
+        Dim encLen As Long
+        encLen = dataLen
+
+        Dim ret As Long
+        ret = mWin32CryptoAPI.AES_CryptEncrypt(m_hKey, 0, 1, 0, _
+            VarPtr(buffer(0)), encLen, dataLen + blockSize)
+
+        If ret = 0 Then
+            Debug.Print "CryptEncrypt failed, dataLen=" & dataLen & ", encLen=" & encLen
+            DoEncryptCryptoAPI = Nothing
+            Exit Function
+        End If
+
+        ' Resize buffer to actual encrypted size
+        ReDim Preserve buffer(encLen - 1)
+        DoEncryptCryptoAPI = buffer
+        Exit Function
+
+ErrorHandler:
+        Debug.Print "DoEncryptCryptoAPI failed: " & Err.Description
+        DoEncryptCryptoAPI = Nothing
+    End Function
+
+    ' Execute decryption using CryptoAPI
+    Private Function DoDecryptCryptoAPI(ByRef data() As Byte) As Byte()
+        On Error GoTo ErrorHandler
+
+        ' Always reinitialize to ensure correct IV
+        m_Initialized = False
+        If Not InitializeCryptoAPIProvider() Then
+            DoDecryptCryptoAPI = Nothing
+            Exit Function
+        End If
+
+        Dim dataLen As Long
+        dataLen = UBound(data) - LBound(data) + 1
+
+        ' Allocate buffer (same size as encrypted data)
+        Dim buffer() As Byte
+        ReDim buffer(dataLen - 1)
+
+        ' Copy data to buffer
+        mWin32CryptoAPI.AES_CopyMemory VarPtr(buffer(0)), VarPtr(data(0)), dataLen
+
+        ' Decrypt
+        Dim decLen As Long
+        decLen = dataLen
+
+        Dim ret As Long
+        ret = mWin32CryptoAPI.AES_CryptDecrypt(m_hKey, 0, 1, 0, _
+            VarPtr(buffer(0)), decLen)
+
+        If ret = 0 Then
+            Debug.Print "CryptDecrypt failed, dataLen=" & dataLen & ", decLen=" & decLen
+            DoDecryptCryptoAPI = Nothing
+            Exit Function
+        End If
+
+        ' Resize buffer to actual decrypted size
+        If decLen > 0 Then
+            ReDim Preserve buffer(decLen - 1)
+            DoDecryptCryptoAPI = buffer
+        Else
+            DoDecryptCryptoAPI = Nothing
+        End If
+        Exit Function
+
+ErrorHandler:
+        Debug.Print "DoDecryptCryptoAPI failed: " & Err.Description
+        DoDecryptCryptoAPI = Nothing
+    End Function
+
+    ' =====================================================
+    ' CNG Implementation (CFB/OFB/CTR/GCM modes)
+    ' =====================================================
+
+    ' Execute encryption using CNG
+    Private Function DoEncryptCNG(ByRef data() As Byte) As Byte()
+        On Error GoTo ErrorHandler
+
+        ' Check if CNG is available
+        If Not mWin32CNG.IsCNGAvailable() Then
+            Err.Raise vbObjectError + 300, "cAes.DoEncryptCNG", "CNG not available (requires Vista or later)"
+        End If
+
+        ' Initialize CNG provider
+        If Not InitializeCNGProvider() Then
+            DoEncryptCNG = Nothing
+            Exit Function
+        End If
+
+        Dim dataLen As Long
+        dataLen = UBound(data) - LBound(data) + 1
+
+        ' GCM mode needs special handling (AEAD)
+        If m_CipherMode = AesCipherMode.GCM Then
+            DoEncryptCNG = DoEncryptCNG_GCM(data)
+            Exit Function
+        End If
+
+        ' Calculate required output size
+        Dim encLen As Long
+        Dim ret As Long
+
+        ' First call to get required size
+        ret = mWin32CNG.BCryptEncrypt(m_hCNGKey, _
+            VarPtr(data(LBound(data))), dataLen, _
+            0, 0, 0, 0, 0, encLen, 0)
+
+        If ret <> 0 And ret <> mWin32CNG.STATUS_SUCCESS Then
+            Debug.Print "BCryptEncrypt size query failed: 0x" & Hex$(ret)
+            DoEncryptCNG = Nothing
+            Exit Function
+        End If
+
+        ' Allocate output buffer
+        Dim buffer() As Byte
+        ReDim buffer(encLen - 1)
+
+        ' Prepare IV buffer (CNG modifies IV, so we need a copy)
+        Dim ivBuffer() As Byte
+        If Not m_Helper.IsArrayEmpty(m_IV) Then
+            ReDim ivBuffer(UBound(m_IV))
+            mWin32CryptoAPI.AES_CopyMemory VarPtr(ivBuffer(0)), VarPtr(m_IV(0)), UBound(m_IV) + 1
+        End If
+
+        Dim ivPtr As LongPtr
+        Dim ivLen As Long
+        If Not m_Helper.IsArrayEmpty(ivBuffer) Then
+            ivPtr = VarPtr(ivBuffer(0))
+            ivLen = UBound(ivBuffer) + 1
+        Else
+            ivPtr = 0
+            ivLen = 0
+        End If
+
+        ' Perform encryption
+        ret = mWin32CNG.BCryptEncrypt(m_hCNGKey, _
+            VarPtr(data(LBound(data))), dataLen, _
+            0, ivPtr, ivLen, _
+            VarPtr(buffer(0)), encLen, encLen, 0)
+
+        If ret <> 0 Then
+            Debug.Print "BCryptEncrypt failed: 0x" & Hex$(ret) & " - " & mWin32CNG.CNGErrorMessage(ret)
+            DoEncryptCNG = Nothing
+            Exit Function
+        End If
+
+        ' Resize to actual size
+        If encLen > 0 Then
+            ReDim Preserve buffer(encLen - 1)
+        End If
+
+        DoEncryptCNG = buffer
+        Exit Function
+
+ErrorHandler:
+        Debug.Print "DoEncryptCNG failed: " & Err.Description
+        DoEncryptCNG = Nothing
+    End Function
+
+    ' GCM mode encryption (AEAD)
+    Private Function DoEncryptCNG_GCM(ByRef data() As Byte) As Byte()
+        On Error GoTo ErrorHandler
+
+        Dim dataLen As Long
+        dataLen = UBound(data) - LBound(data) + 1
+
+        ' GCM requires 12-byte nonce (IV), not 16
+        Dim nonce() As Byte
+        If Not m_Helper.IsArrayEmpty(m_IV) Then
+            ' Use first 12 bytes of IV if it's 16 bytes
+            If UBound(m_IV) - LBound(m_IV) + 1 >= 12 Then
+                ReDim nonce(11)
+                mWin32CryptoAPI.AES_CopyMemory VarPtr(nonce(0)), VarPtr(m_IV(LBound(m_IV))), 12
+            Else
+                ' IV is too short, pad with zeros
+                ReDim nonce(11)
+                Dim copyLen As Long
+                copyLen = UBound(m_IV) - LBound(m_IV) + 1
+                mWin32CryptoAPI.AES_CopyMemory VarPtr(nonce(0)), VarPtr(m_IV(LBound(m_IV))), copyLen
+            End If
+        Else
+            ' Generate 12-byte nonce
+            ReDim nonce(11)
+            Randomize
+            Dim k As Long
+            For k = 0 To 11
+                nonce(k) = CByte(Rnd() * 255)
+            Next k
+        End If
+
+        ' Generate tag buffer (16 bytes for GCM)
+        ReDim m_GcmTag(15)
+
+        ' Prepare auth info structure
+        Dim authInfo As mWin32CNG.BCRYPT_AUTH_MODE_INFO
+        ' Initialize entire structure to zeros first
+        mWin32CryptoAPI.AES_ZeroMemory VarPtr(authInfo), LenB(authInfo)
+        ' Set cbSize to the actual structure size
+        authInfo.cbSize = LenB(authInfo)
+        authInfo.dwInfoVersion = mWin32CNG.BCRYPT_AUTH_MODE_INFO_VERSION
+
+        ' Set nonce (12 bytes for GCM)
+        authInfo.pbNonce = VarPtr(nonce(0))
+        authInfo.cbNonce = 12
+
+        ' Set AAD (Additional Authenticated Data) - can be empty
+        If Not m_Helper.IsArrayEmpty(m_GcmAAD) Then
+            authInfo.pbAuthData = VarPtr(m_GcmAAD(LBound(m_GcmAAD)))
+            authInfo.cbAuthData = UBound(m_GcmAAD) - LBound(m_GcmAAD) + 1
+        Else
+            authInfo.pbAuthData = 0
+            authInfo.cbAuthData = 0
+        End If
+
+        ' Set tag buffer (CNG will write tag here)
+        authInfo.pbTag = VarPtr(m_GcmTag(0))
+        authInfo.cbTag = 16
+
+        ' Other fields must be 0
+        authInfo.pbMacContext = 0
+        authInfo.cbMacContext = 0
+        authInfo.cbAAD = 0
+        authInfo.cbData = 0
+        authInfo.dwFlags = 0
+
+        ' Calculate required output size
+        Dim encLen As Long
+        Dim ret As Long
+
+        ' For GCM, size query also needs auth info
+        ret = mWin32CNG.BCryptEncrypt(m_hCNGKey, _
+            VarPtr(data(LBound(data))), dataLen, _
+            VarPtr(authInfo), 0, 0, 0, 0, encLen, 0)
+
+        ' STATUS_SUCCESS (0) means the call succeeded
+        If ret <> mWin32CNG.STATUS_SUCCESS Then
+            Debug.Print "BCryptEncrypt_GCM size query failed: 0x" & Hex$(ret)
+            DoEncryptCNG_GCM = Nothing
+            Exit Function
+        End If
+
+        ' Allocate output buffer
+        Dim buffer() As Byte
+        ReDim buffer(encLen - 1)
+
+        ' Perform encryption with auth info
+        ' Note: CNG will use and modify the nonce via authInfo.pbNonce
+        ret = mWin32CNG.BCryptEncrypt(m_hCNGKey, _
+            VarPtr(data(LBound(data))), dataLen, _
+            VarPtr(authInfo), _
+            0, 0, _
+            VarPtr(buffer(0)), encLen, encLen, 0)
+
+        If ret <> 0 Then
+            Debug.Print "BCryptEncrypt_GCM failed: 0x" & Hex$(ret) & " - " & mWin32CNG.CNGErrorMessage(ret)
+            DoEncryptCNG_GCM = Nothing
+            Exit Function
+        End If
+
+        ' Copy tag from auth info (CNG writes tag here)
+        ' Note: tag was already written to m_GcmTag via pbTag pointer
+
+        ' Resize to actual size
+        If encLen > 0 Then
+            ReDim Preserve buffer(encLen - 1)
+        End If
+
+        DoEncryptCNG_GCM = buffer
+        Exit Function
+
+ErrorHandler:
+        Debug.Print "DoEncryptCNG_GCM failed: " & Err.Description
+        DoEncryptCNG_GCM = Nothing
+    End Function
+
+    ' Execute decryption using CNG
+    Private Function DoDecryptCNG(ByRef data() As Byte) As Byte()
+        On Error GoTo ErrorHandler
+
+        ' Check if CNG is available
+        If Not mWin32CNG.IsCNGAvailable() Then
+            Err.Raise vbObjectError + 301, "cAes.DoDecryptCNG", "CNG not available (requires Vista or later)"
+        End If
+
+        ' Initialize CNG provider
+        If Not InitializeCNGProvider() Then
+            DoDecryptCNG = Nothing
+            Exit Function
+        End If
+
+        ' GCM mode needs special handling (AEAD)
+        If m_CipherMode = AesCipherMode.GCM Then
+            DoDecryptCNG = DoDecryptCNG_GCM(data)
+            Exit Function
+        End If
+
+        Dim dataLen As Long
+        dataLen = UBound(data) - LBound(data) + 1
+
+        ' Calculate required output size
+        Dim decLen As Long
+        Dim ret As Long
+
+        ' First call to get required size
+        ret = mWin32CNG.BCryptDecrypt(m_hCNGKey, _
+            VarPtr(data(LBound(data))), dataLen, _
+            0, 0, 0, 0, 0, decLen, 0)
+
+        If ret <> 0 And ret <> mWin32CNG.STATUS_SUCCESS Then
+            Debug.Print "BCryptDecrypt size query failed: 0x" & Hex$(ret)
+            DoDecryptCNG = Nothing
+            Exit Function
+        End If
+
+        ' Allocate output buffer
+        Dim buffer() As Byte
+        ReDim buffer(decLen - 1)
+
+        ' Prepare IV buffer
+        Dim ivBuffer() As Byte
+        If Not m_Helper.IsArrayEmpty(m_IV) Then
+            ReDim ivBuffer(UBound(m_IV))
+            mWin32CryptoAPI.AES_CopyMemory VarPtr(ivBuffer(0)), VarPtr(m_IV(0)), UBound(m_IV) + 1
+        End If
+
+        Dim ivPtr As LongPtr
+        Dim ivLen As Long
+        If Not m_Helper.IsArrayEmpty(ivBuffer) Then
+            ivPtr = VarPtr(ivBuffer(0))
+            ivLen = UBound(ivBuffer) + 1
+        Else
+            ivPtr = 0
+            ivLen = 0
+        End If
+
+        ' Perform decryption
+        ret = mWin32CNG.BCryptDecrypt(m_hCNGKey, _
+            VarPtr(data(LBound(data))), dataLen, _
+            0, ivPtr, ivLen, _
+            VarPtr(buffer(0)), decLen, decLen, 0)
+
+        If ret <> 0 Then
+            Debug.Print "BCryptDecrypt failed: 0x" & Hex$(ret) & " - " & mWin32CNG.CNGErrorMessage(ret)
+            DoDecryptCNG = Nothing
+            Exit Function
+        End If
+
+        ' Resize to actual size
+        If decLen > 0 Then
+            ReDim Preserve buffer(decLen - 1)
+        End If
+
+        DoDecryptCNG = buffer
+        Exit Function
+
+ErrorHandler:
+        Debug.Print "DoDecryptCNG failed: " & Err.Description
+        DoDecryptCNG = Nothing
+    End Function
+
+    ' GCM mode decryption (AEAD)
+    Private Function DoDecryptCNG_GCM(ByRef data() As Byte) As Byte()
+        On Error GoTo ErrorHandler
+
+        Dim dataLen As Long
+        dataLen = UBound(data) - LBound(data) + 1
+
+        ' Check if tag is provided
+        If m_Helper.IsArrayEmpty(m_GcmTag) Then
+            Err.Raise vbObjectError + 302, "cAes.DoDecryptCNG_GCM", "GCM tag not set for decryption"
+        End If
+
+        ' GCM requires 12-byte nonce (IV), not 16
+        Dim nonce() As Byte
+        If Not m_Helper.IsArrayEmpty(m_IV) Then
+            ' Use first 12 bytes of IV if it's 16 bytes
+            If UBound(m_IV) - LBound(m_IV) + 1 >= 12 Then
+                ReDim nonce(11)
+                mWin32CryptoAPI.AES_CopyMemory VarPtr(nonce(0)), VarPtr(m_IV(LBound(m_IV))), 12
+            Else
+                ' IV is too short, pad with zeros
+                ReDim nonce(11)
+                Dim copyLen As Long
+                copyLen = UBound(m_IV) - LBound(m_IV) + 1
+                mWin32CryptoAPI.AES_CopyMemory VarPtr(nonce(0)), VarPtr(m_IV(LBound(m_IV))), copyLen
+            End If
+        Else
+            ' No IV provided
+            ReDim nonce(11)
+        End If
+
+        ' Prepare auth info structure
+        Dim authInfo As mWin32CNG.BCRYPT_AUTH_MODE_INFO
+        ' Initialize entire structure to zeros first
+        mWin32CryptoAPI.AES_ZeroMemory VarPtr(authInfo), LenB(authInfo)
+        ' Set cbSize to the actual structure size
+        authInfo.cbSize = LenB(authInfo)
+        authInfo.dwInfoVersion = mWin32CNG.BCRYPT_AUTH_MODE_INFO_VERSION
+
+        ' Set nonce (12 bytes for GCM)
+        authInfo.pbNonce = VarPtr(nonce(0))
+        authInfo.cbNonce = 12
+
+        ' Set AAD (Additional Authenticated Data) - must match encryption
+        If Not m_Helper.IsArrayEmpty(m_GcmAAD) Then
+            authInfo.pbAuthData = VarPtr(m_GcmAAD(LBound(m_GcmAAD)))
+            authInfo.cbAuthData = UBound(m_GcmAAD) - LBound(m_GcmAAD) + 1
+        Else
+            authInfo.pbAuthData = 0
+            authInfo.cbAuthData = 0
+        End If
+
+        ' Set tag for verification
+        authInfo.pbTag = VarPtr(m_GcmTag(0))
+        authInfo.cbTag = UBound(m_GcmTag) - LBound(m_GcmTag) + 1
+
+        ' Other fields must be 0
+        authInfo.pbMacContext = 0
+        authInfo.cbMacContext = 0
+        authInfo.cbAAD = 0
+        authInfo.cbData = 0
+        authInfo.dwFlags = 0
+
+        ' Calculate required output size
+        Dim decLen As Long
+        Dim ret As Long
+
+        ' For GCM, size query also needs auth info
+        ret = mWin32CNG.BCryptDecrypt(m_hCNGKey, _
+            VarPtr(data(LBound(data))), dataLen, _
+            VarPtr(authInfo), 0, 0, 0, 0, decLen, 0)
+
+        ' STATUS_SUCCESS (0) means the call succeeded
+        If ret <> mWin32CNG.STATUS_SUCCESS Then
+            Debug.Print "BCryptDecrypt_GCM size query failed: 0x" & Hex$(ret)
+            DoDecryptCNG_GCM = Nothing
+            Exit Function
+        End If
+
+        ' Allocate output buffer
+        Dim buffer() As Byte
+        ReDim buffer(decLen - 1)
+
+        ' Perform decryption with auth info
+        ' Note: CNG will use and modify the nonce via authInfo.pbNonce
+        ret = mWin32CNG.BCryptDecrypt(m_hCNGKey, _
+            VarPtr(data(LBound(data))), dataLen, _
+            VarPtr(authInfo), _
+            0, 0, _
+            VarPtr(buffer(0)), decLen, decLen, 0)
+
+        If ret <> 0 Then
+            Debug.Print "BCryptDecrypt_GCM failed: 0x" & Hex$(ret) & " - " & mWin32CNG.CNGErrorMessage(ret)
+            DoDecryptCNG_GCM = Nothing
+            Exit Function
+        End If
+
+        ' Resize to actual size
+        If decLen > 0 Then
+            ReDim Preserve buffer(decLen - 1)
+        End If
+
+        DoDecryptCNG_GCM = buffer
+        Exit Function
+
+ErrorHandler:
+        Debug.Print "DoDecryptCNG_GCM failed: " & Err.Description
+        DoDecryptCNG_GCM = Nothing
+    End Function
+
+    ' Class termination cleanup
+    Private Sub Class_Terminate()
+        Cleanup
+        Set m_Helper = Nothing
+    End Sub
+
+End Class

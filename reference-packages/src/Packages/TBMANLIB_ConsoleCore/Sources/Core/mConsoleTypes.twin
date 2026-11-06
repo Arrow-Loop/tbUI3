@@ -1,0 +1,191 @@
+' =====================================================
+' mConsoleTypes.twin - Console Type Definitions
+' Modern Console Library for TwinBASIC
+' =====================================================
+
+' Console Color Enum - ANSI/VT100 compatible colors
+Public Module mConsoleTypes
+    ' Nothing here - this module exists just to ensure that types are compiled
+    Public Enum ConsoleColor
+        Black = 0
+        DarkBlue = 1
+        DarkGreen = 2
+        DarkCyan = 3
+        DarkRed = 4
+        DarkMagenta = 5
+        DarkYellow = 6
+        Gray = 7
+        DarkGray = 8
+        Blue = 9
+        Green = 10
+        Cyan = 11
+        Red = 12
+        Magenta = 13
+        Yellow = 14
+        White = 15
+    End Enum
+
+    ' Console Text Style Flags
+    [Flags]
+    Public Enum ConsoleTextStyle
+        StyleNone = 0
+        StyleBold = 1
+        StyleUnderline = 2
+        StyleReverse = 4
+    End Enum
+
+    ' Console Key Codes
+    Public Enum ConsoleKey
+        KeyEnter = 13
+        KeyEscape = 27
+        KeySpace = 32
+        KeyBackspace = 8
+        KeyTab = 9
+        KeyUp = 72
+        KeyDown = 80
+        KeyLeft = 75
+        KeyRight = 77
+        KeyHome = 71
+        KeyEnd = 79
+        KeyPageUp = 73
+        KeyPageDown = 81
+        KeyInsert = 82
+        KeyDelete = 83
+        KeyF1 = 59
+        KeyF2 = 60
+        KeyF3 = 61
+        KeyF4 = 62
+        KeyF5 = 63
+        KeyF6 = 64
+        KeyF7 = 65
+        KeyF8 = 66
+        KeyF9 = 67
+        KeyF10 = 68
+        KeyF11 = 133
+        KeyF12 = 134
+    End Enum
+
+    ' Console Mode Flags
+    [Flags]
+    Public Enum ConsoleMode
+        ModeNormal = 0
+        ModeVirtualTerminal = 1
+        ModeFullScreen = 2
+        ModeRaw = 4
+    End Enum
+
+    ' Console Event Types
+    Public Enum ConsoleEventType
+        EventNone = 0
+        EventResize = 1
+        EventKeyPress = 2
+        EventMouseClick = 3
+        EventFocus = 4
+        EventCtrlC = 5
+        EventCtrlBreak = 6
+        EventClose = 7
+    End Enum
+
+    ' Console Position Structure
+    Public Type ConsolePosition
+        Col As Long
+        Row As Long
+    End Type
+
+    ' Console Size Structure
+    Public Type ConsoleSize
+        Width As Long
+        Height As Long
+    End Type
+
+    ' Console Rect Structure
+    Public Type ConsoleRect
+        Left As Long
+        Top As Long
+        Right As Long
+        Bottom As Long
+    End Type
+
+    ' Console Character Info
+    Public Type ConsoleCharInfo
+        Char As String
+        ForeColor As ConsoleColor
+        BackColor As ConsoleColor
+        Style As ConsoleTextStyle
+    End Type
+
+    ' Console Key Info
+    Public Type ConsoleKeyInfo
+        KeyCode As Long
+        KeyChar As String
+        IsAltPressed As Boolean
+        IsCtrlPressed As Boolean
+        IsShiftPressed As Boolean
+    End Type
+
+    ' Console Mouse Info
+    Public Type ConsoleMouseInfo
+        Col As Long
+        Row As Long
+        Button As Long
+        IsDoubleClick As Boolean
+    End Type
+
+    ' Console Event Info
+    Public Type ConsoleEventInfo
+        EventType As ConsoleEventType
+        KeyInfo As ConsoleKeyInfo
+        MouseInfo As ConsoleMouseInfo
+        NewSize As ConsoleSize
+    End Type
+
+    ' ========== Helper Functions ==========
+
+    ' Create a ConsoleRect structure
+    Public Function ConsoleRect_Create(ByVal left As Long, ByVal top As Long, _
+                                        ByVal right As Long, ByVal bottom As Long) As ConsoleRect
+        Dim result As ConsoleRect
+        result.Left = left
+        result.Top = top
+        result.Right = right
+        result.Bottom = bottom
+        Return result
+    End Function
+
+    ' Check if a point is inside a rect
+    Public Function ConsoleRect_Contains(ByVal rect As ConsoleRect, _
+                                          ByVal x As Long, ByVal y As Long) As Boolean
+        Return x >= rect.Left AndAlso x <= rect.Right AndAlso _
+               y >= rect.Top AndAlso y <= rect.Bottom
+    End Function
+
+    ' Get width of a rect
+    Public Function ConsoleRect_Width(ByVal rect As ConsoleRect) As Long
+        Return rect.Right - rect.Left + 1
+    End Function
+
+    ' Get height of a rect
+    Public Function ConsoleRect_Height(ByVal rect As ConsoleRect) As Long
+        Return rect.Bottom - rect.Top + 1
+    End Function
+
+    ' ========== Theme Color Types ==========
+
+    Public Enum ThemeColorType
+        tcPrimary = 1
+        tcSecondary = 2
+        tcSuccess = 3
+        tcWarning = 4
+        tcError = 5
+        tcInfo = 6
+        tcMuted = 7
+        tcBackground = 8
+        tcForeground = 9
+        tcBorder = 10
+        tcHeaderBackground = 11
+        tcHeaderForeground = 12
+        tcSelectedBackground = 13
+        tcSelectedForeground = 14
+    End Enum
+
+End Module

@@ -1,5 +1,12 @@
 # Changelog: tbIDE (WinUI 3 look for the twinBASIC IDE)
 
+## 2026-11-09: disabled Preview button greys out
+
+Shane's 1043 screenshot with the add-in loaded showed the toolbar, menus and New / Open dialog working (`163 of 163 rules parsed`), with Preview in red text while disabled in code view.
+
+Fixed (add-in)
+- A disabled Preview button now uses `TextFillColorDisabled` like every other disabled toolbar button. The IDE marks it disabled with a red background, which earlier passes turned into red text.
+
 ## 2026-11-09: long menus no longer run off the window
 
 Shane: large menus (the Edit menu) were cut off by the window.

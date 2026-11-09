@@ -261,3 +261,12 @@ body.darkMode ::-webkit-scrollbar-thumb:hover, body:not(.darkMode) ::-webkit-scr
 
 body #hoverTooltip { box-sizing: border-box; max-width: 320px; padding: 6px 9px 8px 9px; border: 1px solid var(--color-popup-border); border-radius: 4px; box-shadow: none; font-family: 'Segoe UI Variable Text', 'Segoe UI Variable', 'Segoe UI', sans-serif; font-size: 12px; font-weight: 400; line-height: normal; }
 body #hoverTooltip.visibleTooltip { -webkit-filter: opacity(1); }
+
+/* ---------- Glyph colours the IDE hard-codes ----------
+  The Window > Theme menu glyph (.codicon-symbol-color) is fixed black with !important, so it vanishes on a dark menu;
+  it takes the menu text colour like every other menu glyph. The panel header buttons (... and close) turn black on
+  a translucent white square when hovered; WinUI's subtle button hover is SubtleFillColorSecondary with
+  TextFillColorPrimary and ControlCornerRadius 4 (reference .button--subtle:hover). */
+
+body .codicon.codicon-symbol-color { color: inherit !important; }
+body .panelHeaderIcon:hover { color: var(--color-text); background-color: var(--color-neutral-hover); outline: 0; border-radius: 4px; }

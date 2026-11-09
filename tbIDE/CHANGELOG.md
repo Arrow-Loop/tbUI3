@@ -1,5 +1,19 @@
 # Changelog: tbIDE (WinUI 3 look for the twinBASIC IDE)
 
+## 2026-11-09: glyph colours
+
+Shane spotted wrong-coloured glyphs on 1043 with the add-in loaded: the info icon in message boxes and the Theme icon in the Window menu.
+
+Fixed (themes)
+- `InfoBoxIconFilter`: the info icon is a white PNG that the inherited IDE Dark theme inverts to black. WinUI3 Dark now shows it at `TextFillColorSecondary` (`opacity(0.7725)`), WinUI3 Light inverts it to black at `TextFillColorSecondary` (`invert(1) opacity(0.6196)`).
+
+Fixed (add-in, no theme property)
+- The Theme menu glyph (`.codicon-symbol-color`) is hard-coded black with `!important`; it now takes the menu text colour.
+- Panel header buttons (the `...` and close glyphs) turned black on a translucent white square when hovered; they now use WinUI's subtle button hover (`SubtleFillColorSecondary`, `TextFillColorPrimary`, 4px corners). 77 rules.
+
+Validated
+- Chromium with 1043's CSS: info icon filter as above in each theme; Theme glyph white (dark) and rgba(0,0,0,0.894) (light), matching its menu item; hovered panel button white on rgba(255,255,255,0.06) in dark with no outline.
+
 ## 2026-11-09: New Project Options dialog
 
 Shane asked whether the themes can fix the New Project Options dialog (white Project Name box, native blue check boxes, grey-bordered drop-down) before the add-in loads.

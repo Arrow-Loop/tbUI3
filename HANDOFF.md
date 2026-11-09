@@ -2,6 +2,8 @@
 
 ## Current update, 2026-11-09
 
+Latest result overrides any implication of a working 1.0.0.63 baseline: Shane's BETA 1043 win32 report shows TB5079 for controls on both forms, secondary TB5125 errors, and a native "failed to deserialize JSON [1]" designer error while the embedded 1.0.0.63 reference is enabled. Static JSON/identity/reference inspection did not identify the native cause. Await a fresh-session result and canonical tbUI3 package diagnostics. No source change was made in response to this report; do not call the candidate compiled or the rendering failure corrected.
+
 The recoverable package candidate is 1.0.0.63 on tbui3-dev. UI3TabView/UI3TabPage, the separate TabViewDesigner add-in and frmMultiPage are integrated and synchronized. Read `docs/controls/UI3TabView.md`, `tbIDE/TabViewDesigner/README.md` and `docs/validation/2026-11-09-tabview-candidate.md` for the exact contract and evidence. Shane's follow-up screenshots show dark headers initially, then a purple strip after interaction; captions still show defaults. Version 1.0.0.63 removes layout/property mutations from Paint and adds adapter v3 diagnostics plus native paint logs. Twenty-two adapter checks pass. Stable rendering and fixture initialization remain open. Use TabView diagnostics before/after the symptom and compare tbUI3-tabview.log; do not infer a CSS or native cause from the image alone. The full IDE authoring loop remains the next gate. The earlier chat's claimed candidate was never committed and supplies no inherited validation evidence. Existing styling work is preserved.
 
 ## Earlier milestone context

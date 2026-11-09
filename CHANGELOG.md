@@ -4,6 +4,12 @@ All notable changes to tbUI3. Dates are when the change was made, not released. 
 
 ## Unreleased
 
+### 2026-11-09, 1.0.0.63 control-loading failure recorded
+
+- Shane's BETA 1043 win32 report contains TB5079 for the existing frmMain buttons and frmMultiPage controls, with secondary TB5125 Len errors. The screenshot confirms the embedded tbUI3 1.0.0.63 reference is enabled and shows "failed to deserialize JSON [1]" for UI3TabView1. Stable loading/compilation is not established.
+- Rechecked the current branch's packed package/test blobs against the delivered revision, public identities, package reference and form/control JSON syntax. No missing reference or JSON syntax defect was identified. This does not establish native deserializer acceptance.
+- Recorded the diagnostic dependency: fresh-session result and diagnostics from the canonical package project are needed to distinguish stale compiler state from a package/control initialization failure. No code correction or root cause is claimed for this report.
+
 ### 2026-11-09, designer paint lifecycle correction and diagnostics (1.0.0.63)
 
 - Shane's BETA 1043 win32 screenshots show a dark header initially, then a purple strip and missing labels after interaction. Default Page/Button captions remain visible; one-time fixture initialization is not yet established by live evidence.

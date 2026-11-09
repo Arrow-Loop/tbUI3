@@ -2,6 +2,12 @@
 
 Current candidate: **1.0.0.63**. Earlier candidate evidence is retained below as history.
 
+## 1.0.0.63 reported loading/compilation failure
+
+Shane's later BETA 1043 win32 report lists TB5079 for the existing frmMain buttons and frmMultiPage controls, plus secondary TB5125 Len errors. The screenshot shows the embedded tbUI3 1.0.0.63 reference enabled and "failed to deserialize JSON [1]" on UI3TabView1. Treat native loading/compilation as failed for that observed session. The earlier 22 adapter checks and 68 mirror checks did not exercise native control deserialization.
+
+Current branch packed blobs still match the delivered 1.0.0.63 artifacts. All form/control JSON documents parse, package identities and references remain present. No JSON syntax defect or missing reference was found. These checks cannot explain or clear the native failure. Required next evidence: whether the same rejection persists in a fresh IDE session, and diagnostics from tbUI3/tbUI3.twinproj itself. No code correction, regression cause or clean build is claimed.
+
 ## 1.0.0.63 interaction follow-up
 
 Shane supplied two BETA 1043 win32 screenshots: the first shows dark headers, the second has a purple strip and missing labels after interacting with the form. Header-strip pixels sampled from the supplied image include RGB (133,21,181), while the initial image at the same locations is dark. The page body remains visible. Both show default Page/Button labels, so neither stable rendering nor fixture initialization is established.

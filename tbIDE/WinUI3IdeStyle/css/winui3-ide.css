@@ -219,7 +219,8 @@ body .configEditorContainer input[type=text]:focus, body .configEditorContainer 
 body .configEditorContainer input:disabled, body .configEditorContainer textarea:disabled, body .configEditorContainer2 input:disabled, body .configEditorContainer2 textarea:disabled, body .IDEoptionValue input:disabled { background-color: var(--color-control-disabled) !important; color: var(--color-text-disabled) !important; border-color: var(--color-control-border) !important; }
 
 /* ---------- Drop-downs: ComboBox (reference .select-field) ----------
-  ComboBoxPadding 12,5,0,7 plus the 32px DropDownGlyph column (reference --combo-padding 5px 32px 7px 12px),
+  ComboBoxPadding 12,5,0,7 plus the 32px DropDownGlyph column (reference --combo-padding 5px 32px 7px 12px), applied as
+  6px top and bottom: Chromium centres the 18px line box differently from XAML, and 5/7 left the text 1px high,
   ComboBoxMinHeight 32, ControlCornerRadius 4, ControlFillColorDefault rest, Secondary hover, Tertiary pressed
   with TextFillColorSecondary text, 12px chevron (DropDownGlyph E70D) 12px from the right in TextFillColorSecondary.
   The border is ControlElevationBorderBrush; a select cannot carry the reference's ::before ring, so it is a solid
@@ -229,11 +230,11 @@ body .configEditorContainer input:disabled, body .configEditorContainer textarea
   makes it dark in WinUI3 Dark. Deviation: the toolbar and code navigation drop-downs keep a compact height
   so the toolbar and the editor do not grow. The property sheet's drop-downs are left alone. */
 
-body .configEditorContainer select, body .configEditorContainer2 select, body select.IDEoptionDropdown, body select.findReplacePanelDropDown2, body select.webpagePanelHeaderZoom, body #rootMenu2 select, body #rootMenu2 select:focus, body .codePanelDropDownContainer select.dropDown, body .codePanelDropDownContainer select.dropDown:focus { appearance: none; -webkit-appearance: none; box-sizing: border-box; min-height: 32px; padding: 5px 32px 7px 12px; border: 1px solid var(--color-control-border) !important; border-radius: 4px; outline: none !important; background-color: var(--color-control) !important; background-image: var(--combo-chevron) !important; background-repeat: no-repeat !important; background-position: right 12px center !important; background-size: 12px 12px !important; color: var(--color-text) !important; font-family: 'Segoe UI Variable Text', 'Segoe UI Variable', 'Segoe UI', sans-serif; font-size: 14px; line-height: 18px; cursor: default; }
+body .configEditorContainer select, body .configEditorContainer2 select, body select.IDEoptionDropdown, body select.findReplacePanelDropDown2, body select.webpagePanelHeaderZoom, body #rootMenu2 select, body #rootMenu2 select:focus, body .codePanelDropDownContainer select.dropDown, body .codePanelDropDownContainer select.dropDown:focus { appearance: none; -webkit-appearance: none; box-sizing: border-box; min-height: 32px; padding: 6px 32px 6px 12px; border: 1px solid var(--color-control-border) !important; border-radius: 4px; outline: none !important; background-color: var(--color-control) !important; background-image: var(--combo-chevron) !important; background-repeat: no-repeat !important; background-position: right 12px center !important; background-size: 12px 12px !important; color: var(--color-text) !important; font-family: 'Segoe UI Variable Text', 'Segoe UI Variable', 'Segoe UI', sans-serif; font-size: 14px; line-height: 18px; cursor: default; }
 body.darkMode #rootMenu2 select, body.darkMode .codePanelDropDownContainer select.dropDown, body.darkMode .configEditorContainer select, body.darkMode .configEditorContainer2 select, body.darkMode select.IDEoptionDropdown, body.darkMode select.findReplacePanelDropDown2, body.darkMode select.webpagePanelHeaderZoom { color-scheme: dark; border-top-color: var(--color-control-border-bottom) !important; }
 body:not(.darkMode) #rootMenu2 select, body:not(.darkMode) .codePanelDropDownContainer select.dropDown, body:not(.darkMode) .configEditorContainer select, body:not(.darkMode) .configEditorContainer2 select, body:not(.darkMode) select.IDEoptionDropdown, body:not(.darkMode) select.findReplacePanelDropDown2, body:not(.darkMode) select.webpagePanelHeaderZoom { color-scheme: light; border-bottom-color: var(--color-control-border-bottom) !important; }
 body #rootMenu2 select, body .codePanelDropDownContainer select.dropDown, body .codePanelDropDownContainer select.dropDown:focus { min-height: 0; padding: 2px 30px 3px 10px; background-position: right 10px center !important; font-size: 13px; }
-body .tbps-controlSelect, body .tbis-controlSelect, body select.tbps-warningState { min-width: 200px; padding: 5px 32px 7px 12px !important; }
+body .tbps-controlSelect, body .tbis-controlSelect, body select.tbps-warningState { min-width: 200px; padding: 6px 32px 6px 12px !important; }
 body .configEditorContainer select:hover, body .configEditorContainer2 select:hover, body select.IDEoptionDropdown:hover, body select.findReplacePanelDropDown2:hover, body select.webpagePanelHeaderZoom:hover, body #rootMenu2 select:hover, body .codePanelDropDownContainer select.dropDown:hover { background-color: var(--color-control-hover) !important; }
 body .configEditorContainer select:active, body .configEditorContainer2 select:active, body select.IDEoptionDropdown:active, body select.findReplacePanelDropDown2:active, body select.webpagePanelHeaderZoom:active, body #rootMenu2 select:active, body .codePanelDropDownContainer select.dropDown:active { background-color: var(--color-control-active) !important; color: var(--color-text-muted) !important; }
 body .configEditorContainer select:disabled, body .configEditorContainer2 select:disabled, body select.IDEoptionDropdown:disabled, body select.findReplacePanelDropDown2:disabled, body select.webpagePanelHeaderZoom:disabled, body #rootMenu2 select:disabled, body .codePanelDropDownContainer select.dropDown:disabled { background-color: var(--color-control-disabled) !important; color: var(--color-text-disabled) !important; border-color: var(--color-control-border) !important; }
@@ -404,11 +405,13 @@ body #rootMenu2 > #menuBarPreview.disabledCommand { background-color: transparen
    corners, 64px rows with 12px 16px padding, 600 title, 12px TextFillColorSecondary description, control on the
    right). The row divider stays the themes' DialogConfigRowBorderBottom.
    IDE Options' No / Yes pair becomes a ToggleSwitch (reference .toggle: 40x20 track, 12px knob growing to 14px on
-   hover and 17px wide when pressed, 'Off' / 'On' to its left as in Windows Settings). The two segments stay in the
+   hover and 17px wide when pressed, 'Off' / 'On' to its left as in Windows Settings). The knob sits 10px from
+   either outer edge, as in ToggleSwitch's 20px knob column; the reference's 8.5px origin left the on knob 1px off. The two segments stay in the
    page as invisible click targets over the switch; the selected one ignores the pointer, so a click always lands on
    the other one. Project Settings' bool has a third state (Default, whose value only the script knows), so it
-   cannot be a two-state switch: it becomes a Segmented control (Community Toolkit) with the selected item raised
-   and an accent pill. Number fields become a NumberBox with inline spin buttons; the references tabs a SelectorBar. */
+   cannot be a two-state switch: it becomes a horizontal RadioButtons group (reference .choice radio: 20px circle,
+   accent fill and a 12px dot when selected, 14px on hover, 10px pressed). Shane found a Segmented control
+   looked wrong. Number fields become a NumberBox with inline spin buttons; the references tabs a SelectorBar. */
 body { --chevron-up-mask: url('data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 12 12%27%3E%3Cpath d=%27M2.5 7.5 6 4l3.5 3.5%27 fill=%27none%27 stroke=%27%23000%27 stroke-width=%271.2%27 stroke-linecap=%27round%27 stroke-linejoin=%27round%27/%3E%3C/svg%3E'); --chevron-down-mask: url('data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 12 12%27%3E%3Cpath d=%27M2.5 4.5 6 8l3.5-3.5%27 fill=%27none%27 stroke=%27%23000%27 stroke-width=%271.2%27 stroke-linecap=%27round%27 stroke-linejoin=%27round%27/%3E%3C/svg%3E'); }
 body .tbps-settingsNav, body .tbis-settingsNav { border-right: 1px solid var(--color-divider); }
 body .tbps-settingsToolbar, body .tbis-settingsToolbar { padding: 8px 4px 4px; gap: 4px; }
@@ -436,14 +439,15 @@ body .tbps-optionDesc, body .tbis-optionDesc { margin-top: 2px; color: var(--col
 body .tbps-optionValueCol, body .tbis-optionValueCol { align-items: flex-end; }
 body .tbps-optionRowFull .tbps-optionValueCol { align-items: stretch; }
 body .tbps-optionErrors, body .tbis-optionErrors { padding: 8px 12px; border: 1px solid var(--color-card-border); border-radius: 4px; background: var(--color-critical-soft); color: var(--color-text); font-size: 12px; }
+body .tbis-optionValueCol:has(> .tbis-warning) { flex-direction: row-reverse; align-items: center; justify-content: flex-start; gap: 12px; }
 body .tbis-warning { padding: 4px 12px; border: 1px solid var(--color-card-border); border-radius: 4px; background: var(--color-caution-soft); color: var(--color-text); font-size: 12px; }
 body .tbps-optionBanner { padding: 12px 16px; border: 1px solid var(--color-card-border); border-radius: 4px; background: var(--color-caution-soft); color: var(--color-text); font-size: 14px; }
 body .tbis-bool { position: relative; display: inline-block; box-sizing: border-box; width: 40px; height: 20px; margin: 6px 0 6px 52px; overflow: visible; border: 1px solid var(--color-border-strong); border-radius: 10px; background: var(--color-alt); }
 body .tbis-bool::before { content: 'Off'; position: absolute; right: calc(100% + 12px); top: 50%; transform: translateY(-50%); color: var(--color-text); font-size: 14px; line-height: 20px; white-space: nowrap; pointer-events: none; }
-body .tbis-bool::after { content: ''; position: absolute; top: 50%; left: 8.5px; width: 12px; height: 12px; transform: translate(-50%, -50%); border-radius: 50%; background: var(--color-text-muted); transition: left 0.1s, width 0.1s, height 0.1s; pointer-events: none; }
+body .tbis-bool::after { content: ''; position: absolute; top: 50%; left: 9px; width: 12px; height: 12px; transform: translate(-50%, -50%); border-radius: 50%; background: var(--color-text-muted); transition: left 0.1s, width 0.1s, height 0.1s; pointer-events: none; }
 body .tbis-bool:has(> .tbis-boolSegment:nth-child(2).tbis-boolSelected) { border-color: var(--color-accent); background: var(--color-accent); }
 body .tbis-bool:has(> .tbis-boolSegment:nth-child(2).tbis-boolSelected)::before { content: 'On'; }
-body .tbis-bool:has(> .tbis-boolSegment:nth-child(2).tbis-boolSelected)::after { left: 28.5px; background: var(--color-accent-text); }
+body .tbis-bool:has(> .tbis-boolSegment:nth-child(2).tbis-boolSelected)::after { left: 29px; background: var(--color-accent-text); }
 body .tbis-bool:hover { background: var(--color-alt-hover); }
 body .tbis-bool:hover::after { width: 14px; height: 14px; }
 body .tbis-bool:active { background: var(--color-alt-pressed); }
@@ -452,11 +456,16 @@ body .tbis-bool:has(> .tbis-boolSegment:nth-child(2).tbis-boolSelected):hover { 
 body .tbis-bool:has(> .tbis-boolSegment:nth-child(2).tbis-boolSelected):active { border-color: transparent; background: var(--color-accent-pressed); }
 body .tbis-boolSegment { position: absolute; inset: -6px -2px -6px -52px; padding: 0; border: 0; background: transparent; color: transparent; font-size: 0; }
 body .tbis-boolSegment.tbis-boolSelected { pointer-events: none; background: transparent; color: transparent; }
-body .tbps-bool { display: inline-flex; gap: 2px; padding: 2px; overflow: visible; border: 1px solid var(--color-control-border); border-radius: 4px; background: var(--color-alt); }
-body .tbps-boolSegment { min-height: 26px; box-sizing: border-box; padding: 3px 12px 5px; border: 0; border-radius: 3px; background: transparent; color: var(--color-text-muted); font-size: 14px; line-height: 18px; cursor: default; }
-body .tbps-boolSegment:hover { background: var(--color-neutral-hover); color: var(--color-text); }
-body .tbps-boolSegment:active { background: var(--color-neutral-pressed); }
-body .tbps-boolSegment.tbps-boolSelected { background: var(--color-control) linear-gradient(var(--color-accent), var(--color-accent)) center bottom 2px / 16px 3px no-repeat; box-shadow: 0 0 0 1px var(--color-control-border); color: var(--color-text); }
+body .tbps-bool { display: inline-flex; gap: 0 20px; padding: 0; overflow: visible; border: 0; border-radius: 0; background: transparent; }
+body .tbps-boolSegment { position: relative; display: inline-flex; align-items: center; gap: 8px; min-height: 32px; padding: 0; border: 0; background: transparent; color: var(--color-text); font-size: 14px; line-height: 20px; cursor: default; }
+body .tbps-boolSegment::before { content: ''; flex: 0 0 auto; box-sizing: border-box; width: 20px; height: 20px; border: 1px solid var(--color-border-strong); border-radius: 50%; background: var(--color-alt); }
+body .tbps-boolSegment:hover::before { background: var(--color-alt-hover); }
+body .tbps-boolSegment:active::before { background: var(--color-alt-pressed); border-color: var(--color-border-disabled); }
+body .tbps-boolSegment.tbps-boolSelected { background: transparent; color: var(--color-text); }
+body .tbps-boolSegment.tbps-boolSelected::before { border-color: var(--color-accent); background: radial-gradient(circle, var(--color-accent-text) 0 5.5px, var(--color-accent) 6px); }
+body .tbps-boolSegment.tbps-boolSelected:hover::before { border-color: var(--color-accent-hover); background: radial-gradient(circle, var(--color-accent-text) 0 6.5px, var(--color-accent-hover) 7px); }
+body .tbps-boolSegment.tbps-boolSelected:active::before { border-color: var(--color-accent-pressed); background: radial-gradient(circle, var(--color-accent-text) 0 4.5px, var(--color-accent-pressed) 5px); }
+body .tbps-boolSegment:hover { background: transparent; }
 body .tbps-boolDefault { font-size: 14px; opacity: 1; }
 body .tbps-spin { position: relative; overflow: visible; border: 0; border-radius: 4px; }
 body .tbps-spin input { width: 152px !important; min-width: 152px !important; padding-right: 68px !important; }

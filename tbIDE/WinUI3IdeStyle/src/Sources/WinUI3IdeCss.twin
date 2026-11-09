@@ -5,7 +5,7 @@ Module WinUI3IdeCss
 
     ' Number of rules Build() returns. The add-in's log compares it with what the browser parsed.
     Public Function RuleCount() As Long
-        Return 229
+        Return 235
     End Function
 
     Public Function Build() As String
@@ -103,7 +103,7 @@ Module WinUI3IdeCss
         css = css & "color: var(--color-text-disabled) !important; border-color: var(--color-control-border) !important; }" & vbCrLf
         css = css & "body .configEditorContainer select, body .configEditorContainer2 select, body select.IDEoptionDropdown, body select.findReplacePanelDropDown2, body select.webpagePanelHeaderZoom, "
         css = css & "body #rootMenu2 select, body #rootMenu2 select:focus, body .codePanelDropDownContainer select.dropDown, body .codePanelDropDownContainer select.dropDown:focus { appearance: none; "
-        css = css & "-webkit-appearance: none; box-sizing: border-box; min-height: 32px; padding: 5px 32px 7px 12px; border: 1px solid var(--color-control-border) !important; border-radius: 4px; "
+        css = css & "-webkit-appearance: none; box-sizing: border-box; min-height: 32px; padding: 6px 32px 6px 12px; border: 1px solid var(--color-control-border) !important; border-radius: 4px; "
         css = css & "outline: none !important; background-color: var(--color-control) !important; background-image: var(--combo-chevron) !important; background-repeat: no-repeat !important; "
         css = css & "background-position: right 12px center !important; background-size: 12px 12px !important; color: var(--color-text) !important; font-family: 'Segoe UI Variable Text', "
         css = css & "'Segoe UI Variable', 'Segoe UI', sans-serif; font-size: 14px; line-height: 18px; cursor: default; }" & vbCrLf
@@ -115,7 +115,7 @@ Module WinUI3IdeCss
         css = css & "body:not(.darkMode) select.webpagePanelHeaderZoom { color-scheme: light; border-bottom-color: var(--color-control-border-bottom) !important; }" & vbCrLf
         css = css & "body #rootMenu2 select, body .codePanelDropDownContainer select.dropDown, body .codePanelDropDownContainer select.dropDown:focus { min-height: 0; padding: 2px 30px 3px 10px; "
         css = css & "background-position: right 10px center !important; font-size: 13px; }" & vbCrLf
-        css = css & "body .tbps-controlSelect, body .tbis-controlSelect, body select.tbps-warningState { min-width: 200px; padding: 5px 32px 7px 12px !important; }" & vbCrLf
+        css = css & "body .tbps-controlSelect, body .tbis-controlSelect, body select.tbps-warningState { min-width: 200px; padding: 6px 32px 6px 12px !important; }" & vbCrLf
         css = css & "body .configEditorContainer select:hover, body .configEditorContainer2 select:hover, body select.IDEoptionDropdown:hover, body select.findReplacePanelDropDown2:hover, "
         css = css & "body select.webpagePanelHeaderZoom:hover, body #rootMenu2 select:hover, "
         css = css & "body .codePanelDropDownContainer select.dropDown:hover { background-color: var(--color-control-hover) !important; }" & vbCrLf
@@ -300,6 +300,7 @@ Module WinUI3IdeCss
         css = css & "body .tbps-optionRowFull .tbps-optionValueCol { align-items: stretch; }" & vbCrLf
         css = css & "body .tbps-optionErrors, body .tbis-optionErrors { padding: 8px 12px; border: 1px solid var(--color-card-border); border-radius: 4px; background: var(--color-critical-soft); "
         css = css & "color: var(--color-text); font-size: 12px; }" & vbCrLf
+        css = css & "body .tbis-optionValueCol:has(> .tbis-warning) { flex-direction: row-reverse; align-items: center; justify-content: flex-start; gap: 12px; }" & vbCrLf
         css = css & "body .tbis-warning { padding: 4px 12px; border: 1px solid var(--color-card-border); border-radius: 4px; background: var(--color-caution-soft); color: var(--color-text); "
         css = css & "font-size: 12px; }" & vbCrLf
         css = css & "body .tbps-optionBanner { padding: 12px 16px; border: 1px solid var(--color-card-border); border-radius: 4px; background: var(--color-caution-soft); color: var(--color-text); "
@@ -308,11 +309,11 @@ Module WinUI3IdeCss
         css = css & "border: 1px solid var(--color-border-strong); border-radius: 10px; background: var(--color-alt); }" & vbCrLf
         css = css & "body .tbis-bool::before { content: 'Off'; position: absolute; right: calc(100% + 12px); top: 50%; transform: translateY(-50%); color: var(--color-text); font-size: 14px; "
         css = css & "line-height: 20px; white-space: nowrap; pointer-events: none; }" & vbCrLf
-        css = css & "body .tbis-bool::after { content: ''; position: absolute; top: 50%; left: 8.5px; width: 12px; height: 12px; transform: translate(-50%, -50%); border-radius: 50%; "
+        css = css & "body .tbis-bool::after { content: ''; position: absolute; top: 50%; left: 9px; width: 12px; height: 12px; transform: translate(-50%, -50%); border-radius: 50%; "
         css = css & "background: var(--color-text-muted); transition: left 0.1s, width 0.1s, height 0.1s; pointer-events: none; }" & vbCrLf
         css = css & "body .tbis-bool:has(> .tbis-boolSegment:nth-child(2).tbis-boolSelected) { border-color: var(--color-accent); background: var(--color-accent); }" & vbCrLf
         css = css & "body .tbis-bool:has(> .tbis-boolSegment:nth-child(2).tbis-boolSelected)::before { content: 'On'; }" & vbCrLf
-        css = css & "body .tbis-bool:has(> .tbis-boolSegment:nth-child(2).tbis-boolSelected)::after { left: 28.5px; background: var(--color-accent-text); }" & vbCrLf
+        css = css & "body .tbis-bool:has(> .tbis-boolSegment:nth-child(2).tbis-boolSelected)::after { left: 29px; background: var(--color-accent-text); }" & vbCrLf
         css = css & "body .tbis-bool:hover { background: var(--color-alt-hover); }" & vbCrLf
         css = css & "body .tbis-bool:hover::after { width: 14px; height: 14px; }" & vbCrLf
         css = css & "body .tbis-bool:active { background: var(--color-alt-pressed); }" & vbCrLf
@@ -321,14 +322,21 @@ Module WinUI3IdeCss
         css = css & "body .tbis-bool:has(> .tbis-boolSegment:nth-child(2).tbis-boolSelected):active { border-color: transparent; background: var(--color-accent-pressed); }" & vbCrLf
         css = css & "body .tbis-boolSegment { position: absolute; inset: -6px -2px -6px -52px; padding: 0; border: 0; background: transparent; color: transparent; font-size: 0; }" & vbCrLf
         css = css & "body .tbis-boolSegment.tbis-boolSelected { pointer-events: none; background: transparent; color: transparent; }" & vbCrLf
-        css = css & "body .tbps-bool { display: inline-flex; gap: 2px; padding: 2px; overflow: visible; border: 1px solid var(--color-control-border); border-radius: 4px; background: var(--color-alt); "
+        css = css & "body .tbps-bool { display: inline-flex; gap: 0 20px; padding: 0; overflow: visible; border: 0; border-radius: 0; background: transparent; }" & vbCrLf
+        css = css & "body .tbps-boolSegment { position: relative; display: inline-flex; align-items: center; gap: 8px; min-height: 32px; padding: 0; border: 0; background: transparent; "
+        css = css & "color: var(--color-text); font-size: 14px; line-height: 20px; cursor: default; }" & vbCrLf
+        css = css & "body .tbps-boolSegment::before { content: ''; flex: 0 0 auto; box-sizing: border-box; width: 20px; height: 20px; border: 1px solid var(--color-border-strong); border-radius: 50%; "
+        css = css & "background: var(--color-alt); }" & vbCrLf
+        css = css & "body .tbps-boolSegment:hover::before { background: var(--color-alt-hover); }" & vbCrLf
+        css = css & "body .tbps-boolSegment:active::before { background: var(--color-alt-pressed); border-color: var(--color-border-disabled); }" & vbCrLf
+        css = css & "body .tbps-boolSegment.tbps-boolSelected { background: transparent; color: var(--color-text); }" & vbCrLf
+        css = css & "body .tbps-boolSegment.tbps-boolSelected::before { border-color: var(--color-accent); background: radial-gradient(circle, var(--color-accent-text) 0 5.5px, var(--color-accent) 6px); "
         css = css & "}" & vbCrLf
-        css = css & "body .tbps-boolSegment { min-height: 26px; box-sizing: border-box; padding: 3px 12px 5px; border: 0; border-radius: 3px; background: transparent; color: var(--color-text-muted); "
-        css = css & "font-size: 14px; line-height: 18px; cursor: default; }" & vbCrLf
-        css = css & "body .tbps-boolSegment:hover { background: var(--color-neutral-hover); color: var(--color-text); }" & vbCrLf
-        css = css & "body .tbps-boolSegment:active { background: var(--color-neutral-pressed); }" & vbCrLf
-        css = css & "body .tbps-boolSegment.tbps-boolSelected { background: var(--color-control) linear-gradient(var(--color-accent), var(--color-accent)) center bottom 2px / 16px 3px no-repeat; "
-        css = css & "box-shadow: 0 0 0 1px var(--color-control-border); color: var(--color-text); }" & vbCrLf
+        css = css & "body .tbps-boolSegment.tbps-boolSelected:hover::before { border-color: var(--color-accent-hover); background: radial-gradient(circle, var(--color-accent-text) 0 6.5px, "
+        css = css & "var(--color-accent-hover) 7px); }" & vbCrLf
+        css = css & "body .tbps-boolSegment.tbps-boolSelected:active::before { border-color: var(--color-accent-pressed); background: radial-gradient(circle, var(--color-accent-text) 0 4.5px, "
+        css = css & "var(--color-accent-pressed) 5px); }" & vbCrLf
+        css = css & "body .tbps-boolSegment:hover { background: transparent; }" & vbCrLf
         css = css & "body .tbps-boolDefault { font-size: 14px; opacity: 1; }" & vbCrLf
         css = css & "body .tbps-spin { position: relative; overflow: visible; border: 0; border-radius: 4px; }" & vbCrLf
         css = css & "body .tbps-spin input { width: 152px !important; min-width: 152px !important; padding-right: 68px !important; }" & vbCrLf

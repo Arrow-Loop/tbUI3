@@ -1,5 +1,19 @@
 # Changelog: tbIDE (WinUI 3 look for the twinBASIC IDE)
 
+## 2026-11-09: settings dialogs, Shane's review fixes
+
+Shane's comments on the previews: dark combo boxes not quite right, the toggle a little wonky, the restart notice should sit left of the switch, and the three-state Segmented control did not look right.
+
+Changed (add-in)
+- ComboBoxes everywhere: 6px top and bottom padding instead of WinUI's 5/7. Chromium centres the 18px line box differently from XAML, so the text sat 1px high.
+- ToggleSwitch knob 10px from either outer edge (it was 9.5px off, 10.5px on, from the reference's 8.5px origin).
+- IDE Options: "FULL IDE RESTART REQUIRED" sits left of the switch on the same line.
+- Project Settings' No / Yes / Default: a horizontal RadioButtons group (reference radio) instead of a Segmented control.
+- 235 rules, 51,754 characters.
+
+Validated
+- Chromium mocks of both dialogs, both themes: 235 of 235 rules parsed; switch clicks still toggle. Not yet checked in the real IDE.
+
 ## 2026-11-09: Options and Project Settings as WinUI settings pages
 
 Shane (1043 screenshots of both dialogs): the dialogs should use NavigationView, ToggleSwitch instead of the `No | Yes` element, a correct ComboBox, and the reference's settings rows.

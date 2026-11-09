@@ -1,5 +1,15 @@
 # Changelog: tbIDE (WinUI 3 look for the twinBASIC IDE)
 
+## 2026-11-09: themes: dialog button hover no longer turns white without the add-in
+
+Shane noticed that before the add-in loads, hovering a dialog button in WinUI3 Dark turned it near-white with unreadable text.
+
+Fixed
+- The IDE hard-codes `.msgBoxButton:hover { background-color: #ebeff5 }`, which beats the theme's flat `DialogButtonsBackColor`. Aurora avoids it by using a gradient, which paints over the background colour. `DialogButtonsBackColor` and `DialogButtonFocusBackColor` are now single-colour gradients (#2D2D2D dark, #FBFBFB light), so the hover keeps the button's fill with the IDE's `brightness(1.3)` hover filter (#3A3A3A in dark). The add-in's own button rules still replace this when it is loaded.
+
+Validated
+- Chromium with 1043's `styles.css` and the theme variables only (no add-in): hovered buttons keep the gradient over the #EBEFF5 colour, with white text in dark and #1A1A1A in light.
+
 ## 2026-11-09: drop-downs, check boxes, scroll bars and tooltips from the reference
 
 Shane confirmed the reference-based buttons are right on 1043 and asked to bring the rest of the UI in line.

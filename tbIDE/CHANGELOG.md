@@ -6,6 +6,19 @@
 - Added one-time initialization for the explicitly marked frmMultiPage fixture, with exact form-ID scoping and marker consumption. Later edits and other forms remain untouched. Selection diagnostics include selected name/class.
 - Regenerated the embedded script and canonical add-in project. Twenty adapter/contract checks pass; the screenshot-driven correction's native IDE outcome remains to be observed.
 
+## 2026-11-09: panel headers and Project Explorer TreeView
+
+Next roadmap items, agreed with Shane: panel headers and the Project Explorer as a WinUI TreeView.
+
+Changed (themes)
+- PanelHeaderFontSize 14px (BodyStrong) and PanelHeaderPadding 4px 4px 4px 0 in both WinUI3 themes.
+
+Changed (add-in)
+- Panel headers are at least 40px tall. Their command buttons (search, settings, add, clear, close and the rest) are 28px subtle buttons in the secondary text colour with a 4px-corner hover fill, instead of faded 16px glyphs with a white outline on hover.
+- Tree panels (Project Explorer and the other trees) follow the reference TreeView: rows inset 4px with 4px corners and at least 28px tall, a pressed fill, chevrons instead of plus / minus boxes, and text that keeps its colour on hover (the IDE turned it white, which disappeared in WinUI3 Light). The IDE's per-level indents, folder icons and file icons are unchanged. Trees with grid lines (call stack) keep full-width rows.
+
+Validated: Chromium mock with the 1043 styles.css, codicons and both themes (288 of 288 rules parsed; previews panels-dark.png, panels-light.png, panels-before-dark.png). Not yet checked in the real IDE.
+
 ## 2026-11-09: on/off switch for the add-in in IDE Options
 
 Shane asked for a toggle under Colour Theme that turns the add-in's extra styling on or off, on by default.

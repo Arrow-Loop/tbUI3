@@ -1,6 +1,7 @@
 # Roadmap: tbIDE (WinUI 3 look for the twinBASIC IDE)
 
 ## Committed next steps
+- Shane rebuilds the add-in (hold Shift while opening its project) and runs README.md check list items 1 to 8, especially Options for anything cut off by the 32px text fields and the arrow-key highlight in menus. Fix what reads wrong.
 - Shane builds `WinUI3IdeStyle` in win32 and win64, runs the add-in check list in README.md and reports the Debug Console output. Then he saves the project in the IDE and the IDE-saved project and its export are committed, replacing the tool-built container.
 - Shane tests both themes in BETA 1043 using the check list in README.md (the 1015 versions were never tested in the IDE); fix whatever reads wrong and record the result in CHANGELOG.md.
 - Watch the dock container margin: if 2px margins make panels overflow or misalign when docking or resizing, fall back to `DockContainerMargin: 0` with `DockBorder` gaps.
@@ -23,7 +24,8 @@ Risks: reaching outside the tool window is not a documented use of the API and c
 Steps:
 1. Spike (written 2026-10-30, not yet built): dialog button hover and pressed, ProgressBar, menu bar hover. It proves whether the page can be reached at all. Open questions it answers: does twinBASIC keep the case of late-bound JavaScript names (`ownerDocument`, `getElementById`, `textContent`); does the hidden tool window stay hidden across restarts; does the stylesheet survive the IDE reloading its theme.
 2. If the spike works, extend the CSS per surface, using the property map from the theme work, in this order: context menus and code navigation drop-downs (dark in WinUI3 Dark), panel headers and layout per the DockingManager reference, TabView document tabs, accent-filled default dialog button, Segoe UI Variable, control heights and padding, the remaining Options-page texts.
-3. Record per-BETA re-check steps (rerun the property map, then confirm each selector in `WinUI3IdeCss.twin` still exists in `ide/styles.css`).
+2a. Done 2026-11-09: menus and context menus, editor tab shape, dialog and Options text boxes (from Shane's WinUI HTML/CSS reference). Next from the same reference, in order: drop-downs (`select` in Options and the toolbar, and the code navigation drop-downs that stay light) as ComboBox; panel headers and layout per the DockingManager reference; check boxes and radio buttons in Options; scroll bars (the reference has scrollbar tokens); tooltips; Segoe UI Variable across the rest of the UI.
+3. Record per-BETA re-check steps (rerun the property map, then confirm each selector in `css/winui3-ide.css` still exists in `ide/styles.css`).
 4. If an IDE release blocks reaching the page, fall back to the themes alone and raise the missing theme properties upstream (see Exploratory).
 
 ## Exploratory
@@ -33,4 +35,3 @@ Steps:
 - Toolbox icons: the `ToolboxIcon*` properties accept data URIs, so the toolbox could show Fluent icons. Could reuse the tbUI3 icon library.
 - Distribution (decided by Shane 2026-10-30): the themes and add-in stay separate from the tbUI3 package. A package runs no code when it is enabled, and silently installing into the IDE from a control was rejected. Likely shape: a "tbUI3 IDE extras" zip attached to tbUI3 releases, and possibly the add-in copying the themes into `%APPDATA%\twinBASIC\themes` on first load. Only after the add-in spike works in win32 and win64.
 - Read the accent from Windows: the add-in could read the system accent and set the theme's accent CSS variables at run time, which a static .theme file cannot.
-- Generate `WinUI3IdeCss.twin` from a plain .css file with a small script, once the stylesheet grows beyond a spike.

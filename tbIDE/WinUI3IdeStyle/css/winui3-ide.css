@@ -1,0 +1,163 @@
+/*
+  WinUI3 IDE Style: the stylesheet the add-in puts on the twinBASIC IDE page while a WinUI3 theme is active.
+  This file is the source. tbIDE/tools/build-addin-css.mjs turns it into src/Sources/WinUI3IdeCss.twin
+  (one CSS rule per line of the string Build() returns) and patches the .twinproj.
+
+  Rules for this file: no double quotes (use single quotes), no @media or other nested blocks,
+  every rule prefixed with body, body.darkMode or body:not(.darkMode) so it outranks the IDE's own rule.
+  body.darkMode is set by the IDE for themes that inherit Dark.
+
+  It only covers what the .theme files cannot reach: rules the IDE's styles.css hard-codes (BETA 1043).
+  Values are WinUI 3 theme resources from microsoft-ui-xaml (Common_themeresources_any.xaml plus the
+  control's own *_themeresources.xaml, named on each rule). Tokens and component values marked
+  "reference" come from Shane's WinUI HTML/CSS reference library (Arrow-Loop/twinBASIC-Knowledge,
+  branch feature/winui3-html-css-js-reference, reference/winui-html/winui-baseline.css, commit 20b438a),
+  which itself is sourced from microsoft-ui-xaml bfb0e2a and WinUI-Gallery 05939cc.
+*/
+
+/* ---------- Tokens (reference winui-baseline.css, light :root and dark [data-theme=dark]) ---------- */
+
+body.darkMode {
+  --color-text: #ffffff;                  /* TextFillColorPrimary */
+  --color-text-muted: #ffffffc5;          /* TextFillColorSecondary */
+  --color-text-subtle: #ffffff87;         /* TextFillColorTertiary */
+  --color-text-disabled: #ffffff5d;       /* TextFillColorDisabled */
+  --color-control: #ffffff0f;             /* ControlFillColorDefault */
+  --color-control-hover: #ffffff15;       /* ControlFillColorSecondary */
+  --color-control-disabled: #ffffff0b;    /* ControlFillColorDisabled */
+  --color-input-active: #1e1e1eb3;        /* ControlFillColorInputActive */
+  --color-control-border: #ffffff12;      /* ControlStrokeColorDefault */
+  --color-border-strong: #ffffff8b;       /* ControlStrongStrokeColorDefault */
+  --color-neutral-hover: #ffffff0f;       /* SubtleFillColorSecondary */
+  --color-neutral-pressed: #ffffff0a;     /* SubtleFillColorTertiary */
+  --color-divider: #ffffff15;             /* DividerStrokeColorDefault */
+  --color-flyout: #2c2c2c;                /* AcrylicInAppFillColorDefaultBrush fallback */
+  --color-popup-border: #00000033;        /* SurfaceStrokeColorFlyout */
+  --color-accent: #60cdff;                /* AccentFillColorDefault, default Windows blue */
+}
+
+body:not(.darkMode) {
+  --color-text: #000000e4;
+  --color-text-muted: #0000009e;
+  --color-text-subtle: #00000072;
+  --color-text-disabled: #0000005c;
+  --color-control: #ffffffb3;
+  --color-control-hover: #f9f9f980;
+  --color-control-disabled: #f9f9f94d;
+  --color-input-active: #ffffff;
+  --color-control-border: #0000000f;
+  --color-border-strong: #00000072;
+  --color-neutral-hover: #00000009;
+  --color-neutral-pressed: #00000006;
+  --color-divider: #0000000f;
+  --color-flyout: #f9f9f9;
+  --color-popup-border: #0000000f;
+  --color-accent: #005fb8;
+}
+
+/* ---------- Dialog buttons: WinUI Button and ContentDialog (microsoft-ui-xaml main, read 2026-11-09) ----------
+  Shape, Button_themeresources.xaml: ButtonPadding 11,5,11,6, ButtonBorderThemeThickness 1, FontSize 14,
+  ControlCornerRadius 4, font Segoe UI Variable. Line height 19px makes the button 32px tall.
+  ContentDialog_themeresources.xaml: ContentDialogPadding 24 around the command area, ContentDialogButtonSpacing 8.
+  Colours: ButtonBackgroundPointerOver = ControlFillColorSecondary, Pressed = ControlFillColorTertiary,
+  ButtonForegroundPressed = TextFillColorSecondary, ButtonBorderBrushPressed = ControlStrokeColorDefault.
+  Rest colours and the elevation border come from the .theme files. Solid colours are the translucent fill
+  composited over the dialog's command area (#202020 dark, #F3F3F3 light).
+  .buttonFocused marks the button Enter presses, which ContentDialog draws with AccentButtonStyle:
+  AccentFillColorDefault, PointerOver 90%, Pressed 80%, TextOnAccentFillColorPrimary/Secondary,
+  AccentControlElevationBorderBrush (bottom ControlStrokeColorOnAccentSecondary), BorderBrushPressed transparent.
+  WinUI shows no focus ring on a button that only has default status, so the IDE's ring is removed.
+  Deviation: WinUI stretches ContentDialog buttons into equal columns; the IDE's layout is kept. */
+
+body .msgBoxButtons { padding: 24px; gap: 8px; }
+body .msgBoxButton { box-sizing: border-box; height: 32px; margin: 0; padding: 5px 11px 6px 11px; border-radius: 4px; font-family: 'Segoe UI Variable Text', 'Segoe UI Variable', 'Segoe UI', sans-serif; font-size: 14px; font-weight: 400; line-height: 19px; white-space: nowrap; }
+body.darkMode .msgBoxButton:hover { background: #323232; filter: none; }
+body.darkMode .msgBoxButton:active { background: #272727; filter: none; color: rgba(255, 255, 255, 0.7725); border-color: rgba(255, 255, 255, 0.0706); }
+body.darkMode .msgBoxButton.buttonFocused { background: #60CDFF; color: #000000; border: 1px solid rgba(255, 255, 255, 0.0784); border-bottom-color: rgba(0, 0, 0, 0.1373); outline: none; filter: none; }
+body.darkMode .msgBoxButton.buttonFocused:hover { background: rgba(96, 205, 255, 0.9); }
+body.darkMode .msgBoxButton.buttonFocused:active { background: rgba(96, 205, 255, 0.8); color: rgba(0, 0, 0, 0.502); border-color: transparent; }
+body:not(.darkMode) .msgBoxButton:hover { background: #F6F6F6; filter: none; }
+body:not(.darkMode) .msgBoxButton:active { background: #F5F5F5; filter: none; color: rgba(0, 0, 0, 0.6196); border-color: rgba(0, 0, 0, 0.0588); }
+body:not(.darkMode) .msgBoxButton.buttonFocused { background: #005FB8; color: #FFFFFF; border: 1px solid rgba(255, 255, 255, 0.0784); border-bottom-color: rgba(0, 0, 0, 0.4); outline: none; filter: none; }
+body:not(.darkMode) .msgBoxButton.buttonFocused:hover { background: rgba(0, 95, 184, 0.9); }
+body:not(.darkMode) .msgBoxButton.buttonFocused:active { background: rgba(0, 95, 184, 0.8); color: rgba(255, 255, 255, 0.702); border-color: transparent; }
+
+/* ---------- Progress bar: ProgressBar_themeresources.xaml ----------
+  ProgressBarMinHeight 3, TrackHeight 1, CornerRadius 1.5, TrackCornerRadius 0.5,
+  Foreground = AccentFillColorDefault, Background = ControlStrongStrokeColorDefault.
+  The IDE's bar is a 27px green box with centred text; this makes it a WinUI bar with the text above it. */
+
+body .mainProgressBarOuter { position: relative; height: 32px; border: 0; border-radius: 0; outline: 0; background: transparent; }
+body .mainProgressBarOuter::before { content: ''; position: absolute; left: 0; right: 0; bottom: 1px; height: 1px; border-radius: 0.5px; }
+body .mainProgressBarInner { position: absolute; left: 0; bottom: 0; height: 3px; border-radius: 1.5px; }
+body .mainProgressBarInnerText { top: 0; height: calc(100% - 3px); text-align: left; text-shadow: none; }
+body.darkMode .mainProgressBarOuter::before { background: rgba(255, 255, 255, 0.5442); }
+body.darkMode .mainProgressBarInner { background: #60CDFF; }
+body:not(.darkMode) .mainProgressBarOuter::before { background: rgba(0, 0, 0, 0.4458); }
+body:not(.darkMode) .mainProgressBarInner { background: #005FB8; }
+
+/* ---------- Menu bar: MenuBar_themeresources.xaml ----------
+  MenuBarItemBackgroundPointerOver = SubtleFillColorSecondary, Selected = SubtleFillColorTertiary,
+  Foreground = TextFillColorPrimary (the theme's menu text colour). Replaces the IDE's fixed light grey hover
+  and rgb(77, 75, 75) hover text. Status bar menu items share that rule and keep the status bar's text colour. */
+
+body.darkMode .menuItem:hover { background-color: rgba(255, 255, 255, 0.0605); color: var(--themeMenuForeColor); }
+body.darkMode .isMenuItemSelected { background-color: rgba(255, 255, 255, 0.0419); color: var(--themeMenuForeColor); }
+body.darkMode .statusMenuItem:hover { background-color: rgba(255, 255, 255, 0.0605); color: inherit; }
+body:not(.darkMode) .menuItem:hover { background-color: rgba(0, 0, 0, 0.0373); color: var(--themeMenuForeColor); }
+body:not(.darkMode) .isMenuItemSelected { background-color: rgba(0, 0, 0, 0.0241); color: var(--themeMenuForeColor); }
+body:not(.darkMode) .statusMenuItem:hover { background-color: rgba(0, 0, 0, 0.0373); color: inherit; }
+
+/* ---------- Menus and context menus: MenuFlyout (reference .flyout-menu) ----------
+  The IDE draws every drop-down and context menu as #contextMenu / .contextMenu / .contextMenu2 /
+  #contextMenuSUB, with items .contextMenuItem (text colour hard-coded #000000, which is why the themes keep
+  menus light). These rules give it MenuFlyoutPresenter: OverlayCornerRadius 8, 1px SurfaceStrokeColorFlyout
+  border, AcrylicInAppFillColorDefault fallback, MenuFlyoutPresenterThemePadding 0,2 (reference --menu-padding),
+  and MenuFlyoutItem: margin 2px 4px, padding 4px 11px 5px, min height 32px, ControlCornerRadius 4,
+  14px Segoe UI Variable, hover SubtleFillColorSecondary, pressed SubtleFillColorTertiary with
+  TextFillColorSecondary. Icons sit in a 16px column 11px from the item's edge with 12px before the text
+  (reference --space-3), so text starts at 39px. Separators are MenuFlyoutSeparator (reference
+  .flyout-menu__separator: 1px DividerStrokeColorDefault, margin 4px 6px). Shortcut text is the
+  accelerator: TextFillColorSecondary, 12px, 24px from the label (MenuFlyoutItemChevronMargin).
+  Deviation: no acrylic blur or shadow (the reference also uses none), and the IDE keeps its own
+  submenu arrow position and keyboard handling. .focusedMenuItem is the IDE's keyboard highlight,
+  a red tint with !important, so it is replaced with the hover colour. */
+
+body #contextMenu, body .contextMenu, body .contextMenu2, body #contextMenuSUB { box-sizing: border-box; min-width: 96px; padding: 2px 0; background: var(--color-flyout); color: var(--color-text); border: 1px solid var(--color-popup-border); border-radius: 8px; outline: none; font-family: 'Segoe UI Variable Text', 'Segoe UI Variable', 'Segoe UI', sans-serif; font-size: 14px; font-weight: 400; }
+body .contextMenuItem { position: relative; box-sizing: border-box; min-height: 32px; margin: 2px 4px; padding: 4px 25px 5px 39px; border-radius: 4px; color: var(--color-text); line-height: 23px; white-space: nowrap; cursor: default; }
+body .contextMenuNoIcons .contextMenuItem { padding-left: 11px; }
+body .contextMenuItem > .codicon { left: 0; margin-left: 11px; top: 8px; font-size: 16px; line-height: 16px; }
+body .contextMenuItem:hover { background-color: var(--color-neutral-hover); }
+body .contextMenuItem:active { background-color: var(--color-neutral-pressed); color: var(--color-text-muted); }
+body .contextMenuItem.focusedMenuItem { background-color: var(--color-neutral-hover) !important; }
+body .contextMenuItemDetail { padding-left: 24px; color: var(--color-text-muted); font-size: 12px; }
+body .contextMenuItemDisabled, body .contextMenuItemDisabled:active { color: var(--color-text-disabled); }
+body .contextMenuItemDisabled:hover { background-color: transparent; }
+body #contextMenu hr, body .contextMenu hr, body .contextMenu2 hr, body #contextMenuSUB hr { height: 1px; margin: 4px 6px; border: 0; background: var(--color-divider); }
+
+/* ---------- Editor tabs: TabView (reference .tab-view__item) ----------
+  TabViewItem: top corners OverlayCornerRadius 8, padding 3px 4px 3px 8px horizontally (reference --tab-padding),
+  12px text in TextFillColorSecondary, TextFillColorPrimary when selected, 1px DividerStrokeColorDefault
+  separators 8px from top and bottom between unselected tabs (none next to the selected tab).
+  The close button is TabViewItemHeaderCloseButton: ControlCornerRadius 4, hover SubtleFillColorSecondary.
+  Backgrounds come from the .theme files. Deviation: the IDE's tab height and strip layout are kept
+  (the reference's 36px Edge-measured height and concave feet would need DOM the IDE does not have). */
+
+body .tabItem { border-radius: 8px 8px 0 0; margin-right: 0; padding-left: 8px; padding-right: 4px; font-family: 'Segoe UI Variable Text', 'Segoe UI Variable', 'Segoe UI', sans-serif; font-size: 12px; font-weight: 400; color: var(--color-text-muted); }
+body .tabItemSelected { color: var(--color-text); }
+body .tabItem:not(.tabItemSelected):not(:has(+ .tabItemSelected))::after { content: ''; position: absolute; right: 0; top: 8px; bottom: 8px; width: 1px; background: var(--color-divider); }
+body .tabItemIconRight { border-radius: 4px; }
+body .tabItem:hover .tabItemIconRight, body .tabItemSelected .tabItemIconRight { color: var(--color-text-muted); }
+body .tabItemIconRight:hover { background: var(--color-neutral-hover) !important; color: var(--color-text); }
+
+/* ---------- Text boxes in dialogs and Options: TextBox (reference .text-field / .text-control) ----------
+  TextControlThemeMinHeight 32, TextControlThemePadding 10,5,6,6, ControlCornerRadius 4, 14px.
+  Rest: ControlFillColorDefault with TextControlElevationBorderBrush (ControlStrokeColorDefault, bottom
+  ControlStrongStrokeColorDefault). Hover: ControlFillColorSecondary. Focused: ControlFillColorInputActive
+  with a 2px AccentFillColorDefault bottom border. Disabled: ControlFillColorDisabled, TextFillColorDisabled.
+  The IDE's rules use !important, so these do too. The property sheet's compact inputs are left alone. */
+
+body .configEditorContainer input[type=text], body .configEditorContainer input[type=number], body .configEditorContainer textarea, body .configEditorContainer2 input[type=text], body .configEditorContainer2 input[type=number], body .configEditorContainer2 textarea, body .simpleMsgBoxNoImage input[type=text] { box-sizing: border-box; min-height: 32px; margin: 0; padding: 5px 6px 6px 10px; background-color: var(--color-control) !important; color: var(--color-text) !important; border: 1px solid var(--color-control-border) !important; border-bottom-color: var(--color-border-strong) !important; border-radius: 4px; outline: none !important; font-family: 'Segoe UI Variable Text', 'Segoe UI Variable', 'Segoe UI', sans-serif; font-size: 14px; line-height: 19px; }
+body .configEditorContainer input[type=text]:hover, body .configEditorContainer input[type=number]:hover, body .configEditorContainer textarea:hover, body .configEditorContainer2 input[type=text]:hover, body .configEditorContainer2 input[type=number]:hover, body .configEditorContainer2 textarea:hover, body .simpleMsgBoxNoImage input[type=text]:hover { background-color: var(--color-control-hover) !important; }
+body .configEditorContainer input[type=text]:focus, body .configEditorContainer input[type=number]:focus, body .configEditorContainer textarea:focus, body .configEditorContainer2 input[type=text]:focus, body .configEditorContainer2 input[type=number]:focus, body .configEditorContainer2 textarea:focus, body .simpleMsgBoxNoImage input[type=text]:focus { background-color: var(--color-input-active) !important; border-bottom: 2px solid var(--color-accent) !important; padding-bottom: 5px; }
+body .configEditorContainer input:disabled, body .configEditorContainer textarea:disabled, body .configEditorContainer2 input:disabled, body .configEditorContainer2 textarea:disabled { background-color: var(--color-control-disabled) !important; color: var(--color-text-disabled) !important; border-color: var(--color-control-border) !important; }

@@ -67,13 +67,16 @@ Open a project with a form and a module, then look at each item in both themes:
 
 ### What it does
 
-While the active theme's name starts with `WinUI3`, the add-in adds one stylesheet to the IDE page; when you switch to any other theme it empties it again. The spike covers three things the themes cannot:
+While the active theme's name starts with `WinUI3`, the add-in adds one stylesheet to the IDE page; when you switch to any other theme it empties it again. It covers what the themes cannot:
 
 - Dialog buttons: WinUI's Button shape (32px, 4px corners, 14px Segoe UI Variable, ContentDialog's 24px command area padding and 8px spacing), hover and pressed fills instead of the IDE's near-white `#ebeff5` hover, and the accept button as WinUI's accent button.
 - Progress bar: WinUI's ProgressBar, a 3px accent indicator with 1.5px corners on a 1px `ControlStrongStrokeColorDefault` track, with the text above it, instead of the green gradient box.
 - Menu bar and status bar hover: WinUI's MenuBarItem `SubtleFillColorSecondary` hover and `SubtleFillColorTertiary` selected fill, instead of fixed light grey with grey text.
+- Menus and context menus: WinUI's MenuFlyout. Dark in WinUI3 Dark (#2C2C2C), 8px corners, 32px items with 4px corners inset 4px from the edge, 14px Segoe UI Variable, icons in a 16px column, shortcut text muted and 12px, thin divider separators.
+- Editor tabs: WinUI's TabView item shape. 8px top corners, 12px text that is muted until selected, thin separators between unselected tabs, a rounded close button. The IDE's tab height is kept.
+- Text boxes in dialogs and Options: WinUI's TextBox. 32px, 4px corners, a darker bottom edge at rest and a 2px accent bottom edge when focused. The property sheet's inputs are left alone.
 
-Each rule in `WinUI3IdeStyle/src/Sources/WinUI3IdeCss.twin` names the WinUI resource it comes from.
+The stylesheet's source is `WinUI3IdeStyle/css/winui3-ide.css`, and each rule there names the WinUI resource it comes from. Menus, tabs, text boxes and the shared colour tokens are taken from Shane's WinUI HTML/CSS reference library (Arrow-Loop/twinBASIC-Knowledge, branch `feature/winui3-html-css-js-reference`, `reference/winui-html/winui-baseline.css` at commit 20b438a), remapped onto the IDE's own class names. After editing the .css file, run `node tbIDE/tools/build-addin-css.mjs`, which writes `src/Sources/WinUI3IdeCss.twin` (do not edit that file by hand), then `node tools/twinproj-src.mjs patch tbIDE/WinUI3IdeStyle/WinUI3IdeStyle.twinproj tbIDE/WinUI3IdeStyle/src Sources/WinUI3IdeCss.twin`.
 
 ### How it works
 
@@ -93,21 +96,24 @@ To remove it, delete `WinUI3IdeStyle.dll` from both `addins` folders and restart
 
 ### What to check
 
-1. Debug Console shows `loaded`, then `theme is winui3 dark`, `stylesheet applied` and a `check:` line reading `18 of 18 rules parsed, body.darkMode = True` (False on WinUI3 Light) `, last element in head = #winui3IdeStyleCss`. Switching to Dark or Light shows `stylesheet removed`.
+1. Debug Console shows `loaded`, then `theme is winui3 dark`, `stylesheet applied` and a `check:` line reading `49 of 49 rules parsed, ... body.darkMode = True` (False on WinUI3 Light) `, last element in head = #winui3IdeStyleCss`. Switching to Dark or Light shows `stylesheet removed`.
 2. Any dialog (for example File > New Project): buttons are 32px tall with 4px corners and 14px text; the default button (Open, OK) is accent blue with dark text in WinUI3 Dark and white text in WinUI3 Light, with no white ring. Hovering a normal button gives a slightly lighter fill, not white; pressing it gives a slightly darker fill with dimmer text.
 3. A long operation with the progress dialog (for example, a build): a thin blue bar on a thin grey line, with the text above it on the left.
 4. Menu bar: hovering File, Edit and so on shows a faint highlight with the text unchanged; an open menu's item stays faintly highlighted.
 5. Status bar items: hover is faint and the text keeps its colour.
-6. Switching to Dark, Light or Classic puts everything back to the IDE's own look.
-7. Restart the IDE: no empty "WinUI3 IDE Style" window should appear. If one does, report it.
+6. Right-click in the code editor, and open File and a submenu: in WinUI3 Dark the menu is dark grey with white text, rounded corners, rounded item highlights inset from the edge, icons lined up in a column, muted shortcut text and thin separators. Disabled items are dim. Moving through the menu with the arrow keys shows the same faint highlight, not red.
+7. Editor tabs: open three or more files. Tabs have rounded top corners and smaller text, unselected tab text is a little dimmer, thin lines separate unselected tabs, and the close button gets a rounded faint highlight on hover.
+8. Tools > Options (or any page with text fields), and a rename or input box: text fields are 32px with rounded corners and a darker bottom line; clicking into one gives a blue bottom line. Check nothing in Options is cut off or overlaps because the fields are taller.
+9. Switching to Dark, Light or Classic puts everything back to the IDE's own look.
+10. Restart the IDE: no empty "WinUI3 IDE Style" window should appear. If one does, report it.
 
 If the Debug Console shows `could not apply the stylesheet:` or nothing at all, copy the line (or say it is missing) and report it with the architecture.
 
 ## Known limits
 
-The IDE still hard-codes some colours in BETA 1043, so no theme can change them. The add-in covers the dialog button hover, the progress bar and the menu bar hover; the rest is on the roadmap for it:
+The IDE still hard-codes some colours in BETA 1043, so no theme can change them. The add-in covers the dialog buttons, the progress bar, the menu bar hover, menus and context menus, editor tabs and dialog text boxes; the rest is on the roadmap for it:
 
-- Context menu text is fixed black, and the code navigation drop-downs have fixed dark text, so both stay light in WinUI3 Dark.
+- Context menu text is fixed black, so without the add-in menus stay light in WinUI3 Dark. The code navigation drop-downs have fixed dark text and stay light even with the add-in, for now.
 - The title text and caption buttons, and the dialog title text, are fixed white, so WinUI3 Light uses an accent-blue title bar and dialog header instead of WinUI's light ones.
 - Menu bar hover is fixed light grey, the middle panel's header has a fixed grey edge, and the property category text is fixed white.
 - A few Options pages still have fixed dark text (compiler warning lists, the not-signed-in warning, the filter bar), which may be hard to read on WinUI3 Dark's dark dialogs. The IDE's own Aurora theme has the same issue.

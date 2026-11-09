@@ -1,5 +1,27 @@
 # Changelog: tbIDE (WinUI 3 look for the twinBASIC IDE)
 
+## 2026-11-09: menus, tabs and text boxes from the WinUI HTML/CSS reference
+
+Shane shared his WinUI HTML/CSS reference library (Arrow-Loop/twinBASIC-Knowledge, branch `feature/winui3-html-css-js-reference`, `reference/winui-html`, commit 20b438a) so the add-in can reuse it instead of rebuilding WinUI controls from scratch.
+
+Added
+- `WinUI3IdeStyle/css/winui3-ide.css` is now the stylesheet's source, with the WinUI resource and reference rule each value comes from. `tools/build-addin-css.mjs` turns it into `src/Sources/WinUI3IdeCss.twin`: one rule per line, long rules split over several twinBASIC lines, `RuleCount` written as a number. It stops on double quotes, nested blocks such as `@media`, and selectors not prefixed with `body`.
+- The reference's colour tokens (`--color-text`, `--color-control`, `--color-flyout`, `--color-divider` and so on) for light and dark, scoped to `body:not(.darkMode)` and `body.darkMode`.
+- Menus and context menus as WinUI MenuFlyout, mapped from the reference's `.flyout-menu`: #2C2C2C (dark) or #F9F9F9 (light), 1px `SurfaceStrokeColorFlyout` border, 8px corners, 2px vertical padding; items 32px with 4px corners, inset 2px 4px, 14px Segoe UI Variable, icon column at 11px with text at 39px, `SubtleFillColorSecondary` hover, `SubtleFillColorTertiary` press. Shortcut text is muted 12px; disabled text uses `TextFillColorDisabled`; `<hr>` separators are 1px `DividerStrokeColorDefault` with 4px 6px margins. The IDE's red keyboard highlight (`.focusedMenuItem`) is replaced with the hover fill. This makes menus dark in WinUI3 Dark, which the theme alone cannot do (the IDE hard-codes black item text).
+- Editor tabs shaped like the reference's `.tab-view__item`: 8px top corners, 8px left and 4px right padding, 12px regular text, `TextFillColorSecondary` until selected, 1px divider separators 8px from top and bottom between unselected tabs, and a 4px-cornered close button with a subtle hover.
+- Text boxes in dialogs and Options as WinUI TextBox, from the reference's `.text-field` and `.text-control`: 32px, padding 5px 6px 6px 10px, 4px corners, `ControlFillColorDefault` with a `ControlStrongStrokeColorDefault` bottom edge, `ControlFillColorSecondary` hover, `ControlFillColorInputActive` with a 2px accent bottom edge when focused, disabled colours. Property sheet inputs are not touched.
+- 49 rules in all (was 26).
+
+Kept on purpose
+- The IDE's tab height and strip layout are kept; the reference's 36px Edge-measured height and concave tab feet need DOM the IDE does not have.
+- No acrylic blur or shadow on menus (the reference uses none either).
+- Drop-down lists (`select`) in Options and the code navigation drop-downs are not restyled yet.
+
+Validated
+- In Chromium with 1043's `styles.css`, `configEditor.css`, `codicon.css` and both WinUI3 theme variable sets, on a mock of the IDE's menu, tab and Options markup: 49 of 49 rules parsed; menu #2C2C2C dark and #F9F9F9 light with 8px corners and 14px text; items 32px, hover rgba(255,255,255,0.06) dark; keyboard-focused item no longer red; separators 1px; tabs 12px with 8px corners and muted text until selected; text boxes 32px with a 2px #60CDFF (dark) or #005FB8 (light) bottom edge when focused. The dialog button test from the previous entry still gives the same values.
+- `tools/twinproj-src.mjs compare` reports all four project entries the same as `src/`.
+- Not yet run in the IDE.
+
 ## 2026-11-09: dialog buttons follow WinUI Button and ContentDialog
 
 Shane's first working run on 1043: the add-in's stylesheet is on the page (`check: 18 of 18 rules parsed`) and button hovers are right, but the buttons did not look like WinUI's (his side-by-side with WinUI Gallery's Button page).

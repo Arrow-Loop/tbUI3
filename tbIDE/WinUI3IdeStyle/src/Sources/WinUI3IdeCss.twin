@@ -5,7 +5,7 @@ Module WinUI3IdeCss
 
     ' Number of rules Build() returns. The add-in's log compares it with what the browser parsed.
     Public Function RuleCount() As Long
-        Return 235
+        Return 233
     End Function
 
     Public Function Build() As String
@@ -35,15 +35,16 @@ Module WinUI3IdeCss
         css = css & "var(--color-accent-border-bottom) 0 1px, var(--color-accent-border) 3px); --color-success: #0f7b0f; --color-critical: #c42b1c; --color-card: #ffffffb3; "
         css = css & "--color-card-border: #0000000f; --color-caution-soft: #fff4ce; --color-critical-soft: #fde7e9; }" & vbCrLf
         css = css & "body .msgBoxButtons { padding: 24px; gap: 8px; }" & vbCrLf
-        css = css & "body .msgBoxButton { position: relative; display: inline-flex; align-items: center; justify-content: center; box-sizing: border-box; min-height: 32px; margin: 0; "
-        css = css & "padding: 5px 11px 6px 11px; border: 1px solid transparent; border-radius: 4px; background: var(--color-control); background-clip: padding-box; box-shadow: none; "
+        css = css & "body .msgBoxButton, body .tbps-refreshBtn { position: relative; display: inline-flex; align-items: center; justify-content: center; box-sizing: border-box; min-height: 32px; "
+        css = css & "margin: 0; padding: 5px 11px 6px 11px; border: 1px solid transparent; border-radius: 4px; background: var(--color-control); background-clip: padding-box; box-shadow: none; "
         css = css & "color: var(--color-text); font-family: 'Segoe UI Variable Text', 'Segoe UI Variable', 'Segoe UI', sans-serif; font-size: 14px; font-weight: 400; line-height: 19px; "
         css = css & "white-space: nowrap; cursor: default; filter: none; --edge-brush: var(--brush-control-elevation); }" & vbCrLf
-        css = css & "body .msgBoxButton::before { content: ''; position: absolute; inset: -1px; padding: 1px; border-radius: inherit; background: var(--edge-brush); "
+        css = css & "body .msgBoxButton::before, body .tbps-refreshBtn::before { content: ''; position: absolute; inset: -1px; padding: 1px; border-radius: inherit; background: var(--edge-brush); "
         css = css & "-webkit-mask: linear-gradient(var(--color-border-mask) 0 0) content-box, linear-gradient(var(--color-border-mask) 0 0); -webkit-mask-composite: xor; mask-composite: exclude; "
         css = css & "pointer-events: none; }" & vbCrLf
-        css = css & "body .msgBoxButton:hover { background: var(--color-control-hover); background-clip: padding-box; filter: none; }" & vbCrLf
-        css = css & "body .msgBoxButton:active { background: var(--color-control-active); background-clip: padding-box; color: var(--color-text-muted); --edge-brush: var(--color-control-border); }" & vbCrLf
+        css = css & "body .msgBoxButton:hover, body .tbps-refreshBtn:hover { background: var(--color-control-hover); background-clip: padding-box; filter: none; }" & vbCrLf
+        css = css & "body .msgBoxButton:active, body .tbps-refreshBtn:active { background: var(--color-control-active); background-clip: padding-box; color: var(--color-text-muted); "
+        css = css & "--edge-brush: var(--color-control-border); }" & vbCrLf
         css = css & "body .msgBoxButton.buttonFocused { background: var(--color-accent); background-clip: border-box; color: var(--color-accent-text); border: 1px solid transparent; outline: none; "
         css = css & "--edge-brush: var(--brush-accent-elevation); }" & vbCrLf
         css = css & "body .msgBoxButton.buttonFocused:hover { background: var(--color-accent-hover); background-clip: border-box; }" & vbCrLf
@@ -349,10 +350,7 @@ Module WinUI3IdeCss
         css = css & "body .tbps-spinBtn:first-child::after { -webkit-mask-image: var(--chevron-up-mask); }" & vbCrLf
         css = css & "body .tbps-spinBtn:hover { background: var(--color-neutral-hover); color: transparent; }" & vbCrLf
         css = css & "body .tbps-spinBtn:active { background: var(--color-neutral-pressed); }" & vbCrLf
-        css = css & "body .tbps-refreshBtn { min-width: 32px; min-height: 32px; border: 1px solid var(--color-control-border); border-radius: 4px; background: var(--color-control); "
-        css = css & "color: var(--color-text); }" & vbCrLf
-        css = css & "body .tbps-refreshBtn:hover { background: var(--color-control-hover); }" & vbCrLf
-        css = css & "body .tbps-refreshBtn:active { background: var(--color-control-active); color: var(--color-text-muted); }" & vbCrLf
+        css = css & "body .tbps-refreshBtn { min-width: 32px; padding: 5px 8px 6px; font-size: 16px; }" & vbCrLf
         css = css & "body .tbps-referencesShell .referencesListChoice { gap: 4px; border-bottom: 0; }" & vbCrLf
         css = css & "body .tbps-referencesShell .referencesListChoiceOption { padding: 7px 12px 9px; border-radius: 4px; color: var(--color-text-muted); font-size: 14px; font-weight: 400; opacity: 1; "
         css = css & "box-shadow: none !important; transition: none; }" & vbCrLf

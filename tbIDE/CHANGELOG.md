@@ -9,10 +9,11 @@ Changed (add-in)
 - ToggleSwitch knob 10px from either outer edge (it was 9.5px off, 10.5px on, from the reference's 8.5px origin).
 - IDE Options: "FULL IDE RESTART REQUIRED" sits left of the switch on the same line.
 - Project Settings' No / Yes / Default: a horizontal RadioButtons group (reference radio) instead of a Segmented control.
-- 235 rules, 51,754 characters.
+- Project ID's refresh button now uses the same reference `.button` rules as the dialog buttons (masked elevation edge, hover and pressed fills); it had its own flat look.
+- 233 rules, 51,577 characters.
 
 Validated
-- Chromium mocks of both dialogs, both themes: 235 of 235 rules parsed; switch clicks still toggle. Not yet checked in the real IDE.
+- Chromium mocks of both dialogs, both themes: 233 of 233 rules parsed; switch clicks still toggle. Not yet checked in the real IDE.
 
 ## 2026-11-09: Options and Project Settings as WinUI settings pages
 

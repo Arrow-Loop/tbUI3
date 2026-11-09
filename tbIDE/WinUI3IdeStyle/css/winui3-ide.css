@@ -122,10 +122,10 @@ body:not(.darkMode) {
   dialogs (New / Open Project) never mark a default button, so none of their buttons is accent. */
 
 body .msgBoxButtons { padding: 24px; gap: 8px; }
-body .msgBoxButton { position: relative; display: inline-flex; align-items: center; justify-content: center; box-sizing: border-box; min-height: 32px; margin: 0; padding: 5px 11px 6px 11px; border: 1px solid transparent; border-radius: 4px; background: var(--color-control); background-clip: padding-box; box-shadow: none; color: var(--color-text); font-family: 'Segoe UI Variable Text', 'Segoe UI Variable', 'Segoe UI', sans-serif; font-size: 14px; font-weight: 400; line-height: 19px; white-space: nowrap; cursor: default; filter: none; --edge-brush: var(--brush-control-elevation); }
-body .msgBoxButton::before { content: ''; position: absolute; inset: -1px; padding: 1px; border-radius: inherit; background: var(--edge-brush); -webkit-mask: linear-gradient(var(--color-border-mask) 0 0) content-box, linear-gradient(var(--color-border-mask) 0 0); -webkit-mask-composite: xor; mask-composite: exclude; pointer-events: none; }
-body .msgBoxButton:hover { background: var(--color-control-hover); background-clip: padding-box; filter: none; }
-body .msgBoxButton:active { background: var(--color-control-active); background-clip: padding-box; color: var(--color-text-muted); --edge-brush: var(--color-control-border); }
+body .msgBoxButton, body .tbps-refreshBtn { position: relative; display: inline-flex; align-items: center; justify-content: center; box-sizing: border-box; min-height: 32px; margin: 0; padding: 5px 11px 6px 11px; border: 1px solid transparent; border-radius: 4px; background: var(--color-control); background-clip: padding-box; box-shadow: none; color: var(--color-text); font-family: 'Segoe UI Variable Text', 'Segoe UI Variable', 'Segoe UI', sans-serif; font-size: 14px; font-weight: 400; line-height: 19px; white-space: nowrap; cursor: default; filter: none; --edge-brush: var(--brush-control-elevation); }
+body .msgBoxButton::before, body .tbps-refreshBtn::before { content: ''; position: absolute; inset: -1px; padding: 1px; border-radius: inherit; background: var(--edge-brush); -webkit-mask: linear-gradient(var(--color-border-mask) 0 0) content-box, linear-gradient(var(--color-border-mask) 0 0); -webkit-mask-composite: xor; mask-composite: exclude; pointer-events: none; }
+body .msgBoxButton:hover, body .tbps-refreshBtn:hover { background: var(--color-control-hover); background-clip: padding-box; filter: none; }
+body .msgBoxButton:active, body .tbps-refreshBtn:active { background: var(--color-control-active); background-clip: padding-box; color: var(--color-text-muted); --edge-brush: var(--color-control-border); }
 body .msgBoxButton.buttonFocused { background: var(--color-accent); background-clip: border-box; color: var(--color-accent-text); border: 1px solid transparent; outline: none; --edge-brush: var(--brush-accent-elevation); }
 body .msgBoxButton.buttonFocused:hover { background: var(--color-accent-hover); background-clip: border-box; }
 body .msgBoxButton.buttonFocused:active { background: var(--color-accent-pressed); background-clip: border-box; color: var(--color-accent-text-pressed); --edge-brush: transparent; }
@@ -476,9 +476,7 @@ body .tbps-spinBtn::after { content: ''; position: absolute; left: 50%; top: 50%
 body .tbps-spinBtn:first-child::after { -webkit-mask-image: var(--chevron-up-mask); }
 body .tbps-spinBtn:hover { background: var(--color-neutral-hover); color: transparent; }
 body .tbps-spinBtn:active { background: var(--color-neutral-pressed); }
-body .tbps-refreshBtn { min-width: 32px; min-height: 32px; border: 1px solid var(--color-control-border); border-radius: 4px; background: var(--color-control); color: var(--color-text); }
-body .tbps-refreshBtn:hover { background: var(--color-control-hover); }
-body .tbps-refreshBtn:active { background: var(--color-control-active); color: var(--color-text-muted); }
+body .tbps-refreshBtn { min-width: 32px; padding: 5px 8px 6px; font-size: 16px; }
 body .tbps-referencesShell .referencesListChoice { gap: 4px; border-bottom: 0; }
 body .tbps-referencesShell .referencesListChoiceOption { padding: 7px 12px 9px; border-radius: 4px; color: var(--color-text-muted); font-size: 14px; font-weight: 400; opacity: 1; box-shadow: none !important; transition: none; }
 body .tbps-referencesShell .referencesListChoiceOption:hover { background: var(--color-neutral-hover); color: var(--color-text); }

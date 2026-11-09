@@ -102,7 +102,7 @@ To remove it, delete `WinUI3IdeStyle.dll` from both `addins` folders and restart
 
 ### What to check
 
-1. Debug Console shows `loaded`, then `theme is winui3 dark`, `stylesheet applied` and a `check:` line reading `235 of 235 rules parsed, ... body.darkMode = True` (False on WinUI3 Light) `, last element in head = #winui3IdeStyleCss`. Switching to Dark or Light shows `stylesheet removed`.
+1. Debug Console shows `loaded`, then `theme is winui3 dark`, `stylesheet applied` and a `check:` line reading `233 of 233 rules parsed, ... body.darkMode = True` (False on WinUI3 Light) `, last element in head = #winui3IdeStyleCss`. Switching to Dark or Light shows `stylesheet removed`.
 2. Any dialog (for example File > New Project): buttons are 32px tall with 4px corners and 14px text; the default button (Open, OK) is accent blue with dark text in WinUI3 Dark and white text in WinUI3 Light, with no white ring. Hovering a normal button gives a slightly lighter fill, not white; pressing it gives a slightly darker fill with dimmer text.
 3. A long operation with the progress dialog (for example, a build): a thin blue bar on a thin grey line, with the text above it on the left.
 4. Menu bar: hovering File, Edit and so on shows a faint highlight with the text unchanged; an open menu's item stays faintly highlighted.

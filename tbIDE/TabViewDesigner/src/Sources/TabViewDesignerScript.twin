@@ -17,7 +17,7 @@ Private Module TabViewDesignerScript
         js = js & vbLf
         js = js & "    'use strict';"
         js = js & vbLf
-        js = js & "    const version = 3;"
+        js = js & "    const version = 4;"
         js = js & vbLf
         js = js & "    const hostClass = 'tbui3.ui3tabview', pageClass = 'tbui3.ui3tabpage';"
         js = js & vbLf
@@ -29,7 +29,7 @@ Private Module TabViewDesignerScript
         js = js & vbLf
         js = js & "        'getTopLeftOfAllControls', 'changedSelectedControls', 'unselectAllControls',"
         js = js & vbLf
-        js = js & "        'changeProperty', 'undoPoint', 'getImageFromServer', 'syncPropertySheet',"
+        js = js & "        'changeProperty', 'undoPoint', 'getImageFromServer', 'queueMultipleSnapshot', 'syncPropertySheet',"
         js = js & vbLf
         js = js & "        'deleteSelectedControls', 'updateAllControlDragPoints'];"
         js = js & vbLf
@@ -149,17 +149,37 @@ Private Module TabViewDesignerScript
         js = js & vbLf
         js = js & "    }"
         js = js & vbLf
+        js = js & "    function snapshotHost(g, host) {"
+        js = js & vbLf
+        js = js & "        // getImageFromServer explicitly returns without doing anything in full-form"
+        js = js & vbLf
+        js = js & "        // mode. Queue the parent ID inside the current native edit batch instead."
+        js = js & vbLf
+        js = js & "        if (g.isInFullFormMode) {"
+        js = js & vbLf
+        js = js & "            if (host.formDesignerControlId === undefined) throw new Error('TabView is waiting for its native ID.');"
+        js = js & vbLf
+        js = js & "            api.queueMultipleSnapshot(g, host.formDesignerControlId);"
+        js = js & vbLf
+        js = js & "        } else api.getImageFromServer(g, host);"
+        js = js & vbLf
+        js = js & "    }"
+        js = js & vbLf
         js = js & "    function setPage(g, host, page, selectPage = false) {"
         js = js & vbLf
         js = js & "        if (!page) return;"
         js = js & vbLf
         js = js & "        if (!sameName(host.properties.SelectedPage, name(page))) {"
         js = js & vbLf
-        js = js & "            edit(g, () => api.changeProperty(g, host, 'SelectedPage', name(page)));"
+        js = js & "            edit(g, () => {"
+        js = js & vbLf
+        js = js & "                api.changeProperty(g, host, 'SelectedPage', name(page));"
+        js = js & vbLf
+        js = js & "                snapshotHost(g, host);"
+        js = js & vbLf
+        js = js & "            });"
         js = js & vbLf
         js = js & "            desires.set(host, name(page));"
-        js = js & vbLf
-        js = js & "            api.getImageFromServer(g, host);"
         js = js & vbLf
         js = js & "        }"
         js = js & vbLf
@@ -295,8 +315,6 @@ Private Module TabViewDesignerScript
         js = js & vbLf
         js = js & "            api.doPaste(g, paste, created, false);"
         js = js & vbLf
-        js = js & "            api.changeProperty(g, host, 'SelectedPage', nextName);"
-        js = js & vbLf
         js = js & "        }, false); } catch (e) {"
         js = js & vbLf
         js = js & "            api.undoPoint(g);"
@@ -351,9 +369,21 @@ Private Module TabViewDesignerScript
         js = js & vbLf
         js = js & "                api.changeProperty(g, pending.page, 'PageOrder', pending.order);"
         js = js & vbLf
+        js = js & "                // Activation must happen after the page exists natively, and the"
+        js = js & vbLf
+        js = js & "                // header bitmap must reflect its final caption and ordering."
+        js = js & vbLf
+        js = js & "                api.changeProperty(g, pending.host, 'SelectedPage', name(pending.page));"
+        js = js & vbLf
+        js = js & "                snapshotHost(g, pending.host);"
+        js = js & vbLf
         js = js & "            });"
         js = js & vbLf
-        js = js & "            api.getImageFromServer(g, pending.host);"
+        js = js & "            desires.set(pending.host, name(pending.page));"
+        js = js & vbLf
+        js = js & "            choose(g, [pending.page]);"
+        js = js & vbLf
+        js = js & "            selections.set(g, pending.page);"
         js = js & vbLf
         js = js & "        } finally { pendingNewPages.delete(g); }"
         js = js & vbLf
@@ -405,9 +435,11 @@ Private Module TabViewDesignerScript
         js = js & vbLf
         js = js & "            api.changeProperty(g, g.designer, 'Tag', '');"
         js = js & vbLf
+        js = js & "            snapshotHost(g, host);"
+        js = js & vbLf
         js = js & "        });"
         js = js & vbLf
-        js = js & "        desires.set(host, 'pgGeneral'); api.getImageFromServer(g, host);"
+        js = js & "        desires.set(host, 'pgGeneral');"
         js = js & vbLf
         js = js & "        choose(g, [host]);"
         js = js & vbLf
@@ -425,9 +457,13 @@ Private Module TabViewDesignerScript
         js = js & vbLf
         js = js & "        [list[from], list[to]] = [list[to], list[from]];"
         js = js & vbLf
-        js = js & "        edit(g, () => list.forEach((p, i) => api.changeProperty(g, p, 'PageOrder', i)));"
+        js = js & "        edit(g, () => {"
         js = js & vbLf
-        js = js & "        api.getImageFromServer(g, host);"
+        js = js & "            list.forEach((p, i) => api.changeProperty(g, p, 'PageOrder', i));"
+        js = js & vbLf
+        js = js & "            snapshotHost(g, host);"
+        js = js & vbLf
+        js = js & "        });"
         js = js & vbLf
         js = js & "    }"
         js = js & vbLf
@@ -447,13 +483,13 @@ Private Module TabViewDesignerScript
         js = js & vbLf
         js = js & "            api.changeProperty(g, host, 'SelectedPage', next ? name(next) : '');"
         js = js & vbLf
+        js = js & "            snapshotHost(g, host);"
+        js = js & vbLf
         js = js & "        });"
         js = js & vbLf
         js = js & "        desires.set(host, next ? name(next) : '');"
         js = js & vbLf
         js = js & "        choose(g, [host]);"
-        js = js & vbLf
-        js = js & "        api.getImageFromServer(g, host);"
         js = js & vbLf
         js = js & "    }"
         js = js & vbLf
@@ -493,7 +529,9 @@ Private Module TabViewDesignerScript
         js = js & vbLf
         js = js & "            else if (command === 'delete') remove(g, host);"
         js = js & vbLf
-        js = js & "            else if (command !== 'refresh') throw new Error('Unknown designer command.');"
+        js = js & "            else if (command === 'refresh') edit(g, () => snapshotHost(g, host), false);"
+        js = js & vbLf
+        js = js & "            else throw new Error('Unknown designer command.');"
         js = js & vbLf
         js = js & "            tick();"
         js = js & vbLf
@@ -537,7 +575,13 @@ Private Module TabViewDesignerScript
         js = js & vbLf
         js = js & "            try { computed = api.document.defaultView.getComputedStyle(c); } catch (_) {}"
         js = js & vbLf
-        js = js & "            const image = String(c.imageData || '');"
+        js = js & "            // Full-form replies store the bitmap on backgroundImage, not imageData."
+        js = js & vbLf
+        js = js & "            const inlineImage = String(c.style?.backgroundImage || computed.backgroundImage || '');"
+        js = js & vbLf
+        js = js & "            const urlImage = inlineImage.match(/data:image\/png;base64,([^\" & Chr(34) & "')]+)/i);"
+        js = js & vbLf
+        js = js & "            const image = String(c.imageData || urlImage?.[1] || '');"
         js = js & vbLf
         js = js & "            let checksum = 2166136261;"
         js = js & vbLf
@@ -547,7 +591,11 @@ Private Module TabViewDesignerScript
         js = js & vbLf
         js = js & "            try {"
         js = js & vbLf
+        js = js & "                if (!image) throw new Error('No bitmap');"
+        js = js & vbLf
         js = js & "                const bytes = api.document.defaultView.atob(image.slice(0, 44));"
+        js = js & vbLf
+        js = js & "                if (bytes.length < 24 || bytes.slice(1, 4) !== 'PNG') throw new Error('Not PNG');"
         js = js & vbLf
         js = js & "                const u32 = at => ((bytes.charCodeAt(at) * 16777216) + (bytes.charCodeAt(at+1) << 16) +"
         js = js & vbLf
@@ -753,9 +801,9 @@ Private Module TabViewDesignerScript
         js = js & "n'?getTopLeftOfAllControls:undefined,changedSelectedControls:typeof changedSelectedControls==='function'?changedSelectedControls:undefined,unselectAll"
         js = js & "Controls:typeof unselectAllControls==='function'?unselectAllControls:undefined,changeProperty:typeof changeProperty==='function'?changeProperty:undefi"
         js = js & "ned,undoPoint:typeof undoPoint==='function'?undoPoint:undefined,getImageFromServer:typeof getImageFromServer==='function'?getImageFromServer:undefined"
-        js = js & ",syncPropertySheet:typeof syncPropertySheet==='function'?syncPropertySheet:undefined,deleteSelectedControls:typeof deleteSelectedControls==='function'"
-        js = js & "?deleteSelectedControls:undefined,updateAllControlDragPoints:typeof updateAllControlDragPoints==='function'?updateAllControlDragPoints:undefined});ret"
-        js = js & "urn window.__tbUI3TabDesigner.install()})()"
+        js = js & ",queueMultipleSnapshot:typeof queueMultipleSnapshot==='function'?queueMultipleSnapshot:undefined,syncPropertySheet:typeof syncPropertySheet==='functio"
+        js = js & "n'?syncPropertySheet:undefined,deleteSelectedControls:typeof deleteSelectedControls==='function'?deleteSelectedControls:undefined,updateAllControlDrag"
+        js = js & "Points:typeof updateAllControlDragPoints==='function'?updateAllControlDragPoints:undefined});return window.__tbUI3TabDesigner.install()})()"
         js = js & vbLf
         Return js
     End Function

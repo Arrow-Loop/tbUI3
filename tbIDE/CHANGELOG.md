@@ -1,5 +1,11 @@
 # Changelog: tbIDE (WinUI 3 look for the twinBASIC IDE)
 
+## 2026-11-09: TabView Designer live snapshot correction (adapter v4, add-in 1.0.0.3)
+
+- BETA 1043 getImageFromServer is a no-op in full-form mode. Parent headers now use queueMultipleSnapshot in the active native property batch after child changes. New pages receive Caption/PageOrder and host activation after their compiler-assigned ID exists.
+- Full-form bitmap diagnostics use the actual backgroundImage PNG instead of an absent imageData property. Raw PNG contents are excluded from logs.
+- Actual shipped live batch/property/snapshot functions reproduce missing parent snapshots and premature activation in v3. All 26 adapter/contract checks pass after correction. Package 1.0.0.63 and styling implementation are unchanged; the native new-tab selection outcome is the next gate.
+
 ## 2026-11-09: TabView Designer rendering diagnostics
 
 - Adapter v3 adds a read-only TabView diagnostics toolbar command that bypasses normal selection/edit gates, reporting supported API state, root/selected controls, real IDs and parents, fixture marker, pending work, computed canvas state and bitmap dimensions/checksums.

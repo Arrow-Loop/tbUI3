@@ -2,6 +2,10 @@
 
 Status: integrated 1.0.0.63 implementation candidate, 2026-11-09 (initial integration 1.0.0.61). This is the first recoverable implementation, not a continuation of a previously committed 1.0.0.61. The earlier chat's candidate never reached the repository.
 
+## Live designer selection follow-up
+
+The package remains 1.0.0.63. Shane reports normal rendering and successful + page creation in the working session, but v3 cannot select the added page. Uploaded logs confirm native fixture captions/order and accepted root/IDs. Adapter v4 (add-in 1.0.0.3) queues parent header snapshots through the full-form native batch protocol, because getImageFromServer returns immediately in that mode. It configures and activates a new page after its native ID is assigned. This correction is covered by protocol checks with actual shipped helper functions; the native authoring outcome remains a gate. Reference-reload deserialization and the logged Paint exception are separate unresolved findings.
+
 ## Current rendering investigation
 
 Shane's subsequent BETA 1043 win32 screenshots show dark headers initially and a purple strip after interaction, with custom captions still at defaults. Version 1.0.0.63 corrects unsafe layout/property mutations during Paint and adds temporary local evidence collection. The shipped UserControl snapshot implementation temporarily resizes the HWND around WM_PRINTCLIENT; stable behavior after this correction has not yet been observed. `TabView diagnostics` captures adapter v3 state without editing the form. Native lines and adapter output append to `tbUI3-tabview.log` beside the consumer project (native route uses App.Path), with TEMP as an additional route. Compare a capture before and after the symptom.

@@ -1,8 +1,18 @@
 # TabView candidate validation, 2026-11-09
 
-Current candidate: **1.0.0.63**. Earlier candidate evidence is retained below as history.
+Current candidate: **package 1.0.0.63 with adapter v4 (add-in 1.0.0.3)**. Earlier candidate evidence is retained below as history.
 
-## 1.0.0.63 reported loading/compilation failure
+## Adapter v4 follow-up, package unchanged at 1.0.0.63
+
+Shane reports normal tab rendering in the working session, + creation succeeds, and the added page cannot be selected under v3. Reference unload/reload sometimes succeeds with unchanged code and sometimes triggers the previously reported deserialization failure. Keep that intermittent issue distinct from selection.
+
+Source log: tbUI3Test/tbUI3-tabview.log at e23e46250d631bd0eaf4e399126341445460f846. It identifies native 1.0.0.63 and adapter v3, consumerAccepted=true, real IDs and zero pending work in two captures. It confirms native General/Details/Finish captions/order and consumed marker. UI3TabPage1 paints at 16:47:03, 16:47:58 and 16:50:38 with hr=0. The captures themselves contain only the three fixture pages, so they do not establish new-page DOM ownership/class at failure. A host Paint exception &H80020009 at 16:48:01 remains unexplained.
+
+Official BETA 1043 source confirms getImageFromServer returns immediately when isInFullFormMode is true. queueMultipleSnapshot adds a control ID to the active batch; handleMultipleChangeProperties sends those IDs alongside property changes. Adapter v4 uses that path for parent header snapshots and activates a new page after native ID acknowledgement, with caption/order in the same batch. Full-form diagnostics now read backgroundImage, where actual live snapshots are stored; v3's zero imageData lengths did not mean no bitmap existed.
+
+Executed: 26 adapter/contract checks pass with the official main.js. The previous v3 adapter failed the new missing-parent-snapshot and premature-host-activation checks. The live checks run the actual shipped batch, changeProperty and snapshot functions with delayed property acknowledgement in a test facade; they are not native IDE outcome evidence. All 68 current packed-project mirrors match. The latest human-saved test binary is unchanged; its two form exports were refreshed. The add-in project SHA-256 is `c57da8785919941a7f7621663b5ddd65e87b3268774eb788148870f01c24e5a3`. The full native add/select/switch/drop/save/reopen/undo sequence remains open after v4.
+
+## Historical 1.0.0.63 reported loading/compilation failure
 
 Shane's later BETA 1043 win32 report lists TB5079 for the existing frmMain buttons and frmMultiPage controls, plus secondary TB5125 Len errors. The screenshot shows the embedded tbUI3 1.0.0.63 reference enabled and "failed to deserialize JSON [1]" on UI3TabView1. Treat native loading/compilation as failed for that observed session. The earlier 22 adapter checks and 68 mirror checks did not exercise native control deserialization.
 

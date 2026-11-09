@@ -5,13 +5,13 @@
  */
 (function createTabViewDesigner(api) {
     'use strict';
-    const version = 3;
+    const version = 4;
     const hostClass = 'tbui3.ui3tabview', pageClass = 'tbui3.ui3tabpage';
     const pageClsid = '{1681A635-13C8-47F3-B96A-FE8123C9F708}';
     const required = ['getCurrentFormEditorGlobals', 'preparePaste', 'deserializeControls',
         'prepareForMultipleChangeProperties', 'handleMultipleChangeProperties', 'doPaste',
         'getTopLeftOfAllControls', 'changedSelectedControls', 'unselectAllControls',
-        'changeProperty', 'undoPoint', 'getImageFromServer', 'syncPropertySheet',
+        'changeProperty', 'undoPoint', 'getImageFromServer', 'queueMultipleSnapshot', 'syncPropertySheet',
         'deleteSelectedControls', 'updateAllControlDragPoints'];
     const hiddenClass = 'tbui3-inactive-page';
     const touched = new Set(), desires = new WeakMap(), firstHeaders = new WeakMap();
@@ -71,12 +71,22 @@
             finally { busy = false; if (started && checkpoint) api.undoPoint(g); }
         }
     }
+    function snapshotHost(g, host) {
+        // getImageFromServer explicitly returns without doing anything in full-form
+        // mode. Queue the parent ID inside the current native edit batch instead.
+        if (g.isInFullFormMode) {
+            if (host.formDesignerControlId === undefined) throw new Error('TabView is waiting for its native ID.');
+            api.queueMultipleSnapshot(g, host.formDesignerControlId);
+        } else api.getImageFromServer(g, host);
+    }
     function setPage(g, host, page, selectPage = false) {
         if (!page) return;
         if (!sameName(host.properties.SelectedPage, name(page))) {
-            edit(g, () => api.changeProperty(g, host, 'SelectedPage', name(page)));
+            edit(g, () => {
+                api.changeProperty(g, host, 'SelectedPage', name(page));
+                snapshotHost(g, host);
+            });
             desires.set(host, name(page));
-            api.getImageFromServer(g, host);
         }
         if (selectPage) choose(g, [page]);
         display(g, host);
@@ -144,7 +154,6 @@
             const top = api.getTopLeftOfAllControls(g, created);
             paste.lowestPointOfSelection = { x: top.x, y: top.y - 10 };
             api.doPaste(g, paste, created, false);
-            api.changeProperty(g, host, 'SelectedPage', nextName);
         }, false); } catch (e) {
             api.undoPoint(g);
             choose(g, previousSelection.filter(c => !c.isDeleted));
@@ -172,8 +181,14 @@
             edit(g, () => {
                 api.changeProperty(g, pending.page, 'Caption', pending.caption);
                 api.changeProperty(g, pending.page, 'PageOrder', pending.order);
+                // Activation must happen after the page exists natively, and the
+                // header bitmap must reflect its final caption and ordering.
+                api.changeProperty(g, pending.host, 'SelectedPage', name(pending.page));
+                snapshotHost(g, pending.host);
             });
-            api.getImageFromServer(g, pending.host);
+            desires.set(pending.host, name(pending.page));
+            choose(g, [pending.page]);
+            selections.set(g, pending.page);
         } finally { pendingNewPages.delete(g); }
         return true;
     }
@@ -199,8 +214,9 @@
             api.changeProperty(g, host, 'SelectedPage', 'pgGeneral');
             api.changeProperty(g, host, 'IsAddTabButtonVisible', true);
             api.changeProperty(g, g.designer, 'Tag', '');
+            snapshotHost(g, host);
         });
-        desires.set(host, 'pgGeneral'); api.getImageFromServer(g, host);
+        desires.set(host, 'pgGeneral');
         choose(g, [host]);
         selections.set(g, g.selectedControls[0]);
         return true;
@@ -209,8 +225,10 @@
         const list = pages(g, host), current = active(g, host), from = list.indexOf(current), to = from + direction;
         if (from < 0 || to < 0 || to >= list.length) return;
         [list[from], list[to]] = [list[to], list[from]];
-        edit(g, () => list.forEach((p, i) => api.changeProperty(g, p, 'PageOrder', i)));
-        api.getImageFromServer(g, host);
+        edit(g, () => {
+            list.forEach((p, i) => api.changeProperty(g, p, 'PageOrder', i));
+            snapshotHost(g, host);
+        });
     }
     function remove(g, host) {
         const page = active(g, host);
@@ -220,10 +238,10 @@
             choose(g, [page]);
             api.deleteSelectedControls(g);
             api.changeProperty(g, host, 'SelectedPage', next ? name(next) : '');
+            snapshotHost(g, host);
         });
         desires.set(host, next ? name(next) : '');
         choose(g, [host]);
-        api.getImageFromServer(g, host);
     }
     function run(command) {
         try {
@@ -243,7 +261,8 @@
             if (command === 'left') move(g, host, -1);
             else if (command === 'right') move(g, host, 1);
             else if (command === 'delete') remove(g, host);
-            else if (command !== 'refresh') throw new Error('Unknown designer command.');
+            else if (command === 'refresh') edit(g, () => snapshotHost(g, host), false);
+            else throw new Error('Unknown designer command.');
             tick();
             return 'OK';
         } catch (e) { error = String(e.message || e); return 'TabView Designer: ' + error; }
@@ -265,12 +284,17 @@
             if (!cls.includes('ui3tab')) continue;
             let computed = {};
             try { computed = api.document.defaultView.getComputedStyle(c); } catch (_) {}
-            const image = String(c.imageData || '');
+            // Full-form replies store the bitmap on backgroundImage, not imageData.
+            const inlineImage = String(c.style?.backgroundImage || computed.backgroundImage || '');
+            const urlImage = inlineImage.match(/data:image\/png;base64,([^\"')]+)/i);
+            const image = String(c.imageData || urlImage?.[1] || '');
             let checksum = 2166136261;
             for (let i = 0; i < image.length; i++) checksum = Math.imul(checksum ^ image.charCodeAt(i), 16777619) >>> 0;
             let pngSize = '(unavailable)';
             try {
+                if (!image) throw new Error('No bitmap');
                 const bytes = api.document.defaultView.atob(image.slice(0, 44));
+                if (bytes.length < 24 || bytes.slice(1, 4) !== 'PNG') throw new Error('Not PNG');
                 const u32 = at => ((bytes.charCodeAt(at) * 16777216) + (bytes.charCodeAt(at+1) << 16) +
                     (bytes.charCodeAt(at+2) << 8) + bytes.charCodeAt(at+3)) >>> 0;
                 pngSize = u32(16) + 'x' + u32(20);

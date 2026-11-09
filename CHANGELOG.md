@@ -4,6 +4,14 @@ All notable changes to tbUI3. Dates are when the change was made, not released. 
 
 ## Unreleased
 
+### 2026-11-09, live designer header refresh and page activation (adapter v4)
+
+- Shane reports 1.0.0.63 renders without the purple tabs in the working session and + creates a page, but the new page cannot be selected. Reference unload/reload sometimes triggers the earlier deserialization failure and sometimes succeeds with identical code; that remains a separate intermittent loading issue.
+- The pushed log confirms adapter v3 and native 1.0.0.63, accepted consumer Form/IDs, consumed fixture marker, native General/Details/Finish captions/order and successful draw results for newly created UI3TabPage1. Captured diagnostics contain the original three pages, so they do not establish the failed new page's complete DOM state. One host Paint exception (&H80020009 at 16:48:01) remains unexplained.
+- Corrected a source-confirmed protocol defect: BETA 1043 getImageFromServer returns immediately in full-form mode. Adapter v4 queues the parent TabView ID via queueMultipleSnapshot inside the native edit batch after child initialization, ordering, selection and deletion. Its refresh command also uses that protocol. New-page activation now follows compiler-assigned ID acknowledgement and caption/order setup, then refreshes the parent headers in that batch.
+- Diagnostics now read full-form PNG data from backgroundImage when imageData is absent, validating the PNG header before reporting dimensions. No image data is logged. The standalone add-in is version 1.0.0.3; package 1.0.0.63 is unchanged.
+- Added three protocol checks using actual shipped live batch/changeProperty/snapshot functions with delayed property acknowledgement, plus one bitmap-state check. The previous code failed the missing-parent-snapshot and premature-activation checks; all 26 checks now pass. Re-exported Shane's latest test project into its stale form mirrors without changing the canonical test binary.
+
 ### 2026-11-09, 1.0.0.63 control-loading failure recorded
 
 - Shane's BETA 1043 win32 report contains TB5079 for the existing frmMain buttons and frmMultiPage controls, with secondary TB5125 Len errors. The screenshot confirms the embedded tbUI3 1.0.0.63 reference is enabled and shows "failed to deserialize JSON [1]" for UI3TabView1. Stable loading/compilation is not established.

@@ -34,7 +34,7 @@ function fixture() {
         doPaste:(g,n,cs)=>{g.selectedControls=cs;},changedSelectedControls:()=>{},
         unselectAllControls:g=>{g.selectedControls.forEach(c=>{c.isSelected=false;c.classList.remove('baseControlSelected');});g.selectedControls=[];},
         changeProperty:(g,c,k,v)=>{c.properties[k]=v;},undoPoint:()=>calls.undo++,
-        getImageFromServer:()=>{},syncPropertySheet:()=>{},updateAllControlDragPoints:()=>{},
+        getImageFromServer:()=>{},queueMultipleSnapshot:()=>{},syncPropertySheet:()=>{},updateAllControlDragPoints:()=>{},
         deleteSelectedControls:g=>{for(const c of g.selectedControls){g.allControls=g.allControls.filter(x=>!c.contains(x));c.remove();c.isDeleted=true;}g.selectedControls=[form];},
         document:{head:new Node(),createElement:()=>new Node(),addEventListener:(t,f)=>calls.events.set(t,f),removeEventListener:t=>calls.events.delete(t)},
         setInterval:f=>{calls.intervals.set(1,f);return 1;},clearInterval:id=>calls.intervals.delete(id)
@@ -163,7 +163,7 @@ test('embedded twinBASIC script exactly reconstructs parseable JavaScript',()=>{
     new vm.Script(js);assert(js.includes(source.trim()));assert(!src.match(/"[^"\r\n]+""[^"\r\n]+"/));
 });
 test('new UserControl defaults are replaced through native setters after compiler acknowledgement',()=>{
-    const f=fixture();f.page('Existing',7);f.g.isInFullFormMode=true;
+    const f=fixture();f.page('Existing',7);f.g.isInFullFormMode=true;f.host.formDesignerControlId=1;
     const original=f.api.deserializeControls;
     f.api.deserializeControls=(g,json,parent)=>{
         const cs=original(g,json,parent);
@@ -199,7 +199,7 @@ test('diagnostics reveal rejected class/selection state without changing control
     f.form.properties._className='MyProject.frmMultiPage';f.g.selectedControls=[p];
     const before=JSON.stringify([f.form.properties,f.host.properties,p.properties]);
     const text=f.adapter.run('diagnostics');assert(text.startsWith('DIAGNOSTICS '));
-    const report=JSON.parse(text.slice(12));assert.equal(report.adapter,3);assert.equal(report.consumerAccepted,false);
+    const report=JSON.parse(text.slice(12));assert.equal(report.adapter,4);assert.equal(report.consumerAccepted,false);
     assert.equal(report.form.className,'MyProject.frmMultiPage');assert.equal(report.controls.length,2);
     assert.equal(report.selection[0].name,'Page1');assert.equal(f.calls.undo,0);
     assert.equal(JSON.stringify([f.form.properties,f.host.properties,p.properties]),before);
@@ -208,4 +208,66 @@ test('diagnostics report missing internals even when normal editing commands are
     const f=fixture();delete f.api.deserializeControls;
     const report=JSON.parse(f.adapter.run('diagnostics').slice(12));
     assert.equal(report.supported,false);assert(report.missing.includes('deserializeControls'));assert.equal(f.calls.undo,0);
+});
+
+// Live property changes are acknowledged asynchronously, unlike the simple facade above.
+function liveFixture(t) {
+    const file=process.env.TB_IDE_MAIN_JS;
+    if(!file){t.skip('Set TB_IDE_MAIN_JS for live-designer protocol checks');return;}
+    const ide=fs.readFileSync(file,'utf8'),f=fixture();
+    function extract(name){const start=ide.indexOf('function '+name+'(');assert(start>=0);let pos=start;while((pos=ide.indexOf('}',pos+1))>=0){try{const text=ide.slice(start,pos+1);new vm.Script('('+text+')');return text;}catch{}}throw Error(name);}
+    const sandbox={};
+    for(const name of ['prepareForMultipleChangeProperties','handleMultipleChangeProperties','queueMultipleChangeProperty','queueMultipleSnapshot','getImageFromServer','changeProperty'])
+        sandbox[name]=vm.runInNewContext('('+extract(name)+')',sandbox);
+    Object.assign(f.api,sandbox);
+    f.g.isInFullFormMode=true;f.g.uniqueFormDesignerId='fixture';f.host.formDesignerControlId=1;
+    f.calls.messages=[];f.g.exampleSocket={send:wire=>f.calls.messages.push(JSON.parse(wire.split('/FORMJSON/0/')[1]))};
+    const page=f.page;
+    f.page=(name,order=0)=>{const p=page(name,order);p.formDesignerControlId=f.g.allControls.length;return p;};
+    f.ack=()=>{for(const batch of f.calls.messages.splice(0)){
+        for(const change of batch)if(typeof change==='object'){
+            const c=f.g.allControls.find(c=>c.formDesignerControlId===change.controlID);if(c)c.properties[change.propertyName]=change.value;
+        }
+        f.g.pendingChangesCount--;
+    }};
+    return f;
+}
+test('live reordering requests a host bitmap in the same native batch',t=>{
+    const f=liveFixture(t);if(!f)return;f.page('Page1');f.page('Page2',1);
+    f.adapter.run('right');
+    assert(f.calls.messages.some(batch=>batch.includes(1)),'Parent header snapshot missing');
+    assert.equal(f.host.properties.SelectedPage,'Page1');
+    f.ack();assert.equal(f.g.pendingChangesCount,0);
+});
+test('live page insertion activates the host only after the new ID exists',t=>{
+    const f=liveFixture(t);if(!f)return;f.page('Page1');
+    f.adapter.run('new');const added=f.g.allControls.at(-1);
+    assert(!f.calls.messages.flat().some(v=>v&&v.propertyName==='SelectedPage'),'Host activated before page acknowledgement');
+    added.formDesignerControlId=90;f.adapter.tick();
+    const batch=f.calls.messages.at(-1);
+    assert(batch.some(v=>v&&v.controlID===1&&v.propertyName==='SelectedPage'&&v.value===added.properties.Name));
+    assert(batch.includes(1),'Configured page did not refresh parent headers');
+    f.ack();f.adapter.tick();
+    assert.equal(f.host.properties.SelectedPage,added.properties.Name);
+    f.adapter.install();const handler=f.calls.events.get('pointerdown');
+    handler({button:0,target:f.host,clientX:145,clientY:80,preventDefault(){},stopImmediatePropagation(){}});
+    f.ack();f.adapter.tick();assert.equal(f.host.properties.SelectedPage,'Page1');
+    handler({button:0,target:f.host,clientX:100+350*1.5,clientY:80,preventDefault(){},stopImmediatePropagation(){}});
+    assert.equal(f.host.properties.SelectedPage,'Page1');
+    f.ack();f.adapter.tick();assert.equal(f.host.properties.SelectedPage,added.properties.Name);
+});
+test('live delete and refresh include the host in the native snapshot request',t=>{
+    const f=liveFixture(t);if(!f)return;f.page('Page1');f.page('Page2',1);
+    f.adapter.run('delete');assert(f.calls.messages.some(batch=>batch.includes(1)));
+    f.ack();f.adapter.tick();f.adapter.run('refresh');
+    assert(f.calls.messages.some(batch=>batch.includes(1)));
+});
+test('full-form bitmap diagnostics use the background image rather than an empty imageData',()=>{
+    const f=fixture();
+    const header=Buffer.alloc(33);header.write('\x89PNG\r\n\x1a\n',0,'binary');header.writeUInt32BE(500,16);header.writeUInt32BE(240,20);
+    f.host.style={backgroundImage:'url("data:image/png;base64,'+header.toString('base64')+'")'};
+    f.api.document.defaultView={getComputedStyle:()=>({}),atob:s=>Buffer.from(s,'base64').toString('binary')};
+    const report=JSON.parse(f.adapter.run('diagnostics').slice(12));
+    assert.equal(report.controls[0].snapshot.pngSize,'500x240');assert(report.controls[0].snapshot.encodedLength>0);
+    assert(!JSON.stringify(report).includes(header.toString('base64')));
 });

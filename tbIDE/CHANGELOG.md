@@ -1,5 +1,20 @@
 # Changelog: tbIDE (WinUI 3 look for the twinBASIC IDE)
 
+## 2026-11-09: dialog buttons from the reference's .button
+
+Shane's first run of the menus, tabs and text boxes (`check: 49 of 49 rules parsed`) showed the dialog buttons were still the hand-built ones, not his reference library's.
+
+Changed
+- Dialog buttons now use the reference's `.button` and `.button--primary` rules (winui-baseline.css, commit 20b438a) instead of hand-composited colours. The fill is the translucent `ControlFillColorDefault`/`Secondary`/`Tertiary` tokens. The border is the reference's masked edge ring: the real border is transparent and a `::before` ring paints `ControlElevationBorderBrush` as a 3px gradient (lighter top in dark, darker bottom in light), keeping the 4px corners. Pressed flattens it to `ControlStrokeColorDefault`. The default button (`.buttonFocused`) is `.button--primary`: accent fill, `AccentControlElevationBorderBrush` ring, no ring when pressed.
+- Added the tokens these rules need: `--color-control-active`, `--color-control-border-bottom`, the accent hover, pressed, text and border colours, `--brush-control-elevation` and `--brush-accent-elevation`. Accent hover and pressed are written as 90% and 80% alpha colours rather than the reference's `color-mix()`, in case the IDE's Chromium is older.
+- 45 rules (the per-theme button rules collapsed into shared ones driven by tokens).
+
+Known
+- The New / Open Project dialog never marks a default button (the IDE only adds `.buttonFocused` in some dialogs), so its Open button stays a normal button. Making it accent would need the add-in to pick the button by caption or id; not done.
+
+Validated
+- Chromium with 1043's `styles.css` and both theme variable sets: 45 of 45 rules parsed; buttons 32px, 14px regular; dark rest rgba(255,255,255,0.06) with a #FFFFFF18 top edge fading to #FFFFFF12; Open #60CDFF with black text and a #00000023 bottom edge; light Open #005FB8 with white text and a #00000066 bottom edge. Screenshots checked against WinUI Gallery's Button page.
+
 ## 2026-11-09: menus, tabs and text boxes from the WinUI HTML/CSS reference
 
 Shane shared his WinUI HTML/CSS reference library (Arrow-Loop/twinBASIC-Knowledge, branch `feature/winui3-html-css-js-reference`, `reference/winui-html`, commit 20b438a) so the add-in can reuse it instead of rebuilding WinUI controls from scratch.

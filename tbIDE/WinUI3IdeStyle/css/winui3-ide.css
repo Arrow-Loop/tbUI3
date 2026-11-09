@@ -34,6 +34,17 @@ body.darkMode {
   --color-flyout: #2c2c2c;                /* AcrylicInAppFillColorDefaultBrush fallback */
   --color-popup-border: #00000033;        /* SurfaceStrokeColorFlyout */
   --color-accent: #60cdff;                /* AccentFillColorDefault, default Windows blue */
+  --color-control-active: #ffffff08;      /* ControlFillColorTertiary */
+  --color-control-border-bottom: #ffffff18; /* ControlStrokeColorSecondary (the top edge in dark) */
+  --color-accent-hover: #60cdffe6;        /* AccentFillColorSecondary, 90% */
+  --color-accent-pressed: #60cdffcc;      /* AccentFillColorTertiary, 80% */
+  --color-accent-text: #000000;           /* TextOnAccentFillColorPrimary */
+  --color-accent-text-pressed: #00000080; /* TextOnAccentFillColorSecondary */
+  --color-accent-border: #ffffff14;       /* ControlStrokeColorOnAccentDefault */
+  --color-accent-border-bottom: #00000023; /* ControlStrokeColorOnAccentSecondary */
+  --color-border-mask: #ffffff;           /* alpha-only mask for the edge ring */
+  --brush-control-elevation: linear-gradient(to bottom, var(--color-control-border-bottom) 0 1px, var(--color-control-border) 3px); /* ControlElevationBorderBrush, dark */
+  --brush-accent-elevation: linear-gradient(to top, var(--color-accent-border-bottom) 0 1px, var(--color-accent-border) 3px); /* AccentControlElevationBorderBrush */
 }
 
 body:not(.darkMode) {
@@ -53,34 +64,41 @@ body:not(.darkMode) {
   --color-flyout: #f9f9f9;
   --color-popup-border: #0000000f;
   --color-accent: #005fb8;
+  --color-control-active: #f9f9f94d;
+  --color-control-border-bottom: #00000029;
+  --color-accent-hover: #005fb8e6;
+  --color-accent-pressed: #005fb8cc;
+  --color-accent-text: #ffffff;
+  --color-accent-text-pressed: #ffffffb3;
+  --color-accent-border: #ffffff14;
+  --color-accent-border-bottom: #00000066;
+  --color-border-mask: #ffffff;
+  --brush-control-elevation: linear-gradient(to top, var(--color-control-border-bottom) 0 1px, var(--color-control-border) 3px);
+  --brush-accent-elevation: linear-gradient(to top, var(--color-accent-border-bottom) 0 1px, var(--color-accent-border) 3px);
 }
 
-/* ---------- Dialog buttons: WinUI Button and ContentDialog (microsoft-ui-xaml main, read 2026-11-09) ----------
-  Shape, Button_themeresources.xaml: ButtonPadding 11,5,11,6, ButtonBorderThemeThickness 1, FontSize 14,
-  ControlCornerRadius 4, font Segoe UI Variable. Line height 19px makes the button 32px tall.
-  ContentDialog_themeresources.xaml: ContentDialogPadding 24 around the command area, ContentDialogButtonSpacing 8.
-  Colours: ButtonBackgroundPointerOver = ControlFillColorSecondary, Pressed = ControlFillColorTertiary,
-  ButtonForegroundPressed = TextFillColorSecondary, ButtonBorderBrushPressed = ControlStrokeColorDefault.
-  Rest colours and the elevation border come from the .theme files. Solid colours are the translucent fill
-  composited over the dialog's command area (#202020 dark, #F3F3F3 light).
-  .buttonFocused marks the button Enter presses, which ContentDialog draws with AccentButtonStyle:
-  AccentFillColorDefault, PointerOver 90%, Pressed 80%, TextOnAccentFillColorPrimary/Secondary,
-  AccentControlElevationBorderBrush (bottom ControlStrokeColorOnAccentSecondary), BorderBrushPressed transparent.
-  WinUI shows no focus ring on a button that only has default status, so the IDE's ring is removed.
-  Deviation: WinUI stretches ContentDialog buttons into equal columns; the IDE's layout is kept. */
+/* ---------- Dialog buttons: WinUI Button (reference .button and .button--primary) ----------
+  Taken from the reference's .button rules: ButtonPadding 11,5,11,6, ButtonMinHeight 32, ControlCornerRadius 4,
+  14px Segoe UI Variable with a 19px line, ControlFillColorDefault rest fill, ControlFillColorSecondary hover,
+  ControlFillColorTertiary pressed with TextFillColorSecondary text. The border is the reference's masked
+  edge ring: the real border is transparent and a ::before ring paints ControlElevationBorderBrush (a 3px
+  gradient, lighter at the top in dark and darker at the bottom in light), which keeps the 4px corners and the
+  translucent fill intact. Pressed swaps the ring for flat ControlStrokeColorDefault.
+  ContentDialog_themeresources.xaml: ContentDialogPadding 24 around the command area, ButtonSpacing 8.
+  The IDE marks the button Enter presses with .buttonFocused; it is drawn as .button--primary (AccentButtonStyle):
+  AccentFillColorDefault, 90% hover, 80% pressed, TextOnAccentFillColorPrimary/Secondary, the accent edge ring,
+  no ring when pressed. The IDE's own white ring around it is removed (WinUI shows none for default status).
+  Deviations: WinUI stretches ContentDialog buttons into equal columns; the IDE's layout is kept. Some IDE
+  dialogs (New / Open Project) never mark a default button, so none of their buttons is accent. */
 
 body .msgBoxButtons { padding: 24px; gap: 8px; }
-body .msgBoxButton { box-sizing: border-box; height: 32px; margin: 0; padding: 5px 11px 6px 11px; border-radius: 4px; font-family: 'Segoe UI Variable Text', 'Segoe UI Variable', 'Segoe UI', sans-serif; font-size: 14px; font-weight: 400; line-height: 19px; white-space: nowrap; }
-body.darkMode .msgBoxButton:hover { background: #323232; filter: none; }
-body.darkMode .msgBoxButton:active { background: #272727; filter: none; color: rgba(255, 255, 255, 0.7725); border-color: rgba(255, 255, 255, 0.0706); }
-body.darkMode .msgBoxButton.buttonFocused { background: #60CDFF; color: #000000; border: 1px solid rgba(255, 255, 255, 0.0784); border-bottom-color: rgba(0, 0, 0, 0.1373); outline: none; filter: none; }
-body.darkMode .msgBoxButton.buttonFocused:hover { background: rgba(96, 205, 255, 0.9); }
-body.darkMode .msgBoxButton.buttonFocused:active { background: rgba(96, 205, 255, 0.8); color: rgba(0, 0, 0, 0.502); border-color: transparent; }
-body:not(.darkMode) .msgBoxButton:hover { background: #F6F6F6; filter: none; }
-body:not(.darkMode) .msgBoxButton:active { background: #F5F5F5; filter: none; color: rgba(0, 0, 0, 0.6196); border-color: rgba(0, 0, 0, 0.0588); }
-body:not(.darkMode) .msgBoxButton.buttonFocused { background: #005FB8; color: #FFFFFF; border: 1px solid rgba(255, 255, 255, 0.0784); border-bottom-color: rgba(0, 0, 0, 0.4); outline: none; filter: none; }
-body:not(.darkMode) .msgBoxButton.buttonFocused:hover { background: rgba(0, 95, 184, 0.9); }
-body:not(.darkMode) .msgBoxButton.buttonFocused:active { background: rgba(0, 95, 184, 0.8); color: rgba(255, 255, 255, 0.702); border-color: transparent; }
+body .msgBoxButton { position: relative; display: inline-flex; align-items: center; justify-content: center; box-sizing: border-box; min-height: 32px; margin: 0; padding: 5px 11px 6px 11px; border: 1px solid transparent; border-radius: 4px; background: var(--color-control); background-clip: padding-box; box-shadow: none; color: var(--color-text); font-family: 'Segoe UI Variable Text', 'Segoe UI Variable', 'Segoe UI', sans-serif; font-size: 14px; font-weight: 400; line-height: 19px; white-space: nowrap; cursor: default; filter: none; --edge-brush: var(--brush-control-elevation); }
+body .msgBoxButton::before { content: ''; position: absolute; inset: -1px; padding: 1px; border-radius: inherit; background: var(--edge-brush); -webkit-mask: linear-gradient(var(--color-border-mask) 0 0) content-box, linear-gradient(var(--color-border-mask) 0 0); -webkit-mask-composite: xor; mask-composite: exclude; pointer-events: none; }
+body .msgBoxButton:hover { background: var(--color-control-hover); background-clip: padding-box; filter: none; }
+body .msgBoxButton:active { background: var(--color-control-active); background-clip: padding-box; color: var(--color-text-muted); --edge-brush: var(--color-control-border); }
+body .msgBoxButton.buttonFocused { background: var(--color-accent); background-clip: border-box; color: var(--color-accent-text); border: 1px solid transparent; outline: none; --edge-brush: var(--brush-accent-elevation); }
+body .msgBoxButton.buttonFocused:hover { background: var(--color-accent-hover); background-clip: border-box; }
+body .msgBoxButton.buttonFocused:active { background: var(--color-accent-pressed); background-clip: border-box; color: var(--color-accent-text-pressed); --edge-brush: transparent; }
 
 /* ---------- Progress bar: ProgressBar_themeresources.xaml ----------
   ProgressBarMinHeight 3, TrackHeight 1, CornerRadius 1.5, TrackCornerRadius 0.5,

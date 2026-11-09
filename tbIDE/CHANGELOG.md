@@ -1,5 +1,20 @@
 # Changelog: tbIDE (WinUI 3 look for the twinBASIC IDE)
 
+## 2026-11-09: drop-downs, check boxes, scroll bars and tooltips from the reference
+
+Shane confirmed the reference-based buttons are right on 1043 and asked to bring the rest of the UI in line.
+
+Added (all from winui-baseline.css, commit 20b438a, mapped onto the IDE's own elements)
+- Drop-downs as `.select-field` (ComboBox): padding 5px 32px 7px 12px, 32px, 4px corners, token fills for rest, hover and pressed, a 12px chevron 12px from the right in `TextFillColorSecondary` (an SVG, since a `select` cannot carry the reference's `::after` glyph), and `color-scheme` so the open list follows the theme. A `select` cannot carry the edge ring either, so the elevation border is a solid border with `ControlStrokeColorSecondary` on the top (dark) or bottom (light). Covers Options, the find panel, the web page zoom, the toolbar and the code navigation drop-downs; the last two stay compact. The code navigation drop-downs' hard-coded #202020 text is overridden, so they are dark in WinUI3 Dark.
+- Check boxes and radio buttons as `.choice input` (CheckBox, RadioButton): 20px, 4px corners or round, `ControlAltFillColor` fills, accent when checked, a 12px tick drawn as an SVG mask in the shape of the CheckMark glyph (no dependency on the Segoe Fluent Icons font), radio dot 12px, 14px on hover, 10px pressed. Covers Options, project settings and the find panel's scope options.
+- Scroll bars as the reference's `*::-webkit-scrollbar`: 8px, transparent track, no arrow buttons, pill thumb inset 3px that widens to 1px under the pointer. The thumb stays visible at rest (the reference hides it until its container is hovered, which in the IDE's nested panels would show every scroll bar at once). Monaco's own scroll bars are not affected.
+- Tooltips (`#hoverTooltip`) as `.tool-tip`: padding 6px 9px 8px, 12px, 4px corners, flyout fill and border, max width 320px, no shadow.
+- Tokens: `ControlAltFillColor` Secondary, Tertiary and Quarternary, `ControlStrongStrokeColorDisabled`, accent disabled colours, and the chevron image per theme.
+- 74 rules.
+
+Validated
+- Chromium with 1043's `styles.css`, `configEditor.css` and both theme variable sets, with the CSS passed through the add-in's JavaScript string escaping and `window.eval` exactly as the add-in does: 74 of 74 rules parsed. Toolbar and code navigation drop-downs rgba(255,255,255,0.06) with white text and `color-scheme: dark` in WinUI3 Dark; Options drop-down 32px; checked box #60CDFF (dark) and #005FB8 (light) with the tick visible; tooltip #2C2C2C and #F9F9F9, 12px; scroll bars 8px. Screenshots checked. Not yet run in the IDE.
+
 ## 2026-11-09: dialog buttons from the reference's .button
 
 Shane's first run of the menus, tabs and text boxes (`check: 49 of 49 rules parsed`) showed the dialog buttons were still the hand-built ones, not his reference library's.

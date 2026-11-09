@@ -17,6 +17,8 @@ const cssFile = path.join(here, '../WinUI3IdeStyle/css/winui3-ide-icons.css');
 
 // Toolbar element id (main.htm #rootMenu2) -> Fluent icon file (name_size_regular.svg).
 // 16px artwork is used where the set has it; the rest are 20px artwork drawn at 16px.
+// Comment, uncomment, indent, outdent and the form designer's align and size buttons keep the IDE's own
+// glyphs (Shane, 2026-11-09): they show what each command does better than the Fluent set.
 const map = [
   ['saveIcon', 'save_16_regular'],
   ['searchIcon', 'document_search_16_regular'],
@@ -32,18 +34,6 @@ const map = [
   ['restartIcon', 'arrow_clockwise_16_regular'],
   ['trashIcon', 'broom_16_regular'],
   ['buildIcon', 'box_arrow_up_20_regular'],
-  ['commentIcon', 'comment_16_regular'],
-  ['uncommentIcon', 'comment_off_16_regular'],
-  ['indentIcon', 'text_indent_increase_16_regular'],
-  ['unindentIcon', 'text_indent_decrease_16_regular'],
-  ['menuBarAlignLeft', 'align_left_16_regular'],
-  ['menuBarAlignTop', 'align_top_16_regular'],
-  ['menuBarAlignRight', 'align_right_16_regular'],
-  ['menuBarAlignBottom', 'align_bottom_16_regular'],
-  ['menuBarSizeWidest', 'arrow_fit_16_regular'],
-  ['menuBarSizeTallest', 'arrow_maximize_vertical_20_regular'],
-  ['menuBarSizeNarrowest', 'arrow_fit_in_16_regular'],
-  ['menuBarSizeShortest', 'arrow_minimize_vertical_20_regular'],
   ['menuBarGrid', 'grid_dots_16_regular'],
   ['menuBarBringToFront', 'position_to_front_20_regular'],
   ['menuBarSendToBack', 'position_to_back_20_regular'],

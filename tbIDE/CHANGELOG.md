@@ -1,5 +1,17 @@
 # Changelog: tbIDE (WinUI 3 look for the twinBASIC IDE)
 
+## 2026-11-09: original glyphs for comment, indent, align and size
+
+Shane: these buttons "need to probably stick with the original glyphs that tB used because they relay more information visually as to their function than the Fluent ones" (with a screenshot of comment, uncomment, indent, outdent, the four align and the four size buttons).
+
+Changed (add-in)
+- Those 12 buttons keep the IDE's own images and colour filters (16px, 19px for align and size, as the IDE draws them) inside the CommandBar button shape and hover states. Their Fluent SVGs are removed; 19 toolbar buttons still use Fluent icons.
+- The exclusions use attribute selectors, not ids, so the rule's specificity stays below the IDE's `#menuBarPreview` width (an id-based first try made Preview and the theme button overlap in the mock).
+- 163 rules, 40,478 characters.
+
+Validated
+- Chromium mock, both themes: 163 of 163 rules parsed; the 12 buttons show the IDE's glyphs; `twinproj-src.mjs compare` all same. Not yet checked in the real IDE.
+
 ## 2026-11-09: toolbar card like the new Outlook's simplified ribbon
 
 Shane pointed at the new Outlook's ribbon. That ribbon is web Fluent UI (Outlook runs in WebView2), not a WinUI 3 control, so its look carries over to the IDE's HTML directly. Shane agreed to the CSS-only version now and a tabbed ribbon as a roadmap idea.

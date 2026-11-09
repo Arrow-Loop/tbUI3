@@ -348,6 +348,8 @@ body #fp2root .fp2-mark { background: transparent; color: var(--color-accent); f
    AppBarThemeCompactHeight, and buttons are 36px wide rather than 68px, because the IDE has about 30
    commands and no overflow menu: at WinUI's full size the row would wrap on most screens.
    Add-in buttons (id addinButton-*) keep their own image or caption and only get the shape and states.
+   So do comment, uncomment, indent, outdent and the form designer's align and size buttons (Shane, 2026-11-09): the IDE's own glyphs show
+   what each one does better than the Fluent set can, so they keep their image and filter at the IDE's size.
    The bar itself is drawn like the new Outlook's single-line simplified ribbon (web Fluent UI, not a WinUI
    control): a card (CardBackgroundFillColorDefault, CardStrokeColorDefault, 8px corners, Fluent shadow4)
    floating on the window background, with wider gaps around the group separators.
@@ -357,9 +359,11 @@ body #fp2root .fp2-mark { background: transparent; color: var(--color-accent); f
 body .sectionHeader:has(> #rootMenu2) { padding: 4px 8px 4px 0; background: var(--themeGeneralBackColor); }
 body #rootMenu2 { min-height: 40px; margin-bottom: 0; padding: 0 4px; align-items: center; border: 1px solid var(--color-card-border); border-radius: 8px; background: var(--color-card); box-shadow: 0 0 2px rgba(0,0,0,0.12), 0 2px 4px rgba(0,0,0,0.14); }
 body #rootMenu2 > .icon { position: relative; isolation: isolate; flex: 0 0 auto; align-self: center !important; box-sizing: border-box; height: 40px !important; margin: 0 !important; padding: 0; border: 0; border-radius: 4px; outline: 0; color: var(--color-text); cursor: default; }
-body #rootMenu2 > .icon:not([id^=addinButton-]) { width: 36px !important; background: transparent none !important; -webkit-filter: none !important; filter: none !important; font-size: 0; }
+body #rootMenu2 > .icon:not([id^=addinButton-]):not([id^=menuBarAlign]):not([id^=menuBarSize]):not([id=commentIcon]):not([id=uncommentIcon]):not([id=indentIcon]):not([id=unindentIcon]) { width: 36px !important; background: transparent none !important; -webkit-filter: none !important; filter: none !important; font-size: 0; }
 body #rootMenu2 > .icon::before { content: '' !important; position: absolute; inset: 6px 2px; z-index: -1; border-radius: inherit; background: transparent; }
-body #rootMenu2 > .icon:not([id^=addinButton-])::after { content: ''; position: absolute; left: 10px; top: 12px; width: 16px; height: 16px; background: currentColor; -webkit-mask: var(--fluent-icon) center / contain no-repeat; }
+body #rootMenu2 > .icon:not([id^=addinButton-]):not([id^=menuBarAlign]):not([id^=menuBarSize]):not([id=commentIcon]):not([id=uncommentIcon]):not([id=indentIcon]):not([id=unindentIcon])::after { content: ''; position: absolute; left: 10px; top: 12px; width: 16px; height: 16px; background: currentColor; -webkit-mask: var(--fluent-icon) center / contain no-repeat; }
+body #rootMenu2 > #commentIcon, body #rootMenu2 > #uncommentIcon, body #rootMenu2 > #indentIcon, body #rootMenu2 > #unindentIcon, body #rootMenu2 > [id^=menuBarAlign], body #rootMenu2 > [id^=menuBarSize] { width: 36px !important; background-size: 16px 16px !important; background-position: center !important; background-repeat: no-repeat !important; }
+body #rootMenu2 > [id^=menuBarAlign], body #rootMenu2 > [id^=menuBarSize] { background-size: 19px 19px !important; }
 body #rootMenu2 > .icon[id^=addinButton-] { min-width: 36px; background-size: 16px 16px !important; background-position: center !important; background-repeat: no-repeat !important; }
 body #rootMenu2 > .icon[id^=addinButton-].iconTextOnly { width: auto; padding: 0 12px; font-size: 14px; font-weight: 400; line-height: 40px; white-space: nowrap; }
 body #rootMenu2 > .icon:hover::before { background: var(--color-neutral-hover); }

@@ -34,6 +34,7 @@ body.darkMode {
   --color-flyout: #2c2c2c;                /* AcrylicInAppFillColorDefaultBrush fallback */
   --color-popup-border: #00000033;        /* SurfaceStrokeColorFlyout */
   --color-accent: #60cdff;                /* AccentFillColorDefault, default Windows blue */
+  --color-accent-link: #99ebff;           /* AccentTextFillColorPrimary (HyperlinkButton) */
   --color-neutral-selected: #ffffff0f;    /* SubtleFillColorSecondary, NavigationViewItemBackgroundSelected */
   --color-card-hover: #ffffff15;          /* ControlFillColorSecondary over the card */
   --color-control-active: #ffffff08;      /* ControlFillColorTertiary */
@@ -79,6 +80,7 @@ body:not(.darkMode) {
   --color-flyout: #f9f9f9;
   --color-popup-border: #0000000f;
   --color-accent: #005fb8;
+  --color-accent-link: #003e92;
   --color-neutral-selected: #00000009;
   --color-card-hover: #f9f9f980;
   --color-control-active: #f9f9f94d;
@@ -122,10 +124,10 @@ body:not(.darkMode) {
   dialogs (New / Open Project) never mark a default button, so none of their buttons is accent. */
 
 body .msgBoxButtons { padding: 24px; gap: 8px; }
-body .msgBoxButton, body .tbps-refreshBtn { position: relative; display: inline-flex; align-items: center; justify-content: center; box-sizing: border-box; min-height: 32px; margin: 0; padding: 5px 11px 6px 11px; border: 1px solid transparent; border-radius: 4px; background: var(--color-control); background-clip: padding-box; box-shadow: none; color: var(--color-text); font-family: 'Segoe UI Variable Text', 'Segoe UI Variable', 'Segoe UI', sans-serif; font-size: 14px; font-weight: 400; line-height: 19px; white-space: nowrap; cursor: default; filter: none; --edge-brush: var(--brush-control-elevation); }
-body .msgBoxButton::before, body .tbps-refreshBtn::before { content: ''; position: absolute; inset: -1px; padding: 1px; border-radius: inherit; background: var(--edge-brush); -webkit-mask: linear-gradient(var(--color-border-mask) 0 0) content-box, linear-gradient(var(--color-border-mask) 0 0); -webkit-mask-composite: xor; mask-composite: exclude; pointer-events: none; }
-body .msgBoxButton:hover, body .tbps-refreshBtn:hover { background: var(--color-control-hover); background-clip: padding-box; filter: none; }
-body .msgBoxButton:active, body .tbps-refreshBtn:active { background: var(--color-control-active); background-clip: padding-box; color: var(--color-text-muted); --edge-brush: var(--color-control-border); }
+body .msgBoxButton, body .tbps-refreshBtn, body .loadFromFile, body .importPackage, body .referenceTypeButton { position: relative; display: inline-flex; align-items: center; justify-content: center; box-sizing: border-box; min-height: 32px; margin: 0; padding: 5px 11px 6px 11px; border: 1px solid transparent; border-radius: 4px; background: var(--color-control); background-clip: padding-box; box-shadow: none; color: var(--color-text); font-family: 'Segoe UI Variable Text', 'Segoe UI Variable', 'Segoe UI', sans-serif; font-size: 14px; font-weight: 400; line-height: 19px; white-space: nowrap; cursor: default; filter: none; --edge-brush: var(--brush-control-elevation); }
+body .msgBoxButton::before, body .tbps-refreshBtn::before, body .loadFromFile::before, body .importPackage::before, body .referenceTypeButton::before { content: ''; position: absolute; inset: -1px; padding: 1px; border-radius: inherit; background: var(--edge-brush); -webkit-mask: linear-gradient(var(--color-border-mask) 0 0) content-box, linear-gradient(var(--color-border-mask) 0 0); -webkit-mask-composite: xor; mask-composite: exclude; pointer-events: none; }
+body .msgBoxButton:hover, body .tbps-refreshBtn:hover, body .loadFromFile:hover, body .importPackage:hover, body .referenceTypeButton:hover { background: var(--color-control-hover); background-clip: padding-box; filter: none; }
+body .msgBoxButton:active, body .tbps-refreshBtn:active, body .loadFromFile:active, body .importPackage:active, body .referenceTypeButton:active { background: var(--color-control-active); background-clip: padding-box; color: var(--color-text-muted); --edge-brush: var(--color-control-border); }
 body .msgBoxButton.buttonFocused { background: var(--color-accent); background-clip: border-box; color: var(--color-accent-text); border: 1px solid transparent; outline: none; --edge-brush: var(--brush-accent-elevation); }
 body .msgBoxButton.buttonFocused:hover { background: var(--color-accent-hover); background-clip: border-box; }
 body .msgBoxButton.buttonFocused:active { background: var(--color-accent-pressed); background-clip: border-box; color: var(--color-accent-text-pressed); --edge-brush: transparent; }
@@ -237,7 +239,7 @@ body .configEditorContainer select, body .configEditorContainer2 select, body se
 body.darkMode #rootMenu2 select, body.darkMode .codePanelDropDownContainer select.dropDown, body.darkMode .configEditorContainer select, body.darkMode .configEditorContainer2 select, body.darkMode select.IDEoptionDropdown, body.darkMode select.findReplacePanelDropDown2, body.darkMode select.webpagePanelHeaderZoom { color-scheme: dark; border-top-color: var(--color-control-border-bottom) !important; }
 body:not(.darkMode) #rootMenu2 select, body:not(.darkMode) .codePanelDropDownContainer select.dropDown, body:not(.darkMode) .configEditorContainer select, body:not(.darkMode) .configEditorContainer2 select, body:not(.darkMode) select.IDEoptionDropdown, body:not(.darkMode) select.findReplacePanelDropDown2, body:not(.darkMode) select.webpagePanelHeaderZoom { color-scheme: light; border-bottom-color: var(--color-control-border-bottom) !important; }
 body #rootMenu2 select, body .codePanelDropDownContainer select.dropDown, body .codePanelDropDownContainer select.dropDown:focus { min-height: 0; padding: 2px 30px 3px 10px; background-position: right 10px center !important; font-size: 13px; }
-body .tbps-controlSelect, body .tbis-controlSelect, body select.tbps-warningState { min-width: 200px; padding: 6px 32px 6px 12px !important; }
+body .tbps-controlSelect, body .tbis-controlSelect { min-width: 200px; padding: 6px 32px 6px 12px !important; }
 body .configEditorContainer select:hover, body .configEditorContainer2 select:hover, body select.IDEoptionDropdown:hover, body select.findReplacePanelDropDown2:hover, body select.webpagePanelHeaderZoom:hover, body #rootMenu2 select:hover, body .codePanelDropDownContainer select.dropDown:hover { background-color: var(--color-control-hover) !important; }
 body .configEditorContainer select:active, body .configEditorContainer2 select:active, body select.IDEoptionDropdown:active, body select.findReplacePanelDropDown2:active, body select.webpagePanelHeaderZoom:active, body #rootMenu2 select:active, body .codePanelDropDownContainer select.dropDown:active { background-color: var(--color-control-active) !important; color: var(--color-text-muted) !important; }
 body .configEditorContainer select:disabled, body .configEditorContainer2 select:disabled, body select.IDEoptionDropdown:disabled, body select.findReplacePanelDropDown2:disabled, body select.webpagePanelHeaderZoom:disabled, body #rootMenu2 select:disabled, body .codePanelDropDownContainer select.dropDown:disabled { background-color: var(--color-control-disabled) !important; color: var(--color-text-disabled) !important; border-color: var(--color-control-border) !important; }
@@ -260,7 +262,7 @@ body .configEditorContainer input[type=checkbox]:checked:hover, body .configEdit
 body .configEditorContainer input[type=checkbox]:checked:active, body .configEditorContainer2 input[type=checkbox]:checked:active, body .configEditorContainer input[type=radio]:checked:active, body .configEditorContainer2 input[type=radio]:checked:active, body input.findReplacePanelSplitLeftOption:checked:active, body input.IDEoptionCheckbox:checked:active { background: var(--color-accent-pressed); border-color: var(--color-accent-pressed); color: var(--color-accent-text-pressed); }
 body .configEditorContainer input[type=checkbox]:disabled, body .configEditorContainer2 input[type=checkbox]:disabled, body .configEditorContainer input[type=radio]:disabled, body .configEditorContainer2 input[type=radio]:disabled, body input.findReplacePanelSplitLeftOption:disabled, body input.IDEoptionCheckbox:disabled { background: transparent; border-color: var(--color-border-disabled); }
 body .configEditorContainer input[type=checkbox]:checked:disabled, body .configEditorContainer2 input[type=checkbox]:checked:disabled, body .configEditorContainer input[type=radio]:checked:disabled, body .configEditorContainer2 input[type=radio]:checked:disabled, body input.findReplacePanelSplitLeftOption:checked:disabled, body input.IDEoptionCheckbox:checked:disabled { background: var(--color-accent-disabled); border-color: transparent; color: var(--color-accent-text-disabled); }
-body .configEditorContainer input[type=checkbox]:checked::after, body .configEditorContainer2 input[type=checkbox]:checked::after, body input.IDEoptionCheckbox:checked::after { content: ''; position: absolute; left: 3px; top: 3px; width: 12px; height: 12px; background: currentColor; -webkit-mask: url('data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 12 12%27%3E%3Cpath d=%27M2 6.3 4.7 9 10 3.2%27 fill=%27none%27 stroke=%27%23000%27 stroke-width=%271.4%27 stroke-linecap=%27round%27 stroke-linejoin=%27round%27/%3E%3C/svg%3E') center / 12px 12px no-repeat; }
+body .configEditorContainer input[type=checkbox]:checked::after, body .configEditorContainer2 input[type=checkbox]:checked::after, body input.IDEoptionCheckbox:checked::after, body .referencesListColEnabled .tickIcon2::after { content: ''; position: absolute; left: 3px; top: 3px; width: 12px; height: 12px; background: currentColor; -webkit-mask: url('data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 12 12%27%3E%3Cpath d=%27M2 6.3 4.7 9 10 3.2%27 fill=%27none%27 stroke=%27%23000%27 stroke-width=%271.4%27 stroke-linecap=%27round%27 stroke-linejoin=%27round%27/%3E%3C/svg%3E') center / 12px 12px no-repeat; }
 body .configEditorContainer input[type=radio], body .configEditorContainer2 input[type=radio], body input.findReplacePanelSplitLeftOption { border-radius: 50%; }
 body .configEditorContainer input[type=radio]:checked::after, body .configEditorContainer2 input[type=radio]:checked::after, body input.findReplacePanelSplitLeftOption:checked::after { content: ''; position: absolute; top: 50%; left: 50%; width: 12px; height: 12px; border-radius: 50%; background: currentColor; transform: translate(-50%, -50%); }
 body .configEditorContainer input[type=radio]:checked:hover::after, body .configEditorContainer2 input[type=radio]:checked:hover::after, body input.findReplacePanelSplitLeftOption:checked:hover::after { width: 14px; height: 14px; }
@@ -418,10 +420,10 @@ body #rootMenu2 > #menuBarPreview.disabledCommand { background-color: transparen
 body { --chevron-up-mask: url('data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 12 12%27%3E%3Cpath d=%27M2.5 7.5 6 4l3.5 3.5%27 fill=%27none%27 stroke=%27%23000%27 stroke-width=%271.2%27 stroke-linecap=%27round%27 stroke-linejoin=%27round%27/%3E%3C/svg%3E'); --chevron-down-mask: url('data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 12 12%27%3E%3Cpath d=%27M2.5 4.5 6 8l3.5-3.5%27 fill=%27none%27 stroke=%27%23000%27 stroke-width=%271.2%27 stroke-linecap=%27round%27 stroke-linejoin=%27round%27/%3E%3C/svg%3E'); }
 body .tbps-settingsNav, body .tbis-settingsNav { border-right: 1px solid var(--color-divider); }
 body .tbps-settingsToolbar, body .tbis-settingsToolbar { padding: 8px 4px 4px; gap: 4px; }
-body .tbps-settingsSearch, body .tbis-settingsSearch { min-height: 32px; padding: 5px 10px 6px 10px; border: 1px solid var(--color-control-border) !important; border-bottom-color: var(--color-border-strong) !important; border-radius: 4px; background: var(--color-control) padding-box !important; box-shadow: none; color: var(--color-text) !important; font: 14px/19px 'Segoe UI Variable Text', 'Segoe UI Variable', 'Segoe UI', sans-serif; }
-body .tbps-settingsSearch:hover, body .tbis-settingsSearch:hover { background: var(--color-control-hover) !important; }
-body .tbps-settingsSearch:focus, body .tbis-settingsSearch:focus { background: var(--color-input-active) !important; border-bottom: 2px solid var(--color-accent) !important; padding-bottom: 5px; box-shadow: none; }
-body .tbps-settingsSearch::placeholder, body .tbis-settingsSearch::placeholder { color: var(--color-text-muted); }
+body .tbps-settingsSearch, body .tbis-settingsSearch, body input.tbps-warningsFilter, body input.referencesSearchBox { min-height: 32px; padding: 5px 10px 6px 10px; border: 1px solid var(--color-control-border) !important; border-bottom-color: var(--color-border-strong) !important; border-radius: 4px; background: var(--color-control) padding-box !important; box-shadow: none; color: var(--color-text) !important; font: 14px/19px 'Segoe UI Variable Text', 'Segoe UI Variable', 'Segoe UI', sans-serif; }
+body .tbps-settingsSearch:hover, body .tbis-settingsSearch:hover, body input.tbps-warningsFilter:hover, body input.referencesSearchBox:hover { background: var(--color-control-hover) !important; }
+body .tbps-settingsSearch:focus, body .tbis-settingsSearch:focus, body input.tbps-warningsFilter:focus, body input.referencesSearchBox:focus { background: var(--color-input-active) !important; border-bottom: 2px solid var(--color-accent) !important; padding-bottom: 5px; box-shadow: none; }
+body .tbps-settingsSearch::placeholder, body .tbis-settingsSearch::placeholder, body input.tbps-warningsFilter::placeholder, body input.referencesSearchBox::placeholder { color: var(--color-text-muted); }
 body .tbps-settingsNavList, body .tbis-settingsNavList { padding: 0 0 8px; }
 body .tbps-navItem, body .tbis-navItem { position: relative; box-sizing: border-box; height: 36px; margin: 2px 4px; padding: 0 8px 0 12px; border-radius: 4px; color: var(--color-text); font-size: 14px; font-weight: 400; cursor: default; }
 body .tbps-navItem:hover, body .tbis-navItem:hover { background: var(--color-neutral-hover); }
@@ -484,3 +486,44 @@ body .tbps-referencesShell .referencesListChoice { gap: 4px; border-bottom: 0; }
 body .tbps-referencesShell .referencesListChoiceOption { padding: 7px 12px 9px; border-radius: 4px; color: var(--color-text-muted); font-size: 14px; font-weight: 400; opacity: 1; box-shadow: none !important; transition: none; }
 body .tbps-referencesShell .referencesListChoiceOption:hover { background: var(--color-neutral-hover); color: var(--color-text); }
 body .tbps-referencesShell .referencesListChoiceOptionSelected, body .tbps-referencesShell .referencesListChoiceOptionSelected:hover { background: transparent linear-gradient(var(--color-accent), var(--color-accent)) center bottom / 16px 3px no-repeat; color: var(--color-text); font-weight: 400; }
+
+/* ---------- Library References and Compiler Warnings: ListView tables, CheckBox, HyperlinkButton, InfoBar ----------
+   The references lists (Enabled Libraries, Available COM References, Available Packages) become a ListView in a card
+   with a column header: no grey grid lines, a divider under each row, neutral hover. Their tick boxes are PNG divs
+   (.tickIcon2 / .tickIcon2empty), drawn here as the WinUI CheckBox. The edit pencil and AUTO-FIX are HyperlinkButtons,
+   a load error is a critical InfoBar, and Import from file... is the reference button. The tables' own colours come
+   from the theme (DialogList*); only what the theme cannot reach is here. The warnings list is a ListView whose
+   rows hold a ComboBox in a fixed column, so the drop-down no longer runs into the description. */
+body .referencesListNewOuter { box-sizing: border-box; border: 1px solid var(--color-card-border); border-radius: 4px; margin-bottom: 12px; }
+body .referencesListNewOuter::-webkit-scrollbar-track { background: transparent; }
+body .referencesListRowHeader { border-bottom: 1px solid var(--color-divider); font-size: 12px; font-weight: 600; }
+body .referencesListRowHeader > div { min-height: 32px; box-sizing: border-box; padding: 6px 12px; border-right: 1px solid var(--color-divider); }
+body .referencesListRowHeader > div:last-child, body .referencesListRowHeader .referencesListColEnabled, body .referencesListRowHeader .referencesListColName { border-right: 0; }
+body .referencesListRowHeader .referencesListColName2 { padding: 0 8px; }
+body .referencesListRow { border-bottom: 1px solid var(--color-divider); color: var(--color-text); }
+body .referencesListRow:hover { background: var(--color-neutral-hover); }
+body .referencesListRow > div { min-height: 36px; box-sizing: border-box; padding: 4px 12px; border-right: 0; }
+body .referencesListRowHeader .referencesListColEnabled, body .referencesListRow .referencesListColEnabled { display: flex; align-items: center; gap: 6px; padding: 0 0 0 8px; }
+body .referencesListRow .referencesListColName { white-space: normal; }
+body .subText { margin-left: 8px; color: var(--color-text-muted); font-style: normal; font-weight: 400; }
+body .tbpsRefDragIcon { margin: 0; color: var(--color-text-muted); -webkit-filter: none; filter: none; }
+body .tbpsRefDragDisabled { color: var(--color-text-disabled); }
+body .referencesListColEnabled .tickIcon2, body .referencesListColEnabled .tickIcon2empty { position: relative; box-sizing: border-box; width: 20px; height: 20px; margin: 0; border: 1px solid var(--color-border-strong); border-radius: 4px; background: var(--color-alt); color: var(--color-accent-text); -webkit-filter: none !important; filter: none !important; cursor: default; }
+body .referencesListColEnabled .tickIcon2 { border-color: var(--color-accent); background: var(--color-accent); }
+body .referencesListColEnabled:hover .tickIcon2empty { background: var(--color-alt-hover); }
+body .referencesListColEnabled:hover .tickIcon2 { border-color: var(--color-accent-hover); background: var(--color-accent-hover); }
+body .referencesListColEnabled:active .tickIcon2empty { background: var(--color-alt-pressed); border-color: var(--color-border-disabled); }
+body .referencesListColEnabled:active .tickIcon2 { border-color: var(--color-accent-pressed); background: var(--color-accent-pressed); }
+body .referencesListColSymbolEditLink, body .errorFixClickable { margin-left: 4px; padding: 0 6px; border-radius: 4px; color: var(--color-accent-link); font-style: normal; text-decoration: none; cursor: default; }
+body .referencesListColSymbolEditLink:hover, body .errorFixClickable:hover { background: var(--color-neutral-hover); text-decoration: none; cursor: default; }
+body .referencesListError { margin: 4px 0; padding: 6px 12px; border: 1px solid var(--color-card-border); border-radius: 4px; background: var(--color-critical-soft); color: var(--color-text); font-size: 12px; font-style: normal; font-weight: 400; text-align: left; }
+body .loadFromFile, body .importPackage, body .referenceTypeButton { width: auto; }
+body .tbps-referencesShell .optionLoadFromFileDiv { padding-top: 0; }
+body .tbps-warningsFilterWrap { margin-bottom: 8px; }
+body input.tbps-warningsFilter { min-width: 296px; }
+body .tbps-warningsList { box-sizing: border-box; border: 1px solid var(--color-card-border); border-radius: 4px; }
+body .tbps-warningRow { grid-template-columns: 136px 1fr; align-items: center; gap: 12px; min-height: 44px; box-sizing: border-box; padding: 6px 12px; border-bottom: 1px solid var(--color-divider); }
+body .tbps-warningRow:last-child { border-bottom: 0; }
+body .tbps-warningRow:hover { background: var(--color-neutral-hover); }
+body select.tbps-warningState { width: 100%; min-width: 0; padding: 5px 28px 6px 11px !important; }
+body .tbps-warningDesc { color: var(--color-text); font-size: 14px; line-height: 20px; }

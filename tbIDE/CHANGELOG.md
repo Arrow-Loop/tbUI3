@@ -1,5 +1,21 @@
 # Changelog: tbIDE (WinUI 3 look for the twinBASIC IDE)
 
+## 2026-11-09: Library References tables and Compiler Warnings list
+
+Shane's screenshots of Project Settings: the references tables still had the IDE's grey grid look, and the Compiler Warnings drop-downs ran into the descriptions.
+
+Fixed (add-in)
+- Compiler Warnings: the combo box rule gave each warning's drop-down a 200px minimum inside the IDE's 110px column, so it spilled over the description. The drop-down now fills a 136px column, rows are a ListView (centred, divider between rows, neutral hover) in a bordered list, and the filter box is a TextBox.
+
+Changed (add-in)
+- Library References (Enabled Libraries, Available COM References, Available Packages) as a ListView in a bordered card with a column header: semibold 12px header with subtle column dividers, 36px rows with a divider and neutral hover, no grey grid lines, "in order of priority" no longer italic.
+- The tick boxes (PNG divs, not inputs) drawn as the WinUI CheckBox; the drag grip uses the muted text colour.
+- The symbol edit pencil and AUTO-FIX as HyperlinkButtons (new token --color-accent-link, AccentTextFillColorPrimary); a reference load error as a critical InfoBar instead of red on yellow.
+- Import from file..., and the package and reference-type buttons, use the reference button; the available-list search box is a TextBox.
+- The list colours themselves still come from the theme (DialogList* keys); only what the theme cannot reach is in the add-in.
+
+Validated: Chromium mock with the IDE's 1043 styles.css, configEditor.css and injected tbps CSS plus both WinUI3 themes (266 of 266 rules parsed; previews settings-tables-dark/light.png and settings-tables-before-dark.png). Not yet checked in the real IDE.
+
 ## 2026-11-09: TextBox and ComboBox edges match the Gallery; menus clear the menu bar
 
 Shane compared 1043 with the compiled WinUI Gallery (screenshots): text box and combo box borders showed as grey outlines, and the long Edit menu scrolled but covered the menu bar.

@@ -56,6 +56,8 @@ body.darkMode {
   --brush-accent-elevation: linear-gradient(to top, var(--color-accent-border-bottom) 0 1px, var(--color-accent-border) 3px); /* AccentControlElevationBorderBrush */
   --color-success: #6ccb5f;               /* SystemFillColorSuccess */
   --color-critical: #ff99a4;              /* SystemFillColorCritical */
+  --color-card: #ffffff0d;                /* CardBackgroundFillColorDefault */
+  --color-card-border: #0000001a;         /* CardStrokeColorDefault */
 }
 
 body:not(.darkMode) {
@@ -97,6 +99,8 @@ body:not(.darkMode) {
   --brush-accent-elevation: linear-gradient(to top, var(--color-accent-border-bottom) 0 1px, var(--color-accent-border) 3px);
   --color-success: #0f7b0f;
   --color-critical: #c42b1c;
+  --color-card: #ffffffb3;
+  --color-card-border: #0000000f;
 }
 
 /* ---------- Dialog buttons: WinUI Button (reference .button and .button--primary) ----------
@@ -344,11 +348,14 @@ body #fp2root .fp2-mark { background: transparent; color: var(--color-accent); f
    AppBarThemeCompactHeight, and buttons are 36px wide rather than 68px, because the IDE has about 30
    commands and no overflow menu: at WinUI's full size the row would wrap on most screens.
    Add-in buttons (id addinButton-*) keep their own image or caption and only get the shape and states.
+   The bar itself is drawn like the new Outlook's single-line simplified ribbon (web Fluent UI, not a WinUI
+   control): a card (CardBackgroundFillColorDefault, CardStrokeColorDefault, 8px corners, Fluent shadow4)
+   floating on the window background, with wider gaps around the group separators.
    The IDE draws each icon as a background image with a CSS filter. Both are cleared here and the icon
    is drawn by ::after as a mask filled with the text colour. The masks are Fluent UI System Icons
    (MIT, Microsoft), set per button in winui3-ide-icons.css, which tools/build-toolbar-icons.mjs writes. */
-body .sectionHeader:has(> #rootMenu2) { padding: 0; }
-body #rootMenu2 { min-height: 40px; margin-bottom: 0; padding-left: 4px; align-items: center; }
+body .sectionHeader:has(> #rootMenu2) { padding: 4px 8px 4px 0; background: var(--themeGeneralBackColor); }
+body #rootMenu2 { min-height: 40px; margin-bottom: 0; padding: 0 4px; align-items: center; border: 1px solid var(--color-card-border); border-radius: 8px; background: var(--color-card); box-shadow: 0 0 2px rgba(0,0,0,0.12), 0 2px 4px rgba(0,0,0,0.14); }
 body #rootMenu2 > .icon { position: relative; isolation: isolate; flex: 0 0 auto; align-self: center !important; box-sizing: border-box; height: 40px !important; margin: 0 !important; padding: 0; border: 0; border-radius: 4px; outline: 0; color: var(--color-text); cursor: default; }
 body #rootMenu2 > .icon:not([id^=addinButton-]) { width: 36px !important; background: transparent none !important; -webkit-filter: none !important; filter: none !important; font-size: 0; }
 body #rootMenu2 > .icon::before { content: '' !important; position: absolute; inset: 6px 2px; z-index: -1; border-radius: inherit; background: transparent; }
@@ -369,7 +376,7 @@ body #rootMenu2 > .icon.menuBarToggleOn:active::before { background: var(--color
 body #rootMenu2 > .icon.menuBarToggleOn:active { color: var(--color-accent-text-pressed); }
 body #rootMenu2 > .icon.menuBarToggleOn.disabledCommand { color: var(--color-accent-text-disabled); }
 body #rootMenu2 > .icon.menuBarToggleOn.disabledCommand::before { background: var(--color-accent-disabled) !important; }
-body #rootMenu2 > .toolbarSplitter { flex: 0 0 auto; align-self: stretch; width: 1px; margin: 8px 2px; border-radius: 0.5px; background: var(--color-divider); }
+body #rootMenu2 > .toolbarSplitter { flex: 0 0 auto; align-self: stretch; width: 1px; margin: 10px 6px; border-radius: 0.5px; background: var(--color-divider); }
 body #rootMenu2 > select { align-self: center; height: 32px; margin: 0 4px; border-radius: 4px; }
 body #rootMenu2 > #menuBarPreview { width: auto !important; padding: 0 12px 0 36px; font-size: 14px; line-height: 40px; white-space: nowrap; }
 body #rootMenu2 > #menuBarPreview > .previewButtonArrow { display: none; }

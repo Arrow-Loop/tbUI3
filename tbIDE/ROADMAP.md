@@ -29,6 +29,8 @@ Steps:
 4. If an IDE release blocks reaching the page, fall back to the themes alone and raise the missing theme properties upstream (see Exploratory).
 
 ## Exploratory
+
+- Tabbed simplified ribbon like the new Outlook (agreed with Shane 2026-11-09 as an idea, not committed): tabs such as Home, Debug and Design above the toolbar card, each showing only its groups. Needs the add-in to move or hide the IDE's toolbar buttons with JavaScript (the CSS-only card is done), so it is more fragile across BETAs; the button ids it would group are listed in README.md's toolbar notes and `tools/build-toolbar-icons.mjs`.
 - Ask the twinBASIC project for theme properties for the hard-coded colours listed in README.md "Known limits" (still open in 1033: context menu item text, menu bar hover, title and dialog title text, caption icons, drop-down text, property category text, a separate focused dialog button text colour, tab shape, UI font). 1033 already added dialog contents and panel corners. With the rest, WinUI3 Dark could have dark menus, and WinUI3 Light a light title bar. This would be a GitHub issue on twinbasic/twinbasic, filed only with Shane's go-ahead.
 - Accent variants: the build script could take an accent colour and emit themes for other Windows accents, since a theme file cannot read the system accent.
 - WinUI-style syntax colours: optional, since WinUI defines no code palette; would need a reference such as Visual Studio's Dark and Light.

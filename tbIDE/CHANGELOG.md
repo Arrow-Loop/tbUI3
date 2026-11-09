@@ -1,5 +1,16 @@
 # Changelog: tbIDE (WinUI 3 look for the twinBASIC IDE)
 
+## 2026-11-09: toolbar card like the new Outlook's simplified ribbon
+
+Shane pointed at the new Outlook's ribbon. That ribbon is web Fluent UI (Outlook runs in WebView2), not a WinUI 3 control, so its look carries over to the IDE's HTML directly. Shane agreed to the CSS-only version now and a tabbed ribbon as a roadmap idea.
+
+Changed (add-in)
+- The toolbar is a card floating on the window background: `CardBackgroundFillColorDefault` fill, `CardStrokeColorDefault` border, 8px corners and Fluent's shadow4, inset 4px from the edges. Group separators have 6px gaps either side. Buttons, icons and states are unchanged.
+- 173 rules, 46,238 characters. The bar now needs about 1610px for one row.
+
+Validated
+- Same Chromium mock as the CommandBar entry, both themes: 173 of 173 rules parsed, `twinproj-src.mjs compare` all same. Not yet checked in the real IDE.
+
 ## 2026-11-09: toolbar as a WinUI CommandBar with Fluent icons
 
 Shane: the toolbar "needs to be restyled to look like whatever WinUI3's version of a Ribbon is and replace all the icons with their Fluent equivalents where possible." WinUI 3 has no Ribbon control (the Community Toolkit Labs Ribbon is experimental); its command surface is CommandBar, so the toolbar follows CommandBar, AppBarButton, AppBarToggleButton and AppBarSeparator (`CommandBar_themeresources.xaml`, `AppBarButton_themeresources.xaml`, reference `.command-bar`, `.appbar-button`, `.appbar-separator`).

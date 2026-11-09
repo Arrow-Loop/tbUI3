@@ -20,7 +20,8 @@ Module WinUI3IdeCss
         css = css & "--combo-chevron: url('data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 width=%2712%27 height=%2712%27 viewBox=%270 0 12 12%27%3E%3Cpath d=%27M2.5 4.5 6 8l3.5-3.5%27"
         css = css & " fill=%27none%27 stroke=%27%23ffffffc5%27 stroke-width=%271%27 stroke-linecap=%27round%27 stroke-linejoin=%27round%27/%3E%3C/svg%3E'); "
         css = css & "--brush-control-elevation: linear-gradient(to bottom, var(--color-control-border-bottom) 0 1px, var(--color-control-border) 3px); --brush-accent-elevation: linear-gradient(to top, "
-        css = css & "var(--color-accent-border-bottom) 0 1px, var(--color-accent-border) 3px); --color-success: #6ccb5f; --color-critical: #ff99a4; }" & vbCrLf
+        css = css & "var(--color-accent-border-bottom) 0 1px, var(--color-accent-border) 3px); --color-success: #6ccb5f; --color-critical: #ff99a4; --color-card: #ffffff0d; "
+        css = css & "--color-card-border: #0000001a; }" & vbCrLf
         css = css & "body:not(.darkMode) { --color-text: #000000e4; --color-text-muted: #0000009e; --color-text-subtle: #00000072; --color-text-disabled: #0000005c; --color-control: #ffffffb3; "
         css = css & "--color-control-hover: #f9f9f980; --color-control-disabled: #f9f9f94d; --color-input-active: #ffffff; --color-control-border: #0000000f; --color-border-strong: #00000072; "
         css = css & "--color-neutral-hover: #00000009; --color-neutral-pressed: #00000006; --color-divider: #0000000f; --color-flyout: #f9f9f9; --color-popup-border: #0000000f; --color-accent: #005fb8; "
@@ -31,7 +32,8 @@ Module WinUI3IdeCss
         css = css & "--combo-chevron: url('data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 width=%2712%27 height=%2712%27 viewBox=%270 0 12 12%27%3E%3Cpath d=%27M2.5 4.5 6 8l3.5-3.5%27"
         css = css & " fill=%27none%27 stroke=%27%230000009e%27 stroke-width=%271%27 stroke-linecap=%27round%27 stroke-linejoin=%27round%27/%3E%3C/svg%3E'); "
         css = css & "--brush-control-elevation: linear-gradient(to top, var(--color-control-border-bottom) 0 1px, var(--color-control-border) 3px); --brush-accent-elevation: linear-gradient(to top, "
-        css = css & "var(--color-accent-border-bottom) 0 1px, var(--color-accent-border) 3px); --color-success: #0f7b0f; --color-critical: #c42b1c; }" & vbCrLf
+        css = css & "var(--color-accent-border-bottom) 0 1px, var(--color-accent-border) 3px); --color-success: #0f7b0f; --color-critical: #c42b1c; --color-card: #ffffffb3; "
+        css = css & "--color-card-border: #0000000f; }" & vbCrLf
         css = css & "body .msgBoxButtons { padding: 24px; gap: 8px; }" & vbCrLf
         css = css & "body .msgBoxButton { position: relative; display: inline-flex; align-items: center; justify-content: center; box-sizing: border-box; min-height: 32px; margin: 0; "
         css = css & "padding: 5px 11px 6px 11px; border: 1px solid transparent; border-radius: 4px; background: var(--color-control); background-clip: padding-box; box-shadow: none; "
@@ -221,8 +223,9 @@ Module WinUI3IdeCss
         css = css & "body #fp2root .fp2-rowX:hover { background: var(--color-neutral-hover); color: var(--color-text); }" & vbCrLf
         css = css & "body #fp2root .fp2-searchGroupTitle { margin: 0 0 8px 0; font-size: 14px; font-weight: 600; letter-spacing: 0; text-transform: none; opacity: 1; }" & vbCrLf
         css = css & "body #fp2root .fp2-mark { background: transparent; color: var(--color-accent); font-weight: 600; }" & vbCrLf
-        css = css & "body .sectionHeader:has(> #rootMenu2) { padding: 0; }" & vbCrLf
-        css = css & "body #rootMenu2 { min-height: 40px; margin-bottom: 0; padding-left: 4px; align-items: center; }" & vbCrLf
+        css = css & "body .sectionHeader:has(> #rootMenu2) { padding: 4px 8px 4px 0; background: var(--themeGeneralBackColor); }" & vbCrLf
+        css = css & "body #rootMenu2 { min-height: 40px; margin-bottom: 0; padding: 0 4px; align-items: center; border: 1px solid var(--color-card-border); border-radius: 8px; "
+        css = css & "background: var(--color-card); box-shadow: 0 0 2px rgba(0,0,0,0.12), 0 2px 4px rgba(0,0,0,0.14); }" & vbCrLf
         css = css & "body #rootMenu2 > .icon { position: relative; isolation: isolate; flex: 0 0 auto; align-self: center !important; box-sizing: border-box; height: 40px !important; "
         css = css & "margin: 0 !important; padding: 0; border: 0; border-radius: 4px; outline: 0; color: var(--color-text); cursor: default; }" & vbCrLf
         css = css & "body #rootMenu2 > .icon:not([id^=addinButton-]) { width: 36px !important; background: transparent none !important; -webkit-filter: none !important; filter: none !important; "
@@ -247,7 +250,7 @@ Module WinUI3IdeCss
         css = css & "body #rootMenu2 > .icon.menuBarToggleOn:active { color: var(--color-accent-text-pressed); }" & vbCrLf
         css = css & "body #rootMenu2 > .icon.menuBarToggleOn.disabledCommand { color: var(--color-accent-text-disabled); }" & vbCrLf
         css = css & "body #rootMenu2 > .icon.menuBarToggleOn.disabledCommand::before { background: var(--color-accent-disabled) !important; }" & vbCrLf
-        css = css & "body #rootMenu2 > .toolbarSplitter { flex: 0 0 auto; align-self: stretch; width: 1px; margin: 8px 2px; border-radius: 0.5px; background: var(--color-divider); }" & vbCrLf
+        css = css & "body #rootMenu2 > .toolbarSplitter { flex: 0 0 auto; align-self: stretch; width: 1px; margin: 10px 6px; border-radius: 0.5px; background: var(--color-divider); }" & vbCrLf
         css = css & "body #rootMenu2 > select { align-self: center; height: 32px; margin: 0 4px; border-radius: 4px; }" & vbCrLf
         css = css & "body #rootMenu2 > #menuBarPreview { width: auto !important; padding: 0 12px 0 36px; font-size: 14px; line-height: 40px; white-space: nowrap; }" & vbCrLf
         css = css & "body #rootMenu2 > #menuBarPreview > .previewButtonArrow { display: none; }" & vbCrLf

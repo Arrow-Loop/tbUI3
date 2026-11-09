@@ -4,6 +4,14 @@ All notable changes to tbUI3. Dates are when the change was made, not released. 
 
 ## Unreleased
 
+### 2026-11-09, unique native page discovery and toolbar help (1.0.0.64, adapter v5)
+
+- Shane reports improved behavior with v4, but a newly drawn empty TabView appears to gain two pages after + and the second header is inaccessible. The enlarged screenshot shows two headers both captioned Page 2. That supports a repeated-page discovery hypothesis; it does not prove that two native page objects were created. The previously pushed logs predate this screenshot.
+- Native page discovery now builds a temporary collection, rejects repeated object identities or nonempty control names and publishes the distinct list after enumeration. Header drawing, PageCount, sizing and keyboard navigation share that list. Caption is never used for identity, so different pages may display identical captions. Existing public IDs and saved form data are preserved.
+- Added temporary native discovery traces with raw/unique counts, duplicate count and accepted page names/object addresses. Adapter v5 diagnostics report actual designer page counts/names plus native PageCount when included by the IDE. These distinguish a phantom painted header from two real controls on the next native capture.
+- Added explanatory hover titles to the six existing add-in toolbar buttons, including deletion of page contents and the diagnostic log location. Original titles are restored when the adapter unloads. Empty hosts still start with zero pages; + creates the first page on demand.
+- Package is 1.0.0.64; separate add-in is 1.0.0.4 (adapter v5). All 30 adapter/contract checks pass, including an empty-host + gesture, identical captions on distinct pages, page-count diagnostics and toolbar help. These JS checks do not execute native ContainedControls enumeration. All 68 project mirrors, embedded package/version, stable identities, ownership and CRLF checks pass; all three official exports match their mirrors. The observed duplicate-header outcome remains the next native gate.
+
 ### 2026-11-09, live designer header refresh and page activation (adapter v4)
 
 - Shane reports 1.0.0.63 renders without the purple tabs in the working session and + creates a page, but the new page cannot be selected. Reference unload/reload sometimes triggers the earlier deserialization failure and sometimes succeeds with identical code; that remains a separate intermittent loading issue.

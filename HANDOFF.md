@@ -2,9 +2,11 @@
 
 ## Current update, 2026-11-09
 
-Package 1.0.0.63 is unchanged. The separate TabViewDesigner add-in is now 1.0.0.3, adapter v4. Shane confirms the purple tabs are absent in the working session and + creates a new page, but v3 cannot select it. Logs confirm fixture initialization (General/Details/Finish), accepted consumer IDs and successful native page paints. Intermittent deserialization after reference unload/reload remains separate and unresolved; a host Paint exception at 16:48:01 is also recorded.
+Current candidate: package 1.0.0.64, TabViewDesigner add-in 1.0.0.4, adapter v5. Shane reports v4 is better, but a newly drawn empty host shows two matching Page 2 headers after +, with the second inaccessible. The screenshot supports a repeated native page entry hypothesis; it does not prove two real controls were inserted. No new log accompanied this screenshot.
 
-Adapter v4 corrects a source-confirmed full-form protocol bug: getImageFromServer is a no-op there. Parent headers now use queueMultipleSnapshot in the live edit batch; activation follows the new page's native ID and property setup. Full-form bitmap diagnostics read backgroundImage. The previous code failed two targeted protocol checks; all 26 adapter/contract checks now pass. Next native gate is selecting the new page, switching back, dropping a child and persistence/undo. Read docs/validation/2026-11-09-tabview-candidate.md for evidence boundaries. Shane's latest test project is preserved and its form mirrors refreshed. Existing styling work is preserved.
+The native host now publishes a distinct page collection after enumeration, matching object identity or nonempty control name and never matching Caption. Discovery logs raw/unique/duplicate counts and accepted names/object addresses. Adapter diagnostics compare designer page counts/names with native PageCount when provided. The six toolbar buttons have explanatory hover help. Empty hosts intentionally have zero pages until + is clicked. All 30 JS adapter/contract checks and 68 packed-project mirrors pass; native duplicate-enumeration behavior is not exercised by those JS checks. Next native gate is one + gesture on an empty host, real page count, selection, second page and contained controls.
+
+The earlier paint/layout and live snapshot corrections remain. Intermittent reference unload/reload deserialization and the host Paint exception at 16:48:01 remain unresolved and separate. Public IDs, the latest saved test form descriptors and unrelated styling are preserved. Read docs/controls/UI3TabView.md and docs/validation/2026-11-09-tabview-candidate.md before extending this work.
 
 ## Earlier milestone context
 

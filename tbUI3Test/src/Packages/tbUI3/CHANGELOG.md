@@ -1,3 +1,7 @@
+### 1.0.0.64
+- Page discovery builds an atomic list of unique page objects/control names, so a repeated enumeration entry cannot create a phantom header. Equal captions on distinct pages remain valid.
+- Temporary discovery diagnostics record raw/unique counts, duplicate entries and accepted page names/object addresses for comparison with the designer DOM.
+
 ### 1.0.0.63
 - Separates read-only page discovery from layout so paint and property snapshots do not move controls.
 - Guards no-op ScaleMode assignments and removes the page BackColor setter from Paint.

@@ -5,7 +5,7 @@
  */
 (function createTabViewDesigner(api) {
     'use strict';
-    const version = 4;
+    const version = 5;
     const hostClass = 'tbui3.ui3tabview', pageClass = 'tbui3.ui3tabpage';
     const pageClsid = '{1681A635-13C8-47F3-B96A-FE8123C9F708}';
     const required = ['getCurrentFormEditorGlobals', 'preparePaste', 'deserializeControls',
@@ -13,6 +13,24 @@
         'getTopLeftOfAllControls', 'changedSelectedControls', 'unselectAllControls',
         'changeProperty', 'undoPoint', 'getImageFromServer', 'queueMultipleSnapshot', 'syncPropertySheet',
         'deleteSelectedControls', 'updateAllControlDragPoints'];
+    const toolbarTitles = new Map();
+    const toolbarHelp = {
+        tbUI3TabNew: 'Add one page to the selected TabView. Selecting one of its pages or child controls also identifies the TabView.',
+        tbUI3TabDelete: 'Delete the active page and every control it contains. Select its TabView, page or a child control first.',
+        tbUI3TabLeft: 'Move the active page one position left in its TabView.',
+        tbUI3TabRight: 'Move the active page one position right in its TabView.',
+        tbUI3TabRefresh: 'Reinstall the TabView designer adapter and request a fresh header snapshot.',
+        tbUI3TabDiagnostics: 'Write TabView state and native/designer page counts to tbUI3-tabview.log beside the project.'
+    };
+    function describeToolbar() {
+        for (const [id, help] of Object.entries(toolbarHelp)) {
+            const button = api.document.getElementById?.('addinButton-' + id);
+            if (button && !toolbarTitles.has(button)) {
+                toolbarTitles.set(button, button.title);
+                button.title = help;
+            }
+        }
+    }
     const hiddenClass = 'tbui3-inactive-page';
     const touched = new Set(), desires = new WeakMap(), firstHeaders = new WeakMap();
     const requestNumbers = new WeakMap(), selections = new WeakMap();
@@ -299,8 +317,11 @@
                     (bytes.charCodeAt(at+2) << 8) + bytes.charCodeAt(at+3)) >>> 0;
                 pngSize = u32(16) + 'x' + u32(20);
             } catch (_) {}
+            const directPages = cls === hostClass ? pages(g, c) : null;
             report.controls.push({ name: name(c), className: cls, clsid: c.properties?._clsid,
                 nativeId: c.formDesignerControlId, parent: name(c.parentElement),
+                nativePageCount: cls === hostClass ? c.properties?.PageCount : undefined,
+                designerPageCount: directPages?.length, designerPageNames: directPages?.map(name),
                 caption: c.properties?.Caption, order: c.properties?.PageOrder, selectedPage: c.properties?.SelectedPage,
                 geometry: [c.properties?.Left, c.properties?.Top, c.properties?.Width, c.properties?.Height],
                 hiddenByAdapter: c.classList.contains(hiddenClass),
@@ -313,6 +334,7 @@
     }
     function tick() {
         if (disposed || !supported()) return;
+        describeToolbar();
         for (const node of touched) if (node.isConnected === false) {
             node.classList.remove(hiddenClass); touched.delete(node);
         }
@@ -377,6 +399,8 @@
         api.document?.removeEventListener('pointerdown', pointer, true);
         for (const node of touched) node.classList.remove(hiddenClass);
         touched.clear();
+        for (const [button, title] of toolbarTitles) button.title = title;
+        toolbarTitles.clear();
         style?.remove();
     }
     function install() {

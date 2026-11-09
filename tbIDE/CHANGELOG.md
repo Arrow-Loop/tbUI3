@@ -1,5 +1,18 @@
 # Changelog: tbIDE (WinUI 3 look for the twinBASIC IDE)
 
+## 2026-11-09: New Project Options dialog
+
+Shane asked whether the themes can fix the New Project Options dialog (white Project Name box, native blue check boxes, grey-bordered drop-down) before the add-in loads.
+
+Finding
+- No. In 1043 that dialog's controls use no theme variables: the Project Name box is an `<input>` with no `type` attribute (so the IDE's `input[type="text"]` rules, and the add-in's, never matched it), the check boxes are native `.IDEoptionCheckbox` scaled to 1.2, and `.IDEoptionDropdown` has a hard-coded grey border. A theme value becomes a CSS variable inside the IDE's own declarations, so it cannot add rules. Only the add-in can reach them.
+
+Fixed (add-in)
+- `.IDEoptionValue input:not([type])` is now styled as a TextBox (rest fill from the add-in, since no theme property reaches it), and `input.IDEoptionCheckbox` as a CheckBox (the 1.2 scale removed). `select.IDEoptionDropdown` was already covered. 75 rules.
+
+Validated
+- Chromium with 1043's CSS on a mock of the dialog's markup (taken from `showNewProjectOptions` in main.js): Project Name 32px, rgba(255,255,255,0.06) with white text in dark and rgba(255,255,255,0.7) in light, 4px corners; check box 20px accent with no scale; drop-down styled.
+
 ## 2026-11-09: theme first, and theme colours aligned with the reference tokens
 
 Shane's rule: anything a theme property can do belongs in the theme; the add-in only covers what the themes cannot. Every add-in rule was checked against the 1043 theme properties.

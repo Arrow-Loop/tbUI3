@@ -81,21 +81,22 @@ Module WinUI3IdeCss
         css = css & "body .tabItemIconRight { border-radius: 4px; }" & vbCrLf
         css = css & "body .tabItem:hover .tabItemIconRight, body .tabItemSelected .tabItemIconRight { color: var(--color-text-muted); }" & vbCrLf
         css = css & "body .tabItemIconRight:hover { background: var(--color-neutral-hover) !important; color: var(--color-text); }" & vbCrLf
-        css = css & "body .simpleMsgBoxNoImage input[type=text] { background-color: var(--color-control) !important; color: var(--color-text) !important; }" & vbCrLf
+        css = css & "body .simpleMsgBoxNoImage input[type=text], body .IDEoptionValue input:not([type]) { background-color: var(--color-control) !important; color: var(--color-text) !important; }" & vbCrLf
         css = css & "body .configEditorContainer input[type=text], body .configEditorContainer input[type=number], body .configEditorContainer textarea, body .configEditorContainer2 input[type=text], "
-        css = css & "body .configEditorContainer2 input[type=number], body .configEditorContainer2 textarea, body .simpleMsgBoxNoImage input[type=text] { box-sizing: border-box; min-height: 32px; "
-        css = css & "margin: 0; padding: 5px 6px 6px 10px; border: 1px solid var(--color-control-border) !important; border-bottom-color: var(--color-border-strong) !important; border-radius: 4px; "
-        css = css & "outline: none !important; font-family: 'Segoe UI Variable Text', 'Segoe UI Variable', 'Segoe UI', sans-serif; font-size: 14px; line-height: 19px; }" & vbCrLf
+        css = css & "body .configEditorContainer2 input[type=number], body .configEditorContainer2 textarea, body .simpleMsgBoxNoImage input[type=text], "
+        css = css & "body .IDEoptionValue input:not([type]) { box-sizing: border-box; min-height: 32px; margin: 0; padding: 5px 6px 6px 10px; border: 1px solid var(--color-control-border) !important; "
+        css = css & "border-bottom-color: var(--color-border-strong) !important; border-radius: 4px; outline: none !important; font-family: 'Segoe UI Variable Text', 'Segoe UI Variable', 'Segoe UI', "
+        css = css & "sans-serif; font-size: 14px; line-height: 19px; }" & vbCrLf
         css = css & "body .configEditorContainer input[type=text]:hover, body .configEditorContainer input[type=number]:hover, body .configEditorContainer textarea:hover, "
         css = css & "body .configEditorContainer2 input[type=text]:hover, body .configEditorContainer2 input[type=number]:hover, body .configEditorContainer2 textarea:hover, "
-        css = css & "body .simpleMsgBoxNoImage input[type=text]:hover { background-color: var(--color-control-hover) !important; }" & vbCrLf
+        css = css & "body .simpleMsgBoxNoImage input[type=text]:hover, body .IDEoptionValue input:not([type]):hover { background-color: var(--color-control-hover) !important; }" & vbCrLf
         css = css & "body .configEditorContainer input[type=text]:focus, body .configEditorContainer input[type=number]:focus, body .configEditorContainer textarea:focus, "
         css = css & "body .configEditorContainer2 input[type=text]:focus, body .configEditorContainer2 input[type=number]:focus, body .configEditorContainer2 textarea:focus, "
-        css = css & "body .simpleMsgBoxNoImage input[type=text]:focus { background-color: var(--color-input-active) !important; border-bottom: 2px solid var(--color-accent) !important; "
-        css = css & "padding-bottom: 5px; }" & vbCrLf
+        css = css & "body .simpleMsgBoxNoImage input[type=text]:focus, body .IDEoptionValue input:not([type]):focus { background-color: var(--color-input-active) !important; "
+        css = css & "border-bottom: 2px solid var(--color-accent) !important; padding-bottom: 5px; }" & vbCrLf
         css = css & "body .configEditorContainer input:disabled, body .configEditorContainer textarea:disabled, body .configEditorContainer2 input:disabled, "
-        css = css & "body .configEditorContainer2 textarea:disabled { background-color: var(--color-control-disabled) !important; color: var(--color-text-disabled) !important; "
-        css = css & "border-color: var(--color-control-border) !important; }" & vbCrLf
+        css = css & "body .configEditorContainer2 textarea:disabled, body .IDEoptionValue input:disabled { background-color: var(--color-control-disabled) !important; "
+        css = css & "color: var(--color-text-disabled) !important; border-color: var(--color-control-border) !important; }" & vbCrLf
         css = css & "body .configEditorContainer select, body .configEditorContainer2 select, body select.IDEoptionDropdown, body select.findReplacePanelDropDown2, body select.webpagePanelHeaderZoom, "
         css = css & "body #rootMenu2 select, body #rootMenu2 select:focus, body .codePanelDropDownContainer select.dropDown, body .codePanelDropDownContainer select.dropDown:focus { appearance: none; "
         css = css & "-webkit-appearance: none; box-sizing: border-box; min-height: 32px; padding: 5px 32px 7px 12px; border: 1px solid var(--color-control-border) !important; border-radius: 4px; "
@@ -123,31 +124,33 @@ Module WinUI3IdeCss
         css = css & "body.darkMode select option { background-color: #2c2c2c; color: #ffffff; }" & vbCrLf
         css = css & "body:not(.darkMode) select option { background-color: #f9f9f9; color: #000000e4; }" & vbCrLf
         css = css & "body .configEditorContainer input[type=checkbox], body .configEditorContainer2 input[type=checkbox], body .configEditorContainer input[type=radio], "
-        css = css & "body .configEditorContainer2 input[type=radio], body input.findReplacePanelSplitLeftOption { appearance: none; -webkit-appearance: none; position: relative; box-sizing: border-box; "
-        css = css & "flex: 0 0 auto; width: 20px; height: 20px; margin-top: 0; margin-bottom: 0; vertical-align: middle; border: 1px solid var(--color-border-strong); border-radius: 4px; "
-        css = css & "background: var(--color-alt); color: var(--color-accent-text); outline: none; cursor: default; }" & vbCrLf
+        css = css & "body .configEditorContainer2 input[type=radio], body input.findReplacePanelSplitLeftOption, body input.IDEoptionCheckbox { appearance: none; -webkit-appearance: none; "
+        css = css & "position: relative; box-sizing: border-box; flex: 0 0 auto; transform: none; width: 20px; height: 20px; margin-top: 0; margin-bottom: 0; vertical-align: middle; "
+        css = css & "border: 1px solid var(--color-border-strong); border-radius: 4px; background: var(--color-alt); color: var(--color-accent-text); outline: none; cursor: default; }" & vbCrLf
         css = css & "body .configEditorContainer input[type=checkbox]:hover, body .configEditorContainer2 input[type=checkbox]:hover, body .configEditorContainer input[type=radio]:hover, "
-        css = css & "body .configEditorContainer2 input[type=radio]:hover, body input.findReplacePanelSplitLeftOption:hover { background: var(--color-alt-hover); }" & vbCrLf
+        css = css & "body .configEditorContainer2 input[type=radio]:hover, body input.findReplacePanelSplitLeftOption:hover, body input.IDEoptionCheckbox:hover { background: var(--color-alt-hover); }" & vbCrLf
         css = css & "body .configEditorContainer input[type=checkbox]:active, body .configEditorContainer2 input[type=checkbox]:active, body .configEditorContainer input[type=radio]:active, "
-        css = css & "body .configEditorContainer2 input[type=radio]:active, body input.findReplacePanelSplitLeftOption:active { background: var(--color-alt-pressed); "
+        css = css & "body .configEditorContainer2 input[type=radio]:active, body input.findReplacePanelSplitLeftOption:active, body input.IDEoptionCheckbox:active { background: var(--color-alt-pressed); "
         css = css & "border-color: var(--color-border-disabled); }" & vbCrLf
         css = css & "body .configEditorContainer input[type=checkbox]:checked, body .configEditorContainer2 input[type=checkbox]:checked, body .configEditorContainer input[type=radio]:checked, "
-        css = css & "body .configEditorContainer2 input[type=radio]:checked, body input.findReplacePanelSplitLeftOption:checked { background: var(--color-accent); border-color: var(--color-accent); }" & vbCrLf
+        css = css & "body .configEditorContainer2 input[type=radio]:checked, body input.findReplacePanelSplitLeftOption:checked, body input.IDEoptionCheckbox:checked { background: var(--color-accent); "
+        css = css & "border-color: var(--color-accent); }" & vbCrLf
         css = css & "body .configEditorContainer input[type=checkbox]:checked:hover, body .configEditorContainer2 input[type=checkbox]:checked:hover, "
-        css = css & "body .configEditorContainer input[type=radio]:checked:hover, body .configEditorContainer2 input[type=radio]:checked:hover, "
-        css = css & "body input.findReplacePanelSplitLeftOption:checked:hover { background: var(--color-accent-hover); border-color: var(--color-accent-hover); }" & vbCrLf
+        css = css & "body .configEditorContainer input[type=radio]:checked:hover, body .configEditorContainer2 input[type=radio]:checked:hover, body input.findReplacePanelSplitLeftOption:checked:hover, "
+        css = css & "body input.IDEoptionCheckbox:checked:hover { background: var(--color-accent-hover); border-color: var(--color-accent-hover); }" & vbCrLf
         css = css & "body .configEditorContainer input[type=checkbox]:checked:active, body .configEditorContainer2 input[type=checkbox]:checked:active, "
         css = css & "body .configEditorContainer input[type=radio]:checked:active, body .configEditorContainer2 input[type=radio]:checked:active, "
-        css = css & "body input.findReplacePanelSplitLeftOption:checked:active { background: var(--color-accent-pressed); border-color: var(--color-accent-pressed); "
-        css = css & "color: var(--color-accent-text-pressed); }" & vbCrLf
+        css = css & "body input.findReplacePanelSplitLeftOption:checked:active, body input.IDEoptionCheckbox:checked:active { background: var(--color-accent-pressed); "
+        css = css & "border-color: var(--color-accent-pressed); color: var(--color-accent-text-pressed); }" & vbCrLf
         css = css & "body .configEditorContainer input[type=checkbox]:disabled, body .configEditorContainer2 input[type=checkbox]:disabled, body .configEditorContainer input[type=radio]:disabled, "
-        css = css & "body .configEditorContainer2 input[type=radio]:disabled, body input.findReplacePanelSplitLeftOption:disabled { background: transparent; border-color: var(--color-border-disabled); "
-        css = css & "}" & vbCrLf
+        css = css & "body .configEditorContainer2 input[type=radio]:disabled, body input.findReplacePanelSplitLeftOption:disabled, body input.IDEoptionCheckbox:disabled { background: transparent; "
+        css = css & "border-color: var(--color-border-disabled); }" & vbCrLf
         css = css & "body .configEditorContainer input[type=checkbox]:checked:disabled, body .configEditorContainer2 input[type=checkbox]:checked:disabled, "
         css = css & "body .configEditorContainer input[type=radio]:checked:disabled, body .configEditorContainer2 input[type=radio]:checked:disabled, "
-        css = css & "body input.findReplacePanelSplitLeftOption:checked:disabled { background: var(--color-accent-disabled); border-color: transparent; color: var(--color-accent-text-disabled); }" & vbCrLf
-        css = css & "body .configEditorContainer input[type=checkbox]:checked::after, body .configEditorContainer2 input[type=checkbox]:checked::after { content: ''; position: absolute; left: 3px; "
-        css = css & "top: 3px; width: 12px; height: 12px; background: currentColor; "
+        css = css & "body input.findReplacePanelSplitLeftOption:checked:disabled, body input.IDEoptionCheckbox:checked:disabled { background: var(--color-accent-disabled); border-color: transparent; "
+        css = css & "color: var(--color-accent-text-disabled); }" & vbCrLf
+        css = css & "body .configEditorContainer input[type=checkbox]:checked::after, body .configEditorContainer2 input[type=checkbox]:checked::after, "
+        css = css & "body input.IDEoptionCheckbox:checked::after { content: ''; position: absolute; left: 3px; top: 3px; width: 12px; height: 12px; background: currentColor; "
         css = css & "-webkit-mask: url('data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 12 12%27%3E%3Cpath d=%27M2 6.3 4.7 9 10 3.2%27 fill=%27none%27 stroke=%27%23000%2"
         css = css & "7 stroke-width=%271.4%27 stroke-linecap=%27round%27 stroke-linejoin=%27round%27/%3E%3C/svg%3E') center / 12px 12px no-repeat; }" & vbCrLf
         css = css & "body .configEditorContainer input[type=radio], body .configEditorContainer2 input[type=radio], body input.findReplacePanelSplitLeftOption { border-radius: 50%; }" & vbCrLf

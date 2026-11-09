@@ -1,5 +1,20 @@
 # Changelog: tbIDE (WinUI 3 look for the twinBASIC IDE)
 
+## 2026-11-09: Options and Project Settings as WinUI settings pages
+
+Shane (1043 screenshots of both dialogs): the dialogs should use NavigationView, ToggleSwitch instead of the `No | Yes` element, a correct ComboBox, and the reference's settings rows.
+
+Added (add-in; 1043 builds both dialogs in script with their own injected stylesheets, `tips-style` with `tbis-*` classes for IDE Options and `tbps-style` with `tbps-*` for Project Settings, so no theme property reaches them)
+- Left list as NavigationView items (as in the New / Open dialog): 36px, 4px corners, subtle hover, selected fill and accent indicator, muted counts. Filter box as a TextBox. The nav's grey edge is a divider.
+- Groups as the reference's settings list: a 14px semibold header over one card (`CardBackgroundFillColorDefault`, `CardStrokeColorDefault`, 4px corners) of 64px rows, 600 titles, 12px muted descriptions, control on the right. The row divider stays the themes' `DialogConfigRowBorderBottom`.
+- IDE Options' No / Yes as a ToggleSwitch (reference `.toggle`): 40x20 track, knob 12px (14px on hover, 17px wide pressed), accent when on, Off / On text to its left as in Windows Settings. The IDE's two segments stay as invisible click targets over the switch and its text; the selected one ignores the pointer, so a click always selects the other.
+- Project Settings' No / Yes / Default as a Segmented control: its third state is "use the default", whose value only the script knows, so a two-state switch would lose it.
+- ComboBoxes in both dialogs: the dialogs' `padding: 4px 6px !important` pushed the text under the chevron; WinUI padding now wins. Number fields as a NumberBox with inline chevron spin buttons. Refresh button as a Button, references tabs as a SelectorBar, the edition banner and "FULL IDE RESTART REQUIRED" as caution InfoBar colours, option errors as critical.
+- New tokens `SystemFillColorCautionBackground` and `SystemFillColorCriticalBackground`. 229 rules, 50,898 characters.
+
+Validated
+- Chromium mocks of both dialogs built from the 1043 builder functions' class names, with each dialog's injected CSS (extracted from main.js), `configEditor.css` and both theme variable sets: 229 of 229 rules parsed. Clicking an off switch turns it on, clicking again turns it off, clicking its Off / On text toggles it. `twinproj-src.mjs compare` all same. Not yet checked in the real IDE.
+
 ## 2026-11-09: separate TabView Designer candidate
 
 - Added the separately installed TabViewDesigner add-in for tbUI3 1.0.0.61. WinUI3IdeStyle, its CSS and themes are unchanged.

@@ -58,6 +58,8 @@ body.darkMode {
   --color-critical: #ff99a4;              /* SystemFillColorCritical */
   --color-card: #ffffff0d;                /* CardBackgroundFillColorDefault */
   --color-card-border: #0000001a;         /* CardStrokeColorDefault */
+  --color-caution-soft: #433519;          /* SystemFillColorCautionBackground */
+  --color-critical-soft: #442726;         /* SystemFillColorCriticalBackground */
 }
 
 body:not(.darkMode) {
@@ -101,6 +103,8 @@ body:not(.darkMode) {
   --color-critical: #c42b1c;
   --color-card: #ffffffb3;
   --color-card-border: #0000000f;
+  --color-caution-soft: #fff4ce;
+  --color-critical-soft: #fde7e9;
 }
 
 /* ---------- Dialog buttons: WinUI Button (reference .button and .button--primary) ----------
@@ -229,6 +233,7 @@ body .configEditorContainer select, body .configEditorContainer2 select, body se
 body.darkMode #rootMenu2 select, body.darkMode .codePanelDropDownContainer select.dropDown, body.darkMode .configEditorContainer select, body.darkMode .configEditorContainer2 select, body.darkMode select.IDEoptionDropdown, body.darkMode select.findReplacePanelDropDown2, body.darkMode select.webpagePanelHeaderZoom { color-scheme: dark; border-top-color: var(--color-control-border-bottom) !important; }
 body:not(.darkMode) #rootMenu2 select, body:not(.darkMode) .codePanelDropDownContainer select.dropDown, body:not(.darkMode) .configEditorContainer select, body:not(.darkMode) .configEditorContainer2 select, body:not(.darkMode) select.IDEoptionDropdown, body:not(.darkMode) select.findReplacePanelDropDown2, body:not(.darkMode) select.webpagePanelHeaderZoom { color-scheme: light; border-bottom-color: var(--color-control-border-bottom) !important; }
 body #rootMenu2 select, body .codePanelDropDownContainer select.dropDown, body .codePanelDropDownContainer select.dropDown:focus { min-height: 0; padding: 2px 30px 3px 10px; background-position: right 10px center !important; font-size: 13px; }
+body .tbps-controlSelect, body .tbis-controlSelect, body select.tbps-warningState { min-width: 200px; padding: 5px 32px 7px 12px !important; }
 body .configEditorContainer select:hover, body .configEditorContainer2 select:hover, body select.IDEoptionDropdown:hover, body select.findReplacePanelDropDown2:hover, body select.webpagePanelHeaderZoom:hover, body #rootMenu2 select:hover, body .codePanelDropDownContainer select.dropDown:hover { background-color: var(--color-control-hover) !important; }
 body .configEditorContainer select:active, body .configEditorContainer2 select:active, body select.IDEoptionDropdown:active, body select.findReplacePanelDropDown2:active, body select.webpagePanelHeaderZoom:active, body #rootMenu2 select:active, body .codePanelDropDownContainer select.dropDown:active { background-color: var(--color-control-active) !important; color: var(--color-text-muted) !important; }
 body .configEditorContainer select:disabled, body .configEditorContainer2 select:disabled, body select.IDEoptionDropdown:disabled, body select.findReplacePanelDropDown2:disabled, body select.webpagePanelHeaderZoom:disabled, body #rootMenu2 select:disabled, body .codePanelDropDownContainer select.dropDown:disabled { background-color: var(--color-control-disabled) !important; color: var(--color-text-disabled) !important; border-color: var(--color-control-border) !important; }
@@ -390,3 +395,82 @@ body #rootMenu2 > #menuBarPreview { width: auto !important; padding: 0 12px 0 36
 body #rootMenu2 > #menuBarPreview > .previewButtonArrow { display: none; }
 body #rootMenu2 > #menuBarPreview > span { font-size: 14px; font-weight: 400; }
 body #rootMenu2 > #menuBarPreview.disabledCommand { background-color: transparent; color: var(--color-text-disabled); }
+
+/* ---------- Options and Project Settings: NavigationView, settings rows, ToggleSwitch, Segmented, NumberBox ----------
+   BETA 1043 builds both dialogs in script with their own injected stylesheets (tips-style, classes tbis-*, and
+   tbps-style, classes tbps-*), so each rule names both families. Left list: NavigationView items as in the New /
+   Open dialog. Search: AutoSuggestBox / TextBox. Groups: a 14px semibold header over the reference's settings
+   list (.settings-list, .settings-row: one card, CardBackgroundFillColorDefault, CardStrokeColorDefault, 4px
+   corners, 64px rows with 12px 16px padding, 600 title, 12px TextFillColorSecondary description, control on the
+   right). The row divider stays the themes' DialogConfigRowBorderBottom.
+   IDE Options' No / Yes pair becomes a ToggleSwitch (reference .toggle: 40x20 track, 12px knob growing to 14px on
+   hover and 17px wide when pressed, 'Off' / 'On' to its left as in Windows Settings). The two segments stay in the
+   page as invisible click targets over the switch; the selected one ignores the pointer, so a click always lands on
+   the other one. Project Settings' bool has a third state (Default, whose value only the script knows), so it
+   cannot be a two-state switch: it becomes a Segmented control (Community Toolkit) with the selected item raised
+   and an accent pill. Number fields become a NumberBox with inline spin buttons; the references tabs a SelectorBar. */
+body { --chevron-up-mask: url('data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 12 12%27%3E%3Cpath d=%27M2.5 7.5 6 4l3.5 3.5%27 fill=%27none%27 stroke=%27%23000%27 stroke-width=%271.2%27 stroke-linecap=%27round%27 stroke-linejoin=%27round%27/%3E%3C/svg%3E'); --chevron-down-mask: url('data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 12 12%27%3E%3Cpath d=%27M2.5 4.5 6 8l3.5-3.5%27 fill=%27none%27 stroke=%27%23000%27 stroke-width=%271.2%27 stroke-linecap=%27round%27 stroke-linejoin=%27round%27/%3E%3C/svg%3E'); }
+body .tbps-settingsNav, body .tbis-settingsNav { border-right: 1px solid var(--color-divider); }
+body .tbps-settingsToolbar, body .tbis-settingsToolbar { padding: 8px 4px 4px; gap: 4px; }
+body .tbps-settingsSearch, body .tbis-settingsSearch { min-height: 32px; padding: 5px 10px 6px 10px; border: 1px solid var(--color-control-border) !important; border-bottom-color: var(--color-border-strong) !important; border-radius: 4px; background: var(--color-control) !important; box-shadow: none; color: var(--color-text) !important; font: 14px/19px 'Segoe UI Variable Text', 'Segoe UI Variable', 'Segoe UI', sans-serif; }
+body .tbps-settingsSearch:hover, body .tbis-settingsSearch:hover { background: var(--color-control-hover) !important; }
+body .tbps-settingsSearch:focus, body .tbis-settingsSearch:focus { background: var(--color-input-active) !important; border-bottom: 2px solid var(--color-accent) !important; padding-bottom: 5px; box-shadow: none; }
+body .tbps-settingsSearch::placeholder, body .tbis-settingsSearch::placeholder { color: var(--color-text-muted); }
+body .tbps-settingsNavList, body .tbis-settingsNavList { padding: 0 0 8px; }
+body .tbps-navItem, body .tbis-navItem { position: relative; box-sizing: border-box; height: 36px; margin: 2px 4px; padding: 0 8px 0 12px; border-radius: 4px; color: var(--color-text); font-size: 14px; font-weight: 400; cursor: default; }
+body .tbps-navItem:hover, body .tbis-navItem:hover { background: var(--color-neutral-hover); }
+body .tbps-navItem:active, body .tbis-navItem:active { background: var(--color-neutral-pressed); color: var(--color-text-muted); }
+body .tbps-navItemSelected, body .tbps-navItemSelected:hover, body .tbis-navItemSelected, body .tbis-navItemSelected:hover { background: var(--themeDialogNavButtonBackColorSelected, var(--color-neutral-selected)); box-shadow: none; font-weight: 400; }
+body .tbps-navItemSelected::before, body .tbis-navItemSelected::before { content: ''; position: absolute; left: 0; top: 50%; width: 3px; height: 16px; margin-top: -8px; border-radius: 2px; background: var(--color-accent); }
+body .tbps-navItemCount, body .tbis-navItemCount { color: var(--color-text-muted); font-size: 12px; opacity: 1; }
+body .tbps-changedCountVisible, body .tbis-changedCountVisible { color: var(--color-text-muted); opacity: 1; }
+body .tbps-settingsPane, body .tbis-settingsPane { padding: 16px 24px 24px; }
+body .tbps-groupSection, body .tbis-groupSection { margin-bottom: 28px; }
+body .tbps-groupTitle, body .tbis-groupTitle { margin: 0 0 8px; padding: 0; border: 0; background: none; color: var(--color-text); font-size: 14px; font-weight: 600; line-height: 20px; }
+body .tbps-groupRows, body .tbis-groupRows { border: 1px solid var(--color-card-border); border-radius: 4px; background: var(--color-card); }
+body .tbps-optionRow, body .tbis-optionRow { align-items: center; min-height: 64px; box-sizing: border-box; padding: 12px 16px; }
+body .tbps-optionRow:last-child, body .tbis-optionRow:last-child { border-bottom: 0; }
+body .tbps-optionRow:hover, body .tbis-optionRow:hover { background: transparent; }
+body .tbps-optionName, body .tbis-optionName { color: var(--color-text); font-size: 14px; font-weight: 600; line-height: 20px; }
+body .tbps-optionDesc, body .tbis-optionDesc { margin-top: 2px; color: var(--color-text-muted); font-size: 12px; line-height: 16px; opacity: 1; }
+body .tbps-optionValueCol, body .tbis-optionValueCol { align-items: flex-end; }
+body .tbps-optionRowFull .tbps-optionValueCol { align-items: stretch; }
+body .tbps-optionErrors, body .tbis-optionErrors { padding: 8px 12px; border: 1px solid var(--color-card-border); border-radius: 4px; background: var(--color-critical-soft); color: var(--color-text); font-size: 12px; }
+body .tbis-warning { padding: 4px 12px; border: 1px solid var(--color-card-border); border-radius: 4px; background: var(--color-caution-soft); color: var(--color-text); font-size: 12px; }
+body .tbps-optionBanner { padding: 12px 16px; border: 1px solid var(--color-card-border); border-radius: 4px; background: var(--color-caution-soft); color: var(--color-text); font-size: 14px; }
+body .tbis-bool { position: relative; display: inline-block; box-sizing: border-box; width: 40px; height: 20px; margin: 6px 0 6px 52px; overflow: visible; border: 1px solid var(--color-border-strong); border-radius: 10px; background: var(--color-alt); }
+body .tbis-bool::before { content: 'Off'; position: absolute; right: calc(100% + 12px); top: 50%; transform: translateY(-50%); color: var(--color-text); font-size: 14px; line-height: 20px; white-space: nowrap; pointer-events: none; }
+body .tbis-bool::after { content: ''; position: absolute; top: 50%; left: 8.5px; width: 12px; height: 12px; transform: translate(-50%, -50%); border-radius: 50%; background: var(--color-text-muted); transition: left 0.1s, width 0.1s, height 0.1s; pointer-events: none; }
+body .tbis-bool:has(> .tbis-boolSegment:nth-child(2).tbis-boolSelected) { border-color: var(--color-accent); background: var(--color-accent); }
+body .tbis-bool:has(> .tbis-boolSegment:nth-child(2).tbis-boolSelected)::before { content: 'On'; }
+body .tbis-bool:has(> .tbis-boolSegment:nth-child(2).tbis-boolSelected)::after { left: 28.5px; background: var(--color-accent-text); }
+body .tbis-bool:hover { background: var(--color-alt-hover); }
+body .tbis-bool:hover::after { width: 14px; height: 14px; }
+body .tbis-bool:active { background: var(--color-alt-pressed); }
+body .tbis-bool:active::after { width: 17px; height: 14px; }
+body .tbis-bool:has(> .tbis-boolSegment:nth-child(2).tbis-boolSelected):hover { border-color: transparent; background: var(--color-accent-hover); }
+body .tbis-bool:has(> .tbis-boolSegment:nth-child(2).tbis-boolSelected):active { border-color: transparent; background: var(--color-accent-pressed); }
+body .tbis-boolSegment { position: absolute; inset: -6px -2px -6px -52px; padding: 0; border: 0; background: transparent; color: transparent; font-size: 0; }
+body .tbis-boolSegment.tbis-boolSelected { pointer-events: none; background: transparent; color: transparent; }
+body .tbps-bool { display: inline-flex; gap: 2px; padding: 2px; overflow: visible; border: 1px solid var(--color-control-border); border-radius: 4px; background: var(--color-alt); }
+body .tbps-boolSegment { min-height: 26px; box-sizing: border-box; padding: 3px 12px 5px; border: 0; border-radius: 3px; background: transparent; color: var(--color-text-muted); font-size: 14px; line-height: 18px; cursor: default; }
+body .tbps-boolSegment:hover { background: var(--color-neutral-hover); color: var(--color-text); }
+body .tbps-boolSegment:active { background: var(--color-neutral-pressed); }
+body .tbps-boolSegment.tbps-boolSelected { background: var(--color-control) linear-gradient(var(--color-accent), var(--color-accent)) center bottom 2px / 16px 3px no-repeat; box-shadow: 0 0 0 1px var(--color-control-border); color: var(--color-text); }
+body .tbps-boolDefault { font-size: 14px; opacity: 1; }
+body .tbps-spin { position: relative; overflow: visible; border: 0; border-radius: 4px; }
+body .tbps-spin input { width: 152px !important; min-width: 152px !important; padding-right: 68px !important; }
+body .tbps-spin input[type=number]::-webkit-inner-spin-button, body .tbps-spin input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+body .tbps-spinBtns { position: absolute; top: 4px; right: 4px; bottom: 4px; display: flex; flex-direction: row; gap: 0; border: 0; }
+body .tbps-spinBtn, body .tbps-spinBtn:first-child { position: relative; display: block; width: 28px; height: auto; overflow: hidden; border: 0; border-radius: 4px; background: transparent; color: transparent; font-size: 0; }
+body .tbps-spinBtn::after { content: ''; position: absolute; left: 50%; top: 50%; width: 12px; height: 12px; margin: -6px 0 0 -6px; background: var(--color-text-muted); -webkit-mask: var(--chevron-down-mask) center / contain no-repeat; }
+body .tbps-spinBtn:first-child::after { -webkit-mask-image: var(--chevron-up-mask); }
+body .tbps-spinBtn:hover { background: var(--color-neutral-hover); color: transparent; }
+body .tbps-spinBtn:active { background: var(--color-neutral-pressed); }
+body .tbps-refreshBtn { min-width: 32px; min-height: 32px; border: 1px solid var(--color-control-border); border-radius: 4px; background: var(--color-control); color: var(--color-text); }
+body .tbps-refreshBtn:hover { background: var(--color-control-hover); }
+body .tbps-refreshBtn:active { background: var(--color-control-active); color: var(--color-text-muted); }
+body .tbps-referencesShell .referencesListChoice { gap: 4px; border-bottom: 0; }
+body .tbps-referencesShell .referencesListChoiceOption { padding: 7px 12px 9px; border-radius: 4px; color: var(--color-text-muted); font-size: 14px; font-weight: 400; opacity: 1; box-shadow: none !important; transition: none; }
+body .tbps-referencesShell .referencesListChoiceOption:hover { background: var(--color-neutral-hover); color: var(--color-text); }
+body .tbps-referencesShell .referencesListChoiceOptionSelected, body .tbps-referencesShell .referencesListChoiceOptionSelected:hover { background: transparent linear-gradient(var(--color-accent), var(--color-accent)) center bottom / 16px 3px no-repeat; color: var(--color-text); font-weight: 400; }

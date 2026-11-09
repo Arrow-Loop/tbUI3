@@ -1,5 +1,11 @@
 # Changelog: tbIDE (WinUI 3 look for the twinBASIC IDE)
 
+## 2026-11-09: separate TabView Designer candidate
+
+- Added the separately installed TabViewDesigner add-in for tbUI3 1.0.0.61. WinUI3IdeStyle, its CSS and themes are unchanged.
+- Implemented direct-parent insertion through the native BETA 1043 paste path, header hit-testing, designer-only page hiding, Properties reveal, delete/reorder commands, pending-work guards, undo requests and cleanup/recovery. Script generation embeds the adapter in the canonical project with Chr(34) quoting.
+- Added regression checks, an optional actual-IDE paste-contract check, and TabViewDesigner/README.md. Full IDE-loop validation remains pending; evidence is in ../docs/validation/2026-11-09-tabview-candidate.md.
+
 ## 2026-11-09: disabled Preview button greys out
 
 Shane's 1043 screenshot with the add-in loaded showed the toolbar, menus and New / Open dialog working (`163 of 163 rules parsed`), with Preview in red text while disabled in code view.

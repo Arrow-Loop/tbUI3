@@ -1,5 +1,11 @@
 # Roadmap: tbIDE (WinUI 3 look for the twinBASIC IDE)
 
+## TabView Designer candidate
+
+- The separate TabViewDesigner add-in is implemented alongside tbUI3 1.0.0.61, independently of the styling work below. Its README documents installation and validation boundaries.
+- Next gate: actual native IDE authoring, persistence, undo/redo, Properties-selected child reveal and final win64 smoke. Record results before calling the baseline validated.
+- Re-inspect private internals per beta. Preserve direct host targeting, unchanged coordinates, pending-compiler guards and cleanup. Replace the bridge with an official designer API when available.
+
 ## Committed next steps
 - Shane rebuilds the add-in (hold Shift while opening its project) and runs README.md check list items 1 to 8, especially Options for anything cut off by the 32px text fields and the arrow-key highlight in menus. Fix what reads wrong.
 - Shane builds `WinUI3IdeStyle` in win32 and win64, runs the add-in check list in README.md and reports the Debug Console output. Then he saves the project in the IDE and the IDE-saved project and its export are committed, replacing the tool-built container.

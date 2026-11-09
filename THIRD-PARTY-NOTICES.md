@@ -50,3 +50,10 @@ Relevant source:
 - `Samples/Spacing/SpacingPage.xaml` documents the 4-pixel spacing grid and identifies 8 epx as spacing between adjacent UI controls / a control and label.
 
 License: MIT / Microsoft repository licensing as distributed with WinUI Gallery. No Gallery code or assets are required at runtime.
+
+
+## TabView candidate (2026-11-09)
+
+- TabView geometry/resource mappings were transcribed from microsoft-ui-xaml `3259dc4437540678368c6e7c72869cb58d14a568`, `controls/dev/TabView/TabView_themeresources.xaml` (MIT), using existing shared theme colors where equal. The control source matrix records incomplete states.
+- The adapter was independently written after inspecting official twinBASIC BETA 1043 designer and VB/tbIDE APIs. No IDE implementation source or release archive is redistributed. The optional test reads native function bodies only from the developer-supplied local archive extraction.
+- TabViewDesigner uses the repository's existing Sample 11-derived probe container with a fresh project identity; it retains baseline compiler references without adding runtime dependencies.

@@ -1,4 +1,10 @@
-# Handoff: tbUI3 state on 2026-10-07
+# Handoff: tbUI3
+
+## Current update, 2026-11-09
+
+The recoverable package candidate is 1.0.0.61 on tbui3-dev. UI3TabView/UI3TabPage, the separate TabViewDesigner add-in and frmMultiPage are integrated and synchronized. Read `docs/controls/UI3TabView.md`, `tbIDE/TabViewDesigner/README.md` and `docs/validation/2026-11-09-tabview-candidate.md` for the exact contract and evidence. The full IDE authoring loop remains the next gate. The earlier chat's claimed candidate was never committed and supplies no inherited validation evidence. Existing styling work is preserved.
+
+## Earlier milestone context
 
 This is written for the next developer or AI session; ChatGPT is expected to run the next several passes. Read `AGENTS.md`, then this file, then `CHANGELOG.md` and `ROADMAP.md`. State at the time of writing: `tbui3-dev`, package version 1.0.0.58, twinBASIC BETA 1012.
 
@@ -180,3 +186,4 @@ Things that need Shane's decision, not a pass of their own: a dark icon-picker p
 - Update CHANGELOG.md and ROADMAP.md in every pass. Record only what was actually run as verified.
 - Keep instructions to Shane short and one step at a time, with the exact thing to click or type.
 - win32 and win64 (Shane, 2026-10-20): Shane tests each build in win32 only. At the end of each pass, first review that pass's changes for x64 traps (Long vs LongPtr in declares, struct sizes, COM interface layouts, subclassing), then Shane runs one short win64 smoke test: open a form, open the picker, apply, reopen, run the app.
+

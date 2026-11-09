@@ -4,6 +4,15 @@ All notable changes to tbUI3. Dates are when the change was made, not released. 
 
 ## Unreleased
 
+### 2026-11-09, integrated MultiPage candidate (1.0.0.61)
+
+- Added native UI3TabView and UI3TabPage ControlContainer controls with new recorded stable IDs, saved captions/order/selection, automatic sizing, per-window DPI conversion, actual page ownership, runtime visibility switching, and basic mouse/keyboard selection. No negative-position parking or Tag-based membership.
+- Added the separate TabViewDesigner add-in, derived from the existing Sample 11-based probe; WinUI3IdeStyle is unchanged. The embedded adapter inserts direct host children through the native paste path, switches designer pages, reveals Properties-selected children, deletes page subtrees, reorders pages and requests undo checkpoints. Pending compiler work blocks edits; unload or timer failure restores ordinary visibility.
+- Inspected official BETA 1043 designer and VB/tbIDE sources. Added indexed ContainedControls discovery with raw-object/extender handling, explicit paste-parent targeting, zero paste displacement and protection against replaying old verb requests after refresh.
+- Added frmMultiPage and its entry button to the existing tbUI3Test icon harness. Refreshed the full embedded package, including the existing IconList L3 code, from the canonical package.
+- Added regression and optional native paste-contract checks, source/fidelity documentation, and synchronized packed projects/mirrors. Exact evidence is in docs/validation/2026-11-09-tabview-candidate.md. The full IDE editing loop remains a gate, not a claimed result.
+- Recovery note: the earlier chat reported a 1.0.0.61 candidate but left no recoverable implementation commit. This pass establishes the actual candidate and does not inherit that chat's unverified test claims.
+
 ### 2026-11-01, UI3IconList L3: the list in code (1.0.0.60, Claude)
 
 - New public control `UI3IconList` (stable IDs in `tbUI3/UI3IconList-ids.json`): a nonvisual box like UI3FormTheme (`InvisibleAtRuntime`), with its own toolbox bitmap. Members: `Add(Key, Data, Source)` for SVG or image bytes, `AddIcon(Key, Icon)` for a Segoe Fluent glyph, `Remove(Key)` (no error for a missing key), `Clear`, `Count`, `Exists(Key)`, `Key(Index)` (1-based, as in VB6's ImageList), `IconData(Key)`, `IconSource(Key)`, and two additions to the plan's table: `Icon(Key)`, so a glyph entry can be copied out too, and a hidden read-only `Revision` that changes on every edit. Keys are case-insensitive, not empty (error 5), and adding an existing key replaces it; data that isn't a recognised image raises 380. Entries are saved with the form (`Count`, then `Key<n>`, `Kind<n>`, and `Glyph<n>` or `Data<n>`/`Source<n>`).
@@ -755,3 +764,4 @@ All notable changes to tbUI3. Dates are when the change was made, not released. 
   - UI3Button appeared in the toolbox of tbUI3Test and dropped onto the form as UI3Button1;
   - Caption and Style persisted through a save;
   - Click ran at runtime.
+

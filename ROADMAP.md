@@ -2,6 +2,17 @@
 
 Committed work is listed first. Exploratory ideas are marked as such.
 
+## Committed: MultiPage authoring candidate, next gate
+
+The integrated UI3TabView/UI3TabPage and separate TabViewDesigner implementation is in 1.0.0.61 on tbui3-dev. Contract and limits: `docs/controls/UI3TabView.md`. Negative-coordinate parking is not used.
+
+- Next gate: IDE acceptance and the actual create/switch/drop/save/reopen/delete/reorder/undo loop on BETA 1043, then runtime ownership, resize and keyboard checks. Keep the existing win32-per-pass and final win64-smoke agreement. Record real outcomes separately from source/fixture checks.
+- Verify the New page verb's context-menu exposure and request-property refresh. Toolbar and header paths are implemented independently of that optional verb.
+- Recheck private internals per beta. Matching function names is not compatibility proof. Preserve explicit host targeting, pending-work guards, undo checkpoints and cleanup; replace insertion with an official designer API when one becomes available.
+- Finish WinUI TabView fidelity after observing the authoring baseline: selected corners/seams/borders, hover/pressed/animations, add glyph, focus template, high contrast, accessibility/automation, icon integration and close behavior. Current rendering is explicitly a candidate.
+- Add overflow scroll buttons and decide runtime page creation separately. Keyboard, Properties and code can reach overflow pages. Runtime + raises AddTabButtonClick; the fixed-page harness hides it at runtime.
+- Follow up on control-name changes invalidating SelectedPage, arbitrary user-defined scale modes, nested containers and DPI/RDP scenarios. Preserve page ownership and child coordinates.
+
 ## Committed: spike A (see 2026-10-06-spike-spec.md)
 
 - S2 run: validated on 2026-10-06 in win32 and win64 at design time and runtime: accent/Standard styles, resizing and Click. UI3Window dark-mode visual baseline passed in both architectures. Light mode is deferred by user choice and remains unvalidated.
@@ -75,3 +86,4 @@ Committed work is listed first. Exploratory ideas are marked as such.
 - Supported WinRT accent/theme path: the audited WinRT 1.7.0.159 package does **not** implement `UISettings.GetColorValue`; it only defines the `UIColorType` enum. Later, derive/source and validate the minimal `UISettings` declarations needed for `Accent`, `AccentLight1-3`, `AccentDark1-3`, foreground/background, and change notifications. Keep this dependency-free and do not replace the currently working registry/DWM fallback until the supported path is proven.
 - Composition (WinRT) for flyout shadows and acrylic, later.
 - CustomControls as a secondary route, if WaynesForm's limits are ever lifted.
+

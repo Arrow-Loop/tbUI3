@@ -30,10 +30,10 @@ IDE first).
 
 ## Current development state
 
-- `UI3Button` is the first working Direct2D/DirectWrite control. Standard and Accent rest-state rendering, resizing and Click have been validated in win32 and win64 dark mode.
-- Package version 1.0.0.2 contains the validated form-theme baseline: `UI3Window.Attach/Detach` plus the nonvisual drop-on `UI3FormTheme`, cached theme/accent state and live Windows theme/accent notifications.
-- Live light/dark switching has been validated during runtime testing.
-- The active implementation milestone is S3 icon glyph support. Package version 1.0.0.3 contains the first packed candidate and awaits BETA 997 compile/runtime validation.
+- The working Button, form theme, icon picker and stored-icon milestones have their validation history in CHANGELOG.md. IconList L3 was added in 1.0.0.60; L4 remains planned.
+- Package 1.0.0.61 adds the first integrated UI3TabView/UI3TabPage candidate: real page ownership, sizing and runtime switching, plus the separate [TabView Designer add-in](tbIDE/TabViewDesigner/README.md) for designer authoring. [API, source matrix and validation boundary](docs/controls/UI3TabView.md).
+- tbUI3Test preserves the icon harness and adds **Open MultiPage test**, opening a three-page form. Its embedded package is synchronized with the canonical package.
+- Adapter fixture, BETA 1043 paste-contract and project/mirror checks are recorded separately from the pending full IDE-loop gate. This is a candidate, not a completed WinUI fidelity milestone.
 
 ## WinUI fidelity contract
 
@@ -59,3 +59,4 @@ The current inventory is reconciled against WinUI Gallery main commit `b927a6253
 tbUI3 is intentionally self-contained. Public TWINSERV and built-in packages may be studied as reference implementations, and permissively licensed portions may be adapted when useful, but they are not added as tbUI3 package dependencies merely for convenience. Any adapted third-party implementation must be minimized, kept private where practical, and have its source/licence recorded.
 
 The project under `reference-packages/` is therefore a laboratory, not a dependency template. Its many enabled packages are expected there and must not be copied wholesale into `tbUI3/tbUI3.twinproj`.
+

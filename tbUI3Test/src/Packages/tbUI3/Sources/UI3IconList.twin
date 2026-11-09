@@ -1,0 +1,226 @@
+[FormDesignerId("5F1097E5-3CD4-439E-BA61-26C4636C9FAB")]
+[ClassId("F7BFB864-C660-4022-B76E-7D27CCB1ADAC")]
+[InterfaceId("91D14167-D128-49AA-A559-AE95BBD472C8")]
+[EventInterfaceId("F2EF1859-EE37-4312-B0A1-BA78B7F724CA")]
+[COMControl]
+[Description("Nonvisual tbUI3 icon list, like VB6's ImageList. Holds keyed icons that tbUI3 controls show through IconKey.")]
+Public Class UI3IconList
+
+    ' A form's keyed icons (docs/2026-10-20-ui3iconlist-plan.md). Each entry is a Segoe Fluent glyph
+    ' (stored as its UI3Icon value) or an SVG or image file (stored as its bytes), saved once with the
+    ' form however many controls show it. Controls name the list through IconList and an entry through
+    ' IconKey; they find the list with Parent.Controls on first use (L2 spike, 2026-11-01) and ask
+    ' it for the entry when they paint. Revision changes on every edit, so a control knows when to
+    ' fetch its entry again, and UI3IconListRegistry repaints the controls that use a list.
+    ' Keys are unique, not empty and compared case-insensitively. Index arguments are 1-based, as in
+    ' VB6's ImageList.
+
+    Private Const KIND_GLYPH As Long = 0
+    Private Const KIND_IMAGE As Long = 1
+
+    Private m_Keys() As String
+    Private m_Kinds() As Long
+    Private m_Glyphs() As Long
+    Private m_Data() As Variant        ' Byte array for KIND_IMAGE, Empty for KIND_GLYPH
+    Private m_Sources() As String
+    Private m_Count As Long
+    Private m_Revision As Long
+    Private m_Loading As Boolean
+
+    [Description("Adds an SVG or image file's bytes (for example from LoadResData) under Key. An existing Key is replaced. Source is a name shown with the entry.")]
+    Public Sub Add(ByVal Key As String, ByVal Data As Variant, Optional ByVal Source As String = "")
+        Dim bytes() As Byte
+        Dim probe As New UI3IconImage
+        CheckKey Key
+        If Not IsArray(Data) Then Err.Raise 380
+        bytes = Data
+        If Not probe.SetData(bytes, Source) Then Err.Raise 380
+        StoreEntry Key, KIND_IMAGE, 0, bytes, Source
+    End Sub
+
+    [Description("Adds a Segoe Fluent glyph under Key. An existing Key is replaced.")]
+    Public Sub AddIcon(ByVal Key As String, ByVal Icon As UI3Icon)
+        CheckKey Key
+        If Icon = ui3IconNone Then Err.Raise 380
+        StoreEntry Key, KIND_GLYPH, Icon, Empty, ""
+    End Sub
+
+    [Description("Removes the entry with Key. Does nothing when there is no such entry.")]
+    Public Sub Remove(ByVal Key As String)
+        Dim i As Long
+        Dim j As Long
+        i = FindKey(Key)
+        If i < 0 Then Exit Sub
+        For j = i To m_Count - 2
+            m_Keys(j) = m_Keys(j + 1)
+            m_Kinds(j) = m_Kinds(j + 1)
+            m_Glyphs(j) = m_Glyphs(j + 1)
+            m_Data(j) = m_Data(j + 1)
+            m_Sources(j) = m_Sources(j + 1)
+        Next
+        m_Count = m_Count - 1
+        m_Data(m_Count) = Empty
+        Changed
+    End Sub
+
+    [Description("Removes every entry.")]
+    Public Sub Clear()
+        If m_Count = 0 Then Exit Sub
+        m_Count = 0
+        Erase m_Keys, m_Kinds, m_Glyphs, m_Data, m_Sources
+        Changed
+    End Sub
+
+    [Description("Number of entries.")]
+    Public Property Get Count() As Long
+        Count = m_Count
+    End Property
+
+    [Description("True when the list has an entry with Key.")]
+    Public Function Exists(ByVal Key As String) As Boolean
+        Exists = (FindKey(Key) >= 0)
+    End Function
+
+    [Description("The key of entry Index, from 1 to Count.")]
+    Public Property Get Key(ByVal Index As Long) As String
+        If Index < 1 Or Index > m_Count Then Err.Raise 9
+        Key = m_Keys(Index - 1)
+    End Property
+
+    [Description("The Segoe Fluent glyph stored under Key, or None when the entry is an SVG or image or there is no such entry.")]
+    Public Property Get Icon(ByVal Key As String) As UI3Icon
+        Dim i As Long
+        i = FindKey(Key)
+        If i < 0 Then Exit Property
+        If m_Kinds(i) = KIND_GLYPH Then Icon = m_Glyphs(i)
+    End Property
+
+    [Description("The SVG or image file bytes stored under Key, or Empty when the entry is a glyph or there is no such entry. Assign it to a control's IconData to copy the icon.")]
+    Public Property Get IconData(ByVal Key As String) As Variant
+        Dim i As Long
+        i = FindKey(Key)
+        If i < 0 Then
+            IconData = Empty
+        ElseIf m_Kinds(i) = KIND_IMAGE Then
+            IconData = m_Data(i)
+        Else
+            IconData = Empty
+        End If
+    End Property
+
+    [Description("The name stored with an SVG or image entry, such as file:save.svg. Empty for a glyph or a missing Key.")]
+    Public Property Get IconSource(ByVal Key As String) As String
+        Dim i As Long
+        i = FindKey(Key)
+        If i >= 0 Then IconSource = m_Sources(i)
+    End Property
+
+    ' Changes whenever the list changes. Controls compare it with the value they last fetched with.
+    ' Unique across every list in the process, so two lists never share a value.
+    [Description("A number that changes whenever the list changes.")]
+    [NonBrowsable]
+    Public Property Get Revision() As Long
+        If m_Revision = 0 Then m_Revision = NextIconListRevision()
+        Revision = m_Revision
+    End Property
+
+    Private Sub CheckKey(ByVal Key As String)
+        If Len(Key) = 0 Then Err.Raise 5
+    End Sub
+
+    Private Function FindKey(ByVal Key As String) As Long
+        Dim i As Long
+        FindKey = -1
+        If Len(Key) = 0 Then Exit Function
+        For i = 0 To m_Count - 1
+            If StrComp(m_Keys(i), Key, vbTextCompare) = 0 Then
+                FindKey = i
+                Exit Function
+            End If
+        Next
+    End Function
+
+    Private Sub StoreEntry(ByVal Key As String, ByVal Kind As Long, ByVal Glyph As Long, ByVal Data As Variant, ByVal Source As String)
+        Dim i As Long
+        i = FindKey(Key)
+        If i < 0 Then
+            i = m_Count
+            If m_Count = 0 Then
+                ReDim m_Keys(0 To 7)
+                ReDim m_Kinds(0 To 7)
+                ReDim m_Glyphs(0 To 7)
+                ReDim m_Data(0 To 7)
+                ReDim m_Sources(0 To 7)
+            ElseIf m_Count > UBound(m_Keys) Then
+                ReDim Preserve m_Keys(0 To m_Count * 2 - 1)
+                ReDim Preserve m_Kinds(0 To m_Count * 2 - 1)
+                ReDim Preserve m_Glyphs(0 To m_Count * 2 - 1)
+                ReDim Preserve m_Data(0 To m_Count * 2 - 1)
+                ReDim Preserve m_Sources(0 To m_Count * 2 - 1)
+            End If
+            m_Count = m_Count + 1
+        End If
+        m_Keys(i) = Key
+        m_Kinds(i) = Kind
+        m_Glyphs(i) = Glyph
+        m_Data(i) = Data
+        m_Sources(i) = Source
+        Changed
+    End Sub
+
+    Private Sub Changed()
+        m_Revision = NextIconListRevision()
+        If m_Loading Then Exit Sub
+        PropertyChanged "Entries"
+        IconListChanged
+    End Sub
+
+    ' Saved as Count, then Key<n>, Kind<n> and either Glyph<n> or Data<n> and Source<n> (n from 1).
+    Private Sub UserControl_ReadProperties(PropBag As PropertyBag)
+        Dim n As Long
+        Dim i As Long
+        Dim entryKind As Long
+        Dim stored As Variant
+        Dim bytes() As Byte
+        Dim entryKey As String
+
+        m_Loading = True
+        m_Count = 0
+        Erase m_Keys, m_Kinds, m_Glyphs, m_Data, m_Sources
+        n = PropBag.ReadProperty("Count", 0)
+        For i = 1 To n
+            entryKey = PropBag.ReadProperty("Key" & i, "")
+            entryKind = PropBag.ReadProperty("Kind" & i, KIND_GLYPH)
+            If Len(entryKey) <> 0 Then
+                If entryKind = KIND_IMAGE Then
+                    stored = PropBag.ReadProperty("Data" & i, Empty)
+                    If IsArray(stored) Then
+                        bytes = stored
+                        StoreEntry entryKey, KIND_IMAGE, 0, bytes, PropBag.ReadProperty("Source" & i, "")
+                    End If
+                Else
+                    StoreEntry entryKey, KIND_GLYPH, PropBag.ReadProperty("Glyph" & i, 0), Empty, ""
+                End If
+            End If
+        Next
+        m_Loading = False
+        m_Revision = NextIconListRevision()
+        IconListChanged
+    End Sub
+
+    Private Sub UserControl_WriteProperties(PropBag As PropertyBag)
+        Dim i As Long
+        PropBag.WriteProperty "Count", m_Count, 0
+        For i = 0 To m_Count - 1
+            PropBag.WriteProperty "Key" & (i + 1), m_Keys(i)
+            PropBag.WriteProperty "Kind" & (i + 1), m_Kinds(i)
+            If m_Kinds(i) = KIND_IMAGE Then
+                PropBag.WriteProperty "Data" & (i + 1), m_Data(i)
+                PropBag.WriteProperty "Source" & (i + 1), m_Sources(i), ""
+            Else
+                PropBag.WriteProperty "Glyph" & (i + 1), m_Glyphs(i)
+            End If
+        Next
+    End Sub
+
+End Class

@@ -1,0 +1,44 @@
+' Source matrix and intentionally incomplete states: docs/controls/UI3TabView.md.
+Private Module UI3TabMetrics
+    ' TabView_themeresources.xaml, microsoft-ui-xaml 3259dc4437540678368c6e7c72869cb58d14a568.
+    Public Const HeaderTop As Single = 8
+    Public Const HeaderHeight As Single = 32
+    Public Const HeaderMinWidth As Single = 100
+    Public Const HeaderMaxWidth As Single = 240
+    Public Const HeaderFontSize As Single = 12
+    Public Const HeaderPadding As Single = 8
+    Public Const AddWidth As Single = 32
+    Public Const AddGap As Single = 3
+    Public Const AddHeight As Single = 24
+    Public Const ContentTop As Single = 40
+
+    Private Declare PtrSafe Function GetDpiForWindow Lib "user32" (ByVal hWnd As LongPtr) As Long
+
+    Public Function WindowDpi(ByVal hWnd As LongPtr) As Single
+        WindowDpi = GetDpiForWindow(hWnd)
+        If WindowDpi <= 0 Then WindowDpi = 96
+    End Function
+
+    Public Function PageBackground() As Long
+        If IsDarkMode() Then PageBackground = DARK_SolidBackgroundFillColorTertiary Else PageBackground = LIGHT_SolidBackgroundFillColorTertiary
+    End Function
+
+    Public Function PageOleColor() As Long
+        Dim color As Long = PageBackground()
+        PageOleColor = RGB((color And &HFF0000) \ &H10000, (color And &HFF00&) \ &H100&, color And &HFF&)
+    End Function
+
+    Public Function HeaderWidth(ByVal Available As Single, ByVal Count As Long, ByVal ShowAdd As Boolean) As Single
+        If ShowAdd Then Available = Available - AddWidth - AddGap
+        If Count = 0 Then Return HeaderMinWidth
+        HeaderWidth = Available / Count
+        If HeaderWidth < HeaderMinWidth Then HeaderWidth = HeaderMinWidth
+        If HeaderWidth > HeaderMaxWidth Then HeaderWidth = HeaderMaxWidth
+    End Function
+
+    Public Sub FillBox(ByVal Target As ID2D1RenderTarget, ByVal X As Single, ByVal Y As Single, ByVal W As Single, ByVal H As Single, ByVal Color As Long)
+        If W <= 0 Or H <= 0 Then Exit Sub
+        Dim box As D2D1_ROUNDED_RECT = RoundedRect(X, Y, X + W, Y + H, 0)
+        Target.FillRoundedRectangle box, SolidBrush(Target, Color)
+    End Sub
+End Module

@@ -1,5 +1,13 @@
 # Changelog: tbIDE (WinUI 3 look for the twinBASIC IDE)
 
+## 2026-11-09: add-in matches the theme name without case
+
+Fixed
+- Shane's run on BETA 1043 showed the add-in loads (`[WinUI3 IDE Style] loaded`) but the IDE reports the active theme as `winui3 dark`, in lower case, so the case-sensitive `WinUI3` prefix check never matched and no stylesheet was applied. The check now ignores case.
+
+Validated
+- Confirmed on Shane's PC (BETA 1043, win32 compiler): the add-in loads when a project opens and receives the theme name. Styling itself is not yet confirmed.
+
 ## 2026-11-09: BETA 1043
 
 Changed

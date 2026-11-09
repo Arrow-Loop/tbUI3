@@ -55,7 +55,8 @@ Private Class WinUI3IdeStyleAddin
 
     Private Sub ApplyForTheme(ByVal ThemeName As String)
         Log "theme is " & ThemeName
-        If Left$(ThemeName, Len(ThemePrefix)) = ThemePrefix Then
+        ' The IDE reports theme names in lower case ("winui3 dark"), so compare without case.
+        If StrComp(Left$(ThemeName, Len(ThemePrefix)), ThemePrefix, vbTextCompare) = 0 Then
             ApplyStyle ThemeName
         Else
             ClearStyle

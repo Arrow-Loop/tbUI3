@@ -1,5 +1,15 @@
 # Changelog: tbIDE (WinUI 3 look for the twinBASIC IDE)
 
+## 2026-11-09: long menus no longer run off the window
+
+Shane: large menus (the Edit menu) were cut off by the window.
+
+Fixed (add-in)
+- Menus and context menus are capped at the window height less 10px and scroll, as WinUI's MenuFlyout does (it moves the flyout to fit and scrolls what is still too tall). The IDE already moves a menu up to fit, but a menu taller than the window ended up above the top edge, and its own max-height fallback is set without a unit, so it never applied. WinUI's 32px items made the IDE's longer menus taller than many windows.
+
+Validated
+- Chromium, 600px window, 30-item menu opened under the menu bar with the IDE's own positioning code: the menu sits at 7px to 597px and scrolls (before the fix it started above the window). 163 of 163 rules; `twinproj-src.mjs compare` all same. Not yet checked in the real IDE.
+
 ## 2026-11-09: original glyphs for comment, indent, align and size
 
 Shane: these buttons "need to probably stick with the original glyphs that tB used because they relay more information visually as to their function than the Fluent ones" (with a screenshot of comment, uncomment, indent, outdent, the four align and the four size buttons).

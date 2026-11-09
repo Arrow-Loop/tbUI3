@@ -1,5 +1,14 @@
 # Changelog: tbIDE (WinUI 3 look for the twinBASIC IDE)
 
+## 2026-11-09: all page writes through window.eval
+
+Fixed
+- The stylesheet was never on the IDE page. Shane's run of the eval check reported `no style element on the page` right after `updated the existing style element`: on BETA 1033/1043, a write through a property path (`ownerDocument.getElementById(id).textContent = css`) reports success even when `getElementById` returns null, so `SetStyleText` always returned True and the `insertAdjacentHTML` branch never ran. The earlier `stylesheet removed` line was the same false success.
+- The add-in now adds, updates and removes its `<style>` element with one `window.eval` call each (the route the designer bridge probe proved), passing the CSS as an escaped single-quoted JavaScript string, and logs what the page returned.
+
+Validated
+- The exact apply, check and remove scripts the add-in builds, run in Chromium against 1043's `styles.css`: `added the style element`, `updated the style element`, `18 of 18 rules parsed, 1940 characters, body.darkMode = true, selected menu item background = rgba(255, 255, 255, 0.043)`, `stylesheet removed`.
+
 ## 2026-11-09: page check through window.eval
 
 Changed
@@ -69,7 +78,7 @@ Added
 
 Findings (from BETA 1033's `ide/main.js`)
 - An add-in tool window's body is in a shadow root attached to an element on the main IDE page, so `ownerDocument` from its `RootDomElement` is the IDE page.
-- `toolWindowElementGetProperty` and `toolWindowElementSetProperty` walk any property path from the element and call functions along the way, so a late-bound path such as `.Properties.ownerDocument.getElementById(id).textContent = css` reaches the page.
+- `toolWindowElementGetProperty` and `toolWindowElementSetProperty` walk any property path from the element and call functions along the way. (Superseded 2026-11-09: in practice, writes through such a path report success without changing the page; use `ownerDocument.defaultView.eval`.)
 
 Validated
 - `twinproj-src.mjs compare` shows the built project and `src/` match (4 of 4 files the same).

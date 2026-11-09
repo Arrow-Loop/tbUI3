@@ -91,29 +91,19 @@ Private Class WinUI3IdeStyleAddin
         End If
     End Sub
 
+    ' All page work goes through window.eval in the IDE page, the route the designer bridge probe
+    ' proved on BETA 1043. Writing through property paths (getElementById(...).textContent = ...)
+    ' reported success there without changing the page, so the stylesheet was never added.
     Private Sub ApplyStyle(ByVal ThemeName As String)
         Dim stepName As String
         On Error GoTo Failed
-        If StyleWindow Is Nothing Then
-            ' Tool windows start invisible, and this one stays that way.
-            stepName = "creating the hidden tool window"
-            Set StyleWindow = Host.ToolWindows.Add("WinUI3IdeStyle", "WinUI3IdeStyleHost")
-            StyleWindow.Title = "WinUI3 IDE Style"
-            Log "created the hidden tool window"
-        End If
-
         stepName = "building the stylesheet"
         Dim css As String = WinUI3IdeCss.Build()
-        stepName = "updating the style element"
-        If SetStyleText(css) Then
-            Log "updated the existing style element"
-        Else
-            ' First use in this IDE session: add the element, then it can be refilled or emptied.
-            stepName = "adding the style element to the IDE page"
-            StyleWindow.RootDomElement.Properties.ownerDocument.head.insertAdjacentHTML("beforeend", "<style id=" & StyleElementId & ">" & css & "</style>")
-            Log "added the style element to the IDE page"
-        End If
-
+        stepName = "writing the style element"
+        Log "page: " & RunJs("(function(){var s=document.getElementById('" & StyleElementId & "');var added=!s;" & _
+            "if(added){s=document.createElement('style');s.id='" & StyleElementId & "';}" & _
+            "s.textContent=" & JsString(css) & ";document.head.appendChild(s);" & _
+            "return (added?'added':'updated')+' the style element';})()")
         IsApplied = True
         Log "stylesheet applied for " & ThemeName & " (" & Len(css) & " characters)"
         LogPageState
@@ -124,33 +114,44 @@ Private Class WinUI3IdeStyleAddin
 
     Private Sub ClearStyle()
         If Not IsApplied Then Exit Sub
-        If SetStyleText("") Then
-            Log "stylesheet removed"
-        Else
-            Log "could not remove the stylesheet: the style element was not found"
-        End If
+        On Error GoTo Failed
+        Log "page: " & RunJs("(function(){var s=document.getElementById('" & StyleElementId & "');" & _
+            "if(!s)return 'no style element to remove';s.remove();return 'stylesheet removed';})()")
         IsApplied = False
+        Exit Sub
+    Failed:
+        Log "could not remove the stylesheet: " & ErrorText()
     End Sub
 
-    ' Replaces the text of the add-in's <style> element. Returns False when the element is not there yet.
-    Private Function SetStyleText(ByVal css As String) As Boolean
-        On Error GoTo Missing
-        If StyleWindow Is Nothing Then Exit Function
-        StyleWindow.RootDomElement.Properties.ownerDocument.getElementById(StyleElementId).textContent = css
-        Return True
-    Missing:
-        ' Falls through and returns False.
+    ' Evaluates a JavaScript expression in the IDE page and returns its result as text.
+    ' The page is reached through a hidden tool window: its body sits in a shadow root on the
+    ' IDE page, so its ownerDocument is the IDE page. Errors go to the caller.
+    Private Function RunJs(ByVal Expr As String) As String
+        If StyleWindow Is Nothing Then
+            ' Tool windows start invisible, and this one stays that way.
+            Set StyleWindow = Host.ToolWindows.Add("WinUI3IdeStyle", "WinUI3IdeStyleHost")
+            StyleWindow.Title = "WinUI3 IDE Style"
+            Log "created the hidden tool window"
+        End If
+        Dim doc As Object
+        Set doc = StyleWindow.RootDomElement.Properties.ownerDocument
+        Return CStr(doc.defaultView.eval(Expr))
+    End Function
+
+    ' Text as a single-quoted JavaScript string literal.
+    Private Function JsString(ByVal Text As String) As String
+        Text = Replace(Text, "\", "\\")
+        Text = Replace(Text, "'", "\'")
+        Text = Replace(Text, vbCr, "\r")
+        Text = Replace(Text, vbLf, "\n")
+        Return "'" & Text & "'"
     End Function
 
     ' Reads back what the IDE page now holds, so a log shows whether the rules can take effect.
-    ' Runs one JavaScript expression in the IDE page through window.eval, the route the designer
-    ' bridge probe proved on 1043 (reading values back through property paths failed here).
     ' It also moves the style element to the end of <head>, so it wins ties with the IDE's own
     ' stylesheets, and tests one rule for real: a temporary hidden menu item's computed background.
     Private Sub LogPageState()
         On Error GoTo Failed
-        Dim doc As Object
-        Set doc = StyleWindow.RootDomElement.Properties.ownerDocument
         Dim js As String = "(function(){var s=document.getElementById('" & StyleElementId & "');" & _
             "if(!s)return 'no style element on the page';" & _
             "document.head.appendChild(s);" & _
@@ -158,7 +159,7 @@ Private Class WinUI3IdeStyleAddin
             "document.body.appendChild(t);var bg=getComputedStyle(t).backgroundColor;t.remove();" & _
             "return (s.sheet?s.sheet.cssRules.length:'no sheet')+' of " & WinUI3IdeCss.RuleCount() & " rules parsed, '+s.textContent.length+' characters, '" & _
             "+'body.darkMode = '+document.body.classList.contains('darkMode')+', selected menu item background = '+bg+', starts with: '+s.textContent.slice(0,40);})()"
-        Log "check: " & CStr(doc.defaultView.eval(js))
+        Log "check: " & RunJs(js)
         Exit Sub
     Failed:
         Log "check failed: " & ErrorText()

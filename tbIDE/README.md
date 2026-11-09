@@ -77,7 +77,7 @@ Each rule in `WinUI3IdeStyle/src/Sources/WinUI3IdeCss.twin` names the WinUI reso
 
 ### How it works
 
-The IDE is an HTML page. The add-in opens a hidden tool window, whose body sits in a shadow root on that page, and reaches the page through it: `RootDomElement.Properties.ownerDocument.head.insertAdjacentHTML(...)` adds a `<style id=winui3IdeStyleCss>` element, and `getElementById(...).textContent` refills or empties it. `Host_OnChangedTheme` and `Host.Themes.ActiveThemeName` decide when. It logs what it did to the Debug Console with the prefix `[WinUI3 IDE Style]`.
+The IDE is an HTML page. The add-in opens a hidden tool window, whose body sits in a shadow root on that page, and reaches the page through it: `RootDomElement.Properties.ownerDocument.defaultView.eval(...)` runs one JavaScript expression in the IDE page to add, update or remove a `<style id=winui3IdeStyleCss>` element at the end of `<head>`. (Writing through a property path, such as `getElementById(...).textContent = ...`, reports success without changing the page, so the add-in does not use it.) `Host.Themes.ActiveThemeName` decides when, checked at start-up, on project load, two seconds after each, and on every theme change. It logs each step to the Debug Console with the prefix `[WinUI3 IDE Style]`.
 
 This is not a documented use of the add-in API. The official `ToolWindow.ApplyCss` only styles the tool window's own shadow root. A later BETA could block it, and the IDE's class names (`.msgBoxButton`, `.mainProgressBarOuter`, `.menuItem`) are not a stable contract, so the CSS needs re-checking per BETA.
 

@@ -1,8 +1,24 @@
 # TabView candidate validation, 2026-11-09
 
-Current candidate: **package 1.0.0.63 with adapter v4 (add-in 1.0.0.3)**. Earlier candidate evidence is retained below as history.
+Current candidate: **package 1.0.0.64 with adapter v5 (add-in 1.0.0.4)**. Earlier candidate evidence is retained below as history.
 
-## Adapter v4 follow-up, package unchanged at 1.0.0.63
+## 1.0.0.64 / adapter v5 repeated-header follow-up
+
+Shane reports v4 is better, but + on a newly drawn empty TabView appears to create two pages and the second is inaccessible. Enlarging the supplied screenshot shows both headers read Page 2. This supports, but does not establish, a repeated native discovery entry. The last pushed logs predate this screenshot; do not treat them as a capture of this new host.
+
+The native page collector previously accepted every recognized enumeration entry without uniqueness checks. It now builds a temporary collection, excludes matching object identities or nonempty control names, then publishes the unique list. Drawing, count, arrangement and selection use that list. It never uses Caption for identity. Names must be distinct; control-array identity remains future work. Discovery diagnostics record raw/unique counts, duplicate count and accepted names/object addresses. Adapter v5 records actual designer counts/names and native PageCount if present in the snapshot.
+
+Toolbar buttons now have explanatory hover titles, restored on unload. Empty hosts still start with no pages. No speculative second insertion path, click suppression or native request-counter throttling was added. Existing saved form descriptors and public IDs are preserved.
+
+Executed: 30 adapter/contract checks pass with official BETA 1043 main.js, including one empty-host + gesture, matching captions on distinct pages, native-versus-designer diagnostics and toolbar help restoration. Those are JS/facade checks, not execution of native ContainedControls enumeration. The native guard is source-inspected; its actual IDE outcome remains open. All 68 packed-project mirrors, complete embedded package/version 64, stable IDs, form ownership and CRLF checks pass. Official exports of all three packed projects match the mirrors (27/36/3 files; .meta preserved).
+
+| Current project | SHA-256 |
+| --- | --- |
+| `tbUI3/tbUI3.twinproj` | `b144bba9c3fd21a889ba5d731c381166753c0dfdc7ebac823a5aafb3a5844c34` |
+| `tbUI3Test/tbUI3Test.twinproj` | `4b95d7b110aec2a3b7e66c8b3e041fa44641926de73864fc949bbc9aaffd8ed9` |
+| `tbIDE/TabViewDesigner/TabViewDesigner.twinproj` | `4daa8604318ebd31751fc395cab6b9d5c284d0f997a306a6cd5146e033736cc8` |
+
+## Historical adapter v4 follow-up, package unchanged at 1.0.0.63
 
 Shane reports normal tab rendering in the working session, + creation succeeds, and the added page cannot be selected under v3. Reference unload/reload sometimes succeeds with unchanged code and sometimes triggers the previously reported deserialization failure. Keep that intermittent issue distinct from selection.
 

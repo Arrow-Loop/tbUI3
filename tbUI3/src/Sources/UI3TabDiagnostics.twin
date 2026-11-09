@@ -17,10 +17,24 @@ Private Module UI3TabDiagnostics
         Note state & " hwnd=&H" & Hex$(Hwnd) & " dc=&H" & Hex$(DC)
     End Sub
 
+    Public Sub DiscoveryState(ByVal HostName As String, ByVal RawCount As Long, ByVal Pages As Collection, _
+            ByVal Duplicates As Long, ByRef Previous As String)
+        On Error Resume Next
+        Dim state As String, page As UI3TabPage, i As Long
+        state = "host " & HostName & " discovery raw=" & RawCount & " unique=" & Pages.Count & " duplicates=" & Duplicates & " names="
+        For i = 1 To Pages.Count
+            Set page = Pages(i)
+            state = state & " [" & page.PageName & "@" & Hex$(ObjPtr(page)) & "]"
+        Next
+        If state = Previous Then Exit Sub
+        Previous = state
+        Note state
+    End Sub
+
     Public Sub Note(ByVal Text As String)
         On Error Resume Next
         Dim lineText As String
-        lineText = Format$(Now, "hh:nn:ss") & " [native 1.0.0.63] " & Text
+        lineText = Format$(Now, "hh:nn:ss") & " [native 1.0.0.64] " & Text
         AppendLog App.Path & "\tbUI3-tabview.log", lineText
         AppendLog Environ$("TEMP") & "\tbUI3-tabview.log", lineText
     End Sub

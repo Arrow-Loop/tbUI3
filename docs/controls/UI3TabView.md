@@ -1,8 +1,14 @@
 # UI3TabView and UI3TabPage
 
-Status: integrated 1.0.0.63 implementation candidate, 2026-11-09 (initial integration 1.0.0.61). This is the first recoverable implementation, not a continuation of a previously committed 1.0.0.61. The earlier chat's candidate never reached the repository.
+Status: integrated 1.0.0.64 implementation candidate, 2026-11-09 (initial integration 1.0.0.61). This is the first recoverable implementation, not a continuation of a previously committed 1.0.0.61. The earlier chat's candidate never reached the repository.
 
-## Live designer selection follow-up
+## Repeated header follow-up
+
+Current package 1.0.0.64 and adapter v5 (add-in 1.0.0.4) address Shane's report that a freshly drawn empty TabView shows two matching Page 2 headers after +, with the second inaccessible. The screenshot is consistent with a repeated page entry in native discovery; it is not proof of duplicate native object creation. The package now builds and publishes a distinct page list by object identity or nonempty control name. It never deduplicates captions. Page names must be distinct, matching SelectedPage's name-based identity contract; control arrays are outside this candidate's supported identity model.
+
+Native discovery traces report raw/unique counts, duplicates and accepted names/object addresses. Adapter diagnostics report designer page counts/names and native PageCount when serialized. Compare these after one + gesture before claiming an enumeration or insertion cause. Toolbar buttons have descriptive hover help; Delete page includes the page's children, and diagnostics writes tbUI3-tabview.log. Empty hosts remain empty until the first + action. The native outcome after this correction remains open.
+
+## Historical live designer selection follow-up
 
 The package remains 1.0.0.63. Shane reports normal rendering and successful + page creation in the working session, but v3 cannot select the added page. Uploaded logs confirm native fixture captions/order and accepted root/IDs. Adapter v4 (add-in 1.0.0.3) queues parent header snapshots through the full-form native batch protocol, because getImageFromServer returns immediately in that mode. It configures and activates a new page after its native ID is assigned. This correction is covered by protocol checks with actual shipped helper functions; the native authoring outcome remains a gate. Reference-reload deserialization and the logged Paint exception are separate unresolved findings.
 
@@ -16,7 +22,7 @@ Shane's subsequent BETA 1043 win32 screenshots show dark headers initially and a
 
 Shane's first BETA 1043 win32 screenshot showed the native designer controls and toolbar, but the header's white text was being drawn over the form's light ambient color and the fixture's custom properties were at defaults. Version 1.0.0.62 addresses those findings; it does not record the corrected IDE outcome as passed.
 
-The host discovers immediate page children on Show, Resize, Paint and `RefreshPages`. Discovery in Paint and property getters is read-only with respect to control geometry/properties; explicit layout remains in `RefreshPages`/resize. Identical ScaleMode assignments are skipped, and Paint does not assign BackColor. BETA 1043's `UCContainedControls.Item` supplies the raw control; the enumerator can supply an extender. Discovery accepts both representations. It matches the immediate container's ScaleMode; twips and pixels are the intended baseline. Arbitrary user-defined scale origins/ranges remain outside this candidate's coverage. Page layout uses current window DPI, not a cached system-DPI paint DC. The test project's existing system-DPI awareness policy is preserved.
+The host discovers immediate page children on Show, Resize, Paint and `RefreshPages`, builds a separate unique collection and then replaces the current list. Discovery in Paint and property getters is read-only with respect to control geometry/properties; explicit layout remains in `RefreshPages`/resize. Identical ScaleMode assignments are skipped, and Paint does not assign BackColor. BETA 1043's `UCContainedControls.Item` supplies the raw control; the enumerator can supply an extender. Discovery accepts both representations. It matches the immediate container's ScaleMode; twips and pixels are the intended baseline. Arbitrary user-defined scale origins/ranges remain outside this candidate's coverage. Page layout uses current window DPI, not a cached system-DPI paint DC. The test project's existing system-DPI awareness policy is preserved.
 
 Pages fill the host below the 40-DIP header area. Only page geometry changes on resize; switching never moves pages or their children. Runtime selection toggles page visibility. At design time, the separate add-in suppresses inactive DOM page nodes and their external resize handles; persisted `Visible` is untouched.
 

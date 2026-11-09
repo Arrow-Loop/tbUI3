@@ -17,7 +17,7 @@ Private Module TabViewDesignerScript
         js = js & vbLf
         js = js & "    'use strict';"
         js = js & vbLf
-        js = js & "    const version = 4;"
+        js = js & "    const version = 5;"
         js = js & vbLf
         js = js & "    const hostClass = 'tbui3.ui3tabview', pageClass = 'tbui3.ui3tabpage';"
         js = js & vbLf
@@ -32,6 +32,42 @@ Private Module TabViewDesignerScript
         js = js & "        'changeProperty', 'undoPoint', 'getImageFromServer', 'queueMultipleSnapshot', 'syncPropertySheet',"
         js = js & vbLf
         js = js & "        'deleteSelectedControls', 'updateAllControlDragPoints'];"
+        js = js & vbLf
+        js = js & "    const toolbarTitles = new Map();"
+        js = js & vbLf
+        js = js & "    const toolbarHelp = {"
+        js = js & vbLf
+        js = js & "        tbUI3TabNew: 'Add one page to the selected TabView. Selecting one of its pages or child controls also identifies the TabView.',"
+        js = js & vbLf
+        js = js & "        tbUI3TabDelete: 'Delete the active page and every control it contains. Select its TabView, page or a child control first.',"
+        js = js & vbLf
+        js = js & "        tbUI3TabLeft: 'Move the active page one position left in its TabView.',"
+        js = js & vbLf
+        js = js & "        tbUI3TabRight: 'Move the active page one position right in its TabView.',"
+        js = js & vbLf
+        js = js & "        tbUI3TabRefresh: 'Reinstall the TabView designer adapter and request a fresh header snapshot.',"
+        js = js & vbLf
+        js = js & "        tbUI3TabDiagnostics: 'Write TabView state and native/designer page counts to tbUI3-tabview.log beside the project.'"
+        js = js & vbLf
+        js = js & "    };"
+        js = js & vbLf
+        js = js & "    function describeToolbar() {"
+        js = js & vbLf
+        js = js & "        for (const [id, help] of Object.entries(toolbarHelp)) {"
+        js = js & vbLf
+        js = js & "            const button = api.document.getElementById?.('addinButton-' + id);"
+        js = js & vbLf
+        js = js & "            if (button && !toolbarTitles.has(button)) {"
+        js = js & vbLf
+        js = js & "                toolbarTitles.set(button, button.title);"
+        js = js & vbLf
+        js = js & "                button.title = help;"
+        js = js & vbLf
+        js = js & "            }"
+        js = js & vbLf
+        js = js & "        }"
+        js = js & vbLf
+        js = js & "    }"
         js = js & vbLf
         js = js & "    const hiddenClass = 'tbui3-inactive-page';"
         js = js & vbLf
@@ -605,9 +641,15 @@ Private Module TabViewDesignerScript
         js = js & vbLf
         js = js & "            } catch (_) {}"
         js = js & vbLf
+        js = js & "            const directPages = cls === hostClass ? pages(g, c) : null;"
+        js = js & vbLf
         js = js & "            report.controls.push({ name: name(c), className: cls, clsid: c.properties?._clsid,"
         js = js & vbLf
         js = js & "                nativeId: c.formDesignerControlId, parent: name(c.parentElement),"
+        js = js & vbLf
+        js = js & "                nativePageCount: cls === hostClass ? c.properties?.PageCount : undefined,"
+        js = js & vbLf
+        js = js & "                designerPageCount: directPages?.length, designerPageNames: directPages?.map(name),"
         js = js & vbLf
         js = js & "                caption: c.properties?.Caption, order: c.properties?.PageOrder, selectedPage: c.properties?.SelectedPage,"
         js = js & vbLf
@@ -632,6 +674,8 @@ Private Module TabViewDesignerScript
         js = js & "    function tick() {"
         js = js & vbLf
         js = js & "        if (disposed || !supported()) return;"
+        js = js & vbLf
+        js = js & "        describeToolbar();"
         js = js & vbLf
         js = js & "        for (const node of touched) if (node.isConnected === false) {"
         js = js & vbLf
@@ -760,6 +804,10 @@ Private Module TabViewDesignerScript
         js = js & "        for (const node of touched) node.classList.remove(hiddenClass);"
         js = js & vbLf
         js = js & "        touched.clear();"
+        js = js & vbLf
+        js = js & "        for (const [button, title] of toolbarTitles) button.title = title;"
+        js = js & vbLf
+        js = js & "        toolbarTitles.clear();"
         js = js & vbLf
         js = js & "        style?.remove();"
         js = js & vbLf

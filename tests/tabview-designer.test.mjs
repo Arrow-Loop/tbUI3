@@ -199,7 +199,7 @@ test('diagnostics reveal rejected class/selection state without changing control
     f.form.properties._className='MyProject.frmMultiPage';f.g.selectedControls=[p];
     const before=JSON.stringify([f.form.properties,f.host.properties,p.properties]);
     const text=f.adapter.run('diagnostics');assert(text.startsWith('DIAGNOSTICS '));
-    const report=JSON.parse(text.slice(12));assert.equal(report.adapter,4);assert.equal(report.consumerAccepted,false);
+    const report=JSON.parse(text.slice(12));assert.equal(report.adapter,5);assert.equal(report.consumerAccepted,false);
     assert.equal(report.form.className,'MyProject.frmMultiPage');assert.equal(report.controls.length,2);
     assert.equal(report.selection[0].name,'Page1');assert.equal(f.calls.undo,0);
     assert.equal(JSON.stringify([f.form.properties,f.host.properties,p.properties]),before);
@@ -270,4 +270,31 @@ test('full-form bitmap diagnostics use the background image rather than an empty
     const report=JSON.parse(f.adapter.run('diagnostics').slice(12));
     assert.equal(report.controls[0].snapshot.pngSize,'500x240');assert(report.controls[0].snapshot.encodedLength>0);
     assert(!JSON.stringify(report).includes(header.toString('base64')));
+});
+test('one plus gesture on an empty host sends one page insertion',()=>{
+    const f=fixture();let insertions=0;const deserialize=f.api.deserializeControls;
+    f.api.deserializeControls=(...args)=>{insertions++;return deserialize(...args);};
+    f.adapter.install();f.calls.events.get('pointerdown')({button:0,target:f.host,clientX:115,clientY:80,preventDefault(){},stopImmediatePropagation(){}});
+    f.adapter.tick();f.adapter.tick();
+    assert.equal(insertions,1);assert.equal(f.host.children.length,1);
+    assert.equal(f.g.selectedControls[0],f.host.children[0]);
+});
+test('matching captions remain distinct pages with their own header selections',()=>{
+    const f=fixture(),a=f.page('Page1'),b=f.page('Page2',1);
+    a.properties.Caption=b.properties.Caption='Same caption';f.adapter.install();
+    f.calls.events.get('pointerdown')({button:0,target:f.host,clientX:100+350*1.5,clientY:80,preventDefault(){},stopImmediatePropagation(){}});
+    assert.equal(f.host.properties.SelectedPage,'Page2');assert.equal(f.g.selectedControls[0],b);
+    assert(a.classes.has('tbui3-inactive-page'));assert(!b.classes.has('tbui3-inactive-page'));
+});
+test('diagnostics distinguish a native header count from distinct designer page names',()=>{
+    const f=fixture();f.page('Page1');f.host.properties.PageCount=2;
+    const host=JSON.parse(f.adapter.run('diagnostics').slice(12)).controls[0];
+    assert.equal(host.nativePageCount,2);assert.equal(host.designerPageCount,1);assert.deepEqual(host.designerPageNames,['Page1']);
+});
+test('toolbar hover help explains page deletion and diagnostics, and is restored on unload',()=>{
+    const f=fixture(),buttons=new Map(['tbUI3TabDelete','tbUI3TabDiagnostics'].map(id=>['addinButton-'+id,{title:id}]));
+    f.api.document.getElementById=id=>buttons.get(id);f.adapter.install();
+    assert.match(buttons.get('addinButton-tbUI3TabDelete').title,/every control it contains/);
+    assert.match(buttons.get('addinButton-tbUI3TabDiagnostics').title,/tbUI3-tabview.log/);
+    f.adapter.dispose();assert.equal(buttons.get('addinButton-tbUI3TabDelete').title,'tbUI3TabDelete');
 });

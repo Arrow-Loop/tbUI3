@@ -1,5 +1,11 @@
 # Changelog: tbIDE (WinUI 3 look for the twinBASIC IDE)
 
+## 2026-11-09: TabView Designer page-count diagnostics and toolbar help (adapter v5, add-in 1.0.0.4)
+
+- Added designer page counts/names and native PageCount when serialized to diagnostics, to distinguish repeated native headers from actual duplicate controls. Package 1.0.0.64 now guards its page collection against repeated identities/names; equal captions remain valid.
+- The six existing toolbar buttons now describe their behavior on hover, including the page contents removed by Delete and the diagnostic log location. Original titles are restored on unload.
+- All 30 adapter/contract checks pass; the native empty-host duplicate-header outcome remains open. No extra insertions, mouse suppression or inferred native-request deduplication were added without evidence. Styling sources remain unchanged.
+
 ## 2026-11-09: TabView Designer live snapshot correction (adapter v4, add-in 1.0.0.3)
 
 - BETA 1043 getImageFromServer is a no-op in full-form mode. Parent headers now use queueMultipleSnapshot in the active native property batch after child changes. New pages receive Caption/PageOrder and host activation after their compiler-assigned ID exists.

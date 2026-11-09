@@ -12,6 +12,7 @@ Public Class UI3TabView
     Private m_ShowAddButton As Boolean
     Private m_Pages As Collection
     Private m_Collecting As Boolean
+    Private m_LastDiscoveryTrace As String
     Private m_Refreshing As Boolean
     Private m_LastPaintTrace As String
     Private m_Painting As Boolean
@@ -84,29 +85,40 @@ Public Class UI3TabView
         If m_Collecting Then Exit Sub
         m_Collecting = True
         On Error GoTo Done
-        Set m_Pages = New Collection
+        ' Build a distinct list before publishing it. A repeated native enumeration
+        ' entry must not become another header, count, layout or keyboard position.
+        Dim found As Collection
+        Set found = New Collection
         Dim item As Object, page As UI3TabPage, existing As UI3TabPage, at As Long
-        Dim contained As Object, childIndex As Long
+        Dim contained As Object, childIndex As Long, rawCount As Long, duplicates As Long
         Set contained = UserControl.ContainedControls
-        For childIndex = 0 To contained.Count - 1
+        rawCount = contained.Count
+        For childIndex = 0 To rawCount - 1
             Set item = contained.Item(childIndex)
             Set page = PageObject(item)
             If Not page Is Nothing Then
-                at = 1
-                Do While at <= m_Pages.Count
-                    Set existing = m_Pages(at)
-                    If page.PageOrder < existing.PageOrder Then Exit Do
-                    If page.PageOrder = existing.PageOrder Then
-                        If StrComp(page.PageName, existing.PageName, vbTextCompare) < 0 Then Exit Do
-                    End If
-                    at = at + 1
-                Loop
-                If at > m_Pages.Count Then m_Pages.Add page Else m_Pages.Add page, , at
+                If ContainsPage(found, page) Then
+                    duplicates = duplicates + 1
+                Else
+                    at = 1
+                    Do While at <= found.Count
+                        Set existing = found(at)
+                        If page.PageOrder < existing.PageOrder Then Exit Do
+                        If page.PageOrder = existing.PageOrder Then
+                            If StrComp(page.PageName, existing.PageName, vbTextCompare) < 0 Then Exit Do
+                        End If
+                        at = at + 1
+                    Loop
+                    If at > found.Count Then found.Add page Else found.Add page, , at
+                End If
             End If
         Next
     Done:
+        Set m_Pages = found
         If m_Pages Is Nothing Then Set m_Pages = New Collection
         m_Collecting = False
+        On Error Resume Next
+        If Not Ambient.UserMode Then UI3TabDiagnostics.DiscoveryState UserControl.Extender.Name, rawCount, m_Pages, duplicates, m_LastDiscoveryTrace
     End Sub
 
     ' Native snapshot capture temporarily changes the HWND size. Painting and
@@ -137,6 +149,18 @@ Public Class UI3TabView
         m_Refreshing = False
         If Not m_Painting Then UserControl.Refresh
     End Sub
+
+    Private Function ContainsPage(ByVal Pages As Collection, ByVal Candidate As UI3TabPage) As Boolean
+        Dim current As UI3TabPage, candidateName As String, i As Long
+        candidateName = Candidate.PageName
+        For i = 1 To Pages.Count
+            Set current = Pages(i)
+            If current Is Candidate Then Return True
+            If Len(candidateName) > 0 Then
+                If StrComp(current.PageName, candidateName, vbTextCompare) = 0 Then Return True
+            End If
+        Next
+    End Function
 
     Private Sub MatchContainerScale()
         On Error Resume Next

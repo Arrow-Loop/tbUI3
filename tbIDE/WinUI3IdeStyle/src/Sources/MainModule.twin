@@ -21,15 +21,20 @@ Private Class WinUI3IdeStyleAddin
     ' A hidden tool window. Its body lives in a shadow root inside the IDE page, so its
     ' ownerDocument is the IDE page itself, which is how the stylesheet reaches the whole IDE.
     Private StyleWindow As ToolWindow
+    ' Re-checks the theme a moment after start-up and project load. The IDE restores the project's
+    ' state and clears the Debug Console after loading add-ins, which hid the first log lines.
+    Private WithEvents SettleTimer As AddinTimer
     Private IsApplied As Boolean
 
     Public Sub New(ByVal Host As Host)
         Set Me.Host = Host
         Log "loaded: " & Architecture() & ", IDE compiler " & SafeCompilerVersion()
         ApplyForActiveTheme "start-up"
+        StartSettleTimer
     End Sub
 
     Private Sub Class_Terminate()
+        Set SettleTimer = Nothing
         ClearStyle
     End Sub
 
@@ -39,6 +44,23 @@ Private Class WinUI3IdeStyleAddin
 
     Private Sub Host_OnProjectLoaded()
         ApplyForActiveTheme "project loaded"
+        StartSettleTimer
+    End Sub
+
+    Private Sub StartSettleTimer()
+        On Error GoTo Failed
+        If SettleTimer Is Nothing Then Set SettleTimer = New AddinTimer
+        SettleTimer.Enabled = False
+        SettleTimer.Interval = 2000
+        SettleTimer.Enabled = True
+        Exit Sub
+    Failed:
+        Log "could not start the settle timer: " & ErrorText()
+    End Sub
+
+    Private Sub SettleTimer_Timer()
+        SettleTimer.Enabled = False
+        ApplyForActiveTheme "2 seconds after loading"
     End Sub
 
     Private Sub Host_OnChangedTheme(ByVal ThemeName As String)

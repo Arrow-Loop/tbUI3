@@ -1,5 +1,10 @@
 # Changelog: tbIDE (WinUI 3 look for the twinBASIC IDE)
 
+## 2026-11-09: re-check two seconds after loading
+
+Changed
+- The add-in re-checks the theme and re-applies its stylesheet two seconds after start-up and after each project load, using the package's `AddinTimer`. Shane found the Debug Console empty after opening a project with the add-in and a WinUI3 theme loaded: in 1043 the IDE loads add-ins, then restores the project's state, and the console can be cleared in between (`clearDebugConsole`), so the first lines were lost and whether the stylesheet was applied at that point could not be seen.
+
 ## 2026-11-09: detailed Debug Console log
 
 Changed

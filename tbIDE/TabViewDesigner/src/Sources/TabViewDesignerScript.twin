@@ -17,7 +17,7 @@ Private Module TabViewDesignerScript
         js = js & vbLf
         js = js & "    'use strict';"
         js = js & vbLf
-        js = js & "    const version = 2;"
+        js = js & "    const version = 3;"
         js = js & vbLf
         js = js & "    const hostClass = 'tbui3.ui3tabview', pageClass = 'tbui3.ui3tabpage';"
         js = js & vbLf
@@ -461,6 +461,8 @@ Private Module TabViewDesignerScript
         js = js & vbLf
         js = js & "        try {"
         js = js & vbLf
+        js = js & "            if (command === 'diagnostics') return diagnostics();"
+        js = js & vbLf
         js = js & "            if (disposed) throw new Error('Adapter disabled; use TabView refresh to reinstall it.');"
         js = js & vbLf
         js = js & "            if (!supported()) throw new Error('Unsupported IDE designer internals; adapter disabled.');"
@@ -498,6 +500,84 @@ Private Module TabViewDesignerScript
         js = js & "            return 'OK';"
         js = js & vbLf
         js = js & "        } catch (e) { error = String(e.message || e); return 'TabView Designer: ' + error; }"
+        js = js & vbLf
+        js = js & "    }"
+        js = js & vbLf
+        js = js & "    function diagnostics() {"
+        js = js & vbLf
+        js = js & "        // Read-only and deliberately bypasses consumer/class filters: report why a"
+        js = js & vbLf
+        js = js & "        // real IDE state was rejected instead of hiding it behind another generic error."
+        js = js & vbLf
+        js = js & "        const g = typeof api.getCurrentFormEditorGlobals === 'function' ? api.getCurrentFormEditorGlobals() : null;"
+        js = js & vbLf
+        js = js & "        const missing = required.filter(k => typeof api[k] !== 'function');"
+        js = js & vbLf
+        js = js & "        const root = g?.designer?.properties || {};"
+        js = js & vbLf
+        js = js & "        const report = { adapter: version, missing, supported: supported(), consumerAccepted: !!(supported() && globals()),"
+        js = js & vbLf
+        js = js & "            form: { name: root.Name, className: root._className, clsid: root._clsid, formId: root.FormDesignerId,"
+        js = js & vbLf
+        js = js & "                marker: String(root.Tag || '').startsWith('tbUI3:') ? root.Tag : '(not a fixture marker)', backColor: root.BackColor },"
+        js = js & vbLf
+        js = js & "            pending: { properties: g?.pendingChangesCount, snapshots: g?.outstandingSerializationRequests, dragging: g?.isDragging },"
+        js = js & vbLf
+        js = js & "            selection: (g?.selectedControls || []).map(c => ({ name: name(c), className: kind(c), clsid: c.properties?._clsid,"
+        js = js & vbLf
+        js = js & "                parent: name(c.parentElement), parentClass: kind(c.parentElement) })), controls: [], lastError: error };"
+        js = js & vbLf
+        js = js & "        for (const c of g?.allControls || []) {"
+        js = js & vbLf
+        js = js & "            const cls = kind(c);"
+        js = js & vbLf
+        js = js & "            if (!cls.includes('ui3tab')) continue;"
+        js = js & vbLf
+        js = js & "            let computed = {};"
+        js = js & vbLf
+        js = js & "            try { computed = api.document.defaultView.getComputedStyle(c); } catch (_) {}"
+        js = js & vbLf
+        js = js & "            const image = String(c.imageData || '');"
+        js = js & vbLf
+        js = js & "            let checksum = 2166136261;"
+        js = js & vbLf
+        js = js & "            for (let i = 0; i < image.length; i++) checksum = Math.imul(checksum ^ image.charCodeAt(i), 16777619) >>> 0;"
+        js = js & vbLf
+        js = js & "            let pngSize = '(unavailable)';"
+        js = js & vbLf
+        js = js & "            try {"
+        js = js & vbLf
+        js = js & "                const bytes = api.document.defaultView.atob(image.slice(0, 44));"
+        js = js & vbLf
+        js = js & "                const u32 = at => ((bytes.charCodeAt(at) * 16777216) + (bytes.charCodeAt(at+1) << 16) +"
+        js = js & vbLf
+        js = js & "                    (bytes.charCodeAt(at+2) << 8) + bytes.charCodeAt(at+3)) >>> 0;"
+        js = js & vbLf
+        js = js & "                pngSize = u32(16) + 'x' + u32(20);"
+        js = js & vbLf
+        js = js & "            } catch (_) {}"
+        js = js & vbLf
+        js = js & "            report.controls.push({ name: name(c), className: cls, clsid: c.properties?._clsid,"
+        js = js & vbLf
+        js = js & "                nativeId: c.formDesignerControlId, parent: name(c.parentElement),"
+        js = js & vbLf
+        js = js & "                caption: c.properties?.Caption, order: c.properties?.PageOrder, selectedPage: c.properties?.SelectedPage,"
+        js = js & vbLf
+        js = js & "                geometry: [c.properties?.Left, c.properties?.Top, c.properties?.Width, c.properties?.Height],"
+        js = js & vbLf
+        js = js & "                hiddenByAdapter: c.classList.contains(hiddenClass),"
+        js = js & vbLf
+        js = js & "                style: { display: computed.display, color: computed.backgroundColor, size: computed.backgroundSize,"
+        js = js & vbLf
+        js = js & "                    inlineImageLength: String(c.style?.backgroundImage || '').length,"
+        js = js & vbLf
+        js = js & "                    computedImageLength: String(computed.backgroundImage || '').length },"
+        js = js & vbLf
+        js = js & "                snapshot: { encodedLength: image.length, pngSize, checksum: checksum.toString(16) } });"
+        js = js & vbLf
+        js = js & "        }"
+        js = js & vbLf
+        js = js & "        return 'DIAGNOSTICS ' + JSON.stringify(report);"
         js = js & vbLf
         js = js & "    }"
         js = js & vbLf
@@ -663,7 +743,7 @@ Private Module TabViewDesignerScript
         js = js & vbLf
         js = js & "    }"
         js = js & vbLf
-        js = js & "    return { version, install, dispose, run, tick, supported, get lastError() { return error; } };"
+        js = js & "    return { version, install, dispose, run, tick, diagnostics, supported, get lastError() { return error; } };"
         js = js & vbLf
         js = js & "})({document:document,setInterval:setInterval.bind(window),clearInterval:clearInterval.bind(window),getCurrentFormEditorGlobals:typeof getCurrentFormE"
         js = js & "ditorGlobals==='function'?getCurrentFormEditorGlobals:undefined,preparePaste:typeof preparePaste==='function'?preparePaste:undefined,deserializeContro"

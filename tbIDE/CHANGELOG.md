@@ -1,5 +1,11 @@
 # Changelog: tbIDE (WinUI 3 look for the twinBASIC IDE)
 
+## 2026-11-09: TabView Designer rendering diagnostics
+
+- Adapter v3 adds a read-only TabView diagnostics toolbar command that bypasses normal selection/edit gates, reporting supported API state, root/selected controls, real IDs and parents, fixture marker, pending work, computed canvas state and bitmap dimensions/checksums.
+- Adapter reports append to tbUI3-tabview.log beside the consumer project and under TEMP; package 1.0.0.63 adds corresponding native paint-state/error lines. No raw bitmap or textbox contents are recorded.
+- Twenty-two adapter/contract checks pass; packed add-in and source mirror match. Shane's purple-strip screenshot remains an open native IDE result. Styling sources are unchanged by this pass.
+
 ## 2026-11-09: TabView Designer initialization follow-up
 
 - Adapter v2 waits for new control IDs, then sets Caption/PageOrder through native changeProperty before its final undo checkpoint. Initial insertion JSON alone is not treated as saved UserControl state.

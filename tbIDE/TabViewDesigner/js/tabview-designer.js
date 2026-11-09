@@ -5,7 +5,7 @@
  */
 (function createTabViewDesigner(api) {
     'use strict';
-    const version = 2;
+    const version = 3;
     const hostClass = 'tbui3.ui3tabview', pageClass = 'tbui3.ui3tabpage';
     const pageClsid = '{1681A635-13C8-47F3-B96A-FE8123C9F708}';
     const required = ['getCurrentFormEditorGlobals', 'preparePaste', 'deserializeControls',
@@ -227,6 +227,7 @@
     }
     function run(command) {
         try {
+            if (command === 'diagnostics') return diagnostics();
             if (disposed) throw new Error('Adapter disabled; use TabView refresh to reinstall it.');
             if (!supported()) throw new Error('Unsupported IDE designer internals; adapter disabled.');
             const g = globals();
@@ -246,6 +247,45 @@
             tick();
             return 'OK';
         } catch (e) { error = String(e.message || e); return 'TabView Designer: ' + error; }
+    }
+    function diagnostics() {
+        // Read-only and deliberately bypasses consumer/class filters: report why a
+        // real IDE state was rejected instead of hiding it behind another generic error.
+        const g = typeof api.getCurrentFormEditorGlobals === 'function' ? api.getCurrentFormEditorGlobals() : null;
+        const missing = required.filter(k => typeof api[k] !== 'function');
+        const root = g?.designer?.properties || {};
+        const report = { adapter: version, missing, supported: supported(), consumerAccepted: !!(supported() && globals()),
+            form: { name: root.Name, className: root._className, clsid: root._clsid, formId: root.FormDesignerId,
+                marker: String(root.Tag || '').startsWith('tbUI3:') ? root.Tag : '(not a fixture marker)', backColor: root.BackColor },
+            pending: { properties: g?.pendingChangesCount, snapshots: g?.outstandingSerializationRequests, dragging: g?.isDragging },
+            selection: (g?.selectedControls || []).map(c => ({ name: name(c), className: kind(c), clsid: c.properties?._clsid,
+                parent: name(c.parentElement), parentClass: kind(c.parentElement) })), controls: [], lastError: error };
+        for (const c of g?.allControls || []) {
+            const cls = kind(c);
+            if (!cls.includes('ui3tab')) continue;
+            let computed = {};
+            try { computed = api.document.defaultView.getComputedStyle(c); } catch (_) {}
+            const image = String(c.imageData || '');
+            let checksum = 2166136261;
+            for (let i = 0; i < image.length; i++) checksum = Math.imul(checksum ^ image.charCodeAt(i), 16777619) >>> 0;
+            let pngSize = '(unavailable)';
+            try {
+                const bytes = api.document.defaultView.atob(image.slice(0, 44));
+                const u32 = at => ((bytes.charCodeAt(at) * 16777216) + (bytes.charCodeAt(at+1) << 16) +
+                    (bytes.charCodeAt(at+2) << 8) + bytes.charCodeAt(at+3)) >>> 0;
+                pngSize = u32(16) + 'x' + u32(20);
+            } catch (_) {}
+            report.controls.push({ name: name(c), className: cls, clsid: c.properties?._clsid,
+                nativeId: c.formDesignerControlId, parent: name(c.parentElement),
+                caption: c.properties?.Caption, order: c.properties?.PageOrder, selectedPage: c.properties?.SelectedPage,
+                geometry: [c.properties?.Left, c.properties?.Top, c.properties?.Width, c.properties?.Height],
+                hiddenByAdapter: c.classList.contains(hiddenClass),
+                style: { display: computed.display, color: computed.backgroundColor, size: computed.backgroundSize,
+                    inlineImageLength: String(c.style?.backgroundImage || '').length,
+                    computedImageLength: String(computed.backgroundImage || '').length },
+                snapshot: { encodedLength: image.length, pngSize, checksum: checksum.toString(16) } });
+        }
+        return 'DIAGNOSTICS ' + JSON.stringify(report);
     }
     function tick() {
         if (disposed || !supported()) return;
@@ -328,5 +368,5 @@
         tick();
         return 'TabView Designer adapter v' + version + ' installed';
     }
-    return { version, install, dispose, run, tick, supported, get lastError() { return error; } };
+    return { version, install, dispose, run, tick, diagnostics, supported, get lastError() { return error; } };
 })

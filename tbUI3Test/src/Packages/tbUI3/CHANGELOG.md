@@ -1,3 +1,8 @@
+### 1.0.0.63
+- Separates read-only page discovery from layout so paint and property snapshots do not move controls.
+- Guards no-op ScaleMode assignments and removes the page BackColor setter from Paint.
+- Adds temporary local native paint diagnostics plus a read-only TabView diagnostics command in the separate add-in.
+
 ### 1.0.0.62
 - TabView header uses a theme-matched background rather than the form's unrelated ambient color.
 - UI3FormTheme applies its managed background in the designer without attaching runtime subclasses.

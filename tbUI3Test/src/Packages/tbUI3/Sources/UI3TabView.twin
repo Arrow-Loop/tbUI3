@@ -11,7 +11,9 @@ Public Class UI3TabView
     Private m_SelectedPage As String
     Private m_ShowAddButton As Boolean
     Private m_Pages As Collection
+    Private m_Collecting As Boolean
     Private m_Refreshing As Boolean
+    Private m_LastPaintTrace As String
     Private m_Painting As Boolean
     Private m_Focused As Boolean
     Private m_FirstHeader As Long
@@ -48,19 +50,19 @@ Public Class UI3TabView
 
     [NonBrowsable]
     Public Property Get PageCount() As Long
-        RefreshPages
+        CollectPages
         PageCount = m_Pages.Count
     End Property
 
     [NonBrowsable]
     Public Property Get Pages(ByVal Index As Long) As UI3TabPage
-        RefreshPages
+        CollectPages
         Set Pages = m_Pages(Index)
     End Property
 
     [NonBrowsable]
     Public Property Get SelectedIndex() As Long
-        RefreshPages
+        CollectPages
         SelectedIndex = ActiveIndex() - 1
     End Property
 
@@ -78,11 +80,10 @@ Public Class UI3TabView
 
     ' Keep the same coordinate scale as the immediate containing form/control.
     ' Do not keep page references between refreshes: pages may be removed in the IDE.
-    Public Sub RefreshPages()
-        If m_Refreshing Then Exit Sub
-        m_Refreshing = True
+    Private Sub CollectPages()
+        If m_Collecting Then Exit Sub
+        m_Collecting = True
         On Error GoTo Done
-        UserControl.ScaleMode = UserControl.Extender.Container.ScaleMode
         Set m_Pages = New Collection
         Dim item As Object, page As UI3TabPage, existing As UI3TabPage, at As Long
         Dim contained As Object, childIndex As Long
@@ -103,6 +104,20 @@ Public Class UI3TabView
                 If at > m_Pages.Count Then m_Pages.Add page Else m_Pages.Add page, , at
             End If
         Next
+    Done:
+        If m_Pages Is Nothing Then Set m_Pages = New Collection
+        m_Collecting = False
+    End Sub
+
+    ' Native snapshot capture temporarily changes the HWND size. Painting and
+    ' property getters only discover pages; they must never move controls.
+    Public Sub RefreshPages()
+        If m_Refreshing Or m_Painting Then Exit Sub
+        m_Refreshing = True
+        On Error GoTo Done
+        MatchContainerScale
+        CollectPages
+        Dim page As UI3TabPage
         Dim top As Single, w As Single, h As Single, i As Long, active As Long
         top = UserControl.ScaleY(UI3TabMetrics.ContentTop * UI3TabMetrics.WindowDpi(UserControl.hWnd) / 96!, vbPixels, UserControl.ScaleMode)
         w = UserControl.ScaleWidth
@@ -121,6 +136,12 @@ Public Class UI3TabView
         If m_Pages Is Nothing Then Set m_Pages = New Collection
         m_Refreshing = False
         If Not m_Painting Then UserControl.Refresh
+    End Sub
+
+    Private Sub MatchContainerScale()
+        On Error Resume Next
+        Dim mode As Long = UserControl.Extender.Container.ScaleMode
+        If UserControl.ScaleMode <> mode Then UserControl.ScaleMode = mode
     End Sub
 
     Private Function PageObject(ByVal Item As Object) As UI3TabPage
@@ -222,6 +243,7 @@ Public Class UI3TabView
         m_ShowAddButton = True
         m_FirstHeader = 1
         Set m_Pages = New Collection
+        MatchContainerScale
     End Sub
 
     Private Sub UserControl_ReadProperties(PropBag As PropertyBag)
@@ -229,6 +251,7 @@ Public Class UI3TabView
         m_ShowAddButton = PropBag.ReadProperty("IsAddTabButtonVisible", True)
         m_FirstHeader = 1
         Set m_Pages = New Collection
+        MatchContainerScale
     End Sub
 
     Private Sub UserControl_WriteProperties(PropBag As PropertyBag)
@@ -246,11 +269,13 @@ Public Class UI3TabView
 
     Private Sub UserControl_GotFocus()
         m_Focused = True
+        If Not Ambient.UserMode Then UI3TabDiagnostics.Note "host " & UserControl.Extender.Name & " GotFocus"
         UserControl.Refresh
     End Sub
 
     Private Sub UserControl_LostFocus()
         m_Focused = False
+        If Not Ambient.UserMode Then UI3TabDiagnostics.Note "host " & UserControl.Extender.Name & " LostFocus"
         UserControl.Refresh
     End Sub
 
@@ -258,20 +283,25 @@ Public Class UI3TabView
         If m_Painting Then Exit Sub
         m_Painting = True
         On Error GoTo Failed
-        RefreshPages
+        CollectPages
+        EnsureHeaderVisible ActiveIndex()
         Dim client As UI3GdiRect, dpi As Single, w As Single, h As Single, clear As D2D1_COLOR_F
+        Dim dc As LongPtr, drawing As Boolean, hr As Long
+        dc = UserControl.hDC
+        If dc = 0 Then GoTo Done
         UI3GetClientRect UserControl.hWnd, client
         If client.Right <= 0 Or client.Bottom <= 0 Then GoTo Done
         dpi = UI3TabMetrics.WindowDpi(UserControl.hWnd)
         If m_Target Is Nothing Then Set m_Target = CreateDCTarget()
         m_Target.SetDpi dpi, dpi
-        m_Target.BindDC UserControl.hDC, client
+        m_Target.BindDC dc, client
         w = client.Right * 96! / dpi
         h = client.Bottom * 96! / dpi
         ' An opaque theme surface keeps dark text/fills paired with their own theme.
         ' twinBASIC supplies the root form BackColor as ambient even inside a page.
         clear = ColorFromArgb(UI3TabMetrics.HeaderBackground())
         m_Target.BeginDraw
+        drawing = True
         m_Target.Clear clear
         UI3TabMetrics.FillBox m_Target, 0, UI3TabMetrics.ContentTop, w, h - UI3TabMetrics.ContentTop, UI3TabMetrics.PageBackground()
         Dim size As Single, i As Long, x As Single, color As Long, active As Long, count As Long
@@ -295,13 +325,21 @@ Public Class UI3TabView
         Next
         If m_ShowAddButton Then DrawCenteredTextStyled m_Target, "+", UI3TabMetrics.HeaderFontSize, 400, x + UI3TabMetrics.AddGap, UI3TabMetrics.HeaderTop, _
             x + UI3TabMetrics.AddGap + UI3TabMetrics.AddWidth, UI3TabMetrics.HeaderTop + UI3TabMetrics.AddHeight, color
-        If m_Target.EndDraw(0, 0) < 0 Then Set m_Target = Nothing
+        hr = m_Target.EndDraw(0, 0)
+        drawing = False
+        If Not Ambient.UserMode Or hr <> 0 Then
+            UI3TabDiagnostics.PaintState "host " & UserControl.Extender.Name, UserControl.hWnd, dc, client, dpi, _
+                UserControl.ScaleWidth, UserControl.ScaleHeight, hr, m_LastPaintTrace
+        End If
+        If hr < 0 Then Set m_Target = Nothing
     Done:
         m_Painting = False
         Exit Sub
     Failed:
+        hr = Err.Number
+        UI3TabDiagnostics.Note "host " & UserControl.Extender.Name & " Paint exception &H" & Hex$(hr) & " " & Err.Description
         On Error Resume Next
-        If Not m_Target Is Nothing Then m_Target.EndDraw 0, 0
+        If drawing And Not m_Target Is Nothing Then m_Target.EndDraw 0, 0
         Set m_Target = Nothing
         m_Painting = False
     End Sub

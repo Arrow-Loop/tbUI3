@@ -4,6 +4,14 @@ All notable changes to tbUI3. Dates are when the change was made, not released. 
 
 ## Unreleased
 
+### 2026-11-09, designer paint lifecycle correction and diagnostics (1.0.0.63)
+
+- Shane's BETA 1043 win32 screenshots show a dark header initially, then a purple strip and missing labels after interaction. Default Page/Button captions remain visible; one-time fixture initialization is not yet established by live evidence.
+- Separated page discovery from arrangement. Paint and public property getters no longer move pages, assign ScaleMode or change page BackColor. ScaleMode synchronization skips identical assignments. Paint caches its DC once, tracks the active draw scope and records errors before discarding a failed target.
+- Inspected the shipped UserControl snapshot path: it temporarily resizes the native HWND, sends WM_PRINTCLIENT and restores the old rectangle. This makes layout/property mutation during Paint unsafe; it does not alone prove the screenshot's final cause.
+- Added temporary native paint-state logs and adapter v3's read-only TabView diagnostics toolbar command. Logs contain native dimensions/DPI/pixel samples/EndDraw status and adapter IDs, ownership, initialization marker, pending work, computed canvas state and bitmap dimensions/checksums. No raw bitmap or textbox content is logged.
+- Twenty-two adapter/contract checks pass. All 68 packed-project mirrors, embedded package equality, identities and CRLF checks pass. The purple-strip symptom remains an open IDE gate; no corrected live outcome is claimed.
+
 ### 2026-11-09, readable designer and native property initialization (1.0.0.62)
 
 - Shane's BETA 1043 win32 screenshot shows the designer controls and add-in toolbar present, but dark-theme text on a light ambient surface and custom captions at their Page/Button defaults. The older selection-rejection lines in that screenshot do not establish a current selection failure.

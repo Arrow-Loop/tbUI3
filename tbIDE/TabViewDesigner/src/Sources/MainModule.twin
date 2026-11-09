@@ -13,6 +13,7 @@ Private Class TabViewDesignerAddin
     Private WithEvents MoveLeftButton As Button
     Private WithEvents MoveRightButton As Button
     Private WithEvents RefreshButton As Button
+    Private WithEvents DiagnosticsButton As Button
     Private PageWindow As ToolWindow
     Private WithEvents LoadTimer As AddinTimer
     Private m_Installed As Boolean
@@ -58,6 +59,7 @@ Private Class TabViewDesignerAddin
                 Set MoveLeftButton = .AddButton("tbUI3TabLeft", "Page left")
                 Set MoveRightButton = .AddButton("tbUI3TabRight", "Page right")
                 Set RefreshButton = .AddButton("tbUI3TabRefresh", "TabView refresh")
+                Set DiagnosticsButton = .AddButton("tbUI3TabDiagnostics", "TabView diagnostics")
             End With
         End If
         If PageWindow Is Nothing Then Set PageWindow = Host.ToolWindows.Add("tbUI3TabViewDesigner", "tbUI3TabViewDesignerHost")
@@ -108,6 +110,10 @@ Private Class TabViewDesignerAddin
         RunCommand "refresh"
     End Sub
 
+    Private Sub DiagnosticsButton_OnClick()
+        RunCommand "diagnostics"
+    End Sub
+
     Private Sub Class_Terminate()
         On Error Resume Next
         Set LoadTimer = Nothing
@@ -118,5 +124,19 @@ Private Class TabViewDesignerAddin
     Private Sub Log(ByVal Text As String)
         On Error Resume Next
         Host.DebugConsole.PrintText "[TabView Designer] " & Text
+        Dim folder As String
+        folder = Host.CurrentProject.Path
+        If LCase$(Right$(folder, 9)) = ".twinproj" Then folder = Left$(folder, InStrRev(folder, "\") - 1)
+        If Len(folder) > 0 Then AppendLog folder & "\tbUI3-tabview.log", Text
+        AppendLog Environ$("TEMP") & "\tbUI3-tabview.log", Text
+    End Sub
+
+    Private Sub AppendLog(ByVal Path As String, ByVal Text As String)
+        On Error Resume Next
+        Dim file As Integer
+        file = FreeFile
+        Open Path For Append As #file
+        Print #file, Format$(Now, "hh:nn:ss") & " [adapter v3] " & Text
+        Close #file
     End Sub
 End Class

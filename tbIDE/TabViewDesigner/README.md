@@ -1,6 +1,6 @@
 # tbUI3 TabView Designer
 
-Separate native IDE add-in for tbUI3 1.0.0.62's real page containers. It coexists with WinUI3IdeStyle and does not require a particular IDE theme. BETA 1043 is the source-inspected adapter baseline; the insertion recipe originated in the BETA 1033 probe.
+Separate native IDE add-in for tbUI3 1.0.0.63's real page containers. It coexists with WinUI3IdeStyle and does not require a particular IDE theme. BETA 1043 is the source-inspected adapter baseline; the insertion recipe originated in the BETA 1033 probe.
 
 ## Installation and use
 
@@ -14,10 +14,15 @@ With a consumer Form designer open, drop UI3TabView and click its +, or select t
 | Delete page | Deletes the active page and its children through the native designer; requests one undo checkpoint |
 | Page left / Page right | Changes saved PageOrder while retaining selected-page identity |
 | TabView refresh | Reinstalls the adapter and refreshes current page display |
+| TabView diagnostics | Read-only adapter v3 report; works even when ordinary editing commands reject the selection |
 
 These commands expect one host or one of its descendants selected. Pending compiler replies, snapshots, dragging and resync block edits until the designer settles; a toolbar command reports the reason in Debug Console. The adapter does not queue a stale command against another selection. The control's New page verb supplies an additional request path; its visibility in the actual context menu remains a separate IDE check.
 
 Without the add-in, the package and runtime have no missing dependency. The toolbox path still allows real pages, but the IDE's ordinary visibility rendering does not hide inactive pages completely. Unloading the add-in restores the ordinary designer display. After an adapter timer error it restores the display and disables itself; TabView refresh reinstalls it.
+
+## Rendering diagnostics
+
+The current blocker is a header that becomes a purple strip after designer interaction. If it remains with 1.0.0.63 and adapter v3, click **TabView diagnostics** once before and once after the change, then preserve `tbUI3-tabview.log` beside the consumer `.twinproj`. The add-in also writes a copy under TEMP. Native control traces use App.Path and TEMP. The log records adapter version, IDs, ownership, fixture marker, pending operations, canvas/computed state and snapshot dimensions/checksums, plus native draw dimensions/DPI/pixels/result. It excludes raw image data and ordinary textbox contents. This is temporary investigation instrumentation; remove/disable it when the cause is established.
 
 ## Harness and validation boundary
 

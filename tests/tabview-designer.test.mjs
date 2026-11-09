@@ -194,3 +194,18 @@ test('a marker copied to another form does not authorize harness initialization'
     const page=f.page('pgGeneral');f.page('pgDetails');f.page('pgFinish');page.properties.Caption='Keep this';
     f.adapter.tick();assert.equal(page.properties.Caption,'Keep this');assert.equal(f.calls.undo,0);
 });
+test('diagnostics reveal rejected class/selection state without changing controls or undo history',()=>{
+    const f=fixture(),p=f.page('Page1');p.properties.Caption='Page';p.imageData='';
+    f.form.properties._className='MyProject.frmMultiPage';f.g.selectedControls=[p];
+    const before=JSON.stringify([f.form.properties,f.host.properties,p.properties]);
+    const text=f.adapter.run('diagnostics');assert(text.startsWith('DIAGNOSTICS '));
+    const report=JSON.parse(text.slice(12));assert.equal(report.adapter,3);assert.equal(report.consumerAccepted,false);
+    assert.equal(report.form.className,'MyProject.frmMultiPage');assert.equal(report.controls.length,2);
+    assert.equal(report.selection[0].name,'Page1');assert.equal(f.calls.undo,0);
+    assert.equal(JSON.stringify([f.form.properties,f.host.properties,p.properties]),before);
+});
+test('diagnostics report missing internals even when normal editing commands are disabled',()=>{
+    const f=fixture();delete f.api.deserializeControls;
+    const report=JSON.parse(f.adapter.run('diagnostics').slice(12));
+    assert.equal(report.supported,false);assert(report.missing.includes('deserializeControls'));assert.equal(f.calls.undo,0);
+});

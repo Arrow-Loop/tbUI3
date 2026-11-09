@@ -1,6 +1,26 @@
 # TabView candidate validation, 2026-11-09
 
-Current candidate: **1.0.0.62**. The initial 1.0.0.61 evidence is retained below as history.
+Current candidate: **1.0.0.63**. Earlier candidate evidence is retained below as history.
+
+## 1.0.0.63 interaction follow-up
+
+Shane supplied two BETA 1043 win32 screenshots: the first shows dark headers, the second has a purple strip and missing labels after interacting with the form. Header-strip pixels sampled from the supplied image include RGB (133,21,181), while the initial image at the same locations is dark. The page body remains visible. Both show default Page/Button labels, so neither stable rendering nor fixture initialization is established.
+
+The shipped `VB/Sources/CONTROLS/STANDARD/UserControl.twin` IViewObjectDraw temporarily changes the native HWND size, sends WM_PRINTCLIENT into a compatible bitmap and restores the rectangle. `Graphics.ScaleModeChanged` notifies ambient scale changes even on identical assignments. Version 1.0.0.63 removes layout/property mutation from Paint and property getters, guards identical scale assignments, caches the paint DC and adds native state/error traces. This corrects an unsafe lifecycle path; it is not proof that the final purple-strip cause is fully identified.
+
+Adapter v3 adds read-only diagnostics available even when ordinary commands reject the consumer/selection. It records actual versions/classes/IDs/parents, marker, pending state, computed canvas presentation and snapshot PNG dimensions/checksum. Both adapters and native controls append local evidence to tbUI3-tabview.log. Raw bitmaps and ordinary textbox contents are excluded.
+
+Executed: 22 adapter/contract checks passed using the official BETA 1043 main.js; 27 package, 37 test-app and 4 add-in entries match their mirrors (68 total). Full embedded package, imported revision 63, stable identities, page ownership and CRLF checks pass. The official exporter successfully exported all three packed projects; all 27/36/3 exported file contents match the mirrors byte for byte (the exporter omits the preserved .meta entries). The latest IDE-saved frmMultiPage descriptor from the branch is preserved byte for byte while updating its embedded package; the stale local descriptor was not republished. Live corrected outcome remains open.
+
+| Current project | SHA-256 |
+| --- | --- |
+| `tbUI3/tbUI3.twinproj` | `599f6ab6e31bc059f1348c29a8c01ec06ae35b0b699d3df1722c40f7f2019cc6` |
+| `tbUI3Test/tbUI3Test.twinproj` | `41372ddf5aaa720790cda83938fcecddd329ed3eae751a9a0416c9639725e0a3` |
+| `tbIDE/TabViewDesigner/TabViewDesigner.twinproj` | `8f78e902720c7f398dcb5e72719c1abdc92967bb960c86ade0460d61f05297eb` |
+
+## Historical 1.0.0.62 record
+
+
 
 ## 1.0.0.62 screenshot follow-up
 
@@ -47,7 +67,7 @@ Candidate: tbUI3 1.0.0.61. This record supersedes the unverified earlier chat st
 
 ## Remaining gate
 
-No real IDE first-open, compiler, runtime or full editing-loop result is recorded for this candidate. The next gate is the actual add/switch/drop/Properties/resize/save/reopen/delete/reorder/undo workflow, then runtime ownership/keyboard and final win64 smoke. WinUI visual-state, accessibility, high-contrast and overflow-button work remains in ROADMAP.md. Do not promote source/fixture results to those categories.
+The 1.0.0.61 integration had no recorded real IDE result at publication. Subsequent screenshots establish designer opening with rendering/initialization defects; they do not establish a successful full editing loop. The next gate is the actual add/switch/drop/Properties/resize/save/reopen/delete/reorder/undo workflow, then runtime ownership/keyboard and final win64 smoke. WinUI visual-state, accessibility, high-contrast and overflow-button work remains in ROADMAP.md. Do not promote source/fixture results to those categories.
 
 The starting package/test-project snapshots came from tbui3-dev `18ab64f4f08543bb60dde6163b98f78bcbe95479`. Concurrent styling commit `312eebe0b3a7335d01ee7dae5b56c5235442bac7` is preserved; the shared tbIDE changelog was reconciled with its additions.
 

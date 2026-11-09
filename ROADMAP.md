@@ -4,9 +4,10 @@ Committed work is listed first. Exploratory ideas are marked as such.
 
 ## Committed: MultiPage authoring candidate, next gate
 
-The integrated UI3TabView/UI3TabPage and separate TabViewDesigner implementation began in 1.0.0.61; 1.0.0.62 corrects designer contrast and native property initialization on tbui3-dev. Contract and limits: `docs/controls/UI3TabView.md`. Negative-coordinate parking is not used.
+The integrated UI3TabView/UI3TabPage and separate TabViewDesigner implementation began in 1.0.0.61; 1.0.0.63 separates painting from layout and adds diagnostics after 1.0.0.62's contrast/initialization changes on tbui3-dev. Contract and limits: `docs/controls/UI3TabView.md`. Negative-coordinate parking is not used.
 
-- Initial designer opening is now observed in Shane's BETA 1043 win32 screenshot. Version 1.0.0.62 addresses the unreadable header and default captions shown there. Confirm its initial General/Details/Finish labels, theme-matched canvas and new-page caption/order before closing that gate.
+- Current blocker: Shane's BETA 1043 win32 screenshots initially show dark tabs, then a purple strip with missing labels after interaction. The Page/Button defaults remain; do not mark fixture initialization or stable rendering validated. Version 1.0.0.63 removes layout/property mutations from Paint. If it persists, compare TabView diagnostics before/after against native lines in tbUI3-tabview.log to separate snapshot contents, dimensions and DOM presentation.
+- Investigate resize-triggered layout during the IDE's temporary snapshot HWND resize if logged dimensions or page bounds drift. Preserve user resize behavior; do not suppress Resize indiscriminately. Remove or disable temporary native diagnostics after the failure is understood.
 - Next gate: the actual create/switch/drop/save/reopen/delete/reorder/undo loop on BETA 1043, then runtime ownership, resize and keyboard checks. Keep the existing win32-per-pass and final win64-smoke agreement. Record real outcomes separately from source/fixture checks.
 - Verify the New page verb's context-menu exposure and request-property refresh. Toolbar and header paths are implemented independently of that optional verb.
 - Recheck private internals per beta. Matching function names is not compatibility proof. Preserve explicit host targeting, pending-work guards, undo checkpoints and cleanup; replace insertion with an official designer API when one becomes available.

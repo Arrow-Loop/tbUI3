@@ -2,8 +2,9 @@
 
 ## TabView Designer candidate
 
-- The separate TabViewDesigner add-in is implemented alongside tbUI3 1.0.0.62 (initial candidate 1.0.0.61), independently of the styling work below. Its README documents installation and validation boundaries.
-- Confirm adapter v2's compiler-acknowledged caption/order setup and one-time fixture initialization. The older selection-rejection lines in Shane's screenshot were not evidence of a current ownership error.
+- The separate TabViewDesigner add-in is implemented alongside tbUI3 1.0.0.63 (initial candidate 1.0.0.61), independently of the styling work below. Its README documents installation and validation boundaries.
+- Current blocker: dark tabs become a purple strip after interaction in Shane's BETA 1043 win32 screenshots; labels still show defaults. Compare adapter v3 TabView diagnostics before/after against the native 1.0.0.63 lines in tbUI3-tabview.log. Confirm the real adapter version, accepted consumer/root class, native IDs and fixture marker before changing initialization again.
+- Distinguish native bitmap corruption from DOM/CSS presentation using logged snapshot dimensions/checksums and native draw results. Follow up on temporary snapshot HWND resize if bounds drift. Remove/disable temporary logging after resolution.
 - Next gate: actual native IDE authoring, persistence, undo/redo, Properties-selected child reveal and final win64 smoke. Record results before calling the baseline validated.
 - Re-inspect private internals per beta. Preserve direct host targeting, unchanged coordinates, pending-compiler guards and cleanup. Replace the bridge with an official designer API when available.
 

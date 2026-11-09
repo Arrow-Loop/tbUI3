@@ -1,6 +1,10 @@
 # UI3TabView and UI3TabPage
 
-Status: integrated 1.0.0.62 implementation candidate, 2026-11-09 (initial integration 1.0.0.61). This is the first recoverable implementation, not a continuation of a previously committed 1.0.0.61. The earlier chat's candidate never reached the repository.
+Status: integrated 1.0.0.63 implementation candidate, 2026-11-09 (initial integration 1.0.0.61). This is the first recoverable implementation, not a continuation of a previously committed 1.0.0.61. The earlier chat's candidate never reached the repository.
+
+## Current rendering investigation
+
+Shane's subsequent BETA 1043 win32 screenshots show dark headers initially and a purple strip after interaction, with custom captions still at defaults. Version 1.0.0.63 corrects unsafe layout/property mutations during Paint and adds temporary local evidence collection. The shipped UserControl snapshot implementation temporarily resizes the HWND around WM_PRINTCLIENT; stable behavior after this correction has not yet been observed. `TabView diagnostics` captures adapter v3 state without editing the form. Native lines and adapter output append to `tbUI3-tabview.log` beside the consumer project (native route uses App.Path), with TEMP as an additional route. Compare a capture before and after the symptom.
 
 ## Ownership and persistence
 
@@ -8,7 +12,7 @@ Status: integrated 1.0.0.62 implementation candidate, 2026-11-09 (initial integr
 
 Shane's first BETA 1043 win32 screenshot showed the native designer controls and toolbar, but the header's white text was being drawn over the form's light ambient color and the fixture's custom properties were at defaults. Version 1.0.0.62 addresses those findings; it does not record the corrected IDE outcome as passed.
 
-The host discovers immediate page children on Show, Resize, Paint and `RefreshPages`. BETA 1043's `UCContainedControls.Item` supplies the raw control; the enumerator can supply an extender. Discovery accepts both representations. It matches the immediate container's ScaleMode; twips and pixels are the intended baseline. Arbitrary user-defined scale origins/ranges remain outside this candidate's coverage. Page layout uses current window DPI, not a cached system-DPI paint DC. The test project's existing system-DPI awareness policy is preserved.
+The host discovers immediate page children on Show, Resize, Paint and `RefreshPages`. Discovery in Paint and property getters is read-only with respect to control geometry/properties; explicit layout remains in `RefreshPages`/resize. Identical ScaleMode assignments are skipped, and Paint does not assign BackColor. BETA 1043's `UCContainedControls.Item` supplies the raw control; the enumerator can supply an extender. Discovery accepts both representations. It matches the immediate container's ScaleMode; twips and pixels are the intended baseline. Arbitrary user-defined scale origins/ranges remain outside this candidate's coverage. Page layout uses current window DPI, not a cached system-DPI paint DC. The test project's existing system-DPI awareness policy is preserved.
 
 Pages fill the host below the 40-DIP header area. Only page geometry changes on resize; switching never moves pages or their children. Runtime selection toggles page visibility. At design time, the separate add-in suppresses inactive DOM page nodes and their external resize handles; persisted `Visible` is untouched.
 

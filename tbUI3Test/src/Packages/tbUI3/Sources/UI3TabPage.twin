@@ -8,6 +8,7 @@ Public Class UI3TabPage
     Private m_Caption As String
     Private m_PageOrder As Long
     Private m_Target As ID2D1DCRenderTarget
+    Private m_LastPaintTrace As String
 
     Public Property Get Caption() As String
         Caption = m_Caption
@@ -63,7 +64,8 @@ Public Class UI3TabPage
     Private Sub MatchContainerScale()
         On Error Resume Next
         ' The immediate container is important for pages inside a pixels-scaled host.
-        UserControl.ScaleMode = UserControl.Extender.Container.ScaleMode
+        Dim mode As Long = UserControl.Extender.Container.ScaleMode
+        If UserControl.ScaleMode <> mode Then UserControl.ScaleMode = mode
     End Sub
 
     Private Sub NotifyHost()
@@ -103,19 +105,32 @@ Public Class UI3TabPage
     Private Sub UserControl_Paint()
         On Error GoTo Failed
         Dim client As UI3GdiRect, dpi As Single, clear As D2D1_COLOR_F
+        Dim dc As LongPtr, drawing As Boolean, hr As Long
+        dc = UserControl.hDC
+        If dc = 0 Then Exit Sub
         UI3GetClientRect UserControl.hWnd, client
         If client.Right <= 0 Or client.Bottom <= 0 Then Exit Sub
         If m_Target Is Nothing Then Set m_Target = CreateDCTarget()
         dpi = UI3TabMetrics.WindowDpi(UserControl.hWnd)
         m_Target.SetDpi dpi, dpi
-        m_Target.BindDC UserControl.hDC, client
+        m_Target.BindDC dc, client
         clear = ColorFromArgb(UI3TabMetrics.PageBackground())
-        If UserControl.BackColor <> UI3TabMetrics.PageOleColor() Then UserControl.BackColor = UI3TabMetrics.PageOleColor()
         m_Target.BeginDraw
+        drawing = True
         m_Target.Clear clear
-        If m_Target.EndDraw(0, 0) < 0 Then Set m_Target = Nothing
+        hr = m_Target.EndDraw(0, 0)
+        drawing = False
+        If Not Ambient.UserMode Or hr <> 0 Then
+            UI3TabDiagnostics.PaintState "page " & UserControl.Extender.Name, UserControl.hWnd, dc, client, dpi, _
+                UserControl.ScaleWidth, UserControl.ScaleHeight, hr, m_LastPaintTrace
+        End If
+        If hr < 0 Then Set m_Target = Nothing
         Exit Sub
     Failed:
+        hr = Err.Number
+        UI3TabDiagnostics.Note "page " & UserControl.Extender.Name & " Paint exception &H" & Hex$(hr) & " " & Err.Description
+        On Error Resume Next
+        If drawing And Not m_Target Is Nothing Then m_Target.EndDraw 0, 0
         Set m_Target = Nothing
     End Sub
 End Class

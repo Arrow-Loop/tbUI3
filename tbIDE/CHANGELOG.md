@@ -1,5 +1,13 @@
 # Changelog: tbIDE (WinUI 3 look for the twinBASIC IDE)
 
+## 2026-11-09: TextBox and ComboBox edges match the Gallery; menus clear the menu bar
+
+Shane compared 1043 with the compiled WinUI Gallery (screenshots): text box and combo box borders showed as grey outlines, and the long Edit menu scrolled but covered the menu bar.
+
+Fixed (add-in)
+- TextBoxes, ComboBoxes and the settings filter boxes clip their fill to the padding box (WinUI's BackgroundSizing=InnerBorderEdge). The translucent 1px edge was painted over the fill, so it doubled up: 79 on a 66 fill in Shane's screenshot, where the Gallery draws 47 on a 45 fill over a 32 background. Measured after the fix in Chromium: edge 68 on a 65 fill over 54, top edge 72, text box bottom line 163, the same proportions as the Gallery.
+- Menus are capped at the window height less 44px instead of 10px, so when the IDE moves a long menu up to fit it stops below the menu bar, as a WinUI MenuBar flyout does.
+
 ## 2026-11-09: settings dialogs, Shane's review fixes
 
 Shane's comments on the previews: dark combo boxes not quite right, the toggle a little wonky, the restart notice should sit left of the switch, and the three-state Segmented control did not look right.

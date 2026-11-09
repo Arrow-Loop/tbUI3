@@ -5,7 +5,7 @@
  */
 (function createTabViewDesigner(api) {
     'use strict';
-    const version = 1;
+    const version = 2;
     const hostClass = 'tbui3.ui3tabview', pageClass = 'tbui3.ui3tabpage';
     const pageClsid = '{1681A635-13C8-47F3-B96A-FE8123C9F708}';
     const required = ['getCurrentFormEditorGlobals', 'preparePaste', 'deserializeControls',
@@ -16,6 +16,7 @@
     const hiddenClass = 'tbui3-inactive-page';
     const touched = new Set(), desires = new WeakMap(), firstHeaders = new WeakMap();
     const requestNumbers = new WeakMap(), selections = new WeakMap();
+    const pendingNewPages = new WeakMap();
     let timer, disposed = false, busy = false, error = '', style;
     const kind = c => String(c?.properties?._className || '').toLowerCase();
     const name = c => String(c?.properties?.Name || '');
@@ -60,14 +61,14 @@
         api.syncPropertySheet(g);
         api.updateAllControlDragPoints(g);
     }
-    function edit(g, action) {
+    function edit(g, action, checkpoint = true) {
         if (!ready(g)) throw new Error('Designer is waiting for the compiler; retry when it settles.');
         busy = true;
         let started = false;
         try { api.prepareForMultipleChangeProperties(g); started = true; action(); }
         finally {
             try { if (started) api.handleMultipleChangeProperties(g); }
-            finally { busy = false; if (started) api.undoPoint(g); }
+            finally { busy = false; if (started && checkpoint) api.undoPoint(g); }
         }
     }
     function setPage(g, host, page, selectPage = false) {
@@ -117,6 +118,7 @@
     function newPage(g, host) {
         if (!host) throw new Error('Select a UI3TabView or one of its pages first.');
         if (!ready(g)) throw new Error('Designer is waiting for the compiler; retry when it settles.');
+        if (pendingNewPages.has(g)) throw new Error('Designer is finishing the new page; retry when it settles.');
         const list = pages(g, host);
         let number = 1;
         while (g.allControls.some(c => sameName(name(c), 'UI3TabPage' + number))) number++;
@@ -143,14 +145,65 @@
             paste.lowestPointOfSelection = { x: top.x, y: top.y - 10 };
             api.doPaste(g, paste, created, false);
             api.changeProperty(g, host, 'SelectedPage', nextName);
-        }); } catch (e) {
+        }, false); } catch (e) {
+            api.undoPoint(g);
             choose(g, previousSelection.filter(c => !c.isDeleted));
             throw e;
         }
         desires.set(host, nextName);
+        // The compiler initializes a fresh UserControl from its PropertyBag defaults.
+        // Public fields in insertion JSON are not proof that its setters ran. Apply them
+        // through native changeProperty once the new control has a compiler-assigned ID.
+        pendingNewPages.set(g, { host, page: created[0], caption: data[0].Caption, order: data[0].PageOrder });
         choose(g, created);
+        selections.set(g, created[0]);
+        if (ready(g) && (!g.isInFullFormMode || created[0].formDesignerControlId !== undefined)) finishNewPage(g);
         display(g, host);
         return nextName;
+    }
+    function finishNewPage(g) {
+        const pending = pendingNewPages.get(g);
+        if (!pending || !ready(g)) return false;
+        if (!g.allControls.includes(pending.page) || pending.page.isDeleted) {
+            pendingNewPages.delete(g); api.undoPoint(g); return true;
+        }
+        if (g.isInFullFormMode && pending.page.formDesignerControlId === undefined) return false;
+        try {
+            edit(g, () => {
+                api.changeProperty(g, pending.page, 'Caption', pending.caption);
+                api.changeProperty(g, pending.page, 'PageOrder', pending.order);
+            });
+            api.getImageFromServer(g, pending.host);
+        } finally { pendingNewPages.delete(g); }
+        return true;
+    }
+    function initializeHarness(g) {
+        // Only our explicitly marked fixture gets first-open initialization. No page Tag
+        // is used for membership; user forms and user property values are left alone.
+        const form = g.designer.properties;
+        if (form.Tag !== 'tbUI3:MultiPageHarness:1' ||
+            String(form.FormDesignerId).replace(/[{}]/g, '').toUpperCase() !== 'B64F9C2B-DC41-4C4E-8C0F-7147B529D994') return false;
+        const byName = n => g.allControls.find(c => sameName(name(c), n));
+        const host = byName('UI3TabView1');
+        const seeds = [['pgGeneral', 'General', 0], ['pgDetails', 'Details', 1], ['pgFinish', 'Finish', 2]];
+        if (!host || seeds.some(s => !byName(s[0]))) return false;
+        edit(g, () => {
+            for (const [n, caption, order] of seeds) {
+                api.changeProperty(g, byName(n), 'Caption', caption);
+                api.changeProperty(g, byName(n), 'PageOrder', order);
+            }
+            for (const [i, caption] of ['General page action', 'Open Finish page', 'Return to General'].entries()) {
+                const button = byName('cmdPage' + (i + 1));
+                if (button) { api.changeProperty(g, button, 'Caption', caption); api.changeProperty(g, button, 'Style', 0); }
+            }
+            api.changeProperty(g, host, 'SelectedPage', 'pgGeneral');
+            api.changeProperty(g, host, 'IsAddTabButtonVisible', true);
+            api.changeProperty(g, g.designer, 'Tag', '');
+        });
+        desires.set(host, 'pgGeneral'); api.getImageFromServer(g, host);
+        choose(g, [host]);
+        selections.set(g, g.selectedControls[0]);
+        return true;
     }
     function move(g, host, direction) {
         const list = pages(g, host), current = active(g, host), from = list.indexOf(current), to = from + direction;
@@ -179,8 +232,12 @@
             const g = globals();
             if (!g) throw new Error('Open a consumer Form designer first.');
             const host = selectedHost(g);
-            if (!host) throw new Error('Select a UI3TabView or one of its children first.');
+            if (!host) {
+                const detail = g.selectedControls.map(c => name(c) + ' [' + kind(c) + ']').join(', ') || '(none)';
+                throw new Error('Select a UI3TabView or one of its children first. Current selection: ' + detail);
+            }
             if (!ready(g)) throw new Error('Designer is waiting for the compiler; retry when it settles.');
+            if (pendingNewPages.has(g)) throw new Error('Designer is finishing the new page; retry when it settles.');
             if (command === 'new') return newPage(g, host);
             if (command === 'left') move(g, host, -1);
             else if (command === 'right') move(g, host, 1);
@@ -199,6 +256,15 @@
         if (!g) return;
         const hosts = g.allControls.filter(c => kind(c) === hostClass && !c.isDeleted);
         if (ready(g)) {
+            if (pendingNewPages.has(g)) {
+                finishNewPage(g);
+                for (const host of hosts) display(g, host);
+                return;
+            }
+            if (initializeHarness(g)) {
+                for (const host of hosts) display(g, host);
+                return;
+            }
             // Only a *new* Properties/list selection should reveal a hidden child's page.
             // A tab switch must not be undone by the old selection on the next timer tick.
             const previous = selections.get(g), selection = g.selectedControls[0];
@@ -218,7 +284,7 @@
     function pointer(event) {
         if (disposed || event.button !== 0 || !supported()) return;
         const g = globals();
-        if (!ready(g)) return;
+        if (!ready(g) || pendingNewPages.has(g)) return;
         // Deepest host first, so nested TabViews receive their own header clicks.
         const hosts = g.allControls.filter(c => kind(c) === hostClass && !c.isDeleted).reverse();
         for (const host of hosts) {

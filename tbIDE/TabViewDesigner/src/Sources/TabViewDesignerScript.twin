@@ -17,7 +17,7 @@ Private Module TabViewDesignerScript
         js = js & vbLf
         js = js & "    'use strict';"
         js = js & vbLf
-        js = js & "    const version = 1;"
+        js = js & "    const version = 2;"
         js = js & vbLf
         js = js & "    const hostClass = 'tbui3.ui3tabview', pageClass = 'tbui3.ui3tabpage';"
         js = js & vbLf
@@ -38,6 +38,8 @@ Private Module TabViewDesignerScript
         js = js & "    const touched = new Set(), desires = new WeakMap(), firstHeaders = new WeakMap();"
         js = js & vbLf
         js = js & "    const requestNumbers = new WeakMap(), selections = new WeakMap();"
+        js = js & vbLf
+        js = js & "    const pendingNewPages = new WeakMap();"
         js = js & vbLf
         js = js & "    let timer, disposed = false, busy = false, error = '', style;"
         js = js & vbLf
@@ -127,7 +129,7 @@ Private Module TabViewDesignerScript
         js = js & vbLf
         js = js & "    }"
         js = js & vbLf
-        js = js & "    function edit(g, action) {"
+        js = js & "    function edit(g, action, checkpoint = true) {"
         js = js & vbLf
         js = js & "        if (!ready(g)) throw new Error('Designer is waiting for the compiler; retry when it settles.');"
         js = js & vbLf
@@ -141,7 +143,7 @@ Private Module TabViewDesignerScript
         js = js & vbLf
         js = js & "            try { if (started) api.handleMultipleChangeProperties(g); }"
         js = js & vbLf
-        js = js & "            finally { busy = false; if (started) api.undoPoint(g); }"
+        js = js & "            finally { busy = false; if (started && checkpoint) api.undoPoint(g); }"
         js = js & vbLf
         js = js & "        }"
         js = js & vbLf
@@ -241,6 +243,8 @@ Private Module TabViewDesignerScript
         js = js & vbLf
         js = js & "        if (!ready(g)) throw new Error('Designer is waiting for the compiler; retry when it settles.');"
         js = js & vbLf
+        js = js & "        if (pendingNewPages.has(g)) throw new Error('Designer is finishing the new page; retry when it settles.');"
+        js = js & vbLf
         js = js & "        const list = pages(g, host);"
         js = js & vbLf
         js = js & "        let number = 1;"
@@ -293,7 +297,9 @@ Private Module TabViewDesignerScript
         js = js & vbLf
         js = js & "            api.changeProperty(g, host, 'SelectedPage', nextName);"
         js = js & vbLf
-        js = js & "        }); } catch (e) {"
+        js = js & "        }, false); } catch (e) {"
+        js = js & vbLf
+        js = js & "            api.undoPoint(g);"
         js = js & vbLf
         js = js & "            choose(g, previousSelection.filter(c => !c.isDeleted));"
         js = js & vbLf
@@ -303,11 +309,111 @@ Private Module TabViewDesignerScript
         js = js & vbLf
         js = js & "        desires.set(host, nextName);"
         js = js & vbLf
+        js = js & "        // The compiler initializes a fresh UserControl from its PropertyBag defaults."
+        js = js & vbLf
+        js = js & "        // Public fields in insertion JSON are not proof that its setters ran. Apply them"
+        js = js & vbLf
+        js = js & "        // through native changeProperty once the new control has a compiler-assigned ID."
+        js = js & vbLf
+        js = js & "        pendingNewPages.set(g, { host, page: created[0], caption: data[0].Caption, order: data[0].PageOrder });"
+        js = js & vbLf
         js = js & "        choose(g, created);"
+        js = js & vbLf
+        js = js & "        selections.set(g, created[0]);"
+        js = js & vbLf
+        js = js & "        if (ready(g) && (!g.isInFullFormMode || created[0].formDesignerControlId !== undefined)) finishNewPage(g);"
         js = js & vbLf
         js = js & "        display(g, host);"
         js = js & vbLf
         js = js & "        return nextName;"
+        js = js & vbLf
+        js = js & "    }"
+        js = js & vbLf
+        js = js & "    function finishNewPage(g) {"
+        js = js & vbLf
+        js = js & "        const pending = pendingNewPages.get(g);"
+        js = js & vbLf
+        js = js & "        if (!pending || !ready(g)) return false;"
+        js = js & vbLf
+        js = js & "        if (!g.allControls.includes(pending.page) || pending.page.isDeleted) {"
+        js = js & vbLf
+        js = js & "            pendingNewPages.delete(g); api.undoPoint(g); return true;"
+        js = js & vbLf
+        js = js & "        }"
+        js = js & vbLf
+        js = js & "        if (g.isInFullFormMode && pending.page.formDesignerControlId === undefined) return false;"
+        js = js & vbLf
+        js = js & "        try {"
+        js = js & vbLf
+        js = js & "            edit(g, () => {"
+        js = js & vbLf
+        js = js & "                api.changeProperty(g, pending.page, 'Caption', pending.caption);"
+        js = js & vbLf
+        js = js & "                api.changeProperty(g, pending.page, 'PageOrder', pending.order);"
+        js = js & vbLf
+        js = js & "            });"
+        js = js & vbLf
+        js = js & "            api.getImageFromServer(g, pending.host);"
+        js = js & vbLf
+        js = js & "        } finally { pendingNewPages.delete(g); }"
+        js = js & vbLf
+        js = js & "        return true;"
+        js = js & vbLf
+        js = js & "    }"
+        js = js & vbLf
+        js = js & "    function initializeHarness(g) {"
+        js = js & vbLf
+        js = js & "        // Only our explicitly marked fixture gets first-open initialization. No page Tag"
+        js = js & vbLf
+        js = js & "        // is used for membership; user forms and user property values are left alone."
+        js = js & vbLf
+        js = js & "        const form = g.designer.properties;"
+        js = js & vbLf
+        js = js & "        if (form.Tag !== 'tbUI3:MultiPageHarness:1' ||"
+        js = js & vbLf
+        js = js & "            String(form.FormDesignerId).replace(/[{}]/g, '').toUpperCase() !== 'B64F9C2B-DC41-4C4E-8C0F-7147B529D994') return false;"
+        js = js & vbLf
+        js = js & "        const byName = n => g.allControls.find(c => sameName(name(c), n));"
+        js = js & vbLf
+        js = js & "        const host = byName('UI3TabView1');"
+        js = js & vbLf
+        js = js & "        const seeds = [['pgGeneral', 'General', 0], ['pgDetails', 'Details', 1], ['pgFinish', 'Finish', 2]];"
+        js = js & vbLf
+        js = js & "        if (!host || seeds.some(s => !byName(s[0]))) return false;"
+        js = js & vbLf
+        js = js & "        edit(g, () => {"
+        js = js & vbLf
+        js = js & "            for (const [n, caption, order] of seeds) {"
+        js = js & vbLf
+        js = js & "                api.changeProperty(g, byName(n), 'Caption', caption);"
+        js = js & vbLf
+        js = js & "                api.changeProperty(g, byName(n), 'PageOrder', order);"
+        js = js & vbLf
+        js = js & "            }"
+        js = js & vbLf
+        js = js & "            for (const [i, caption] of ['General page action', 'Open Finish page', 'Return to General'].entries()) {"
+        js = js & vbLf
+        js = js & "                const button = byName('cmdPage' + (i + 1));"
+        js = js & vbLf
+        js = js & "                if (button) { api.changeProperty(g, button, 'Caption', caption); api.changeProperty(g, button, 'Style', 0); }"
+        js = js & vbLf
+        js = js & "            }"
+        js = js & vbLf
+        js = js & "            api.changeProperty(g, host, 'SelectedPage', 'pgGeneral');"
+        js = js & vbLf
+        js = js & "            api.changeProperty(g, host, 'IsAddTabButtonVisible', true);"
+        js = js & vbLf
+        js = js & "            api.changeProperty(g, g.designer, 'Tag', '');"
+        js = js & vbLf
+        js = js & "        });"
+        js = js & vbLf
+        js = js & "        desires.set(host, 'pgGeneral'); api.getImageFromServer(g, host);"
+        js = js & vbLf
+        js = js & "        choose(g, [host]);"
+        js = js & vbLf
+        js = js & "        selections.set(g, g.selectedControls[0]);"
+        js = js & vbLf
+        js = js & "        return true;"
         js = js & vbLf
         js = js & "    }"
         js = js & vbLf
@@ -365,9 +471,17 @@ Private Module TabViewDesignerScript
         js = js & vbLf
         js = js & "            const host = selectedHost(g);"
         js = js & vbLf
-        js = js & "            if (!host) throw new Error('Select a UI3TabView or one of its children first.');"
+        js = js & "            if (!host) {"
+        js = js & vbLf
+        js = js & "                const detail = g.selectedControls.map(c => name(c) + ' [' + kind(c) + ']').join(', ') || '(none)';"
+        js = js & vbLf
+        js = js & "                throw new Error('Select a UI3TabView or one of its children first. Current selection: ' + detail);"
+        js = js & vbLf
+        js = js & "            }"
         js = js & vbLf
         js = js & "            if (!ready(g)) throw new Error('Designer is waiting for the compiler; retry when it settles.');"
+        js = js & vbLf
+        js = js & "            if (pendingNewPages.has(g)) throw new Error('Designer is finishing the new page; retry when it settles.');"
         js = js & vbLf
         js = js & "            if (command === 'new') return newPage(g, host);"
         js = js & vbLf
@@ -404,6 +518,24 @@ Private Module TabViewDesignerScript
         js = js & "        const hosts = g.allControls.filter(c => kind(c) === hostClass && !c.isDeleted);"
         js = js & vbLf
         js = js & "        if (ready(g)) {"
+        js = js & vbLf
+        js = js & "            if (pendingNewPages.has(g)) {"
+        js = js & vbLf
+        js = js & "                finishNewPage(g);"
+        js = js & vbLf
+        js = js & "                for (const host of hosts) display(g, host);"
+        js = js & vbLf
+        js = js & "                return;"
+        js = js & vbLf
+        js = js & "            }"
+        js = js & vbLf
+        js = js & "            if (initializeHarness(g)) {"
+        js = js & vbLf
+        js = js & "                for (const host of hosts) display(g, host);"
+        js = js & vbLf
+        js = js & "                return;"
+        js = js & vbLf
+        js = js & "            }"
         js = js & vbLf
         js = js & "            // Only a *new* Properties/list selection should reveal a hidden child's page."
         js = js & vbLf
@@ -443,7 +575,7 @@ Private Module TabViewDesignerScript
         js = js & vbLf
         js = js & "        const g = globals();"
         js = js & vbLf
-        js = js & "        if (!ready(g)) return;"
+        js = js & "        if (!ready(g) || pendingNewPages.has(g)) return;"
         js = js & vbLf
         js = js & "        // Deepest host first, so nested TabViews receive their own header clicks."
         js = js & vbLf

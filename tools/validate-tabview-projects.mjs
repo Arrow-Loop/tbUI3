@@ -23,9 +23,9 @@ for(const [project,mirror] of projects) {
     check(mirror);console.log(project+': '+files.size+' exact mirrors');
 }
 const [pkg,test]=all;
-assert.equal(JSON.parse(pkg.get('Settings'))['project.versionRevision'],61);
+assert.equal(JSON.parse(pkg.get('Settings'))['project.versionRevision'],62);
 const imported=JSON.parse(test.get('Settings'))['project.references'].find(r=>r.symbolId==='tbUI3');
-assert.equal(Number(imported.versionRevision),61);
+assert.equal(Number(imported.versionRevision),62);
 for(const [p,data] of pkg) if(p!=='.meta') assert(data.equals(test.get('Packages/tbUI3/'+p)),'Embedded package mismatch: '+p);
 for(const name of ['UI3Button','UI3FormTheme','UI3IconList','UI3TabView','UI3TabPage']) {
     const ids=JSON.parse(fs.readFileSync('tbUI3/'+name+'-ids.json'));
@@ -40,7 +40,7 @@ for(const name of ['frmMain','frmMultiPage']) {
     const f=JSON.parse(test.get('Sources/'+name+'.tbform'))[0];
     assert.equal('{'+test.get('Sources/'+name+'.twin').toString().match(/FormDesignerId\("([^"\r\n]+)"\)/)[1]+'}',f.FormDesignerId);
 }
-const form=JSON.parse(test.get('Sources/frmMultiPage.tbform'))[0],host=form._children[0];
+const form=JSON.parse(test.get('Sources/frmMultiPage.tbform'))[0],host=form._children.find(c=>c._className==='tbUI3.UI3TabView');
 assert.equal(host._className,'tbUI3.UI3TabView');assert.equal(host._children.length,3);
 for(const page of host._children) {assert.equal(page._className,'tbUI3.UI3TabPage');assert(page._children.length>0);}
 console.log('Package reference, full embedded package, control IDs, form IDs, real page ownership and CRLF verified.');

@@ -1,5 +1,11 @@
 # Changelog: tbIDE (WinUI 3 look for the twinBASIC IDE)
 
+## 2026-11-09: TabView Designer initialization follow-up
+
+- Adapter v2 waits for new control IDs, then sets Caption/PageOrder through native changeProperty before its final undo checkpoint. Initial insertion JSON alone is not treated as saved UserControl state.
+- Added one-time initialization for the explicitly marked frmMultiPage fixture, with exact form-ID scoping and marker consumption. Later edits and other forms remain untouched. Selection diagnostics include selected name/class.
+- Regenerated the embedded script and canonical add-in project. Twenty adapter/contract checks pass; the screenshot-driven correction's native IDE outcome remains to be observed.
+
 ## 2026-11-09: on/off switch for the add-in in IDE Options
 
 Shane asked for a toggle under Colour Theme that turns the add-in's extra styling on or off, on by default.

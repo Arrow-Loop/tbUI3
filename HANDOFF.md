@@ -2,7 +2,7 @@
 
 ## Current update, 2026-11-09
 
-The recoverable package candidate is 1.0.0.61 on tbui3-dev. UI3TabView/UI3TabPage, the separate TabViewDesigner add-in and frmMultiPage are integrated and synchronized. Read `docs/controls/UI3TabView.md`, `tbIDE/TabViewDesigner/README.md` and `docs/validation/2026-11-09-tabview-candidate.md` for the exact contract and evidence. The full IDE authoring loop remains the next gate. The earlier chat's claimed candidate was never committed and supplies no inherited validation evidence. Existing styling work is preserved.
+The recoverable package candidate is 1.0.0.62 on tbui3-dev. UI3TabView/UI3TabPage, the separate TabViewDesigner add-in and frmMultiPage are integrated and synchronized. Read `docs/controls/UI3TabView.md`, `tbIDE/TabViewDesigner/README.md` and `docs/validation/2026-11-09-tabview-candidate.md` for the exact contract and evidence. Shane's first designer screenshot revealed poor contrast and default captions; 1.0.0.62 addresses both and expands adapter checks to 20. The full IDE authoring loop remains the next gate. The earlier chat's claimed candidate was never committed and supplies no inherited validation evidence. Existing styling work is preserved.
 
 ## Earlier milestone context
 

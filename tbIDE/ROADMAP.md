@@ -2,7 +2,8 @@
 
 ## TabView Designer candidate
 
-- The separate TabViewDesigner add-in is implemented alongside tbUI3 1.0.0.61, independently of the styling work below. Its README documents installation and validation boundaries.
+- The separate TabViewDesigner add-in is implemented alongside tbUI3 1.0.0.62 (initial candidate 1.0.0.61), independently of the styling work below. Its README documents installation and validation boundaries.
+- Confirm adapter v2's compiler-acknowledged caption/order setup and one-time fixture initialization. The older selection-rejection lines in Shane's screenshot were not evidence of a current ownership error.
 - Next gate: actual native IDE authoring, persistence, undo/redo, Properties-selected child reveal and final win64 smoke. Record results before calling the baseline validated.
 - Re-inspect private internals per beta. Preserve direct host targeting, unchanged coordinates, pending-compiler guards and cleanup. Replace the bridge with an official designer API when available.
 

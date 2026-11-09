@@ -4,6 +4,14 @@ All notable changes to tbUI3. Dates are when the change was made, not released. 
 
 ## Unreleased
 
+### 2026-11-09, readable designer and native property initialization (1.0.0.62)
+
+- Shane's BETA 1043 win32 screenshot shows the designer controls and add-in toolbar present, but dark-theme text on a light ambient surface and custom captions at their Page/Button defaults. The older selection-rejection lines in that screenshot do not establish a current selection failure.
+- TabView now draws its header over a matching WinUI solid base surface rather than clearing it to the form's unrelated ambient color. UI3FormTheme applies its managed form background in design mode without installing runtime subclasses. The multipage fixture now includes that helper.
+- The add-in now applies a new page's Caption and PageOrder through native setters after a compiler-assigned ID exists, before the final undo checkpoint. This fixes reliance on initial JSON values becoming UserControl PropertyBag state. The explicitly marked fixture initializes native captions/order once, clears its form-level marker, and preserves subsequent edits. Ordinary user forms are not initialized by this fixture path.
+- The harness sets its intended labels/order/selection explicitly at runtime as well; its launcher receives its intended caption. Selection-rejection diagnostics include the current selected control name and class.
+- Expanded adapter coverage to 20 passing checks, including compiler-default replacement after acknowledgement, one-time fixture setup and exclusion of other forms. Packed projects, full embedded package and 66 mirrors are synchronized; real IDE results for these changes remain a separate gate.
+
 ### 2026-11-09, integrated MultiPage candidate (1.0.0.61)
 
 - Added native UI3TabView and UI3TabPage ControlContainer controls with new recorded stable IDs, saved captions/order/selection, automatic sizing, per-window DPI conversion, actual page ownership, runtime visibility switching, and basic mouse/keyboard selection. No negative-position parking or Tag-based membership.

@@ -69,6 +69,7 @@ Public Class UI3FormTheme
                 TryAttach
             Else
                 DetachTheme
+                TryAttach
             End If
         End If
     End Sub
@@ -81,7 +82,19 @@ Public Class UI3FormTheme
         Dim parentForm As Object
 
         On Error GoTo EH
-        If Not Ambient.UserMode Then Exit Sub
+        If Not Ambient.UserMode Then
+            ' No runtime window subclass is attached in the designer. Apply only
+            ' the managed canvas color, including the ambient color used by children.
+            If m_ManageBackColor Then
+                Set parentForm = UserControl.Parent
+                If parentForm Is Nothing Then Exit Sub
+                UI3Theme.SetThemeMode m_ThemeMode
+                UI3Theme.RefreshTheme
+                Dim backColor As Long = UI3Window.UI3WindowBackColor()
+                If parentForm.BackColor <> backColor Then parentForm.BackColor = backColor
+            End If
+            Exit Sub
+        End If
 
         Set parentForm = UserControl.Parent
         If parentForm Is Nothing Then Exit Sub

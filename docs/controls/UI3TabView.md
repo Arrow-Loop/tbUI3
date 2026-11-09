@@ -1,10 +1,12 @@
 # UI3TabView and UI3TabPage
 
-Status: integrated 1.0.0.61 implementation candidate, 2026-11-09. This is the first recoverable implementation, not a continuation of a previously committed 1.0.0.61. The earlier chat's candidate never reached the repository.
+Status: integrated 1.0.0.62 implementation candidate, 2026-11-09 (initial integration 1.0.0.61). This is the first recoverable implementation, not a continuation of a previously committed 1.0.0.61. The earlier chat's candidate never reached the repository.
 
 ## Ownership and persistence
 
 `UI3TabView` and `UI3TabPage` are native, windowed ControlContainer UserControls drawn with the existing Direct2D/DirectWrite engine. Every page is a direct child of its host. Ordinary controls belong to the page, so their coordinates and state do not depend on which tab is selected. No negative coordinates, Tag-based membership, clipboard access, synthetic input, or runtime add-in dependency is used.
+
+Shane's first BETA 1043 win32 screenshot showed the native designer controls and toolbar, but the header's white text was being drawn over the form's light ambient color and the fixture's custom properties were at defaults. Version 1.0.0.62 addresses those findings; it does not record the corrected IDE outcome as passed.
 
 The host discovers immediate page children on Show, Resize, Paint and `RefreshPages`. BETA 1043's `UCContainedControls.Item` supplies the raw control; the enumerator can supply an extender. Discovery accepts both representations. It matches the immediate container's ScaleMode; twips and pixels are the intended baseline. Arbitrary user-defined scale origins/ranges remain outside this candidate's coverage. Page layout uses current window DPI, not a cached system-DPI paint DC. The test project's existing system-DPI awareness policy is preserved.
 
@@ -30,7 +32,7 @@ The host supports mouse selection and Left/Right/Home/End while focused. It brin
 
 See [the add-in instructions](../../tbIDE/TabViewDesigner/README.md). The add-in is required for + creation and fully hiding inactive designer pages. It is optional for runtime use. Without it, pages can still be drawn from the toolbox, selected in Properties, and auto-sized, but the IDE shows inactive pages rather than giving the complete MultiPage experience.
 
-The adapter calls BETA 1043's actual `preparePaste`, `deserializeControls`, `doPaste`, change-property and undo paths. It overrides the paste parent with the TabView itself, so a selected child on page 1 cannot accidentally receive a page 2 container. It neutralizes doPaste's ordinary positioning offset while retaining the IDE's edit path. Mutations wait for pending compiler/snapshot work to finish. Every attempted edit that entered a native transaction requests an undo checkpoint, including partial failures.
+The adapter calls BETA 1043's actual `preparePaste`, `deserializeControls`, `doPaste`, change-property and undo paths. It overrides the paste parent with the TabView itself, so a selected child on page 1 cannot accidentally receive a page 2 container. It neutralizes doPaste's ordinary positioning offset while retaining the IDE's edit path. Mutations wait for pending compiler/snapshot work to finish. A new page is configured in two native phases: insert, then set Caption/PageOrder after its compiler-assigned ID exists. The final phase requests the undo checkpoint; failed insertion still requests one. Initial custom-property JSON is not assumed to be PropertyBag state. The marked fixture uses an exact form ID plus a consumed form-level marker for first-open initialization, never page Tag-based membership.
 
 The DOM bridge is private IDE integration, not a supported twinBASIC designer API. Required functions are checked before hooks are installed. Timer exceptions remove the hooks and restore page visibility. `TabView refresh` reinstalls the adapter. The adapter version is replaced on install, avoiding stale helpers after rebuilding. It never modifies WinUI3IdeStyle's stylesheet or add-in.
 
@@ -44,6 +46,7 @@ Value authority: microsoft/microsoft-ui-xaml commit `3259dc4437540678368c6e7c728
 | Equal widths | TabViewItemMinWidth 100, TabViewItemMaxWidth 240 | Clamped equal widths, selected header kept in view |
 | Typography | TabViewItemHeaderFontSize 12 | Existing Segoe UI Variable Text / Segoe UI fallback, normal weight |
 | Header padding | TabViewItemHeaderPaddingWithoutCloseButton 8,3,8,3 | 8-DIP horizontal content inset; centered vertical text |
+| Header backdrop | SolidBackgroundFillColorBase | 1.0.0.62 uses an opaque, matching base surface as a tbUI3 hosting convenience; WinUI TabViewBackground is transparent. This avoids white text on the unrelated root form's light ambient color. |
 | Selected fill | TabViewItemHeaderBackgroundSelected -> SolidBackgroundFillColorTertiaryBrush | Existing dark #282828 / light #F9F9F9 tokens, also used for page background |
 | Text | HeaderForeground -> TextFillColorSecondaryBrush; selected -> TextFillColorPrimaryBrush | Existing shared light/dark foreground tokens |
 | Disabled text | HeaderForegroundDisabled -> TextFillColorDisabledBrush | Disabled native header input and text |

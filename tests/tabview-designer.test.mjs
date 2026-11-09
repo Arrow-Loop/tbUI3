@@ -162,3 +162,35 @@ test('embedded twinBASIC script exactly reconstructs parseable JavaScript',()=>{
     }
     new vm.Script(js);assert(js.includes(source.trim()));assert(!src.match(/"[^"\r\n]+""[^"\r\n]+"/));
 });
+test('new UserControl defaults are replaced through native setters after compiler acknowledgement',()=>{
+    const f=fixture();f.page('Existing',7);f.g.isInFullFormMode=true;
+    const original=f.api.deserializeControls;
+    f.api.deserializeControls=(g,json,parent)=>{
+        const cs=original(g,json,parent);
+        cs[0].properties.Caption='Page';cs[0].properties.PageOrder=0;
+        g.pendingChangesCount=1;return cs;
+    };
+    f.adapter.run('new');const created=f.g.allControls.at(-1);
+    assert.equal(created.properties.Caption,'Page');assert.equal(f.calls.undo,0);
+    assert.match(f.adapter.run('new'),/waiting for the compiler/);
+    f.g.pendingChangesCount=0;f.adapter.tick();assert.equal(f.calls.undo,0);
+    created.formDesignerControlId=99;f.adapter.tick();
+    assert.equal(created.properties.Caption,'Page 1');assert.equal(created.properties.PageOrder,8);
+    assert.equal(f.calls.undo,1);f.adapter.tick();assert.equal(f.calls.undo,1);
+});
+test('the marked harness initializes native properties once and keeps later user edits',()=>{
+    const f=fixture();f.host.properties.Name='UI3TabView1';
+    Object.assign(f.form.properties,{Tag:'tbUI3:MultiPageHarness:1',FormDesignerId:'{B64F9C2B-DC41-4C4E-8C0F-7147B529D994}'});
+    const pages=['pgGeneral','pgDetails','pgFinish'].map(n=>f.page(n));
+    for(let i=0;i<3;i++)f.g.allControls.push(pages[i].appendChild(new Node({_className:'tbUI3.UI3Button',Name:'cmdPage'+(i+1),Caption:'Button'})));
+    f.adapter.tick();assert.deepEqual(pages.map(p=>p.properties.Caption),['General','Details','Finish']);
+    assert.deepEqual(pages.map(p=>p.properties.PageOrder),[0,1,2]);
+    assert.equal(f.host.properties.SelectedPage,'pgGeneral');assert.equal(f.form.properties.Tag,'');assert.equal(f.calls.undo,1);
+    pages[0].properties.Caption='My edit';f.adapter.tick();assert.equal(pages[0].properties.Caption,'My edit');
+});
+test('a marker copied to another form does not authorize harness initialization',()=>{
+    const f=fixture();f.host.properties.Name='UI3TabView1';
+    Object.assign(f.form.properties,{Tag:'tbUI3:MultiPageHarness:1',FormDesignerId:'{OTHER-FORM}'});
+    const page=f.page('pgGeneral');f.page('pgDetails');f.page('pgFinish');page.properties.Caption='Keep this';
+    f.adapter.tick();assert.equal(page.properties.Caption,'Keep this');assert.equal(f.calls.undo,0);
+});

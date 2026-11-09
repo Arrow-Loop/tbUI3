@@ -1,3 +1,8 @@
+### 1.0.0.62
+- TabView header uses a theme-matched background rather than the form's unrelated ambient color.
+- UI3FormTheme applies its managed background in the designer without attaching runtime subclasses.
+- Designer-created pages receive captions/order through native setters after compiler acknowledgement; the harness initializes its real saved properties on first open.
+
 ### 1.0.0.61
 - Integrated UI3TabView/UI3TabPage candidate with real page containers, saved selection/order and auto layout.
 - Separate TabView Designer add-in supplies design-time page creation, switching, deletion and reordering.

@@ -268,7 +268,9 @@ Public Class UI3TabView
         m_Target.BindDC UserControl.hDC, client
         w = client.Right * 96! / dpi
         h = client.Bottom * 96! / dpi
-        clear = ColorFromArgb(ArgbFromOleColor(UserControl.Ambient.BackColor))
+        ' An opaque theme surface keeps dark text/fills paired with their own theme.
+        ' twinBASIC supplies the root form BackColor as ambient even inside a page.
+        clear = ColorFromArgb(UI3TabMetrics.HeaderBackground())
         m_Target.BeginDraw
         m_Target.Clear clear
         UI3TabMetrics.FillBox m_Target, 0, UI3TabMetrics.ContentTop, w, h - UI3TabMetrics.ContentTop, UI3TabMetrics.PageBackground()

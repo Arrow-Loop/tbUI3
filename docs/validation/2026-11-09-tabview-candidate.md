@@ -1,5 +1,25 @@
 # TabView candidate validation, 2026-11-09
 
+Current candidate: **1.0.0.62**. The initial 1.0.0.61 evidence is retained below as history.
+
+## 1.0.0.62 screenshot follow-up
+
+Shane's attached BETA 1043 win32 screenshot shows the tab/page controls and add-in toolbar loaded. The visible issues are low header contrast and custom captions at Page/Button defaults. The screenshot's selection-rejection messages predate its current display and are not treated as proof of a current ownership failure.
+
+Source inspection confirms ActiveXExtender.AmbientBackColor returns the root form BackColor, even for controls inside custom pages. The new header draws a matching solid-base surface; UI3FormTheme now applies its managed designer background without runtime subclasses. The fresh harness contains that helper.
+
+The adapter now waits for compiler-assigned page IDs and uses native setters for caption/order, with the final undo checkpoint after configuration. The marked fixture initializes native properties once, while runtime code explicitly sets the same intended values. No guessed PropertyBag wire encoding is introduced.
+
+Validation: 20 adapter/contract checks passed; all 66 mirrors match; all three packed projects exported successfully with the official tool, and its exported contents match the mirrors. The correction's actual IDE outcome remains to be observed.
+
+| Current project | SHA-256 |
+| --- | --- |
+| `tbUI3/tbUI3.twinproj` | `0116ebc95ac87bc66901bb83810cf419ee86a521b74052f2c44c5820ee29f76f` |
+| `tbUI3Test/tbUI3Test.twinproj` | `2c4fe467b866215749247616f7d85d183afa86334f611c8a049705d2bb687cce` |
+| `tbIDE/TabViewDesigner/TabViewDesigner.twinproj` | `40edafaca6e84ed75326f86e1262f5a04be269cddd75f6e846b3cf0c6def0262` |
+
+## Historical 1.0.0.61 record
+
 Candidate: tbUI3 1.0.0.61. This record supersedes the unverified earlier chat status.
 
 ## Executed checks
@@ -30,3 +50,5 @@ Candidate: tbUI3 1.0.0.61. This record supersedes the unverified earlier chat st
 No real IDE first-open, compiler, runtime or full editing-loop result is recorded for this candidate. The next gate is the actual add/switch/drop/Properties/resize/save/reopen/delete/reorder/undo workflow, then runtime ownership/keyboard and final win64 smoke. WinUI visual-state, accessibility, high-contrast and overflow-button work remains in ROADMAP.md. Do not promote source/fixture results to those categories.
 
 The starting package/test-project snapshots came from tbui3-dev `18ab64f4f08543bb60dde6163b98f78bcbe95479`. Concurrent styling commit `312eebe0b3a7335d01ee7dae5b56c5235442bac7` is preserved; the shared tbIDE changelog was reconciled with its additions.
+
+

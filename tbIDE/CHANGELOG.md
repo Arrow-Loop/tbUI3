@@ -1,5 +1,22 @@
 # Changelog: tbIDE (WinUI 3 look for the twinBASIC IDE)
 
+## 2026-11-09: toolbar as a WinUI CommandBar with Fluent icons
+
+Shane: the toolbar "needs to be restyled to look like whatever WinUI3's version of a Ribbon is and replace all the icons with their Fluent equivalents where possible." WinUI 3 has no Ribbon control (the Community Toolkit Labs Ribbon is experimental); its command surface is CommandBar, so the toolbar follows CommandBar, AppBarButton, AppBarToggleButton and AppBarSeparator (`CommandBar_themeresources.xaml`, `AppBarButton_themeresources.xaml`, reference `.command-bar`, `.appbar-button`, `.appbar-separator`).
+
+Added (add-in; the toolbar's icon images and filters are hard-coded in `styles.css`, so no theme property reaches them)
+- Every built-in toolbar button is an AppBarButton with collapsed label: 40px tall, 36px wide, 16px icon, a 4px-corner hover plate inset 6px 2px (`AppBarButtonInnerBorderMargin`), `SubtleFillColorSecondary` hover, `SubtleFillColorTertiary` press, `TextFillColorDisabled` when disabled. The IDE's image and colour filters are cleared.
+- 31 icons replaced with Fluent UI System Icons (MIT, Microsoft), drawn as masks in the text colour. Run is `SystemFillColorSuccess` green and Stop `SystemFillColorCritical` red while enabled.
+- The grid toggle is an AppBarToggleButton: accent fill with on-accent icon when on, instead of a white outline.
+- Separators are 1px `DividerStrokeColorDefault` lines with 8px vertical margins. The two drop-downs are 32px ComboBoxes. Preview is a labelled AppBarButton.
+- Buttons that other add-ins put on the toolbar (`addinButton-*`) keep their own image or caption and get only the shape, size and hover states.
+- The toolbar panel's header padding is removed so the bar is 40px tall.
+- New `tools/build-toolbar-icons.mjs` maps toolbar ids to Fluent icons and writes `css/winui3-ide-icons.css`; the 31 SVGs and Microsoft's MIT licence are in `WinUI3IdeStyle/icons/fluent/`. `build-addin-css.mjs` now reads both .css files.
+- 173 rules, 45,911 characters.
+
+Validated
+- Chromium with 1043's `styles.css`, `formDesigner.css`, `codicon.css`, the toolbar markup from `main.htm` inside a panel header, both theme variable sets and a text-only add-in button: 173 of 173 rules parsed, every icon's mask resolves, the bar is 40px tall and one row at 1640px wide (it needs about 1530px; the IDE's own icons needed about 1160px, and narrower windows wrap to a second row as before). `twinproj-src.mjs compare` reports every entry the same. Not yet checked in the real IDE.
+
 ## 2026-11-09: New / Open Project dialog as a NavigationView
 
 Shane: the New / Open dialog "needs to look like a NavigationView".

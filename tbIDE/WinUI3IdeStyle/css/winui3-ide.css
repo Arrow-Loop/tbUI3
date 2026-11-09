@@ -54,6 +54,8 @@ body.darkMode {
   --combo-chevron: url('data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 width=%2712%27 height=%2712%27 viewBox=%270 0 12 12%27%3E%3Cpath d=%27M2.5 4.5 6 8l3.5-3.5%27 fill=%27none%27 stroke=%27%23ffffffc5%27 stroke-width=%271%27 stroke-linecap=%27round%27 stroke-linejoin=%27round%27/%3E%3C/svg%3E'); /* ComboBox DropDownGlyph E70D, TextFillColorSecondary */
   --brush-control-elevation: linear-gradient(to bottom, var(--color-control-border-bottom) 0 1px, var(--color-control-border) 3px); /* ControlElevationBorderBrush, dark */
   --brush-accent-elevation: linear-gradient(to top, var(--color-accent-border-bottom) 0 1px, var(--color-accent-border) 3px); /* AccentControlElevationBorderBrush */
+  --color-success: #6ccb5f;               /* SystemFillColorSuccess */
+  --color-critical: #ff99a4;              /* SystemFillColorCritical */
 }
 
 body:not(.darkMode) {
@@ -93,6 +95,8 @@ body:not(.darkMode) {
   --combo-chevron: url('data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 width=%2712%27 height=%2712%27 viewBox=%270 0 12 12%27%3E%3Cpath d=%27M2.5 4.5 6 8l3.5-3.5%27 fill=%27none%27 stroke=%27%230000009e%27 stroke-width=%271%27 stroke-linecap=%27round%27 stroke-linejoin=%27round%27/%3E%3C/svg%3E');
   --brush-control-elevation: linear-gradient(to top, var(--color-control-border-bottom) 0 1px, var(--color-control-border) 3px);
   --brush-accent-elevation: linear-gradient(to top, var(--color-accent-border-bottom) 0 1px, var(--color-accent-border) 3px);
+  --color-success: #0f7b0f;
+  --color-critical: #c42b1c;
 }
 
 /* ---------- Dialog buttons: WinUI Button (reference .button and .button--primary) ----------
@@ -331,3 +335,43 @@ body #fp2root .fp2-rowX { width: 24px; height: 24px; border: 0; border-radius: 4
 body #fp2root .fp2-rowX:hover { background: var(--color-neutral-hover); color: var(--color-text); }
 body #fp2root .fp2-searchGroupTitle { margin: 0 0 8px 0; font-size: 14px; font-weight: 600; letter-spacing: 0; text-transform: none; opacity: 1; }
 body #fp2root .fp2-mark { background: transparent; color: var(--color-accent); font-weight: 600; }
+
+/* ---------- Toolbar: CommandBar with AppBarButton, AppBarToggleButton and AppBarSeparator ----------
+   WinUI 3 has no Ribbon; its command surface is CommandBar (CommandBar_themeresources.xaml,
+   AppBarButton_themeresources.xaml, reference .command-bar / .appbar-button / .appbar-separator).
+   Buttons use DefaultLabelPosition=Collapsed: 16px icon, InnerBorderMargin 2,6,2,6 for the hover plate.
+   The bar is 40px tall (the compact viewbox margin 0,12,0,12 around the 16px icon) rather than the 48px
+   AppBarThemeCompactHeight, and buttons are 36px wide rather than 68px, because the IDE has about 30
+   commands and no overflow menu: at WinUI's full size the row would wrap on most screens.
+   Add-in buttons (id addinButton-*) keep their own image or caption and only get the shape and states.
+   The IDE draws each icon as a background image with a CSS filter. Both are cleared here and the icon
+   is drawn by ::after as a mask filled with the text colour. The masks are Fluent UI System Icons
+   (MIT, Microsoft), set per button in winui3-ide-icons.css, which tools/build-toolbar-icons.mjs writes. */
+body .sectionHeader:has(> #rootMenu2) { padding: 0; }
+body #rootMenu2 { min-height: 40px; margin-bottom: 0; padding-left: 4px; align-items: center; }
+body #rootMenu2 > .icon { position: relative; isolation: isolate; flex: 0 0 auto; align-self: center !important; box-sizing: border-box; height: 40px !important; margin: 0 !important; padding: 0; border: 0; border-radius: 4px; outline: 0; color: var(--color-text); cursor: default; }
+body #rootMenu2 > .icon:not([id^=addinButton-]) { width: 36px !important; background: transparent none !important; -webkit-filter: none !important; filter: none !important; font-size: 0; }
+body #rootMenu2 > .icon::before { content: '' !important; position: absolute; inset: 6px 2px; z-index: -1; border-radius: inherit; background: transparent; }
+body #rootMenu2 > .icon:not([id^=addinButton-])::after { content: ''; position: absolute; left: 10px; top: 12px; width: 16px; height: 16px; background: currentColor; -webkit-mask: var(--fluent-icon) center / contain no-repeat; }
+body #rootMenu2 > .icon[id^=addinButton-] { min-width: 36px; background-size: 16px 16px !important; background-position: center !important; background-repeat: no-repeat !important; }
+body #rootMenu2 > .icon[id^=addinButton-].iconTextOnly { width: auto; padding: 0 12px; font-size: 14px; font-weight: 400; line-height: 40px; white-space: nowrap; }
+body #rootMenu2 > .icon:hover::before { background: var(--color-neutral-hover); }
+body #rootMenu2 > .icon:active::before { background: var(--color-neutral-pressed); }
+body #rootMenu2 > .icon:active { color: var(--color-text-muted); }
+body #rootMenu2 > .icon.disabledCommand, body #rootMenu2 > .icon.disabledCommand:hover, body #rootMenu2 > .icon.disabledCommand:active { color: var(--color-text-disabled); }
+body #rootMenu2 > .icon.disabledCommand::before { background: transparent !important; }
+body #rootMenu2 > #playIcon:not(.disabledCommand) { color: var(--color-success); }
+body #rootMenu2 > #stopIcon:not(.disabledCommand) { color: var(--color-critical); }
+body #rootMenu2 > .icon.menuBarToggleOn { color: var(--color-accent-text); background-color: transparent; outline: 0; }
+body #rootMenu2 > .icon.menuBarToggleOn::before { background: var(--color-accent); }
+body #rootMenu2 > .icon.menuBarToggleOn:hover::before { background: var(--color-accent-hover); }
+body #rootMenu2 > .icon.menuBarToggleOn:active::before { background: var(--color-accent-pressed); }
+body #rootMenu2 > .icon.menuBarToggleOn:active { color: var(--color-accent-text-pressed); }
+body #rootMenu2 > .icon.menuBarToggleOn.disabledCommand { color: var(--color-accent-text-disabled); }
+body #rootMenu2 > .icon.menuBarToggleOn.disabledCommand::before { background: var(--color-accent-disabled) !important; }
+body #rootMenu2 > .toolbarSplitter { flex: 0 0 auto; align-self: stretch; width: 1px; margin: 8px 2px; border-radius: 0.5px; background: var(--color-divider); }
+body #rootMenu2 > select { align-self: center; height: 32px; margin: 0 4px; border-radius: 4px; }
+body #rootMenu2 > #menuBarPreview { width: auto !important; padding: 0 12px 0 36px; font-size: 14px; line-height: 40px; white-space: nowrap; }
+body #rootMenu2 > #menuBarPreview > .previewButtonArrow { display: none; }
+body #rootMenu2 > #menuBarPreview > span { font-size: 14px; font-weight: 400; }
+body #rootMenu2 > #menuBarPreview.disabledCommand { color: var(--color-critical); }

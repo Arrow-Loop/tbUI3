@@ -1,5 +1,16 @@
 # Changelog: tbIDE (WinUI 3 look for the twinBASIC IDE)
 
+## 2026-11-09: references tables, Shane's first look in 1043
+
+Shane in 1043: "almost perfect". Left over: the Use ActiveX Controls tick boxes were still the IDE's, the ActiveX Fusion Mode drop-down ran into the Fusion: Async Events column, and the Available lists' unloaded symbols showed as bold blue "...".
+
+Fixed (add-in)
+- Every tick box in a references row (not only the Enabled column) is the WinUI CheckBox.
+- The Fusion Mode drop-down is a 144px ComboBox centred in its 160px column, and the Async Events check box and its header share a 160px column.
+- The click-to-load "..." symbol is an accent HyperlinkButton (the IDE's generic .clickable is bold blue).
+
+Validated: Chromium mock with the fusion columns and an Available row (271 of 271 rules parsed). Not yet checked in the real IDE.
+
 ## 2026-11-09: Library References tables and Compiler Warnings list
 
 Shane's screenshots of Project Settings: the references tables still had the IDE's grey grid look, and the Compiler Warnings drop-downs ran into the descriptions.

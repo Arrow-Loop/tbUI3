@@ -1,5 +1,19 @@
 # Changelog: tbIDE (WinUI 3 look for the twinBASIC IDE)
 
+## 2026-11-09: BETA 1043
+
+Changed
+- Both themes target BETA 1043 (Dark 232 properties, Light 227). Added 1043's three new properties: `DialogImportListHoverBackColor` and `DialogImportListHoverForeColor` (the import dialog's list hover, WinUI ListViewItem `SubtleFillColorSecondary` hover with `TextFillColorPrimary` text) and `DialogTickForeColor` (dialog check marks, `TextFillColorPrimary`). Without them WinUI3 Dark inherited black check marks and a near-white hover with black text on its dark dialogs.
+- Removed `FrontPageListBackground`, which no BETA since 1033 uses.
+
+Findings (BETA 1043's `ide/` against 1033's)
+- 1043 adds those three properties and removes none. `applyThemeData` is unchanged. `formDesigner.css`, `configEditor.css` and `main.htm` are unchanged.
+- Every selector the add-in targets is still in `styles.css`, and the tool window and property-walking code it relies on (`createToolWindowById`, shadow root, `toolWindowElementGetProperty`, `toolWindowElementSetProperty`) and add-in loading on project open are still in `main.js`.
+
+Validated
+- Both files parse with 1043's `applyThemeData` (copied): no dropped lines of ours. Every value passes Chromium's `CSS.supports` for its property against 1043's stylesheets, apart from the same main.js-only properties and indent-guide colours as before.
+- Not yet tested inside the IDE.
+
 ## 2026-11-09: add-in logs when it loads
 
 Changed

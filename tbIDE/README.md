@@ -5,12 +5,12 @@ This folder makes the twinBASIC IDE itself look like a WinUI 3 app. It has two p
 - Two IDE themes, **WinUI3 Dark** and **WinUI3 Light**, which set the IDE's colours, corners and borders through its own theme system.
 - **WinUI3 IDE Style**, an optional IDE add-in written in twinBASIC, which reshapes what the themes cannot reach (the parts the IDE's stylesheet hard-codes). The themes work on their own; the add-in only adds to them.
 
-Both are built and checked against twinBASIC **BETA 1033**. The themes need 1033 or later: older builds ignore the new dialog and panel properties, so dialogs stay in the IDE's defaults and panels lose their gaps.
+Both are built for twinBASIC **BETA 1043** and checked against 1033 and 1043 (the add-in's stylesheet rules and the IDE plumbing it uses are unchanged between the two). The themes need 1033 or later: older builds ignore the new dialog and panel properties, so dialogs stay in the IDE's defaults and panels lose their gaps.
 
 | Path | Contents |
 | --- | --- |
-| `themes/WinUI3 Dark.theme` | Inherits the IDE's Dark theme and overrides 228 properties |
-| `themes/WinUI3 Light.theme` | Inherits the IDE's Light theme and overrides 225 properties |
+| `themes/WinUI3 Dark.theme` | Inherits the IDE's Dark theme and overrides 232 properties |
+| `themes/WinUI3 Light.theme` | Inherits the IDE's Light theme and overrides 227 properties |
 | `tools/build-themes.mjs` | Generates both theme files. Change colours there and rerun `node tools/build-themes.mjs themes` from this folder, rather than editing the .theme files by hand |
 | `WinUI3IdeStyle/WinUI3IdeStyle.twinproj` | The add-in project (Standard DLL referencing the IDE Extensibility Package) |
 | `WinUI3IdeStyle/src/` | Plain-text mirror of the add-in project |
@@ -27,7 +27,7 @@ The layout follows WinUI Gallery:
 - Docked panels, including the code editor area, are rounded cards (8px corners) on a lighter layer (#282828 dark, #F9F9F9 light), with 4px gaps between them.
 - Dialogs follow WinUI's ContentDialog: 8px corners, a content area, a darker or greyer button bar, 4px-rounded buttons with a focus ring, and an accent line under the selected tab.
 
-## How twinBASIC themes work (verified in BETA 1015 and 1033)
+## How twinBASIC themes work (verified in BETA 1015, 1033 and 1043)
 
 - A theme is a `.theme` text file of `Name: value;` lines. `inherits: dark;` or `inherits: light;` at the top pulls in a built-in theme first.
 - The IDE turns each property into a CSS variable (`Name` becomes `--themeName`) that its stylesheets use (`ide/styles.css`, `ide/formDesigner.css`, `ide/configEditor.css`, and some CSS built inside `ide/main.js`, such as the new front page). A value ending in `!important` is set as important.
@@ -105,7 +105,7 @@ If the Debug Console shows `could not apply the stylesheet:` or nothing at all, 
 
 ## Known limits
 
-The IDE still hard-codes some colours in BETA 1033, so no theme can change them. The add-in covers the dialog button hover, the progress bar and the menu bar hover; the rest is on the roadmap for it:
+The IDE still hard-codes some colours in BETA 1043, so no theme can change them. The add-in covers the dialog button hover, the progress bar and the menu bar hover; the rest is on the roadmap for it:
 
 - Context menu text is fixed black, and the code navigation drop-downs have fixed dark text, so both stay light in WinUI3 Dark.
 - The title text and caption buttons, and the dialog title text, are fixed white, so WinUI3 Light uses an accent-blue title bar and dialog header instead of WinUI's light ones.

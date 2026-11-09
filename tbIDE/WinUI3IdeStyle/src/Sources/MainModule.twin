@@ -42,7 +42,8 @@ Private Class WinUI3IdeStyleAddin
     End Sub
 
     Private Sub Host_OnChangedTheme(ByVal ThemeName As String)
-        ApplyForTheme ThemeName
+        ' ThemeName is only the theme group ("dark" or "light"), so ask for the theme itself.
+        ApplyForActiveTheme
     End Sub
 
     Private Sub ApplyForActiveTheme()

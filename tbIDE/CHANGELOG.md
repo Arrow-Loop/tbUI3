@@ -1,5 +1,13 @@
 # Changelog: tbIDE (WinUI 3 look for the twinBASIC IDE)
 
+## 2026-11-09: add-in reads the theme name on theme changes
+
+Fixed
+- `Host_OnChangedTheme` receives only the theme group (`dark` or `light`; 1043's `notifyChangedTheme` sends `getBaseThemeName()`), so switching to WinUI3 Dark logged `theme is dark` and never applied the stylesheet. The add-in now ignores that argument and reads `Host.Themes.ActiveThemeName`.
+
+Validated
+- Shane's log after switching to Dark showed `stylesheet removed`, which only happens after the stylesheet element was added, so injecting the stylesheet into the IDE page works on BETA 1043 (win32).
+
 ## 2026-11-09: add-in matches the theme name without case
 
 Fixed

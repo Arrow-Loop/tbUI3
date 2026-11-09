@@ -5,7 +5,7 @@ Module WinUI3IdeCss
 
     ' Number of rules Build() returns. The add-in's log compares it with what the browser parsed.
     Public Function RuleCount() As Long
-        Return 271
+        Return 288
     End Function
 
     Public Function Build() As String
@@ -268,7 +268,9 @@ Module WinUI3IdeCss
         css = css & "body { --chevron-up-mask: url('data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 12 12%27%3E%3Cpath d=%27M2.5 7.5 6 4l3.5 3.5%27 fill=%27none%27 strok"
         css = css & "e=%27%23000%27 stroke-width=%271.2%27 stroke-linecap=%27round%27 stroke-linejoin=%27round%27/%3E%3C/svg%3E'); "
         css = css & "--chevron-down-mask: url('data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 12 12%27%3E%3Cpath d=%27M2.5 4.5 6 8l3.5-3.5%27 fill=%27none%27 stroke=%27"
-        css = css & "%23000%27 stroke-width=%271.2%27 stroke-linecap=%27round%27 stroke-linejoin=%27round%27/%3E%3C/svg%3E'); }" & vbCrLf
+        css = css & "%23000%27 stroke-width=%271.2%27 stroke-linecap=%27round%27 stroke-linejoin=%27round%27/%3E%3C/svg%3E'); "
+        css = css & "--chevron-right-mask: url('data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 12 12%27%3E%3Cpath d=%27M4.5 2.5 8 6 4.5 9.5%27 fill=%27none%27 stroke=%2"
+        css = css & "7%23000%27 stroke-width=%271.2%27 stroke-linecap=%27round%27 stroke-linejoin=%27round%27/%3E%3C/svg%3E'); }" & vbCrLf
         css = css & "body .tbps-settingsNav, body .tbis-settingsNav { border-right: 1px solid var(--color-divider); }" & vbCrLf
         css = css & "body .tbps-settingsToolbar, body .tbis-settingsToolbar { padding: 8px 4px 4px; gap: 4px; }" & vbCrLf
         css = css & "body .tbps-settingsSearch, body .tbis-settingsSearch, body input.tbps-warningsFilter, body input.referencesSearchBox { min-height: 32px; padding: 5px 10px 6px 10px; "
@@ -409,6 +411,26 @@ Module WinUI3IdeCss
         css = css & "body .tbps-warningRow:hover { background: var(--color-neutral-hover); }" & vbCrLf
         css = css & "body select.tbps-warningState { width: 100%; min-width: 0; padding: 5px 28px 6px 11px !important; }" & vbCrLf
         css = css & "body .tbps-warningDesc { color: var(--color-text); font-size: 14px; line-height: 20px; }" & vbCrLf
+        css = css & "body .sectionHeader { min-height: 40px; box-sizing: border-box; }" & vbCrLf
+        css = css & "body .sectionHeaderInner { padding-left: 2px; }" & vbCrLf
+        css = css & "body .sectionHeader .gripIcon { opacity: 0.6; }" & vbCrLf
+        css = css & "body .sectionHeader .panelHeaderIcon { position: relative; display: inline-flex; align-items: center; justify-content: center; box-sizing: border-box; width: 28px; height: 28px; "
+        css = css & "margin: 0 0 0 2px; padding: 0 !important; border: 0; border-radius: 4px; outline: 0; opacity: 1; color: var(--color-text-muted); font-size: 16px !important; line-height: 28px; "
+        css = css & "background-position: center; background-size: 16px; background-repeat: no-repeat; }" & vbCrLf
+        css = css & "body .sectionHeader .panelHeaderIcon.codicon, body .sectionHeader .azIconButton { -webkit-filter: none; filter: none; }" & vbCrLf
+        css = css & "body .sectionHeader .azIconButton { font-size: 13px !important; font-weight: 600; }" & vbCrLf
+        css = css & "body .sectionHeader .panelHeaderIcon:hover { outline: 0; border-radius: 4px; background-color: var(--color-neutral-hover); color: var(--color-text); }" & vbCrLf
+        css = css & "body .sectionHeader .panelHeaderIcon.codicon:hover, body .sectionHeader .azIconButton:hover { -webkit-filter: none; filter: none; }" & vbCrLf
+        css = css & "body .sectionHeader .panelHeaderIcon:active { background-color: var(--color-neutral-pressed); color: var(--color-text-muted); }" & vbCrLf
+        css = css & "body .sectionHeader .panelToggleButtonOn { background-color: var(--color-neutral-selected); }" & vbCrLf
+        css = css & "body .sectionHeader .codicon-close::before { left: 50%; }" & vbCrLf
+        css = css & "body .sectionHeader .codicon-close { color: var(--color-text-muted); }" & vbCrLf
+        css = css & "body .treeItemInner:not(.treeItemGridLines) { min-height: 28px; box-sizing: border-box; margin: 1px 4px; padding-top: 2px; padding-bottom: 2px; border-radius: 4px; }" & vbCrLf
+        css = css & "body .treeItemInner:hover { color: inherit; }" & vbCrLf
+        css = css & "body .treeItemInner:not(.treeItemGridLines):active { background-color: var(--color-neutral-pressed); }" & vbCrLf
+        css = css & "body .treeNodeIcon.iconExpand14, body .treeNodeIcon.iconCollapse14 { align-self: center; width: 16px; height: 16px; margin: 0 4px 0 0; border-radius: 0; "
+        css = css & "background: var(--color-text-muted) !important; -webkit-filter: none; filter: none; -webkit-mask: var(--chevron-down-mask) center / 12px 12px no-repeat; }" & vbCrLf
+        css = css & "body .treeNodeIcon.iconExpand14 { -webkit-mask-image: var(--chevron-right-mask); }" & vbCrLf
         css = css & "body #rootMenu2 > #saveIcon { --fluent-icon: url('data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 width=%2716%27 height=%2716%27 viewBox=%270 0 16 16%27%3E%3Cpath "
         css = css & "d=%27M4 3a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1V9.5C4 8.67 4.67 8 5.5 8h5c.83 0 1.5.67 1.5 1.5V13a1 1 0 0 0 1-1V5.62a1 1 0 0 0-.3-.7L11.1 3.28a1 1 0 0 0-.71-.29H10v1.5C10 5.33 9.33 6 8.5 6"
         css = css & "h-2A1.5 1.5 0 0 1 5 4.5V3zm2 0v1.5c0 .28.22.5.5.5h2a.5.5 0 0 0 .5-.5V3zm5 10V9.5a.5.5 0 0 0-.5-.5h-5a.5.5 0 0 0-.5.5V13zM2 4c0-1.1.9-2 2-2h6.38a2 2 0 0 1 1.41.59l1.62 1.62A2 2 0 0 "

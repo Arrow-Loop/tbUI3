@@ -417,7 +417,7 @@ body #rootMenu2 > #menuBarPreview.disabledCommand { background-color: transparen
    cannot be a two-state switch: it becomes a horizontal RadioButtons group (reference .choice radio: 20px circle,
    accent fill and a 12px dot when selected, 14px on hover, 10px pressed). Shane found a Segmented control
    looked wrong. Number fields become a NumberBox with inline spin buttons; the references tabs a SelectorBar. */
-body { --chevron-up-mask: url('data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 12 12%27%3E%3Cpath d=%27M2.5 7.5 6 4l3.5 3.5%27 fill=%27none%27 stroke=%27%23000%27 stroke-width=%271.2%27 stroke-linecap=%27round%27 stroke-linejoin=%27round%27/%3E%3C/svg%3E'); --chevron-down-mask: url('data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 12 12%27%3E%3Cpath d=%27M2.5 4.5 6 8l3.5-3.5%27 fill=%27none%27 stroke=%27%23000%27 stroke-width=%271.2%27 stroke-linecap=%27round%27 stroke-linejoin=%27round%27/%3E%3C/svg%3E'); }
+body { --chevron-up-mask: url('data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 12 12%27%3E%3Cpath d=%27M2.5 7.5 6 4l3.5 3.5%27 fill=%27none%27 stroke=%27%23000%27 stroke-width=%271.2%27 stroke-linecap=%27round%27 stroke-linejoin=%27round%27/%3E%3C/svg%3E'); --chevron-down-mask: url('data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 12 12%27%3E%3Cpath d=%27M2.5 4.5 6 8l3.5-3.5%27 fill=%27none%27 stroke=%27%23000%27 stroke-width=%271.2%27 stroke-linecap=%27round%27 stroke-linejoin=%27round%27/%3E%3C/svg%3E'); --chevron-right-mask: url('data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 12 12%27%3E%3Cpath d=%27M4.5 2.5 8 6 4.5 9.5%27 fill=%27none%27 stroke=%27%23000%27 stroke-width=%271.2%27 stroke-linecap=%27round%27 stroke-linejoin=%27round%27/%3E%3C/svg%3E'); }
 body .tbps-settingsNav, body .tbis-settingsNav { border-right: 1px solid var(--color-divider); }
 body .tbps-settingsToolbar, body .tbis-settingsToolbar { padding: 8px 4px 4px; gap: 4px; }
 body .tbps-settingsSearch, body .tbis-settingsSearch, body input.tbps-warningsFilter, body input.referencesSearchBox { min-height: 32px; padding: 5px 10px 6px 10px; border: 1px solid var(--color-control-border) !important; border-bottom-color: var(--color-border-strong) !important; border-radius: 4px; background: var(--color-control) padding-box !important; box-shadow: none; color: var(--color-text) !important; font: 14px/19px 'Segoe UI Variable Text', 'Segoe UI Variable', 'Segoe UI', sans-serif; }
@@ -532,3 +532,29 @@ body .tbps-warningRow:last-child { border-bottom: 0; }
 body .tbps-warningRow:hover { background: var(--color-neutral-hover); }
 body select.tbps-warningState { width: 100%; min-width: 0; padding: 5px 28px 6px 11px !important; }
 body .tbps-warningDesc { color: var(--color-text); font-size: 14px; line-height: 20px; }
+
+/* ---------- Panels: pane headers with subtle command buttons; trees as TreeView ----------
+   Header colours, text size (14px, BodyStrong) and padding come from the theme (PanelHeader*). Here: the header's
+   command buttons (codicons and a few images) become 28px subtle buttons (WinUI AppBarButton in a pane header: no
+   fill at rest, SubtleFillColorSecondary on hover, 4px corners, secondary text colour), instead of faded 16px glyphs
+   with a white outline on hover. Trees (Project Explorer and the other tree panels) follow the reference .tree-view:
+   rows inset 4px with 4px corners, the theme's hover and selected fills, text that keeps its colour on hover (the
+   IDE turns it white, which vanished in WinUI3 Light), and chevrons instead of plus / minus boxes. Indents stay the
+   IDE's (inline padding per level). Trees with grid lines (call stack) keep their full-width rows. */
+body .sectionHeader { min-height: 40px; box-sizing: border-box; }
+body .sectionHeaderInner { padding-left: 2px; }
+body .sectionHeader .gripIcon { opacity: 0.6; }
+body .sectionHeader .panelHeaderIcon { position: relative; display: inline-flex; align-items: center; justify-content: center; box-sizing: border-box; width: 28px; height: 28px; margin: 0 0 0 2px; padding: 0 !important; border: 0; border-radius: 4px; outline: 0; opacity: 1; color: var(--color-text-muted); font-size: 16px !important; line-height: 28px; background-position: center; background-size: 16px; background-repeat: no-repeat; }
+body .sectionHeader .panelHeaderIcon.codicon, body .sectionHeader .azIconButton { -webkit-filter: none; filter: none; }
+body .sectionHeader .azIconButton { font-size: 13px !important; font-weight: 600; }
+body .sectionHeader .panelHeaderIcon:hover { outline: 0; border-radius: 4px; background-color: var(--color-neutral-hover); color: var(--color-text); }
+body .sectionHeader .panelHeaderIcon.codicon:hover, body .sectionHeader .azIconButton:hover { -webkit-filter: none; filter: none; }
+body .sectionHeader .panelHeaderIcon:active { background-color: var(--color-neutral-pressed); color: var(--color-text-muted); }
+body .sectionHeader .panelToggleButtonOn { background-color: var(--color-neutral-selected); }
+body .sectionHeader .codicon-close::before { left: 50%; }
+body .sectionHeader .codicon-close { color: var(--color-text-muted); }
+body .treeItemInner:not(.treeItemGridLines) { min-height: 28px; box-sizing: border-box; margin: 1px 4px; padding-top: 2px; padding-bottom: 2px; border-radius: 4px; }
+body .treeItemInner:hover { color: inherit; }
+body .treeItemInner:not(.treeItemGridLines):active { background-color: var(--color-neutral-pressed); }
+body .treeNodeIcon.iconExpand14, body .treeNodeIcon.iconCollapse14 { align-self: center; width: 16px; height: 16px; margin: 0 4px 0 0; border-radius: 0; background: var(--color-text-muted) !important; -webkit-filter: none; filter: none; -webkit-mask: var(--chevron-down-mask) center / 12px 12px no-repeat; }
+body .treeNodeIcon.iconExpand14 { -webkit-mask-image: var(--chevron-right-mask); }

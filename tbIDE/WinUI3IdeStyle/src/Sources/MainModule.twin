@@ -25,8 +25,8 @@ Private Class WinUI3IdeStyleAddin
 
     Public Sub New(ByVal Host As Host)
         Set Me.Host = Host
-        Log "loaded"
-        ApplyForActiveTheme
+        Log "loaded: " & Architecture() & ", IDE compiler " & SafeCompilerVersion()
+        ApplyForActiveTheme "start-up"
     End Sub
 
     Private Sub Class_Terminate()
@@ -38,56 +38,75 @@ Private Class WinUI3IdeStyleAddin
     End Property
 
     Private Sub Host_OnProjectLoaded()
-        ApplyForActiveTheme
+        ApplyForActiveTheme "project loaded"
     End Sub
 
     Private Sub Host_OnChangedTheme(ByVal ThemeName As String)
         ' ThemeName is only the theme group ("dark" or "light"), so ask for the theme itself.
-        ApplyForActiveTheme
+        ApplyForActiveTheme "theme changed (event says " & ThemeName & ")"
     End Sub
 
-    Private Sub ApplyForActiveTheme()
+    Private Sub ApplyForActiveTheme(ByVal Reason As String)
         On Error GoTo Failed
-        ApplyForTheme Host.Themes.ActiveThemeName
+        Dim activeName As String = Host.Themes.ActiveThemeName
+        Log Reason & ": theme is " & activeName & ", group " & Host.Themes.ActiveThemeNameGroup
+        ApplyForTheme activeName
         Exit Sub
     Failed:
-        Log "could not read the active theme: " & Err.Description
+        Log Reason & ": could not read the active theme: " & ErrorText()
     End Sub
 
     Private Sub ApplyForTheme(ByVal ThemeName As String)
-        Log "theme is " & ThemeName
         ' The IDE reports theme names in lower case ("winui3 dark"), so compare without case.
         If StrComp(Left$(ThemeName, Len(ThemePrefix)), ThemePrefix, vbTextCompare) = 0 Then
             ApplyStyle ThemeName
         Else
-            ClearStyle
+            If IsApplied Then
+                ClearStyle
+            Else
+                Log "not a WinUI3 theme, nothing to do"
+            End If
         End If
     End Sub
 
     Private Sub ApplyStyle(ByVal ThemeName As String)
+        Dim stepName As String
         On Error GoTo Failed
         If StyleWindow Is Nothing Then
             ' Tool windows start invisible, and this one stays that way.
+            stepName = "creating the hidden tool window"
             Set StyleWindow = Host.ToolWindows.Add("WinUI3IdeStyle", "WinUI3IdeStyleHost")
             StyleWindow.Title = "WinUI3 IDE Style"
+            Log "created the hidden tool window"
         End If
 
+        stepName = "building the stylesheet"
         Dim css As String = WinUI3IdeCss.Build()
-        If Not SetStyleText(css) Then
+        stepName = "updating the style element"
+        If SetStyleText(css) Then
+            Log "updated the existing style element"
+        Else
             ' First use in this IDE session: add the element, then it can be refilled or emptied.
+            stepName = "adding the style element to the IDE page"
             StyleWindow.RootDomElement.Properties.ownerDocument.head.insertAdjacentHTML("beforeend", "<style id=" & StyleElementId & ">" & css & "</style>")
+            Log "added the style element to the IDE page"
         End If
 
-        If Not IsApplied Then Log "stylesheet applied for " & ThemeName & " (" & Len(css) & " characters)"
         IsApplied = True
+        Log "stylesheet applied for " & ThemeName & " (" & Len(css) & " characters)"
+        LogPageState
         Exit Sub
     Failed:
-        Log "could not apply the stylesheet: " & Err.Description
+        Log "could not apply the stylesheet while " & stepName & ": " & ErrorText()
     End Sub
 
     Private Sub ClearStyle()
         If Not IsApplied Then Exit Sub
-        If SetStyleText("") Then Log "stylesheet removed"
+        If SetStyleText("") Then
+            Log "stylesheet removed"
+        Else
+            Log "could not remove the stylesheet: the style element was not found"
+        End If
         IsApplied = False
     End Sub
 
@@ -99,6 +118,37 @@ Private Class WinUI3IdeStyleAddin
         Return True
     Missing:
         ' Falls through and returns False.
+    End Function
+
+    ' Reads back what the IDE page now holds, so a log shows whether the rules can take effect:
+    ' how many rules the browser parsed, whether the page is in dark mode (the rules are split on
+    ' body.darkMode), and whether another stylesheet was added after ours (it would win ties).
+    Private Sub LogPageState()
+        On Error GoTo Failed
+        Dim parsed As Long = StyleWindow.RootDomElement.Properties.ownerDocument.getElementById(StyleElementId).sheet.cssRules.length
+        Dim isDark As Boolean = StyleWindow.RootDomElement.Properties.ownerDocument.body.classList.contains("darkMode")
+        Dim lastId As String = StyleWindow.RootDomElement.Properties.ownerDocument.head.lastElementChild.id
+        Log "check: " & parsed & " of " & WinUI3IdeCss.RuleCount() & " rules parsed, body.darkMode = " & isDark & ", last element in head = #" & lastId
+        Exit Sub
+    Failed:
+        Log "check failed: " & ErrorText()
+    End Sub
+
+    Private Function Architecture() As String
+        #If Win64 Then
+            Return "win64"
+        #Else
+            Return "win32"
+        #End If
+    End Function
+
+    Private Function SafeCompilerVersion() As String
+        On Error Resume Next
+        SafeCompilerVersion = Host.CompilerVersion
+    End Function
+
+    Private Function ErrorText() As String
+        Return "error " & Err.Number & " (&H" & Hex$(Err.Number) & "): " & Err.Description
     End Function
 
     Private Sub Log(ByVal Text As String)

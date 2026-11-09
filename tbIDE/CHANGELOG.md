@@ -1,5 +1,10 @@
 # Changelog: tbIDE (WinUI 3 look for the twinBASIC IDE)
 
+## 2026-11-09: detailed Debug Console log
+
+Changed
+- The add-in now logs its architecture and the IDE compiler version on load; the reason, theme name and theme group for every check (start-up, project loaded, theme changed, with the event's own value); each step (tool window created, style element added or updated); and, after applying, a read-back from the IDE page: rules parsed out of the expected 18, whether `body.darkMode` is set, and the id of the last element in `<head>`. Failures name the step and the error number. Asked for by Shane.
+
 ## 2026-11-09: add-in reads the theme name on theme changes
 
 Fixed

@@ -83,9 +83,9 @@ This is not a documented use of the add-in API. The official `ToolWindow.ApplyCs
 
 ### Build and install
 
-1. Open `WinUI3IdeStyle/WinUI3IdeStyle.twinproj` in twinBASIC.
+1. Open `WinUI3IdeStyle/WinUI3IdeStyle.twinproj` in twinBASIC. When rebuilding, hold Shift while the project opens: the IDE loads add-ins whenever a project opens, so otherwise the old `WinUI3IdeStyle.dll` is in use and cannot be overwritten.
 2. Build it for win32 and again for win64 (switch the architecture in the toolbar). The build path is the sample's `${IdePath}\addins\${Architecture}\${ProjectName}.${FileExtension}`, so the DLLs land in the IDE's `addins\win32` and `addins\win64` folders.
-3. Restart the IDE so it loads the new DLLs. If the IDE lists add-ins in its options, check WinUI3 IDE Style is enabled there.
+3. Restart the IDE and open any project (add-ins load when a project opens, not at IDE start; holding Shift skips them). If the IDE lists add-ins in its options, check WinUI3 IDE Style is enabled there.
 4. Switch to WinUI3 Dark or WinUI3 Light. The Debug Console should show `[WinUI3 IDE Style] stylesheet applied for WinUI3 Dark (... characters)`.
 5. Save the project in the IDE and export `src/` (see the repository README), so the repository holds the IDE-saved copy.
 

@@ -1,8 +1,16 @@
 # TabView candidate validation, 2026-11-09
 
-Current candidate: **package 1.0.0.64 with adapter v5 (add-in 1.0.0.4)**. Earlier candidate evidence is retained below as history.
+Current candidate: **package 1.0.0.64 with adapter v6 (add-in 1.0.0.5)**. Earlier candidate evidence is retained below as history.
 
-## 1.0.0.64 / adapter v5 repeated-header follow-up
+## Adapter v6 page-lock follow-up, package unchanged at 1.0.0.64
+
+Shane reports the prior correction appears to work, then describes accidental independent page-control movement. Adapter v6 uses the shipped IDE native lock registry for direct UI3TabPage children. The inspected isControlLocked check is local to that control, and the actual mouse drag, keyboard moveControls and resize functions all consult it. The same check does not automatically lock a child or the owning host. deleteControl does not reject a locked page; existing subtree deletion remains intact.
+
+Lock ownership is tracked per designer and DOM node, including rename and node replacement. Pre-existing lock state is retained; session-owned locks are removed when no longer owned by a TabView or on adapter unload/error cleanup. Uses the silent native path, with no geometry property writes or undo checkpoints. Standard IDE Options serialization includes current lockedControls, so saved locks are treated as pre-existing at the next installation; no cross-session ownership guess is made.
+
+Executed: all 34 adapter/contract checks pass with official BETA 1043 main.js. The lock check runs actual shipped lock/unlock, mouse movement, keyboard movement and right-edge resize functions in the test facade, proving their properties remain unchanged for a protected page while host/child geometry can change. Separate checks cover new pages, rename/resync, reparent/subtree deletion, pre-existing locks and cleanup. These are protocol/function checks; native IDE authoring remains a separate outcome. All 68 project mirrors match. Canonical package/test binaries are unchanged. Add-in SHA-256: `e8f9412f7517d191c6e0662154fd581e0a2f460aab74e6275a4db1a404655ffe`.
+
+## Historical 1.0.0.64 / adapter v5 repeated-header follow-up
 
 Shane reports v4 is better, but + on a newly drawn empty TabView appears to create two pages and the second is inaccessible. Enlarging the supplied screenshot shows both headers read Page 2. This supports, but does not establish, a repeated native discovery entry. The last pushed logs predate this screenshot; do not treat them as a capture of this new host.
 

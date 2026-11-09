@@ -2,7 +2,13 @@
 
 Status: integrated 1.0.0.64 implementation candidate, 2026-11-09 (initial integration 1.0.0.61). This is the first recoverable implementation, not a continuation of a previously committed 1.0.0.61. The earlier chat's candidate never reached the repository.
 
-## Repeated header follow-up
+## Managed page geometry in the designer
+
+Adapter v6 (add-in 1.0.0.5) locks direct UI3TabPage children through BETA 1043's native lockTheControl/unlockTheControl path. isControlLocked is consulted by native mouse movement, keyboard moveControls and resizing. It tests the selected control's own lock, so the TabView and contained buttons/text boxes remain independently editable. Page selection, property editing and the existing Delete page path remain available. The native package still owns page geometry on layout.
+
+Locks are applied to existing/new pages and follow rename/resync. Reparenting or deleting a page releases a session-owned lock. Unload/error cleanup restores locks introduced by this adapter session and leaves pre-existing locks alone. Standard IDE Options serialization can save current lock names with the form; the next session treats those saved locks as pre-existing. Protection itself makes no page geometry edits and requests no undo checkpoint. Package 1.0.0.64 is unchanged.
+
+## Historical repeated header follow-up
 
 Current package 1.0.0.64 and adapter v5 (add-in 1.0.0.4) address Shane's report that a freshly drawn empty TabView shows two matching Page 2 headers after +, with the second inaccessible. The screenshot is consistent with a repeated page entry in native discovery; it is not proof of duplicate native object creation. The package now builds and publishes a distinct page list by object identity or nonempty control name. It never deduplicates captions. Page names must be distinct, matching SelectedPage's name-based identity contract; control arrays are outside this candidate's supported identity model.
 

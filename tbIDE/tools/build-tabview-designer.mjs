@@ -9,7 +9,7 @@ const js = fs.readFileSync(dir + '/js/tabview-designer.js', 'utf8').trim();
 const names = ['getCurrentFormEditorGlobals','preparePaste','deserializeControls',
     'prepareForMultipleChangeProperties','handleMultipleChangeProperties','doPaste',
     'getTopLeftOfAllControls','changedSelectedControls','unselectAllControls','changeProperty',
-    'undoPoint','getImageFromServer','queueMultipleSnapshot','syncPropertySheet','deleteSelectedControls','updateAllControlDragPoints'];
+    'undoPoint','getImageFromServer','queueMultipleSnapshot','syncPropertySheet','deleteSelectedControls','updateAllControlDragPoints','lockTheControl','unlockTheControl'];
 const facade = '{document:document,setInterval:setInterval.bind(window),clearInterval:clearInterval.bind(window),' +
     names.map(n => n + ':typeof ' + n + "==='function'?" + n + ':undefined').join(',') + '}';
 const script = "(function(){if(window.__tbUI3TabDesigner)window.__tbUI3TabDesigner.dispose();" +

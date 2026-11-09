@@ -23,7 +23,7 @@ function fixture() {
     const form = new Node({_className:'Form',Name:'Form1'}); form.classList.add('designer');
     const host = form.appendChild(new Node({_className:'tbUI3.UI3TabView',Name:'Tabs1',SelectedPage:'Page1',Width:500,Height:240,Left:20,Top:20}));
     const g = {designer:form,allControls:[host],selectedControls:[host],designerContainerOUTER:{parentNode:{}},
-        pendingChangesCount:0,outstandingSerializationRequests:0,multiChangeNestCount:0,isInFullFormMode:false};
+        pendingChangesCount:0,outstandingSerializationRequests:0,multiChangeNestCount:0,isInFullFormMode:false,lockedControls:[]};
     const calls = { undo:0,edit:0,clipboard:0,move:[],events:new Map(),intervals:new Map() };
     const api = {
         getCurrentFormEditorGlobals:()=>g,
@@ -33,6 +33,8 @@ function fixture() {
         getTopLeftOfAllControls:(g,cs)=>({x:cs[0].properties.Left,y:cs[0].properties.Top}),
         doPaste:(g,n,cs)=>{g.selectedControls=cs;},changedSelectedControls:()=>{},
         unselectAllControls:g=>{g.selectedControls.forEach(c=>{c.isSelected=false;c.classList.remove('baseControlSelected');});g.selectedControls=[];},
+        lockTheControl:(g,n)=>{g.lockedControls=g.lockedControls.filter(x=>x.toLowerCase()!==n.toLowerCase());g.lockedControls.push(n);},
+        unlockTheControl:(g,n)=>{g.lockedControls=g.lockedControls.filter(x=>x.toLowerCase()!==n.toLowerCase());},
         changeProperty:(g,c,k,v)=>{c.properties[k]=v;},undoPoint:()=>calls.undo++,
         getImageFromServer:()=>{},queueMultipleSnapshot:()=>{},syncPropertySheet:()=>{},updateAllControlDragPoints:()=>{},
         deleteSelectedControls:g=>{for(const c of g.selectedControls){g.allControls=g.allControls.filter(x=>!c.contains(x));c.remove();c.isDeleted=true;}g.selectedControls=[form];},
@@ -139,6 +141,7 @@ test('a timer exception restores the native designer rather than leaving invisib
     f.api.getCurrentFormEditorGlobals=()=>{throw Error('IDE contract changed');};
     f.calls.intervals.get(1)();assert(!b.classes.has('tbui3-inactive-page'));assert.equal(f.calls.intervals.size,0);
     assert.match(f.adapter.lastError,/IDE contract changed/);assert.match(f.adapter.run('new'),/Adapter disabled/);
+    assert.equal(f.g.lockedControls.length,0);
 });
 test('narrow hosts keep the selected overflow tab reachable and the add button separate',()=>{
     const f=fixture();f.host.properties.Width=235;
@@ -199,7 +202,7 @@ test('diagnostics reveal rejected class/selection state without changing control
     f.form.properties._className='MyProject.frmMultiPage';f.g.selectedControls=[p];
     const before=JSON.stringify([f.form.properties,f.host.properties,p.properties]);
     const text=f.adapter.run('diagnostics');assert(text.startsWith('DIAGNOSTICS '));
-    const report=JSON.parse(text.slice(12));assert.equal(report.adapter,5);assert.equal(report.consumerAccepted,false);
+    const report=JSON.parse(text.slice(12));assert.equal(report.adapter,6);assert.equal(report.consumerAccepted,false);
     assert.equal(report.form.className,'MyProject.frmMultiPage');assert.equal(report.controls.length,2);
     assert.equal(report.selection[0].name,'Page1');assert.equal(f.calls.undo,0);
     assert.equal(JSON.stringify([f.form.properties,f.host.properties,p.properties]),before);
@@ -297,4 +300,45 @@ test('toolbar hover help explains page deletion and diagnostics, and is restored
     assert.match(buttons.get('addinButton-tbUI3TabDelete').title,/every control it contains/);
     assert.match(buttons.get('addinButton-tbUI3TabDiagnostics').title,/tbUI3-tabview.log/);
     f.adapter.dispose();assert.equal(buttons.get('addinButton-tbUI3TabDelete').title,'tbUI3TabDelete');
+});
+test('page protection preserves child/host editing and restores pre-existing locks on unload',()=>{
+    const f=fixture(),a=f.page('Page1'),b=f.page('Page2',1),child=a.appendChild(new Node({_className:'TextBox',Name:'Text1'}));f.g.allControls.push(child);
+    f.g.lockedControls=['Text1','Page2'];const before=JSON.stringify(f.g.allControls.map(c=>c.properties));
+    f.adapter.install();assert.deepEqual([...f.g.lockedControls].sort(),['Page1','Page2','Text1']);
+    assert(!f.g.lockedControls.includes('Tabs1'));assert.equal(JSON.stringify(f.g.allControls.map(c=>c.properties)),before);assert.equal(f.calls.undo,0);
+    f.adapter.dispose();assert.deepEqual([...f.g.lockedControls].sort(),['Page2','Text1']);
+});
+test('new pages are protected immediately and locks follow rename and native node replacement',()=>{
+    const f=fixture();f.adapter.install();f.adapter.run('new');const page=f.g.allControls.at(-1);
+    assert(f.g.lockedControls.includes(page.properties.Name));
+    // Native rename migrates the existing lock; it remains owned by this adapter.
+    page.properties.Name='RenamedPage';f.g.lockedControls=['RenamedPage'];f.adapter.tick();
+    assert.deepEqual([...f.g.lockedControls],['RenamedPage']);
+    f.g.allControls=f.g.allControls.filter(c=>c!==page);page.remove();f.page('RenamedPage');f.adapter.tick();
+    assert.deepEqual([...f.g.lockedControls],['RenamedPage']);f.adapter.dispose();assert.deepEqual([...f.g.lockedControls],[]);
+});
+test('page protection is released on reparent and page deletion still removes its subtree',()=>{
+    const f=fixture(),p=f.page('Page1'),child=p.appendChild(new Node({_className:'TextBox',Name:'Text1'}));f.g.allControls.push(child);f.adapter.install();
+    assert(f.g.lockedControls.includes('Page1'));p.remove();f.form.appendChild(p);f.adapter.tick();assert(!f.g.lockedControls.includes('Page1'));
+    p.remove();f.host.appendChild(p);f.adapter.tick();assert(f.g.lockedControls.includes('Page1'));
+    f.g.selectedControls=[p];f.adapter.run('delete');f.adapter.tick();
+    assert(!f.g.allControls.includes(p));assert(!f.g.allControls.includes(child));assert(!f.g.lockedControls.includes('Page1'));
+});
+test('shipped IDE drag, keyboard move and resize handlers honor page-only native locks',t=>{
+    const file=process.env.TB_IDE_MAIN_JS;if(!file)return t.skip('Set TB_IDE_MAIN_JS for native lock/drag protocol checks');
+    const ide=fs.readFileSync(file,'utf8'),f=fixture(),p=f.page('Page1'),child=p.appendChild(new Node({_className:'TextBox',Name:'Text1',Left:18,Top:30,Width:80,Height:25}));f.g.allControls.push(child);
+    function extract(name){const start=ide.indexOf('function '+name+'(');assert(start>=0);let pos=start;while((pos=ide.indexOf('}',pos+1))>=0){try{const text=ide.slice(start,pos+1);new vm.Script('('+text+')');return text;}catch{}}throw Error(name);}
+    const noop=()=>{};
+    const sandbox={calculateInclusionCount:(g,cs)=>cs.forEach(c=>{c.InclusionCount=1;}),isRectangularControl:()=>true,
+        syncDesignerControlToProperties:noop,updateAllControlDragPoints:noop,refreshPendingControls:noop,setSelectionDragInfo:noop,
+        syncPropertySheet:noop,syncUserScaledWidthHeight:noop,getImageFromServer:noop,doAnchoringAdjustments:noop,configureMiniToolbar:noop};
+    for(const name of ['isControlLocked','unlockTheControl','lockTheControl','handleMoveDragControlInProgress','handleDraggerRightInProgress','moveControls'])
+        sandbox[name]=vm.runInNewContext('('+extract(name)+')',sandbox);
+    f.api.lockTheControl=sandbox.lockTheControl;f.api.unlockTheControl=sandbox.unlockTheControl;f.g.zoomRatio=1;
+    f.adapter.install();
+    function drag(c){c.LastPositionX=c.properties.Left;c.LastPositionY=c.properties.Top;c.LastPositionWidth=c.properties.Width;f.g.selectedControls=[c];sandbox.handleMoveDragControlInProgress(f.g,10,20);sandbox.handleDraggerRightInProgress(f.g,15,0);sandbox.moveControls(f.g,[c],12,8,true,true);}
+    const before=JSON.stringify(p.properties);drag(p);assert.equal(JSON.stringify(p.properties),before);
+    drag(child);assert.equal(child.properties.Left,40);assert.equal(child.properties.Top,58);assert.equal(child.properties.Width,95);
+    drag(f.host);assert.equal(f.host.properties.Left,42);assert.equal(f.host.properties.Top,48);assert.equal(f.host.properties.Width,515);
+    assert.equal(JSON.stringify(p.properties),before);f.adapter.dispose();assert(!sandbox.isControlLocked(f.g,p));
 });

@@ -2,11 +2,11 @@
 
 ## Current update, 2026-11-09
 
-Current candidate: package 1.0.0.64, TabViewDesigner add-in 1.0.0.4, adapter v5. Shane reports v4 is better, but a newly drawn empty host shows two matching Page 2 headers after +, with the second inaccessible. The screenshot supports a repeated native page entry hypothesis; it does not prove two real controls were inserted. No new log accompanied this screenshot.
+Current candidate: unchanged package 1.0.0.64 plus TabViewDesigner add-in 1.0.0.5, adapter v6. Shane reports the repeated-header correction appears to work, but page controls can be accidentally moved separately from their host. The add-in now uses the native IDE per-control lock for direct page children. The host and page contents remain editable/movable; protection follows page creation, rename and node resync and is released on reparent/deletion.
 
-The native host now publishes a distinct page collection after enumeration, matching object identity or nonempty control name and never matching Caption. Discovery logs raw/unique/duplicate counts and accepted names/object addresses. Adapter diagnostics compare designer page counts/names with native PageCount when provided. The six toolbar buttons have explanatory hover help. Empty hosts intentionally have zero pages until + is clicked. All 30 JS adapter/contract checks and 68 packed-project mirrors pass; native duplicate-enumeration behavior is not exercised by those JS checks. Next native gate is one + gesture on an empty host, real page count, selection, second page and contained controls.
+Pre-existing locks are preserved, and session-owned locks are removed on adapter unload/error cleanup. Normal IDE saving can persist current locks in __IDEOptions; locks already saved when a session starts are treated as pre-existing. The adapter does not change page geometry or create undo checkpoints for locking. All 34 adapter/contract checks pass, including actual shipped mouse drag, keyboard move and resize functions. The native authoring outcome for protection remains the next gate. The package and canonical test project are unchanged by this pass.
 
-The earlier paint/layout and live snapshot corrections remain. Intermittent reference unload/reload deserialization and the host Paint exception at 16:48:01 remain unresolved and separate. Public IDs, the latest saved test form descriptors and unrelated styling are preserved. Read docs/controls/UI3TabView.md and docs/validation/2026-11-09-tabview-candidate.md before extending this work.
+The earlier paint/layout and live snapshot corrections remain. Intermittent reference unload/reload deserialization and the host Paint exception at 16:48:01 remain unresolved and separate. Public IDs and unrelated styling are preserved. Read docs/controls/UI3TabView.md and docs/validation/2026-11-09-tabview-candidate.md before extending this work.
 
 ## Earlier milestone context
 

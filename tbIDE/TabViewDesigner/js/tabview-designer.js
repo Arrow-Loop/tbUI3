@@ -5,14 +5,14 @@
  */
 (function createTabViewDesigner(api) {
     'use strict';
-    const version = 5;
+    const version = 6;
     const hostClass = 'tbui3.ui3tabview', pageClass = 'tbui3.ui3tabpage';
     const pageClsid = '{1681A635-13C8-47F3-B96A-FE8123C9F708}';
     const required = ['getCurrentFormEditorGlobals', 'preparePaste', 'deserializeControls',
         'prepareForMultipleChangeProperties', 'handleMultipleChangeProperties', 'doPaste',
         'getTopLeftOfAllControls', 'changedSelectedControls', 'unselectAllControls',
         'changeProperty', 'undoPoint', 'getImageFromServer', 'queueMultipleSnapshot', 'syncPropertySheet',
-        'deleteSelectedControls', 'updateAllControlDragPoints'];
+        'deleteSelectedControls', 'updateAllControlDragPoints', 'lockTheControl', 'unlockTheControl'];
     const toolbarTitles = new Map();
     const toolbarHelp = {
         tbUI3TabNew: 'Add one page to the selected TabView. Selecting one of its pages or child controls also identifies the TabView.',
@@ -35,6 +35,34 @@
     const touched = new Set(), desires = new WeakMap(), firstHeaders = new WeakMap();
     const requestNumbers = new WeakMap(), selections = new WeakMap();
     const pendingNewPages = new WeakMap();
+    const pageLocks = new Map();
+    function restorePageLock(g, record) {
+        if (!record.preExisting) api.unlockTheControl(g, record.name, true);
+    }
+    function protectPages(g) {
+        if (!Array.isArray(g.lockedControls)) return;
+        let records = pageLocks.get(g);
+        if (!records) { records = new Map(); pageLocks.set(g, records); }
+        const current = new Set(g.allControls.filter(c => !c.isDeleted && kind(c) === pageClass && kind(c.parentElement) === hostClass));
+        // Release old nodes first: a native resync can replace a node under the same name.
+        for (const [page, record] of records) if (!current.has(page)) {
+            restorePageLock(g, record); records.delete(page);
+        }
+        for (const page of current) {
+            const pageName = name(page);
+            if (!pageName) continue;
+            let record = records.get(page);
+            if (!record) {
+                record = { name: pageName, preExisting: (g.lockedControls || []).some(n => sameName(n, pageName)) };
+                records.set(page, record);
+            } else if (record.name !== pageName) {
+                // Native rename carries locks to the new name. Preserve ownership of
+                // that managed lock rather than mistaking it for a user's old lock.
+                restorePageLock(g, record); record.name = pageName;
+            }
+            if (!(g.lockedControls || []).includes(pageName)) api.lockTheControl(g, pageName, true);
+        }
+    }
     let timer, disposed = false, busy = false, error = '', style;
     const kind = c => String(c?.properties?._className || '').toLowerCase();
     const name = c => String(c?.properties?.Name || '');
@@ -110,6 +138,7 @@
         display(g, host);
     }
     function display(g, host) {
+        protectPages(g);
         const current = active(g, host);
         for (const page of pages(g, host)) {
             page.classList.toggle(hiddenClass, page !== current);
@@ -325,6 +354,7 @@
                 caption: c.properties?.Caption, order: c.properties?.PageOrder, selectedPage: c.properties?.SelectedPage,
                 geometry: [c.properties?.Left, c.properties?.Top, c.properties?.Width, c.properties?.Height],
                 hiddenByAdapter: c.classList.contains(hiddenClass),
+                layoutLocked: (g.lockedControls || []).includes(name(c)),
                 style: { display: computed.display, color: computed.backgroundColor, size: computed.backgroundSize,
                     inlineImageLength: String(c.style?.backgroundImage || '').length,
                     computedImageLength: String(computed.backgroundImage || '').length },
@@ -340,6 +370,7 @@
         }
         const g = globals();
         if (!g) return;
+        protectPages(g);
         const hosts = g.allControls.filter(c => kind(c) === hostClass && !c.isDeleted);
         if (ready(g)) {
             if (pendingNewPages.has(g)) {
@@ -399,6 +430,13 @@
         api.document?.removeEventListener('pointerdown', pointer, true);
         for (const node of touched) node.classList.remove(hiddenClass);
         touched.clear();
+        for (const [g, records] of pageLocks) {
+            for (const record of records.values()) {
+                try { restorePageLock(g, record); } catch (_) {}
+            }
+            try { api.updateAllControlDragPoints(g); } catch (_) {}
+        }
+        pageLocks.clear();
         for (const [button, title] of toolbarTitles) button.title = title;
         toolbarTitles.clear();
         style?.remove();

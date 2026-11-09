@@ -1,6 +1,6 @@
 # tbUI3 TabView Designer
 
-Adapter v5, add-in version 1.0.0.4. Separate native IDE add-in for tbUI3 1.0.0.64's real page containers. It coexists with WinUI3IdeStyle and does not require a particular IDE theme. BETA 1043 is the source-inspected adapter baseline; the insertion recipe originated in the BETA 1033 probe.
+Adapter v6, add-in version 1.0.0.5. Separate native IDE add-in for tbUI3 1.0.0.64's real page containers. It coexists with WinUI3IdeStyle and does not require a particular IDE theme. BETA 1043 is the source-inspected adapter baseline; the insertion recipe originated in the BETA 1033 probe.
 
 ## Installation and use
 
@@ -14,13 +14,19 @@ With a consumer Form designer open, drop UI3TabView and click its +, or select t
 | Delete page | Deletes the active page and its children through the native designer; requests one undo checkpoint |
 | Page left / Page right | Changes saved PageOrder while retaining selected-page identity |
 | TabView refresh | Reinstalls the adapter and refreshes current page display |
-| TabView diagnostics | Read-only adapter v5 report; works even when ordinary editing commands reject the selection |
+| TabView diagnostics | Read-only adapter v6 report; works even when ordinary editing commands reject the selection |
 
 These commands expect one host or one of its descendants selected. Pending compiler replies, snapshots, dragging and resync block edits until the designer settles; a toolbar command reports the reason in Debug Console. The adapter does not queue a stale command against another selection. The control's New page verb supplies an additional request path; its visibility in the actual context menu remains a separate IDE check.
 
 Without the add-in, the package and runtime have no missing dependency. The toolbox path still allows real pages, but the IDE's ordinary visibility rendering does not hide inactive pages completely. Unloading the add-in restores the ordinary designer display. After an adapter timer error it restores the display and disables itself; TabView refresh reinstalls it.
 
 Hover over a toolbar button for its full explanation. These are designer commands for the selected TabView, its page or a contained control; Delete page also deletes that page's contents. A newly drawn host intentionally has no pages until + or New page is used.
+
+## Managed page geometry in the designer
+
+Adapter v6 (add-in 1.0.0.5) locks direct UI3TabPage children through BETA 1043's native lockTheControl/unlockTheControl path. isControlLocked is consulted by native mouse movement, keyboard moveControls and resizing. It tests the selected control's own lock, so the TabView and contained buttons/text boxes remain independently editable. Page selection, property editing and the existing Delete page path remain available. The native package still owns page geometry on layout.
+
+Locks are applied to existing/new pages and follow rename/resync. Reparenting or deleting a page releases a session-owned lock. Unload/error cleanup restores locks introduced by this adapter session and leaves pre-existing locks alone. Standard IDE Options serialization can save current lock names with the form; the next session treats those saved locks as pre-existing. Protection itself makes no page geometry edits and requests no undo checkpoint. Package 1.0.0.64 is unchanged.
 
 ## Native page-count investigation
 

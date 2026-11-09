@@ -4,6 +4,13 @@ All notable changes to tbUI3. Dates are when the change was made, not released. 
 
 ## Unreleased
 
+### 2026-11-09, protect page geometry in the designer (adapter v6)
+
+- Shane reports the duplicate-header correction appears to work, then identifies accidental movement of a UI3TabPage independently from its host. That is the new authoring issue; no broader editing-loop pass is implied.
+- Adapter v6 (add-in 1.0.0.5) applies the IDE's native per-control lock to direct UI3TabPage children. Native mouse drag, keyboard movement and resize handlers honor that lock; the host and page contents are not automatically locked. New pages are protected immediately, and protection follows native rename/resync and is released when a page is removed or reparented.
+- Tracks pre-existing locks and releases only session-owned locks on unload or timer-error cleanup. Uses the native silent lock/unlock path without adding geometry edits or undo checkpoints. Normal IDE Options serialization can save current locks; already saved locks count as pre-existing on the next session. Diagnostics include layoutLocked state.
+- All 34 adapter/contract checks pass, including actual shipped drag/move/resize handlers, child/host editing, new-page protection, rename/node replacement, reparent/delete and cleanup. Add-in project/export match. Package 1.0.0.64 and the canonical test project are unchanged; actual native page selection/child editing remains the next gate for this new protection.
+
 ### 2026-11-09, unique native page discovery and toolbar help (1.0.0.64, adapter v5)
 
 - Shane reports improved behavior with v4, but a newly drawn empty TabView appears to gain two pages after + and the second header is inaccessible. The enlarged screenshot shows two headers both captioned Page 2. That supports a repeated-page discovery hypothesis; it does not prove that two native page objects were created. The previously pushed logs predate this screenshot.

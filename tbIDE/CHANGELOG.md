@@ -1,5 +1,11 @@
 # Changelog: tbIDE (WinUI 3 look for the twinBASIC IDE)
 
+## 2026-11-09: TabView page-position protection (adapter v6, add-in 1.0.0.5)
+
+- Uses native per-control locks for direct UI3TabPage children so accidental page drag, keyboard move and resize are blocked while host/child controls remain editable. New pages are protected immediately; locks follow rename/resync and release on reparent/delete.
+- Preserves pre-existing locks and restores session-owned locks on unload/timer failure. Standard IDE saving can record current page locks in IDE Options; protection does not edit geometry or request undo checkpoints. Diagnostics now include layoutLocked.
+- All 34 adapter/contract checks pass, including actual shipped drag/move/resize functions and lock lifecycle cases. Package 1.0.0.64 and canonical test project are unchanged. Shane's native authoring result for the new protection remains open.
+
 ## 2026-11-09: TabView Designer page-count diagnostics and toolbar help (adapter v5, add-in 1.0.0.4)
 
 - Added designer page counts/names and native PageCount when serialized to diagnostics, to distinguish repeated native headers from actual duplicate controls. Package 1.0.0.64 now guards its page collection against repeated identities/names; equal captions remain valid.

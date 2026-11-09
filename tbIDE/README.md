@@ -69,7 +69,7 @@ Open a project with a form and a module, then look at each item in both themes:
 
 While the active theme's name starts with `WinUI3`, the add-in adds one stylesheet to the IDE page; when you switch to any other theme it empties it again. The spike covers three things the themes cannot:
 
-- Dialog buttons: WinUI's Button hover and pressed fills (`ControlFillColorSecondary` and `ControlFillColorTertiary`) and pressed text, instead of the IDE's near-white `#ebeff5` hover and brightness filter.
+- Dialog buttons: WinUI's Button shape (32px, 4px corners, 14px Segoe UI Variable, ContentDialog's 24px command area padding and 8px spacing), hover and pressed fills instead of the IDE's near-white `#ebeff5` hover, and the accept button as WinUI's accent button.
 - Progress bar: WinUI's ProgressBar, a 3px accent indicator with 1.5px corners on a 1px `ControlStrongStrokeColorDefault` track, with the text above it, instead of the green gradient box.
 - Menu bar and status bar hover: WinUI's MenuBarItem `SubtleFillColorSecondary` hover and `SubtleFillColorTertiary` selected fill, instead of fixed light grey with grey text.
 
@@ -94,7 +94,7 @@ To remove it, delete `WinUI3IdeStyle.dll` from both `addins` folders and restart
 ### What to check
 
 1. Debug Console shows `loaded`, then `theme is winui3 dark`, `stylesheet applied` and a `check:` line reading `18 of 18 rules parsed, body.darkMode = True` (False on WinUI3 Light) `, last element in head = #winui3IdeStyleCss`. Switching to Dark or Light shows `stylesheet removed`.
-2. Any message box (for example, close a project with unsaved changes): hovering a button gives a slightly lighter fill, not white; pressing it gives a slightly darker fill with dimmer text.
+2. Any dialog (for example File > New Project): buttons are 32px tall with 4px corners and 14px text; the default button (Open, OK) is accent blue with dark text in WinUI3 Dark and white text in WinUI3 Light, with no white ring. Hovering a normal button gives a slightly lighter fill, not white; pressing it gives a slightly darker fill with dimmer text.
 3. A long operation with the progress dialog (for example, a build): a thin blue bar on a thin grey line, with the text above it on the left.
 4. Menu bar: hovering File, Edit and so on shows a faint highlight with the text unchanged; an open menu's item stays faintly highlighted.
 5. Status bar items: hover is faint and the text keeps its colour.

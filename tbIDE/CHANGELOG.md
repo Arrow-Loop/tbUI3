@@ -1,5 +1,22 @@
 # Changelog: tbIDE (WinUI 3 look for the twinBASIC IDE)
 
+## 2026-11-09: dialog buttons follow WinUI Button and ContentDialog
+
+Shane's first working run on 1043: the add-in's stylesheet is on the page (`check: 18 of 18 rules parsed`) and button hovers are right, but the buttons did not look like WinUI's (his side-by-side with WinUI Gallery's Button page).
+
+Changed
+- Dialog buttons take WinUI's Button shape: 32px tall, `ButtonPadding` 11,5,11,6, 4px corners, 14px Segoe UI Variable (`ContentControlThemeFontFamily`), regular weight, no margin. The command area uses `ContentDialogPadding` 24 and `ContentDialogButtonSpacing` 8.
+- The button Enter presses (`.buttonFocused`, the dialog's accept button) is drawn as WinUI's AccentButtonStyle, the way ContentDialog draws its default button: accent fill (#60CDFF dark, #005FB8 light), on-accent text, the accent elevation border, 90% and 80% accent on hover and press. The IDE's white focus ring around it is removed, since WinUI shows no ring for default status.
+- Pressed text and border corrected to current microsoft-ui-xaml values (`TextFillColorSecondary` #C5FFFFFF and #9E000000, `ControlStrokeColorDefault` #0F000000 light); the earlier values were from an older WinUI release.
+- `RuleCount` is now counted from the stylesheet (26 rules).
+
+Kept on purpose
+- WinUI stretches ContentDialog's buttons into equal columns. The IDE's own layout (Browse on the left, Open and Cancel on the right, minimum widths) is kept.
+- The accent is the default Windows blue. Shane's Windows accent is different; reading the system accent is an exploratory roadmap item.
+
+Validated
+- In Chromium with 1043's `styles.css` and the WinUI3 Dark theme variables: Browse and Cancel 32px, #2D2D2D, white 14px text, border top rgba(255,255,255,0.094) and others 0.07; Open #60CDFF with black text and a rgba(0,0,0,0.137) bottom border, no outline; Cancel hover #323232.
+
 ## 2026-11-09: all page writes through window.eval
 
 Fixed

@@ -1,14 +1,14 @@
 Module WinUI3IdeCss
     ' The stylesheet the add-in puts on the IDE page while a WinUI3 theme is active.
-    ' It only covers what the .theme files cannot reach: rules the IDE's styles.css hard-codes (BETA 1033).
+    ' It only covers what the .theme files cannot reach: rules the IDE's styles.css hard-codes (BETA 1043).
     ' Values are WinUI 3 theme resources from microsoft-ui-xaml (Common_themeresources_any.xaml plus the
     ' control's own *_themeresources.xaml, named on each rule). Solid colours are the WinUI translucent
     ' fill composited over the WinUI3 theme surface underneath, as noted.
     ' body.darkMode is set by the IDE for themes that inherit Dark.
 
-    ' Number of rules Build() returns, one per AppendLine call. The add-in's log compares it with what the browser parsed.
+    ' Number of rules Build() returns (one per line). The add-in's log compares it with what the browser parsed.
     Public Function RuleCount() As Long
-        Return 18
+        Return UBound(Split(Build(), vbCrLf))
     End Function
 
     Public Function Build() As String
@@ -19,16 +19,39 @@ Module WinUI3IdeCss
         Return css
     End Function
 
-    ' Button_themeresources.xaml: ButtonBackgroundPointerOver = ControlFillColorSecondary,
-    ' ButtonBackgroundPressed = ControlFillColorTertiary, ButtonForegroundPressed = TextFillColorSecondary,
-    ' ButtonBorderBrushPressed = ControlStrokeColorDefault. Replaces the IDE's #ebeff5 hover and brightness filter.
+    ' Dialog buttons as WinUI's Button and ContentDialog (microsoft-ui-xaml main, read 2026-11-09).
+    ' Shape, Button_themeresources.xaml: ButtonPadding 11,5,11,6, ButtonBorderThemeThickness 1,
+    ' FontSize ControlContentThemeFontSize (14), ControlCornerRadius 4, font ContentControlThemeFontFamily
+    ' (XamlAutoFontFamily, Segoe UI Variable on Windows 11). Line height 19px makes the button 32px tall,
+    ' WinUI's standard control height. ContentDialog_themeresources.xaml: ContentDialogPadding 24 around
+    ' the command area, ContentDialogButtonSpacing 8 between buttons.
+    ' Colours, Button: ButtonBackgroundPointerOver = ControlFillColorSecondary, ButtonBackgroundPressed =
+    ' ControlFillColorTertiary, ButtonForegroundPressed = TextFillColorSecondary, ButtonBorderBrushPressed =
+    ' ControlStrokeColorDefault. Rest colours and the elevation border come from the .theme files.
+    ' The IDE marks the button that Enter presses with .buttonFocused (the dialog's accept button until
+    ' another is pressed), which is the button ContentDialog draws with AccentButtonStyle: AccentButtonBackground
+    ' = AccentFillColorDefault, PointerOver = AccentFillColorSecondary (90%), Pressed = AccentFillColorTertiary
+    ' (80%), Foreground = TextOnAccentFillColorPrimary, ForegroundPressed = TextOnAccentFillColorSecondary,
+    ' BorderBrush = AccentControlElevationBorderBrush (bottom ControlStrokeColorOnAccentSecondary, rest
+    ' ControlStrokeColorOnAccentDefault), BorderBrushPressed = ControlFillColorTransparent. WinUI shows no
+    ' focus ring on a button that only has default status, so the IDE's ring is removed.
+    ' Deviation: WinUI stretches ContentDialog's buttons into equal columns; the IDE's own button layout
+    ' (left and right groups, minimum widths) is kept.
     Private Sub AddDialogButtons(ByRef css As String)
+        AppendLine css, "body .msgBoxButtons { padding: 24px; gap: 8px; }"
+        AppendLine css, "body .msgBoxButton { box-sizing: border-box; height: 32px; margin: 0; padding: 5px 11px 6px 11px; border-radius: 4px; font-family: 'Segoe UI Variable Text', 'Segoe UI Variable', 'Segoe UI', sans-serif; font-size: 14px; font-weight: 400; line-height: 19px; white-space: nowrap; }"
         ' Dark, over the #202020 command area: Secondary #15FFFFFF gives #323232, Tertiary #08FFFFFF gives #272727.
         AppendLine css, "body.darkMode .msgBoxButton:hover { background: #323232; filter: none; }"
-        AppendLine css, "body.darkMode .msgBoxButton:active { background: #272727; filter: none; color: rgba(255, 255, 255, 0.786); border-top-color: rgba(255, 255, 255, 0.07); }"
+        AppendLine css, "body.darkMode .msgBoxButton:active { background: #272727; filter: none; color: rgba(255, 255, 255, 0.7725); border-color: rgba(255, 255, 255, 0.0706); }"
+        AppendLine css, "body.darkMode .msgBoxButton.buttonFocused { background: #60CDFF; color: #000000; border: 1px solid rgba(255, 255, 255, 0.0784); border-bottom-color: rgba(0, 0, 0, 0.1373); outline: none; filter: none; }"
+        AppendLine css, "body.darkMode .msgBoxButton.buttonFocused:hover { background: rgba(96, 205, 255, 0.9); }"
+        AppendLine css, "body.darkMode .msgBoxButton.buttonFocused:active { background: rgba(96, 205, 255, 0.8); color: rgba(0, 0, 0, 0.502); border-color: transparent; }"
         ' Light, over the #F3F3F3 command area: Secondary #80F9F9F9 gives #F6F6F6, Tertiary #4DF9F9F9 gives #F5F5F5.
         AppendLine css, "body:not(.darkMode) .msgBoxButton:hover { background: #F6F6F6; filter: none; }"
-        AppendLine css, "body:not(.darkMode) .msgBoxButton:active { background: #F5F5F5; filter: none; color: rgba(0, 0, 0, 0.6063); border-bottom-color: rgba(0, 0, 0, 0.0578); }"
+        AppendLine css, "body:not(.darkMode) .msgBoxButton:active { background: #F5F5F5; filter: none; color: rgba(0, 0, 0, 0.6196); border-color: rgba(0, 0, 0, 0.0588); }"
+        AppendLine css, "body:not(.darkMode) .msgBoxButton.buttonFocused { background: #005FB8; color: #FFFFFF; border: 1px solid rgba(255, 255, 255, 0.0784); border-bottom-color: rgba(0, 0, 0, 0.4); outline: none; filter: none; }"
+        AppendLine css, "body:not(.darkMode) .msgBoxButton.buttonFocused:hover { background: rgba(0, 95, 184, 0.9); }"
+        AppendLine css, "body:not(.darkMode) .msgBoxButton.buttonFocused:active { background: rgba(0, 95, 184, 0.8); color: rgba(255, 255, 255, 0.702); border-color: transparent; }"
     End Sub
 
     ' ProgressBar_themeresources.xaml: ProgressBarMinHeight 3, ProgressBarTrackHeight 1,

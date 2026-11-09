@@ -187,9 +187,13 @@ body .tabItemIconRight:hover { background: var(--color-neutral-hover) !important
   Rest: ControlFillColorDefault with TextControlElevationBorderBrush (ControlStrokeColorDefault, bottom
   ControlStrongStrokeColorDefault). Hover: ControlFillColorSecondary. Focused: ControlFillColorInputActive
   with a 2px AccentFillColorDefault bottom border. Disabled: ControlFillColorDisabled, TextFillColorDisabled.
-  The IDE's rules use !important, so these do too. The property sheet's compact inputs are left alone. */
+  The rest fill and text colour come from the themes (DialogTextInputBackColor, DialogTextInputForeColor); the add-in adds
+  the shape, the stronger bottom edge and the hover, focus and disabled states. The simple input box has no theme property,
+  so it gets the rest fill here. The IDE's rules use !important, so these do too. The property sheet's compact inputs are left alone. */
 
-body .configEditorContainer input[type=text], body .configEditorContainer input[type=number], body .configEditorContainer textarea, body .configEditorContainer2 input[type=text], body .configEditorContainer2 input[type=number], body .configEditorContainer2 textarea, body .simpleMsgBoxNoImage input[type=text] { box-sizing: border-box; min-height: 32px; margin: 0; padding: 5px 6px 6px 10px; background-color: var(--color-control) !important; color: var(--color-text) !important; border: 1px solid var(--color-control-border) !important; border-bottom-color: var(--color-border-strong) !important; border-radius: 4px; outline: none !important; font-family: 'Segoe UI Variable Text', 'Segoe UI Variable', 'Segoe UI', sans-serif; font-size: 14px; line-height: 19px; }
+body .simpleMsgBoxNoImage input[type=text] { background-color: var(--color-control) !important; color: var(--color-text) !important; }
+
+body .configEditorContainer input[type=text], body .configEditorContainer input[type=number], body .configEditorContainer textarea, body .configEditorContainer2 input[type=text], body .configEditorContainer2 input[type=number], body .configEditorContainer2 textarea, body .simpleMsgBoxNoImage input[type=text] { box-sizing: border-box; min-height: 32px; margin: 0; padding: 5px 6px 6px 10px; border: 1px solid var(--color-control-border) !important; border-bottom-color: var(--color-border-strong) !important; border-radius: 4px; outline: none !important; font-family: 'Segoe UI Variable Text', 'Segoe UI Variable', 'Segoe UI', sans-serif; font-size: 14px; line-height: 19px; }
 body .configEditorContainer input[type=text]:hover, body .configEditorContainer input[type=number]:hover, body .configEditorContainer textarea:hover, body .configEditorContainer2 input[type=text]:hover, body .configEditorContainer2 input[type=number]:hover, body .configEditorContainer2 textarea:hover, body .simpleMsgBoxNoImage input[type=text]:hover { background-color: var(--color-control-hover) !important; }
 body .configEditorContainer input[type=text]:focus, body .configEditorContainer input[type=number]:focus, body .configEditorContainer textarea:focus, body .configEditorContainer2 input[type=text]:focus, body .configEditorContainer2 input[type=number]:focus, body .configEditorContainer2 textarea:focus, body .simpleMsgBoxNoImage input[type=text]:focus { background-color: var(--color-input-active) !important; border-bottom: 2px solid var(--color-accent) !important; padding-bottom: 5px; }
 body .configEditorContainer input:disabled, body .configEditorContainer textarea:disabled, body .configEditorContainer2 input:disabled, body .configEditorContainer2 textarea:disabled { background-color: var(--color-control-disabled) !important; color: var(--color-text-disabled) !important; border-color: var(--color-control-border) !important; }
@@ -251,8 +255,8 @@ body.darkMode ::-webkit-scrollbar-thumb:hover, body:not(.darkMode) ::-webkit-scr
 
 /* ---------- Tooltips: ToolTip (reference .tool-tip) ----------
   ToolTipBorderPadding 9,6,9,8, ToolTipContentThemeFontSize 12, ControlCornerRadius 4, 1px SurfaceStrokeColorFlyout,
-  AcrylicInAppFillColorDefault fallback, TextFillColorPrimary, ToolTipMaxWidth 320. No shadow (as the reference).
+  ToolTipMaxWidth 320. The fill (VariablesPanelHoverTooltipBackColor) and text colour come from the themes. No shadow (as the reference).
   The IDE fades #hoverTooltip in with a filter; that is kept, ending fully opaque. */
 
-body #hoverTooltip { box-sizing: border-box; max-width: 320px; padding: 6px 9px 8px 9px; border: 1px solid var(--color-popup-border); border-radius: 4px; background: var(--color-flyout); color: var(--color-text); box-shadow: none; font-family: 'Segoe UI Variable Text', 'Segoe UI Variable', 'Segoe UI', sans-serif; font-size: 12px; font-weight: 400; line-height: normal; }
+body #hoverTooltip { box-sizing: border-box; max-width: 320px; padding: 6px 9px 8px 9px; border: 1px solid var(--color-popup-border); border-radius: 4px; box-shadow: none; font-family: 'Segoe UI Variable Text', 'Segoe UI Variable', 'Segoe UI', sans-serif; font-size: 12px; font-weight: 400; line-height: normal; }
 body #hoverTooltip.visibleTooltip { -webkit-filter: opacity(1); }

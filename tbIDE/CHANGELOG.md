@@ -1,5 +1,22 @@
 # Changelog: tbIDE (WinUI 3 look for the twinBASIC IDE)
 
+## 2026-11-09: theme first, and theme colours aligned with the reference tokens
+
+Shane's rule: anything a theme property can do belongs in the theme; the add-in only covers what the themes cannot. Every add-in rule was checked against the 1043 theme properties.
+
+Changed (themes)
+- Text boxes in Options and dialogs rest on `ControlFillColorDefault` (rgba(255,255,255,0.0588) dark, rgba(255,255,255,0.702) light) instead of `ControlFillColorInputActive`, matching the reference's `.text-field` rest state.
+- Scroll bar thumbs use the reference's thumb colours: `TextFillColorTertiary` (0.5294 dark, 0.4471 light), and `TextFillColorSecondary` for the dialog thumb hover.
+- Light tab hover is `LayerOnMicaBaseAltFillColorSecondary` #0A000000, the reference's `--color-tab-hover`.
+
+Changed (add-in)
+- The text box rule no longer sets the rest fill and text colour, and the tooltip rule no longer sets its fill and text colour; both now come from the themes. The simple input box (no theme property) keeps an add-in rest fill. 75 rules.
+
+What stays in the add-in, because 1043 has no theme property for it: shapes, sizes, padding and fonts of every control; the dark menu (item text is hard-coded black); menu bar hover; progress bar; dialog button hover, pressed and accent default button (one text colour is shared by all buttons); the code navigation drop-downs' text (hard-coded #202020); text box hover, focus and bottom edge; check boxes and radio buttons; scroll bar width, arrows and hover for the main scroll bars; tooltip shape.
+
+Validated
+- Chromium with 1043's CSS: 75 of 75 rules parsed; text boxes rgba(255,255,255,0.06) dark and rgba(255,255,255,0.7) light at rest from the theme, focus unchanged; tooltip #2C2C2C and #F9F9F9 from the theme.
+
 ## 2026-11-09: themes: dialog button hover no longer turns white without the add-in
 
 Shane noticed that before the add-in loads, hovering a dialog button in WinUI3 Dark turned it near-white with unreadable text.

@@ -1,5 +1,15 @@
 # Changelog: tbIDE (WinUI 3 look for the twinBASIC IDE)
 
+## 2026-11-09: on/off switch for the add-in in IDE Options
+
+Shane asked for a toggle under Colour Theme that turns the add-in's extra styling on or off, on by default.
+
+Added (add-in)
+- "Enable additional IDE theme styling via add-in" under Colour Theme in IDE Options. A MutationObserver adds the row whenever the IDE builds the list (opening the dialog, filtering) and a WinUI3 theme is active. It reuses the dialog's own row and Yes / No classes, so it is a ToggleSwitch like the others.
+- Switching it disables or re-enables the stylesheet at once through the style element's media attribute, without the dialog's Save Changes (as a WinUI ToggleSwitch does). A 1-second timer reads the change back and saves it with SaveSetting (HKCU, WinUI3IdeStyle\Options\Enabled); start-up reads it, defaulting to on.
+
+Validated: the page script, extracted from MainModule.twin, parses and in a Chromium mock of IDE Options adds one row under Colour Theme, adds it again after the list is rebuilt, never twice, and switches the stylesheet off and on (media 'not all' / 'all'). Not yet compiled or run in the IDE: the twinBASIC side (SaveSetting, the timer) is untested.
+
 ## 2026-11-09: references tables, Shane's first look in 1043
 
 Shane in 1043: "almost perfect". Left over: the Use ActiveX Controls tick boxes were still the IDE's, the ActiveX Fusion Mode drop-down ran into the Fusion: Async Events column, and the Available lists' unloaded symbols showed as bold blue "...".

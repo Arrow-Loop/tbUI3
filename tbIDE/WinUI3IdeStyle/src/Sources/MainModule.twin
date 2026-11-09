@@ -24,7 +24,19 @@ Private Class WinUI3IdeStyleAddin
     ' Re-checks the theme a moment after start-up and project load. The IDE restores the project's
     ' state and clears the Debug Console after loading add-ins, which hid the first log lines.
     Private WithEvents SettleTimer As AddinTimer
+    ' Picks up a change to the add-in's own option in IDE Options (see InstallOption) and saves it.
+    Private WithEvents OptionTimer As AddinTimer
     Private IsApplied As Boolean
+
+    ' The add-in's on/off option, saved per user (HKCU\Software\VB and VBA Program Settings).
+    Private Const SettingsApp As String = "WinUI3IdeStyle"
+    Private Const SettingsSection As String = "Options"
+    Private Const SettingEnabled As String = "Enabled"
+    ' Label of the IDE Options row the add-in's option goes under.
+    Private Const OptionAnchor As String = "Colour Theme"
+    Private Const OptionName As String = "Enable additional IDE theme styling via add-in"
+    Private Const OptionDesc As String = "The WinUI3 IDE Style add-in restyles what the theme cannot reach, such as the toolbar, " & _
+        "dialogs and lists. Turn it off to see the WinUI3 theme on its own. Takes effect at once."
 
     Public Sub New(ByVal Host As Host)
         Set Me.Host = Host
@@ -35,6 +47,7 @@ Private Class WinUI3IdeStyleAddin
 
     Private Sub Class_Terminate()
         Set SettleTimer = Nothing
+        Set OptionTimer = Nothing
         ClearStyle
     End Sub
 
@@ -107,6 +120,7 @@ Private Class WinUI3IdeStyleAddin
         IsApplied = True
         Log "stylesheet applied for " & ThemeName & " (" & Len(css) & " characters)"
         LogPageState
+        InstallOption
         Exit Sub
     Failed:
         Log "could not apply the stylesheet while " & stepName & ": " & ErrorText()
@@ -114,6 +128,7 @@ Private Class WinUI3IdeStyleAddin
 
     Private Sub ClearStyle()
         If Not IsApplied Then Exit Sub
+        If Not OptionTimer Is Nothing Then OptionTimer.Enabled = False
         On Error GoTo Failed
         Log "page: " & RunJs("(function(){var s=document.getElementById('" & StyleElementId & "');" & _
             "if(!s)return 'no style element to remove';s.remove();return 'stylesheet removed';})()")
@@ -122,6 +137,63 @@ Private Class WinUI3IdeStyleAddin
     Failed:
         Log "could not remove the stylesheet: " & ErrorText()
     End Sub
+
+    ' Adds "Enable additional IDE theme styling via add-in" under Colour Theme in IDE Options. The IDE builds
+    ' that dialog in script each time it opens (and again when it is filtered), so a MutationObserver adds the row
+    ' whenever a Colour Theme row appears without it. The row reuses the dialog's own classes (tbis-optionRow,
+    ' tbis-bool), so it looks like the IDE's other Yes / No options: a ToggleSwitch while the styling is on, the
+    ' IDE's own No | Yes control while it is off. Switching it turns the stylesheet on or off at once through the
+    ' style element's media attribute; OptionTimer then reads the change back and saves it.
+    ' The page script is written with single quotes only, so the twinBASIC strings need no Chr(34).
+    Private Sub InstallOption()
+        On Error GoTo Failed
+        Dim enabled As Boolean = OptionEnabled()
+        Dim js As String = "(function(){var w=window,st=w.__winui3IdeStyle||(w.__winui3IdeStyle={});" & _
+            "st.enabled=" & IIf(enabled, "true", "false") & ";st.dirty=false;" & _
+            "st.apply=function(){var s=document.getElementById('" & StyleElementId & "');if(s)s.media=st.enabled?'all':'not all';};" & _
+            "st.names=st.names||document.getElementsByClassName('tbis-optionName');" & _
+            "st.row=function(){var r=document.createElement('div');r.className='tbis-optionRow winui3IdeStyleOptionRow';" & _
+            "var l=document.createElement('div');l.className='tbis-optionLabelCol';var n=document.createElement('div');n.className='tbis-optionName';" & _
+            "n.textContent=" & JsString(OptionName) & ";var d=document.createElement('div');d.className='tbis-optionDesc';" & _
+            "d.textContent=" & JsString(OptionDesc) & ";l.appendChild(n);l.appendChild(d);" & _
+            "var v=document.createElement('div');v.className='tbis-optionValueCol';var b=document.createElement('div');b.className='tbis-bool';" & _
+            "var no=document.createElement('div'),yes=document.createElement('div');no.className=yes.className='tbis-boolSegment';no.textContent='No';yes.textContent='Yes';" & _
+            "var show=function(){no.classList.toggle('tbis-boolSelected',!st.enabled);yes.classList.toggle('tbis-boolSelected',st.enabled);};" & _
+            "var set=function(on){if(st.enabled===on)return;st.enabled=on;st.dirty=true;st.apply();show();};" & _
+            "no.onclick=function(){set(false);};yes.onclick=function(){set(true);};show();" & _
+            "b.appendChild(no);b.appendChild(yes);v.appendChild(b);r.appendChild(l);r.appendChild(v);return r;};" & _
+            "st.scan=function(){if(!st.names.length||!document.getElementById('" & StyleElementId & "'))return;" & _
+            "for(var i=0;i<st.names.length;i++){var n=st.names[i];if(n.textContent.trim()!==" & JsString(OptionAnchor) & ")continue;" & _
+            "var r=n.closest('.tbis-optionRow'),x=r&&r.nextElementSibling;" & _
+            "if(r&&!(x&&x.classList.contains('winui3IdeStyleOptionRow')))r.after(st.row());}};" & _
+            "if(!st.observer){st.observer=new MutationObserver(function(){st.scan();});st.observer.observe(document.body,{childList:true,subtree:true});}" & _
+            "st.apply();st.scan();return 'option ready, styling '+(st.enabled?'on':'off');})()"
+        Log "page: " & RunJs(js)
+        If OptionTimer Is Nothing Then Set OptionTimer = New AddinTimer
+        OptionTimer.Interval = 1000
+        OptionTimer.Enabled = True
+        Exit Sub
+    Failed:
+        Log "could not add the IDE Options switch: " & ErrorText()
+    End Sub
+
+    Private Sub OptionTimer_Timer()
+        On Error GoTo Failed
+        Dim changed As String = RunJs("(function(){var s=window.__winui3IdeStyle;if(!s||!s.dirty)return '';s.dirty=false;return s.enabled?'1':'0';})()")
+        If Len(changed) = 0 Then Exit Sub
+        SaveSetting SettingsApp, SettingsSection, SettingEnabled, changed
+        Log "additional styling turned " & IIf(changed = "1", "on", "off") & " in IDE Options (saved)"
+        Exit Sub
+    Failed:
+        OptionTimer.Enabled = False
+        Log "stopped watching the IDE Options switch: " & ErrorText()
+    End Sub
+
+    ' On unless the user turned it off in IDE Options.
+    Private Function OptionEnabled() As Boolean
+        On Error Resume Next
+        OptionEnabled = (GetSetting(SettingsApp, SettingsSection, SettingEnabled, "1") <> "0")
+    End Function
 
     ' Evaluates a JavaScript expression in the IDE page and returns its result as text.
     ' The page is reached through a hidden tool window: its body sits in a shadow root on the

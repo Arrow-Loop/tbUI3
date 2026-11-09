@@ -142,15 +142,23 @@ Private Class WinUI3IdeStyleAddin
         ' Falls through and returns False.
     End Function
 
-    ' Reads back what the IDE page now holds, so a log shows whether the rules can take effect:
-    ' how many rules the browser parsed, whether the page is in dark mode (the rules are split on
-    ' body.darkMode), and whether another stylesheet was added after ours (it would win ties).
+    ' Reads back what the IDE page now holds, so a log shows whether the rules can take effect.
+    ' Runs one JavaScript expression in the IDE page through window.eval, the route the designer
+    ' bridge probe proved on 1043 (reading values back through property paths failed here).
+    ' It also moves the style element to the end of <head>, so it wins ties with the IDE's own
+    ' stylesheets, and tests one rule for real: a temporary hidden menu item's computed background.
     Private Sub LogPageState()
         On Error GoTo Failed
-        Dim parsed As Long = StyleWindow.RootDomElement.Properties.ownerDocument.getElementById(StyleElementId).sheet.cssRules.length
-        Dim isDark As Boolean = StyleWindow.RootDomElement.Properties.ownerDocument.body.classList.contains("darkMode")
-        Dim lastId As String = StyleWindow.RootDomElement.Properties.ownerDocument.head.lastElementChild.id
-        Log "check: " & parsed & " of " & WinUI3IdeCss.RuleCount() & " rules parsed, body.darkMode = " & isDark & ", last element in head = #" & lastId
+        Dim doc As Object
+        Set doc = StyleWindow.RootDomElement.Properties.ownerDocument
+        Dim js As String = "(function(){var s=document.getElementById('" & StyleElementId & "');" & _
+            "if(!s)return 'no style element on the page';" & _
+            "document.head.appendChild(s);" & _
+            "var t=document.createElement('span');t.className='menuItem isMenuItemSelected';t.style.position='absolute';t.style.visibility='hidden';" & _
+            "document.body.appendChild(t);var bg=getComputedStyle(t).backgroundColor;t.remove();" & _
+            "return (s.sheet?s.sheet.cssRules.length:'no sheet')+' of " & WinUI3IdeCss.RuleCount() & " rules parsed, '+s.textContent.length+' characters, '" & _
+            "+'body.darkMode = '+document.body.classList.contains('darkMode')+', selected menu item background = '+bg+', starts with: '+s.textContent.slice(0,40);})()"
+        Log "check: " & CStr(doc.defaultView.eval(js))
         Exit Sub
     Failed:
         Log "check failed: " & ErrorText()

@@ -1,5 +1,16 @@
 # Changelog: tbIDE (WinUI 3 look for the twinBASIC IDE)
 
+## 2026-11-09: page check through window.eval
+
+Changed
+- The `check:` read-back now runs one JavaScript expression through `ownerDocument.defaultView.eval`, the route the designer bridge probe proved on 1043. It also moves the style element to the end of `<head>` on every apply, and tests one rule for real: a temporary hidden `.menuItem.isMenuItemSelected` element's computed background (rgba(255, 255, 255, 0.043) when the add-in's rule wins in WinUI3 Dark).
+
+Found
+- Shane's run with the two-second re-check: `updated the existing style element` and `stylesheet applied (1940 characters)` succeed, but reading values back through property paths (`getElementById(...).sheet.cssRules.length`) fails with &H80004005 Unspecified error, and the menu highlight still looked like the IDE's own, so whether the rules take effect is still open.
+
+Validated
+- The check expression run in Chromium on a mock page with 1043's `styles.css` and the add-in's CSS returns `18 of 18 rules parsed, 1921 characters, body.darkMode = true, selected menu item background = rgba(255, 255, 255, 0.043)`.
+
 ## 2026-11-09: re-check two seconds after loading
 
 Changed

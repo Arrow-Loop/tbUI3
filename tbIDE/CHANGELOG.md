@@ -1,5 +1,14 @@
 # Changelog: tbIDE (WinUI 3 look for the twinBASIC IDE)
 
+## 2026-11-09: add-in logs when it loads
+
+Changed
+- `WinUI3IdeStyle` now prints `[WinUI3 IDE Style] loaded` when the IDE loads it and `theme is <name>` for the active theme and each theme change. Before, it printed nothing unless a WinUI3 theme was active, so on Dark or Light there was no way to tell whether it had loaded.
+
+Found
+- Shane's first run (BETA 1043): with a project open and the Dark theme, other add-ins' buttons (Global Search, Designer probe) appear, but the Add-ins menu still says "no addins loaded" and the add-in printed nothing, which this change makes testable. The themes target 1033 and have not been re-checked against 1043.
+
+
 ## 2026-10-30: moved into tbUI3, WinUI3 IDE Style add-in spike
 
 Added

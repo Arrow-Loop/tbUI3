@@ -25,6 +25,7 @@ Private Class WinUI3IdeStyleAddin
 
     Public Sub New(ByVal Host As Host)
         Set Me.Host = Host
+        Log "loaded"
         ApplyForActiveTheme
     End Sub
 
@@ -53,6 +54,7 @@ Private Class WinUI3IdeStyleAddin
     End Sub
 
     Private Sub ApplyForTheme(ByVal ThemeName As String)
+        Log "theme is " & ThemeName
         If Left$(ThemeName, Len(ThemePrefix)) = ThemePrefix Then
             ApplyStyle ThemeName
         Else

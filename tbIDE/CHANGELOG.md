@@ -12,6 +12,15 @@
 - Added one-time initialization for the explicitly marked frmMultiPage fixture, with exact form-ID scoping and marker consumption. Later edits and other forms remain untouched. Selection diagnostics include selected name/class.
 - Regenerated the embedded script and canonical add-in project. Twenty adapter/contract checks pass; the screenshot-driven correction's native IDE outcome remains to be observed.
 
+## 2026-11-09: panel titles in sentence case
+
+Shane agreed to sentence case for the IDE's panel titles (WinUI style), which the IDE hard-codes in capitals.
+
+Changed (add-in)
+- The page script rewrites the IDE's own English panel titles (Project explorer, Toolbox, Properties, Debug console, Editor 1 and the rest, from a fixed list) while the styling is on, keeping a trailing number. Add-in tool windows and titles in other languages are untouched. The original text comes back when the IDE Options switch is turned off or the theme stops being WinUI3, and a title the IDE rewrites later is converted again.
+
+Validated: in a Chromium mock, titles convert, an IDE rewrite is converted again, an add-in title and a German title stay as they are, and switching off or clearing the theme restores the capitals. Not yet run in the IDE.
+
 ## 2026-11-09: panel headers and Project Explorer TreeView
 
 Next roadmap items, agreed with Shane: panel headers and the Project Explorer as a WinUI TreeView.

@@ -5,7 +5,7 @@ Module WinUI3IdeCss
 
     ' Number of rules Build() returns. The add-in's log compares it with what the browser parsed.
     Public Function RuleCount() As Long
-        Return 77
+        Return 114
     End Function
 
     Public Function Build() As String
@@ -13,9 +13,10 @@ Module WinUI3IdeCss
         css = css & "body.darkMode { --color-text: #ffffff; --color-text-muted: #ffffffc5; --color-text-subtle: #ffffff87; --color-text-disabled: #ffffff5d; --color-control: #ffffff0f; "
         css = css & "--color-control-hover: #ffffff15; --color-control-disabled: #ffffff0b; --color-input-active: #1e1e1eb3; --color-control-border: #ffffff12; --color-border-strong: #ffffff8b; "
         css = css & "--color-neutral-hover: #ffffff0f; --color-neutral-pressed: #ffffff0a; --color-divider: #ffffff15; --color-flyout: #2c2c2c; --color-popup-border: #00000033; --color-accent: #60cdff; "
-        css = css & "--color-control-active: #ffffff08; --color-control-border-bottom: #ffffff18; --color-accent-hover: #60cdffe6; --color-accent-pressed: #60cdffcc; --color-accent-text: #000000; "
-        css = css & "--color-accent-text-pressed: #00000080; --color-accent-border: #ffffff14; --color-accent-border-bottom: #00000023; --color-border-mask: #ffffff; --color-alt: #00000019; "
-        css = css & "--color-alt-hover: #ffffff0b; --color-alt-pressed: #ffffff12; --color-border-disabled: #ffffff28; --color-accent-disabled: #ffffff28; --color-accent-text-disabled: #ffffff87; "
+        css = css & "--color-neutral-selected: #ffffff0f; --color-card-hover: #ffffff15; --color-control-active: #ffffff08; --color-control-border-bottom: #ffffff18; --color-accent-hover: #60cdffe6; "
+        css = css & "--color-accent-pressed: #60cdffcc; --color-accent-text: #000000; --color-accent-text-pressed: #00000080; --color-accent-border: #ffffff14; --color-accent-border-bottom: #00000023; "
+        css = css & "--color-border-mask: #ffffff; --color-alt: #00000019; --color-alt-hover: #ffffff0b; --color-alt-pressed: #ffffff12; --color-border-disabled: #ffffff28; "
+        css = css & "--color-accent-disabled: #ffffff28; --color-accent-text-disabled: #ffffff87; "
         css = css & "--combo-chevron: url('data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 width=%2712%27 height=%2712%27 viewBox=%270 0 12 12%27%3E%3Cpath d=%27M2.5 4.5 6 8l3.5-3.5%27"
         css = css & " fill=%27none%27 stroke=%27%23ffffffc5%27 stroke-width=%271%27 stroke-linecap=%27round%27 stroke-linejoin=%27round%27/%3E%3C/svg%3E'); "
         css = css & "--brush-control-elevation: linear-gradient(to bottom, var(--color-control-border-bottom) 0 1px, var(--color-control-border) 3px); --brush-accent-elevation: linear-gradient(to top, "
@@ -23,9 +24,10 @@ Module WinUI3IdeCss
         css = css & "body:not(.darkMode) { --color-text: #000000e4; --color-text-muted: #0000009e; --color-text-subtle: #00000072; --color-text-disabled: #0000005c; --color-control: #ffffffb3; "
         css = css & "--color-control-hover: #f9f9f980; --color-control-disabled: #f9f9f94d; --color-input-active: #ffffff; --color-control-border: #0000000f; --color-border-strong: #00000072; "
         css = css & "--color-neutral-hover: #00000009; --color-neutral-pressed: #00000006; --color-divider: #0000000f; --color-flyout: #f9f9f9; --color-popup-border: #0000000f; --color-accent: #005fb8; "
-        css = css & "--color-control-active: #f9f9f94d; --color-control-border-bottom: #00000029; --color-accent-hover: #005fb8e6; --color-accent-pressed: #005fb8cc; --color-accent-text: #ffffff; "
-        css = css & "--color-accent-text-pressed: #ffffffb3; --color-accent-border: #ffffff14; --color-accent-border-bottom: #00000066; --color-border-mask: #ffffff; --color-alt: #00000006; "
-        css = css & "--color-alt-hover: #0000000f; --color-alt-pressed: #00000018; --color-border-disabled: #00000037; --color-accent-disabled: #00000037; --color-accent-text-disabled: #ffffff; "
+        css = css & "--color-neutral-selected: #00000009; --color-card-hover: #f9f9f980; --color-control-active: #f9f9f94d; --color-control-border-bottom: #00000029; --color-accent-hover: #005fb8e6; "
+        css = css & "--color-accent-pressed: #005fb8cc; --color-accent-text: #ffffff; --color-accent-text-pressed: #ffffffb3; --color-accent-border: #ffffff14; --color-accent-border-bottom: #00000066; "
+        css = css & "--color-border-mask: #ffffff; --color-alt: #00000006; --color-alt-hover: #0000000f; --color-alt-pressed: #00000018; --color-border-disabled: #00000037; "
+        css = css & "--color-accent-disabled: #00000037; --color-accent-text-disabled: #ffffff; "
         css = css & "--combo-chevron: url('data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 width=%2712%27 height=%2712%27 viewBox=%270 0 12 12%27%3E%3Cpath d=%27M2.5 4.5 6 8l3.5-3.5%27"
         css = css & " fill=%27none%27 stroke=%27%230000009e%27 stroke-width=%271%27 stroke-linecap=%27round%27 stroke-linejoin=%27round%27/%3E%3C/svg%3E'); "
         css = css & "--brush-control-elevation: linear-gradient(to top, var(--color-control-border-bottom) 0 1px, var(--color-control-border) 3px); --brush-accent-elevation: linear-gradient(to top, "
@@ -174,6 +176,51 @@ Module WinUI3IdeCss
         css = css & "body #hoverTooltip.visibleTooltip { -webkit-filter: opacity(1); }" & vbCrLf
         css = css & "body .codicon.codicon-symbol-color { color: inherit !important; }" & vbCrLf
         css = css & "body .panelHeaderIcon:hover { color: var(--color-text); background-color: var(--color-neutral-hover); outline: 0; border-radius: 4px; }" & vbCrLf
+        css = css & "body #fp2root { font-family: 'Segoe UI Variable Text', 'Segoe UI Variable', 'Segoe UI', sans-serif; font-size: 14px; }" & vbCrLf
+        css = css & "body #fp2root .fp2-toolbar { gap: 8px; padding: 12px 16px; border-bottom: 1px solid var(--color-divider); }" & vbCrLf
+        css = css & "body #fp2root .fp2-body { border-top: 0; }" & vbCrLf
+        css = css & "body #fp2root .fp2-search { min-height: 32px; padding: 5px 32px 6px 10px; border: 1px solid var(--color-control-border); border-bottom-color: var(--color-border-strong); "
+        css = css & "border-radius: 4px; background: var(--color-control); color: var(--color-text); font-size: 14px; line-height: 19px; box-shadow: none; }" & vbCrLf
+        css = css & "body #fp2root .fp2-search:hover { background: var(--color-control-hover); }" & vbCrLf
+        css = css & "body #fp2root .fp2-search:focus { background: var(--color-input-active); border-color: var(--color-control-border); border-bottom: 2px solid var(--color-accent); "
+        css = css & "padding-bottom: 5px; box-shadow: none; }" & vbCrLf
+        css = css & "body #fp2root .fp2-search::placeholder { color: var(--color-text-muted); opacity: 1; }" & vbCrLf
+        css = css & "body #fp2root .fp2-searchIcon { left: auto; right: 10px; font-size: 12px; color: var(--color-text-muted); }" & vbCrLf
+        css = css & "body #fp2root .fp2-versionBadge { padding: 2px 8px; border: 1px solid var(--color-control-border); border-radius: 4px; background: var(--color-control); "
+        css = css & "color: var(--color-text-muted); font-size: 12px; opacity: 1; }" & vbCrLf
+        css = css & "body #fp2root .fp2-rail { padding: 4px 0; border-right: 1px solid var(--color-divider); }" & vbCrLf
+        css = css & "body #fp2root .fp2-railItem { position: relative; gap: 16px; height: 36px; margin: 2px 4px; padding: 0 8px 0 12px; border: 0; border-radius: 4px; color: var(--color-text); "
+        css = css & "font-size: 14px; font-weight: 400; cursor: default; }" & vbCrLf
+        css = css & "body #fp2root .fp2-railItem:hover { background: var(--color-neutral-hover); }" & vbCrLf
+        css = css & "body #fp2root .fp2-railItem:active { background: var(--color-neutral-pressed); color: var(--color-text-muted); }" & vbCrLf
+        css = css & "body #fp2root .fp2-railItemSelected, body #fp2root .fp2-railItemSelected:hover { border: 0; background: var(--themeDialogNavButtonBackColorSelected, var(--color-neutral-selected)); "
+        css = css & "font-weight: 400; }" & vbCrLf
+        css = css & "body #fp2root .fp2-railItemSelected::before { content: ''; position: absolute; left: 0; top: 50%; width: 3px; height: 16px; border-radius: 2px; background: var(--color-accent); "
+        css = css & "transform: translateY(-50%); }" & vbCrLf
+        css = css & "body #fp2root .fp2-railItemIcon { width: 16px; font-size: 16px; color: var(--color-text); }" & vbCrLf
+        css = css & "body #fp2root .fp2-railItemCount { padding: 0; background: transparent; color: var(--color-text-muted); font-size: 12px; opacity: 1; }" & vbCrLf
+        css = css & "body #fp2root .fp2-railHint, body #fp2root .fp2-sectionDesc, body #fp2root .fp2-empty, body #fp2root .fp2-emptyHint { color: var(--color-text-muted); opacity: 1; }" & vbCrLf
+        css = css & "body #fp2root .fp2-railHint { font-size: 12px; padding: 8px 16px; }" & vbCrLf
+        css = css & "body #fp2root .fp2-content { padding: 16px 24px 24px 24px; }" & vbCrLf
+        css = css & "body #fp2root .fp2-cardGrid { gap: 8px; }" & vbCrLf
+        css = css & "body #fp2root .fp2-card { border-radius: var(--themeFrontPageItemBorderRadius, 8px); box-shadow: none; filter: none; transition: none; cursor: default; }" & vbCrLf
+        css = css & "body #fp2root .fp2-card:hover { border: var(--themeFrontPageSelectedItemBorder); background: var(--color-card-hover); box-shadow: none; filter: none; }" & vbCrLf
+        css = css & "body #fp2root .fp2-card:active { background: var(--color-control-active); color: var(--color-text-muted); }" & vbCrLf
+        css = css & "body #fp2root .fp2-card.fp2-selected { border: 1px solid var(--color-accent); outline: 1px solid var(--color-accent); outline-offset: -2px; "
+        css = css & "background: var(--themeFrontPageItemBackColor); }" & vbCrLf
+        css = css & "body #fp2root .fp2-card.fp2-selected:hover { background: var(--color-card-hover); }" & vbCrLf
+        css = css & "body #fp2root .fp2-cardName, body #fp2root .fp2-rowName { font-size: 14px; font-weight: 600; }" & vbCrLf
+        css = css & "body #fp2root .fp2-cardSub, body #fp2root .fp2-rowSub, body #fp2root .fp2-rowPath { color: var(--color-text-muted); font-size: 12px; opacity: 1; }" & vbCrLf
+        css = css & "body #fp2root .fp2-row { position: relative; min-height: 40px; padding: 6px 12px 6px 16px; border: 0; border-radius: 4px; cursor: default; }" & vbCrLf
+        css = css & "body #fp2root .fp2-row:hover { border: 0; background: var(--color-neutral-hover); }" & vbCrLf
+        css = css & "body #fp2root .fp2-row:active { background: var(--color-neutral-pressed); }" & vbCrLf
+        css = css & "body #fp2root .fp2-row.fp2-selected { border: 0; outline: 0; background: var(--color-neutral-selected); }" & vbCrLf
+        css = css & "body #fp2root .fp2-row.fp2-selected::before { content: ''; position: absolute; left: 0; top: 50%; width: 3px; height: 16px; border-radius: 2px; background: var(--color-accent); "
+        css = css & "transform: translateY(-50%); }" & vbCrLf
+        css = css & "body #fp2root .fp2-rowX { width: 24px; height: 24px; border: 0; border-radius: 4px; background: transparent; color: var(--color-text-muted); cursor: default; }" & vbCrLf
+        css = css & "body #fp2root .fp2-rowX:hover { background: var(--color-neutral-hover); color: var(--color-text); }" & vbCrLf
+        css = css & "body #fp2root .fp2-searchGroupTitle { margin: 0 0 8px 0; font-size: 14px; font-weight: 600; letter-spacing: 0; text-transform: none; opacity: 1; }" & vbCrLf
+        css = css & "body #fp2root .fp2-mark { background: transparent; color: var(--color-accent); font-weight: 600; }" & vbCrLf
         Return css
     End Function
 

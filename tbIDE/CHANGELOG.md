@@ -1,5 +1,24 @@
 # Changelog: tbIDE (WinUI 3 look for the twinBASIC IDE)
 
+## 2026-11-09: New / Open Project dialog as a NavigationView
+
+Shane: the New / Open dialog "needs to look like a NavigationView".
+
+Changed (themes)
+- `DialogNavButtonBackColorSelected` is `SubtleFillColorSecondary` (rgba(255,255,255,0.0588) dark, rgba(0,0,0,0.0353) light), the reference's `--color-neutral-selected` and NavigationView's selected item fill.
+
+Added (add-in)
+- The dialog (`#fp2root`, 1043) injects its own stylesheet with fixed colours, so the add-in's rules are prefixed `body #fp2root` and win whichever loads last.
+- Left rail as NavigationView (reference `.nav-item`, `.nav-indicator`): 36px items with 4px corners inset 2px 4px, 16px icon in a 40px column, 14px regular label, subtle hover, selected fill and the 3x16 accent selection indicator; icons in the text colour; counts as muted caption text; divider instead of the fixed grey border.
+- Search box as AutoSuggestBox: TextBox shape and states with the query glyph on the right.
+- Version badge as a quiet caption tag instead of a white pill with black text.
+- Template tiles as GridView items on cards: no blue hover border, shadow or brightening; `ControlFillColorSecondary` hover, `ControlFillColorTertiary` press, 2px accent border when selected. Card fill, border and radius still come from the themes.
+- Recent rows as ListView items with the accent selection indicator and a subtle 24px remove button; search group titles as 14px semibold sentence case.
+- 114 rules.
+
+Validated
+- Chromium with 1043's `styles.css`, `codicon.css`, the dialog's own injected CSS (extracted from main.js) and both theme variable sets, with the add-in's style element placed before the dialog's to prove order independence: 114 of 114 rules parsed; rail items 36px with the selected fill from the theme and the accent indicator; search box 32px; hovered card rgba(255,255,255,0.082) with no filter and its theme border; screenshots checked. Not yet run in the IDE.
+
 ## 2026-11-09: glyph colours
 
 Shane spotted wrong-coloured glyphs on 1043 with the add-in loaded: the info icon in message boxes and the Theme icon in the Window menu.

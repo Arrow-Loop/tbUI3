@@ -1,5 +1,11 @@
 # Changelog: tbIDE (WinUI 3 look for the twinBASIC IDE)
 
+## 2026-11-10: recorded ribbon and rename requirements
+
+- Recorded Shane's command-by-command Home, Code, Form, contextual nested MultiPage and Add-ins layout in tbIDE/ROADMAP.md, including an always-visible Home tab and third-party button routing.
+- Documented the future tbUI3IDE project/output rename, identity/preference migration and scoped use of Fluent UI Web as the ribbon-pattern basis with WinUI 3 visuals. Updated handoff/architecture requirements. This is a documentation revision; runtime, project name and ribbon implementation are unchanged.
+
+
 ## 2026-11-10: one distributed tbUI3 IDE add-in, 1.1.0.0
 
 - Shane chose one distributed IDE add-in with independently optional theme styling. The existing WinUI3IdeStyle project now contains the theme implementation and TabView adapter v8. It exposes one add-in entry point, reports tbUI3 IDE as its display name and retains the WinUI3IdeStyle.dll output/project ID so existing styling installations and per-user preferences carry forward.

@@ -5,14 +5,41 @@
 - One canonical project and DLL: WinUI3IdeStyle/WinUI3IdeStyle.twinproj, WinUI3IdeStyle.dll, display name tbUI3 IDE, version 1.1.0.0. It combines the theme implementation with TabView adapter v8. The old standalone TabViewDesigner target is retired; migration removes its DLL from both architecture folders.
 - Current gate: native combined startup/project load/unload, one set of toolbar commands, standard theme operation, page creation with the styling switch off and saved preferences retained. Source/JS/packing evidence is in ../docs/validation/2026-11-10-unified-ide-addin.md.
 
-## Next agreed pass: Microsoft Office-style tabbed ribbon
+## Next agreed pass: tbUI3IDE rename and Office-style ribbon
 
-Shane requested this as the next implementation after consolidation (2026-11-10), promoting the parked ribbon idea to agreed future work. It is not implemented in version 1.1.0.0.
+Shane specified the next pass on 2026-11-10. Version 1.1.0.0 remains the consolidated add-in; the following rename and ribbon are agreed requirements, not implemented behavior.
 
-- Replace the shared toolbar arrangement with a tabbed ribbon using groups such as Home, Debug and Design, with TabView commands in their own clearly separated group or contextual tab.
-- Preserve the IDE's actual command nodes/handlers, enabled and checked state, tooltips, architecture/zoom selectors, shortcuts and commands contributed by other add-ins. Reuse the command IDs mapped in README.md and tools/build-toolbar-icons.mjs; recheck actual BETA internals before implementation.
-- Keep tab management available when optional styling is off or a standard IDE theme is selected. Provide the ordinary toolbar as a working fallback if ribbon setup is unsupported or disabled; restore moved nodes and state on unload/error. Decide exact ribbon visibility/presentation behavior in that pass without coupling functional page commands to the styling preference.
-- Cover contextual selection, narrow-window overflow, keyboard/focus navigation, project/theme changes, refresh and cleanup. Keep the WinUI styling resource authority while implementing the requested Office-style command organization; WinUI 3 itself does not supply a native Ribbon control.
+### Identity and migration
+
+- Rename the project to **tbUI3IDE**, including the canonical project/folder, output DLL and build/generator/documentation references. Intended canonical target: tbIDE/tbUI3IDE/tbUI3IDE.twinproj, output tbUI3IDE.dll.
+- Preserve the established project ID, existing theme preference and all native page identities. Retain or migrate the WinUI3IdeStyle/Options/Enabled preference without resetting the user's choice.
+- The rename remains one distributed add-in. Migration must remove the old WinUI3IdeStyle.dll as well as any remaining TabViewDesigner.dll from both architecture folders to avoid duplicate add-in instances.
+
+### Design authority
+
+Use Microsoft Office ribbon organization with WinUI 3's visual language. Shane explicitly authorizes Fluent UI Web as the basis for the ribbon, since there is no official WinUI 3 Ribbon implementation. This is a scoped design exception for ribbon structure/interaction, not a change to the control package's WinUI 3 fidelity policy. Consult current Microsoft Fluent UI Web sources for the ribbon pattern before implementation; use WinUI 3 resources for shared colors, typography, surfaces, controls and states where those definitions exist. Do not describe the result as an official WinUI 3 Ribbon control.
+
+### Requested command layout
+
+Home is a static, always-visible top-level tab. Code, Form and Add-ins are the other top-level tabs; MultiPage is contextual and nested under Form rather than a permanent peer. Ribbon controls should use appropriately sized icons, labels and groups, not merely place the existing small toolbar row inside tabs.
+
+| Tab | Groups and commands, in requested order |
+| --- | --- |
+| Home | Save, Find in Project, Switch Between Form and Code; Undo, Redo; Start/Continue, Break Into Code, Stop, Step Over, Step Into, Step Out; build-configuration dropdown; Restart Compiler, Clean, Build; Change IDE Theme |
+| Code | Comment Selection, Uncomment Selection, Indent Block, Outdent Block |
+| Form | All Align Controls commands; all Resize Controls commands; existing grid indicator/options exposed directly in the ribbon where practical; Bring to Front and Send to Back; form designer zoom dropdown; Preview |
+| MultiPage, nested under Form | Visible only for the selected multipage context; existing New page, Delete page, Page left, Page right, Refresh and Diagnostics commands |
+| Add-ins | Toolbar buttons contributed by other add-ins, discovered dynamically and preserving each button's original behavior |
+
+The request's plural Forms and singular Form refer to the same tab; use Form consistently. Bring to Front/Send to Back correspond to the existing menuBarBringToFront and menuBarSendToBack commands. Resolve the contextual MultiPage owner from native selection; the existing adapter already resolves a TabView from its page/child selection. Keep contextual navigation stable when commands create/select a page.
+
+### Implementation constraints and checks
+
+- Preserve the IDE's real command nodes/handlers, enabled/checked state, tooltips, build/zoom selectors and shortcuts. Reuse/recheck actual command IDs from README.md and tools/build-toolbar-icons.mjs against the current BETA. Keep unknown native commands accessible rather than silently dropping them.
+- Collect third-party toolbar buttons in Add-ins, including buttons added after startup. Keep this add-in's own TabView commands in MultiPage, not Add-ins. Preserve other add-ins' images and handlers.
+- Keep tab management available when optional styling is off or a standard IDE theme is selected. Provide the ordinary toolbar as a working fallback if ribbon setup is unsupported or disabled. Restore moved nodes, selection, state and focus on unload/error.
+- Cover contextual selection, narrow-window overflow, keyboard/focus navigation, project/theme changes, refresh and cleanup. The ribbon should resize command presentations and groups gracefully while Home stays reachable.
+- Preserve the working combined add-in lifecycle and native delete/readd correction; record actual native observations separately from DOM/protocol checks.
 
 ## TabView Designer candidate
 

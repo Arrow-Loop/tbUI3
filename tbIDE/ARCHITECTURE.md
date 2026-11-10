@@ -24,4 +24,4 @@ WinUI3IdeStyle/css/winui3-ide.css and winui3-ide-icons.css remain the authoritat
 
 ## Next extension
 
-The agreed Microsoft Office-style ribbon will be implemented inside this same project. TabView command IDs/handlers must remain stable and receive their own group/context. Optional styling must not become a dependency of page commands. See ROADMAP.md for restoration, fallback, focus and overflow constraints.
+The next pass renames this established project/output to tbUI3IDE while preserving its project ID and saved theme preference. The agreed Microsoft Office-style ribbon uses WinUI 3 visuals, with Fluent UI Web as the authorized ribbon-pattern basis. Home stays visible; Code, Form and Add-ins are top-level tabs. MultiPage is a contextual child of Form. TabView command IDs/handlers remain stable. Optional styling must not become a dependency of page commands. See ROADMAP.md for restoration, fallback, focus and overflow constraints.

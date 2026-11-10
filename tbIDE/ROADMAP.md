@@ -5,9 +5,9 @@
 - One canonical project and DLL: WinUI3IdeStyle/WinUI3IdeStyle.twinproj, WinUI3IdeStyle.dll, display name tbUI3 IDE, version 1.1.0.0. It combines the theme implementation with TabView adapter v8. The old standalone TabViewDesigner target is retired; migration removes its DLL from both architecture folders.
 - Current gate: native combined startup/project load/unload, one set of toolbar commands, standard theme operation, page creation with the styling switch off and saved preferences retained. Source/JS/packing evidence is in ../docs/validation/2026-11-10-unified-ide-addin.md.
 
-## Next agreed pass: tbUI3IDE rename and Office-style ribbon
+## Next agreed pass: tbUI3IDE rename and selectable IDE toolbar
 
-Shane specified the next pass on 2026-11-10. Version 1.1.0.0 remains the consolidated add-in; the following rename and ribbon are agreed requirements, not implemented behavior.
+Shane specified and revised the next pass on 2026-11-10. Version 1.1.0.0 remains the consolidated add-in; the following rename, settings and toolbar modes are agreed requirements, not implemented behavior. The original single ribbon proposal is retained below as Hybrid, superseded as the only replacement by the three-mode choice. The inline mockup was canceled; this pass records the revised requirements.
 
 ### Identity and migration
 
@@ -17,9 +17,23 @@ Shane specified the next pass on 2026-11-10. Version 1.1.0.0 remains the consoli
 
 ### Design authority
 
-Use Microsoft Office ribbon organization with WinUI 3's visual language. Shane explicitly authorizes Fluent UI Web as the basis for the ribbon, since there is no official WinUI 3 Ribbon implementation. This is a scoped design exception for ribbon structure/interaction, not a change to the control package's WinUI 3 fidelity policy. Consult current Microsoft Fluent UI Web sources for the ribbon pattern before implementation; use WinUI 3 resources for shared colors, typography, surfaces, controls and states where those definitions exist. Do not describe the result as an official WinUI 3 Ribbon control.
+Use Microsoft Office ribbon organization with WinUI 3's visual language. Shane explicitly authorizes Fluent UI Web as the basis for the ribbon, since there is no official WinUI 3 Ribbon implementation. This is a scoped design exception for ribbon structure/interaction, not a change to the control package's WinUI 3 fidelity policy. Consult current Microsoft Fluent UI Web sources for the ribbon pattern before implementation; use WinUI 3 resources for shared typography, geometry, controls and interaction states where those definitions exist. The selected IDE theme supplies the toolbar's palette and theme-state colors, as required below; do not force the included WinUI3 palettes onto other themes. Do not describe the result as an official WinUI 3 Ribbon control.
 
-### Requested command layout
+### Settings, themes and compatibility
+
+- In IDE settings, directly below **Enable additional IDE theme styling via add-in**, add **IDE Toolbar**, a combo box with exactly **Classic**, **Hybrid**, and **Ribbon**, in that order. Persist the selected mode independently of the existing styling preference and preserve it through the tbUI3IDE rename.
+- The control's placement below the styling switch is positional only. Turning additional theme styling off must not disable the combo box, force Classic or disable page management.
+- Shane explicitly requires the toolbar UI to follow **whatever IDE theme the user selects**, including standard and third-party themes, whether or not either included WinUI3 theme is selected. This applies to the settings control, Hybrid/Ribbon tabs, groups, menus, fullscreen File view and quick-access area. Use the active IDE theme's colors/state resources, updating on theme changes; do not gate the toolbar on the WinUI3 theme names or impose their palettes on other themes.
+- Keep the existing theme-styling preference's scope separate: it controls the optional additional IDE restyling. The toolbar modes have their own essential layout/presentation and active-theme integration, independent of that restyling.
+- Compatibility default for existing installations with no saved toolbar mode: Classic. This is an implementation default to preserve their current layout, not a claim that the user selected a mode.
+
+| Mode | Required behavior |
+| --- | --- |
+| Classic | Preserve the current native menu bar and existing toolbar layout, commands and contributed buttons, with their current active-theme behavior. |
+| Hybrid | Preserve the native menu bar; replace the toolbar with the previously specified Home, Code, Form, contextual nested MultiPage and Add-ins organization below. |
+| Ribbon | Migrate the full native menu/command surface into an Office-style ribbon, fullscreen File view and quick-access area as specified below. |
+
+### Hybrid command layout
 
 Home is a static, always-visible top-level tab. Code, Form and Add-ins are the other top-level tabs; MultiPage is contextual and nested under Form rather than a permanent peer. Ribbon controls should use appropriately sized icons, labels and groups, not merely place the existing small toolbar row inside tabs.
 
@@ -31,14 +45,31 @@ Home is a static, always-visible top-level tab. Code, Form and Add-ins are the o
 | MultiPage, nested under Form | Visible only for the selected multipage context; existing New page, Delete page, Page left, Page right, Refresh and Diagnostics commands |
 | Add-ins | Toolbar buttons contributed by other add-ins, discovered dynamically and preserving each button's original behavior |
 
-The request's plural Forms and singular Form refer to the same tab; use Form consistently. Bring to Front/Send to Back correspond to the existing menuBarBringToFront and menuBarSendToBack commands. Resolve the contextual MultiPage owner from native selection; the existing adapter already resolves a TabView from its page/child selection. Keep contextual navigation stable when commands create/select a page.
+The request's plural Forms and singular Form refer to the same tab; use Form consistently. Bring to Front/Send to Back correspond to the existing menuBarBringToFront and menuBarSendToBack commands. Resolve the contextual MultiPage owner from native selection; the existing adapter already resolves a TabView from its page/child selection. Keep contextual navigation stable when commands create/select a page. This table defines Hybrid; do not silently substitute it for the complete Ribbon mode.
+
+### Ribbon: full menu migration and Office interaction
+
+- Reproduce Microsoft Office's ribbon organization and interaction with WinUI 3 visuals: tabs, labeled command groups, appropriate large/small commands, contextual tools, expanding/collapsing groups, overflow and keyboard access. This is a full menu replacement, not a second copy of Hybrid. Consult current official Office references before defining the detailed command/group mapping; Office applications have differing command inventories, so preserve twinBASIC's IDE functions rather than inventing document-editing commands.
+- Migrate all commands from **File, Edit, View, Project, Format, Debug, Run, Tools, Add-Ins, Window, and Help**, including nested and dynamically populated menu options. Project and Format are separate native menus. Retain their functions and discoverable grouping; the old menu row is replaced in Ribbon mode. Record a complete mapping from the current native menu tree during implementation, including how contextual Form/MultiPage tools are exposed.
+- **File** opens an Office-style **fullscreen Backstage view within the IDE window**, covering the working area, with navigation, content sections and a clear back/close route. It is not an ordinary dropdown or OS fullscreen switch. Back/Escape returns to the prior document/designer and focus. Route existing file operations and settings to their real native commands.
+- Put **which add-ins are enabled** into an **Add-ins section of the fullscreen File view**, preserving the native enable/disable behavior and any restart requirement the IDE actually has. Keep that management UI distinct from the **Add-ins ribbon**, which contains toolbar buttons contributed by other add-ins, including buttons added after startup.
+- Move **Save, Undo, Redo, Play/Start/Continue, Pause/Break Into Code, and Stop** to a quick-access area in the space formerly occupied by the native menus, above the ribbon. If **Show real OS titlebar** is **off**, place this area in the IDE's custom title bar instead. Follow changes to that setting, preserve window controls/title dragging and command states, and do not attempt to put HTML controls into the real OS title bar.
+- File view, quick-access commands, tabs, flyouts and groups all inherit the active IDE theme, including standard/third-party themes, independently of the additional-styling switch.
+
+### Dynamic command discovery and future IDE updates
+
+- Build the presentation from twinBASIC's **live menu and toolbar command model**, preserving command identity, hierarchy, caption, icon, enabled/visible/checked state, shortcuts, selectors and original handlers. The IDE remains the execution/state authority. Menu and toolbar entries representing the same command must share state and not execute twice.
+- Discover new menus and menu options automatically: a new top-level native menu obtains a reachable ribbon section/tab, and an unrecognized option appears within its discovered parent group or overflow. Do not require a hard-coded whitelist or an add-in release for newly added commands to remain accessible. Explicit mappings may improve known-command presentation but cannot determine whether a command exists.
+- Reconcile additions, removals, renames, ordering and state changes after startup, including project/context changes, theme changes, recently used items, dynamic submenus and other add-ins' contributions. Respect native lazy population without executing user actions merely to enumerate commands. Preserve native shortcuts and keyboard access through the replacement surface.
+- The compatibility promise concerns added menus/options under the existing command model. Structural changes to twinBASIC's private APIs are a separate compatibility risk; detect unsupported layouts and restore the fully working Classic surface rather than showing incomplete menus. Document that boundary without claiming arbitrary future internals are supported.
 
 ### Implementation constraints and checks
 
 - Preserve the IDE's real command nodes/handlers, enabled/checked state, tooltips, build/zoom selectors and shortcuts. Reuse/recheck actual command IDs from README.md and tools/build-toolbar-icons.mjs against the current BETA. Keep unknown native commands accessible rather than silently dropping them.
 - Collect third-party toolbar buttons in Add-ins, including buttons added after startup. Keep this add-in's own TabView commands in MultiPage, not Add-ins. Preserve other add-ins' images and handlers.
-- Keep tab management available when optional styling is off or a standard IDE theme is selected. Provide the ordinary toolbar as a working fallback if ribbon setup is unsupported or disabled. Restore moved nodes, selection, state and focus on unload/error.
-- Cover contextual selection, narrow-window overflow, keyboard/focus navigation, project/theme changes, refresh and cleanup. The ribbon should resize command presentations and groups gracefully while Home stays reachable.
+- Keep tab management and all three toolbar choices available when optional styling is off or any standard/third-party IDE theme is selected. Provide the ordinary toolbar as a working fallback if replacement setup is unsupported. Restore moved nodes, selection, state and focus on mode changes, unload/error, without losing the saved mode preference.
+- Cover Classic/Hybrid/Ribbon transitions, saved-mode restart, all active-theme/style-switch combinations, contextual selection, narrow-window overflow, keyboard/focus navigation, project changes, refresh and cleanup. In Hybrid, Home stays reachable. In Ribbon, File and quick-access controls remain reachable, including with the real OS title bar on/off and while changing that option.
+- Verify every discovered native menu command has a reachable equivalent in Ribbon. Exercise newly injected top-level menus, nested/lazy menu items, renamed/removed commands and late third-party buttons without changing add-in code. Verify state synchronization, exact-once invocation, File enable/disable management and return focus. Keep observed DOM checks and native IDE results distinct.
 - Preserve the working combined add-in lifecycle and native delete/readd correction; record actual native observations separately from DOM/protocol checks.
 
 ## TabView Designer candidate

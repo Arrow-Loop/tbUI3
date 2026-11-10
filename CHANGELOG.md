@@ -4,6 +4,11 @@ All notable changes to tbUI3. Dates are when the change was made, not released. 
 
 ## Unreleased
 
+### 2026-11-10, document three toolbar modes and active-theme behavior
+
+- Revised the agreed IDE plan to an independently saved IDE Toolbar choice: Classic, Hybrid (the earlier tabbed-toolbar proposal) and full Office-style Ribbon. Recorded fullscreen File/Backstage, add-in enablement, contributed buttons, quick-access placement and automatic discovery of future native menus/options in tbIDE/ROADMAP.md.
+- Recorded that toolbar UI follows any selected IDE theme, including standard/third-party themes, independently of additional styling. Updated both roadmaps, the IDE architecture and current handoff. Documentation only; the existing add-in/package versions, runtime, settings and project/output names are unchanged.
+
 ### 2026-11-10, document the next ribbon layout and project rename
 
 - Recorded Shane's command-by-command Home, Code, Form, contextual nested MultiPage and Add-ins layout in tbIDE/ROADMAP.md, including an always-visible Home tab and third-party button routing.

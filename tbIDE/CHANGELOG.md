@@ -1,5 +1,11 @@
 # Changelog: tbIDE (WinUI 3 look for the twinBASIC IDE)
 
+## 2026-11-10: documented Classic, Hybrid and Ribbon requirements
+
+- Revised ROADMAP.md so the previous Home/Code/Form/contextual MultiPage/Add-ins proposal is Hybrid, alongside Classic and full Ribbon, selected through an independent IDE Toolbar combo box below the additional-styling option. Recorded saved preferences and the compatibility default.
+- Documented full native menu migration, fullscreen Office-style File/Backstage with add-in enablement, separate contributed-button ribbon and upper/custom-title-bar quick-access controls. Recorded dynamic live-menu discovery and future-menu coverage as requirements, with restoration and state/dispatch checks.
+- Recorded Shane's clarification that all toolbar presentations follow whichever IDE theme is selected, including standard/third-party themes, independently of the additional-styling switch. Updated architecture and handoff documents. Documentation only: no toolbar mode, setting, rename or runtime behavior was implemented or tested in this pass.
+
 ## 2026-11-10: recorded ribbon and rename requirements
 
 - Recorded Shane's command-by-command Home, Code, Form, contextual nested MultiPage and Add-ins layout in tbIDE/ROADMAP.md, including an always-visible Home tab and third-party button routing.

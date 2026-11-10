@@ -2,7 +2,7 @@
 
 ## Distribution and identity
 
-One canonical project, tbUI3IDE/tbUI3IDE.twinproj, produces tbUI3IDE.dll per IDE architecture, version 1.2.0.1. Its established project ID is unchanged. Remove legacy WinUI3IdeStyle.dll and TabViewDesigner.dll from both addins architecture directories during migration. Theme files and the tbUI3 runtime control package remain separate; built consumer applications do not need this add-in.
+One canonical project, tbUI3IDE/tbUI3IDE.twinproj, produces tbUI3IDE.dll per IDE architecture, version 1.2.0.2. Its established project ID is unchanged. Remove legacy WinUI3IdeStyle.dll and TabViewDesigner.dll from both addins architecture directories during migration. Theme files and the tbUI3 runtime control package remain separate; built consumer applications do not need this add-in.
 
 ## Entry point and independent features
 
@@ -22,6 +22,8 @@ Save/Undo/Redo/Play/Pause/Stop use the former menu space in rootMenu1Inner, whic
 
 The 1.2.0.1 geometry uses central CSS variables: command area 100px maximum and separate tab strip 26px maximum; full-size button minimum/standard width 50px, maximum width 86px and fixed height 76px. Border-box sizing includes padding/borders. Three stacked 24px rows with two 2px gaps also occupy 76px. Compact group captions and two-line large-button labels keep that vertical budget; complete captions remain in tooltips. Quick-access, Backstage and popup controls retain their own dimensions. These are Shane's explicit composition values, supported by his Office spacing screenshot, rather than asserted WinUI Ribbon template values.
 
+The 1.2.0.2 presentation separates short known-command/selector captions from full native help/shortcut tooltips. This mapping only refines labels; discovery and dispatch remain native and unknown contributions remain accessible. Stacked captions use single-line ellipsis, and group padding/column gaps are compact. Essential toolbar CSS carries the existing simplified-toolbar Fluent shadow4 elevation and 8px card corners; it does not substitute a new theme palette.
+
 ## Theme and icon ownership
 
 css/ide-toolbar.css is essential presentation, independent of the optional theme stylesheet. Every palette/state color comes from the active IDE's theme variables, including standard and third-party themes. WinUI 3 supplies the visual language; Office supplies the ribbon organization. The existing 19 Fluent SVGs are scaled to 28px lead / 18px stacked presentations. Native designer glyphs and other add-ins' images are retained. No Office icons or new icon library is introduced.
@@ -32,4 +34,4 @@ WinUI3IdeCss and its 288 generated rules remain unchanged. Its media state and p
 
 tools/build-ide-toolbar.mjs embeds the readable adapter, essential CSS and the existing Fluent map into IdeToolbarScript.twin. tools/build-tabview-designer.mjs embeds the page adapter and patches all current sources/Settings into the canonical project. The .meta project-root rename is applied explicitly. Loose JS/CSS remain review inputs, not runtime dependencies. Source mirrors are compared against packed entries and the current official exporter.
 
-Mode change/unload removes owned surfaces and restores native selectors/grid nodes from comment markers, native menu visibility, the docked toolbar header and the original showContextMenu hook when still owned. Cleanup preserves wrappers installed later by other add-ins. The options timer stops and both feature lifecycles dispose. Pending theme/toolbar preferences are drained before teardown. See ROADMAP.md and ../docs/validation/2026-11-10-ide-toolbar.md for remaining acceptance boundaries.
+Mode change/unload removes owned surfaces and restores native selectors/grid nodes from comment markers, native menu visibility, the docked toolbar header, its exclusive dock/floating slot and the original showContextMenu hook when still owned. Cleanup preserves wrappers installed later by other add-ins. The adapter reconciles its hidden-node set after redocking. A dock/floating slot is hidden only when its sole sectionHeader is the TOOLBAR header, so shared native panels are retained; no saved layout dimensions are rewritten. The options timer stops and both feature lifecycles dispose. Pending theme/toolbar preferences are drained before teardown. See ROADMAP.md and ../docs/validation/2026-11-10-ide-toolbar.md for remaining acceptance boundaries.

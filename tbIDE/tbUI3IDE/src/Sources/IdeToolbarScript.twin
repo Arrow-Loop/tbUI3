@@ -9,64 +9,67 @@ Private Module IdeToolbarScript
         js = js & "ontrol template.\n * The two host-hiding rules override the IDE's own ID-level display rules.\n */\n.tbui3-toolbar-owned, .tbui3-toolbar-option {\n   "
         js = js & " --tbui3-toolbar-bg: var(--themeMenuBackColor, var(--themeGeneralBackColor));\n    --tbui3-toolbar-fg: var(--themeMenuForeColor, var(--themeGeneralTex"
         js = js & "tColor));\n    --tbui3-toolbar-hover: var(--themeContextMenuItemHoverColor, var(--themeTreeItemSelectedBackColor));\n    --tbui3-toolbar-line: var(--t"
-        js = js & "hemeToolbarDropDownBorder, 1px solid currentColor);\n    --tbui3-toolbar-selected: var(--themeTreeItemSelectedBackColor);\n    color: var(--tbui3-tool"
-        js = js & "bar-fg);\n    font-family: 'Segoe UI Variable', 'Segoe UI', sans-serif;\n    box-sizing: border-box;\n}\n.tbui3-toolbar-native-hidden, .tbui3-menu-sou"
-        js = js & "rce { display: none !important; }\n.tbui3-ribbon {\n    --tbui3-command-area-height: 100px;\n    --tbui3-tab-area-height: 26px;\n    --tbui3-large-but"
-        js = js & "ton-width: 50px;\n    --tbui3-large-button-max-width: 86px;\n    --tbui3-large-button-height: 76px;\n    flex: 0 0 auto; min-width: 0; max-height: cal"
-        js = js & "c(var(--tbui3-command-area-height) + var(--tbui3-tab-area-height)); background: var(--tbui3-toolbar-bg);\n}\n.tbui3-ribbon, .tbui3-ribbon * { box-sizi"
-        js = js & "ng: border-box; }\n.tbui3-ribbon-tabs { display: flex; flex: 0 0 auto; height: var(--tbui3-tab-area-height); max-height: var(--tbui3-tab-area-height);"
-        js = js & " gap: 4px; padding: 0 8px; overflow-x: auto; overflow-y: hidden; scrollbar-width: none; }\n.tbui3-ribbon-tabs::-webkit-scrollbar { height: 0; }\n.tbui"
-        js = js & "3-ribbon-tab { flex: 0 0 auto; position: relative; height: var(--tbui3-tab-area-height, 26px); max-height: var(--tbui3-tab-area-height, 26px); padding"
-        js = js & ": 3px 12px; border: 0; background: transparent; color: inherit; font: inherit; line-height: 20px; cursor: default; border-radius: 4px 4px 0 0; }\n.tbu"
-        js = js & "i3-ribbon-tab[aria-selected='true'] { background: var(--tbui3-toolbar-selected); }\n.tbui3-ribbon-tab[aria-selected='true']::after { content: ''; posi"
-        js = js & "tion: absolute; height: 2px; left: 14px; right: 14px; bottom: 0; background: currentColor; border-radius: 2px; }\n.tbui3-ribbon-tab:hover, .tbui3-ribb"
-        js = js & "on-command:hover:not(:disabled), .tbui3-backstage-nav:hover, .tbui3-backstage-back:hover { background: var(--tbui3-toolbar-hover); }\n.tbui3-toolbar-o"
-        js = js & "wned button:focus-visible, .tbui3-toolbar-owned select:focus-visible, .tbui3-toolbar-select:focus-visible { outline: 2px solid currentColor; outline-o"
-        js = js & "ffset: -3px; }\n.tbui3-ribbon-content { display: flex; align-items: stretch; height: var(--tbui3-command-area-height); min-height: 0; max-height: var("
-        js = js & "--tbui3-command-area-height); overflow-x: auto; overflow-y: hidden; padding: 2px 8px 0; gap: 4px; border-bottom: var(--tbui3-toolbar-line); scrollbar-"
-        js = js & "width: thin; }\n.tbui3-ribbon-content[hidden], .tbui3-backstage[hidden] { display: none; }\n.tbui3-ribbon-group { display: flex; flex: 0 0 auto; flex-"
-        js = js & "direction: column; padding: 0 8px; border-right: var(--tbui3-toolbar-line); min-width: 0; }\n.tbui3-ribbon-group:last-child { border-right: 0; }\n.tbu"
-        js = js & "i3-ribbon-group-body { display: grid; grid-auto-flow: column; grid-template-rows: repeat(3, 24px); align-items: stretch; gap: 2px 4px; flex: 0 0 76px;"
-        js = js & " }\n.tbui3-ribbon-group-title { height: 14px; flex: 0 0 14px; line-height: 12px; text-align: center; font-size: 11px; padding-top: 2px; overflow: hidd"
-        js = js & "en; white-space: nowrap; text-overflow: ellipsis; opacity: .8; }\n.tbui3-ribbon-command { display: flex; flex-direction: row; justify-content: start; "
-        js = js & "align-items: center; gap: 5px; min-width: 50px; max-width: 180px; min-height: 24px; height: 24px; padding: 2px 4px; border: 1px solid transparent; bor"
-        js = js & "der-radius: 4px; background: transparent; color: inherit; font: inherit; font-size: 12px; cursor: default; }\n.tbui3-ribbon-content .tbui3-ribbon-grou"
-        js = js & "p-body > .tbui3-ribbon-command:first-child { grid-row: span 3; flex-direction: column; justify-content: center; width: max-content; min-width: var(--t"
-        js = js & "bui3-large-button-width); max-width: var(--tbui3-large-button-max-width); height: var(--tbui3-large-button-height); min-height: var(--tbui3-large-butt"
-        js = js & "on-height); max-height: var(--tbui3-large-button-height); padding: 4px 6px; }\n.tbui3-ribbon-command:disabled { opacity: .45; }\n.tbui3-ribbon-command"
-        js = js & "[hidden] { display: none; }\n.tbui3-ribbon-command:active:not(:disabled), .tbui3-ribbon-checked { background: var(--tbui3-toolbar-selected); border-co"
-        js = js & "lor: currentColor; }\n.tbui3-ribbon-label { line-height: 16px; text-align: left; max-width: 150px; white-space: normal; }\n.tbui3-ribbon-icon { displa"
+        js = js & "hemeToolbarDropDownBorder, 1px solid currentColor);\n    --tbui3-toolbar-selected: var(--themeTreeItemSelectedBackColor);\n    /* Existing simplified-"
+        js = js & "toolbar Fluent shadow4, preserved as an effect rather than a palette. */\n    --tbui3-toolbar-shadow: 0 0 2px rgba(0,0,0,0.12), 0 2px 4px rgba(0,0,0,0"
+        js = js & ".14);\n    color: var(--tbui3-toolbar-fg);\n    font-family: 'Segoe UI Variable', 'Segoe UI', sans-serif;\n    box-sizing: border-box;\n}\n.tbui3-tool"
+        js = js & "bar-native-hidden, .tbui3-menu-source { display: none !important; }\n.tbui3-ribbon {\n    --tbui3-command-area-height: 100px;\n    --tbui3-tab-area-he"
+        js = js & "ight: 26px;\n    --tbui3-large-button-width: 50px;\n    --tbui3-large-button-max-width: 86px;\n    --tbui3-large-button-height: 76px;\n    flex: 0 0 a"
+        js = js & "uto; min-width: 0; max-height: calc(var(--tbui3-command-area-height) + var(--tbui3-tab-area-height)); background: var(--tbui3-toolbar-bg);\n    positi"
+        js = js & "on: relative; z-index: 1; margin: 0 2px 3px; border-radius: 8px; box-shadow: var(--tbui3-toolbar-shadow);\n}\n.tbui3-ribbon, .tbui3-ribbon * { box-siz"
+        js = js & "ing: border-box; }\n.tbui3-ribbon-tabs { display: flex; flex: 0 0 auto; height: var(--tbui3-tab-area-height); max-height: var(--tbui3-tab-area-height)"
+        js = js & "; gap: 4px; padding: 0 8px; overflow-x: auto; overflow-y: hidden; scrollbar-width: none; }\n.tbui3-ribbon-tabs::-webkit-scrollbar { height: 0; }\n.tbu"
+        js = js & "i3-ribbon-tab { flex: 0 0 auto; position: relative; height: var(--tbui3-tab-area-height, 26px); max-height: var(--tbui3-tab-area-height, 26px); paddin"
+        js = js & "g: 3px 12px; border: 0; background: transparent; color: inherit; font: inherit; line-height: 20px; cursor: default; border-radius: 4px 4px 0 0; }\n.tb"
+        js = js & "ui3-ribbon-tab[aria-selected='true'] { background: var(--tbui3-toolbar-selected); }\n.tbui3-ribbon-tab[aria-selected='true']::after { content: ''; pos"
+        js = js & "ition: absolute; height: 2px; left: 14px; right: 14px; bottom: 0; background: currentColor; border-radius: 2px; }\n.tbui3-ribbon-tab:hover, .tbui3-rib"
+        js = js & "bon-command:hover:not(:disabled), .tbui3-backstage-nav:hover, .tbui3-backstage-back:hover { background: var(--tbui3-toolbar-hover); }\n.tbui3-toolbar-"
+        js = js & "owned button:focus-visible, .tbui3-toolbar-owned select:focus-visible, .tbui3-toolbar-select:focus-visible { outline: 2px solid currentColor; outline-"
+        js = js & "offset: -3px; }\n.tbui3-ribbon-content { display: flex; align-items: stretch; height: var(--tbui3-command-area-height); min-height: 0; max-height: var"
+        js = js & "(--tbui3-command-area-height); overflow-x: auto; overflow-y: hidden; padding: 2px 4px 0; gap: 2px; border-bottom: var(--tbui3-toolbar-line); border-ra"
+        js = js & "dius: 0 0 8px 8px; scrollbar-width: thin; }\n.tbui3-ribbon-content[hidden], .tbui3-backstage[hidden] { display: none; }\n.tbui3-ribbon-group { display"
+        js = js & ": flex; flex: 0 0 auto; flex-direction: column; padding: 0 4px; border-right: var(--tbui3-toolbar-line); min-width: 0; }\n.tbui3-ribbon-group:last-chi"
+        js = js & "ld { border-right: 0; }\n.tbui3-ribbon-group-body { display: grid; grid-auto-flow: column; grid-template-rows: repeat(3, 24px); align-items: stretch; "
+        js = js & "gap: 2px; flex: 0 0 76px; }\n.tbui3-ribbon-group-title { height: 14px; flex: 0 0 14px; line-height: 12px; text-align: center; font-size: 11px; padding"
+        js = js & "-top: 2px; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; opacity: .8; }\n.tbui3-ribbon-command { display: flex; flex-direction: row;"
+        js = js & " justify-content: start; align-items: center; gap: 4px; min-width: 50px; max-width: 160px; min-height: 24px; height: 24px; padding: 2px 4px; border: 1"
+        js = js & "px solid transparent; border-radius: 4px; background: transparent; color: inherit; font: inherit; font-size: 12px; cursor: default; }\n.tbui3-ribbon-c"
+        js = js & "ontent .tbui3-ribbon-group-body > .tbui3-ribbon-command:first-child { grid-row: span 3; flex-direction: column; justify-content: center; width: max-co"
+        js = js & "ntent; min-width: var(--tbui3-large-button-width); max-width: var(--tbui3-large-button-max-width); height: var(--tbui3-large-button-height); min-heigh"
+        js = js & "t: var(--tbui3-large-button-height); max-height: var(--tbui3-large-button-height); padding: 4px 6px; }\n.tbui3-ribbon-command:disabled { opacity: .45;"
+        js = js & " }\n.tbui3-ribbon-command[hidden] { display: none; }\n.tbui3-ribbon-command:active:not(:disabled), .tbui3-ribbon-checked { background: var(--tbui3-too"
+        js = js & "lbar-selected); border-color: currentColor; }\n.tbui3-ribbon-label { line-height: 16px; text-align: left; max-width: 150px; white-space: normal; }\n.t"
+        js = js & "bui3-ribbon-content .tbui3-ribbon-label { min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }\n.tbui3-ribbon-icon { displa"
         js = js & "y: inline-block; flex: 0 0 auto; width: 18px; height: 18px; font-size: 18px; line-height: 18px; background: var(--tbui3-native-image, none) center / c"
         js = js & "ontain no-repeat; }\n.tbui3-ribbon-icon[hidden] { display: none; }\n.tbui3-ribbon-content .tbui3-ribbon-group-body > .tbui3-ribbon-command:first-child"
         js = js & " .tbui3-ribbon-icon { width: 28px; height: 28px; font-size: 28px; line-height: 28px; }\n.tbui3-ribbon-content .tbui3-ribbon-group-body > .tbui3-ribbon"
         js = js & "-command:first-child .tbui3-ribbon-label { text-align: center; min-width: 0; max-width: calc(var(--tbui3-large-button-max-width) - 14px); max-height: "
-        js = js & "32px; overflow: hidden; overflow-wrap: anywhere; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; }\n.tbui3-ribbon-mask { ba"
-        js = js & "ckground: currentColor; mask: var(--tbui3-icon) center / contain no-repeat; -webkit-mask: var(--tbui3-icon) center / contain no-repeat; }\n.tbui3-ribb"
-        js = js & "on-selector { display: flex; grid-row: span 3; flex-direction: column; gap: 6px; padding: 4px 6px; max-width: 200px; font-size: 11px; }\n.tbui3-ribbon"
-        js = js & "-selector select, .tbui3-ribbon-select, .tbui3-toolbar-select { min-height: 32px; max-width: 200px; background: var(--themeDialogGeneralBackColor); co"
-        js = js & "lor: var(--themeDialogGeneralForeColor); border: var(--themeToolbarDropDownBorder); border-radius: 4px; font: inherit; padding: 3px 8px; }\n.tbui3-rib"
-        js = js & "bon-content .tbui3-ribbon-select { grid-row: span 2; align-self: start; }\n.tbui3-ribbon-select option, .tbui3-toolbar-select option { background: var"
-        js = js & "(--themeDialogGeneralBackColor); color: var(--themeDialogGeneralForeColor); }\n.tbui3-ribbon-content .menuBarGridOptionsInner { display: grid; grid-te"
-        js = js & "mplate-columns: repeat(2, max-content); gap: 2px 12px; font-size: 11px; }\n.tbui3-ribbon-grid { grid-row: span 3; border: 0; padding: 0; margin: 0; mi"
-        js = js & "n-width: 0; }\n.tbui3-ribbon-grid:disabled { opacity: .45; }\n.tbui3-ribbon-content .menuBarGridOptionRow { display: flex; gap: 6px; align-items: cent"
-        js = js & "er; justify-content: space-between; }\n.tbui3-ribbon-content .menuBarGridOptionRow input[type='number'] { width: 44px; color: inherit; background: var"
-        js = js & "(--tbui3-toolbar-bg); border: var(--tbui3-toolbar-line); }\n.tbui3-ribbon-context { align-self: start; border: var(--tbui3-toolbar-line); border-radiu"
-        js = js & "s: 4px; }\n.tbui3-quick { display: flex; flex: 0 1 auto; gap: 2px; align-items: center; min-width: 0; overflow-x: auto; -webkit-app-region: no-drag; }"
-        js = js & "\n.tbui3-quick-real-titlebar { min-height: 32px; }\n.tbui3-ribbon-compact { height: 28px; min-height: 28px; min-width: 30px; width: 30px; padding: 4px"
-        js = js & "; }\n.tbui3-ribbon-compact .tbui3-ribbon-icon { width: 18px; height: 18px; font-size: 18px; line-height: 18px; }\n.tbui3-ribbon-compact .tbui3-ribbon-"
-        js = js & "label { display: none; }\n.tbui3-backstage { position: absolute; inset: 32px 0 0; z-index: 100000; display: flex; background: var(--themeDialogGeneral"
-        js = js & "BackColor, var(--tbui3-toolbar-bg)); color: var(--themeDialogGeneralForeColor, var(--tbui3-toolbar-fg)); }\n.tbui3-backstage-rail { display: flex; fle"
-        js = js & "x-direction: column; gap: 4px; flex: 0 0 200px; padding: 16px 8px; background: var(--tbui3-toolbar-bg); overflow-y: auto; }\n.tbui3-backstage-back, .t"
-        js = js & "bui3-backstage-nav { border: 0; border-radius: 4px; background: transparent; color: inherit; font: inherit; text-align: left; padding: 12px; }\n.tbui3"
-        js = js & "-backstage-back { margin-bottom: 20px; }\n.tbui3-backstage-content { flex: 1 1 auto; overflow: auto; padding: 24px; min-width: 0; }\n.tbui3-backstage-"
-        js = js & "heading { font-weight: 400; font-size: 28px; margin: 0 0 24px; }\n.tbui3-backstage-content .tbui3-ribbon-group-body { display: flex; flex-wrap: wrap; "
-        js = js & "gap: 8px; }\n.tbui3-backstage-content .tbui3-ribbon-command { flex-direction: row; height: auto; min-height: 48px; min-width: 180px; max-width: 280px;"
-        js = js & " }\n.tbui3-ribbon-popup { position: fixed; left: max(0px, var(--tbui3-popup-x)); top: max(0px, var(--tbui3-popup-y)); display: flex; flex-direction: c"
-        js = js & "olumn; padding: 4px; max-height: 60vh; overflow: auto; z-index: 100001; min-width: 240px; background: var(--themeContextMenuBackColor, var(--tbui3-too"
-        js = js & "lbar-bg)); border: var(--tbui3-toolbar-line); border-radius: 8px; }\n.tbui3-ribbon-popup .tbui3-ribbon-command { flex-direction: row; justify-content:"
-        js = js & " start; height: auto; min-height: 32px; max-width: none; }\n.tbui3-ribbon-popup .tbui3-ribbon-icon { width: 20px; height: 20px; font-size: 20px; }\n.t"
-        js = js & "bui3-ribbon-popup .tbui3-ribbon-label { max-width: none; text-align: left; }\n.tbui3-ribbon-separator { border-top: var(--tbui3-toolbar-line); margin:"
-        js = js & " 4px 0; }\n" & Chr(34) & ";document.head.appendChild(css);"
+        js = js & "32px; white-space: normal; overflow: hidden; overflow-wrap: anywhere; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; }\n.t"
+        js = js & "bui3-ribbon-mask { background: currentColor; mask: var(--tbui3-icon) center / contain no-repeat; -webkit-mask: var(--tbui3-icon) center / contain no-r"
+        js = js & "epeat; }\n.tbui3-ribbon-selector { display: flex; grid-row: span 3; flex-direction: column; gap: 4px; padding: 2px 4px; max-width: 120px; font-size: 1"
+        js = js & "1px; }\n.tbui3-ribbon-selector select, .tbui3-ribbon-select, .tbui3-toolbar-select { min-height: 32px; max-width: 200px; background: var(--themeDialog"
+        js = js & "GeneralBackColor); color: var(--themeDialogGeneralForeColor); border: var(--themeToolbarDropDownBorder); border-radius: 4px; font: inherit; padding: 3"
+        js = js & "px 8px; }\n.tbui3-ribbon-content .tbui3-ribbon-select { grid-row: span 2; align-self: start; }\n.tbui3-ribbon-select option, .tbui3-toolbar-select opt"
+        js = js & "ion { background: var(--themeDialogGeneralBackColor); color: var(--themeDialogGeneralForeColor); }\n.tbui3-ribbon-content .menuBarGridOptionsInner { d"
+        js = js & "isplay: grid; grid-template-columns: repeat(2, max-content); gap: 2px 12px; font-size: 11px; }\n.tbui3-ribbon-grid { grid-row: span 3; border: 0; padd"
+        js = js & "ing: 0; margin: 0; min-width: 0; }\n.tbui3-ribbon-grid:disabled { opacity: .45; }\n.tbui3-ribbon-content .menuBarGridOptionRow { display: flex; gap: 6"
+        js = js & "px; align-items: center; justify-content: space-between; }\n.tbui3-ribbon-content .menuBarGridOptionRow input[type='number'] { width: 44px; color: inh"
+        js = js & "erit; background: var(--tbui3-toolbar-bg); border: var(--tbui3-toolbar-line); }\n.tbui3-ribbon-context { align-self: start; border: var(--tbui3-toolba"
+        js = js & "r-line); border-radius: 4px; }\n.tbui3-quick { display: flex; flex: 0 1 auto; gap: 2px; align-items: center; min-width: 0; overflow-x: auto; -webkit-a"
+        js = js & "pp-region: no-drag; }\n.tbui3-quick-real-titlebar { min-height: 32px; }\n.tbui3-ribbon-compact { height: 28px; min-height: 28px; min-width: 30px; widt"
+        js = js & "h: 30px; padding: 4px; }\n.tbui3-ribbon-compact .tbui3-ribbon-icon { width: 18px; height: 18px; font-size: 18px; line-height: 18px; }\n.tbui3-ribbon-c"
+        js = js & "ompact .tbui3-ribbon-label { display: none; }\n.tbui3-backstage { position: absolute; inset: 32px 0 0; z-index: 100000; display: flex; background: var"
+        js = js & "(--themeDialogGeneralBackColor, var(--tbui3-toolbar-bg)); color: var(--themeDialogGeneralForeColor, var(--tbui3-toolbar-fg)); }\n.tbui3-backstage-rail"
+        js = js & " { display: flex; flex-direction: column; gap: 4px; flex: 0 0 200px; padding: 16px 8px; background: var(--tbui3-toolbar-bg); overflow-y: auto; }\n.tbu"
+        js = js & "i3-backstage-back, .tbui3-backstage-nav { border: 0; border-radius: 4px; background: transparent; color: inherit; font: inherit; text-align: left; pad"
+        js = js & "ding: 12px; }\n.tbui3-backstage-back { margin-bottom: 20px; }\n.tbui3-backstage-content { flex: 1 1 auto; overflow: auto; padding: 24px; min-width: 0;"
+        js = js & " }\n.tbui3-backstage-heading { font-weight: 400; font-size: 28px; margin: 0 0 24px; }\n.tbui3-backstage-content .tbui3-ribbon-group-body { display: fl"
+        js = js & "ex; flex-wrap: wrap; gap: 8px; }\n.tbui3-backstage-content .tbui3-ribbon-command { flex-direction: row; height: auto; min-height: 48px; min-width: 180"
+        js = js & "px; max-width: 280px; }\n.tbui3-ribbon-popup { position: fixed; left: max(0px, var(--tbui3-popup-x)); top: max(0px, var(--tbui3-popup-y)); display: fl"
+        js = js & "ex; flex-direction: column; padding: 4px; max-height: 60vh; overflow: auto; z-index: 100001; min-width: 240px; background: var(--themeContextMenuBackC"
+        js = js & "olor, var(--tbui3-toolbar-bg)); border: var(--tbui3-toolbar-line); border-radius: 8px; }\n.tbui3-ribbon-popup .tbui3-ribbon-command { flex-direction: "
+        js = js & "row; justify-content: start; height: auto; min-height: 32px; max-width: none; }\n.tbui3-ribbon-popup .tbui3-ribbon-icon { width: 20px; height: 20px; f"
+        js = js & "ont-size: 20px; }\n.tbui3-ribbon-popup .tbui3-ribbon-label { max-width: none; text-align: left; }\n.tbui3-ribbon-separator { border-top: var(--tbui3-t"
+        js = js & "oolbar-line); margin: 4px 0; }\n" & Chr(34) & ";document.head.appendChild(css);"
         js = js & vbLf
         js = js & "var adapter=/* tbUI3IDE toolbar presentation. Native nodes/commands remain the execution authority."
         js = js & vbLf
@@ -135,6 +138,30 @@ Private Module IdeToolbarScript
         js = js & vbLf
         js = js & "    const quickIds=['saveIcon','undoIcon','redoIcon','playIcon','pauseIcon','stopIcon'];"
         js = js & vbLf
+        js = js & "    // Presentation captions are deliberately shorter than the native help/shortcut tooltip."
+        js = js & vbLf
+        js = js & "    // This table never decides whether a command exists or how it is executed."
+        js = js & vbLf
+        js = js & "    const sourceLabels={saveIcon:'Save',searchIcon:'Find in project',designSwitchIcon:'Form / code',"
+        js = js & vbLf
+        js = js & "        undoIcon:'Undo',redoIcon:'Redo',playIcon:'Start / Continue',pauseIcon:'Break',stopIcon:'Stop',"
+        js = js & vbLf
+        js = js & "        debugStepOverIcon:'Step over',debugStepIntoIcon:'Step into',debugStepOutIcon:'Step out',"
+        js = js & vbLf
+        js = js & "        restartIcon:'Restart compiler',trashIcon:'Clean',buildIcon:'Build',menuBarColorMode:'Theme',"
+        js = js & vbLf
+        js = js & "        buildConfigSelector:'Configuration',zoomSelect:'Zoom',menuBarPreview:'Preview',"
+        js = js & vbLf
+        js = js & "        commentIcon:'Comment',uncommentIcon:'Uncomment',indentIcon:'Indent',unindentIcon:'Outdent',"
+        js = js & vbLf
+        js = js & "        menuBarAlignLeft:'Align left',menuBarAlignTop:'Align top',menuBarAlignRight:'Align right',menuBarAlignBottom:'Align bottom',"
+        js = js & vbLf
+        js = js & "        menuBarSizeWidest:'Widest',menuBarSizeTallest:'Tallest',menuBarSizeNarrowest:'Narrowest',menuBarSizeShortest:'Shortest',"
+        js = js & vbLf
+        js = js & "        menuBarGrid:'Show grid',menuBarBringToFront:'Bring to front',menuBarSendToBack:'Send to back'};"
+        js = js & vbLf
+        js = js & "    const sourceCaption=n=>sourceLabels[n.id]||label(n).replace(/\s*\([^)]*\)\s*$/,'');"
+        js = js & vbLf
         js = js & "    const pageIds=['tbUI3TabNew','tbUI3TabDelete','tbUI3TabLeft','tbUI3TabRight','tbUI3TabRefresh','tbUI3TabDiagnostics'];"
         js = js & vbLf
         js = js & "    const pageSource=n=>pageIds.some(id=>n.id==='addinButton-'+id);"
@@ -181,21 +208,41 @@ Private Module IdeToolbarScript
         js = js & vbLf
         js = js & "        for(const [id,m] of menus)if(!found.has(id)){m.node.classList.remove('tbui3-menu-source');menus.delete(id);}"
         js = js & vbLf
-        js = js & "        if(state.mode!=='Classic'){"
-        js = js & vbLf
-        js = js & "            hideNative(toolbar);"
-        js = js & vbLf
-        js = js & "            const header=toolbar.parentElement;"
-        js = js & vbLf
-        js = js & "            if(header&&header.panelId==='TOOLBAR'){hideNative(header);if(header.sectionRoot)hideNative(header.sectionRoot);}"
-        js = js & vbLf
-        js = js & "        }"
+        js = js & "        if(state.mode!=='Classic')syncNativeToolbarVisibility(toolbar);"
         js = js & vbLf
         js = js & "        return toolbar;"
         js = js & vbLf
         js = js & "    }"
         js = js & vbLf
-        js = js & "    function hideNative(n){n.classList.add('tbui3-toolbar-native-hidden');hiddenNative.add(n);}"
+        js = js & "    function syncNativeToolbarVisibility(toolbar) {"
+        js = js & vbLf
+        js = js & "        const wanted=new Set([toolbar]),header=toolbar.parentElement;"
+        js = js & vbLf
+        js = js & "        if(header&&header.panelId==='TOOLBAR'){"
+        js = js & vbLf
+        js = js & "            wanted.add(header);if(header.sectionRoot)wanted.add(header.sectionRoot);"
+        js = js & vbLf
+        js = js & "            // BETA 1044 leaves a 30px minimum-height dock slot after its header/body are hidden."
+        js = js & vbLf
+        js = js & "            // Collapse only the nearest slot whose panel headers all belong to this toolbar."
+        js = js & vbLf
+        js = js & "            const slot=header.closest('.dockElementContainer, .floatingPanel');"
+        js = js & vbLf
+        js = js & "            const headers=slot&&[...slot.querySelectorAll('.sectionHeader')];"
+        js = js & vbLf
+        js = js & "            if(headers&&headers.length===1&&headers[0]===header)wanted.add(slot);"
+        js = js & vbLf
+        js = js & "        }"
+        js = js & vbLf
+        js = js & "        let changed=false;"
+        js = js & vbLf
+        js = js & "        for(const n of hiddenNative)if(!wanted.has(n)){n.classList.remove('tbui3-toolbar-native-hidden');hiddenNative.delete(n);changed=true;}"
+        js = js & vbLf
+        js = js & "        for(const n of wanted)if(!hiddenNative.has(n)){n.classList.add('tbui3-toolbar-native-hidden');hiddenNative.add(n);changed=true;}"
+        js = js & vbLf
+        js = js & "        if(changed)resize();"
+        js = js & vbLf
+        js = js & "    }"
         js = js & vbLf
         js = js & "    function group(name,parent=content) {"
         js = js & vbLf
@@ -257,7 +304,7 @@ Private Module IdeToolbarScript
         js = js & vbLf
         js = js & "        b.dataset.source=typeof n.id==='string'?n.id:'';b.title=label(n);b.setAttribute('aria-label',label(n));"
         js = js & vbLf
-        js = js & "        b.append(iconFor(n),el('span','tbui3-ribbon-label',label(n).replace(/\s*\([^)]*\)\s*$/,'')));"
+        js = js & "        b.append(iconFor(n),el('span','tbui3-ribbon-label',sourceCaption(n)));"
         js = js & vbLf
         js = js & "        b.addEventListener('mousedown',e=>e.preventDefault());"
         js = js & vbLf
@@ -279,7 +326,7 @@ Private Module IdeToolbarScript
         js = js & vbLf
         js = js & "        for(const id of ids){const n=sources.get(id);if(!n)continue;"
         js = js & vbLf
-        js = js & "            if(n.matches('select')){const l=el('label','tbui3-ribbon-selector',label(n));park(n,l);parent.append(l);}"
+        js = js & "            if(n.matches('select')){const l=el('label','tbui3-ribbon-selector',sourceCaption(n));l.title=label(n);park(n,l);parent.append(l);}"
         js = js & vbLf
         js = js & "            else sourceButton(n,parent);"
         js = js & vbLf

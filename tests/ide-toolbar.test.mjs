@@ -107,9 +107,41 @@ test('checked menu state and dynamically changed selector values stay synchroniz
 });
 test('the toolbar owns no theme-name gate or hard-coded color palette',()=>{
     const css=fs.readFileSync('tbIDE/tbUI3IDE/css/ide-toolbar.css','utf8');
-    assert(!/#[0-9a-f]{3,8}\b|rgba?\(/i.test(css));assert(css.includes('--themeMenuBackColor'));assert(css.includes('--themeDialogGeneralForeColor'));
+    // The established Fluent shadow4 alpha values are an elevation effect, not an application palette.
+    const paletteCss=css.replace(/--tbui3-toolbar-shadow:[^;]+;/g,'');
+    assert(!/#[0-9a-f]{3,8}\b|rgba?\(/i.test(paletteCss));assert(css.includes('--themeMenuBackColor'));assert(css.includes('--themeDialogGeneralForeColor'));
     assert(!/ThemePrefix|WinUI3 Dark|WinUI3 Light|__winui3IdeStyle/.test(source));
     const main=fs.readFileSync('tbIDE/tbUI3IDE/src/Sources/MainModule.twin','utf8');assert(main.includes("return 'toolbar:'+t.requestedMode"));
+});
+test('the empty 30px native dock slot collapses and returns intact in Classic',()=>{
+    const f=fixture(),slot=f.d.createElement('div'),panel=f.d.createElement('div'),header=f.d.createElement('div'),body=f.d.createElement('div');
+    slot.className='dockElementContainer';slot.style.minHeight='30px';header.className='sectionHeader';header.panelId='TOOLBAR';header.sectionRoot=body;
+    f.toolbar.before(slot);slot.append(panel);panel.append(header,body);header.append(f.toolbar);
+    f.adapter.setMode('Hybrid');assert(slot.classList.contains('tbui3-toolbar-native-hidden'));
+    assert.equal(slot.style.minHeight,'30px');f.adapter.setMode('Classic');assert(!slot.classList.contains('tbui3-toolbar-native-hidden'));
+    assert.equal(f.toolbar.parentElement,header);assert.equal(slot.style.minHeight,'30px');f.dispose();
+});
+test('a dock slot shared with another native panel stays visible',()=>{
+    const f=fixture(),slot=f.d.createElement('div'),header=f.d.createElement('div'),other=f.d.createElement('div');
+    slot.className='dockElementContainer';header.className=other.className='sectionHeader';header.panelId='TOOLBAR';other.panelId='EDITOR';
+    f.toolbar.before(slot);slot.append(header,other);header.append(f.toolbar);f.adapter.setMode('Hybrid');
+    assert(!slot.classList.contains('tbui3-toolbar-native-hidden'));assert(header.classList.contains('tbui3-toolbar-native-hidden'));assert(!other.classList.contains('tbui3-toolbar-native-hidden'));f.dispose();
+});
+test('toolbar redocking releases the former slot and collapses only its new slot',()=>{
+    const f=fixture(),slots=[f.d.createElement('div'),f.d.createElement('div')],header=f.d.createElement('div');
+    for(const n of slots)n.className='dockElementContainer';header.className='sectionHeader';header.panelId='TOOLBAR';
+    f.toolbar.before(...slots);slots[0].append(header);header.append(f.toolbar);f.adapter.setMode('Hybrid');
+    assert(slots[0].classList.contains('tbui3-toolbar-native-hidden'));slots[1].append(header);f.adapter.tick();
+    assert(!slots[0].classList.contains('tbui3-toolbar-native-hidden'));assert(slots[1].classList.contains('tbui3-toolbar-native-hidden'));f.dispose();
+    assert(!slots[1].classList.contains('tbui3-toolbar-native-hidden'));
+});
+test('ribbon captions are short while original help and shortcuts remain in tooltips',()=>{
+    const f=fixture(),restart=f.button('restartIcon','Restart the compiler. Hold ALT key to additionally restart the LLVM cache process.');
+    f.adapter.setMode('Hybrid');const b=f.d.querySelector('[data-source=restartIcon]');
+    assert.equal(b.querySelector('.tbui3-ribbon-label').textContent,'Restart compiler');assert(b.title.includes('Hold ALT key'));
+    assert.equal(f.d.querySelector('[data-source=saveIcon] .tbui3-ribbon-label').textContent,'Save');
+    assert(f.d.querySelector('.tbui3-ribbon-selector').textContent.startsWith('Configuration'));
+    b.click();assert.deepEqual(f.calls,['restartIcon']);assert.equal(restart.title,b.title);f.dispose();
 });
 
 function installedFunction(text,name) {

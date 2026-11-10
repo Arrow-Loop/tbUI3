@@ -1,5 +1,13 @@
 # Changelog: tbIDE (WinUI 3 look for the twinBASIC IDE)
 
+## 2026-11-10, collapse the empty toolbar slot and restore compact presentation (tbUI3IDE 1.2.0.2)
+
+- Shane's BETA 1044 screenshot shows a blank rounded strip under Hybrid, missing toolbar elevation and oversized/overlapping command captions. The native stylesheet gives dockElementContainer a 30px minimum height; hiding only the toolbar header/body leaves that slot visible. The adapter now hides the nearest dock/floating slot only when its sole sectionHeader is the TOOLBAR header. Shared panels stay visible; redocking releases the previous slot, and Classic/unload restores all owned visibility classes without changing saved dimensions or docking configuration.
+- Restored the existing simplified-toolbar Fluent shadow4 (0 0 2px at .12 alpha plus 0 2px 4px at .14 alpha) and 8px card corners on the replacement ribbon. The selected IDE theme still supplies palette/state colors. These are the already established elevation values, not Office iconography or a new palette.
+- Separated concise captions from native tooltip/help text. Known commands now use Save, Form / code, Restart compiler, Configuration and similar compact labels; the original help, ALT-key explanation and shortcuts remain in tooltips. Unknown/contributed commands are still discovered and routed normally. Stacked labels stay on one line with ellipsis; full-size labels retain two lines.
+- Reduced group horizontal padding from 8px to 4px, command-column/group gaps to 2px, and selector caption width to 120px. Preserved the 100px command-area cap, 26px tab-strip cap, 50px standard / 86px maximum full-size widths, fixed 76px full-size height and all existing glyphs.
+- All 66 JS/DOM/protocol checks pass, including four new regressions for dedicated-slot cleanup, shared-slot safety, redocking and caption/tooltip separation. The 71 configured project mirrors and current official add-in export match. The reported screenshot is the before-state evidence; the corrected native appearance remains the next observation. Package 1.0.0.65, adapter v8 and the saved consumer project are unchanged.
+
 ## 2026-11-10, compact ribbon sizing (tbUI3IDE 1.2.0.1)
 
 - Applied Shane's requested geometry to Hybrid/Ribbon: command area capped at 100px, with a separate tab strip capped at 26px. Full-size commands use a 50px standard minimum width, expand for their label up to 86px, and remain exactly 76px high. The supplied Office screenshot confirms the separate command/tab areas.

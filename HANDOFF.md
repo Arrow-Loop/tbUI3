@@ -1,12 +1,14 @@
 # Handoff: tbUI3
 
-## Current implementation, 2026-11-10: tbUI3IDE 1.2.0.1
+## Current implementation, 2026-11-10: tbUI3IDE 1.2.0.2
 
 The canonical IDE add-in is now tbIDE/tbUI3IDE/tbUI3IDE.twinproj, output tbUI3IDE.dll. Remove both legacy WinUI3IdeStyle.dll and TabViewDesigner.dll from both architecture folders. Project ID and the WinUI3IdeStyle/Options/Enabled preference remain unchanged; ToolbarMode is saved independently. Package 1.0.0.65 and adapter v8 are unchanged.
 
 The first implementation includes the three-mode selector, active-theme toolbar CSS, enlarged existing Fluent glyphs, native command/menu discovery, Hybrid context, full-menu Ribbon, File/Backstage and quick access. All 62 JS/DOM/protocol checks pass against BETA 1044 helpers; all 71 project mirrors and the current official add-in export match. Evidence: docs/validation/2026-11-10-ide-toolbar.md. Native/visual acceptance and Office adaptive collapse/keytips remain open. BETA 1044's Add-Ins menu only lists loaded add-ins with unsupported action stubs, so real enable/disable is still future work. Do not claim those gates passed. Current architecture and detailed remaining work: tbIDE/ARCHITECTURE.md and tbIDE/ROADMAP.md.
 
 Sizing update in 1.2.0.1: the command area is capped at 100px, separate from the 26px tab strip. Full-size buttons are 76px high and 50px standard/minimum width, growing for labels up to 86px. The supplied Office screenshot confirms the spacing model. Validate the compact geometry along with the existing native acceptance gates.
+
+Spacing correction in 1.2.0.2: the adapter now collapses the toolbar-only native dock slot (BETA 1044 reserves a 30px minimum height), restores the established Fluent shadow/card corners, and uses concise captions rather than help paragraphs, with tighter group spacing. All 66 JS/DOM/protocol checks pass, including the dedicated/shared-slot and redocking regressions. The native screenshot supplied by Shane is the before-state; corrected native appearance remains open. Package/test contents are unchanged.
 
 ## Earlier consolidation/planning update, 2026-11-10
 

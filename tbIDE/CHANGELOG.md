@@ -1,5 +1,10 @@
 # Changelog: tbIDE (WinUI 3 look for the twinBASIC IDE)
 
+## 2026-11-10: hide the page toolbox button (adapter v8, add-in 1.0.0.7)
+
+- Hides only the exact registered tbUI3.UI3TabPage toolbox entry while active, preserving class registration/arrays and page insertion. Reapplies after toolbox rebuild, returns a previously selected page drawing tool to the native pointer when ready, and removes its presentation class on unload/error cleanup. Host/unrelated tools remain visible.
+- All 41 JS adapter checks pass against official BETA 1044 helpers; packed/exported add-in contents match. Package 65 remains unchanged. Native toolbox observation is open. New uploaded package 65 logs now confirm stale Name failures &H5B are skipped and replacement Page8 is discovered.
+
 ## 2026-11-10: native package 65 delete/readd follow-up
 
 - New v7/native 64 logs still show replacements excluded from native discovery after deletion. Package 65 isolates per-entry failures and adds skipped/failure diagnostics; the adapter and its packed project are unchanged. All 40 existing adapter checks pass with official BETA 1044 helpers, without implying native collector execution.

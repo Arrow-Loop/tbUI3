@@ -5,7 +5,7 @@
  */
 (function createTabViewDesigner(api) {
     'use strict';
-    const version = 7;
+    const version = 8;
     const hostClass = 'tbui3.ui3tabview', pageClass = 'tbui3.ui3tabpage';
     const pageClsid = '{1681A635-13C8-47F3-B96A-FE8123C9F708}';
     const required = ['getCurrentFormEditorGlobals', 'preparePaste', 'deserializeControls',
@@ -32,6 +32,23 @@
         }
     }
     const hiddenClass = 'tbui3-inactive-page';
+    const toolboxHiddenClass = 'tbui3-page-toolbox-hidden';
+    const hiddenTools = new Set();
+    function hidePageToolbox(g) {
+        for (const item of hiddenTools) if (item.isConnected === false) {
+            item.classList.remove(toolboxHiddenClass); hiddenTools.delete(item);
+        }
+        // Keep native registration and allToolboxItems intact: the add-in still
+        // needs this public class for insertion, saved forms and Properties.
+        for (const item of g.allToolboxItems || []) {
+            if (!sameName(item.controlTypePackage, 'tbUI3') ||
+                !sameName(item.controlType, 'UI3TabPage') || !sameName(item.clsid, pageClsid)) continue;
+            if (g.selectedTool === item && ready(g) && typeof g.toolBoxPointer?.onclick === 'function')
+                g.toolBoxPointer.onclick();
+            item.classList.add(toolboxHiddenClass);
+            hiddenTools.add(item);
+        }
+    }
     const touched = new Set(), desires = new WeakMap(), firstHeaders = new WeakMap();
     const requestNumbers = new WeakMap(), selections = new WeakMap();
     const pendingNewPages = new WeakMap();
@@ -138,6 +155,7 @@
         display(g, host);
     }
     function display(g, host) {
+        hidePageToolbox(g);
         protectPages(g);
         const current = active(g, host);
         for (const page of pages(g, host)) {
@@ -476,13 +494,15 @@
         pageLocks.clear();
         for (const [button, title] of toolbarTitles) button.title = title;
         toolbarTitles.clear();
+        for (const item of hiddenTools) item.classList.remove(toolboxHiddenClass);
+        hiddenTools.clear();
         style?.remove();
     }
     function install() {
         if (!supported()) return 'Unsupported IDE designer internals; no hooks installed.';
         style = api.document.createElement('style');
         // A narrow designer-only rule must win the IDE's inline display styles.
-        style.textContent = '.' + hiddenClass + '{display:none!important}';
+        style.textContent = '.' + hiddenClass + ',.' + toolboxHiddenClass + '{display:none!important}';
         api.document.head.appendChild(style);
         api.document.addEventListener('pointerdown', pointer, true);
         timer = api.setInterval(() => {

@@ -2,9 +2,9 @@
 
 ## Current update, 2026-11-10
 
-Current package is 1.0.0.65 with unchanged TabViewDesigner adapter v7/add-in 1.0.0.6. The new uploaded log confirms the prior notification correction was incomplete: 09:25:25 raw=5 unique=1 and 09:26 raw=7 unique=1 follow deletion; Page3/Page4 are created but stay at their default 480x200. Native collection previously aborted the entire loop on any entry/property error. It now skips the failing entry and continues, preserving distinct-name/object ordering. Diagnostics add skipped count and the last failed entry index, stage and HRESULT; the old trace cannot establish that exact error.
+Current package remains 1.0.0.65. TabViewDesigner is adapter v8/add-in 1.0.0.7. It hides only the registered tbUI3.UI3TabPage toolbox button via an owned CSS class, leaving the native registry/array/public control metadata intact for insertion and saved forms. Toolbox rebuilds are handled by the existing tick, selected page drawing tools return to the pointer when ready, and unload/error cleanup restores visibility. Host and unrelated toolbox entries remain visible. Native toolbox behavior remains the next observation; all 41 JS checks pass with official BETA 1044 helpers and all 68 mirrors match, including the latest saved test form.
 
-The canonical package and full embedded test package are updated; the latest saved test form descriptors and public IDs are preserved. All 68 mirrors and official package/test export contents match; all 40 existing adapter checks pass with actual BETA 1044 helpers. Those JS tests do not execute this native correction. Next gate is the same native delete/readd sequence, accepted replacement names/bounds and skipped-entry trace, plus Properties/source removal, save/reopen and undo/redo. No adapter rebuild is needed for this pass.
+Shane says package 65 appears to work. New log at 10:05:41 confirms skipped stale Name entries, error &H5B, and at 10:05:43 includes replacement Page8 despite those entries. This validates the native per-entry recovery mechanism; save/reopen, generated/Properties removal and undo/redo remain open. The test binary and package are unchanged by the toolbox implementation. Rebuild the add-in for this pass; retain package 65.
 
 ## Earlier milestone context
 

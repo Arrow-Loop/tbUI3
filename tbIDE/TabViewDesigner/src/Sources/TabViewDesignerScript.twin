@@ -17,7 +17,7 @@ Private Module TabViewDesignerScript
         js = js & vbLf
         js = js & "    'use strict';"
         js = js & vbLf
-        js = js & "    const version = 7;"
+        js = js & "    const version = 8;"
         js = js & vbLf
         js = js & "    const hostClass = 'tbui3.ui3tabview', pageClass = 'tbui3.ui3tabpage';"
         js = js & vbLf
@@ -70,6 +70,40 @@ Private Module TabViewDesignerScript
         js = js & "    }"
         js = js & vbLf
         js = js & "    const hiddenClass = 'tbui3-inactive-page';"
+        js = js & vbLf
+        js = js & "    const toolboxHiddenClass = 'tbui3-page-toolbox-hidden';"
+        js = js & vbLf
+        js = js & "    const hiddenTools = new Set();"
+        js = js & vbLf
+        js = js & "    function hidePageToolbox(g) {"
+        js = js & vbLf
+        js = js & "        for (const item of hiddenTools) if (item.isConnected === false) {"
+        js = js & vbLf
+        js = js & "            item.classList.remove(toolboxHiddenClass); hiddenTools.delete(item);"
+        js = js & vbLf
+        js = js & "        }"
+        js = js & vbLf
+        js = js & "        // Keep native registration and allToolboxItems intact: the add-in still"
+        js = js & vbLf
+        js = js & "        // needs this public class for insertion, saved forms and Properties."
+        js = js & vbLf
+        js = js & "        for (const item of g.allToolboxItems || []) {"
+        js = js & vbLf
+        js = js & "            if (!sameName(item.controlTypePackage, 'tbUI3') ||"
+        js = js & vbLf
+        js = js & "                !sameName(item.controlType, 'UI3TabPage') || !sameName(item.clsid, pageClsid)) continue;"
+        js = js & vbLf
+        js = js & "            if (g.selectedTool === item && ready(g) && typeof g.toolBoxPointer?.onclick === 'function')"
+        js = js & vbLf
+        js = js & "                g.toolBoxPointer.onclick();"
+        js = js & vbLf
+        js = js & "            item.classList.add(toolboxHiddenClass);"
+        js = js & vbLf
+        js = js & "            hiddenTools.add(item);"
+        js = js & vbLf
+        js = js & "        }"
+        js = js & vbLf
+        js = js & "    }"
         js = js & vbLf
         js = js & "    const touched = new Set(), desires = new WeakMap(), firstHeaders = new WeakMap();"
         js = js & vbLf
@@ -282,6 +316,8 @@ Private Module TabViewDesignerScript
         js = js & "    }"
         js = js & vbLf
         js = js & "    function display(g, host) {"
+        js = js & vbLf
+        js = js & "        hidePageToolbox(g);"
         js = js & vbLf
         js = js & "        protectPages(g);"
         js = js & vbLf
@@ -960,6 +996,10 @@ Private Module TabViewDesignerScript
         js = js & vbLf
         js = js & "        toolbarTitles.clear();"
         js = js & vbLf
+        js = js & "        for (const item of hiddenTools) item.classList.remove(toolboxHiddenClass);"
+        js = js & vbLf
+        js = js & "        hiddenTools.clear();"
+        js = js & vbLf
         js = js & "        style?.remove();"
         js = js & vbLf
         js = js & "    }"
@@ -972,7 +1012,7 @@ Private Module TabViewDesignerScript
         js = js & vbLf
         js = js & "        // A narrow designer-only rule must win the IDE's inline display styles."
         js = js & vbLf
-        js = js & "        style.textContent = '.' + hiddenClass + '{display:none!important}';"
+        js = js & "        style.textContent = '.' + hiddenClass + ',.' + toolboxHiddenClass + '{display:none!important}';"
         js = js & vbLf
         js = js & "        api.document.head.appendChild(style);"
         js = js & vbLf

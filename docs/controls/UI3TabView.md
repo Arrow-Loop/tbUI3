@@ -2,6 +2,10 @@
 
 Status: integrated 1.0.0.65 implementation candidate, 2026-11-10 (initial integration 1.0.0.61). This is the first recoverable implementation, not a continuation of a previously committed 1.0.0.61. The earlier chat's candidate never reached the repository.
 
+## Toolbox presentation
+
+TabViewDesigner adapter v8/add-in 1.0.0.7 hides the UI3TabPage toolbox button while active on a consumer form. UI3TabView remains available; +/New page creates real page controls. UI3TabPage remains public and registered, and pages remain selectable in Properties. This is reversible add-in presentation, not a package-level hidden-control flag. Without the add-in the entry is visible. Package remains 1.0.0.65.
+
 ## Structural deletion, generated names and multiple hosts
 
 Adapter v7 (add-in 1.0.0.6) calls the IDE's onSignificantChange after native page deletion and its undo checkpoint, matching the native Delete command. This structural notification is necessary beyond live control removal; its omission left the adapter's deletion path incomplete for the saved/generated form model.

@@ -33,7 +33,7 @@ IDE first).
 - The working Button, form theme, icon picker and stored-icon milestones have their validation history in CHANGELOG.md. IconList L3 was added in 1.0.0.60; L4 remains planned.
 - Package 1.0.0.64 contains the integrated UI3TabView/UI3TabPage candidate and designer paint lifecycle corrections and temporary diagnostics: real page ownership, sizing and runtime switching, plus the separate [TabView Designer add-in](tbIDE/TabViewDesigner/README.md) for designer authoring. [API, source matrix and validation boundary](docs/controls/UI3TabView.md).
 - tbUI3Test preserves the icon harness and adds **Open MultiPage test**, opening a three-page form. Its embedded package is synchronized with the canonical package.
-- Adapter v6 (add-in 1.0.0.5) protects page geometry through native designer locks, while its v5 toolbar help and page-count diagnostics remain. Package 1.0.0.64 builds a unique native page list to guard against repeated headers. Shane reports the repeated-header correction appears to work; accidental independent page movement is addressed by v6.
+- Adapter v7 (add-in 1.0.0.6) completes structural deletion and generates host-scoped page names, while native page locks, toolbar help and count diagnostics remain. Package 1.0.0.64 builds a unique native page list to guard against repeated headers. Shane confirms locked pages still accept child controls. The current follow-up is delete/readd state and replacement-page bounds across multiple hosts.
 - Adapter fixture, BETA 1043 paste-contract and project/mirror checks are recorded separately from the pending full IDE-loop gate. This is a candidate, not a completed WinUI fidelity milestone.
 
 ## WinUI fidelity contract

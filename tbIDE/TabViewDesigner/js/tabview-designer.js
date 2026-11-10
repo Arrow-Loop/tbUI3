@@ -1,18 +1,18 @@
-/* tbUI3 designer adapter. IDE BETA 1043, plus the BETA 1033 insertion probe.
+/* tbUI3 designer adapter. IDE BETA 1043/1044, plus the BETA 1033 insertion probe.
  * Native controls own geometry and persistence. This adapter only suppresses inactive
  * page DOM nodes and calls the IDE's own edit/undo functions. No clipboard or input simulation.
  * Kept as a factory so tests can supply an isolated IDE facade.
  */
 (function createTabViewDesigner(api) {
     'use strict';
-    const version = 6;
+    const version = 7;
     const hostClass = 'tbui3.ui3tabview', pageClass = 'tbui3.ui3tabpage';
     const pageClsid = '{1681A635-13C8-47F3-B96A-FE8123C9F708}';
     const required = ['getCurrentFormEditorGlobals', 'preparePaste', 'deserializeControls',
         'prepareForMultipleChangeProperties', 'handleMultipleChangeProperties', 'doPaste',
         'getTopLeftOfAllControls', 'changedSelectedControls', 'unselectAllControls',
         'changeProperty', 'undoPoint', 'getImageFromServer', 'queueMultipleSnapshot', 'syncPropertySheet',
-        'deleteSelectedControls', 'updateAllControlDragPoints', 'lockTheControl', 'unlockTheControl'];
+        'deleteSelectedControls', 'updateAllControlDragPoints', 'lockTheControl', 'unlockTheControl', 'onSignificantChange'];
     const toolbarTitles = new Map();
     const toolbarHelp = {
         tbUI3TabNew: 'Add one page to the selected TabView. Selecting one of its pages or child controls also identifies the TabView.',
@@ -172,16 +172,40 @@
         firstHeaders.set(host, first);
         return { list, size, first, count: Math.min(slots, list.length - first), add };
     }
+    function pageNameState(g) {
+        // Keep allocation history across adapter refreshes, but outside saved form
+        // properties. Deleted native names may still be referenced during resync.
+        if (!g.__tbUI3PageNames || g.__tbUI3PageNames.version !== 1) {
+            Object.defineProperty(g, '__tbUI3PageNames', { configurable: true,
+                value: { version: 1, used: new Set(), next: new Map() } });
+        }
+        const state = g.__tbUI3PageNames;
+        for (const c of g.allControls) if (name(c)) state.used.add(name(c).toLowerCase());
+        return state;
+    }
+    function allocatePage(g, host, list) {
+        const hostName = name(host);
+        if (!hostName) throw new Error('Name the TabView before adding a page.');
+        const state = pageNameState(g), key = hostName.toLowerCase(), prefix = hostName + '_Page';
+        let number = Math.max(state.next.get(key) || 1, list.length + 1);
+        for (const page of list) {
+            if (name(page).toLowerCase().startsWith(prefix.toLowerCase())) {
+                const suffix = name(page).slice(prefix.length);
+                if (/^[1-9][0-9]*$/.test(suffix)) number = Math.max(number, Number(suffix) + 1);
+            }
+        }
+        while (state.used.has((prefix + number).toLowerCase())) number++;
+        state.next.set(key, number + 1); state.used.add((prefix + number).toLowerCase());
+        return { name: prefix + number, caption: 'Page ' + number };
+    }
     function newPage(g, host) {
         if (!host) throw new Error('Select a UI3TabView or one of its pages first.');
         if (!ready(g)) throw new Error('Designer is waiting for the compiler; retry when it settles.');
         if (pendingNewPages.has(g)) throw new Error('Designer is finishing the new page; retry when it settles.');
         const list = pages(g, host);
-        let number = 1;
-        while (g.allControls.some(c => sameName(name(c), 'UI3TabPage' + number))) number++;
-        const nextName = 'UI3TabPage' + number;
+        const allocated = allocatePage(g, host, list), nextName = allocated.name;
         const data = [{ _className: 'tbUI3.UI3TabPage', _clsid: pageClsid, Name: nextName,
-            Caption: 'Page ' + number, PageOrder: list.reduce((n, p) => Math.max(n, Number(p.properties.PageOrder) || 0), -1) + 1,
+            Caption: allocated.caption, PageOrder: list.reduce((n, p) => Math.max(n, Number(p.properties.PageOrder) || 0), -1) + 1,
             Left: 0, Top: 40, Width: Math.max(1, Number(host.properties.Width) || 1),
             Height: Math.max(1, (Number(host.properties.Height) || 41) - 40),
             Visible: true, TabStop: false, Index: -1, _children: [] }];
@@ -210,7 +234,7 @@
         // The compiler initializes a fresh UserControl from its PropertyBag defaults.
         // Public fields in insertion JSON are not proof that its setters ran. Apply them
         // through native changeProperty once the new control has a compiler-assigned ID.
-        pendingNewPages.set(g, { host, page: created[0], caption: data[0].Caption, order: data[0].PageOrder });
+        pendingNewPages.set(g, { host, hostName: name(host), page: created[0], pageName: nextName, caption: data[0].Caption, order: data[0].PageOrder });
         choose(g, created);
         selections.set(g, created[0]);
         if (ready(g) && (!g.isInFullFormMode || created[0].formDesignerControlId !== undefined)) finishNewPage(g);
@@ -220,8 +244,17 @@
     function finishNewPage(g) {
         const pending = pendingNewPages.get(g);
         if (!pending || !ready(g)) return false;
-        if (!g.allControls.includes(pending.page) || pending.page.isDeleted) {
-            pendingNewPages.delete(g); api.undoPoint(g); return true;
+        // The compiler may replace DOM objects during structural resync. Resolve
+        // only the uniquely allocated page under the original host, not selection.
+        if (!g.allControls.includes(pending.host) || !g.allControls.includes(pending.page) || pending.page.isDeleted) {
+            const host = g.allControls.find(c => kind(c) === hostClass && sameName(name(c), pending.hostName) && !c.isDeleted);
+            const page = host && pages(g, host).find(c => sameName(name(c), pending.pageName));
+            if (!host || !page) { pendingNewPages.delete(g); api.undoPoint(g); return true; }
+            pending.host = host; pending.page = page;
+        }
+        if (pending.page.errorInfo) {
+            pendingNewPages.delete(g); api.undoPoint(g);
+            throw new Error('Page initialization failed: ' + pending.page.errorInfo);
         }
         if (g.isInFullFormMode && pending.page.formDesignerControlId === undefined) return false;
         try {
@@ -281,6 +314,7 @@
         const page = active(g, host);
         if (!page) return;
         const list = pages(g, host), index = list.indexOf(page), next = list[index + 1] || list[index - 1];
+        pageNameState(g);
         edit(g, () => {
             choose(g, [page]);
             api.deleteSelectedControls(g);
@@ -288,7 +322,10 @@
             snapshotHost(g, host);
         });
         desires.set(host, next ? name(next) : '');
-        choose(g, [host]);
+        choose(g, [host]); selections.set(g, host);
+        // The native Delete command sends this in addition to its undo checkpoint.
+        // Without it the live tab vanishes but generated/saved form members remain.
+        api.onSignificantChange(g);
     }
     function run(command) {
         try {

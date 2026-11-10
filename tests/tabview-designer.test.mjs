@@ -37,7 +37,7 @@ function fixture() {
         unlockTheControl:(g,n)=>{g.lockedControls=g.lockedControls.filter(x=>x.toLowerCase()!==n.toLowerCase());},
         changeProperty:(g,c,k,v)=>{c.properties[k]=v;},undoPoint:()=>calls.undo++,
         getImageFromServer:()=>{},queueMultipleSnapshot:()=>{},syncPropertySheet:()=>{},updateAllControlDragPoints:()=>{},
-        deleteSelectedControls:g=>{for(const c of g.selectedControls){g.allControls=g.allControls.filter(x=>!c.contains(x));c.remove();c.isDeleted=true;}g.selectedControls=[form];},
+        onSignificantChange:()=>{},deleteSelectedControls:g=>{for(const c of g.selectedControls){g.allControls=g.allControls.filter(x=>!c.contains(x));c.remove();c.isDeleted=true;}g.selectedControls=[form];},
         document:{head:new Node(),createElement:()=>new Node(),addEventListener:(t,f)=>calls.events.set(t,f),removeEventListener:t=>calls.events.delete(t)},
         setInterval:f=>{calls.intervals.set(1,f);return 1;},clearInterval:id=>calls.intervals.delete(id)
     };
@@ -48,15 +48,15 @@ function fixture() {
 test('new page is a direct host child even when a child of the first page is selected',()=>{
     const f=fixture(),p=f.page('Page1'),child=p.appendChild(new Node({_className:'TextBox',Name:'Text1',Left:18,Top:30}));
     f.g.allControls.push(child);f.g.selectedControls=[child];
-    assert.equal(f.adapter.run('new'),'UI3TabPage1');
+    assert.equal(f.adapter.run('new'),'Tabs1_Page2');
     const created=f.g.allControls.at(-1);
     assert.equal(created.parentElement,f.host);assert.notEqual(created.parentElement,p);
-    assert.equal(f.host.properties.SelectedPage,'UI3TabPage1');assert.equal(f.calls.undo,1);
+    assert.equal(f.host.properties.SelectedPage,'Tabs1_Page2');assert.equal(f.calls.undo,1);
     assert.equal(child.properties.Left,18);assert.equal(child.properties.Top,30);
 });
 test('creation reserves a unique name across the whole form and keeps existing page order',()=>{
-    const f=fixture();f.page('UI3TabPage1',8);f.page('UI3TabPage3',2);
-    assert.equal(f.adapter.run('new'),'UI3TabPage2');assert.equal(f.g.allControls.at(-1).properties.PageOrder,9);
+    const f=fixture();f.page('Tabs1_Page1',8);f.page('Tabs1_Page3',2);
+    assert.equal(f.adapter.run('new'),'Tabs1_Page4');assert.equal(f.g.allControls.at(-1).properties.PageOrder,9);
 });
 test('switching changes only selection and designer visibility, never child coordinates or Visible',()=>{
     const f=fixture(),a=f.page('Page1'),b=f.page('Page2',1);
@@ -178,7 +178,7 @@ test('new UserControl defaults are replaced through native setters after compile
     assert.match(f.adapter.run('new'),/waiting for the compiler/);
     f.g.pendingChangesCount=0;f.adapter.tick();assert.equal(f.calls.undo,0);
     created.formDesignerControlId=99;f.adapter.tick();
-    assert.equal(created.properties.Caption,'Page 1');assert.equal(created.properties.PageOrder,8);
+    assert.equal(created.properties.Caption,'Page 2');assert.equal(created.properties.PageOrder,8);
     assert.equal(f.calls.undo,1);f.adapter.tick();assert.equal(f.calls.undo,1);
 });
 test('the marked harness initializes native properties once and keeps later user edits',()=>{
@@ -202,7 +202,7 @@ test('diagnostics reveal rejected class/selection state without changing control
     f.form.properties._className='MyProject.frmMultiPage';f.g.selectedControls=[p];
     const before=JSON.stringify([f.form.properties,f.host.properties,p.properties]);
     const text=f.adapter.run('diagnostics');assert(text.startsWith('DIAGNOSTICS '));
-    const report=JSON.parse(text.slice(12));assert.equal(report.adapter,6);assert.equal(report.consumerAccepted,false);
+    const report=JSON.parse(text.slice(12));assert.equal(report.adapter,7);assert.equal(report.consumerAccepted,false);
     assert.equal(report.form.className,'MyProject.frmMultiPage');assert.equal(report.controls.length,2);
     assert.equal(report.selection[0].name,'Page1');assert.equal(f.calls.undo,0);
     assert.equal(JSON.stringify([f.form.properties,f.host.properties,p.properties]),before);
@@ -341,4 +341,56 @@ test('shipped IDE drag, keyboard move and resize handlers honor page-only native
     drag(child);assert.equal(child.properties.Left,40);assert.equal(child.properties.Top,58);assert.equal(child.properties.Width,95);
     drag(f.host);assert.equal(f.host.properties.Left,42);assert.equal(f.host.properties.Top,48);assert.equal(f.host.properties.Width,515);
     assert.equal(JSON.stringify(p.properties),before);f.adapter.dispose();assert(!sandbox.isControlLocked(f.g,p));
+});
+test('page deletion sends the native form-structure notification needed to remove saved members',t=>{
+    const file=process.env.TB_IDE_MAIN_JS;if(!file)return t.skip('Set TB_IDE_MAIN_JS for deletion notification contract');
+    const ide=fs.readFileSync(file,'utf8'),f=fixture(),p=f.page('Page1');
+    const child=p.appendChild(new Node({_className:'TextBox',Name:'Text1'}));f.g.allControls.push(child);const messages=[];
+    const start=ide.indexOf('function onSignificantChange('),end=ide.indexOf('function ',start+10);assert(start>=0);
+    const source=ide.slice(start,end);
+    f.g.vscode={postMessage:m=>messages.push(m)};
+    f.api.onSignificantChange=vm.runInNewContext('('+source+')',{serializeForm:g=>g.allControls.map(c=>({Name:c.properties.Name}))});
+    f.adapter.run('delete');
+    const message=messages.find(m=>m.type==='onSignificantChange');assert(message,'Deletion never notified the project model');
+    assert(!message.args[0].form.some(c=>c.Name==='Page1'||c.Name==='Text1'));
+});
+test('page names and captions are scoped to each host while all form names stay unique',()=>{
+    const f=fixture();f.adapter.install();
+    assert.equal(f.adapter.run('new'),'Tabs1_Page1');const a=f.g.allControls.at(-1);assert.equal(a.properties.Caption,'Page 1');
+    const host2=f.form.appendChild(new Node({_className:'tbUI3.UI3TabView',Name:'SettingsTabs',Width:310,Height:180,Left:600,Top:40}));f.g.allControls.push(host2);f.g.selectedControls=[host2];
+    assert.equal(f.adapter.run('new'),'SettingsTabs_Page1');const b=f.g.allControls.at(-1);
+    assert.equal(b.properties.Caption,'Page 1');assert.equal(b.parentElement,host2);assert.equal(b.properties.Width,310);assert.equal(b.properties.Height,140);
+    assert.equal(a.properties.Width,500);assert.equal(a.properties.Height,200);assert.equal(a.properties.Caption,'Page 1');
+});
+test('delete and add on a second host preserves ownership and bounds, including after deleting the last page',()=>{
+    const f=fixture();f.adapter.install();f.adapter.run('new');const first=f.g.allControls.at(-1),before=JSON.stringify(first.properties);
+    const host2=f.form.appendChild(new Node({_className:'tbUI3.UI3TabView',Name:'OtherTabs',Width:270,Height:160,Left:550,Top:100}));f.g.allControls.push(host2);f.g.selectedControls=[host2];
+    assert.equal(f.adapter.run('new'),'OtherTabs_Page1');const removed=f.g.allControls.at(-1);f.adapter.run('delete');assert(!f.g.allControls.includes(removed));
+    assert.equal(f.adapter.run('new'),'OtherTabs_Page2');let replacement=f.g.allControls.at(-1);
+    assert.equal(replacement.parentElement,host2);assert.deepEqual([replacement.properties.Left,replacement.properties.Top,replacement.properties.Width,replacement.properties.Height],[0,40,270,120]);
+    assert.equal(JSON.stringify(first.properties),before);assert.equal(host2.properties.SelectedPage,'OtherTabs_Page2');
+    f.adapter.run('delete');f.adapter.dispose();const refreshed=factory(f.api);refreshed.install();f.g.selectedControls=[host2];
+    assert.equal(refreshed.run('new'),'OtherTabs_Page3');assert(!Object.keys(f.g).includes('__tbUI3PageNames'));
+});
+test('page allocation skips unrelated name collisions and keeps user labels unchanged',()=>{
+    const f=fixture();const existing=f.page('MyCustomPage');existing.properties.Caption='Account settings';
+    f.g.allControls.push(f.form.appendChild(new Node({_className:'TextBox',Name:'Tabs1_Page2'})));
+    assert.equal(f.adapter.run('new'),'Tabs1_Page3');assert.equal(existing.properties.Name,'MyCustomPage');assert.equal(existing.properties.Caption,'Account settings');
+});
+test('new page initialization survives replacement of its DOM node during native resync',()=>{
+    const f=fixture();f.g.isInFullFormMode=true;f.host.formDesignerControlId=1;
+    assert.equal(f.adapter.run('new'),'Tabs1_Page1');const old=f.g.allControls.at(-1),properties={...old.properties,Caption:'Page',PageOrder:0};
+    f.g.allControls=f.g.allControls.filter(c=>c!==old);old.remove();old.isDeleted=true;
+    const replacement=f.host.appendChild(new Node(properties));replacement.formDesignerControlId=99;f.g.allControls.push(replacement);f.adapter.tick();
+    assert.equal(replacement.properties.Caption,'Page 1');assert.equal(f.host.properties.SelectedPage,'Tabs1_Page1');assert.equal(f.g.selectedControls[0],replacement);
+    assert(!f.adapter.run('new').includes('finishing the new page'));
+});
+test('live delete then add sends a structure change and configures the replacement after acknowledgement',t=>{
+    const f=liveFixture(t);if(!f)return;const messages=[];f.g.vscode={postMessage:m=>messages.push(m)};
+    const ide=fs.readFileSync(process.env.TB_IDE_MAIN_JS,'utf8'),start=ide.indexOf('function onSignificantChange('),end=ide.indexOf('function ',start+10);
+    f.api.onSignificantChange=vm.runInNewContext('('+ide.slice(start,end)+')',{serializeForm:g=>g.allControls.map(c=>({Name:c.properties.Name}))});
+    const p=f.page('Tabs1_Page1');f.host.properties.SelectedPage='Tabs1_Page1';f.adapter.run('delete');
+    assert(messages.some(m=>m.type==='onSignificantChange'&&!m.args[0].form.some(c=>c.Name==='Tabs1_Page1')));
+    f.ack();f.adapter.tick();assert.equal(f.adapter.run('new'),'Tabs1_Page2');const created=f.g.allControls.at(-1);created.formDesignerControlId=100;
+    f.adapter.tick();f.ack();f.adapter.tick();assert.equal(f.host.properties.SelectedPage,'Tabs1_Page2');assert.equal(created.properties.Caption,'Page 2');
 });

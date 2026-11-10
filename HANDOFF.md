@@ -1,12 +1,12 @@
 # Handoff: tbUI3
 
-## Current update, 2026-11-09
+## Current update, 2026-11-10
 
-Current candidate: unchanged package 1.0.0.64 plus TabViewDesigner add-in 1.0.0.5, adapter v6. Shane reports the repeated-header correction appears to work, but page controls can be accidentally moved separately from their host. The add-in now uses the native IDE per-control lock for direct page children. The host and page contents remain editable/movable; protection follows page creation, rename and node resync and is released on reparent/deletion.
+Current package remains 1.0.0.64. TabViewDesigner is add-in 1.0.0.6, adapter v7. Shane confirms adding controls works with page locks. The next reports are delete-then-add failure, stale deleted entries in Properties, replacement sizing after deletion and global page numbering across hosts. The native Delete command calls onSignificantChange in addition to deletion/undo; the adapter omitted that structural notification. V7 now sends it, and its actual-source contract check fails on v6 and passes on v7.
 
-Pre-existing locks are preserved, and session-owned locks are removed on adapter unload/error cleanup. Normal IDE saving can persist current locks in __IDEOptions; locks already saved when a session starts are treated as pre-existing. The adapter does not change page geometry or create undo checkpoints for locking. All 34 adapter/contract checks pass, including actual shipped mouse drag, keyboard move and resize functions. The native authoring outcome for protection remains the next gate. The package and canonical test project are unchanged by this pass.
+New pages use host-scoped names such as UI3TabView2_Page1 and host-local captions. Session allocation history avoids recycling issued names across refreshes and protects form-wide uniqueness. Existing pages are not automatically renamed. Pending new-page setup can resolve a replacement DOM node under the original host after resync; errors are surfaced. Host geometry remains the insertion source. Tests cover delete/readd on two differently sized hosts, deleting the last page, naming collisions and delayed native acknowledgements.
 
-The earlier paint/layout and live snapshot corrections remain. Intermittent reference unload/reload deserialization and the host Paint exception at 16:48:01 remain unresolved and separate. Public IDs and unrelated styling are preserved. Read docs/controls/UI3TabView.md and docs/validation/2026-11-09-tabview-candidate.md before extending this work.
+All 40 JS adapter/contract checks pass against official BETA 1043 and 1044 helper functions. Inspected dependencies/edit/deletion functions are unchanged between those releases; official 1044 archive and main.js hashes are recorded in validation notes. Shane's latest test binary and package are unchanged by this fix; its stale frmMultiPage mirror was refreshed in a separate sync commit. The native outcome after v7, persistence and full undo/redo remain gates. Existing page locks/theming and unrelated styling remain intact. Do not add guessed native-layout or counter-reset changes without a capture of the remaining symptom.
 
 ## Earlier milestone context
 

@@ -1,5 +1,11 @@
 # Changelog: tbIDE (WinUI 3 look for the twinBASIC IDE)
 
+## 2026-11-10, compact ribbon sizing (tbUI3IDE 1.2.0.1)
+
+- Applied Shane's requested geometry to Hybrid/Ribbon: command area capped at 100px, with a separate tab strip capped at 26px. Full-size commands use a 50px standard minimum width, expand for their label up to 86px, and remain exactly 76px high. The supplied Office screenshot confirms the separate command/tab areas.
+- Centralized the dimensions in ribbon CSS variables and applied border-box sizing so padding and borders count toward those limits. Reduced stacked rows to 24px, retained 76px for the three-row span, tightened group captions and limited large labels to two lines with the original tooltip retained. Kept quick access, Backstage and submenu button sizing separate.
+- Regenerated the embedded stylesheet/script and packed add-in as 1.2.0.1. Existing 62 JS/DOM/protocol checks, source/mirror checks and official-export comparison pass. Geometry was inspected statically; this entry does not claim a new rendered IDE observation. Package 1.0.0.65, adapter v8, glyphs and command behavior are unchanged.
+
 ## 2026-11-10: reconcile main research with the current IDE candidate
 
 - Preserved the main-branch designer-bridge research and its probe history alongside the unified tbUI3IDE implementation records. Updated the roadmap to distinguish historical questions from the current acceptance gates. No source or packed-project changes.
@@ -525,4 +531,3 @@ Validated
 - Both files parse with a copy of the IDE's own `applyThemeData` parser: no dropped lines, and every property name exists in the shipped themes.
 - Every value passes Chromium's `CSS.supports` for the CSS property it feeds (the two indent-guide colours are used inside a larger `box-shadow`, so they were checked by hand).
 - Not yet tested inside the IDE. Shane's check on his PC is pending.
-

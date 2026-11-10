@@ -2,7 +2,7 @@
 
 ## Distribution and identity
 
-One canonical project, tbUI3IDE/tbUI3IDE.twinproj, produces tbUI3IDE.dll per IDE architecture, version 1.2.0.0. Its established project ID is unchanged. Remove legacy WinUI3IdeStyle.dll and TabViewDesigner.dll from both addins architecture directories during migration. Theme files and the tbUI3 runtime control package remain separate; built consumer applications do not need this add-in.
+One canonical project, tbUI3IDE/tbUI3IDE.twinproj, produces tbUI3IDE.dll per IDE architecture, version 1.2.0.1. Its established project ID is unchanged. Remove legacy WinUI3IdeStyle.dll and TabViewDesigner.dll from both addins architecture directories during migration. Theme files and the tbUI3 runtime control package remain separate; built consumer applications do not need this add-in.
 
 ## Entry point and independent features
 
@@ -19,6 +19,8 @@ The live adapter observes current sources through a bounded 400ms scan, captures
 The fullscreen File view sits inside the IDE window. File operations and Tools/settings use native descriptors. Loaded-add-in information moves into its Add-ins section; other add-ins' toolbar contributions remain on the Add-ins ribbon tab. BETA 1044 has no functional native enable/disable action: its loaded-add-in actions call notSupportedMenuOption. Those entries are displayed disabled with an explanation, and real enablement remains roadmap work.
 
 Save/Undo/Redo/Play/Pause/Stop use the former menu space in rootMenu1Inner, which is the custom title bar when Show real OS titlebar is off and the row above the ribbon when it is on. Window controls and title-drag handlers remain owned by the IDE. File Escape/back returns focus; tab arrow navigation and Ctrl+F1 collapse are handled locally. Current groups use a larger lead command and three stacked rows with horizontal overflow; complete Office adaptive collapse/keytips and visual acceptance remain open.
+
+The 1.2.0.1 geometry uses central CSS variables: command area 100px maximum and separate tab strip 26px maximum; full-size button minimum/standard width 50px, maximum width 86px and fixed height 76px. Border-box sizing includes padding/borders. Three stacked 24px rows with two 2px gaps also occupy 76px. Compact group captions and two-line large-button labels keep that vertical budget; complete captions remain in tooltips. Quick-access, Backstage and popup controls retain their own dimensions. These are Shane's explicit composition values, supported by his Office spacing screenshot, rather than asserted WinUI Ribbon template values.
 
 ## Theme and icon ownership
 

@@ -1,3 +1,7 @@
+### 1.0.0.65
+- Isolates errors per native contained-control entry so a stale deleted page cannot stop discovery of later replacement pages.
+- Discovery diagnostics now include skipped-entry count and the last failure index, stage and HRESULT.
+
 ### 1.0.0.64
 - Page discovery builds an atomic list of unique page objects/control names, so a repeated enumeration entry cannot create a phantom header. Equal captions on distinct pages remain valid.
 - Temporary discovery diagnostics record raw/unique counts, duplicate entries and accepted page names/object addresses for comparison with the designer DOM.

@@ -18,10 +18,11 @@ Private Module UI3TabDiagnostics
     End Sub
 
     Public Sub DiscoveryState(ByVal HostName As String, ByVal RawCount As Long, ByVal Pages As Collection, _
-            ByVal Duplicates As Long, ByRef Previous As String)
+            ByVal Duplicates As Long, ByVal Skipped As Long, ByVal Failure As String, ByRef Previous As String)
         On Error Resume Next
         Dim state As String, page As UI3TabPage, i As Long
-        state = "host " & HostName & " discovery raw=" & RawCount & " unique=" & Pages.Count & " duplicates=" & Duplicates & " names="
+        state = "host " & HostName & " discovery raw=" & RawCount & " unique=" & Pages.Count & " duplicates=" & Duplicates & _
+            " skipped=" & Skipped & " failure=" & Failure & " names="
         For i = 1 To Pages.Count
             Set page = Pages(i)
             state = state & " [" & page.PageName & "@" & Hex$(ObjPtr(page)) & "]"
@@ -34,7 +35,7 @@ Private Module UI3TabDiagnostics
     Public Sub Note(ByVal Text As String)
         On Error Resume Next
         Dim lineText As String
-        lineText = Format$(Now, "hh:nn:ss") & " [native 1.0.0.64] " & Text
+        lineText = Format$(Now, "hh:nn:ss") & " [native 1.0.0.65] " & Text
         AppendLog App.Path & "\tbUI3-tabview.log", lineText
         AppendLog Environ$("TEMP") & "\tbUI3-tabview.log", lineText
     End Sub

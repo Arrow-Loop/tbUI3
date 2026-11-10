@@ -89,36 +89,61 @@ Public Class UI3TabView
         ' entry must not become another header, count, layout or keyboard position.
         Dim found As Collection
         Set found = New Collection
-        Dim item As Object, page As UI3TabPage, existing As UI3TabPage, at As Long
-        Dim contained As Object, childIndex As Long, rawCount As Long, duplicates As Long
+        Dim contained As Object, childIndex As Long, rawCount As Long, duplicates As Long, skipped As Long
+        Dim failure As String
         Set contained = UserControl.ContainedControls
         rawCount = contained.Count
         For childIndex = 0 To rawCount - 1
-            Set item = contained.Item(childIndex)
-            Set page = PageObject(item)
-            If Not page Is Nothing Then
-                If ContainsPage(found, page) Then
-                    duplicates = duplicates + 1
-                Else
-                    at = 1
-                    Do While at <= found.Count
-                        Set existing = found(at)
-                        If page.PageOrder < existing.PageOrder Then Exit Do
-                        If page.PageOrder = existing.PageOrder Then
-                            If StrComp(page.PageName, existing.PageName, vbTextCompare) < 0 Then Exit Do
-                        End If
-                        at = at + 1
-                    Loop
-                    If at > found.Count Then found.Add page Else found.Add page, , at
-                End If
-            End If
+            CollectPageEntry contained, childIndex, found, duplicates, skipped, failure
         Next
     Done:
         Set m_Pages = found
         If m_Pages Is Nothing Then Set m_Pages = New Collection
         m_Collecting = False
         On Error Resume Next
-        If Not Ambient.UserMode Then UI3TabDiagnostics.DiscoveryState UserControl.Extender.Name, rawCount, m_Pages, duplicates, m_LastDiscoveryTrace
+        If Not Ambient.UserMode Then UI3TabDiagnostics.DiscoveryState UserControl.Extender.Name, rawCount, m_Pages, duplicates, skipped, failure, m_LastDiscoveryTrace
+    End Sub
+
+    ' A deleted native entry can remain in ContainedControls during designer resync.
+    ' Reject only that entry; later live pages must still be discovered and arranged.
+    Private Sub CollectPageEntry(ByVal Contained As Object, ByVal Index As Long, ByVal Found As Collection, _
+            ByRef Duplicates As Long, ByRef Skipped As Long, ByRef Failure As String)
+        On Error GoTo Rejected
+        Dim stage As String, item As Object, page As UI3TabPage, existing As UI3TabPage
+        Dim at As Long, pageName As String, pageOrder As Long, caption As String
+        stage = "Item"
+        Set item = Contained.Item(Index)
+        stage = "Object"
+        Set page = PageObject(item)
+        If page Is Nothing Then Exit Sub
+        stage = "Name"
+        pageName = page.PageName
+        stage = "Order"
+        pageOrder = page.PageOrder
+        ' Probe Caption before admitting the page to the list used by Paint.
+        stage = "Caption"
+        caption = page.Caption
+        stage = "Duplicate"
+        If ContainsPage(Found, page) Then
+            Duplicates = Duplicates + 1
+            Exit Sub
+        End If
+        stage = "Sort"
+        at = 1
+        Do While at <= Found.Count
+            Set existing = Found(at)
+            If pageOrder < existing.PageOrder Then Exit Do
+            If pageOrder = existing.PageOrder Then
+                If StrComp(pageName, existing.PageName, vbTextCompare) < 0 Then Exit Do
+            End If
+            at = at + 1
+        Loop
+        If at > Found.Count Then Found.Add page Else Found.Add page, , at
+        Exit Sub
+    Rejected:
+        Skipped = Skipped + 1
+        Failure = "index=" & Index & " stage=" & stage & " hr=&H" & Hex$(Err.Number)
+        Err.Clear
     End Sub
 
     ' Native snapshot capture temporarily changes the HWND size. Painting and

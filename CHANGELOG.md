@@ -4,6 +4,14 @@ All notable changes to tbUI3. Dates are when the change was made, not released. 
 
 ## Unreleased
 
+### 2026-11-10, continue native discovery past invalid deleted entries (1.0.0.65)
+
+- Shane's new adapter v7/native 64 log still shows delete/readd failure. At 09:25:13 UI3TabView2 has one survivor; subsequent discovery reports raw=5 then raw=7 but still unique=1, while newly created Page3/Page4 paint only at their default 480x200. The add-in creates replacements, but native discovery does not admit them for arrangement.
+- Source inspection found one error boundary around the entire contained-control loop. A failure retrieving a deleted entry or reading its page properties ended enumeration and published a partial list. Collection now isolates each entry's retrieval, property probes, deduplication and sorted insertion; a failed entry is skipped and later entries are still visited. No geometry, ownership, public ID or selection contract was changed.
+- Temporary native discovery diagnostics include skipped count and last failed index/stage/HRESULT. The old log does not expose an HRESULT or prove which property failed; the new instrumentation distinguishes those cases.
+- Updated the canonical package and full embedded consumer package to 1.0.0.65, preserving Shane's latest saved form descriptors. Adapter v7/add-in 1.0.0.6 is unchanged. All 68 mirrors, embedded package equality, IDs/ownership/CRLF checks and official package/test exports match. All 40 existing JS adapter/contract checks pass against official BETA 1044 helpers; those checks do not execute the native collector. Native collection behavior is source-inspected; the next native outcome remains open.
+
+
 ### 2026-11-10, finish structural deletion and scope new page names to their host (adapter v7)
 
 - Shane confirms adding child controls still works with page locking, then reports add-after-delete failure, replacement-page sizing/positioning problems after deletion, and deleted pages remaining in Properties. His BETA 1044 screenshot also shows form-global UI3TabPage numbering across multiple hosts.

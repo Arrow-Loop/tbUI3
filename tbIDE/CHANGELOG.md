@@ -1,5 +1,9 @@
 # Changelog: tbIDE (WinUI 3 look for the twinBASIC IDE)
 
+## 2026-11-10: native package 65 delete/readd follow-up
+
+- New v7/native 64 logs still show replacements excluded from native discovery after deletion. Package 65 isolates per-entry failures and adds skipped/failure diagnostics; the adapter and its packed project are unchanged. All 40 existing adapter checks pass with official BETA 1044 helpers, without implying native collector execution.
+
 ## 2026-11-10: structural delete completion and host-scoped naming (adapter v7, add-in 1.0.0.6)
 
 - Added the missing native onSignificantChange after deletion/undo, matching the native Delete command. A source-contract check confirms v6 omitted the project-model notification.

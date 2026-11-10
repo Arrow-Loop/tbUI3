@@ -1,6 +1,6 @@
 # UI3TabView and UI3TabPage
 
-Status: integrated 1.0.0.64 implementation candidate, 2026-11-09 (initial integration 1.0.0.61). This is the first recoverable implementation, not a continuation of a previously committed 1.0.0.61. The earlier chat's candidate never reached the repository.
+Status: integrated 1.0.0.65 implementation candidate, 2026-11-10 (initial integration 1.0.0.61). This is the first recoverable implementation, not a continuation of a previously committed 1.0.0.61. The earlier chat's candidate never reached the repository.
 
 ## Structural deletion, generated names and multiple hosts
 
@@ -25,6 +25,10 @@ Native discovery traces report raw/unique counts, duplicates and accepted names/
 ## Historical live designer selection follow-up
 
 The package remains 1.0.0.63. Shane reports normal rendering and successful + page creation in the working session, but v3 cannot select the added page. Uploaded logs confirm native fixture captions/order and accepted root/IDs. Adapter v4 (add-in 1.0.0.3) queues parent header snapshots through the full-form native batch protocol, because getImageFromServer returns immediately in that mode. It configures and activates a new page after its native ID is assigned. This correction is covered by protocol checks with actual shipped helper functions; the native authoring outcome remains a gate. Reference-reload deserialization and the logged Paint exception are separate unresolved findings.
+
+## Native discovery after deletion, 1.0.0.65
+
+The v7/native 64 trace shows replacement objects are created but stay 480x200 while discovery retains only the surviving page. The old collector had one error boundary around the full loop. Each entry now has its own guarded retrieval, PageName/PageOrder/Caption probes, duplicate check and sorted insertion. A failed entry increments skipped count and leaves later indices reachable. This does not remove the IDE's stale object or replace structural-delete notification. Temporary discovery logs include last failed index/stage/HRESULT. Source inspection supports this correction; the next native capture must establish the actual failed stage and restored replacement layout.
 
 ## Current rendering investigation
 

@@ -1,6 +1,8 @@
 # tbUI3 TabView Designer
 
-Adapter v7, add-in version 1.0.0.6. Separate native IDE add-in for tbUI3 1.0.0.64's real page containers. It coexists with WinUI3IdeStyle and does not require a particular IDE theme. BETA 1043 and 1044 are source-inspected adapter baselines; the insertion recipe originated in the BETA 1033 probe.
+Adapter v7, add-in version 1.0.0.6. Separate native IDE add-in for tbUI3 1.0.0.65's real page containers. It coexists with WinUI3IdeStyle and does not require a particular IDE theme. BETA 1043 and 1044 are source-inspected adapter baselines; the insertion recipe originated in the BETA 1033 probe.
+
+Package 1.0.0.65 is the native delete/readd follow-up: failed contained-control entries no longer abort discovery of later pages. Update the package/embedded test package for this correction; adapter v7 remains unchanged. Native logs now report skipped-entry count and failure stage/HRESULT.
 
 ## Installation and use
 

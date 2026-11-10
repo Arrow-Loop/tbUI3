@@ -1,8 +1,20 @@
 # TabView candidate validation, 2026-11-09
 
-Current candidate: **package 1.0.0.64 with adapter v7 (add-in 1.0.0.6)**. Earlier candidate evidence is retained below as history.
+Current candidate: **package 1.0.0.65 with adapter v7 (add-in 1.0.0.6)**. Earlier candidate evidence is retained below as history.
 
-## Adapter v7 delete/readd and host-scoped naming follow-up, 2026-11-10
+## Native stale-entry discovery follow-up, 1.0.0.65, 2026-11-10
+
+Evidence: tbUI3Test/tbUI3-tabview.log at commit 9bfc629527cfecbe393bc46499a42445c16bd60a, Git blob 461c9831c9356d310cfeabd4735c5aaf1ceb5481. Adapter v7 is installed at 09:24:10. At 09:25:13 deletion leaves raw=3 unique=1 duplicates=1. At 09:25:25 raw=5 unique=1 duplicates=1; at 09:26 raw=7 unique=1 duplicates=1. Page3 and Page4 paint at 480x200 and never receive the host's 538x376 page bounds. This proves replacement creation without acceptance into the native layout list; it does not reveal an HRESULT.
+
+Source inspection: the old CollectPages handler exits the entire enumeration on an Item/property failure, retaining only the partial list before that entry. The new CollectPageEntry guards each index independently, probes properties needed by paint/layout and preserves identity/name deduplication and ordering. Errors increment skipped count and record index/stage/HRESULT; later indices remain reachable. No ownership/geometry rewrite or stale-object destruction is introduced. Adapter v7 remains unchanged.
+
+Executed: all 68 packed-project mirrors, full package embedding/reference 65, stable IDs, ownership and CRLF checks pass. Official exports match all 27 package and 36 consumer file contents. All 40 existing JS adapter/contract checks pass with official BETA 1044 helpers; they do not run the native collector. Native behavior after the new error boundary remains the next gate, alongside deleted Properties/source removal, persistence and undo/redo.
+
+- tbUI3/tbUI3.twinproj SHA-256: 55f67ec98c93f9c6d6ebd8dc133e07112c4c107cc92207d99315446117a8c9b5
+- tbUI3Test/tbUI3Test.twinproj SHA-256: 734ba5d485cb7575ca1f600abbdf162c5b3bcd765b31ebe8b92c2cead650270c
+- tbIDE/TabViewDesigner/TabViewDesigner.twinproj SHA-256: 713b52c2b4d8621cb2b9ec7cfac03da4af05a395f796bbd2518172445f592f26
+
+## Historical adapter v7 delete/readd and host-scoped naming follow-up, 2026-11-10
 
 Shane confirms child controls can be added with page locking. He then reports deletion removes a header but leaves the page in Properties, add-after-delete fails, and sizing/positioning problems occur after deletion when adding on multiple hosts. The supplied screenshot identifies BETA 1044 and form-global UI3TabPage names/captions.
 

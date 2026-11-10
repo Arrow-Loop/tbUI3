@@ -23,9 +23,9 @@ for(const [project,mirror] of projects) {
     check(mirror);console.log(project+': '+files.size+' exact mirrors');
 }
 const [pkg,test]=all;
-assert.equal(JSON.parse(pkg.get('Settings'))['project.versionRevision'],64);
+assert.equal(JSON.parse(pkg.get('Settings'))['project.versionRevision'],65);
 const imported=JSON.parse(test.get('Settings'))['project.references'].find(r=>r.symbolId==='tbUI3');
-assert.equal(Number(imported.versionRevision),64);
+assert.equal(Number(imported.versionRevision),65);
 for(const [p,data] of pkg) if(p!=='.meta') assert(data.equals(test.get('Packages/tbUI3/'+p)),'Embedded package mismatch: '+p);
 for(const name of ['UI3Button','UI3FormTheme','UI3IconList','UI3TabView','UI3TabPage']) {
     const ids=JSON.parse(fs.readFileSync('tbUI3/'+name+'-ids.json'));

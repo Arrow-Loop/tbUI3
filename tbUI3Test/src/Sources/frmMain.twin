@@ -16,6 +16,7 @@ Class frmMain
         On Error GoTo Failed
         Dim folder As String
         stepName = "IconFolder"
+        UI3Button5.Caption = "Open MultiPage test"
         folder = IconFolder()
         If Len(folder) = 0 Then MsgBox "test-icons not found next to " & App.Path
 
@@ -141,6 +142,10 @@ Class frmMain
         UI3Button3.IconSize = size
         UI3Button4.IconSize = size
         UI3Button4.Caption = "Copy, size " & size
+    End Sub
+
+    Private Sub UI3Button5_Click()
+        frmMultiPage.Show
     End Sub
 
 End Class

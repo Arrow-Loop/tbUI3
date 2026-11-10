@@ -1,0 +1,51 @@
+' Temporary, local diagnostics for the TabView designer paint/snapshot investigation.
+' Uses the same App.Path / TEMP file routes as this repository's proven probe logger.
+Private Module UI3TabDiagnostics
+    Private Declare PtrSafe Function GetPixel Lib "gdi32" (ByVal hdc As LongPtr, ByVal x As Long, ByVal y As Long) As Long
+
+    Public Sub PaintState(ByVal Label As String, ByVal Hwnd As LongPtr, ByVal DC As LongPtr, ByRef Client As UI3GdiRect, _
+            ByVal Dpi As Single, ByVal ScaleW As Single, ByVal ScaleH As Single, ByVal Result As Long, ByRef Previous As String)
+        On Error Resume Next
+        Dim topPixel As Long, bodyPixel As Long, state As String
+        topPixel = GetPixel(DC, CLng(12 * Dpi / 96!), CLng(12 * Dpi / 96!))
+        bodyPixel = GetPixel(DC, CLng(12 * Dpi / 96!), CLng(48 * Dpi / 96!))
+        state = Label & " client=" & Client.Right & "x" & Client.Bottom & " dpi=" & Dpi & _
+            " scale=" & ScaleW & "x" & ScaleH & " hr=&H" & Hex$(Result) & _
+            " topBGR=&H" & Hex$(topPixel) & " bodyBGR=&H" & Hex$(bodyPixel)
+        If state = Previous And Result = 0 Then Exit Sub
+        Previous = state
+        Note state & " hwnd=&H" & Hex$(Hwnd) & " dc=&H" & Hex$(DC)
+    End Sub
+
+    Public Sub DiscoveryState(ByVal HostName As String, ByVal RawCount As Long, ByVal Pages As Collection, _
+            ByVal Duplicates As Long, ByVal Skipped As Long, ByVal Failure As String, ByRef Previous As String)
+        On Error Resume Next
+        Dim state As String, page As UI3TabPage, i As Long
+        state = "host " & HostName & " discovery raw=" & RawCount & " unique=" & Pages.Count & " duplicates=" & Duplicates & _
+            " skipped=" & Skipped & " failure=" & Failure & " names="
+        For i = 1 To Pages.Count
+            Set page = Pages(i)
+            state = state & " [" & page.PageName & "@" & Hex$(ObjPtr(page)) & "]"
+        Next
+        If state = Previous Then Exit Sub
+        Previous = state
+        Note state
+    End Sub
+
+    Public Sub Note(ByVal Text As String)
+        On Error Resume Next
+        Dim lineText As String
+        lineText = Format$(Now, "hh:nn:ss") & " [native 1.0.0.65] " & Text
+        AppendLog App.Path & "\tbUI3-tabview.log", lineText
+        AppendLog Environ$("TEMP") & "\tbUI3-tabview.log", lineText
+    End Sub
+
+    Private Sub AppendLog(ByVal FilePath As String, ByVal Text As String)
+        On Error Resume Next
+        Dim file As Integer
+        file = FreeFile
+        Open FilePath For Append As #file
+        Print #file, Text
+        Close #file
+    End Sub
+End Module

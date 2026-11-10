@@ -1,0 +1,37 @@
+[FormDesignerId("B64F9C2B-DC41-4C4E-8C0F-7147B529D994")]
+[PredeclaredId]
+Class frmMultiPage
+    Private Sub Form_Load()
+        UI3Window.Attach Me
+        pgGeneral.Caption = "General"
+        pgGeneral.PageOrder = 0
+        pgDetails.Caption = "Details"
+        pgDetails.PageOrder = 1
+        pgFinish.Caption = "Finish"
+        pgFinish.PageOrder = 2
+        cmdPage1.Caption = "General page action"
+        cmdPage2.Caption = "Open Finish page"
+        cmdPage3.Caption = "Return to General"
+        UI3TabView1.SelectedPage = "pgGeneral"
+        UI3TabView1.IsAddTabButtonVisible = False
+        UI3TabView1.RefreshPages
+    End Sub
+    Private Sub Form_Unload(Cancel As Integer)
+        UI3Window.Detach Me
+    End Sub
+    Private Sub Form_Resize()
+        If Me.ScaleWidth > 480 And Me.ScaleHeight > 480 Then UI3TabView1.Move 240, 240, Me.ScaleWidth - 480, Me.ScaleHeight - 480
+    End Sub
+    Private Sub cmdPage1_Click()
+        MsgBox "This button belongs to the General page."
+    End Sub
+    Private Sub cmdPage2_Click()
+        UI3TabView1.SelectedPage = "pgFinish"
+    End Sub
+    Private Sub cmdPage3_Click()
+        UI3TabView1.SelectedIndex = 0
+    End Sub
+    Private Sub UI3TabView1_SelectionChanged()
+        Me.Caption = "Selected page: " & UI3TabView1.SelectedPage
+    End Sub
+End Class

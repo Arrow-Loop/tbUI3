@@ -1,4 +1,20 @@
-# Handoff: tbUI3 state on 2026-10-07
+# Handoff: tbUI3
+
+## Current implementation, 2026-11-10: tbUI3IDE 1.2.0.0
+
+The canonical IDE add-in is now tbIDE/tbUI3IDE/tbUI3IDE.twinproj, output tbUI3IDE.dll. Remove both legacy WinUI3IdeStyle.dll and TabViewDesigner.dll from both architecture folders. Project ID and the WinUI3IdeStyle/Options/Enabled preference remain unchanged; ToolbarMode is saved independently. Package 1.0.0.65 and adapter v8 are unchanged.
+
+The first implementation includes the three-mode selector, active-theme toolbar CSS, enlarged existing Fluent glyphs, native command/menu discovery, Hybrid context, full-menu Ribbon, File/Backstage and quick access. All 62 JS/DOM/protocol checks pass against BETA 1044 helpers; all 71 project mirrors and the current official add-in export match. Evidence: docs/validation/2026-11-10-ide-toolbar.md. Native/visual acceptance and Office adaptive collapse/keytips remain open. BETA 1044's Add-Ins menu only lists loaded add-ins with unsupported action stubs, so real enable/disable is still future work. Do not claim those gates passed. Current architecture and detailed remaining work: tbIDE/ARCHITECTURE.md and tbIDE/ROADMAP.md.
+
+## Earlier consolidation/planning update, 2026-11-10
+
+Current control package remains 1.0.0.65. One IDE add-in, version 1.1.0.0, now combines theme styling and TabView adapter v8. Canonical project: tbIDE/WinUI3IdeStyle/WinUI3IdeStyle.twinproj. Display name: tbUI3 IDE. Output remains WinUI3IdeStyle.dll; remove legacy TabViewDesigner.dll from both addins architecture directories when migrating. The standalone TabViewDesigner project/src has been retired, and its old README redirects to current instructions.
+
+The existing theme setting and all 288 CSS rules are preserved. MainModule owns the only exported AddIn entry point and the styling lifecycle; private TabViewDesignerController owns functional page behavior. It starts independently of the theme setting and remains available when styling is off or a standard theme is selected. Both features clean up on unload. Readable adapter/script generation now targets the unified project's js/src directories. All 44 JS/contract checks pass with actual BETA 1044 helpers, all 70 mirrors match and official export matches all 5 add-in files. The actual combined native load/unload is the next observation.
+
+Shane revised the next pass: rename the project/output to tbUI3IDE and add IDE Toolbar directly below the additional-styling option, with Classic, Hybrid and Ribbon choices saved independently. Classic retains the existing menu/toolbar; Hybrid is the earlier Home/Code/Form/contextual MultiPage/Add-ins plan, retaining native menus. Ribbon migrates all native menus to an Office-style ribbon, with fullscreen File/Backstage, add-in enablement under File and contributed toolbar commands in Add-ins. Save/Undo/Redo/Play/Pause/Stop go above the ribbon in the former menu area, or the custom title bar when Show real OS titlebar is off. All toolbar UI follows whatever IDE theme the user selects, including standard/third-party themes, even when additional styling is off. Dynamic discovery must expose future menus/options without an add-in update while preserving native command/state authority. Fluent UI Web remains the authorized ribbon-pattern basis with WinUI 3 visuals. Exact groups, migration, discovery and validation requirements are authoritative in tbIDE/ROADMAP.md. These are recorded future requirements; version 1.1.0.0 still uses WinUI3IdeStyle and its existing toolbar. Package 65 delete/readd progress remains supported by the stale Name &H5B trace and replacement Page8 discovery; broader persistence/undo gates remain open.
+
+## Earlier milestone context
 
 This is written for the next developer or AI session; ChatGPT is expected to run the next several passes. Read `AGENTS.md`, then this file, then `CHANGELOG.md` and `ROADMAP.md`. State at the time of writing: `tbui3-dev`, package version 1.0.0.58, twinBASIC BETA 1012.
 
@@ -180,3 +196,4 @@ Things that need Shane's decision, not a pass of their own: a dark icon-picker p
 - Update CHANGELOG.md and ROADMAP.md in every pass. Record only what was actually run as verified.
 - Keep instructions to Shane short and one step at a time, with the exact thing to click or type.
 - win32 and win64 (Shane, 2026-10-20): Shane tests each build in win32 only. At the end of each pass, first review that pass's changes for x64 traps (Long vs LongPtr in declares, struct sizes, COM interface layouts, subclassing), then Shane runs one short win64 smoke test: open a form, open the picker, apply, reopen, run the app.
+

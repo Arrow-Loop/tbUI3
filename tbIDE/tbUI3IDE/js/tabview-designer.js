@@ -1,0 +1,515 @@
+/* tbUI3 designer adapter. IDE BETA 1043/1044, plus the BETA 1033 insertion probe.
+ * Native controls own geometry and persistence. This adapter only suppresses inactive
+ * page DOM nodes and calls the IDE's own edit/undo functions. No clipboard or input simulation.
+ * Kept as a factory so tests can supply an isolated IDE facade.
+ */
+(function createTabViewDesigner(api) {
+    'use strict';
+    const version = 8;
+    const hostClass = 'tbui3.ui3tabview', pageClass = 'tbui3.ui3tabpage';
+    const pageClsid = '{1681A635-13C8-47F3-B96A-FE8123C9F708}';
+    const required = ['getCurrentFormEditorGlobals', 'preparePaste', 'deserializeControls',
+        'prepareForMultipleChangeProperties', 'handleMultipleChangeProperties', 'doPaste',
+        'getTopLeftOfAllControls', 'changedSelectedControls', 'unselectAllControls',
+        'changeProperty', 'undoPoint', 'getImageFromServer', 'queueMultipleSnapshot', 'syncPropertySheet',
+        'deleteSelectedControls', 'updateAllControlDragPoints', 'lockTheControl', 'unlockTheControl', 'onSignificantChange'];
+    const toolbarTitles = new Map();
+    const toolbarHelp = {
+        tbUI3TabNew: 'Add one page to the selected TabView. Selecting one of its pages or child controls also identifies the TabView.',
+        tbUI3TabDelete: 'Delete the active page and every control it contains. Select its TabView, page or a child control first.',
+        tbUI3TabLeft: 'Move the active page one position left in its TabView.',
+        tbUI3TabRight: 'Move the active page one position right in its TabView.',
+        tbUI3TabRefresh: 'Reinstall the TabView designer adapter and request a fresh header snapshot.',
+        tbUI3TabDiagnostics: 'Write TabView state and native/designer page counts to tbUI3-tabview.log beside the project.'
+    };
+    function describeToolbar() {
+        for (const [id, help] of Object.entries(toolbarHelp)) {
+            const button = api.document.getElementById?.('addinButton-' + id);
+            if (button && !toolbarTitles.has(button)) {
+                toolbarTitles.set(button, button.title);
+                button.title = help;
+            }
+        }
+    }
+    const hiddenClass = 'tbui3-inactive-page';
+    const toolboxHiddenClass = 'tbui3-page-toolbox-hidden';
+    const hiddenTools = new Set();
+    function hidePageToolbox(g) {
+        for (const item of hiddenTools) if (item.isConnected === false) {
+            item.classList.remove(toolboxHiddenClass); hiddenTools.delete(item);
+        }
+        // Keep native registration and allToolboxItems intact: the add-in still
+        // needs this public class for insertion, saved forms and Properties.
+        for (const item of g.allToolboxItems || []) {
+            if (!sameName(item.controlTypePackage, 'tbUI3') ||
+                !sameName(item.controlType, 'UI3TabPage') || !sameName(item.clsid, pageClsid)) continue;
+            if (g.selectedTool === item && ready(g) && typeof g.toolBoxPointer?.onclick === 'function')
+                g.toolBoxPointer.onclick();
+            item.classList.add(toolboxHiddenClass);
+            hiddenTools.add(item);
+        }
+    }
+    const touched = new Set(), desires = new WeakMap(), firstHeaders = new WeakMap();
+    const requestNumbers = new WeakMap(), selections = new WeakMap();
+    const pendingNewPages = new WeakMap();
+    const pageLocks = new Map();
+    function restorePageLock(g, record) {
+        if (!record.preExisting) api.unlockTheControl(g, record.name, true);
+    }
+    function protectPages(g) {
+        if (!Array.isArray(g.lockedControls)) return;
+        let records = pageLocks.get(g);
+        if (!records) { records = new Map(); pageLocks.set(g, records); }
+        const current = new Set(g.allControls.filter(c => !c.isDeleted && kind(c) === pageClass && kind(c.parentElement) === hostClass));
+        // Release old nodes first: a native resync can replace a node under the same name.
+        for (const [page, record] of records) if (!current.has(page)) {
+            restorePageLock(g, record); records.delete(page);
+        }
+        for (const page of current) {
+            const pageName = name(page);
+            if (!pageName) continue;
+            let record = records.get(page);
+            if (!record) {
+                record = { name: pageName, preExisting: (g.lockedControls || []).some(n => sameName(n, pageName)) };
+                records.set(page, record);
+            } else if (record.name !== pageName) {
+                // Native rename carries locks to the new name. Preserve ownership of
+                // that managed lock rather than mistaking it for a user's old lock.
+                restorePageLock(g, record); record.name = pageName;
+            }
+            if (!(g.lockedControls || []).includes(pageName)) api.lockTheControl(g, pageName, true);
+        }
+    }
+    let timer, disposed = false, busy = false, error = '', style;
+    const kind = c => String(c?.properties?._className || '').toLowerCase();
+    const name = c => String(c?.properties?.Name || '');
+    const sameName = (a, b) => String(a || '').toLowerCase() === String(b || '').toLowerCase();
+    function supported() { return required.every(k => typeof api[k] === 'function'); }
+    function globals() {
+        const g = api.getCurrentFormEditorGlobals();
+        if (!g?.designer || !Array.isArray(g.allControls) || !Array.isArray(g.selectedControls)) return null;
+        // Report designers and control-definition designers are not consumer Forms.
+        if (g.designerContainerOUTER?.parentNode?.isReportMode) return null;
+        if (!['form', 'mdiform'].includes(kind(g.designer))) return null;
+        return g;
+    }
+    function ready(g) {
+        return g && !busy && !g.isDragging && !g.isSyncingToLiveForm && !g.isInitialSync &&
+            !g.pendingChangesCount && !g.outstandingSerializationRequests && !g.multiChangeNestCount;
+    }
+    function pages(g, host) {
+        return g.allControls.filter(c => !c.isDeleted && kind(c) === pageClass && c.parentElement === host)
+            .sort((a, b) => (Number(a.properties.PageOrder) || 0) - (Number(b.properties.PageOrder) || 0) ||
+                (name(a).toLowerCase() < name(b).toLowerCase() ? -1 : name(a).toLowerCase() > name(b).toLowerCase() ? 1 : 0));
+    }
+    function owner(c) {
+        for (let at = c; at; at = at.parentElement) if (kind(at) === hostClass) return at;
+        return null;
+    }
+    function selectedHost(g) { return g.selectedControls.length === 1 ? owner(g.selectedControls[0]) : null; }
+    function active(g, host) {
+        const list = pages(g, host), desired = desires.get(host);
+        return list.find(c => sameName(name(c), desired || host.properties.SelectedPage)) || list[0];
+    }
+    function revealPage(c, host) {
+        for (let at = c; at && at !== host; at = at.parentElement)
+            if (kind(at) === pageClass && at.parentElement === host) return at;
+        return null;
+    }
+    function choose(g, controls) {
+        api.unselectAllControls(g);
+        g.selectedControls = controls;
+        for (const c of controls) { c.isSelected = true; c.classList.add('baseControlSelected'); }
+        api.changedSelectedControls(g);
+        api.syncPropertySheet(g);
+        api.updateAllControlDragPoints(g);
+    }
+    function edit(g, action, checkpoint = true) {
+        if (!ready(g)) throw new Error('Designer is waiting for the compiler; retry when it settles.');
+        busy = true;
+        let started = false;
+        try { api.prepareForMultipleChangeProperties(g); started = true; action(); }
+        finally {
+            try { if (started) api.handleMultipleChangeProperties(g); }
+            finally { busy = false; if (started && checkpoint) api.undoPoint(g); }
+        }
+    }
+    function snapshotHost(g, host) {
+        // getImageFromServer explicitly returns without doing anything in full-form
+        // mode. Queue the parent ID inside the current native edit batch instead.
+        if (g.isInFullFormMode) {
+            if (host.formDesignerControlId === undefined) throw new Error('TabView is waiting for its native ID.');
+            api.queueMultipleSnapshot(g, host.formDesignerControlId);
+        } else api.getImageFromServer(g, host);
+    }
+    function setPage(g, host, page, selectPage = false) {
+        if (!page) return;
+        if (!sameName(host.properties.SelectedPage, name(page))) {
+            edit(g, () => {
+                api.changeProperty(g, host, 'SelectedPage', name(page));
+                snapshotHost(g, host);
+            });
+            desires.set(host, name(page));
+        }
+        if (selectPage) choose(g, [page]);
+        display(g, host);
+    }
+    function display(g, host) {
+        hidePageToolbox(g);
+        protectPages(g);
+        const current = active(g, host);
+        for (const page of pages(g, host)) {
+            page.classList.toggle(hiddenClass, page !== current);
+            touched.add(page);
+            // Resize handles are siblings in the IDE, outside the hidden page subtree.
+            for (const c of g.allControls) {
+                if (c === page || page.contains(c)) {
+                    for (const key of ['draggerTopLeft', 'draggerTop', 'draggerTopRight', 'draggerLeft',
+                        'draggerRight', 'draggerBottomLeft', 'draggerBottom', 'draggerBottomRight']) {
+                        const handle = c[key];
+                        if (handle) { handle.classList.toggle(hiddenClass, page !== current); touched.add(handle); }
+                    }
+                }
+            }
+        }
+    }
+    function layout(g, host) {
+        const list = pages(g, host), width = Number(host.properties.Width);
+        if (!(width > 0)) return null;
+        const add = host.properties.IsAddTabButtonVisible !== false;
+        const available = width - (add ? 35 : 0);
+        const size = Math.max(100, Math.min(240, list.length ? available / list.length : 100));
+        const slots = Math.max(0, Math.floor(available / size));
+        const current = list.indexOf(active(g, host));
+        let first = firstHeaders.get(host) || 0;
+        if (current >= 0) {
+            if (current < first) first = current;
+            if (slots > 0 && current >= first + slots) first = current - slots + 1;
+        }
+        if (first >= list.length) first = 0;
+        firstHeaders.set(host, first);
+        return { list, size, first, count: Math.min(slots, list.length - first), add };
+    }
+    function pageNameState(g) {
+        // Keep allocation history across adapter refreshes, but outside saved form
+        // properties. Deleted native names may still be referenced during resync.
+        if (!g.__tbUI3PageNames || g.__tbUI3PageNames.version !== 1) {
+            Object.defineProperty(g, '__tbUI3PageNames', { configurable: true,
+                value: { version: 1, used: new Set(), next: new Map() } });
+        }
+        const state = g.__tbUI3PageNames;
+        for (const c of g.allControls) if (name(c)) state.used.add(name(c).toLowerCase());
+        return state;
+    }
+    function allocatePage(g, host, list) {
+        const hostName = name(host);
+        if (!hostName) throw new Error('Name the TabView before adding a page.');
+        const state = pageNameState(g), key = hostName.toLowerCase(), prefix = hostName + '_Page';
+        let number = Math.max(state.next.get(key) || 1, list.length + 1);
+        for (const page of list) {
+            if (name(page).toLowerCase().startsWith(prefix.toLowerCase())) {
+                const suffix = name(page).slice(prefix.length);
+                if (/^[1-9][0-9]*$/.test(suffix)) number = Math.max(number, Number(suffix) + 1);
+            }
+        }
+        while (state.used.has((prefix + number).toLowerCase())) number++;
+        state.next.set(key, number + 1); state.used.add((prefix + number).toLowerCase());
+        return { name: prefix + number, caption: 'Page ' + number };
+    }
+    function newPage(g, host) {
+        if (!host) throw new Error('Select a UI3TabView or one of its pages first.');
+        if (!ready(g)) throw new Error('Designer is waiting for the compiler; retry when it settles.');
+        if (pendingNewPages.has(g)) throw new Error('Designer is finishing the new page; retry when it settles.');
+        const list = pages(g, host);
+        const allocated = allocatePage(g, host, list), nextName = allocated.name;
+        const data = [{ _className: 'tbUI3.UI3TabPage', _clsid: pageClsid, Name: nextName,
+            Caption: allocated.caption, PageOrder: list.reduce((n, p) => Math.max(n, Number(p.properties.PageOrder) || 0), -1) + 1,
+            Left: 0, Top: 40, Width: Math.max(1, Number(host.properties.Width) || 1),
+            Height: Math.max(1, (Number(host.properties.Height) || 41) - 40),
+            Visible: true, TabStop: false, Index: -1, _children: [] }];
+        // preparePaste normally chooses the *parent* of a selected custom container.
+        // Override that target explicitly so the page is never nested in the active page.
+        let created;
+        const previousSelection = g.selectedControls.slice();
+        try { edit(g, () => {
+            const paste = api.preparePaste(g);
+            paste.parentContainer = host;
+            paste.wasContainerSelection = false;
+            paste.wasNoSelection = false;
+            created = api.deserializeControls(g, JSON.stringify(data), host, false, false);
+            if (!created?.length || created[0].parentElement !== host) throw new Error('IDE did not insert a direct page child.');
+            // doPaste includes a +10 offset for ordinary paste. Neutralize its positioning,
+            // while retaining selection, dirty-state, snapshots and anchoring behavior.
+            const top = api.getTopLeftOfAllControls(g, created);
+            paste.lowestPointOfSelection = { x: top.x, y: top.y - 10 };
+            api.doPaste(g, paste, created, false);
+        }, false); } catch (e) {
+            api.undoPoint(g);
+            choose(g, previousSelection.filter(c => !c.isDeleted));
+            throw e;
+        }
+        desires.set(host, nextName);
+        // The compiler initializes a fresh UserControl from its PropertyBag defaults.
+        // Public fields in insertion JSON are not proof that its setters ran. Apply them
+        // through native changeProperty once the new control has a compiler-assigned ID.
+        pendingNewPages.set(g, { host, hostName: name(host), page: created[0], pageName: nextName, caption: data[0].Caption, order: data[0].PageOrder });
+        choose(g, created);
+        selections.set(g, created[0]);
+        if (ready(g) && (!g.isInFullFormMode || created[0].formDesignerControlId !== undefined)) finishNewPage(g);
+        display(g, host);
+        return nextName;
+    }
+    function finishNewPage(g) {
+        const pending = pendingNewPages.get(g);
+        if (!pending || !ready(g)) return false;
+        // The compiler may replace DOM objects during structural resync. Resolve
+        // only the uniquely allocated page under the original host, not selection.
+        if (!g.allControls.includes(pending.host) || !g.allControls.includes(pending.page) || pending.page.isDeleted) {
+            const host = g.allControls.find(c => kind(c) === hostClass && sameName(name(c), pending.hostName) && !c.isDeleted);
+            const page = host && pages(g, host).find(c => sameName(name(c), pending.pageName));
+            if (!host || !page) { pendingNewPages.delete(g); api.undoPoint(g); return true; }
+            pending.host = host; pending.page = page;
+        }
+        if (pending.page.errorInfo) {
+            pendingNewPages.delete(g); api.undoPoint(g);
+            throw new Error('Page initialization failed: ' + pending.page.errorInfo);
+        }
+        if (g.isInFullFormMode && pending.page.formDesignerControlId === undefined) return false;
+        try {
+            edit(g, () => {
+                api.changeProperty(g, pending.page, 'Caption', pending.caption);
+                api.changeProperty(g, pending.page, 'PageOrder', pending.order);
+                // Activation must happen after the page exists natively, and the
+                // header bitmap must reflect its final caption and ordering.
+                api.changeProperty(g, pending.host, 'SelectedPage', name(pending.page));
+                snapshotHost(g, pending.host);
+            });
+            desires.set(pending.host, name(pending.page));
+            choose(g, [pending.page]);
+            selections.set(g, pending.page);
+        } finally { pendingNewPages.delete(g); }
+        return true;
+    }
+    function initializeHarness(g) {
+        // Only our explicitly marked fixture gets first-open initialization. No page Tag
+        // is used for membership; user forms and user property values are left alone.
+        const form = g.designer.properties;
+        if (form.Tag !== 'tbUI3:MultiPageHarness:1' ||
+            String(form.FormDesignerId).replace(/[{}]/g, '').toUpperCase() !== 'B64F9C2B-DC41-4C4E-8C0F-7147B529D994') return false;
+        const byName = n => g.allControls.find(c => sameName(name(c), n));
+        const host = byName('UI3TabView1');
+        const seeds = [['pgGeneral', 'General', 0], ['pgDetails', 'Details', 1], ['pgFinish', 'Finish', 2]];
+        if (!host || seeds.some(s => !byName(s[0]))) return false;
+        edit(g, () => {
+            for (const [n, caption, order] of seeds) {
+                api.changeProperty(g, byName(n), 'Caption', caption);
+                api.changeProperty(g, byName(n), 'PageOrder', order);
+            }
+            for (const [i, caption] of ['General page action', 'Open Finish page', 'Return to General'].entries()) {
+                const button = byName('cmdPage' + (i + 1));
+                if (button) { api.changeProperty(g, button, 'Caption', caption); api.changeProperty(g, button, 'Style', 0); }
+            }
+            api.changeProperty(g, host, 'SelectedPage', 'pgGeneral');
+            api.changeProperty(g, host, 'IsAddTabButtonVisible', true);
+            api.changeProperty(g, g.designer, 'Tag', '');
+            snapshotHost(g, host);
+        });
+        desires.set(host, 'pgGeneral');
+        choose(g, [host]);
+        selections.set(g, g.selectedControls[0]);
+        return true;
+    }
+    function move(g, host, direction) {
+        const list = pages(g, host), current = active(g, host), from = list.indexOf(current), to = from + direction;
+        if (from < 0 || to < 0 || to >= list.length) return;
+        [list[from], list[to]] = [list[to], list[from]];
+        edit(g, () => {
+            list.forEach((p, i) => api.changeProperty(g, p, 'PageOrder', i));
+            snapshotHost(g, host);
+        });
+    }
+    function remove(g, host) {
+        const page = active(g, host);
+        if (!page) return;
+        const list = pages(g, host), index = list.indexOf(page), next = list[index + 1] || list[index - 1];
+        pageNameState(g);
+        edit(g, () => {
+            choose(g, [page]);
+            api.deleteSelectedControls(g);
+            api.changeProperty(g, host, 'SelectedPage', next ? name(next) : '');
+            snapshotHost(g, host);
+        });
+        desires.set(host, next ? name(next) : '');
+        choose(g, [host]); selections.set(g, host);
+        // The native Delete command sends this in addition to its undo checkpoint.
+        // Without it the live tab vanishes but generated/saved form members remain.
+        api.onSignificantChange(g);
+    }
+    function run(command) {
+        try {
+            if (command === 'diagnostics') return diagnostics();
+            if (disposed) throw new Error('Adapter disabled; use TabView refresh to reinstall it.');
+            if (!supported()) throw new Error('Unsupported IDE designer internals; adapter disabled.');
+            const g = globals();
+            if (!g) throw new Error('Open a consumer Form designer first.');
+            const host = selectedHost(g);
+            if (!host) {
+                const detail = g.selectedControls.map(c => name(c) + ' [' + kind(c) + ']').join(', ') || '(none)';
+                throw new Error('Select a UI3TabView or one of its children first. Current selection: ' + detail);
+            }
+            if (!ready(g)) throw new Error('Designer is waiting for the compiler; retry when it settles.');
+            if (pendingNewPages.has(g)) throw new Error('Designer is finishing the new page; retry when it settles.');
+            if (command === 'new') return newPage(g, host);
+            if (command === 'left') move(g, host, -1);
+            else if (command === 'right') move(g, host, 1);
+            else if (command === 'delete') remove(g, host);
+            else if (command === 'refresh') edit(g, () => snapshotHost(g, host), false);
+            else throw new Error('Unknown designer command.');
+            tick();
+            return 'OK';
+        } catch (e) { error = String(e.message || e); return 'TabView Designer: ' + error; }
+    }
+    function diagnostics() {
+        // Read-only and deliberately bypasses consumer/class filters: report why a
+        // real IDE state was rejected instead of hiding it behind another generic error.
+        const g = typeof api.getCurrentFormEditorGlobals === 'function' ? api.getCurrentFormEditorGlobals() : null;
+        const missing = required.filter(k => typeof api[k] !== 'function');
+        const root = g?.designer?.properties || {};
+        const report = { adapter: version, missing, supported: supported(), consumerAccepted: !!(supported() && globals()),
+            form: { name: root.Name, className: root._className, clsid: root._clsid, formId: root.FormDesignerId,
+                marker: String(root.Tag || '').startsWith('tbUI3:') ? root.Tag : '(not a fixture marker)', backColor: root.BackColor },
+            pending: { properties: g?.pendingChangesCount, snapshots: g?.outstandingSerializationRequests, dragging: g?.isDragging },
+            selection: (g?.selectedControls || []).map(c => ({ name: name(c), className: kind(c), clsid: c.properties?._clsid,
+                parent: name(c.parentElement), parentClass: kind(c.parentElement) })), controls: [], lastError: error };
+        for (const c of g?.allControls || []) {
+            const cls = kind(c);
+            if (!cls.includes('ui3tab')) continue;
+            let computed = {};
+            try { computed = api.document.defaultView.getComputedStyle(c); } catch (_) {}
+            // Full-form replies store the bitmap on backgroundImage, not imageData.
+            const inlineImage = String(c.style?.backgroundImage || computed.backgroundImage || '');
+            const urlImage = inlineImage.match(/data:image\/png;base64,([^\"')]+)/i);
+            const image = String(c.imageData || urlImage?.[1] || '');
+            let checksum = 2166136261;
+            for (let i = 0; i < image.length; i++) checksum = Math.imul(checksum ^ image.charCodeAt(i), 16777619) >>> 0;
+            let pngSize = '(unavailable)';
+            try {
+                if (!image) throw new Error('No bitmap');
+                const bytes = api.document.defaultView.atob(image.slice(0, 44));
+                if (bytes.length < 24 || bytes.slice(1, 4) !== 'PNG') throw new Error('Not PNG');
+                const u32 = at => ((bytes.charCodeAt(at) * 16777216) + (bytes.charCodeAt(at+1) << 16) +
+                    (bytes.charCodeAt(at+2) << 8) + bytes.charCodeAt(at+3)) >>> 0;
+                pngSize = u32(16) + 'x' + u32(20);
+            } catch (_) {}
+            const directPages = cls === hostClass ? pages(g, c) : null;
+            report.controls.push({ name: name(c), className: cls, clsid: c.properties?._clsid,
+                nativeId: c.formDesignerControlId, parent: name(c.parentElement),
+                nativePageCount: cls === hostClass ? c.properties?.PageCount : undefined,
+                designerPageCount: directPages?.length, designerPageNames: directPages?.map(name),
+                caption: c.properties?.Caption, order: c.properties?.PageOrder, selectedPage: c.properties?.SelectedPage,
+                geometry: [c.properties?.Left, c.properties?.Top, c.properties?.Width, c.properties?.Height],
+                hiddenByAdapter: c.classList.contains(hiddenClass),
+                layoutLocked: (g.lockedControls || []).includes(name(c)),
+                style: { display: computed.display, color: computed.backgroundColor, size: computed.backgroundSize,
+                    inlineImageLength: String(c.style?.backgroundImage || '').length,
+                    computedImageLength: String(computed.backgroundImage || '').length },
+                snapshot: { encodedLength: image.length, pngSize, checksum: checksum.toString(16) } });
+        }
+        return 'DIAGNOSTICS ' + JSON.stringify(report);
+    }
+    function tick() {
+        if (disposed || !supported()) return;
+        describeToolbar();
+        for (const node of touched) if (node.isConnected === false) {
+            node.classList.remove(hiddenClass); touched.delete(node);
+        }
+        const g = globals();
+        if (!g) return;
+        protectPages(g);
+        const hosts = g.allControls.filter(c => kind(c) === hostClass && !c.isDeleted);
+        if (ready(g)) {
+            if (pendingNewPages.has(g)) {
+                finishNewPage(g);
+                for (const host of hosts) display(g, host);
+                return;
+            }
+            if (initializeHarness(g)) {
+                for (const host of hosts) display(g, host);
+                return;
+            }
+            // Only a *new* Properties/list selection should reveal a hidden child's page.
+            // A tab switch must not be undone by the old selection on the next timer tick.
+            const previous = selections.get(g), selection = g.selectedControls[0];
+            selections.set(g, selection);
+            for (const host of hosts) {
+                desires.delete(host);
+                const selected = previous !== selection ? revealPage(selection, host) : null;
+                if (selected && selected !== active(g, host)) { setPage(g, host, selected); break; }
+                const request = Number(host.properties.DesignerNewPageRequest) || 0;
+                const last = requestNumbers.has(host) ? requestNumbers.get(host) : request;
+                requestNumbers.set(host, request);
+                if (request && request !== last) { newPage(g, host); break; }
+            }
+        }
+        for (const host of hosts) display(g, host);
+    }
+    function pointer(event) {
+        if (disposed || event.button !== 0 || !supported()) return;
+        const g = globals();
+        if (!ready(g) || pendingNewPages.has(g)) return;
+        // Deepest host first, so nested TabViews receive their own header clicks.
+        const hosts = g.allControls.filter(c => kind(c) === hostClass && !c.isDeleted).reverse();
+        for (const host of hosts) {
+            if (!host.contains(event.target) || host.closest('.' + hiddenClass)) continue;
+            const rect = host.getBoundingClientRect(), info = layout(g, host);
+            if (!info || !rect.width || !rect.height) continue;
+            const x = (event.clientX - rect.left) * Number(host.properties.Width) / rect.width;
+            const y = (event.clientY - rect.top) * Number(host.properties.Height) / rect.height;
+            if (y < 8 || y >= 40 || x < 0) continue;
+            const index = Math.floor(x / info.size);
+            const addX = info.count * info.size + 3;
+            const isNew = info.add && x >= addX && x < addX + 32;
+            if (!isNew && index >= info.count) continue;
+            event.preventDefault(); event.stopImmediatePropagation();
+            try {
+                if (isNew) newPage(g, host);
+                else setPage(g, host, info.list[info.first + index], true);
+                selections.set(g, g.selectedControls[0]);
+            } catch (e) { error = String(e.message || e); }
+            return;
+        }
+    }
+    function dispose() {
+        disposed = true;
+        if (timer) api.clearInterval(timer);
+        api.document?.removeEventListener('pointerdown', pointer, true);
+        for (const node of touched) node.classList.remove(hiddenClass);
+        touched.clear();
+        for (const [g, records] of pageLocks) {
+            for (const record of records.values()) {
+                try { restorePageLock(g, record); } catch (_) {}
+            }
+            try { api.updateAllControlDragPoints(g); } catch (_) {}
+        }
+        pageLocks.clear();
+        for (const [button, title] of toolbarTitles) button.title = title;
+        toolbarTitles.clear();
+        for (const item of hiddenTools) item.classList.remove(toolboxHiddenClass);
+        hiddenTools.clear();
+        style?.remove();
+    }
+    function install() {
+        if (!supported()) return 'Unsupported IDE designer internals; no hooks installed.';
+        style = api.document.createElement('style');
+        // A narrow designer-only rule must win the IDE's inline display styles.
+        style.textContent = '.' + hiddenClass + ',.' + toolboxHiddenClass + '{display:none!important}';
+        api.document.head.appendChild(style);
+        api.document.addEventListener('pointerdown', pointer, true);
+        timer = api.setInterval(() => {
+            try { tick(); } catch (e) { error = String(e.message || e); dispose(); }
+        }, 150);
+        tick();
+        return 'TabView Designer adapter v' + version + ' installed';
+    }
+    return { version, install, dispose, run, tick, diagnostics, supported, get lastError() { return error; } };
+})

@@ -1,0 +1,66 @@
+' Shared state behind UI3IconList (docs/2026-10-20-ui3iconlist-plan.md, "Drawing and updates").
+'
+' Each list's Revision comes from one process-wide counter, so a control that remembers the
+' Revision it fetched its entry with can tell when that list, or a different list found under
+' the same name, has changed. Controls showing a list icon register their window here; when any
+' list changes, every registered window is repainted and checks its own list's Revision. Only
+' window handles are kept, never object references, so nothing here keeps a control alive.
+
+Private Module UI3IconListRegistry
+
+    Private Declare PtrSafe Function InvalidateRect Lib "user32" (ByVal hWnd As LongPtr, ByVal lpRect As LongPtr, _
+        ByVal bErase As Long) As Long
+    Private Declare PtrSafe Function IsWindow Lib "user32" (ByVal hWnd As LongPtr) As Long
+
+    Private m_LastRevision As Long
+    Private m_Users() As LongPtr
+    Private m_UserCount As Long
+
+    Public Function NextIconListRevision() As Long
+        If m_LastRevision = &H7FFFFFFF Then m_LastRevision = 0
+        m_LastRevision = m_LastRevision + 1
+        NextIconListRevision = m_LastRevision
+    End Function
+
+    Public Sub RegisterIconListUser(ByVal hWnd As LongPtr)
+        Dim i As Long
+        If hWnd = 0 Then Exit Sub
+        For i = 0 To m_UserCount - 1
+            If m_Users(i) = hWnd Then Exit Sub
+        Next
+        If m_UserCount = 0 Then
+            ReDim m_Users(0 To 15)
+        ElseIf m_UserCount > UBound(m_Users) Then
+            ReDim Preserve m_Users(0 To m_UserCount * 2 - 1)
+        End If
+        m_Users(m_UserCount) = hWnd
+        m_UserCount = m_UserCount + 1
+    End Sub
+
+    Public Sub UnregisterIconListUser(ByVal hWnd As LongPtr)
+        Dim i As Long
+        For i = 0 To m_UserCount - 1
+            If m_Users(i) = hWnd Then
+                m_Users(i) = m_Users(m_UserCount - 1)
+                m_UserCount = m_UserCount - 1
+                Exit Sub
+            End If
+        Next
+    End Sub
+
+    ' Repaints every registered control; windows that no longer exist are dropped.
+    Public Sub IconListChanged()
+        Dim i As Long
+        i = 0
+        Do While i < m_UserCount
+            If IsWindow(m_Users(i)) = 0 Then
+                m_Users(i) = m_Users(m_UserCount - 1)
+                m_UserCount = m_UserCount - 1
+            Else
+                InvalidateRect m_Users(i), 0, 0
+                i = i + 1
+            End If
+        Loop
+    End Sub
+
+End Module

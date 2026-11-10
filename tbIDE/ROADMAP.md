@@ -1,8 +1,107 @@
-# Roadmap: tbIDE (WinUI 3 look for the twinBASIC IDE)
+# Roadmap: tbUI3 IDE
+
+## Single add-in distribution, implemented 2026-11-10
+
+- Consolidation history: version 1.1.0.0 used WinUI3IdeStyle/WinUI3IdeStyle.twinproj and WinUI3IdeStyle.dll. The current 1.2.0.0 candidate uses tbUI3IDE/tbUI3IDE.twinproj and tbUI3IDE.dll. It combines the theme implementation with TabView adapter v8. The old standalone TabViewDesigner target is retired; migration removes its DLL from both architecture folders.
+- Current gate: native combined startup/project load/unload, one set of toolbar commands, standard theme operation, page creation with the styling switch off and saved preferences retained. Source/JS/packing evidence is in ../docs/validation/2026-11-10-unified-ide-addin.md.
+
+## Current implementation: tbUI3IDE 1.2.0.0 candidate
+
+Implemented 2026-11-10: project/output rename, independent saved IDE Toolbar selector, Classic/Hybrid/Ribbon renderers, active-theme CSS, the existing Fluent glyphs at larger sizes, live native menu/toolbar discovery and state/dispatch, fullscreen File view, quick access, contextual MultiPage and restoration. The original requirements below remain the acceptance specification; implementation is not a claim of final Office parity. Source/DOM evidence is in ../docs/validation/2026-11-10-ide-toolbar.md.
+
+Remaining work:
+
+- Observe the new native add-in startup/settings/mode-switch/unload and saved-mode restart in the IDE, including standard/third-party themes and additional styling off. Verify the project rename retains its prior Enabled setting and only one add-in instance loads after removing legacy DLLs.
+- Review actual ribbon appearance and spacing, glyph rendering, narrow-window access and keyboard navigation. The current composition uses larger lead commands, three stacked rows and horizontal overflow. Office-style automatic group collapse/flyouts, keytips, complete focus parity and detailed semantic regrouping beyond the live menu separators remain follow-ups. Source validation is not visual acceptance.
+- File > Add-ins migrates the native loaded-add-in list. BETA 1044 showAddinsMenu supplies notSupportedMenuOption stub actions and the inspected root bridge has only getAddinsList, without enable/disable. Real add-in enablement requires an exposed, validated IDE capability or separately designed restart-safe management; no functional enable/disable setting is implemented in this candidate.
+- Validate all native menu families, every dynamic/lazy submenu and combo selector with real project/debug/designer context. Existing command handlers/shortcuts are reused, but private-API compatibility remains bounded by the current command model. Verify future menus/options appear without changing the add-in.
+- Check live grid controls, build/zoom selectors, native menu shortcut interception, selected-page context, popup placement and File focus return in the actual IDE. Verify toolbar reparenting/docking and layout restoration without persisting hidden panels.
+- Browser visual checking was blocked by the browser URL policy. No screenshot or native IDE appearance is recorded for this pass. Remove temporary diagnostics only after observed behavior supports doing so.
+
+## Toolbar requirements and acceptance specification
+
+Shane specified and revised the next pass on 2026-11-10. Version 1.1.0.0 remains the consolidated add-in; the following rename, settings and toolbar modes are the agreed requirements; current implementation and remaining gates are recorded above. The original single ribbon proposal is retained below as Hybrid, superseded as the only replacement by the three-mode choice. The inline mockup was canceled.
+
+### Identity and migration
+
+- Rename the project to **tbUI3IDE**, including the canonical project/folder, output DLL and build/generator/documentation references. Intended canonical target: tbIDE/tbUI3IDE/tbUI3IDE.twinproj, output tbUI3IDE.dll.
+- Preserve the established project ID, existing theme preference and all native page identities. Retain or migrate the WinUI3IdeStyle/Options/Enabled preference without resetting the user's choice.
+- The rename remains one distributed add-in. Migration must remove the old WinUI3IdeStyle.dll as well as any remaining TabViewDesigner.dll from both architecture folders to avoid duplicate add-in instances.
+
+### Design authority
+
+Use Microsoft Office ribbon organization with WinUI 3's visual language. Shane explicitly authorizes Fluent UI Web as the basis for the ribbon, since there is no official WinUI 3 Ribbon implementation. This is a scoped design exception for ribbon structure/interaction, not a change to the control package's WinUI 3 fidelity policy. Consult current Microsoft Fluent UI Web sources for the ribbon pattern before implementation; use WinUI 3 resources for shared typography, geometry, controls and interaction states where those definitions exist. The selected IDE theme supplies the toolbar's palette and theme-state colors, as required below; do not force the included WinUI3 palettes onto other themes. Do not describe the result as an official WinUI 3 Ribbon control.
+
+### Settings, themes and compatibility
+
+- In IDE settings, directly below **Enable additional IDE theme styling via add-in**, add **IDE Toolbar**, a combo box with exactly **Classic**, **Hybrid**, and **Ribbon**, in that order. Persist the selected mode independently of the existing styling preference and preserve it through the tbUI3IDE rename.
+- The control's placement below the styling switch is positional only. Turning additional theme styling off must not disable the combo box, force Classic or disable page management.
+- Shane explicitly requires the toolbar UI to follow **whatever IDE theme the user selects**, including standard and third-party themes, whether or not either included WinUI3 theme is selected. This applies to the settings control, Hybrid/Ribbon tabs, groups, menus, fullscreen File view and quick-access area. Use the active IDE theme's colors/state resources, updating on theme changes; do not gate the toolbar on the WinUI3 theme names or impose their palettes on other themes.
+- Keep the existing theme-styling preference's scope separate: it controls the optional additional IDE restyling. The toolbar modes have their own essential layout/presentation and active-theme integration, independent of that restyling.
+- Compatibility default for existing installations with no saved toolbar mode: Classic. This is an implementation default to preserve their current layout, not a claim that the user selected a mode.
+
+| Mode | Required behavior |
+| --- | --- |
+| Classic | Preserve the current native menu bar and existing toolbar layout, commands and contributed buttons, with their current active-theme behavior. |
+| Hybrid | Preserve the native menu bar; replace the toolbar with the previously specified Home, Code, Form, contextual nested MultiPage and Add-ins organization below. |
+| Ribbon | Migrate the full native menu/command surface into an Office-style ribbon, fullscreen File view and quick-access area as specified below. |
+
+### Hybrid command layout
+
+Home is a static, always-visible top-level tab. Code, Form and Add-ins are the other top-level tabs; MultiPage is contextual and nested under Form rather than a permanent peer. Ribbon controls should use appropriately sized icons, labels and groups, not merely place the existing small toolbar row inside tabs.
+
+| Tab | Groups and commands, in requested order |
+| --- | --- |
+| Home | Save, Find in Project, Switch Between Form and Code; Undo, Redo; Start/Continue, Break Into Code, Stop, Step Over, Step Into, Step Out; build-configuration dropdown; Restart Compiler, Clean, Build; Change IDE Theme |
+| Code | Comment Selection, Uncomment Selection, Indent Block, Outdent Block |
+| Form | All Align Controls commands; all Resize Controls commands; existing grid indicator/options exposed directly in the ribbon where practical; Bring to Front and Send to Back; form designer zoom dropdown; Preview |
+| MultiPage, nested under Form | Visible only for the selected multipage context; existing New page, Delete page, Page left, Page right, Refresh and Diagnostics commands |
+| Add-ins | Toolbar buttons contributed by other add-ins, discovered dynamically and preserving each button's original behavior |
+
+The request's plural Forms and singular Form refer to the same tab; use Form consistently. Bring to Front/Send to Back correspond to the existing menuBarBringToFront and menuBarSendToBack commands. Resolve the contextual MultiPage owner from native selection; the existing adapter already resolves a TabView from its page/child selection. Keep contextual navigation stable when commands create/select a page. This table defines Hybrid; do not silently substitute it for the complete Ribbon mode.
+
+### Ribbon: full menu migration and Office interaction
+
+- Reproduce Microsoft Office's ribbon organization and interaction with WinUI 3 visuals: tabs, labeled command groups, appropriate large/small commands, contextual tools, expanding/collapsing groups, overflow and keyboard access. This is a full menu replacement, not a second copy of Hybrid. Consult current official Office references before defining the detailed command/group mapping; Office applications have differing command inventories, so preserve twinBASIC's IDE functions rather than inventing document-editing commands.
+- Migrate all commands from **File, Edit, View, Project, Format, Debug, Run, Tools, Add-Ins, Window, and Help**, including nested and dynamically populated menu options. Project and Format are separate native menus. Retain their functions and discoverable grouping; the old menu row is replaced in Ribbon mode. Record a complete mapping from the current native menu tree during implementation, including how contextual Form/MultiPage tools are exposed.
+- **File** opens an Office-style **fullscreen Backstage view within the IDE window**, covering the working area, with navigation, content sections and a clear back/close route. It is not an ordinary dropdown or OS fullscreen switch. Back/Escape returns to the prior document/designer and focus. Route existing file operations and settings to their real native commands.
+- Put **which add-ins are enabled** into an **Add-ins section of the fullscreen File view**, preserving the native enable/disable behavior and any restart requirement the IDE actually has. Keep that management UI distinct from the **Add-ins ribbon**, which contains toolbar buttons contributed by other add-ins, including buttons added after startup.
+- Move **Save, Undo, Redo, Play/Start/Continue, Pause/Break Into Code, and Stop** to a quick-access area in the space formerly occupied by the native menus, above the ribbon. If **Show real OS titlebar** is **off**, place this area in the IDE's custom title bar instead. Follow changes to that setting, preserve window controls/title dragging and command states, and do not attempt to put HTML controls into the real OS title bar.
+- File view, quick-access commands, tabs, flyouts and groups all inherit the active IDE theme, including standard/third-party themes, independently of the additional-styling switch.
+
+### Dynamic command discovery and future IDE updates
+
+- Build the presentation from twinBASIC's **live menu and toolbar command model**, preserving command identity, hierarchy, caption, icon, enabled/visible/checked state, shortcuts, selectors and original handlers. The IDE remains the execution/state authority. Menu and toolbar entries representing the same command must share state and not execute twice.
+- Discover new menus and menu options automatically: a new top-level native menu obtains a reachable ribbon section/tab, and an unrecognized option appears within its discovered parent group or overflow. Do not require a hard-coded whitelist or an add-in release for newly added commands to remain accessible. Explicit mappings may improve known-command presentation but cannot determine whether a command exists.
+- Reconcile additions, removals, renames, ordering and state changes after startup, including project/context changes, theme changes, recently used items, dynamic submenus and other add-ins' contributions. Respect native lazy population without executing user actions merely to enumerate commands. Preserve native shortcuts and keyboard access through the replacement surface.
+- The compatibility promise concerns added menus/options under the existing command model. Structural changes to twinBASIC's private APIs are a separate compatibility risk; detect unsupported layouts and restore the fully working Classic surface rather than showing incomplete menus. Document that boundary without claiming arbitrary future internals are supported.
+
+### Implementation constraints and checks
+
+- Preserve the IDE's real command nodes/handlers, enabled/checked state, tooltips, build/zoom selectors and shortcuts. Reuse/recheck actual command IDs from README.md and tools/build-toolbar-icons.mjs against the current BETA. Keep unknown native commands accessible rather than silently dropping them.
+- Collect third-party toolbar buttons in Add-ins, including buttons added after startup. Keep this add-in's own TabView commands in MultiPage, not Add-ins. Preserve other add-ins' images and handlers.
+- Keep tab management and all three toolbar choices available when optional styling is off or any standard/third-party IDE theme is selected. Provide the ordinary toolbar as a working fallback if replacement setup is unsupported. Restore moved nodes, selection, state and focus on mode changes, unload/error, without losing the saved mode preference.
+- Cover Classic/Hybrid/Ribbon transitions, saved-mode restart, all active-theme/style-switch combinations, contextual selection, narrow-window overflow, keyboard/focus navigation, project changes, refresh and cleanup. In Hybrid, Home stays reachable. In Ribbon, File and quick-access controls remain reachable, including with the real OS title bar on/off and while changing that option.
+- Verify every discovered native menu command has a reachable equivalent in Ribbon. Exercise newly injected top-level menus, nested/lazy menu items, renamed/removed commands and late third-party buttons without changing add-in code. Verify state synchronization, exact-once invocation, File enable/disable management and return focus. Keep observed DOM checks and native IDE results distinct.
+- Preserve the working combined add-in lifecycle and native delete/readd correction; record actual native observations separately from DOM/protocol checks.
+
+## TabView Designer candidate
+
+- TabView management is now part of the unified add-in alongside tbUI3 1.0.0.65 (initial candidate 1.0.0.61), independently of the styling work below. Its README documents installation and validation boundaries.
+- Current gate: adapter v8 in unified add-in 1.2.0.0 hides the page toolbox button without unregistering the class. Observe native toolbox rebuild/unload and ordinary +/New page insertion. Package 65 remains unchanged.
+- Package 65 progress: Shane reports delete/readd appears to work; native logs confirm Name failures &H5B are skipped and replacement Page8 is discovered. Continue persistence and full undo/redo coverage.
+- Continuing gate: adapter v7 (add-in 1.0.0.6) adds missing structural-delete notification and host-scoped generated names. Verify deleted Properties/generated entries vanish and add-after-delete works with correct bounds on two hosts, then save/reopen and undo/redo on BETA 1044. Host rename/reparent migration of existing names requires explicit refactoring; no automatic rename of existing code references is implemented.
+- Previous gate: Shane reports the repeated-header correction appears to work. Adapter v6 (add-in 1.0.0.5) now locks page geometry through the native IDE while keeping host/child editing available. Verify selection, drag/keyboard/resize protection, host resizing, child editing and delete/undo. Confirm standard IDE Options lock persistence matches the intended workflow; cleanup preserves pre-existing locks.
+- Earlier gate: adapter v4 improves behavior, but Shane reports a new empty host shows two matching Page 2 headers after + and the second is inaccessible. Package 1.0.0.64 deduplicates native discovery by identity/name; adapter v5 (add-in 1.0.0.4) adds count/name diagnostics and toolbar hover help. Verify one real first-page insertion, accessible headers and a second real page; compare native raw/unique/duplicate traces with DOM counts before assigning cause.
+- Earlier blocker: Shane reports 1.0.0.63 renders normally and v3 + creates a page, but the new page cannot be selected. Logs confirm native fixture labels/order. Adapter v4 corrects live parent-header snapshots and activation after native page acknowledgement; verify the actual add/select/switch/drop/save/reopen loop. Intermittent reference-reload deserialization remains a separate unresolved issue. Older screenshots showed a purple strip and default labels. Compare adapter v4 TabView diagnostics before/after against the native 1.0.0.63 lines in tbUI3-tabview.log. The uploaded v3 diagnostics confirm accepted root/IDs and consumed marker; they show only the original three pages. Capture the added page before inferring its DOM ownership/class.
+- Distinguish native bitmap corruption from DOM/CSS presentation using logged snapshot dimensions/checksums and native draw results. Follow up on temporary snapshot HWND resize if bounds drift. Remove/disable temporary logging after resolution.
+- Next gate: actual native IDE authoring, persistence, undo/redo, Properties-selected child reveal and final win64 smoke. Record results before calling the baseline validated.
+- Re-inspect private internals per beta. Preserve direct host targeting, unchanged coordinates, pending-compiler guards and cleanup. Replace the bridge with an official designer API when available.
 
 ## Committed next steps
-- Shane builds `WinUI3IdeStyle` in win32 and win64, runs the add-in check list in README.md and reports the Debug Console output. Then he saves the project in the IDE and the IDE-saved project and its export are committed, replacing the tool-built container.
-- Shane tests both themes in BETA 1033 using the check list in README.md (the 1015 versions were never tested in the IDE); fix whatever reads wrong and record the result in CHANGELOG.md.
+- Shane rebuilds the add-in (hold Shift while opening its project) and runs README.md check list items 1 to 8, especially Options for anything cut off by the 32px text fields and the arrow-key highlight in menus. Fix what reads wrong.
+- Shane builds `tbUI3IDE` in win32 and win64, runs the add-in check list in README.md and reports the Debug Console output. Then he saves the project in the IDE and the IDE-saved project and its export are committed, replacing the tool-built container.
+- Shane tests both themes in BETA 1043 using the check list in README.md (the 1015 versions were never tested in the IDE); fix whatever reads wrong and record the result in CHANGELOG.md.
 - Watch the dock container margin: if 2px margins make panels overflow or misalign when docking or resizing, fall back to `DockContainerMargin: 0` with `DockBorder` gaps.
 - Re-check both themes against each new twinBASIC BETA. New properties appear in the shipped Dark.theme (it lists them all); rerun the property map against the new `ide/styles.css`.
 
@@ -23,18 +122,23 @@ Risks: reaching outside the tool window is not a documented use of the API and c
 Steps:
 1. Spike (written 2026-10-30, not yet built): dialog button hover and pressed, ProgressBar, menu bar hover. It proves whether the page can be reached at all. Open questions it answers: does twinBASIC keep the case of late-bound JavaScript names (`ownerDocument`, `getElementById`, `textContent`); does the hidden tool window stay hidden across restarts; does the stylesheet survive the IDE reloading its theme.
 2. If the spike works, extend the CSS per surface, using the property map from the theme work, in this order: context menus and code navigation drop-downs (dark in WinUI3 Dark), panel headers and layout per the DockingManager reference, TabView document tabs, accent-filled default dialog button, Segoe UI Variable, control heights and padding, the remaining Options-page texts.
-3. Record per-BETA re-check steps (rerun the property map, then confirm each selector in `WinUI3IdeCss.twin` still exists in `ide/styles.css`).
+2a. Done 2026-11-09: menus and context menus, editor tab shape, dialog and Options text boxes (from Shane's WinUI HTML/CSS reference). Also done 2026-11-09: dialog buttons from the reference's `.button`, drop-downs, check boxes and radio buttons, scroll bars, tooltips, the New / Open Project dialog as a NavigationView, the toolbar as a CommandBar with Fluent icons, the Options and Project Settings dialogs as NavigationView with settings rows, and the Library References tables and Compiler Warnings list as ListViews. Also done 2026-11-09: panel headers (subtle command buttons) and trees as TreeView. Also done 2026-11-09: English panel titles in sentence case (the add-in rewrites them). Next: the property sheet as list rows; the New / Open dialog's Open button as an accent button (the add-in would pick it by caption, if Shane wants); a WinUI overflow menu for the toolbar would need JavaScript, not CSS; Segoe UI Variable across the rest of the UI; Monaco's own hover and scroll bars through its theme.
+3. Record per-BETA re-check steps (rerun the property map, then confirm each selector in `css/winui3-ide.css` still exists in `ide/styles.css`).
 4. If an IDE release blocks reaching the page, fall back to the themes alone and raise the missing theme properties upstream (see Exploratory).
 
-## Planned: designer bridge for tbUI3 containers (explored 2026-11-01)
+## Historical research: designer bridge for tbUI3 containers (2026-11-01)
+
+Preserved from main during the 2026-11-10 reconciliation. Distribution and the initial page-authoring questions below are historical: the unified tbUI3IDE candidate now contains the implemented adapter. Current acceptance gates above are authoritative.
 
 The add-in can drive the form designer, not just style it. `ownerDocument.defaultView.eval(js)` runs JavaScript in the IDE page and returns its value, and inserting a control's JSON through the designer's own insert steps creates a real, saved, undoable control. Proven with the throwaway DesignerBridgeProbe add-in. Recipe and history: `../docs/research/2026-11-01-multipage-designer.md`. Intended first use: one-click "New Page" for UI3TabView. Ideas beyond that (each needs Shane's go-ahead): HTML tab headers and a "+" drawn over the TabView (instant clicks, hover), our own items on the designer's right-click menu, drag to reorder tabs, hiding UI3TabPage from the toolbox, and handles for SplitView and Expander. Open for Shane: whether this goes in WinUI3IdeStyle or a separate add-in, and whether tbUI3 containers require it. The same per-beta risk as the stylesheet applies, but it's higher here, because these are internal designer functions, not just selectors.
 
 ## Exploratory
+
+- The 2026-11-09 parked tabbed-ribbon idea was promoted to the next agreed pass on 2026-11-10; see the committed ribbon section above.
 - Ask the twinBASIC project for theme properties for the hard-coded colours listed in README.md "Known limits" (still open in 1033: context menu item text, menu bar hover, title and dialog title text, caption icons, drop-down text, property category text, a separate focused dialog button text colour, tab shape, UI font). 1033 already added dialog contents and panel corners. With the rest, WinUI3 Dark could have dark menus, and WinUI3 Light a light title bar. This would be a GitHub issue on twinbasic/twinbasic, filed only with Shane's go-ahead.
 - Accent variants: the build script could take an accent colour and emit themes for other Windows accents, since a theme file cannot read the system accent.
 - WinUI-style syntax colours: optional, since WinUI defines no code palette; would need a reference such as Visual Studio's Dark and Light.
-- Toolbox icons: the `ToolboxIcon*` properties accept data URIs, so the toolbox could show Fluent icons. Could reuse the tbUI3 icon library.
-- Distribution (decided by Shane 2026-10-30): the themes and add-in stay separate from the tbUI3 package. A package runs no code when it is enabled, and silently installing into the IDE from a control was rejected. Likely shape: a "tbUI3 IDE extras" zip attached to tbUI3 releases, and possibly the add-in copying the themes into `%APPDATA%\twinBASIC\themes` on first load. Only after the add-in spike works in win32 and win64.
+- Dropped 2026-11-09 (Shane): Fluent icons for the toolbox. The toolbox keeps the icons each control defines for itself, so the WinUI3 themes must not set the `ToolboxIcon*` properties to replace them.
+- Distribution (decided by Shane 2026-10-30): one combined IDE add-in and optional theme files stay separate from the tbUI3 control package. A package runs no code when it is enabled, and silently installing into the IDE from a control was rejected. Likely shape: a "tbUI3 IDE extras" zip attached to tbUI3 releases, and possibly the add-in copying the themes into `%APPDATA%\twinBASIC\themes` on first load. Only after the add-in spike works in win32 and win64.
 - Read the accent from Windows: the add-in could read the system accent and set the theme's accent CSS variables at run time, which a static .theme file cannot.
-- Generate `WinUI3IdeCss.twin` from a plain .css file with a small script, once the stylesheet grows beyond a spike.
+

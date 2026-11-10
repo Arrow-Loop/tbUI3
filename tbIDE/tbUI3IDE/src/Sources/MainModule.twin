@@ -1,0 +1,325 @@
+Module MainModule
+    [DllExport]
+    Public Function tbCreateCompilerAddin(ByVal Host As Host) As AddIn
+        ' Entry point the twinBASIC IDE calls for every add-in DLL in its addins\win32 or addins\win64 folder.
+        ' The IDE releases the returned object when it unloads the add-in.
+        Return New tbUI3IDEAddin(Host)
+    End Function
+End Module
+
+Private Class tbUI3IDEAddin
+
+    Implements AddIn
+
+    ' Theme-only style element; the TabView controller owns a separate functional stylesheet.
+    Private Const StyleElementId As String = "winui3IdeStyleCss"
+    ' Themes whose name starts with this get the stylesheet: "WinUI3 Dark", "WinUI3 Light".
+    Private Const ThemePrefix As String = "WinUI3"
+    Private Const LogPrefix As String = "[tbUI3IDE] "
+
+    Private WithEvents Host As Host
+    ' A hidden tool window. Its body lives in a shadow root inside the IDE page, so its
+    ' ownerDocument is the IDE page itself, which is how the stylesheet reaches the whole IDE.
+    Private StyleWindow As ToolWindow
+    ' Re-checks the theme a moment after start-up and project load. The IDE restores the project's
+    ' state and clears the Debug Console after loading add-ins, which hid the first log lines.
+    Private WithEvents SettleTimer As AddinTimer
+    ' Picks up a change to the add-in's own option in IDE Options (see InstallOption) and saves it.
+    Private WithEvents OptionTimer As AddinTimer
+    Private TabDesigner As TabViewDesignerController
+    Private IsApplied As Boolean
+    Private ToolbarInstalled As Boolean
+    Private ToolbarLastError As String
+
+    ' The add-in's on/off option, saved per user (HKCU\Software\VB and VBA Program Settings).
+    Private Const SettingsApp As String = "WinUI3IdeStyle"
+    Private Const SettingsSection As String = "Options"
+    Private Const SettingEnabled As String = "Enabled"
+    Private Const SettingToolbar As String = "ToolbarMode"
+    ' Label of the IDE Options row the add-in's option goes under.
+    Private Const OptionAnchor As String = "Colour Theme"
+    Private Const OptionName As String = "Enable additional IDE theme styling via add-in"
+    ' The IDE's own panel titles (English), in the sentence case WinUI uses. The IDE hard-codes them in capitals,
+    ' which CSS cannot undo, so the page script rewrites them (see InstallOption). Titles in other languages and
+    ' add-in tool windows are left alone. A trailing number (EDITOR 1) is kept.
+    Private Const PanelTitles As String = "{'EDITOR':'Editor','PROJECT EXPLORER':'Project explorer','OPEN EDITORS':'Open editors'," & _
+        "'HISTORY':'History','OUTLINE':'Outline','CALL STACK':'Call stack','VARIABLES':'Variables','WATCHES':'Watches'," & _
+        "'DEBUG CONSOLE':'Debug console','DIAGNOSTICS':'Diagnostics','PACKAGE PUBLISHING':'Package publishing','TOOLBAR':'Toolbar'," & _
+        "'TOOLBOX':'Toolbox','PROPERTIES':'Properties','WEBPAGE':'Webpage','FIND / REPLACE':'Find / replace','FIND REPLACE':'Find / replace'," & _
+        "'IDE TRACE OUTPUT':'IDE trace output','MEMORY':'Memory'}"
+    Private Const OptionDesc As String = "The WinUI3 IDE Style add-in restyles what the theme cannot reach, such as the toolbar, " & _
+        "dialogs and lists. Turn it off to see the WinUI3 theme on its own. Tab management stays enabled. Takes effect at once."
+
+    Public Sub New(ByVal Host As Host)
+        Set Me.Host = Host
+        Set TabDesigner = New TabViewDesignerController(Host)
+        Log "loaded: " & Architecture() & ", IDE compiler " & SafeCompilerVersion()
+        ApplyForActiveTheme "start-up"
+        StartSettleTimer
+    End Sub
+
+    Private Sub Class_Terminate()
+        On Error Resume Next
+        If ToolbarInstalled Then
+            OptionTimer_Timer
+            OptionTimer_Timer
+        End If
+        If Not SettleTimer Is Nothing Then SettleTimer.Enabled = False
+        If Not OptionTimer Is Nothing Then OptionTimer.Enabled = False
+        Set SettleTimer = Nothing
+        Set OptionTimer = Nothing
+        If Not TabDesigner Is Nothing Then TabDesigner.Dispose
+        Set TabDesigner = Nothing
+        If Not StyleWindow Is Nothing Then
+            RunJs "(function(){var t=window.__tbUI3Toolbar;if(t)t.dispose();delete window.__tbUI3Toolbar;var s=document.getElementById('tbUI3ToolbarCss');if(s)s.remove();return 'toolbar removed';})()"
+        End If
+        ClearStyle
+        If Not StyleWindow Is Nothing Then
+            RunJs "(function(){var s=window.__winui3IdeStyle;if(s&&s.observer)s.observer.disconnect();" & _
+                "document.querySelectorAll('.winui3IdeStyleOptionRow').forEach(function(r){r.remove();});" & _
+                "delete window.__winui3IdeStyle;return 'theme option removed';})()"
+        End If
+        Set StyleWindow = Nothing
+    End Sub
+
+    Private Property Get AddIn_Name() As String
+        Return "tbUI3IDE"
+    End Property
+
+    Private Sub Host_OnProjectLoaded()
+        If Not TabDesigner Is Nothing Then TabDesigner.ProjectLoaded
+        ApplyForActiveTheme "project loaded"
+        StartSettleTimer
+    End Sub
+
+    Private Sub StartSettleTimer()
+        On Error GoTo Failed
+        If SettleTimer Is Nothing Then Set SettleTimer = New AddinTimer
+        SettleTimer.Enabled = False
+        SettleTimer.Interval = 2000
+        SettleTimer.Enabled = True
+        Exit Sub
+    Failed:
+        Log "could not start the settle timer: " & ErrorText()
+    End Sub
+
+    Private Sub SettleTimer_Timer()
+        SettleTimer.Enabled = False
+        ApplyForActiveTheme "2 seconds after loading"
+    End Sub
+
+    Private Sub Host_OnChangedTheme(ByVal ThemeName As String)
+        ' ThemeName is only the theme group ("dark" or "light"), so ask for the theme itself.
+        ApplyForActiveTheme "theme changed (event says " & ThemeName & ")"
+    End Sub
+
+    Private Sub ApplyForActiveTheme(ByVal Reason As String)
+        On Error GoTo Failed
+        Dim activeName As String = Host.Themes.ActiveThemeName
+        Log Reason & ": theme is " & activeName & ", group " & Host.Themes.ActiveThemeNameGroup
+        InstallToolbar
+        ApplyForTheme activeName
+        InstallOption
+        Exit Sub
+    Failed:
+        Log Reason & ": could not read the active theme: " & ErrorText()
+    End Sub
+
+    Private Sub ApplyForTheme(ByVal ThemeName As String)
+        ' The IDE reports theme names in lower case ("winui3 dark"), so compare without case.
+        If StrComp(Left$(ThemeName, Len(ThemePrefix)), ThemePrefix, vbTextCompare) = 0 Then
+            ApplyStyle ThemeName
+        Else
+            If IsApplied Then
+                ClearStyle
+            Else
+                Log "not a WinUI3 theme, nothing to do"
+            End If
+        End If
+    End Sub
+
+    ' All page work goes through window.eval in the IDE page, the route the designer bridge probe
+    ' proved on BETA 1043. Writing through property paths (getElementById(...).textContent = ...)
+    ' reported success there without changing the page, so the stylesheet was never added.
+    Private Sub ApplyStyle(ByVal ThemeName As String)
+        Dim stepName As String
+        On Error GoTo Failed
+        stepName = "building the stylesheet"
+        Dim css As String = WinUI3IdeCss.Build()
+        stepName = "writing the style element"
+        Log "page: " & RunJs("(function(){var s=document.getElementById('" & StyleElementId & "');var added=!s;" & _
+            "if(added){s=document.createElement('style');s.id='" & StyleElementId & "';}" & _
+            "s.textContent=" & JsString(css) & ";document.head.appendChild(s);" & _
+            "return (added?'added':'updated')+' the style element';})()")
+        IsApplied = True
+        Log "stylesheet applied for " & ThemeName & " (" & Len(css) & " characters)"
+        LogPageState
+        Exit Sub
+    Failed:
+        Log "could not apply the stylesheet while " & stepName & ": " & ErrorText()
+    End Sub
+
+    Private Sub ClearStyle()
+        If Not IsApplied Then Exit Sub
+        On Error GoTo Failed
+        Log "page: " & RunJs("(function(){var s=document.getElementById('" & StyleElementId & "');" & _
+            "if(!s)return 'no style element to remove';s.remove();if(window.__winui3IdeStyle&&window.__winui3IdeStyle.titles)window.__winui3IdeStyle.titles();" & _
+            "return 'stylesheet removed';})()")
+        IsApplied = False
+        Exit Sub
+    Failed:
+        Log "could not remove the stylesheet: " & ErrorText()
+    End Sub
+
+    ' Adds "Enable additional IDE theme styling via add-in" under Colour Theme in IDE Options. The IDE builds
+    ' that dialog in script each time it opens (and again when it is filtered), so a MutationObserver adds the row
+    ' whenever a Colour Theme row appears without it. The row reuses the dialog's own classes (tbis-optionRow,
+    ' tbis-bool), so it looks like the IDE's other Yes / No options: a ToggleSwitch while the styling is on, the
+    ' IDE's own No | Yes control while it is off. Switching it turns the stylesheet on or off at once through the
+    ' style element's media attribute; OptionTimer then reads the change back and saves it.
+    ' The same script puts the IDE's panel titles in sentence case (PanelTitles) while the styling is on, and
+    ' puts the original text back when it is switched off or the theme is no longer WinUI3.
+    ' The page script is written with single quotes only, so the twinBASIC strings need no Chr(34).
+    Private Sub InstallOption()
+        On Error GoTo Failed
+        Dim enabled As Boolean = OptionEnabled()
+        Dim js As String = "(function(){var w=window,st=w.__winui3IdeStyle||(w.__winui3IdeStyle={});" & _
+            "st.enabled=" & IIf(enabled, "true", "false") & ";st.dirty=false;" & _
+            "st.apply=function(){var s=document.getElementById('" & StyleElementId & "');if(s)s.media=st.enabled?'all':'not all';st.titles();};" & _
+            "st.titleMap=" & PanelTitles & ";st.heads=st.heads||document.getElementsByClassName('sectionHeaderInner');" & _
+            "st.titles=function(){var on=st.enabled&&!!document.getElementById('" & StyleElementId & "');" & _
+            "for(var i=0;i<st.heads.length;i++){var h=st.heads[i],t=h.textContent,o=h.getAttribute('data-winui3-title');" & _
+            "if(!on){if(o!==null){if(t===h.getAttribute('data-winui3-shown'))h.textContent=o;h.removeAttribute('data-winui3-title');h.removeAttribute('data-winui3-shown');}continue;}" & _
+            "if(t===h.getAttribute('data-winui3-shown'))continue;var m=/^(.*?)(\s+\d+)?$/.exec(t),n=st.titleMap[m[1]];if(!n)continue;" & _
+            "h.setAttribute('data-winui3-title',t);n+=(m[2]||'');h.setAttribute('data-winui3-shown',n);h.textContent=n;}};" & _
+            "st.names=st.names||document.getElementsByClassName('tbis-optionName');" & _
+            "st.row=function(){var r=document.createElement('div');r.className='tbis-optionRow winui3IdeStyleOptionRow';" & _
+            "var l=document.createElement('div');l.className='tbis-optionLabelCol';var n=document.createElement('div');n.className='tbis-optionName';" & _
+            "n.textContent=" & JsString(OptionName) & ";var d=document.createElement('div');d.className='tbis-optionDesc';" & _
+            "d.textContent=" & JsString(OptionDesc) & ";l.appendChild(n);l.appendChild(d);" & _
+            "var v=document.createElement('div');v.className='tbis-optionValueCol';var b=document.createElement('div');b.className='tbis-bool';" & _
+            "var no=document.createElement('div'),yes=document.createElement('div');no.className=yes.className='tbis-boolSegment';no.textContent='No';yes.textContent='Yes';" & _
+            "var show=function(){no.classList.toggle('tbis-boolSelected',!st.enabled);yes.classList.toggle('tbis-boolSelected',st.enabled);};" & _
+            "var set=function(on){if(st.enabled===on)return;st.enabled=on;st.dirty=true;st.apply();show();};" & _
+            "no.onclick=function(){set(false);};yes.onclick=function(){set(true);};show();" & _
+            "b.appendChild(no);b.appendChild(yes);v.appendChild(b);r.appendChild(l);r.appendChild(v);return r;};" & _
+            "st.scan=function(){st.titles();if(!st.names.length)return;" & _
+            "for(var i=0;i<st.names.length;i++){var n=st.names[i];if(n.textContent.trim()!==" & JsString(OptionAnchor) & ")continue;" & _
+            "var r=n.closest('.tbis-optionRow'),x=r&&r.nextElementSibling;" & _
+            "if(r&&!(x&&x.classList.contains('winui3IdeStyleOptionRow')))r.after(st.row());}};" & _
+            "if(!st.observer){st.observer=new MutationObserver(function(){st.scan();});st.observer.observe(document.body,{childList:true,subtree:true});}" & _
+            "st.apply();st.scan();return 'option ready, styling '+(st.enabled?'on':'off');})()"
+        Log "page: " & RunJs(js)
+        If OptionTimer Is Nothing Then Set OptionTimer = New AddinTimer
+        OptionTimer.Interval = 1000
+        OptionTimer.Enabled = True
+        Exit Sub
+    Failed:
+        Log "could not add the IDE Options switch: " & ErrorText()
+    End Sub
+
+    Private Sub InstallToolbar()
+        On Error GoTo Failed
+        If ToolbarInstalled Then Exit Sub
+        Log "page: " & RunJs(IdeToolbarScript.Build())
+        Dim mode As String = GetSetting(SettingsApp, SettingsSection, SettingToolbar, "Classic")
+        If mode <> "Classic" And mode <> "Hybrid" And mode <> "Ribbon" Then mode = "Classic"
+        RunJs "window.__tbUI3Toolbar.setMode(" & JsString(mode) & ",false);'toolbar mode restored'"
+        ToolbarInstalled = True
+        Exit Sub
+    Failed:
+        Log "could not initialize the toolbar: " & ErrorText()
+    End Sub
+
+    Private Sub OptionTimer_Timer()
+        On Error GoTo Failed
+        If Not ToolbarInstalled Then InstallToolbar
+        Dim toolbarError As String = RunJs("window.__tbUI3Toolbar ? window.__tbUI3Toolbar.lastError : ''")
+        If Len(toolbarError) > 0 And toolbarError <> ToolbarLastError Then Log "toolbar fallback: " & toolbarError
+        ToolbarLastError = toolbarError
+        Dim changed As String = RunJs("(function(){var t=window.__tbUI3Toolbar;if(t&&t.dirty){t.dirty=false;return 'toolbar:'+t.requestedMode;}" & _
+            "var s=window.__winui3IdeStyle;if(!s||!s.dirty)return '';s.dirty=false;return s.enabled?'theme:1':'theme:0';})()")
+        If Len(changed) = 0 Then Exit Sub
+        If Left$(changed, 8) = "toolbar:" Then
+            SaveSetting SettingsApp, SettingsSection, SettingToolbar, Mid$(changed, 9)
+            Log "toolbar mode saved: " & Mid$(changed, 9)
+        ElseIf Left$(changed, 6) = "theme:" Then
+            SaveSetting SettingsApp, SettingsSection, SettingEnabled, Mid$(changed, 7)
+            Log "additional styling turned " & IIf(Mid$(changed, 7) = "1", "on", "off") & " in IDE Options (saved)"
+        End If
+        Exit Sub
+    Failed:
+        Log "could not read IDE options: " & ErrorText()
+    End Sub
+
+    ' On unless the user turned it off in IDE Options.
+    Private Function OptionEnabled() As Boolean
+        On Error Resume Next
+        OptionEnabled = (GetSetting(SettingsApp, SettingsSection, SettingEnabled, "1") <> "0")
+    End Function
+
+    ' Evaluates a JavaScript expression in the IDE page and returns its result as text.
+    ' The page is reached through a hidden tool window: its body sits in a shadow root on the
+    ' IDE page, so its ownerDocument is the IDE page. Errors go to the caller.
+    Private Function RunJs(ByVal Expr As String) As String
+        If StyleWindow Is Nothing Then
+            ' Tool windows start invisible, and this one stays that way.
+            Set StyleWindow = Host.ToolWindows.Add("tbUI3IDE", "tbUI3IDEHost")
+            StyleWindow.Title = "tbUI3IDE"
+            Log "created the hidden tool window"
+        End If
+        Dim doc As Object
+        Set doc = StyleWindow.RootDomElement.Properties.ownerDocument
+        Return CStr(doc.defaultView.eval(Expr))
+    End Function
+
+    ' Text as a single-quoted JavaScript string literal.
+    Private Function JsString(ByVal Text As String) As String
+        Text = Replace(Text, "\", "\\")
+        Text = Replace(Text, "'", "\'")
+        Text = Replace(Text, vbCr, "\r")
+        Text = Replace(Text, vbLf, "\n")
+        Return "'" & Text & "'"
+    End Function
+
+    ' Reads back what the IDE page now holds, so a log shows whether the rules can take effect.
+    ' It also moves the style element to the end of <head>, so it wins ties with the IDE's own
+    ' stylesheets, and tests one rule for real: a temporary hidden menu item's computed background.
+    Private Sub LogPageState()
+        On Error GoTo Failed
+        Dim js As String = "(function(){var s=document.getElementById('" & StyleElementId & "');" & _
+            "if(!s)return 'no style element on the page';" & _
+            "document.head.appendChild(s);" & _
+            "var t=document.createElement('span');t.className='menuItem isMenuItemSelected';t.style.position='absolute';t.style.visibility='hidden';" & _
+            "document.body.appendChild(t);var bg=getComputedStyle(t).backgroundColor;t.remove();" & _
+            "return (s.sheet?s.sheet.cssRules.length:'no sheet')+' of " & WinUI3IdeCss.RuleCount() & " rules parsed, '+s.textContent.length+' characters, '" & _
+            "+'body.darkMode = '+document.body.classList.contains('darkMode')+', selected menu item background = '+bg+', starts with: '+s.textContent.slice(0,40);})()"
+        Log "check: " & RunJs(js)
+        Exit Sub
+    Failed:
+        Log "check failed: " & ErrorText()
+    End Sub
+
+    Private Function Architecture() As String
+        #If Win64 Then
+            Return "win64"
+        #Else
+            Return "win32"
+        #End If
+    End Function
+
+    Private Function SafeCompilerVersion() As String
+        On Error Resume Next
+        SafeCompilerVersion = Host.CompilerVersion
+    End Function
+
+    Private Function ErrorText() As String
+        Return "error " & Err.Number & " (&H" & Hex$(Err.Number) & "): " & Err.Description
+    End Function
+
+    Private Sub Log(ByVal Text As String)
+        On Error Resume Next
+        Host.DebugConsole.PrintText(LogPrefix & Text)
+    End Sub
+
+End Class

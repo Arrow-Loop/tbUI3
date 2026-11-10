@@ -1,3 +1,26 @@
+### 1.0.0.65
+- Isolates errors per native contained-control entry so a stale deleted page cannot stop discovery of later replacement pages.
+- Discovery diagnostics now include skipped-entry count and the last failure index, stage and HRESULT.
+
+### 1.0.0.64
+- Page discovery builds an atomic list of unique page objects/control names, so a repeated enumeration entry cannot create a phantom header. Equal captions on distinct pages remain valid.
+- Temporary discovery diagnostics record raw/unique counts, duplicate entries and accepted page names/object addresses for comparison with the designer DOM.
+
+### 1.0.0.63
+- Separates read-only page discovery from layout so paint and property snapshots do not move controls.
+- Guards no-op ScaleMode assignments and removes the page BackColor setter from Paint.
+- Adds temporary local native paint diagnostics plus a read-only TabView diagnostics command in the separate add-in.
+
+### 1.0.0.62
+- TabView header uses a theme-matched background rather than the form's unrelated ambient color.
+- UI3FormTheme applies its managed background in the designer without attaching runtime subclasses.
+- Designer-created pages receive captions/order through native setters after compiler acknowledgement; the harness initializes its real saved properties on first open.
+
+### 1.0.0.61
+- Integrated UI3TabView/UI3TabPage candidate with real page containers, saved selection/order and auto layout.
+- Separate TabView Designer add-in supplies design-time page creation, switching, deletion and reordering.
+- Added a three-page harness; source/adapter validation and the pending IDE gate are recorded in the repository docs.
+
 ### 1.0.0.60
 - New `UI3IconList`: a nonvisual list of keyed icons (Segoe glyphs, SVGs and images), like VB6's ImageList.
 - UI3Button gets `IconKey` and `IconList` to show an icon from a list.

@@ -1,0 +1,136 @@
+[FormDesignerId("C41FBB3E-AE21-49E5-887D-690CBCE32075")]
+[ClassId("1681A635-13C8-47F3-B96A-FE8123C9F708")]
+[InterfaceId("CE74EBD6-EC95-4898-94AE-B30E54690299")]
+[EventInterfaceId("84F9E83F-E693-46A6-BEA5-EF2959A7C646")]
+[COMControl]
+[Description("A real page container owned and sized by UI3TabView.")]
+Public Class UI3TabPage
+    Private m_Caption As String
+    Private m_PageOrder As Long
+    Private m_Target As ID2D1DCRenderTarget
+    Private m_LastPaintTrace As String
+
+    Public Property Get Caption() As String
+        Caption = m_Caption
+    End Property
+
+    Public Property Let Caption(ByVal Value As String)
+        m_Caption = Value
+        PropertyChanged "Caption"
+        NotifyHost
+    End Property
+
+    [Description("tbUI3 convenience: zero-based ordering within the owning TabView.")]
+    Public Property Get PageOrder() As Long
+        PageOrder = m_PageOrder
+    End Property
+
+    Public Property Let PageOrder(ByVal Value As Long)
+        If Value < 0 Then Err.Raise 380
+        m_PageOrder = Value
+        PropertyChanged "PageOrder"
+        NotifyHost
+    End Property
+
+    [NonBrowsable]
+    Public Property Get ScaleMode() As Long
+        ScaleMode = UserControl.ScaleMode
+    End Property
+
+    [NonBrowsable]
+    Public Property Get PageName() As String
+        PageName = UserControl.Extender.Name
+    End Property
+
+    [NonBrowsable]
+    Public Property Get Controls() As Object
+        Set Controls = UserControl.ContainedControls
+    End Property
+
+    ' The host calls this with coordinates expressed in its own scale units.
+    ' Extender dimensions belong to that same container coordinate system.
+    [NonBrowsable]
+    Public Sub Arrange(ByVal X As Single, ByVal Y As Single, ByVal W As Single, ByVal H As Single, ByVal Active As Boolean)
+        MatchContainerScale
+        With UserControl.Extender
+            If .Left <> X Or .Top <> Y Or .Width <> W Or .Height <> H Then .Move X, Y, W, H
+            ' False is still rendered by the IDE. The add-in hides the DOM page instead.
+            If Ambient.UserMode Then
+                If .Visible <> Active Then .Visible = Active
+            End If
+        End With
+    End Sub
+
+    Private Sub MatchContainerScale()
+        On Error Resume Next
+        ' The immediate container is important for pages inside a pixels-scaled host.
+        Dim mode As Long = UserControl.Extender.Container.ScaleMode
+        If UserControl.ScaleMode <> mode Then UserControl.ScaleMode = mode
+    End Sub
+
+    Private Sub NotifyHost()
+        On Error Resume Next
+        Dim container As Object
+        Set container = UserControl.Extender.Container
+        container.RefreshPages
+    End Sub
+
+    Private Sub UserControl_InitProperties()
+        m_Caption = "Page"
+        m_PageOrder = 0
+        MatchContainerScale
+    End Sub
+
+    Private Sub UserControl_ReadProperties(PropBag As PropertyBag)
+        m_Caption = PropBag.ReadProperty("Caption", "Page")
+        m_PageOrder = PropBag.ReadProperty("PageOrder", 0)
+        If m_PageOrder < 0 Then m_PageOrder = 0
+        MatchContainerScale
+    End Sub
+
+    Private Sub UserControl_WriteProperties(PropBag As PropertyBag)
+        PropBag.WriteProperty "Caption", m_Caption, "Page"
+        PropBag.WriteProperty "PageOrder", m_PageOrder, 0
+    End Sub
+
+    Private Sub UserControl_Show()
+        MatchContainerScale
+        NotifyHost
+    End Sub
+
+    Private Sub UserControl_Resize()
+        UserControl.Refresh
+    End Sub
+
+    Private Sub UserControl_Paint()
+        On Error GoTo Failed
+        Dim client As UI3GdiRect, dpi As Single, clear As D2D1_COLOR_F
+        Dim dc As LongPtr, drawing As Boolean, hr As Long
+        dc = UserControl.hDC
+        If dc = 0 Then Exit Sub
+        UI3GetClientRect UserControl.hWnd, client
+        If client.Right <= 0 Or client.Bottom <= 0 Then Exit Sub
+        If m_Target Is Nothing Then Set m_Target = CreateDCTarget()
+        dpi = UI3TabMetrics.WindowDpi(UserControl.hWnd)
+        m_Target.SetDpi dpi, dpi
+        m_Target.BindDC dc, client
+        clear = ColorFromArgb(UI3TabMetrics.PageBackground())
+        m_Target.BeginDraw
+        drawing = True
+        m_Target.Clear clear
+        hr = m_Target.EndDraw(0, 0)
+        drawing = False
+        If Not Ambient.UserMode Or hr <> 0 Then
+            UI3TabDiagnostics.PaintState "page " & UserControl.Extender.Name, UserControl.hWnd, dc, client, dpi, _
+                UserControl.ScaleWidth, UserControl.ScaleHeight, hr, m_LastPaintTrace
+        End If
+        If hr < 0 Then Set m_Target = Nothing
+        Exit Sub
+    Failed:
+        hr = Err.Number
+        UI3TabDiagnostics.Note "page " & UserControl.Extender.Name & " Paint exception &H" & Hex$(hr) & " " & Err.Description
+        On Error Resume Next
+        If drawing And Not m_Target Is Nothing Then m_Target.EndDraw 0, 0
+        Set m_Target = Nothing
+    End Sub
+End Class

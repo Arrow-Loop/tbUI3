@@ -1,0 +1,144 @@
+Private Class TabViewDesignerController
+    Private Host As Host
+    Private WithEvents NewPageButton As Button
+    Private WithEvents DeletePageButton As Button
+    Private WithEvents MoveLeftButton As Button
+    Private WithEvents MoveRightButton As Button
+    Private WithEvents RefreshButton As Button
+    Private WithEvents DiagnosticsButton As Button
+    Private PageWindow As ToolWindow
+    Private WithEvents LoadTimer As AddinTimer
+    Private m_Installed As Boolean
+    Private m_LastError As String
+
+    Public Sub New(ByVal Host As Host)
+        Set Me.Host = Host
+        Set LoadTimer = New AddinTimer
+        LoadTimer.Interval = 1500
+        LoadTimer.Enabled = True
+    End Sub
+
+    ' The single add-in owns project lifecycle; tab behavior is independent of its theme setting.
+    Public Sub ProjectLoaded()
+        Install
+    End Sub
+
+    Private Sub LoadTimer_Timer()
+        On Error GoTo Failed
+        If Not m_Installed Then
+            Install
+        Else
+            Dim detail As String
+            detail = RunJs("window.__tbUI3TabDesigner ? window.__tbUI3TabDesigner.lastError : ''")
+            If Len(detail) > 0 And detail <> m_LastError Then Log detail
+            m_LastError = detail
+        End If
+        Exit Sub
+    Failed:
+        ' The IDE page may be unavailable during load or shutdown; retry on the next tick.
+    End Sub
+
+    Private Sub Install()
+        On Error GoTo Failed
+        If NewPageButton Is Nothing Then
+            With Host.Toolbars(0)
+                .AddSplitter()
+                Set NewPageButton = .AddButton("tbUI3TabNew", "New page")
+                Set DeletePageButton = .AddButton("tbUI3TabDelete", "Delete page")
+                Set MoveLeftButton = .AddButton("tbUI3TabLeft", "Page left")
+                Set MoveRightButton = .AddButton("tbUI3TabRight", "Page right")
+                Set RefreshButton = .AddButton("tbUI3TabRefresh", "TabView refresh")
+                Set DiagnosticsButton = .AddButton("tbUI3TabDiagnostics", "TabView diagnostics")
+            End With
+        End If
+        If PageWindow Is Nothing Then Set PageWindow = Host.ToolWindows.Add("tbUI3TabViewDesigner", "tbUI3TabViewDesignerHost")
+        If Not m_Installed Then
+            Log RunJs(TabViewDesignerScript.Build())
+            m_Installed = True
+            m_LastError = ""
+        End If
+        Exit Sub
+    Failed:
+        Log "Install failed: " & Err.Number & " " & Err.Description
+    End Sub
+
+    Private Function RunJs(ByVal Text As String) As String
+        Dim doc As Object
+        Set doc = PageWindow.RootDomElement.Properties.ownerDocument
+        Return CStr(doc.defaultView.eval(Text))
+    End Function
+
+    Private Sub RunCommand(ByVal Command As String)
+        On Error GoTo Failed
+        If Command = "refresh" Then m_Installed = False
+        Install
+        If Not m_Installed Then Exit Sub
+        Log RunJs("window.__tbUI3TabDesigner.run('" & Command & "')")
+        Exit Sub
+    Failed:
+        Log "Command failed: " & Err.Number & " " & Err.Description
+    End Sub
+
+    Private Sub NewPageButton_OnClick()
+        RunCommand "new"
+    End Sub
+
+    Private Sub DeletePageButton_OnClick()
+        RunCommand "delete"
+    End Sub
+
+    Private Sub MoveLeftButton_OnClick()
+        RunCommand "left"
+    End Sub
+
+    Private Sub MoveRightButton_OnClick()
+        RunCommand "right"
+    End Sub
+
+    Private Sub RefreshButton_OnClick()
+        RunCommand "refresh"
+    End Sub
+
+    Private Sub DiagnosticsButton_OnClick()
+        RunCommand "diagnostics"
+    End Sub
+
+    Public Sub Dispose()
+        On Error Resume Next
+        If Not LoadTimer Is Nothing Then LoadTimer.Enabled = False
+        Set LoadTimer = Nothing
+        If m_Installed Then RunJs "window.__tbUI3TabDesigner.dispose();'TabView Designer removed'"
+        m_Installed = False
+        Set PageWindow = Nothing
+        Set NewPageButton = Nothing
+        Set DeletePageButton = Nothing
+        Set MoveLeftButton = Nothing
+        Set MoveRightButton = Nothing
+        Set RefreshButton = Nothing
+        Set DiagnosticsButton = Nothing
+        Set Host = Nothing
+    End Sub
+
+    Private Sub Class_Terminate()
+        Dispose
+    End Sub
+
+    Private Sub Log(ByVal Text As String)
+        On Error Resume Next
+        Host.DebugConsole.PrintText "[TabView Designer] " & Text
+        Dim folder As String
+        folder = Host.CurrentProject.Path
+        If LCase$(Right$(folder, 9)) = ".twinproj" Then folder = Left$(folder, InStrRev(folder, "\") - 1)
+        If Len(folder) > 0 Then AppendLog folder & "\tbUI3-tabview.log", Text
+        AppendLog Environ$("TEMP") & "\tbUI3-tabview.log", Text
+    End Sub
+
+    Private Sub AppendLog(ByVal Path As String, ByVal Text As String)
+        On Error Resume Next
+        Dim file As Integer
+        file = FreeFile
+        Open Path For Append As #file
+        Print #file, Format$(Now, "hh:nn:ss") & " [adapter v8] " & Text
+        Close #file
+    End Sub
+End Class

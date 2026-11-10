@@ -4,6 +4,117 @@ All notable changes to tbUI3. Dates are when the change was made, not released. 
 
 ## Unreleased
 
+### 2026-11-10, reconcile development and main documentation
+
+- Reconciled accumulated tbui3-dev work with main while preserving the earlier MultiPage research, notes and probe projects. Kept both histories in the changelogs and marked superseded research questions as historical in the roadmaps. Package/add-in code and validation status are unchanged by this reconciliation.
+
+### 2026-11-10, first selectable-toolbar implementation (tbUI3IDE 1.2.0.0)
+
+- Renamed the canonical IDE add-in project, container root, output, metadata and active tooling to tbIDE/tbUI3IDE/tbUI3IDE.twinproj / tbUI3IDE.dll, preserving project ID {15AA6303-46EB-4D7C-B378-F0564F750D0C}, the legacy Enabled preference, package 1.0.0.65 and TabView adapter v8. Added independently persisted ToolbarMode, with Classic as the compatibility default.
+- Added IDE Toolbar below the additional-styling switch for every IDE theme. Classic preserves native UI; Hybrid provides Home, Code, Form, nested contextual MultiPage and Add-ins; Ribbon discovers native menu headers/descriptors, presents their commands in groups, opens fullscreen File/Backstage and routes loaded-add-in information to File. Save/Undo/Redo/Play/Pause/Stop occupy the upper quick-access area. Third-party toolbar buttons remain in Add-ins.
+- Reused all 19 established Fluent SVG glyphs, scaling lead commands to 28px and stacked commands to 18px. Existing native designer glyphs and third-party images are retained. Essential toolbar CSS uses active IDE theme variables and is independent of optional WinUI3 restyling. No Office icon assets were introduced.
+- Retained native command/context authority and live build/zoom/grid controls. Added menu alternatives, checked/disabled state, lazy submenus, asynchronous Add-ins population, late contribution discovery, native menu shortcut interception, tab keyboard navigation, File Escape/focus return, Ctrl+F1 collapse and horizontal overflow. Mode changes/unload restore original nodes and the native docked toolbar header without editing the saved panel layout. Unsupported structure falls back to Classic while retaining the requested preference and reporting the reason.
+- BETA 1044's native Add-Ins menu lists loaded add-ins, but its action calls notSupportedMenuOption and no enable/disable bridge is exposed. Backstage displays that limitation and disables those stub actions; enable/disable management remains open rather than inventing a toggle.
+- All 62 JS/DOM/protocol checks pass against official BETA 1044 helpers (44 existing and 18 toolbar checks), including native menu builders and native command/context bindings. All 71 configured project mirrors match; the latest official impexp export matches the six add-in export files, with .meta checked separately. Browser visual checking was blocked by the browser URL policy; no rendered appearance or native IDE startup result is claimed. Detailed evidence and remaining acceptance work: docs/validation/2026-11-10-ide-toolbar.md.
+
+### 2026-11-10, document three toolbar modes and active-theme behavior
+
+- Revised the agreed IDE plan to an independently saved IDE Toolbar choice: Classic, Hybrid (the earlier tabbed-toolbar proposal) and full Office-style Ribbon. Recorded fullscreen File/Backstage, add-in enablement, contributed buttons, quick-access placement and automatic discovery of future native menus/options in tbIDE/ROADMAP.md.
+- Recorded that toolbar UI follows any selected IDE theme, including standard/third-party themes, independently of additional styling. Updated both roadmaps, the IDE architecture and current handoff. Documentation only; the existing add-in/package versions, runtime, settings and project/output names are unchanged.
+
+### 2026-11-10, document the next ribbon layout and project rename
+
+- Recorded Shane's command-by-command Home, Code, Form, contextual nested MultiPage and Add-ins layout in tbIDE/ROADMAP.md, including an always-visible Home tab and third-party button routing.
+- Documented the future tbUI3IDE project/output rename, identity/preference migration and scoped use of Fluent UI Web as the ribbon-pattern basis with WinUI 3 visuals. Updated handoff/architecture requirements. This is a documentation revision; runtime, project name and ribbon implementation are unchanged.
+
+
+### 2026-11-10, consolidate IDE styling and TabView management into one add-in (1.1.0.0)
+
+- Shane chose one distributed IDE add-in with independently optional theme styling. The existing WinUI3IdeStyle project now contains the theme implementation and TabView adapter v8. It exposes one add-in entry point, reports tbUI3 IDE as its display name and retains the WinUI3IdeStyle.dll output/project ID so existing styling installations and per-user preferences carry forward.
+- Moved the readable adapter and embedded script into the unified project. A private TabViewDesignerController owns its existing toolbar commands, hidden page bridge, retry timer and disposal. The single add-in starts it independently of theme selection/settings and forwards project load. Theme changes and the saved styling switch affect only theme presentation; tab commands, page protection and toolbox hiding remain active.
+- Preserved all 288 generated theme rules and both CSS inputs byte-for-byte. Preserved the WinUI3IdeStyle/Options/Enabled setting. Unload stops both feature timers, disposes tab behavior, removes theme CSS and disconnects the theme option observer/removes its row. Retired the standalone TabViewDesigner project, entry point and export tree; its README now directs users to the unified add-in. Existing installations must remove TabViewDesigner.dll from both architecture folders to prevent duplicate loaded components.
+- Updated the script builder and validator for the single canonical project. The initial project bootstrap refuses to overwrite the established project. All 44 JS/contract checks pass against official BETA 1044 helpers, including the actual theme-switch script with styling on/off, saved disabled state, page insertion after theme removal and one entry point. All 70 project mirrors and 5 official add-in export contents match. These are source, packing and JS checks; the unified native load/unload outcome is a separate gate.
+- Recorded the Microsoft Office-style tabbed ribbon as the next agreed pass, with TabView commands in their own group/tab rather than the general toolbar. No ribbon layout is implemented in this consolidation. Package 1.0.0.65 and the saved consumer project are unchanged.
+
+
+### 2026-11-10, hide the page toolbox entry while the designer add-in is active (adapter v8)
+
+- Shane requested hiding UI3TabPage from the toolbox because pages are created through their TabView. Adapter v8/add-in 1.0.0.7 hides only the exact tbUI3/UI3TabPage class's native toolbox button. It retains the registered class and native toolbox array for insertion, saved-form loading and Properties. UI3TabView and unrelated entries remain visible.
+- Uses an add-in-owned display class, reapplied when the IDE rebuilds the toolbox. If the page drawing tool was selected, the adapter returns to the native pointer when editing is ready. Unload/error cleanup removes its hiding class. No public metadata, runtime code, page creation/ownership or package version changed.
+- All 41 JS adapter/contract checks pass with official BETA 1044 helpers, including toolbox refresh/cleanup, pointer reset, unchanged registration and page creation. All 68 project mirrors match, and official add-in export matches all 3 files. The native toolbox result remains a separate observation.
+- Shane reports package 65 appears to resolve delete/readd. His new native log provides direct confirmation of the guarded failure: 10:05:41 skips three stale entries with last failure stage=Name, error &H5B; 10:05:43 accepts replacement UI3TabView2_Page8 despite those same skipped entries. This confirms continued discovery past stale names, without claiming persistence/undo coverage. Refreshed the test form mirror from his latest saved project; its canonical binary is preserved.
+
+
+### 2026-11-10, continue native discovery past invalid deleted entries (1.0.0.65)
+
+- Shane's new adapter v7/native 64 log still shows delete/readd failure. At 09:25:13 UI3TabView2 has one survivor; subsequent discovery reports raw=5 then raw=7 but still unique=1, while newly created Page3/Page4 paint only at their default 480x200. The add-in creates replacements, but native discovery does not admit them for arrangement.
+- Source inspection found one error boundary around the entire contained-control loop. A failure retrieving a deleted entry or reading its page properties ended enumeration and published a partial list. Collection now isolates each entry's retrieval, property probes, deduplication and sorted insertion; a failed entry is skipped and later entries are still visited. No geometry, ownership, public ID or selection contract was changed.
+- Temporary native discovery diagnostics include skipped count and last failed index/stage/HRESULT. The old log does not expose an HRESULT or prove which property failed; the new instrumentation distinguishes those cases.
+- Updated the canonical package and full embedded consumer package to 1.0.0.65, preserving Shane's latest saved form descriptors. Adapter v7/add-in 1.0.0.6 is unchanged. All 68 mirrors, embedded package equality, IDs/ownership/CRLF checks and official package/test exports match. All 40 existing JS adapter/contract checks pass against official BETA 1044 helpers; those checks do not execute the native collector. Native collection behavior is source-inspected; the next native outcome remains open.
+
+
+### 2026-11-10, finish structural deletion and scope new page names to their host (adapter v7)
+
+- Shane confirms adding child controls still works with page locking, then reports add-after-delete failure, replacement-page sizing/positioning problems after deletion, and deleted pages remaining in Properties. His BETA 1044 screenshot also shows form-global UI3TabPage numbering across multiple hosts.
+- Corrected the missing native onSignificantChange notification after toolbar deletion, matching the IDE's own Delete command sequence. Removing the live control and requesting an undo checkpoint alone did not notify the project model that form structure changed. The new source-contract check failed before this change and passes after it.
+- New generated names include the owning host, e.g. UI3TabView2_Page1, with host-local default captions. Allocation remains form-wide collision-safe and retains issued names across adapter refreshes during the same editing session. Existing pages/custom names and captions are not automatically renamed, preserving code references. Actual containment remains the ownership authority.
+- Pending initialization can reacquire a uniquely allocated page under its original host after native DOM resync; initialization errors are reported instead of leaving an indefinite pending operation. Insertion bounds continue to come from the selected host. Added deletion/replacement checks across differently sized hosts, last-page deletion, allocation collisions and resync.
+- Rechecked the adapter's private functions against the official BETA 1044 release; inspected dependencies/edit/deletion paths are unchanged from 1043. All 40 adapter/contract checks pass independently against each version's actual helper functions. The complete native IDE delete/readd outcome remains the next gate.
+- Refreshed the stale frmMultiPage export from Shane's latest canonical test project in a separate synchronization commit. Package 1.0.0.64 and the current canonical test binary remain unchanged by the fix. Add-in version is 1.0.0.6 (adapter v7); its project/export and all 68 mirrors match.
+
+### 2026-11-09, protect page geometry in the designer (adapter v6)
+
+- Shane reports the duplicate-header correction appears to work, then identifies accidental movement of a UI3TabPage independently from its host. That is the new authoring issue; no broader editing-loop pass is implied.
+- Adapter v6 (add-in 1.0.0.5) applies the IDE's native per-control lock to direct UI3TabPage children. Native mouse drag, keyboard movement and resize handlers honor that lock; the host and page contents are not automatically locked. New pages are protected immediately, and protection follows native rename/resync and is released when a page is removed or reparented.
+- Tracks pre-existing locks and releases only session-owned locks on unload or timer-error cleanup. Uses the native silent lock/unlock path without adding geometry edits or undo checkpoints. Normal IDE Options serialization can save current locks; already saved locks count as pre-existing on the next session. Diagnostics include layoutLocked state.
+- All 34 adapter/contract checks pass, including actual shipped drag/move/resize handlers, child/host editing, new-page protection, rename/node replacement, reparent/delete and cleanup. Add-in project/export match. Package 1.0.0.64 and the canonical test project are unchanged; actual native page selection/child editing remains the next gate for this new protection.
+
+### 2026-11-09, unique native page discovery and toolbar help (1.0.0.64, adapter v5)
+
+- Shane reports improved behavior with v4, but a newly drawn empty TabView appears to gain two pages after + and the second header is inaccessible. The enlarged screenshot shows two headers both captioned Page 2. That supports a repeated-page discovery hypothesis; it does not prove that two native page objects were created. The previously pushed logs predate this screenshot.
+- Native page discovery now builds a temporary collection, rejects repeated object identities or nonempty control names and publishes the distinct list after enumeration. Header drawing, PageCount, sizing and keyboard navigation share that list. Caption is never used for identity, so different pages may display identical captions. Existing public IDs and saved form data are preserved.
+- Added temporary native discovery traces with raw/unique counts, duplicate count and accepted page names/object addresses. Adapter v5 diagnostics report actual designer page counts/names plus native PageCount when included by the IDE. These distinguish a phantom painted header from two real controls on the next native capture.
+- Added explanatory hover titles to the six existing add-in toolbar buttons, including deletion of page contents and the diagnostic log location. Original titles are restored when the adapter unloads. Empty hosts still start with zero pages; + creates the first page on demand.
+- Package is 1.0.0.64; separate add-in is 1.0.0.4 (adapter v5). All 30 adapter/contract checks pass, including an empty-host + gesture, identical captions on distinct pages, page-count diagnostics and toolbar help. These JS checks do not execute native ContainedControls enumeration. All 68 project mirrors, embedded package/version, stable identities, ownership and CRLF checks pass; all three official exports match their mirrors. The observed duplicate-header outcome remains the next native gate.
+
+### 2026-11-09, live designer header refresh and page activation (adapter v4)
+
+- Shane reports 1.0.0.63 renders without the purple tabs in the working session and + creates a page, but the new page cannot be selected. Reference unload/reload sometimes triggers the earlier deserialization failure and sometimes succeeds with identical code; that remains a separate intermittent loading issue.
+- The pushed log confirms adapter v3 and native 1.0.0.63, accepted consumer Form/IDs, consumed fixture marker, native General/Details/Finish captions/order and successful draw results for newly created UI3TabPage1. Captured diagnostics contain the original three pages, so they do not establish the failed new page's complete DOM state. One host Paint exception (&H80020009 at 16:48:01) remains unexplained.
+- Corrected a source-confirmed protocol defect: BETA 1043 getImageFromServer returns immediately in full-form mode. Adapter v4 queues the parent TabView ID via queueMultipleSnapshot inside the native edit batch after child initialization, ordering, selection and deletion. Its refresh command also uses that protocol. New-page activation now follows compiler-assigned ID acknowledgement and caption/order setup, then refreshes the parent headers in that batch.
+- Diagnostics now read full-form PNG data from backgroundImage when imageData is absent, validating the PNG header before reporting dimensions. No image data is logged. The standalone add-in is version 1.0.0.3; package 1.0.0.63 is unchanged.
+- Added three protocol checks using actual shipped live batch/changeProperty/snapshot functions with delayed property acknowledgement, plus one bitmap-state check. The previous code failed the missing-parent-snapshot and premature-activation checks; all 26 checks now pass. Re-exported Shane's latest test project into its stale form mirrors without changing the canonical test binary.
+
+### 2026-11-09, 1.0.0.63 control-loading failure recorded
+
+- Shane's BETA 1043 win32 report contains TB5079 for the existing frmMain buttons and frmMultiPage controls, with secondary TB5125 Len errors. The screenshot confirms the embedded tbUI3 1.0.0.63 reference is enabled and shows "failed to deserialize JSON [1]" for UI3TabView1. Stable loading/compilation is not established.
+- Rechecked the current branch's packed package/test blobs against the delivered revision, public identities, package reference and form/control JSON syntax. No missing reference or JSON syntax defect was identified. This does not establish native deserializer acceptance.
+- Recorded the diagnostic dependency: fresh-session result and diagnostics from the canonical package project are needed to distinguish stale compiler state from a package/control initialization failure. No code correction or root cause is claimed for this report.
+
+### 2026-11-09, designer paint lifecycle correction and diagnostics (1.0.0.63)
+
+- Shane's BETA 1043 win32 screenshots show a dark header initially, then a purple strip and missing labels after interaction. Default Page/Button captions remain visible; one-time fixture initialization is not yet established by live evidence.
+- Separated page discovery from arrangement. Paint and public property getters no longer move pages, assign ScaleMode or change page BackColor. ScaleMode synchronization skips identical assignments. Paint caches its DC once, tracks the active draw scope and records errors before discarding a failed target.
+- Inspected the shipped UserControl snapshot path: it temporarily resizes the native HWND, sends WM_PRINTCLIENT and restores the old rectangle. This makes layout/property mutation during Paint unsafe; it does not alone prove the screenshot's final cause.
+- Added temporary native paint-state logs and adapter v3's read-only TabView diagnostics toolbar command. Logs contain native dimensions/DPI/pixel samples/EndDraw status and adapter IDs, ownership, initialization marker, pending work, computed canvas state and bitmap dimensions/checksums. No raw bitmap or textbox content is logged.
+- Twenty-two adapter/contract checks pass. All 68 packed-project mirrors, embedded package equality, identities and CRLF checks pass. The purple-strip symptom remains an open IDE gate; no corrected live outcome is claimed.
+
+### 2026-11-09, readable designer and native property initialization (1.0.0.62)
+
+- Shane's BETA 1043 win32 screenshot shows the designer controls and add-in toolbar present, but dark-theme text on a light ambient surface and custom captions at their Page/Button defaults. The older selection-rejection lines in that screenshot do not establish a current selection failure.
+- TabView now draws its header over a matching WinUI solid base surface rather than clearing it to the form's unrelated ambient color. UI3FormTheme applies its managed form background in design mode without installing runtime subclasses. The multipage fixture now includes that helper.
+- The add-in now applies a new page's Caption and PageOrder through native setters after a compiler-assigned ID exists, before the final undo checkpoint. This fixes reliance on initial JSON values becoming UserControl PropertyBag state. The explicitly marked fixture initializes native captions/order once, clears its form-level marker, and preserves subsequent edits. Ordinary user forms are not initialized by this fixture path.
+- The harness sets its intended labels/order/selection explicitly at runtime as well; its launcher receives its intended caption. Selection-rejection diagnostics include the current selected control name and class.
+- Expanded adapter coverage to 20 passing checks, including compiler-default replacement after acknowledgement, one-time fixture setup and exclusion of other forms. Packed projects, full embedded package and 66 mirrors are synchronized; real IDE results for these changes remain a separate gate.
+
+### 2026-11-09, integrated MultiPage candidate (1.0.0.61)
+
+- Added native UI3TabView and UI3TabPage ControlContainer controls with new recorded stable IDs, saved captions/order/selection, automatic sizing, per-window DPI conversion, actual page ownership, runtime visibility switching, and basic mouse/keyboard selection. No negative-position parking or Tag-based membership.
+- Added the separate TabViewDesigner add-in, derived from the existing Sample 11-based probe; WinUI3IdeStyle is unchanged. The embedded adapter inserts direct host children through the native paste path, switches designer pages, reveals Properties-selected children, deletes page subtrees, reorders pages and requests undo checkpoints. Pending compiler work blocks edits; unload or timer failure restores ordinary visibility.
+- Inspected official BETA 1043 designer and VB/tbIDE sources. Added indexed ContainedControls discovery with raw-object/extender handling, explicit paste-parent targeting, zero paste displacement and protection against replaying old verb requests after refresh.
+- Added frmMultiPage and its entry button to the existing tbUI3Test icon harness. Refreshed the full embedded package, including the existing IconList L3 code, from the canonical package.
+- Added regression and optional native paste-contract checks, source/fidelity documentation, and synchronized packed projects/mirrors. Exact evidence is in docs/validation/2026-11-09-tabview-candidate.md. The full IDE editing loop remains a gate, not a claimed result.
+- Recovery note: the earlier chat reported a 1.0.0.61 candidate but left no recoverable implementation commit. This pass establishes the actual candidate and does not inherit that chat's unverified test claims.
 ### 2026-11-01, MultiPage-style containers in the designer: investigation (research, no package change, Claude)
 
 - Record: `docs/research/2026-11-01-multipage-designer.md`, with the working notes, the twinBASIC feature request draft and the throwaway probe projects under `docs/research/2026-11-01-multipage-designer/`.
@@ -766,3 +877,5 @@ All notable changes to tbUI3. Dates are when the change was made, not released. 
   - UI3Button appeared in the toolbox of tbUI3Test and dropped onto the form as UI3Button1;
   - Caption and Style persisted through a save;
   - Click ran at runtime.
+
+

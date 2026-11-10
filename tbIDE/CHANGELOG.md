@@ -30,6 +30,10 @@
 - Added one-time initialization for the explicitly marked frmMultiPage fixture, with exact form-ID scoping and marker consumption. Later edits and other forms remain untouched. Selection diagnostics include selected name/class.
 - Regenerated the embedded script and canonical add-in project. Twenty adapter/contract checks pass; the screenshot-driven correction's native IDE outcome remains to be observed.
 
+## 2026-11-10: checked against BETA 1044
+
+Compared Shane's BETA 1044 install with 1043. The only theme change is Aurora's IconType2Filter and IconType2HoverFilter; the built-in Dark and Light themes the WinUI3 themes inherit are unchanged, no `--theme` property was added or removed, and no class name in main.js changed. The other changes (form designer text selection while renaming, a rename guard, debugger hover values in hex) touch nothing the themes or the add-in style. No theme or add-in change needed. Not yet run in 1044.
+
 ## 2026-11-09: panel titles in sentence case
 
 Shane agreed to sentence case for the IDE's panel titles (WinUI style), which the IDE hard-codes in capitals.

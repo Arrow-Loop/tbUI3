@@ -5,7 +5,7 @@ This folder makes the twinBASIC IDE itself look like a WinUI 3 app. It has two p
 - Two IDE themes, **WinUI3 Dark** and **WinUI3 Light**, which set the IDE's colours, corners and borders through its own theme system.
 - **WinUI3 IDE Style**, an optional IDE add-in written in twinBASIC, which reshapes what the themes cannot reach (the parts the IDE's stylesheet hard-codes). The themes work on their own; the add-in only adds to them.
 
-Both are built for twinBASIC **BETA 1043** and checked against 1033 and 1043 (the add-in's stylesheet rules and the IDE plumbing it uses are unchanged between the two). The themes need 1033 or later: older builds ignore the new dialog and panel properties, so dialogs stay in the IDE's defaults and panels lose their gaps.
+Both are built for twinBASIC **BETA 1043** and checked against 1033, 1043 and 1044 (the add-in's stylesheet rules and the IDE plumbing it uses are unchanged between them; 1044 changed only Aurora's icon filters and the form designer's text selection). The themes need 1033 or later: older builds ignore the new dialog and panel properties, so dialogs stay in the IDE's defaults and panels lose their gaps.
 
 | Path | Contents |
 | --- | --- |

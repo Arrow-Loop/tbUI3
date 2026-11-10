@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import vm from 'node:vm';
 import test from 'node:test';
-const source = fs.readFileSync('tbIDE/WinUI3IdeStyle/js/tabview-designer.js','utf8');
+const source = fs.readFileSync('tbIDE/tbUI3IDE/js/tabview-designer.js','utf8');
 const factory = vm.runInNewContext(source);
 class Node {
     constructor(properties = {}) {
@@ -152,7 +152,7 @@ test('narrow hosts keep the selected overflow tab reachable and the add button s
     assert.equal(f.host.properties.SelectedPage,'Page3');assert.equal(f.g.selectedControls[0],list[2]);
 });
 test('embedded twinBASIC script exactly reconstructs parseable JavaScript',()=>{
-    const p='tbIDE/WinUI3IdeStyle/src/Sources/TabViewDesignerScript.twin';
+    const p='tbIDE/tbUI3IDE/src/Sources/TabViewDesignerScript.twin';
     if(!fs.existsSync(p)) return;
     const src=fs.readFileSync(p,'utf8');let js='';
     for(const line of src.split(/\r?\n/)) {
@@ -417,7 +417,7 @@ test('page toolbox hiding preserves registration, new-page creation and unrelate
 // Evaluate the actual theme-options expression emitted by the twinBASIC wrapper.
 // Only its small string-concatenation grammar is needed; native methods are not simulated.
 function themeOptionsExpression(enabled) {
-    const source=fs.readFileSync('tbIDE/WinUI3IdeStyle/src/Sources/MainModule.twin','utf8').replace(/& _\r?\n\s*/g,'& ');
+    const source=fs.readFileSync('tbIDE/tbUI3IDE/src/Sources/MainModule.twin','utf8').replace(/& _\r?\n\s*/g,'& ');
     const values={enabled,IIf:(condition,yes,no)=>condition?yes:no,
         JsString:s=>"'"+s.replace(/\\/g,'\\\\').replace(/'/g,"\\'").replace(/\r/g,'\\r').replace(/\n/g,'\\n')+"'"};
     const evaluate=expression=>vm.runInNewContext(expression.replace(/"[^"]*"|&/g,t=>t==='&'?'+':JSON.stringify(t.slice(1,-1))),values);
@@ -427,7 +427,7 @@ function themeOptionsExpression(enabled) {
     return evaluate(expression);
 }
 test('one add-in entry point owns both features and preserves the saved theme setting',()=>{
-    const dir='tbIDE/WinUI3IdeStyle/src',main=fs.readFileSync(dir+'/Sources/MainModule.twin','utf8');
+    const dir='tbIDE/tbUI3IDE/src',main=fs.readFileSync(dir+'/Sources/MainModule.twin','utf8');
     const controller=fs.readFileSync(dir+'/Sources/TabViewDesignerController.twin','utf8');
     const sources=fs.readdirSync(dir+'/Sources').filter(p=>p.endsWith('.twin')).map(p=>fs.readFileSync(dir+'/Sources/'+p,'utf8')).join('\n');
     assert.equal((sources.match(/\[DllExport\]/g)||[]).length,1);assert.equal((sources.match(/Implements AddIn\b/g)||[]).length,1);

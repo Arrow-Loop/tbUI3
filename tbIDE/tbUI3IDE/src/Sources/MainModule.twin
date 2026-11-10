@@ -3,11 +3,11 @@ Module MainModule
     Public Function tbCreateCompilerAddin(ByVal Host As Host) As AddIn
         ' Entry point the twinBASIC IDE calls for every add-in DLL in its addins\win32 or addins\win64 folder.
         ' The IDE releases the returned object when it unloads the add-in.
-        Return New WinUI3IdeStyleAddin(Host)
+        Return New tbUI3IDEAddin(Host)
     End Function
 End Module
 
-Private Class WinUI3IdeStyleAddin
+Private Class tbUI3IDEAddin
 
     Implements AddIn
 
@@ -15,7 +15,7 @@ Private Class WinUI3IdeStyleAddin
     Private Const StyleElementId As String = "winui3IdeStyleCss"
     ' Themes whose name starts with this get the stylesheet: "WinUI3 Dark", "WinUI3 Light".
     Private Const ThemePrefix As String = "WinUI3"
-    Private Const LogPrefix As String = "[WinUI3 IDE Style] "
+    Private Const LogPrefix As String = "[tbUI3IDE] "
 
     Private WithEvents Host As Host
     ' A hidden tool window. Its body lives in a shadow root inside the IDE page, so its
@@ -28,11 +28,14 @@ Private Class WinUI3IdeStyleAddin
     Private WithEvents OptionTimer As AddinTimer
     Private TabDesigner As TabViewDesignerController
     Private IsApplied As Boolean
+    Private ToolbarInstalled As Boolean
+    Private ToolbarLastError As String
 
     ' The add-in's on/off option, saved per user (HKCU\Software\VB and VBA Program Settings).
     Private Const SettingsApp As String = "WinUI3IdeStyle"
     Private Const SettingsSection As String = "Options"
     Private Const SettingEnabled As String = "Enabled"
+    Private Const SettingToolbar As String = "ToolbarMode"
     ' Label of the IDE Options row the add-in's option goes under.
     Private Const OptionAnchor As String = "Colour Theme"
     Private Const OptionName As String = "Enable additional IDE theme styling via add-in"
@@ -57,12 +60,19 @@ Private Class WinUI3IdeStyleAddin
 
     Private Sub Class_Terminate()
         On Error Resume Next
+        If ToolbarInstalled Then
+            OptionTimer_Timer
+            OptionTimer_Timer
+        End If
         If Not SettleTimer Is Nothing Then SettleTimer.Enabled = False
         If Not OptionTimer Is Nothing Then OptionTimer.Enabled = False
         Set SettleTimer = Nothing
         Set OptionTimer = Nothing
         If Not TabDesigner Is Nothing Then TabDesigner.Dispose
         Set TabDesigner = Nothing
+        If Not StyleWindow Is Nothing Then
+            RunJs "(function(){var t=window.__tbUI3Toolbar;if(t)t.dispose();delete window.__tbUI3Toolbar;var s=document.getElementById('tbUI3ToolbarCss');if(s)s.remove();return 'toolbar removed';})()"
+        End If
         ClearStyle
         If Not StyleWindow Is Nothing Then
             RunJs "(function(){var s=window.__winui3IdeStyle;if(s&&s.observer)s.observer.disconnect();" & _
@@ -73,7 +83,7 @@ Private Class WinUI3IdeStyleAddin
     End Sub
 
     Private Property Get AddIn_Name() As String
-        Return "tbUI3 IDE"
+        Return "tbUI3IDE"
     End Property
 
     Private Sub Host_OnProjectLoaded()
@@ -107,7 +117,9 @@ Private Class WinUI3IdeStyleAddin
         On Error GoTo Failed
         Dim activeName As String = Host.Themes.ActiveThemeName
         Log Reason & ": theme is " & activeName & ", group " & Host.Themes.ActiveThemeNameGroup
+        InstallToolbar
         ApplyForTheme activeName
+        InstallOption
         Exit Sub
     Failed:
         Log Reason & ": could not read the active theme: " & ErrorText()
@@ -142,7 +154,6 @@ Private Class WinUI3IdeStyleAddin
         IsApplied = True
         Log "stylesheet applied for " & ThemeName & " (" & Len(css) & " characters)"
         LogPageState
-        InstallOption
         Exit Sub
     Failed:
         Log "could not apply the stylesheet while " & stepName & ": " & ErrorText()
@@ -150,7 +161,6 @@ Private Class WinUI3IdeStyleAddin
 
     Private Sub ClearStyle()
         If Not IsApplied Then Exit Sub
-        If Not OptionTimer Is Nothing Then OptionTimer.Enabled = False
         On Error GoTo Failed
         Log "page: " & RunJs("(function(){var s=document.getElementById('" & StyleElementId & "');" & _
             "if(!s)return 'no style element to remove';s.remove();if(window.__winui3IdeStyle&&window.__winui3IdeStyle.titles)window.__winui3IdeStyle.titles();" & _
@@ -193,7 +203,7 @@ Private Class WinUI3IdeStyleAddin
             "var set=function(on){if(st.enabled===on)return;st.enabled=on;st.dirty=true;st.apply();show();};" & _
             "no.onclick=function(){set(false);};yes.onclick=function(){set(true);};show();" & _
             "b.appendChild(no);b.appendChild(yes);v.appendChild(b);r.appendChild(l);r.appendChild(v);return r;};" & _
-            "st.scan=function(){st.titles();if(!st.names.length||!document.getElementById('" & StyleElementId & "'))return;" & _
+            "st.scan=function(){st.titles();if(!st.names.length)return;" & _
             "for(var i=0;i<st.names.length;i++){var n=st.names[i];if(n.textContent.trim()!==" & JsString(OptionAnchor) & ")continue;" & _
             "var r=n.closest('.tbis-optionRow'),x=r&&r.nextElementSibling;" & _
             "if(r&&!(x&&x.classList.contains('winui3IdeStyleOptionRow')))r.after(st.row());}};" & _
@@ -208,16 +218,38 @@ Private Class WinUI3IdeStyleAddin
         Log "could not add the IDE Options switch: " & ErrorText()
     End Sub
 
-    Private Sub OptionTimer_Timer()
+    Private Sub InstallToolbar()
         On Error GoTo Failed
-        Dim changed As String = RunJs("(function(){var s=window.__winui3IdeStyle;if(!s||!s.dirty)return '';s.dirty=false;return s.enabled?'1':'0';})()")
-        If Len(changed) = 0 Then Exit Sub
-        SaveSetting SettingsApp, SettingsSection, SettingEnabled, changed
-        Log "additional styling turned " & IIf(changed = "1", "on", "off") & " in IDE Options (saved)"
+        If ToolbarInstalled Then Exit Sub
+        Log "page: " & RunJs(IdeToolbarScript.Build())
+        Dim mode As String = GetSetting(SettingsApp, SettingsSection, SettingToolbar, "Classic")
+        If mode <> "Classic" And mode <> "Hybrid" And mode <> "Ribbon" Then mode = "Classic"
+        RunJs "window.__tbUI3Toolbar.setMode(" & JsString(mode) & ",false);'toolbar mode restored'"
+        ToolbarInstalled = True
         Exit Sub
     Failed:
-        OptionTimer.Enabled = False
-        Log "stopped watching the IDE Options switch: " & ErrorText()
+        Log "could not initialize the toolbar: " & ErrorText()
+    End Sub
+
+    Private Sub OptionTimer_Timer()
+        On Error GoTo Failed
+        If Not ToolbarInstalled Then InstallToolbar
+        Dim toolbarError As String = RunJs("window.__tbUI3Toolbar ? window.__tbUI3Toolbar.lastError : ''")
+        If Len(toolbarError) > 0 And toolbarError <> ToolbarLastError Then Log "toolbar fallback: " & toolbarError
+        ToolbarLastError = toolbarError
+        Dim changed As String = RunJs("(function(){var t=window.__tbUI3Toolbar;if(t&&t.dirty){t.dirty=false;return 'toolbar:'+t.requestedMode;}" & _
+            "var s=window.__winui3IdeStyle;if(!s||!s.dirty)return '';s.dirty=false;return s.enabled?'theme:1':'theme:0';})()")
+        If Len(changed) = 0 Then Exit Sub
+        If Left$(changed, 8) = "toolbar:" Then
+            SaveSetting SettingsApp, SettingsSection, SettingToolbar, Mid$(changed, 9)
+            Log "toolbar mode saved: " & Mid$(changed, 9)
+        ElseIf Left$(changed, 6) = "theme:" Then
+            SaveSetting SettingsApp, SettingsSection, SettingEnabled, Mid$(changed, 7)
+            Log "additional styling turned " & IIf(Mid$(changed, 7) = "1", "on", "off") & " in IDE Options (saved)"
+        End If
+        Exit Sub
+    Failed:
+        Log "could not read IDE options: " & ErrorText()
     End Sub
 
     ' On unless the user turned it off in IDE Options.
@@ -232,8 +264,8 @@ Private Class WinUI3IdeStyleAddin
     Private Function RunJs(ByVal Expr As String) As String
         If StyleWindow Is Nothing Then
             ' Tool windows start invisible, and this one stays that way.
-            Set StyleWindow = Host.ToolWindows.Add("WinUI3IdeStyle", "WinUI3IdeStyleHost")
-            StyleWindow.Title = "WinUI3 IDE Style"
+            Set StyleWindow = Host.ToolWindows.Add("tbUI3IDE", "tbUI3IDEHost")
+            StyleWindow.Title = "tbUI3IDE"
             Log "created the hidden tool window"
         End If
         Dim doc As Object

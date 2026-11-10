@@ -1,6 +1,12 @@
 # Handoff: tbUI3
 
-## Current update, 2026-11-10
+## Current implementation, 2026-11-10: tbUI3IDE 1.2.0.0
+
+The canonical IDE add-in is now tbIDE/tbUI3IDE/tbUI3IDE.twinproj, output tbUI3IDE.dll. Remove both legacy WinUI3IdeStyle.dll and TabViewDesigner.dll from both architecture folders. Project ID and the WinUI3IdeStyle/Options/Enabled preference remain unchanged; ToolbarMode is saved independently. Package 1.0.0.65 and adapter v8 are unchanged.
+
+The first implementation includes the three-mode selector, active-theme toolbar CSS, enlarged existing Fluent glyphs, native command/menu discovery, Hybrid context, full-menu Ribbon, File/Backstage and quick access. All 62 JS/DOM/protocol checks pass against BETA 1044 helpers; all 71 project mirrors and the current official add-in export match. Evidence: docs/validation/2026-11-10-ide-toolbar.md. Native/visual acceptance and Office adaptive collapse/keytips remain open. BETA 1044's Add-Ins menu only lists loaded add-ins with unsupported action stubs, so real enable/disable is still future work. Do not claim those gates passed. Current architecture and detailed remaining work: tbIDE/ARCHITECTURE.md and tbIDE/ROADMAP.md.
+
+## Earlier consolidation/planning update, 2026-11-10
 
 Current control package remains 1.0.0.65. One IDE add-in, version 1.1.0.0, now combines theme styling and TabView adapter v8. Canonical project: tbIDE/WinUI3IdeStyle/WinUI3IdeStyle.twinproj. Display name: tbUI3 IDE. Output remains WinUI3IdeStyle.dll; remove legacy TabViewDesigner.dll from both addins architecture directories when migrating. The standalone TabViewDesigner project/src has been retired, and its old README redirects to current instructions.
 

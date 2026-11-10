@@ -1,8 +1,8 @@
-// Writes tbIDE/WinUI3IdeStyle/css/winui3-ide-icons.css: one rule per toolbar button that sets --fluent-icon
+// Writes tbIDE/tbUI3IDE/css/winui3-ide-icons.css: one rule per toolbar button that sets --fluent-icon
 // to a Fluent UI System Icon, which winui3-ide.css draws as a mask filled with the text colour.
 // Usage: node build-toolbar-icons.mjs [--refresh <@fluentui/svg-icons icons folder>]
 //   --refresh copies the icons named below from an unpacked @fluentui/svg-icons package into
-//   tbIDE/WinUI3IdeStyle/icons/fluent/ first. Without it the committed copies are used.
+//   tbIDE/tbUI3IDE/icons/fluent/ first. Without it the committed copies are used.
 // Then run build-addin-css.mjs, which reads winui3-ide.css and this file.
 //
 // Icons: Fluent UI System Icons, MIT License, Copyright (c) 2020 Microsoft Corporation
@@ -12,8 +12,8 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
-const iconDir = path.join(here, '../WinUI3IdeStyle/icons/fluent');
-const cssFile = path.join(here, '../WinUI3IdeStyle/css/winui3-ide-icons.css');
+const iconDir = path.join(here, '../tbUI3IDE/icons/fluent');
+const cssFile = path.join(here, '../tbUI3IDE/css/winui3-ide-icons.css');
 
 // Toolbar element id (main.htm #rootMenu2) -> Fluent icon file (name_size_regular.svg).
 // 16px artwork is used where the set has it; the rest are 20px artwork drawn at 16px.

@@ -1,28 +1,30 @@
 # tbUI3 IDE: one add-in for designer tools and optional WinUI 3 styling
 
-The single distributed add-in is **tbUI3 IDE 1.1.0.0**, built from `WinUI3IdeStyle/WinUI3IdeStyle.twinproj` as **WinUI3IdeStyle.dll**. It includes TabView adapter v8 and the IDE styling implementation. The DLL/project name is retained for installation and saved-setting compatibility.
+The single distributed add-in is **tbUI3IDE 1.2.0.0**, built from `tbUI3IDE/tbUI3IDE.twinproj` as **tbUI3IDE.dll**. It includes TabView adapter v8 and the IDE styling implementation. The established project ID and saved theme preference are retained through the rename.
 
-Tab management is independent of the theme. It works with the additional-styling switch off and with the IDE's standard themes. The switch continues to control only the theme presentation.
+Tab management and toolbar layout are independent of the theme. Both work with the additional-styling switch off and with the IDE's standard themes. The switch continues to control only the optional additional restyling.
+
+**IDE Toolbar**, immediately below that switch, selects Classic (default), Hybrid or Ribbon. All modes follow the selected IDE theme. Hybrid retains the menu bar with Home, Code, Form, contextual MultiPage and Add-ins toolbar groups. Ribbon migrates native menus into tabs and groups, fullscreen File and upper quick access. File > Add-ins shows the native loaded-add-in list; BETA 1044 does not expose enable/disable commands. The first implementation uses horizontal overflow and Ctrl+F1 collapse; final Office adaptive behavior and visual acceptance remain open. See [ROADMAP.md](ROADMAP.md) and [validation evidence](../docs/validation/2026-11-10-ide-toolbar.md).
 
 ### Migration from two add-ins
 
-Keep only the unified WinUI3IdeStyle.dll in each architecture's addins folder. Remove the old **TabViewDesigner.dll** from both `addins\win32` and `addins\win64` before loading the unified build, then restart the IDE. The standalone TabViewDesigner project has been retired. Its old DLL must not be distributed or loaded alongside this one. Existing theme preferences are retained.
+Install tbUI3IDE.dll in each architecture's addins folder. Remove the old **WinUI3IdeStyle.dll** and **TabViewDesigner.dll** from both `addins\win32` and `addins\win64` before loading the unified build, then restart the IDE. The standalone TabViewDesigner project has been retired. Its old DLL must not be distributed or loaded alongside this one. Existing theme preferences are retained.
 
 This folder provides:
 
 - Two IDE themes, **WinUI3 Dark** and **WinUI3 Light**, which set the IDE's colours, corners and borders through its own theme system.
 - **tbUI3 IDE**, the single twinBASIC add-in: TabView page management plus optional styling for the parts the IDE theme cannot reach. The theme files still work independently.
 
-Both are built for twinBASIC **BETA 1043** and checked against 1033, 1043 and 1044 (the add-in's stylesheet rules and the IDE plumbing it uses are unchanged between them; 1044 changed only Aurora's icon filters and the form designer's text selection). The themes need 1033 or later: older builds ignore the new dialog and panel properties, so dialogs stay in the IDE's defaults and panels lose their gaps.
+The theme baseline targets twinBASIC **BETA 1043** and was checked against 1033, 1043 and 1044 (the add-in's stylesheet rules and the IDE plumbing it uses are unchanged between them; 1044 changed only Aurora's icon filters and the form designer's text selection). The themes need 1033 or later: older builds ignore the new dialog and panel properties, so dialogs stay in the IDE's defaults and panels lose their gaps.
 
 | Path | Contents |
 | --- | --- |
 | `themes/WinUI3 Dark.theme` | Inherits the IDE's Dark theme and overrides 232 properties |
 | `themes/WinUI3 Light.theme` | Inherits the IDE's Light theme and overrides 227 properties |
 | `tools/build-themes.mjs` | Generates both theme files. Change colours there and rerun `node tools/build-themes.mjs themes` from this folder, rather than editing the .theme files by hand |
-| `WinUI3IdeStyle/WinUI3IdeStyle.twinproj` | The single add-in project, including both features (Standard DLL referencing the IDE Extensibility Package) |
-| `WinUI3IdeStyle/src/` | Plain-text mirror of the add-in project |
-| `tools/build-addin-project.mjs` | Built the first `WinUI3IdeStyle.twinproj` from `src/`, using the IDE's add-in sample as the container. Once the IDE has saved the project, sync it like the repository's other projects |
+| `tbUI3IDE/tbUI3IDE.twinproj` | The single add-in project, including both features (Standard DLL referencing the IDE Extensibility Package) |
+| `tbUI3IDE/src/` | Plain-text mirror of the add-in project |
+| `tools/build-addin-project.mjs` | Built the first `tbUI3IDE.twinproj` from `src/`, using the IDE's add-in sample as the container. Once the IDE has saved the project, sync it like the repository's other projects |
 
 `CHANGELOG.md` and `ROADMAP.md` in this folder track this work separately from the tbUI3 control library.
 
@@ -97,9 +99,9 @@ Rule of thumb: anything a theme property can set lives in the .theme files; the 
 - Library References and Compiler Warnings: the references tables become a ListView in a card with a column header, WinUI check boxes, hyperlink pencils and a critical InfoBar for load errors; each compiler warning is a list row with its drop-down in a fixed column.
 - Text boxes in dialogs and Options: WinUI's TextBox. 32px, 4px corners, a darker bottom edge at rest and a 2px accent bottom edge when focused. The property sheet's inputs are left alone.
 - Panels: pane headers with 28px subtle command buttons and the IDE's English panel titles in sentence case (Project explorer, Debug console; restored when the add-in's switch is off); Project Explorer and the other trees as WinUI TreeViews with chevrons and rounded, inset rows.
-- Its own switch in IDE Options: "Enable additional IDE theme styling via add-in", added under Colour Theme, on by default. Turning it off disables the add-in's stylesheet at once (the WinUI3 theme stays), and the choice is saved per user in the registry (`HKCU\Software\VB and VBA Program Settings\WinUI3IdeStyle\Options`, value `Enabled`). The switch only appears while a WinUI3 theme is active.
+- Its own switch in IDE Options: "Enable additional IDE theme styling via add-in", added under Colour Theme, on by default. Turning it off disables the add-in's stylesheet at once (the WinUI3 theme stays), and the choice is saved per user in the registry (`HKCU\Software\VB and VBA Program Settings\WinUI3IdeStyle\Options`, value `Enabled`). The switch and independent IDE Toolbar selector appear for all IDE themes.
 
-The stylesheet's source is `WinUI3IdeStyle/css/winui3-ide.css`, and each rule there names the WinUI resource it comes from. Menus, tabs, text boxes and the shared colour tokens are taken from Shane's WinUI HTML/CSS reference library (Arrow-Loop/twinBASIC-Knowledge, branch `feature/winui3-html-css-js-reference`, `reference/winui-html/winui-baseline.css` at commit 20b438a), remapped onto the IDE's own class names. After editing the .css file, run `node tbIDE/tools/build-addin-css.mjs`, which writes `src/Sources/WinUI3IdeCss.twin` (do not edit that file by hand), (it also reads `css/winui3-ide-icons.css`, which `node tbIDE/tools/build-toolbar-icons.mjs` writes from the icon map in that script), then `node tools/twinproj-src.mjs patch tbIDE/WinUI3IdeStyle/WinUI3IdeStyle.twinproj tbIDE/WinUI3IdeStyle/src Sources/WinUI3IdeCss.twin`.
+The stylesheet's source is `tbUI3IDE/css/winui3-ide.css`, and each rule there names the WinUI resource it comes from. Menus, tabs, text boxes and the shared colour tokens are taken from Shane's WinUI HTML/CSS reference library (Arrow-Loop/twinBASIC-Knowledge, branch `feature/winui3-html-css-js-reference`, `reference/winui-html/winui-baseline.css` at commit 20b438a), remapped onto the IDE's own class names. After editing the .css file, run `node tbIDE/tools/build-addin-css.mjs`, which writes `src/Sources/WinUI3IdeCss.twin` (do not edit that file by hand), (it also reads `css/winui3-ide-icons.css`, which `node tbIDE/tools/build-toolbar-icons.mjs` writes from the icon map in that script), then `node tools/twinproj-src.mjs patch tbIDE/tbUI3IDE/tbUI3IDE.twinproj tbIDE/tbUI3IDE/src Sources/WinUI3IdeCss.twin`.
 
 ### How it works
 
@@ -109,13 +111,13 @@ This is not a documented use of the add-in API. The official `ToolWindow.ApplyCs
 
 ### Build and install
 
-1. Open `WinUI3IdeStyle/WinUI3IdeStyle.twinproj` in twinBASIC. When rebuilding, hold Shift while the project opens: the IDE loads add-ins whenever a project opens, so otherwise the old `WinUI3IdeStyle.dll` is in use and cannot be overwritten.
+1. Open `tbUI3IDE/tbUI3IDE.twinproj` in twinBASIC. When rebuilding, hold Shift while the project opens: the IDE loads add-ins whenever a project opens, so otherwise the old `tbUI3IDE.dll` is in use and cannot be overwritten.
 2. Build it for win32 and again for win64 (switch the architecture in the toolbar). The build path is the sample's `${IdePath}\addins\${Architecture}\${ProjectName}.${FileExtension}`, so the DLLs land in the IDE's `addins\win32` and `addins\win64` folders.
 3. Restart the IDE and open any project (add-ins load when a project opens, not at IDE start; holding Shift skips them). If the IDE lists add-ins in its options, its display name is tbUI3 IDE.
 4. Switch to WinUI3 Dark or WinUI3 Light. The Debug Console should show `[WinUI3 IDE Style] stylesheet applied for WinUI3 Dark (... characters)`.
 5. Commit the IDE-saved project through the normal repository workflow; regenerate its source mirrors from that canonical project.
 
-To remove both features, delete `WinUI3IdeStyle.dll` from both `addins` folders and restart the IDE. To disable only styling, use the existing additional-styling setting.
+To remove all add-in features, delete `tbUI3IDE.dll` from both `addins` folders and restart the IDE. To disable only styling, use the existing additional-styling setting.
 
 ### What to check
 

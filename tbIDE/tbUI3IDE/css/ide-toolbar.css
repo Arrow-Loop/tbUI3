@@ -1,0 +1,67 @@
+/* Essential toolbar presentation, independent of the optional IDE restyling.
+ * Palette comes only from the current IDE's theme variables. Geometry is a
+ * tbUI3IDE ribbon composition, not an official WinUI Ribbon control template.
+ * The two host-hiding rules override the IDE's own ID-level display rules.
+ */
+.tbui3-toolbar-owned, .tbui3-toolbar-option {
+    --tbui3-toolbar-bg: var(--themeMenuBackColor, var(--themeGeneralBackColor));
+    --tbui3-toolbar-fg: var(--themeMenuForeColor, var(--themeGeneralTextColor));
+    --tbui3-toolbar-hover: var(--themeContextMenuItemHoverColor, var(--themeTreeItemSelectedBackColor));
+    --tbui3-toolbar-line: var(--themeToolbarDropDownBorder, 1px solid currentColor);
+    --tbui3-toolbar-selected: var(--themeTreeItemSelectedBackColor);
+    color: var(--tbui3-toolbar-fg);
+    font-family: 'Segoe UI Variable', 'Segoe UI', sans-serif;
+    box-sizing: border-box;
+}
+.tbui3-toolbar-native-hidden, .tbui3-menu-source { display: none !important; }
+.tbui3-ribbon { flex: 0 0 auto; min-width: 0; background: var(--tbui3-toolbar-bg); border-bottom: var(--tbui3-toolbar-line); }
+.tbui3-ribbon-tabs { display: flex; gap: 4px; padding: 0 8px; overflow-x: auto; scrollbar-width: thin; }
+.tbui3-ribbon-tab { flex: 0 0 auto; position: relative; padding: 8px 16px; border: 0; background: transparent; color: inherit; font: inherit; cursor: default; border-radius: 4px 4px 0 0; }
+.tbui3-ribbon-tab[aria-selected='true'] { background: var(--tbui3-toolbar-selected); }
+.tbui3-ribbon-tab[aria-selected='true']::after { content: ''; position: absolute; height: 2px; left: 14px; right: 14px; bottom: 0; background: currentColor; border-radius: 2px; }
+.tbui3-ribbon-tab:hover, .tbui3-ribbon-command:hover:not(:disabled), .tbui3-backstage-nav:hover, .tbui3-backstage-back:hover { background: var(--tbui3-toolbar-hover); }
+.tbui3-toolbar-owned button:focus-visible, .tbui3-toolbar-owned select:focus-visible, .tbui3-toolbar-select:focus-visible { outline: 2px solid currentColor; outline-offset: -3px; }
+.tbui3-ribbon-content { display: flex; align-items: stretch; min-height: 112px; max-height: 176px; overflow-x: auto; overflow-y: auto; padding: 4px 8px 2px; gap: 4px; scrollbar-width: thin; }
+.tbui3-ribbon-content[hidden], .tbui3-backstage[hidden] { display: none; }
+.tbui3-ribbon-group { display: flex; flex: 0 0 auto; flex-direction: column; padding: 2px 8px; border-right: var(--tbui3-toolbar-line); min-width: 64px; }
+.tbui3-ribbon-group:last-child { border-right: 0; }
+.tbui3-ribbon-group-body { display: grid; grid-auto-flow: column; grid-template-rows: repeat(3, 26px); align-items: stretch; gap: 2px 4px; flex: 1 0 auto; }
+.tbui3-ribbon-group-title { text-align: center; font-size: 11px; padding-top: 5px; opacity: .8; }
+.tbui3-ribbon-command { display: flex; flex-direction: row; justify-content: start; align-items: center; gap: 5px; min-width: 64px; max-width: 180px; min-height: 26px; padding: 3px 6px; border: 1px solid transparent; border-radius: 4px; background: transparent; color: inherit; font: inherit; font-size: 12px; cursor: default; }
+.tbui3-ribbon-group-body > .tbui3-ribbon-command:first-child { grid-row: span 3; flex-direction: column; justify-content: center; min-height: 74px; max-width: 112px; }
+.tbui3-ribbon-command:disabled { opacity: .45; }
+.tbui3-ribbon-command[hidden] { display: none; }
+.tbui3-ribbon-command:active:not(:disabled), .tbui3-ribbon-checked { background: var(--tbui3-toolbar-selected); border-color: currentColor; }
+.tbui3-ribbon-label { line-height: 16px; text-align: left; max-width: 150px; white-space: normal; }
+.tbui3-ribbon-icon { display: inline-block; flex: 0 0 auto; width: 18px; height: 18px; font-size: 18px; line-height: 18px; background: var(--tbui3-native-image, none) center / contain no-repeat; }
+.tbui3-ribbon-icon[hidden] { display: none; }
+.tbui3-ribbon-group-body > .tbui3-ribbon-command:first-child .tbui3-ribbon-icon { width: 28px; height: 28px; font-size: 28px; line-height: 28px; }
+.tbui3-ribbon-group-body > .tbui3-ribbon-command:first-child .tbui3-ribbon-label { text-align: center; max-width: 100px; }
+.tbui3-ribbon-mask { background: currentColor; mask: var(--tbui3-icon) center / contain no-repeat; -webkit-mask: var(--tbui3-icon) center / contain no-repeat; }
+.tbui3-ribbon-selector { display: flex; grid-row: span 3; flex-direction: column; gap: 6px; padding: 4px 6px; max-width: 200px; font-size: 11px; }
+.tbui3-ribbon-selector select, .tbui3-ribbon-select, .tbui3-toolbar-select { min-height: 32px; max-width: 200px; background: var(--themeDialogGeneralBackColor); color: var(--themeDialogGeneralForeColor); border: var(--themeToolbarDropDownBorder); border-radius: 4px; font: inherit; padding: 3px 8px; }
+.tbui3-ribbon-select option, .tbui3-toolbar-select option { background: var(--themeDialogGeneralBackColor); color: var(--themeDialogGeneralForeColor); }
+.tbui3-ribbon-content .menuBarGridOptionsInner { display: grid; grid-template-columns: repeat(2, max-content); gap: 2px 12px; font-size: 11px; }
+.tbui3-ribbon-grid { grid-row: span 3; border: 0; padding: 0; margin: 0; min-width: 0; }
+.tbui3-ribbon-grid:disabled { opacity: .45; }
+.tbui3-ribbon-content .menuBarGridOptionRow { display: flex; gap: 6px; align-items: center; justify-content: space-between; }
+.tbui3-ribbon-content .menuBarGridOptionRow input[type='number'] { width: 44px; color: inherit; background: var(--tbui3-toolbar-bg); border: var(--tbui3-toolbar-line); }
+.tbui3-ribbon-context { align-self: start; border: var(--tbui3-toolbar-line); border-radius: 4px; }
+.tbui3-quick { display: flex; flex: 0 1 auto; gap: 2px; align-items: center; min-width: 0; overflow-x: auto; -webkit-app-region: no-drag; }
+.tbui3-quick-real-titlebar { min-height: 32px; }
+.tbui3-ribbon-compact { min-height: 28px; min-width: 30px; width: 30px; padding: 4px; }
+.tbui3-ribbon-compact .tbui3-ribbon-icon { width: 18px; height: 18px; font-size: 18px; line-height: 18px; }
+.tbui3-ribbon-compact .tbui3-ribbon-label { display: none; }
+.tbui3-backstage { position: absolute; inset: 32px 0 0; z-index: 100000; display: flex; background: var(--themeDialogGeneralBackColor, var(--tbui3-toolbar-bg)); color: var(--themeDialogGeneralForeColor, var(--tbui3-toolbar-fg)); }
+.tbui3-backstage-rail { display: flex; flex-direction: column; gap: 4px; flex: 0 0 200px; padding: 16px 8px; background: var(--tbui3-toolbar-bg); overflow-y: auto; }
+.tbui3-backstage-back, .tbui3-backstage-nav { border: 0; border-radius: 4px; background: transparent; color: inherit; font: inherit; text-align: left; padding: 12px; }
+.tbui3-backstage-back { margin-bottom: 20px; }
+.tbui3-backstage-content { flex: 1 1 auto; overflow: auto; padding: 24px; min-width: 0; }
+.tbui3-backstage-heading { font-weight: 400; font-size: 28px; margin: 0 0 24px; }
+.tbui3-backstage-content .tbui3-ribbon-group-body { display: flex; flex-wrap: wrap; gap: 8px; }
+.tbui3-backstage-content .tbui3-ribbon-command { flex-direction: row; min-height: 48px; min-width: 180px; max-width: 280px; }
+.tbui3-ribbon-popup { position: fixed; left: max(0px, var(--tbui3-popup-x)); top: max(0px, var(--tbui3-popup-y)); display: flex; flex-direction: column; padding: 4px; max-height: 60vh; overflow: auto; z-index: 100001; min-width: 240px; background: var(--themeContextMenuBackColor, var(--tbui3-toolbar-bg)); border: var(--tbui3-toolbar-line); border-radius: 8px; }
+.tbui3-ribbon-popup .tbui3-ribbon-command { flex-direction: row; justify-content: start; min-height: 32px; max-width: none; }
+.tbui3-ribbon-popup .tbui3-ribbon-icon { width: 20px; height: 20px; font-size: 20px; }
+.tbui3-ribbon-popup .tbui3-ribbon-label { max-width: none; text-align: left; }
+.tbui3-ribbon-separator { border-top: var(--tbui3-toolbar-line); margin: 4px 0; }

@@ -13,7 +13,7 @@ twinBASIC forms like the built-in VB6-compatible controls.
 | `tbUI3Test/src/` | Plain-text export of the test harness |
 | `reference-packages/ReferencePackages.twinproj` | Validated package-laboratory project used only to study third-party implementations |
 | `reference-packages/src/` | Loose mirror of the reference project and embedded packages for search, diffing, and code archaeology |
-| `tbIDE/` | WinUI3 Dark and Light themes for the twinBASIC IDE itself, and the WinUI3 IDE Style add-in (own README, CHANGELOG and ROADMAP) |
+| `tbIDE/` | WinUI3 Dark and Light themes for the twinBASIC IDE itself, and the tbUI3IDE add-in (own README, CHANGELOG and ROADMAP) |
 
 The `.twinproj` files are binary and are the source of truth for the IDE. The `src/` folders are
 exported from them so changes can be diffed and reviewed.
@@ -33,7 +33,7 @@ IDE first).
 - The working Button, form theme, icon picker and stored-icon milestones have their validation history in CHANGELOG.md. IconList L3 was added in 1.0.0.60; L4 remains planned.
 - Package 1.0.0.65 contains the integrated UI3TabView/UI3TabPage candidate and designer paint lifecycle corrections and temporary diagnostics: real page ownership, sizing and runtime switching, plus [the unified tbUI3 IDE add-in](tbIDE/README.md) for designer authoring. [API, source matrix and validation boundary](docs/controls/UI3TabView.md).
 - tbUI3Test preserves the icon harness and adds **Open MultiPage test**, opening a three-page form. Its embedded package is synchronized with the canonical package.
-- The unified tbUI3 IDE add-in 1.1.0.0 includes adapter v8. It hides the page toolbox button and retains the v7 changes: it completes structural deletion and generates host-scoped page names, while native page locks, toolbar help and count diagnostics remain. Package 1.0.0.65 also skips invalid native entries individually so a deleted entry cannot stop later replacement-page discovery. Shane confirms locked pages still accept child controls. The current follow-up is delete/readd state and replacement-page bounds across multiple hosts.
+- The unified tbUI3IDE add-in 1.2.0.0 includes adapter v8 and selectable Classic/Hybrid/Ribbon layouts with active-theme presentation. It hides the page toolbox button and retains the v7 changes: it completes structural deletion and generates host-scoped page names, while native page locks, toolbar help and count diagnostics remain. Package 1.0.0.65 also skips invalid native entries individually so a deleted entry cannot stop later replacement-page discovery. Shane confirms locked pages still accept child controls. The current follow-up is delete/readd state and replacement-page bounds across multiple hosts.
 - Adapter fixture, BETA 1043 paste-contract and project/mirror checks are recorded separately from the pending full IDE-loop gate. This is a candidate, not a completed WinUI fidelity milestone.
 
 ## WinUI fidelity contract

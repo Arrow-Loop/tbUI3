@@ -1,6 +1,6 @@
 # TabView management in the unified tbUI3 IDE add-in
 
-TabView adapter v8 is now included in **tbUI3 IDE 1.1.0.0**, alongside optional IDE theme styling. There is one project and DLL: [WinUI3IdeStyle.twinproj](../WinUI3IdeStyle/WinUI3IdeStyle.twinproj), output WinUI3IdeStyle.dll. The old standalone TabViewDesigner project/export has been retired. [Build, install and migration](../README.md) explains removing the legacy TabViewDesigner.dll from both architecture folders before loading the unified add-in.
+TabView adapter v8 is now included in **tbUI3IDE 1.2.0.0**, alongside optional IDE theme styling. There is one project and DLL: [tbUI3IDE.twinproj](../tbUI3IDE/tbUI3IDE.twinproj), output tbUI3IDE.dll. The old standalone TabViewDesigner project/export has been retired. [Build, install and migration](../README.md) explains removing the legacy WinUI3IdeStyle.dll and TabViewDesigner.dll from both architecture folders before loading the unified add-in.
 
 Page management works with standard IDE themes and with additional styling disabled. Package 1.0.0.65 remains the native control dependency; no add-in is needed by built consumer applications.
 
@@ -20,9 +20,9 @@ Pending compiler replies, resync and drag operations block edits until the desig
 
 ## Source and maintenance
 
-- Readable adapter: ../WinUI3IdeStyle/js/tabview-designer.js.
-- Native controller: ../WinUI3IdeStyle/src/Sources/TabViewDesignerController.twin.
-- Generated script: ../WinUI3IdeStyle/src/Sources/TabViewDesignerScript.twin.
+- Readable adapter: ../tbUI3IDE/js/tabview-designer.js.
+- Native controller: ../tbUI3IDE/src/Sources/TabViewDesignerController.twin.
+- Generated script: ../tbUI3IDE/src/Sources/TabViewDesignerScript.twin.
 - Run `node tbIDE/tools/build-tabview-designer.mjs` from the repository root to regenerate/pack the script into the one canonical project. It uses Chr(34) for embedded quotes. Installed DLLs need no loose JS/CSS files.
 - Run `node tools/validate-tabview-projects.mjs` and the tests in tests/tabview-designer.test.mjs. Set TB_IDE_MAIN_JS to the official BETA's ide/main.js for native-helper protocol checks.
 

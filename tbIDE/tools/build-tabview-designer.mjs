@@ -2,8 +2,8 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { edit } from '../../tools/twinproj-edit.mjs';
-const dir = 'tbIDE/WinUI3IdeStyle';
-const file = dir + '/WinUI3IdeStyle.twinproj';
+const dir = 'tbIDE/tbUI3IDE';
+const file = dir + '/tbUI3IDE.twinproj';
 if (!fs.existsSync(file)) throw new Error('The canonical unified add-in project is required.');
 const wrapper = dir + '/src/Sources/TabViewDesignerController.twin';
 fs.writeFileSync(wrapper, fs.readFileSync(wrapper, 'utf8').replace(/\r?\n/g, '\r\n'));

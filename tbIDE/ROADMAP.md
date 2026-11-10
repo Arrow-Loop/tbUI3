@@ -2,12 +2,25 @@
 
 ## Single add-in distribution, implemented 2026-11-10
 
-- One canonical project and DLL: WinUI3IdeStyle/WinUI3IdeStyle.twinproj, WinUI3IdeStyle.dll, display name tbUI3 IDE, version 1.1.0.0. It combines the theme implementation with TabView adapter v8. The old standalone TabViewDesigner target is retired; migration removes its DLL from both architecture folders.
+- Consolidation history: version 1.1.0.0 used WinUI3IdeStyle/WinUI3IdeStyle.twinproj and WinUI3IdeStyle.dll. The current 1.2.0.0 candidate uses tbUI3IDE/tbUI3IDE.twinproj and tbUI3IDE.dll. It combines the theme implementation with TabView adapter v8. The old standalone TabViewDesigner target is retired; migration removes its DLL from both architecture folders.
 - Current gate: native combined startup/project load/unload, one set of toolbar commands, standard theme operation, page creation with the styling switch off and saved preferences retained. Source/JS/packing evidence is in ../docs/validation/2026-11-10-unified-ide-addin.md.
 
-## Next agreed pass: tbUI3IDE rename and selectable IDE toolbar
+## Current implementation: tbUI3IDE 1.2.0.0 candidate
 
-Shane specified and revised the next pass on 2026-11-10. Version 1.1.0.0 remains the consolidated add-in; the following rename, settings and toolbar modes are agreed requirements, not implemented behavior. The original single ribbon proposal is retained below as Hybrid, superseded as the only replacement by the three-mode choice. The inline mockup was canceled; this pass records the revised requirements.
+Implemented 2026-11-10: project/output rename, independent saved IDE Toolbar selector, Classic/Hybrid/Ribbon renderers, active-theme CSS, the existing Fluent glyphs at larger sizes, live native menu/toolbar discovery and state/dispatch, fullscreen File view, quick access, contextual MultiPage and restoration. The original requirements below remain the acceptance specification; implementation is not a claim of final Office parity. Source/DOM evidence is in ../docs/validation/2026-11-10-ide-toolbar.md.
+
+Remaining work:
+
+- Observe the new native add-in startup/settings/mode-switch/unload and saved-mode restart in the IDE, including standard/third-party themes and additional styling off. Verify the project rename retains its prior Enabled setting and only one add-in instance loads after removing legacy DLLs.
+- Review actual ribbon appearance and spacing, glyph rendering, narrow-window access and keyboard navigation. The current composition uses larger lead commands, three stacked rows and horizontal overflow. Office-style automatic group collapse/flyouts, keytips, complete focus parity and detailed semantic regrouping beyond the live menu separators remain follow-ups. Source validation is not visual acceptance.
+- File > Add-ins migrates the native loaded-add-in list. BETA 1044 showAddinsMenu supplies notSupportedMenuOption stub actions and the inspected root bridge has only getAddinsList, without enable/disable. Real add-in enablement requires an exposed, validated IDE capability or separately designed restart-safe management; no functional enable/disable setting is implemented in this candidate.
+- Validate all native menu families, every dynamic/lazy submenu and combo selector with real project/debug/designer context. Existing command handlers/shortcuts are reused, but private-API compatibility remains bounded by the current command model. Verify future menus/options appear without changing the add-in.
+- Check live grid controls, build/zoom selectors, native menu shortcut interception, selected-page context, popup placement and File focus return in the actual IDE. Verify toolbar reparenting/docking and layout restoration without persisting hidden panels.
+- Browser visual checking was blocked by the browser URL policy. No screenshot or native IDE appearance is recorded for this pass. Remove temporary diagnostics only after observed behavior supports doing so.
+
+## Toolbar requirements and acceptance specification
+
+Shane specified and revised the next pass on 2026-11-10. Version 1.1.0.0 remains the consolidated add-in; the following rename, settings and toolbar modes are the agreed requirements; current implementation and remaining gates are recorded above. The original single ribbon proposal is retained below as Hybrid, superseded as the only replacement by the three-mode choice. The inline mockup was canceled.
 
 ### Identity and migration
 
@@ -75,7 +88,7 @@ The request's plural Forms and singular Form refer to the same tab; use Form con
 ## TabView Designer candidate
 
 - TabView management is now part of the unified add-in alongside tbUI3 1.0.0.65 (initial candidate 1.0.0.61), independently of the styling work below. Its README documents installation and validation boundaries.
-- Current gate: adapter v8 in unified add-in 1.1.0.0 hides the page toolbox button without unregistering the class. Observe native toolbox rebuild/unload and ordinary +/New page insertion. Package 65 remains unchanged.
+- Current gate: adapter v8 in unified add-in 1.2.0.0 hides the page toolbox button without unregistering the class. Observe native toolbox rebuild/unload and ordinary +/New page insertion. Package 65 remains unchanged.
 - Package 65 progress: Shane reports delete/readd appears to work; native logs confirm Name failures &H5B are skipped and replacement Page8 is discovered. Continue persistence and full undo/redo coverage.
 - Continuing gate: adapter v7 (add-in 1.0.0.6) adds missing structural-delete notification and host-scoped generated names. Verify deleted Properties/generated entries vanish and add-after-delete works with correct bounds on two hosts, then save/reopen and undo/redo on BETA 1044. Host rename/reparent migration of existing names requires explicit refactoring; no automatic rename of existing code references is implemented.
 - Previous gate: Shane reports the repeated-header correction appears to work. Adapter v6 (add-in 1.0.0.5) now locks page geometry through the native IDE while keeping host/child editing available. Verify selection, drag/keyboard/resize protection, host resizing, child editing and delete/undo. Confirm standard IDE Options lock persistence matches the intended workflow; cleanup preserves pre-existing locks.
@@ -87,7 +100,7 @@ The request's plural Forms and singular Form refer to the same tab; use Form con
 
 ## Committed next steps
 - Shane rebuilds the add-in (hold Shift while opening its project) and runs README.md check list items 1 to 8, especially Options for anything cut off by the 32px text fields and the arrow-key highlight in menus. Fix what reads wrong.
-- Shane builds `WinUI3IdeStyle` in win32 and win64, runs the add-in check list in README.md and reports the Debug Console output. Then he saves the project in the IDE and the IDE-saved project and its export are committed, replacing the tool-built container.
+- Shane builds `tbUI3IDE` in win32 and win64, runs the add-in check list in README.md and reports the Debug Console output. Then he saves the project in the IDE and the IDE-saved project and its export are committed, replacing the tool-built container.
 - Shane tests both themes in BETA 1043 using the check list in README.md (the 1015 versions were never tested in the IDE); fix whatever reads wrong and record the result in CHANGELOG.md.
 - Watch the dock container margin: if 2px margins make panels overflow or misalign when docking or resizing, fall back to `DockContainerMargin: 0` with `DockBorder` gaps.
 - Re-check both themes against each new twinBASIC BETA. New properties appear in the shipped Dark.theme (it lists them all); rerun the property map against the new `ide/styles.css`.

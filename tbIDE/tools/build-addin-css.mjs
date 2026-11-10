@@ -1,7 +1,7 @@
-// Turns tbIDE/WinUI3IdeStyle/css/winui3-ide.css and winui3-ide-icons.css (written by build-toolbar-icons.mjs)
-// into tbIDE/WinUI3IdeStyle/src/Sources/WinUI3IdeCss.twin.
+// Turns tbIDE/tbUI3IDE/css/winui3-ide.css and winui3-ide-icons.css (written by build-toolbar-icons.mjs)
+// into tbIDE/tbUI3IDE/src/Sources/WinUI3IdeCss.twin.
 // Usage: node build-addin-css.mjs [cssFile[,cssFile...]] [twinFile]   (defaults are the paths above, relative to this script)
-// Then patch the project: node tools/twinproj-src.mjs patch tbIDE/WinUI3IdeStyle/WinUI3IdeStyle.twinproj tbIDE/WinUI3IdeStyle/src Sources/WinUI3IdeCss.twin
+// Then patch the project: node tools/twinproj-src.mjs patch tbIDE/tbUI3IDE/tbUI3IDE.twinproj tbIDE/tbUI3IDE/src Sources/WinUI3IdeCss.twin
 //
 // Comments are dropped and each rule becomes one line of the string Build() returns, so the add-in can
 // compare RuleCount() with the number of rules the browser parsed. Long rules are split over several
@@ -13,8 +13,8 @@ import { fileURLToPath } from 'url';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const cssFiles = process.argv[2] ? process.argv[2].split(',')
-  : ['winui3-ide.css', 'winui3-ide-icons.css'].map(f => path.join(here, '../WinUI3IdeStyle/css', f));
-const twinFile = process.argv[3] || path.join(here, '../WinUI3IdeStyle/src/Sources/WinUI3IdeCss.twin');
+  : ['winui3-ide.css', 'winui3-ide-icons.css'].map(f => path.join(here, '../tbUI3IDE/css', f));
+const twinFile = process.argv[3] || path.join(here, '../tbUI3IDE/src/Sources/WinUI3IdeCss.twin');
 const MaxChunk = 180;
 
 const fail = msg => { console.error('build-addin-css: ' + msg); process.exit(1); };

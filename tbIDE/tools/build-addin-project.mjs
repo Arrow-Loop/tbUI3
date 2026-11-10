@@ -8,6 +8,7 @@ import fs from "node:fs"; import path from "node:path";
 import { scan, edit } from "../../tools/twinproj-edit.mjs";
 const seed = process.argv[2]; if (!seed) { console.error("usage: build-addin-project.mjs <seed.twinproj>"); process.exit(1); }
 const name = "WinUI3IdeStyle"; const dir = path.join("tbIDE", name); const src = path.join(dir, "src");
+if (fs.existsSync(path.join(dir, name + '.twinproj'))) throw new Error('The canonical project already exists. Use twinproj-src patch/add to preserve its identity and contents.');
 let buf = fs.readFileSync(seed); const ents = scan(buf);
 const rd = (r) => fs.readFileSync(path.join(src, r));
 const sources = fs.readdirSync(path.join(src, "Sources")).sort().map(f => [f, rd("Sources/" + f)]);

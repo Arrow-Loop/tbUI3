@@ -11,7 +11,7 @@ Private Class WinUI3IdeStyleAddin
 
     Implements AddIn
 
-    ' Id of the <style> element the add-in adds to the IDE page. It is never removed, only emptied.
+    ' Theme-only style element; the TabView controller owns a separate functional stylesheet.
     Private Const StyleElementId As String = "winui3IdeStyleCss"
     ' Themes whose name starts with this get the stylesheet: "WinUI3 Dark", "WinUI3 Light".
     Private Const ThemePrefix As String = "WinUI3"
@@ -26,6 +26,7 @@ Private Class WinUI3IdeStyleAddin
     Private WithEvents SettleTimer As AddinTimer
     ' Picks up a change to the add-in's own option in IDE Options (see InstallOption) and saves it.
     Private WithEvents OptionTimer As AddinTimer
+    Private TabDesigner As TabViewDesignerController
     Private IsApplied As Boolean
 
     ' The add-in's on/off option, saved per user (HKCU\Software\VB and VBA Program Settings).
@@ -44,26 +45,39 @@ Private Class WinUI3IdeStyleAddin
         "'TOOLBOX':'Toolbox','PROPERTIES':'Properties','WEBPAGE':'Webpage','FIND / REPLACE':'Find / replace','FIND REPLACE':'Find / replace'," & _
         "'IDE TRACE OUTPUT':'IDE trace output','MEMORY':'Memory'}"
     Private Const OptionDesc As String = "The WinUI3 IDE Style add-in restyles what the theme cannot reach, such as the toolbar, " & _
-        "dialogs and lists. Turn it off to see the WinUI3 theme on its own. Takes effect at once."
+        "dialogs and lists. Turn it off to see the WinUI3 theme on its own. Tab management stays enabled. Takes effect at once."
 
     Public Sub New(ByVal Host As Host)
         Set Me.Host = Host
+        Set TabDesigner = New TabViewDesignerController(Host)
         Log "loaded: " & Architecture() & ", IDE compiler " & SafeCompilerVersion()
         ApplyForActiveTheme "start-up"
         StartSettleTimer
     End Sub
 
     Private Sub Class_Terminate()
+        On Error Resume Next
+        If Not SettleTimer Is Nothing Then SettleTimer.Enabled = False
+        If Not OptionTimer Is Nothing Then OptionTimer.Enabled = False
         Set SettleTimer = Nothing
         Set OptionTimer = Nothing
+        If Not TabDesigner Is Nothing Then TabDesigner.Dispose
+        Set TabDesigner = Nothing
         ClearStyle
+        If Not StyleWindow Is Nothing Then
+            RunJs "(function(){var s=window.__winui3IdeStyle;if(s&&s.observer)s.observer.disconnect();" & _
+                "document.querySelectorAll('.winui3IdeStyleOptionRow').forEach(function(r){r.remove();});" & _
+                "delete window.__winui3IdeStyle;return 'theme option removed';})()"
+        End If
+        Set StyleWindow = Nothing
     End Sub
 
     Private Property Get AddIn_Name() As String
-        Return "WinUI3 IDE Style"
+        Return "tbUI3 IDE"
     End Property
 
     Private Sub Host_OnProjectLoaded()
+        If Not TabDesigner Is Nothing Then TabDesigner.ProjectLoaded
         ApplyForActiveTheme "project loaded"
         StartSettleTimer
     End Sub

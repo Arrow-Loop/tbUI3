@@ -2,9 +2,11 @@
 
 ## Current update, 2026-11-10
 
-Current package remains 1.0.0.65. TabViewDesigner is adapter v8/add-in 1.0.0.7. It hides only the registered tbUI3.UI3TabPage toolbox button via an owned CSS class, leaving the native registry/array/public control metadata intact for insertion and saved forms. Toolbox rebuilds are handled by the existing tick, selected page drawing tools return to the pointer when ready, and unload/error cleanup restores visibility. Host and unrelated toolbox entries remain visible. Native toolbox behavior remains the next observation; all 41 JS checks pass with official BETA 1044 helpers and all 68 mirrors match, including the latest saved test form.
+Current control package remains 1.0.0.65. One IDE add-in, version 1.1.0.0, now combines theme styling and TabView adapter v8. Canonical project: tbIDE/WinUI3IdeStyle/WinUI3IdeStyle.twinproj. Display name: tbUI3 IDE. Output remains WinUI3IdeStyle.dll; remove legacy TabViewDesigner.dll from both addins architecture directories when migrating. The standalone TabViewDesigner project/src has been retired, and its old README redirects to current instructions.
 
-Shane says package 65 appears to work. New log at 10:05:41 confirms skipped stale Name entries, error &H5B, and at 10:05:43 includes replacement Page8 despite those entries. This validates the native per-entry recovery mechanism; save/reopen, generated/Properties removal and undo/redo remain open. The test binary and package are unchanged by the toolbox implementation. Rebuild the add-in for this pass; retain package 65.
+The existing theme setting and all 288 CSS rules are preserved. MainModule owns the only exported AddIn entry point and the styling lifecycle; private TabViewDesignerController owns functional page behavior. It starts independently of the theme setting and remains available when styling is off or a standard theme is selected. Both features clean up on unload. Readable adapter/script generation now targets the unified project's js/src directories. All 44 JS/contract checks pass with actual BETA 1044 helpers, all 70 mirrors match and official export matches all 5 add-in files. The actual combined native load/unload is the next observation.
+
+Shane explicitly wants the parked Microsoft Office-style tabbed ribbon next, with TabView commands separated from the general toolbar. Consolidation is implemented; the ribbon is agreed future work in tbIDE/ROADMAP.md. Preserve native command handlers, state, shortcuts and fallback behavior. Package 65 delete/readd progress remains supported by the stale Name &H5B trace and replacement Page8 discovery; broader persistence/undo gates remain open.
 
 ## Earlier milestone context
 

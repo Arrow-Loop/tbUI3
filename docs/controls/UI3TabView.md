@@ -4,7 +4,7 @@ Status: integrated 1.0.0.65 implementation candidate, 2026-11-10 (initial integr
 
 ## Toolbox presentation
 
-TabViewDesigner adapter v8/add-in 1.0.0.7 hides the UI3TabPage toolbox button while active on a consumer form. UI3TabView remains available; +/New page creates real page controls. UI3TabPage remains public and registered, and pages remain selectable in Properties. This is reversible add-in presentation, not a package-level hidden-control flag. Without the add-in the entry is visible. Package remains 1.0.0.65.
+TabViewDesigner adapter v8 inside the unified tbUI3 IDE add-in 1.1.0.0 hides the UI3TabPage toolbox button while active on a consumer form. UI3TabView remains available; +/New page creates real page controls. UI3TabPage remains public and registered, and pages remain selectable in Properties. This is reversible add-in presentation, not a package-level hidden-control flag. Without the add-in the entry is visible. Package remains 1.0.0.65.
 
 ## Structural deletion, generated names and multiple hosts
 
@@ -46,7 +46,7 @@ Shane's first BETA 1043 win32 screenshot showed the native designer controls and
 
 The host discovers immediate page children on Show, Resize, Paint and `RefreshPages`, builds a separate unique collection and then replaces the current list. Discovery in Paint and property getters is read-only with respect to control geometry/properties; explicit layout remains in `RefreshPages`/resize. Identical ScaleMode assignments are skipped, and Paint does not assign BackColor. BETA 1043's `UCContainedControls.Item` supplies the raw control; the enumerator can supply an extender. Discovery accepts both representations. It matches the immediate container's ScaleMode; twips and pixels are the intended baseline. Arbitrary user-defined scale origins/ranges remain outside this candidate's coverage. Page layout uses current window DPI, not a cached system-DPI paint DC. The test project's existing system-DPI awareness policy is preserved.
 
-Pages fill the host below the 40-DIP header area. Only page geometry changes on resize; switching never moves pages or their children. Runtime selection toggles page visibility. At design time, the separate add-in suppresses inactive DOM page nodes and their external resize handles; persisted `Visible` is untouched.
+Pages fill the host below the 40-DIP header area. Only page geometry changes on resize; switching never moves pages or their children. Runtime selection toggles page visibility. At design time, the unified add-in suppresses inactive DOM page nodes and their external resize handles; persisted `Visible` is untouched.
 
 | Member | Contract |
 | --- | --- |
@@ -66,7 +66,7 @@ The host supports mouse selection and Left/Right/Home/End while focused. It brin
 
 ## Designer integration
 
-See [the add-in instructions](../../tbIDE/TabViewDesigner/README.md). The add-in is required for + creation and fully hiding inactive designer pages. It is optional for runtime use. Without it, pages can still be drawn from the toolbox, selected in Properties, and auto-sized, but the IDE shows inactive pages rather than giving the complete MultiPage experience.
+Theme styling can be disabled independently; TabView management stays active. The standalone TabViewDesigner build is retired. See [the unified add-in page-management instructions](../../tbIDE/TabViewDesigner/README.md). The add-in is required for + creation and fully hiding inactive designer pages. It is optional for runtime use. Without it, pages can still be drawn from the toolbox, selected in Properties, and auto-sized, but the IDE shows inactive pages rather than giving the complete MultiPage experience.
 
 The adapter calls BETA 1043's actual `preparePaste`, `deserializeControls`, `doPaste`, change-property and undo paths. It overrides the paste parent with the TabView itself, so a selected child on page 1 cannot accidentally receive a page 2 container. It neutralizes doPaste's ordinary positioning offset while retaining the IDE's edit path. Mutations wait for pending compiler/snapshot work to finish. A new page is configured in two native phases: insert, then set Caption/PageOrder after its compiler-assigned ID exists. The final phase requests the undo checkpoint; failed insertion still requests one. Initial custom-property JSON is not assumed to be PropertyBag state. The marked fixture uses an exact form ID plus a consumed form-level marker for first-open initialization, never page Tag-based membership.
 

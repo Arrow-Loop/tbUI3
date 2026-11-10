@@ -1,13 +1,5 @@
-Module MainModule
-    [DllExport]
-    Public Function tbCreateCompilerAddin(ByVal Host As Host) As AddIn
-        Return New TabViewDesignerAddin(Host)
-    End Function
-End Module
-
-Private Class TabViewDesignerAddin
-    Implements AddIn
-    Private WithEvents Host As Host
+Private Class TabViewDesignerController
+    Private Host As Host
     Private WithEvents NewPageButton As Button
     Private WithEvents DeletePageButton As Button
     Private WithEvents MoveLeftButton As Button
@@ -26,11 +18,8 @@ Private Class TabViewDesignerAddin
         LoadTimer.Enabled = True
     End Sub
 
-    Private Property Get AddIn_Name() As String
-        Return "tbUI3 TabView Designer"
-    End Property
-
-    Private Sub Host_OnProjectLoaded()
+    ' The single add-in owns project lifecycle; tab behavior is independent of its theme setting.
+    Public Sub ProjectLoaded()
         Install
     End Sub
 
@@ -114,11 +103,24 @@ Private Class TabViewDesignerAddin
         RunCommand "diagnostics"
     End Sub
 
-    Private Sub Class_Terminate()
+    Public Sub Dispose()
         On Error Resume Next
+        If Not LoadTimer Is Nothing Then LoadTimer.Enabled = False
         Set LoadTimer = Nothing
         If m_Installed Then RunJs "window.__tbUI3TabDesigner.dispose();'TabView Designer removed'"
         m_Installed = False
+        Set PageWindow = Nothing
+        Set NewPageButton = Nothing
+        Set DeletePageButton = Nothing
+        Set MoveLeftButton = Nothing
+        Set MoveRightButton = Nothing
+        Set RefreshButton = Nothing
+        Set DiagnosticsButton = Nothing
+        Set Host = Nothing
+    End Sub
+
+    Private Sub Class_Terminate()
+        Dispose
     End Sub
 
     Private Sub Log(ByVal Text As String)

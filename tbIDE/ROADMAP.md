@@ -1,9 +1,23 @@
-# Roadmap: tbIDE (WinUI 3 look for the twinBASIC IDE)
+# Roadmap: tbUI3 IDE
+
+## Single add-in distribution, implemented 2026-11-10
+
+- One canonical project and DLL: WinUI3IdeStyle/WinUI3IdeStyle.twinproj, WinUI3IdeStyle.dll, display name tbUI3 IDE, version 1.1.0.0. It combines the theme implementation with TabView adapter v8. The old standalone TabViewDesigner target is retired; migration removes its DLL from both architecture folders.
+- Current gate: native combined startup/project load/unload, one set of toolbar commands, standard theme operation, page creation with the styling switch off and saved preferences retained. Source/JS/packing evidence is in ../docs/validation/2026-11-10-unified-ide-addin.md.
+
+## Next agreed pass: Microsoft Office-style tabbed ribbon
+
+Shane requested this as the next implementation after consolidation (2026-11-10), promoting the parked ribbon idea to agreed future work. It is not implemented in version 1.1.0.0.
+
+- Replace the shared toolbar arrangement with a tabbed ribbon using groups such as Home, Debug and Design, with TabView commands in their own clearly separated group or contextual tab.
+- Preserve the IDE's actual command nodes/handlers, enabled and checked state, tooltips, architecture/zoom selectors, shortcuts and commands contributed by other add-ins. Reuse the command IDs mapped in README.md and tools/build-toolbar-icons.mjs; recheck actual BETA internals before implementation.
+- Keep tab management available when optional styling is off or a standard IDE theme is selected. Provide the ordinary toolbar as a working fallback if ribbon setup is unsupported or disabled; restore moved nodes and state on unload/error. Decide exact ribbon visibility/presentation behavior in that pass without coupling functional page commands to the styling preference.
+- Cover contextual selection, narrow-window overflow, keyboard/focus navigation, project/theme changes, refresh and cleanup. Keep the WinUI styling resource authority while implementing the requested Office-style command organization; WinUI 3 itself does not supply a native Ribbon control.
 
 ## TabView Designer candidate
 
-- The separate TabViewDesigner add-in is implemented alongside tbUI3 1.0.0.65 (initial candidate 1.0.0.61), independently of the styling work below. Its README documents installation and validation boundaries.
-- Current gate: adapter v8/add-in 1.0.0.7 hides the page toolbox button without unregistering the class. Observe native toolbox rebuild/unload and ordinary +/New page insertion. Package 65 remains unchanged.
+- TabView management is now part of the unified add-in alongside tbUI3 1.0.0.65 (initial candidate 1.0.0.61), independently of the styling work below. Its README documents installation and validation boundaries.
+- Current gate: adapter v8 in unified add-in 1.1.0.0 hides the page toolbox button without unregistering the class. Observe native toolbox rebuild/unload and ordinary +/New page insertion. Package 65 remains unchanged.
 - Package 65 progress: Shane reports delete/readd appears to work; native logs confirm Name failures &H5B are skipped and replacement Page8 is discovered. Continue persistence and full undo/redo coverage.
 - Continuing gate: adapter v7 (add-in 1.0.0.6) adds missing structural-delete notification and host-scoped generated names. Verify deleted Properties/generated entries vanish and add-after-delete works with correct bounds on two hosts, then save/reopen and undo/redo on BETA 1044. Host rename/reparent migration of existing names requires explicit refactoring; no automatic rename of existing code references is implemented.
 - Previous gate: Shane reports the repeated-header correction appears to work. Adapter v6 (add-in 1.0.0.5) now locks page geometry through the native IDE while keeping host/child editing available. Verify selection, drag/keyboard/resize protection, host resizing, child editing and delete/undo. Confirm standard IDE Options lock persistence matches the intended workflow; cleanup preserves pre-existing locks.
@@ -43,10 +57,10 @@ Steps:
 
 ## Exploratory
 
-- Tabbed simplified ribbon like the new Outlook (agreed with Shane 2026-11-09 as an idea, not committed): tabs such as Home, Debug and Design above the toolbar card, each showing only its groups. Needs the add-in to move or hide the IDE's toolbar buttons with JavaScript (the CSS-only card is done), so it is more fragile across BETAs; the button ids it would group are listed in README.md's toolbar notes and `tools/build-toolbar-icons.mjs`.
+- The 2026-11-09 parked tabbed-ribbon idea was promoted to the next agreed pass on 2026-11-10; see the committed ribbon section above.
 - Ask the twinBASIC project for theme properties for the hard-coded colours listed in README.md "Known limits" (still open in 1033: context menu item text, menu bar hover, title and dialog title text, caption icons, drop-down text, property category text, a separate focused dialog button text colour, tab shape, UI font). 1033 already added dialog contents and panel corners. With the rest, WinUI3 Dark could have dark menus, and WinUI3 Light a light title bar. This would be a GitHub issue on twinbasic/twinbasic, filed only with Shane's go-ahead.
 - Accent variants: the build script could take an accent colour and emit themes for other Windows accents, since a theme file cannot read the system accent.
 - WinUI-style syntax colours: optional, since WinUI defines no code palette; would need a reference such as Visual Studio's Dark and Light.
 - Dropped 2026-11-09 (Shane): Fluent icons for the toolbox. The toolbox keeps the icons each control defines for itself, so the WinUI3 themes must not set the `ToolboxIcon*` properties to replace them.
-- Distribution (decided by Shane 2026-10-30): the themes and add-in stay separate from the tbUI3 package. A package runs no code when it is enabled, and silently installing into the IDE from a control was rejected. Likely shape: a "tbUI3 IDE extras" zip attached to tbUI3 releases, and possibly the add-in copying the themes into `%APPDATA%\twinBASIC\themes` on first load. Only after the add-in spike works in win32 and win64.
+- Distribution (decided by Shane 2026-10-30): one combined IDE add-in and optional theme files stay separate from the tbUI3 control package. A package runs no code when it is enabled, and silently installing into the IDE from a control was rejected. Likely shape: a "tbUI3 IDE extras" zip attached to tbUI3 releases, and possibly the add-in copying the themes into `%APPDATA%\twinBASIC\themes` on first load. Only after the add-in spike works in win32 and win64.
 - Read the accent from Windows: the add-in could read the system accent and set the theme's accent CSS variables at run time, which a static .theme file cannot.

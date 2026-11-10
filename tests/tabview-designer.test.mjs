@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import vm from 'node:vm';
 import test from 'node:test';
-const source = fs.readFileSync('tbIDE/TabViewDesigner/js/tabview-designer.js','utf8');
+const source = fs.readFileSync('tbIDE/WinUI3IdeStyle/js/tabview-designer.js','utf8');
 const factory = vm.runInNewContext(source);
 class Node {
     constructor(properties = {}) {
@@ -152,7 +152,7 @@ test('narrow hosts keep the selected overflow tab reachable and the add button s
     assert.equal(f.host.properties.SelectedPage,'Page3');assert.equal(f.g.selectedControls[0],list[2]);
 });
 test('embedded twinBASIC script exactly reconstructs parseable JavaScript',()=>{
-    const p='tbIDE/TabViewDesigner/src/Sources/TabViewDesignerScript.twin';
+    const p='tbIDE/WinUI3IdeStyle/src/Sources/TabViewDesignerScript.twin';
     if(!fs.existsSync(p)) return;
     const src=fs.readFileSync(p,'utf8');let js='';
     for(const line of src.split(/\r?\n/)) {
@@ -412,4 +412,56 @@ test('page toolbox hiding preserves registration, new-page creation and unrelate
     pageTool.isConnected=false;f.g.allToolboxItems=[replacement,hostTool,otherTool];f.adapter.tick();
     assert(!pageTool.classList.contains('tbui3-page-toolbox-hidden'));assert(replacement.classList.contains('tbui3-page-toolbox-hidden'));
     f.adapter.dispose();assert(!replacement.classList.contains('tbui3-page-toolbox-hidden'));assert.equal(f.api.document.head.children.length,0);
+});
+
+// Evaluate the actual theme-options expression emitted by the twinBASIC wrapper.
+// Only its small string-concatenation grammar is needed; native methods are not simulated.
+function themeOptionsExpression(enabled) {
+    const source=fs.readFileSync('tbIDE/WinUI3IdeStyle/src/Sources/MainModule.twin','utf8').replace(/& _\r?\n\s*/g,'& ');
+    const values={enabled,IIf:(condition,yes,no)=>condition?yes:no,
+        JsString:s=>"'"+s.replace(/\\/g,'\\\\').replace(/'/g,"\\'").replace(/\r/g,'\\r').replace(/\n/g,'\\n')+"'"};
+    const evaluate=expression=>vm.runInNewContext(expression.replace(/"[^"]*"|&/g,t=>t==='&'?'+':JSON.stringify(t.slice(1,-1))),values);
+    for(const m of source.matchAll(/Private Const (\w+) As String = ([^\r\n]+)/g))values[m[1]]=evaluate(m[2]);
+    const method=source.slice(source.indexOf('Private Sub InstallOption()'),source.indexOf('Private Sub OptionTimer_Timer()'));
+    const expression=method.match(/Dim js As String = ([^\r\n]+)/)[1];
+    return evaluate(expression);
+}
+test('one add-in entry point owns both features and preserves the saved theme setting',()=>{
+    const dir='tbIDE/WinUI3IdeStyle/src',main=fs.readFileSync(dir+'/Sources/MainModule.twin','utf8');
+    const controller=fs.readFileSync(dir+'/Sources/TabViewDesignerController.twin','utf8');
+    const sources=fs.readdirSync(dir+'/Sources').filter(p=>p.endsWith('.twin')).map(p=>fs.readFileSync(dir+'/Sources/'+p,'utf8')).join('\n');
+    assert.equal((sources.match(/\[DllExport\]/g)||[]).length,1);assert.equal((sources.match(/Implements AddIn\b/g)||[]).length,1);
+    assert(!fs.existsSync('tbIDE/TabViewDesigner/TabViewDesigner.twinproj'));
+    const startup=main.slice(main.indexOf('Public Sub New('),main.indexOf('Private Sub Class_Terminate()'));
+    assert(startup.indexOf('New TabViewDesignerController(Host)')<startup.indexOf('ApplyForActiveTheme'));
+    assert.match(main,/TabDesigner.ProjectLoaded/);assert.match(main,/TabDesigner.Dispose/);
+    assert.match(main,/SettingsApp As String = "WinUI3IdeStyle"/);assert.match(main,/SettingEnabled As String = "Enabled"/);
+    assert(!controller.includes('OptionEnabled'));assert(!controller.includes('ThemePrefix'));
+    assert.match(controller,/Set LoadTimer = Nothing/);assert.match(controller,/__tbUI3TabDesigner.dispose\(\)/);
+});
+test('the actual theme option switches styling off and on while tab management keeps working',()=>{
+    const f=fixture(),style={media:'all'},heading={textContent:'TOOLBOX',data:new Map(),
+        getAttribute(k){return this.data.has(k)?this.data.get(k):null;},setAttribute(k,v){this.data.set(k,v);},removeAttribute(k){this.data.delete(k);}};
+    const anchor=new Node();anchor.textContent='Colour Theme';const row={after(n){this.nextElementSibling=n;}};anchor.closest=()=>row;
+    const document={getElementById:id=>id==='winui3IdeStyleCss'?style:null,
+        getElementsByClassName:cls=>cls==='sectionHeaderInner'?[heading]:[anchor],
+        createElement:()=>{const n=new Node();n.classList.contains=x=>String(n.className).split(' ').includes(x)||n.classes.has(x);return n;},body:{}};
+    const window={__tbUI3TabDesigner:f.adapter};let disconnected=false;
+    const sandbox={window,document,MutationObserver:class{observe(){}disconnect(){disconnected=true;}}};
+    vm.runInNewContext(themeOptionsExpression(true),sandbox);
+    assert.equal(heading.textContent,'Toolbox');assert.equal(style.media,'all');
+    const option=row.nextElementSibling,segments=option.children[1].children[0].children;
+    segments[0].onclick();assert.equal(style.media,'not all');assert.equal(heading.textContent,'TOOLBOX');
+    assert.equal(window.__winui3IdeStyle.dirty,true);assert.equal(window.__tbUI3TabDesigner.run('new'),'Tabs1_Page1');
+    segments[1].onclick();assert.equal(style.media,'all');assert.equal(heading.textContent,'Toolbox');
+    assert.equal(window.__tbUI3TabDesigner.run('new'),'Tabs1_Page2');assert.equal(disconnected,false);
+    document.getElementById=()=>null;window.__winui3IdeStyle.titles();assert.equal(heading.textContent,'TOOLBOX');
+    assert.equal(window.__tbUI3TabDesigner.run('new'),'Tabs1_Page3');
+});
+test('the actual theme option restores its saved disabled state without disabling page insertion',()=>{
+    const f=fixture(),style={media:'all'},window={__tbUI3TabDesigner:f.adapter};
+    const document={getElementById:()=>style,getElementsByClassName:()=>[],body:{}};
+    vm.runInNewContext(themeOptionsExpression(false),{window,document,MutationObserver:class{observe(){}}});
+    assert.equal(style.media,'not all');assert.equal(window.__winui3IdeStyle.enabled,false);assert.equal(window.__winui3IdeStyle.dirty,false);
+    assert.equal(window.__tbUI3TabDesigner.run('new'),'Tabs1_Page1');
 });

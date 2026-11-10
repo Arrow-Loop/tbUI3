@@ -2,8 +2,10 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { edit } from '../../tools/twinproj-edit.mjs';
-const dir = 'tbIDE/TabViewDesigner';
-const wrapper = dir + '/src/Sources/MainModule.twin';
+const dir = 'tbIDE/WinUI3IdeStyle';
+const file = dir + '/WinUI3IdeStyle.twinproj';
+if (!fs.existsSync(file)) throw new Error('The canonical unified add-in project is required.');
+const wrapper = dir + '/src/Sources/TabViewDesignerController.twin';
 fs.writeFileSync(wrapper, fs.readFileSync(wrapper, 'utf8').replace(/\r?\n/g, '\r\n'));
 const js = fs.readFileSync(dir + '/js/tabview-designer.js', 'utf8').trim();
 const names = ['getCurrentFormEditorGlobals','preparePaste','deserializeControls',
@@ -26,7 +28,6 @@ for (const line of script.split(/\r?\n/)) {
 }
 lines.push('        Return js','    End Function','End Module','');
 fs.writeFileSync(dir + '/src/Sources/TabViewDesignerScript.twin', lines.join('\r\n'));
-const file = dir + '/TabViewDesigner.twinproj';
 if (fs.existsSync(file)) {
     const { scan } = await import('../../tools/twinproj-edit.mjs');
     let binary = fs.readFileSync(file), entries = scan(binary);

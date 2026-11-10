@@ -1,6 +1,6 @@
 # TabView candidate validation, 2026-11-09
 
-Current candidate: **package 1.0.0.65 with adapter v8 (add-in 1.0.0.7)**. Earlier candidate evidence is retained below as history.
+Candidate before consolidation: **package 1.0.0.65 with adapter v8 (standalone add-in 1.0.0.7)**. Current deployment is the unified tbUI3 IDE add-in 1.1.0.0; see [consolidation evidence](2026-11-10-unified-ide-addin.md). Earlier candidate evidence is retained below as history.
 
 ## Adapter v8 toolbox presentation and package 65 evidence, 2026-11-10
 

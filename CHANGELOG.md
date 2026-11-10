@@ -4,6 +4,15 @@ All notable changes to tbUI3. Dates are when the change was made, not released. 
 
 ## Unreleased
 
+### 2026-11-10, consolidate IDE styling and TabView management into one add-in (1.1.0.0)
+
+- Shane chose one distributed IDE add-in with independently optional theme styling. The existing WinUI3IdeStyle project now contains the theme implementation and TabView adapter v8. It exposes one add-in entry point, reports tbUI3 IDE as its display name and retains the WinUI3IdeStyle.dll output/project ID so existing styling installations and per-user preferences carry forward.
+- Moved the readable adapter and embedded script into the unified project. A private TabViewDesignerController owns its existing toolbar commands, hidden page bridge, retry timer and disposal. The single add-in starts it independently of theme selection/settings and forwards project load. Theme changes and the saved styling switch affect only theme presentation; tab commands, page protection and toolbox hiding remain active.
+- Preserved all 288 generated theme rules and both CSS inputs byte-for-byte. Preserved the WinUI3IdeStyle/Options/Enabled setting. Unload stops both feature timers, disposes tab behavior, removes theme CSS and disconnects the theme option observer/removes its row. Retired the standalone TabViewDesigner project, entry point and export tree; its README now directs users to the unified add-in. Existing installations must remove TabViewDesigner.dll from both architecture folders to prevent duplicate loaded components.
+- Updated the script builder and validator for the single canonical project. The initial project bootstrap refuses to overwrite the established project. All 44 JS/contract checks pass against official BETA 1044 helpers, including the actual theme-switch script with styling on/off, saved disabled state, page insertion after theme removal and one entry point. All 70 project mirrors and 5 official add-in export contents match. These are source, packing and JS checks; the unified native load/unload outcome is a separate gate.
+- Recorded the Microsoft Office-style tabbed ribbon as the next agreed pass, with TabView commands in their own group/tab rather than the general toolbar. No ribbon layout is implemented in this consolidation. Package 1.0.0.65 and the saved consumer project are unchanged.
+
+
 ### 2026-11-10, hide the page toolbox entry while the designer add-in is active (adapter v8)
 
 - Shane requested hiding UI3TabPage from the toolbox because pages are created through their TabView. Adapter v8/add-in 1.0.0.7 hides only the exact tbUI3/UI3TabPage class's native toolbox button. It retains the registered class and native toolbox array for insertion, saved-form loading and Properties. UI3TabView and unrelated entries remain visible.

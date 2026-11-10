@@ -4,6 +4,14 @@ All notable changes to tbUI3. Dates are when the change was made, not released. 
 
 ## Unreleased
 
+### 2026-11-10, task-based Ribbon and vertical Backstage (tbUI3IDE 1.3.0.0)
+
+- Replaced literal native-menu tabs/separator captions with semantic task groups: Home Clipboard/Editing; Insert Components; Code formatting/navigation/outlining/case; Form designer arrangement; View views/panels/zoom/window/appearance; Project build/compiler/folders; Debug and Help. Undo/Redo and Start/Break/Stop remain in quick access without duplicate ribbon entries. Paste/Find and other explicit roles determine large buttons instead of making each separator's first command large.
+- Added compact native-action dropdowns for Fold/Unfold, Change case, Find options and More panels. Native command IDs, context alternatives, lazy submenus, enabled/checked state and original actions remain authoritative. New native commands and menus retain fallback destinations. Existing Fluent/native glyphs, theme-independent styling choice, geometry caps and elevation are preserved.
+- Rebuilt File with a vertical navigation rail, project information and vertical tasks. Save, Save document, Options and Exit dispatch native actions; Open/recent, Export, Preferences and loaded Add-ins have task sections. Build/Clean move to Project. The designer/workspace and floating panels are hidden/inert only while File is open, then their prior visibility/accessibility state is restored before commands, on close, mode change and unload. Stable rendering retains focused rail controls across refreshes.
+- Documented the command mapping and future-command fallback contract in tbIDE/RIBBON_LAYOUT.md. The existing BETA 1044 add-in enablement limitation is unchanged.
+- All 72 JS/DOM/protocol checks pass with no skips, including coverage of all 108 shipped top-level native menu descriptors; all 71 mirrors and six official-export files match. Detailed evidence: docs/validation/2026-11-10-ide-toolbar.md. Runtime package 1.0.0.65, TabView adapter v8, stable project IDs and consumer project contents are unchanged.
+
 ### 2026-11-10, collapse the empty toolbar slot and restore compact presentation (tbUI3IDE 1.2.0.2)
 
 - Shane's BETA 1044 screenshot shows a blank rounded strip under Hybrid, missing toolbar elevation and oversized/overlapping command captions. The native stylesheet gives dockElementContainer a 30px minimum height; hiding only the toolbar header/body leaves that slot visible. The adapter now hides the nearest dock/floating slot only when its sole sectionHeader is the TOOLBAR header. Shared panels stay visible; redocking releases the previous slot, and Classic/unload restores all owned visibility classes without changing saved dimensions or docking configuration.

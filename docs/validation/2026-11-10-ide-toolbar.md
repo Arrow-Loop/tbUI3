@@ -24,7 +24,7 @@ node tools/validate-tabview-projects.mjs
 
 ## Acceptance still open
 
-Native settings persistence, title-bar modes, every real menu family/lazy submenu, actual ribbon/glyph appearance and layout remain observation gates. The current implementation retains menu categories/separators with grouped large/small commands and horizontal overflow. Full Office semantic regrouping, automatic collapsed groups/flyouts, keytips and complete keyboard/focus parity remain follow-ups in tbIDE/ROADMAP.md.
+Native settings persistence, title-bar modes, every real menu family/lazy submenu, actual ribbon/glyph appearance and layout remain observation gates. The initial 1.2.0.0 implementation retained native menu categories/separators. The 1.3.0.0 revision below implements task-based semantic grouping; automatic collapsed groups/flyouts, keytips and complete keyboard/focus parity remain follow-ups in tbIDE/ROADMAP.md.
 
 BETA 1044 showAddinsMenu returns loaded names with action callbacks to notSupportedMenuOption; _RootConnection has getAddinsList but no inspected enable/disable operation. File > Add-ins therefore presents that native list with unsupported actions disabled and an explanation. Real enable/disable management is not implemented and must use a validated IDE capability or an explicitly designed restart-safe mechanism.
 
@@ -35,3 +35,15 @@ BETA 1044 showAddinsMenu returns loaded names with action callbacks to notSuppor
 - Quick Access Toolbar: https://learn.microsoft.com/en-us/windows/desktop/windowsribbon/windowsribbon-controls-quickaccesstoolbar
 - Fluent UI: https://developer.microsoft.com/en-us/fluentui
 - Existing Microsoft Fluent System Icons and their MIT licence remain in tbIDE/tbUI3IDE/icons/fluent. Office is the layout reference, not the icon source.
+
+## Task-based organization and Backstage correction, 1.3.0.0
+
+Implemented against Shane's BETA 1044 File/Edit/View screenshots and Office Backstage/Home/View references. New pure presentation factory `js/ribbon-layout.js` supplies the semantic command map documented in `tbIDE/RIBBON_LAYOUT.md`. Native callbacks/commands, lazy submenus and context-dependent alternatives remain the execution authority. Existing glyphs and geometry caps remain unchanged.
+
+- All **72 JS/DOM/protocol tests pass with no skips**: 44 page/combined-add-in tests and 28 toolbar tests. Six new cases exercise Home Clipboard/Editing and quick-access-only Undo/Redo/Run, compact synthetic dropdown actions, designer/floating-panel underlay restoration, vertical File native dispatch/focus retention, unknown-command fallback, and the complete shipped top-level menu inventory.
+- The actual BETA 1044 builders for File, Edit, View, Project, Format, Debug, Run, Tools, Add-ins, Windows and Help provide **108 top-level descriptor entries** in the code-context inventory. Every descriptor is accounted for in semantic tabs, File or quick access; settings/references intentionally appear in Project and File Info. This inventory does not claim to execute every lazy submenu child; the existing lazy/context and native exact-once tests cover those contracts separately.
+- File's DOM cases verify that designer/workspace, existing floating panels and panels created while open are hidden/inert, with original inert/aria-hidden values restored on close or Classic. Native Save and Options dispatch after Backstage/underlay restoration. A retained rail button keeps focus through a refresh.
+- All **71** configured project mirrors byte-match the canonical projects (27 package, 37 consumer, 7 IDE add-in). Stable IDs, native package 1.0.0.65, adapter v8, consumer package contents and CRLF checks pass. The current official exporter reproduces all six add-in exported files; metadata is checked separately by the mirror validator.
+- Embedded script syntax and exact readable adapter/layout/CSS inputs are checked; all 19 existing Fluent SVGs remain embedded. The earlier 1.2.0.2 dedicated/shared-slot and redocking regressions continue to pass.
+
+The provided screenshots show the previous literal-menu/flat File layout. This revision's rendered appearance is still an acceptance item; these results are JavaScript/DOM, source and packing evidence. Automatic group collapse/flyouts and keytips remain future work in tbIDE/ROADMAP.md.

@@ -33,43 +33,51 @@ Private Module IdeToolbarScript
         js = js & "-top: 2px; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; opacity: .8; }\n.tbui3-ribbon-command { display: flex; flex-direction: row;"
         js = js & " justify-content: start; align-items: center; gap: 4px; min-width: 50px; max-width: 160px; min-height: 24px; height: 24px; padding: 2px 4px; border: 1"
         js = js & "px solid transparent; border-radius: 4px; background: transparent; color: inherit; font: inherit; font-size: 12px; cursor: default; }\n.tbui3-ribbon-c"
-        js = js & "ontent .tbui3-ribbon-group-body > .tbui3-ribbon-command:first-child { grid-row: span 3; flex-direction: column; justify-content: center; width: max-co"
-        js = js & "ntent; min-width: var(--tbui3-large-button-width); max-width: var(--tbui3-large-button-max-width); height: var(--tbui3-large-button-height); min-heigh"
-        js = js & "t: var(--tbui3-large-button-height); max-height: var(--tbui3-large-button-height); padding: 4px 6px; }\n.tbui3-ribbon-command:disabled { opacity: .45;"
-        js = js & " }\n.tbui3-ribbon-command[hidden] { display: none; }\n.tbui3-ribbon-command:active:not(:disabled), .tbui3-ribbon-checked { background: var(--tbui3-too"
-        js = js & "lbar-selected); border-color: currentColor; }\n.tbui3-ribbon-label { line-height: 16px; text-align: left; max-width: 150px; white-space: normal; }\n.t"
-        js = js & "bui3-ribbon-content .tbui3-ribbon-label { min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }\n.tbui3-ribbon-icon { displa"
-        js = js & "y: inline-block; flex: 0 0 auto; width: 18px; height: 18px; font-size: 18px; line-height: 18px; background: var(--tbui3-native-image, none) center / c"
-        js = js & "ontain no-repeat; }\n.tbui3-ribbon-icon[hidden] { display: none; }\n.tbui3-ribbon-content .tbui3-ribbon-group-body > .tbui3-ribbon-command:first-child"
-        js = js & " .tbui3-ribbon-icon { width: 28px; height: 28px; font-size: 28px; line-height: 28px; }\n.tbui3-ribbon-content .tbui3-ribbon-group-body > .tbui3-ribbon"
-        js = js & "-command:first-child .tbui3-ribbon-label { text-align: center; min-width: 0; max-width: calc(var(--tbui3-large-button-max-width) - 14px); max-height: "
-        js = js & "32px; white-space: normal; overflow: hidden; overflow-wrap: anywhere; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; }\n.t"
-        js = js & "bui3-ribbon-mask { background: currentColor; mask: var(--tbui3-icon) center / contain no-repeat; -webkit-mask: var(--tbui3-icon) center / contain no-r"
-        js = js & "epeat; }\n.tbui3-ribbon-selector { display: flex; grid-row: span 3; flex-direction: column; gap: 4px; padding: 2px 4px; max-width: 120px; font-size: 1"
-        js = js & "1px; }\n.tbui3-ribbon-selector select, .tbui3-ribbon-select, .tbui3-toolbar-select { min-height: 32px; max-width: 200px; background: var(--themeDialog"
-        js = js & "GeneralBackColor); color: var(--themeDialogGeneralForeColor); border: var(--themeToolbarDropDownBorder); border-radius: 4px; font: inherit; padding: 3"
-        js = js & "px 8px; }\n.tbui3-ribbon-content .tbui3-ribbon-select { grid-row: span 2; align-self: start; }\n.tbui3-ribbon-select option, .tbui3-toolbar-select opt"
-        js = js & "ion { background: var(--themeDialogGeneralBackColor); color: var(--themeDialogGeneralForeColor); }\n.tbui3-ribbon-content .menuBarGridOptionsInner { d"
-        js = js & "isplay: grid; grid-template-columns: repeat(2, max-content); gap: 2px 12px; font-size: 11px; }\n.tbui3-ribbon-grid { grid-row: span 3; border: 0; padd"
-        js = js & "ing: 0; margin: 0; min-width: 0; }\n.tbui3-ribbon-grid:disabled { opacity: .45; }\n.tbui3-ribbon-content .menuBarGridOptionRow { display: flex; gap: 6"
-        js = js & "px; align-items: center; justify-content: space-between; }\n.tbui3-ribbon-content .menuBarGridOptionRow input[type='number'] { width: 44px; color: inh"
-        js = js & "erit; background: var(--tbui3-toolbar-bg); border: var(--tbui3-toolbar-line); }\n.tbui3-ribbon-context { align-self: start; border: var(--tbui3-toolba"
-        js = js & "r-line); border-radius: 4px; }\n.tbui3-quick { display: flex; flex: 0 1 auto; gap: 2px; align-items: center; min-width: 0; overflow-x: auto; -webkit-a"
-        js = js & "pp-region: no-drag; }\n.tbui3-quick-real-titlebar { min-height: 32px; }\n.tbui3-ribbon-compact { height: 28px; min-height: 28px; min-width: 30px; widt"
-        js = js & "h: 30px; padding: 4px; }\n.tbui3-ribbon-compact .tbui3-ribbon-icon { width: 18px; height: 18px; font-size: 18px; line-height: 18px; }\n.tbui3-ribbon-c"
-        js = js & "ompact .tbui3-ribbon-label { display: none; }\n.tbui3-backstage { position: absolute; inset: 32px 0 0; z-index: 100000; display: flex; background: var"
-        js = js & "(--themeDialogGeneralBackColor, var(--tbui3-toolbar-bg)); color: var(--themeDialogGeneralForeColor, var(--tbui3-toolbar-fg)); }\n.tbui3-backstage-rail"
-        js = js & " { display: flex; flex-direction: column; gap: 4px; flex: 0 0 200px; padding: 16px 8px; background: var(--tbui3-toolbar-bg); overflow-y: auto; }\n.tbu"
-        js = js & "i3-backstage-back, .tbui3-backstage-nav { border: 0; border-radius: 4px; background: transparent; color: inherit; font: inherit; text-align: left; pad"
-        js = js & "ding: 12px; }\n.tbui3-backstage-back { margin-bottom: 20px; }\n.tbui3-backstage-content { flex: 1 1 auto; overflow: auto; padding: 24px; min-width: 0;"
-        js = js & " }\n.tbui3-backstage-heading { font-weight: 400; font-size: 28px; margin: 0 0 24px; }\n.tbui3-backstage-content .tbui3-ribbon-group-body { display: fl"
-        js = js & "ex; flex-wrap: wrap; gap: 8px; }\n.tbui3-backstage-content .tbui3-ribbon-command { flex-direction: row; height: auto; min-height: 48px; min-width: 180"
-        js = js & "px; max-width: 280px; }\n.tbui3-ribbon-popup { position: fixed; left: max(0px, var(--tbui3-popup-x)); top: max(0px, var(--tbui3-popup-y)); display: fl"
-        js = js & "ex; flex-direction: column; padding: 4px; max-height: 60vh; overflow: auto; z-index: 100001; min-width: 240px; background: var(--themeContextMenuBackC"
-        js = js & "olor, var(--tbui3-toolbar-bg)); border: var(--tbui3-toolbar-line); border-radius: 8px; }\n.tbui3-ribbon-popup .tbui3-ribbon-command { flex-direction: "
-        js = js & "row; justify-content: start; height: auto; min-height: 32px; max-width: none; }\n.tbui3-ribbon-popup .tbui3-ribbon-icon { width: 20px; height: 20px; f"
-        js = js & "ont-size: 20px; }\n.tbui3-ribbon-popup .tbui3-ribbon-label { max-width: none; text-align: left; }\n.tbui3-ribbon-separator { border-top: var(--tbui3-t"
-        js = js & "oolbar-line); margin: 4px 0; }\n" & Chr(34) & ";document.head.appendChild(css);"
+        js = js & "ontent .tbui3-ribbon-large { grid-row: span 3; flex-direction: column; justify-content: center; width: max-content; min-width: var(--tbui3-large-butto"
+        js = js & "n-width); max-width: var(--tbui3-large-button-max-width); height: var(--tbui3-large-button-height); min-height: var(--tbui3-large-button-height); max-"
+        js = js & "height: var(--tbui3-large-button-height); padding: 4px 6px; }\n.tbui3-ribbon-command:disabled { opacity: .45; }\n.tbui3-ribbon-command[hidden] { displ"
+        js = js & "ay: none; }\n.tbui3-ribbon-command:active:not(:disabled), .tbui3-ribbon-checked { background: var(--tbui3-toolbar-selected); border-color: currentColo"
+        js = js & "r; }\n.tbui3-ribbon-label { line-height: 16px; text-align: left; max-width: 150px; white-space: normal; }\n.tbui3-ribbon-content .tbui3-ribbon-label {"
+        js = js & " min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }\n.tbui3-ribbon-icon { display: inline-block; flex: 0 0 auto; width: 1"
+        js = js & "8px; height: 18px; font-size: 18px; line-height: 18px; background: var(--tbui3-native-image, none) center / contain no-repeat; }\n.tbui3-ribbon-icon[h"
+        js = js & "idden] { display: none; }\n.tbui3-ribbon-content .tbui3-ribbon-large .tbui3-ribbon-icon { width: 28px; height: 28px; font-size: 28px; line-height: 28p"
+        js = js & "x; }\n.tbui3-ribbon-content .tbui3-ribbon-large .tbui3-ribbon-label { text-align: center; min-width: 0; max-width: calc(var(--tbui3-large-button-max-w"
+        js = js & "idth) - 14px); max-height: 32px; white-space: normal; overflow: hidden; overflow-wrap: anywhere; display: -webkit-box; -webkit-box-orient: vertical; -"
+        js = js & "webkit-line-clamp: 2; }\n.tbui3-ribbon-mask { background: currentColor; mask: var(--tbui3-icon) center / contain no-repeat; -webkit-mask: var(--tbui3-"
+        js = js & "icon) center / contain no-repeat; }\n.tbui3-ribbon-selector { display: flex; grid-row: span 3; flex-direction: column; gap: 4px; padding: 2px 4px; max"
+        js = js & "-width: 120px; font-size: 11px; }\n.tbui3-ribbon-selector select, .tbui3-ribbon-select, .tbui3-toolbar-select { min-height: 32px; max-width: 200px; ba"
+        js = js & "ckground: var(--themeDialogGeneralBackColor); color: var(--themeDialogGeneralForeColor); border: var(--themeToolbarDropDownBorder); border-radius: 4px"
+        js = js & "; font: inherit; padding: 3px 8px; }\n.tbui3-ribbon-content .tbui3-ribbon-select { grid-row: span 2; align-self: start; }\n.tbui3-ribbon-select option"
+        js = js & ", .tbui3-toolbar-select option { background: var(--themeDialogGeneralBackColor); color: var(--themeDialogGeneralForeColor); }\n.tbui3-ribbon-content ."
+        js = js & "menuBarGridOptionsInner { display: grid; grid-template-columns: repeat(2, max-content); gap: 2px 12px; font-size: 11px; }\n.tbui3-ribbon-grid { grid-r"
+        js = js & "ow: span 3; border: 0; padding: 0; margin: 0; min-width: 0; }\n.tbui3-ribbon-grid:disabled { opacity: .45; }\n.tbui3-ribbon-content .menuBarGridOption"
+        js = js & "Row { display: flex; gap: 6px; align-items: center; justify-content: space-between; }\n.tbui3-ribbon-content .menuBarGridOptionRow input[type='number'"
+        js = js & "] { width: 44px; color: inherit; background: var(--tbui3-toolbar-bg); border: var(--tbui3-toolbar-line); }\n.tbui3-ribbon-context { align-self: start;"
+        js = js & " border: var(--tbui3-toolbar-line); border-radius: 4px; }\n.tbui3-quick { display: flex; flex: 0 1 auto; gap: 2px; align-items: center; min-width: 0; "
+        js = js & "overflow-x: auto; -webkit-app-region: no-drag; }\n.tbui3-quick-real-titlebar { min-height: 32px; }\n.tbui3-ribbon-compact { height: 28px; min-height: "
+        js = js & "28px; min-width: 30px; width: 30px; padding: 4px; }\n.tbui3-ribbon-compact .tbui3-ribbon-icon { width: 18px; height: 18px; font-size: 18px; line-heigh"
+        js = js & "t: 18px; }\n.tbui3-ribbon-compact .tbui3-ribbon-label { display: none; }\n/* Backstage hides the live designer as well as covering it: designer layers"
+        js = js & " can\n   otherwise paint above an ordinary document overlay. State is restored by JS. */\n.tbui3-backstage-underlay, .tbui3-backstage-underlay * { vis"
+        js = js & "ibility: hidden !important; }\n.tbui3-backstage { position: fixed; inset: 32px 0 0; z-index: 100000; display: flex; background: var(--themeGeneralBack"
+        js = js & "Color, var(--tbui3-toolbar-bg)); color: var(--themeDialogGeneralForeColor, var(--tbui3-toolbar-fg)); }\n.tbui3-backstage-rail { display: flex; flex-di"
+        js = js & "rection: column; gap: 4px; flex: 0 0 160px; padding: 12px 8px 16px; background: var(--tbui3-toolbar-bg); overflow-y: auto; border-right: var(--tbui3-t"
+        js = js & "oolbar-line); }\n.tbui3-backstage-nav-group { display: flex; flex-direction: column; gap: 2px; }\n.tbui3-backstage-footer { margin-top: auto; padding-"
+        js = js & "top: 24px; }\n.tbui3-backstage-back, .tbui3-backstage-nav { display: flex; align-items: center; min-height: 38px; width: 100%; border: 0; border-radiu"
+        js = js & "s: 4px; background: transparent; color: inherit; font: inherit; text-align: left; padding: 8px 12px; }\n.tbui3-backstage-back { margin-bottom: 12px; }"
+        js = js & "\n.tbui3-backstage-selected { background: var(--tbui3-toolbar-selected); outline: 1px solid currentColor; outline-offset: -1px; }\n.tbui3-backstage-na"
+        js = js & "v:disabled { opacity: .45; }\n.tbui3-backstage-content { flex: 1 1 auto; overflow: auto; padding: 24px 40px; min-width: 0; background: var(--themeGene"
+        js = js & "ralBackColor, var(--tbui3-toolbar-bg)); }\n.tbui3-backstage-heading { font-weight: 600; font-size: 22px; margin: 0 0 20px; }\n.tbui3-backstage-project"
+        js = js & " { max-width: 760px; font-size: 16px; margin: 0 0 24px; padding-bottom: 16px; border-bottom: var(--tbui3-toolbar-line); }\n.tbui3-backstage-descriptio"
+        js = js & "n { max-width: 640px; line-height: 20px; margin-bottom: 20px; }\n.tbui3-backstage-tasks { display: flex; flex-direction: column; gap: 12px; width: min"
+        js = js & "(100%, 760px); }\n.tbui3-backstage-task { display: flex; border-bottom: var(--tbui3-toolbar-line); padding-bottom: 8px; }\n.tbui3-backstage-task .tbui"
+        js = js & "3-ribbon-command { flex-direction: row; justify-content: start; gap: 16px; height: auto; min-height: 56px; min-width: 240px; max-width: 100%; width: 1"
+        js = js & "00%; padding: 12px; }\n.tbui3-backstage-task .tbui3-ribbon-icon { width: 28px; height: 28px; font-size: 28px; line-height: 28px; }\n.tbui3-backstage-t"
+        js = js & "ask .tbui3-ribbon-label { max-width: none; text-align: left; font-size: 14px; }\n.tbui3-ribbon-popup { position: fixed; left: max(0px, var(--tbui3-pop"
+        js = js & "up-x)); top: max(0px, var(--tbui3-popup-y)); display: flex; flex-direction: column; padding: 4px; max-height: 60vh; overflow: auto; z-index: 100001; m"
+        js = js & "in-width: 240px; background: var(--themeContextMenuBackColor, var(--tbui3-toolbar-bg)); border: var(--tbui3-toolbar-line); border-radius: 8px; }\n.tbu"
+        js = js & "i3-ribbon-popup .tbui3-ribbon-command { flex-direction: row; justify-content: start; height: auto; min-height: 32px; max-width: none; }\n.tbui3-ribbon"
+        js = js & "-popup .tbui3-ribbon-icon { width: 20px; height: 20px; font-size: 20px; }\n.tbui3-ribbon-popup .tbui3-ribbon-label { max-width: none; text-align: left"
+        js = js & "; }\n.tbui3-ribbon-separator { border-top: var(--tbui3-toolbar-line); margin: 4px 0; }\n" & Chr(34) & ";document.head.appendChild(css);"
         js = js & vbLf
         js = js & "var adapter=/* tbUI3IDE toolbar presentation. Native nodes/commands remain the execution authority."
         js = js & vbLf
@@ -91,11 +99,20 @@ Private Module IdeToolbarScript
         js = js & vbLf
         js = js & "    const hiddenNative=new Set();"
         js = js & vbLf
+        js = js & "    const fileUnderlays=new Map();"
+        js = js & vbLf
         js = js & "    let shell, tabs, content, quick, backstage, fileNav, fileContent, popup, interval;"
         js = js & vbLf
         js = js & "    let signature='', menuSignature='', fileSection='File', savedFocus, captureSink, refreshAt=0;"
         js = js & vbLf
         js = js & "    let nativeMenu=api.getShowContextMenu(), wrappedMenu, pendingSubmenu;"
+        js = js & vbLf
+        js = js & "    let hydrating=false,layout;"
+        js = js & vbLf
+        js = js & "    let fileNavSignature='',fileRenderSignature='';"
+        js = js & vbLf
+        js = js & "    const itemKey=i=>[caption(i),i.action&&String(i.action),i.codicon,i.iconClass,i.class,i.comboValue,i._sourceId,i._ribbonIconSource,i._ribbonLarge,"
+        js = js & "checked(i),menuEnabled(i),i._ribbonChildren?.map(itemKey)];"
         js = js & vbLf
         js = js & "    const own=n=>!!(n&&n.closest&&n.closest('.tbui3-toolbar-owned'));"
         js = js & vbLf
@@ -298,9 +315,9 @@ Private Module IdeToolbarScript
         js = js & vbLf
         js = js & "    }"
         js = js & vbLf
-        js = js & "    function sourceButton(n,parent,compact=false) {"
+        js = js & "    function sourceButton(n,parent,compact=false,large=false) {"
         js = js & vbLf
-        js = js & "        const b=el('button','tbui3-ribbon-command'+(compact?' tbui3-ribbon-compact':''));b.type='button';"
+        js = js & "        const b=el('button','tbui3-ribbon-command'+(compact?' tbui3-ribbon-compact':large?' tbui3-ribbon-large':''));b.type='button';"
         js = js & vbLf
         js = js & "        b.dataset.source=typeof n.id==='string'?n.id:'';b.title=label(n);b.setAttribute('aria-label',label(n));"
         js = js & vbLf
@@ -324,11 +341,11 @@ Private Module IdeToolbarScript
         js = js & vbLf
         js = js & "    function addSources(ids,parent) {"
         js = js & vbLf
-        js = js & "        for(const id of ids){const n=sources.get(id);if(!n)continue;"
+        js = js & "        for(const [index,id] of ids.entries()){const n=sources.get(id);if(!n)continue;"
         js = js & vbLf
         js = js & "            if(n.matches('select')){const l=el('label','tbui3-ribbon-selector',sourceCaption(n));l.title=label(n);park(n,l);parent.append(l);}"
         js = js & vbLf
-        js = js & "            else sourceButton(n,parent);"
+        js = js & "            else sourceButton(n,parent,false,index===0);"
         js = js & vbLf
         js = js & "        }"
         js = js & vbLf
@@ -396,17 +413,22 @@ Private Module IdeToolbarScript
         js = js & vbLf
         js = js & "    function command(item,parent) {"
         js = js & vbLf
+        js = js & "        if(item._sourceId){const n=sources.get(item._sourceId);if(n){if(n.matches('select'))addSources([item._sourceId],parent);else sourceButton(n,pa"
+        js = js & "rent,false,item._ribbonLarge);}return;}"
+        js = js & vbLf
         js = js & "        if(!item.name){parent.append(el('div','tbui3-ribbon-separator'));return;}"
         js = js & vbLf
         js = js & "        if(!menuEnabled(item)&&item.superHiddenContext)return;"
         js = js & vbLf
-        js = js & "        const b=el('button','tbui3-ribbon-command');b.type='button';"
+        js = js & "        const b=el('button','tbui3-ribbon-command'+(item._ribbonLarge?' tbui3-ribbon-large':''));b.type='button';"
         js = js & vbLf
         js = js & "        const title=caption(item);"
         js = js & vbLf
         js = js & "        b.title=title+(typeof item.action==='string'?' '+api.shortcut(item.action):'');"
         js = js & vbLf
-        js = js & "        b.append(iconFor(null,item),el('span','tbui3-ribbon-label',title));"
+        js = js & "        const shown=/^[^a-z]*[A-Z][^a-z]*$/.test(title)?title.charAt(0)+title.slice(1).toLowerCase():title;"
+        js = js & vbLf
+        js = js & "        b.append(iconFor(sources.get(item._ribbonIconSource),item),el('span','tbui3-ribbon-label',shown));"
         js = js & vbLf
         js = js & "        b.addEventListener('mousedown',e=>e.preventDefault());"
         js = js & vbLf
@@ -424,7 +446,7 @@ Private Module IdeToolbarScript
         js = js & vbLf
         js = js & "        }"
         js = js & vbLf
-        js = js & "        if(item.hoverAction){b.setAttribute('aria-haspopup','menu');b.append(el('span','tbui3-ribbon-chevron','\u2304'));}"
+        js = js & "        if(item.hoverAction||item._ribbonChildren){b.setAttribute('aria-haspopup','menu');b.append(el('span','tbui3-ribbon-chevron','\u2304'));}"
         js = js & vbLf
         js = js & "        b.onclick=()=>{"
         js = js & vbLf
@@ -438,7 +460,7 @@ Private Module IdeToolbarScript
         js = js & vbLf
         js = js & "                tick();"
         js = js & vbLf
-        js = js & "            }else if(item.hoverAction)openSubmenu(item,b);"
+        js = js & "            }else if(item.hoverAction||item._ribbonChildren)openSubmenu(item,b);"
         js = js & vbLf
         js = js & "        };"
         js = js & vbLf
@@ -455,6 +477,8 @@ Private Module IdeToolbarScript
         js = js & "        const sink=items=>{if(!popup)return;clear(popup);for(const child of menuItems(items))command(child,popup);syncBindings();popup.querySelector('"
         js = js & "button,select')?.focus();};"
         js = js & vbLf
+        js = js & "        if(item._ribbonChildren){sink(item._ribbonChildren);return;}"
+        js = js & vbLf
         js = js & "        captureSink=sink;pendingSubmenu={sink,until:Date.now()+5000};"
         js = js & vbLf
         js = js & "        try{item.hoverAction(anchor);}finally{captureSink=null;}"
@@ -466,13 +490,13 @@ Private Module IdeToolbarScript
         js = js & vbLf
         js = js & "    function requestMenu(m) {"
         js = js & vbLf
-        js = js & "        const sink=items=>{m.items=items||[];if(state.mode!=='Ribbon')return;"
+        js = js & "        const sink=items=>{m.items=items||[];m.loading=false;m.ready=true;if(state.mode!=='Ribbon'||hydrating)return;"
         js = js & vbLf
-        js = js & "            if(backstage&&!backstage.hidden&&fileSection===m.title)renderFile(m);"
-        js = js & vbLf
-        js = js & "            else if(state.active===m.node.id)renderMenu(m);"
+        js = js & "            refreshLayout();"
         js = js & vbLf
         js = js & "        };"
+        js = js & vbLf
+        js = js & "        if(m.loading)return;m.loading=true;"
         js = js & vbLf
         js = js & "        pendingMenus.set(m.node.id,sink);captureSink=sink;"
         js = js & vbLf
@@ -482,32 +506,99 @@ Private Module IdeToolbarScript
         js = js & vbLf
         js = js & "            else if(m.node.onclick)m.node.onclick({button:0,preventDefault(){},stopPropagation(){}});"
         js = js & vbLf
-        js = js & "        }finally{captureSink=null;}"
+        js = js & "        }catch(e){m.loading=false;throw e;}finally{captureSink=null;}"
         js = js & vbLf
         js = js & "    }"
         js = js & vbLf
-        js = js & "    function renderMenu(m) {"
+        js = js & "    function collectLayout() {"
         js = js & vbLf
-        js = js & "        const items=menuItems(m.items);"
+        js = js & "        const records=[];"
         js = js & vbLf
-        js = js & "        const sig=JSON.stringify([m.node.id,items.map(i=>[caption(i),i.action&&String(i.action),i.codicon,i.iconClass,i.class,i.comboOptions,i.comboVa"
-        js = js & "lue,checked(i),menuEnabled(i)])]);"
+        js = js & "        for(const m of menus.values())for(const item of menuItems(m.items))records.push({menuId:m.node.id,menuTitle:m.title,item});"
+        js = js & vbLf
+        js = js & "        const source=(id,tab,group)=>{if(sources.has(id))records.push({item:{name:sourceCaption(sources.get(id)),_sourceId:id,_ribbonTab:tab,_ribbonGr"
+        js = js & "oup:group}});};"
+        js = js & vbLf
+        js = js & "        for(const id of ['commentIcon','uncommentIcon'])source(id,'Code','Comments');"
+        js = js & vbLf
+        js = js & "        source('buildConfigSelector','Project','Build');source('debugStepOutIcon','Debug','Stepping');"
+        js = js & vbLf
+        js = js & "        source('zoomSelect','View','Zoom');source('menuBarPreview','Form','Designer');"
+        js = js & vbLf
+        js = js & "        if(!records.some(r=>String(r.item.name).includes('MenuCaptionWindowTheme')))source('menuBarColorMode','View','Appearance');"
+        js = js & vbLf
+        js = js & "        const quickActions=new Set();for(const id of quickIds)for(const a of [].concat(sources.get(id)?.boundCommand||[]))quickActions.add(a);"
+        js = js & vbLf
+        js = js & "        return api.buildLayout(records,quickActions);"
+        js = js & vbLf
+        js = js & "    }"
+        js = js & vbLf
+        js = js & "    function hydrateMenus(refresh=false) {"
+        js = js & vbLf
+        js = js & "        hydrating=true;try{for(const m of menus.values())if(!m.ready||refresh&&(m.node.id!=='rootMenuAddins'||backstage&&!backstage.hidden&&fileSectio"
+        js = js & "n==='Add-ins'))requestMenu(m);}finally{hydrating=false;}"
+        js = js & vbLf
+        js = js & "        refreshLayout();"
+        js = js & vbLf
+        js = js & "    }"
+        js = js & vbLf
+        js = js & "    function refreshLayout() {"
+        js = js & vbLf
+        js = js & "        if(state.mode!=='Ribbon'||!tabs)return;"
+        js = js & vbLf
+        js = js & "        layout=collectLayout();"
+        js = js & vbLf
+        js = js & "        const ids=['File',...layout.tabs.map(t=>t.id)];"
+        js = js & vbLf
+        js = js & "        if(!ids.includes('Add-ins'))ids.splice(ids.includes('Help')?ids.indexOf('Help'):ids.length,0,'Add-ins');"
+        js = js & vbLf
+        js = js & "        const distinct=[...new Set(ids)];"
+        js = js & vbLf
+        js = js & "        if(JSON.stringify([...tabs.children].map(n=>n.dataset.tab))!==JSON.stringify(distinct)){"
+        js = js & vbLf
+        js = js & "            clear(tabs);for(const id of distinct)makeTab(id,id,id==='File'?()=>openFile():undefined);"
+        js = js & vbLf
+        js = js & "        }"
+        js = js & vbLf
+        js = js & "        if(!distinct.includes(state.active)||state.active==='File')state.active='Home';"
+        js = js & vbLf
+        js = js & "        if(backstage&&!backstage.hidden){renderFileNav();renderFile();syncBindings();return;}"
+        js = js & vbLf
+        js = js & "        renderLayoutTab();"
+        js = js & vbLf
+        js = js & "    }"
+        js = js & vbLf
+        js = js & "    function renderLayoutTab() {"
+        js = js & vbLf
+        js = js & "        const tab=layout.tabs.find(t=>t.id===state.active);"
+        js = js & vbLf
+        js = js & "        const sig=JSON.stringify([state.active,tab?.groups.map(g=>[g.title,g.items.map(itemKey)]),!!currentHost()]);"
         js = js & vbLf
         js = js & "        if(sig===menuSignature)return;menuSignature=sig;clearContent();"
         js = js & vbLf
-        js = js & "        let body=group(m.title),has=false;"
+        js = js & "        if(state.active==='Add-ins')addins(content,true);"
         js = js & vbLf
-        js = js & "        for(const item of items){if(!item.name){if(has){body=group(localize(items[items.indexOf(item)+1]?.name)||m.title);has=false;}continue;}"
+        js = js & "        else if(tab)for(const g of tab.groups){const body=group(g.title);for(const i of g.items)command(i,body);}"
         js = js & vbLf
-        js = js & "            command(item,body);has=true;}"
+        js = js & "        if(state.active==='Form'){addGrid();addMultiPageContext();}"
         js = js & vbLf
-        js = js & "        if(m.node.id==='rootMenuFormat'){addSources(['zoomSelect','menuBarPreview'],group('Designer'));addGrid();if(currentHost())pages();}"
-        js = js & vbLf
-        js = js & "        if(m.node.id==='rootMenuProject')addSources(['buildConfigSelector','restartIcon','trashIcon','buildIcon'],group('Build'));"
-        js = js & vbLf
-        js = js & "        if(m.node.id==='rootMenuTools')addSources(['menuBarColorMode'],group('Appearance'));"
+        js = js & "        for(const b of tabs.children){const selected=b.dataset.tab===state.active;b.setAttribute('aria-selected',String(selected));b.tabIndex=selected"
+        js = js & "?0:-1;}"
         js = js & vbLf
         js = js & "        syncBindings();resize();"
+        js = js & vbLf
+        js = js & "    }"
+        js = js & vbLf
+        js = js & "    function addMultiPageContext(){if(currentHost()){const b=el('button','tbui3-ribbon-tab tbui3-ribbon-context','MultiPage');"
+        js = js & vbLf
+        js = js & "        b.onclick=()=>{clearContent();pages();syncBindings();resize();};content.prepend(b);}}"
+        js = js & vbLf
+        js = js & "    function tabForNative(m){"
+        js = js & vbLf
+        js = js & "        if(m.node.id==='rootMenuFile'||m.node.id==='rootMenuAddins')return 'File';"
+        js = js & vbLf
+        js = js & "        return {rootMenuEdit:'Home',rootMenuFormat:'Form',rootMenuView:'View',rootMenuWindows:'View',rootMenuProject:'Project',rootMenuRun:'Debug',roo"
+        js = js & "tMenuDebug:'Debug',rootMenuTools:'Project',rootMenuHelp:'Help'}[m.node.id]||m.title;"
         js = js & vbLf
         js = js & "    }"
         js = js & vbLf
@@ -540,7 +631,7 @@ Private Module IdeToolbarScript
         js = js & vbLf
         js = js & "            else addins(content,true);"
         js = js & vbLf
-        js = js & "        }else{const m=menus.get(key);if(m)requestMenu(m);else if(key==='Add-ins')addins(content,true);}"
+        js = js & "        }else{menuSignature='';hydrateMenus(true);}"
         js = js & vbLf
         js = js & "        syncBindings();resize();"
         js = js & vbLf
@@ -554,18 +645,9 @@ Private Module IdeToolbarScript
         js = js & vbLf
         js = js & "        else {"
         js = js & vbLf
-        js = js & "            const file=[...menus.values()].find(m=>m.node.id==='rootMenuFile');"
+        js = js & "            if(!menus.has('rootMenuFile'))throw Error('File menu is unavailable; restoring Classic');"
         js = js & vbLf
-        js = js & "            if(!file)throw Error('File menu is unavailable; restoring Classic');"
-        js = js & vbLf
-        js = js & "            makeTab('File',file.title,()=>openFile(file.title));"
-        js = js & vbLf
-        js = js & "            for(const m of menus.values())if(m.node.id!=='rootMenuFile'&&m.node.id!=='rootMenuAddins')makeTab(m.node.id,m.title);"
-        js = js & vbLf
-        js = js & "            makeTab('Add-ins','Add-ins');"
-        js = js & vbLf
-        js = js & "            if(![...tabs.children].some(b=>b.dataset.tab===state.active))state.active=[...menus.keys()].find(id=>id!=='rootMenuFile'&&id!=='rootMenuAd"
-        js = js & "dins');"
+        js = js & "            if(typeof api.buildLayout!=='function')throw Error('Ribbon layout adapter is unavailable');"
         js = js & vbLf
         js = js & "        }"
         js = js & vbLf
@@ -573,52 +655,144 @@ Private Module IdeToolbarScript
         js = js & vbLf
         js = js & "    }"
         js = js & vbLf
-        js = js & "    function openFile(section='File') {"
+        js = js & "    function syncFileUnderlays() {"
         js = js & vbLf
-        js = js & "        if(backstage.hidden)savedFocus=d.activeElement;"
+        js = js & "        const nodes=[shell,d.getElementById('rootTop'),d.getElementById('rootBottom'),d.getElementById('codePanel'),...d.querySelectorAll('.floatingPa"
+        js = js & "nel')];"
         js = js & vbLf
-        js = js & "        fileSection=section;backstage.hidden=false;clear(fileNav);"
+        js = js & "        for(const n of nodes)if(n&&!fileUnderlays.has(n)){"
         js = js & vbLf
-        js = js & "        const back=el('button','tbui3-backstage-back','\u2190 Back');back.onclick=()=>closeFile();fileNav.append(back);"
+        js = js & "            fileUnderlays.set(n,{inert:n.inert,aria:n.getAttribute('aria-hidden'),hidden:n.classList.contains('tbui3-backstage-underlay')});"
         js = js & vbLf
-        js = js & "        for(const m of menus.values())if(m.node.id==='rootMenuFile'||m.node.id==='rootMenuAddins'||m.node.id==='rootMenuTools'){"
-        js = js & vbLf
-        js = js & "            const b=el('button','tbui3-backstage-nav',m.title);b.onclick=()=>{fileSection=m.title;requestMenu(m);};fileNav.append(b);"
+        js = js & "            n.classList.add('tbui3-backstage-underlay');n.inert=true;n.setAttribute('aria-hidden','true');"
         js = js & vbLf
         js = js & "        }"
-        js = js & vbLf
-        js = js & "        const selected=[...menus.values()].find(m=>m.title===section)||menus.get('rootMenuFile');"
-        js = js & vbLf
-        js = js & "        if(selected){fileSection=selected.title;renderFile(selected);requestMenu(selected);}back.focus();"
         js = js & vbLf
         js = js & "    }"
         js = js & vbLf
-        js = js & "    function renderFile(m) {"
+        js = js & "    function restoreFileUnderlays(){for(const [n,old]of fileUnderlays){"
         js = js & vbLf
-        js = js & "        for(const [n]of bindings)if(fileContent.contains(n))bindings.delete(n);clear(fileContent);"
+        js = js & "        n.classList.toggle('tbui3-backstage-underlay',old.hidden);"
         js = js & vbLf
-        js = js & "        fileContent.append(el('h1','tbui3-backstage-heading',m.title));"
+        js = js & "        if(old.inert===undefined)delete n.inert;else n.inert=old.inert;"
         js = js & vbLf
-        js = js & "        const list=menuItems(m.items),unsupported=m.node.id==='rootMenuAddins'&&list.some(i=>typeof i.action==='function'&&String(i.action).includes('"
-        js = js & "notSupportedMenuOption'));"
+        js = js & "        if(old.aria===null)n.removeAttribute('aria-hidden');else n.setAttribute('aria-hidden',old.aria);"
         js = js & vbLf
-        js = js & "        if(unsupported)fileContent.append(el('p','','This IDE build lists loaded add-ins here. It does not expose enable or disable commands.'));"
+        js = js & "    }fileUnderlays.clear();}"
         js = js & vbLf
-        js = js & "        const body=group(m.title,fileContent);for(const item of list){"
+        js = js & "    function activateItem(item,anchor) {"
         js = js & vbLf
-        js = js & "            if(unsupported&&typeof item.action==='function'&&String(item.action).includes('notSupportedMenuOption'))command({...item,isHidden:true},bo"
-        js = js & "dy);"
+        js = js & "        if(!menuEnabled(item))return;"
         js = js & vbLf
-        js = js & "            else command(item,body);"
+        js = js & "        if(item.action){closeFile(false);closePopup();if(typeof item.action==='string')api.execute(item.action);else item.action(item);tick();}"
         js = js & vbLf
-        js = js & "        }"
+        js = js & "        else if(item.hoverAction||item._ribbonChildren)openSubmenu(item,anchor);"
+        js = js & vbLf
+        js = js & "    }"
+        js = js & vbLf
+        js = js & "    function openFile(section='Info') {"
+        js = js & vbLf
+        js = js & "        if(!backstage)return;"
+        js = js & vbLf
+        js = js & "        if(backstage.hidden)savedFocus=d.activeElement;"
+        js = js & vbLf
+        js = js & "        fileSection=section==='File'?'Info':section==='Addins'?'Add-ins':section;"
+        js = js & vbLf
+        js = js & "        backstage.hidden=false;syncFileUnderlays();"
+        js = js & vbLf
+        js = js & "        renderFileNav();renderFile();fileNav.querySelector('button')?.focus();"
+        js = js & vbLf
+        js = js & "    }"
+        js = js & vbLf
+        js = js & "    function renderFileNav() {"
+        js = js & vbLf
+        js = js & "        const sig=JSON.stringify([fileSection,[...(layout?.file||[])].map(([name,items])=>[name,items.map(itemKey)])]);"
+        js = js & vbLf
+        js = js & "        if(sig===fileNavSignature)return;fileNavSignature=sig;"
+        js = js & vbLf
+        js = js & "        for(const [n]of bindings)if(fileNav.contains(n))bindings.delete(n);clear(fileNav);"
+        js = js & vbLf
+        js = js & "        const back=el('button','tbui3-backstage-back','← Back');back.setAttribute('aria-label','Back to project');back.onclick=()=>closeFile();fileNav"
+        js = js & ".append(back);"
+        js = js & vbLf
+        js = js & "        const main=el('div','tbui3-backstage-nav-group'),footer=el('div','tbui3-backstage-nav-group tbui3-backstage-footer');fileNav.append(main,foote"
+        js = js & "r);"
+        js = js & vbLf
+        js = js & "        const add=(title,section,parent=main,direct=false)=>{"
+        js = js & vbLf
+        js = js & "            const entries=layout?.file.get(section)||[],item=entries.find(menuEnabled)||entries[0];"
+        js = js & vbLf
+        js = js & "            if(section!=='Info'&&section!=='Add-ins'&&!entries.length)return;"
+        js = js & vbLf
+        js = js & "            const b=el('button','tbui3-backstage-nav',title);b.type='button';b.dataset.fileSection=section;"
+        js = js & vbLf
+        js = js & "            if(direct&&item){b.title=caption(item);bindings.set(b,{item});b.onclick=()=>activateItem(item,b);}"
+        js = js & vbLf
+        js = js & "            else{b.onclick=()=>{fileSection=section;renderFile();renderFileNav();};"
+        js = js & vbLf
+        js = js & "                if(fileSection===section){b.classList.add('tbui3-backstage-selected');b.setAttribute('aria-current','page');}}"
+        js = js & vbLf
+        js = js & "            parent.append(b);"
+        js = js & vbLf
+        js = js & "        };"
+        js = js & vbLf
+        js = js & "        add('Info','Info');add('New','New',main,true);add('Open','Open');add('Save','Save',main,true);add('Save document','Save document',main,true);a"
+        js = js & "dd('Save as','Save as',main,true);add('Export','Export');add('Close project','Close',main,true);"
+        js = js & vbLf
+        js = js & "        if(layout?.file.has('More'))add('More commands','More');"
+        js = js & vbLf
+        js = js & "        add('Add-ins','Add-ins',footer);add('Preferences','Preferences',footer);add('Options','Options',footer,true);add('Exit','Exit',footer,true);"
         js = js & vbLf
         js = js & "        syncBindings();"
         js = js & vbLf
         js = js & "    }"
         js = js & vbLf
-        js = js & "    function closeFile(restoreFocus=true){if(backstage&&!backstage.hidden){backstage.hidden=true;if(restoreFocus&&savedFocus?.isConnected)savedFocus.f"
-        js = js & "ocus();}}"
+        js = js & "    function renderFile() {"
+        js = js & vbLf
+        js = js & "        const items=layout?.file.get(fileSection)||[],projectName=api.projectName&&api.projectName();"
+        js = js & vbLf
+        js = js & "        const sig=JSON.stringify([fileSection,projectName,items.map(itemKey),!!menus.get('rootMenuAddins')?.loading]);"
+        js = js & vbLf
+        js = js & "        if(sig===fileRenderSignature)return;fileRenderSignature=sig;"
+        js = js & vbLf
+        js = js & "        for(const [n]of bindings)if(fileContent.contains(n))bindings.delete(n);clear(fileContent);"
+        js = js & vbLf
+        js = js & "        const titles={Info:'Project information',Open:'Open project',Export:'Export project','Add-ins':'Add-ins',Preferences:'Preferences',More:'More "
+        js = js & "file commands'};"
+        js = js & vbLf
+        js = js & "        fileContent.append(el('h1','tbui3-backstage-heading',titles[fileSection]||fileSection));"
+        js = js & vbLf
+        js = js & "        const list=items.filter(i=>i.name);"
+        js = js & vbLf
+        js = js & "        if(fileSection==='Info'){"
+        js = js & vbLf
+        js = js & "            fileContent.append(el('p','tbui3-backstage-project',projectName||'No project open'));"
+        js = js & vbLf
+        js = js & "        }"
+        js = js & vbLf
+        js = js & "        const unsupported=fileSection==='Add-ins'&&list.some(i=>typeof i.action==='function'&&String(i.action).includes('notSupportedMenuOption'));"
+        js = js & vbLf
+        js = js & "        if(unsupported)fileContent.append(el('p','tbui3-backstage-description','This IDE build lists loaded add-ins here. It does not expose enable or"
+        js = js & " disable commands.'));"
+        js = js & vbLf
+        js = js & "        const tasks=el('div','tbui3-backstage-tasks');fileContent.append(tasks);"
+        js = js & vbLf
+        js = js & "        for(const item of list){const row=el('div','tbui3-backstage-task');"
+        js = js & vbLf
+        js = js & "            command(unsupported&&typeof item.action==='function'&&String(item.action).includes('notSupportedMenuOption')?{...item,isHidden:true,_ribbo"
+        js = js & "nLarge:false}:{...item,_ribbonLarge:false},row);tasks.append(row);"
+        js = js & vbLf
+        js = js & "        }"
+        js = js & vbLf
+        js = js & "        if(!list.length&&fileSection==='Add-ins')fileContent.append(el('p','tbui3-backstage-description',menus.get('rootMenuAddins')?.loading?'Loading"
+        js = js & " add-ins...':'No add-ins are listed by the IDE.'));"
+        js = js & vbLf
+        js = js & "        syncBindings();"
+        js = js & vbLf
+        js = js & "    }"
+        js = js & vbLf
+        js = js & "    function closeFile(restoreFocus=true){if(backstage&&!backstage.hidden){backstage.hidden=true;restoreFileUnderlays();if(restoreFocus&&savedFocus?.i"
+        js = js & "sConnected)savedFocus.focus();}}"
         js = js & vbLf
         js = js & "    function syncBindings(){for(const box of d.querySelectorAll('.tbui3-ribbon-grid'))box.disabled=!(api.formGlobals&&api.formGlobals());for(const [b,"
         js = js & "entry]of bindings){"
@@ -689,7 +863,7 @@ Private Module IdeToolbarScript
         js = js & vbLf
         js = js & "        shell=tabs=content=quick=backstage=fileNav=fileContent=null;"
         js = js & vbLf
-        js = js & "        signature='';menuSignature='';resize();"
+        js = js & "        signature='';menuSignature='';fileNavSignature='';fileRenderSignature='';layout=null;resize();"
         js = js & vbLf
         js = js & "    }"
         js = js & vbLf
@@ -741,8 +915,9 @@ Private Module IdeToolbarScript
         js = js & vbLf
         js = js & "            syncBindings();syncQuick();"
         js = js & vbLf
-        js = js & "            if(state.mode==='Ribbon'&&Date.now()>refreshAt){refreshAt=Date.now()+1000;const m=menus.get(state.active);if(m&&backstage.hidden)requestMe"
-        js = js & "nu(m);}"
+        js = js & "            if(backstage&&!backstage.hidden)syncFileUnderlays();"
+        js = js & vbLf
+        js = js & "            if(state.mode==='Ribbon'&&Date.now()>refreshAt){refreshAt=Date.now()+1000;hydrateMenus(true);}"
         js = js & vbLf
         js = js & "        }catch(e){fail(e);}"
         js = js & vbLf
@@ -754,7 +929,7 @@ Private Module IdeToolbarScript
         js = js & vbLf
         js = js & "        state.requestedMode=mode;"
         js = js & vbLf
-        js = js & "        if(state.mode!==mode||mode!=='Classic'&&!shell){restore();state.mode=mode;state.active=mode==='Hybrid'?'Home':'rootMenuEdit';"
+        js = js & "        if(state.mode!==mode||mode!=='Classic'&&!shell){restore();state.mode=mode;state.active='Home';"
         js = js & vbLf
         js = js & "            try{if(mode!=='Classic')build();}catch(e){fail(e);}}"
         js = js & vbLf
@@ -818,9 +993,9 @@ Private Module IdeToolbarScript
         js = js & vbLf
         js = js & "            if(state.mode==='Ribbon'&&m){m.items=items;"
         js = js & vbLf
-        js = js & "                if(anchor.id==='rootMenuFile'||anchor.id==='rootMenuAddins'){fileSection=m.title;openFile(m.title);}"
+        js = js & "                if(anchor.id==='rootMenuFile'||anchor.id==='rootMenuAddins')openFile(anchor.id==='rootMenuAddins'?'Add-ins':'Info');"
         js = js & vbLf
-        js = js & "                else{state.active=anchor.id;selectTab(anchor.id);}return;}"
+        js = js & "                else selectTab(tabForNative(m));return;}"
         js = js & vbLf
         js = js & "            return nativeMenu.call(this,anchor,x,y,items,...rest);"
         js = js & vbLf
@@ -901,7 +1076,213 @@ Private Module IdeToolbarScript
         js = js & "0 0 3 5.5v9A2.5 2.5 0 0 0 5.5 17h4.1q-.24-.48-.4-1H5.5A1.5 1.5 0 0 1 4 14.5V7h12v2.2q.52.16 1 .4zM5.5 4h9c.83 0 1.5.67 1.5 1.5V6H4v-.5C4 4.67 4.67 4 5"
         js = js & ".5 4M19 14.5a4.5 4.5 0 1 1-9 0 4.5 4.5 0 0 1 9 0m-2.29-.44-2.97-1.65a.5.5 0 0 0-.74.44v3.3c0 .38.41.62.74.44l2.97-1.65a.5.5 0 0 0 0-.88%27/%3E%3C/svg%"
         js = js & "3E')" & Chr(34) & "," & Chr(34) & "menuBarColorMode" & Chr(34) & ":" & Chr(34) & "url('data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 width=%2720%27 height=%2720%27 viewBox=%270 0 20 20%27"
-        js = js & "%3E%3Cpath d=%27M10 3a7 7 0 1 1 0 14zm0-1a8 8 0 1 0 0 16 8 8 0 0 0 0-16%27/%3E%3C/svg%3E')" & Chr(34) & "},"
+        js = js & "%3E%3Cpath d=%27M10 3a7 7 0 1 1 0 14zm0-1a8 8 0 1 0 0 16 8 8 0 0 0 0-16%27/%3E%3C/svg%3E')" & Chr(34) & "},buildLayout:/* Office-style organization for the IDE's li"
+        js = js & "ve descriptors. This is presentation"
+        js = js & vbLf
+        js = js & " * metadata only: all actions, contexts and lazy submenus remain native. Unknown"
+        js = js & vbLf
+        js = js & " * commands/menus are deliberately retained rather than filtered by this map. */"
+        js = js & vbLf
+        js = js & "(function buildRibbonLayout(records, quickActions=new Set()) {"
+        js = js & vbLf
+        js = js & "    const tabs=new Map(), file=new Map(), suppressed=[];"
+        js = js & vbLf
+        js = js & "    tabs.set('Home',new Map());"
+        js = js & vbLf
+        js = js & "    const order=['Home','Insert','Code','Form','View','Project','Debug','Tools','Add-ins','Help'];"
+        js = js & vbLf
+        js = js & "    const groups={Home:['Clipboard','Editing'],Insert:['Components'],Code:['Comments','Formatting','Navigation','Outlining','Case'],"
+        js = js & vbLf
+        js = js & "        Form:['Arrange','Size','Spacing','Position','Protection','Designer'],View:['Views','Show','Zoom','Window','Appearance'],"
+        js = js & vbLf
+        js = js & "        Project:['Project','Build','Compiler','Folders'],Debug:['Stepping','Breakpoints','Watches','Execution','Options']};"
+        js = js & vbLf
+        js = js & "    const get=(map,key,make)=>{if(!map.has(key))map.set(key,make());return map.get(key);};"
+        js = js & vbLf
+        js = js & "    const add=(tab,group,item)=>get(get(tabs,tab,()=>new Map()),group,()=>[]).push(item);"
+        js = js & vbLf
+        js = js & "    const addFile=(key,item)=>get(file,key,()=>[]).push(item);"
+        js = js & vbLf
+        js = js & "    const token=(i,name)=>String(i.name||'').includes(name);"
+        js = js & vbLf
+        js = js & "    const quick=a=>quickActions.has(a)||/^tb(?:Editor|FormDesigner)_(Undo|Redo)$/.test(a)||/^tbDebug_(StartOrContinue|BreakInto|Stop)$/.test(a);"
+        js = js & vbLf
+        js = js & "    for(const r of records){const i=r.item,a=typeof i.action==='string'?i.action:'',m=r.menuId;"
+        js = js & vbLf
+        js = js & "        if(!i.name)continue;"
+        js = js & vbLf
+        js = js & "        if(i._ribbonTab){add(i._ribbonTab,i._ribbonGroup,i);continue;}"
+        js = js & vbLf
+        js = js & "        if(m==='rootMenuFile'){"
+        js = js & vbLf
+        js = js & "            const section={tbProject_New:'New',tbProject_Open:'Open',tbProject_OpenRecent:'Open',tbProject_Close:'Close',"
+        js = js & vbLf
+        js = js & "                tbProject_SaveAllChanges:'Save',tbProject_SaveAs:'Save as',tbProject_Export:'Export',tbEditor_Save:'Save document',tbIdeWindow_Close:'"
+        js = js & "Exit'}[a];"
+        js = js & vbLf
+        js = js & "            if(section){addFile(section,i);continue;}"
+        js = js & vbLf
+        js = js & "            if(a==='tbBuild_Start'||a==='tbBuild_Clean'){add('Project','Build',i);continue;}"
+        js = js & vbLf
+        js = js & "            addFile('More',i);continue;"
+        js = js & vbLf
+        js = js & "        }"
+        js = js & vbLf
+        js = js & "        if(m==='rootMenuAddins'){addFile('Add-ins',i);continue;}"
+        js = js & vbLf
+        js = js & "        if(a==='tbIde_ShowIDEOptions'){addFile('Options',i);continue;}"
+        js = js & vbLf
+        js = js & "        if(token(i,'MenuCaptionWindowLanguage')||token(i,'MenuCaptionWindowKeyboardShortcuts')){addFile('Preferences',i);continue;}"
+        js = js & vbLf
+        js = js & "        if(quick(a)){suppressed.push(i);continue;}"
+        js = js & vbLf
+        js = js & "        if(/_Clipboard(?:Cut|Copy|Paste|PasteAsComment)$/.test(a)){add('Home','Clipboard',i);continue;}"
+        js = js & vbLf
+        js = js & "        if(/_SelectAll(?:Controls|Matches)?$|_Delete(?:Right|SelectedControls)$|_Find(?:Replace)?$/.test(a)||"
+        js = js & vbLf
+        js = js & "            a==='tbProject_FindInFiles'||/^tbFindWidget_Show(?:Find|Replace)$/.test(a)||a==='tbEditor_FindWidget_SelectAllMatches'){"
+        js = js & vbLf
+        js = js & "            add('Home','Editing',i);continue;"
+        js = js & vbLf
+        js = js & "        }"
+        js = js & vbLf
+        js = js & "        if(/^tbEditor_(IndentLine|OutdentLine|FormatSelection|FormatDocument)$/.test(a)){add('Code','Formatting',i);continue;}"
+        js = js & vbLf
+        js = js & "        if(/^tbEditor_(GoToDefinition|LastPosition|GotoLineColumn)$/.test(a)){add('Code','Navigation',i);continue;}"
+        js = js & vbLf
+        js = js & "        if(/^tbEditor_(?:Unfold|Fold)/.test(a)){add('Code','Outlining',i);continue;}"
+        js = js & vbLf
+        js = js & "        if(/^tbEditor_TransformTo/.test(a)){add('Code','Case',i);continue;}"
+        js = js & vbLf
+        js = js & "        if(/^tbEditor_(SwitchToCode|SwitchToFormDesign)$/.test(a)||a==='tbShowObjectBrowser'){add('View','Views',i);continue;}"
+        js = js & vbLf
+        js = js & "        if(/_ShowPanel$/.test(a)||m==='rootMenuView'&&typeof i.action==='function'){add('View','Show',i);continue;}"
+        js = js & vbLf
+        js = js & "        if(/^tb(?:Editor_(?:Increase|Decrease)FontSize|FormDesigner_Zoom)/.test(a)){add('View','Zoom',i);continue;}"
+        js = js & vbLf
+        js = js & "        if(m==='rootMenuFormat'){"
+        js = js & vbLf
+        js = js & "            const g=token(i,'MakeSameSize')?'Size':token(i,'Spacing')?'Spacing':"
+        js = js & vbLf
+        js = js & "                token(i,'LockControls')?'Protection':/CenterInContainer|BringToFront|SendToBack/.test(i.name)?'Position':'Arrange';"
+        js = js & vbLf
+        js = js & "            const icon=token(i,'MakeSameSize')?'menuBarSizeWidest':token(i,'FormatAlign')?'menuBarAlignLeft':undefined;"
+        js = js & vbLf
+        js = js & "            add('Form',g,icon?{...i,_ribbonIconSource:icon}:i);continue;"
+        js = js & vbLf
+        js = js & "        }"
+        js = js & vbLf
+        js = js & "        if(m==='rootMenuProject'){"
+        js = js & vbLf
+        js = js & "            if(token(i,'MenuCaptionProjectAdd'))add('Insert','Components',i);"
+        js = js & vbLf
+        js = js & "            else {add('Project',/_Open(?:Project|Build)Folder$/.test(a)?'Folders':'Project',i);"
+        js = js & vbLf
+        js = js & "                if(a==='tbProject_ShowSettings'||a==='tbProject_ShowReferences')addFile('Info',i);}"
+        js = js & vbLf
+        js = js & "            continue;"
+        js = js & vbLf
+        js = js & "        }"
+        js = js & vbLf
+        js = js & "        if(/^tbCompiler_/.test(a)){add('Project','Compiler',i);continue;}"
+        js = js & vbLf
+        js = js & "        if(m==='rootMenuDebug'||m==='rootMenuRun'){"
+        js = js & vbLf
+        js = js & "            add('Debug',/Step/.test(a)?'Stepping':/Breakpoint/.test(a)?'Breakpoints':/^tbWatches_/.test(a)?'Watches':i.hoverAction?'Options':'Executio"
+        js = js & "n',i);continue;"
+        js = js & vbLf
+        js = js & "        }"
+        js = js & vbLf
+        js = js & "        if(m==='rootMenuWindows'){"
+        js = js & vbLf
+        js = js & "            add('View',token(i,'WindowTheme')?'Appearance':'Window',i);continue;"
+        js = js & vbLf
+        js = js & "        }"
+        js = js & vbLf
+        js = js & "        const fallback={rootMenuEdit:['Home','More editing'],rootMenuView:['View','More views'],rootMenuTools:['Tools','Tools'],rootMenuHelp:['Help','"
+        js = js & "Help']}[m];"
+        js = js & vbLf
+        js = js & "        add(...(fallback||[r.menuTitle||m,'Commands']),i);"
+        js = js & vbLf
+        js = js & "    }"
+        js = js & vbLf
+        js = js & "    const action=i=>typeof i.action==='string'?i.action:'';"
+        js = js & vbLf
+        js = js & "    const dropdown=(name,items,icon)=>({name,codicon:icon||items.find(i=>i.codicon)?.codicon,_ribbonChildren:items});"
+        js = js & vbLf
+        js = js & "    for(const [tab,gs]of tabs)for(const [name,items]of gs){"
+        js = js & vbLf
+        js = js & "        if(tab==='Home'&&name==='Clipboard')items.sort((a,b)=>{"
+        js = js & vbLf
+        js = js & "            const rank=i=>/_ClipboardPaste$/.test(action(i))?0:/_ClipboardCut$/.test(action(i))?1:/_ClipboardCopy$/.test(action(i))?2:3;"
+        js = js & vbLf
+        js = js & "            return rank(a)-rank(b);});"
+        js = js & vbLf
+        js = js & "        if(tab==='Home'&&name==='Editing'){"
+        js = js & vbLf
+        js = js & "            const advanced=items.filter(i=>/^tbFindWidget_|FindWidget_/.test(action(i)));"
+        js = js & vbLf
+        js = js & "            const primary=items.filter(i=>!advanced.includes(i));"
+        js = js & vbLf
+        js = js & "            primary.sort((a,b)=>(/_Find$/.test(action(a))?0:1)-(/_Find$/.test(action(b))?0:1));"
+        js = js & vbLf
+        js = js & "            if(advanced.length)primary.push(dropdown('Find options',advanced,'search'));gs.set(name,primary);"
+        js = js & vbLf
+        js = js & "        }"
+        js = js & vbLf
+        js = js & "        if(tab==='Code'&&name==='Outlining'){"
+        js = js & vbLf
+        js = js & "            const folds=items.filter(i=>/^tbEditor_Fold/.test(action(i))),unfolds=items.filter(i=>/^tbEditor_Unfold/.test(action(i)));"
+        js = js & vbLf
+        js = js & "            gs.set(name,[...(folds.length?[dropdown('Fold',folds)]:[]),...(unfolds.length?[dropdown('Unfold',unfolds)]:[])]);"
+        js = js & vbLf
+        js = js & "        }"
+        js = js & vbLf
+        js = js & "        if(tab==='Code'&&name==='Case')gs.set(name,[dropdown('Change case',items)]);"
+        js = js & vbLf
+        js = js & "        if(tab==='View'&&name==='Show'){"
+        js = js & vbLf
+        js = js & "            const common=new Set(['tbProjectExplorer_ShowPanel','tbToolbox_ShowPanel','tbProperties_ShowPanel']);"
+        js = js & vbLf
+        js = js & "            const more=items.filter(i=>!common.has(action(i))),primary=items.filter(i=>common.has(action(i)));"
+        js = js & vbLf
+        js = js & "            gs.set(name,[...(more.length?[dropdown('More panels',more,'browser')]:[]),...primary]);"
+        js = js & vbLf
+        js = js & "        }"
+        js = js & vbLf
+        js = js & "    }"
+        js = js & vbLf
+        js = js & "    const result=[...tabs].map(([id,gs])=>({id,title:id,groups:[...gs].map(([title,items])=>({title,items}))}));"
+        js = js & vbLf
+        js = js & "    for(const tab of result){const preferred=groups[tab.id]||[];tab.groups.sort((a,b)=>{"
+        js = js & vbLf
+        js = js & "        const rank=g=>preferred.includes(g.title)?preferred.indexOf(g.title):preferred.length;return rank(a)-rank(b);"
+        js = js & vbLf
+        js = js & "    });}"
+        js = js & vbLf
+        js = js & "    for(const tab of result)for(const group of tab.groups)group.items=group.items.map((item,index)=>{"
+        js = js & vbLf
+        js = js & "        const a=action(item),large=tab.id==='Home'&&(group.title==='Clipboard'?/_ClipboardPaste$/.test(a):/_Find$/.test(a))||"
+        js = js & vbLf
+        js = js & "            tab.id==='Insert'||tab.id==='View'&&['Views','Appearance'].includes(group.title)||"
+        js = js & vbLf
+        js = js & "            tab.id==='View'&&['Show','Zoom','Window'].includes(group.title)&&index===0||"
+        js = js & vbLf
+        js = js & "            tab.id==='Form'&&['Arrange','Size'].includes(group.title)&&index===0||"
+        js = js & vbLf
+        js = js & "            tab.id==='Project'&&group.title==='Build'&&a==='tbBuild_Start'||"
+        js = js & vbLf
+        js = js & "            tab.id==='Project'&&group.title==='Project'&&index===0||tab.id==='Help'&&index===0;"
+        js = js & vbLf
+        js = js & "        return {...item,_ribbonLarge:!!large};"
+        js = js & vbLf
+        js = js & "    });"
+        js = js & vbLf
+        js = js & "    result.sort((a,b)=>{const rank=x=>order.includes(x)?order.indexOf(x):order.indexOf('Add-ins')-.5;return rank(a.id)-rank(b.id);});"
+        js = js & vbLf
+        js = js & "    return {tabs:result,file,suppressed};"
+        js = js & vbLf
+        js = js & "}),"
         js = js & vbLf
         js = js & "getShowContextMenu:function(){return showContextMenu;},setShowContextMenu:function(fn){showContextMenu=fn;},"
         js = js & vbLf
@@ -911,7 +1292,8 @@ Private Module IdeToolbarScript
         js = js & vbLf
         js = js & "testContext:function(s){return parseAndEvaluateExpression(s);},shortcut:function(s){return GetIdeCommandShortcutDescription(s)||'';},"
         js = js & vbLf
-        js = js & "realTitlebar:function(){return !!liveIDEOptions.showRealTitlebar;},"
+        js = js & "realTitlebar:function(){return !!liveIDEOptions.showRealTitlebar;},projectName:function(){return typeof g_CurrentProjectName==='string'?g_CurrentProje"
+        js = js & "ctName:'';},"
         js = js & vbLf
         js = js & "formGlobals:function(){return getCurrentFormEditorGlobals();},changedSize:function(){changedSize();}});"
         js = js & vbLf

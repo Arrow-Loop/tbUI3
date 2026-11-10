@@ -7,14 +7,15 @@ const icons=Object.fromEntries([...iconCss.matchAll(/>#(\w+)/g)].map(m=>[m[1],m[
 for(const m of iconCss.matchAll(/>\s*#([\w-]+)\s*\{\s*--fluent-icon:\s*(url\('[^']+'\))/g))icons[m[1]]=m[2];
 if(Object.keys(icons).length!==19)throw Error('The established 19-icon Fluent map was not preserved');
 const factory=fs.readFileSync(dir+'/js/ide-toolbar.js','utf8').trim();
+const layout=fs.readFileSync(dir+'/js/ribbon-layout.js','utf8').trim();
 const script=`(function(){if(window.__tbUI3Toolbar)return 'toolbar already installed';
 var css=document.createElement('style');css.id='tbUI3ToolbarCss';css.textContent=${JSON.stringify(css)};document.head.appendChild(css);
-var adapter=${factory}({window:window,icons:${JSON.stringify(icons)},
+var adapter=${factory}({window:window,icons:${JSON.stringify(icons)},buildLayout:${layout},
 getShowContextMenu:function(){return showContextMenu;},setShowContextMenu:function(fn){showContextMenu=fn;},
 localize:function(s){return evaluateLocalizedString(s);},execute:function(s){return executeIdeCommand(s,true);},
 commandEnabled:function(s){var c=ideCommands[s];return !!c&&(!c.defaultContext||evaluateExpression(c.defaultContext));},
 testContext:function(s){return parseAndEvaluateExpression(s);},shortcut:function(s){return GetIdeCommandShortcutDescription(s)||'';},
-realTitlebar:function(){return !!liveIDEOptions.showRealTitlebar;},
+realTitlebar:function(){return !!liveIDEOptions.showRealTitlebar;},projectName:function(){return typeof g_CurrentProjectName==='string'?g_CurrentProjectName:'';},
 formGlobals:function(){return getCurrentFormEditorGlobals();},changedSize:function(){changedSize();}});
 window.__tbUI3Toolbar=adapter;adapter.install('Classic');return 'toolbar installed';})()`;
 const literal=s=>s.split('"').map(x=>'"'+x+'"').join(' & Chr(34) & ');

@@ -1,10 +1,10 @@
 # tbUI3 IDE: one add-in for designer tools and optional WinUI 3 styling
 
-The single distributed add-in is **tbUI3IDE 1.2.0.2**, built from `tbUI3IDE/tbUI3IDE.twinproj` as **tbUI3IDE.dll**. It includes TabView adapter v8 and the IDE styling implementation. The established project ID and saved theme preference are retained through the rename.
+The single distributed add-in is **tbUI3IDE 1.3.0.0**, built from `tbUI3IDE/tbUI3IDE.twinproj` as **tbUI3IDE.dll**. It includes TabView adapter v8 and the IDE styling implementation. The established project ID and saved theme preference are retained through the rename.
 
 Tab management and toolbar layout are independent of the theme. Both work with the additional-styling switch off and with the IDE's standard themes. The switch continues to control only the optional additional restyling.
 
-**IDE Toolbar**, immediately below that switch, selects Classic (default), Hybrid or Ribbon. All modes follow the selected IDE theme. Version 1.2.0.2 removes the empty native toolbar dock slot in replacement modes, restores the previous Fluent shadow/card corners, and tightens group spacing and labels while retaining the native help in tooltips. Hybrid/Ribbon command areas are capped at 100px with a separate 26px tab strip; full-size buttons are 76px high, 50px standard/minimum width and 86px maximum width, including borders/padding. Hybrid retains the menu bar with Home, Code, Form, contextual MultiPage and Add-ins toolbar groups. Ribbon migrates native menus into tabs and groups, fullscreen File and upper quick access. File > Add-ins shows the native loaded-add-in list; BETA 1044 does not expose enable/disable commands. The first implementation uses horizontal overflow and Ctrl+F1 collapse; final Office adaptive behavior and visual acceptance remain open. See [ROADMAP.md](ROADMAP.md) and [validation evidence](../docs/validation/2026-11-10-ide-toolbar.md).
+**IDE Toolbar**, immediately below that switch, selects Classic (default), Hybrid or Ribbon. All modes follow the selected IDE theme. Version 1.2.0.2 removes the empty native toolbar dock slot in replacement modes, restores the previous Fluent shadow/card corners, and tightens group spacing and labels while retaining the native help in tooltips. Hybrid/Ribbon command areas are capped at 100px with a separate 26px tab strip; full-size buttons are 76px high, 50px standard/minimum width and 86px maximum width, including borders/padding. Hybrid retains the menu bar with Home, Code, Form, contextual MultiPage and Add-ins toolbar groups. Ribbon organizes live native commands by task: Home Clipboard/Editing; Insert; Code; Form; View; Project; Debug; Add-ins; Help, plus vertical fullscreen File and upper quick access. Undo/Redo and main execution controls appear only in quick access. File hides the live workspace while open and restores it before native actions or close. See [command mapping](RIBBON_LAYOUT.md). File > Add-ins shows the native loaded-add-in list; BETA 1044 does not expose enable/disable commands. The first implementation uses horizontal overflow and Ctrl+F1 collapse; final Office adaptive behavior and visual acceptance remain open. See [ROADMAP.md](ROADMAP.md) and [validation evidence](../docs/validation/2026-11-10-ide-toolbar.md).
 
 ### Migration from two add-ins
 
@@ -77,7 +77,7 @@ Open a project with a form and a module, then look at each item in both themes:
 
 The same add-in supplies +/New page creation, switching, deletion, reordering, page geometry protection, page toolbox hiding and diagnostics. These remain available with styling disabled. [Page command details](TabViewDesigner/README.md) and [architecture/lifecycle](ARCHITECTURE.md) describe the contract.
 
-The Microsoft Office-style tabbed ribbon is the next agreed pass; current commands retain their existing toolbar positions until that work is implemented.
+The earlier single-row toolbar is retained by Classic. Selectable Hybrid/Ribbon and the current task-based mapping are implemented as described above; remaining adaptive interaction work is tracked in ROADMAP.md.
 
 ## Optional IDE styling
 

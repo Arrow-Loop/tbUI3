@@ -1,0 +1,41 @@
+# Ribbon command organization
+
+Current implementation: tbUI3IDE 1.3.0.0, 2026-11-10.
+
+Shane's Office Home/View/Backstage screenshots define the composition. Ribbon mode organizes commands by task rather than reproducing the native menu names. The IDE-specific Code, Form, Project and Debug tabs retain the IDE's actual functions. Classic and Hybrid keep their existing organizations.
+
+| Surface | Groups and native commands |
+| --- | --- |
+| Quick access | Save, Undo, Redo, Start/Continue, Break, Stop. Undo/Redo and these execution controls are omitted from ribbon groups. |
+| Home | Clipboard: Paste as the large lead command, Cut, Copy, Paste as comment. Editing: Find as the large lead command, Replace, Find in project, Delete, Select all; advanced find/match commands in Find options. |
+| Insert | Components: the native Add component submenu, retaining its lazy discovery. |
+| Code | Comments; Formatting: indent/outdent and format selection/document; Navigation: definition, last position, line/column; Outlining: Fold and Unfold dropdowns; Case: Change case dropdown. |
+| Form | Arrange, Size, Spacing, Position, Protection, Designer preview, native grid options and contextual MultiPage. Alignment and size retain the existing designer glyphs. |
+| View | Views: Code editor, Object designer, Object browser. Show: common Project explorer/Toolbox/Properties commands plus More panels. Zoom: context-sensitive native zoom/font commands and original zoom selector. Window: native panel layouts/features. Appearance: native theme selector. |
+| Project | Project settings/references; Build and Clean with the original build configuration selector; compiler restart/cache controls; project/output folders. |
+| Debug | Stepping, Breakpoints, Watches, Execution, native debugger Options. |
+| Add-ins | Live toolbar contributions from other add-ins; contextual page management remains under Form. |
+| Help | Native Help commands. |
+| File | Vertical navigation rail: Info, New, Open, Save, Save document, Save as, Export, Close project; Add-ins, Preferences, Options and Exit in the lower group. Open includes Open recent. Info shows the actual project name with settings/references tasks. Native language and keyboard-shortcut submenus are under Preferences. |
+
+Sections/tabs are populated when the IDE provides their commands. Newly discovered Tools commands can create a Tools tab. Unknown native menus create their own named tab. New commands in known menus fall back to Home > More editing, View > More views, File > More commands or the corresponding native tab/group; they are never discarded by an allowlist. Root File Build/Clean move to Project. Project settings/references are intentionally available in both Project and File > Info, as project-level tasks.
+
+## Implementation contract
+
+`tbUI3IDE/js/ribbon-layout.js` is pure presentation metadata over current native descriptors. `js/ide-toolbar.js` discovers menus, resolves native context alternatives, refreshes their contents/state, renders the resulting model and dispatches the original command/action. IDs, localized native labels, context expressions, disabled/checked state and lazy submenu functions are retained. Group labels and synthetic grouping captions are currently English, as are the existing toolbar labels.
+
+The factory is embedded by `tools/build-ide-toolbar.mjs`; no loose JavaScript installation is required. Semantic grouping uses stable native command IDs and localization token names rather than translated display text. Synthetic Fold/Unfold, Change case, Find options and More panels wrappers retain every child descriptor/action. New unknown commands remain reachable without a new grouping rule. This depends on the existing IDE menu/descriptor hooks remaining compatible; it does not promise compatibility with arbitrary future API replacements.
+
+Large versus stacked commands are explicit semantic roles, not the first item of each native separator block. Existing Fluent toolbar SVGs and native designer/codicon glyphs are retained. Geometry stays at a 100px command-area maximum, separate 26px tabs, 50px standard/minimum and 86px maximum large-button widths, and 76px large-button height. Essential CSS uses active-theme variables and preserves the existing Fluent shadow/card corners.
+
+## Backstage lifecycle
+
+File is an opaque, full-client-area surface below the title controls. Its rail stays vertical; content is a vertical task list rather than a wrapping ribbon group. While open, the ribbon, docked designer/workspace and floating panels receive an owned visibility rule, `inert` and `aria-hidden`. Original values are restored before native command dispatch and on Back, Escape, mode change or unload. Panels appearing while File is open receive the same treatment. Stable content/navigation signatures avoid replacing focused buttons on each refresh.
+
+The loaded-add-in list remains informational in BETA 1044 because its native callbacks call `notSupportedMenuOption`; those entries are disabled with an explanation. Other add-ins' toolbar buttons remain functional on the Add-ins ribbon tab. No enable/disable mechanism is fabricated.
+
+## Evidence and remaining work
+
+The JavaScript/DOM suite checks semantic placement, native command coverage, context alternatives, lazy/async menus, future menu/command discovery, exact-once actions and Backstage underlay/accessibility restoration. The official BETA 1044 menu builders supply 108 top-level descriptor entries in the code-context inventory; lazy submenu actions remain native and have separate execution checks. See `../docs/validation/2026-11-10-ide-toolbar.md` for the measured results. Final rendered acceptance, automatic group collapse/flyouts and Office keytips remain in ROADMAP.md.
+
+References: Shane's supplied Office screenshots, [Microsoft Backstage overview](https://support.microsoft.com/en-us/office/collab-files/start-backstage-with-the-file-tab), [Microsoft Backstage accessibility](https://support.microsoft.com/en-us/accessibility/office-accessibility/use-a-screen-reader-with-microsoft-365-backstage) and [Microsoft ribbon display behavior](https://support.microsoft.com/en-gb/excel/show-the-ribbon). These support the Office interaction pattern; the IDE-specific command mapping above is this project's implementation decision.

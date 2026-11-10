@@ -8,9 +8,13 @@
     const state={mode:'Classic',requestedMode:'Classic',dirty:false,lastError:'',active:'Home',disposed:false};
     const sources=new Map(), menus=new Map(), bindings=new Map(), placements=new Map(), pendingMenus=new Map();
     const hiddenNative=new Set();
+    const fileUnderlays=new Map();
     let shell, tabs, content, quick, backstage, fileNav, fileContent, popup, interval;
     let signature='', menuSignature='', fileSection='File', savedFocus, captureSink, refreshAt=0;
     let nativeMenu=api.getShowContextMenu(), wrappedMenu, pendingSubmenu;
+    let hydrating=false,layout;
+    let fileNavSignature='',fileRenderSignature='';
+    const itemKey=i=>[caption(i),i.action&&String(i.action),i.codicon,i.iconClass,i.class,i.comboValue,i._sourceId,i._ribbonIconSource,i._ribbonLarge,checked(i),menuEnabled(i),i._ribbonChildren?.map(itemKey)];
     const own=n=>!!(n&&n.closest&&n.closest('.tbui3-toolbar-owned'));
     const el=(tag,cls,text)=>{const n=d.createElement(tag);if(cls)n.className=cls;if(text)n.textContent=text;return n;};
     const clear=n=>{while(n.firstChild)n.firstChild.remove();};
@@ -111,8 +115,8 @@
         // Natural mouse sequence covers both native mousedown commands and add-in click handlers.
         for(const type of ['mousedown','mouseup','click'])n.dispatchEvent(new w.MouseEvent(type,init));
     }
-    function sourceButton(n,parent,compact=false) {
-        const b=el('button','tbui3-ribbon-command'+(compact?' tbui3-ribbon-compact':''));b.type='button';
+    function sourceButton(n,parent,compact=false,large=false) {
+        const b=el('button','tbui3-ribbon-command'+(compact?' tbui3-ribbon-compact':large?' tbui3-ribbon-large':''));b.type='button';
         b.dataset.source=typeof n.id==='string'?n.id:'';b.title=label(n);b.setAttribute('aria-label',label(n));
         b.append(iconFor(n),el('span','tbui3-ribbon-label',sourceCaption(n)));
         b.addEventListener('mousedown',e=>e.preventDefault());
@@ -124,9 +128,9 @@
     }
     function returnNodes() {for(const [n,marker]of placements){if(marker.isConnected)marker.replaceWith(n);}placements.clear();}
     function addSources(ids,parent) {
-        for(const id of ids){const n=sources.get(id);if(!n)continue;
+        for(const [index,id] of ids.entries()){const n=sources.get(id);if(!n)continue;
             if(n.matches('select')){const l=el('label','tbui3-ribbon-selector',sourceCaption(n));l.title=label(n);park(n,l);parent.append(l);}
-            else sourceButton(n,parent);
+            else sourceButton(n,parent,false,index===0);
         }
     }
     function addGrid() {
@@ -160,12 +164,14 @@
         return result;
     }
     function command(item,parent) {
+        if(item._sourceId){const n=sources.get(item._sourceId);if(n){if(n.matches('select'))addSources([item._sourceId],parent);else sourceButton(n,parent,false,item._ribbonLarge);}return;}
         if(!item.name){parent.append(el('div','tbui3-ribbon-separator'));return;}
         if(!menuEnabled(item)&&item.superHiddenContext)return;
-        const b=el('button','tbui3-ribbon-command');b.type='button';
+        const b=el('button','tbui3-ribbon-command'+(item._ribbonLarge?' tbui3-ribbon-large':''));b.type='button';
         const title=caption(item);
         b.title=title+(typeof item.action==='string'?' '+api.shortcut(item.action):'');
-        b.append(iconFor(null,item),el('span','tbui3-ribbon-label',title));
+        const shown=/^[^a-z]*[A-Z][^a-z]*$/.test(title)?title.charAt(0)+title.slice(1).toLowerCase():title;
+        b.append(iconFor(sources.get(item._ribbonIconSource),item),el('span','tbui3-ribbon-label',shown));
         b.addEventListener('mousedown',e=>e.preventDefault());
         bindings.set(b,{item});parent.append(b);
         if(item.comboOptions){
@@ -174,14 +180,14 @@
             select.onchange=()=>{if(menuEnabled(item)&&item.onchange)item.onchange(select.value);};
             b.replaceWith(select);bindings.delete(b);bindings.set(select,{item});return;
         }
-        if(item.hoverAction){b.setAttribute('aria-haspopup','menu');b.append(el('span','tbui3-ribbon-chevron','\u2304'));}
+        if(item.hoverAction||item._ribbonChildren){b.setAttribute('aria-haspopup','menu');b.append(el('span','tbui3-ribbon-chevron','\u2304'));}
         b.onclick=()=>{
             if(!menuEnabled(item))return;
             if(item.action){
                 closeFile(false);closePopup();
                 if(typeof item.action==='string')api.execute(item.action);else item.action(item);
                 tick();
-            }else if(item.hoverAction)openSubmenu(item,b);
+            }else if(item.hoverAction||item._ribbonChildren)openSubmenu(item,b);
         };
     }
     function openSubmenu(item,anchor) {
@@ -189,32 +195,65 @@
         const bounds=anchor.getBoundingClientRect();popup.style.setProperty('--tbui3-popup-x',Math.min(bounds.left,w.innerWidth-280)+'px');
         popup.style.setProperty('--tbui3-popup-y',Math.min(bounds.bottom,w.innerHeight-200)+'px');d.body.append(popup);
         const sink=items=>{if(!popup)return;clear(popup);for(const child of menuItems(items))command(child,popup);syncBindings();popup.querySelector('button,select')?.focus();};
+        if(item._ribbonChildren){sink(item._ribbonChildren);return;}
         captureSink=sink;pendingSubmenu={sink,until:Date.now()+5000};
         try{item.hoverAction(anchor);}finally{captureSink=null;}
     }
     function closePopup(){pendingSubmenu=null;if(popup){for(const n of popup.querySelectorAll('button,select'))bindings.delete(n);popup.remove();popup=null;}}
     function requestMenu(m) {
-        const sink=items=>{m.items=items||[];if(state.mode!=='Ribbon')return;
-            if(backstage&&!backstage.hidden&&fileSection===m.title)renderFile(m);
-            else if(state.active===m.node.id)renderMenu(m);
+        const sink=items=>{m.items=items||[];m.loading=false;m.ready=true;if(state.mode!=='Ribbon'||hydrating)return;
+            refreshLayout();
         };
+        if(m.loading)return;m.loading=true;
         pendingMenus.set(m.node.id,sink);captureSink=sink;
         try{
             if(m.node.onmousedown)m.node.onmousedown({button:0,preventDefault(){},stopPropagation(){}});
             else if(m.node.onclick)m.node.onclick({button:0,preventDefault(){},stopPropagation(){}});
-        }finally{captureSink=null;}
+        }catch(e){m.loading=false;throw e;}finally{captureSink=null;}
     }
-    function renderMenu(m) {
-        const items=menuItems(m.items);
-        const sig=JSON.stringify([m.node.id,items.map(i=>[caption(i),i.action&&String(i.action),i.codicon,i.iconClass,i.class,i.comboOptions,i.comboValue,checked(i),menuEnabled(i)])]);
+    function collectLayout() {
+        const records=[];
+        for(const m of menus.values())for(const item of menuItems(m.items))records.push({menuId:m.node.id,menuTitle:m.title,item});
+        const source=(id,tab,group)=>{if(sources.has(id))records.push({item:{name:sourceCaption(sources.get(id)),_sourceId:id,_ribbonTab:tab,_ribbonGroup:group}});};
+        for(const id of ['commentIcon','uncommentIcon'])source(id,'Code','Comments');
+        source('buildConfigSelector','Project','Build');source('debugStepOutIcon','Debug','Stepping');
+        source('zoomSelect','View','Zoom');source('menuBarPreview','Form','Designer');
+        if(!records.some(r=>String(r.item.name).includes('MenuCaptionWindowTheme')))source('menuBarColorMode','View','Appearance');
+        const quickActions=new Set();for(const id of quickIds)for(const a of [].concat(sources.get(id)?.boundCommand||[]))quickActions.add(a);
+        return api.buildLayout(records,quickActions);
+    }
+    function hydrateMenus(refresh=false) {
+        hydrating=true;try{for(const m of menus.values())if(!m.ready||refresh&&(m.node.id!=='rootMenuAddins'||backstage&&!backstage.hidden&&fileSection==='Add-ins'))requestMenu(m);}finally{hydrating=false;}
+        refreshLayout();
+    }
+    function refreshLayout() {
+        if(state.mode!=='Ribbon'||!tabs)return;
+        layout=collectLayout();
+        const ids=['File',...layout.tabs.map(t=>t.id)];
+        if(!ids.includes('Add-ins'))ids.splice(ids.includes('Help')?ids.indexOf('Help'):ids.length,0,'Add-ins');
+        const distinct=[...new Set(ids)];
+        if(JSON.stringify([...tabs.children].map(n=>n.dataset.tab))!==JSON.stringify(distinct)){
+            clear(tabs);for(const id of distinct)makeTab(id,id,id==='File'?()=>openFile():undefined);
+        }
+        if(!distinct.includes(state.active)||state.active==='File')state.active='Home';
+        if(backstage&&!backstage.hidden){renderFileNav();renderFile();syncBindings();return;}
+        renderLayoutTab();
+    }
+    function renderLayoutTab() {
+        const tab=layout.tabs.find(t=>t.id===state.active);
+        const sig=JSON.stringify([state.active,tab?.groups.map(g=>[g.title,g.items.map(itemKey)]),!!currentHost()]);
         if(sig===menuSignature)return;menuSignature=sig;clearContent();
-        let body=group(m.title),has=false;
-        for(const item of items){if(!item.name){if(has){body=group(localize(items[items.indexOf(item)+1]?.name)||m.title);has=false;}continue;}
-            command(item,body);has=true;}
-        if(m.node.id==='rootMenuFormat'){addSources(['zoomSelect','menuBarPreview'],group('Designer'));addGrid();if(currentHost())pages();}
-        if(m.node.id==='rootMenuProject')addSources(['buildConfigSelector','restartIcon','trashIcon','buildIcon'],group('Build'));
-        if(m.node.id==='rootMenuTools')addSources(['menuBarColorMode'],group('Appearance'));
+        if(state.active==='Add-ins')addins(content,true);
+        else if(tab)for(const g of tab.groups){const body=group(g.title);for(const i of g.items)command(i,body);}
+        if(state.active==='Form'){addGrid();addMultiPageContext();}
+        for(const b of tabs.children){const selected=b.dataset.tab===state.active;b.setAttribute('aria-selected',String(selected));b.tabIndex=selected?0:-1;}
         syncBindings();resize();
+    }
+    function addMultiPageContext(){if(currentHost()){const b=el('button','tbui3-ribbon-tab tbui3-ribbon-context','MultiPage');
+        b.onclick=()=>{clearContent();pages();syncBindings();resize();};content.prepend(b);}}
+    function tabForNative(m){
+        if(m.node.id==='rootMenuFile'||m.node.id==='rootMenuAddins')return 'File';
+        return {rootMenuEdit:'Home',rootMenuFormat:'Form',rootMenuView:'View',rootMenuWindows:'View',rootMenuProject:'Project',rootMenuRun:'Debug',rootMenuDebug:'Debug',rootMenuTools:'Project',rootMenuHelp:'Help'}[m.node.id]||m.title;
     }
     function clearContent(){returnNodes();for(const [n]of bindings)if(content.contains(n))bindings.delete(n);clear(content);}
     function makeTab(key,title,action) {
@@ -229,44 +268,83 @@
         if(state.mode==='Hybrid'){
             if(known[key]){for(const [name,ids]of known[key])addSources(ids,group(name));if(key==='Form'){addGrid();if(currentHost()){const nested=el('button','tbui3-ribbon-tab tbui3-ribbon-context','MultiPage');nested.onclick=()=>{clearContent();pages();syncBindings();resize();};content.prepend(nested);}}}
             else addins(content,true);
-        }else{const m=menus.get(key);if(m)requestMenu(m);else if(key==='Add-ins')addins(content,true);}
+        }else{menuSignature='';hydrateMenus(true);}
         syncBindings();resize();
     }
     function renderTabs() {
         clear(tabs);
         if(state.mode==='Hybrid')for(const title of ['Home','Code','Form','Add-ins'])makeTab(title,title);
         else {
-            const file=[...menus.values()].find(m=>m.node.id==='rootMenuFile');
-            if(!file)throw Error('File menu is unavailable; restoring Classic');
-            makeTab('File',file.title,()=>openFile(file.title));
-            for(const m of menus.values())if(m.node.id!=='rootMenuFile'&&m.node.id!=='rootMenuAddins')makeTab(m.node.id,m.title);
-            makeTab('Add-ins','Add-ins');
-            if(![...tabs.children].some(b=>b.dataset.tab===state.active))state.active=[...menus.keys()].find(id=>id!=='rootMenuFile'&&id!=='rootMenuAddins');
+            if(!menus.has('rootMenuFile'))throw Error('File menu is unavailable; restoring Classic');
+            if(typeof api.buildLayout!=='function')throw Error('Ribbon layout adapter is unavailable');
         }
         selectTab(state.active);
     }
-    function openFile(section='File') {
-        if(backstage.hidden)savedFocus=d.activeElement;
-        fileSection=section;backstage.hidden=false;clear(fileNav);
-        const back=el('button','tbui3-backstage-back','\u2190 Back');back.onclick=()=>closeFile();fileNav.append(back);
-        for(const m of menus.values())if(m.node.id==='rootMenuFile'||m.node.id==='rootMenuAddins'||m.node.id==='rootMenuTools'){
-            const b=el('button','tbui3-backstage-nav',m.title);b.onclick=()=>{fileSection=m.title;requestMenu(m);};fileNav.append(b);
+    function syncFileUnderlays() {
+        const nodes=[shell,d.getElementById('rootTop'),d.getElementById('rootBottom'),d.getElementById('codePanel'),...d.querySelectorAll('.floatingPanel')];
+        for(const n of nodes)if(n&&!fileUnderlays.has(n)){
+            fileUnderlays.set(n,{inert:n.inert,aria:n.getAttribute('aria-hidden'),hidden:n.classList.contains('tbui3-backstage-underlay')});
+            n.classList.add('tbui3-backstage-underlay');n.inert=true;n.setAttribute('aria-hidden','true');
         }
-        const selected=[...menus.values()].find(m=>m.title===section)||menus.get('rootMenuFile');
-        if(selected){fileSection=selected.title;renderFile(selected);requestMenu(selected);}back.focus();
     }
-    function renderFile(m) {
-        for(const [n]of bindings)if(fileContent.contains(n))bindings.delete(n);clear(fileContent);
-        fileContent.append(el('h1','tbui3-backstage-heading',m.title));
-        const list=menuItems(m.items),unsupported=m.node.id==='rootMenuAddins'&&list.some(i=>typeof i.action==='function'&&String(i.action).includes('notSupportedMenuOption'));
-        if(unsupported)fileContent.append(el('p','','This IDE build lists loaded add-ins here. It does not expose enable or disable commands.'));
-        const body=group(m.title,fileContent);for(const item of list){
-            if(unsupported&&typeof item.action==='function'&&String(item.action).includes('notSupportedMenuOption'))command({...item,isHidden:true},body);
-            else command(item,body);
-        }
+    function restoreFileUnderlays(){for(const [n,old]of fileUnderlays){
+        n.classList.toggle('tbui3-backstage-underlay',old.hidden);
+        if(old.inert===undefined)delete n.inert;else n.inert=old.inert;
+        if(old.aria===null)n.removeAttribute('aria-hidden');else n.setAttribute('aria-hidden',old.aria);
+    }fileUnderlays.clear();}
+    function activateItem(item,anchor) {
+        if(!menuEnabled(item))return;
+        if(item.action){closeFile(false);closePopup();if(typeof item.action==='string')api.execute(item.action);else item.action(item);tick();}
+        else if(item.hoverAction||item._ribbonChildren)openSubmenu(item,anchor);
+    }
+    function openFile(section='Info') {
+        if(!backstage)return;
+        if(backstage.hidden)savedFocus=d.activeElement;
+        fileSection=section==='File'?'Info':section==='Addins'?'Add-ins':section;
+        backstage.hidden=false;syncFileUnderlays();
+        renderFileNav();renderFile();fileNav.querySelector('button')?.focus();
+    }
+    function renderFileNav() {
+        const sig=JSON.stringify([fileSection,[...(layout?.file||[])].map(([name,items])=>[name,items.map(itemKey)])]);
+        if(sig===fileNavSignature)return;fileNavSignature=sig;
+        for(const [n]of bindings)if(fileNav.contains(n))bindings.delete(n);clear(fileNav);
+        const back=el('button','tbui3-backstage-back','← Back');back.setAttribute('aria-label','Back to project');back.onclick=()=>closeFile();fileNav.append(back);
+        const main=el('div','tbui3-backstage-nav-group'),footer=el('div','tbui3-backstage-nav-group tbui3-backstage-footer');fileNav.append(main,footer);
+        const add=(title,section,parent=main,direct=false)=>{
+            const entries=layout?.file.get(section)||[],item=entries.find(menuEnabled)||entries[0];
+            if(section!=='Info'&&section!=='Add-ins'&&!entries.length)return;
+            const b=el('button','tbui3-backstage-nav',title);b.type='button';b.dataset.fileSection=section;
+            if(direct&&item){b.title=caption(item);bindings.set(b,{item});b.onclick=()=>activateItem(item,b);}
+            else{b.onclick=()=>{fileSection=section;renderFile();renderFileNav();};
+                if(fileSection===section){b.classList.add('tbui3-backstage-selected');b.setAttribute('aria-current','page');}}
+            parent.append(b);
+        };
+        add('Info','Info');add('New','New',main,true);add('Open','Open');add('Save','Save',main,true);add('Save document','Save document',main,true);add('Save as','Save as',main,true);add('Export','Export');add('Close project','Close',main,true);
+        if(layout?.file.has('More'))add('More commands','More');
+        add('Add-ins','Add-ins',footer);add('Preferences','Preferences',footer);add('Options','Options',footer,true);add('Exit','Exit',footer,true);
         syncBindings();
     }
-    function closeFile(restoreFocus=true){if(backstage&&!backstage.hidden){backstage.hidden=true;if(restoreFocus&&savedFocus?.isConnected)savedFocus.focus();}}
+    function renderFile() {
+        const items=layout?.file.get(fileSection)||[],projectName=api.projectName&&api.projectName();
+        const sig=JSON.stringify([fileSection,projectName,items.map(itemKey),!!menus.get('rootMenuAddins')?.loading]);
+        if(sig===fileRenderSignature)return;fileRenderSignature=sig;
+        for(const [n]of bindings)if(fileContent.contains(n))bindings.delete(n);clear(fileContent);
+        const titles={Info:'Project information',Open:'Open project',Export:'Export project','Add-ins':'Add-ins',Preferences:'Preferences',More:'More file commands'};
+        fileContent.append(el('h1','tbui3-backstage-heading',titles[fileSection]||fileSection));
+        const list=items.filter(i=>i.name);
+        if(fileSection==='Info'){
+            fileContent.append(el('p','tbui3-backstage-project',projectName||'No project open'));
+        }
+        const unsupported=fileSection==='Add-ins'&&list.some(i=>typeof i.action==='function'&&String(i.action).includes('notSupportedMenuOption'));
+        if(unsupported)fileContent.append(el('p','tbui3-backstage-description','This IDE build lists loaded add-ins here. It does not expose enable or disable commands.'));
+        const tasks=el('div','tbui3-backstage-tasks');fileContent.append(tasks);
+        for(const item of list){const row=el('div','tbui3-backstage-task');
+            command(unsupported&&typeof item.action==='function'&&String(item.action).includes('notSupportedMenuOption')?{...item,isHidden:true,_ribbonLarge:false}:{...item,_ribbonLarge:false},row);tasks.append(row);
+        }
+        if(!list.length&&fileSection==='Add-ins')fileContent.append(el('p','tbui3-backstage-description',menus.get('rootMenuAddins')?.loading?'Loading add-ins...':'No add-ins are listed by the IDE.'));
+        syncBindings();
+    }
+    function closeFile(restoreFocus=true){if(backstage&&!backstage.hidden){backstage.hidden=true;restoreFileUnderlays();if(restoreFocus&&savedFocus?.isConnected)savedFocus.focus();}}
     function syncBindings(){for(const box of d.querySelectorAll('.tbui3-ribbon-grid'))box.disabled=!(api.formGlobals&&api.formGlobals());for(const [b,entry]of bindings){
         const on=entry.source?!disabled(entry.source):menuEnabled(entry.item);b.disabled=!on;b.setAttribute('aria-disabled',String(!on));
             const isChecked=entry.source?entry.source.classList.contains('menuBarToggleOn'):checked(entry.item);
@@ -300,7 +378,7 @@
         for(const n of hiddenNative)n.classList.remove('tbui3-toolbar-native-hidden');hiddenNative.clear();pendingMenus.clear();
         if(shell)shell.remove();if(quick)quick.remove();if(backstage)backstage.remove();
         shell=tabs=content=quick=backstage=fileNav=fileContent=null;
-        signature='';menuSignature='';resize();
+        signature='';menuSignature='';fileNavSignature='';fileRenderSignature='';layout=null;resize();
     }
     function build() {
         const toolbar=discover(),root=d.getElementById('root'),top=d.getElementById('rootTop');
@@ -325,13 +403,14 @@
             syncOptions();if(state.mode==='Classic')return;
             discover();const next=currentSignature();if(next!==signature){signature=next;menuSignature='';renderTabs();}
             syncBindings();syncQuick();
-            if(state.mode==='Ribbon'&&Date.now()>refreshAt){refreshAt=Date.now()+1000;const m=menus.get(state.active);if(m&&backstage.hidden)requestMenu(m);}
+            if(backstage&&!backstage.hidden)syncFileUnderlays();
+            if(state.mode==='Ribbon'&&Date.now()>refreshAt){refreshAt=Date.now()+1000;hydrateMenus(true);}
         }catch(e){fail(e);}
     }
     function setMode(mode,dirty=false){
         if(!modes.includes(mode))mode='Classic';
         state.requestedMode=mode;
-        if(state.mode!==mode||mode!=='Classic'&&!shell){restore();state.mode=mode;state.active=mode==='Hybrid'?'Home':'rootMenuEdit';
+        if(state.mode!==mode||mode!=='Classic'&&!shell){restore();state.mode=mode;state.active='Home';
             try{if(mode!=='Classic')build();}catch(e){fail(e);}}
         if(dirty)state.dirty=true;syncOptions();return state.mode;
     }
@@ -362,8 +441,8 @@
             if(!anchor&&pendingSubmenu&&pendingSubmenu.until>Date.now()){const s=pendingSubmenu.sink;pendingSubmenu=null;s(items);return;}
             const m=anchor&&menus.get(anchor.id);
             if(state.mode==='Ribbon'&&m){m.items=items;
-                if(anchor.id==='rootMenuFile'||anchor.id==='rootMenuAddins'){fileSection=m.title;openFile(m.title);}
-                else{state.active=anchor.id;selectTab(anchor.id);}return;}
+                if(anchor.id==='rootMenuFile'||anchor.id==='rootMenuAddins')openFile(anchor.id==='rootMenuAddins'?'Add-ins':'Info');
+                else selectTab(tabForNative(m));return;}
             return nativeMenu.call(this,anchor,x,y,items,...rest);
         };
         api.setShowContextMenu(wrappedMenu);d.addEventListener('keydown',keydown,true);d.addEventListener('pointerdown',pointerdown,true);

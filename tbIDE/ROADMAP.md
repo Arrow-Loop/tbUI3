@@ -2,10 +2,10 @@
 
 ## Single add-in distribution, implemented 2026-11-10
 
-- Consolidation history: version 1.1.0.0 used WinUI3IdeStyle/WinUI3IdeStyle.twinproj and WinUI3IdeStyle.dll. The current 1.2.0.0 candidate uses tbUI3IDE/tbUI3IDE.twinproj and tbUI3IDE.dll. It combines the theme implementation with TabView adapter v8. The old standalone TabViewDesigner target is retired; migration removes its DLL from both architecture folders.
+- Consolidation history: version 1.1.0.0 used WinUI3IdeStyle/WinUI3IdeStyle.twinproj and WinUI3IdeStyle.dll. The current 1.3.0.0 candidate uses tbUI3IDE/tbUI3IDE.twinproj and tbUI3IDE.dll. It combines the theme implementation with TabView adapter v8. The old standalone TabViewDesigner target is retired; migration removes its DLL from both architecture folders.
 - Current gate: native combined startup/project load/unload, one set of toolbar commands, standard theme operation, page creation with the styling switch off and saved preferences retained. Source/JS/packing evidence is in ../docs/validation/2026-11-10-unified-ide-addin.md.
 
-## Current implementation: tbUI3IDE 1.2.0.2 candidate
+## Current implementation: tbUI3IDE 1.3.0.0 candidate
 
 Implemented 2026-11-10: project/output rename, independent saved IDE Toolbar selector, Classic/Hybrid/Ribbon renderers, active-theme CSS, the existing Fluent glyphs at larger sizes, live native menu/toolbar discovery and state/dispatch, fullscreen File view, quick access, contextual MultiPage and restoration. The original requirements below remain the acceptance specification; implementation is not a claim of final Office parity. Source/DOM evidence is in ../docs/validation/2026-11-10-ide-toolbar.md.
 
@@ -13,20 +13,26 @@ Geometry update, 1.2.0.1: use a 100px command-area maximum plus a separate 26px 
 
 Spacing follow-up, 1.2.0.2: collapse only the toolbar-owned native dock slot to remove its 30px minimum-height remainder; restore the established Fluent shadow4/card corners; use concise button/selector captions with full native help in tooltips; halve group side padding and use 2px horizontal gaps. The supplied BETA 1044 screenshot is evidence of the original blank strip and overlapping tooltip-derived labels. The new four regression checks pass; the corrected native appearance is not yet observed.
 
+Semantic organization follow-up, 1.3.0.0: implemented Home Clipboard/Editing, dedicated Code/Form groups, Office-style View groups, Project build/compiler commands and vertical File navigation/tasks. Undo/Redo and the main execution controls are quick-access only. Backstage now hides/inerts and restores the live workspace/floating panels; new commands keep dynamic fallback destinations. Exact mapping and implementation contract: [RIBBON_LAYOUT.md](RIBBON_LAYOUT.md). Native rendered acceptance of this revision remains open.
+
 Remaining work:
 
 - Observe removal of the blank rounded strip, visible shadow and compact labels in both Hybrid/Ribbon; switch to Classic and back, including redocked/shared-slot layouts. Verify no unrelated panel disappears and native panel layout persists as before.
 
 - Observe the new native add-in startup/settings/mode-switch/unload and saved-mode restart in the IDE, including standard/third-party themes and additional styling off. Verify the project rename retains its prior Enabled setting and only one add-in instance loads after removing legacy DLLs.
-- Review actual ribbon appearance and spacing, glyph rendering, narrow-window access and keyboard navigation. The current composition uses larger lead commands, three stacked rows and horizontal overflow. Office-style automatic group collapse/flyouts, keytips, complete focus parity and detailed semantic regrouping beyond the live menu separators remain follow-ups. Source validation is not visual acceptance.
+- Review actual ribbon appearance and spacing, glyph rendering, narrow-window access and keyboard navigation. The current composition uses larger lead commands, three stacked rows and horizontal overflow. Office-style automatic group collapse/flyouts, keytips, complete focus parity remain follow-ups. Source validation is not visual acceptance.
 - File > Add-ins migrates the native loaded-add-in list. BETA 1044 showAddinsMenu supplies notSupportedMenuOption stub actions and the inspected root bridge has only getAddinsList, without enable/disable. Real add-in enablement requires an exposed, validated IDE capability or separately designed restart-safe management; no functional enable/disable setting is implemented in this candidate.
 - Validate all native menu families, every dynamic/lazy submenu and combo selector with real project/debug/designer context. Existing command handlers/shortcuts are reused, but private-API compatibility remains bounded by the current command model. Verify future menus/options appear without changing the add-in.
 - Check live grid controls, build/zoom selectors, native menu shortcut interception, selected-page context, popup placement and File focus return in the actual IDE. Verify toolbar reparenting/docking and layout restoration without persisting hidden panels.
 - Browser visual checking was blocked by the browser URL policy. No screenshot or native IDE appearance is recorded for this pass. Remove temporary diagnostics only after observed behavior supports doing so.
 
+
+
+
+
 ## Toolbar requirements and acceptance specification
 
-Shane specified and revised the next pass on 2026-11-10. Version 1.1.0.0 remains the consolidated add-in; the following rename, settings and toolbar modes are the agreed requirements; current implementation and remaining gates are recorded above. The original single ribbon proposal is retained below as Hybrid, superseded as the only replacement by the three-mode choice. The inline mockup was canceled.
+Shane specified and revised the next pass on 2026-11-10. Version 1.1.0.0 was the first consolidated add-in; the following rename, settings and toolbar modes are the agreed requirements; current implementation and remaining gates are recorded above. The original single ribbon proposal is retained below as Hybrid, superseded as the only replacement by the three-mode choice. The inline mockup was canceled.
 
 ### Identity and migration
 
@@ -68,7 +74,7 @@ The request's plural Forms and singular Form refer to the same tab; use Form con
 
 ### Ribbon: full menu migration and Office interaction
 
-- Reproduce Microsoft Office's ribbon organization and interaction with WinUI 3 visuals: tabs, labeled command groups, appropriate large/small commands, contextual tools, expanding/collapsing groups, overflow and keyboard access. This is a full menu replacement, not a second copy of Hybrid. Consult current official Office references before defining the detailed command/group mapping; Office applications have differing command inventories, so preserve twinBASIC's IDE functions rather than inventing document-editing commands.
+- Reproduce Microsoft Office's ribbon organization and interaction with WinUI 3 visuals: tabs, labeled command groups, appropriate large/small commands, contextual tools, expanding/collapsing groups, overflow and keyboard access. This is a full menu replacement, not a second copy of Hybrid. The current mapping is documented in RIBBON_LAYOUT.md using Shane's screenshots and the linked official Office references; Office applications have differing command inventories, so preserve twinBASIC's IDE functions rather than inventing document-editing commands.
 - Migrate all commands from **File, Edit, View, Project, Format, Debug, Run, Tools, Add-Ins, Window, and Help**, including nested and dynamically populated menu options. Project and Format are separate native menus. Retain their functions and discoverable grouping; the old menu row is replaced in Ribbon mode. Record a complete mapping from the current native menu tree during implementation, including how contextual Form/MultiPage tools are exposed.
 - **File** opens an Office-style **fullscreen Backstage view within the IDE window**, covering the working area, with navigation, content sections and a clear back/close route. It is not an ordinary dropdown or OS fullscreen switch. Back/Escape returns to the prior document/designer and focus. Route existing file operations and settings to their real native commands.
 - Put **which add-ins are enabled** into an **Add-ins section of the fullscreen File view**, preserving the native enable/disable behavior and any restart requirement the IDE actually has. Keep that management UI distinct from the **Add-ins ribbon**, which contains toolbar buttons contributed by other add-ins, including buttons added after startup.

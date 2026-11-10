@@ -2,8 +2,8 @@
 Private Module TabViewDesignerScript
     Public Function Build() As String
         Dim js As String
-        js = js & "(function(){if(window.__tbUI3TabDesigner)window.__tbUI3TabDesigner.dispose();window.__tbUI3TabDesigner=/* tbUI3 designer adapter. IDE BETA 1043, plus "
-        js = js & "the BETA 1033 insertion probe."
+        js = js & "(function(){if(window.__tbUI3TabDesigner)window.__tbUI3TabDesigner.dispose();window.__tbUI3TabDesigner=/* tbUI3 designer adapter. IDE BETA 1043/1044, "
+        js = js & "plus the BETA 1033 insertion probe."
         js = js & vbLf
         js = js & " * Native controls own geometry and persistence. This adapter only suppresses inactive"
         js = js & vbLf
@@ -17,7 +17,7 @@ Private Module TabViewDesignerScript
         js = js & vbLf
         js = js & "    'use strict';"
         js = js & vbLf
-        js = js & "    const version = 6;"
+        js = js & "    const version = 7;"
         js = js & vbLf
         js = js & "    const hostClass = 'tbui3.ui3tabview', pageClass = 'tbui3.ui3tabpage';"
         js = js & vbLf
@@ -31,7 +31,7 @@ Private Module TabViewDesignerScript
         js = js & vbLf
         js = js & "        'changeProperty', 'undoPoint', 'getImageFromServer', 'queueMultipleSnapshot', 'syncPropertySheet',"
         js = js & vbLf
-        js = js & "        'deleteSelectedControls', 'updateAllControlDragPoints', 'lockTheControl', 'unlockTheControl'];"
+        js = js & "        'deleteSelectedControls', 'updateAllControlDragPoints', 'lockTheControl', 'unlockTheControl', 'onSignificantChange'];"
         js = js & vbLf
         js = js & "    const toolbarTitles = new Map();"
         js = js & vbLf
@@ -351,6 +351,58 @@ Private Module TabViewDesignerScript
         js = js & vbLf
         js = js & "    }"
         js = js & vbLf
+        js = js & "    function pageNameState(g) {"
+        js = js & vbLf
+        js = js & "        // Keep allocation history across adapter refreshes, but outside saved form"
+        js = js & vbLf
+        js = js & "        // properties. Deleted native names may still be referenced during resync."
+        js = js & vbLf
+        js = js & "        if (!g.__tbUI3PageNames || g.__tbUI3PageNames.version !== 1) {"
+        js = js & vbLf
+        js = js & "            Object.defineProperty(g, '__tbUI3PageNames', { configurable: true,"
+        js = js & vbLf
+        js = js & "                value: { version: 1, used: new Set(), next: new Map() } });"
+        js = js & vbLf
+        js = js & "        }"
+        js = js & vbLf
+        js = js & "        const state = g.__tbUI3PageNames;"
+        js = js & vbLf
+        js = js & "        for (const c of g.allControls) if (name(c)) state.used.add(name(c).toLowerCase());"
+        js = js & vbLf
+        js = js & "        return state;"
+        js = js & vbLf
+        js = js & "    }"
+        js = js & vbLf
+        js = js & "    function allocatePage(g, host, list) {"
+        js = js & vbLf
+        js = js & "        const hostName = name(host);"
+        js = js & vbLf
+        js = js & "        if (!hostName) throw new Error('Name the TabView before adding a page.');"
+        js = js & vbLf
+        js = js & "        const state = pageNameState(g), key = hostName.toLowerCase(), prefix = hostName + '_Page';"
+        js = js & vbLf
+        js = js & "        let number = Math.max(state.next.get(key) || 1, list.length + 1);"
+        js = js & vbLf
+        js = js & "        for (const page of list) {"
+        js = js & vbLf
+        js = js & "            if (name(page).toLowerCase().startsWith(prefix.toLowerCase())) {"
+        js = js & vbLf
+        js = js & "                const suffix = name(page).slice(prefix.length);"
+        js = js & vbLf
+        js = js & "                if (/^[1-9][0-9]*$/.test(suffix)) number = Math.max(number, Number(suffix) + 1);"
+        js = js & vbLf
+        js = js & "            }"
+        js = js & vbLf
+        js = js & "        }"
+        js = js & vbLf
+        js = js & "        while (state.used.has((prefix + number).toLowerCase())) number++;"
+        js = js & vbLf
+        js = js & "        state.next.set(key, number + 1); state.used.add((prefix + number).toLowerCase());"
+        js = js & vbLf
+        js = js & "        return { name: prefix + number, caption: 'Page ' + number };"
+        js = js & vbLf
+        js = js & "    }"
+        js = js & vbLf
         js = js & "    function newPage(g, host) {"
         js = js & vbLf
         js = js & "        if (!host) throw new Error('Select a UI3TabView or one of its pages first.');"
@@ -361,15 +413,11 @@ Private Module TabViewDesignerScript
         js = js & vbLf
         js = js & "        const list = pages(g, host);"
         js = js & vbLf
-        js = js & "        let number = 1;"
-        js = js & vbLf
-        js = js & "        while (g.allControls.some(c => sameName(name(c), 'UI3TabPage' + number))) number++;"
-        js = js & vbLf
-        js = js & "        const nextName = 'UI3TabPage' + number;"
+        js = js & "        const allocated = allocatePage(g, host, list), nextName = allocated.name;"
         js = js & vbLf
         js = js & "        const data = [{ _className: 'tbUI3.UI3TabPage', _clsid: pageClsid, Name: nextName,"
         js = js & vbLf
-        js = js & "            Caption: 'Page ' + number, PageOrder: list.reduce((n, p) => Math.max(n, Number(p.properties.PageOrder) || 0), -1) + 1,"
+        js = js & "            Caption: allocated.caption, PageOrder: list.reduce((n, p) => Math.max(n, Number(p.properties.PageOrder) || 0), -1) + 1,"
         js = js & vbLf
         js = js & "            Left: 0, Top: 40, Width: Math.max(1, Number(host.properties.Width) || 1),"
         js = js & vbLf
@@ -427,7 +475,8 @@ Private Module TabViewDesignerScript
         js = js & vbLf
         js = js & "        // through native changeProperty once the new control has a compiler-assigned ID."
         js = js & vbLf
-        js = js & "        pendingNewPages.set(g, { host, page: created[0], caption: data[0].Caption, order: data[0].PageOrder });"
+        js = js & "        pendingNewPages.set(g, { host, hostName: name(host), page: created[0], pageName: nextName, caption: data[0].Caption, order: data[0].PageOrder "
+        js = js & "});"
         js = js & vbLf
         js = js & "        choose(g, created);"
         js = js & vbLf
@@ -447,9 +496,27 @@ Private Module TabViewDesignerScript
         js = js & vbLf
         js = js & "        if (!pending || !ready(g)) return false;"
         js = js & vbLf
-        js = js & "        if (!g.allControls.includes(pending.page) || pending.page.isDeleted) {"
+        js = js & "        // The compiler may replace DOM objects during structural resync. Resolve"
         js = js & vbLf
-        js = js & "            pendingNewPages.delete(g); api.undoPoint(g); return true;"
+        js = js & "        // only the uniquely allocated page under the original host, not selection."
+        js = js & vbLf
+        js = js & "        if (!g.allControls.includes(pending.host) || !g.allControls.includes(pending.page) || pending.page.isDeleted) {"
+        js = js & vbLf
+        js = js & "            const host = g.allControls.find(c => kind(c) === hostClass && sameName(name(c), pending.hostName) && !c.isDeleted);"
+        js = js & vbLf
+        js = js & "            const page = host && pages(g, host).find(c => sameName(name(c), pending.pageName));"
+        js = js & vbLf
+        js = js & "            if (!host || !page) { pendingNewPages.delete(g); api.undoPoint(g); return true; }"
+        js = js & vbLf
+        js = js & "            pending.host = host; pending.page = page;"
+        js = js & vbLf
+        js = js & "        }"
+        js = js & vbLf
+        js = js & "        if (pending.page.errorInfo) {"
+        js = js & vbLf
+        js = js & "            pendingNewPages.delete(g); api.undoPoint(g);"
+        js = js & vbLf
+        js = js & "            throw new Error('Page initialization failed: ' + pending.page.errorInfo);"
         js = js & vbLf
         js = js & "        }"
         js = js & vbLf
@@ -569,6 +636,8 @@ Private Module TabViewDesignerScript
         js = js & vbLf
         js = js & "        const list = pages(g, host), index = list.indexOf(page), next = list[index + 1] || list[index - 1];"
         js = js & vbLf
+        js = js & "        pageNameState(g);"
+        js = js & vbLf
         js = js & "        edit(g, () => {"
         js = js & vbLf
         js = js & "            choose(g, [page]);"
@@ -583,7 +652,13 @@ Private Module TabViewDesignerScript
         js = js & vbLf
         js = js & "        desires.set(host, next ? name(next) : '');"
         js = js & vbLf
-        js = js & "        choose(g, [host]);"
+        js = js & "        choose(g, [host]); selections.set(g, host);"
+        js = js & vbLf
+        js = js & "        // The native Delete command sends this in addition to its undo checkpoint."
+        js = js & vbLf
+        js = js & "        // Without it the live tab vanishes but generated/saved form members remain."
+        js = js & vbLf
+        js = js & "        api.onSignificantChange(g);"
         js = js & vbLf
         js = js & "    }"
         js = js & vbLf
@@ -928,7 +1003,8 @@ Private Module TabViewDesignerScript
         js = js & ",queueMultipleSnapshot:typeof queueMultipleSnapshot==='function'?queueMultipleSnapshot:undefined,syncPropertySheet:typeof syncPropertySheet==='functio"
         js = js & "n'?syncPropertySheet:undefined,deleteSelectedControls:typeof deleteSelectedControls==='function'?deleteSelectedControls:undefined,updateAllControlDrag"
         js = js & "Points:typeof updateAllControlDragPoints==='function'?updateAllControlDragPoints:undefined,lockTheControl:typeof lockTheControl==='function'?lockTheCo"
-        js = js & "ntrol:undefined,unlockTheControl:typeof unlockTheControl==='function'?unlockTheControl:undefined});return window.__tbUI3TabDesigner.install()})()"
+        js = js & "ntrol:undefined,unlockTheControl:typeof unlockTheControl==='function'?unlockTheControl:undefined,onSignificantChange:typeof onSignificantChange==='fun"
+        js = js & "ction'?onSignificantChange:undefined});return window.__tbUI3TabDesigner.install()})()"
         js = js & vbLf
         Return js
     End Function

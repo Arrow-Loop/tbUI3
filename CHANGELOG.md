@@ -4,6 +4,15 @@ All notable changes to tbUI3. Dates are when the change was made, not released. 
 
 ## Unreleased
 
+### 2026-11-10, finish structural deletion and scope new page names to their host (adapter v7)
+
+- Shane confirms adding child controls still works with page locking, then reports add-after-delete failure, replacement-page sizing/positioning problems after deletion, and deleted pages remaining in Properties. His BETA 1044 screenshot also shows form-global UI3TabPage numbering across multiple hosts.
+- Corrected the missing native onSignificantChange notification after toolbar deletion, matching the IDE's own Delete command sequence. Removing the live control and requesting an undo checkpoint alone did not notify the project model that form structure changed. The new source-contract check failed before this change and passes after it.
+- New generated names include the owning host, e.g. UI3TabView2_Page1, with host-local default captions. Allocation remains form-wide collision-safe and retains issued names across adapter refreshes during the same editing session. Existing pages/custom names and captions are not automatically renamed, preserving code references. Actual containment remains the ownership authority.
+- Pending initialization can reacquire a uniquely allocated page under its original host after native DOM resync; initialization errors are reported instead of leaving an indefinite pending operation. Insertion bounds continue to come from the selected host. Added deletion/replacement checks across differently sized hosts, last-page deletion, allocation collisions and resync.
+- Rechecked the adapter's private functions against the official BETA 1044 release; inspected dependencies/edit/deletion paths are unchanged from 1043. All 40 adapter/contract checks pass independently against each version's actual helper functions. The complete native IDE delete/readd outcome remains the next gate.
+- Refreshed the stale frmMultiPage export from Shane's latest canonical test project in a separate synchronization commit. Package 1.0.0.64 and the current canonical test binary remain unchanged by the fix. Add-in version is 1.0.0.6 (adapter v7); its project/export and all 68 mirrors match.
+
 ### 2026-11-09, protect page geometry in the designer (adapter v6)
 
 - Shane reports the duplicate-header correction appears to work, then identifies accidental movement of a UI3TabPage independently from its host. That is the new authoring issue; no broader editing-loop pass is implied.

@@ -1,6 +1,6 @@
 # tbUI3 TabView Designer
 
-Adapter v6, add-in version 1.0.0.5. Separate native IDE add-in for tbUI3 1.0.0.64's real page containers. It coexists with WinUI3IdeStyle and does not require a particular IDE theme. BETA 1043 is the source-inspected adapter baseline; the insertion recipe originated in the BETA 1033 probe.
+Adapter v7, add-in version 1.0.0.6. Separate native IDE add-in for tbUI3 1.0.0.64's real page containers. It coexists with WinUI3IdeStyle and does not require a particular IDE theme. BETA 1043 and 1044 are source-inspected adapter baselines; the insertion recipe originated in the BETA 1033 probe.
 
 ## Installation and use
 
@@ -14,13 +14,21 @@ With a consumer Form designer open, drop UI3TabView and click its +, or select t
 | Delete page | Deletes the active page and its children through the native designer; requests one undo checkpoint |
 | Page left / Page right | Changes saved PageOrder while retaining selected-page identity |
 | TabView refresh | Reinstalls the adapter and refreshes current page display |
-| TabView diagnostics | Read-only adapter v6 report; works even when ordinary editing commands reject the selection |
+| TabView diagnostics | Read-only adapter v7 report; works even when ordinary editing commands reject the selection |
 
 These commands expect one host or one of its descendants selected. Pending compiler replies, snapshots, dragging and resync block edits until the designer settles; a toolbar command reports the reason in Debug Console. The adapter does not queue a stale command against another selection. The control's New page verb supplies an additional request path; its visibility in the actual context menu remains a separate IDE check.
 
 Without the add-in, the package and runtime have no missing dependency. The toolbox path still allows real pages, but the IDE's ordinary visibility rendering does not hide inactive pages completely. Unloading the add-in restores the ordinary designer display. After an adapter timer error it restores the display and disables itself; TabView refresh reinstalls it.
 
 Hover over a toolbar button for its full explanation. These are designer commands for the selected TabView, its page or a contained control; Delete page also deletes that page's contents. A newly drawn host intentionally has no pages until + or New page is used.
+
+## Structural deletion, generated names and multiple hosts
+
+Adapter v7 (add-in 1.0.0.6) calls the IDE's onSignificantChange after native page deletion and its undo checkpoint, matching the native Delete command. This structural notification is necessary beyond live control removal; its omission left the adapter's deletion path incomplete for the saved/generated form model.
+
+New default control names include the host Name, e.g. UI3TabView2_Page1. Default captions are numbered within the host; generated numbers can have gaps after deletion. Allocation skips any name already used anywhere on the form and reserves issued names across adapter refreshes in the same editing session. This history is a non-enumerable designer-session field, not a saved form/page property. Existing page names/custom captions are preserved to avoid changing code references. Native containment determines ownership; naming is organizational, not a membership scheme.
+
+New pages always use their selected host's bounds. Pending initialization resolves only the uniquely allocated page under its original host after native resync, not whichever control becomes selected. The user narrowed the sizing problem to the delete/readd sequence; v7 fixes structural completion and tests that sequence across differently sized hosts. It does not introduce an unverified native ownership/layout rewrite. The actual IDE outcome, save/reopen and undo/redo remain gates.
 
 ## Managed page geometry in the designer
 

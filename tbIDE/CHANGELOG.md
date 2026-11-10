@@ -1,5 +1,11 @@
 # Changelog: tbIDE (WinUI 3 look for the twinBASIC IDE)
 
+## 2026-11-10: structural delete completion and host-scoped naming (adapter v7, add-in 1.0.0.6)
+
+- Added the missing native onSignificantChange after deletion/undo, matching the native Delete command. A source-contract check confirms v6 omitted the project-model notification.
+- New pages use host-prefixed names and host-local default captions, with form-wide collision checking and session reservation across refreshes. Existing names/captions remain intact. Pending initialization can resolve its own page under the original host after resync and reports native initialization errors.
+- All 40 adapter/contract checks pass against official 1043 and 1044 functions, including delete/readd across two host sizes and deletion of the last page. Package 1.0.0.64 and the latest canonical test project are unchanged; native persistence/undo/redo remain open. Child-control insertion with v6 locking is confirmed by Shane.
+
 ## 2026-11-09: TabView page-position protection (adapter v6, add-in 1.0.0.5)
 
 - Uses native per-control locks for direct UI3TabPage children so accidental page drag, keyboard move and resize are blocked while host/child controls remain editable. New pages are protected immediately; locks follow rename/resync and release on reparent/delete.

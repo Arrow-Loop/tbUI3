@@ -1,8 +1,20 @@
 # TabView candidate validation, 2026-11-09
 
-Current candidate: **package 1.0.0.64 with adapter v6 (add-in 1.0.0.5)**. Earlier candidate evidence is retained below as history.
+Current candidate: **package 1.0.0.64 with adapter v7 (add-in 1.0.0.6)**. Earlier candidate evidence is retained below as history.
 
-## Adapter v6 page-lock follow-up, package unchanged at 1.0.0.64
+## Adapter v7 delete/readd and host-scoped naming follow-up, 2026-11-10
+
+Shane confirms child controls can be added with page locking. He then reports deletion removes a header but leaves the page in Properties, add-after-delete fails, and sizing/positioning problems occur after deletion when adding on multiple hosts. The supplied screenshot identifies BETA 1044 and form-global UI3TabPage names/captions.
+
+Actual native Delete action: deleteSelectedControls, undoPoint, onSignificantChange. V6 called deletion and undo but omitted onSignificantChange, which sends the current serialized form in a structure-change message. A new actual-source contract check fails on v6 and passes with the notification added. V7 also allocates host-prefixed names, host-local default captions and session-reserved identifiers without changing existing page names/captions. It rebinds pending setup only to its uniquely allocated page under the original host after native DOM replacement.
+
+Executed: all 40 checks pass with the actual shipped 1043 helpers, and all 40 pass with 1044. Cases include structural deletion notification, last-page deletion/readd, distinct host bounds and ownership, name collisions, reservation across refresh and delayed native acknowledgement/resync. These exercise JS/protocol functions and a test facade, not a complete native IDE editing loop. All 68 packed-project mirrors match; the add-in officially exports with all 3 file contents matching its mirror. Package/test canonical binaries are unchanged from the current branch; frmMultiPage's stale mirror was refreshed from the saved project in the prior sync commit.
+
+Official BETA 1044 tag: beta-x-1044. Release archive SHA-256: d9e525fd7743f6161653025c130aec141fbcfa79dca7255b1eff067b519a0554. ide/main.js SHA-256: e6785e459e2f6fd729c7e79a5eb6d9d64022a32b72b9e8364ff246cec00923ba. Inspected dependencies and insertion/deletion paths are unchanged from 1043. Add-in SHA-256: `713b52c2b4d8621cb2b9ec7cfac03da4af05a395f796bbd2518172445f592f26`.
+
+The pushed v5/native 64 log also now provides direct evidence for the earlier repeated-entry hypothesis: 17:34:02 shows raw=2 unique=1 duplicates=1 for the second host, and 17:34:05 shows raw=4 unique=2 duplicates=2. Those older lines are not a capture of today's v6 delete/readd failure. No speculative native layout rewrite or compiler-counter reset was added. Next gate: the exact native delete/readd transition, Properties/source removal, correct bounds, persistence and undo/redo after v7.
+
+## Historical adapter v6 page-lock follow-up, package unchanged at 1.0.0.64
 
 Shane reports the prior correction appears to work, then describes accidental independent page-control movement. Adapter v6 uses the shipped IDE native lock registry for direct UI3TabPage children. The inspected isControlLocked check is local to that control, and the actual mouse drag, keyboard moveControls and resize functions all consult it. The same check does not automatically lock a child or the owning host. deleteControl does not reject a locked page; existing subtree deletion remains intact.
 

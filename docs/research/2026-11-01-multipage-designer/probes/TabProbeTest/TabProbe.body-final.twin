@@ -1,0 +1,153 @@
+    ' Throwaway probe, not tbUI3 code. Probe 1 answers two questions about the form designer:
+    ' does it follow when this control moves its children at design time, and does
+    ' a click on a selected control reach MouseDown here? Children whose Tag is not
+    ' the current page are parked 75000 to the left (the old SSTab trick).
+
+    Private m_Page As Long
+
+    Public Property Get SelectedPage() As Long
+        SelectedPage = m_Page
+    End Property
+
+    Public Property Let SelectedPage(ByVal Value As Long)
+        If Value < 1 Or Value > 2 Then Value = 1
+        m_Page = Value
+        PropertyChanged "SelectedPage"
+        ShowPage
+    End Property
+
+    Private Sub UserControl_InitProperties()
+        m_Page = 1
+        LogLine "InitProperties"
+    End Sub
+
+    Private Sub UserControl_ReadProperties(PropBag As PropertyBag)
+        m_Page = PropBag.ReadProperty("SelectedPage", 1)
+        LogLine "ReadProperties page=" & m_Page
+    End Sub
+
+    Private Sub UserControl_WriteProperties(PropBag As PropertyBag)
+        PropBag.WriteProperty "SelectedPage", m_Page, 1
+    End Sub
+
+    Private Sub UserControl_MouseDown(Button As Integer, Shift As Integer, X As Single, Y As Single)
+        LogLine "MouseDown x=" & X & " y=" & Y
+        If Y <= UserControl.ScaleY(24, vbPixels, UserControl.ScaleMode) Then
+            If X >= TabWidth() * 2 Then
+                AddChild
+            ElseIf X < TabWidth() Then
+                SelectedPage = 1
+            Else
+                SelectedPage = 2
+            End If
+        End If
+    End Sub
+
+    Private Sub UserControl_Click()
+        LogLine "Click"
+    End Sub
+
+    Private Sub UserControl_Resize()
+        UserControl.Refresh
+    End Sub
+
+    Private Sub UserControl_Paint()
+        Dim w As Single, h As Single, pad As Single
+        w = TabWidth()
+        h = UserControl.ScaleY(24, vbPixels, UserControl.ScaleMode)
+        pad = UserControl.ScaleX(8, vbPixels, UserControl.ScaleMode)
+        UserControl.Cls
+        UserControl.Line (0, 0)-(w, h), IIf(m_Page = 1, RGB(0, 95, 184), RGB(150, 150, 150)), BF
+        UserControl.Line (w, 0)-(w * 2, h), IIf(m_Page = 2, RGB(0, 95, 184), RGB(150, 150, 150)), BF
+        UserControl.ForeColor = vbWhite
+        UserControl.CurrentX = pad: UserControl.CurrentY = pad / 2: UserControl.Print "Page 1"
+        UserControl.CurrentX = w + pad: UserControl.CurrentY = pad / 2: UserControl.Print "Page 2"
+        UserControl.Line (w * 2, 0)-(UserControl.ScaleWidth, h), RGB(16, 124, 16), BF
+        UserControl.CurrentX = w * 2 + pad: UserControl.CurrentY = pad / 2: UserControl.Print "+"
+    End Sub
+
+    ' The green "+" zone at the right end of the strip is 40 pixels wide.
+    Private Function TabWidth() As Single
+        TabWidth = (UserControl.ScaleWidth - UserControl.ScaleX(40, vbPixels, UserControl.ScaleMode)) / 2
+    End Function
+
+    ' Fallback trigger: set AddTestButton = True in the Properties panel.
+    Public Property Get AddTestButton() As Boolean
+        AddTestButton = False
+    End Property
+
+    Public Property Let AddTestButton(ByVal Value As Boolean)
+        If Value Then AddChild
+    End Property
+
+    ' Probe 2: can a UserControl add a control to its form at design time, put it
+    ' inside itself, and have the designer show and save it? Every step is logged.
+    Private Sub AddChild()
+        Dim frm As Object, ctl As Object, nm As String
+        nm = "pgAdded" & CStr(CLng(Timer))
+        On Error Resume Next
+        Set frm = UserControl.Parent
+        LogLine "AddChild: Parent=" & TypeName(frm) & " err=" & Err.Number & " " & Err.Description
+        Err.Clear
+        LogLine "AddChild: form controls before=" & frm.Controls.Count & " err=" & Err.Number & " " & Err.Description
+        Err.Clear
+        Dim progIds As Variant, i As Long
+        progIds = Array("TabProbeTest.TabProbePage", "TabProbePage")
+        For i = 0 To UBound(progIds)
+            Set ctl = frm.Controls.Add(progIds(i), nm)
+            LogLine "AddChild: Controls.Add(" & progIds(i) & ", " & nm & ") -> " & TypeName(ctl) & " err=" & Err.Number & " " & Err.Description
+            Err.Clear
+            If Not ctl Is Nothing Then Exit For
+        Next
+        If ctl Is Nothing Then Exit Sub
+        Set ctl.Container = UserControl.Extender
+        LogLine "AddChild: Set Container = Extender err=" & Err.Number & " " & Err.Description
+        Err.Clear
+        ctl.Move UserControl.ScaleX(16, vbPixels, UserControl.ScaleMode), UserControl.ScaleY(40, vbPixels, UserControl.ScaleMode), _
+                 UserControl.ScaleWidth - UserControl.ScaleX(32, vbPixels, UserControl.ScaleMode), UserControl.ScaleHeight - UserControl.ScaleY(56, vbPixels, UserControl.ScaleMode)
+        LogLine "AddChild: Move err=" & Err.Number & " " & Err.Description
+        Err.Clear
+        ctl.Tag = CStr(m_Page)
+        ctl.Visible = True
+        LogLine "AddChild: Tag/Visible err=" & Err.Number & " " & Err.Description
+        Err.Clear
+        LogLine "AddChild: form controls after=" & frm.Controls.Count & ", contained=" & UserControl.ContainedControls.Count
+        UserControl.Refresh
+    End Sub
+
+    Private Sub ShowPage()
+        Dim c As Object
+        For Each c In UserControl.ContainedControls
+            If c.Tag <> "" Then
+                If c.Tag = CStr(m_Page) Then
+                    If c.Left < -50000 Then c.Left = c.Left + 75000
+                Else
+                    If c.Left > -50000 Then c.Left = c.Left - 75000
+                End If
+            End If
+        Next
+        For Each c In UserControl.ContainedControls
+            LogLine "  child " & c.Name & " Tag=" & c.Tag & " Left=" & c.Left & " Top=" & c.Top
+        Next
+        LogLine "ShowPage " & m_Page & " children=" & UserControl.ContainedControls.Count & " ScaleMode=" & UserControl.ScaleMode
+        UserControl.Refresh
+    End Sub
+
+    ' Writes beside the project (App.Path), and also to %TEMP% in case
+    ' App.Path is not the project folder while the designer is running.
+    Private Sub LogLine(ByVal s As String)
+        On Error Resume Next
+        Dim lineText As String
+        lineText = Format$(Now, "hh:nn:ss") & "  UserMode=" & Ambient.UserMode & "  " & s & "  [App.Path=" & App.Path & "]"
+        WriteLogFile App.Path & "\tabprobe.log", lineText
+        WriteLogFile Environ$("TEMP") & "\tabprobe.log", lineText
+    End Sub
+
+    Private Sub WriteLogFile(ByVal filePath As String, ByVal lineText As String)
+        On Error Resume Next
+        Dim f As Integer
+        f = FreeFile
+        Open filePath For Append As #f
+        Print #f, lineText
+        Close #f
+    End Sub

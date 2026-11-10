@@ -1,5 +1,9 @@
 # Changelog: tbIDE (WinUI 3 look for the twinBASIC IDE)
 
+## 2026-11-10: reconcile main research with the current IDE candidate
+
+- Preserved the main-branch designer-bridge research and its probe history alongside the unified tbUI3IDE implementation records. Updated the roadmap to distinguish historical questions from the current acceptance gates. No source or packed-project changes.
+
 ## 2026-11-10, first selectable-toolbar implementation (tbUI3IDE 1.2.0.0)
 
 - Renamed the canonical IDE add-in project, container root, output, metadata and active tooling to tbIDE/tbUI3IDE/tbUI3IDE.twinproj / tbUI3IDE.dll, preserving project ID {15AA6303-46EB-4D7C-B378-F0564F750D0C}, the legacy Enabled preference, package 1.0.0.65 and TabView adapter v8. Added independently persisted ToolbarMode, with Classic as the compatibility default.
@@ -449,6 +453,12 @@ Changed
 Found
 - Shane's first run (BETA 1043): with a project open and the Dark theme, other add-ins' buttons (Global Search, Designer probe) appear, but the Add-ins menu still says "no addins loaded" and the add-in printed nothing, which this change makes testable. The themes target 1033 and have not been re-checked against 1043.
 
+## 2026-11-01: designer bridge probe (research, no add-in change)
+
+Validated by Shane on BETA 1033 with a throwaway add-in (`../docs/research/2026-11-01-multipage-designer/probes/DesignerBridgeProbe/`):
+- `ownerDocument.defaultView.eval(js)` runs in the IDE page and returns its value synchronously. A `<script>` element appended through the bridge did not run, and an inline `onerror` handler ran, but only asynchronously.
+- The form designer's functions are page globals (`addControl`, `preparePaste`, `deserializeControls`, `doPaste`, `executeIdeCommand` and others). The open designer's state is `getCurrentFormEditorGlobals()`.
+- Inserting a page control's JSON through the designer's own insert steps, plus `undoPoint`, created a real control inside the selected container: named, selectable, one-step undo, and kept after save and reopen.
 
 ## 2026-10-30: moved into tbUI3, WinUI3 IDE Style add-in spike
 
@@ -515,3 +525,4 @@ Validated
 - Both files parse with a copy of the IDE's own `applyThemeData` parser: no dropped lines, and every property name exists in the shipped themes.
 - Every value passes Chromium's `CSS.supports` for the CSS property it feeds (the two indent-guide colours are used inside a larger `box-shadow`, so they were checked by hand).
 - Not yet tested inside the IDE. Shane's check on his PC is pending.
+

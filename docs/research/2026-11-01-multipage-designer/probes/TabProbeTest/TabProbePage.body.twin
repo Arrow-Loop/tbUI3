@@ -1,0 +1,18 @@
+    ' Throwaway probe page: a plain container that TabProbe tries to create at design time.
+
+    Private Sub UserControl_InitProperties()
+        UserControl.BackColor = RGB(230, 240, 250)
+    End Sub
+
+    Private Sub UserControl_Paint()
+        On Error Resume Next
+        UserControl.Cls
+        UserControl.ForeColor = RGB(0, 60, 120)
+        UserControl.CurrentX = UserControl.ScaleX(8, vbPixels, UserControl.ScaleMode)
+        UserControl.CurrentY = UserControl.ScaleY(8, vbPixels, UserControl.ScaleMode)
+        UserControl.Print "TabProbePage " & Extender.Name
+    End Sub
+
+    Private Sub UserControl_Resize()
+        UserControl.Refresh
+    End Sub

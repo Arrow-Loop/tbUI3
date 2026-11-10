@@ -4,6 +4,10 @@ All notable changes to tbUI3. Dates are when the change was made, not released. 
 
 ## Unreleased
 
+### 2026-11-10, reconcile development and main documentation
+
+- Reconciled accumulated tbui3-dev work with main while preserving the earlier MultiPage research, notes and probe projects. Kept both histories in the changelogs and marked superseded research questions as historical in the roadmaps. Package/add-in code and validation status are unchanged by this reconciliation.
+
 ### 2026-11-10, first selectable-toolbar implementation (tbUI3IDE 1.2.0.0)
 
 - Renamed the canonical IDE add-in project, container root, output, metadata and active tooling to tbIDE/tbUI3IDE/tbUI3IDE.twinproj / tbUI3IDE.dll, preserving project ID {15AA6303-46EB-4D7C-B378-F0564F750D0C}, the legacy Enabled preference, package 1.0.0.65 and TabView adapter v8. Added independently persisted ToolbarMode, with Classic as the compatibility default.
@@ -111,6 +115,16 @@ All notable changes to tbUI3. Dates are when the change was made, not released. 
 - Added frmMultiPage and its entry button to the existing tbUI3Test icon harness. Refreshed the full embedded package, including the existing IconList L3 code, from the canonical package.
 - Added regression and optional native paste-contract checks, source/fidelity documentation, and synchronized packed projects/mirrors. Exact evidence is in docs/validation/2026-11-09-tabview-candidate.md. The full IDE editing loop remains a gate, not a claimed result.
 - Recovery note: the earlier chat reported a 1.0.0.61 candidate but left no recoverable implementation commit. This pass establishes the actual candidate and does not inherit that chat's unverified test claims.
+### 2026-11-01, MultiPage-style containers in the designer: investigation (research, no package change, Claude)
+
+- Record: `docs/research/2026-11-01-multipage-designer.md`, with the working notes, the twinBASIC feature request draft and the throwaway probe projects under `docs/research/2026-11-01-multipage-designer/`.
+- Validated by Shane on BETA 1033 with the TabProbe test projects:
+  - A second click on a selected ControlContainer UserControl reaches its MouseDown and Click at design time (`UserMode = False`).
+  - The designer follows when the control moves its ContainedControls.
+  - A container whose ScaleMode differs from the form's (pixels on a twips form) makes newly drawn children jump to its top-left. With matching twips they stay put.
+- Failed: `UserControl.Parent.Controls.Add` at design time. A CommandButton is created and draws, but the designer can't select it, doesn't list it and doesn't save it. A project UserControl fails with -2147467259. Wayne (Discord) confirmed there's currently no supported way to create a designer control from code, and pointed out that `UserControl.Verbs` and `VerbInvoked` exist (confirmed in the VB package).
+- Validated by Shane with the DesignerBridgeProbe add-in: an add-in can run JavaScript in the IDE page (`ownerDocument.defaultView.eval`, synchronous). Through the designer's own insert steps, with no clipboard, it created a real page control inside a selected container: named, selectable, draggable, undone with one Ctrl+Z (once `undoPoint` was added), and still there after save and reopen.
+- Decisions (Shane): shipped containers must feel like VBA's MultiPage and never use SSTab-style negative Left. The model is a host plus real page containers (UI3TabView with UI3TabPage). Public posts don't mention tbUI3. Still open: whether the add-in is required, what triggers "New Page", and the per-beta breakage policy.
 
 ### 2026-11-01, UI3IconList L3: the list in code (1.0.0.60, Claude)
 
@@ -863,4 +877,5 @@ All notable changes to tbUI3. Dates are when the change was made, not released. 
   - UI3Button appeared in the toolbox of tbUI3Test and dropped onto the form as UI3Button1;
   - Caption and Style persisted through a save;
   - Click ran at runtime.
+
 

@@ -126,6 +126,12 @@ Steps:
 3. Record per-BETA re-check steps (rerun the property map, then confirm each selector in `css/winui3-ide.css` still exists in `ide/styles.css`).
 4. If an IDE release blocks reaching the page, fall back to the themes alone and raise the missing theme properties upstream (see Exploratory).
 
+## Historical research: designer bridge for tbUI3 containers (2026-11-01)
+
+Preserved from main during the 2026-11-10 reconciliation. Distribution and the initial page-authoring questions below are historical: the unified tbUI3IDE candidate now contains the implemented adapter. Current acceptance gates above are authoritative.
+
+The add-in can drive the form designer, not just style it. `ownerDocument.defaultView.eval(js)` runs JavaScript in the IDE page and returns its value, and inserting a control's JSON through the designer's own insert steps creates a real, saved, undoable control. Proven with the throwaway DesignerBridgeProbe add-in. Recipe and history: `../docs/research/2026-11-01-multipage-designer.md`. Intended first use: one-click "New Page" for UI3TabView. Ideas beyond that (each needs Shane's go-ahead): HTML tab headers and a "+" drawn over the TabView (instant clicks, hover), our own items on the designer's right-click menu, drag to reorder tabs, hiding UI3TabPage from the toolbox, and handles for SplitView and Expander. Open for Shane: whether this goes in WinUI3IdeStyle or a separate add-in, and whether tbUI3 containers require it. The same per-beta risk as the stylesheet applies, but it's higher here, because these are internal designer functions, not just selectors.
+
 ## Exploratory
 
 - The 2026-11-09 parked tabbed-ribbon idea was promoted to the next agreed pass on 2026-11-10; see the committed ribbon section above.
@@ -135,3 +141,4 @@ Steps:
 - Dropped 2026-11-09 (Shane): Fluent icons for the toolbox. The toolbox keeps the icons each control defines for itself, so the WinUI3 themes must not set the `ToolboxIcon*` properties to replace them.
 - Distribution (decided by Shane 2026-10-30): one combined IDE add-in and optional theme files stay separate from the tbUI3 control package. A package runs no code when it is enabled, and silently installing into the IDE from a control was rejected. Likely shape: a "tbUI3 IDE extras" zip attached to tbUI3 releases, and possibly the add-in copying the themes into `%APPDATA%\twinBASIC\themes` on first load. Only after the add-in spike works in win32 and win64.
 - Read the accent from Windows: the add-in could read the system accent and set the theme's accent CSS variables at run time, which a static .theme file cannot.
+

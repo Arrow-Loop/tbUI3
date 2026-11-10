@@ -1,8 +1,16 @@
 # TabView candidate validation, 2026-11-09
 
-Current candidate: **package 1.0.0.65 with adapter v7 (add-in 1.0.0.6)**. Earlier candidate evidence is retained below as history.
+Current candidate: **package 1.0.0.65 with adapter v8 (add-in 1.0.0.7)**. Earlier candidate evidence is retained below as history.
 
-## Native stale-entry discovery follow-up, 1.0.0.65, 2026-11-10
+## Adapter v8 toolbox presentation and package 65 evidence, 2026-11-10
+
+Official BETA 1044 setCustomControlsArray creates toolboxItemOuter buttons with clsid, controlType and controlTypePackage, and retains them in allToolboxItems. Adapter v8 matches the existing page ClassId plus package/name, applies an owned display:none rule to that button and leaves registry/metadata intact. The existing tick handles newly rebuilt buttons. Unload/error cleanup removes owned classes; a selected page drawing tool returns to the native pointer when ready. No toolbox-wide filter, public-class visibility change or deletion is used.
+
+Executed: 41 JS adapter/contract checks pass with official 1044 helpers. The new case covers exact-class targeting, unrelated controls, registry preservation, new-page creation, pointer reset, rebuilt toolbox nodes and cleanup. CSS declaration/DOM-class handling is checked in the facade; actual native toolbox presentation is pending. All 68 packed mirrors match and all 3 official add-in export file contents match. Add-in SHA-256: b26973a2cc46f4b25947b7ba8e492c4a5dffd26b6dc27a7ef7d87ce1c93b7e11. Package remains 65.
+
+New log evidence from commit 529663cf94fc10177f9a2ca952f53782e2314b01, Git blob 3cf682ddf25a95345bf5872df0df598554d82258: 10:05:41 raw=4 unique=1 duplicates=0 skipped=3, last failure index=3 stage=Name hr=&H5B. At 10:05:43 raw=6 unique=2 duplicates=1 skipped=3 includes UI3TabView2_Page8. This confirms replacement discovery continues past stale name errors. Shane reports the result appears to work. It does not establish save/reopen, full undo/redo or removal of generated/Properties entries. The latest canonical test binary was preserved and its stale frmMultiPage mirror refreshed.
+
+## Historical native stale-entry discovery follow-up, 1.0.0.65, 2026-11-10
 
 Evidence: tbUI3Test/tbUI3-tabview.log at commit 9bfc629527cfecbe393bc46499a42445c16bd60a, Git blob 461c9831c9356d310cfeabd4735c5aaf1ceb5481. Adapter v7 is installed at 09:24:10. At 09:25:13 deletion leaves raw=3 unique=1 duplicates=1. At 09:25:25 raw=5 unique=1 duplicates=1; at 09:26 raw=7 unique=1 duplicates=1. Page3 and Page4 paint at 480x200 and never receive the host's 538x376 page bounds. This proves replacement creation without acceptance into the native layout list; it does not reveal an HRESULT.
 

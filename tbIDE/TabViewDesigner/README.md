@@ -1,8 +1,12 @@
 # tbUI3 TabView Designer
 
-Adapter v7, add-in version 1.0.0.6. Separate native IDE add-in for tbUI3 1.0.0.65's real page containers. It coexists with WinUI3IdeStyle and does not require a particular IDE theme. BETA 1043 and 1044 are source-inspected adapter baselines; the insertion recipe originated in the BETA 1033 probe.
+Adapter v8, add-in version 1.0.0.7. Separate native IDE add-in for tbUI3 1.0.0.65's real page containers. It coexists with WinUI3IdeStyle and does not require a particular IDE theme. BETA 1043 and 1044 are source-inspected adapter baselines; the insertion recipe originated in the BETA 1033 probe.
 
 Package 1.0.0.65 is the native delete/readd follow-up: failed contained-control entries no longer abort discovery of later pages. Update the package/embedded test package for this correction; adapter v7 remains unchanged. Native logs now report skipped-entry count and failure stage/HRESULT.
+
+## Page toolbox entry
+
+While this add-in is active on a consumer form, UI3TabPage is hidden from the toolbox. Create pages through the TabView + button or New page toolbar command. UI3TabView stays available in the toolbox, and existing pages remain accessible through Properties. The registered page class and native toolbox array are retained for insertion and saved-form loading. The add-in reapplies its owned display class after toolbox rebuilds and removes it on unload/error cleanup; without the add-in, the page entry is visible.
 
 ## Installation and use
 
@@ -16,7 +20,7 @@ With a consumer Form designer open, drop UI3TabView and click its +, or select t
 | Delete page | Deletes the active page and its children through the native designer; requests one undo checkpoint |
 | Page left / Page right | Changes saved PageOrder while retaining selected-page identity |
 | TabView refresh | Reinstalls the adapter and refreshes current page display |
-| TabView diagnostics | Read-only adapter v7 report; works even when ordinary editing commands reject the selection |
+| TabView diagnostics | Read-only adapter v8 report; works even when ordinary editing commands reject the selection |
 
 These commands expect one host or one of its descendants selected. Pending compiler replies, snapshots, dragging and resync block edits until the designer settles; a toolbar command reports the reason in Debug Console. The adapter does not queue a stale command against another selection. The control's New page verb supplies an additional request path; its visibility in the actual context menu remains a separate IDE check.
 

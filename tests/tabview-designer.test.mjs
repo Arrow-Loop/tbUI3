@@ -202,7 +202,7 @@ test('diagnostics reveal rejected class/selection state without changing control
     f.form.properties._className='MyProject.frmMultiPage';f.g.selectedControls=[p];
     const before=JSON.stringify([f.form.properties,f.host.properties,p.properties]);
     const text=f.adapter.run('diagnostics');assert(text.startsWith('DIAGNOSTICS '));
-    const report=JSON.parse(text.slice(12));assert.equal(report.adapter,7);assert.equal(report.consumerAccepted,false);
+    const report=JSON.parse(text.slice(12));assert.equal(report.adapter,8);assert.equal(report.consumerAccepted,false);
     assert.equal(report.form.className,'MyProject.frmMultiPage');assert.equal(report.controls.length,2);
     assert.equal(report.selection[0].name,'Page1');assert.equal(f.calls.undo,0);
     assert.equal(JSON.stringify([f.form.properties,f.host.properties,p.properties]),before);
@@ -393,4 +393,23 @@ test('live delete then add sends a structure change and configures the replaceme
     assert(messages.some(m=>m.type==='onSignificantChange'&&!m.args[0].form.some(c=>c.Name==='Tabs1_Page1')));
     f.ack();f.adapter.tick();assert.equal(f.adapter.run('new'),'Tabs1_Page2');const created=f.g.allControls.at(-1);created.formDesignerControlId=100;
     f.adapter.tick();f.ack();f.adapter.tick();assert.equal(f.host.properties.SelectedPage,'Tabs1_Page2');assert.equal(created.properties.Caption,'Page 2');
+});
+
+
+test('page toolbox hiding preserves registration, new-page creation and unrelated entries',()=>{
+    const f=fixture(),pageTool=new Node(),hostTool=new Node(),otherTool=new Node();
+    Object.assign(pageTool,{controlTypePackage:'tbUI3',controlType:'UI3TabPage',clsid:'{1681A635-13C8-47F3-B96A-FE8123C9F708}'});
+    Object.assign(hostTool,{controlTypePackage:'tbUI3',controlType:'UI3TabView',clsid:'{HOST}'});
+    Object.assign(otherTool,{controlTypePackage:'Other',controlType:'UI3TabPage',clsid:pageTool.clsid});
+    const tools=[pageTool,hostTool,otherTool];f.g.allToolboxItems=tools;
+    let pointerClicks=0;f.g.selectedTool=pageTool;f.g.toolBoxPointer={onclick:()=>{pointerClicks++;f.g.selectedTool=f.g.toolBoxPointer;}};
+    f.adapter.install();
+    assert(pageTool.classList.contains('tbui3-page-toolbox-hidden'));assert(!hostTool.classList.contains('tbui3-page-toolbox-hidden'));
+    assert(!otherTool.classList.contains('tbui3-page-toolbox-hidden'));assert.equal(f.g.allToolboxItems,tools);assert.equal(tools.length,3);
+    assert.equal(pointerClicks,1);assert.equal(f.adapter.run('new'),'Tabs1_Page1');assert.equal(f.calls.undo,1);
+    assert.match(f.api.document.head.children[0].textContent,/\.tbui3-page-toolbox-hidden\{display:none!important\}/);
+    const replacement=new Node();Object.assign(replacement,{controlTypePackage:pageTool.controlTypePackage,controlType:pageTool.controlType,clsid:pageTool.clsid});
+    pageTool.isConnected=false;f.g.allToolboxItems=[replacement,hostTool,otherTool];f.adapter.tick();
+    assert(!pageTool.classList.contains('tbui3-page-toolbox-hidden'));assert(replacement.classList.contains('tbui3-page-toolbox-hidden'));
+    f.adapter.dispose();assert(!replacement.classList.contains('tbui3-page-toolbox-hidden'));assert.equal(f.api.document.head.children.length,0);
 });

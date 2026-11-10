@@ -4,6 +4,14 @@ All notable changes to tbUI3. Dates are when the change was made, not released. 
 
 ## Unreleased
 
+### 2026-11-10, hide the page toolbox entry while the designer add-in is active (adapter v8)
+
+- Shane requested hiding UI3TabPage from the toolbox because pages are created through their TabView. Adapter v8/add-in 1.0.0.7 hides only the exact tbUI3/UI3TabPage class's native toolbox button. It retains the registered class and native toolbox array for insertion, saved-form loading and Properties. UI3TabView and unrelated entries remain visible.
+- Uses an add-in-owned display class, reapplied when the IDE rebuilds the toolbox. If the page drawing tool was selected, the adapter returns to the native pointer when editing is ready. Unload/error cleanup removes its hiding class. No public metadata, runtime code, page creation/ownership or package version changed.
+- All 41 JS adapter/contract checks pass with official BETA 1044 helpers, including toolbox refresh/cleanup, pointer reset, unchanged registration and page creation. All 68 project mirrors match, and official add-in export matches all 3 files. The native toolbox result remains a separate observation.
+- Shane reports package 65 appears to resolve delete/readd. His new native log provides direct confirmation of the guarded failure: 10:05:41 skips three stale entries with last failure stage=Name, error &H5B; 10:05:43 accepts replacement UI3TabView2_Page8 despite those same skipped entries. This confirms continued discovery past stale names, without claiming persistence/undo coverage. Refreshed the test form mirror from his latest saved project; its canonical binary is preserved.
+
+
 ### 2026-11-10, continue native discovery past invalid deleted entries (1.0.0.65)
 
 - Shane's new adapter v7/native 64 log still shows delete/readd failure. At 09:25:13 UI3TabView2 has one survivor; subsequent discovery reports raw=5 then raw=7 but still unique=1, while newly created Page3/Page4 paint only at their default 480x200. The add-in creates replacements, but native discovery does not admit them for arrangement.

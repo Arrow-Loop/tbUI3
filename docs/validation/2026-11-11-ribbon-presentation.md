@@ -38,3 +38,7 @@ node tools/validate-tabview-projects.mjs
 ## Acceptance boundaries
 
 The results above are source, JavaScript/DOM/CSSOM/protocol and packing evidence. CSSOM verifies resource/rule selection, not rendered hover pixels. Shane's supplied native images are from the previous revision, not rendered acceptance of 1.3.0.1. Review the changed surface/foreground, hover/pressed state, large/stacked roles, glyphs, File Help and grid controls in actual light/dark and standard/third-party theme contexts with additional styling on/off. Earlier isolated browser validation was rejected by browser URL policy; that restriction was not bypassed. Automatic group collapse/flyouts and Office keytips remain roadmap work.
+
+## Subsequent native findings
+
+Shane's next BETA 1044 screenshots showed that the light native-context-menu palette and normal z-index dropdown could still conflict with the dark designer, and grid fields still painted white because formDesigner.css uses !important. The previous CSSOM checks did not include that host rule and are not evidence that the field background won the native cascade. The 1.3.0.2 correction and expanded native-rule checks are recorded in [ribbon surfaces/popups](2026-11-11-ribbon-surfaces-popups.md).

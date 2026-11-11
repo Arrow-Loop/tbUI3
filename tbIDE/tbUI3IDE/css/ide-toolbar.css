@@ -12,6 +12,9 @@
     --tbui3-subtle-pressed: #00000006;
     --tbui3-toolbar-hover: var(--color-neutral-hover, var(--tbui3-subtle-hover));
     --tbui3-toolbar-pressed: var(--color-neutral-pressed, var(--tbui3-subtle-pressed));
+    --tbui3-accent: var(--color-accent, var(--themeProblemSelectedBorderColor, var(--themeDesignerRulerMarkerColor, var(--themeFindResultColor, currentColor))));
+    --tbui3-tab-hover-indicator: var(--color-text-subtle, GrayText);
+    color-scheme: light;
     --tbui3-toolbar-line: var(--themeToolbarDropDownBorder, 1px solid currentColor);
     --tbui3-toolbar-selected: var(--themeTreeItemSelectedBackColor);
     /* Existing simplified-toolbar Fluent shadow4, preserved as an effect rather than a palette. */
@@ -21,6 +24,7 @@
     box-sizing: border-box;
 }
 .darkMode .tbui3-toolbar-owned, .darkMode .tbui3-toolbar-option {
+    color-scheme: dark;
     --tbui3-subtle-hover: #ffffff0f;
     --tbui3-subtle-pressed: #ffffff0a;
 }
@@ -31,18 +35,19 @@
     --tbui3-large-button-width: 50px;
     --tbui3-large-button-max-width: 86px;
     --tbui3-large-button-height: 76px;
-    flex: 0 0 auto; min-width: 0; max-height: calc(var(--tbui3-command-area-height) + var(--tbui3-tab-area-height)); background: var(--tbui3-toolbar-bg);
-    position: relative; z-index: 1; margin: 0 2px 3px; border-radius: 8px; box-shadow: var(--tbui3-toolbar-shadow);
+    flex: 0 0 auto; min-width: 0; max-height: calc(var(--tbui3-command-area-height) + var(--tbui3-tab-area-height)); background: transparent;
+    position: relative; z-index: 1; margin: 0 0 3px;
 }
 .tbui3-ribbon, .tbui3-ribbon * { box-sizing: border-box; }
-.tbui3-ribbon-tabs { display: flex; flex: 0 0 auto; height: var(--tbui3-tab-area-height); max-height: var(--tbui3-tab-area-height); gap: 4px; padding: 0 8px; overflow-x: auto; overflow-y: hidden; scrollbar-width: none; }
+.tbui3-ribbon-tabs { background: var(--themeMenuBackColor, var(--themeGeneralBackColor)); color: var(--themeMenuForeColor, var(--tbui3-toolbar-fg)); display: flex; flex: 0 0 auto; height: var(--tbui3-tab-area-height); max-height: var(--tbui3-tab-area-height); gap: 4px; padding: 0 8px; overflow-x: auto; overflow-y: hidden; scrollbar-width: none; }
 .tbui3-ribbon-tabs::-webkit-scrollbar { height: 0; }
 .tbui3-ribbon-tab { flex: 0 0 auto; position: relative; height: var(--tbui3-tab-area-height, 26px); max-height: var(--tbui3-tab-area-height, 26px); padding: 3px 12px; border: 0; background: transparent; color: inherit; font: inherit; line-height: 20px; cursor: default; border-radius: 4px 4px 0 0; }
-.tbui3-ribbon-tab[aria-selected='true'] { background: var(--tbui3-toolbar-selected); }
-.tbui3-ribbon-tab[aria-selected='true']::after { content: ''; position: absolute; height: 2px; left: 14px; right: 14px; bottom: 0; background: currentColor; border-radius: 2px; }
-.tbui3-ribbon-tab:hover, .tbui3-ribbon-command:hover:not(:disabled), .tbui3-backstage-nav:hover:not(:disabled), .tbui3-backstage-back:hover { background: var(--tbui3-toolbar-hover); }
-.tbui3-toolbar-owned button:focus-visible, .tbui3-toolbar-owned select:focus-visible, .tbui3-toolbar-select:focus-visible { outline: 2px solid currentColor; outline-offset: -3px; }
-.tbui3-ribbon-content { display: flex; align-items: stretch; height: var(--tbui3-command-area-height); min-height: 0; max-height: var(--tbui3-command-area-height); overflow-x: auto; overflow-y: hidden; padding: 2px 4px 0; gap: 2px; border-bottom: var(--tbui3-toolbar-line); border-radius: 0 0 8px 8px; scrollbar-width: thin; }
+.tbui3-ribbon-tab::after { content: ''; position: absolute; height: 2px; left: 14px; right: 14px; bottom: 0; background: transparent; border-radius: 2px; }
+.tbui3-ribbon-tab:hover:not([aria-selected='true'])::after { background: var(--tbui3-tab-hover-indicator); }
+.tbui3-ribbon-tab[aria-selected='true']::after { background: var(--tbui3-accent); }
+.tbui3-ribbon-command:hover:not(:disabled), .tbui3-backstage-nav:hover:not(:disabled), .tbui3-backstage-back:hover { background: var(--tbui3-toolbar-hover); }
+.tbui3-toolbar-owned button:focus-visible, .tbui3-toolbar-owned select:focus-visible, .tbui3-toolbar-owned input:focus-visible, .tbui3-toolbar-select:focus-visible { outline: 2px solid currentColor; outline-offset: -3px; }
+.tbui3-ribbon-content { background: var(--tbui3-toolbar-bg); box-shadow: var(--tbui3-toolbar-shadow); margin: 0 2px; display: flex; align-items: stretch; height: var(--tbui3-command-area-height); min-height: 0; max-height: var(--tbui3-command-area-height); overflow-x: auto; overflow-y: hidden; padding: 2px 4px 0; gap: 2px; border-bottom: var(--tbui3-toolbar-line); border-radius: 8px; scrollbar-width: thin; }
 .tbui3-ribbon-content[hidden], .tbui3-backstage[hidden] { display: none; }
 .tbui3-ribbon-group { display: flex; flex: 0 0 auto; flex-direction: column; padding: 0 4px; border-right: var(--tbui3-toolbar-line); min-width: 0; }
 .tbui3-ribbon-group:last-child { border-right: 0; }
@@ -50,7 +55,6 @@
 .tbui3-ribbon-group-title { height: 14px; flex: 0 0 14px; line-height: 12px; text-align: center; font-size: 11px; padding-top: 2px; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; opacity: .8; }
 .tbui3-ribbon-command { display: flex; flex-direction: row; justify-content: start; align-items: center; gap: 4px; min-width: 50px; max-width: 160px; min-height: 24px; height: 24px; padding: 2px 4px; border: 1px solid transparent; border-radius: 4px; background: transparent; color: inherit; font: inherit; font-size: 12px; cursor: default; }
 .tbui3-ribbon-content .tbui3-ribbon-large { position: relative; grid-row: span 3; flex-direction: column; justify-content: center; width: max-content; min-width: var(--tbui3-large-button-width); max-width: var(--tbui3-large-button-max-width); height: var(--tbui3-large-button-height); min-height: var(--tbui3-large-button-height); max-height: var(--tbui3-large-button-height); padding: 4px 6px; }
-.tbui3-ribbon-content .tbui3-ribbon-large .tbui3-ribbon-chevron { position: absolute; right: 4px; bottom: 3px; font-size: 10px; line-height: 10px; }
 .tbui3-ribbon-command:disabled { opacity: .45; }
 .tbui3-ribbon-command[hidden] { display: none; }
 .tbui3-ribbon-command:active:not(:disabled) { background: var(--tbui3-toolbar-pressed); }
@@ -61,6 +65,11 @@
 .tbui3-ribbon-icon[hidden] { display: none; }
 .tbui3-ribbon-content .tbui3-ribbon-large .tbui3-ribbon-icon { width: 28px; height: 28px; font-size: 28px; line-height: 28px; }
 .tbui3-ribbon-content .tbui3-ribbon-large .tbui3-ribbon-label { text-align: center; min-width: 0; max-width: calc(var(--tbui3-large-button-max-width) - 14px); max-height: 32px; white-space: normal; overflow: hidden; overflow-wrap: anywhere; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; }
+/* A real Fluent mask, not a font character; placement follows button size. */
+.tbui3-toolbar-owned .tbui3-ribbon-command > .tbui3-ribbon-chevron { width: 12px; height: 12px; margin-left: auto; align-self: center; }
+.tbui3-ribbon-content .tbui3-ribbon-large.tbui3-ribbon-dropdown { display: grid; grid-template-rows: 28px minmax(0, 28px) 10px; justify-items: center; align-content: center; row-gap: 2px; padding: 2px 6px; }
+.tbui3-ribbon-content .tbui3-ribbon-large.tbui3-ribbon-dropdown > .tbui3-ribbon-label { line-height: 14px; max-height: 28px; }
+.tbui3-ribbon-content .tbui3-ribbon-large > .tbui3-ribbon-chevron { width: 12px; height: 10px; margin: 0; justify-self: center; align-self: center; }
 .tbui3-ribbon-mask { background: currentColor; mask: var(--tbui3-icon) center / contain no-repeat; -webkit-mask: var(--tbui3-icon) center / contain no-repeat; }
 .tbui3-ribbon-selector { display: flex; grid-row: span 3; flex-direction: column; gap: 4px; padding: 2px 4px; max-width: 120px; font-size: 11px; }
 .tbui3-ribbon-selector select, .tbui3-ribbon-select, .tbui3-toolbar-select { min-height: 32px; max-width: 200px; background: var(--themeDialogGeneralBackColor); color: var(--themeDialogGeneralForeColor); border: var(--themeToolbarDropDownBorder); border-radius: 4px; font: inherit; padding: 3px 8px; }
@@ -71,8 +80,13 @@
 .tbui3-ribbon-grid:disabled { opacity: .45; }
 .tbui3-ribbon-content .menuBarGridOptionRow { display: flex; gap: 6px; align-items: center; justify-content: space-between; color: inherit; }
 .tbui3-ribbon-content .menuBarGridOption, .tbui3-ribbon-content .menuBarGridValue { color: inherit; width: auto; min-width: 0; flex: 0 0 auto; }
-.tbui3-ribbon-content .menuBarGridOptionRow input { color-scheme: inherit; accent-color: var(--themeTreeItemSelectedBackColor); }
-.tbui3-ribbon-content .menuBarGridOptionRow input[type='number'] { box-sizing: border-box; width: 48px; min-height: 22px; padding: 0 4px; border-radius: 4px; font: inherit; color: var(--tbui3-toolbar-fg); background: var(--themeDialogGeneralBackColor, var(--tbui3-toolbar-bg)); border: var(--tbui3-toolbar-line); }
+.tbui3-ribbon-content .menuBarGridOptionRow input { color-scheme: inherit; accent-color: var(--tbui3-accent); }
+/* BETA 1044 formDesigner.css hard-codes white !important on the original
+   optionGridWidth/Height classes. This single scoped background exception
+   retains those native nodes/classes and handlers. State rules vary its token. */
+.tbui3-ribbon-content .menuBarGridOptionRow input[type='number'] { --tbui3-grid-fill: var(--color-control, var(--themeDialogGeneralBackColor, var(--tbui3-toolbar-bg))); box-sizing: border-box; width: 48px; min-height: 22px; padding: 0 4px; border-radius: 4px; font: inherit; color: var(--tbui3-toolbar-fg); background: var(--tbui3-grid-fill) !important; border: var(--tbui3-toolbar-line); }
+.tbui3-ribbon-content .menuBarGridOptionRow input[type='number']:hover { --tbui3-grid-fill: var(--color-control-hover, var(--themeDialogGeneralBackColor, var(--tbui3-toolbar-bg))); }
+.tbui3-ribbon-content .menuBarGridOptionRow input[type='number']:focus { --tbui3-grid-fill: var(--color-input-active, var(--themeDialogGeneralBackColor, var(--tbui3-toolbar-bg))); }
 .tbui3-ribbon-context { display: flex; gap: 4px; align-items: center; align-self: start; border: var(--tbui3-toolbar-line); border-radius: 4px; }
 .tbui3-quick { color: var(--themeMenuForeColor, var(--tbui3-toolbar-fg)); display: flex; flex: 0 1 auto; gap: 2px; align-items: center; min-width: 0; overflow-x: auto; -webkit-app-region: no-drag; }
 .tbui3-quick-real-titlebar { min-height: 32px; }
@@ -87,7 +101,9 @@
 .tbui3-backstage-nav-group { display: flex; flex-direction: column; gap: 2px; }
 .tbui3-backstage-footer { margin-top: auto; padding-top: 24px; }
 .tbui3-backstage-back, .tbui3-backstage-nav { display: flex; align-items: center; gap: 12px; min-height: 38px; width: 100%; border: 0; border-radius: 4px; background: transparent; color: inherit; font: inherit; text-align: left; padding: 8px 12px; }
-.tbui3-backstage-back { margin-bottom: 12px; }
+.tbui3-backstage-back { width: 40px; height: 40px; min-height: 40px; padding: 7px; margin-bottom: 12px; align-self: start; justify-content: center; }
+.tbui3-backstage-back-circle { display: grid; place-items: center; width: 26px; height: 26px; border: 1px solid currentColor; border-radius: 50%; flex: 0 0 auto; }
+.tbui3-backstage-back-circle .tbui3-ribbon-icon { width: 18px; height: 18px; }
 .tbui3-backstage-selected { background: var(--tbui3-toolbar-selected); outline: 1px solid currentColor; outline-offset: -1px; }
 .tbui3-backstage-nav:disabled { opacity: .45; }
 .tbui3-backstage-content { flex: 1 1 auto; overflow: auto; padding: 24px 40px; min-width: 0; background: var(--themeGeneralBackColor, var(--tbui3-toolbar-bg)); }
@@ -99,7 +115,8 @@
 .tbui3-backstage-task .tbui3-ribbon-command { flex-direction: row; justify-content: start; gap: 16px; height: auto; min-height: 56px; min-width: 240px; max-width: 100%; width: 100%; padding: 12px; }
 .tbui3-backstage-task .tbui3-ribbon-icon { width: 28px; height: 28px; font-size: 28px; line-height: 28px; }
 .tbui3-backstage-task .tbui3-ribbon-label { max-width: none; text-align: left; font-size: 14px; }
-.tbui3-ribbon-popup { --tbui3-toolbar-hover: var(--themeContextMenuItemHoverColor, var(--tbui3-subtle-hover)); position: fixed; left: max(0px, var(--tbui3-popup-x)); top: max(0px, var(--tbui3-popup-y)); display: flex; flex-direction: column; padding: 4px; max-height: 60vh; overflow: auto; z-index: 100001; min-width: 240px; background: var(--themeContextMenuBackground, var(--themeContextMenuBackColor, var(--tbui3-toolbar-bg))); color: var(--themeContextMenuForeColor, var(--tbui3-toolbar-fg)); border: var(--tbui3-toolbar-line); border-radius: 8px; }
+/* Prefer the browser top layer; max signed CSS z-index is the legacy fallback. */
+.tbui3-ribbon-popup { position: fixed; inset: auto; margin: 0; left: max(0px, var(--tbui3-popup-x)); top: max(0px, var(--tbui3-popup-y)); display: flex; flex-direction: column; padding: 4px; max-height: 60vh; max-width: calc(100vw - 8px); overflow: auto; z-index: 2147483647; min-width: 240px; background: var(--color-flyout, var(--themeGeneralBackColor, var(--themeDialogGeneralBackColor))); color: var(--tbui3-toolbar-fg); border: var(--tbui3-toolbar-line); border-radius: 8px; }
 .tbui3-ribbon-popup .tbui3-ribbon-command { flex-direction: row; justify-content: start; height: auto; min-height: 32px; max-width: none; }
 .tbui3-ribbon-popup .tbui3-ribbon-icon { width: 20px; height: 20px; font-size: 20px; }
 .tbui3-ribbon-popup .tbui3-ribbon-label { max-width: none; text-align: left; }

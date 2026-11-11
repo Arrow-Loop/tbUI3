@@ -186,7 +186,7 @@ test('shipped native File/Edit/Format/Tools and async Add-ins descriptors popula
     f.adapter.openFile('Add-ins');await new Promise(r=>setTimeout(r,10));assert(f.d.querySelector('.tbui3-backstage-content').textContent.includes('Native loaded add-in'));f.dispose();
 });
 
-test('embedded toolbar contains the exact adapter, essential CSS, original glyphs and 17 Fluent gap-fill glyphs',()=>{
+test('embedded toolbar contains the exact adapter, essential CSS, original glyphs and 18 Fluent gap-fill glyphs',()=>{
     const path='tbIDE/tbUI3IDE/src/Sources/IdeToolbarScript.twin',src=fs.readFileSync(path,'utf8');let js='';
     for(const line of src.split(/\r?\n/)){
         if(line.trim()==='js = js & vbLf'){js+='\n';continue;}
@@ -195,7 +195,7 @@ test('embedded toolbar contains the exact adapter, essential CSS, original glyph
     }
     new vm.Script(js);assert(js.includes(source.trim()));assert(js.includes(layoutSource.trim()));assert(js.includes(presentationSource.trim()));
     const css=fs.readFileSync('tbIDE/tbUI3IDE/css/ide-toolbar.css','utf8');assert(js.includes(JSON.stringify(css)));
-    assert.equal((js.match(/data:image\/svg\+xml/g)||[]).length,36);assert(!/(?<!\r)\n/.test(src));
+    assert.equal((js.match(/data:image\/svg\+xml/g)||[]).length,37);assert(!/(?<!\r)\n/.test(src));
 });
 
 test('Home uses Paste as the lead command and keeps Undo/Redo/Run solely in quick access',()=>{
@@ -306,7 +306,7 @@ test('text-only add-ins get a Fluent glyph while contributed images and exact-on
     proxy.click();assert.deepEqual(f.calls,['search addin']);f.dispose();
 });
 test('moved grid controls retain original nodes and events and restore in original order',()=>{
-    const f=fixture(),grid=f.d.createElement('div');grid.id='menuBarGridOptions';grid.innerHTML='<div class="menuBarGridOptionsInner"><div class="menuBarGridOptionRow"><div class="menuBarGridOption">Grid width</div><div class="menuBarGridValue"><input type="number" value="8"></div></div></div>';
+    const f=fixture(),grid=f.d.createElement('div');grid.id='menuBarGridOptions';grid.innerHTML='<div class="menuBarGridOptionsInner"><div class="menuBarGridOptionRow"><div class="menuBarGridOption">Grid width</div><div class="menuBarGridValue"><input class="optionGridWidth" type="number" value="8"></div></div></div>';
     f.toolbar.after(grid);const inner=grid.firstElementChild,input=grid.querySelector('input');let changes=0;input.onchange=()=>changes++;
     f.api.formGlobals=()=>({selectedControls:[]});f.adapter.setMode('Ribbon');f.d.querySelector('[data-tab=Form]').click();assert.equal(f.d.querySelector('.tbui3-ribbon-grid input'),input);
     input.value='12';input.dispatchEvent(new f.w.Event('change'));assert.equal(changes,1);f.adapter.setMode('Classic');assert.equal(grid.firstElementChild,inner);assert.equal(input.value,'12');f.dispose();
@@ -317,13 +317,70 @@ test('toolbar surface, hover, pressed and grid styles consume the old toolbar an
     assert(token.getPropertyValue('--tbui3-toolbar-bg').includes('--color-card'));assert(token.getPropertyValue('--tbui3-toolbar-bg').includes('--themeToolbarBackground'));
     assert(token.getPropertyValue('--tbui3-toolbar-fg').replace(/\s/g,'').startsWith('var(--color-text,var(--themeGeneralTextColor'));
     const quick=rules.find(r=>r.selectorText==='.tbui3-quick');assert(quick.style.color.includes('--themeMenuForeColor'));
-    const popup=rules.find(r=>r.selectorText==='.tbui3-ribbon-popup');assert(popup.style.color.includes('--themeContextMenuForeColor'));assert(popup.style.background.includes('--themeContextMenuBackground')); 
+    const popup=rules.find(r=>r.selectorText==='.tbui3-ribbon-popup');assert(popup.style.color.includes('--tbui3-toolbar-fg'));assert(popup.style.background.includes('--color-flyout'));assert(popup.style.background.includes('--themeDialogGeneralBackColor'));assert(!popup.style.background.includes('--themeContextMenuBackColor'));  
     assert(token.getPropertyValue('--tbui3-toolbar-hover').includes('--color-neutral-hover'));assert(token.getPropertyValue('--tbui3-toolbar-pressed').includes('--color-neutral-pressed'));
     assert.equal(token.getPropertyValue('--tbui3-subtle-hover'),'#00000009');
     const dark=rules.find(r=>r.selectorText==='.darkMode .tbui3-toolbar-owned, .darkMode .tbui3-toolbar-option');assert.equal(dark.style.getPropertyValue('--tbui3-subtle-hover'),'#ffffff0f');assert.equal(dark.style.getPropertyValue('--tbui3-subtle-pressed'),'#ffffff0a');
     const hover=rules.find(r=>r.selectorText?.includes('.tbui3-ribbon-command:hover:not(:disabled)'));assert.equal(hover.style.background,'var(--tbui3-toolbar-hover)');
     assert(rules.some(r=>r.selectorText==='.tbui3-ribbon-command:active:not(:disabled)'&&r.style.background==='var(--tbui3-toolbar-pressed)'));
     assert(rules.some(r=>r.selectorText==='.tbui3-ribbon-content .menuBarGridOptionsInner'&&r.style.color==='var(--tbui3-toolbar-fg)'));
-    const numbers=rules.find(r=>r.selectorText===".tbui3-ribbon-content .menuBarGridOptionRow input[type='number']");assert(numbers.style.background.includes('--themeDialogGeneralBackColor'));
+    const numbers=rules.find(r=>r.selectorText===".tbui3-ribbon-content .menuBarGridOptionRow input[type='number']");assert(numbers.style.getPropertyValue('--tbui3-grid-fill').includes('--themeDialogGeneralBackColor'));assert.equal(numbers.style.getPropertyPriority('background'),'important');
     assert(css.includes('--tbui3-command-area-height: 100px'));assert(css.includes('--tbui3-large-button-height: 76px'));assert(css.includes('--tbui3-tab-area-height: 26px'));dom.window.close();
+});
+
+test('dropdowns promote to the browser top layer and clean up on Escape, File and mode changes',()=>{
+    const f=fixture();let shown=0,hidden=0;
+    f.w.HTMLElement.prototype.showPopover=function(){assert(this.isConnected);assert.equal(this.getAttribute('popover'),'manual');shown++;};
+    f.w.HTMLElement.prototype.hidePopover=function(){hidden++;};
+    f.adapter.setMode('Ribbon');f.d.querySelector('[data-tab=Form]').click();
+    const open=()=>{const b=f.d.querySelector('[aria-haspopup=menu]');b.click();assert.equal(b.getAttribute('aria-expanded'),'true');const menu=f.d.querySelector('.tbui3-ribbon-popup');assert.equal(menu.dataset.popupLayer,'top');assert.equal(menu.parentElement,f.d.body);return b;};
+    const first=open();f.d.dispatchEvent(new f.w.KeyboardEvent('keydown',{key:'Escape',bubbles:true}));assert.equal(hidden,1);assert.equal(first.getAttribute('aria-expanded'),'false');assert(!f.d.querySelector('.tbui3-ribbon-popup'));
+    open();f.adapter.openFile();assert.equal(hidden,2);assert(!f.d.querySelector('.tbui3-ribbon-popup'));f.adapter.closeFile();
+    open();f.adapter.setMode('Classic');assert.equal(shown,3);assert.equal(hidden,3);assert(!f.d.querySelector('.tbui3-ribbon-popup'));f.dispose();
+});
+test('popover failure retains a body-level maximum-z fallback and exact-once native action',()=>{
+    const f=fixture();f.w.HTMLElement.prototype.showPopover=function(){throw Error('Host does not support promotion');};
+    f.adapter.setMode('Ribbon');f.d.querySelector('[data-tab=Form]').click();f.d.querySelector('[aria-haspopup=menu]').click();
+    const menu=f.d.querySelector('.tbui3-ribbon-popup');assert.equal(menu.dataset.popupLayer,'fallback');assert(!menu.hasAttribute('popover'));assert.equal(f.d.body.lastElementChild,menu);
+    menu.querySelector('button').click();assert.deepEqual(f.calls,['left']);assert(!f.d.querySelector('.tbui3-ribbon-popup'));
+    const css=fs.readFileSync('tbIDE/tbUI3IDE/css/ide-toolbar.css','utf8');assert(css.includes('z-index: 2147483647'));assert(css.includes('inset: auto; margin: 0;'));f.dispose();
+});
+test('tab strip and command surface are separate, with indicator-only selected and hover states',()=>{
+    const dom=new JSDOM('<head></head>'),style=dom.window.document.createElement('style');style.textContent=fs.readFileSync('tbIDE/tbUI3IDE/css/ide-toolbar.css','utf8');dom.window.document.head.append(style);
+    const rules=[...style.sheet.cssRules],rule=selector=>rules.find(r=>r.selectorText===selector).style;
+    assert.equal(rule('.tbui3-ribbon').background,'transparent');assert(rule('.tbui3-ribbon-tabs').background.includes('--themeMenuBackColor'));
+    assert(rule('.tbui3-ribbon-tabs').color.includes('--themeMenuForeColor'));assert.equal(rule('.tbui3-ribbon-content').background,'var(--tbui3-toolbar-bg)');assert(rule('.tbui3-ribbon-content').getPropertyValue('box-shadow').includes('--tbui3-toolbar-shadow'));
+    assert.equal(rule('.tbui3-ribbon-tab').background,'transparent');assert(!rules.some(r=>r.selectorText===".tbui3-ribbon-tab[aria-selected='true']"&&r.style.background));
+    assert.equal(rule(".tbui3-ribbon-tab[aria-selected='true']::after").background,'var(--tbui3-accent)');
+    assert.equal(rule(".tbui3-ribbon-tab:hover:not([aria-selected='true'])::after").background,'var(--tbui3-tab-hover-indicator)');
+    assert(!rules.some(r=>r.selectorText?.includes('.tbui3-ribbon-tab:hover')&&!r.selectorText.includes('::after')));
+    const token=rule('.tbui3-toolbar-owned, .tbui3-toolbar-option');assert(token.getPropertyValue('--tbui3-accent').includes('--themeProblemSelectedBorderColor'));assert(token.getPropertyValue('--tbui3-tab-hover-indicator').includes('GrayText'));dom.window.close();
+});
+test('large and compact dropdowns use a masked Fluent chevron in their respective layout positions',()=>{
+    const f=fixture();f.items.Format[0].name='{%MenuCaptionFormatAlign}';f.items.Edit=[{name:'Other options',hoverAction:()=>f.show(undefined,0,0,[{name:'Child',action:'child'}])}];
+    f.adapter.setMode('Ribbon');const compact=f.d.querySelector('.tbui3-ribbon-dropdown');assert(!compact.classList.contains('tbui3-ribbon-large'));assert.equal(compact.querySelector('.tbui3-ribbon-chevron').textContent,'');
+    assert(compact.querySelector('.tbui3-ribbon-chevron').style.getPropertyValue('--tbui3-icon').includes('chevron_down'));
+    f.d.querySelector('[data-tab=Form]').click();const large=f.d.querySelector('.tbui3-ribbon-dropdown');assert(large.classList.contains('tbui3-ribbon-large'));
+    assert.equal(large.lastElementChild,large.querySelector('.tbui3-ribbon-chevron'));assert.equal(large.querySelector('.tbui3-ribbon-chevron').textContent,'');
+    const style=f.d.createElement('style');style.textContent=fs.readFileSync('tbIDE/tbUI3IDE/css/ide-toolbar.css','utf8');f.d.head.append(style);const rules=[...style.sheet.cssRules];
+    const grid=rules.find(r=>r.selectorText==='.tbui3-ribbon-content .tbui3-ribbon-large.tbui3-ribbon-dropdown').style;assert.equal(grid.display,'grid');assert(grid.getPropertyValue('grid-template-rows').includes('10px'));
+    const big=rules.find(r=>r.selectorText==='.tbui3-ribbon-content .tbui3-ribbon-large > .tbui3-ribbon-chevron').style;assert.equal(big.getPropertyValue('justify-self'),'center');assert.equal(parseFloat(big.margin),0);
+    const small=rules.find(r=>r.selectorText==='.tbui3-toolbar-owned .tbui3-ribbon-command > .tbui3-ribbon-chevron').style;assert.equal(small.getPropertyValue('align-self'),'center');assert.equal(small.getPropertyValue('margin-left'),'auto');f.dispose();
+});
+test('File Back is an accessible icon-only circled arrow and restores the prior focus',()=>{
+    const f=fixture();f.adapter.setMode('Ribbon');const editor=f.d.getElementById('editor');editor.focus();f.adapter.openFile();
+    const back=f.d.querySelector('.tbui3-backstage-back');assert.equal(back.textContent,'');assert.equal(back.getAttribute('aria-label'),'Back to project');assert.equal(back.title,'Back to project');
+    const circle=back.querySelector('.tbui3-backstage-back-circle');assert(circle);assert.equal(circle.getAttribute('aria-hidden'),'true');assert(circle.querySelector('.tbui3-ribbon-mask').style.getPropertyValue('--tbui3-icon').includes('arrow_left'));
+    back.click();assert(f.d.querySelector('.tbui3-backstage').hidden);assert.equal(f.d.activeElement,editor);f.dispose();
+});
+test('grid input background overrides the actual native BETA forced-white important rule',t=>{
+    if(!process.env.TB_IDE_DESIGNER_CSS)return t.skip('Set TB_IDE_DESIGNER_CSS to the native formDesigner.css');
+    const native=fs.readFileSync(process.env.TB_IDE_DESIGNER_CSS,'utf8'),block=native.match(/input\.optionGridWidth, input\.optionGridHeight\s*\{[^}]*\}/)?.[0];assert(block);assert(/background:\s*white\s*!important/.test(block));
+    const f=fixture(),grid=f.d.createElement('div');grid.id='menuBarGridOptions';grid.innerHTML='<div class="menuBarGridOptionsInner"><div class="menuBarGridOptionRow"><input type="number" class="optionGridWidth"><input type="number" class="optionGridHeight"></div></div>';
+    f.toolbar.after(grid);f.adapter.setMode('Ribbon');f.d.querySelector('[data-tab=Form]').click();const style=f.d.createElement('style');style.textContent=block+'\n'+fs.readFileSync('tbIDE/tbUI3IDE/css/ide-toolbar.css','utf8');f.d.head.append(style);
+    const rules=[...style.sheet.cssRules],ours=rules.find(r=>r.selectorText===".tbui3-ribbon-content .menuBarGridOptionRow input[type='number']");assert.equal(ours.style.getPropertyPriority('background'),'important');assert.equal(ours.style.background,'var(--tbui3-grid-fill)');
+    for(const input of grid.querySelectorAll('input'))assert.fail('Native input was not moved into the ribbon');
+    assert.equal(f.d.querySelectorAll('.tbui3-ribbon-grid input').length,2);
+    for(const input of f.d.querySelectorAll('.tbui3-ribbon-grid input')){assert(input.matches(ours.selectorText));assert(!/white|rgb\(255, 255, 255\)/.test(f.w.getComputedStyle(input).background));}
+    const popup=rules.find(r=>r.selectorText==='.tbui3-ribbon-popup');assert(popup.style.background.includes('--color-flyout'));assert(!popup.style.background.includes('--themeContextMenuBackColor'));f.dispose();
 });

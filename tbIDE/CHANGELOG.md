@@ -1,5 +1,14 @@
 # Changelog: tbIDE (WinUI 3 look for the twinBASIC IDE)
 
+## 2026-11-11, separate ribbon surfaces and correct dropdown layering (tbUI3IDE 1.3.0.2)
+
+- Separated the title/menu-colored tab strip from the toolbar-colored command card. Only the command card carries the existing Fluent shadow/corners. Tabs stay transparent: selected tabs show an active-theme accent underline, and unselected hover shows a grey underline without a hover plate. Keyboard focus remains visible.
+- Dropdowns now use the application flyout/general surface and matching toolbar foreground instead of the IDE's deliberately light native context-menu surface. Standard selects receive the active light/dark color-scheme. Menus use manual browser popover promotion when available, escaping native designer stacking/overflow. Older hosts retain a body-level maximum-z fallback. Escape, File opening/closing, command dispatch, mode changes and unload remove the owned popup and clear its expanded state.
+- Corrected the grid number-field background conflict: BETA 1044 formDesigner.css hard-codes white !important for input.optionGridWidth/Height. One scoped background !important declaration now consumes a themed fill token; hover/focus vary that token. Original native nodes/classes/values/events are retained, and unrelated designer controls are untouched.
+- Replaced the U+2304 text marker with a masked Fluent Chevron Down from the existing pinned Microsoft icon source. Full-size dropdowns center it below the caption in a 76px layout; compact/popup commands center it at the right. The combined map contains 37 SVGs: 19 established and 18 gap-fill.
+- File Back is now an icon-only left arrow in a circular outline, with an accessible label/tooltip and existing Escape/back focus restoration.
+- All 84 JavaScript/DOM/CSSOM/protocol checks pass without skips, including six new regressions for the reported surfaces, layering, native style conflict and glyphs. All 108 native top-level menu descriptors remain accounted for; all 71 packed mirrors and six official-export files match. Package 1.0.0.65, adapter v8, consumer project and stable identities remain unchanged. Evidence: docs/validation/2026-11-11-ribbon-surfaces-popups.md.
+
 ## 2026-11-11, ribbon surface, command sizing, icons and File Help (tbUI3IDE 1.3.0.1)
 
 - Reconnected the replacement ribbon to the old toolbar surface resource: the existing CardBackgroundFillColorDefault token when available, otherwise the selected theme's ToolbarBackground. Toolbar text uses the corresponding general/control foreground rather than the titlebar foreground; quick access retains the titlebar foreground, and popups use their native menu surface/foreground pair.

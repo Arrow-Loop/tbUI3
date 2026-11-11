@@ -2,10 +2,10 @@
 
 ## Single add-in distribution, implemented 2026-11-10
 
-- Consolidation history: version 1.1.0.0 used WinUI3IdeStyle/WinUI3IdeStyle.twinproj and WinUI3IdeStyle.dll. The current 1.3.0.1 candidate uses tbUI3IDE/tbUI3IDE.twinproj and tbUI3IDE.dll. It combines the theme implementation with TabView adapter v8. The old standalone TabViewDesigner target is retired; migration removes its DLL from both architecture folders.
+- Consolidation history: version 1.1.0.0 used WinUI3IdeStyle/WinUI3IdeStyle.twinproj and WinUI3IdeStyle.dll. The current 1.3.0.2 candidate uses tbUI3IDE/tbUI3IDE.twinproj and tbUI3IDE.dll. It combines the theme implementation with TabView adapter v8. The old standalone TabViewDesigner target is retired; migration removes its DLL from both architecture folders.
 - Current gate: native combined startup/project load/unload, one set of toolbar commands, standard theme operation, page creation with the styling switch off and saved preferences retained. Source/JS/packing evidence is in ../docs/validation/2026-11-10-unified-ide-addin.md.
 
-## Current implementation: tbUI3IDE 1.3.0.1 candidate
+## Current implementation: tbUI3IDE 1.3.0.2 candidate
 
 Implemented 2026-11-10: project/output rename, independent saved IDE Toolbar selector, Classic/Hybrid/Ribbon renderers, active-theme CSS, the existing Fluent glyphs at larger sizes, live native menu/toolbar discovery and state/dispatch, fullscreen File view, quick access, contextual MultiPage and restoration. The original requirements below remain the acceptance specification; implementation is not a claim of final Office parity. Source/DOM evidence is in ../docs/validation/2026-11-10-ide-toolbar.md.
 
@@ -17,16 +17,18 @@ Semantic organization follow-up, 1.3.0.0: implemented Home Clipboard/Editing, de
 
 Reference-driven presentation follow-up, 1.3.0.1 (2026-11-11): implemented the old toolbar surface resource, matching foregrounds, independent light/dark hover/pressed effects, function-based large/stacked command roles, icon coverage/fallbacks, Help under File and themed live grid controls. Shane's 1.3.0.0 screenshots demonstrate the organized tabs/File page opening and identify the prior surface/icon/sizing deficiencies; they do not validate the new revision. The 78 JS/DOM/CSSOM/protocol checks and packing comparisons pass. Mapping: RIBBON_LAYOUT.md; evidence: ../docs/validation/2026-11-11-ribbon-presentation.md.
 
+Surface/layering follow-up, 1.3.0.2: implemented separate titlebar-colored tabs and toolbar-colored command card, indicator-only tab states, active-theme application dropdown fills, top-layer popovers with legacy fallback, the narrowly scoped native forced-white field override, masked and size-aligned chevrons, and an accessible circled File Back arrow. Shane's subsequent native 1.3.0.1 screenshots establish that the previous light dropdown, designer overlap and forced-white grid problem remained; prior CSSOM checks did not establish those rendered results. The new 84-check evidence includes the actual native forced-white rule: ../docs/validation/2026-11-11-ribbon-surfaces-popups.md.
+
 Remaining work:
 
-- Observe the 1.3.0.1 toolbar surface/foreground, visible hover/pressed state, full-size roles, icons, File Help and themed grid in light/dark and standard/third-party themes with additional styling on/off. Compare to Shane's Office references; retain earlier shadow, compact labels and dock-slot checks in both Hybrid/Ribbon; switch to Classic and back, including redocked/shared-slot layouts. Verify no unrelated panel disappears and native panel layout persists as before.
+- Observe 1.3.0.2 dropdown colors and top-layer/fallback painting over selected designer controls/grabbers; separate titlebar/tab and toolbar surfaces; selected/hover indicators; real grid number-field normal/hover/focus states; chevron positions; circled File Back. Cover light/dark, standard/third-party themes, additional styling on/off, native titlebar modes and popup teardown while switching modes/unloading. Compare to Shane's Office references; retain earlier shadow, compact labels and dock-slot checks in both Hybrid/Ribbon; switch to Classic and back, including redocked/shared-slot layouts. Verify no unrelated panel disappears and native panel layout persists as before.
 
 - Observe the new native add-in startup/settings/mode-switch/unload and saved-mode restart in the IDE, including standard/third-party themes and additional styling off. Verify the project rename retains its prior Enabled setting and only one add-in instance loads after removing legacy DLLs.
 - Review actual ribbon appearance and spacing, glyph rendering, narrow-window access and keyboard navigation. The current composition uses larger lead commands, three stacked rows and horizontal overflow. Office-style automatic group collapse/flyouts, keytips, complete focus parity remain follow-ups. Source validation is not visual acceptance.
 - File > Add-ins migrates the native loaded-add-in list. BETA 1044 showAddinsMenu supplies notSupportedMenuOption stub actions and the inspected root bridge has only getAddinsList, without enable/disable. Real add-in enablement requires an exposed, validated IDE capability or separately designed restart-safe management; no functional enable/disable setting is implemented in this candidate.
 - Validate all native menu families, every dynamic/lazy submenu and combo selector with real project/debug/designer context. Existing command handlers/shortcuts are reused, but private-API compatibility remains bounded by the current command model. Verify future menus/options appear without changing the add-in.
 - Check live grid controls, build/zoom selectors, native menu shortcut interception, selected-page context, popup placement and File focus return in the actual IDE. Verify toolbar reparenting/docking and layout restoration without persisting hidden panels.
-- The earlier browser fixture was rejected by the browser URL policy. Shane supplied native screenshots of 1.3.0.0 on 2026-11-11; rendered acceptance of the new 1.3.0.1 changes remains open. Remove temporary diagnostics only after observed behavior supports doing so.
+- The earlier browser fixture was rejected by the browser URL policy. Shane supplied native screenshots of 1.3.0.0 on 2026-11-11; native 1.3.0.1 findings are recorded above; rendered acceptance of the new 1.3.0.2 changes remains open. Remove temporary diagnostics only after observed behavior supports doing so.
 
 
 

@@ -9,7 +9,7 @@
     const sources=new Map(), menus=new Map(), bindings=new Map(), placements=new Map(), pendingMenus=new Map();
     const hiddenNative=new Set();
     const fileUnderlays=new Map();
-    let shell, tabs, content, quick, backstage, fileNav, fileContent, popup, interval;
+    let shell, tabs, content, quick, backstage, fileNav, fileContent, popup, popupAnchor, interval;
     let signature='', menuSignature='', fileSection='File', savedFocus, captureSink, refreshAt=0;
     let nativeMenu=api.getShowContextMenu(), wrappedMenu, pendingSubmenu;
     let hydrating=false,layout;
@@ -181,7 +181,7 @@
             select.onchange=()=>{if(menuEnabled(item)&&item.onchange)item.onchange(select.value);};
             b.replaceWith(select);bindings.delete(b);bindings.set(select,{item});return;
         }
-        if(item.hoverAction||item._ribbonChildren){b.setAttribute('aria-haspopup','menu');b.append(el('span','tbui3-ribbon-chevron','\u2304'));}
+        if(item.hoverAction||item._ribbonChildren){b.setAttribute('aria-haspopup','menu');b.setAttribute('aria-expanded','false');b.classList.add('tbui3-ribbon-dropdown');const chevron=iconFor(null,{_ribbonGlyph:'chevron_down'});chevron.classList.add('tbui3-ribbon-chevron');b.append(chevron);}
         b.onclick=()=>{
             if(!menuEnabled(item))return;
             if(item.action){
@@ -192,15 +192,22 @@
         };
     }
     function openSubmenu(item,anchor) {
-        closePopup();popup=el('div','tbui3-toolbar-owned tbui3-ribbon-popup');popup.setAttribute('role','menu');
+        closePopup();popupAnchor=anchor;anchor.setAttribute('aria-expanded','true');popup=el('div','tbui3-toolbar-owned tbui3-ribbon-popup');popup.setAttribute('role','menu');
         const bounds=anchor.getBoundingClientRect();popup.style.setProperty('--tbui3-popup-x',Math.min(bounds.left,w.innerWidth-280)+'px');
         popup.style.setProperty('--tbui3-popup-y',Math.min(bounds.bottom,w.innerHeight-200)+'px');d.body.append(popup);
+        // Top-layer promotion escapes the IDE designer's million-level controls
+        // and 99,999,999 grabbers without hiding or reparenting the designer.
+        if(typeof popup.showPopover==='function'){
+            popup.setAttribute('popover','manual');
+            try{popup.showPopover();popup.dataset.popupLayer='top';}
+            catch(e){popup.removeAttribute('popover');popup.dataset.popupLayer='fallback';}
+        }else popup.dataset.popupLayer='fallback';
         const sink=items=>{if(!popup)return;clear(popup);for(const child of menuItems(items))command(child,popup);syncBindings();popup.querySelector('button,select')?.focus();};
         if(item._ribbonChildren){sink(item._ribbonChildren);return;}
         captureSink=sink;pendingSubmenu={sink,until:Date.now()+5000};
         try{item.hoverAction(anchor);}finally{captureSink=null;}
     }
-    function closePopup(){pendingSubmenu=null;if(popup){for(const n of popup.querySelectorAll('button,select'))bindings.delete(n);popup.remove();popup=null;}}
+    function closePopup(){pendingSubmenu=null;if(popup){for(const n of popup.querySelectorAll('button,select'))bindings.delete(n);if(popup.dataset.popupLayer==='top'&&typeof popup.hidePopover==='function'){try{popup.hidePopover();}catch(e){}}popup.remove();popup=null;}if(popupAnchor?.isConnected)popupAnchor.setAttribute('aria-expanded','false');popupAnchor=null;}
     function requestMenu(m) {
         const sink=items=>{m.items=items||[];m.loading=false;m.ready=true;if(state.mode!=='Ribbon'||hydrating)return;
             refreshLayout();
@@ -299,7 +306,7 @@
         else if(item.hoverAction||item._ribbonChildren)openSubmenu(item,anchor);
     }
     function openFile(section='Info') {
-        if(!backstage)return;
+        if(!backstage)return;closePopup();
         if(backstage.hidden)savedFocus=d.activeElement;
         fileSection=section==='File'?'Info':section==='Addins'?'Add-ins':section;
         backstage.hidden=false;syncFileUnderlays();
@@ -309,7 +316,7 @@
         const sig=JSON.stringify([fileSection,[...(layout?.file||[])].map(([name,items])=>[name,items.map(itemKey)])]);
         if(sig===fileNavSignature)return;fileNavSignature=sig;
         for(const [n]of bindings)if(fileNav.contains(n))bindings.delete(n);clear(fileNav);
-        const back=el('button','tbui3-backstage-back');back.append(iconFor(null,{_ribbonGlyph:'arrow_left'}),el('span','','Back'));back.setAttribute('aria-label','Back to project');back.onclick=()=>closeFile();fileNav.append(back);
+        const back=el('button','tbui3-backstage-back');const circle=el('span','tbui3-backstage-back-circle');circle.setAttribute('aria-hidden','true');circle.append(iconFor(null,{_ribbonGlyph:'arrow_left'}));back.append(circle);back.title='Back to project';back.setAttribute('aria-label','Back to project');back.onclick=()=>closeFile();fileNav.append(back);
         const main=el('div','tbui3-backstage-nav-group'),footer=el('div','tbui3-backstage-nav-group tbui3-backstage-footer');fileNav.append(main,footer);
         const add=(title,section,parent=main,direct=false)=>{
             const entries=layout?.file.get(section)||[],item=entries.find(menuEnabled)||entries[0];
@@ -347,7 +354,7 @@
         if(!list.length&&fileSection==='Add-ins')fileContent.append(el('p','tbui3-backstage-description',menus.get('rootMenuAddins')?.loading?'Loading add-ins...':'No add-ins are listed by the IDE.'));
         syncBindings();
     }
-    function closeFile(restoreFocus=true){if(backstage&&!backstage.hidden){backstage.hidden=true;restoreFileUnderlays();if(restoreFocus&&savedFocus?.isConnected)savedFocus.focus();}}
+    function closeFile(restoreFocus=true){if(backstage&&!backstage.hidden){closePopup();backstage.hidden=true;restoreFileUnderlays();if(restoreFocus&&savedFocus?.isConnected)savedFocus.focus();}}
     function syncBindings(){for(const box of d.querySelectorAll('.tbui3-ribbon-grid'))box.disabled=!(api.formGlobals&&api.formGlobals());for(const [b,entry]of bindings){
         const on=entry.source?!disabled(entry.source):menuEnabled(entry.item);b.disabled=!on;b.setAttribute('aria-disabled',String(!on));
             const isChecked=entry.source?entry.source.classList.contains('menuBarToggleOn'):checked(entry.item);

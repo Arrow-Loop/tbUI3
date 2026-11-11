@@ -1,6 +1,8 @@
 # Handoff: tbUI3
 
-## Current implementation, 2026-11-11: tbUI3IDE 1.3.0.1
+## Current implementation, 2026-11-11: tbUI3IDE 1.3.0.2
+
+The 1.3.0.2 pass addresses Shane's subsequent native screenshots: separate titlebar/tab and toolbar surfaces; transparent selected/hover tabs with accent/grey indicators; app-themed dropdowns promoted to the browser top layer (legacy max-z fallback); the real native white !important grid-field conflict; masked, size-aligned chevrons; accessible circled File Back. Native source confirms windowed controls at an offset of 1e6 and grabbers at 99,999,999, above the prior dropdown layer. The prior CSSOM checks missed the host's forced-white rule; the new suite loads it. All 84 JS/DOM/CSSOM/protocol checks pass with no skips; all 108 descriptors, 71 mirrors and six official-export matches remain intact. Current evidence: docs/validation/2026-11-11-ribbon-surfaces-popups.md. The icon map now has 37 SVGs (19 established, 18 gap-fill). Package 65, adapter v8, consumer project and identities remain unchanged. Rendered acceptance of this revision is still open.
 
 The 1.3.0.1 pass follows Shane's 2026-11-11 Office/native screenshots: old toolbar surface and compatible foregrounds; sourced light/dark hover/pressed fills independent of optional styling; command-specific full-size/stacked roles with multiple large buttons per group; icons on all command/navigation surfaces; Help moved under File; themed live grid controls. New metadata: tbIDE/tbUI3IDE/js/ribbon-presentation.js; 17 pinned MIT Fluent gap-fill SVGs: icons/ribbon.json. All 78 JS/DOM/CSSOM/protocol checks pass, all 108 live menu descriptors remain reachable, all 71 mirrors and six official-export files match. Evidence: docs/validation/2026-11-11-ribbon-presentation.md. Native rendered acceptance of this revision remains open; do not infer it from the supplied 1.3.0.0 screenshots. Package 65, adapter v8 and the consumer project are unchanged.
 

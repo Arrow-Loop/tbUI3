@@ -465,3 +465,32 @@ test('the actual theme option restores its saved disabled state without disablin
     assert.equal(style.media,'not all');assert.equal(window.__winui3IdeStyle.enabled,false);assert.equal(window.__winui3IdeStyle.dirty,false);
     assert.equal(window.__tbUI3TabDesigner.run('new'),'Tabs1_Page1');
 });
+
+test('actual native theme changes remove optional CSS and stale theme keys without the host notification',async()=>{
+    const {JSDOM}=await import(process.env.TB_JSDOM_MODULE||'jsdom');
+    const dom=new JSDOM('<html><head><style id="winui3IdeStyleCss">body { --color-text: white; }</style></head><body><div class="sectionHeaderInner">TOOLBOX</div></body></html>',{runScripts:'outside-only'}),w=dom.window;
+    const native=fs.readFileSync(process.env.TB_IDE_MAIN_JS,'utf8');
+    function extract(name){const start=native.indexOf('function '+name+'(');assert(start>=0);let pos=start;while((pos=native.indexOf('}',pos+1))>=0){try{const text=native.slice(start,pos+1);new vm.Script('('+text+')');return text;}catch{}}throw Error(name);}
+    w.eval('var activeThemeData={},activeThemeInfo=null,liveIDEOptions={colorTheme:"WinUI3 Dark"},customThemes=['+
+        '{name:"Dark",fullName:"Dark.theme",group:"dark",text:"GeneralBackColor: #2b2b2b;\\nGeneralTextColor: #c8c8c8;\\nDialogGeneralBackColor: white;\\nDialogGeneralForeColor: black;\\n"},'+
+        '{name:"WinUI3 Dark",fullName:"WinUI3 Dark.theme",group:"dark",text:"GeneralBackColor: #202020;\\nGeneralTextColor: white;\\nDialogGeneralBackColor: #282828;\\nDialogGeneralForeColor: white;\\nExtraWinUIResource: #123456 !important;\\n"}];'+
+        ['applyThemeData','buildThemeData','getThemeName'].map(extract).join(';'));
+    w.buildThemeData();w.eval(themeOptionsExpression(true));const st=w.__winui3IdeStyle;
+    assert.equal(w.document.querySelector('.sectionHeaderInner').textContent,'Toolbox');assert(w.document.getElementById('winui3IdeStyleCss'));assert.equal(w.document.documentElement.style.getPropertyValue('--themeExtraWinUIResource'),'#123456');
+    w.liveIDEOptions.colorTheme='Dark';w.buildThemeData();await new Promise(resolve=>w.setTimeout(resolve,0));
+    assert.equal(w.document.getElementById('winui3IdeStyleCss'),null);assert.equal(w.document.querySelector('.sectionHeaderInner').textContent,'TOOLBOX');assert.equal(st.enabled,true);assert.equal(st.dirty,false);
+    assert.equal(w.document.documentElement.style.getPropertyValue('--themeExtraWinUIResource'),'');assert.equal(w.document.documentElement.style.getPropertyValue('--themeDialogGeneralBackColor'),'white');assert.equal(w.document.documentElement.style.getPropertyValue('--themeDialogGeneralForeColor'),'black');
+    st.observer.disconnect();st.themeObserver.disconnect();dom.window.close();
+});
+test('reinstalling the actual options expression preserves an unsaved disabled preference through theme reconciliation',async()=>{
+    const {JSDOM}=await import(process.env.TB_JSDOM_MODULE||'jsdom');const dom=new JSDOM('<head><style id="winui3IdeStyleCss"></style></head><body><div class="tbis-optionRow"><div class="tbis-optionName">Colour Theme</div></div></body>',{runScripts:'outside-only'}),w=dom.window;
+    w.eval(themeOptionsExpression(true));const st=w.__winui3IdeStyle;w.document.querySelector('.winui3IdeStyleOptionRow .tbis-boolSegment').click();
+    assert.equal(st.enabled,false);assert.equal(st.dirty,true);assert.equal(w.document.getElementById('winui3IdeStyleCss').media,'not all');
+    // Registry has not yet been polled: replaying saved true must retain the newer page value.
+    w.eval(themeOptionsExpression(true));assert.equal(st.enabled,false);assert.equal(st.dirty,true);assert.equal(w.document.getElementById('winui3IdeStyleCss').media,'not all');assert.equal(w.document.querySelectorAll('.winui3IdeStyleOptionRow').length,1);
+    st.observer.disconnect();st.themeObserver.disconnect();w.close();
+    const main=fs.readFileSync('tbIDE/tbUI3IDE/src/Sources/MainModule.twin','utf8');
+    const timer=main.slice(main.indexOf('Private Sub OptionTimer_Timer()'),main.indexOf('Private Function OptionEnabled()'));
+    assert.match(timer,/Host.Themes.ActiveThemeName/);assert.match(timer,/StrComp\(activeName, LastThemeName, vbTextCompare\)/);assert(timer.indexOf('ApplyForActiveTheme')<timer.indexOf('If Len(changed) = 0 Then Exit Sub'));
+    assert.match(main,/s.media=\(st\?st.enabled:/);assert.match(main,/s&&s.themeObserver\)s.themeObserver.disconnect\(\)/);
+});

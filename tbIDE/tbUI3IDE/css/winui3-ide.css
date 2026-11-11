@@ -31,6 +31,7 @@ body.darkMode {
   --color-neutral-hover: #ffffff0f;       /* SubtleFillColorSecondary */
   --color-neutral-pressed: #ffffff0a;     /* SubtleFillColorTertiary */
   --color-divider: #ffffff15;             /* DividerStrokeColorDefault */
+  --color-menu-shadow: 0 0 2px rgba(0,0,0,0.12), 0 2px 4px rgba(0,0,0,0.14); /* Requested dropdown elevation, existing Fluent shadow4 composition */
   --color-flyout: #2c2c2c;                /* AcrylicInAppFillColorDefaultBrush fallback */
   --color-popup-border: #00000033;        /* SurfaceStrokeColorFlyout */
   --color-accent: #60cdff;                /* AccentFillColorDefault, default Windows blue */
@@ -77,6 +78,7 @@ body:not(.darkMode) {
   --color-neutral-hover: #00000009;
   --color-neutral-pressed: #00000006;
   --color-divider: #0000000f;
+  --color-menu-shadow: 0 0 2px rgba(0,0,0,0.12), 0 2px 4px rgba(0,0,0,0.14);
   --color-flyout: #f9f9f9;
   --color-popup-border: #0000000f;
   --color-accent: #005fb8;
@@ -169,7 +171,8 @@ body:not(.darkMode) .statusMenuItem:hover { background-color: rgba(0, 0, 0, 0.03
   (reference --space-3), so text starts at 39px. Separators are MenuFlyoutSeparator (reference
   .flyout-menu__separator: 1px DividerStrokeColorDefault, margin 4px 6px). Shortcut text is the
   accelerator: TextFillColorSecondary, 12px, 24px from the label (MenuFlyoutItemChevronMargin).
-  Deviation: no acrylic blur or shadow (the reference also uses none), and the IDE keeps its own
+  Composition update requested by Shane: the existing Fluent shadow4 effect separates menu surfaces.
+  No acrylic blur is added, and the IDE keeps its own
   submenu arrow position and keyboard handling. .focusedMenuItem is the IDE's keyboard highlight,
   a red tint with !important, so it is replaced with the hover colour. */
 
@@ -178,7 +181,7 @@ body:not(.darkMode) .statusMenuItem:hover { background-color: rgba(0, 0, 0, 0.03
    own menu bar. The cap leaves 44px, so when the IDE moves a long menu up to fit it stops below the menu bar. The IDE already moves a menu
    up to fit, but a menu taller than the window ended up cut off at the top, and its own max-height
    fallback is set without a unit, so it never applies. Capping the height here lets the IDE's move work. */
-body #contextMenu, body .contextMenu, body .contextMenu2, body #contextMenuSUB { box-sizing: border-box; min-width: 96px; max-height: calc(100vh - 44px); overflow-y: auto; padding: 2px 0; background: var(--color-flyout); color: var(--color-text); border: 1px solid var(--color-popup-border); border-radius: 8px; outline: none; font-family: 'Segoe UI Variable Text', 'Segoe UI Variable', 'Segoe UI', sans-serif; font-size: 14px; font-weight: 400; }
+body #contextMenu, body .contextMenu, body .contextMenu2, body #contextMenuSUB { box-sizing: border-box; min-width: 96px; max-height: calc(100vh - 44px); overflow-y: auto; padding: 2px 0; background: var(--color-flyout); color: var(--color-text); border: 1px solid var(--color-popup-border); border-radius: 8px; box-shadow: var(--color-menu-shadow); outline: none; font-family: 'Segoe UI Variable Text', 'Segoe UI Variable', 'Segoe UI', sans-serif; font-size: 14px; font-weight: 400; }
 body .contextMenuItem { position: relative; box-sizing: border-box; min-height: 32px; margin: 2px 4px; padding: 4px 25px 5px 39px; border-radius: 4px; color: var(--color-text); line-height: 23px; white-space: nowrap; cursor: default; }
 body .contextMenuNoIcons .contextMenuItem { padding-left: 11px; }
 body .contextMenuItem > .codicon { left: 0; margin-left: 11px; top: 8px; font-size: 16px; line-height: 16px; }

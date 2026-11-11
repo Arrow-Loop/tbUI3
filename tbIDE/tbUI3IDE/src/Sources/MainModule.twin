@@ -27,7 +27,7 @@ Private Class tbUI3IDEAddin
     ' Picks up a change to the add-in's own option in IDE Options (see InstallOption) and saves it.
     Private WithEvents OptionTimer As AddinTimer
     Private TabDesigner As TabViewDesignerController
-    Private IsApplied As Boolean
+    Private LastThemeName As String
     Private ToolbarInstalled As Boolean
     Private ToolbarLastError As String
 
@@ -75,7 +75,7 @@ Private Class tbUI3IDEAddin
         End If
         ClearStyle
         If Not StyleWindow Is Nothing Then
-            RunJs "(function(){var s=window.__winui3IdeStyle;if(s&&s.observer)s.observer.disconnect();" & _
+            RunJs "(function(){var s=window.__winui3IdeStyle;if(s&&s.observer)s.observer.disconnect();if(s&&s.themeObserver)s.themeObserver.disconnect();" & _
                 "document.querySelectorAll('.winui3IdeStyleOptionRow').forEach(function(r){r.remove();});" & _
                 "delete window.__winui3IdeStyle;return 'theme option removed';})()"
         End If
@@ -120,6 +120,7 @@ Private Class tbUI3IDEAddin
         InstallToolbar
         ApplyForTheme activeName
         InstallOption
+        LastThemeName = activeName
         Exit Sub
     Failed:
         Log Reason & ": could not read the active theme: " & ErrorText()
@@ -130,11 +131,7 @@ Private Class tbUI3IDEAddin
         If StrComp(Left$(ThemeName, Len(ThemePrefix)), ThemePrefix, vbTextCompare) = 0 Then
             ApplyStyle ThemeName
         Else
-            If IsApplied Then
-                ClearStyle
-            Else
-                Log "not a WinUI3 theme, nothing to do"
-            End If
+            ClearStyle
         End If
     End Sub
 
@@ -149,9 +146,9 @@ Private Class tbUI3IDEAddin
         stepName = "writing the style element"
         Log "page: " & RunJs("(function(){var s=document.getElementById('" & StyleElementId & "');var added=!s;" & _
             "if(added){s=document.createElement('style');s.id='" & StyleElementId & "';}" & _
-            "s.textContent=" & JsString(css) & ";document.head.appendChild(s);" & _
+            "s.textContent=" & JsString(css) & ";var st=window.__winui3IdeStyle;" & _
+            "s.media=(st?st.enabled:" & IIf(OptionEnabled(), "true", "false") & ")?'all':'not all';document.head.appendChild(s);" & _
             "return (added?'added':'updated')+' the style element';})()")
-        IsApplied = True
         Log "stylesheet applied for " & ThemeName & " (" & Len(css) & " characters)"
         LogPageState
         Exit Sub
@@ -160,12 +157,10 @@ Private Class tbUI3IDEAddin
     End Sub
 
     Private Sub ClearStyle()
-        If Not IsApplied Then Exit Sub
         On Error GoTo Failed
         Log "page: " & RunJs("(function(){var s=document.getElementById('" & StyleElementId & "');" & _
             "if(!s)return 'no style element to remove';s.remove();if(window.__winui3IdeStyle&&window.__winui3IdeStyle.titles)window.__winui3IdeStyle.titles();" & _
             "return 'stylesheet removed';})()")
-        IsApplied = False
         Exit Sub
     Failed:
         Log "could not remove the stylesheet: " & ErrorText()
@@ -184,8 +179,16 @@ Private Class tbUI3IDEAddin
         On Error GoTo Failed
         Dim enabled As Boolean = OptionEnabled()
         Dim js As String = "(function(){var w=window,st=w.__winui3IdeStyle||(w.__winui3IdeStyle={});" & _
-            "st.enabled=" & IIf(enabled, "true", "false") & ";st.dirty=false;" & _
-            "st.apply=function(){var s=document.getElementById('" & StyleElementId & "');if(s)s.media=st.enabled?'all':'not all';st.titles();};" & _
+            "if(typeof st.enabled!=='boolean')st.enabled=" & IIf(enabled, "true", "false") & ";if(typeof st.dirty!=='boolean')st.dirty=false;" & _
+            "st.syncTheme=function(){var name=typeof getThemeName==='function'?getThemeName():null;" & _
+            "var root=document.documentElement,data=typeof activeThemeData==='object'&&activeThemeData;" & _
+            "if(root&&data&&name!==null){var next={};Object.keys(data).forEach(function(k){next[k==='GlobalSearchMatchTextColorPart'?'--globalSearchMatchTextColorPart':'--theme'+k]=true;});" & _
+            "if(st.pageTheme!==name&&st.palette)Object.keys(st.palette).forEach(function(k){var old=st.palette[k];" & _
+            "if(!next[k]&&root.style.getPropertyValue(k)===old.value&&root.style.getPropertyPriority(k)===old.priority)root.style.removeProperty(k);});" & _
+            "st.palette={};Object.keys(next).forEach(function(k){st.palette[k]={value:root.style.getPropertyValue(k),priority:root.style.getPropertyPriority(k)};});st.pageTheme=name;}" & _
+            "return name===null||/^winui3/i.test(name);};" & _
+            "st.apply=function(){var eligible=st.syncTheme(),s=document.getElementById('" & StyleElementId & "');" & _
+            "if(s&&!eligible){s.remove();s=null;}if(s)s.media=st.enabled?'all':'not all';st.titles();};" & _
             "st.titleMap=" & PanelTitles & ";st.heads=st.heads||document.getElementsByClassName('sectionHeaderInner');" & _
             "st.titles=function(){var on=st.enabled&&!!document.getElementById('" & StyleElementId & "');" & _
             "for(var i=0;i<st.heads.length;i++){var h=st.heads[i],t=h.textContent,o=h.getAttribute('data-winui3-title');" & _
@@ -208,6 +211,9 @@ Private Class tbUI3IDEAddin
             "var r=n.closest('.tbis-optionRow'),x=r&&r.nextElementSibling;" & _
             "if(r&&!(x&&x.classList.contains('winui3IdeStyleOptionRow')))r.after(st.row());}};" & _
             "if(!st.observer){st.observer=new MutationObserver(function(){st.scan();});st.observer.observe(document.body,{childList:true,subtree:true});}" & _
+            "if(!st.themeObserver&&document.documentElement){st.themeObserver=new MutationObserver(function(){st.apply();});" & _
+            "st.themeObserver.observe(document.documentElement,{attributes:true,attributeFilter:['style','class']});" & _
+            "st.themeObserver.observe(document.body,{attributes:true,attributeFilter:['class']});}" & _
             "st.apply();st.scan();return 'option ready, styling '+(st.enabled?'on':'off');})()"
         Log "page: " & RunJs(js)
         If OptionTimer Is Nothing Then Set OptionTimer = New AddinTimer
@@ -234,6 +240,10 @@ Private Class tbUI3IDEAddin
     Private Sub OptionTimer_Timer()
         On Error GoTo Failed
         If Not ToolbarInstalled Then InstallToolbar
+        ' Saving Colour Theme in BETA 1044 Options calls changedIdeOptions without notifyChangedTheme.
+        ' Reconcile the actual name even when the host event was omitted; never reset unsaved page options.
+        Dim activeName As String = Host.Themes.ActiveThemeName
+        If StrComp(activeName, LastThemeName, vbTextCompare) <> 0 Then ApplyForActiveTheme "theme preference reconciled"
         Dim toolbarError As String = RunJs("window.__tbUI3Toolbar ? window.__tbUI3Toolbar.lastError : ''")
         If Len(toolbarError) > 0 And toolbarError <> ToolbarLastError Then Log "toolbar fallback: " & toolbarError
         ToolbarLastError = toolbarError

@@ -365,7 +365,7 @@ test('large and compact dropdowns use a masked Fluent chevron in their respectiv
     f.d.querySelector('[data-tab=Form]').click();const large=f.d.querySelector('.tbui3-ribbon-dropdown');assert(large.classList.contains('tbui3-ribbon-large'));
     assert.equal(large.lastElementChild,large.querySelector('.tbui3-ribbon-chevron'));assert.equal(large.querySelector('.tbui3-ribbon-chevron').textContent,'');
     const style=f.d.createElement('style');style.textContent=fs.readFileSync('tbIDE/tbUI3IDE/css/ide-toolbar.css','utf8');f.d.head.append(style);const rules=[...style.sheet.cssRules];
-    const grid=rules.find(r=>r.selectorText==='.tbui3-ribbon-content .tbui3-ribbon-large').style;assert.equal(grid.display,'grid');assert(grid.getPropertyValue('grid-template-rows').includes('10px'));
+    const grid=rules.find(r=>r.selectorText==='.tbui3-ribbon-content .tbui3-ribbon-large').style;assert.equal(grid.display,'grid');assert(grid.getPropertyValue('grid-template-rows').includes('8px'));
     const big=rules.find(r=>r.selectorText==='.tbui3-ribbon-content .tbui3-ribbon-large > .tbui3-ribbon-chevron').style;assert.equal(big.getPropertyValue('justify-self'),'center');assert.equal(parseFloat(big.margin),0);
     const small=rules.find(r=>r.selectorText==='.tbui3-toolbar-owned .tbui3-ribbon-command > .tbui3-ribbon-chevron').style;assert.equal(small.getPropertyValue('align-self'),'center');assert.equal(small.getPropertyValue('margin-left'),'auto');f.dispose();
 });
@@ -431,7 +431,7 @@ test('outside mouse/pointer clicks, browser light-dismiss and window blur close 
 test('all full-size buttons share a fixed top glyph row for one-line, two-line and dropdown captions',()=>{
     const f=fixture();f.items.Edit=[{name:'Paste',action:'tbEditor_ClipboardPaste'},{name:'Find in project with longer label',action:'tbProject_FindInFiles'},{name:'Fold',action:'tbEditor_Fold'}];f.adapter.setMode('Ribbon');
     const style=f.d.createElement('style');style.textContent=fs.readFileSync('tbIDE/tbUI3IDE/css/ide-toolbar.css','utf8');f.d.head.append(style);const rules=[...style.sheet.cssRules];const large=rules.find(r=>r.selectorText==='.tbui3-ribbon-content .tbui3-ribbon-large').style;
-    assert.equal(large.display,'grid');assert.equal(large.getPropertyValue('align-content'),'start');assert.equal(large.getPropertyValue('grid-template-rows'),'28px minmax(0, 28px) 10px');
+    assert.equal(large.display,'grid');assert.equal(large.getPropertyValue('align-content'),'start');assert.equal(large.getPropertyValue('grid-template-rows'),'32px 4px 28px 2px 8px');
     for(const button of f.d.querySelectorAll('.tbui3-ribbon-large'))assert(button.firstElementChild.classList.contains('tbui3-ribbon-icon'));
     assert(!rules.some(r=>r.selectorText==='.tbui3-ribbon-content .tbui3-ribbon-large.tbui3-ribbon-dropdown'&&r.style.getPropertyValue('align-content')==='center'));f.dispose();
 });
@@ -459,4 +459,45 @@ test('native grid toggle replaces the shown checkbox while preserving canonical 
 });
 test('native producer capture rejects bound/private-source incompatibility without dropping its parent command',()=>{
     const f=fixture();attachNativeBridge(f);f.items.Format[0].name='{%MenuCaptionFormatAlign}';f.items.Format[0].hoverAction=f.items.Format[0].hoverAction.bind(null);f.adapter.setMode('Ribbon');f.d.querySelector('[data-tab=Form]').click();const b=f.d.querySelector('[aria-haspopup=menu]');assert(b);b.click();assert(f.d.querySelector('.tbui3-ribbon-popup button'));f.dispose();
+});
+
+test('Ribbon and Hybrid share centered glyph canvases, intrinsic widths, fixed padding and 89px dividers',()=>{
+    const css=fs.readFileSync('tbIDE/tbUI3IDE/css/ide-toolbar.css','utf8');
+    for(const mode of ['Ribbon','Hybrid']){
+        const f=fixture();f.button('menuBarGrid','Show grid');f.button('pasteIcon','Paste');
+        const native=f.d.createElement('div');native.id='menuBarGridOptions';native.innerHTML='<div class="menuBarGridOptionsInner"><div class="menuBarGridOptionRow"><input class="optionGridWidth" type="number" value="10"></div></div>';f.toolbar.after(native);
+        f.adapter.setMode(mode);f.d.querySelector('[data-tab=Form]').click();
+        const groups=[...f.d.querySelectorAll('.tbui3-ribbon-group')].filter(n=>n.getAttribute('aria-label')==='Grid');
+        assert.equal(groups.length,1);assert(groups[0].querySelector('[data-source=menuBarGrid]'));assert(groups[0].querySelector('.tbui3-ribbon-grid input'));assert(!f.d.querySelector('[aria-label="Grid options"]'));
+        const style=f.d.createElement('style');style.textContent=css;f.d.head.append(style);const rules=[...style.sheet.cssRules],rule=selector=>rules.find(r=>r.selectorText===selector).style;
+        const large=rule('.tbui3-ribbon-content .tbui3-ribbon-large');assert.equal(large.width,'min-content');assert.equal(large.getPropertyValue('justify-content'),'stretch');assert.equal(large.getPropertyValue('grid-template-columns'),'1fr');assert.equal(large.getPropertyValue('align-items'),'start');
+        assert.equal(large.padding,'0px 4px');assert.equal(large.getPropertyValue('grid-template-rows'),'32px 4px 28px 2px 8px');
+        const area=rule('.tbui3-ribbon-content');assert.equal(area.padding,'4px 4px 0px');assert.equal(area.height,'var(--tbui3-command-area-height)');
+        const divider=rule('.tbui3-ribbon-group:not(:last-child)::after');assert.equal(divider.height,'89px');assert.equal(parseFloat(divider.top),0);
+        const big=rule('.tbui3-ribbon-content .tbui3-ribbon-large .tbui3-ribbon-icon');assert.equal(big.width,'32px');assert.equal(big.height,'32px');assert.equal(big.getPropertyValue('grid-row'),'1');
+        const small=rule('.tbui3-ribbon-icon');assert.equal(small.width,'16px');assert.equal(small.height,'16px');assert.equal(small.getPropertyValue('place-items'),'center');
+        const caption=rule('.tbui3-ribbon-content .tbui3-ribbon-large .tbui3-ribbon-label');assert.equal(caption.getPropertyValue('grid-row'),'3');assert.equal(caption.getPropertyValue('justify-self'),'stretch');assert.equal(caption.getPropertyValue('overflow-wrap'),'break-word');
+        f.adapter.setMode('Classic');assert.equal(native.querySelector('input').value,'10');f.dispose();
+    }
+});
+test('Configuration and Zoom keep hidden accessible captions in both replacement modes',()=>{
+    for(const mode of ['Ribbon','Hybrid']){
+        const f=fixture(),zoom=f.d.createElement('select');zoom.id='zoomSelect';zoom.innerHTML='<option>100%</option>';f.toolbar.append(zoom);f.adapter.setMode(mode);
+        for(const [id,tab]of [['buildConfigSelector',mode==='Ribbon'?'Project':'Home'],['zoomSelect',mode==='Ribbon'?'View':'Form']]){
+            f.d.querySelector(`[data-tab=${tab}]`).click();const node=f.d.getElementById(id);assert(node.closest('.tbui3-ribbon-selector'));assert(node.previousElementSibling.classList.contains('tbui3-ribbon-caption-hidden'));assert(node.previousElementSibling.textContent);
+        }f.dispose();
+    }
+});
+test('File rail reaches the top while title controls remain uncovered and Native Dark uses application foreground',()=>{
+    const f=fixture();f.adapter.setMode('Ribbon');f.adapter.openFile();const style=f.d.createElement('style');style.textContent=fs.readFileSync('tbIDE/tbUI3IDE/css/ide-toolbar.css','utf8');f.d.head.append(style);const rules=[...style.sheet.cssRules];
+    const file=rules.find(r=>r.selectorText==='.tbui3-backstage').style,rail=rules.find(r=>r.selectorText==='.tbui3-backstage-rail').style;
+    assert.equal(file.inset,'32px 0 0');assert.equal(rail.getPropertyValue('margin-top'),'-32px');assert.equal(rail.padding,'44px 8px 16px');assert.equal(file.color,'var(--tbui3-toolbar-fg)');assert(!file.color.includes('DialogGeneralForeColor'));assert(fs.readFileSync('tbIDE/tbUI3IDE/css/ide-toolbar.css','utf8').includes('-webkit-app-region: no-drag'));
+    assert(!f.d.getElementById('rootMenuClose').closest('.tbui3-backstage-underlay'));f.dispose();
+});
+
+test('WinUI3 Light and Dark share subtle menu elevation with native and replacement dropdowns',()=>{
+    const css=fs.readFileSync('tbIDE/tbUI3IDE/css/winui3-ide.css','utf8'),dom=new JSDOM('<head></head>'),d=dom.window.document,style=d.createElement('style');style.textContent=css+'\n'+fs.readFileSync('tbIDE/tbUI3IDE/css/ide-toolbar.css','utf8');d.head.append(style);const rules=[...style.sheet.cssRules];
+    for(const selector of ['body.darkMode','body:not(.darkMode)']){const token=rules.find(r=>r.selectorText===selector).style.getPropertyValue('--color-menu-shadow');assert.equal(token.replace(/\s/g,''),'002pxrgba(0,0,0,0.12),02px4pxrgba(0,0,0,0.14)');}
+    const native=rules.find(r=>r.selectorText==='body #contextMenu, body .contextMenu, body .contextMenu2, body #contextMenuSUB');assert.equal(native.style.getPropertyValue('box-shadow'),'var(--color-menu-shadow)');
+    const popup=rules.find(r=>r.selectorText==='.tbui3-ribbon-popup');assert.equal(popup.style.getPropertyValue('box-shadow'),'var(--color-menu-shadow, none)');dom.window.close();
 });

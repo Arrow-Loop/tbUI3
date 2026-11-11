@@ -1,5 +1,15 @@
 # Changelog: tbIDE (WinUI 3 look for the twinBASIC IDE)
 
+## 2026-11-11, compact glyph canvases and theme reconciliation (tbUI3IDE 1.3.0.4)
+
+- Corrected large-button horizontal alignment by replacing the inherited left-justified grid with a stretched single column. Large buttons now size to minimum content between 50px and 86px rather than starting from maximum content. Labels wrap at word boundaries with a bounded long-word fallback. Paste, Grid and all other large commands share this layout in Hybrid and Ribbon.
+- The 100px command card now has 4px top padding and 89px section dividers. Each 76px large button budgets 32px glyph canvas, 4px caption gap, 28px two-line caption, 2px chevron gap, 8px chevron and 2px borders. Artwork is centered in the canvas; small command canvases are 16px. Group gaps remain compact.
+- Combined the original Grid toggle and its live native options into one Grid group. Configuration joins Zoom as a visually hidden accessible selector caption. File's rail extends through the former quick-access row, while the title controls remain uncovered. File now pairs the general surface with the application foreground, correcting black text on Native Dark.
+- Fixed missing theme-event coverage: BETA 1044's IDE Options save path calls changedIdeOptions without notifyChangedTheme. The shared options timer now reconciles the actual theme name. A page-side theme-property observer removes optional CSS immediately when leaving WinUI3, restores native panel titles and removes only previously recorded theme variables omitted by the next palette whose value/priority remain unchanged. Native palette values are retained.
+- Verified the additional-styling toggle's actual emitted JavaScript still switches optional CSS off/on and restores saved Off independently of page management and toolbar mode. Reinitialization no longer overwrites a newer, unsaved page preference; stylesheet insertion sets its media before attaching it, preserving Off during theme reapplication. Both observers disconnect on unload.
+- Added a subtle menu shadow in WinUI3 Light and Dark using the existing Fluent shadow4 composition. Native menus/submenus and replacement dropdowns share the token. This remains optional additional styling and disappears with that stylesheet; other themes retain their own palette.
+- All 99 JavaScript/DOM/CSSOM/native-protocol checks pass without skips, all 71 project mirrors match, and all six current official-export files match. Runtime package 1.0.0.65, adapter v8, consumer project and stable IDs remain unchanged. Evidence: docs/validation/2026-11-11-ribbon-geometry-theme-lifecycle.md.
+
 ## 2026-11-11, direct Form/Insert commands and editor-aware ribbon (tbUI3IDE 1.3.0.3)
 
 - Form now expands the live native Align and Make Same Size descriptors directly into its groups. The four alignment and four size commands use their existing toolbar nodes/handlers/glyphs in classic order; additional native alignment options remain directly available. Context/disabled state and future child descriptors are retained.

@@ -132,14 +132,14 @@
     function returnNodes() {for(const [n,marker]of placements){if(marker.isConnected)marker.replaceWith(n);}placements.clear();}
     function addSources(ids,parent) {
         for(const id of ids){const n=sources.get(id);if(!n)continue;
-            if(n.matches('select')){const l=el('label','tbui3-ribbon-selector');l.title=label(n);l.append(el('span',id==='zoomSelect'?'tbui3-ribbon-caption-hidden':'',sourceCaption(n)));park(n,l);parent.append(l);}
+            if(n.matches('select')){const l=el('label','tbui3-ribbon-selector');l.title=label(n);l.append(el('span',['zoomSelect','buildConfigSelector'].includes(id)?'tbui3-ribbon-caption-hidden':'',sourceCaption(n)));park(n,l);parent.append(l);}
             else sourceButton(n,parent,false,!!api.present?.({},id).large);
         }
     }
     function addGrid() {
         const n=d.getElementById('menuBarGridOptions');if(!n)return;
         const body=n.querySelector('.menuBarGridOptionsInner');if(body){const box=el('fieldset','tbui3-ribbon-grid'+(sources.has('menuBarGrid')?' tbui3-ribbon-grid-toggle-present':''));
-            box.disabled=!(api.formGlobals&&api.formGlobals());park(body,box);group('Grid options').append(box);}
+            box.disabled=!(api.formGlobals&&api.formGlobals());park(body,box);const target=content.querySelector('.tbui3-ribbon-group[aria-label="Grid"] .tbui3-ribbon-group-body')||group('Grid');target.append(box);}
     }
     function pages(parent=content) {const body=group('MultiPage',parent);for(const n of sources.values())if(pageSource(n))sourceButton(n,body);}
     function addins(parent=content,includeUnknown=false) {

@@ -47,28 +47,29 @@
 .tbui3-ribbon-tab[aria-selected='true']::after { background: var(--tbui3-accent); }
 .tbui3-ribbon-command:hover:not(:disabled), .tbui3-backstage-nav:hover:not(:disabled), .tbui3-backstage-back:hover { background: var(--tbui3-toolbar-hover); }
 .tbui3-toolbar-owned button:focus-visible, .tbui3-toolbar-owned select:focus-visible, .tbui3-toolbar-owned input:focus-visible, .tbui3-toolbar-select:focus-visible { outline: 2px solid currentColor; outline-offset: -3px; }
-.tbui3-ribbon-content { background: var(--tbui3-toolbar-bg); box-shadow: var(--tbui3-toolbar-shadow); margin: 0 2px; display: flex; align-items: stretch; height: var(--tbui3-command-area-height); min-height: 0; max-height: var(--tbui3-command-area-height); overflow-x: auto; overflow-y: hidden; padding: 2px 4px 0; gap: 2px; border-bottom: var(--tbui3-toolbar-line); border-radius: 8px; scrollbar-width: thin; }
+.tbui3-ribbon-content { background: var(--tbui3-toolbar-bg); box-shadow: var(--tbui3-toolbar-shadow); margin: 0 2px; display: flex; align-items: stretch; height: var(--tbui3-command-area-height); min-height: 0; max-height: var(--tbui3-command-area-height); overflow-x: auto; overflow-y: hidden; padding: 4px 4px 0; gap: 2px; border-bottom: var(--tbui3-toolbar-line); border-radius: 8px; scrollbar-width: thin; }
 .tbui3-ribbon-content[hidden], .tbui3-backstage[hidden] { display: none; }
-.tbui3-ribbon-group { display: flex; flex: 0 0 auto; flex-direction: column; padding: 0 4px; border-right: var(--tbui3-toolbar-line); min-width: 0; }
-.tbui3-ribbon-group:last-child { border-right: 0; }
+.tbui3-ribbon-group { position: relative; display: flex; flex: 0 0 auto; flex-direction: column; padding: 0 4px; min-width: 0; }
+.tbui3-ribbon-group:not(:last-child)::after { content: ''; position: absolute; top: 0; right: 0; height: 89px; border-right: var(--tbui3-toolbar-line); pointer-events: none; }
 .tbui3-ribbon-group-body { display: grid; grid-auto-flow: column; grid-template-rows: repeat(3, 24px); align-items: stretch; gap: 2px; flex: 0 0 76px; }
 .tbui3-ribbon-group-title { height: 14px; flex: 0 0 14px; line-height: 12px; text-align: center; font-size: 11px; padding-top: 2px; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; opacity: .8; }
 .tbui3-ribbon-command { display: flex; flex-direction: row; justify-content: start; align-items: center; gap: 4px; min-width: 50px; max-width: 160px; min-height: 24px; height: 24px; padding: 2px 4px; border: 1px solid transparent; border-radius: 4px; background: transparent; color: inherit; font: inherit; font-size: 12px; cursor: default; }
 /* Every large glyph starts in the same fixed top row, regardless of caption length. */
-.tbui3-ribbon-content .tbui3-ribbon-large { position: relative; grid-row: span 3; display: grid; grid-template-rows: 28px minmax(0, 28px) 10px; justify-items: center; align-content: start; row-gap: 2px; width: max-content; min-width: var(--tbui3-large-button-width); max-width: var(--tbui3-large-button-max-width); height: var(--tbui3-large-button-height); min-height: var(--tbui3-large-button-height); max-height: var(--tbui3-large-button-height); padding: 2px 6px; }
+.tbui3-ribbon-content .tbui3-ribbon-large { position: relative; grid-row: span 3; display: grid; grid-template-columns: 1fr; grid-template-rows: 32px 4px 28px 2px 8px; justify-content: stretch; justify-items: center; align-items: start; align-content: start; row-gap: 0; width: min-content; min-width: var(--tbui3-large-button-width); max-width: var(--tbui3-large-button-max-width); height: var(--tbui3-large-button-height); min-height: var(--tbui3-large-button-height); max-height: var(--tbui3-large-button-height); padding: 0 4px; }
 .tbui3-ribbon-command:disabled { opacity: .45; }
 .tbui3-ribbon-command[hidden] { display: none; }
 .tbui3-ribbon-command:active:not(:disabled) { background: var(--tbui3-toolbar-pressed); }
 .tbui3-ribbon-checked { background: var(--tbui3-toolbar-selected); border-color: currentColor; }
 .tbui3-ribbon-label { line-height: 16px; text-align: left; max-width: 150px; white-space: normal; }
 .tbui3-ribbon-content .tbui3-ribbon-label { min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.tbui3-ribbon-icon { display: inline-block; flex: 0 0 auto; width: 18px; height: 18px; font-size: 18px; line-height: 18px; background: var(--tbui3-native-image, none) center / contain no-repeat; }
+.tbui3-ribbon-icon { display: inline-grid; place-items: center; flex: 0 0 auto; width: 16px; height: 16px; font-size: 16px; line-height: 16px; background: var(--tbui3-native-image, none) center / contain no-repeat; }
 .tbui3-ribbon-icon[hidden] { display: none; }
-.tbui3-ribbon-content .tbui3-ribbon-large .tbui3-ribbon-icon { width: 28px; height: 28px; font-size: 28px; line-height: 28px; }
-.tbui3-ribbon-content .tbui3-ribbon-large .tbui3-ribbon-label { text-align: center; min-width: 0; max-width: calc(var(--tbui3-large-button-max-width) - 14px); max-height: 28px; line-height: 14px; white-space: normal; overflow: hidden; overflow-wrap: anywhere; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; }
+.tbui3-ribbon-content .tbui3-ribbon-large .tbui3-ribbon-icon { grid-row: 1; width: 32px; height: 32px; font-size: 28px; line-height: 32px; background-size: 28px 28px; mask-size: 28px 28px; -webkit-mask-size: 28px 28px; }
+.tbui3-ribbon-icon.codicon::before { line-height: inherit; text-align: center; }
+.tbui3-ribbon-content .tbui3-ribbon-large .tbui3-ribbon-label { grid-row: 3; justify-self: stretch; text-align: center; min-width: 0; max-width: none; max-height: 28px; line-height: 14px; white-space: normal; overflow: hidden; overflow-wrap: break-word; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; }
 /* A real Fluent mask, not a font character; placement follows button size. */
 .tbui3-toolbar-owned .tbui3-ribbon-command > .tbui3-ribbon-chevron { width: 12px; height: 12px; margin-left: auto; align-self: center; }
-.tbui3-ribbon-content .tbui3-ribbon-large > .tbui3-ribbon-chevron { width: 12px; height: 10px; margin: 0; justify-self: center; align-self: center; }
+.tbui3-ribbon-content .tbui3-ribbon-large > .tbui3-ribbon-chevron { grid-row: 5; width: 12px; height: 8px; margin: 0; mask-size: contain; -webkit-mask-size: contain; justify-self: center; align-self: center; }
 .tbui3-ribbon-mask { background: currentColor; mask: var(--tbui3-icon) center / contain no-repeat; -webkit-mask: var(--tbui3-icon) center / contain no-repeat; }
 .tbui3-ribbon-caption-hidden { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
 .tbui3-ribbon-selector { display: flex; grid-row: span 3; flex-direction: column; gap: 4px; padding: 2px 4px; max-width: 120px; font-size: 11px; }
@@ -93,13 +94,13 @@
 .tbui3-quick[hidden] { display: none; }
 .tbui3-quick-real-titlebar { min-height: 32px; }
 .tbui3-ribbon-compact { height: 28px; min-height: 28px; min-width: 30px; width: 30px; padding: 4px; }
-.tbui3-ribbon-compact .tbui3-ribbon-icon { width: 18px; height: 18px; font-size: 18px; line-height: 18px; }
+.tbui3-ribbon-compact .tbui3-ribbon-icon { width: 16px; height: 16px; font-size: 16px; line-height: 16px; }
 .tbui3-ribbon-compact .tbui3-ribbon-label { display: none; }
 /* Backstage hides the live designer as well as covering it: designer layers can
    otherwise paint above an ordinary document overlay. State is restored by JS. */
 .tbui3-backstage-underlay, .tbui3-backstage-underlay * { visibility: hidden !important; }
-.tbui3-backstage { position: fixed; inset: 32px 0 0; z-index: 100000; display: flex; background: var(--themeGeneralBackColor, var(--tbui3-toolbar-bg)); color: var(--themeDialogGeneralForeColor, var(--tbui3-toolbar-fg)); }
-.tbui3-backstage-rail { display: flex; flex-direction: column; gap: 4px; flex: 0 0 160px; padding: 12px 8px 16px; background: var(--tbui3-toolbar-bg); overflow-y: auto; border-right: var(--tbui3-toolbar-line); }
+.tbui3-backstage { position: fixed; inset: 32px 0 0; z-index: 100000; display: flex; background: var(--themeGeneralBackColor, var(--tbui3-toolbar-bg)); color: var(--tbui3-toolbar-fg); }
+.tbui3-backstage-rail { display: flex; flex-direction: column; gap: 4px; flex: 0 0 160px; margin-top: -32px; padding: 44px 8px 16px; -webkit-app-region: no-drag; background: var(--tbui3-toolbar-bg); overflow-y: auto; border-right: var(--tbui3-toolbar-line); }
 .tbui3-backstage-nav-group { display: flex; flex-direction: column; gap: 2px; }
 .tbui3-backstage-footer { margin-top: auto; padding-top: 24px; }
 .tbui3-backstage-back, .tbui3-backstage-nav { display: flex; align-items: center; gap: 12px; min-height: 38px; width: 100%; border: 0; border-radius: 4px; background: transparent; color: inherit; font: inherit; text-align: left; padding: 8px 12px; }
@@ -118,8 +119,8 @@
 .tbui3-backstage-task .tbui3-ribbon-icon { width: 28px; height: 28px; font-size: 28px; line-height: 28px; }
 .tbui3-backstage-task .tbui3-ribbon-label { max-width: none; text-align: left; font-size: 14px; }
 /* Prefer the browser top layer; max signed CSS z-index is the legacy fallback. */
-.tbui3-ribbon-popup { position: fixed; inset: auto; margin: 0; left: max(0px, var(--tbui3-popup-x)); top: max(0px, var(--tbui3-popup-y)); display: flex; flex-direction: column; padding: 4px; max-height: 60vh; max-width: calc(100vw - 8px); overflow: auto; z-index: 2147483647; min-width: 240px; background: var(--color-flyout, var(--themeGeneralBackColor, var(--themeDialogGeneralBackColor))); color: var(--tbui3-toolbar-fg); border: var(--tbui3-toolbar-line); border-radius: 8px; }
+.tbui3-ribbon-popup { position: fixed; inset: auto; margin: 0; left: max(0px, var(--tbui3-popup-x)); top: max(0px, var(--tbui3-popup-y)); display: flex; flex-direction: column; padding: 4px; max-height: 60vh; max-width: calc(100vw - 8px); overflow: auto; z-index: 2147483647; box-shadow: var(--color-menu-shadow, none); min-width: 240px; background: var(--color-flyout, var(--themeGeneralBackColor, var(--themeDialogGeneralBackColor))); color: var(--tbui3-toolbar-fg); border: var(--tbui3-toolbar-line); border-radius: 8px; }
 .tbui3-ribbon-popup .tbui3-ribbon-command { flex-direction: row; justify-content: start; height: auto; min-height: 32px; max-width: none; }
-.tbui3-ribbon-popup .tbui3-ribbon-icon { width: 20px; height: 20px; font-size: 20px; }
+.tbui3-ribbon-popup .tbui3-ribbon-icon { width: 16px; height: 16px; font-size: 16px; }
 .tbui3-ribbon-popup .tbui3-ribbon-label { max-width: none; text-align: left; }
 .tbui3-ribbon-separator { border-top: var(--tbui3-toolbar-line); margin: 4px 0; }

@@ -12,18 +12,22 @@
         'tbFormDesigner_BringControlToFront','tbFormDesigner_SendControlToBack','tbFormDesigner_ToggleLockSelectedControls',
         'tbProject_ShowReferences','tbProject_ShowSettings','tbBuild_Start','tbBuild_Clean',
         'tbCompiler_Restart','tbCompiler_RestartAndFlushLlvmCache','tbProject_OpenProjectFolder','tbProject_OpenBuildFolder',
-        'tbDebug_ToggleBreakpoint','tbDebug_SetNextExecutionStatement'
+        'tbDebug_ToggleBreakpoint','tbDebug_SetNextExecutionStatement',
+        'tbFormDesigner_AlignSelectedControlsLeft','tbFormDesigner_AlignSelectedControlsTop','tbFormDesigner_AlignSelectedControlsRight','tbFormDesigner_AlignSelectedControlsBottom',
+        'tbFormDesigner_ResizeSelectedControlsWidest','tbFormDesigner_ResizeSelectedControlsTallest','tbFormDesigner_ResizeSelectedControlsNarrowest','tbFormDesigner_ResizeSelectedControlsShortest'
     ]);
     const largeSources=new Set(['saveIcon','searchIcon','designSwitchIcon','playIcon','buildIcon','trashIcon','restartIcon',
         'commentIcon','uncommentIcon','menuBarAlignLeft','menuBarAlignTop','menuBarAlignRight','menuBarAlignBottom',
         'menuBarSizeWidest','menuBarSizeTallest','menuBarSizeNarrowest','menuBarSizeShortest',
-        'menuBarBringToFront','menuBarSendToBack','menuBarPreview','menuBarColorMode']);
+        'menuBarBringToFront','menuBarSendToBack','menuBarPreview','menuBarColorMode','menuBarGrid']);
     const largeNames=['MenuCaptionProjectAdd','MenuCaptionFormatAlign','MenuCaptionFormatMakeSameSize',
         'MenuCaptionFormatHorizontalSpacing','MenuCaptionFormatVerticalSpacing','MenuCaptionWindowPanelLayouts',
         'MenuCaptionWindowPanelFeatures','MenuCaptionWindowTheme'];
-    const large=largeActions.has(a)||largeSources.has(source)||source.startsWith('addinButton-')||
+    const large=item._ribbonTab==='Insert'||largeActions.has(a)||largeSources.has(source)||source.startsWith('addinButton-')||
         largeNames.some(has)||['Fold','Unfold','Find options','More panels','Debugger Options'].includes(n);
+    const captions={tbFileSystem_AddFolder:'Folder',tbFileSystem_AddWindowsForm:'Windows form',tbFileSystem_AddWindowsMDIForm:'MDI form',tbFileSystem_AddWindowsUserControl:'UserControl',tbFileSystem_AddWindowsPropertyPage:'Property page',tbFileSystem_AddWindowsReport:'Report',tbFileSystem_AddCustomControlsForm:'Custom form',tbFileSystem_AddModuleTWIN:'Module (.twin)',tbFileSystem_AddClassTWIN:'Class (.twin)',tbFileSystem_AddModuleBAS:'Module (.bas)',tbFileSystem_AddClassCLS:'Class (.cls)',tbFileSystem_AddOtherFile:'Other file',tbFileSystem_ImportFile:'Import',tbFileSystem_AddResourceVisualStylesManifest:'Visual styles',tbFileSystem_AddResourceStringTable:'String table',tbFileSystem_AddResourceMessageTable:'Message table'};
     let glyph='apps_list';
+    if(/^tbFileSystem_Add(?:Module|Class)/.test(a))glyph='code';
     if(/Find|Search/i.test(n)||/Find/.test(a))glyph='searchIcon';
     if(/ClipboardCut$/.test(a))glyph='cut';
     else if(/SelectAll|SelectAllMatches/.test(a))glyph='select_all_on';
@@ -40,5 +44,5 @@
     else if(/Settings|Options|PanelFeatures|KeyboardShortcuts|Language/.test(n)||/ShowSettings|ShowIDEOptions/.test(a))glyph='settings';
     else if(/^tbHelp_|Help/.test(n))glyph='chat_help';
     else if(source.startsWith('addinButton-')||has('Add-ins'))glyph=/Search|Find/i.test(n)?'searchIcon':'puzzle_piece';
-    return {large,glyph:item._ribbonGlyph||glyph};
+    return {large,glyph:item._ribbonGlyph||glyph,caption:captions[a]};
 })

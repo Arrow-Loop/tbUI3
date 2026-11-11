@@ -1,5 +1,16 @@
 # Changelog: tbIDE (WinUI 3 look for the twinBASIC IDE)
 
+## 2026-11-11, direct Form/Insert commands and editor-aware ribbon (tbUI3IDE 1.3.0.3)
+
+- Form now expands the live native Align and Make Same Size descriptors directly into its groups. The four alignment and four size commands use their existing toolbar nodes/handlers/glyphs in classic order; additional native alignment options remain directly available. Context/disabled state and future child descriptors are retained.
+- Insert now expands the actual asynchronous native Add component producer into Forms, Code, Resources, Files and fallback Components groups, with concise labels/full native tooltips. New dynamic options are retained. An isolated descriptor-capture bridge shadows only showContextMenu in the producer's own JavaScript realm, so asynchronous captures do not temporarily replace the IDE's global menu function or open an unrequested popup. Unsupported producer/private-closure changes retain the native parent as a compatibility fallback.
+- Dropdowns use browser auto-popover light-dismiss plus window-capture pointer/mouse outside-click handling. Clicking empty ribbon surfaces now dismisses them too; browser close events, window blur and clicking the same dropdown button also clean up state. The original outside click is not consumed.
+- All full-size buttons share the same fixed top glyph/caption/chevron grid, independent of caption length or dropdown role; the 76px height and existing size caps remain unchanged.
+- File immediately hides quick access, restoring the same six buttons and focus on exit. The visible Zoom caption above its native selector is removed while retaining an accessible hidden label and the original selector/events.
+- Native editor identity/type changes switch the ribbon to Code for CodeEditor or Form for UIDesigner. Stable editor state leaves a manual ribbon choice intact; File defers editor-following until exit. Both Hybrid and Ribbon use the same bounded native-state observation.
+- Restored the classic Grid toggle on Form using its original native handler, checked state and canonical Show Grid checkbox state. The redundant checkbox row is hidden only inside the replacement grid fieldset when that toggle exists; Classic restoration retains the original node and value.
+- All 93 JavaScript/DOM/CSSOM/protocol checks pass without skips, including nine new regressions and actual BETA 1044 native producers. All 71 project mirrors and six official-export files match. Native package 1.0.0.65, adapter v8, consumer project and identities remain unchanged. Evidence: docs/validation/2026-11-11-ribbon-direct-commands.md.
+
 ## 2026-11-11, separate ribbon surfaces and correct dropdown layering (tbUI3IDE 1.3.0.2)
 
 - Separated the title/menu-colored tab strip from the toolbar-colored command card. Only the command card carries the existing Fluent shadow/corners. Tabs stay transparent: selected tabs show an active-theme accent underline, and unselected hover shows a grey underline without a hover plate. Keyboard focus remains visible.

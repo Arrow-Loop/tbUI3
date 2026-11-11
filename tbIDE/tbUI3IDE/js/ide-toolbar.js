@@ -8,6 +8,8 @@
     const state={mode:'Classic',requestedMode:'Classic',dirty:false,lastError:'',active:'Home',disposed:false};
     const sources=new Map(), menus=new Map(), bindings=new Map(), placements=new Map(), pendingMenus=new Map();
     const hiddenNative=new Set();
+    const expandedMenus=new Map();
+    let menuEpoch=0,collectingLayout=false,lastEditorNode,lastEditorKind,editorBaseline=false;
     const fileUnderlays=new Map();
     let shell, tabs, content, quick, backstage, fileNav, fileContent, popup, popupAnchor, interval;
     let signature='', menuSignature='', fileSection='File', savedFocus, captureSink, refreshAt=0;
@@ -45,7 +47,7 @@
         commentIcon:'Comment',uncommentIcon:'Uncomment',indentIcon:'Indent',unindentIcon:'Outdent',
         menuBarAlignLeft:'Align left',menuBarAlignTop:'Align top',menuBarAlignRight:'Align right',menuBarAlignBottom:'Align bottom',
         menuBarSizeWidest:'Widest',menuBarSizeTallest:'Tallest',menuBarSizeNarrowest:'Narrowest',menuBarSizeShortest:'Shortest',
-        menuBarGrid:'Show grid',menuBarBringToFront:'Bring to front',menuBarSendToBack:'Send to back'};
+        menuBarGrid:'Grid',menuBarBringToFront:'Bring to front',menuBarSendToBack:'Send to back'};
     const sourceCaption=n=>sourceLabels[n.id]||label(n).replace(/\s*\([^)]*\)\s*$/,'');
     const pageIds=['tbUI3TabNew','tbUI3TabDelete','tbUI3TabLeft','tbUI3TabRight','tbUI3TabRefresh','tbUI3TabDiagnostics'];
     const pageSource=n=>pageIds.some(id=>n.id==='addinButton-'+id);
@@ -130,13 +132,13 @@
     function returnNodes() {for(const [n,marker]of placements){if(marker.isConnected)marker.replaceWith(n);}placements.clear();}
     function addSources(ids,parent) {
         for(const id of ids){const n=sources.get(id);if(!n)continue;
-            if(n.matches('select')){const l=el('label','tbui3-ribbon-selector',sourceCaption(n));l.title=label(n);park(n,l);parent.append(l);}
+            if(n.matches('select')){const l=el('label','tbui3-ribbon-selector');l.title=label(n);l.append(el('span',id==='zoomSelect'?'tbui3-ribbon-caption-hidden':'',sourceCaption(n)));park(n,l);parent.append(l);}
             else sourceButton(n,parent,false,!!api.present?.({},id).large);
         }
     }
     function addGrid() {
         const n=d.getElementById('menuBarGridOptions');if(!n)return;
-        const body=n.querySelector('.menuBarGridOptionsInner');if(body){const box=el('fieldset','tbui3-ribbon-grid');
+        const body=n.querySelector('.menuBarGridOptionsInner');if(body){const box=el('fieldset','tbui3-ribbon-grid'+(sources.has('menuBarGrid')?' tbui3-ribbon-grid-toggle-present':''));
             box.disabled=!(api.formGlobals&&api.formGlobals());park(body,box);group('Grid options').append(box);}
     }
     function pages(parent=content) {const body=group('MultiPage',parent);for(const n of sources.values())if(pageSource(n))sourceButton(n,body);}
@@ -171,7 +173,7 @@
         const b=el('button','tbui3-ribbon-command'+(item._ribbonLarge?' tbui3-ribbon-large':''));b.type='button';
         const title=caption(item);
         b.title=title+(typeof item.action==='string'?' '+api.shortcut(item.action):'');
-        const shown=/^[^a-z]*[A-Z][^a-z]*$/.test(title)?title.charAt(0)+title.slice(1).toLowerCase():title;
+        const shown=api.present?.(item).caption||(/^[^a-z]*[A-Z][^a-z]*$/.test(title)?title.charAt(0)+title.slice(1).toLowerCase():title);
         b.append(iconFor(sources.get(item._ribbonIconSource),item),el('span','tbui3-ribbon-label',shown));
         b.addEventListener('mousedown',e=>e.preventDefault());
         bindings.set(b,{item});parent.append(b);
@@ -188,21 +190,22 @@
                 closeFile(false);closePopup();
                 if(typeof item.action==='string')api.execute(item.action);else item.action(item);
                 tick();
-            }else if(item.hoverAction||item._ribbonChildren)openSubmenu(item,b);
+            }else if(item.hoverAction||item._ribbonChildren){if(popupAnchor===b)closePopup();else openSubmenu(item,b);}
         };
     }
     function openSubmenu(item,anchor) {
         closePopup();popupAnchor=anchor;anchor.setAttribute('aria-expanded','true');popup=el('div','tbui3-toolbar-owned tbui3-ribbon-popup');popup.setAttribute('role','menu');
         const bounds=anchor.getBoundingClientRect();popup.style.setProperty('--tbui3-popup-x',Math.min(bounds.left,w.innerWidth-280)+'px');
         popup.style.setProperty('--tbui3-popup-y',Math.min(bounds.bottom,w.innerHeight-200)+'px');d.body.append(popup);
+        const surface=popup;surface.addEventListener('toggle',event=>{if(event.newState==='closed'&&popup===surface)closePopup();});
         // Top-layer promotion escapes the IDE designer's million-level controls
         // and 99,999,999 grabbers without hiding or reparenting the designer.
         if(typeof popup.showPopover==='function'){
-            popup.setAttribute('popover','manual');
+            popup.setAttribute('popover','auto');
             try{popup.showPopover();popup.dataset.popupLayer='top';}
             catch(e){popup.removeAttribute('popover');popup.dataset.popupLayer='fallback';}
         }else popup.dataset.popupLayer='fallback';
-        const sink=items=>{if(!popup)return;clear(popup);for(const child of menuItems(items))command(child,popup);syncBindings();popup.querySelector('button,select')?.focus();};
+        const sink=items=>{if(popup!==surface)return;clear(popup);for(const child of menuItems(items))command(child,popup);syncBindings();popup.querySelector('button,select')?.focus();};
         if(item._ribbonChildren){sink(item._ribbonChildren);return;}
         captureSink=sink;pendingSubmenu={sink,until:Date.now()+5000};
         try{item.hoverAction(anchor);}finally{captureSink=null;}
@@ -219,19 +222,51 @@
             else if(m.node.onclick)m.node.onclick({button:0,preventDefault(){},stopPropagation(){}});
         }catch(e){m.loading=false;throw e;}finally{captureSink=null;}
     }
+    function expandedItems(m,item,kind){
+        if(!api.captureMenu||!item.hoverAction)return null;
+        const key=m.node.id+'|'+item.name;
+        let entry=expandedMenus.get(key);
+        if(!entry){entry={items:[],ready:false,epoch:-1};expandedMenus.set(key,entry);}
+        if(entry.loading&&Date.now()-entry.started>5000){entry.loading=false;entry.failed=true;}
+        const active=state.active===(kind==='Insert'?'Insert':'Form');
+        if(!entry.loading&&(!entry.ready||active)&&entry.epoch!==menuEpoch&&!item.isHidden){
+            entry.loading=true;entry.started=Date.now();entry.epoch=menuEpoch;entry.failed=false;
+            const accepted=api.captureMenu(item,m.node,items=>{
+                if(state.mode!=='Ribbon'||expandedMenus.get(key)!==entry)return;
+                entry.items=items;entry.ready=true;entry.loading=false;
+                if(!collectingLayout&&!hydrating)refreshLayout();
+            },kind);
+            if(!accepted){entry.loading=false;entry.failed=true;}
+        }
+        if(!entry.ready)return null;
+        return menuItems(entry.items).filter(i=>i.name).map(child=>({...child,
+            isHidden:!!(item.isHidden||child.isHidden),
+            context:item.context&&child.context?'('+item.context+') && ('+child.context+')':child.context||item.context}));
+    }
     function collectLayout() {
-        const records=[];
-        for(const m of menus.values())for(const item of menuItems(m.items))records.push({menuId:m.node.id,menuTitle:m.title,item});
+        const records=[];collectingLayout=true;
+        try{for(const m of menus.values())for(const item of menuItems(m.items)){
+            const name=String(item.name||''),kind=m.node.id==='rootMenuProject'&&name.includes('MenuCaptionProjectAdd')?'Insert':
+                m.node.id==='rootMenuFormat'&&/MenuCaptionFormat(?:Align|MakeSameSize)/.test(name)?'Form':null;
+            const expanded=kind&&expandedItems(m,item,kind);
+            if(expanded){for(const child of expanded){
+                if(kind==='Insert'){const a=typeof child.action==='string'?child.action:'';
+                    const group=/Resource/.test(a)?'Resources':/AddModule|AddClass/.test(a)?'Code':/AddFolder|OtherFile|ImportFile/.test(a)?'Files':a&&/Form|Control|Report|PropertyPage/.test(a)||typeof child.action==='function'?'Forms':'Components';
+                    records.push({item:{...child,_ribbonTab:'Insert',_ribbonGroup:group}});
+                }else{const source=[...sources.values()].find(n=>[].concat(n.boundCommand||[]).includes(child.action));
+                    records.push({menuId:m.node.id,menuTitle:m.title,item:{...child,...(source?{_sourceId:source.id}:{})}});}
+            }}else records.push({menuId:m.node.id,menuTitle:m.title,item});
+        }}finally{collectingLayout=false;}
         const source=(id,tab,group)=>{if(sources.has(id))records.push({item:{name:sourceCaption(sources.get(id)),_sourceId:id,_ribbonTab:tab,_ribbonGroup:group}});};
         for(const id of ['commentIcon','uncommentIcon'])source(id,'Code','Comments');
         source('buildConfigSelector','Project','Build');source('debugStepOutIcon','Debug','Stepping');
-        source('zoomSelect','View','Zoom');source('menuBarPreview','Form','Designer');
+        source('zoomSelect','View','Zoom');source('menuBarPreview','Form','Designer');source('menuBarGrid','Form','Grid');
         if(!records.some(r=>String(r.item.name).includes('MenuCaptionWindowTheme')))source('menuBarColorMode','View','Appearance');
         const quickActions=new Set();for(const id of quickIds)for(const a of [].concat(sources.get(id)?.boundCommand||[]))quickActions.add(a);
         return api.buildLayout(records,quickActions,api.present);
     }
     function hydrateMenus(refresh=false) {
-        hydrating=true;try{for(const m of menus.values())if(!m.ready||refresh&&(m.node.id!=='rootMenuAddins'||backstage&&!backstage.hidden&&fileSection==='Add-ins'))requestMenu(m);}finally{hydrating=false;}
+        if(refresh)menuEpoch++;hydrating=true;try{for(const m of menus.values())if(!m.ready||refresh&&(m.node.id!=='rootMenuAddins'||backstage&&!backstage.hidden&&fileSection==='Add-ins'))requestMenu(m);}finally{hydrating=false;}
         refreshLayout();
     }
     function refreshLayout() {
@@ -309,7 +344,7 @@
         if(!backstage)return;closePopup();
         if(backstage.hidden)savedFocus=d.activeElement;
         fileSection=section==='File'?'Info':section==='Addins'?'Add-ins':section;
-        backstage.hidden=false;syncFileUnderlays();
+        backstage.hidden=false;syncQuick();syncFileUnderlays();
         renderFileNav();renderFile();fileNav.querySelector('button')?.focus();
     }
     function renderFileNav() {
@@ -354,7 +389,7 @@
         if(!list.length&&fileSection==='Add-ins')fileContent.append(el('p','tbui3-backstage-description',menus.get('rootMenuAddins')?.loading?'Loading add-ins...':'No add-ins are listed by the IDE.'));
         syncBindings();
     }
-    function closeFile(restoreFocus=true){if(backstage&&!backstage.hidden){closePopup();backstage.hidden=true;restoreFileUnderlays();if(restoreFocus&&savedFocus?.isConnected)savedFocus.focus();}}
+    function closeFile(restoreFocus=true){if(backstage&&!backstage.hidden){closePopup();backstage.hidden=true;syncQuick();restoreFileUnderlays();if(restoreFocus&&savedFocus?.isConnected)savedFocus.focus();}}
     function syncBindings(){for(const box of d.querySelectorAll('.tbui3-ribbon-grid'))box.disabled=!(api.formGlobals&&api.formGlobals());for(const [b,entry]of bindings){
         const on=entry.source?!disabled(entry.source):menuEnabled(entry.item);b.disabled=!on;b.setAttribute('aria-disabled',String(!on));
             const isChecked=entry.source?entry.source.classList.contains('menuBarToggleOn'):checked(entry.item);
@@ -362,7 +397,7 @@
             if(entry.source){b.title=label(entry.source);b.hidden=!visible(entry.source);}
     }}
     function syncQuick(){
-        if(!quick)return;const parent=d.getElementById('rootMenu1Inner');
+        if(!quick)return;quick.hidden=!!(backstage&&!backstage.hidden);const parent=d.getElementById('rootMenu1Inner');
         if(parent&&quick.parentElement!==parent)parent.prepend(quick);
         quick.classList.toggle('tbui3-quick-real-titlebar',!!api.realTitlebar());
     }
@@ -388,7 +423,7 @@
         for(const n of hiddenNative)n.classList.remove('tbui3-toolbar-native-hidden');hiddenNative.clear();pendingMenus.clear();
         if(shell)shell.remove();if(quick)quick.remove();if(backstage)backstage.remove();
         shell=tabs=content=quick=backstage=fileNav=fileContent=null;
-        signature='';menuSignature='';fileNavSignature='';fileRenderSignature='';layout=null;resize();
+        signature='';menuSignature='';fileNavSignature='';fileRenderSignature='';layout=null;expandedMenus.clear();editorBaseline=false;lastEditorNode=lastEditorKind=undefined;resize();
     }
     function build() {
         const toolbar=discover(),root=d.getElementById('root'),top=d.getElementById('rootTop');
@@ -404,15 +439,22 @@
             backstage.setAttribute('aria-modal','true');backstage.setAttribute('aria-label','File');
             fileNav=el('nav','tbui3-backstage-rail');fileContent=el('div','tbui3-backstage-content');backstage.append(fileNav,fileContent);root.append(backstage);
         }
-        signature=currentSignature();renderTabs();
+        signature=currentSignature();renderTabs();syncEditorTab(true);
     }
     function currentSignature(){return JSON.stringify([state.mode,[...sources.values()].map(n=>[n.id,n.title,n.style.backgroundImage]),[...menus.values()].map(m=>[m.node.id,m.title]),!!currentHost()]);}
+    function syncEditorTab(initial=false){
+        if(!api.editorState||backstage&&!backstage.hidden)return;
+        const current=api.editorState(),node=current&&current.node,kind=current&&current.kind;
+        const changed=editorBaseline&&(node!==lastEditorNode||kind!==lastEditorKind);
+        lastEditorNode=node;lastEditorKind=kind;editorBaseline=true;
+        if(!initial&&changed&&['Code','Form'].includes(kind)&&[...tabs.children].some(t=>t.dataset.tab===kind))selectTab(kind);
+    }
     function tick(){
         if(state.disposed)return;
         try{
             syncOptions();if(state.mode==='Classic')return;
             discover();const next=currentSignature();if(next!==signature){signature=next;menuSignature='';renderTabs();}
-            syncBindings();syncQuick();
+            syncEditorTab();syncBindings();syncQuick();
             if(backstage&&!backstage.hidden)syncFileUnderlays();
             if(state.mode==='Ribbon'&&Date.now()>refreshAt){refreshAt=Date.now()+1000;hydrateMenus(true);}
         }catch(e){fail(e);}
@@ -440,7 +482,8 @@
         else if(e.key==='Home')i=0;else if(e.key==='End')i=items.length-1;else return;
         e.preventDefault();e.stopImmediatePropagation();items[i].focus();items[i].click();
     }
-    function pointerdown(e){if(popup&&!popup.contains(e.target)&&!own(e.target))closePopup();}
+    function pointerdown(e){if(popup&&!popup.contains(e.target)&&!popupAnchor?.contains(e.target))closePopup();}
+    function blur(){closePopup();}
     function install(mode='Classic') {
         if(typeof nativeMenu!=='function')throw Error('Native showContextMenu is unavailable');
         wrappedMenu=function(anchor,x,y,items,...rest){
@@ -455,12 +498,12 @@
                 else selectTab(tabForNative(m));return;}
             return nativeMenu.call(this,anchor,x,y,items,...rest);
         };
-        api.setShowContextMenu(wrappedMenu);d.addEventListener('keydown',keydown,true);d.addEventListener('pointerdown',pointerdown,true);
+        api.setShowContextMenu(wrappedMenu);d.addEventListener('keydown',keydown,true);w.addEventListener('pointerdown',pointerdown,true);w.addEventListener('mousedown',pointerdown,true);w.addEventListener('blur',blur);
         interval=w.setInterval(tick,400);setMode(mode);return state;
     }
     function dispose(){state.disposed=true;w.clearInterval(interval);restore();
         if(api.getShowContextMenu()===wrappedMenu)api.setShowContextMenu(nativeMenu);
-        d.removeEventListener('keydown',keydown,true);d.removeEventListener('pointerdown',pointerdown,true);
+        d.removeEventListener('keydown',keydown,true);w.removeEventListener('pointerdown',pointerdown,true);w.removeEventListener('mousedown',pointerdown,true);w.removeEventListener('blur',blur);
         for(const n of d.querySelectorAll('.tbui3-toolbar-option'))n.remove();
     }
     return Object.assign(state,{install,setMode,tick,dispose,openFile,closeFile,discover});

@@ -41,3 +41,7 @@ node tools/validate-tabview-projects.mjs
 ## Acceptance boundaries
 
 These are source, DOM/CSSOM/protocol and packing checks. The supplied screenshots document the previous revision and identified failures. Actual popup painting over designer controls, light/dark/third-party theme contrast, grid normal/hover/focus appearance, titlebar modes and the corrected glyph positions remain native rendered-acceptance items in tbIDE/ROADMAP.md. Previous isolated browser checking was rejected by URL policy; that restriction was not bypassed. Automatic group collapse and Office keytips remain future work.
+
+## Subsequent native feedback
+
+Shane reported marked improvement, then observed that manual popovers could remain open on outside clicks. The 1.3.0.3 revision uses auto-popover light-dismiss and early window-level pointer/mouse dismissal, including empty owned ribbon surfaces; browser close events and blur also clean up state. Its direct-command/editor changes and expanded checks are recorded in [direct commands](2026-11-11-ribbon-direct-commands.md).

@@ -10,10 +10,12 @@ const glyphs=JSON.parse(fs.readFileSync(dir+'/icons/ribbon.json','utf8'));
 for(const [key,{svg}]of Object.entries(glyphs.icons))icons[key]=`url('data:image/svg+xml,${encodeURIComponent(svg.trim()).replace(/'/g,'%27')}')`;
 const presentation=fs.readFileSync(dir+'/js/ribbon-presentation.js','utf8').trim();
 const factory=fs.readFileSync(dir+'/js/ide-toolbar.js','utf8').trim();
+const contextBridge=fs.readFileSync(dir+'/js/native-toolbar-context.js','utf8').trim();
 const layout=fs.readFileSync(dir+'/js/ribbon-layout.js','utf8').trim();
 const script=`(function(){if(window.__tbUI3Toolbar)return 'toolbar already installed';
 var css=document.createElement('style');css.id='tbUI3ToolbarCss';css.textContent=${JSON.stringify(css)};document.head.appendChild(css);
-var adapter=${factory}({window:window,icons:${JSON.stringify(icons)},buildLayout:${layout},present:${presentation},
+var nativeContext=${contextBridge}({selectedEditor:function(){return typeof openEditors==='undefined'?null:openEditors.selectedEditorNode;},addComponent:typeof showContextMenuAddComponent==='function'?showContextMenuAddComponent:undefined});
+var adapter=${factory}({window:window,icons:${JSON.stringify(icons)},buildLayout:${layout},present:${presentation},captureMenu:nativeContext.captureMenu,editorState:nativeContext.editorState,
 getShowContextMenu:function(){return showContextMenu;},setShowContextMenu:function(fn){showContextMenu=fn;},
 localize:function(s){return evaluateLocalizedString(s);},execute:function(s){return executeIdeCommand(s,true);},
 commandEnabled:function(s){var c=ideCommands[s];return !!c&&(!c.defaultContext||evaluateExpression(c.defaultContext));},

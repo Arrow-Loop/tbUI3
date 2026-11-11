@@ -5,8 +5,8 @@
     const tabs=new Map(), file=new Map(), suppressed=[];
     tabs.set('Home',new Map());
     const order=['Home','Insert','Code','Form','View','Project','Debug','Tools','Add-ins','Help'];
-    const groups={Home:['Clipboard','Editing'],Insert:['Components'],Code:['Comments','Formatting','Navigation','Outlining','Case'],
-        Form:['Arrange','Size','Spacing','Position','Protection','Designer'],View:['Views','Show','Zoom','Window','Appearance'],
+    const groups={Home:['Clipboard','Editing'],Insert:['Forms','Code','Resources','Files','Components'],Code:['Comments','Formatting','Navigation','Outlining','Case'],
+        Form:['Arrange','Size','Spacing','Position','Protection','Designer','Grid'],View:['Views','Show','Zoom','Window','Appearance'],
         Project:['Project','Build','Compiler','Folders'],Debug:['Stepping','Breakpoints','Watches','Execution','Options']};
     const get=(map,key,make)=>{if(!map.has(key))map.set(key,make());return map.get(key);};
     const add=(tab,group,item)=>get(get(tabs,tab,()=>new Map()),group,()=>[]).push(item);
@@ -65,6 +65,12 @@
     const action=i=>typeof i.action==='string'?i.action:'';
     const dropdown=(name,items,icon)=>({name,codicon:icon||items.find(i=>i.codicon)?.codicon,_ribbonChildren:items});
     for(const [tab,gs]of tabs)for(const [name,items]of gs){
+        if(tab==='Form'&&['Arrange','Size'].includes(name)){
+            const preferred=name==='Arrange'?['tbFormDesigner_AlignSelectedControlsLeft','tbFormDesigner_AlignSelectedControlsTop','tbFormDesigner_AlignSelectedControlsRight','tbFormDesigner_AlignSelectedControlsBottom']:
+                ['tbFormDesigner_ResizeSelectedControlsWidest','tbFormDesigner_ResizeSelectedControlsTallest','tbFormDesigner_ResizeSelectedControlsNarrowest','tbFormDesigner_ResizeSelectedControlsShortest'];
+            const rank=i=>preferred.includes(action(i))?preferred.indexOf(action(i)):preferred.length;
+            items.sort((a,b)=>rank(a)-rank(b));
+        }
         if(tab==='Home'&&name==='Clipboard')items.sort((a,b)=>{
             const rank=i=>/_ClipboardPaste$/.test(action(i))?0:/_ClipboardCut$/.test(action(i))?1:/_ClipboardCopy$/.test(action(i))?2:3;
             return rank(a)-rank(b);});

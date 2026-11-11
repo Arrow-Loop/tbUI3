@@ -1,7 +1,7 @@
 /* Office-style organization for the IDE's live descriptors. This is presentation
  * metadata only: all actions, contexts and lazy submenus remain native. Unknown
  * commands/menus are deliberately retained rather than filtered by this map. */
-(function buildRibbonLayout(records, quickActions=new Set()) {
+(function buildRibbonLayout(records, quickActions=new Set(),present=()=>({large:false})) {
     const tabs=new Map(), file=new Map(), suppressed=[];
     tabs.set('Home',new Map());
     const order=['Home','Insert','Code','Form','View','Project','Debug','Tools','Add-ins','Help'];
@@ -24,6 +24,7 @@
             addFile('More',i);continue;
         }
         if(m==='rootMenuAddins'){addFile('Add-ins',i);continue;}
+        if(m==='rootMenuHelp'){addFile('Help',i);continue;}
         if(a==='tbIde_ShowIDEOptions'){addFile('Options',i);continue;}
         if(token(i,'MenuCaptionWindowLanguage')||token(i,'MenuCaptionWindowKeyboardShortcuts')){addFile('Preferences',i);continue;}
         if(quick(a)){suppressed.push(i);continue;}
@@ -56,9 +57,9 @@
             add('Debug',/Step/.test(a)?'Stepping':/Breakpoint/.test(a)?'Breakpoints':/^tbWatches_/.test(a)?'Watches':i.hoverAction?'Options':'Execution',i);continue;
         }
         if(m==='rootMenuWindows'){
-            add('View',token(i,'WindowTheme')?'Appearance':'Window',i);continue;
+            add('View',token(i,'WindowTheme')?'Appearance':'Window',token(i,'WindowTheme')?{...i,_ribbonIconSource:'menuBarColorMode'}:i);continue;
         }
-        const fallback={rootMenuEdit:['Home','More editing'],rootMenuView:['View','More views'],rootMenuTools:['Tools','Tools'],rootMenuHelp:['Help','Help']}[m];
+        const fallback={rootMenuEdit:['Home','More editing'],rootMenuView:['View','More views'],rootMenuTools:['Tools','Tools']}[m];
         add(...(fallback||[r.menuTitle||m,'Commands']),i);
     }
     const action=i=>typeof i.action==='string'?i.action:'';
@@ -88,15 +89,8 @@
     for(const tab of result){const preferred=groups[tab.id]||[];tab.groups.sort((a,b)=>{
         const rank=g=>preferred.includes(g.title)?preferred.indexOf(g.title):preferred.length;return rank(a)-rank(b);
     });}
-    for(const tab of result)for(const group of tab.groups)group.items=group.items.map((item,index)=>{
-        const a=action(item),large=tab.id==='Home'&&(group.title==='Clipboard'?/_ClipboardPaste$/.test(a):/_Find$/.test(a))||
-            tab.id==='Insert'||tab.id==='View'&&['Views','Appearance'].includes(group.title)||
-            tab.id==='View'&&['Show','Zoom','Window'].includes(group.title)&&index===0||
-            tab.id==='Form'&&['Arrange','Size'].includes(group.title)&&index===0||
-            tab.id==='Project'&&group.title==='Build'&&a==='tbBuild_Start'||
-            tab.id==='Project'&&group.title==='Project'&&index===0||tab.id==='Help'&&index===0;
-        return {...item,_ribbonLarge:!!large};
-    });
+    for(const tab of result)for(const group of tab.groups)group.items=group.items.map(item=>
+        ({...item,_ribbonLarge:present(item).large}));
     result.sort((a,b)=>{const rank=x=>order.includes(x)?order.indexOf(x):order.indexOf('Add-ins')-.5;return rank(a.id)-rank(b.id);});
     return {tabs:result,file,suppressed};
 })

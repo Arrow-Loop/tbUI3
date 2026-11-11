@@ -4,6 +4,16 @@ All notable changes to tbUI3. Dates are when the change was made, not released. 
 
 ## Unreleased
 
+### 2026-11-11, ribbon surface, command sizing, icons and File Help (tbUI3IDE 1.3.0.1)
+
+- Reconnected the replacement ribbon to the old toolbar surface resource: the existing CardBackgroundFillColorDefault token when available, otherwise the selected theme's ToolbarBackground. Toolbar text uses the corresponding general/control foreground rather than the titlebar foreground; quick access retains the titlebar foreground, and popups use their native menu surface/foreground pair.
+- Restored the established WinUI SubtleFillColorSecondary/Tertiary hover/pressed fills in essential CSS for light/dark, including when optional additional styling is off. These are the same pinned alpha effects as the existing stylesheet; they do not replace the selected theme's surface/foreground palette. Popup hover follows the native context-menu resource.
+- Replaced the remaining first-command sizing rules with an explicit function-based presentation map, derived from Shane's Office Home/View/Developer/Page Layout screenshots. Related view controls, Project Settings/References, Bring Forward/Send Backward, formatting and other primary actions can all be full-size within one group. Clipboard Cut/Copy, indent/outdent, stepping and similar auxiliary commands stay stacked. Retained the 100px command area, 26px tabs and 50px standard / 86px maximum by 76px full-size limits; dropdown arrows do not add a vertical layout row.
+- Filled missing command icons across ribbon groups, synthetic/lazy dropdowns, File navigation, contextual MultiPage and text-only add-in buttons. Existing 19 Fluent glyphs, native designer glyphs and contributed images remain intact. Added 17 MIT Fluent UI System Icons from pinned Microsoft source for gaps; future text-only commands receive a generic Fluent fallback without filtering the native action.
+- Moved every native Help command into File > Help and intercepted the native Help menu opening to that section. No separate Help ribbon tab remains. Native command/callback dispatch and dynamically added Help entries remain available.
+- The moved grid controls now inherit the toolbar foreground and themed number-input fill/border, with consistent three-row placement. Their original nodes, values and handlers restore intact in Classic.
+- Validation: 78 JavaScript/DOM/CSSOM/protocol tests pass with no skips; all 108 shipped BETA 1044 top-level menu descriptors remain accounted for. All 71 project mirrors and six official-export files match. Native package 1.0.0.65, TabView adapter v8, consumer project and stable identities are unchanged. Detailed evidence: docs/validation/2026-11-11-ribbon-presentation.md.
+
 ### 2026-11-10, task-based Ribbon and vertical Backstage (tbUI3IDE 1.3.0.0)
 
 - Replaced literal native-menu tabs/separator captions with semantic task groups: Home Clipboard/Editing; Insert Components; Code formatting/navigation/outlining/case; Form designer arrangement; View views/panels/zoom/window/appearance; Project build/compiler/folders; Debug and Help. Undo/Redo and Start/Break/Stop remain in quick access without duplicate ribbon entries. Paste/Find and other explicit roles determine large buttons instead of making each separator's first command large.

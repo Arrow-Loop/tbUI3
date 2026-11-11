@@ -7,77 +7,88 @@ Private Module IdeToolbarScript
         js = js & "var css=document.createElement('style');css.id='tbUI3ToolbarCss';css.textContent=" & Chr(34) & "/* Essential toolbar presentation, independent of the optional IDE r"
         js = js & "estyling.\n * Palette comes only from the current IDE's theme variables. Geometry is a\n * tbUI3IDE ribbon composition, not an official WinUI Ribbon c"
         js = js & "ontrol template.\n * The two host-hiding rules override the IDE's own ID-level display rules.\n */\n.tbui3-toolbar-owned, .tbui3-toolbar-option {\n   "
-        js = js & " --tbui3-toolbar-bg: var(--themeMenuBackColor, var(--themeGeneralBackColor));\n    --tbui3-toolbar-fg: var(--themeMenuForeColor, var(--themeGeneralTex"
-        js = js & "tColor));\n    --tbui3-toolbar-hover: var(--themeContextMenuItemHoverColor, var(--themeTreeItemSelectedBackColor));\n    --tbui3-toolbar-line: var(--t"
-        js = js & "hemeToolbarDropDownBorder, 1px solid currentColor);\n    --tbui3-toolbar-selected: var(--themeTreeItemSelectedBackColor);\n    /* Existing simplified-"
-        js = js & "toolbar Fluent shadow4, preserved as an effect rather than a palette. */\n    --tbui3-toolbar-shadow: 0 0 2px rgba(0,0,0,0.12), 0 2px 4px rgba(0,0,0,0"
-        js = js & ".14);\n    color: var(--tbui3-toolbar-fg);\n    font-family: 'Segoe UI Variable', 'Segoe UI', sans-serif;\n    box-sizing: border-box;\n}\n.tbui3-tool"
-        js = js & "bar-native-hidden, .tbui3-menu-source { display: none !important; }\n.tbui3-ribbon {\n    --tbui3-command-area-height: 100px;\n    --tbui3-tab-area-he"
-        js = js & "ight: 26px;\n    --tbui3-large-button-width: 50px;\n    --tbui3-large-button-max-width: 86px;\n    --tbui3-large-button-height: 76px;\n    flex: 0 0 a"
-        js = js & "uto; min-width: 0; max-height: calc(var(--tbui3-command-area-height) + var(--tbui3-tab-area-height)); background: var(--tbui3-toolbar-bg);\n    positi"
-        js = js & "on: relative; z-index: 1; margin: 0 2px 3px; border-radius: 8px; box-shadow: var(--tbui3-toolbar-shadow);\n}\n.tbui3-ribbon, .tbui3-ribbon * { box-siz"
-        js = js & "ing: border-box; }\n.tbui3-ribbon-tabs { display: flex; flex: 0 0 auto; height: var(--tbui3-tab-area-height); max-height: var(--tbui3-tab-area-height)"
-        js = js & "; gap: 4px; padding: 0 8px; overflow-x: auto; overflow-y: hidden; scrollbar-width: none; }\n.tbui3-ribbon-tabs::-webkit-scrollbar { height: 0; }\n.tbu"
-        js = js & "i3-ribbon-tab { flex: 0 0 auto; position: relative; height: var(--tbui3-tab-area-height, 26px); max-height: var(--tbui3-tab-area-height, 26px); paddin"
-        js = js & "g: 3px 12px; border: 0; background: transparent; color: inherit; font: inherit; line-height: 20px; cursor: default; border-radius: 4px 4px 0 0; }\n.tb"
-        js = js & "ui3-ribbon-tab[aria-selected='true'] { background: var(--tbui3-toolbar-selected); }\n.tbui3-ribbon-tab[aria-selected='true']::after { content: ''; pos"
-        js = js & "ition: absolute; height: 2px; left: 14px; right: 14px; bottom: 0; background: currentColor; border-radius: 2px; }\n.tbui3-ribbon-tab:hover, .tbui3-rib"
-        js = js & "bon-command:hover:not(:disabled), .tbui3-backstage-nav:hover, .tbui3-backstage-back:hover { background: var(--tbui3-toolbar-hover); }\n.tbui3-toolbar-"
-        js = js & "owned button:focus-visible, .tbui3-toolbar-owned select:focus-visible, .tbui3-toolbar-select:focus-visible { outline: 2px solid currentColor; outline-"
-        js = js & "offset: -3px; }\n.tbui3-ribbon-content { display: flex; align-items: stretch; height: var(--tbui3-command-area-height); min-height: 0; max-height: var"
-        js = js & "(--tbui3-command-area-height); overflow-x: auto; overflow-y: hidden; padding: 2px 4px 0; gap: 2px; border-bottom: var(--tbui3-toolbar-line); border-ra"
-        js = js & "dius: 0 0 8px 8px; scrollbar-width: thin; }\n.tbui3-ribbon-content[hidden], .tbui3-backstage[hidden] { display: none; }\n.tbui3-ribbon-group { display"
-        js = js & ": flex; flex: 0 0 auto; flex-direction: column; padding: 0 4px; border-right: var(--tbui3-toolbar-line); min-width: 0; }\n.tbui3-ribbon-group:last-chi"
-        js = js & "ld { border-right: 0; }\n.tbui3-ribbon-group-body { display: grid; grid-auto-flow: column; grid-template-rows: repeat(3, 24px); align-items: stretch; "
-        js = js & "gap: 2px; flex: 0 0 76px; }\n.tbui3-ribbon-group-title { height: 14px; flex: 0 0 14px; line-height: 12px; text-align: center; font-size: 11px; padding"
-        js = js & "-top: 2px; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; opacity: .8; }\n.tbui3-ribbon-command { display: flex; flex-direction: row;"
-        js = js & " justify-content: start; align-items: center; gap: 4px; min-width: 50px; max-width: 160px; min-height: 24px; height: 24px; padding: 2px 4px; border: 1"
-        js = js & "px solid transparent; border-radius: 4px; background: transparent; color: inherit; font: inherit; font-size: 12px; cursor: default; }\n.tbui3-ribbon-c"
-        js = js & "ontent .tbui3-ribbon-large { grid-row: span 3; flex-direction: column; justify-content: center; width: max-content; min-width: var(--tbui3-large-butto"
-        js = js & "n-width); max-width: var(--tbui3-large-button-max-width); height: var(--tbui3-large-button-height); min-height: var(--tbui3-large-button-height); max-"
-        js = js & "height: var(--tbui3-large-button-height); padding: 4px 6px; }\n.tbui3-ribbon-command:disabled { opacity: .45; }\n.tbui3-ribbon-command[hidden] { displ"
-        js = js & "ay: none; }\n.tbui3-ribbon-command:active:not(:disabled), .tbui3-ribbon-checked { background: var(--tbui3-toolbar-selected); border-color: currentColo"
-        js = js & "r; }\n.tbui3-ribbon-label { line-height: 16px; text-align: left; max-width: 150px; white-space: normal; }\n.tbui3-ribbon-content .tbui3-ribbon-label {"
-        js = js & " min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }\n.tbui3-ribbon-icon { display: inline-block; flex: 0 0 auto; width: 1"
-        js = js & "8px; height: 18px; font-size: 18px; line-height: 18px; background: var(--tbui3-native-image, none) center / contain no-repeat; }\n.tbui3-ribbon-icon[h"
-        js = js & "idden] { display: none; }\n.tbui3-ribbon-content .tbui3-ribbon-large .tbui3-ribbon-icon { width: 28px; height: 28px; font-size: 28px; line-height: 28p"
-        js = js & "x; }\n.tbui3-ribbon-content .tbui3-ribbon-large .tbui3-ribbon-label { text-align: center; min-width: 0; max-width: calc(var(--tbui3-large-button-max-w"
-        js = js & "idth) - 14px); max-height: 32px; white-space: normal; overflow: hidden; overflow-wrap: anywhere; display: -webkit-box; -webkit-box-orient: vertical; -"
-        js = js & "webkit-line-clamp: 2; }\n.tbui3-ribbon-mask { background: currentColor; mask: var(--tbui3-icon) center / contain no-repeat; -webkit-mask: var(--tbui3-"
-        js = js & "icon) center / contain no-repeat; }\n.tbui3-ribbon-selector { display: flex; grid-row: span 3; flex-direction: column; gap: 4px; padding: 2px 4px; max"
-        js = js & "-width: 120px; font-size: 11px; }\n.tbui3-ribbon-selector select, .tbui3-ribbon-select, .tbui3-toolbar-select { min-height: 32px; max-width: 200px; ba"
-        js = js & "ckground: var(--themeDialogGeneralBackColor); color: var(--themeDialogGeneralForeColor); border: var(--themeToolbarDropDownBorder); border-radius: 4px"
-        js = js & "; font: inherit; padding: 3px 8px; }\n.tbui3-ribbon-content .tbui3-ribbon-select { grid-row: span 2; align-self: start; }\n.tbui3-ribbon-select option"
-        js = js & ", .tbui3-toolbar-select option { background: var(--themeDialogGeneralBackColor); color: var(--themeDialogGeneralForeColor); }\n.tbui3-ribbon-content ."
-        js = js & "menuBarGridOptionsInner { display: grid; grid-template-columns: repeat(2, max-content); gap: 2px 12px; font-size: 11px; }\n.tbui3-ribbon-grid { grid-r"
-        js = js & "ow: span 3; border: 0; padding: 0; margin: 0; min-width: 0; }\n.tbui3-ribbon-grid:disabled { opacity: .45; }\n.tbui3-ribbon-content .menuBarGridOption"
-        js = js & "Row { display: flex; gap: 6px; align-items: center; justify-content: space-between; }\n.tbui3-ribbon-content .menuBarGridOptionRow input[type='number'"
-        js = js & "] { width: 44px; color: inherit; background: var(--tbui3-toolbar-bg); border: var(--tbui3-toolbar-line); }\n.tbui3-ribbon-context { align-self: start;"
-        js = js & " border: var(--tbui3-toolbar-line); border-radius: 4px; }\n.tbui3-quick { display: flex; flex: 0 1 auto; gap: 2px; align-items: center; min-width: 0; "
-        js = js & "overflow-x: auto; -webkit-app-region: no-drag; }\n.tbui3-quick-real-titlebar { min-height: 32px; }\n.tbui3-ribbon-compact { height: 28px; min-height: "
-        js = js & "28px; min-width: 30px; width: 30px; padding: 4px; }\n.tbui3-ribbon-compact .tbui3-ribbon-icon { width: 18px; height: 18px; font-size: 18px; line-heigh"
-        js = js & "t: 18px; }\n.tbui3-ribbon-compact .tbui3-ribbon-label { display: none; }\n/* Backstage hides the live designer as well as covering it: designer layers"
-        js = js & " can\n   otherwise paint above an ordinary document overlay. State is restored by JS. */\n.tbui3-backstage-underlay, .tbui3-backstage-underlay * { vis"
-        js = js & "ibility: hidden !important; }\n.tbui3-backstage { position: fixed; inset: 32px 0 0; z-index: 100000; display: flex; background: var(--themeGeneralBack"
-        js = js & "Color, var(--tbui3-toolbar-bg)); color: var(--themeDialogGeneralForeColor, var(--tbui3-toolbar-fg)); }\n.tbui3-backstage-rail { display: flex; flex-di"
-        js = js & "rection: column; gap: 4px; flex: 0 0 160px; padding: 12px 8px 16px; background: var(--tbui3-toolbar-bg); overflow-y: auto; border-right: var(--tbui3-t"
-        js = js & "oolbar-line); }\n.tbui3-backstage-nav-group { display: flex; flex-direction: column; gap: 2px; }\n.tbui3-backstage-footer { margin-top: auto; padding-"
-        js = js & "top: 24px; }\n.tbui3-backstage-back, .tbui3-backstage-nav { display: flex; align-items: center; min-height: 38px; width: 100%; border: 0; border-radiu"
-        js = js & "s: 4px; background: transparent; color: inherit; font: inherit; text-align: left; padding: 8px 12px; }\n.tbui3-backstage-back { margin-bottom: 12px; }"
-        js = js & "\n.tbui3-backstage-selected { background: var(--tbui3-toolbar-selected); outline: 1px solid currentColor; outline-offset: -1px; }\n.tbui3-backstage-na"
-        js = js & "v:disabled { opacity: .45; }\n.tbui3-backstage-content { flex: 1 1 auto; overflow: auto; padding: 24px 40px; min-width: 0; background: var(--themeGene"
-        js = js & "ralBackColor, var(--tbui3-toolbar-bg)); }\n.tbui3-backstage-heading { font-weight: 600; font-size: 22px; margin: 0 0 20px; }\n.tbui3-backstage-project"
-        js = js & " { max-width: 760px; font-size: 16px; margin: 0 0 24px; padding-bottom: 16px; border-bottom: var(--tbui3-toolbar-line); }\n.tbui3-backstage-descriptio"
-        js = js & "n { max-width: 640px; line-height: 20px; margin-bottom: 20px; }\n.tbui3-backstage-tasks { display: flex; flex-direction: column; gap: 12px; width: min"
-        js = js & "(100%, 760px); }\n.tbui3-backstage-task { display: flex; border-bottom: var(--tbui3-toolbar-line); padding-bottom: 8px; }\n.tbui3-backstage-task .tbui"
-        js = js & "3-ribbon-command { flex-direction: row; justify-content: start; gap: 16px; height: auto; min-height: 56px; min-width: 240px; max-width: 100%; width: 1"
-        js = js & "00%; padding: 12px; }\n.tbui3-backstage-task .tbui3-ribbon-icon { width: 28px; height: 28px; font-size: 28px; line-height: 28px; }\n.tbui3-backstage-t"
-        js = js & "ask .tbui3-ribbon-label { max-width: none; text-align: left; font-size: 14px; }\n.tbui3-ribbon-popup { position: fixed; left: max(0px, var(--tbui3-pop"
-        js = js & "up-x)); top: max(0px, var(--tbui3-popup-y)); display: flex; flex-direction: column; padding: 4px; max-height: 60vh; overflow: auto; z-index: 100001; m"
-        js = js & "in-width: 240px; background: var(--themeContextMenuBackColor, var(--tbui3-toolbar-bg)); border: var(--tbui3-toolbar-line); border-radius: 8px; }\n.tbu"
-        js = js & "i3-ribbon-popup .tbui3-ribbon-command { flex-direction: row; justify-content: start; height: auto; min-height: 32px; max-width: none; }\n.tbui3-ribbon"
-        js = js & "-popup .tbui3-ribbon-icon { width: 20px; height: 20px; font-size: 20px; }\n.tbui3-ribbon-popup .tbui3-ribbon-label { max-width: none; text-align: left"
-        js = js & "; }\n.tbui3-ribbon-separator { border-top: var(--tbui3-toolbar-line); margin: 4px 0; }\n" & Chr(34) & ";document.head.appendChild(css);"
+        js = js & " --tbui3-toolbar-bg: var(--color-card, var(--themeToolbarBackground, var(--themeMenuBackColor, var(--themeGeneralBackColor))));\n    --tbui3-toolbar-f"
+        js = js & "g: var(--color-text, var(--themeGeneralTextColor, var(--themeMenuForeColor)));\n    /* SubtleFillColorSecondary/Tertiary, same pinned WinUI resources "
+        js = js & "as\n       winui3-ide.css; alpha interaction effects also work with styling off. */\n    --tbui3-subtle-hover: #00000009;\n    --tbui3-subtle-pressed:"
+        js = js & " #00000006;\n    --tbui3-toolbar-hover: var(--color-neutral-hover, var(--tbui3-subtle-hover));\n    --tbui3-toolbar-pressed: var(--color-neutral-press"
+        js = js & "ed, var(--tbui3-subtle-pressed));\n    --tbui3-toolbar-line: var(--themeToolbarDropDownBorder, 1px solid currentColor);\n    --tbui3-toolbar-selected:"
+        js = js & " var(--themeTreeItemSelectedBackColor);\n    /* Existing simplified-toolbar Fluent shadow4, preserved as an effect rather than a palette. */\n    --tb"
+        js = js & "ui3-toolbar-shadow: 0 0 2px rgba(0,0,0,0.12), 0 2px 4px rgba(0,0,0,0.14);\n    color: var(--tbui3-toolbar-fg);\n    font-family: 'Segoe UI Variable', "
+        js = js & "'Segoe UI', sans-serif;\n    box-sizing: border-box;\n}\n.darkMode .tbui3-toolbar-owned, .darkMode .tbui3-toolbar-option {\n    --tbui3-subtle-hover: "
+        js = js & "#ffffff0f;\n    --tbui3-subtle-pressed: #ffffff0a;\n}\n.tbui3-toolbar-native-hidden, .tbui3-menu-source { display: none !important; }\n.tbui3-ribbon {"
+        js = js & "\n    --tbui3-command-area-height: 100px;\n    --tbui3-tab-area-height: 26px;\n    --tbui3-large-button-width: 50px;\n    --tbui3-large-button-max-wid"
+        js = js & "th: 86px;\n    --tbui3-large-button-height: 76px;\n    flex: 0 0 auto; min-width: 0; max-height: calc(var(--tbui3-command-area-height) + var(--tbui3-t"
+        js = js & "ab-area-height)); background: var(--tbui3-toolbar-bg);\n    position: relative; z-index: 1; margin: 0 2px 3px; border-radius: 8px; box-shadow: var(--t"
+        js = js & "bui3-toolbar-shadow);\n}\n.tbui3-ribbon, .tbui3-ribbon * { box-sizing: border-box; }\n.tbui3-ribbon-tabs { display: flex; flex: 0 0 auto; height: var("
+        js = js & "--tbui3-tab-area-height); max-height: var(--tbui3-tab-area-height); gap: 4px; padding: 0 8px; overflow-x: auto; overflow-y: hidden; scrollbar-width: n"
+        js = js & "one; }\n.tbui3-ribbon-tabs::-webkit-scrollbar { height: 0; }\n.tbui3-ribbon-tab { flex: 0 0 auto; position: relative; height: var(--tbui3-tab-area-hei"
+        js = js & "ght, 26px); max-height: var(--tbui3-tab-area-height, 26px); padding: 3px 12px; border: 0; background: transparent; color: inherit; font: inherit; line"
+        js = js & "-height: 20px; cursor: default; border-radius: 4px 4px 0 0; }\n.tbui3-ribbon-tab[aria-selected='true'] { background: var(--tbui3-toolbar-selected); }\"
+        js = js & "n.tbui3-ribbon-tab[aria-selected='true']::after { content: ''; position: absolute; height: 2px; left: 14px; right: 14px; bottom: 0; background: curren"
+        js = js & "tColor; border-radius: 2px; }\n.tbui3-ribbon-tab:hover, .tbui3-ribbon-command:hover:not(:disabled), .tbui3-backstage-nav:hover:not(:disabled), .tbui3-"
+        js = js & "backstage-back:hover { background: var(--tbui3-toolbar-hover); }\n.tbui3-toolbar-owned button:focus-visible, .tbui3-toolbar-owned select:focus-visible"
+        js = js & ", .tbui3-toolbar-select:focus-visible { outline: 2px solid currentColor; outline-offset: -3px; }\n.tbui3-ribbon-content { display: flex; align-items: "
+        js = js & "stretch; height: var(--tbui3-command-area-height); min-height: 0; max-height: var(--tbui3-command-area-height); overflow-x: auto; overflow-y: hidden; "
+        js = js & "padding: 2px 4px 0; gap: 2px; border-bottom: var(--tbui3-toolbar-line); border-radius: 0 0 8px 8px; scrollbar-width: thin; }\n.tbui3-ribbon-content[hi"
+        js = js & "dden], .tbui3-backstage[hidden] { display: none; }\n.tbui3-ribbon-group { display: flex; flex: 0 0 auto; flex-direction: column; padding: 0 4px; borde"
+        js = js & "r-right: var(--tbui3-toolbar-line); min-width: 0; }\n.tbui3-ribbon-group:last-child { border-right: 0; }\n.tbui3-ribbon-group-body { display: grid; gr"
+        js = js & "id-auto-flow: column; grid-template-rows: repeat(3, 24px); align-items: stretch; gap: 2px; flex: 0 0 76px; }\n.tbui3-ribbon-group-title { height: 14px"
+        js = js & "; flex: 0 0 14px; line-height: 12px; text-align: center; font-size: 11px; padding-top: 2px; overflow: hidden; white-space: nowrap; text-overflow: elli"
+        js = js & "psis; opacity: .8; }\n.tbui3-ribbon-command { display: flex; flex-direction: row; justify-content: start; align-items: center; gap: 4px; min-width: 50"
+        js = js & "px; max-width: 160px; min-height: 24px; height: 24px; padding: 2px 4px; border: 1px solid transparent; border-radius: 4px; background: transparent; co"
+        js = js & "lor: inherit; font: inherit; font-size: 12px; cursor: default; }\n.tbui3-ribbon-content .tbui3-ribbon-large { position: relative; grid-row: span 3; fl"
+        js = js & "ex-direction: column; justify-content: center; width: max-content; min-width: var(--tbui3-large-button-width); max-width: var(--tbui3-large-button-max"
+        js = js & "-width); height: var(--tbui3-large-button-height); min-height: var(--tbui3-large-button-height); max-height: var(--tbui3-large-button-height); padding"
+        js = js & ": 4px 6px; }\n.tbui3-ribbon-content .tbui3-ribbon-large .tbui3-ribbon-chevron { position: absolute; right: 4px; bottom: 3px; font-size: 10px; line-hei"
+        js = js & "ght: 10px; }\n.tbui3-ribbon-command:disabled { opacity: .45; }\n.tbui3-ribbon-command[hidden] { display: none; }\n.tbui3-ribbon-command:active:not(:di"
+        js = js & "sabled) { background: var(--tbui3-toolbar-pressed); }\n.tbui3-ribbon-checked { background: var(--tbui3-toolbar-selected); border-color: currentColor; "
+        js = js & "}\n.tbui3-ribbon-label { line-height: 16px; text-align: left; max-width: 150px; white-space: normal; }\n.tbui3-ribbon-content .tbui3-ribbon-label { mi"
+        js = js & "n-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }\n.tbui3-ribbon-icon { display: inline-block; flex: 0 0 auto; width: 18px"
+        js = js & "; height: 18px; font-size: 18px; line-height: 18px; background: var(--tbui3-native-image, none) center / contain no-repeat; }\n.tbui3-ribbon-icon[hidd"
+        js = js & "en] { display: none; }\n.tbui3-ribbon-content .tbui3-ribbon-large .tbui3-ribbon-icon { width: 28px; height: 28px; font-size: 28px; line-height: 28px; "
+        js = js & "}\n.tbui3-ribbon-content .tbui3-ribbon-large .tbui3-ribbon-label { text-align: center; min-width: 0; max-width: calc(var(--tbui3-large-button-max-widt"
+        js = js & "h) - 14px); max-height: 32px; white-space: normal; overflow: hidden; overflow-wrap: anywhere; display: -webkit-box; -webkit-box-orient: vertical; -web"
+        js = js & "kit-line-clamp: 2; }\n.tbui3-ribbon-mask { background: currentColor; mask: var(--tbui3-icon) center / contain no-repeat; -webkit-mask: var(--tbui3-ico"
+        js = js & "n) center / contain no-repeat; }\n.tbui3-ribbon-selector { display: flex; grid-row: span 3; flex-direction: column; gap: 4px; padding: 2px 4px; max-wi"
+        js = js & "dth: 120px; font-size: 11px; }\n.tbui3-ribbon-selector select, .tbui3-ribbon-select, .tbui3-toolbar-select { min-height: 32px; max-width: 200px; backg"
+        js = js & "round: var(--themeDialogGeneralBackColor); color: var(--themeDialogGeneralForeColor); border: var(--themeToolbarDropDownBorder); border-radius: 4px; f"
+        js = js & "ont: inherit; padding: 3px 8px; }\n.tbui3-ribbon-content .tbui3-ribbon-select { grid-row: span 2; align-self: start; }\n.tbui3-ribbon-select option, ."
+        js = js & "tbui3-toolbar-select option { background: var(--themeDialogGeneralBackColor); color: var(--themeDialogGeneralForeColor); }\n.tbui3-ribbon-content .men"
+        js = js & "uBarGridOptionsInner { display: grid; grid-auto-flow: column; grid-template-rows: repeat(3, 24px); grid-template-columns: repeat(2, max-content); gap:"
+        js = js & " 2px 12px; font-size: 11px; color: var(--tbui3-toolbar-fg); }\n.tbui3-ribbon-grid { grid-row: span 3; border: 0; padding: 0; margin: 0; min-width: 0; "
+        js = js & "}\n.tbui3-ribbon-grid:disabled { opacity: .45; }\n.tbui3-ribbon-content .menuBarGridOptionRow { display: flex; gap: 6px; align-items: center; justify-"
+        js = js & "content: space-between; color: inherit; }\n.tbui3-ribbon-content .menuBarGridOption, .tbui3-ribbon-content .menuBarGridValue { color: inherit; width: "
+        js = js & "auto; min-width: 0; flex: 0 0 auto; }\n.tbui3-ribbon-content .menuBarGridOptionRow input { color-scheme: inherit; accent-color: var(--themeTreeItemSel"
+        js = js & "ectedBackColor); }\n.tbui3-ribbon-content .menuBarGridOptionRow input[type='number'] { box-sizing: border-box; width: 48px; min-height: 22px; padding:"
+        js = js & " 0 4px; border-radius: 4px; font: inherit; color: var(--tbui3-toolbar-fg); background: var(--themeDialogGeneralBackColor, var(--tbui3-toolbar-bg)); bo"
+        js = js & "rder: var(--tbui3-toolbar-line); }\n.tbui3-ribbon-context { display: flex; gap: 4px; align-items: center; align-self: start; border: var(--tbui3-toolb"
+        js = js & "ar-line); border-radius: 4px; }\n.tbui3-quick { color: var(--themeMenuForeColor, var(--tbui3-toolbar-fg)); display: flex; flex: 0 1 auto; gap: 2px; al"
+        js = js & "ign-items: center; min-width: 0; overflow-x: auto; -webkit-app-region: no-drag; }\n.tbui3-quick-real-titlebar { min-height: 32px; }\n.tbui3-ribbon-com"
+        js = js & "pact { height: 28px; min-height: 28px; min-width: 30px; width: 30px; padding: 4px; }\n.tbui3-ribbon-compact .tbui3-ribbon-icon { width: 18px; height: "
+        js = js & "18px; font-size: 18px; line-height: 18px; }\n.tbui3-ribbon-compact .tbui3-ribbon-label { display: none; }\n/* Backstage hides the live designer as wel"
+        js = js & "l as covering it: designer layers can\n   otherwise paint above an ordinary document overlay. State is restored by JS. */\n.tbui3-backstage-underlay, "
+        js = js & ".tbui3-backstage-underlay * { visibility: hidden !important; }\n.tbui3-backstage { position: fixed; inset: 32px 0 0; z-index: 100000; display: flex; b"
+        js = js & "ackground: var(--themeGeneralBackColor, var(--tbui3-toolbar-bg)); color: var(--themeDialogGeneralForeColor, var(--tbui3-toolbar-fg)); }\n.tbui3-backst"
+        js = js & "age-rail { display: flex; flex-direction: column; gap: 4px; flex: 0 0 160px; padding: 12px 8px 16px; background: var(--tbui3-toolbar-bg); overflow-y: "
+        js = js & "auto; border-right: var(--tbui3-toolbar-line); }\n.tbui3-backstage-nav-group { display: flex; flex-direction: column; gap: 2px; }\n.tbui3-backstage-fo"
+        js = js & "oter { margin-top: auto; padding-top: 24px; }\n.tbui3-backstage-back, .tbui3-backstage-nav { display: flex; align-items: center; gap: 12px; min-height"
+        js = js & ": 38px; width: 100%; border: 0; border-radius: 4px; background: transparent; color: inherit; font: inherit; text-align: left; padding: 8px 12px; }\n.t"
+        js = js & "bui3-backstage-back { margin-bottom: 12px; }\n.tbui3-backstage-selected { background: var(--tbui3-toolbar-selected); outline: 1px solid currentColor; "
+        js = js & "outline-offset: -1px; }\n.tbui3-backstage-nav:disabled { opacity: .45; }\n.tbui3-backstage-content { flex: 1 1 auto; overflow: auto; padding: 24px 40p"
+        js = js & "x; min-width: 0; background: var(--themeGeneralBackColor, var(--tbui3-toolbar-bg)); }\n.tbui3-backstage-heading { font-weight: 600; font-size: 22px; m"
+        js = js & "argin: 0 0 20px; }\n.tbui3-backstage-project { max-width: 760px; font-size: 16px; margin: 0 0 24px; padding-bottom: 16px; border-bottom: var(--tbui3-t"
+        js = js & "oolbar-line); }\n.tbui3-backstage-description { max-width: 640px; line-height: 20px; margin-bottom: 20px; }\n.tbui3-backstage-tasks { display: flex; f"
+        js = js & "lex-direction: column; gap: 12px; width: min(100%, 760px); }\n.tbui3-backstage-task { display: flex; border-bottom: var(--tbui3-toolbar-line); padding"
+        js = js & "-bottom: 8px; }\n.tbui3-backstage-task .tbui3-ribbon-command { flex-direction: row; justify-content: start; gap: 16px; height: auto; min-height: 56px;"
+        js = js & " min-width: 240px; max-width: 100%; width: 100%; padding: 12px; }\n.tbui3-backstage-task .tbui3-ribbon-icon { width: 28px; height: 28px; font-size: 28"
+        js = js & "px; line-height: 28px; }\n.tbui3-backstage-task .tbui3-ribbon-label { max-width: none; text-align: left; font-size: 14px; }\n.tbui3-ribbon-popup { --t"
+        js = js & "bui3-toolbar-hover: var(--themeContextMenuItemHoverColor, var(--tbui3-subtle-hover)); position: fixed; left: max(0px, var(--tbui3-popup-x)); top: max("
+        js = js & "0px, var(--tbui3-popup-y)); display: flex; flex-direction: column; padding: 4px; max-height: 60vh; overflow: auto; z-index: 100001; min-width: 240px; "
+        js = js & "background: var(--themeContextMenuBackground, var(--themeContextMenuBackColor, var(--tbui3-toolbar-bg))); color: var(--themeContextMenuForeColor, var("
+        js = js & "--tbui3-toolbar-fg)); border: var(--tbui3-toolbar-line); border-radius: 8px; }\n.tbui3-ribbon-popup .tbui3-ribbon-command { flex-direction: row; justi"
+        js = js & "fy-content: start; height: auto; min-height: 32px; max-width: none; }\n.tbui3-ribbon-popup .tbui3-ribbon-icon { width: 20px; height: 20px; font-size: "
+        js = js & "20px; }\n.tbui3-ribbon-popup .tbui3-ribbon-label { max-width: none; text-align: left; }\n.tbui3-ribbon-separator { border-top: var(--tbui3-toolbar-lin"
+        js = js & "e); margin: 4px 0; }\n" & Chr(34) & ";document.head.appendChild(css);"
         js = js & vbLf
         js = js & "var adapter=/* tbUI3IDE toolbar presentation. Native nodes/commands remain the execution authority."
         js = js & vbLf
@@ -269,37 +280,40 @@ Private Module IdeToolbarScript
         js = js & vbLf
         js = js & "    }"
         js = js & vbLf
-        js = js & "    function iconFor(n,descriptor) {"
+        js = js & "    function iconFor(n,descriptor={}) {"
         js = js & vbLf
         js = js & "        let src=n;"
         js = js & vbLf
-        js = js & "        if(!src&&descriptor&&typeof descriptor.action==='string')"
+        js = js & "        if(!src&&typeof descriptor.action==='string')"
         js = js & vbLf
         js = js & "            src=[...sources.values()].find(x=>[].concat(x.boundCommand||[]).includes(descriptor.action));"
         js = js & vbLf
         js = js & "        const i=el('span','tbui3-ribbon-icon');i.setAttribute('aria-hidden','true');"
         js = js & vbLf
-        js = js & "        const uri=src&&api.icons[src.id];"
+        js = js & "        const mask=uri=>{i.classList.add('tbui3-ribbon-mask');i.style.setProperty('--tbui3-icon',uri);return i;};"
         js = js & vbLf
-        js = js & "        if(uri){i.classList.add('tbui3-ribbon-mask');i.style.setProperty('--tbui3-icon',uri);}"
+        js = js & "        if(src&&api.icons[src.id])return mask(api.icons[src.id]);"
         js = js & vbLf
-        js = js & "        else if(src){"
+        js = js & "        if(src){"
         js = js & vbLf
         js = js & "            const cs=w.getComputedStyle(src);let image=cs.backgroundImage;"
         js = js & vbLf
         js = js & "            if(!image||image==='none')image=w.getComputedStyle(src,'::before').backgroundImage;"
         js = js & vbLf
-        js = js & "            if(image&&image!=='none')i.style.setProperty('--tbui3-native-image',image);"
+        js = js & "            if(image&&image!=='none'){i.style.setProperty('--tbui3-native-image',image);return i;}"
         js = js & vbLf
-        js = js & "            else if(src.classList.contains('iconTextOnly'))i.hidden=true;"
+        js = js & "            const c=src.matches('.codicon')?src:src.querySelector('.codicon');"
         js = js & vbLf
-        js = js & "            else {const c=src.querySelector('.codicon');if(c)i.className+=' '+c.className;}"
+        js = js & "            if(c){i.className+=' '+[...c.classList].filter(x=>x==='codicon'||x.startsWith('codicon-')||x==='flipX'||x==='rotate90').join(' ');return i"
+        js = js & ";}"
         js = js & vbLf
-        js = js & "        }else if(descriptor&&descriptor.codicon)i.className+=' codicon codicon-'+descriptor.codicon;"
+        js = js & "        }"
         js = js & vbLf
-        js = js & "        else if(descriptor&&descriptor.iconClass)i.className+=' '+descriptor.iconClass;"
+        js = js & "        if(descriptor.codicon){i.className+=' codicon codicon-'+descriptor.codicon;return i;}"
         js = js & vbLf
-        js = js & "        return i;"
+        js = js & "        const glyph=api.present?api.present(descriptor,src&&src.id).glyph:'apps_list';"
+        js = js & vbLf
+        js = js & "        return mask(api.icons[glyph]||api.icons.apps_list||api.icons.saveIcon);"
         js = js & vbLf
         js = js & "    }"
         js = js & vbLf
@@ -315,13 +329,13 @@ Private Module IdeToolbarScript
         js = js & vbLf
         js = js & "    }"
         js = js & vbLf
-        js = js & "    function sourceButton(n,parent,compact=false,large=false) {"
+        js = js & "    function sourceButton(n,parent,compact=false,large=!!api.present?.({},n.id).large) {"
         js = js & vbLf
         js = js & "        const b=el('button','tbui3-ribbon-command'+(compact?' tbui3-ribbon-compact':large?' tbui3-ribbon-large':''));b.type='button';"
         js = js & vbLf
         js = js & "        b.dataset.source=typeof n.id==='string'?n.id:'';b.title=label(n);b.setAttribute('aria-label',label(n));"
         js = js & vbLf
-        js = js & "        b.append(iconFor(n),el('span','tbui3-ribbon-label',sourceCaption(n)));"
+        js = js & "        b.append(iconFor(n,{name:sourceCaption(n)}),el('span','tbui3-ribbon-label',sourceCaption(n)));"
         js = js & vbLf
         js = js & "        b.addEventListener('mousedown',e=>e.preventDefault());"
         js = js & vbLf
@@ -341,11 +355,11 @@ Private Module IdeToolbarScript
         js = js & vbLf
         js = js & "    function addSources(ids,parent) {"
         js = js & vbLf
-        js = js & "        for(const [index,id] of ids.entries()){const n=sources.get(id);if(!n)continue;"
+        js = js & "        for(const id of ids){const n=sources.get(id);if(!n)continue;"
         js = js & vbLf
         js = js & "            if(n.matches('select')){const l=el('label','tbui3-ribbon-selector',sourceCaption(n));l.title=label(n);park(n,l);parent.append(l);}"
         js = js & vbLf
-        js = js & "            else sourceButton(n,parent,false,index===0);"
+        js = js & "            else sourceButton(n,parent,false,!!api.present?.({},id).large);"
         js = js & vbLf
         js = js & "        }"
         js = js & vbLf
@@ -529,7 +543,7 @@ Private Module IdeToolbarScript
         js = js & vbLf
         js = js & "        const quickActions=new Set();for(const id of quickIds)for(const a of [].concat(sources.get(id)?.boundCommand||[]))quickActions.add(a);"
         js = js & vbLf
-        js = js & "        return api.buildLayout(records,quickActions);"
+        js = js & "        return api.buildLayout(records,quickActions,api.present);"
         js = js & vbLf
         js = js & "    }"
         js = js & vbLf
@@ -589,7 +603,8 @@ Private Module IdeToolbarScript
         js = js & vbLf
         js = js & "    }"
         js = js & vbLf
-        js = js & "    function addMultiPageContext(){if(currentHost()){const b=el('button','tbui3-ribbon-tab tbui3-ribbon-context','MultiPage');"
+        js = js & "    function addMultiPageContext(){if(currentHost()){const b=el('button','tbui3-ribbon-tab tbui3-ribbon-context');b.append(iconFor(null,{_ribbonGlyph:"
+        js = js & "'apps_list'}),el('span','','MultiPage'));"
         js = js & vbLf
         js = js & "        b.onclick=()=>{clearContent();pages();syncBindings();resize();};content.prepend(b);}}"
         js = js & vbLf
@@ -598,7 +613,7 @@ Private Module IdeToolbarScript
         js = js & "        if(m.node.id==='rootMenuFile'||m.node.id==='rootMenuAddins')return 'File';"
         js = js & vbLf
         js = js & "        return {rootMenuEdit:'Home',rootMenuFormat:'Form',rootMenuView:'View',rootMenuWindows:'View',rootMenuProject:'Project',rootMenuRun:'Debug',roo"
-        js = js & "tMenuDebug:'Debug',rootMenuTools:'Project',rootMenuHelp:'Help'}[m.node.id]||m.title;"
+        js = js & "tMenuDebug:'Debug',rootMenuTools:'Project',rootMenuHelp:'File'}[m.node.id]||m.title;"
         js = js & vbLf
         js = js & "    }"
         js = js & vbLf
@@ -626,8 +641,8 @@ Private Module IdeToolbarScript
         js = js & "        if(state.mode==='Hybrid'){"
         js = js & vbLf
         js = js & "            if(known[key]){for(const [name,ids]of known[key])addSources(ids,group(name));if(key==='Form'){addGrid();if(currentHost()){const nested=el("
-        js = js & "'button','tbui3-ribbon-tab tbui3-ribbon-context','MultiPage');nested.onclick=()=>{clearContent();pages();syncBindings();resize();};content.prepend(nes"
-        js = js & "ted);}}}"
+        js = js & "'button','tbui3-ribbon-tab tbui3-ribbon-context');nested.append(iconFor(null,{_ribbonGlyph:'apps_list'}),el('span','','MultiPage'));nested.onclick=()="
+        js = js & ">{clearContent();pages();syncBindings();resize();};content.prepend(nested);}}}"
         js = js & vbLf
         js = js & "            else addins(content,true);"
         js = js & vbLf
@@ -712,8 +727,8 @@ Private Module IdeToolbarScript
         js = js & vbLf
         js = js & "        for(const [n]of bindings)if(fileNav.contains(n))bindings.delete(n);clear(fileNav);"
         js = js & vbLf
-        js = js & "        const back=el('button','tbui3-backstage-back','← Back');back.setAttribute('aria-label','Back to project');back.onclick=()=>closeFile();fileNav"
-        js = js & ".append(back);"
+        js = js & "        const back=el('button','tbui3-backstage-back');back.append(iconFor(null,{_ribbonGlyph:'arrow_left'}),el('span','','Back'));back.setAttribute('"
+        js = js & "aria-label','Back to project');back.onclick=()=>closeFile();fileNav.append(back);"
         js = js & vbLf
         js = js & "        const main=el('div','tbui3-backstage-nav-group'),footer=el('div','tbui3-backstage-nav-group tbui3-backstage-footer');fileNav.append(main,foote"
         js = js & "r);"
@@ -724,7 +739,11 @@ Private Module IdeToolbarScript
         js = js & vbLf
         js = js & "            if(section!=='Info'&&section!=='Add-ins'&&!entries.length)return;"
         js = js & vbLf
-        js = js & "            const b=el('button','tbui3-backstage-nav',title);b.type='button';b.dataset.fileSection=section;"
+        js = js & "            const b=el('button','tbui3-backstage-nav');"
+        js = js & vbLf
+        js = js & "            const glyph={Info:'info','Add-ins':'puzzle_piece',Preferences:'settings',Options:'settings',Help:'chat_help',More:'apps_list'}[section];"
+        js = js & vbLf
+        js = js & "            b.append(iconFor(null,glyph?{_ribbonGlyph:glyph}:item||{}),el('span','',title));b.type='button';b.dataset.fileSection=section;"
         js = js & vbLf
         js = js & "            if(direct&&item){b.title=caption(item);bindings.set(b,{item});b.onclick=()=>activateItem(item,b);}"
         js = js & vbLf
@@ -741,7 +760,8 @@ Private Module IdeToolbarScript
         js = js & vbLf
         js = js & "        if(layout?.file.has('More'))add('More commands','More');"
         js = js & vbLf
-        js = js & "        add('Add-ins','Add-ins',footer);add('Preferences','Preferences',footer);add('Options','Options',footer,true);add('Exit','Exit',footer,true);"
+        js = js & "        add('Add-ins','Add-ins',footer);add('Help','Help',footer);add('Preferences','Preferences',footer);add('Options','Options',footer,true);add('Ex"
+        js = js & "it','Exit',footer,true);"
         js = js & vbLf
         js = js & "        syncBindings();"
         js = js & vbLf
@@ -758,7 +778,7 @@ Private Module IdeToolbarScript
         js = js & "        for(const [n]of bindings)if(fileContent.contains(n))bindings.delete(n);clear(fileContent);"
         js = js & vbLf
         js = js & "        const titles={Info:'Project information',Open:'Open project',Export:'Export project','Add-ins':'Add-ins',Preferences:'Preferences',More:'More "
-        js = js & "file commands'};"
+        js = js & "file commands',Help:'Help'};"
         js = js & vbLf
         js = js & "        fileContent.append(el('h1','tbui3-backstage-heading',titles[fileSection]||fileSection));"
         js = js & vbLf
@@ -777,7 +797,8 @@ Private Module IdeToolbarScript
         js = js & vbLf
         js = js & "        const tasks=el('div','tbui3-backstage-tasks');fileContent.append(tasks);"
         js = js & vbLf
-        js = js & "        for(const item of list){const row=el('div','tbui3-backstage-task');"
+        js = js & "        for(const original of list){const item=fileSection==='Add-ins'?{...original,_ribbonGlyph:'puzzle_piece'}:original;const row=el('div','tbui3-ba"
+        js = js & "ckstage-task');"
         js = js & vbLf
         js = js & "            command(unsupported&&typeof item.action==='function'&&String(item.action).includes('notSupportedMenuOption')?{...item,isHidden:true,_ribbo"
         js = js & "nLarge:false}:{...item,_ribbonLarge:false},row);tasks.append(row);"
@@ -993,7 +1014,8 @@ Private Module IdeToolbarScript
         js = js & vbLf
         js = js & "            if(state.mode==='Ribbon'&&m){m.items=items;"
         js = js & vbLf
-        js = js & "                if(anchor.id==='rootMenuFile'||anchor.id==='rootMenuAddins')openFile(anchor.id==='rootMenuAddins'?'Add-ins':'Info');"
+        js = js & "                if(['rootMenuFile','rootMenuAddins','rootMenuHelp'].includes(anchor.id))openFile(anchor.id==='rootMenuAddins'?'Add-ins':anchor.id==='r"
+        js = js & "ootMenuHelp'?'Help':'Info');"
         js = js & vbLf
         js = js & "                else selectTab(tabForNative(m));return;}"
         js = js & vbLf
@@ -1076,14 +1098,208 @@ Private Module IdeToolbarScript
         js = js & "0 0 3 5.5v9A2.5 2.5 0 0 0 5.5 17h4.1q-.24-.48-.4-1H5.5A1.5 1.5 0 0 1 4 14.5V7h12v2.2q.52.16 1 .4zM5.5 4h9c.83 0 1.5.67 1.5 1.5V6H4v-.5C4 4.67 4.67 4 5"
         js = js & ".5 4M19 14.5a4.5 4.5 0 1 1-9 0 4.5 4.5 0 0 1 9 0m-2.29-.44-2.97-1.65a.5.5 0 0 0-.74.44v3.3c0 .38.41.62.74.44l2.97-1.65a.5.5 0 0 0 0-.88%27/%3E%3C/svg%"
         js = js & "3E')" & Chr(34) & "," & Chr(34) & "menuBarColorMode" & Chr(34) & ":" & Chr(34) & "url('data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 width=%2720%27 height=%2720%27 viewBox=%270 0 20 20%27"
-        js = js & "%3E%3Cpath d=%27M10 3a7 7 0 1 1 0 14zm0-1a8 8 0 1 0 0 16 8 8 0 0 0 0-16%27/%3E%3C/svg%3E')" & Chr(34) & "},buildLayout:/* Office-style organization for the IDE's li"
-        js = js & "ve descriptors. This is presentation"
+        js = js & "%3E%3Cpath d=%27M10 3a7 7 0 1 1 0 14zm0-1a8 8 0 1 0 0 16 8 8 0 0 0 0-16%27/%3E%3C/svg%3E')" & Chr(34) & "," & Chr(34) & "cut" & Chr(34) & ":" & Chr(34) & "url('data:image/svg+xml,%3Csvg%20width%3D%2224%22%2"
+        js = js & "0height%3D%2224%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%0A%3Cpath%20d%3D%22M1"
+        js = js & "2.1409%209.3415L12.14%209.34286L7.37017%202.3284C7.13725%201.98587%206.67077%201.89702%206.32824%202.12994C5.98572%202.36286%205.89687%202.82934%206.1"
+        js = js & "2978%203.17187L11.2606%2010.7171L8.86478%2014.4605C8.30797%2014.1665%207.67342%2014.0001%207%2014.0001C4.79086%2014.0001%203%2015.791%203%2018.0001C3%"
+        js = js & "2020.2093%204.79086%2022.0001%207%2022.0001C9.20914%2022.0001%2011%2020.2093%2011%2018.0001C11%2017.0089%2010.6395%2016.1019%2010.0424%2015.4031L12.17"
+        js = js & "8%2012.0662L14.2426%2015.1024C13.4771%2015.831%2013%2016.8599%2013%2018.0001C13%2020.2093%2014.7909%2022.0001%2017%2022.0001C19.2091%2022.0001%2021%20"
+        js = js & "20.2093%2021%2018.0001C21%2015.791%2019.2091%2014.0001%2017%2014.0001C16.471%2014.0001%2015.9659%2014.1028%2015.5037%2014.2894L13.0575%2010.692L13.058"
+        js = js & "8%2010.69L12.1409%209.3415ZM4.5%2018.0001C4.5%2016.6194%205.61929%2015.5001%207%2015.5001C8.38071%2015.5001%209.5%2016.6194%209.5%2018.0001C9.5%2019.3"
+        js = js & "808%208.38071%2020.5001%207%2020.5001C5.61929%2020.5001%204.5%2019.3808%204.5%2018.0001ZM14.5%2018.0001C14.5%2016.6194%2015.6193%2015.5001%2017%2015.5"
+        js = js & "001C18.3807%2015.5001%2019.5%2016.6194%2019.5%2018.0001C19.5%2019.3808%2018.3807%2020.5001%2017%2020.5001C15.6193%2020.5001%2014.5%2019.3808%2014.5%20"
+        js = js & "18.0001ZM13.9381%209.31607L17.8815%203.15438C18.1048%202.8055%2018.003%202.34167%2017.6541%202.11839C17.3053%201.89511%2016.8414%201.99692%2016.6181%2"
+        js = js & "02.3458L13.0202%207.96756L13.9381%209.31607Z%22%20fill%3D%22%23212121%22%2F%3E%0A%3C%2Fsvg%3E')" & Chr(34) & "," & Chr(34) & "select_all_on" & Chr(34) & ":" & Chr(34) & "url('data:image/svg+xml,%3Csvg%20wid"
+        js = js & "th%3D%2224%22%20height%3D%2224%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%0A%3Cp"
+        js = js & "ath%20d%3D%22M15.2803%209.03033C15.5732%208.73744%2015.5732%208.26256%2015.2803%207.96967C14.9874%207.67678%2014.5126%207.67678%2014.2197%207.96967L10"
+        js = js & "%2012.1893L8.03033%2010.2197C7.73744%209.92678%207.26256%209.92678%206.96967%2010.2197C6.67678%2010.5126%206.67678%2010.9874%206.96967%2011.2803L9.469"
+        js = js & "67%2013.7803C9.76256%2014.0732%2010.2374%2014.0732%2010.5303%2013.7803L15.2803%209.03033ZM3%206.25C3%204.45507%204.45507%203%206.25%203H15.75C17.5449%"
+        js = js & "203%2019%204.45507%2019%206.25V15.75C19%2017.5449%2017.5449%2019%2015.75%2019H6.25C4.45507%2019%203%2017.5449%203%2015.75V6.25ZM6.25%204.5C5.2835%204."
+        js = js & "5%204.5%205.2835%204.5%206.25V15.75C4.5%2016.7165%205.2835%2017.5%206.25%2017.5H15.75C16.7165%2017.5%2017.5%2016.7165%2017.5%2015.75V6.25C17.5%205.283"
+        js = js & "5%2016.7165%204.5%2015.75%204.5H6.25ZM9.24118%2021.5C8.08967%2021.5%207.07793%2020.9016%206.5%2019.9987H9.21565L9.24118%2019.9989H16.2462C18.3188%2019"
+        js = js & ".9989%2019.9989%2018.3188%2019.9989%2016.2462V6.5C20.9016%207.07796%2021.5%208.08964%2021.5%209.24108V16.2462C21.5%2019.1478%2019.1478%2021.5%2016.246"
+        js = js & "2%2021.5H9.24118Z%22%20fill%3D%22%23212121%22%2F%3E%0A%3C%2Fsvg%3E')" & Chr(34) & "," & Chr(34) & "delete" & Chr(34) & ":" & Chr(34) & "url('data:image/svg+xml,%3Csvg%20width%3D%2224%22%20height%3D%2224%22%"
+        js = js & "20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%0A%3Cpath%20d%3D%22M10%205H14C14%203.895"
+        js = js & "43%2013.1046%203%2012%203C10.8954%203%2010%203.89543%2010%205ZM8.5%205C8.5%203.067%2010.067%201.5%2012%201.5C13.933%201.5%2015.5%203.067%2015.5%205H21"
+        js = js & ".25C21.6642%205%2022%205.33579%2022%205.75C22%206.16421%2021.6642%206.5%2021.25%206.5H19.9309L18.7589%2018.6112C18.5729%2020.5334%2016.9575%2022%2015."
+        js = js & "0263%2022H8.97369C7.04254%2022%205.42715%2020.5334%205.24113%2018.6112L4.06908%206.5H2.75C2.33579%206.5%202%206.16421%202%205.75C2%205.33579%202.33579"
+        js = js & "%205%202.75%205H8.5ZM10.5%209.75C10.5%209.33579%2010.1642%209%209.75%209C9.33579%209%209%209.33579%209%209.75V17.25C9%2017.6642%209.33579%2018%209.75%"
+        js = js & "2018C10.1642%2018%2010.5%2017.6642%2010.5%2017.25V9.75ZM14.25%209C14.6642%209%2015%209.33579%2015%209.75V17.25C15%2017.6642%2014.6642%2018%2014.25%201"
+        js = js & "8C13.8358%2018%2013.5%2017.6642%2013.5%2017.25V9.75C13.5%209.33579%2013.8358%209%2014.25%209ZM6.73416%2018.4667C6.84577%2019.62%207.815%2020.5%208.973"
+        js = js & "69%2020.5H15.0263C16.185%2020.5%2017.1542%2019.62%2017.2658%2018.4667L18.4239%206.5H5.57608L6.73416%2018.4667Z%22%20fill%3D%22%23212121%22%2F%3E%0A%3C"
+        js = js & "%2Fsvg%3E')" & Chr(34) & "," & Chr(34) & "code" & Chr(34) & ":" & Chr(34) & "url('data:image/svg+xml,%3Csvg%20width%3D%2224%22%20height%3D%2224%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20xml"
+        js = js & "ns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%0A%3Cpath%20d%3D%22M15.0461%201.49224C15.1885%201.10338%2015.6191%200.903659%2016.008%201.04595C16."
+        js = js & "3967%201.18841%2016.5965%201.619%2016.4543%202.00786L8.95427%2022.5079C8.81191%2022.8967%208.38124%2023.0963%207.99236%2022.9542C7.60349%2022.8118%207"
+        js = js & ".40378%2022.3812%207.54607%2021.9922L15.0461%201.49224ZM6.2072%206.23247C6.4929%205.93284%206.96791%205.92152%207.26775%206.20708C7.5673%206.49276%207"
+        js = js & ".57861%206.9678%207.29314%207.26763L2.78533%2012.0001L7.29314%2016.7325C7.57857%2017.0323%207.56733%2017.5074%207.26775%2017.793C6.96793%2018.0786%206"
+        js = js & ".4929%2018.0672%206.2072%2017.7676L1.2072%2012.5176C0.93134%2012.228%200.93134%2011.7721%201.2072%2011.4825L6.2072%206.23247ZM16.7326%206.20708C17.032"
+        js = js & "5%205.92158%2017.5075%205.93279%2017.7931%206.23247L22.7931%2011.4825C23.0688%2011.7721%2023.0689%2012.228%2022.7931%2012.5176L17.7931%2017.7676C17.50"
+        js = js & "75%2018.0673%2017.0325%2018.0785%2016.7326%2017.793C16.4329%2017.5073%2016.4216%2017.0323%2016.7072%2016.7325L21.215%2012.0001L16.7072%207.26763C16.42"
+        js = js & "16%206.96776%2016.4329%206.49277%2016.7326%206.20708Z%22%20fill%3D%22%23212121%22%2F%3E%0A%3C%2Fsvg%3E')" & Chr(34) & "," & Chr(34) & "arrow_collapse_all" & Chr(34) & ":" & Chr(34) & "url('data:image/svg+xm"
+        js = js & "l,%3Csvg%20width%3D%2224%22%20height%3D%2224%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsv"
+        js = js & "g%22%3E%0A%3Cpath%20d%3D%22M2%204.75C2%204.33579%202.33579%204%202.75%204H21.25C21.6642%204%2022%204.33579%2022%204.75C22%205.16421%2021.6642%205.5%20"
+        js = js & "21.25%205.5H2.75C2.33579%205.5%202%205.16421%202%204.75ZM12%208.75C12%208.33579%2012.3358%208%2012.75%208H21.25C21.6642%208%2022%208.33579%2022%208.75"
+        js = js & "C22%209.16421%2021.6642%209.5%2021.25%209.5H12.75C12.3358%209.5%2012%209.16421%2012%208.75ZM7.28033%208.21967C7.13968%208.07902%206.94891%208%206.75%2"
+        js = js & "08C6.55109%208%206.36032%208.07902%206.21967%208.21967L3.21967%2011.2197C2.92678%2011.5126%202.92678%2011.9874%203.21967%2012.2803C3.51256%2012.5732%2"
+        js = js & "03.98744%2012.5732%204.28033%2012.2803L6%2010.5607V19.25C6%2019.6642%206.33579%2020%206.75%2020C7.16421%2020%207.5%2019.6642%207.5%2019.25V10.5607L9.2"
+        js = js & "1967%2012.2803C9.51256%2012.5732%209.98744%2012.5732%2010.2803%2012.2803C10.5732%2011.9874%2010.5732%2011.5126%2010.2803%2011.2197L7.28033%208.21967Z%"
+        js = js & "22%20fill%3D%22%23212121%22%2F%3E%0A%3C%2Fsvg%3E')" & Chr(34) & "," & Chr(34) & "arrow_expand" & Chr(34) & ":" & Chr(34) & "url('data:image/svg+xml,%3Csvg%20width%3D%2224%22%20height%3D%2224%22%20viewBox%3D"
+        js = js & "%220%200%2024%2024%22%20fill%3D%22none%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%0A%3Cpath%20d%3D%22M7.59551%2015.3497C7.8884%2015.05"
+        js = js & "68%208.36327%2015.0568%208.65617%2015.3497C8.94906%2015.6426%208.94906%2016.1174%208.65617%2016.4103L5.561%2019.5042H7.75C8.1297%2019.5042%208.44349%2"
+        js = js & "019.7864%208.49315%2020.1524L8.5%2020.2542C8.5%2020.6684%208.16421%2021.0042%207.75%2021.0042H3.75C3.33579%2021.0042%203%2020.6684%203%2020.2542V16.25"
+        js = js & "42C3%2015.84%203.33579%2015.5042%203.75%2015.5042C4.16421%2015.5042%204.5%2015.84%204.5%2016.2542V18.4432L7.59551%2015.3497ZM16.255%2021.0042C15.8408%"
+        js = js & "2021.0042%2015.505%2020.6684%2015.505%2020.2542C15.505%2019.84%2015.8408%2019.5042%2016.255%2019.5042H18.441L15.3495%2016.4101C15.0833%2016.1438%2015."
+        js = js & "0593%2015.7271%2015.2772%2015.4336L15.3499%2015.3495C15.6429%2015.0567%2016.1178%2015.0569%2016.4105%2015.3499L19.505%2018.4462V16.2542C19.505%2015.87"
+        js = js & "45%2019.7872%2015.5607%2020.1532%2015.5111L20.255%2015.5042C20.6692%2015.5042%2021.005%2015.84%2021.005%2016.2542V20.2542C21.005%2020.6684%2020.6692%2"
+        js = js & "021.0042%2020.255%2021.0042H16.255ZM7.75%203C8.16421%203%208.5%203.33579%208.5%203.75C8.5%204.16421%208.16421%204.5%207.75%204.5H5.563L8.65554%207.594"
+        js = js & "88C8.9217%207.86125%208.94574%208.27792%208.72777%208.57145L8.65512%208.65554C8.36211%208.94832%207.88724%208.94813%207.59446%208.65512L4.5%205.558V7."
+        js = js & "75C4.5%208.1297%204.21785%208.44349%203.85177%208.49315L3.75%208.5C3.33579%208.5%203%208.16421%203%207.75V3.75C3%203.33579%203.33579%203%203.75%203H7."
+        js = js & "75ZM20.255%203C20.6692%203%2021.005%203.33579%2021.005%203.75V7.75C21.005%208.16421%2020.6692%208.5%2020.255%208.5C19.8408%208.5%2019.505%208.16421%20"
+        js = js & "19.505%207.75V5.559L16.4104%208.65522C16.1442%208.92154%2015.7276%208.94583%2015.4339%208.72804L15.3498%208.65544C15.0568%208.3626%2015.0567%207.88773"
+        js = js & "%2015.3496%207.59478L18.442%204.5H16.255C15.8753%204.5%2015.5615%204.21785%2015.5118%203.85177L15.505%203.75C15.505%203.33579%2015.8408%203%2016.255%2"
+        js = js & "03H20.255Z%22%20fill%3D%22%23212121%22%2F%3E%0A%3C%2Fsvg%3E')" & Chr(34) & "," & Chr(34) & "text_change_case" & Chr(34) & ":" & Chr(34) & "url('data:image/svg+xml,%3Csvg%20width%3D%2224%22%20height%3D%2224%"
+        js = js & "22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%0A%3Cpath%20d%3D%22M16.5106%203.00008"
+        js = js & "C16.8242%203.00452%2017.1019%203.20362%2017.2068%203.49919L22.7068%2018.9992C22.8453%2019.3896%2022.6411%2019.8183%2022.2508%2019.9568C21.8604%2020.09"
+        js = js & "53%2021.4317%2019.8912%2021.2931%2019.5008L19.8735%2015.5L12.7558%2015.5L11.1994%2019.5207C11.0499%2019.907%2010.6155%2020.099%2010.2292%2019.9494C9.8"
+        js = js & "4293%2019.7999%209.651%2019.3655%209.80053%2018.9793L15.8005%203.47925C15.9137%203.18678%2016.197%202.99563%2016.5106%203.00008ZM16.4694%205.90659L13."
+        js = js & "3364%2014L19.3412%2014L16.4694%205.90659ZM5.50005%2010.5014L5.78725%2010.5113C7.74783%2010.6088%208.91466%2011.7373%208.9955%2013.5555L9%2013.7604V19."
+        js = js & "2604C9%2019.6401%208.71785%2019.9539%208.35177%2020.0035L8.25%2020.0104C7.8703%2020.0104%207.55651%2019.7282%207.50685%2019.3621L7.5%2019.2604L7.49865"
+        js = js & "%2019.156C6.51108%2019.7214%205.59755%2020.0104%204.75%2020.0104C2.91158%2020.0104%201.5%2018.7159%201.5%2016.7604C1.5%2015.036%202.68843%2013.7549%20"
+        js = js & "4.6597%2013.5158C5.592%2013.4028%206.53953%2013.4736%207.49853%2013.7255C7.4887%2012.6184%206.94255%2012.0706%205.71275%2012.0095C4.75051%2011.9616%20"
+        js = js & "4.07429%2012.0967%203.67825%2012.3744C3.33911%2012.6123%202.87139%2012.5301%202.63357%2012.191C2.39576%2011.8518%202.47789%2011.3841%202.81703%2011.14"
+        js = js & "63C3.47484%2010.685%204.37072%2010.4807%205.50005%2010.5014ZM7.499%2015.3241L7.19613%2015.2338C6.38875%2015.0117%205.60483%2014.9486%204.8403%2015.041"
+        js = js & "3C3.60791%2015.1908%203%2015.8461%203%2016.7967C3%2017.8934%203.7124%2018.5467%204.75%2018.5467C5.43032%2018.5467%206.26848%2018.2324%207.25129%2017.5"
+        js = js & "83L7.499%2017.4141V15.3241Z%22%20fill%3D%22%23212121%22%2F%3E%0A%3C%2Fsvg%3E')" & Chr(34) & "," & Chr(34) & "apps_list" & Chr(34) & ":" & Chr(34) & "url('data:image/svg+xml,%3Csvg%20width%3D%2224%22%20heigh"
+        js = js & "t%3D%2224%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%0A%3Cpath%20d%3D%22M6.24788"
+        js = js & "%2016.0021C7.21437%2016.0021%207.99788%2016.7856%207.99788%2017.7521V20.25C7.99788%2021.2165%207.21437%2022%206.24788%2022H3.75C2.7835%2022%202%2021.2"
+        js = js & "165%202%2020.25V17.7521C2%2016.7856%202.7835%2016.0021%203.75%2016.0021H6.24788ZM6.24788%2017.5021H3.75C3.61193%2017.5021%203.5%2017.6141%203.5%2017.7"
+        js = js & "521V20.25C3.5%2020.3881%203.61193%2020.5%203.75%2020.5H6.24788C6.38595%2020.5%206.49788%2020.3881%206.49788%2020.25V17.7521C6.49788%2017.6141%206.3859"
+        js = js & "5%2017.5021%206.24788%2017.5021ZM9.74809%2018H21.2529C21.6671%2018%2022.0029%2018.3358%2022.0029%2018.75C22.0029%2019.1297%2021.7207%2019.4435%2021.35"
+        js = js & "47%2019.4932L21.2529%2019.5H9.74809C9.33388%2019.5%208.99809%2019.1642%208.99809%2018.75C8.99809%2018.3703%209.28025%2018.0565%209.64632%2018.0068L9.7"
+        js = js & "4809%2018H21.2529H9.74809ZM6.24788%209.00106C7.21437%209.00106%207.99788%209.78456%207.99788%2010.7511V13.2489C7.99788%2014.2154%207.21437%2014.9989%2"
+        js = js & "06.24788%2014.9989H3.75C2.7835%2014.9989%202%2014.2154%202%2013.2489V10.7511C2%209.78456%202.7835%209.00106%203.75%209.00106H6.24788ZM6.24788%2010.501"
+        js = js & "1H3.75C3.61193%2010.5011%203.5%2010.613%203.5%2010.7511V13.2489C3.5%2013.387%203.61193%2013.4989%203.75%2013.4989H6.24788C6.38595%2013.4989%206.49788%"
+        js = js & "2013.387%206.49788%2013.2489V10.7511C6.49788%2010.613%206.38595%2010.5011%206.24788%2010.5011ZM9.74809%2011H21.2529C21.6671%2011%2022.0029%2011.3358%2"
+        js = js & "022.0029%2011.75C22.0029%2012.1297%2021.7207%2012.4435%2021.3547%2012.4932L21.2529%2012.5H9.74809C9.33388%2012.5%208.99809%2012.1642%208.99809%2011.75"
+        js = js & "C8.99809%2011.3703%209.28025%2011.0565%209.64632%2011.0068L9.74809%2011H21.2529H9.74809ZM6.24788%202C7.21437%202%207.99788%202.7835%207.99788%203.75V6"
+        js = js & ".24788C7.99788%207.21437%207.21437%207.99788%206.24788%207.99788H3.75C2.7835%207.99788%202%207.21437%202%206.24788V3.75C2%202.7835%202.7835%202%203.75"
+        js = js & "%202H6.24788ZM6.24788%203.5H3.75C3.61193%203.5%203.5%203.61193%203.5%203.75V6.24788C3.5%206.38595%203.61193%206.49788%203.75%206.49788H6.24788C6.38595"
+        js = js & "%206.49788%206.49788%206.38595%206.49788%206.24788V3.75C6.49788%203.61193%206.38595%203.5%206.24788%203.5ZM9.74809%204H21.2529C21.6671%204%2022.0029%2"
+        js = js & "04.33579%2022.0029%204.75C22.0029%205.1297%2021.7207%205.44349%2021.3547%205.49315L21.2529%205.5H9.74809C9.33388%205.5%208.99809%205.16421%208.99809%2"
+        js = js & "04.75C8.99809%204.3703%209.28025%204.05651%209.64632%204.00685L9.74809%204H21.2529H9.74809Z%22%20fill%3D%22%23212121%22%2F%3E%0A%3C%2Fsvg%3E')" & Chr(34) & "," & Chr(34) & "setti"
+        js = js & "ngs" & Chr(34) & ":" & Chr(34) & "url('data:image/svg+xml,%3Csvg%20width%3D%2224%22%20height%3D%2224%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20xmlns%3D%22http%3A"
+        js = js & "%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%0A%3Cpath%20d%3D%22M12.0122%202.25C12.7462%202.25846%2013.4773%202.34326%2014.1937%202.50304C14.5064%202.57279%201"
+        js = js & "4.7403%202.83351%2014.7758%203.15196L14.946%204.67881C15.0231%205.37986%2015.615%205.91084%2016.3206%205.91158C16.5103%205.91188%2016.6979%205.87238%2"
+        js = js & "016.8732%205.79483L18.2738%205.17956C18.5651%205.05159%2018.9055%205.12136%2019.1229%205.35362C20.1351%206.43464%2020.8889%207.73115%2021.3277%209.145"
+        js = js & "58C21.4223%209.45058%2021.3134%209.78203%2021.0564%209.9715L19.8149%2010.8866C19.4607%2011.1468%2019.2516%2011.56%2019.2516%2011.9995C19.2516%2012.438"
+        js = js & "9%2019.4607%2012.8521%2019.8157%2013.1129L21.0582%2014.0283C21.3153%2014.2177%2021.4243%2014.5492%2021.3297%2014.8543C20.8911%2016.2685%2020.1377%2017"
+        js = js & ".5649%2019.1261%2018.6461C18.9089%2018.8783%2018.5688%2018.9483%2018.2775%2018.8206L16.8712%2018.2045C16.4688%2018.0284%2016.0068%2018.0542%2015.6265%"
+        js = js & "2018.274C15.2463%2018.4937%2014.9933%2018.8812%2014.945%2019.3177L14.7759%2020.8444C14.741%2021.1592%2014.5122%2021.4182%2014.204%2021.4915C12.7556%20"
+        js = js & "21.8361%2011.2465%2021.8361%209.79803%2021.4915C9.48991%2021.4182%209.26105%2021.1592%209.22618%2020.8444L9.05736%2019.32C9.00777%2018.8843%208.75434%"
+        js = js & "2018.498%208.37442%2018.279C7.99451%2018.06%207.5332%2018.0343%207.1322%2018.2094L5.72557%2018.8256C5.43422%2018.9533%205.09403%2018.8833%204.87678%20"
+        js = js & "18.6509C3.86462%2017.5685%203.11119%2016.2705%202.6732%2014.8548C2.57886%2014.5499%202.68786%2014.2186%202.94485%2014.0293L4.18818%2013.1133C4.54232%2"
+        js = js & "012.8531%204.75147%2012.4399%204.75147%2012.0005C4.75147%2011.561%204.54232%2011.1478%204.18771%2010.8873L2.94516%209.97285C2.6878%209.78345%202.5787%"
+        js = js & "209.45178%202.67337%209.14658C3.11212%207.73215%203.86594%206.43564%204.87813%205.35462C5.09559%205.12236%205.43594%205.05259%205.72724%205.18056L7.12"
+        js = js & "762%205.79572C7.53056%205.97256%207.9938%205.94585%208.37577%205.72269C8.75609%205.50209%209.00929%205.11422%209.05817%204.67764L9.22824%203.15196C9.2"
+        js = js & "6376%202.83335%209.49786%202.57254%209.8108%202.50294C10.5281%202.34342%2011.26%202.25865%2012.0122%202.25ZM12.0124%203.7499C11.5583%203.75524%2011.10"
+        js = js & "56%203.79443%2010.6578%203.86702L10.5489%204.84418C10.4471%205.75368%209.92003%206.56102%209.13042%207.01903C8.33597%207.48317%207.36736%207.53903%206"
+        js = js & ".52458%207.16917L5.62629%206.77456C5.05436%207.46873%204.59914%208.25135%204.27852%209.09168L5.07632%209.67879C5.81513%2010.2216%206.25147%2011.0837%2"
+        js = js & "06.25147%2012.0005C6.25147%2012.9172%205.81513%2013.7793%205.0771%2014.3215L4.27805%2014.9102C4.59839%2015.752%205.05368%2016.5361%205.626%2017.2316L6"
+        js = js & ".53113%2016.8351C7.36923%2016.4692%208.33124%2016.5227%209.12353%2016.9794C9.91581%2017.4361%2010.4443%2018.2417%2010.548%2019.1526L10.657%2020.1365C1"
+        js = js & "1.5466%2020.2878%2012.4555%2020.2878%2013.3451%2020.1365L13.4541%2019.1527C13.5549%2018.2421%2014.0828%2017.4337%2014.876%2016.9753C15.6692%2016.5168%"
+        js = js & "2016.6332%2016.463%2017.4728%2016.8305L18.3772%2017.2267C18.949%2016.5323%2019.4041%2015.7495%2019.7247%2014.909L18.9267%2014.3211C18.1879%2013.7783%2"
+        js = js & "017.7516%2012.9162%2017.7516%2011.9995C17.7516%2011.0827%2018.1879%2010.2206%2018.9258%209.67847L19.7227%209.09109C19.4021%208.25061%2018.9468%207.467"
+        js = js & "84%2018.3748%206.77356L17.4783%207.16737C17.113%207.32901%2016.7178%207.4122%2016.3187%207.41158C14.849%207.41004%2013.6155%206.30355%2013.4551%204.84"
+        js = js & "383L13.3462%203.8667C12.9007%203.7942%2012.4526%203.75512%2012.0124%203.7499ZM11.9997%208.24995C14.0708%208.24995%2015.7497%209.92888%2015.7497%2012C1"
+        js = js & "5.7497%2014.071%2014.0708%2015.75%2011.9997%2015.75C9.92863%2015.75%208.2497%2014.071%208.2497%2012C8.2497%209.92888%209.92863%208.24995%2011.9997%208"
+        js = js & ".24995ZM11.9997%209.74995C10.7571%209.74995%209.7497%2010.7573%209.7497%2012C9.7497%2013.2426%2010.7571%2014.25%2011.9997%2014.25C13.2423%2014.25%2014"
+        js = js & ".2497%2013.2426%2014.2497%2012C14.2497%2010.7573%2013.2423%209.74995%2011.9997%209.74995Z%22%20fill%3D%22%23212121%22%2F%3E%0A%3C%2Fsvg%3E')" & Chr(34) & "," & Chr(34) & "chat_he"
+        js = js & "lp" & Chr(34) & ":" & Chr(34) & "url('data:image/svg+xml,%3Csvg%20width%3D%2224%22%20height%3D%2224%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20xmlns%3D%22http%3A%"
+        js = js & "2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%0A%3Cpath%20d%3D%22M12%202C17.5228%202%2022%206.47715%2022%2012C22%2017.5228%2017.5228%2022%2012%2022C10.3817%2022%"
+        js = js & "208.81782%2021.6146%207.41286%2020.888L3.58704%2021.9553C2.92212%2022.141%202.23258%2021.7525%202.04691%2021.0876C1.98546%2020.8676%201.98549%2020.634"
+        js = js & "9%202.04695%2020.4151L3.11461%2016.5922C2.38637%2015.186%202%2013.6203%202%2012C2%206.47715%206.47715%202%2012%202ZM12%203.5C7.30558%203.5%203.5%207.3"
+        js = js & "0558%203.5%2012C3.5%2013.4696%203.87277%2014.8834%204.57303%2016.1375L4.72368%2016.4072L3.61096%2020.3914L7.59755%2019.2792L7.86709%2019.4295C9.12006%"
+        js = js & "2020.1281%2010.5322%2020.5%2012%2020.5C16.6944%2020.5%2020.5%2016.6944%2020.5%2012C20.5%207.30558%2016.6944%203.5%2012%203.5ZM12%2015.5C12.5523%2015.5"
+        js = js & "%2013%2015.9477%2013%2016.5C13%2017.0523%2012.5523%2017.5%2012%2017.5C11.4477%2017.5%2011%2017.0523%2011%2016.5C11%2015.9477%2011.4477%2015.5%2012%201"
+        js = js & "5.5ZM12%206.75C13.5188%206.75%2014.75%207.98122%2014.75%209.5C14.75%2010.5108%2014.4525%2011.074%2013.6989%2011.8586L13.5303%2012.0303C12.9084%2012.65"
+        js = js & "22%2012.75%2012.9163%2012.75%2013.5C12.75%2013.9142%2012.4142%2014.25%2012%2014.25C11.5858%2014.25%2011.25%2013.9142%2011.25%2013.5C11.25%2012.4892%20"
+        js = js & "11.5475%2011.926%2012.3011%2011.1414L12.4697%2010.9697C13.0916%2010.3478%2013.25%2010.0837%2013.25%209.5C13.25%208.80964%2012.6904%208.25%2012%208.25C"
+        js = js & "11.3528%208.25%2010.8205%208.74187%2010.7565%209.37219L10.75%209.5C10.75%209.91421%2010.4142%2010.25%2010%2010.25C9.58579%2010.25%209.25%209.91421%209"
+        js = js & ".25%209.5C9.25%207.98122%2010.4812%206.75%2012%206.75Z%22%20fill%3D%22%23212121%22%2F%3E%0A%3C%2Fsvg%3E')" & Chr(34) & "," & Chr(34) & "info" & Chr(34) & ":" & Chr(34) & "url('data:image/svg+xml,%3Csvg%20wi"
+        js = js & "dth%3D%2224%22%20height%3D%2224%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%0A%3C"
+        js = js & "path%20d%3D%22M12.0016%201.99902C17.5253%201.99902%2022.0031%206.47687%2022.0031%2012.0006C22.0031%2017.5243%2017.5253%2022.0021%2012.0016%2022.0021C6"
+        js = js & ".47785%2022.0021%202%2017.5243%202%2012.0006C2%206.47687%206.47785%201.99902%2012.0016%201.99902ZM12.0016%203.49902C7.30627%203.49902%203.5%207.3053%2"
+        js = js & "03.5%2012.0006C3.5%2016.6959%207.30627%2020.5021%2012.0016%2020.5021C16.6968%2020.5021%2020.5031%2016.6959%2020.5031%2012.0006C20.5031%207.3053%2016.6"
+        js = js & "968%203.49902%2012.0016%203.49902ZM12%2010.5C12.4142%2010.5%2012.75%2010.8358%2012.75%2011.25V16.25C12.75%2016.6642%2012.4142%2017%2012%2017C11.5858%2"
+        js = js & "017%2011.25%2016.6642%2011.25%2016.25V11.25C11.25%2010.8358%2011.5858%2010.5%2012%2010.5ZM12%209C12.5523%209%2013%208.55229%2013%208C13%207.44772%2012"
+        js = js & ".5523%207%2012%207C11.4477%207%2011%207.44772%2011%208C11%208.55229%2011.4477%209%2012%209Z%22%20fill%3D%22%23212121%22%2F%3E%0A%3C%2Fsvg%3E')" & Chr(34) & "," & Chr(34) & "arrow"
+        js = js & "_left" & Chr(34) & ":" & Chr(34) & "url('data:image/svg+xml,%3Csvg%20width%3D%2224%22%20height%3D%2224%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20xmlns%3D%22http%"
+        js = js & "3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%0A%3Cpath%20d%3D%22M10.7327%2019.7905C11.0326%2020.0762%2011.5074%2020.0646%2011.7931%2019.7647C12.0788%2019.464"
+        js = js & "8%2012.0672%2018.99%2011.7673%2018.7043L5.51587%2012.7497L20.25%2012.7497C20.6642%2012.7497%2021%2012.4139%2021%2011.9997C21%2011.5855%2020.6642%2011."
+        js = js & "2497%2020.25%2011.2497L5.51577%2011.2497L11.7673%205.29502C12.0672%205.00933%2012.0787%204.5346%2011.7931%204.23467C11.5074%203.93475%2011.0326%203.92"
+        js = js & "32%2010.7327%204.20889L3.31379%2011.2756C3.14486%2011.4365%203.04491%2011.6417%203.01393%2011.8551C3.00479%2011.9019%203%2011.9503%203%2011.9997C3%201"
+        js = js & "2.0493%203.00481%2012.0977%203.01398%2012.1446C3.04502%2012.3579%203.14496%2012.563%203.31379%2012.7238L10.7327%2019.7905Z%22%20fill%3D%22%23212121%22"
+        js = js & "%2F%3E%0A%3C%2Fsvg%3E')" & Chr(34) & "," & Chr(34) & "puzzle_piece" & Chr(34) & ":" & Chr(34) & "url('data:image/svg+xml,%3Csvg%20width%3D%2224%22%20height%3D%2224%22%20viewBox%3D%220%200%2024%2024%22%20fil"
+        js = js & "l%3D%22none%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%0A%3Cpath%20d%3D%22M13%202.00423C14.5977%202.00423%2015.9037%203.25315%2015.994"
+        js = js & "%204.82327L15.999%204.999L18.25%205C19.1172%205%2019.837%205.63072%2019.9758%206.45858L19.9942%206.60663L20%206.75018L19.9991%2010.5012L18.0015%2010.5"
+        js = js & "013C17.2579%2010.5013%2016.6353%2011.0445%2016.5215%2011.7403L16.5062%2011.8725L16.5015%2012.0013C16.5015%2012.7449%2017.0446%2013.3675%2017.7405%2013"
+        js = js & ".4813L17.8727%2013.4965L18.0014%2013.5013L19.9991%2013.5012L20%2017.2526C20%2018.1708%2019.2929%2018.9238%2018.3934%2018.9968L18.2499%2019.0026L15.999"
+        js = js & "%2019.002L15.9949%2019.1747C15.9106%2020.6305%2014.7881%2021.8078%2013.3567%2021.9774L13.1763%2021.9933L13%2021.9984C11.4023%2021.9984%2010.0963%2020."
+        js = js & "7495%2010.0051%2019.1779L10%2019.002L7.75%2019.0026C6.88283%2019.0026%206.16298%2018.3719%206.02417%2017.5443L6.0058%2017.3963L6%2017.2528L5.999%2015."
+        js = js & "001L5.836%2014.9962C4.38017%2014.9119%203.20285%2013.7894%203.03326%2012.3581L3.01736%2012.1776L3.01227%2012.0013C3.01227%2010.4036%204.26119%209.0976"
+        js = js & "5%205.83593%209.0064L5.999%209.001L6%206.75C6%205.88283%206.63072%205.16298%207.45831%205.02418L7.60631%205.0058L7.74981%205L9.999%204.999L10.0051%204"
+        js = js & ".82796C10.0894%203.37214%2011.2119%202.19482%2012.6432%202.02523L12.8237%202.00933L13%202.00423ZM13%203.50423C12.2203%203.50423%2011.5795%204.09912%20"
+        js = js & "11.5069%204.86039L11.5%205.00497L11.4985%206.49904L7.75%206.5C7.63165%206.5%207.53251%206.58223%207.5066%206.69279L7.5%206.75018L7.49909%2010.5012L6.0"
+        js = js & "1227%2010.5013C5.18384%2010.5013%204.51227%2011.1729%204.51227%2012.0013C4.51227%2012.781%205.10716%2013.4218%205.86775%2013.4944L6.01219%2013.5013L7."
+        js = js & "49909%2013.5012L7.5%2017.2526C7.5%2017.371%207.58223%2017.4701%207.69261%2017.496L7.7499%2017.5026L11.4985%2017.5021L11.5%2018.9984C11.5%2019.8268%201"
+        js = js & "2.1716%2020.4984%2013%2020.4984C13.7797%2020.4984%2014.4204%2019.9035%2014.4931%2019.1434L14.5%2018.9991L14.4985%2017.5021L18.25%2017.5026C18.3683%201"
+        js = js & "7.5026%2018.4675%2017.4204%2018.4934%2017.3101L18.5%2017.2528L18.499%2015L17.9762%2015.0009L17.7968%2014.9944C16.2855%2014.8922%2015.0927%2013.6769%20"
+        js = js & "15.0068%2012.1532L15.0019%2011.976L15.0084%2011.7967C15.1105%2010.2854%2016.3258%209.09259%2017.827%209.00631L18.0014%209.00131L18.499%209.001L18.5%20"
+        js = js & "6.75C18.5%206.65532%2018.4474%206.57294%2018.3697%206.5305L18.3072%206.5066L18.2498%206.5L14.4985%206.49904L14.5%205.00423C14.5%204.17581%2013.8284%20"
+        js = js & "3.50423%2013%203.50423Z%22%20fill%3D%22%23212121%22%2F%3E%0A%3C%2Fsvg%3E')" & Chr(34) & "," & Chr(34) & "text_bullet_list_square" & Chr(34) & ":" & Chr(34) & "url('data:image/svg+xml,%3Csvg%20width%3D%2224%"
+        js = js & "22%20height%3D%2224%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%0A%3Cpath%20d%3D%"
+        js = js & "22M7.75%209.25C8.30228%209.25%208.75%208.80228%208.75%208.25C8.75%207.69772%208.30228%207.25%207.75%207.25C7.19772%207.25%206.75%207.69772%206.75%208."
+        js = js & "25C6.75%208.80228%207.19772%209.25%207.75%209.25ZM11.25%207.5C10.8358%207.5%2010.5%207.83579%2010.5%208.25C10.5%208.66421%2010.8358%209%2011.25%209H16"
+        js = js & ".75C17.1642%209%2017.5%208.66421%2017.5%208.25C17.5%207.83579%2017.1642%207.5%2016.75%207.5H11.25ZM11.2501%2011.25C10.8358%2011.25%2010.5001%2011.5858"
+        js = js & "%2010.5001%2012C10.5001%2012.4142%2010.8358%2012.75%2011.2501%2012.75H16.7499C17.1642%2012.75%2017.4999%2012.4142%2017.4999%2012C17.4999%2011.5858%201"
+        js = js & "7.1642%2011.25%2016.7499%2011.25H11.2501ZM10.5001%2015.75C10.5001%2015.3358%2010.8358%2015%2011.2501%2015H16.7499C17.1642%2015%2017.4999%2015.3358%201"
+        js = js & "7.4999%2015.75C17.4999%2016.1642%2017.1642%2016.5%2016.7499%2016.5H11.2501C10.8358%2016.5%2010.5001%2016.1642%2010.5001%2015.75ZM8.75%2012C8.75%2012.5"
+        js = js & "523%208.30228%2013%207.75%2013C7.19772%2013%206.75%2012.5523%206.75%2012C6.75%2011.4477%207.19772%2011%207.75%2011C8.30228%2011%208.75%2011.4477%208.7"
+        js = js & "5%2012ZM7.75%2016.75C8.30228%2016.75%208.75%2016.3023%208.75%2015.75C8.75%2015.1977%208.30228%2014.75%207.75%2014.75C7.19772%2014.75%206.75%2015.1977%"
+        js = js & "206.75%2015.75C6.75%2016.3023%207.19772%2016.75%207.75%2016.75ZM6.25%203C4.45507%203%203%204.45507%203%206.25V17.75C3%2019.5449%204.45507%2021%206.25%"
+        js = js & "2021H17.75C19.5449%2021%2021%2019.5449%2021%2017.75V6.25C21%204.45507%2019.5449%203%2017.75%203H6.25ZM4.5%206.25C4.5%205.2835%205.2835%204.5%206.25%20"
+        js = js & "4.5H17.75C18.7165%204.5%2019.5%205.2835%2019.5%206.25V17.75C19.5%2018.7165%2018.7165%2019.5%2017.75%2019.5H6.25C5.2835%2019.5%204.5%2018.7165%204.5%20"
+        js = js & "17.75V6.25Z%22%20fill%3D%22%23212121%22%2F%3E%0A%3C%2Fsvg%3E')" & Chr(34) & "," & Chr(34) & "align_space_evenly_horizontal" & Chr(34) & ":" & Chr(34) & "url('data:image/svg+xml,%3Csvg%20width%3D%2224%22%20h"
+        js = js & "eight%3D%2224%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%0A%3Cpath%20d%3D%22M3.5"
+        js = js & "%2017.5C3.5%2018.0523%203.94772%2018.5%204.5%2018.5H5.5C6.05229%2018.5%206.5%2018.0523%206.5%2017.5L6.5%206.5C6.5%205.94771%206.05228%205.5%205.5%205."
+        js = js & "5H4.5C3.94772%205.5%203.5%205.94771%203.5%206.5L3.5%2017.5ZM4.5%2020C3.11929%2020%202%2018.8807%202%2017.5V6.5C2%205.11929%203.11929%204%204.5%204H5.5"
+        js = js & "C6.88071%204%208%205.11929%208%206.5L8%2017.5C8%2018.8807%206.88071%2020%205.5%2020H4.5ZM10.5%2017.5C10.5%2018.0523%2010.9477%2018.5%2011.5%2018.5H12."
+        js = js & "5C13.0523%2018.5%2013.5%2018.0523%2013.5%2017.5V6.5C13.5%205.94771%2013.0523%205.5%2012.5%205.5H11.5C10.9477%205.5%2010.5%205.94771%2010.5%206.5V17.5Z"
+        js = js & "M11.5%2020C10.1193%2020%209%2018.8807%209%2017.5L9%206.5C9%205.11929%2010.1193%204%2011.5%204H12.5C13.8807%204%2015%205.11929%2015%206.5V17.5C15%2018."
+        js = js & "8807%2013.8807%2020%2012.5%2020H11.5ZM18.5%2018.5C17.9477%2018.5%2017.5%2018.0523%2017.5%2017.5L17.5%206.5C17.5%205.94771%2017.9477%205.5%2018.5%205.5"
+        js = js & "H19.5C20.0523%205.5%2020.5%205.94771%2020.5%206.5V17.5C20.5%2018.0523%2020.0523%2018.5%2019.5%2018.5H18.5ZM16%2017.5C16%2018.8807%2017.1193%2020%2018."
+        js = js & "5%2020H19.5C20.8807%2020%2022%2018.8807%2022%2017.5V6.5C22%205.11929%2020.8807%204%2019.5%204H18.5C17.1193%204%2016%205.11929%2016%206.5L16%2017.5Z%22"
+        js = js & "%20fill%3D%22%23212121%22%2F%3E%0A%3C%2Fsvg%3E')" & Chr(34) & "," & Chr(34) & "align_space_evenly_vertical" & Chr(34) & ":" & Chr(34) & "url('data:image/svg+xml,%3Csvg%20width%3D%2224%22%20height%3D%2224%22"
+        js = js & "%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%0A%3Cpath%20d%3D%22M6.5%203.5C5.94772%2"
+        js = js & "03.5%205.5%203.94772%205.5%204.5V5.5C5.5%206.05228%205.94772%206.5%206.5%206.5H17.5C18.0523%206.5%2018.5%206.05229%2018.5%205.5V4.5C18.5%203.94772%201"
+        js = js & "8.0523%203.5%2017.5%203.5H6.5ZM4%204.5C4%203.11929%205.11929%202%206.5%202H17.5C18.8807%202%2020%203.11929%2020%204.5V5.5C20%206.88071%2018.8807%208%2"
+        js = js & "017.5%208H6.5C5.11929%208%204%206.88071%204%205.5V4.5ZM6.5%2010.5C5.94772%2010.5%205.5%2010.9477%205.5%2011.5V12.5C5.5%2013.0523%205.94772%2013.5%206."
+        js = js & "5%2013.5H17.5C18.0523%2013.5%2018.5%2013.0523%2018.5%2012.5V11.5C18.5%2010.9477%2018.0523%2010.5%2017.5%2010.5H6.5ZM4%2011.5C4%2010.1193%205.11929%209"
+        js = js & "%206.5%209H17.5C18.8807%209%2020%2010.1193%2020%2011.5V12.5C20%2013.8807%2018.8807%2015%2017.5%2015H6.5C5.11929%2015%204%2013.8807%204%2012.5V11.5ZM5."
+        js = js & "5%2018.5C5.5%2017.9477%205.94772%2017.5%206.5%2017.5H17.5C18.0523%2017.5%2018.5%2017.9477%2018.5%2018.5V19.5C18.5%2020.0523%2018.0523%2020.5%2017.5%20"
+        js = js & "20.5H6.5C5.94772%2020.5%205.5%2020.0523%205.5%2019.5V18.5ZM6.5%2016C5.11929%2016%204%2017.1193%204%2018.5V19.5C4%2020.8807%205.11929%2022%206.5%2022H1"
+        js = js & "7.5C18.8807%2022%2020%2020.8807%2020%2019.5V18.5C20%2017.1193%2018.8807%2016%2017.5%2016H6.5Z%22%20fill%3D%22%23212121%22%2F%3E%0A%3C%2Fsvg%3E')" & Chr(34) & "," & Chr(34) & "cir"
+        js = js & "cle" & Chr(34) & ":" & Chr(34) & "url('data:image/svg+xml,%3Csvg%20width%3D%2224%22%20height%3D%2224%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20xmlns%3D%22http%3A"
+        js = js & "%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%0A%3Cpath%20d%3D%22M12%203.5C7.30558%203.5%203.5%207.30558%203.5%2012C3.5%2016.6944%207.30558%2020.5%2012%2020.5C1"
+        js = js & "6.6944%2020.5%2020.5%2016.6944%2020.5%2012C20.5%207.30558%2016.6944%203.5%2012%203.5ZM2%2012C2%206.47715%206.47715%202%2012%202C17.5228%202%2022%206.4"
+        js = js & "7715%2022%2012C22%2017.5228%2017.5228%2022%2012%2022C6.47715%2022%202%2017.5228%202%2012Z%22%20fill%3D%22%23212121%22%2F%3E%0A%3C%2Fsvg%3E')" & Chr(34) & "},buildLa"
+        js = js & "yout:/* Office-style organization for the IDE's live descriptors. This is presentation"
         js = js & vbLf
         js = js & " * metadata only: all actions, contexts and lazy submenus remain native. Unknown"
         js = js & vbLf
         js = js & " * commands/menus are deliberately retained rather than filtered by this map. */"
         js = js & vbLf
-        js = js & "(function buildRibbonLayout(records, quickActions=new Set()) {"
+        js = js & "(function buildRibbonLayout(records, quickActions=new Set(),present=()=>({large:false})) {"
         js = js & vbLf
         js = js & "    const tabs=new Map(), file=new Map(), suppressed=[];"
         js = js & vbLf
@@ -1129,6 +1345,8 @@ Private Module IdeToolbarScript
         js = js & "        }"
         js = js & vbLf
         js = js & "        if(m==='rootMenuAddins'){addFile('Add-ins',i);continue;}"
+        js = js & vbLf
+        js = js & "        if(m==='rootMenuHelp'){addFile('Help',i);continue;}"
         js = js & vbLf
         js = js & "        if(a==='tbIde_ShowIDEOptions'){addFile('Options',i);continue;}"
         js = js & vbLf
@@ -1195,12 +1413,11 @@ Private Module IdeToolbarScript
         js = js & vbLf
         js = js & "        if(m==='rootMenuWindows'){"
         js = js & vbLf
-        js = js & "            add('View',token(i,'WindowTheme')?'Appearance':'Window',i);continue;"
+        js = js & "            add('View',token(i,'WindowTheme')?'Appearance':'Window',token(i,'WindowTheme')?{...i,_ribbonIconSource:'menuBarColorMode'}:i);continue;"
         js = js & vbLf
         js = js & "        }"
         js = js & vbLf
-        js = js & "        const fallback={rootMenuEdit:['Home','More editing'],rootMenuView:['View','More views'],rootMenuTools:['Tools','Tools'],rootMenuHelp:['Help','"
-        js = js & "Help']}[m];"
+        js = js & "        const fallback={rootMenuEdit:['Home','More editing'],rootMenuView:['View','More views'],rootMenuTools:['Tools','Tools']}[m];"
         js = js & vbLf
         js = js & "        add(...(fallback||[r.menuTitle||m,'Commands']),i);"
         js = js & vbLf
@@ -1260,27 +1477,99 @@ Private Module IdeToolbarScript
         js = js & vbLf
         js = js & "    });}"
         js = js & vbLf
-        js = js & "    for(const tab of result)for(const group of tab.groups)group.items=group.items.map((item,index)=>{"
+        js = js & "    for(const tab of result)for(const group of tab.groups)group.items=group.items.map(item=>"
         js = js & vbLf
-        js = js & "        const a=action(item),large=tab.id==='Home'&&(group.title==='Clipboard'?/_ClipboardPaste$/.test(a):/_Find$/.test(a))||"
-        js = js & vbLf
-        js = js & "            tab.id==='Insert'||tab.id==='View'&&['Views','Appearance'].includes(group.title)||"
-        js = js & vbLf
-        js = js & "            tab.id==='View'&&['Show','Zoom','Window'].includes(group.title)&&index===0||"
-        js = js & vbLf
-        js = js & "            tab.id==='Form'&&['Arrange','Size'].includes(group.title)&&index===0||"
-        js = js & vbLf
-        js = js & "            tab.id==='Project'&&group.title==='Build'&&a==='tbBuild_Start'||"
-        js = js & vbLf
-        js = js & "            tab.id==='Project'&&group.title==='Project'&&index===0||tab.id==='Help'&&index===0;"
-        js = js & vbLf
-        js = js & "        return {...item,_ribbonLarge:!!large};"
-        js = js & vbLf
-        js = js & "    });"
+        js = js & "        ({...item,_ribbonLarge:present(item).large}));"
         js = js & vbLf
         js = js & "    result.sort((a,b)=>{const rank=x=>order.includes(x)?order.indexOf(x):order.indexOf('Add-ins')-.5;return rank(a.id)-rank(b.id);});"
         js = js & vbLf
         js = js & "    return {tabs:result,file,suppressed};"
+        js = js & vbLf
+        js = js & "}),present:/* Command-specific presentation derived from Shane's Office Home/View/Developer/"
+        js = js & vbLf
+        js = js & " * Page Layout references. No group-position rule decides a command's size."
+        js = js & vbLf
+        js = js & " * This is IDE presentation metadata, not command execution or an availability list. */"
+        js = js & vbLf
+        js = js & "(function ribbonPresentation(item={},sourceId='') {"
+        js = js & vbLf
+        js = js & "    const a=typeof item.action==='string'?item.action:'',n=String(item.name||'');"
+        js = js & vbLf
+        js = js & "    const has=s=>n.includes(s),source=sourceId||item._sourceId||'';"
+        js = js & vbLf
+        js = js & "    const largeActions=new Set(["
+        js = js & vbLf
+        js = js & "        'tbEditor_ClipboardPaste','tbFormDesigner_ClipboardPaste','tbEditor_Find','tbProject_FindInFiles',"
+        js = js & vbLf
+        js = js & "        'tbEditor_FormatSelection','tbEditor_FormatDocument','tbEditor_GoToDefinition','tbEditor_LastPosition','tbEditor_GotoLineColumn',"
+        js = js & vbLf
+        js = js & "        'tbEditor_SwitchToCode','tbEditor_SwitchToFormDesign','tbShowObjectBrowser',"
+        js = js & vbLf
+        js = js & "        'tbEditor_IncreaseFontSize','tbEditor_DecreaseFontSize','tbFormDesigner_ZoomIncrease','tbFormDesigner_ZoomDecrease',"
+        js = js & vbLf
+        js = js & "        'tbFormDesigner_BringControlToFront','tbFormDesigner_SendControlToBack','tbFormDesigner_ToggleLockSelectedControls',"
+        js = js & vbLf
+        js = js & "        'tbProject_ShowReferences','tbProject_ShowSettings','tbBuild_Start','tbBuild_Clean',"
+        js = js & vbLf
+        js = js & "        'tbCompiler_Restart','tbCompiler_RestartAndFlushLlvmCache','tbProject_OpenProjectFolder','tbProject_OpenBuildFolder',"
+        js = js & vbLf
+        js = js & "        'tbDebug_ToggleBreakpoint','tbDebug_SetNextExecutionStatement'"
+        js = js & vbLf
+        js = js & "    ]);"
+        js = js & vbLf
+        js = js & "    const largeSources=new Set(['saveIcon','searchIcon','designSwitchIcon','playIcon','buildIcon','trashIcon','restartIcon',"
+        js = js & vbLf
+        js = js & "        'commentIcon','uncommentIcon','menuBarAlignLeft','menuBarAlignTop','menuBarAlignRight','menuBarAlignBottom',"
+        js = js & vbLf
+        js = js & "        'menuBarSizeWidest','menuBarSizeTallest','menuBarSizeNarrowest','menuBarSizeShortest',"
+        js = js & vbLf
+        js = js & "        'menuBarBringToFront','menuBarSendToBack','menuBarPreview','menuBarColorMode']);"
+        js = js & vbLf
+        js = js & "    const largeNames=['MenuCaptionProjectAdd','MenuCaptionFormatAlign','MenuCaptionFormatMakeSameSize',"
+        js = js & vbLf
+        js = js & "        'MenuCaptionFormatHorizontalSpacing','MenuCaptionFormatVerticalSpacing','MenuCaptionWindowPanelLayouts',"
+        js = js & vbLf
+        js = js & "        'MenuCaptionWindowPanelFeatures','MenuCaptionWindowTheme'];"
+        js = js & vbLf
+        js = js & "    const large=largeActions.has(a)||largeSources.has(source)||source.startsWith('addinButton-')||"
+        js = js & vbLf
+        js = js & "        largeNames.some(has)||['Fold','Unfold','Find options','More panels','Debugger Options'].includes(n);"
+        js = js & vbLf
+        js = js & "    let glyph='apps_list';"
+        js = js & vbLf
+        js = js & "    if(/Find|Search/i.test(n)||/Find/.test(a))glyph='searchIcon';"
+        js = js & vbLf
+        js = js & "    if(/ClipboardCut$/.test(a))glyph='cut';"
+        js = js & vbLf
+        js = js & "    else if(/SelectAll|SelectAllMatches/.test(a))glyph='select_all_on';"
+        js = js & vbLf
+        js = js & "    else if(/Delete|Clear$|BreakpointsClear/.test(a))glyph='delete';"
+        js = js & vbLf
+        js = js & "    else if(/FormatSelection|FormatDocument/.test(a))glyph='code';"
+        js = js & vbLf
+        js = js & "    else if(/Unfold/.test(a)||n==='Unfold')glyph='arrow_expand';"
+        js = js & vbLf
+        js = js & "    else if(/Fold/.test(a)||n==='Fold')glyph='arrow_collapse_all';"
+        js = js & vbLf
+        js = js & "    else if(/TransformTo/.test(a)||n==='Change case')glyph='text_change_case';"
+        js = js & vbLf
+        js = js & "    else if(/GotoLineColumn|GoToDefinition|LastPosition/.test(a))glyph='text_bullet_list_square';"
+        js = js & vbLf
+        js = js & "    else if(/Breakpoint/.test(a))glyph='circle';"
+        js = js & vbLf
+        js = js & "    else if(/SetNextExecutionStatement/.test(a))glyph='playIcon';"
+        js = js & vbLf
+        js = js & "    else if(/HorizontalSpacing/.test(n)||/SpacingHorizontal/.test(a))glyph='align_space_evenly_horizontal';"
+        js = js & vbLf
+        js = js & "    else if(/VerticalSpacing/.test(n)||/SpacingVertical/.test(a))glyph='align_space_evenly_vertical';"
+        js = js & vbLf
+        js = js & "    else if(/Settings|Options|PanelFeatures|KeyboardShortcuts|Language/.test(n)||/ShowSettings|ShowIDEOptions/.test(a))glyph='settings';"
+        js = js & vbLf
+        js = js & "    else if(/^tbHelp_|Help/.test(n))glyph='chat_help';"
+        js = js & vbLf
+        js = js & "    else if(source.startsWith('addinButton-')||has('Add-ins'))glyph=/Search|Find/i.test(n)?'searchIcon':'puzzle_piece';"
+        js = js & vbLf
+        js = js & "    return {large,glyph:item._ribbonGlyph||glyph};"
         js = js & vbLf
         js = js & "}),"
         js = js & vbLf

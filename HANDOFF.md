@@ -1,6 +1,8 @@
 # Handoff: tbUI3
 
-## Current implementation, 2026-11-10: tbUI3IDE 1.3.0.0
+## Current implementation, 2026-11-11: tbUI3IDE 1.3.0.1
+
+The 1.3.0.1 pass follows Shane's 2026-11-11 Office/native screenshots: old toolbar surface and compatible foregrounds; sourced light/dark hover/pressed fills independent of optional styling; command-specific full-size/stacked roles with multiple large buttons per group; icons on all command/navigation surfaces; Help moved under File; themed live grid controls. New metadata: tbIDE/tbUI3IDE/js/ribbon-presentation.js; 17 pinned MIT Fluent gap-fill SVGs: icons/ribbon.json. All 78 JS/DOM/CSSOM/protocol checks pass, all 108 live menu descriptors remain reachable, all 71 mirrors and six official-export files match. Evidence: docs/validation/2026-11-11-ribbon-presentation.md. Native rendered acceptance of this revision remains open; do not infer it from the supplied 1.3.0.0 screenshots. Package 65, adapter v8 and the consumer project are unchanged.
 
 The 1.3.0.0 revision replaces literal menu tabs with Home Clipboard/Editing, task-based Code/Form, View groups and Project build/compiler commands. Undo/Redo and main execution controls are quick-access only. File now has a vertical rail/task surface and explicitly hides/inerts the live designer/workspace and floating panels until close or native dispatch. Future commands keep dynamic fallback destinations. All 72 JS/DOM/protocol checks pass, including all 108 live top-level menu descriptors; all 71 mirrors and six official-export files match. Exact command map: tbIDE/RIBBON_LAYOUT.md. Package/consumer project and adapter v8 are unchanged. This is source/DOM/packing evidence; rendered acceptance and adaptive group behavior remain open.
 

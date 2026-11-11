@@ -1,6 +1,6 @@
 # Ribbon command organization
 
-Current implementation: tbUI3IDE 1.3.0.0, 2026-11-10.
+Current implementation: tbUI3IDE 1.3.0.1, 2026-11-11.
 
 Shane's Office Home/View/Backstage screenshots define the composition. Ribbon mode organizes commands by task rather than reproducing the native menu names. The IDE-specific Code, Form, Project and Debug tabs retain the IDE's actual functions. Classic and Hybrid keep their existing organizations.
 
@@ -15,8 +15,8 @@ Shane's Office Home/View/Backstage screenshots define the composition. Ribbon mo
 | Project | Project settings/references; Build and Clean with the original build configuration selector; compiler restart/cache controls; project/output folders. |
 | Debug | Stepping, Breakpoints, Watches, Execution, native debugger Options. |
 | Add-ins | Live toolbar contributions from other add-ins; contextual page management remains under Form. |
-| Help | Native Help commands. |
-| File | Vertical navigation rail: Info, New, Open, Save, Save document, Save as, Export, Close project; Add-ins, Preferences, Options and Exit in the lower group. Open includes Open recent. Info shows the actual project name with settings/references tasks. Native language and keyboard-shortcut submenus are under Preferences. |
+| File > Help | Every native Help command, with native callbacks/states and future entries retained. There is no separate Help ribbon tab. |
+| File | Vertical navigation rail: Info, New, Open, Save, Save document, Save as, Export, Close project; Add-ins, Help, Preferences, Options and Exit in the lower group. Open includes Open recent. Info shows the actual project name with settings/references tasks. Native language and keyboard-shortcut submenus are under Preferences. |
 
 Sections/tabs are populated when the IDE provides their commands. Newly discovered Tools commands can create a Tools tab. Unknown native menus create their own named tab. New commands in known menus fall back to Home > More editing, View > More views, File > More commands or the corresponding native tab/group; they are never discarded by an allowlist. Root File Build/Clean move to Project. Project settings/references are intentionally available in both Project and File > Info, as project-level tasks.
 
@@ -26,7 +26,18 @@ Sections/tabs are populated when the IDE provides their commands. Newly discover
 
 The factory is embedded by `tools/build-ide-toolbar.mjs`; no loose JavaScript installation is required. Semantic grouping uses stable native command IDs and localization token names rather than translated display text. Synthetic Fold/Unfold, Change case, Find options and More panels wrappers retain every child descriptor/action. New unknown commands remain reachable without a new grouping rule. This depends on the existing IDE menu/descriptor hooks remaining compatible; it does not promise compatibility with arbitrary future API replacements.
 
-Large versus stacked commands are explicit semantic roles, not the first item of each native separator block. Existing Fluent toolbar SVGs and native designer/codicon glyphs are retained. Geometry stays at a 100px command-area maximum, separate 26px tabs, 50px standard/minimum and 86px maximum large-button widths, and 76px large-button height. Essential CSS uses active-theme variables and preserves the existing Fluent shadow/card corners.
+Large versus stacked commands are explicit function roles in `js/ribbon-presentation.js`, independent of group position or ordering. This applies to Hybrid source controls and Ribbon descriptors, with multiple full-size commands permitted per group. The following mapping uses the supplied Office screenshots as analogies; IDE-only actions are documented project composition choices, not claims that Microsoft ships these IDE commands.
+
+| Reference function | Full-size roles | Stacked roles |
+| --- | --- | --- |
+| Home Clipboard / Editing | Paste, Find, Find in project and Find options | Cut, Copy, Paste as comment, Delete, Select all, Replace |
+| View Views / Zoom / Window | Code editor, Object designer, Object browser; Zoom in/out; More panels; panel layouts/features; Theme | Project explorer, Toolbox and Properties; original zoom selector keeps its own geometry |
+| Page Layout Arrange | Align, Make same size, horizontal/vertical spacing, Bring forward, Send backward, Lock controls | Center in container commands; native grid controls |
+| Developer / editing and navigation | Comments; format selection/document; definition, previous position, line/column; Fold/Unfold; Preview; Add component | Indent/outdent; Change case, like Office Font's case control |
+| Project / Debug, IDE-specific analogies | References, Project settings, Build/Clean, compiler restart/cache, project/build folders, breakpoint toggle, set next statement, debugger options | Stepping, add/clear watches, clear breakpoints |
+| Add-ins | Contributed command buttons | Selectors retain their native control geometry |
+
+ Existing Fluent toolbar SVGs and native designer/codicon glyphs are retained. Geometry stays at a 100px command-area maximum, separate 26px tabs, 50px standard/minimum and 86px maximum large-button widths, and 76px large-button height. Essential CSS uses the old toolbar card/ToolbarBackground resource and matching foreground, preserves Fluent shadow/card corners and supplies the existing pinned WinUI subtle hover/pressed alpha effects for light/dark even with additional styling off. File navigation and every command receive icons; native/source images take priority, then pinned Fluent gap-fill/fallback artwork. Popup hover/foreground follow their own context-menu resources.
 
 ## Backstage lifecycle
 
@@ -36,6 +47,6 @@ The loaded-add-in list remains informational in BETA 1044 because its native cal
 
 ## Evidence and remaining work
 
-The JavaScript/DOM suite checks semantic placement, native command coverage, context alternatives, lazy/async menus, future menu/command discovery, exact-once actions and Backstage underlay/accessibility restoration. The official BETA 1044 menu builders supply 108 top-level descriptor entries in the code-context inventory; lazy submenu actions remain native and have separate execution checks. See `../docs/validation/2026-11-10-ide-toolbar.md` for the measured results. Final rendered acceptance, automatic group collapse/flyouts and Office keytips remain in ROADMAP.md.
+The JavaScript/DOM suite checks semantic placement, native command coverage, context alternatives, lazy/async menus, future menu/command discovery, exact-once actions and Backstage underlay/accessibility restoration. The official BETA 1044 menu builders supply 108 top-level descriptor entries in the code-context inventory; lazy submenu actions remain native and have separate execution checks. All 78 JS/DOM/CSSOM/protocol checks pass. See `../docs/validation/2026-11-11-ribbon-presentation.md` for the measured results. Final rendered acceptance, automatic group collapse/flyouts and Office keytips remain in ROADMAP.md.
 
 References: Shane's supplied Office screenshots, [Microsoft Backstage overview](https://support.microsoft.com/en-us/office/collab-files/start-backstage-with-the-file-tab), [Microsoft Backstage accessibility](https://support.microsoft.com/en-us/accessibility/office-accessibility/use-a-screen-reader-with-microsoft-365-backstage) and [Microsoft ribbon display behavior](https://support.microsoft.com/en-gb/excel/show-the-ribbon). These support the Office interaction pattern; the IDE-specific command mapping above is this project's implementation decision.

@@ -6,13 +6,18 @@ const {JSDOM}=await import(process.env.TB_JSDOM_MODULE||'jsdom');
 const source=fs.readFileSync('tbIDE/tbUI3IDE/js/ide-toolbar.js','utf8');
 const factory=vm.runInNewContext(source);
 const layoutSource=fs.readFileSync('tbIDE/tbUI3IDE/js/ribbon-layout.js','utf8');
-const buildLayout=vm.runInNewContext(layoutSource);
+const presentationSource=fs.readFileSync('tbIDE/tbUI3IDE/js/ribbon-presentation.js','utf8');
+const present=vm.runInNewContext(presentationSource);
+const rawBuildLayout=vm.runInNewContext(layoutSource);
+const buildLayout=(records,quick)=>rawBuildLayout(records,quick,present);
+const establishedIcons=Object.fromEntries([...fs.readFileSync('tbIDE/tbUI3IDE/css/winui3-ide-icons.css','utf8').matchAll(/>\s*#([\w-]+)\s*\{\s*--fluent-icon:\s*(url\('[^']+'\))/g)].map(m=>[m[1],m[2]]));
+const extraIcons=JSON.parse(fs.readFileSync('tbIDE/tbUI3IDE/icons/ribbon.json','utf8')).icons;
 function fixture() {
     const dom=new JSDOM(`<div id='root'><div id='rootMenu1'><div id='rootMenu1Inner'></div><div id='rootMenuClose'>Close</div></div><div id='rootTop'><input id='editor'></div><div id='rootMenu2'></div></div>
     <div class='tbis-optionRow'><div class='tbis-optionName'>Enable additional IDE theme styling via add-in</div></div>`);
     const w=dom.window,d=w.document,calls=[];w.setInterval=()=>1;w.clearInterval=()=>{};const computed=w.getComputedStyle.bind(w);w.getComputedStyle=n=>computed(n);
     const toolbar=d.getElementById('rootMenu2'),headers=d.getElementById('rootMenu1Inner');
-    const api={window:w,buildLayout,projectName:()=>'Example project',icons:{saveIcon:"url('data:image/svg+xml,save')"},
+    const api={window:w,buildLayout,present,projectName:()=>'Example project',icons:{...establishedIcons,...Object.fromEntries(Object.keys(extraIcons).map(key=>[key,"url('data:image/svg+xml,"+key+"')"]))},
         localize:s=>s,execute:s=>calls.push(s),commandEnabled:s=>s!=='disabled',testContext:()=>true,
         shortcut:()=>'',realTitlebar:()=>false,formGlobals:()=>null,changedSize:()=>{}};
     let show=(anchor,x,y,items)=>calls.push(['nativeMenu',anchor&&anchor.id,items]);
@@ -109,8 +114,8 @@ test('checked menu state and dynamically changed selector values stay synchroniz
 });
 test('the toolbar owns no theme-name gate or hard-coded color palette',()=>{
     const css=fs.readFileSync('tbIDE/tbUI3IDE/css/ide-toolbar.css','utf8');
-    // The established Fluent shadow4 alpha values are an elevation effect, not an application palette.
-    const paletteCss=css.replace(/--tbui3-toolbar-shadow:[^;]+;/g,'');
+    // Pinned WinUI subtle-state alpha fills and shadow4 are effects, not a replacement theme palette.
+    const paletteCss=css.replace(/--tbui3-toolbar-shadow:[^;]+;|--tbui3-subtle-(?:hover|pressed):[^;]+;/g,'');
     assert(!/#[0-9a-f]{3,8}\b|rgba?\(/i.test(paletteCss));assert(css.includes('--themeMenuBackColor'));assert(css.includes('--themeDialogGeneralForeColor'));
     assert(!/ThemePrefix|WinUI3 Dark|WinUI3 Light|__winui3IdeStyle/.test(source));
     const main=fs.readFileSync('tbIDE/tbUI3IDE/src/Sources/MainModule.twin','utf8');assert(main.includes("return 'toolbar:'+t.requestedMode"));
@@ -181,16 +186,16 @@ test('shipped native File/Edit/Format/Tools and async Add-ins descriptors popula
     f.adapter.openFile('Add-ins');await new Promise(r=>setTimeout(r,10));assert(f.d.querySelector('.tbui3-backstage-content').textContent.includes('Native loaded add-in'));f.dispose();
 });
 
-test('embedded toolbar contains the exact adapter, essential CSS and the existing 19 Fluent glyphs',()=>{
+test('embedded toolbar contains the exact adapter, essential CSS, original glyphs and 17 Fluent gap-fill glyphs',()=>{
     const path='tbIDE/tbUI3IDE/src/Sources/IdeToolbarScript.twin',src=fs.readFileSync(path,'utf8');let js='';
     for(const line of src.split(/\r?\n/)){
         if(line.trim()==='js = js & vbLf'){js+='\n';continue;}
         if(!line.trim().startsWith('js = js & '))continue;
         for(const part of line.trim().slice(10).split(' & ')){if(part==='Chr(34)')js+='"';else js+=part.slice(1,-1);}
     }
-    new vm.Script(js);assert(js.includes(source.trim()));assert(js.includes(layoutSource.trim()));
+    new vm.Script(js);assert(js.includes(source.trim()));assert(js.includes(layoutSource.trim()));assert(js.includes(presentationSource.trim()));
     const css=fs.readFileSync('tbIDE/tbUI3IDE/css/ide-toolbar.css','utf8');assert(js.includes(JSON.stringify(css)));
-    assert.equal((js.match(/data:image\/svg\+xml/g)||[]).length,19);assert(!/(?<!\r)\n/.test(src));
+    assert.equal((js.match(/data:image\/svg\+xml/g)||[]).length,36);assert(!/(?<!\r)\n/.test(src));
 });
 
 test('Home uses Paste as the lead command and keeps Undo/Redo/Run solely in quick access',()=>{
@@ -255,4 +260,70 @@ test('all shipped BETA 1044 menu descriptors remain reachable after semantic org
     assert(actions('Project','Build').includes('tbBuild_Start'));assert(layout.file.has('Options'));assert(layout.file.has('Save document'));
     assert(!layout.tabs.some(t=>['Edit','Run','Window','Windows','Format'].includes(t.id)));
     t.diagnostic(`${records.length} live native descriptors retained across ${layout.tabs.length} semantic tabs, File and quick access`);
+});
+
+test('Office role sizing survives reordering and permits multiple full-size commands in one group',()=>{
+    const records=[
+        ['rootMenuProject','Settings','tbProject_ShowSettings'],['rootMenuProject','References','tbProject_ShowReferences'],
+        ['rootMenuFormat','Bring forward','tbFormDesigner_BringControlToFront'],['rootMenuFormat','Send backward','tbFormDesigner_SendControlToBack'],
+        ['rootMenuView','Zoom in','tbEditor_IncreaseFontSize'],['rootMenuView','Zoom out','tbEditor_DecreaseFontSize'],
+        ['rootMenuEdit','Paste','tbEditor_ClipboardPaste'],['rootMenuEdit','Copy','tbEditor_ClipboardCopy'],
+        ['rootMenuEdit','Format document','tbEditor_FormatDocument'],['rootMenuEdit','Indent','tbEditor_IndentLine']
+    ].map(([menuId,name,action])=>({menuId,menuTitle:menuId,item:{name,action}}));
+    const sizes=rows=>Object.fromEntries(buildLayout(rows).tabs.flatMap(t=>t.groups.flatMap(g=>g.items.map(i=>[i.action,i._ribbonLarge]))));
+    const first=sizes(records);assert.deepEqual(sizes(records.slice().reverse()),first);
+    for(const a of ['tbProject_ShowSettings','tbProject_ShowReferences','tbFormDesigner_BringControlToFront','tbFormDesigner_SendControlToBack','tbEditor_IncreaseFontSize','tbEditor_DecreaseFontSize','tbEditor_ClipboardPaste','tbEditor_FormatDocument'])assert.equal(first[a],true,a);
+    assert.equal(first.tbEditor_ClipboardCopy,false);assert.equal(first.tbEditor_IndentLine,false);
+    assert.equal(present({name:'Fold'}).large,true);assert.equal(present({name:'Unfold'}).large,true);assert.equal(present({name:'Change case'}).large,false);
+});
+test('Help is available only through File and native Help shortcut interception preserves its actions',()=>{
+    const f=fixture();f.items.Help=[{name:'About',action:'tbHelp_ShowAboutWindow'},{name:'Support',action:()=>f.calls.push('support')}];
+    const native=f.menu('Help');f.adapter.setMode('Ribbon');assert(!f.d.querySelector('[data-tab=Help]'));
+    f.show(native,0,0,f.items.Help);assert(!f.d.querySelector('.tbui3-backstage').hidden);
+    assert.equal(f.d.querySelector('.tbui3-backstage-heading').textContent,'Help');
+    f.d.querySelector('.tbui3-backstage-tasks button').click();assert.deepEqual(f.calls,['tbHelp_ShowAboutWindow']);assert(f.d.querySelector('.tbui3-backstage').hidden);
+    f.adapter.openFile();f.d.querySelector('[data-file-section=Help]').click();[...f.d.querySelectorAll('.tbui3-backstage-tasks button')].find(b=>b.textContent==='Support').click();assert.deepEqual(f.calls,['tbHelp_ShowAboutWindow','support']);f.dispose();
+});
+function assertButtonIcon(button){
+    const icon=button.querySelector('.tbui3-ribbon-icon');assert(icon&&!icon.hidden,'Missing icon: '+button.textContent);
+    assert(icon.classList.contains('codicon')||icon.style.getPropertyValue('--tbui3-icon')||icon.style.getPropertyValue('--tbui3-native-image'),'Empty icon: '+button.textContent);
+}
+test('text-only native, synthetic, File and future commands all receive visible icon representations',()=>{
+    const f=fixture();f.items.Edit=[{name:'Cut',action:'tbEditor_ClipboardCut'},{name:'Select all',action:'tbEditor_SelectAll'},
+        {name:'Fold',action:'tbEditor_Fold'},{name:'Unfold',action:'tbEditor_Unfold'},
+        {name:'Uppercase',action:'tbEditor_TransformToUppercase'},{name:'Future command',action:'new-command'}];
+    f.adapter.setMode('Ribbon');for(const tab of ['Home','Code']){f.d.querySelector(`[data-tab=${tab}]`).click();for(const b of f.d.querySelectorAll('.tbui3-ribbon-content button'))assertButtonIcon(b);}
+    [...f.d.querySelectorAll('.tbui3-ribbon-content button')].find(b=>b.textContent.startsWith('Fold')).click();for(const b of f.d.querySelectorAll('.tbui3-ribbon-popup button'))assertButtonIcon(b);
+    f.adapter.openFile();for(const b of f.d.querySelectorAll('.tbui3-backstage button'))assertButtonIcon(b);
+    for(const b of f.d.querySelectorAll('.tbui3-quick button'))assertButtonIcon(b);f.dispose();
+});
+test('text-only add-ins get a Fluent glyph while contributed images and exact-once handlers remain intact',()=>{
+    const f=fixture(),text=f.button('addinButton-global-search','Global Search'),image=f.button('addinButton-imaged','Other add-in');text.classList.add('iconTextOnly');
+    text.onmousedown=null;text.onclick=()=>f.calls.push('search addin');image.style.backgroundImage='url(https://example.test/original.svg)';
+    f.adapter.setMode('Ribbon');f.d.querySelector('[data-tab="Add-ins"]').click();const proxy=f.d.querySelector('[data-source="addinButton-global-search"]');
+    assertButtonIcon(proxy);assert(proxy.classList.contains('tbui3-ribbon-large'));assert.equal(proxy.querySelector('.tbui3-ribbon-icon').style.getPropertyValue('--tbui3-icon'),f.api.icons.searchIcon);
+    assert(f.d.querySelector('[data-source="addinButton-imaged"] .tbui3-ribbon-icon').style.getPropertyValue('--tbui3-native-image').includes('original.svg'));
+    proxy.click();assert.deepEqual(f.calls,['search addin']);f.dispose();
+});
+test('moved grid controls retain original nodes and events and restore in original order',()=>{
+    const f=fixture(),grid=f.d.createElement('div');grid.id='menuBarGridOptions';grid.innerHTML='<div class="menuBarGridOptionsInner"><div class="menuBarGridOptionRow"><div class="menuBarGridOption">Grid width</div><div class="menuBarGridValue"><input type="number" value="8"></div></div></div>';
+    f.toolbar.after(grid);const inner=grid.firstElementChild,input=grid.querySelector('input');let changes=0;input.onchange=()=>changes++;
+    f.api.formGlobals=()=>({selectedControls:[]});f.adapter.setMode('Ribbon');f.d.querySelector('[data-tab=Form]').click();assert.equal(f.d.querySelector('.tbui3-ribbon-grid input'),input);
+    input.value='12';input.dispatchEvent(new f.w.Event('change'));assert.equal(changes,1);f.adapter.setMode('Classic');assert.equal(grid.firstElementChild,inner);assert.equal(input.value,'12');f.dispose();
+});
+test('toolbar surface, hover, pressed and grid styles consume the old toolbar and active-theme resources',()=>{
+    const css=fs.readFileSync('tbIDE/tbUI3IDE/css/ide-toolbar.css','utf8'),dom=new JSDOM('<head></head>');const style=dom.window.document.createElement('style');style.textContent=css;dom.window.document.head.append(style);
+    const rules=[...style.sheet.cssRules];const token=rules.find(r=>r.selectorText==='.tbui3-toolbar-owned, .tbui3-toolbar-option').style;
+    assert(token.getPropertyValue('--tbui3-toolbar-bg').includes('--color-card'));assert(token.getPropertyValue('--tbui3-toolbar-bg').includes('--themeToolbarBackground'));
+    assert(token.getPropertyValue('--tbui3-toolbar-fg').replace(/\s/g,'').startsWith('var(--color-text,var(--themeGeneralTextColor'));
+    const quick=rules.find(r=>r.selectorText==='.tbui3-quick');assert(quick.style.color.includes('--themeMenuForeColor'));
+    const popup=rules.find(r=>r.selectorText==='.tbui3-ribbon-popup');assert(popup.style.color.includes('--themeContextMenuForeColor'));assert(popup.style.background.includes('--themeContextMenuBackground')); 
+    assert(token.getPropertyValue('--tbui3-toolbar-hover').includes('--color-neutral-hover'));assert(token.getPropertyValue('--tbui3-toolbar-pressed').includes('--color-neutral-pressed'));
+    assert.equal(token.getPropertyValue('--tbui3-subtle-hover'),'#00000009');
+    const dark=rules.find(r=>r.selectorText==='.darkMode .tbui3-toolbar-owned, .darkMode .tbui3-toolbar-option');assert.equal(dark.style.getPropertyValue('--tbui3-subtle-hover'),'#ffffff0f');assert.equal(dark.style.getPropertyValue('--tbui3-subtle-pressed'),'#ffffff0a');
+    const hover=rules.find(r=>r.selectorText?.includes('.tbui3-ribbon-command:hover:not(:disabled)'));assert.equal(hover.style.background,'var(--tbui3-toolbar-hover)');
+    assert(rules.some(r=>r.selectorText==='.tbui3-ribbon-command:active:not(:disabled)'&&r.style.background==='var(--tbui3-toolbar-pressed)'));
+    assert(rules.some(r=>r.selectorText==='.tbui3-ribbon-content .menuBarGridOptionsInner'&&r.style.color==='var(--tbui3-toolbar-fg)'));
+    const numbers=rules.find(r=>r.selectorText===".tbui3-ribbon-content .menuBarGridOptionRow input[type='number']");assert(numbers.style.background.includes('--themeDialogGeneralBackColor'));
+    assert(css.includes('--tbui3-command-area-height: 100px'));assert(css.includes('--tbui3-large-button-height: 76px'));assert(css.includes('--tbui3-tab-area-height: 26px'));dom.window.close();
 });

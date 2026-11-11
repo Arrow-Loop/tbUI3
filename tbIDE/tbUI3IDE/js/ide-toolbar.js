@@ -92,22 +92,23 @@
         const n=el('section','tbui3-ribbon-group'),body=el('div','tbui3-ribbon-group-body');
         n.setAttribute('aria-label',name);n.append(body,el('div','tbui3-ribbon-group-title',name));parent.append(n);return body;
     }
-    function iconFor(n,descriptor) {
+    function iconFor(n,descriptor={}) {
         let src=n;
-        if(!src&&descriptor&&typeof descriptor.action==='string')
+        if(!src&&typeof descriptor.action==='string')
             src=[...sources.values()].find(x=>[].concat(x.boundCommand||[]).includes(descriptor.action));
         const i=el('span','tbui3-ribbon-icon');i.setAttribute('aria-hidden','true');
-        const uri=src&&api.icons[src.id];
-        if(uri){i.classList.add('tbui3-ribbon-mask');i.style.setProperty('--tbui3-icon',uri);}
-        else if(src){
+        const mask=uri=>{i.classList.add('tbui3-ribbon-mask');i.style.setProperty('--tbui3-icon',uri);return i;};
+        if(src&&api.icons[src.id])return mask(api.icons[src.id]);
+        if(src){
             const cs=w.getComputedStyle(src);let image=cs.backgroundImage;
             if(!image||image==='none')image=w.getComputedStyle(src,'::before').backgroundImage;
-            if(image&&image!=='none')i.style.setProperty('--tbui3-native-image',image);
-            else if(src.classList.contains('iconTextOnly'))i.hidden=true;
-            else {const c=src.querySelector('.codicon');if(c)i.className+=' '+c.className;}
-        }else if(descriptor&&descriptor.codicon)i.className+=' codicon codicon-'+descriptor.codicon;
-        else if(descriptor&&descriptor.iconClass)i.className+=' '+descriptor.iconClass;
-        return i;
+            if(image&&image!=='none'){i.style.setProperty('--tbui3-native-image',image);return i;}
+            const c=src.matches('.codicon')?src:src.querySelector('.codicon');
+            if(c){i.className+=' '+[...c.classList].filter(x=>x==='codicon'||x.startsWith('codicon-')||x==='flipX'||x==='rotate90').join(' ');return i;}
+        }
+        if(descriptor.codicon){i.className+=' codicon codicon-'+descriptor.codicon;return i;}
+        const glyph=api.present?api.present(descriptor,src&&src.id).glyph:'apps_list';
+        return mask(api.icons[glyph]||api.icons.apps_list||api.icons.saveIcon);
     }
     function invokeSource(n,event) {
         if(disabled(n))return;
@@ -115,10 +116,10 @@
         // Natural mouse sequence covers both native mousedown commands and add-in click handlers.
         for(const type of ['mousedown','mouseup','click'])n.dispatchEvent(new w.MouseEvent(type,init));
     }
-    function sourceButton(n,parent,compact=false,large=false) {
+    function sourceButton(n,parent,compact=false,large=!!api.present?.({},n.id).large) {
         const b=el('button','tbui3-ribbon-command'+(compact?' tbui3-ribbon-compact':large?' tbui3-ribbon-large':''));b.type='button';
         b.dataset.source=typeof n.id==='string'?n.id:'';b.title=label(n);b.setAttribute('aria-label',label(n));
-        b.append(iconFor(n),el('span','tbui3-ribbon-label',sourceCaption(n)));
+        b.append(iconFor(n,{name:sourceCaption(n)}),el('span','tbui3-ribbon-label',sourceCaption(n)));
         b.addEventListener('mousedown',e=>e.preventDefault());
         b.onclick=e=>{invokeSource(n,e);tick();};parent.append(b);bindings.set(b,{source:n});return b;
     }
@@ -128,9 +129,9 @@
     }
     function returnNodes() {for(const [n,marker]of placements){if(marker.isConnected)marker.replaceWith(n);}placements.clear();}
     function addSources(ids,parent) {
-        for(const [index,id] of ids.entries()){const n=sources.get(id);if(!n)continue;
+        for(const id of ids){const n=sources.get(id);if(!n)continue;
             if(n.matches('select')){const l=el('label','tbui3-ribbon-selector',sourceCaption(n));l.title=label(n);park(n,l);parent.append(l);}
-            else sourceButton(n,parent,false,index===0);
+            else sourceButton(n,parent,false,!!api.present?.({},id).large);
         }
     }
     function addGrid() {
@@ -220,7 +221,7 @@
         source('zoomSelect','View','Zoom');source('menuBarPreview','Form','Designer');
         if(!records.some(r=>String(r.item.name).includes('MenuCaptionWindowTheme')))source('menuBarColorMode','View','Appearance');
         const quickActions=new Set();for(const id of quickIds)for(const a of [].concat(sources.get(id)?.boundCommand||[]))quickActions.add(a);
-        return api.buildLayout(records,quickActions);
+        return api.buildLayout(records,quickActions,api.present);
     }
     function hydrateMenus(refresh=false) {
         hydrating=true;try{for(const m of menus.values())if(!m.ready||refresh&&(m.node.id!=='rootMenuAddins'||backstage&&!backstage.hidden&&fileSection==='Add-ins'))requestMenu(m);}finally{hydrating=false;}
@@ -249,11 +250,11 @@
         for(const b of tabs.children){const selected=b.dataset.tab===state.active;b.setAttribute('aria-selected',String(selected));b.tabIndex=selected?0:-1;}
         syncBindings();resize();
     }
-    function addMultiPageContext(){if(currentHost()){const b=el('button','tbui3-ribbon-tab tbui3-ribbon-context','MultiPage');
+    function addMultiPageContext(){if(currentHost()){const b=el('button','tbui3-ribbon-tab tbui3-ribbon-context');b.append(iconFor(null,{_ribbonGlyph:'apps_list'}),el('span','','MultiPage'));
         b.onclick=()=>{clearContent();pages();syncBindings();resize();};content.prepend(b);}}
     function tabForNative(m){
         if(m.node.id==='rootMenuFile'||m.node.id==='rootMenuAddins')return 'File';
-        return {rootMenuEdit:'Home',rootMenuFormat:'Form',rootMenuView:'View',rootMenuWindows:'View',rootMenuProject:'Project',rootMenuRun:'Debug',rootMenuDebug:'Debug',rootMenuTools:'Project',rootMenuHelp:'Help'}[m.node.id]||m.title;
+        return {rootMenuEdit:'Home',rootMenuFormat:'Form',rootMenuView:'View',rootMenuWindows:'View',rootMenuProject:'Project',rootMenuRun:'Debug',rootMenuDebug:'Debug',rootMenuTools:'Project',rootMenuHelp:'File'}[m.node.id]||m.title;
     }
     function clearContent(){returnNodes();for(const [n]of bindings)if(content.contains(n))bindings.delete(n);clear(content);}
     function makeTab(key,title,action) {
@@ -266,7 +267,7 @@
         state.active=key;menuSignature='';closeFile(false);closePopup();clearContent();
         for(const b of tabs.children){const selected=b.dataset.tab===key;b.setAttribute('aria-selected',String(selected));b.tabIndex=selected?0:-1;if(selected&&focus)b.focus();}
         if(state.mode==='Hybrid'){
-            if(known[key]){for(const [name,ids]of known[key])addSources(ids,group(name));if(key==='Form'){addGrid();if(currentHost()){const nested=el('button','tbui3-ribbon-tab tbui3-ribbon-context','MultiPage');nested.onclick=()=>{clearContent();pages();syncBindings();resize();};content.prepend(nested);}}}
+            if(known[key]){for(const [name,ids]of known[key])addSources(ids,group(name));if(key==='Form'){addGrid();if(currentHost()){const nested=el('button','tbui3-ribbon-tab tbui3-ribbon-context');nested.append(iconFor(null,{_ribbonGlyph:'apps_list'}),el('span','','MultiPage'));nested.onclick=()=>{clearContent();pages();syncBindings();resize();};content.prepend(nested);}}}
             else addins(content,true);
         }else{menuSignature='';hydrateMenus(true);}
         syncBindings();resize();
@@ -308,12 +309,14 @@
         const sig=JSON.stringify([fileSection,[...(layout?.file||[])].map(([name,items])=>[name,items.map(itemKey)])]);
         if(sig===fileNavSignature)return;fileNavSignature=sig;
         for(const [n]of bindings)if(fileNav.contains(n))bindings.delete(n);clear(fileNav);
-        const back=el('button','tbui3-backstage-back','← Back');back.setAttribute('aria-label','Back to project');back.onclick=()=>closeFile();fileNav.append(back);
+        const back=el('button','tbui3-backstage-back');back.append(iconFor(null,{_ribbonGlyph:'arrow_left'}),el('span','','Back'));back.setAttribute('aria-label','Back to project');back.onclick=()=>closeFile();fileNav.append(back);
         const main=el('div','tbui3-backstage-nav-group'),footer=el('div','tbui3-backstage-nav-group tbui3-backstage-footer');fileNav.append(main,footer);
         const add=(title,section,parent=main,direct=false)=>{
             const entries=layout?.file.get(section)||[],item=entries.find(menuEnabled)||entries[0];
             if(section!=='Info'&&section!=='Add-ins'&&!entries.length)return;
-            const b=el('button','tbui3-backstage-nav',title);b.type='button';b.dataset.fileSection=section;
+            const b=el('button','tbui3-backstage-nav');
+            const glyph={Info:'info','Add-ins':'puzzle_piece',Preferences:'settings',Options:'settings',Help:'chat_help',More:'apps_list'}[section];
+            b.append(iconFor(null,glyph?{_ribbonGlyph:glyph}:item||{}),el('span','',title));b.type='button';b.dataset.fileSection=section;
             if(direct&&item){b.title=caption(item);bindings.set(b,{item});b.onclick=()=>activateItem(item,b);}
             else{b.onclick=()=>{fileSection=section;renderFile();renderFileNav();};
                 if(fileSection===section){b.classList.add('tbui3-backstage-selected');b.setAttribute('aria-current','page');}}
@@ -321,7 +324,7 @@
         };
         add('Info','Info');add('New','New',main,true);add('Open','Open');add('Save','Save',main,true);add('Save document','Save document',main,true);add('Save as','Save as',main,true);add('Export','Export');add('Close project','Close',main,true);
         if(layout?.file.has('More'))add('More commands','More');
-        add('Add-ins','Add-ins',footer);add('Preferences','Preferences',footer);add('Options','Options',footer,true);add('Exit','Exit',footer,true);
+        add('Add-ins','Add-ins',footer);add('Help','Help',footer);add('Preferences','Preferences',footer);add('Options','Options',footer,true);add('Exit','Exit',footer,true);
         syncBindings();
     }
     function renderFile() {
@@ -329,7 +332,7 @@
         const sig=JSON.stringify([fileSection,projectName,items.map(itemKey),!!menus.get('rootMenuAddins')?.loading]);
         if(sig===fileRenderSignature)return;fileRenderSignature=sig;
         for(const [n]of bindings)if(fileContent.contains(n))bindings.delete(n);clear(fileContent);
-        const titles={Info:'Project information',Open:'Open project',Export:'Export project','Add-ins':'Add-ins',Preferences:'Preferences',More:'More file commands'};
+        const titles={Info:'Project information',Open:'Open project',Export:'Export project','Add-ins':'Add-ins',Preferences:'Preferences',More:'More file commands',Help:'Help'};
         fileContent.append(el('h1','tbui3-backstage-heading',titles[fileSection]||fileSection));
         const list=items.filter(i=>i.name);
         if(fileSection==='Info'){
@@ -338,7 +341,7 @@
         const unsupported=fileSection==='Add-ins'&&list.some(i=>typeof i.action==='function'&&String(i.action).includes('notSupportedMenuOption'));
         if(unsupported)fileContent.append(el('p','tbui3-backstage-description','This IDE build lists loaded add-ins here. It does not expose enable or disable commands.'));
         const tasks=el('div','tbui3-backstage-tasks');fileContent.append(tasks);
-        for(const item of list){const row=el('div','tbui3-backstage-task');
+        for(const original of list){const item=fileSection==='Add-ins'?{...original,_ribbonGlyph:'puzzle_piece'}:original;const row=el('div','tbui3-backstage-task');
             command(unsupported&&typeof item.action==='function'&&String(item.action).includes('notSupportedMenuOption')?{...item,isHidden:true,_ribbonLarge:false}:{...item,_ribbonLarge:false},row);tasks.append(row);
         }
         if(!list.length&&fileSection==='Add-ins')fileContent.append(el('p','tbui3-backstage-description',menus.get('rootMenuAddins')?.loading?'Loading add-ins...':'No add-ins are listed by the IDE.'));
@@ -441,7 +444,7 @@
             if(!anchor&&pendingSubmenu&&pendingSubmenu.until>Date.now()){const s=pendingSubmenu.sink;pendingSubmenu=null;s(items);return;}
             const m=anchor&&menus.get(anchor.id);
             if(state.mode==='Ribbon'&&m){m.items=items;
-                if(anchor.id==='rootMenuFile'||anchor.id==='rootMenuAddins')openFile(anchor.id==='rootMenuAddins'?'Add-ins':'Info');
+                if(['rootMenuFile','rootMenuAddins','rootMenuHelp'].includes(anchor.id))openFile(anchor.id==='rootMenuAddins'?'Add-ins':anchor.id==='rootMenuHelp'?'Help':'Info');
                 else selectTab(tabForNative(m));return;}
             return nativeMenu.call(this,anchor,x,y,items,...rest);
         };

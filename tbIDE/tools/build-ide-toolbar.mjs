@@ -1,6 +1,7 @@
 // Embed the toolbar adapter, essential CSS and established Fluent icon map.
 import fs from 'node:fs';
 const dir='tbIDE/tbUI3IDE';
+const brandImage='data:image/png;base64,'+fs.readFileSync(dir+'/images/twinBASIC_WinUI3.png').toString('base64');
 const css=fs.readFileSync(dir+'/css/ide-toolbar.css','utf8');
 const iconCss=fs.readFileSync(dir+'/css/winui3-ide-icons.css','utf8');
 const icons=Object.fromEntries([...iconCss.matchAll(/>#(\w+)/g)].map(m=>[m[1],m[0]]));
@@ -15,7 +16,7 @@ const layout=fs.readFileSync(dir+'/js/ribbon-layout.js','utf8').trim();
 const script=`(function(){if(window.__tbUI3Toolbar)return 'toolbar already installed';
 var css=document.createElement('style');css.id='tbUI3ToolbarCss';css.textContent=${JSON.stringify(css)};document.head.appendChild(css);
 var nativeContext=${contextBridge}({selectedEditor:function(){return typeof openEditors==='undefined'?null:openEditors.selectedEditorNode;},addComponent:typeof showContextMenuAddComponent==='function'?showContextMenuAddComponent:undefined});
-var adapter=${factory}({window:window,icons:${JSON.stringify(icons)},buildLayout:${layout},present:${presentation},captureMenu:nativeContext.captureMenu,editorState:nativeContext.editorState,
+var adapter=${factory}({window:window,brandImage:${JSON.stringify(brandImage)},themeName:function(){return getThemeName();},icons:${JSON.stringify(icons)},buildLayout:${layout},present:${presentation},captureMenu:nativeContext.captureMenu,editorState:nativeContext.editorState,
 getShowContextMenu:function(){return showContextMenu;},setShowContextMenu:function(fn){showContextMenu=fn;},
 localize:function(s){return evaluateLocalizedString(s);},execute:function(s){return executeIdeCommand(s,true);},
 commandEnabled:function(s){var c=ideCommands[s];return !!c&&(!c.defaultContext||evaluateExpression(c.defaultContext));},

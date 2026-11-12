@@ -2,6 +2,11 @@
 
 Committed work is listed first. Exploratory ideas are marked as such.
 
+## Current add-in follow-up: 1.3.0.5
+
+- Ribbon reconstruction is implemented; see docs/validation/2026-11-12-ribbon-refinements.md. Build and test the add-in in twinBASIC: short/long button labels, Grid spacing, ten icon-only commands, File > Options, both WinUI3 themes and the real OS titlebar switch. Native visual/build acceptance remains open.
+- Existing TabView authoring, adaptive Ribbon collapse/keytips and add-in enablement gates remain open. Package 1.0.0.65 and adapter v8 are unchanged.
+
 ## Committed: MultiPage authoring candidate, next gate
 
 The integrated UI3TabView/UI3TabPage and separate TabViewDesigner implementation began in 1.0.0.61; 1.0.0.63 separates painting from layout and adds diagnostics after 1.0.0.62's contrast/initialization changes on tbui3-dev. Current candidate is package 1.0.0.65 with adapter v8 inside the unified tbUI3 IDE add-in 1.1.0.0, adding per-entry native error recovery after v7 structural notification and host-scoped naming. Contract and limits: `docs/controls/UI3TabView.md`. Negative-coordinate parking is not used.

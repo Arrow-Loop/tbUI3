@@ -4,6 +4,12 @@ All notable changes to tbUI3. Dates are when the change was made, not released. 
 
 ## Unreleased
 
+### 2026-11-12 — Ribbon refinements (tbUI3IDE 1.3.0.5)
+
+- Reconstructed the five requested changes: font-measured 50–86px large-button widths for up to two whole-word lines; Grid option spacing matching the divider inset; ten compact alignment/size commands with accessible names and native dispatch; one File > Options page containing IDE Options, language and shortcuts; the supplied original PNG before Save only for WinUI3 Light/Dark with the real OS titlebar disabled.
+- PNG bytes are preserved and embedded in the generated add-in script, so no separate image installation is required. Only the add-in revision changes; package 65 and control/consumer identities remain unchanged.
+- 103 JavaScript/DOM/CSSOM/native-protocol checks pass with no skips using the locally installed IDE files and jsdom 26.1.0. Browser-fixture interactions pass in Edge at 1280×720; native compiled build and visual acceptance remain pending. Detailed evidence: docs/validation/2026-11-12-ribbon-refinements.md.
+
 ### 2026-11-11, compact glyph canvases and theme reconciliation (tbUI3IDE 1.3.0.4)
 
 - Corrected large-button horizontal alignment by replacing the inherited left-justified grid with a stretched single column. Large buttons now size to minimum content between 50px and 86px rather than starting from maximum content. Labels wrap at word boundaries with a bounded long-word fallback. Paste, Grid and all other large commands share this layout in Hybrid and Ribbon.

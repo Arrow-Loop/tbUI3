@@ -14,6 +14,40 @@ const rawBuildLayout=vm.runInNewContext(layoutSource);
 const buildLayout=(records,quick)=>rawBuildLayout(records,quick,present);
 const establishedIcons=Object.fromEntries([...fs.readFileSync('tbIDE/tbUI3IDE/css/winui3-ide-icons.css','utf8').matchAll(/>\s*#([\w-]+)\s*\{\s*--fluent-icon:\s*(url\('[^']+'\))/g)].map(m=>[m[1],m[2]]));
 const extraIcons=JSON.parse(fs.readFileSync('tbIDE/tbUI3IDE/icons/ribbon.json','utf8')).icons;
+test('large captions choose the smallest two-line whole-word width and remeasure after font changes',()=>{
+    const f=fixture();let scale=6;
+    const original=f.w.HTMLElement.prototype.getBoundingClientRect;
+    f.w.HTMLElement.prototype.getBoundingClientRect=function(){return {width:this.tagName==='SPAN'?this.textContent.length*scale:0};};
+    f.items.Edit=[{name:'Paste',action:'tbEditor_ClipboardPaste'},{name:'Find in project',action:'tbProject_FindInFiles'},{name:'UnbreakablyLongCaption',action:'tbEditor_Find'}];
+    const style=f.d.createElement('style');style.textContent=fs.readFileSync('tbIDE/tbUI3IDE/css/ide-toolbar.css','utf8');f.d.head.append(style);
+    f.adapter.setMode('Ribbon');
+    const width=title=>parseFloat(f.d.querySelector(`.tbui3-ribbon-content button[title="${title} "]`).style.width);
+    assert.equal(width('Paste'),50);assert.equal(width('Find in project'),52);assert.equal(width('UnbreakablyLongCaption'),86);
+    scale=8;for(const label of f.d.querySelectorAll('.tbui3-ribbon-label'))label.style.fontSize='16px';f.adapter.tick();assert.equal(width('Find in project'),66);
+    f.w.HTMLElement.prototype.getBoundingClientRect=original;f.dispose();
+});
+
+test('all ten alignment and sizing actions are icon-only and dispatch their native command once',()=>{
+    const f=fixture(),actions=['AlignSelectedControlsLeft','AlignSelectedControlsTop','AlignSelectedControlsRight','AlignSelectedControlsBottom','AlignSelectedControlsCenterHorizontal','AlignSelectedControlsCenterVertical','ResizeSelectedControlsWidest','ResizeSelectedControlsTallest','ResizeSelectedControlsNarrowest','ResizeSelectedControlsShortest'];
+    f.items.Format=actions.map(name=>({name,action:'tbFormDesigner_'+name}));f.adapter.setMode('Ribbon');f.d.querySelector('[data-tab=Form]').click();
+    for(const name of actions){const b=f.d.querySelector(`button[title="${name} "]`);assert(b.classList.contains('tbui3-ribbon-compact'));assert(!b.classList.contains('tbui3-ribbon-large'));assert.equal(b.getAttribute('aria-label'),name);b.click();}
+    assert.deepEqual(f.calls,actions.map(a=>'tbFormDesigner_'+a));f.dispose();
+});
+
+test('one Options page contains IDE Options, language and keyboard shortcuts',()=>{
+    const f=fixture();f.items.Windows=[{name:'{%MenuCaptionWindowLanguage}',action:'language'},{name:'{%MenuCaptionWindowKeyboardShortcuts}',action:'shortcuts'}];f.menu('Windows');
+    f.adapter.setMode('Ribbon');f.adapter.openFile();assert.equal(f.d.querySelectorAll('[data-file-section=Options]').length,1);assert(!f.d.querySelector('[data-file-section=Preferences]'));
+    f.d.querySelector('[data-file-section=Options]').click();const tasks=f.d.querySelectorAll('.tbui3-backstage-content button');assert.equal(tasks.length,3);assert.equal(f.calls.length,0);assert(!f.d.querySelector('.tbui3-backstage').hidden);
+    tasks[0].click();assert.deepEqual(f.calls,['tbIde_ShowIDEOptions']);assert(f.d.querySelector('.tbui3-backstage').hidden);f.dispose();
+});
+
+test('original logo precedes Save only for the two WinUI3 themes with the real titlebar disabled',()=>{
+    const f=fixture();let theme='WinUI3 Dark',real=false;f.api.themeName=()=>theme;f.api.realTitlebar=()=>real;f.api.brandImage='data:image/png;base64,AA==';f.adapter.setMode('Ribbon');
+    for(const [name,titlebar,shown]of [['WinUI3 Dark',false,true],['WinUI3 Light',false,true],['Dark',false,false],['WinUI3 Custom',false,false],['WinUI3 Dark',true,false],['WinUI3 Light',false,true]]){
+        theme=name;real=titlebar;f.adapter.tick();const logo=f.d.querySelector('.tbui3-quick-logo');assert.equal(!logo.hidden,shown);assert.equal(logo.nextElementSibling.dataset.source,'saveIcon');assert.equal(f.d.querySelectorAll('.tbui3-quick-logo').length,1);
+    }
+    f.adapter.setMode('Hybrid');assert(!f.d.querySelector('.tbui3-quick-logo'));f.adapter.setMode('Classic');assert(!f.d.querySelector('.tbui3-quick-logo'));f.dispose();
+});
 function fixture() {
     const dom=new JSDOM(`<div id='root'><div id='rootMenu1'><div id='rootMenu1Inner'></div><div id='rootMenuClose'>Close</div></div><div id='rootTop'><input id='editor'></div><div id='rootMenu2'></div></div>
     <div class='tbis-optionRow'><div class='tbis-optionName'>Enable additional IDE theme styling via add-in</div></div>`);
@@ -114,12 +148,13 @@ test('checked menu state and dynamically changed selector values stay synchroniz
     f.d.querySelector('[data-tab=Home]').click();assert.equal(f.d.querySelector('button[title="Toggle "]').getAttribute('aria-pressed'),'false');
     assert.equal(f.d.querySelector('select[aria-label=Choice]').value,'b');f.dispose();
 });
-test('the toolbar owns no theme-name gate or hard-coded color palette',()=>{
+test('toolbar styling owns no theme-name gate or hard-coded color palette; only the logo is theme-specific',()=>{
     const css=fs.readFileSync('tbIDE/tbUI3IDE/css/ide-toolbar.css','utf8');
     // Pinned WinUI subtle-state alpha fills and shadow4 are effects, not a replacement theme palette.
     const paletteCss=css.replace(/--tbui3-toolbar-shadow:[^;]+;|--tbui3-subtle-(?:hover|pressed):[^;]+;/g,'');
     assert(!/#[0-9a-f]{3,8}\b|rgba?\(/i.test(paletteCss));assert(css.includes('--themeMenuBackColor'));assert(css.includes('--themeDialogGeneralForeColor'));
-    assert(!/ThemePrefix|WinUI3 Dark|WinUI3 Light|__winui3IdeStyle/.test(source));
+    assert(!/ThemePrefix|__winui3IdeStyle/.test(source));
+    assert(source.includes("['WinUI3 Dark','WinUI3 Light'].includes(api.themeName?.())"));
     const main=fs.readFileSync('tbIDE/tbUI3IDE/src/Sources/MainModule.twin','utf8');assert(main.includes("return 'toolbar:'+t.requestedMode"));
 });
 test('the empty 30px native dock slot collapses and returns intact in Classic',()=>{
@@ -183,7 +218,7 @@ test('shipped native File/Edit/Format/Tools and async Add-ins descriptors popula
     f.adapter.setMode('Ribbon');f.adapter.openFile();
     assert(f.d.querySelector('[data-file-section=Save]'));
     assert(!f.d.querySelector('.tbui3-backstage-content').textContent.includes('MenuCaptionFileSaveProject'));
-    f.adapter.closeFile();f.d.querySelector('[data-tab=Project]').click();assert(f.d.querySelector('.tbui3-ribbon-content').textContent.includes('Restart the compiler'));
+    f.adapter.openFile('Options');assert(f.d.querySelector('.tbui3-backstage-content button[title*="MenuCaptionToolsIDEOptions"]'));f.adapter.closeFile();
     f.d.querySelector('[data-tab=Form]').click();assert(f.d.querySelector('[aria-haspopup=menu]'));
     f.adapter.openFile('Add-ins');await new Promise(r=>setTimeout(r,10));assert(f.d.querySelector('.tbui3-backstage-content').textContent.includes('Native loaded add-in'));f.dispose();
 });
@@ -198,6 +233,8 @@ test('embedded toolbar contains the exact adapter, essential CSS, original glyph
     new vm.Script(js);assert(js.includes(source.trim()));assert(js.includes(layoutSource.trim()));assert(js.includes(presentationSource.trim()));assert(js.includes(contextSource.trim()));
     const css=fs.readFileSync('tbIDE/tbUI3IDE/css/ide-toolbar.css','utf8');assert(js.includes(JSON.stringify(css)));
     assert.equal((js.match(/data:image\/svg\+xml/g)||[]).length,37);assert(!/(?<!\r)\n/.test(src));
+    const png=js.match(/brandImage:"data:image\/png;base64,([A-Za-z0-9+/=]+)"/);assert(png);
+    assert.deepEqual(Buffer.from(png[1],'base64'),fs.readFileSync('tbIDE/tbUI3IDE/images/twinBASIC_WinUI3.png'));
 });
 
 test('Home uses Paste as the lead command and keeps Undo/Redo/Run solely in quick access',()=>{
@@ -233,7 +270,7 @@ test('File uses a stable vertical navigation rail and native Save/Options close 
     const f=fixture();f.api.execute=a=>{assert(f.d.querySelector('.tbui3-backstage').hidden);assert(!f.d.querySelector('.tbui3-backstage-underlay'));f.calls.push(a);};
     f.adapter.setMode('Ribbon');f.adapter.openFile();const save=f.d.querySelector('[data-file-section=Save]');save.focus();
     f.adapter.tick();assert.equal(f.d.activeElement,save);assert(f.d.querySelector('.tbui3-backstage-project').textContent.includes('Example project'));
-    save.click();assert.deepEqual(f.calls,['tbProject_SaveAllChanges']);f.adapter.openFile();f.d.querySelector('[data-file-section=Options]').click();assert.deepEqual(f.calls,['tbProject_SaveAllChanges','tbIde_ShowIDEOptions']);f.dispose();
+    save.click();assert.deepEqual(f.calls,['tbProject_SaveAllChanges']);f.adapter.openFile();f.d.querySelector('[data-file-section=Options]').click();assert(!f.d.querySelector('.tbui3-backstage').hidden);f.d.querySelector('.tbui3-backstage-content button[title^=Options]').click();assert.deepEqual(f.calls,['tbProject_SaveAllChanges','tbIde_ShowIDEOptions']);f.dispose();
 });
 test('unknown future commands survive every semantic fallback with their native identity',()=>{
     const command=(menuId,name)=>({menuId,menuTitle:menuId==='newMenu'?'Future':menuId,item:{name,action:name}});
@@ -400,7 +437,7 @@ test('Form directly exposes the eight classic alignment and size controls using 
     const sandbox={rootMenuFormat:f.d.getElementById('rootMenuFormat'),menuRightTriangle:'>',showContextMenu:(...args)=>f.show(...args)};
     const show=nativeFunction('showFormatMenu',sandbox);sandbox.rootMenuFormat.onmousedown=()=>show();attachNativeBridge(f);f.adapter.setMode('Ribbon');f.d.querySelector('[data-tab=Form]').click();
     assert.deepEqual([...f.d.querySelectorAll('[data-source^=menuBarAlign],[data-source^=menuBarSize]')].map(n=>n.dataset.source),ids);
-    for(const id of ids){const button=f.d.querySelector(`[data-source=${id}]`);assert(button.classList.contains('tbui3-ribbon-large'));assert(!button.hasAttribute('aria-haspopup'));assert(button.querySelector('.tbui3-ribbon-icon').style.getPropertyValue('--tbui3-native-image').includes(id));}
+    for(const id of ids){const button=f.d.querySelector(`[data-source=${id}]`);assert(button.classList.contains('tbui3-ribbon-compact'));assert(!button.classList.contains('tbui3-ribbon-large'));assert(button.title);assert(button.getAttribute('aria-label'));assert(!button.hasAttribute('aria-haspopup'));assert(button.querySelector('.tbui3-ribbon-icon').style.getPropertyValue('--tbui3-native-image').includes(id));}
     f.d.querySelector('[data-source=menuBarAlignLeft]').click();assert.deepEqual(f.calls,['menuBarAlignLeft']);
     f.d.getElementById('menuBarSizeWidest').classList.add('disabledCommand');f.adapter.tick();assert(f.d.querySelector('[data-source=menuBarSizeWidest]').disabled);f.dispose();
 });
@@ -471,12 +508,12 @@ test('Ribbon and Hybrid share centered glyph canvases, intrinsic widths, fixed p
         assert.equal(groups.length,1);assert(groups[0].querySelector('[data-source=menuBarGrid]'));assert(groups[0].querySelector('.tbui3-ribbon-grid input'));assert(!f.d.querySelector('[aria-label="Grid options"]'));
         const style=f.d.createElement('style');style.textContent=css;f.d.head.append(style);const rules=[...style.sheet.cssRules],rule=selector=>rules.find(r=>r.selectorText===selector).style;
         const large=rule('.tbui3-ribbon-content .tbui3-ribbon-large');assert.equal(large.width,'min-content');assert.equal(large.getPropertyValue('justify-content'),'stretch');assert.equal(large.getPropertyValue('grid-template-columns'),'1fr');assert.equal(large.getPropertyValue('align-items'),'start');
-        assert.equal(large.padding,'0px 4px');assert.equal(large.getPropertyValue('grid-template-rows'),'32px 4px 28px 2px 8px');
-        const area=rule('.tbui3-ribbon-content');assert.equal(area.padding,'4px 4px 0px');assert.equal(area.height,'var(--tbui3-command-area-height)');
+        assert.deepEqual(large.padding.split(/\s+/).map(parseFloat),[0,4]);assert.equal(large.getPropertyValue('grid-template-rows'),'32px 4px 28px 2px 8px');
+        const area=rule('.tbui3-ribbon-content');assert.deepEqual(area.padding.split(/\s+/).map(parseFloat),[4,4,0]);assert.equal(area.height,'var(--tbui3-command-area-height)');
         const divider=rule('.tbui3-ribbon-group:not(:last-child)::after');assert.equal(divider.height,'89px');assert.equal(parseFloat(divider.top),0);
         const big=rule('.tbui3-ribbon-content .tbui3-ribbon-large .tbui3-ribbon-icon');assert.equal(big.width,'32px');assert.equal(big.height,'32px');assert.equal(big.getPropertyValue('grid-row'),'1');
         const small=rule('.tbui3-ribbon-icon');assert.equal(small.width,'16px');assert.equal(small.height,'16px');assert.equal(small.getPropertyValue('place-items'),'center');
-        const caption=rule('.tbui3-ribbon-content .tbui3-ribbon-large .tbui3-ribbon-label');assert.equal(caption.getPropertyValue('grid-row'),'3');assert.equal(caption.getPropertyValue('justify-self'),'stretch');assert.equal(caption.getPropertyValue('overflow-wrap'),'break-word');
+        const caption=rule('.tbui3-ribbon-content .tbui3-ribbon-large .tbui3-ribbon-label');assert.equal(caption.getPropertyValue('grid-row'),'3');assert.equal(caption.getPropertyValue('justify-self'),'stretch');assert.equal(caption.getPropertyValue('overflow-wrap'),'normal');
         f.adapter.setMode('Classic');assert.equal(native.querySelector('input').value,'10');f.dispose();
     }
 });

@@ -44,5 +44,7 @@
     else if(/Settings|Options|PanelFeatures|KeyboardShortcuts|Language/.test(n)||/ShowSettings|ShowIDEOptions/.test(a))glyph='settings';
     else if(/^tbHelp_|Help/.test(n))glyph='chat_help';
     else if(source.startsWith('addinButton-')||has('Add-ins'))glyph=/Search|Find/i.test(n)?'searchIcon':'puzzle_piece';
-    return {large,glyph:item._ribbonGlyph||glyph,caption:captions[a]};
+    const iconOnly=/^tbFormDesigner_(?:AlignSelectedControls(?:Left|Top|Right|Bottom|CenterHorizontal|CenterVertical)|ResizeSelectedControls(?:Widest|Tallest|Narrowest|Shortest))$/.test(a)||
+        /^menuBar(?:Align(?:Left|Top|Right|Bottom)|Size(?:Widest|Tallest|Narrowest|Shortest))$/.test(source);
+    return {large:large&&!iconOnly,iconOnly,glyph:item._ribbonGlyph||glyph,caption:captions[a]};
 })

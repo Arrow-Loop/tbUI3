@@ -1,5 +1,9 @@
 # Roadmap: tbUI3 IDE
 
+## Current candidate: 1.3.0.5, 2026-11-12
+
+The five recovered Ribbon refinements are implemented. Evidence: ../docs/validation/2026-11-12-ribbon-refinements.md. Next, build/save in twinBASIC and validate short/long labels, font scaling, Grid spacing, all ten icon-only actions, the single Options page, and logo visibility across both WinUI3 themes/titlebar settings. Prior native acceptance, adaptive collapse/keytips and real add-in enablement gates remain open.
+
 ## Single add-in distribution, implemented 2026-11-10
 
 - Consolidation history: version 1.1.0.0 used WinUI3IdeStyle/WinUI3IdeStyle.twinproj and WinUI3IdeStyle.dll. The current 1.3.0.4 candidate uses tbUI3IDE/tbUI3IDE.twinproj and tbUI3IDE.dll. It combines the theme implementation with TabView adapter v8. The old standalone TabViewDesigner target is retired; migration removes its DLL from both architecture folders.

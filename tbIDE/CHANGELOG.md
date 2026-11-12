@@ -1,5 +1,13 @@
 # Changelog: tbIDE (WinUI 3 look for the twinBASIC IDE)
 
+## 2026-11-12, recovered Ribbon requirements (tbUI3IDE 1.3.0.5)
+
+- Large labels are measured in their actual rendered font, choosing the smallest width that fits up to two whole-word lines between 50px and 86px. Cached measurements track font/style changes and clear when fonts finish loading. Overlong captions retain the 86px cap and full tooltip.
+- The Grid toggle-to-options gap matches the 4px group/divider inset. Align left/top/right/bottom/center horizontal/center vertical and widest/tallest/narrowest/shortest are compact icon-only buttons; tooltips, accessible names and native execution/state remain intact. Content buttons fit the existing 24px stacked rows.
+- File has one Options page containing the former Preferences commands and the native IDE Options button. Entering the page keeps File open; executing IDE Options closes File before native dispatch.
+- The original user-supplied PNG is preserved as images/twinBASIC_WinUI3.png and embedded in the generated script. Its 24px quick-access image precedes Save only in WinUI3 Dark/Light when Show real OS titlebar is off, independent of optional styling. Classic/Hybrid remain unchanged.
+- 103 automated checks pass with zero skips against installed native IDE fixtures. Edge fixture validation covers rendered widths, compact commands, matching Grid spacing, Options dispatch and live logo conditions without console/page errors. Packed-source validation and limitations are recorded in ../docs/validation/2026-11-12-ribbon-refinements.md. Native build/rendered acceptance remains pending.
+
 ## 2026-11-11, compact glyph canvases and theme reconciliation (tbUI3IDE 1.3.0.4)
 
 - Corrected large-button horizontal alignment by replacing the inherited left-justified grid with a stretched single column. Large buttons now size to minimum content between 50px and 86px rather than starting from maximum content. Labels wrap at word boundaries with a bounded long-word fallback. Paste, Grid and all other large commands share this layout in Hybrid and Ribbon.

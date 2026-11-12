@@ -66,7 +66,7 @@
 .tbui3-ribbon-icon[hidden] { display: none; }
 .tbui3-ribbon-content .tbui3-ribbon-large .tbui3-ribbon-icon { grid-row: 1; width: 32px; height: 32px; font-size: 28px; line-height: 32px; background-size: 28px 28px; mask-size: 28px 28px; -webkit-mask-size: 28px 28px; }
 .tbui3-ribbon-icon.codicon::before { line-height: inherit; text-align: center; }
-.tbui3-ribbon-content .tbui3-ribbon-large .tbui3-ribbon-label { grid-row: 3; justify-self: stretch; text-align: center; min-width: 0; max-width: none; max-height: 28px; line-height: 14px; white-space: normal; overflow: hidden; overflow-wrap: break-word; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; }
+.tbui3-ribbon-content .tbui3-ribbon-large .tbui3-ribbon-label { grid-row: 3; justify-self: stretch; text-align: center; min-width: 0; max-width: none; max-height: 28px; line-height: 14px; white-space: normal; overflow: hidden; overflow-wrap: normal; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; }
 /* A real Fluent mask, not a font character; placement follows button size. */
 .tbui3-toolbar-owned .tbui3-ribbon-command > .tbui3-ribbon-chevron { width: 12px; height: 12px; margin-left: auto; align-self: center; }
 .tbui3-ribbon-content .tbui3-ribbon-large > .tbui3-ribbon-chevron { grid-row: 5; width: 12px; height: 8px; margin: 0; mask-size: contain; -webkit-mask-size: contain; justify-self: center; align-self: center; }
@@ -78,6 +78,8 @@
 .tbui3-ribbon-select option, .tbui3-toolbar-select option { background: var(--themeDialogGeneralBackColor); color: var(--themeDialogGeneralForeColor); }
 .tbui3-ribbon-content .menuBarGridOptionsInner { display: grid; grid-auto-flow: column; grid-template-rows: repeat(3, 24px); grid-template-columns: repeat(2, max-content); gap: 2px 12px; font-size: 11px; color: var(--tbui3-toolbar-fg); }
 .tbui3-ribbon-grid { grid-row: span 3; border: 0; padding: 0; margin: 0; min-width: 0; }
+/* The 2px group-body gap plus this margin matches the 4px divider inset. */
+.tbui3-ribbon-grid-toggle-present { margin-left: 2px; }
 .tbui3-ribbon-grid-toggle-present .menuBarGridOptionRow:has(.optionGridShow) { display: none; }
 .tbui3-ribbon-grid:disabled { opacity: .45; }
 .tbui3-ribbon-content .menuBarGridOptionRow { display: flex; gap: 6px; align-items: center; justify-content: space-between; color: inherit; }
@@ -93,7 +95,10 @@
 .tbui3-quick { color: var(--themeMenuForeColor, var(--tbui3-toolbar-fg)); display: flex; flex: 0 1 auto; gap: 2px; align-items: center; min-width: 0; overflow-x: auto; -webkit-app-region: no-drag; }
 .tbui3-quick[hidden] { display: none; }
 .tbui3-quick-real-titlebar { min-height: 32px; }
+.tbui3-quick-logo { width: 24px; height: 24px; object-fit: contain; flex: 0 0 24px; margin-right: 2px; }
+.tbui3-quick-logo[hidden] { display: none; }
 .tbui3-ribbon-compact { height: 28px; min-height: 28px; min-width: 30px; width: 30px; padding: 4px; }
+.tbui3-ribbon-content .tbui3-ribbon-compact { height: 24px; min-height: 24px; max-height: 24px; }
 .tbui3-ribbon-compact .tbui3-ribbon-icon { width: 16px; height: 16px; font-size: 16px; line-height: 16px; }
 .tbui3-ribbon-compact .tbui3-ribbon-label { display: none; }
 /* Backstage hides the live designer as well as covering it: designer layers can

@@ -26,7 +26,7 @@
         if(m==='rootMenuAddins'){addFile('Add-ins',i);continue;}
         if(m==='rootMenuHelp'){addFile('Help',i);continue;}
         if(a==='tbIde_ShowIDEOptions'){addFile('Options',i);continue;}
-        if(token(i,'MenuCaptionWindowLanguage')||token(i,'MenuCaptionWindowKeyboardShortcuts')){addFile('Preferences',i);continue;}
+        if(token(i,'MenuCaptionWindowLanguage')||token(i,'MenuCaptionWindowKeyboardShortcuts')){addFile('Options',i);continue;}
         if(quick(a)){suppressed.push(i);continue;}
         if(/_Clipboard(?:Cut|Copy|Paste|PasteAsComment)$/.test(a)){add('Home','Clipboard',i);continue;}
         if(/_SelectAll(?:Controls|Matches)?$|_Delete(?:Right|SelectedControls)$|_Find(?:Replace)?$/.test(a)||

@@ -1,5 +1,9 @@
 # Roadmap: tbUI3 IDE
 
+## Current candidate: 1.3.0.11, compact Form and Grid split
+
+Native gate: rebuild/reload; verify Grid's main toggle versus options arrow, option values/events and flyout cleanup, no duplicate Show Grid option, labels/tooltips, full-width card/inset chevron, compact vertical centering and Quick Access's 16px left padding. Repeat shared controls in Hybrid and switch to Classic to verify restoration. 119 tests/71 mirrors and Edge fixtures pass; native acceptance remains pending. Evidence: ../docs/validation/2026-11-12-grid-split-compact.md. Previous adaptive overflow/keytip and TabView gates remain open.
+
 ## Current candidate: 1.3.0.10, Full/Simplified Ribbon
 
 Native follow-up: toggle the bottom-right chevron and Ctrl+F1 between full and compact Ribbon, check every tab and dropdown, edit Grid values, use contextual MultiPage and native selectors, resize horizontally and restart to confirm the saved choice. Hybrid keeps its current structure. Source/browser validation: ../docs/validation/2026-11-12-simplified-ribbon.md (116 tests, 71 mirrors, Edge at 1280px/640px). Simplified uses horizontal scrolling with all commands retained; automatic group overflow menus/adaptive collapse and keytips remain open.

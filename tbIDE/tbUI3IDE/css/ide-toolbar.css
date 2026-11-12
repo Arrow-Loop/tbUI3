@@ -79,22 +79,25 @@
 .tbui3-ribbon-selector select, .tbui3-ribbon-select, .tbui3-toolbar-select { min-height: 32px; max-width: 200px; background: var(--themeDialogGeneralBackColor); color: var(--themeDialogGeneralForeColor); border: var(--themeToolbarDropDownBorder); border-radius: 4px; font: inherit; padding: 3px 8px; }
 .tbui3-ribbon-content .tbui3-ribbon-select { grid-row: span 2; align-self: start; }
 .tbui3-ribbon-select option, .tbui3-toolbar-select option { background: var(--themeDialogGeneralBackColor); color: var(--themeDialogGeneralForeColor); }
-.tbui3-ribbon-content .menuBarGridOptionsInner { display: grid; grid-auto-flow: column; grid-template-rows: repeat(3, 24px); grid-template-columns: repeat(2, max-content); gap: 2px 12px; font-size: 11px; color: var(--tbui3-toolbar-fg); }
+.tbui3-ribbon-grid .menuBarGridOptionsInner { display: grid; grid-auto-flow: row; grid-template-columns: minmax(200px, 1fr); gap: 6px; font-size: 12px; color: var(--tbui3-toolbar-fg); }
 .tbui3-ribbon-grid { grid-row: span 3; border: 0; padding: 0; margin: 0; min-width: 0; }
-/* The 2px group-body gap plus this margin matches the 4px divider inset. */
-.tbui3-ribbon-grid-toggle-present { margin-left: 2px; }
-.tbui3-ribbon-grid-toggle-present .menuBarGridOptionRow:has(.optionGridShow) { display: none; }
 .tbui3-ribbon-grid:disabled { opacity: .45; }
-.tbui3-ribbon-content .menuBarGridOptionRow { display: flex; gap: 6px; align-items: center; justify-content: space-between; color: inherit; }
-.tbui3-ribbon-content .menuBarGridOption, .tbui3-ribbon-content .menuBarGridValue { color: inherit; width: auto; min-width: 0; flex: 0 0 auto; }
-.tbui3-ribbon-content .menuBarGridOptionRow input { color-scheme: inherit; accent-color: var(--tbui3-accent); }
+.tbui3-ribbon-grid .menuBarGridOptionRow { display: flex; gap: 12px; min-height: 26px; align-items: center; justify-content: space-between; color: inherit; }
+.tbui3-ribbon-grid .menuBarGridOption, .tbui3-ribbon-grid .menuBarGridValue { color: inherit; width: auto; min-width: 0; flex: 0 0 auto; }
+.tbui3-ribbon-grid .menuBarGridOptionRow input { color-scheme: inherit; accent-color: var(--tbui3-accent); }
 /* BETA 1044 formDesigner.css hard-codes white !important on the original
    optionGridWidth/Height classes. This single scoped background exception
    retains those native nodes/classes and handlers. State rules vary its token. */
-.tbui3-ribbon-content .menuBarGridOptionRow input[type='number'] { --tbui3-grid-fill: var(--color-control, var(--themeDialogGeneralBackColor, var(--tbui3-toolbar-bg))); box-sizing: border-box; width: 48px; min-height: 22px; padding: 0 4px; border-radius: 4px; font: inherit; color: var(--tbui3-toolbar-fg); background: var(--tbui3-grid-fill) !important; border: var(--tbui3-toolbar-line); }
-.tbui3-ribbon-content .menuBarGridOptionRow input[type='number']:hover { --tbui3-grid-fill: var(--color-control-hover, var(--themeDialogGeneralBackColor, var(--tbui3-toolbar-bg))); }
-.tbui3-ribbon-content .menuBarGridOptionRow input[type='number']:focus { --tbui3-grid-fill: var(--color-input-active, var(--themeDialogGeneralBackColor, var(--tbui3-toolbar-bg))); }
-.tbui3-quick { color: var(--themeMenuForeColor, var(--tbui3-toolbar-fg)); display: flex; flex: 0 1 auto; gap: 2px; align-items: center; min-width: 0; overflow-x: auto; -webkit-app-region: no-drag; }
+.tbui3-ribbon-grid .menuBarGridOptionRow input[type='number'] { --tbui3-grid-fill: var(--color-control, var(--themeDialogGeneralBackColor, var(--tbui3-toolbar-bg))); box-sizing: border-box; width: 48px; min-height: 22px; padding: 0 4px; border-radius: 4px; font: inherit; color: var(--tbui3-toolbar-fg); background: var(--tbui3-grid-fill) !important; border: var(--tbui3-toolbar-line); }
+.tbui3-ribbon-grid .menuBarGridOptionRow input[type='number']:hover { --tbui3-grid-fill: var(--color-control-hover, var(--themeDialogGeneralBackColor, var(--tbui3-toolbar-bg))); }
+.tbui3-ribbon-grid .menuBarGridOptionRow input[type='number']:focus { --tbui3-grid-fill: var(--color-input-active, var(--themeDialogGeneralBackColor, var(--tbui3-toolbar-bg))); }
+.tbui3-ribbon-grid-toggle-present .menuBarGridOptionRow:has(.optionGridShow) { display: none; }
+.tbui3-grid-split { display: flex; grid-row: span 3; align-items: stretch; align-self: start; height: 24px; border-radius: 4px; }
+.tbui3-grid-options-store[hidden] { display: none; }
+.tbui3-ribbon-content .tbui3-grid-dropdown { width: 18px; min-width: 18px; max-width: 18px; padding: 2px; border-left: var(--tbui3-toolbar-line); }
+.tbui3-grid-dropdown .tbui3-ribbon-icon { width: 12px; height: 12px; }
+.tbui3-grid-flyout { padding: 10px; }
+.tbui3-quick { color: var(--themeMenuForeColor, var(--tbui3-toolbar-fg)); display: flex; flex: 0 1 auto; gap: 2px; align-items: center; min-width: 0; padding-left: 16px; overflow-x: auto; -webkit-app-region: no-drag; }
 .tbui3-quick[hidden] { display: none; }
 .tbui3-quick-real-titlebar { min-height: 32px; }
 .tbui3-quick-logo { width: 15px; height: 16px; object-fit: contain; flex: 0 0 15px; margin-right: 2px; }
@@ -134,12 +137,12 @@
 
 /* Full/Simplified is a presentation of Ribbon, independent of the three modes.
    The fixed corner button remains reachable while a long command row scrolls. */
-.tbui3-ribbon-has-toggle .tbui3-ribbon-content { margin-right: 30px; }
+.tbui3-ribbon-has-toggle .tbui3-ribbon-content { padding-right: 32px; }
 .tbui3-ribbon-toggle { position: absolute; right: 3px; bottom: 4px; display: grid; place-items: center; width: 24px; height: 22px; padding: 3px; border: 0; border-radius: 4px; background: var(--tbui3-toolbar-bg); color: var(--tbui3-toolbar-fg); cursor: default; }
 .tbui3-ribbon-toggle:hover { background: var(--tbui3-toolbar-hover); }
 .tbui3-ribbon-toggle[aria-pressed='true'] .tbui3-ribbon-icon { transform: rotate(180deg); }
 .tbui3-ribbon-simplified { --tbui3-command-area-height: 48px; }
-.tbui3-ribbon-simplified .tbui3-ribbon-content { padding: 4px 4px 0; align-items: start; }
+.tbui3-ribbon-simplified .tbui3-ribbon-content { padding: 0 32px 0 4px; align-items: center; }
 .tbui3-ribbon-simplified .tbui3-ribbon-group { flex-direction: row; align-items: center; height: 32px; padding: 0 4px; }
 .tbui3-ribbon-simplified .tbui3-ribbon-group:not(:last-child)::after { top: 2px; height: 28px; }
 .tbui3-ribbon-simplified .tbui3-ribbon-group-body { display: flex; align-items: center; flex: 0 0 auto; height: 32px; gap: 2px; }
@@ -152,7 +155,7 @@
 .tbui3-ribbon-simplified .tbui3-ribbon-content .tbui3-ribbon-chevron { width: 12px; height: 12px; margin-left: 2px; align-self: center; }
 .tbui3-ribbon-simplified .tbui3-ribbon-selector { flex-direction: row; align-items: center; padding: 0 4px; }
 .tbui3-ribbon-simplified .tbui3-ribbon-selector select, .tbui3-ribbon-simplified .tbui3-ribbon-select { min-height: 28px; height: 28px; }
-.tbui3-ribbon-simplified .tbui3-ribbon-grid { flex: 0 0 auto; }
-.tbui3-ribbon-simplified .menuBarGridOptionsInner { display: flex; align-items: center; gap: 12px; height: 32px; }
-.tbui3-ribbon-simplified .menuBarGridOptionRow { white-space: nowrap; }
+.tbui3-ribbon-simplified .tbui3-grid-split { height: 32px; align-self: center; }
+.tbui3-ribbon-simplified .tbui3-ribbon-content .tbui3-grid-dropdown { width: 18px; min-width: 18px; max-width: 18px; padding: 2px; }
+.tbui3-ribbon-simplified .tbui3-grid-dropdown .tbui3-ribbon-icon { width: 12px; height: 12px; }
 .tbui3-ribbon-simplified .tbui3-ribbon-group-divider { height: 24px; align-self: center; }

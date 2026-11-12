@@ -4,6 +4,13 @@ All notable changes to tbUI3. Dates are when the change was made, not released. 
 
 ## Unreleased
 
+### 2026-11-12 — Compact Form/Grid refinements (tbUI3IDE 1.3.0.11)
+
+- Moved the Ribbon chevron inside the existing card instead of reserving an external strip. Vertically centered the 32px simplified command row within its 48px area. Added 16px left padding to Quick Access.
+- Made Center in Container, Lock Controls, Preview, Grid, Page Left/Right, TabView Refresh/Diagnostics, and Insert Folder/Other file/Import icon-only. Original help, accessible names, native actions and state remain intact; New Page/Delete Page retain captions.
+- Grid now combines the native toggle and a separate options arrow. The arrow opens the original native controls in a flyout; edits and handlers survive closing, layout/tab changes and Classic restoration. Routine menu polling defers rebuilding during Grid edits.
+- 119 tests, 71 project mirrors and Edge checks pass. The tested Form layout fits at 1920px, with an inset chevron, centered compact controls and no horizontal overflow. Native build/reload acceptance remains pending. Evidence: docs/validation/2026-11-12-grid-split-compact.md.
+
 ### 2026-11-12 — Full/Simplified Ribbon toggle (tbUI3IDE 1.3.0.10)
 
 - Added a fixed bottom-right down chevron in Ribbon mode. Clicking switches to a 48px single-row Simplified Ribbon and an up chevron; clicking again restores the 100px full command area. Tabs, commands, native controls, state, tooltips and the selected tab are retained.

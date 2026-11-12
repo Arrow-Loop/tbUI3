@@ -1,5 +1,13 @@
 # Changelog: tbIDE (WinUI 3 look for the twinBASIC IDE)
 
+## 2026-11-12, compact controls and Grid toggle/flyout (tbUI3IDE 1.3.0.11)
+
+- The presentation chevron now overlays the bottom-right inside the full-width card; end padding keeps commands clear without an external strip. Simplified commands are vertically centered. Quick Access has 16px left padding.
+- Removed only the requested labels: both Center in Container actions, Lock Controls, Preview, Grid, the last four MultiPage actions, and Insert Folder/Other file/Import. Native tooltips/accessible names, glyphs, state and dispatch remain. The changes use shared metadata in both replacement layouts.
+- Grid is a two-part toggle/flyout composition: the main action keeps native toggling/pressed state; the arrow opens a top-layer Grid options dialog with the original inputs and handlers. Show Grid's duplicate row remains hidden. Options are stored hidden between openings and restored to the native container on tab/mode/unload cleanup. Escape returns focus; outside click, blur, style change and disabled context close correctly. Menu-state refresh defers layout rebuilding during Grid edits.
+- Shared Grid field styles now follow the fieldset into the flyout, retaining the existing native forced-white background exception. No new package/control/native API dependency is introduced.
+- 119 tests and 71 mirrors pass. Edge uses actual BETA 1044 Grid markup/relevant CSS and verifies independent toggle/arrow actions, native change events, stable polling/editing, five option rows, theme fill, original values, compact label visibility/centering, inset chevron, 16px Quick Access padding and 1920px Form fit. Native rebuild/reload acceptance remains pending. Evidence: ../docs/validation/2026-11-12-grid-split-compact.md.
+
 ## 2026-11-12, Full/Simplified Ribbon (tbUI3IDE 1.3.0.10)
 
 - Added the bottom-right down chevron in Ribbon mode, switching to an up chevron and a compact single-row layout on click. The same live command/control nodes and selected tab are retained; switching back restores full measured button widths. The command area is 100px full / 48px simplified, with the existing separate 26px tab strip.

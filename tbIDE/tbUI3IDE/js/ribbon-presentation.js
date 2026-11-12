@@ -98,8 +98,10 @@
     const sourceCaptions={restartIcon:'Restart Compiler','addinButton-tbUI3TabNew':'New Page','addinButton-tbUI3TabDelete':'Delete Page',
         'addinButton-tbUI3TabLeft':'Page Left','addinButton-tbUI3TabRight':'Page Right','addinButton-tbUI3TabRefresh':'TabView Refresh','addinButton-tbUI3TabDiagnostics':'TabView Diagnostics'};
     Object.assign(captions,{tbCompiler_Restart:'Restart Compiler',tbCompiler_RestartAndFlushLlvmCache:'Flush LLVM Cache',tbEditor_Save:'Save Document',tbIde_ShowIDEOptions:'IDE Options'});
-    const iconOnly=/^tbFormDesigner_(?:AlignSelectedControls(?:Left|Top|Right|Bottom|CenterHorizontal|CenterVertical)|ResizeSelectedControls(?:Widest|Tallest|Narrowest|Shortest))$/.test(a)||
-        /^menuBar(?:Align(?:Left|Top|Right|Bottom)|Size(?:Widest|Tallest|Narrowest|Shortest))$/.test(source);
+    const iconOnly=/^tbFormDesigner_(?:AlignSelectedControls(?:Left|Top|Right|Bottom|CenterHorizontal|CenterVertical)|ResizeSelectedControls(?:Widest|Tallest|Narrowest|Shortest)|CenterSelectedGroupInContainer(?:Horizontal|Vertical)|ToggleLock(?:Selected|All)Controls)$/.test(a)||
+        /^menuBar(?:Align(?:Left|Top|Right|Bottom)|Size(?:Widest|Tallest|Narrowest|Shortest)|Preview|Grid)$/.test(source)||
+        ['tbFileSystem_AddFolder','tbFileSystem_AddOtherFile','tbFileSystem_ImportFile'].includes(a)||
+        /^addinButton-tbUI3Tab(?:Left|Right|Refresh|Diagnostics)$/.test(source);
     const renamed=n==='Restart the compiler'?'Restart Compiler':n==='Flush the LLVM compiler cache'?'Flush LLVM Cache':undefined;
     return {large:(large||a==='tbEditor_Save')&&!iconOnly,iconOnly,icon,glyph:item._ribbonGlyph||glyph,caption:sourceCaptions[source]||captions[a]||renamed};
 })

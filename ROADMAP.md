@@ -4,7 +4,9 @@ Committed work is listed first. Exploratory ideas are marked as such.
 
 Every development pass ends with a commit and a verified push to `origin/tbui3-dev`, per Shane's standing instruction of 2026-11-12. Main and PR decisions remain Shane's.
 
-## Current add-in follow-up: 1.3.0.10
+## Current add-in follow-up: 1.3.0.11
+
+- Grid toggle/options split, requested icon-only commands, inset chevron, vertical centering and Quick Access left padding are implemented. Rebuild/reload and confirm native Grid toggle, options values/events, flyout dismissal, Form width, compact centering and 16px Quick Access padding. Native acceptance remains open; source/browser evidence: docs/validation/2026-11-12-grid-split-compact.md (119 tests, 71 mirrors).
 
 - Full/Simplified Ribbon toggle is implemented. Rebuild/reload and verify the down/up corner chevron, all tabs/commands, compact dropdowns/Grid controls, narrow-window scrolling, Ctrl+F1 and the independently saved choice across IDE restart. Native persistence/rendered acceptance remains open; source/browser evidence is in docs/validation/2026-11-12-simplified-ribbon.md (116 checks and 71 mirrors pass).
 - Simplified Ribbon uses one horizontally scrollable command row. Automatic group overflow menus/adaptive collapse and keytips remain separate future work; no commands are removed to fit the row.

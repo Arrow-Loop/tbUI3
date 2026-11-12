@@ -1,6 +1,8 @@
 # Ribbon command organization
 
-Current implementation: tbUI3IDE 1.3.0.10, 2026-11-12.
+Current implementation: tbUI3IDE 1.3.0.11, 2026-11-12.
+
+Grid is icon-only with a native toggle action and separate options-flyout arrow; all other Grid settings are inside the flyout. Center in Container, Lock Controls, Preview, the last four MultiPage buttons and Insert Folder/Other file/Import are also icon-only, retaining help and accessible names. The presentation chevron is inside the full-width card and simplified controls are vertically centered. Quick Access has 16px left padding.
 
 Ribbon's bottom-right chevron switches between the existing full layout and a single-row Simplified Ribbon. The same tab list, groups and command/control nodes remain; simplified shows 20px icons and single-line captions in a 48px command area. Long rows scroll horizontally without dropping options. The choice is saved independently; Hybrid retains native menus and its current structure. This is distinct from the Classic toolbar mode and does not add a fourth entry to IDE Toolbar.
 

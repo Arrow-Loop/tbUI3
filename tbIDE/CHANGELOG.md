@@ -3,7 +3,7 @@
 ## 2026-11-12, Hybrid parity audit (no binary/version change)
 
 - Shared renderer/CSS already supplies Hybrid's label measurement/font refresh, Grid spacing, compact alignment/size source buttons and inline MultiPage section. Added explicit Hybrid width/font regression and both-mode native compact-command dispatch/state coverage. All 105 tests pass without skips.
-- Hybrid retains native menus and does not create a quick-access toolbar or Backstage. A question is pending with Shane about adding quick access/logo to Hybrid or retaining that structure. No assumption was made that Hybrid should acquire Ribbon Backstage.
+- Shane confirmed Hybrid should retain its current native-menu structure without quick access or Backstage. The logo and Backstage-specific Options organization remain Ribbon-only.
 
 ## 2026-11-12, native theme-name logo fix (tbUI3IDE 1.3.0.7)
 

@@ -2,7 +2,7 @@
 
 ## Hybrid parity audit, 2026-11-12
 
-105 checks pass with explicit Hybrid width/font and compact native-command coverage; shared Grid and inline MultiPage checks already cover both layouts. Await Shane's quick-access/logo preference for Hybrid. Current Hybrid retains native menus and has neither quick access nor Backstage. This audit changes tests/docs only; current binary candidate remains 1.3.0.7.
+105 checks pass with explicit Hybrid width/font and compact native-command coverage; shared Grid and inline MultiPage checks already cover both layouts. Shane confirmed Hybrid keeps its current native-menu structure, without quick access or Backstage. The logo and Backstage-specific Options organization remain Ribbon-only. This audit changes tests/docs only; current binary candidate remains 1.3.0.7.
 
 ## Current candidate: 1.3.0.7, quick-access logo fix
 

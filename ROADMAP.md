@@ -6,7 +6,7 @@ Every development pass ends with a commit and a verified push to `origin/tbui3-d
 
 ## Current add-in follow-up: 1.3.0.7
 
-- Hybrid audit: shared width/font, Grid, compact native commands and inline MultiPage fixes are covered. 105 tests pass. Await Shane's preference on adding quick access (including the logo) to Hybrid versus retaining its current native-menu layout. File > Options consolidation belongs to Ribbon Backstage; Hybrid retains native menus. Audit changes tests/docs only, with no version bump.
+- Hybrid audit: shared width/font, Grid, compact native commands and inline MultiPage fixes are covered. 105 tests pass. Shane confirmed Hybrid should retain its current native-menu layout without quick access or Backstage. The logo and File > Options consolidation remain Ribbon-specific. Audit changes tests/docs only, with no version bump.
 
 - Logo theme-name normalization fixes the lowercase result returned by twinBASIC. Rebuild/reload the 1.3.0.7 add-in and confirm the PNG appears before Save on WinUI3 Dark/Light with Show real OS titlebar disabled. Native compiled-host confirmation remains open; actual-function and browser-fixture checks pass.
 

@@ -2,7 +2,7 @@
 
 ## Hybrid audit, 2026-11-12 (current add-in remains 1.3.0.7)
 
-Shane asked that Hybrid receive the Ribbon fixes too. Audit confirms shared label sizing/font refresh, Grid geometry, compact alignment/size buttons and inline MultiPage code already serves both. Added explicit Hybrid width/font and both-mode native command-state/dispatch coverage; 105 tests pass without skips. Hybrid has no quick-access toolbar and keeps native menus, so the logo and File Backstage changes do not apply automatically. An async question asks whether to add quick access including the logo or preserve Hybrid's current structure. Await that preference before changing Hybrid's architecture. This pass changes tests/docs only; no version bump or native build is needed.
+Shane asked that Hybrid receive the Ribbon fixes too. Audit confirms shared label sizing/font refresh, Grid geometry, compact alignment/size buttons and inline MultiPage code already serves both. Added explicit Hybrid width/font and both-mode native command-state/dispatch coverage; 105 tests pass without skips. Shane explicitly chose to keep Hybrid's current structure: native menus without quick access or File Backstage. The logo and Backstage-specific Options consolidation remain Ribbon-only. This pass changes tests/docs only; no version bump or native build is needed.
 
 ## Current implementation, 2026-11-12: tbUI3IDE 1.3.0.7
 

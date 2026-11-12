@@ -43,10 +43,20 @@ test('one Options page contains IDE Options, language and keyboard shortcuts',()
 
 test('original logo precedes Save only for the two WinUI3 themes with the real titlebar disabled',()=>{
     const f=fixture();let theme='WinUI3 Dark',real=false;f.api.themeName=()=>theme;f.api.realTitlebar=()=>real;f.api.brandImage='data:image/png;base64,AA==';f.adapter.setMode('Ribbon');
-    for(const [name,titlebar,shown]of [['WinUI3 Dark',false,true],['WinUI3 Light',false,true],['Dark',false,false],['WinUI3 Custom',false,false],['WinUI3 Dark',true,false],['WinUI3 Light',false,true]]){
+    for(const [name,titlebar,shown]of [['WinUI3 Dark',false,true],['WinUI3 Light',false,true],['winui3 dark',false,true],['winui3 light',false,true],['WINUI3 DARK',false,true],['Dark',false,false],['WinUI3 Custom',false,false],['WinUI3 Dark',true,false],['WinUI3 Light',false,true]]){
         theme=name;real=titlebar;f.adapter.tick();const logo=f.d.querySelector('.tbui3-quick-logo');assert.equal(!logo.hidden,shown);assert.equal(logo.nextElementSibling.dataset.source,'saveIcon');assert.equal(f.d.querySelectorAll('.tbui3-quick-logo').length,1);
     }
     f.adapter.setMode('Hybrid');assert(!f.d.querySelector('.tbui3-quick-logo'));f.adapter.setMode('Classic');assert(!f.d.querySelector('.tbui3-quick-logo'));f.dispose();
+});
+test('logo accepts the lowercase names returned by the actual installed IDE getThemeName function',t=>{
+    if(!process.env.TB_IDE_MAIN_JS)return t.skip('Set TB_IDE_MAIN_JS for native theme-name contract');
+    const f=fixture(),native={activeThemeInfo:{name:'WinUI3 Dark'},liveIDEOptions:{colorTheme:'WinUI3 Dark'}};
+    f.api.themeName=nativeFunction('getThemeName',native);f.api.brandImage='data:image/png;base64,AA==';let real=false;f.api.realTitlebar=()=>real;f.adapter.setMode('Ribbon');
+    for(const [name,visible]of [['WinUI3 Dark',true],['WinUI3 Light',true],['Dark',false],['Light',false],['WinUI3 Custom',false]]){
+        native.activeThemeInfo.name=name;f.adapter.tick();assert.equal(f.api.themeName(),name.toLowerCase());assert.equal(!f.d.querySelector('.tbui3-quick-logo').hidden,visible);
+    }
+    native.activeThemeInfo.name='WinUI3 Dark';real=true;f.adapter.tick();assert(f.d.querySelector('.tbui3-quick-logo').hidden);
+    f.dispose();
 });
 function fixture() {
     const dom=new JSDOM(`<div id='root'><div id='rootMenu1'><div id='rootMenu1Inner'></div><div id='rootMenuClose'>Close</div></div><div id='rootTop'><input id='editor'></div><div id='rootMenu2'></div></div>
@@ -170,7 +180,7 @@ test('toolbar styling owns no theme-name gate or hard-coded color palette; only 
     const paletteCss=css.replace(/--tbui3-toolbar-shadow:[^;]+;|--tbui3-subtle-(?:hover|pressed):[^;]+;/g,'');
     assert(!/#[0-9a-f]{3,8}\b|rgba?\(/i.test(paletteCss));assert(css.includes('--themeMenuBackColor'));assert(css.includes('--themeDialogGeneralForeColor'));
     assert(!/ThemePrefix|__winui3IdeStyle/.test(source));
-    assert(source.includes("['WinUI3 Dark','WinUI3 Light'].includes(api.themeName?.())"));
+    assert(source.includes("['winui3 dark','winui3 light'].includes(themeName)"));
     const main=fs.readFileSync('tbIDE/tbUI3IDE/src/Sources/MainModule.twin','utf8');assert(main.includes("return 'toolbar:'+t.requestedMode"));
 });
 test('the empty 30px native dock slot collapses and returns intact in Classic',()=>{

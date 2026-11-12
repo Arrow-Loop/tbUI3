@@ -1,5 +1,15 @@
 # Ribbon refinements, 2026-11-12
 
+## Follow-up: native logo fix, 1.3.0.7
+
+Shane reported the logo missing in the real IDE. Inspection of the installed main.js shows getThemeName() returns activeThemeInfo.name.toLowerCase(). The original title-case comparison therefore rejected both WinUI3 themes. The original fixture's title-case mock hid this mismatch.
+
+The renderer now converts the supplied name to a trimmed lowercase string and checks only winui3 dark/light, retaining the real-OS-titlebar exclusion. A new regression executes the extracted installed getThemeName() for both WinUI3 themes and unrelated themes and checks the titlebar override. Mock coverage additionally exercises mixed/lowercase names.
+
+Results: 104 tests passed, zero failures/skips; all 71 source/project mirrors match. The external Edge fixture now uses the actual native function and verifies its lowercase result, a visible image with naturalWidth greater than zero, theme/titlebar transitions and retained MultiPage/Options interactions without page/console errors. Native rebuild/reload confirmation remains pending. Generated script/Settings are patched into the canonical add-in project; no control or pointer-width-sensitive code changed.
+
+## Original 1.3.0.5 pass
+
 Candidate: tbUI3IDE 1.3.0.5. Reconstructed from Shane's five requested changes and screenshots of prior progress; the original uncommitted patch was not recovered.
 
 ## Behavior

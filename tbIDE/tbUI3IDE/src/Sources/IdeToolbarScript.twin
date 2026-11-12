@@ -1055,7 +1055,9 @@ Private Module IdeToolbarScript
         js = js & vbLf
         js = js & "        quick.classList.toggle('tbui3-quick-real-titlebar',!!api.realTitlebar());"
         js = js & vbLf
-        js = js & "        const showLogo=!api.realTitlebar()&&['WinUI3 Dark','WinUI3 Light'].includes(api.themeName?.())&&!!api.brandImage;"
+        js = js & "        const themeName=String(api.themeName?.()||'').trim().toLowerCase();"
+        js = js & vbLf
+        js = js & "        const showLogo=!api.realTitlebar()&&['winui3 dark','winui3 light'].includes(themeName)&&!!api.brandImage;"
         js = js & vbLf
         js = js & "        let logo=quick.querySelector('.tbui3-quick-logo');"
         js = js & vbLf

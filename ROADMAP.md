@@ -4,7 +4,9 @@ Committed work is listed first. Exploratory ideas are marked as such.
 
 Every development pass ends with a commit and a verified push to `origin/tbui3-dev`, per Shane's standing instruction of 2026-11-12. Main and PR decisions remain Shane's.
 
-## Current add-in follow-up: 1.3.0.6
+## Current add-in follow-up: 1.3.0.7
+
+- Logo theme-name normalization fixes the lowercase result returned by twinBASIC. Rebuild/reload the 1.3.0.7 add-in and confirm the PNG appears before Save on WinUI3 Dark/Light with Show real OS titlebar disabled. Native compiled-host confirmation remains open; actual-function and browser-fixture checks pass.
 
 - MultiPage commands now appear directly after Grid in Ribbon and Hybrid when a host/page/child is selected. Native acceptance: select/deselect a MultiPage control, run the six commands, and confirm Grid and the rest of Form remain available. Source/browser evidence: docs/validation/2026-11-12-inline-multipage.md.
 

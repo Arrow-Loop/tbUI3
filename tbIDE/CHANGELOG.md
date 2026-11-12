@@ -1,5 +1,11 @@
 # Changelog: tbIDE (WinUI 3 look for the twinBASIC IDE)
 
+## 2026-11-12, native theme-name logo fix (tbUI3IDE 1.3.0.7)
+
+- Fixed the native host mismatch: getThemeName() returns lowercase names, so comparing it against WinUI3 Dark/Light hid the quick-access image. Normalize the value before comparing; accept only the same two themes and keep the real-OS-titlebar exclusion.
+- Added an actual installed getThemeName() regression and mixed/lowercase coverage. Updated the external Edge fixture to use that actual function rather than its former title-case mock; verified a visible, decoded original PNG, theme/titlebar transitions and the existing inline MultiPage/Options flows without page/console errors.
+- 104 automated checks pass without skips and 71 exact mirrors match. Native rebuild/reload acceptance remains pending. Follow-up evidence is appended to ../docs/validation/2026-11-12-ribbon-refinements.md.
+
 ## 2026-11-12, inline contextual MultiPage (tbUI3IDE 1.3.0.6)
 
 - Ribbon and Hybrid now insert a regular MultiPage command group immediately after Grid on the Form tab. Removed the nested launcher and its unused styling; clicking a page command no longer replaces the Form command area.

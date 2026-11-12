@@ -1,5 +1,9 @@
 # Roadmap: tbUI3 IDE
 
+## Current candidate: 1.3.0.7, quick-access logo fix
+
+The logo gate now normalizes the lowercase name from twinBASIC's actual getThemeName(). Native follow-up: rebuild/reload and verify the logo in WinUI3 Dark/Light with real OS titlebar off, then verify it hides with a standard theme or real titlebar on. 104 checks and 71 mirrors pass; actual-function Edge fixture validation passes. Prior MultiPage/native acceptance gates remain open.
+
 ## Current candidate: 1.3.0.6, inline MultiPage
 
 MultiPage is a contextual command group immediately after Grid in both Form layouts. Validate host/page/child selection, deselection, six command states/actions and continued access to the rest of Form in the compiled IDE. Automated/browser-fixture evidence: ../docs/validation/2026-11-12-inline-multipage.md. Existing adaptive Ribbon and TabView gates remain open.

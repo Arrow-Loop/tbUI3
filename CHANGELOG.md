@@ -4,6 +4,11 @@ All notable changes to tbUI3. Dates are when the change was made, not released. 
 
 ## Unreleased
 
+### 2026-11-12 — Quick-access logo theme-name fix (tbUI3IDE 1.3.0.7)
+
+- Fixed the hidden logo in the real IDE: its getThemeName() returns lowercase names, while the initial comparison expected title case. Normalize the name before checking the two WinUI3 themes. The original titlebar/theme restrictions remain intact.
+- 104 automated checks pass without skips, including the actual installed getThemeName() contract; 71 project mirrors match. Edge verifies the original embedded PNG loads visibly with the native lowercase name and follows theme/titlebar changes. Native rebuilt-host acceptance remains pending.
+
 ### 2026-11-12 — Inline MultiPage commands (tbUI3IDE 1.3.0.6)
 
 - Replaced the Form tab's nested MultiPage launcher with an inline MultiPage section immediately to the right of Grid in both Ribbon and Hybrid layouts. Existing host/page/child selection detection, native commands, disabled state and tooltips are retained.

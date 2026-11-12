@@ -435,7 +435,8 @@
         if(!quick)return;quick.hidden=!!(backstage&&!backstage.hidden);const parent=d.getElementById('rootMenu1Inner');
         if(parent&&quick.parentElement!==parent)parent.prepend(quick);
         quick.classList.toggle('tbui3-quick-real-titlebar',!!api.realTitlebar());
-        const showLogo=!api.realTitlebar()&&['WinUI3 Dark','WinUI3 Light'].includes(api.themeName?.())&&!!api.brandImage;
+        const themeName=String(api.themeName?.()||'').trim().toLowerCase();
+        const showLogo=!api.realTitlebar()&&['winui3 dark','winui3 light'].includes(themeName)&&!!api.brandImage;
         let logo=quick.querySelector('.tbui3-quick-logo');
         if(showLogo&&!logo){logo=el('img','tbui3-quick-logo');logo.src=api.brandImage;logo.alt='twinBASIC WinUI3';logo.draggable=false;quick.prepend(logo);}
         if(logo)logo.hidden=!showLogo;

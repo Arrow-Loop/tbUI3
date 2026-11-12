@@ -1,5 +1,9 @@
 # Handoff: tbUI3
 
+## Current implementation, 2026-11-12: tbUI3IDE 1.3.0.7
+
+Shane reported the quick-access PNG was absent in his IDE. Root cause: native getThemeName() lowercases activeThemeInfo.name; the initial logo gate compared title-case names, and its mock repeated that assumption. The renderer now normalizes theme names. A regression executes the installed native function; the Edge fixture also uses it and verifies the original image actually decodes and is visible. All 104 tests and 71 mirrors pass; native rebuilt-host confirmation remains pending. Inline MultiPage from 1.3.0.6 remains intact. Commit and push this pass to origin/tbui3-dev.
+
 ## Current implementation, 2026-11-12: tbUI3IDE 1.3.0.6
 
 Shane requested MultiPage directly in Form rather than a nested sub-ribbon. Both Ribbon and Hybrid now insert its six existing native buttons in a normal MultiPage group immediately after Grid, preserving host/page/child context detection and native state/dispatch. Selection changes remove/restore the group; commands retain the surrounding Form UI. 103 automated checks and 71 mirrors pass; Edge fixture selection/placement/dispatch checks pass in both layouts with no errors. Native build/rendered acceptance remains pending. Evidence: docs/validation/2026-11-12-inline-multipage.md. Commit and push each development pass to origin/tbui3-dev per Shane's standing authorization.

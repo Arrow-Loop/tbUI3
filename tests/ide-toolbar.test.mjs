@@ -2,6 +2,7 @@ import fs from 'node:fs';
 import vm from 'node:vm';
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import {createHash} from 'node:crypto';
 const {JSDOM}=await import(process.env.TB_JSDOM_MODULE||'jsdom');
 const source=fs.readFileSync('tbIDE/tbUI3IDE/js/ide-toolbar.js','utf8');
 const factory=vm.runInNewContext(source);
@@ -14,6 +15,74 @@ const rawBuildLayout=vm.runInNewContext(layoutSource);
 const buildLayout=(records,quick)=>rawBuildLayout(records,quick,present);
 const establishedIcons=Object.fromEntries([...fs.readFileSync('tbIDE/tbUI3IDE/css/winui3-ide-icons.css','utf8').matchAll(/>\s*#([\w-]+)\s*\{\s*--fluent-icon:\s*(url\('[^']+'\))/g)].map(m=>[m[1],m[2]]));
 const extraIcons=JSON.parse(fs.readFileSync('tbIDE/tbUI3IDE/icons/ribbon.json','utf8')).icons;
+const requestedIcons=JSON.parse(fs.readFileSync('tbIDE/tbUI3IDE/icons/requested.json','utf8')).icons;
+test('explicit icon selections match the requested Home, Insert, Code, Form, View, Project, Debug and File commands',()=>{
+    const rows=[
+        ['tbEditor_ClipboardPaste','segoe/E77F'],['tbEditor_ClipboardCut','segoe/E8C6'],['tbEditor_ClipboardCopy','segoe/E8C8'],['tbEditor_Find','segoe/E721'],['tbEditor_DeleteRight','segoe/E74D'],['tbEditor_SelectAll','segoe/E8B3'],['tbProject_FindInFiles','fluent/calendar_search'],
+        ['tbFileSystem_AddWindowsForm','segoe/EB3B'],['tbFileSystem_AddWindowsMDIForm','fluent/window_multiple'],['tbFileSystem_AddWindowsUserControl','fluent/button'],['tbFileSystem_AddWindowsPropertyPage','fluent/tab_desktop'],['tbFileSystem_AddWindowsReport','fluent/calendar_data_bar'],['tbFileSystem_AddCustomControlsForm','fluent/window_toolbox'],['tbFileSystem_AddModuleTWIN','fluent/code_block'],['tbFileSystem_AddClassTWIN','fluent/code_block_edit'],['tbFileSystem_AddModuleBAS','fluent/code_block'],['tbFileSystem_AddClassCLS','fluent/code_block_edit'],['tbFileSystem_AddResourceVisualStylesManifest','fluent/apps_list_detail'],['tbFileSystem_AddResourceMessageTable','fluent/group_list'],['tbFileSystem_AddFolder','segoe/E8F4'],['tbFileSystem_AddOtherFile','fluent/document_add'],['tbFileSystem_ImportFile','fluent/add_square_multiple'],
+        ['tbEditor_FormatSelection','fluent/rename'],['tbEditor_FormatDocument','fluent/document_margins'],['tbEditor_GotoLineColumn','segoe/E8D1'],['tbEditor_GoToDefinition','segoe/E82D'],['tbEditor_LastPosition','fluent/arrow_step_back'],['tbFormDesigner_ToggleLockSelectedControls','segoe/E72E'],
+        ['tbEditor_SwitchToCode','fluent/code'],['tbEditor_SwitchToFormDesign','fluent/design_ideas'],['tbShowObjectBrowser','segoe/EC50'],['tbProjectExplorer_ShowPanel','fluent/code_circle'],['tbToolbox_ShowPanel','fluent/toolbox'],['tbProperties_ShowPanel','fluent/slide_settings'],['tbEditor_IncreaseFontSize','segoe/E8A3'],['tbEditor_DecreaseFontSize','segoe/E71F'],
+        ['tbProject_ShowReferences','fluent/library'],['tbProject_ShowSettings','fluent/apps_settings'],['tbBuild_Start','fluent/cube_tree'],['tbBuild_Clean','fluent/broom'],['tbCompiler_Restart','fluent/arrow_reset'],['tbCompiler_RestartAndFlushLlvmCache','segoe/EBC4'],['tbProject_OpenProjectFolder','fluent/folder_open'],['tbProject_OpenBuildFolder','fluent/folder_arrow_right'],['tbDebug_SetNextExecutionStatement','fluent/skip_forward_tab'],
+        ['tbProject_New','segoe/ECC8'],['tbProject_Open','segoe/E838'],['tbProject_SaveAllChanges','segoe/E74E'],['tbProject_SaveAs','segoe/E792'],['tbEditor_Save','fluent/document_save'],['tbProject_Export','segoe/EDE1'],['tbProject_Close','fluent/share_screen_stop'],['tbHelp_ShowAboutWindow','fluent/chat_help'],['tbHelp_ShowLicenceAgreement','segoe/EF3F'],['tbHelp_PurchaseALicence','fluent/wallet_credit_card'],['tbHelp_EnterLicenceKey','segoe/E8D7'],['tbHelp_OpenKofiWebsite','fluent/drink_coffee'],['tbHelp_ToggleCompilerTraceMode','fluent/table_settings'],['tbIde_ShowIDEOptions','fluent/content_settings'],['tbIdeWindow_Close','fluent/arrow_exit']
+    ];
+    for(const [action,icon]of rows){assert.equal(present({action}).icon,icon,action);if(icon.startsWith('fluent/'))assert(requestedIcons[icon],icon);}
+    for(const [name,icon]of [['Find options','fluent/slide_search'],['Fold','fluent/text_collapse'],['Unfold','fluent/text_expand'],['More panels','fluent/panel_right_cursor'],['Debugger Options','segoe/EBE8'],['{%MenuCaptionWindowPanelLayouts}','fluent/layout_infographic'],['{%MenuCaptionWindowPanelFeatures}','fluent/content_settings'],['{%MenuCaptionWindowTheme}','fluent/dark_theme'],['{%MenuCaptionWindowKeyboardShortcuts}','fluent/keyboard'],['{%MenuCaptionWindowLanguage}','fluent/local_language_globe']])assert.equal(present({name}).icon,icon,name);
+    assert.equal(present({action:'tbCompiler_Restart'}).caption,'Restart Compiler');assert.equal(present({action:'tbCompiler_RestartAndFlushLlvmCache'}).caption,'Flush LLVM Cache');
+});
+
+test('requested icons override native backgrounds and codicons without changing execution or disabled state',()=>{
+    const f=fixture(),search=f.button('searchIcon','Find in project');search.boundCommand='tbProject_FindInFiles';search.style.backgroundImage='url(https://example.test/wrong.svg)';
+    f.items.Edit=[{name:'Find in project',action:'tbProject_FindInFiles',codicon:'wrong'},{name:'Paste',action:'tbEditor_ClipboardPaste',codicon:'wrong'}];f.adapter.setMode('Ribbon');
+    const find=f.d.querySelector('button[title="Find in project "]'),paste=f.d.querySelector('button[title="Paste "]');
+    assert.equal(find.querySelector('.tbui3-ribbon-icon').dataset.iconRef,'fluent/calendar_search');assert(!find.querySelector('.codicon'));
+    const glyph=paste.querySelector('.tbui3-ribbon-icon');assert.equal(glyph.dataset.iconRef,'segoe/E77F');assert.equal(glyph.textContent.codePointAt(0),0xE77F);assert(glyph.classList.contains('tbui3-ribbon-segoe'));assert.equal(glyph.getAttribute('aria-hidden'),'true');
+    paste.click();assert.deepEqual(f.calls,['tbEditor_ClipboardPaste']);f.api.commandEnabled=a=>a!=='tbEditor_ClipboardPaste';f.adapter.tick();assert(paste.disabled);paste.click();assert.deepEqual(f.calls,['tbEditor_ClipboardPaste']);f.dispose();
+});
+
+test('Save Document leads Code and Form in its own group, leaves Ribbon File and preserves native dispatch in both modes',()=>{
+    for(const mode of ['Ribbon','Hybrid']){
+        const f=fixture();f.items.File.push({name:'Save current document',action:'tbEditor_Save'});f.adapter.setMode(mode);
+        for(const tab of ['Code','Form']){
+            f.d.querySelector(`[data-tab=${tab}]`).click();const first=f.d.querySelector('.tbui3-ribbon-content > section');assert.equal(first.getAttribute('aria-label'),'Document');assert.equal(first.querySelectorAll('button').length,1);
+            const b=first.querySelector('button');assert.equal(b.querySelector('.tbui3-ribbon-label').textContent,'Save Document');assert.equal(b.querySelector('.tbui3-ribbon-icon').dataset.iconRef,'fluent/document_save');b.click();assert.equal(f.calls.at(-1),'tbEditor_Save');
+            f.api.commandEnabled=a=>a!=='tbEditor_Save';f.adapter.tick();assert(b.disabled);f.api.commandEnabled=()=>true;
+        }
+        if(mode==='Ribbon'){f.adapter.openFile();assert(!f.d.querySelector('[data-file-section="Save document"]'));}
+        else assert(!f.d.getElementById('rootMenuFile').classList.contains('tbui3-menu-source'));
+        f.dispose();
+    }
+});
+
+test('MultiPage uses renamed labels, original tooltips and two vertical separators with the requested composite',()=>{
+    for(const mode of ['Ribbon','Hybrid']){
+        const f=fixture(),ids=['tbUI3TabNew','tbUI3TabDelete','tbUI3TabLeft','tbUI3TabRight','tbUI3TabRefresh','tbUI3TabDiagnostics'];
+        const labels=['New Page','Delete Page','Page Left','Page Right','TabView Refresh','TabView Diagnostics'];
+        const icons=['document_one_page_add','document_header_dismiss','tab_desktop_arrow_left','tab_desktop_arrow_right_composite','tab_desktop_arrow_clockwise','stethoscope'];
+        for(const id of ids)f.button('addinButton-'+id,'Original help '+id);const host=f.d.createElement('div');host.properties={_className:'tbUI3.UI3TabView'};f.api.formGlobals=()=>({selectedControls:[host]});
+        f.adapter.setMode(mode);f.d.querySelector('[data-tab=Form]').click();const group=f.d.querySelector('section[aria-label=MultiPage]');assert.equal(group.querySelectorAll('[role=separator]').length,2);
+        const children=[...group.querySelector('.tbui3-ribbon-group-body').children];assert.deepEqual(children.map(n=>n.getAttribute('role')==='separator'?'|':n.querySelector('.tbui3-ribbon-label').textContent),[labels[0],labels[1],'|',labels[2],labels[3],'|',labels[4],labels[5]]);
+        for(const [index,b]of [...group.querySelectorAll('button')].entries()){assert.equal(b.title,'Original help '+ids[index]);assert.equal(b.querySelector('.tbui3-ribbon-icon').dataset.iconRef,'fluent/'+icons[index]);b.click();}
+        assert.deepEqual(f.calls,ids.map(id=>'addinButton-'+id));f.dispose();
+    }
+    const composite=requestedIcons['fluent/tab_desktop_arrow_right_composite'];assert(composite.derived);assert.equal(composite.components[1].file,'arrow_circle_right_20_filled.svg');assert(composite.svg.includes('<mask'));assert(composite.svg.includes('fill="black"'));
+});
+
+test('File rail uses requested icons and a horizontal divider between Open and Save',()=>{
+    const f=fixture();for(const [action,name]of [['tbProject_New','New'],['tbProject_Open','Open'],['tbProject_SaveAs','Save as'],['tbProject_Export','Export'],['tbProject_Close','Close'],['tbIdeWindow_Close','Exit']])f.items.File.push({name,action});
+    f.items.Help=[{name:'About',action:'tbHelp_ShowAboutWindow'}];f.menu('Help');f.adapter.setMode('Ribbon');f.adapter.openFile();
+    for(const [section,icon]of [['Info','segoe/E946'],['New','segoe/ECC8'],['Open','segoe/E838'],['Save','segoe/E74E'],['Save as','segoe/E792'],['Export','segoe/EDE1'],['Close','fluent/share_screen_stop'],['Add-ins','fluent/text_bullet_list_square_settings'],['Help','fluent/question_circle'],['Options','fluent/options'],['Exit','fluent/arrow_exit']])assert.equal(f.d.querySelector(`[data-file-section="${section}"] .tbui3-ribbon-icon`).dataset.iconRef,icon,section);
+    const divider=f.d.querySelector('.tbui3-backstage-divider');assert.equal(divider.previousElementSibling.dataset.fileSection,'Open');assert.equal(divider.nextElementSibling.dataset.fileSection,'Save');f.d.querySelector('[data-file-section="Add-ins"]').click();assert.equal(f.d.querySelector('.tbui3-backstage-tasks .tbui3-ribbon-icon').dataset.iconRef,'fluent/puzzle_piece');f.dispose();
+});
+
+test('requested Fluent assets retain pinned provenance, hashes and well-formed self-contained SVG',()=>{
+    const catalog=JSON.parse(fs.readFileSync('tbIDE/tbUI3IDE/icons/requested.json','utf8'));assert.equal(catalog.package,'@fluentui/svg-icons');assert.equal(catalog.version,'1.1.341');
+    const dom=new JSDOM(''),parser=new dom.window.DOMParser();
+    for(const [ref,asset]of Object.entries(catalog.icons)){
+        assert.equal(createHash('sha256').update(asset.svg).digest('hex'),asset.sha256,ref);
+        const svg=parser.parseFromString(asset.svg,'image/svg+xml');assert(!svg.querySelector('parsererror'),ref);assert.equal(svg.documentElement.localName,'svg');assert(svg.documentElement.getAttribute('viewBox'));assert(!svg.querySelector('script,image,foreignObject'));
+        if(!asset.derived)assert(asset.source.includes('@1.1.341/icons/'+asset.file));
+    }dom.window.close();
+});
 test('large captions choose the smallest two-line whole-word width and remeasure after font changes',()=>{
     const f=fixture();let scale=6;
     const original=f.w.HTMLElement.prototype.getBoundingClientRect;
@@ -74,7 +143,7 @@ function fixture() {
     <div class='tbis-optionRow'><div class='tbis-optionName'>Enable additional IDE theme styling via add-in</div></div>`);
     const w=dom.window,d=w.document,calls=[];w.setInterval=()=>1;w.clearInterval=()=>{};const computed=w.getComputedStyle.bind(w);w.getComputedStyle=n=>computed(n);
     const toolbar=d.getElementById('rootMenu2'),headers=d.getElementById('rootMenu1Inner');
-    const api={window:w,buildLayout,present,projectName:()=>'Example project',icons:{...establishedIcons,...Object.fromEntries(Object.keys(extraIcons).map(key=>[key,"url('data:image/svg+xml,"+key+"')"]))},
+    const api={window:w,buildLayout,present,projectName:()=>'Example project',icons:{...establishedIcons,...Object.fromEntries([...Object.keys(extraIcons),...Object.keys(requestedIcons)].map(key=>[key,"url('data:image/svg+xml,"+key+"')"]))},
         localize:s=>s,execute:s=>calls.push(s),commandEnabled:s=>s!=='disabled',testContext:()=>true,
         shortcut:()=>'',realTitlebar:()=>false,formGlobals:()=>null,changedSize:()=>{}};
     let show=(anchor,x,y,items)=>calls.push(['nativeMenu',anchor&&anchor.id,items]);
@@ -219,7 +288,7 @@ test('toolbar redocking releases the former slot and collapses only its new slot
 test('ribbon captions are short while original help and shortcuts remain in tooltips',()=>{
     const f=fixture(),restart=f.button('restartIcon','Restart the compiler. Hold ALT key to additionally restart the LLVM cache process.');
     f.adapter.setMode('Hybrid');const b=f.d.querySelector('[data-source=restartIcon]');
-    assert.equal(b.querySelector('.tbui3-ribbon-label').textContent,'Restart compiler');assert(b.title.includes('Hold ALT key'));
+    assert.equal(b.querySelector('.tbui3-ribbon-label').textContent,'Restart Compiler');assert(b.title.includes('Hold ALT key'));
     assert.equal(f.d.querySelector('[data-source=saveIcon] .tbui3-ribbon-label').textContent,'Save');
     assert(f.d.querySelector('.tbui3-ribbon-selector').textContent.startsWith('Configuration'));
     b.click();assert.deepEqual(f.calls,['restartIcon']);assert.equal(restart.title,b.title);f.dispose();
@@ -260,7 +329,7 @@ test('shipped native File/Edit/Format/Tools and async Add-ins descriptors popula
     f.adapter.openFile('Add-ins');await new Promise(r=>setTimeout(r,10));assert(f.d.querySelector('.tbui3-backstage-content').textContent.includes('Native loaded add-in'));f.dispose();
 });
 
-test('embedded toolbar contains the exact adapter, essential CSS, original glyphs and 18 Fluent gap-fill glyphs',()=>{
+test('embedded toolbar contains the exact adapter, essential CSS, PNG and all cataloged SVG glyphs',()=>{
     const path='tbIDE/tbUI3IDE/src/Sources/IdeToolbarScript.twin',src=fs.readFileSync(path,'utf8');let js='';
     for(const line of src.split(/\r?\n/)){
         if(line.trim()==='js = js & vbLf'){js+='\n';continue;}
@@ -269,7 +338,7 @@ test('embedded toolbar contains the exact adapter, essential CSS, original glyph
     }
     new vm.Script(js);assert(js.includes(source.trim()));assert(js.includes(layoutSource.trim()));assert(js.includes(presentationSource.trim()));assert(js.includes(contextSource.trim()));
     const css=fs.readFileSync('tbIDE/tbUI3IDE/css/ide-toolbar.css','utf8');assert(js.includes(JSON.stringify(css)));
-    assert.equal((js.match(/data:image\/svg\+xml/g)||[]).length,37);assert(!/(?<!\r)\n/.test(src));
+    assert.equal((js.match(/data:image\/svg\+xml/g)||[]).length,37+Object.keys(requestedIcons).length);assert(!/(?<!\r)\n/.test(src));
     const png=js.match(/brandImage:"data:image\/png;base64,([A-Za-z0-9+/=]+)"/);assert(png);
     assert.deepEqual(Buffer.from(png[1],'base64'),fs.readFileSync('tbIDE/tbUI3IDE/images/twinBASIC_WinUI3.png'));
 });
@@ -281,7 +350,7 @@ test('Home uses Paste as the lead command and keeps Undo/Redo/Run solely in quic
         {name:'Format document',action:'tbEditor_FormatDocument'}];
     f.items.Run=[{name:'Run',action:'tbDebug_StartOrContinue'}];f.menu('Run');f.adapter.setMode('Ribbon');
     const body=f.d.querySelector('.tbui3-ribbon-content');assert.deepEqual([...body.querySelectorAll('section')].map(n=>n.getAttribute('aria-label')),['Clipboard','Editing']);
-    assert.equal(body.querySelector('.tbui3-ribbon-large').textContent,'Paste');assert(!body.textContent.includes('Undo'));assert(!body.textContent.includes('Redo'));
+    assert.equal(body.querySelector('.tbui3-ribbon-large .tbui3-ribbon-label').textContent,'Paste');assert(!body.textContent.includes('Undo'));assert(!body.textContent.includes('Redo'));
     body.querySelector('button').click();assert.deepEqual(f.calls,['tbEditor_ClipboardPaste']);
     f.d.querySelector('[data-source=undoIcon]').click();assert.deepEqual(f.calls,['tbEditor_ClipboardPaste','undoIcon']);
     assert(!f.d.querySelector('[data-tab=Edit]'));assert(!f.d.querySelector('[data-tab=Run]'));
@@ -333,7 +402,7 @@ test('all shipped BETA 1044 menu descriptors remain reachable after semantic org
     assert(actions('Home','Clipboard').includes('tbEditor_ClipboardPaste'));assert(actions('Home','Editing').includes('tbProject_FindInFiles'));
     assert(actions('Code','Navigation').includes('tbEditor_GoToDefinition'));assert(actions('Form','Position').includes('tbFormDesigner_BringControlToFront'));
     assert(actions('View','Show').includes('tbWatches_ShowPanel'));assert(actions('View','Zoom').includes('tbEditor_IncreaseFontSize'));
-    assert(actions('Project','Build').includes('tbBuild_Start'));assert(layout.file.has('Options'));assert(layout.file.has('Save document'));
+    assert(actions('Project','Build').includes('tbBuild_Start'));assert(layout.file.has('Options'));assert(!layout.file.has('Save document'));assert(actions('Code','Document').includes('tbEditor_Save'));assert(actions('Form','Document').includes('tbEditor_Save'));
     assert(!layout.tabs.some(t=>['Edit','Run','Window','Windows','Format'].includes(t.id)));
     t.diagnostic(`${records.length} live native descriptors retained across ${layout.tabs.length} semantic tabs, File and quick access`);
 });
@@ -362,7 +431,7 @@ test('Help is available only through File and native Help shortcut interception 
 });
 function assertButtonIcon(button){
     const icon=button.querySelector('.tbui3-ribbon-icon');assert(icon&&!icon.hidden,'Missing icon: '+button.textContent);
-    assert(icon.classList.contains('codicon')||icon.style.getPropertyValue('--tbui3-icon')||icon.style.getPropertyValue('--tbui3-native-image'),'Empty icon: '+button.textContent);
+    assert(icon.classList.contains('codicon')||icon.classList.contains('tbui3-ribbon-segoe')&&icon.textContent||icon.style.getPropertyValue('--tbui3-icon')||icon.style.getPropertyValue('--tbui3-native-image'),'Empty icon: '+button.textContent);
 }
 test('text-only native, synthetic, File and future commands all receive visible icon representations',()=>{
     const f=fixture();f.items.Edit=[{name:'Cut',action:'tbEditor_ClipboardCut'},{name:'Select all',action:'tbEditor_SelectAll'},
@@ -377,7 +446,7 @@ test('text-only add-ins get a Fluent glyph while contributed images and exact-on
     const f=fixture(),text=f.button('addinButton-global-search','Global Search'),image=f.button('addinButton-imaged','Other add-in');text.classList.add('iconTextOnly');
     text.onmousedown=null;text.onclick=()=>f.calls.push('search addin');image.style.backgroundImage='url(https://example.test/original.svg)';
     f.adapter.setMode('Ribbon');f.d.querySelector('[data-tab="Add-ins"]').click();const proxy=f.d.querySelector('[data-source="addinButton-global-search"]');
-    assertButtonIcon(proxy);assert(proxy.classList.contains('tbui3-ribbon-large'));assert.equal(proxy.querySelector('.tbui3-ribbon-icon').style.getPropertyValue('--tbui3-icon'),f.api.icons.searchIcon);
+    assertButtonIcon(proxy);assert(proxy.classList.contains('tbui3-ribbon-large'));assert.equal(proxy.querySelector('.tbui3-ribbon-icon').style.getPropertyValue('--tbui3-icon'),f.api.icons['fluent/globe_search']);
     assert(f.d.querySelector('[data-source="addinButton-imaged"] .tbui3-ribbon-icon').style.getPropertyValue('--tbui3-native-image').includes('original.svg'));
     proxy.click();assert.deepEqual(f.calls,['search addin']);f.dispose();
 });
@@ -491,7 +560,7 @@ test('Insert expands the actual asynchronous native Add producer and keeps dynam
     const content=f.d.querySelector('.tbui3-ribbon-content');assert(content.textContent.includes('Windows form'));assert(content.textContent.includes('Module (.twin)'));assert(content.textContent.includes('String table'));
     assert(!content.querySelector('[aria-haspopup=menu]'));assert(!f.d.querySelector('.tbui3-ribbon-popup'));
     assert.deepEqual([...content.querySelectorAll('section')].map(s=>s.getAttribute('aria-label')),['Forms','Code','Resources','Files']);
-    [...content.querySelectorAll('button')].find(b=>b.textContent==='Windows form').click();assert(f.calls.includes('tbFileSystem_AddWindowsForm'));
+    [...content.querySelectorAll('button')].find(b=>b.querySelector('.tbui3-ribbon-label').textContent==='Windows form').click();assert(f.calls.includes('tbFileSystem_AddWindowsForm'));
     extra=true;f.d.querySelector('[data-tab=Insert]').click();settingsCallback({});assert(f.d.querySelector('.tbui3-ribbon-content').textContent.includes('New future component'));assert.equal(leaked,0);
     f.d.querySelector('[data-tab=Insert]').click();const late=settingsCallback;f.adapter.setMode('Classic');late({});assert(!f.d.querySelector('.tbui3-ribbon'));f.dispose();
 });

@@ -76,7 +76,7 @@
         menuBarAlignLeft:'Align left',menuBarAlignTop:'Align top',menuBarAlignRight:'Align right',menuBarAlignBottom:'Align bottom',
         menuBarSizeWidest:'Widest',menuBarSizeTallest:'Tallest',menuBarSizeNarrowest:'Narrowest',menuBarSizeShortest:'Shortest',
         menuBarGrid:'Grid',menuBarBringToFront:'Bring to front',menuBarSendToBack:'Send to back'};
-    const sourceCaption=n=>sourceLabels[n.id]||label(n).replace(/\s*\([^)]*\)\s*$/,'');
+    const sourceCaption=n=>api.present?.({},n.id).caption||sourceLabels[n.id]||label(n).replace(/\s*\([^)]*\)\s*$/,'');
     const pageIds=['tbUI3TabNew','tbUI3TabDelete','tbUI3TabLeft','tbUI3TabRight','tbUI3TabRefresh','tbUI3TabDiagnostics'];
     const pageSource=n=>pageIds.some(id=>n.id==='addinButton-'+id);
     function currentHost() {
@@ -128,6 +128,13 @@
             src=[...sources.values()].find(x=>[].concat(x.boundCommand||[]).includes(descriptor.action));
         const i=el('span','tbui3-ribbon-icon');i.setAttribute('aria-hidden','true');
         const mask=uri=>{i.classList.add('tbui3-ribbon-mask');i.style.setProperty('--tbui3-icon',uri);return i;};
+        const explicit=api.present?.(descriptor,src&&src.id).icon;
+        if(explicit){
+            i.dataset.iconRef=explicit;
+            if(/^segoe\/[0-9a-f]{4,6}$/i.test(explicit)){i.classList.add('tbui3-ribbon-segoe');i.textContent=String.fromCodePoint(parseInt(explicit.split('/')[1],16));return i;}
+            if(!api.icons[explicit])throw Error('Missing requested icon: '+explicit);
+            return mask(api.icons[explicit]);
+        }
         if(src&&api.icons[src.id])return mask(api.icons[src.id]);
         if(src){
             const cs=w.getComputedStyle(src);let image=cs.backgroundImage;
@@ -325,7 +332,11 @@
     function addMultiPageContext(){
         if(!currentHost())return;
         const body=group('MultiPage');
-        for(const n of sources.values())if(pageSource(n))sourceButton(n,body);
+        for(const ids of [pageIds.slice(0,2),pageIds.slice(2,4),pageIds.slice(4)]){
+            const nodes=ids.map(id=>sources.get('addinButton-'+id)).filter(Boolean);if(!nodes.length)continue;
+            if(body.children.length){const divider=el('div','tbui3-ribbon-group-divider');divider.setAttribute('role','separator');divider.setAttribute('aria-orientation','vertical');body.append(divider);}
+            for(const n of nodes)sourceButton(n,body);
+        }
         const grid=content.querySelector('.tbui3-ribbon-group[aria-label="Grid"]');
         if(grid)grid.after(body.parentElement);
     }
@@ -344,6 +355,7 @@
         state.active=key;menuSignature='';closeFile(false);closePopup();clearContent();
         for(const b of tabs.children){const selected=b.dataset.tab===key;b.setAttribute('aria-selected',String(selected));b.tabIndex=selected?0:-1;if(selected&&focus)b.focus();}
         if(state.mode==='Hybrid'){
+            if(['Code','Form'].includes(key))command({name:'Save Document',action:'tbEditor_Save',_ribbonLarge:true},group('Document'));
             if(known[key]){for(const [name,ids]of known[key])addSources(ids,group(name));if(key==='Form'){addGrid();addMultiPageContext();}}
             else addins(content,true);
         }else{menuSignature='';hydrateMenus(true);}
@@ -392,14 +404,17 @@
             const entries=layout?.file.get(section)||[],item=entries.find(menuEnabled)||entries[0];
             if(section!=='Info'&&section!=='Add-ins'&&!entries.length)return;
             const b=el('button','tbui3-backstage-nav');
-            const glyph={Info:'info','Add-ins':'puzzle_piece',Preferences:'settings',Options:'settings',Help:'chat_help',More:'apps_list'}[section];
-            b.append(iconFor(null,glyph?{_ribbonGlyph:glyph}:item||{}),el('span','',title));b.type='button';b.dataset.fileSection=section;
+            const icon={Info:'segoe/E946',New:'segoe/ECC8',Open:'segoe/E838',Save:'segoe/E74E','Save as':'segoe/E792',Export:'segoe/EDE1',Close:'fluent/share_screen_stop',
+                'Add-ins':'fluent/text_bullet_list_square_settings',Help:'fluent/question_circle',Options:'fluent/options',Exit:'fluent/arrow_exit'}[section];
+            b.append(iconFor(null,icon?{_ribbonIcon:icon}:item||{}),el('span','',title));b.type='button';b.dataset.fileSection=section;
             if(direct&&item){b.title=caption(item);bindings.set(b,{item});b.onclick=()=>activateItem(item,b);}
             else{b.onclick=()=>{fileSection=section;renderFile();renderFileNav();};
                 if(fileSection===section){b.classList.add('tbui3-backstage-selected');b.setAttribute('aria-current','page');}}
             parent.append(b);
         };
-        add('Info','Info');add('New','New',main,true);add('Open','Open');add('Save','Save',main,true);add('Save document','Save document',main,true);add('Save as','Save as',main,true);add('Export','Export');add('Close project','Close',main,true);
+        add('Info','Info');add('New','New',main,true);add('Open','Open');
+        const divider=el('hr','tbui3-backstage-divider');divider.setAttribute('role','separator');main.append(divider);
+        add('Save','Save',main,true);add('Save as','Save as',main,true);add('Export','Export');add('Close project','Close',main,true);
         if(layout?.file.has('More'))add('More commands','More');
         add('Add-ins','Add-ins',footer);add('Help','Help',footer);add('Options','Options',footer);add('Exit','Exit',footer,true);
         syncBindings();
@@ -418,7 +433,7 @@
         const unsupported=fileSection==='Add-ins'&&list.some(i=>typeof i.action==='function'&&String(i.action).includes('notSupportedMenuOption'));
         if(unsupported)fileContent.append(el('p','tbui3-backstage-description','This IDE build lists loaded add-ins here. It does not expose enable or disable commands.'));
         const tasks=el('div','tbui3-backstage-tasks');fileContent.append(tasks);
-        for(const original of list){const item=fileSection==='Add-ins'?{...original,_ribbonGlyph:'puzzle_piece'}:original;const row=el('div','tbui3-backstage-task');
+        for(const original of list){const item=fileSection==='Add-ins'?{...original,_ribbonIcon:'fluent/puzzle_piece'}:original;const row=el('div','tbui3-backstage-task');
             command(unsupported&&typeof item.action==='function'&&String(item.action).includes('notSupportedMenuOption')?{...item,isHidden:true,_ribbonLarge:false}:{...item,_ribbonLarge:false},row);tasks.append(row);
         }
         if(!list.length&&fileSection==='Add-ins')fileContent.append(el('p','tbui3-backstage-description',menus.get('rootMenuAddins')?.loading?'Loading add-ins...':'No add-ins are listed by the IDE.'));

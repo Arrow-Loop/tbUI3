@@ -4,6 +4,14 @@ All notable changes to tbUI3. Dates are when the change was made, not released. 
 
 ## Unreleased
 
+### 2026-11-12 — Requested icon set and document commands (tbUI3IDE 1.3.0.8)
+
+- Applied Shane's explicit Segoe code points and Microsoft Fluent icon choices across Home, Insert, Code, Form, View, Project, Debug, Add-ins and File. Explicit selections override native backgrounds/codicons; unlisted commands retain their native presentation. Renamed Restart Compiler and Flush LLVM Cache.
+- MultiPage uses New Page, Delete Page | Page Left, Page Right | TabView Refresh, TabView Diagnostics, preserving original help text. Page Right combines the requested tab icon and filled right-arrow badge; the original badge is erased before overlay. Added the File divider between Open and Save.
+- Save Document is removed from Ribbon File and placed in a separate leading Document group on Code and Form in both Ribbon and Hybrid. Hybrid retains native menus and no quick-access toolbar, as requested.
+- Imported 55 Fluent SVG assets from Microsoft's pinned @fluentui/svg-icons 1.1.341, with hashes/provenance and the existing MIT notice. The Knowledge repo's reference explicitly excludes the broad icon archive; the official Microsoft package supplies these assets. Windows Segoe fonts are used without redistribution.
+- 111 automated checks, 71 exact project mirrors and Edge renderer-fixture checks pass. All 55 requested SVGs decode. Native build/acceptance remains pending. Evidence: docs/validation/2026-11-12-requested-icons.md.
+
 ### 2026-11-12 — Hybrid parity audit
 
 - Verified the shared large-button sizing/font updates, Grid geometry, compact native alignment/size commands and inline contextual MultiPage behavior in Hybrid. Added a Hybrid-specific measured-width/font-change regression and expanded native alignment/size dispatch/state coverage to both layouts. All 105 tests pass without skips.

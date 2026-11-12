@@ -1,5 +1,9 @@
 # Roadmap: tbUI3 IDE
 
+## Current candidate: 1.3.0.8, requested icons and Save Document
+
+Native follow-up: review the requested Segoe/Fluent assignments on all tabs and File pages, Page Right's overlaid badge, the MultiPage separators/labels with unchanged help, and the File Open/Save separator. Confirm native Save Document enabled state/dispatch from the leading Document group on both Code/Form tabs, in Ribbon and Hybrid. Hybrid continues to retain native menus without quick access. Evidence: ../docs/validation/2026-11-12-requested-icons.md (111 checks, 71 mirrors, Edge fixture pass). Native build/rendered acceptance and previous adaptive/TabView gates remain open.
+
 ## Hybrid parity audit, 2026-11-12
 
 105 checks pass with explicit Hybrid width/font and compact native-command coverage; shared Grid and inline MultiPage checks already cover both layouts. Shane confirmed Hybrid keeps its current native-menu structure, without quick access or Backstage. The logo and Backstage-specific Options organization remain Ribbon-only. This audit changes tests/docs only; current binary candidate remains 1.3.0.7.

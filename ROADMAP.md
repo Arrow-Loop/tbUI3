@@ -4,7 +4,9 @@ Committed work is listed first. Exploratory ideas are marked as such.
 
 Every development pass ends with a commit and a verified push to `origin/tbui3-dev`, per Shane's standing instruction of 2026-11-12. Main and PR decisions remain Shane's.
 
-## Current add-in follow-up: 1.3.0.7
+## Current add-in follow-up: 1.3.0.8
+
+- Requested icon/label assignments, MultiPage/File dividers, the Page Right composite and Code/Form Document groups are implemented. Native gate: rebuild/reload 1.3.0.8; review all tabs and File pages, page-command directions/tooltips, Save Document availability/dispatch in both editors, and Hybrid's shared presentation. Evidence: docs/validation/2026-11-12-requested-icons.md. 111 checks and 71 mirrors pass; native compiled-host acceptance remains open.
 
 - Hybrid audit: shared width/font, Grid, compact native commands and inline MultiPage fixes are covered. 105 tests pass. Shane confirmed Hybrid should retain its current native-menu layout without quick access or Backstage. The logo and File > Options consolidation remain Ribbon-specific. Audit changes tests/docs only, with no version bump.
 

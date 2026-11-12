@@ -5,8 +5,8 @@
     const tabs=new Map(), file=new Map(), suppressed=[];
     tabs.set('Home',new Map());
     const order=['Home','Insert','Code','Form','View','Project','Debug','Tools','Add-ins','Help'];
-    const groups={Home:['Clipboard','Editing'],Insert:['Forms','Code','Resources','Files','Components'],Code:['Comments','Formatting','Navigation','Outlining','Case'],
-        Form:['Arrange','Size','Spacing','Position','Protection','Designer','Grid'],View:['Views','Show','Zoom','Window','Appearance'],
+    const groups={Home:['Clipboard','Editing'],Insert:['Forms','Code','Resources','Files','Components'],Code:['Document','Comments','Formatting','Navigation','Outlining','Case'],
+        Form:['Document','Arrange','Size','Spacing','Position','Protection','Designer','Grid'],View:['Views','Show','Zoom','Window','Appearance'],
         Project:['Project','Build','Compiler','Folders'],Debug:['Stepping','Breakpoints','Watches','Execution','Options']};
     const get=(map,key,make)=>{if(!map.has(key))map.set(key,make());return map.get(key);};
     const add=(tab,group,item)=>get(get(tabs,tab,()=>new Map()),group,()=>[]).push(item);
@@ -15,10 +15,11 @@
     const quick=a=>quickActions.has(a)||/^tb(?:Editor|FormDesigner)_(Undo|Redo)$/.test(a)||/^tbDebug_(StartOrContinue|BreakInto|Stop)$/.test(a);
     for(const r of records){const i=r.item,a=typeof i.action==='string'?i.action:'',m=r.menuId;
         if(!i.name)continue;
+        if(a==='tbEditor_Save'){add('Code','Document',i);add('Form','Document',i);continue;}
         if(i._ribbonTab){add(i._ribbonTab,i._ribbonGroup,i);continue;}
         if(m==='rootMenuFile'){
             const section={tbProject_New:'New',tbProject_Open:'Open',tbProject_OpenRecent:'Open',tbProject_Close:'Close',
-                tbProject_SaveAllChanges:'Save',tbProject_SaveAs:'Save as',tbProject_Export:'Export',tbEditor_Save:'Save document',tbIdeWindow_Close:'Exit'}[a];
+                tbProject_SaveAllChanges:'Save',tbProject_SaveAs:'Save as',tbProject_Export:'Export',tbIdeWindow_Close:'Exit'}[a];
             if(section){addFile(section,i);continue;}
             if(a==='tbBuild_Start'||a==='tbBuild_Clean'){add('Project','Build',i);continue;}
             addFile('More',i);continue;

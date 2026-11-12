@@ -40,6 +40,14 @@ License: MIT.
 
 No VBCCR18 package dependency is added.
 
+## Microsoft Fluent UI System Icons: explicit IDE command icons, 2026-11-12
+
+The add-in embeds the selected Microsoft Fluent UI System Icons from the official `@fluentui/svg-icons` npm package, version **1.1.341**. License: MIT, Copyright (c) Microsoft Corporation. The retained license is `tbIDE/tbUI3IDE/icons/fluent/LICENSE`. Each selected SVG's exact filename, published URL and SHA-256 are recorded in `tbIDE/tbUI3IDE/icons/requested.json`. The importer reads only these assets from that pinned package; no npm dependency is added to the add-in runtime.
+
+The authorized `fluent/tab_desktop_arrow_right_composite` is derived from `tab_desktop_arrow_left_20_regular.svg` and `arrow_circle_right_20_filled.svg`: the old badge is masked out and the right-arrow badge is scaled to the same position/radius. The manifest records both source hashes and the composition. No other requested SVG artwork is redrawn.
+
+Segoe glyph selections refer to code points in the installed Segoe Fluent Icons / Segoe MDL2 Assets fonts. Windows font files are not redistributed.
+
 ## Microsoft WinUI Gallery
 
 S3 uses the Gallery's 2026-10-05 main snapshot (`b927a6253d6b183be55b90287b8a04fde14d31a3`) as behavioral/design reference.

@@ -1,5 +1,9 @@
 # Handoff: tbUI3
 
+## Current implementation, 2026-11-12: tbUI3IDE 1.3.0.8
+
+Implemented Shane's requested command icons, MultiPage labels/dividers, File icons/Open-Save separator and Save Document relocation. Explicit metadata in ribbon-presentation.js overrides native codicons/images; unlisted commands remain native. Segoe uses system fonts; 55 pinned Fluent SVGs are embedded from icons/requested.json (importer: tbIDE/tools/import-ribbon-icons.mjs). Page Right is the authorized left-tab plus filled right-arrow composite with the old badge masked out. Save Document leads Code and Form in an isolated Document group in Ribbon and Hybrid; it is removed only from Ribbon File, with native Hybrid menus preserved. 111 tests, 71 mirrors and Edge fixture checks pass; all SVGs decode. Native build/acceptance remains pending. Detailed evidence: docs/validation/2026-11-12-requested-icons.md. Package/control identities and adapter v8 are unchanged. Commit and push every pass to origin/tbui3-dev.
+
 ## Hybrid audit, 2026-11-12 (current add-in remains 1.3.0.7)
 
 Shane asked that Hybrid receive the Ribbon fixes too. Audit confirms shared label sizing/font refresh, Grid geometry, compact alignment/size buttons and inline MultiPage code already serves both. Added explicit Hybrid width/font and both-mode native command-state/dispatch coverage; 105 tests pass without skips. Shane explicitly chose to keep Hybrid's current structure: native menus without quick access or File Backstage. The logo and Backstage-specific Options consolidation remain Ribbon-only. This pass changes tests/docs only; no version bump or native build is needed.

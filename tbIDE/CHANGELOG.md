@@ -1,5 +1,13 @@
 # Changelog: tbIDE (WinUI 3 look for the twinBASIC IDE)
 
+## 2026-11-12, explicit Segoe/Fluent assignments (tbUI3IDE 1.3.0.8)
+
+- Implemented Shane's icon specification for all named command surfaces. Explicit icon references take precedence over native glyphs/backgrounds; Segoe code points use Segoe Fluent Icons with MDL2 fallback, and Fluent SVG masks follow the current theme foreground. Unlisted glyphs retain native/fallback behavior.
+- Added a pinned, hash-recorded catalog of 55 selected Fluent assets from @fluentui/svg-icons 1.1.341 and an importer. No runtime npm dependency is introduced. The Page Right derivative masks out the old left-arrow badge and overlays arrow_circle_right_20_filled at the same center/radius.
+- MultiPage labels and two internal vertical dividers match the request, while native tooltips, state and command dispatch remain intact. File has the requested navigation icons and an Open/Save horizontal divider. All File add-in rows use puzzle_piece. Restart Compiler and Flush LLVM Cache have the requested captions/icons.
+- Save Document has its own first Document group on Code and Form in both Ribbon and Hybrid and no longer appears in Ribbon File. It uses the native tbEditor_Save command and native availability. Hybrid's native menus are preserved.
+- 111 automated tests, 71 mirrors, SVG decoding and Edge fixture navigation/dispatch checks pass without errors. Native compiled-host visual/build acceptance remains pending. See ../docs/validation/2026-11-12-requested-icons.md.
+
 ## 2026-11-12, Hybrid parity audit (no binary/version change)
 
 - Shared renderer/CSS already supplies Hybrid's label measurement/font refresh, Grid spacing, compact alignment/size source buttons and inline MultiPage section. Added explicit Hybrid width/font regression and both-mode native compact-command dispatch/state coverage. All 105 tests pass without skips.

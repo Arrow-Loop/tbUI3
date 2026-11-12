@@ -1,5 +1,9 @@
 # Handoff: tbUI3
 
+## Current implementation, 2026-11-12: tbUI3IDE 1.3.0.10
+
+Shane requested a bottom-right down-chevron toggle to an Outlook-like Simplified Ribbon with all existing tabs/options. Ribbon now toggles 100px full / 48px single-row command areas; the chevron points up when simplified. Same command/control nodes, selected tab, state and callbacks are retained. Long rows scroll horizontally by scrollbar, mouse wheel or keyboard focus; inputs/selectors retain wheel behavior. An independent SimplifiedRibbon preference is restored/saved through MainModule and all three preference kinds drain on teardown. Ctrl+F1 toggles full/simplified only in Ribbon; Hybrid/Classic keep their structures. Tests: 116 pass without skips; 71 mirrors match; Edge validates 1280px/640px, node/tab retention, popup dispatch, Grid persistence, File and narrow reachability. Native build/restart/visual acceptance remains pending. Evidence: docs/validation/2026-11-12-simplified-ribbon.md. Automatic group-overflow menus/adaptive collapse/keytips remain separate future work. Commit/push every pass to origin/tbui3-dev.
+
 ## Current implementation, 2026-11-12: tbUI3IDE 1.3.0.9
 
 Shane supplied a replacement quick-access logo, twinBASIC_WinUI3_16px.png. Its actual dimensions are 15×16px; it is copied byte-for-byte to the existing images/twinBASIC_WinUI3.png path and displayed at native size. SHA-256: 2b6f1817a8da030d4644d83f1af8a3dd25865f499b63a1c643830e6ad1b6a92d. Existing logo conditions, Hybrid structure and all 1.3.0.8 icon/command behavior remain unchanged. Regenerated/repacked add-in; 111 tests, 71 mirrors and Edge fixture checks pass. Native rebuild/reload confirmation remains pending. Commit and push every pass to origin/tbui3-dev.

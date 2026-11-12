@@ -16,6 +16,51 @@ const buildLayout=(records,quick)=>rawBuildLayout(records,quick,present);
 const establishedIcons=Object.fromEntries([...fs.readFileSync('tbIDE/tbUI3IDE/css/winui3-ide-icons.css','utf8').matchAll(/>\s*#([\w-]+)\s*\{\s*--fluent-icon:\s*(url\('[^']+'\))/g)].map(m=>[m[1],m[2]]));
 const extraIcons=JSON.parse(fs.readFileSync('tbIDE/tbUI3IDE/icons/ribbon.json','utf8')).icons;
 const requestedIcons=JSON.parse(fs.readFileSync('tbIDE/tbUI3IDE/icons/requested.json','utf8')).icons;
+test('corner chevron switches Full/Simplified Ribbon without replacing tabs, commands or native selectors',()=>{
+    const f=fixture();assert(!f.d.querySelector('.tbui3-ribbon-toggle'));f.adapter.setMode('Hybrid');assert(!f.d.querySelector('.tbui3-ribbon-toggle'));f.adapter.setMode('Ribbon');
+    f.items.File.push({name:'Save Document',action:'tbEditor_Save'});f.d.querySelector('[data-tab=Project]').click();
+    const tabs=[...f.d.querySelectorAll('[role=tab]')],content=f.d.querySelector('.tbui3-ribbon-content'),commands=[...content.querySelectorAll('button,select')],select=f.d.getElementById('buildConfigSelector'),toggle=f.d.querySelector('.tbui3-ribbon-toggle');
+    assert.equal(toggle.getAttribute('aria-controls'),content.id);assert.equal(toggle.getAttribute('aria-pressed'),'false');assert.equal(toggle.title,'Switch to Simplified Ribbon');
+    toggle.click();assert(f.adapter.simplified);assert(f.adapter.simplifiedDirty);assert.equal(toggle.getAttribute('aria-pressed'),'true');assert.equal(toggle.getAttribute('aria-expanded'),'false');assert.equal(toggle.title,'Switch to Full Ribbon');assert.equal(f.adapter.active,'Project');assert(!content.hidden);
+    assert.deepEqual([...f.d.querySelectorAll('[role=tab]')],tabs);assert.deepEqual([...content.querySelectorAll('button,select')],commands);assert.equal(f.d.getElementById('buildConfigSelector'),select);
+    f.adapter.tick();assert(f.d.querySelector('.tbui3-ribbon-simplified'));toggle.click();assert(!f.adapter.simplified);assert.equal(toggle.getAttribute('aria-expanded'),'true');assert(!content.hidden);assert.deepEqual([...content.querySelectorAll('button,select')],commands);f.dispose();
+});
+
+test('simplification retains native Grid nodes/events, lazy dropdown dispatch and dynamic/contextual commands',()=>{
+    const f=fixture(),native=f.d.createElement('div');native.id='menuBarGridOptions';native.innerHTML='<div class="menuBarGridOptionsInner"><label class="menuBarGridOptionRow">Width<input class="optionGridWidth" type="number" value="8"></label></div>';f.toolbar.after(native);
+    const input=native.querySelector('input');let changes=0;input.onchange=()=>changes++;
+    const host=f.d.createElement('div');host.properties={_className:'tbUI3.UI3TabView'};let selected=[host];f.api.formGlobals=()=>({selectedControls:selected});f.button('menuBarGrid','Grid');f.button('addinButton-tbUI3TabNew','New page');
+    f.adapter.setMode('Ribbon');f.adapter.setSimplified(true,true);f.d.querySelector('[data-tab=Form]').click();
+    assert.equal(f.d.querySelector('.tbui3-ribbon-grid input'),input);input.value='12';input.dispatchEvent(new f.w.Event('change'));assert.equal(changes,1);
+    f.d.querySelector('[aria-haspopup=menu]').click();const popup=f.d.querySelector('.tbui3-ribbon-popup');assert(popup);popup.querySelector('button').click();assert.deepEqual(f.calls,['left']);
+    selected=[];f.adapter.tick();assert(!f.d.querySelector('section[aria-label=MultiPage]'));assert(f.d.querySelector('.tbui3-ribbon-simplified'));selected=[host];f.adapter.tick();assert(f.d.querySelector('section[aria-label=MultiPage]'));
+    const future=f.button('addinButton-future','Future add-in');f.adapter.tick();f.d.querySelector('[data-tab="Add-ins"]').click();f.d.querySelector('[data-source=addinButton-future]').click();assert.equal(f.calls.at(-1),'addinButton-future');future.classList.add('disabledCommand');f.adapter.tick();assert(f.d.querySelector('[data-source=addinButton-future]').disabled);
+    f.adapter.setMode('Classic');assert.equal(native.querySelector('input'),input);assert.equal(input.value,'12');assert(!f.d.querySelector('.tbui3-ribbon-toggle'));f.dispose();
+});
+
+test('Ctrl+F1 toggles simplified presentation in Ribbon and mode switching preserves the independent preference',()=>{
+    const f=fixture();f.adapter.setMode('Ribbon');f.d.dispatchEvent(new f.w.KeyboardEvent('keydown',{key:'F1',ctrlKey:true,bubbles:true,cancelable:true}));assert(f.adapter.simplified);assert(!f.d.querySelector('.tbui3-ribbon-content').hidden);
+    f.adapter.setMode('Hybrid');assert(!f.d.querySelector('.tbui3-ribbon-simplified'));assert(!f.d.querySelector('.tbui3-ribbon-toggle'));f.d.dispatchEvent(new f.w.KeyboardEvent('keydown',{key:'F1',ctrlKey:true,bubbles:true,cancelable:true}));assert(f.d.querySelector('.tbui3-ribbon-content').hidden);
+    f.adapter.setMode('Ribbon');assert(f.d.querySelector('.tbui3-ribbon-simplified'));assert(!f.d.querySelector('.tbui3-ribbon-content').hidden);f.d.dispatchEvent(new f.w.KeyboardEvent('keydown',{key:'F1',ctrlKey:true,bubbles:true,cancelable:true}));assert(!f.adapter.simplified);f.dispose();
+});
+
+test('simplified horizontal mouse scrolling leaves native inputs/selectors in control of their wheel events',()=>{
+    const f=fixture();f.adapter.setMode('Ribbon');f.adapter.setSimplified(true);const content=f.d.querySelector('.tbui3-ribbon-content');Object.defineProperties(content,{scrollWidth:{value:1500},clientWidth:{value:400}});
+    const wheel=new f.w.WheelEvent('wheel',{deltaY:90,bubbles:true,cancelable:true});content.dispatchEvent(wheel);assert.equal(content.scrollLeft,90);assert(wheel.defaultPrevented);
+    f.d.querySelector('[data-tab=Project]').click();const select=f.d.getElementById('buildConfigSelector'),overSelect=new f.w.WheelEvent('wheel',{deltaY:90,bubbles:true,cancelable:true});select.dispatchEvent(overSelect);assert.equal(content.scrollLeft,90);assert(!overSelect.defaultPrevented);f.dispose();
+});
+
+test('native settings queue independently persists toolbar mode, simplified choice and optional styling',()=>{
+    const main=fs.readFileSync('tbIDE/tbUI3IDE/src/Sources/MainModule.twin','utf8');
+    const poll=main.slice(main.indexOf('Dim changed As String = RunJs('),main.indexOf('If Len(changed) = 0'));
+    const js=[...poll.matchAll(/"((?:[^"]|"")*)"/g)].map(m=>m[1].replace(/""/g,'"')).join('');
+    const toolbar={dirty:true,requestedMode:'Ribbon',simplifiedDirty:true,simplified:true},theme={dirty:true,enabled:false},window={__tbUI3Toolbar:toolbar,__winui3IdeStyle:theme};
+    assert.deepEqual([0,1,2,3].map(()=>vm.runInNewContext(js,{window})),['toolbar:Ribbon','simple:1','theme:0','']);
+    toolbar.simplified=false;toolbar.simplifiedDirty=true;assert.equal(vm.runInNewContext(js,{window}),'simple:0');
+    assert(main.includes('SettingSimplified As String = "SimplifiedRibbon"'));assert(main.includes('SaveSetting SettingsApp, SettingsSection, SettingSimplified, Mid$(changed, 8)'));
+    const teardown=main.slice(main.indexOf('Private Sub Class_Terminate()'),main.indexOf('Private Sub Class_Terminate()')+250);assert.equal((teardown.match(/OptionTimer_Timer/g)||[]).length,3);
+    const f=fixture();f.adapter.setSimplified(true,false);f.adapter.setMode('Ribbon');assert(f.d.querySelector('.tbui3-ribbon-simplified'));assert(!f.adapter.simplifiedDirty);assert(!f.adapter.dirty);f.dispose();
+});
 test('explicit icon selections match the requested Home, Insert, Code, Form, View, Project, Debug and File commands',()=>{
     const rows=[
         ['tbEditor_ClipboardPaste','segoe/E77F'],['tbEditor_ClipboardCut','segoe/E8C6'],['tbEditor_ClipboardCopy','segoe/E8C8'],['tbEditor_Find','segoe/E721'],['tbEditor_DeleteRight','segoe/E74D'],['tbEditor_SelectAll','segoe/E8B3'],['tbProject_FindInFiles','fluent/calendar_search'],

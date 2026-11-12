@@ -5,13 +5,13 @@
 (function createIdeToolbar(api) {
     'use strict';
     const w=api.window, d=w.document, modes=['Classic','Hybrid','Ribbon'];
-    const state={mode:'Classic',requestedMode:'Classic',dirty:false,lastError:'',active:'Home',disposed:false};
+    const state={mode:'Classic',requestedMode:'Classic',dirty:false,simplified:false,simplifiedDirty:false,lastError:'',active:'Home',disposed:false};
     const sources=new Map(), menus=new Map(), bindings=new Map(), placements=new Map(), pendingMenus=new Map();
     const hiddenNative=new Set();
     const expandedMenus=new Map();
     let menuEpoch=0,collectingLayout=false,lastEditorNode,lastEditorKind,editorBaseline=false;
     const fileUnderlays=new Map();
-    let shell, tabs, content, quick, backstage, fileNav, fileContent, popup, popupAnchor, interval;
+    let shell, tabs, content, quick, backstage, fileNav, fileContent, popup, popupAnchor, interval, ribbonToggle;
     let signature='', menuSignature='', fileSection='File', savedFocus, captureSink, refreshAt=0;
     let nativeMenu=api.getShowContextMenu(), wrappedMenu, pendingSubmenu;
     let hydrating=false,layout;
@@ -21,7 +21,7 @@
     // Measure whole words with the rendered label's font. The best single split
     // gives the narrowest button that can show the caption on at most two lines.
     function sizeLabels(){
-        if(!content||content.hidden)return;
+        if(!content||content.hidden||state.mode==='Ribbon'&&state.simplified)return;
         let probe;
         for(const button of content.querySelectorAll('.tbui3-ribbon-large')){
             const text=button.querySelector('.tbui3-ribbon-label');if(!text)continue;
@@ -472,12 +472,39 @@
         }
     }
     function resize(){if(api.changedSize)api.changedSize();}
+    function syncRibbonStyle(){
+        if(!shell)return;
+        const simple=state.mode==='Ribbon'&&state.simplified;
+        shell.classList.toggle('tbui3-ribbon-simplified',simple);
+        if(ribbonToggle){
+            ribbonToggle.title=simple?'Switch to Full Ribbon':'Switch to Simplified Ribbon';
+            ribbonToggle.setAttribute('aria-label',ribbonToggle.title);
+            ribbonToggle.setAttribute('aria-pressed',String(simple));
+            ribbonToggle.setAttribute('aria-expanded',String(!simple));
+        }
+    }
+    function setSimplified(value,dirty=false){
+        value=!!value;const changed=state.simplified!==value;state.simplified=value;
+        if(changed&&dirty)state.simplifiedDirty=true;
+        if(state.mode==='Ribbon'&&content){
+            closePopup();content.hidden=false;
+            for(const b of content.querySelectorAll('.tbui3-ribbon-large'))b.style.removeProperty('width');
+            syncRibbonStyle();sizeLabels();resize();
+        }
+        return state.simplified;
+    }
+    function scrollSimplified(e){
+        if(state.mode!=='Ribbon'||!state.simplified||content.scrollWidth<=content.clientWidth||
+            e.target.closest('input,select')||Math.abs(e.deltaY)<=Math.abs(e.deltaX))return;
+        const before=content.scrollLeft;content.scrollLeft+=e.deltaY;
+        if(content.scrollLeft!==before){e.preventDefault();closePopup();}
+    }
     function restore() {
         closePopup();closeFile(false);returnNodes();bindings.clear();
         for(const m of menus.values())m.node.classList.remove('tbui3-menu-source');
         for(const n of hiddenNative)n.classList.remove('tbui3-toolbar-native-hidden');hiddenNative.clear();pendingMenus.clear();
         if(shell)shell.remove();if(quick)quick.remove();if(backstage)backstage.remove();
-        shell=tabs=content=quick=backstage=fileNav=fileContent=null;
+        shell=tabs=content=quick=backstage=fileNav=fileContent=ribbonToggle=null;
         signature='';menuSignature='';fileNavSignature='';fileRenderSignature='';layout=null;expandedMenus.clear();editorBaseline=false;lastEditorNode=lastEditorKind=undefined;resize();
     }
     function build() {
@@ -488,13 +515,19 @@
         content=el('div','tbui3-ribbon-content');content.setAttribute('role','tabpanel');shell.append(tabs,content);top.before(shell);
         toolbar.classList.add('tbui3-toolbar-native-hidden');
         if(state.mode==='Ribbon'){
+            shell.classList.add('tbui3-ribbon-has-toggle');content.id='tbUI3RibbonCommands';
+            ribbonToggle=el('button','tbui3-ribbon-toggle');ribbonToggle.type='button';
+            ribbonToggle.setAttribute('aria-controls',content.id);ribbonToggle.append(iconFor(null,{_ribbonGlyph:'chevron_down'}));
+            ribbonToggle.onclick=()=>setSimplified(!state.simplified,true);shell.append(ribbonToggle);
+            content.addEventListener('wheel',scrollSimplified,{passive:false});
+            content.addEventListener('focusin',e=>{if(state.simplified)e.target.scrollIntoView?.({block:'nearest',inline:'nearest'});});
             quick=el('div','tbui3-toolbar-owned tbui3-quick');quick.setAttribute('role','toolbar');quick.setAttribute('aria-label','Quick access');
             for(const id of quickIds)if(sources.has(id))sourceButton(sources.get(id),quick,true);syncQuick();
             backstage=el('div','tbui3-toolbar-owned tbui3-backstage');backstage.hidden=true;backstage.setAttribute('role','dialog');
             backstage.setAttribute('aria-modal','true');backstage.setAttribute('aria-label','File');
             fileNav=el('nav','tbui3-backstage-rail');fileContent=el('div','tbui3-backstage-content');backstage.append(fileNav,fileContent);root.append(backstage);
         }
-        signature=currentSignature();renderTabs();syncEditorTab(true);
+        syncRibbonStyle();signature=currentSignature();renderTabs();syncEditorTab(true);
     }
     function currentSignature(){return JSON.stringify([state.mode,[...sources.values()].map(n=>[n.id,n.title,n.style.backgroundImage]),[...menus.values()].map(m=>[m.node.id,m.title]),!!currentHost()]);}
     function syncEditorTab(initial=false){
@@ -530,7 +563,7 @@
                 if(e.shiftKey&&d.activeElement===first){e.preventDefault();last?.focus();}else if(!e.shiftKey&&d.activeElement===last){e.preventDefault();first?.focus();}}
             return;
         }
-        if(e.ctrlKey&&e.key==='F1'){e.preventDefault();content.hidden=!content.hidden;resize();return;}
+        if(e.ctrlKey&&e.key==='F1'){e.preventDefault();if(state.mode==='Ribbon')setSimplified(!state.simplified,true);else{content.hidden=!content.hidden;resize();}return;}
         const b=e.target.closest&&e.target.closest('.tbui3-ribbon-tab');if(!b||!tabs.contains(b))return;
         const items=[...tabs.children];let i=items.indexOf(b);
         if(e.key==='ArrowRight')i=(i+1)%items.length;else if(e.key==='ArrowLeft')i=(i+items.length-1)%items.length;
@@ -563,5 +596,5 @@
         d.removeEventListener('keydown',keydown,true);w.removeEventListener('pointerdown',pointerdown,true);w.removeEventListener('mousedown',pointerdown,true);w.removeEventListener('blur',blur);
         for(const n of d.querySelectorAll('.tbui3-toolbar-option'))n.remove();
     }
-    return Object.assign(state,{install,setMode,tick,dispose,openFile,closeFile,discover});
+    return Object.assign(state,{install,setMode,setSimplified,tick,dispose,openFile,closeFile,discover});
 })

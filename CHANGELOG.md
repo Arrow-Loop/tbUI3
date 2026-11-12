@@ -4,6 +4,13 @@ All notable changes to tbUI3. Dates are when the change was made, not released. 
 
 ## Unreleased
 
+### 2026-11-12 — Full/Simplified Ribbon toggle (tbUI3IDE 1.3.0.10)
+
+- Added a fixed bottom-right down chevron in Ribbon mode. Clicking switches to a 48px single-row Simplified Ribbon and an up chevron; clicking again restores the 100px full command area. Tabs, commands, native controls, state, tooltips and the selected tab are retained.
+- Compact groups use 20px icons and single-line captions. Long rows remain accessible through horizontal scrolling, mouse wheel and keyboard focus; native input/select wheel behavior is preserved. This is a presentation toggle inside Ribbon mode, not a new toolbar mode. Hybrid/Classic retain their existing structures.
+- Saved the preference independently as SimplifiedRibbon alongside ToolbarMode and optional styling. Ctrl+F1 switches full/simplified in Ribbon; Hybrid keeps its existing hide/show shortcut.
+- 116 automated checks, 71 mirrors and Edge fixtures at 1280px/640px pass. Native build/reload and persistence/visual acceptance remain pending. Evidence: docs/validation/2026-11-12-simplified-ribbon.md.
+
 ### 2026-11-12 — Replacement quick-access logo (tbUI3IDE 1.3.0.9)
 
 - Replaced the earlier logo with Shane's supplied twinBASIC_WinUI3_16px.png, preserving its exact PNG bytes under the existing bundled filename. Display it at its native 15×16px size. Existing theme/titlebar visibility rules are unchanged.

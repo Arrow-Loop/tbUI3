@@ -110,7 +110,27 @@ Private Module IdeToolbarScript
         js = js & "ckColor))); color: var(--tbui3-toolbar-fg); border: var(--tbui3-toolbar-line); border-radius: 8px; }\n.tbui3-ribbon-popup .tbui3-ribbon-command { flex"
         js = js & "-direction: row; justify-content: start; height: auto; min-height: 32px; max-width: none; }\n.tbui3-ribbon-popup .tbui3-ribbon-icon { width: 16px; hei"
         js = js & "ght: 16px; font-size: 16px; }\n.tbui3-ribbon-popup .tbui3-ribbon-label { max-width: none; text-align: left; }\n.tbui3-ribbon-separator { border-top: v"
-        js = js & "ar(--tbui3-toolbar-line); margin: 4px 0; }\n" & Chr(34) & ";document.head.appendChild(css);"
+        js = js & "ar(--tbui3-toolbar-line); margin: 4px 0; }\n\n/* Full/Simplified is a presentation of Ribbon, independent of the three modes.\n   The fixed corner but"
+        js = js & "ton remains reachable while a long command row scrolls. */\n.tbui3-ribbon-has-toggle .tbui3-ribbon-content { margin-right: 30px; }\n.tbui3-ribbon-togg"
+        js = js & "le { position: absolute; right: 3px; bottom: 4px; display: grid; place-items: center; width: 24px; height: 22px; padding: 3px; border: 0; border-radiu"
+        js = js & "s: 4px; background: var(--tbui3-toolbar-bg); color: var(--tbui3-toolbar-fg); cursor: default; }\n.tbui3-ribbon-toggle:hover { background: var(--tbui3-"
+        js = js & "toolbar-hover); }\n.tbui3-ribbon-toggle[aria-pressed='true'] .tbui3-ribbon-icon { transform: rotate(180deg); }\n.tbui3-ribbon-simplified { --tbui3-com"
+        js = js & "mand-area-height: 48px; }\n.tbui3-ribbon-simplified .tbui3-ribbon-content { padding: 4px 4px 0; align-items: start; }\n.tbui3-ribbon-simplified .tbui3"
+        js = js & "-ribbon-group { flex-direction: row; align-items: center; height: 32px; padding: 0 4px; }\n.tbui3-ribbon-simplified .tbui3-ribbon-group:not(:last-chil"
+        js = js & "d)::after { top: 2px; height: 28px; }\n.tbui3-ribbon-simplified .tbui3-ribbon-group-body { display: flex; align-items: center; flex: 0 0 auto; height:"
+        js = js & " 32px; gap: 2px; }\n.tbui3-ribbon-simplified .tbui3-ribbon-group-title { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: ins"
+        js = js & "et(50%); white-space: nowrap; }\n.tbui3-ribbon-simplified .tbui3-ribbon-content .tbui3-ribbon-command { display: flex; flex: 0 0 auto; flex-direction:"
+        js = js & " row; align-items: center; justify-content: start; gap: 4px; width: max-content; min-width: 28px; max-width: none; height: 32px; min-height: 32px; max"
+        js = js & "-height: 32px; padding: 4px 6px; }\n.tbui3-ribbon-simplified .tbui3-ribbon-content .tbui3-ribbon-icon { width: 20px; height: 20px; font-size: 20px; li"
+        js = js & "ne-height: 20px; background-size: contain; mask-size: contain; -webkit-mask-size: contain; }\n.tbui3-ribbon-simplified .tbui3-ribbon-content .tbui3-ri"
+        js = js & "bbon-label { display: block; flex: 0 0 auto; max-width: none; max-height: none; line-height: 20px; text-align: left; white-space: nowrap; overflow: vi"
+        js = js & "sible; }\n.tbui3-ribbon-simplified .tbui3-ribbon-content .tbui3-ribbon-compact { width: 30px; padding: 4px; }\n.tbui3-ribbon-simplified .tbui3-ribbon-"
+        js = js & "content .tbui3-ribbon-compact .tbui3-ribbon-label { display: none; }\n.tbui3-ribbon-simplified .tbui3-ribbon-content .tbui3-ribbon-chevron { width: 12"
+        js = js & "px; height: 12px; margin-left: 2px; align-self: center; }\n.tbui3-ribbon-simplified .tbui3-ribbon-selector { flex-direction: row; align-items: center;"
+        js = js & " padding: 0 4px; }\n.tbui3-ribbon-simplified .tbui3-ribbon-selector select, .tbui3-ribbon-simplified .tbui3-ribbon-select { min-height: 28px; height: "
+        js = js & "28px; }\n.tbui3-ribbon-simplified .tbui3-ribbon-grid { flex: 0 0 auto; }\n.tbui3-ribbon-simplified .menuBarGridOptionsInner { display: flex; align-ite"
+        js = js & "ms: center; gap: 12px; height: 32px; }\n.tbui3-ribbon-simplified .menuBarGridOptionRow { white-space: nowrap; }\n.tbui3-ribbon-simplified .tbui3-ribbo"
+        js = js & "n-group-divider { height: 24px; align-self: center; }\n" & Chr(34) & ";document.head.appendChild(css);"
         js = js & vbLf
         js = js & "var nativeContext=/* Native producers are re-evaluated in their own JavaScript realm with only"
         js = js & vbLf
@@ -165,7 +185,7 @@ Private Module IdeToolbarScript
         js = js & vbLf
         js = js & "    const w=api.window, d=w.document, modes=['Classic','Hybrid','Ribbon'];"
         js = js & vbLf
-        js = js & "    const state={mode:'Classic',requestedMode:'Classic',dirty:false,lastError:'',active:'Home',disposed:false};"
+        js = js & "    const state={mode:'Classic',requestedMode:'Classic',dirty:false,simplified:false,simplifiedDirty:false,lastError:'',active:'Home',disposed:false};"
         js = js & vbLf
         js = js & "    const sources=new Map(), menus=new Map(), bindings=new Map(), placements=new Map(), pendingMenus=new Map();"
         js = js & vbLf
@@ -177,7 +197,7 @@ Private Module IdeToolbarScript
         js = js & vbLf
         js = js & "    const fileUnderlays=new Map();"
         js = js & vbLf
-        js = js & "    let shell, tabs, content, quick, backstage, fileNav, fileContent, popup, popupAnchor, interval;"
+        js = js & "    let shell, tabs, content, quick, backstage, fileNav, fileContent, popup, popupAnchor, interval, ribbonToggle;"
         js = js & vbLf
         js = js & "    let signature='', menuSignature='', fileSection='File', savedFocus, captureSink, refreshAt=0;"
         js = js & vbLf
@@ -197,7 +217,7 @@ Private Module IdeToolbarScript
         js = js & vbLf
         js = js & "    function sizeLabels(){"
         js = js & vbLf
-        js = js & "        if(!content||content.hidden)return;"
+        js = js & "        if(!content||content.hidden||state.mode==='Ribbon'&&state.simplified)return;"
         js = js & vbLf
         js = js & "        let probe;"
         js = js & vbLf
@@ -1138,6 +1158,60 @@ Private Module IdeToolbarScript
         js = js & vbLf
         js = js & "    function resize(){if(api.changedSize)api.changedSize();}"
         js = js & vbLf
+        js = js & "    function syncRibbonStyle(){"
+        js = js & vbLf
+        js = js & "        if(!shell)return;"
+        js = js & vbLf
+        js = js & "        const simple=state.mode==='Ribbon'&&state.simplified;"
+        js = js & vbLf
+        js = js & "        shell.classList.toggle('tbui3-ribbon-simplified',simple);"
+        js = js & vbLf
+        js = js & "        if(ribbonToggle){"
+        js = js & vbLf
+        js = js & "            ribbonToggle.title=simple?'Switch to Full Ribbon':'Switch to Simplified Ribbon';"
+        js = js & vbLf
+        js = js & "            ribbonToggle.setAttribute('aria-label',ribbonToggle.title);"
+        js = js & vbLf
+        js = js & "            ribbonToggle.setAttribute('aria-pressed',String(simple));"
+        js = js & vbLf
+        js = js & "            ribbonToggle.setAttribute('aria-expanded',String(!simple));"
+        js = js & vbLf
+        js = js & "        }"
+        js = js & vbLf
+        js = js & "    }"
+        js = js & vbLf
+        js = js & "    function setSimplified(value,dirty=false){"
+        js = js & vbLf
+        js = js & "        value=!!value;const changed=state.simplified!==value;state.simplified=value;"
+        js = js & vbLf
+        js = js & "        if(changed&&dirty)state.simplifiedDirty=true;"
+        js = js & vbLf
+        js = js & "        if(state.mode==='Ribbon'&&content){"
+        js = js & vbLf
+        js = js & "            closePopup();content.hidden=false;"
+        js = js & vbLf
+        js = js & "            for(const b of content.querySelectorAll('.tbui3-ribbon-large'))b.style.removeProperty('width');"
+        js = js & vbLf
+        js = js & "            syncRibbonStyle();sizeLabels();resize();"
+        js = js & vbLf
+        js = js & "        }"
+        js = js & vbLf
+        js = js & "        return state.simplified;"
+        js = js & vbLf
+        js = js & "    }"
+        js = js & vbLf
+        js = js & "    function scrollSimplified(e){"
+        js = js & vbLf
+        js = js & "        if(state.mode!=='Ribbon'||!state.simplified||content.scrollWidth<=content.clientWidth||"
+        js = js & vbLf
+        js = js & "            e.target.closest('input,select')||Math.abs(e.deltaY)<=Math.abs(e.deltaX))return;"
+        js = js & vbLf
+        js = js & "        const before=content.scrollLeft;content.scrollLeft+=e.deltaY;"
+        js = js & vbLf
+        js = js & "        if(content.scrollLeft!==before){e.preventDefault();closePopup();}"
+        js = js & vbLf
+        js = js & "    }"
+        js = js & vbLf
         js = js & "    function restore() {"
         js = js & vbLf
         js = js & "        closePopup();closeFile(false);returnNodes();bindings.clear();"
@@ -1148,7 +1222,7 @@ Private Module IdeToolbarScript
         js = js & vbLf
         js = js & "        if(shell)shell.remove();if(quick)quick.remove();if(backstage)backstage.remove();"
         js = js & vbLf
-        js = js & "        shell=tabs=content=quick=backstage=fileNav=fileContent=null;"
+        js = js & "        shell=tabs=content=quick=backstage=fileNav=fileContent=ribbonToggle=null;"
         js = js & vbLf
         js = js & "        signature='';menuSignature='';fileNavSignature='';fileRenderSignature='';layout=null;expandedMenus.clear();editorBaseline=false;lastEditorNode"
         js = js & "=lastEditorKind=undefined;resize();"
@@ -1171,6 +1245,18 @@ Private Module IdeToolbarScript
         js = js & vbLf
         js = js & "        if(state.mode==='Ribbon'){"
         js = js & vbLf
+        js = js & "            shell.classList.add('tbui3-ribbon-has-toggle');content.id='tbUI3RibbonCommands';"
+        js = js & vbLf
+        js = js & "            ribbonToggle=el('button','tbui3-ribbon-toggle');ribbonToggle.type='button';"
+        js = js & vbLf
+        js = js & "            ribbonToggle.setAttribute('aria-controls',content.id);ribbonToggle.append(iconFor(null,{_ribbonGlyph:'chevron_down'}));"
+        js = js & vbLf
+        js = js & "            ribbonToggle.onclick=()=>setSimplified(!state.simplified,true);shell.append(ribbonToggle);"
+        js = js & vbLf
+        js = js & "            content.addEventListener('wheel',scrollSimplified,{passive:false});"
+        js = js & vbLf
+        js = js & "            content.addEventListener('focusin',e=>{if(state.simplified)e.target.scrollIntoView?.({block:'nearest',inline:'nearest'});});"
+        js = js & vbLf
         js = js & "            quick=el('div','tbui3-toolbar-owned tbui3-quick');quick.setAttribute('role','toolbar');quick.setAttribute('aria-label','Quick access');"
         js = js & vbLf
         js = js & "            for(const id of quickIds)if(sources.has(id))sourceButton(sources.get(id),quick,true);syncQuick();"
@@ -1184,7 +1270,7 @@ Private Module IdeToolbarScript
         js = js & vbLf
         js = js & "        }"
         js = js & vbLf
-        js = js & "        signature=currentSignature();renderTabs();syncEditorTab(true);"
+        js = js & "        syncRibbonStyle();signature=currentSignature();renderTabs();syncEditorTab(true);"
         js = js & vbLf
         js = js & "    }"
         js = js & vbLf
@@ -1259,7 +1345,8 @@ Private Module IdeToolbarScript
         js = js & vbLf
         js = js & "        }"
         js = js & vbLf
-        js = js & "        if(e.ctrlKey&&e.key==='F1'){e.preventDefault();content.hidden=!content.hidden;resize();return;}"
+        js = js & "        if(e.ctrlKey&&e.key==='F1'){e.preventDefault();if(state.mode==='Ribbon')setSimplified(!state.simplified,true);else{content.hidden=!content.hid"
+        js = js & "den;resize();}return;}"
         js = js & vbLf
         js = js & "        const b=e.target.closest&&e.target.closest('.tbui3-ribbon-tab');if(!b||!tabs.contains(b))return;"
         js = js & vbLf
@@ -1328,7 +1415,7 @@ Private Module IdeToolbarScript
         js = js & vbLf
         js = js & "    }"
         js = js & vbLf
-        js = js & "    return Object.assign(state,{install,setMode,tick,dispose,openFile,closeFile,discover});"
+        js = js & "    return Object.assign(state,{install,setMode,setSimplified,tick,dispose,openFile,closeFile,discover});"
         js = js & vbLf
         js = js & "})({window:window,brandImage:" & Chr(34) & "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAA8AAAAQCAYAAADJViUEAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADs"
         js = js & "EAAA7BAbiRa+0AAAAZdEVYdFNvZnR3YXJlAFBhaW50Lk5FVCA1LjEuMTITAUd0AAAAuGVYSWZJSSoACAAAAAUAGgEFAAEAAABKAAAAGwEFAAEAAABSAAAAKAEDAAEAAAACAAAAMQECABEAAABaAAAA"

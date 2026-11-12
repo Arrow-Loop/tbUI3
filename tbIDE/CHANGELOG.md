@@ -1,5 +1,12 @@
 # Changelog: tbIDE (WinUI 3 look for the twinBASIC IDE)
 
+## 2026-11-12, Full/Simplified Ribbon (tbUI3IDE 1.3.0.10)
+
+- Added the bottom-right down chevron in Ribbon mode, switching to an up chevron and a compact single-row layout on click. The same live command/control nodes and selected tab are retained; switching back restores full measured button widths. The command area is 100px full / 48px simplified, with the existing separate 26px tab strip.
+- Simplified uses 20px icons, single-line captions, compact accessible groups and horizontal scrolling without dropping commands. Mouse wheel scrolls overflowing rows except over native inputs/selectors; keyboard focus reveals off-screen controls. File, contextual MultiPage, native selectors/Grid handlers, disabled/checked state and dropdowns remain functional.
+- Added the independent saved SimplifiedRibbon preference and polling protocol; teardown drains all three pending preference kinds. Ribbon Ctrl+F1 uses this toggle. Hybrid/Classic structures are unchanged and Hybrid's prior Ctrl+F1 hide/show remains.
+- 116 automated tests, 71 project mirrors and Edge fixture checks at 1280px/640px pass without page/console errors. Native build/restart preference and visual acceptance remain pending. Evidence: ../docs/validation/2026-11-12-simplified-ribbon.md.
+
 ## 2026-11-12, replacement quick-access image (tbUI3IDE 1.3.0.9)
 
 - Swapped in Shane's supplied twinBASIC_WinUI3_16px.png without modifying its bytes. The existing images/twinBASIC_WinUI3.png path is retained, with native 15×16px display instead of enlarging the small asset. Theme/titlebar conditions and Hybrid structure are unchanged.

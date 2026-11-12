@@ -131,3 +131,28 @@
 .tbui3-ribbon-popup .tbui3-ribbon-icon { width: 16px; height: 16px; font-size: 16px; }
 .tbui3-ribbon-popup .tbui3-ribbon-label { max-width: none; text-align: left; }
 .tbui3-ribbon-separator { border-top: var(--tbui3-toolbar-line); margin: 4px 0; }
+
+/* Full/Simplified is a presentation of Ribbon, independent of the three modes.
+   The fixed corner button remains reachable while a long command row scrolls. */
+.tbui3-ribbon-has-toggle .tbui3-ribbon-content { margin-right: 30px; }
+.tbui3-ribbon-toggle { position: absolute; right: 3px; bottom: 4px; display: grid; place-items: center; width: 24px; height: 22px; padding: 3px; border: 0; border-radius: 4px; background: var(--tbui3-toolbar-bg); color: var(--tbui3-toolbar-fg); cursor: default; }
+.tbui3-ribbon-toggle:hover { background: var(--tbui3-toolbar-hover); }
+.tbui3-ribbon-toggle[aria-pressed='true'] .tbui3-ribbon-icon { transform: rotate(180deg); }
+.tbui3-ribbon-simplified { --tbui3-command-area-height: 48px; }
+.tbui3-ribbon-simplified .tbui3-ribbon-content { padding: 4px 4px 0; align-items: start; }
+.tbui3-ribbon-simplified .tbui3-ribbon-group { flex-direction: row; align-items: center; height: 32px; padding: 0 4px; }
+.tbui3-ribbon-simplified .tbui3-ribbon-group:not(:last-child)::after { top: 2px; height: 28px; }
+.tbui3-ribbon-simplified .tbui3-ribbon-group-body { display: flex; align-items: center; flex: 0 0 auto; height: 32px; gap: 2px; }
+.tbui3-ribbon-simplified .tbui3-ribbon-group-title { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+.tbui3-ribbon-simplified .tbui3-ribbon-content .tbui3-ribbon-command { display: flex; flex: 0 0 auto; flex-direction: row; align-items: center; justify-content: start; gap: 4px; width: max-content; min-width: 28px; max-width: none; height: 32px; min-height: 32px; max-height: 32px; padding: 4px 6px; }
+.tbui3-ribbon-simplified .tbui3-ribbon-content .tbui3-ribbon-icon { width: 20px; height: 20px; font-size: 20px; line-height: 20px; background-size: contain; mask-size: contain; -webkit-mask-size: contain; }
+.tbui3-ribbon-simplified .tbui3-ribbon-content .tbui3-ribbon-label { display: block; flex: 0 0 auto; max-width: none; max-height: none; line-height: 20px; text-align: left; white-space: nowrap; overflow: visible; }
+.tbui3-ribbon-simplified .tbui3-ribbon-content .tbui3-ribbon-compact { width: 30px; padding: 4px; }
+.tbui3-ribbon-simplified .tbui3-ribbon-content .tbui3-ribbon-compact .tbui3-ribbon-label { display: none; }
+.tbui3-ribbon-simplified .tbui3-ribbon-content .tbui3-ribbon-chevron { width: 12px; height: 12px; margin-left: 2px; align-self: center; }
+.tbui3-ribbon-simplified .tbui3-ribbon-selector { flex-direction: row; align-items: center; padding: 0 4px; }
+.tbui3-ribbon-simplified .tbui3-ribbon-selector select, .tbui3-ribbon-simplified .tbui3-ribbon-select { min-height: 28px; height: 28px; }
+.tbui3-ribbon-simplified .tbui3-ribbon-grid { flex: 0 0 auto; }
+.tbui3-ribbon-simplified .menuBarGridOptionsInner { display: flex; align-items: center; gap: 12px; height: 32px; }
+.tbui3-ribbon-simplified .menuBarGridOptionRow { white-space: nowrap; }
+.tbui3-ribbon-simplified .tbui3-ribbon-group-divider { height: 24px; align-self: center; }

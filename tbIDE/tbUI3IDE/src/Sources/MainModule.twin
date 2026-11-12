@@ -36,6 +36,7 @@ Private Class tbUI3IDEAddin
     Private Const SettingsSection As String = "Options"
     Private Const SettingEnabled As String = "Enabled"
     Private Const SettingToolbar As String = "ToolbarMode"
+    Private Const SettingSimplified As String = "SimplifiedRibbon"
     ' Label of the IDE Options row the add-in's option goes under.
     Private Const OptionAnchor As String = "Colour Theme"
     Private Const OptionName As String = "Enable additional IDE theme styling via add-in"
@@ -61,6 +62,7 @@ Private Class tbUI3IDEAddin
     Private Sub Class_Terminate()
         On Error Resume Next
         If ToolbarInstalled Then
+            OptionTimer_Timer
             OptionTimer_Timer
             OptionTimer_Timer
         End If
@@ -231,6 +233,7 @@ Private Class tbUI3IDEAddin
         Dim mode As String = GetSetting(SettingsApp, SettingsSection, SettingToolbar, "Classic")
         If mode <> "Classic" And mode <> "Hybrid" And mode <> "Ribbon" Then mode = "Classic"
         RunJs "window.__tbUI3Toolbar.setMode(" & JsString(mode) & ",false);'toolbar mode restored'"
+        RunJs "window.__tbUI3Toolbar.setSimplified(" & IIf(GetSetting(SettingsApp, SettingsSection, SettingSimplified, "0") = "1", "true", "false") & ",false);'ribbon presentation restored'"
         ToolbarInstalled = True
         Exit Sub
     Failed:
@@ -248,11 +251,15 @@ Private Class tbUI3IDEAddin
         If Len(toolbarError) > 0 And toolbarError <> ToolbarLastError Then Log "toolbar fallback: " & toolbarError
         ToolbarLastError = toolbarError
         Dim changed As String = RunJs("(function(){var t=window.__tbUI3Toolbar;if(t&&t.dirty){t.dirty=false;return 'toolbar:'+t.requestedMode;}" & _
+            "if(t&&t.simplifiedDirty){t.simplifiedDirty=false;return t.simplified?'simple:1':'simple:0';}" & _
             "var s=window.__winui3IdeStyle;if(!s||!s.dirty)return '';s.dirty=false;return s.enabled?'theme:1':'theme:0';})()")
         If Len(changed) = 0 Then Exit Sub
         If Left$(changed, 8) = "toolbar:" Then
             SaveSetting SettingsApp, SettingsSection, SettingToolbar, Mid$(changed, 9)
             Log "toolbar mode saved: " & Mid$(changed, 9)
+        ElseIf Left$(changed, 7) = "simple:" Then
+            SaveSetting SettingsApp, SettingsSection, SettingSimplified, Mid$(changed, 8)
+            Log "simplified ribbon saved: " & Mid$(changed, 8)
         ElseIf Left$(changed, 6) = "theme:" Then
             SaveSetting SettingsApp, SettingsSection, SettingEnabled, Mid$(changed, 7)
             Log "additional styling turned " & IIf(Mid$(changed, 7) = "1", "on", "off") & " in IDE Options (saved)"

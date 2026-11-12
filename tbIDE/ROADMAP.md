@@ -1,5 +1,9 @@
 # Roadmap: tbUI3 IDE
 
+## Current candidate: 1.3.0.10, Full/Simplified Ribbon
+
+Native follow-up: toggle the bottom-right chevron and Ctrl+F1 between full and compact Ribbon, check every tab and dropdown, edit Grid values, use contextual MultiPage and native selectors, resize horizontally and restart to confirm the saved choice. Hybrid keeps its current structure. Source/browser validation: ../docs/validation/2026-11-12-simplified-ribbon.md (116 tests, 71 mirrors, Edge at 1280px/640px). Simplified uses horizontal scrolling with all commands retained; automatic group overflow menus/adaptive collapse and keytips remain open.
+
 ## Current candidate: 1.3.0.9, replacement quick-access logo
 
 Rebuild/reload and verify the supplied small PNG before Save at native 15×16px size, with the existing theme/titlebar conditions. 111 tests, 71 mirrors and Edge fixture checks pass. Prior icon/Save Document/MultiPage acceptance gates remain open.

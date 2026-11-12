@@ -1,6 +1,8 @@
 # Ribbon command organization
 
-Current implementation: tbUI3IDE 1.3.0.8, 2026-11-12.
+Current implementation: tbUI3IDE 1.3.0.10, 2026-11-12.
+
+Ribbon's bottom-right chevron switches between the existing full layout and a single-row Simplified Ribbon. The same tab list, groups and command/control nodes remain; simplified shows 20px icons and single-line captions in a 48px command area. Long rows scroll horizontally without dropping options. The choice is saved independently; Hybrid retains native menus and its current structure. This is distinct from the Classic toolbar mode and does not add a fourth entry to IDE Toolbar.
 
 The Form tab shows MultiPage as a normal group immediately after Grid when a MultiPage host, page or child is selected. This applies to Ribbon and Hybrid; no nested launcher or sub-ribbon is used. Existing native page buttons and command state remain authoritative.
 

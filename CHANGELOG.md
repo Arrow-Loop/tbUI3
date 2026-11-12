@@ -4,6 +4,11 @@ All notable changes to tbUI3. Dates are when the change was made, not released. 
 
 ## Unreleased
 
+### 2026-11-12 — Hybrid parity audit
+
+- Verified the shared large-button sizing/font updates, Grid geometry, compact native alignment/size commands and inline contextual MultiPage behavior in Hybrid. Added a Hybrid-specific measured-width/font-change regression and expanded native alignment/size dispatch/state coverage to both layouts. All 105 tests pass without skips.
+- No add-in code/version changes in this audit. Hybrid retains its native menus and has no quick-access toolbar or File Backstage. Carrying the logo into Hybrid requires a layout decision; Shane was asked whether to add quick access or preserve Hybrid's current structure.
+
 ### 2026-11-12 — Quick-access logo theme-name fix (tbUI3IDE 1.3.0.7)
 
 - Fixed the hidden logo in the real IDE: its getThemeName() returns lowercase names, while the initial comparison expected title case. Normalize the name before checking the two WinUI3 themes. The original titlebar/theme restrictions remain intact.

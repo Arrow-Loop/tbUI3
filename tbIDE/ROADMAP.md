@@ -1,5 +1,9 @@
 # Roadmap: tbUI3 IDE
 
+## Hybrid parity audit, 2026-11-12
+
+105 checks pass with explicit Hybrid width/font and compact native-command coverage; shared Grid and inline MultiPage checks already cover both layouts. Await Shane's quick-access/logo preference for Hybrid. Current Hybrid retains native menus and has neither quick access nor Backstage. This audit changes tests/docs only; current binary candidate remains 1.3.0.7.
+
 ## Current candidate: 1.3.0.7, quick-access logo fix
 
 The logo gate now normalizes the lowercase name from twinBASIC's actual getThemeName(). Native follow-up: rebuild/reload and verify the logo in WinUI3 Dark/Light with real OS titlebar off, then verify it hides with a standard theme or real titlebar on. 104 checks and 71 mirrors pass; actual-function Edge fixture validation passes. Prior MultiPage/native acceptance gates remain open.

@@ -27,6 +27,17 @@ test('large captions choose the smallest two-line whole-word width and remeasure
     f.w.HTMLElement.prototype.getBoundingClientRect=original;f.dispose();
 });
 
+test('Hybrid measures large source captions with the same width and font rules as Ribbon',()=>{
+    const f=fixture();let scale=6;
+    f.w.HTMLElement.prototype.getBoundingClientRect=function(){return {width:this.tagName==='SPAN'?this.textContent.length*scale:0};};
+    f.button('restartIcon','Restart the compiler');
+    const style=f.d.createElement('style');style.textContent=fs.readFileSync('tbIDE/tbUI3IDE/css/ide-toolbar.css','utf8');f.d.head.append(style);
+    f.adapter.setMode('Hybrid');const button=f.d.querySelector('[data-source=restartIcon]');
+    assert.equal(parseFloat(button.style.width),58);assert(button.classList.contains('tbui3-ribbon-large'));
+    scale=8;button.querySelector('.tbui3-ribbon-label').style.fontSize='16px';f.adapter.tick();assert.equal(parseFloat(button.style.width),74);
+    button.click();assert.deepEqual(f.calls,['restartIcon']);f.dispose();
+});
+
 test('all ten alignment and sizing actions are icon-only and dispatch their native command once',()=>{
     const f=fixture(),actions=['AlignSelectedControlsLeft','AlignSelectedControlsTop','AlignSelectedControlsRight','AlignSelectedControlsBottom','AlignSelectedControlsCenterHorizontal','AlignSelectedControlsCenterVertical','ResizeSelectedControlsWidest','ResizeSelectedControlsTallest','ResizeSelectedControlsNarrowest','ResizeSelectedControlsShortest'];
     f.items.Format=actions.map(name=>({name,action:'tbFormDesigner_'+name}));f.adapter.setMode('Ribbon');f.d.querySelector('[data-tab=Form]').click();
@@ -455,17 +466,19 @@ function attachNativeBridge(f,sandbox={}){
     const bridge=contextFactory({selectedEditor:()=>sandbox.selectedEditor||null,addComponent:sandbox.addComponent});
     f.api.captureMenu=bridge.captureMenu;f.api.editorState=bridge.editorState;return bridge;
 }
-test('Form directly exposes the eight classic alignment and size controls using their original native handlers',t=>{
+test('Ribbon and Hybrid expose compact alignment and size controls using their original native handlers',t=>{
     if(!process.env.TB_IDE_MAIN_JS)return t.skip('Set TB_IDE_MAIN_JS for native contract');
+    for(const mode of ['Ribbon','Hybrid']){
     const f=fixture(),ids=['menuBarAlignLeft','menuBarAlignTop','menuBarAlignRight','menuBarAlignBottom','menuBarSizeWidest','menuBarSizeTallest','menuBarSizeNarrowest','menuBarSizeShortest'];
     const actions=['AlignSelectedControlsLeft','AlignSelectedControlsTop','AlignSelectedControlsRight','AlignSelectedControlsBottom','ResizeSelectedControlsWidest','ResizeSelectedControlsTallest','ResizeSelectedControlsNarrowest','ResizeSelectedControlsShortest'];
     for(let i=0;i<ids.length;i++){const n=f.button(ids[i]);n.boundCommand='tbFormDesigner_'+actions[i];n.style.backgroundImage='url(https://example.test/'+ids[i]+'.svg)';}
     const sandbox={rootMenuFormat:f.d.getElementById('rootMenuFormat'),menuRightTriangle:'>',showContextMenu:(...args)=>f.show(...args)};
-    const show=nativeFunction('showFormatMenu',sandbox);sandbox.rootMenuFormat.onmousedown=()=>show();attachNativeBridge(f);f.adapter.setMode('Ribbon');f.d.querySelector('[data-tab=Form]').click();
+    const show=nativeFunction('showFormatMenu',sandbox);sandbox.rootMenuFormat.onmousedown=()=>show();attachNativeBridge(f);f.adapter.setMode(mode);f.d.querySelector('[data-tab=Form]').click();
     assert.deepEqual([...f.d.querySelectorAll('[data-source^=menuBarAlign],[data-source^=menuBarSize]')].map(n=>n.dataset.source),ids);
     for(const id of ids){const button=f.d.querySelector(`[data-source=${id}]`);assert(button.classList.contains('tbui3-ribbon-compact'));assert(!button.classList.contains('tbui3-ribbon-large'));assert(button.title);assert(button.getAttribute('aria-label'));assert(!button.hasAttribute('aria-haspopup'));assert(button.querySelector('.tbui3-ribbon-icon').style.getPropertyValue('--tbui3-native-image').includes(id));}
     f.d.querySelector('[data-source=menuBarAlignLeft]').click();assert.deepEqual(f.calls,['menuBarAlignLeft']);
     f.d.getElementById('menuBarSizeWidest').classList.add('disabledCommand');f.adapter.tick();assert(f.d.querySelector('[data-source=menuBarSizeWidest]').disabled);f.dispose();
+    }
 });
 test('Insert expands the actual asynchronous native Add producer and keeps dynamic options without opening a native popup',t=>{
     if(!process.env.TB_IDE_MAIN_JS)return t.skip('Set TB_IDE_MAIN_JS for native contract');

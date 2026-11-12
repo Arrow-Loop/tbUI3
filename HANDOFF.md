@@ -1,5 +1,9 @@
 # Handoff: tbUI3
 
+## Hybrid audit, 2026-11-12 (current add-in remains 1.3.0.7)
+
+Shane asked that Hybrid receive the Ribbon fixes too. Audit confirms shared label sizing/font refresh, Grid geometry, compact alignment/size buttons and inline MultiPage code already serves both. Added explicit Hybrid width/font and both-mode native command-state/dispatch coverage; 105 tests pass without skips. Hybrid has no quick-access toolbar and keeps native menus, so the logo and File Backstage changes do not apply automatically. An async question asks whether to add quick access including the logo or preserve Hybrid's current structure. Await that preference before changing Hybrid's architecture. This pass changes tests/docs only; no version bump or native build is needed.
+
 ## Current implementation, 2026-11-12: tbUI3IDE 1.3.0.7
 
 Shane reported the quick-access PNG was absent in his IDE. Root cause: native getThemeName() lowercases activeThemeInfo.name; the initial logo gate compared title-case names, and its mock repeated that assumption. The renderer now normalizes theme names. A regression executes the installed native function; the Edge fixture also uses it and verifies the original image actually decodes and is visible. All 104 tests and 71 mirrors pass; native rebuilt-host confirmation remains pending. Inline MultiPage from 1.3.0.6 remains intact. Commit and push this pass to origin/tbui3-dev.

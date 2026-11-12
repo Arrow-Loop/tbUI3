@@ -40,6 +40,7 @@
 ## Branches
 
 - Work goes on `tbui3-dev`. Shane decides what reaches `main`.
+- Commit and push to `origin/tbui3-dev` after every development pass, as Shane explicitly requested on 2026-11-12. Verify that the push succeeded; report any failure. This standing authorization does not authorize merging into `main` or opening PRs.
 - After Shane saves in the IDE, the saved projects and their exports are committed, so the repository always holds his real copy.
 
 ## Documents

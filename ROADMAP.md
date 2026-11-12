@@ -2,6 +2,8 @@
 
 Committed work is listed first. Exploratory ideas are marked as such.
 
+Every development pass ends with a commit and a verified push to `origin/tbui3-dev`, per Shane's standing instruction of 2026-11-12. Main and PR decisions remain Shane's.
+
 ## Current add-in follow-up: 1.3.0.5
 
 - Ribbon reconstruction is implemented; see docs/validation/2026-11-12-ribbon-refinements.md. Build and test the add-in in twinBASIC: short/long button labels, Grid spacing, ten icon-only commands, File > Options, both WinUI3 themes and the real OS titlebar switch. Native visual/build acceptance remains open.

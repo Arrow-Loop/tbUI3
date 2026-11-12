@@ -4,6 +4,8 @@ All notable changes to tbUI3. Dates are when the change was made, not released. 
 
 ## Unreleased
 
+- 2026-11-12: Recorded Shane's standing instruction to commit and push every development pass to `origin/tbui3-dev` and verify success. Main/PR decisions remain Shane's.
+
 ### 2026-11-12 — Ribbon refinements (tbUI3IDE 1.3.0.5)
 
 - Reconstructed the five requested changes: font-measured 50–86px large-button widths for up to two whole-word lines; Grid option spacing matching the divider inset; ten compact alignment/size commands with accessible names and native dispatch; one File > Options page containing IDE Options, language and shortcuts; the supplied original PNG before Save only for WinUI3 Light/Dark with the real OS titlebar disabled.

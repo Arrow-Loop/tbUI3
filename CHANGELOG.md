@@ -4,6 +4,11 @@ All notable changes to tbUI3. Dates are when the change was made, not released. 
 
 ## Unreleased
 
+### 2026-11-12 — Replacement quick-access logo (tbUI3IDE 1.3.0.9)
+
+- Replaced the earlier logo with Shane's supplied twinBASIC_WinUI3_16px.png, preserving its exact PNG bytes under the existing bundled filename. Display it at its native 15×16px size. Existing theme/titlebar visibility rules are unchanged.
+- Regenerated/repacked the add-in. 111 tests, 71 mirrors and Edge fixture checks pass; native rebuild/reload confirmation remains pending.
+
 ### 2026-11-12 — Requested icon set and document commands (tbUI3IDE 1.3.0.8)
 
 - Applied Shane's explicit Segoe code points and Microsoft Fluent icon choices across Home, Insert, Code, Form, View, Project, Debug, Add-ins and File. Explicit selections override native backgrounds/codicons; unlisted commands retain their native presentation. Renamed Restart Compiler and Flush LLVM Cache.

@@ -4,7 +4,9 @@ Committed work is listed first. Exploratory ideas are marked as such.
 
 Every development pass ends with a commit and a verified push to `origin/tbui3-dev`, per Shane's standing instruction of 2026-11-12. Main and PR decisions remain Shane's.
 
-## Current add-in follow-up: 1.3.0.8
+## Current add-in follow-up: 1.3.0.9
+
+- Rebuild/reload to confirm Shane's replacement quick-access PNG at native 15×16px size. The existing WinUI3 Dark/Light and real-titlebar conditions are preserved. Shared icon/command changes from 1.3.0.8 remain intact.
 
 - Requested icon/label assignments, MultiPage/File dividers, the Page Right composite and Code/Form Document groups are implemented. Native gate: rebuild/reload 1.3.0.8; review all tabs and File pages, page-command directions/tooltips, Save Document availability/dispatch in both editors, and Hybrid's shared presentation. Evidence: docs/validation/2026-11-12-requested-icons.md. 111 checks and 71 mirrors pass; native compiled-host acceptance remains open.
 

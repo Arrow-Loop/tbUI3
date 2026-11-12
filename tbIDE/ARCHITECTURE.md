@@ -2,7 +2,7 @@
 
 ## Distribution and identity
 
-One canonical project, tbUI3IDE/tbUI3IDE.twinproj, produces tbUI3IDE.dll per IDE architecture, version 1.3.0.8. Its established project ID is unchanged. Remove legacy WinUI3IdeStyle.dll and TabViewDesigner.dll from both addins architecture directories during migration. Theme files and the tbUI3 runtime control package remain separate; built consumer applications do not need this add-in.
+One canonical project, tbUI3IDE/tbUI3IDE.twinproj, produces tbUI3IDE.dll per IDE architecture, version 1.3.0.9. Its established project ID is unchanged. Remove legacy WinUI3IdeStyle.dll and TabViewDesigner.dll from both addins architecture directories during migration. Theme files and the tbUI3 runtime control package remain separate; built consumer applications do not need this add-in.
 
 Explicit icon references in ribbon-presentation.js override native glyphs/backgrounds only for Shane's named commands. Segoe references use the installed Windows font; Fluent references resolve to embedded SVGs in icons/requested.json, pinned to @fluentui/svg-icons 1.1.341 with per-asset hashes and a documented Page Right derivative. Unlisted commands retain native/fallback artwork. Build-time import is separate from offline script generation. No icon package or extra image file is required at runtime. Save Document uses the native tbEditor_Save command in a leading Document group on Code/Form in both replacement layouts; Ribbon removes it from File, while Hybrid's native menus remain authoritative. MultiPage's six native proxies form three pairs with vertical separators inside the contextual group after Grid.
 

@@ -1,5 +1,9 @@
 # Roadmap: tbUI3 IDE
 
+## Current candidate: 1.3.0.9, replacement quick-access logo
+
+Rebuild/reload and verify the supplied small PNG before Save at native 15×16px size, with the existing theme/titlebar conditions. 111 tests, 71 mirrors and Edge fixture checks pass. Prior icon/Save Document/MultiPage acceptance gates remain open.
+
 ## Current candidate: 1.3.0.8, requested icons and Save Document
 
 Native follow-up: review the requested Segoe/Fluent assignments on all tabs and File pages, Page Right's overlaid badge, the MultiPage separators/labels with unchanged help, and the File Open/Save separator. Confirm native Save Document enabled state/dispatch from the leading Document group on both Code/Form tabs, in Ribbon and Hybrid. Hybrid continues to retain native menus without quick access. Evidence: ../docs/validation/2026-11-12-requested-icons.md (111 checks, 71 mirrors, Edge fixture pass). Native build/rendered acceptance and previous adaptive/TabView gates remain open.

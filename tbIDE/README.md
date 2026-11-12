@@ -1,6 +1,6 @@
 # tbUI3 IDE: one add-in for designer tools and optional WinUI 3 styling
 
-The single distributed add-in is **tbUI3IDE 1.3.0.8**, built from `tbUI3IDE/tbUI3IDE.twinproj` as **tbUI3IDE.dll**. It includes TabView adapter v8 and the IDE styling implementation. The established project ID and saved theme preference are retained through the rename.
+The single distributed add-in is **tbUI3IDE 1.3.0.9**, built from `tbUI3IDE/tbUI3IDE.twinproj` as **tbUI3IDE.dll**. It includes TabView adapter v8 and the IDE styling implementation. The established project ID and saved theme preference are retained through the rename.
 
 Current presentation uses Shane's explicit Segoe/Fluent icon selections, inline MultiPage commands with separators and a leading Save Document group on Code and Form in Ribbon and Hybrid. Ribbon File contains one Options page and no Save Document entry. Hybrid keeps its native menus and no quick access. See [icon pass and validation limits](../docs/validation/2026-11-12-requested-icons.md).
 

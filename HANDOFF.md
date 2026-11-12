@@ -1,5 +1,9 @@
 # Handoff: tbUI3
 
+## Current implementation, 2026-11-12: tbUI3IDE 1.3.0.9
+
+Shane supplied a replacement quick-access logo, twinBASIC_WinUI3_16px.png. Its actual dimensions are 15×16px; it is copied byte-for-byte to the existing images/twinBASIC_WinUI3.png path and displayed at native size. SHA-256: 2b6f1817a8da030d4644d83f1af8a3dd25865f499b63a1c643830e6ad1b6a92d. Existing logo conditions, Hybrid structure and all 1.3.0.8 icon/command behavior remain unchanged. Regenerated/repacked add-in; 111 tests, 71 mirrors and Edge fixture checks pass. Native rebuild/reload confirmation remains pending. Commit and push every pass to origin/tbui3-dev.
+
 ## Current implementation, 2026-11-12: tbUI3IDE 1.3.0.8
 
 Implemented Shane's requested command icons, MultiPage labels/dividers, File icons/Open-Save separator and Save Document relocation. Explicit metadata in ribbon-presentation.js overrides native codicons/images; unlisted commands remain native. Segoe uses system fonts; 55 pinned Fluent SVGs are embedded from icons/requested.json (importer: tbIDE/tools/import-ribbon-icons.mjs). Page Right is the authorized left-tab plus filled right-arrow composite with the old badge masked out. Save Document leads Code and Form in an isolated Document group in Ribbon and Hybrid; it is removed only from Ribbon File, with native Hybrid menus preserved. 111 tests, 71 mirrors and Edge fixture checks pass; all SVGs decode. Native build/acceptance remains pending. Detailed evidence: docs/validation/2026-11-12-requested-icons.md. Package/control identities and adapter v8 are unchanged. Commit and push every pass to origin/tbui3-dev.

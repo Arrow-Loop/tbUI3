@@ -1,5 +1,11 @@
 # Requested icons and document commands, 2026-11-12
 
+## Follow-up: replacement quick-access PNG, 1.3.0.9
+
+Shane replaced the original logo with twinBASIC_WinUI3_16px.png. The PNG is 15×16px, 1095 bytes, SHA-256 `2b6f1817a8da030d4644d83f1af8a3dd25865f499b63a1c643830e6ad1b6a92d`. It is preserved byte-for-byte under the existing bundled filename and rendered at native size. Existing theme/titlebar gates and Hybrid structure are unchanged. The regenerated script's embedded PNG bytes match the supplied asset. 111 tests and 71 mirrors pass; the Edge fixture loads/displays the replacement and retains existing command/selection/logo-condition checks without page/console errors. Native rebuild/reload confirmation remains pending.
+
+## Original 1.3.0.8 pass
+
 Candidate: tbUI3IDE 1.3.0.8. Implements Shane's explicit icon/label/divider list for Home, Insert, Code, Form, MultiPage, View, Project, Debug, Add-ins and File.
 
 ## Sources and reproduction

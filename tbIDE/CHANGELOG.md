@@ -1,5 +1,10 @@
 # Changelog: tbIDE (WinUI 3 look for the twinBASIC IDE)
 
+## 2026-11-12, replacement quick-access image (tbUI3IDE 1.3.0.9)
+
+- Swapped in Shane's supplied twinBASIC_WinUI3_16px.png without modifying its bytes. The existing images/twinBASIC_WinUI3.png path is retained, with native 15×16px display instead of enlarging the small asset. Theme/titlebar conditions and Hybrid structure are unchanged.
+- Generated script and packed add-in contain the new image; the embedded-byte regression checks it. 111 tests, 71 mirrors and Edge fixture checks pass. Native rebuild/reload confirmation remains pending.
+
 ## 2026-11-12, explicit Segoe/Fluent assignments (tbUI3IDE 1.3.0.8)
 
 - Implemented Shane's icon specification for all named command surfaces. Explicit icon references take precedence over native glyphs/backgrounds; Segoe code points use Segoe Fluent Icons with MDL2 fallback, and Fluent SVG masks follow the current theme foreground. Unlisted glyphs retain native/fallback behavior.

@@ -5,7 +5,7 @@ Module WinUI3IdeCss
 
     ' Number of rules Build() returns. The add-in's log compares it with what the browser parsed.
     Public Function RuleCount() As Long
-        Return 288
+        Return 290
     End Function
 
     Public Function Build() As String
@@ -22,13 +22,14 @@ Module WinUI3IdeCss
         css = css & "--brush-control-elevation: linear-gradient(to bottom, var(--color-control-border-bottom) 0 1px, var(--color-control-border) 3px); --brush-accent-elevation: linear-gradient(to top, "
         css = css & "var(--color-accent-border-bottom) 0 1px, var(--color-accent-border) 3px); --color-success: #6ccb5f; --color-critical: #ff99a4; --color-card: #ffffff0d; "
         css = css & "--color-card-border: #0000001a; --color-caution-soft: #433519; --color-critical-soft: #442726; }" & vbCrLf
-        css = css & "body:not(.darkMode) { --color-text: #000000e4; --color-text-muted: #0000009e; --color-text-subtle: #00000072; --color-text-disabled: #0000005c; --color-control: #ffffffb3; "
-        css = css & "--color-control-hover: #f9f9f980; --color-control-disabled: #f9f9f94d; --color-input-active: #ffffff; --color-control-border: #0000000f; --color-border-strong: #00000072; "
-        css = css & "--color-neutral-hover: #00000009; --color-neutral-pressed: #00000006; --color-divider: #0000000f; --color-menu-shadow: 0 0 2px rgba(0,0,0,0.12), 0 2px 4px rgba(0,0,0,0.14); "
-        css = css & "--color-flyout: #f9f9f9; --color-popup-border: #0000000f; --color-accent: #005fb8; --color-accent-link: #003e92; --color-neutral-selected: #00000009; --color-card-hover: #f9f9f980; "
-        css = css & "--color-control-active: #f9f9f94d; --color-control-border-bottom: #00000029; --color-accent-hover: #005fb8e6; --color-accent-pressed: #005fb8cc; --color-accent-text: #ffffff; "
-        css = css & "--color-accent-text-pressed: #ffffffb3; --color-accent-border: #ffffff14; --color-accent-border-bottom: #00000066; --color-border-mask: #ffffff; --color-alt: #00000006; "
-        css = css & "--color-alt-hover: #0000000f; --color-alt-pressed: #00000018; --color-border-disabled: #00000037; --color-accent-disabled: #00000037; --color-accent-text-disabled: #ffffff; "
+        css = css & "body:not(.darkMode) { --themeMenuBackColor: #f3f3f3; --themeMenuForeColor: #1a1a1a; --color-text: #000000e4; --color-text-muted: #0000009e; --color-text-subtle: #00000072; "
+        css = css & "--color-text-disabled: #0000005c; --color-control: #ffffffb3; --color-control-hover: #f9f9f980; --color-control-disabled: #f9f9f94d; --color-input-active: #ffffff; "
+        css = css & "--color-control-border: #0000000f; --color-border-strong: #00000072; --color-neutral-hover: #00000009; --color-neutral-pressed: #00000006; --color-divider: #0000000f; "
+        css = css & "--color-menu-shadow: 0 0 2px rgba(0,0,0,0.12), 0 2px 4px rgba(0,0,0,0.14); --color-flyout: #f9f9f9; --color-popup-border: #0000000f; --color-accent: #005fb8; "
+        css = css & "--color-accent-link: #003e92; --color-neutral-selected: #00000009; --color-card-hover: #f9f9f980; --color-control-active: #f9f9f94d; --color-control-border-bottom: #00000029; "
+        css = css & "--color-accent-hover: #005fb8e6; --color-accent-pressed: #005fb8cc; --color-accent-text: #ffffff; --color-accent-text-pressed: #ffffffb3; --color-accent-border: #ffffff14; "
+        css = css & "--color-accent-border-bottom: #00000066; --color-border-mask: #ffffff; --color-alt: #00000006; --color-alt-hover: #0000000f; --color-alt-pressed: #00000018; "
+        css = css & "--color-border-disabled: #00000037; --color-accent-disabled: #00000037; --color-accent-text-disabled: #ffffff; "
         css = css & "--combo-chevron: url('data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 width=%2712%27 height=%2712%27 viewBox=%270 0 12 12%27%3E%3Cpath d=%27M2.5 4.5 6 8l3.5-3.5%27"
         css = css & " fill=%27none%27 stroke=%27%230000009e%27 stroke-width=%271%27 stroke-linecap=%27round%27 stroke-linejoin=%27round%27/%3E%3C/svg%3E'); "
         css = css & "--brush-control-elevation: linear-gradient(to top, var(--color-control-border-bottom) 0 1px, var(--color-control-border) 3px); --brush-accent-elevation: linear-gradient(to top, "
@@ -57,9 +58,9 @@ Module WinUI3IdeCss
         css = css & "body .mainProgressBarInner { position: absolute; left: 0; bottom: 0; height: 3px; border-radius: 1.5px; }" & vbCrLf
         css = css & "body .mainProgressBarInnerText { top: 0; height: calc(100% - 3px); text-align: left; text-shadow: none; }" & vbCrLf
         css = css & "body.darkMode .mainProgressBarOuter::before { background: rgba(255, 255, 255, 0.5442); }" & vbCrLf
-        css = css & "body.darkMode .mainProgressBarInner { background: #60CDFF; }" & vbCrLf
+        css = css & "body.darkMode .mainProgressBarInner { background: var(--color-accent); }" & vbCrLf
         css = css & "body:not(.darkMode) .mainProgressBarOuter::before { background: rgba(0, 0, 0, 0.4458); }" & vbCrLf
-        css = css & "body:not(.darkMode) .mainProgressBarInner { background: #005FB8; }" & vbCrLf
+        css = css & "body:not(.darkMode) .mainProgressBarInner { background: var(--color-accent); }" & vbCrLf
         css = css & "body.darkMode .menuItem:hover { background-color: rgba(255, 255, 255, 0.0605); color: var(--themeMenuForeColor); }" & vbCrLf
         css = css & "body.darkMode .isMenuItemSelected { background-color: rgba(255, 255, 255, 0.0419); color: var(--themeMenuForeColor); }" & vbCrLf
         css = css & "body.darkMode .statusMenuItem:hover { background-color: rgba(255, 255, 255, 0.0605); color: inherit; }" & vbCrLf
@@ -431,6 +432,9 @@ Module WinUI3IdeCss
         css = css & "body .treeNodeIcon.iconExpand14, body .treeNodeIcon.iconCollapse14 { align-self: center; width: 16px; height: 16px; margin: 0 4px 0 0; border-radius: 0; "
         css = css & "background: var(--color-text-muted) !important; -webkit-filter: none; filter: none; -webkit-mask: var(--chevron-down-mask) center / 12px 12px no-repeat; }" & vbCrLf
         css = css & "body .treeNodeIcon.iconExpand14 { -webkit-mask-image: var(--chevron-right-mask); }" & vbCrLf
+        css = css & "body:not(.darkMode) #rootMenuText, body:not(.darkMode) #rootMenuTextOuter, body:not(.darkMode) #rootMenuTitleFull, body:not(.darkMode) #rootMenuClose, "
+        css = css & "body:not(.darkMode) #rootMenuClose2 { color: #1a1a1a; }" & vbCrLf
+        css = css & "body:not(.darkMode) #rootMenuMinimize, body:not(.darkMode) #rootMenuMaximize, body:not(.darkMode) #rootMenuMinimize2, body:not(.darkMode) #rootMenuMaximize2 { filter: invert(1); }" & vbCrLf
         css = css & "body #rootMenu2 > #saveIcon { --fluent-icon: url('data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 width=%2716%27 height=%2716%27 viewBox=%270 0 16 16%27%3E%3Cpath "
         css = css & "d=%27M4 3a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1V9.5C4 8.67 4.67 8 5.5 8h5c.83 0 1.5.67 1.5 1.5V13a1 1 0 0 0 1-1V5.62a1 1 0 0 0-.3-.7L11.1 3.28a1 1 0 0 0-.71-.29H10v1.5C10 5.33 9.33 6 8.5 6"
         css = css & "h-2A1.5 1.5 0 0 1 5 4.5V3zm2 0v1.5c0 .28.22.5.5.5h2a.5.5 0 0 0 .5-.5V3zm5 10V9.5a.5.5 0 0 0-.5-.5h-5a.5.5 0 0 0-.5.5V13zM2 4c0-1.1.9-2 2-2h6.38a2 2 0 0 1 1.41.59l1.62 1.62A2 2 0 0 "

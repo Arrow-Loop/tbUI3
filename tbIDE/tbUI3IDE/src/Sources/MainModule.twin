@@ -13,8 +13,6 @@ Private Class tbUI3IDEAddin
 
     ' Theme-only style element; the TabView controller owns a separate functional stylesheet.
     Private Const StyleElementId As String = "winui3IdeStyleCss"
-    ' Themes whose name starts with this get the stylesheet: "WinUI3 Dark", "WinUI3 Light".
-    Private Const ThemePrefix As String = "WinUI3"
     Private Const LogPrefix As String = "[tbUI3IDE] "
 
     Private WithEvents Host As Host
@@ -73,7 +71,7 @@ Private Class tbUI3IDEAddin
         If Not TabDesigner Is Nothing Then TabDesigner.Dispose
         Set TabDesigner = Nothing
         If Not StyleWindow Is Nothing Then
-            RunJs "(function(){var t=window.__tbUI3Toolbar;if(t)t.dispose();delete window.__tbUI3Toolbar;var s=document.getElementById('tbUI3ToolbarCss');if(s)s.remove();return 'toolbar removed';})()"
+            RunJs "(function(){var t=window.__tbUI3Toolbar;if(t)t.dispose();delete window.__tbUI3Toolbar;if(window.__tbUI3Appearance)window.__tbUI3Appearance.dispose();delete window.__tbUI3Appearance;var s=document.getElementById('tbUI3ToolbarCss');if(s)s.remove();return 'toolbar removed';})()"
         End If
         ClearStyle
         If Not StyleWindow Is Nothing Then
@@ -122,6 +120,7 @@ Private Class tbUI3IDEAddin
         InstallToolbar
         ApplyForTheme activeName
         InstallOption
+        UpdateSystemAccent
         LastThemeName = activeName
         Exit Sub
     Failed:
@@ -130,7 +129,7 @@ Private Class tbUI3IDEAddin
 
     Private Sub ApplyForTheme(ByVal ThemeName As String)
         ' The IDE reports theme names in lower case ("winui3 dark"), so compare without case.
-        If StrComp(Left$(ThemeName, Len(ThemePrefix)), ThemePrefix, vbTextCompare) = 0 Then
+        If LCase$(ThemeName) = "winui3 dark" Or LCase$(ThemeName) = "winui3 light" Then
             ApplyStyle ThemeName
         Else
             ClearStyle
@@ -188,9 +187,9 @@ Private Class tbUI3IDEAddin
             "if(st.pageTheme!==name&&st.palette)Object.keys(st.palette).forEach(function(k){var old=st.palette[k];" & _
             "if(!next[k]&&root.style.getPropertyValue(k)===old.value&&root.style.getPropertyPriority(k)===old.priority)root.style.removeProperty(k);});" & _
             "st.palette={};Object.keys(next).forEach(function(k){st.palette[k]={value:root.style.getPropertyValue(k),priority:root.style.getPropertyPriority(k)};});st.pageTheme=name;}" & _
-            "return name===null||/^winui3/i.test(name);};" & _
+            "return name===null||['winui3 dark','winui3 light'].includes(String(name).toLowerCase());};" & _
             "st.apply=function(){var eligible=st.syncTheme(),s=document.getElementById('" & StyleElementId & "');" & _
-            "if(s&&!eligible){s.remove();s=null;}if(s)s.media=st.enabled?'all':'not all';st.titles();};" & _
+            "if(s&&!eligible){s.remove();s=null;}if(s)s.media=st.enabled?'all':'not all';if(w.__tbUI3Appearance)w.__tbUI3Appearance.sync();st.titles();};" & _
             "st.titleMap=" & PanelTitles & ";st.heads=st.heads||document.getElementsByClassName('sectionHeaderInner');" & _
             "st.titles=function(){var on=st.enabled&&!!document.getElementById('" & StyleElementId & "');" & _
             "for(var i=0;i<st.heads.length;i++){var h=st.heads[i],t=h.textContent,o=h.getAttribute('data-winui3-title');" & _
@@ -247,6 +246,7 @@ Private Class tbUI3IDEAddin
         ' Reconcile the actual name even when the host event was omitted; never reset unsaved page options.
         Dim activeName As String = Host.Themes.ActiveThemeName
         If StrComp(activeName, LastThemeName, vbTextCompare) <> 0 Then ApplyForActiveTheme "theme preference reconciled"
+        UpdateSystemAccent
         Dim toolbarError As String = RunJs("window.__tbUI3Toolbar ? window.__tbUI3Toolbar.lastError : ''")
         If Len(toolbarError) > 0 And toolbarError <> ToolbarLastError Then Log "toolbar fallback: " & toolbarError
         ToolbarLastError = toolbarError
@@ -267,6 +267,20 @@ Private Class tbUI3IDEAddin
         Exit Sub
     Failed:
         Log "could not read IDE options: " & ErrorText()
+    End Sub
+
+    ' Poll the documented Windows palette on the existing options timer. No external package,
+    ' subprocess or registry accent approximation is needed; failed reads retain static theme colors.
+    Private Sub UpdateSystemAccent()
+        On Error GoTo Failed
+        Dim name As String = LCase$(Host.Themes.ActiveThemeName)
+        If name <> "winui3 dark" And name <> "winui3 light" Then Exit Sub
+        If RunJs("(window.__winui3IdeStyle&&window.__winui3IdeStyle.enabled)?'on':'off'") <> "on" Then Exit Sub
+        Dim palette As String = WinUI3SystemAccent.ReadPalette()
+        RunJs "(function(){var a=window.__tbUI3Appearance;if(a)a.setPalette(" & palette & ");return 'accent refreshed';})()"
+        Exit Sub
+    Failed:
+        ' The host may be loading/unloading. Retry on the existing one-second timer.
     End Sub
 
     ' On unless the user turned it off in IDE Options.
@@ -340,3 +354,56 @@ Private Class tbUI3IDEAddin
     End Sub
 
 End Class
+
+' Minimal private Windows Runtime ABI: Windows.UI.ViewManagement.IUISettings3.
+' IID/vtable follow Windows SDK windows.ui.viewmanagement.h. The first three slots are
+' IInspectable, never called here. This truncation matches Microsoft's WPF UISettingsRCW.
+' https://github.com/dotnet/wpf/blob/main/src/Microsoft.DotNet.Wpf/src/PresentationCore/MS/internal/WindowsRuntime/Windows/UI/ViewManagement/UISettingsRcw.cs
+[InterfaceId("03021BE4-5254-4781-8194-5168F7D06D7B")]
+[OleAutomation(False)]
+Private Interface IWinUI3Settings3 Extends stdole.IUnknown
+    Sub Slot00_GetIids()
+    Sub Slot01_GetRuntimeClassName()
+    Sub Slot02_GetTrustLevel()
+    ' Windows.UI.Color is exactly four bytes (A,R,G,B). A Long retval has the same ABI;
+    ' ReadPalette converts its little-endian representation to CSS RGB explicitly.
+    Function GetColorValue(ByVal desiredColor As Long) As Long
+End Interface
+
+Private Module WinUI3SystemAccent
+    Private Declare PtrSafe Function RoInitialize Lib "combase" (ByVal initType As Long) As Long
+    Private Declare PtrSafe Sub RoUninitialize Lib "combase" ()
+    Private Declare PtrSafe Function WindowsCreateString Lib "combase" (ByVal source As LongPtr, ByVal length As Long, ByRef value As LongPtr) As Long
+    Private Declare PtrSafe Function WindowsDeleteString Lib "combase" (ByVal value As LongPtr) As Long
+    Private Declare PtrSafe Function RoActivateInstance Lib "combase" (ByVal classId As LongPtr, ByRef instance As stdole.IUnknown) As Long
+
+    Public Function ReadPalette() As String
+        Dim initialized As Boolean
+        Dim classId As LongPtr
+        Dim instance As stdole.IUnknown
+        Dim settings As IWinUI3Settings3
+        ReadPalette = "null"
+        On Error GoTo Failed
+        Dim hr As Long = RoInitialize(0) ' Single-threaded; use the existing apartment on RPC_E_CHANGED_MODE.
+        initialized = (hr >= 0)
+        If hr < 0 And hr <> &H80010106 Then GoTo Failed
+        Dim runtimeName As String = "Windows.UI.ViewManagement.UISettings"
+        If WindowsCreateString(StrPtr(runtimeName), Len(runtimeName), classId) < 0 Then GoTo Failed
+        If RoActivateInstance(classId, instance) < 0 Then GoTo Failed
+        Set settings = instance ' QueryInterface for IUISettings3, preserving HRESULT failures.
+        Dim json As String = "["
+        Dim desired As Long
+        For desired = 8 To 2 Step -1 ' Light3, Light2, Light1, Accent, Dark1, Dark2, Dark3.
+            Dim raw As String = Right$("00000000" & Hex$(settings.GetColorValue(desired)), 8)
+            If desired <> 8 Then json = json & ","
+            json = json & Chr$(34) & "#" & Mid$(raw, 5, 2) & Mid$(raw, 3, 2) & Left$(raw, 2) & Chr$(34)
+        Next
+        ReadPalette = json & "]"
+    Failed:
+        On Error Resume Next
+        Set settings = Nothing
+        Set instance = Nothing
+        If classId <> 0 Then WindowsDeleteString classId
+        If initialized Then RoUninitialize
+    End Function
+End Module

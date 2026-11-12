@@ -69,12 +69,13 @@ test('Classic handles late add-ins and caption replacement without resurrecting 
     const icon=late.querySelector('.tbui3-classic-icon');f.adapter.tick();assert.equal(late.querySelector('.tbui3-classic-icon'),icon);f.adapter.dispose();assert.equal(late.textContent,'Updated label');assert(!late.hasAttribute('title'));assert(!late.classList.contains('tbui3-classic-glyph'));f.w.close();
 });
 
-test('window insets follow optional styling/titlebar state, preserve Quick Access and clean up owned state',()=>{
-    const f=fixture(),root=f.d.getElementById('root');let enabled=false,real=false;f.api.stylingEnabled=()=>enabled;f.api.realTitlebar=()=>real;f.adapter.setMode('Ribbon');assert(!root.classList.contains('tbui3-window-insets'));
+test('window insets follow WinUI themes and optional styling/titlebar state, preserve Quick Access and clean up owned state',()=>{
+    const f=fixture(),root=f.d.getElementById('root');let enabled=false,real=false,theme='WinUI3 Dark';f.api.themeName=()=>theme;f.api.stylingEnabled=()=>enabled;f.api.realTitlebar=()=>real;f.adapter.setMode('Ribbon');assert(!root.classList.contains('tbui3-window-insets'));
     const quick=f.d.querySelector('.tbui3-quick'),close=f.d.getElementById('rootMenuClose'),parent=close.parentElement;
     enabled=true;f.adapter.tick();assert(root.classList.contains('tbui3-window-insets'));assert(root.classList.contains('tbui3-window-top-inset'));assert.equal(close.parentElement,parent);assert.equal(f.d.querySelector('.tbui3-quick'),quick);assert(root.style.getPropertyValue('--tbui3-caption-row-height'));
     real=true;f.adapter.tick();assert(root.classList.contains('tbui3-window-insets'));assert(!root.classList.contains('tbui3-window-top-inset'));enabled=false;f.adapter.tick();assert(!root.classList.contains('tbui3-window-insets'));assert(!root.classList.contains('tbui3-window-top-inset'));
-    enabled=true;real=false;f.adapter.tick();f.adapter.dispose();assert(!root.classList.contains('tbui3-window-insets'));assert(!root.classList.contains('tbui3-window-top-inset'));assert.equal(root.style.getPropertyValue('--tbui3-caption-row-height'),'');assert.equal(root.style.getPropertyValue('--tbui3-caption-inner-offset'),'');f.w.close();
+    enabled=true;real=false;for(const name of ['Dark','Light','Classic','Third-party','WinUI3 Custom','winui3 light','WINUI3 DARK']){theme=name;f.adapter.tick();const expected=['winui3 dark','winui3 light'].includes(name.toLowerCase());assert.equal(root.classList.contains('tbui3-window-insets'),expected,name);assert.equal(root.classList.contains('tbui3-window-top-inset'),expected,name);}
+    f.adapter.dispose();assert(!root.classList.contains('tbui3-window-insets'));assert(!root.classList.contains('tbui3-window-top-inset'));assert.equal(root.style.getPropertyValue('--tbui3-caption-row-height'),'');assert.equal(root.style.getPropertyValue('--tbui3-caption-inner-offset'),'');f.w.close();
 });
 test('requested compact controls are simplified-only while full labels and native actions are preserved',()=>{
     const actions=['tbFormDesigner_CenterSelectedGroupInContainerHorizontal','tbFormDesigner_CenterSelectedGroupInContainerVertical','tbFormDesigner_ToggleLockSelectedControls','tbFileSystem_AddFolder','tbFileSystem_AddOtherFile','tbFileSystem_ImportFile'];
@@ -397,7 +398,7 @@ test('checked menu state and dynamically changed selector values stay synchroniz
     f.d.querySelector('[data-tab=Home]').click();assert.equal(f.d.querySelector('button[title="Toggle "]').getAttribute('aria-pressed'),'false');
     assert.equal(f.d.querySelector('select[aria-label=Choice]').value,'b');f.dispose();
 });
-test('toolbar styling owns no theme-name gate or hard-coded color palette; only the logo is theme-specific',()=>{
+test('toolbar commands remain theme-independent; logo and optional window insets alone are theme-specific',()=>{
     const css=fs.readFileSync('tbIDE/tbUI3IDE/css/ide-toolbar.css','utf8');
     // Pinned WinUI subtle-state alpha fills and shadow4 are effects, not a replacement theme palette.
     const paletteCss=css.replace(/--tbui3-toolbar-shadow:[^;]+;|--tbui3-subtle-(?:hover|pressed):[^;]+;/g,'');
@@ -788,4 +789,29 @@ test('WinUI3 Light and Dark share subtle menu elevation with native and replacem
     for(const selector of ['body.darkMode','body:not(.darkMode)']){const token=rules.find(r=>r.selectorText===selector).style.getPropertyValue('--color-menu-shadow');assert.equal(token.replace(/\s/g,''),'002pxrgba(0,0,0,0.12),02px4pxrgba(0,0,0,0.14)');}
     const native=rules.find(r=>r.selectorText==='body #contextMenu, body .contextMenu, body .contextMenu2, body #contextMenuSUB');assert.equal(native.style.getPropertyValue('box-shadow'),'var(--color-menu-shadow)');
     const popup=rules.find(r=>r.selectorText==='.tbui3-ribbon-popup');assert.equal(popup.style.getPropertyValue('box-shadow'),'var(--color-menu-shadow, none)');dom.window.close();
+});
+
+const accentFactory=vm.runInNewContext(fs.readFileSync('tbIDE/tbUI3IDE/js/system-accent.js','utf8'));
+test('system accent maps actual Windows shades by WinUI theme and removes all overrides on off/theme/dispose',()=>{
+    const dom=new JSDOM('<head></head><body></body>'),d=dom.window.document;
+    let name='WinUI3 Light',enabled=true;const palette=['#F6CCFF','#E694F7','#CB65E0','#B345C9','#8E2FA8','#702082','#501260'];
+    const api=accentFactory({document:d,themeName:()=>name,enabled:()=>enabled});
+    const vars=()=>d.getElementById('tbUI3SystemAccentCss')?.sheet.cssRules[0].style;
+    api.setPalette(palette);assert.equal(vars().getPropertyValue('--color-accent'),'#8e2fa8');assert.equal(vars().getPropertyValue('--color-accent-link'),'#702082');assert.equal(vars().getPropertyValue('--themeSelectedTextBackColor'),'#b345c940');
+    const sheet=d.getElementById('tbUI3SystemAccentCss');api.sync();assert.equal(d.getElementById('tbUI3SystemAccentCss'),sheet);
+    name='winui3 dark';api.sync();assert.equal(vars().getPropertyValue('--color-accent'),'#e694f7');assert.equal(vars().getPropertyValue('--color-accent-link'),'#f6ccff');assert.equal(vars().getPropertyValue('--color-accent-hover'),'#e694f7e6');assert.equal(vars().getPropertyValue('--color-accent-pressed'),'#e694f7cc');assert.equal(vars().getPropertyValue('--themeDialogHeaderBackColor'),'');
+    for(const theme of ['Dark','Light','WinUI3 Custom','Third party']){name=theme;api.sync();assert.equal(d.getElementById('tbUI3SystemAccentCss'),null,theme);}
+    name='WinUI3 Light';api.sync();assert(vars());enabled=false;api.sync();assert.equal(d.getElementById('tbUI3SystemAccentCss'),null);enabled=true;api.sync();assert(vars());api.dispose();assert.equal(d.getElementById('tbUI3SystemAccentCss'),null);dom.window.close();
+});
+test('system accent refreshes without changing native palette variables and invalid or failed reads fall back',()=>{
+    const dom=new JSDOM('<html style="--themeProblemSelectedBorderColor:#005fb8"><head></head><body></body></html>'),d=dom.window.document;
+    const api=accentFactory({document:d,themeName:()=> 'WinUI3 Light',enabled:()=>true});
+    api.setPalette(Array(7).fill('#123456'));assert(d.getElementById('tbUI3SystemAccentCss').textContent.includes('#123456'));api.setPalette(Array(7).fill('#abcdef'));assert(!d.getElementById('tbUI3SystemAccentCss').textContent.includes('#123456'));assert.equal(d.documentElement.style.getPropertyValue('--themeProblemSelectedBorderColor'),'#005fb8');
+    for(const invalid of [null,[],Array(7).fill('red'),Array(7).fill('#123456;display:none')]){api.setPalette(invalid);assert.equal(d.getElementById('tbUI3SystemAccentCss'),null);}
+    api.dispose();dom.window.close();
+});
+test('WinUI Light ships neutral window chrome and native bridge polls documented UISettings with balanced cleanup',()=>{
+    const theme=fs.readFileSync('tbIDE/themes/WinUI3 Light.theme','utf8');assert.match(theme,/MenuBackColor:\s*#F3F3F3;/);assert.match(theme,/MenuForeColor:\s*#1A1A1A;/);
+    const main=fs.readFileSync('tbIDE/tbUI3IDE/src/Sources/MainModule.twin','utf8');assert(main.includes('03021BE4-5254-4781-8194-5168F7D06D7B'));assert(main.includes('Windows.UI.ViewManagement.UISettings'));assert(main.includes('For desired = 8 To 2 Step -1'));assert(main.includes('If classId <> 0 Then WindowsDeleteString classId'));assert(main.includes('If initialized Then RoUninitialize'));assert(main.includes('window.__tbUI3Appearance.dispose()'));assert(main.includes("enabled)?'on':'off'"));
+    const builder=fs.readFileSync('tbIDE/tools/build-ide-toolbar.mjs','utf8');assert(builder.includes('system-accent.js'));assert(builder.includes('syncAppearance:function()'));
 });

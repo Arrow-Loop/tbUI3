@@ -270,12 +270,11 @@ const dark = [
 
 const light = [
   ['inherits', 'light', 'everything not listed below comes from the IDE Light theme'],
-  '/* Window chrome: SolidBackgroundFillColorBase #F3F3F3. The IDE draws its title text and caption buttons white, */',
-  '/* so the title and menu bar uses the accent (AccentFillColorDefault #005FB8), like the IDE Light theme does. */',
+  '/* Window chrome: SolidBackgroundFillColorBase #F3F3F3. Additional styling also fixes native white caption text/icons. */',
   ['GeneralBackColor', '#F3F3F3', 'SolidBackgroundFillColorBase'],
   ['GeneralPanelBackColor', '#F3F3F3', 'SolidBackgroundFillColorBase'],
-  ['MenuBackColor', '#005FB8', 'AccentFillColorDefault (default blue accent, Dark1)'],
-  ['MenuForeColor', '#FFFFFF', 'TextOnAccentFillColorPrimary'],
+  ['MenuBackColor', '#F3F3F3', 'SolidBackgroundFillColorBase'],
+  ['MenuForeColor', '#1A1A1A', 'TextFillColorPrimary'],
   ['FullScreenToggleBackColor', '#F9F9F9', 'its text uses the general text colour'],
   ['ToolbarBackground', '#F3F3F3', ''],
   ['ToolbarDropDownBorder', '1px solid rgba(0, 0, 0, 0.0578)', 'ControlStrokeColorDefault #0F000000'],

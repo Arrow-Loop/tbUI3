@@ -192,6 +192,80 @@ Private Module IdeToolbarScript
         js = js & "})({selectedEditor:function(){return typeof openEditors==='undefined'?null:openEditors.selectedEditorNode;},addComponent:typeof showContextMenuAddComp"
         js = js & "onent==='function'?showContextMenuAddComponent:undefined});"
         js = js & vbLf
+        js = js & "window.__tbUI3Appearance=// Windows.UI.ViewManagement.UISettings colors arrive from the native add-in."
+        js = js & vbLf
+        js = js & "// Resource mapping: microsoft-ui-xaml Common_themeresources_any.xaml."
+        js = js & vbLf
+        js = js & "(function createSystemAccent(api) {"
+        js = js & vbLf
+        js = js & "    const d=api.document;"
+        js = js & vbLf
+        js = js & "    let palette=null,style=null;"
+        js = js & vbLf
+        js = js & "    function sync(){"
+        js = js & vbLf
+        js = js & "        const name=String(api.themeName()||'').toLowerCase();"
+        js = js & vbLf
+        js = js & "        if(!api.enabled()||!['winui3 dark','winui3 light'].includes(name)||!palette){"
+        js = js & vbLf
+        js = js & "            style?.remove();style=null;return;"
+        js = js & vbLf
+        js = js & "        }"
+        js = js & vbLf
+        js = js & "        const dark=name==='winui3 dark',fill=palette[dark?1:4],link=palette[dark?0:5],base=palette[3];"
+        js = js & vbLf
+        js = js & "        const tint=(hex,alpha)=>hex+alpha;"
+        js = js & vbLf
+        js = js & "        const vars={"
+        js = js & vbLf
+        js = js & "            '--color-accent':fill,'--color-accent-link':link,"
+        js = js & vbLf
+        js = js & "            '--color-accent-hover':tint(fill,'e6'),'--color-accent-pressed':tint(fill,'cc'),"
+        js = js & vbLf
+        js = js & "            '--themeFindResultColor':fill,'--themeProblemSelectedBorderColor':fill,"
+        js = js & vbLf
+        js = js & "            '--themeDebugIntellisensePartialMatchColor':fill,'--themeSignatureHelpHeaderColor':fill,"
+        js = js & vbLf
+        js = js & "            '--themeDesignerRulerMarkerColor':fill,'--themeFrontPageIconColor':fill,"
+        js = js & vbLf
+        js = js & "            '--themeDesignerToolboxItemSelectedOutline':`1.5px solid ${fill}`,"
+        js = js & vbLf
+        js = js & "            '--themeDialogTabBarBorderTop':`2px solid ${fill}`,"
+        js = js & vbLf
+        js = js & "            '--themeToolbarPreviewButtonColor':tint(fill,dark?'4d':'33'),"
+        js = js & vbLf
+        js = js & "            '--themeSelectedTextBackColor':tint(base,dark?'66':'40')"
+        js = js & vbLf
+        js = js & "        };"
+        js = js & vbLf
+        js = js & "        // The light theme's modal caption has white native text; keep its accent fill."
+        js = js & vbLf
+        js = js & "        if(!dark)vars['--themeDialogHeaderBackColor']=fill;"
+        js = js & vbLf
+        js = js & "        const css='body.darkMode,body:not(.darkMode){'+Object.entries(vars).map(([k,v])=>k+':'+v+';').join('')+'}';"
+        js = js & vbLf
+        js = js & "        if(!style){style=d.createElement('style');style.id='tbUI3SystemAccentCss';}"
+        js = js & vbLf
+        js = js & "        if(style.textContent!==css)style.textContent=css;"
+        js = js & vbLf
+        js = js & "        if(d.head.lastElementChild!==style)d.head.append(style);"
+        js = js & vbLf
+        js = js & "    }"
+        js = js & vbLf
+        js = js & "    return {"
+        js = js & vbLf
+        js = js & "        setPalette(value){palette=Array.isArray(value)&&value.length===7&&value.every(c=>/^#[0-9a-f]{6}$/i.test(c))?value.map(c=>c.toLowerCase()):null"
+        js = js & ";sync();},"
+        js = js & vbLf
+        js = js & "        sync,"
+        js = js & vbLf
+        js = js & "        dispose(){style?.remove();style=null;palette=null;}"
+        js = js & vbLf
+        js = js & "    };"
+        js = js & vbLf
+        js = js & "})({document:document,themeName:function(){return getThemeName();},enabled:function(){return !!(window.__winui3IdeStyle&&window.__winui3IdeStyle.enabl"
+        js = js & "ed);}});"
+        js = js & vbLf
         js = js & "var adapter=/* tbUI3IDE toolbar presentation. Native nodes/commands remain the execution authority."
         js = js & vbLf
         js = js & " * Factory arguments isolate version-specific IDE hooks from the renderer and tests."
@@ -608,8 +682,10 @@ Private Module IdeToolbarScript
         js = js & "caption-row-height'),offset:root.style.getPropertyValue('--tbui3-caption-inner-offset'),offsetPriority:root.style.getPropertyPriority('--tbui3-caption"
         js = js & "-inner-offset')};}"
         js = js & vbLf
-        js = js & "        const enabled=!!api.stylingEnabled?.(),top=enabled&&!api.realTitlebar(),header=d.getElementById('rootMenu1'),inner=d.getElementById('rootMenu1"
-        js = js & "Inner');"
+        js = js & "        const eligible=['winui3 dark','winui3 light'].includes(String(api.themeName?.()||'').toLowerCase());"
+        js = js & vbLf
+        js = js & "        const enabled=eligible&&!!api.stylingEnabled?.(),top=enabled&&!api.realTitlebar(),header=d.getElementById('rootMenu1'),inner=d.getElementById("
+        js = js & "'rootMenu1Inner');"
         js = js & vbLf
         js = js & "        const natural=inner?Math.max(0,inner.getBoundingClientRect().height-(root.classList.contains('tbui3-window-top-inset')?8:0)):0;"
         js = js & vbLf
@@ -1534,7 +1610,7 @@ Private Module IdeToolbarScript
         js = js & vbLf
         js = js & "        try{"
         js = js & vbLf
-        js = js & "            syncOptions();syncWindowInsets();if(state.mode==='Classic'){syncClassic();return;}"
+        js = js & "            syncOptions();api.syncAppearance?.();syncWindowInsets();if(state.mode==='Classic'){syncClassic();return;}"
         js = js & vbLf
         js = js & "            discover();const next=currentSignature();if(next!==signature){signature=next;menuSignature='';renderTabs();}"
         js = js & vbLf
@@ -2689,6 +2765,8 @@ Private Module IdeToolbarScript
         js = js & vbLf
         js = js & "realTitlebar:function(){return !!liveIDEOptions.showRealTitlebar;},projectName:function(){return typeof g_CurrentProjectName==='string'?g_CurrentProje"
         js = js & "ctName:'';},"
+        js = js & vbLf
+        js = js & "syncAppearance:function(){window.__tbUI3Appearance.sync();},"
         js = js & vbLf
         js = js & "stylingEnabled:function(){return !!(window.__winui3IdeStyle&&window.__winui3IdeStyle.enabled);},"
         js = js & vbLf

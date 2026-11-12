@@ -1,5 +1,9 @@
 # Roadmap: tbUI3 IDE
 
+## Current candidate: tbUI3IDE 1.3.0.13
+
+Neutral Light chrome, theme-restricted insets and Windows accent colors are implemented. Native gate: rebuild/reload the add-in; install the regenerated Light.theme; switch between both WinUI themes, standard/third-party themes and styling On/Off; verify no non-WinUI margin changes, caption readability/hover, unchanged caption-button geometry and system accent updates after changing Windows Personalization. Check both IDE architectures and restart preferences. Static themes retain fallback colors without the add-in. 129 tests, 71 mirrors, x86/x64 UISettings ABI probes and Edge fixtures pass; native compiled-host acceptance remains open. Evidence: docs/validation/2026-11-12-neutral-light-system-accent.md. Earlier candidate notes below are historical; only the two WinUI themes now receive optional insets.
+
 ## Current add-in follow-up: 1.3.0.12
 
 Profile parity and the simplified-only scope correction are implemented. Rebuild/reload and verify Form / Code beside Save Document in both editors/profiles, Hybrid full/simplified with its original smaller inventory, Classic glyph-only native/add-in buttons and tooltips, and additional-styling window insets. Check full labels/inline Grid versus simplified icon-only controls/Grid flyout, inset chevron in both with hover-only background, and custom/real OS titlebar geometry. Restart to verify the saved presentation. Native acceptance remains open; 126 tests, 71 mirrors and Edge fixtures pass. Evidence: docs/validation/2026-11-12-profiles-insets-scope.md. Older entries below describe their versions; this pass supersedes earlier scope/Hybrid shortcut statements. Adaptive group overflow/keytips and TabView gates remain open.

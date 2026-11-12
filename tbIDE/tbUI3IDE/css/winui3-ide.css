@@ -65,6 +65,8 @@ body.darkMode {
 }
 
 body:not(.darkMode) {
+  --themeMenuBackColor: #f3f3f3;          /* Neutral window chrome, including previously installed Light.theme */
+  --themeMenuForeColor: #1a1a1a;          /* TextFillColorPrimary on neutral chrome */
   --color-text: #000000e4;
   --color-text-muted: #0000009e;
   --color-text-subtle: #00000072;
@@ -144,9 +146,9 @@ body .mainProgressBarOuter::before { content: ''; position: absolute; left: 0; r
 body .mainProgressBarInner { position: absolute; left: 0; bottom: 0; height: 3px; border-radius: 1.5px; }
 body .mainProgressBarInnerText { top: 0; height: calc(100% - 3px); text-align: left; text-shadow: none; }
 body.darkMode .mainProgressBarOuter::before { background: rgba(255, 255, 255, 0.5442); }
-body.darkMode .mainProgressBarInner { background: #60CDFF; }
+body.darkMode .mainProgressBarInner { background: var(--color-accent); }
 body:not(.darkMode) .mainProgressBarOuter::before { background: rgba(0, 0, 0, 0.4458); }
-body:not(.darkMode) .mainProgressBarInner { background: #005FB8; }
+body:not(.darkMode) .mainProgressBarInner { background: var(--color-accent); }
 
 /* ---------- Menu bar: MenuBar_themeresources.xaml ----------
   MenuBarItemBackgroundPointerOver = SubtleFillColorSecondary, Selected = SubtleFillColorTertiary,
@@ -561,3 +563,11 @@ body .treeItemInner:hover { color: inherit; }
 body .treeItemInner:not(.treeItemGridLines):active { background-color: var(--color-neutral-pressed); }
 body .treeNodeIcon.iconExpand14, body .treeNodeIcon.iconCollapse14 { align-self: center; width: 16px; height: 16px; margin: 0 4px 0 0; border-radius: 0; background: var(--color-text-muted) !important; -webkit-filter: none; filter: none; -webkit-mask: var(--chevron-down-mask) center / 12px 12px no-repeat; }
 body .treeNodeIcon.iconExpand14 { -webkit-mask-image: var(--chevron-right-mask); }
+
+/* Native caption text is hard-coded white; WinUI Light uses neutral chrome.
+   Caption PNGs are white, so invert only minimize/maximize, not the close codicon. */
+body:not(.darkMode) #rootMenuText, body:not(.darkMode) #rootMenuTextOuter,
+body:not(.darkMode) #rootMenuTitleFull, body:not(.darkMode) #rootMenuClose,
+body:not(.darkMode) #rootMenuClose2 { color: #1a1a1a; }
+body:not(.darkMode) #rootMenuMinimize, body:not(.darkMode) #rootMenuMaximize,
+body:not(.darkMode) #rootMenuMinimize2, body:not(.darkMode) #rootMenuMaximize2 { filter: invert(1); }

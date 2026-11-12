@@ -197,7 +197,8 @@
     function syncWindowInsets(){
         const root=d.getElementById('root');if(!root)return;
         if(insetRoot!==root){clearWindowInsets();insetRoot=root;insetOriginal={sides:root.classList.contains('tbui3-window-insets'),top:root.classList.contains('tbui3-window-top-inset'),height:root.style.getPropertyValue('--tbui3-caption-row-height'),priority:root.style.getPropertyPriority('--tbui3-caption-row-height'),offset:root.style.getPropertyValue('--tbui3-caption-inner-offset'),offsetPriority:root.style.getPropertyPriority('--tbui3-caption-inner-offset')};}
-        const enabled=!!api.stylingEnabled?.(),top=enabled&&!api.realTitlebar(),header=d.getElementById('rootMenu1'),inner=d.getElementById('rootMenu1Inner');
+        const eligible=['winui3 dark','winui3 light'].includes(String(api.themeName?.()||'').toLowerCase());
+        const enabled=eligible&&!!api.stylingEnabled?.(),top=enabled&&!api.realTitlebar(),header=d.getElementById('rootMenu1'),inner=d.getElementById('rootMenu1Inner');
         const natural=inner?Math.max(0,inner.getBoundingClientRect().height-(root.classList.contains('tbui3-window-top-inset')?8:0)):0;
         const next=JSON.stringify([enabled,top,state.mode,api.themeName?.(),natural]);if(next===insetSignature)return;insetSignature=next;
         root.classList.remove('tbui3-window-top-inset');root.classList.toggle('tbui3-window-insets',enabled);
@@ -636,7 +637,7 @@
     function tick(){
         if(state.disposed)return;
         try{
-            syncOptions();syncWindowInsets();if(state.mode==='Classic'){syncClassic();return;}
+            syncOptions();api.syncAppearance?.();syncWindowInsets();if(state.mode==='Classic'){syncClassic();return;}
             discover();const next=currentSignature();if(next!==signature){signature=next;menuSignature='';renderTabs();}
             syncEditorTab();syncBindings();syncQuick();
             if(backstage&&!backstage.hidden)syncFileUnderlays();

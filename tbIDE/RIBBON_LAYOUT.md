@@ -1,6 +1,6 @@
 # Ribbon command organization
 
-Current implementation: tbUI3IDE 1.3.0.12, 2026-11-12.
+Current implementation: tbUI3IDE 1.3.0.13, 2026-11-12.
 
 In both Ribbon and Hybrid, full layouts retain the requested secondary labels and inline Grid options. Only Simplified hides the Center in Container, Lock Controls, Preview, Grid, Page Left/Right, TabView Refresh/Diagnostics and Insert Folder/Other file/Import labels and puts Grid options in a toggle-split flyout. Help, accessible names, original values and events remain. The original ten alignment/size commands stay icon-only in both presentations. The chevron sits inside both cards with a transparent resting background and hover fill; its glyph remains visible. Simplified controls are vertically centered. Quick Access retains 16px internal left padding.
 
@@ -8,7 +8,7 @@ Both replacement profiles support full/simplified presentation using the corner 
 
 Save Document and Form / Code share the leading Document group in Code and Form, in that order, for both profiles. The latter dispatches the native Switch Between Form and Code action with its native tooltip. Classic retains its original native toolbar inventory/order/handlers while showing the corresponding Ribbon glyphs and tooltips without button labels; selectors retain their native display.
 
-With additional styling enabled, main-window surfaces receive 8px side insets and no bottom inset. An 8px top inset applies only with the real OS titlebar disabled. The caption/Quick Access row is excluded from side insets, retaining Quick Access padding and native caption-button geometry.
+Only in WinUI3 Dark/Light with additional styling enabled, main-window surfaces receive 8px side insets and no bottom inset. An 8px top inset applies only with the real OS titlebar disabled. The caption/Quick Access row is excluded from side insets, retaining Quick Access padding and native caption-button geometry.
 
 The Form tab shows MultiPage as a normal group immediately after Grid when a MultiPage host, page or child is selected. This applies to Ribbon and Hybrid; no nested launcher or sub-ribbon is used. Existing native page buttons and command state remain authoritative.
 

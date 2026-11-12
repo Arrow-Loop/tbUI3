@@ -12,18 +12,21 @@ for(const [key,{svg}]of Object.entries(glyphs.icons))icons[key]=`url('data:image
 const requested=JSON.parse(fs.readFileSync(dir+'/icons/requested.json','utf8'));
 for(const [key,{svg}]of Object.entries(requested.icons))icons[key]=`url('data:image/svg+xml,${encodeURIComponent(svg.trim()).replace(/'/g,'%27')}')`;
 const presentation=fs.readFileSync(dir+'/js/ribbon-presentation.js','utf8').trim();
+const systemAccent=fs.readFileSync(dir+'/js/system-accent.js','utf8').trim();
 const factory=fs.readFileSync(dir+'/js/ide-toolbar.js','utf8').trim();
 const contextBridge=fs.readFileSync(dir+'/js/native-toolbar-context.js','utf8').trim();
 const layout=fs.readFileSync(dir+'/js/ribbon-layout.js','utf8').trim();
 const script=`(function(){if(window.__tbUI3Toolbar)return 'toolbar already installed';
 var css=document.createElement('style');css.id='tbUI3ToolbarCss';css.textContent=${JSON.stringify(css)};document.head.appendChild(css);
 var nativeContext=${contextBridge}({selectedEditor:function(){return typeof openEditors==='undefined'?null:openEditors.selectedEditorNode;},addComponent:typeof showContextMenuAddComponent==='function'?showContextMenuAddComponent:undefined});
+window.__tbUI3Appearance=${systemAccent}({document:document,themeName:function(){return getThemeName();},enabled:function(){return !!(window.__winui3IdeStyle&&window.__winui3IdeStyle.enabled);}});
 var adapter=${factory}({window:window,brandImage:${JSON.stringify(brandImage)},themeName:function(){return getThemeName();},icons:${JSON.stringify(icons)},buildLayout:${layout},present:${presentation},captureMenu:nativeContext.captureMenu,editorState:nativeContext.editorState,
 getShowContextMenu:function(){return showContextMenu;},setShowContextMenu:function(fn){showContextMenu=fn;},
 localize:function(s){return evaluateLocalizedString(s);},execute:function(s){return executeIdeCommand(s,true);},
 commandEnabled:function(s){var c=ideCommands[s];return !!c&&(!c.defaultContext||evaluateExpression(c.defaultContext));},
 testContext:function(s){return parseAndEvaluateExpression(s);},shortcut:function(s){return GetIdeCommandShortcutDescription(s)||'';},
 realTitlebar:function(){return !!liveIDEOptions.showRealTitlebar;},projectName:function(){return typeof g_CurrentProjectName==='string'?g_CurrentProjectName:'';},
+syncAppearance:function(){window.__tbUI3Appearance.sync();},
 stylingEnabled:function(){return !!(window.__winui3IdeStyle&&window.__winui3IdeStyle.enabled);},
 formGlobals:function(){return getCurrentFormEditorGlobals();},changedSize:function(){changedSize();}});
 window.__tbUI3Toolbar=adapter;adapter.install('Classic');return 'toolbar installed';})()`;

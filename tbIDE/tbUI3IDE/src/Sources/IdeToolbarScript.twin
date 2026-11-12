@@ -77,38 +77,37 @@ Private Module IdeToolbarScript
         js = js & "); background: var(--tbui3-grid-fill) !important; border: var(--tbui3-toolbar-line); }\n.tbui3-ribbon-content .menuBarGridOptionRow input[type='number"
         js = js & "']:hover { --tbui3-grid-fill: var(--color-control-hover, var(--themeDialogGeneralBackColor, var(--tbui3-toolbar-bg))); }\n.tbui3-ribbon-content .menuB"
         js = js & "arGridOptionRow input[type='number']:focus { --tbui3-grid-fill: var(--color-input-active, var(--themeDialogGeneralBackColor, var(--tbui3-toolbar-bg)))"
-        js = js & "; }\n.tbui3-ribbon-context { display: flex; gap: 4px; align-items: center; align-self: start; border: var(--tbui3-toolbar-line); border-radius: 4px; }"
-        js = js & "\n.tbui3-quick { color: var(--themeMenuForeColor, var(--tbui3-toolbar-fg)); display: flex; flex: 0 1 auto; gap: 2px; align-items: center; min-width: 0"
-        js = js & "; overflow-x: auto; -webkit-app-region: no-drag; }\n.tbui3-quick[hidden] { display: none; }\n.tbui3-quick-real-titlebar { min-height: 32px; }\n.tbui3-"
-        js = js & "quick-logo { width: 24px; height: 24px; object-fit: contain; flex: 0 0 24px; margin-right: 2px; }\n.tbui3-quick-logo[hidden] { display: none; }\n.tbui"
-        js = js & "3-ribbon-compact { height: 28px; min-height: 28px; min-width: 30px; width: 30px; padding: 4px; }\n.tbui3-ribbon-content .tbui3-ribbon-compact { height"
-        js = js & ": 24px; min-height: 24px; max-height: 24px; }\n.tbui3-ribbon-compact .tbui3-ribbon-icon { width: 16px; height: 16px; font-size: 16px; line-height: 16p"
-        js = js & "x; }\n.tbui3-ribbon-compact .tbui3-ribbon-label { display: none; }\n/* Backstage hides the live designer as well as covering it: designer layers can\n"
-        js = js & "   otherwise paint above an ordinary document overlay. State is restored by JS. */\n.tbui3-backstage-underlay, .tbui3-backstage-underlay * { visibilit"
-        js = js & "y: hidden !important; }\n.tbui3-backstage { position: fixed; inset: 32px 0 0; z-index: 100000; display: flex; background: var(--themeGeneralBackColor,"
-        js = js & " var(--tbui3-toolbar-bg)); color: var(--tbui3-toolbar-fg); }\n.tbui3-backstage-rail { display: flex; flex-direction: column; gap: 4px; flex: 0 0 160px"
-        js = js & "; margin-top: -32px; padding: 44px 8px 16px; -webkit-app-region: no-drag; background: var(--tbui3-toolbar-bg); overflow-y: auto; border-right: var(--t"
-        js = js & "bui3-toolbar-line); }\n.tbui3-backstage-nav-group { display: flex; flex-direction: column; gap: 2px; }\n.tbui3-backstage-footer { margin-top: auto; pa"
-        js = js & "dding-top: 24px; }\n.tbui3-backstage-back, .tbui3-backstage-nav { display: flex; align-items: center; gap: 12px; min-height: 38px; width: 100%; border"
-        js = js & ": 0; border-radius: 4px; background: transparent; color: inherit; font: inherit; text-align: left; padding: 8px 12px; }\n.tbui3-backstage-back { width"
-        js = js & ": 40px; height: 40px; min-height: 40px; padding: 7px; margin-bottom: 12px; align-self: start; justify-content: center; }\n.tbui3-backstage-back-circle"
-        js = js & " { display: grid; place-items: center; width: 26px; height: 26px; border: 1px solid currentColor; border-radius: 50%; flex: 0 0 auto; }\n.tbui3-backst"
-        js = js & "age-back-circle .tbui3-ribbon-icon { width: 18px; height: 18px; }\n.tbui3-backstage-selected { background: var(--tbui3-toolbar-selected); outline: 1px"
-        js = js & " solid currentColor; outline-offset: -1px; }\n.tbui3-backstage-nav:disabled { opacity: .45; }\n.tbui3-backstage-content { flex: 1 1 auto; overflow: au"
-        js = js & "to; padding: 24px 40px; min-width: 0; background: var(--themeGeneralBackColor, var(--tbui3-toolbar-bg)); }\n.tbui3-backstage-heading { font-weight: 60"
-        js = js & "0; font-size: 22px; margin: 0 0 20px; }\n.tbui3-backstage-project { max-width: 760px; font-size: 16px; margin: 0 0 24px; padding-bottom: 16px; border-"
-        js = js & "bottom: var(--tbui3-toolbar-line); }\n.tbui3-backstage-description { max-width: 640px; line-height: 20px; margin-bottom: 20px; }\n.tbui3-backstage-tas"
-        js = js & "ks { display: flex; flex-direction: column; gap: 12px; width: min(100%, 760px); }\n.tbui3-backstage-task { display: flex; border-bottom: var(--tbui3-t"
-        js = js & "oolbar-line); padding-bottom: 8px; }\n.tbui3-backstage-task .tbui3-ribbon-command { flex-direction: row; justify-content: start; gap: 16px; height: au"
-        js = js & "to; min-height: 56px; min-width: 240px; max-width: 100%; width: 100%; padding: 12px; }\n.tbui3-backstage-task .tbui3-ribbon-icon { width: 28px; height"
-        js = js & ": 28px; font-size: 28px; line-height: 28px; }\n.tbui3-backstage-task .tbui3-ribbon-label { max-width: none; text-align: left; font-size: 14px; }\n/* P"
-        js = js & "refer the browser top layer; max signed CSS z-index is the legacy fallback. */\n.tbui3-ribbon-popup { position: fixed; inset: auto; margin: 0; left: m"
-        js = js & "ax(0px, var(--tbui3-popup-x)); top: max(0px, var(--tbui3-popup-y)); display: flex; flex-direction: column; padding: 4px; max-height: 60vh; max-width: "
-        js = js & "calc(100vw - 8px); overflow: auto; z-index: 2147483647; box-shadow: var(--color-menu-shadow, none); min-width: 240px; background: var(--color-flyout, "
-        js = js & "var(--themeGeneralBackColor, var(--themeDialogGeneralBackColor))); color: var(--tbui3-toolbar-fg); border: var(--tbui3-toolbar-line); border-radius: 8"
-        js = js & "px; }\n.tbui3-ribbon-popup .tbui3-ribbon-command { flex-direction: row; justify-content: start; height: auto; min-height: 32px; max-width: none; }\n.t"
-        js = js & "bui3-ribbon-popup .tbui3-ribbon-icon { width: 16px; height: 16px; font-size: 16px; }\n.tbui3-ribbon-popup .tbui3-ribbon-label { max-width: none; text-"
-        js = js & "align: left; }\n.tbui3-ribbon-separator { border-top: var(--tbui3-toolbar-line); margin: 4px 0; }\n" & Chr(34) & ";document.head.appendChild(css);"
+        js = js & "; }\n.tbui3-quick { color: var(--themeMenuForeColor, var(--tbui3-toolbar-fg)); display: flex; flex: 0 1 auto; gap: 2px; align-items: center; min-width"
+        js = js & ": 0; overflow-x: auto; -webkit-app-region: no-drag; }\n.tbui3-quick[hidden] { display: none; }\n.tbui3-quick-real-titlebar { min-height: 32px; }\n.tbu"
+        js = js & "i3-quick-logo { width: 24px; height: 24px; object-fit: contain; flex: 0 0 24px; margin-right: 2px; }\n.tbui3-quick-logo[hidden] { display: none; }\n.t"
+        js = js & "bui3-ribbon-compact { height: 28px; min-height: 28px; min-width: 30px; width: 30px; padding: 4px; }\n.tbui3-ribbon-content .tbui3-ribbon-compact { hei"
+        js = js & "ght: 24px; min-height: 24px; max-height: 24px; }\n.tbui3-ribbon-compact .tbui3-ribbon-icon { width: 16px; height: 16px; font-size: 16px; line-height: "
+        js = js & "16px; }\n.tbui3-ribbon-compact .tbui3-ribbon-label { display: none; }\n/* Backstage hides the live designer as well as covering it: designer layers ca"
+        js = js & "n\n   otherwise paint above an ordinary document overlay. State is restored by JS. */\n.tbui3-backstage-underlay, .tbui3-backstage-underlay * { visibi"
+        js = js & "lity: hidden !important; }\n.tbui3-backstage { position: fixed; inset: 32px 0 0; z-index: 100000; display: flex; background: var(--themeGeneralBackCol"
+        js = js & "or, var(--tbui3-toolbar-bg)); color: var(--tbui3-toolbar-fg); }\n.tbui3-backstage-rail { display: flex; flex-direction: column; gap: 4px; flex: 0 0 16"
+        js = js & "0px; margin-top: -32px; padding: 44px 8px 16px; -webkit-app-region: no-drag; background: var(--tbui3-toolbar-bg); overflow-y: auto; border-right: var("
+        js = js & "--tbui3-toolbar-line); }\n.tbui3-backstage-nav-group { display: flex; flex-direction: column; gap: 2px; }\n.tbui3-backstage-footer { margin-top: auto;"
+        js = js & " padding-top: 24px; }\n.tbui3-backstage-back, .tbui3-backstage-nav { display: flex; align-items: center; gap: 12px; min-height: 38px; width: 100%; bor"
+        js = js & "der: 0; border-radius: 4px; background: transparent; color: inherit; font: inherit; text-align: left; padding: 8px 12px; }\n.tbui3-backstage-back { wi"
+        js = js & "dth: 40px; height: 40px; min-height: 40px; padding: 7px; margin-bottom: 12px; align-self: start; justify-content: center; }\n.tbui3-backstage-back-cir"
+        js = js & "cle { display: grid; place-items: center; width: 26px; height: 26px; border: 1px solid currentColor; border-radius: 50%; flex: 0 0 auto; }\n.tbui3-bac"
+        js = js & "kstage-back-circle .tbui3-ribbon-icon { width: 18px; height: 18px; }\n.tbui3-backstage-selected { background: var(--tbui3-toolbar-selected); outline: "
+        js = js & "1px solid currentColor; outline-offset: -1px; }\n.tbui3-backstage-nav:disabled { opacity: .45; }\n.tbui3-backstage-content { flex: 1 1 auto; overflow:"
+        js = js & " auto; padding: 24px 40px; min-width: 0; background: var(--themeGeneralBackColor, var(--tbui3-toolbar-bg)); }\n.tbui3-backstage-heading { font-weight:"
+        js = js & " 600; font-size: 22px; margin: 0 0 20px; }\n.tbui3-backstage-project { max-width: 760px; font-size: 16px; margin: 0 0 24px; padding-bottom: 16px; bord"
+        js = js & "er-bottom: var(--tbui3-toolbar-line); }\n.tbui3-backstage-description { max-width: 640px; line-height: 20px; margin-bottom: 20px; }\n.tbui3-backstage-"
+        js = js & "tasks { display: flex; flex-direction: column; gap: 12px; width: min(100%, 760px); }\n.tbui3-backstage-task { display: flex; border-bottom: var(--tbui"
+        js = js & "3-toolbar-line); padding-bottom: 8px; }\n.tbui3-backstage-task .tbui3-ribbon-command { flex-direction: row; justify-content: start; gap: 16px; height:"
+        js = js & " auto; min-height: 56px; min-width: 240px; max-width: 100%; width: 100%; padding: 12px; }\n.tbui3-backstage-task .tbui3-ribbon-icon { width: 28px; hei"
+        js = js & "ght: 28px; font-size: 28px; line-height: 28px; }\n.tbui3-backstage-task .tbui3-ribbon-label { max-width: none; text-align: left; font-size: 14px; }\n/"
+        js = js & "* Prefer the browser top layer; max signed CSS z-index is the legacy fallback. */\n.tbui3-ribbon-popup { position: fixed; inset: auto; margin: 0; left"
+        js = js & ": max(0px, var(--tbui3-popup-x)); top: max(0px, var(--tbui3-popup-y)); display: flex; flex-direction: column; padding: 4px; max-height: 60vh; max-widt"
+        js = js & "h: calc(100vw - 8px); overflow: auto; z-index: 2147483647; box-shadow: var(--color-menu-shadow, none); min-width: 240px; background: var(--color-flyou"
+        js = js & "t, var(--themeGeneralBackColor, var(--themeDialogGeneralBackColor))); color: var(--tbui3-toolbar-fg); border: var(--tbui3-toolbar-line); border-radius"
+        js = js & ": 8px; }\n.tbui3-ribbon-popup .tbui3-ribbon-command { flex-direction: row; justify-content: start; height: auto; min-height: 32px; max-width: none; }\"
+        js = js & "n.tbui3-ribbon-popup .tbui3-ribbon-icon { width: 16px; height: 16px; font-size: 16px; }\n.tbui3-ribbon-popup .tbui3-ribbon-label { max-width: none; te"
+        js = js & "xt-align: left; }\n.tbui3-ribbon-separator { border-top: var(--tbui3-toolbar-line); margin: 4px 0; }\n" & Chr(34) & ";document.head.appendChild(css);"
         js = js & vbLf
         js = js & "var nativeContext=/* Native producers are re-evaluated in their own JavaScript realm with only"
         js = js & vbLf
@@ -502,8 +501,6 @@ Private Module IdeToolbarScript
         js = js & vbLf
         js = js & "    }"
         js = js & vbLf
-        js = js & "    function pages(parent=content) {const body=group('MultiPage',parent);for(const n of sources.values())if(pageSource(n))sourceButton(n,body);}"
-        js = js & vbLf
         js = js & "    function addins(parent=content,includeUnknown=false) {"
         js = js & vbLf
         js = js & "        const used=new Set(Object.values(known).flatMap(gs=>gs.flatMap(g=>g[1])));"
@@ -818,10 +815,19 @@ Private Module IdeToolbarScript
         js = js & vbLf
         js = js & "    }"
         js = js & vbLf
-        js = js & "    function addMultiPageContext(){if(currentHost()){const b=el('button','tbui3-ribbon-tab tbui3-ribbon-context');b.append(iconFor(null,{_ribbonGlyph:"
-        js = js & "'apps_list'}),el('span','','MultiPage'));"
+        js = js & "    function addMultiPageContext(){"
         js = js & vbLf
-        js = js & "        b.onclick=()=>{clearContent();pages();syncBindings();resize();};content.prepend(b);}}"
+        js = js & "        if(!currentHost())return;"
+        js = js & vbLf
+        js = js & "        const body=group('MultiPage');"
+        js = js & vbLf
+        js = js & "        for(const n of sources.values())if(pageSource(n))sourceButton(n,body);"
+        js = js & vbLf
+        js = js & "        const grid=content.querySelector('.tbui3-ribbon-group[aria-label=" & Chr(34) & "Grid" & Chr(34) & "]');"
+        js = js & vbLf
+        js = js & "        if(grid)grid.after(body.parentElement);"
+        js = js & vbLf
+        js = js & "    }"
         js = js & vbLf
         js = js & "    function tabForNative(m){"
         js = js & vbLf
@@ -855,9 +861,7 @@ Private Module IdeToolbarScript
         js = js & vbLf
         js = js & "        if(state.mode==='Hybrid'){"
         js = js & vbLf
-        js = js & "            if(known[key]){for(const [name,ids]of known[key])addSources(ids,group(name));if(key==='Form'){addGrid();if(currentHost()){const nested=el("
-        js = js & "'button','tbui3-ribbon-tab tbui3-ribbon-context');nested.append(iconFor(null,{_ribbonGlyph:'apps_list'}),el('span','','MultiPage'));nested.onclick=()="
-        js = js & ">{clearContent();pages();syncBindings();resize();};content.prepend(nested);}}}"
+        js = js & "            if(known[key]){for(const [name,ids]of known[key])addSources(ids,group(name));if(key==='Form'){addGrid();addMultiPageContext();}}"
         js = js & vbLf
         js = js & "            else addins(content,true);"
         js = js & vbLf

@@ -170,7 +170,6 @@
         const body=n.querySelector('.menuBarGridOptionsInner');if(body){const box=el('fieldset','tbui3-ribbon-grid'+(sources.has('menuBarGrid')?' tbui3-ribbon-grid-toggle-present':''));
             box.disabled=!(api.formGlobals&&api.formGlobals());park(body,box);const target=content.querySelector('.tbui3-ribbon-group[aria-label="Grid"] .tbui3-ribbon-group-body')||group('Grid');target.append(box);}
     }
-    function pages(parent=content) {const body=group('MultiPage',parent);for(const n of sources.values())if(pageSource(n))sourceButton(n,body);}
     function addins(parent=content,includeUnknown=false) {
         const used=new Set(Object.values(known).flatMap(gs=>gs.flatMap(g=>g[1])));
         const entries=[...sources.values()].filter(n=>!pageSource(n)&&n.id.startsWith('addinButton-'));
@@ -323,8 +322,13 @@
         for(const b of tabs.children){const selected=b.dataset.tab===state.active;b.setAttribute('aria-selected',String(selected));b.tabIndex=selected?0:-1;}
         syncBindings();resize();
     }
-    function addMultiPageContext(){if(currentHost()){const b=el('button','tbui3-ribbon-tab tbui3-ribbon-context');b.append(iconFor(null,{_ribbonGlyph:'apps_list'}),el('span','','MultiPage'));
-        b.onclick=()=>{clearContent();pages();syncBindings();resize();};content.prepend(b);}}
+    function addMultiPageContext(){
+        if(!currentHost())return;
+        const body=group('MultiPage');
+        for(const n of sources.values())if(pageSource(n))sourceButton(n,body);
+        const grid=content.querySelector('.tbui3-ribbon-group[aria-label="Grid"]');
+        if(grid)grid.after(body.parentElement);
+    }
     function tabForNative(m){
         if(m.node.id==='rootMenuFile'||m.node.id==='rootMenuAddins')return 'File';
         return {rootMenuEdit:'Home',rootMenuFormat:'Form',rootMenuView:'View',rootMenuWindows:'View',rootMenuProject:'Project',rootMenuRun:'Debug',rootMenuDebug:'Debug',rootMenuTools:'Project',rootMenuHelp:'File'}[m.node.id]||m.title;
@@ -340,7 +344,7 @@
         state.active=key;menuSignature='';closeFile(false);closePopup();clearContent();
         for(const b of tabs.children){const selected=b.dataset.tab===key;b.setAttribute('aria-selected',String(selected));b.tabIndex=selected?0:-1;if(selected&&focus)b.focus();}
         if(state.mode==='Hybrid'){
-            if(known[key]){for(const [name,ids]of known[key])addSources(ids,group(name));if(key==='Form'){addGrid();if(currentHost()){const nested=el('button','tbui3-ribbon-tab tbui3-ribbon-context');nested.append(iconFor(null,{_ribbonGlyph:'apps_list'}),el('span','','MultiPage'));nested.onclick=()=>{clearContent();pages();syncBindings();resize();};content.prepend(nested);}}}
+            if(known[key]){for(const [name,ids]of known[key])addSources(ids,group(name));if(key==='Form'){addGrid();addMultiPageContext();}}
             else addins(content,true);
         }else{menuSignature='';hydrateMenus(true);}
         syncBindings();resize();

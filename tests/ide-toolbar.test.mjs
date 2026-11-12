@@ -117,10 +117,26 @@ test('asynchronous add-in menu callbacks populate File without opening recursive
     f.adapter.setMode('Ribbon');f.adapter.openFile('Add-ins');assert.equal(requests,1);callback();
     assert.equal(requests,1);assert(f.d.querySelector('.tbui3-backstage-content').textContent.includes('Loaded add-in'));f.dispose();
 });
-test('contextual MultiPage is only nested under Form when a host or child is selected',()=>{
-    const f=fixture();f.adapter.setMode('Hybrid');f.d.querySelector('[data-tab=Form]').click();assert(!f.d.querySelector('.tbui3-ribbon-context'));
-    const host=f.d.createElement('div');host.properties={_className:'tbUI3.UI3TabView'};const child=host.appendChild(f.d.createElement('div'));
-    f.api.formGlobals=()=>({selectedControls:[child]});f.adapter.tick();assert(f.d.querySelector('.tbui3-ribbon-context'));f.dispose();
+test('MultiPage commands appear directly after Grid only with host or child selection in Ribbon and Hybrid',()=>{
+    for(const mode of ['Ribbon','Hybrid']){
+        const f=fixture(),ids=['tbUI3TabNew','tbUI3TabDelete','tbUI3TabLeft','tbUI3TabRight','tbUI3TabRefresh','tbUI3TabDiagnostics'];
+        for(const id of ids){const n=f.button('addinButton-'+id,id);n.onmousedown=null;n.onclick=()=>f.calls.push(id);}
+        f.button('menuBarGrid','Grid');
+        let selected=[];f.api.formGlobals=()=>({selectedControls:selected});f.adapter.setMode(mode);f.d.querySelector('[data-tab=Form]').click();
+        const section=()=>f.d.querySelector('.tbui3-ribbon-group[aria-label="MultiPage"]');assert(!section());
+        const host=f.d.createElement('div');host.properties={_className:'tbUI3.UI3TabView'};const page=host.appendChild(f.d.createElement('div'));page.properties={_className:'tbUI3.UI3TabPage'};const child=page.appendChild(f.d.createElement('div'));
+        for(const control of [host,page,child]){
+            selected=[control];f.adapter.tick();assert(section());assert.equal(section().previousElementSibling.getAttribute('aria-label'),'Grid');
+            assert.deepEqual([...section().querySelectorAll('button')].map(b=>b.dataset.source),ids.map(id=>'addinButton-'+id));
+            assert(!f.d.querySelector('.tbui3-ribbon-context'));assert(f.d.querySelector('[data-source=menuBarGrid]'));assert.equal(f.adapter.active,'Form');
+        }
+        section().querySelector('button').click();assert.deepEqual(f.calls,['tbUI3TabNew']);assert(section());assert(f.d.querySelector('[data-source=menuBarGrid]'));
+        f.d.getElementById('addinButton-tbUI3TabDelete').classList.add('disabledCommand');f.adapter.tick();assert(section().querySelector('[data-source=addinButton-tbUI3TabDelete]').disabled);
+        f.d.querySelector('[data-tab=Home]').click();assert(!section());f.d.querySelector('[data-tab=Form]').click();assert(section());
+        selected=[f.d.createElement('div')];f.adapter.tick();assert(!section());assert(f.d.querySelector('[data-source=menuBarGrid]'));
+        selected=[];f.adapter.tick();assert(!section());selected=[host];f.adapter.tick();assert(section());
+        f.adapter.setMode('Classic');assert(!section());assert.equal(f.d.getElementById('addinButton-tbUI3TabNew').parentElement,f.toolbar);f.dispose();
+    }
 });
 test('quick access stays above the ribbon and follows the titlebar option',()=>{
     const f=fixture();f.adapter.setMode('Ribbon');const q=f.d.querySelector('.tbui3-quick');assert.equal(q.parentElement.id,'rootMenu1Inner');

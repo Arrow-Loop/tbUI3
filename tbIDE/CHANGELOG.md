@@ -1,5 +1,11 @@
 # Changelog: tbIDE (WinUI 3 look for the twinBASIC IDE)
 
+## 2026-11-12, inline contextual MultiPage (tbUI3IDE 1.3.0.6)
+
+- Ribbon and Hybrid now insert a regular MultiPage command group immediately after Grid on the Form tab. Removed the nested launcher and its unused styling; clicking a page command no longer replaces the Form command area.
+- Existing host/page/child context detection and native page buttons, state, tooltips, glyphs and dispatch are preserved. Other Form groups remain visible. Selecting an unrelated control or leaving the Form tab removes the group; returning restores it when applicable.
+- 103 automated checks and 71 exact project mirrors pass. Edge fixture checks pass in both layouts with no console/page errors. Native compiled-host acceptance remains pending. Evidence: ../docs/validation/2026-11-12-inline-multipage.md.
+
 ## 2026-11-12, recovered Ribbon requirements (tbUI3IDE 1.3.0.5)
 
 - Large labels are measured in their actual rendered font, choosing the smallest width that fits up to two whole-word lines between 50px and 86px. Cached measurements track font/style changes and clear when fonts finish loading. Overlong captions retain the 86px cap and full tooltip.

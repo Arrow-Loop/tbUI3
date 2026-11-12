@@ -4,6 +4,11 @@ All notable changes to tbUI3. Dates are when the change was made, not released. 
 
 ## Unreleased
 
+### 2026-11-12 — Inline MultiPage commands (tbUI3IDE 1.3.0.6)
+
+- Replaced the Form tab's nested MultiPage launcher with an inline MultiPage section immediately to the right of Grid in both Ribbon and Hybrid layouts. Existing host/page/child selection detection, native commands, disabled state and tooltips are retained.
+- 103 automated checks pass with no skips; all 71 project/source mirrors match. Edge fixture checks verify placement, contextual show/hide and command dispatch without leaving the Form ribbon. Native build/rendered acceptance remains pending; see docs/validation/2026-11-12-inline-multipage.md.
+
 - 2026-11-12: Recorded Shane's standing instruction to commit and push every development pass to `origin/tbui3-dev` and verify success. Main/PR decisions remain Shane's.
 
 ### 2026-11-12 — Ribbon refinements (tbUI3IDE 1.3.0.5)

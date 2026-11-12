@@ -1,6 +1,8 @@
 # Ribbon command organization
 
-Current implementation: tbUI3IDE 1.3.0.3, 2026-11-11.
+Current implementation: tbUI3IDE 1.3.0.6, 2026-11-12.
+
+The Form tab shows MultiPage as a normal group immediately after Grid when a MultiPage host, page or child is selected. This applies to Ribbon and Hybrid; no nested launcher or sub-ribbon is used. Existing native page buttons and command state remain authoritative.
 
 Shane's Office Home/View/Backstage screenshots define the composition. Ribbon mode organizes commands by task rather than reproducing the native menu names. The IDE-specific Code, Form, Project and Debug tabs retain the IDE's actual functions. Classic and Hybrid keep their existing organizations.
 

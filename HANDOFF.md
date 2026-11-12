@@ -1,5 +1,9 @@
 # Handoff: tbUI3
 
+## Current implementation, 2026-11-12: tbUI3IDE 1.3.0.6
+
+Shane requested MultiPage directly in Form rather than a nested sub-ribbon. Both Ribbon and Hybrid now insert its six existing native buttons in a normal MultiPage group immediately after Grid, preserving host/page/child context detection and native state/dispatch. Selection changes remove/restore the group; commands retain the surrounding Form UI. 103 automated checks and 71 mirrors pass; Edge fixture selection/placement/dispatch checks pass in both layouts with no errors. Native build/rendered acceptance remains pending. Evidence: docs/validation/2026-11-12-inline-multipage.md. Commit and push each development pass to origin/tbui3-dev per Shane's standing authorization.
+
 ## Current implementation, 2026-11-12: tbUI3IDE 1.3.0.5
 
 Reconstructed Shane's five Ribbon refinements from his prompt and progress screenshots, using the supplied original PNG. Large captions measure their actual font for the narrowest two-line whole-word fit within 50–86px; Grid spacing matches the divider inset; ten alignment/size commands are icon-only with native state/dispatch; File > Options contains IDE Options and former Preferences entries; the embedded logo precedes Save only on WinUI3 Dark/Light with real OS titlebar off. Package 65, adapter v8 and control/consumer identities are unchanged. 103 automated checks pass without skips against installed IDE fixtures; Edge browser-fixture checks pass. Native compiled build and rendered acceptance remain open. See docs/validation/2026-11-12-ribbon-refinements.md. Work is in the local tbui3-dev worktree; no GitHub push is implied by this entry.

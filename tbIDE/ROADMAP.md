@@ -1,5 +1,9 @@
 # Roadmap: tbUI3 IDE
 
+## Current candidate: 1.3.0.6, inline MultiPage
+
+MultiPage is a contextual command group immediately after Grid in both Form layouts. Validate host/page/child selection, deselection, six command states/actions and continued access to the rest of Form in the compiled IDE. Automated/browser-fixture evidence: ../docs/validation/2026-11-12-inline-multipage.md. Existing adaptive Ribbon and TabView gates remain open.
+
 ## Current candidate: 1.3.0.5, 2026-11-12
 
 The five recovered Ribbon refinements are implemented. Evidence: ../docs/validation/2026-11-12-ribbon-refinements.md. Next, build/save in twinBASIC and validate short/long labels, font scaling, Grid spacing, all ten icon-only actions, the single Options page, and logo visibility across both WinUI3 themes/titlebar settings. Prior native acceptance, adaptive collapse/keytips and real add-in enablement gates remain open.

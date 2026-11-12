@@ -1,5 +1,9 @@
 # Roadmap: tbUI3 IDE
 
+## Current add-in follow-up: 1.3.0.12
+
+Profile parity and the simplified-only scope correction are implemented. Rebuild/reload and verify Form / Code beside Save Document in both editors/profiles, Hybrid full/simplified with its original smaller inventory, Classic glyph-only native/add-in buttons and tooltips, and additional-styling window insets. Check full labels/inline Grid versus simplified icon-only controls/Grid flyout, inset chevron in both with hover-only background, and custom/real OS titlebar geometry. Restart to verify the saved presentation. Native acceptance remains open; 126 tests, 71 mirrors and Edge fixtures pass. Evidence: docs/validation/2026-11-12-profiles-insets-scope.md. Older entries below describe their versions; this pass supersedes earlier scope/Hybrid shortcut statements. Adaptive group overflow/keytips and TabView gates remain open.
+
 ## Current candidate: 1.3.0.11, compact Form and Grid split
 
 Native gate: rebuild/reload; verify Grid's main toggle versus options arrow, option values/events and flyout cleanup, no duplicate Show Grid option, labels/tooltips, full-width card/inset chevron, compact vertical centering and Quick Access's 16px left padding. Repeat shared controls in Hybrid and switch to Classic to verify restoration. 119 tests/71 mirrors and Edge fixtures pass; native acceptance remains pending. Evidence: ../docs/validation/2026-11-12-grid-split-compact.md. Previous adaptive overflow/keytip and TabView gates remain open.

@@ -24,6 +24,7 @@ localize:function(s){return evaluateLocalizedString(s);},execute:function(s){ret
 commandEnabled:function(s){var c=ideCommands[s];return !!c&&(!c.defaultContext||evaluateExpression(c.defaultContext));},
 testContext:function(s){return parseAndEvaluateExpression(s);},shortcut:function(s){return GetIdeCommandShortcutDescription(s)||'';},
 realTitlebar:function(){return !!liveIDEOptions.showRealTitlebar;},projectName:function(){return typeof g_CurrentProjectName==='string'?g_CurrentProjectName:'';},
+stylingEnabled:function(){return !!(window.__winui3IdeStyle&&window.__winui3IdeStyle.enabled);},
 formGlobals:function(){return getCurrentFormEditorGlobals();},changedSize:function(){changedSize();}});
 window.__tbUI3Toolbar=adapter;adapter.install('Classic');return 'toolbar installed';})()`;
 const literal=s=>s.split('"').map(x=>'"'+x+'"').join(' & Chr(34) & ');

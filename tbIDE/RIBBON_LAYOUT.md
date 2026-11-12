@@ -1,10 +1,14 @@
 # Ribbon command organization
 
-Current implementation: tbUI3IDE 1.3.0.11, 2026-11-12.
+Current implementation: tbUI3IDE 1.3.0.12, 2026-11-12.
 
-Grid is icon-only with a native toggle action and separate options-flyout arrow; all other Grid settings are inside the flyout. Center in Container, Lock Controls, Preview, the last four MultiPage buttons and Insert Folder/Other file/Import are also icon-only, retaining help and accessible names. The presentation chevron is inside the full-width card and simplified controls are vertically centered. Quick Access has 16px left padding.
+In both Ribbon and Hybrid, full layouts retain the requested secondary labels and inline Grid options. Only Simplified hides the Center in Container, Lock Controls, Preview, Grid, Page Left/Right, TabView Refresh/Diagnostics and Insert Folder/Other file/Import labels and puts Grid options in a toggle-split flyout. Help, accessible names, original values and events remain. The original ten alignment/size commands stay icon-only in both presentations. The chevron sits inside both cards with a transparent resting background and hover fill; its glyph remains visible. Simplified controls are vertically centered. Quick Access retains 16px internal left padding.
 
-Ribbon's bottom-right chevron switches between the existing full layout and a single-row Simplified Ribbon. The same tab list, groups and command/control nodes remain; simplified shows 20px icons and single-line captions in a 48px command area. Long rows scroll horizontally without dropping options. The choice is saved independently; Hybrid retains native menus and its current structure. This is distinct from the Classic toolbar mode and does not add a fourth entry to IDE Toolbar.
+Both replacement profiles support full/simplified presentation using the corner chevron or Ctrl+F1 and the same independently saved preference. Hybrid retains native menus, its smaller Home/Code/Form/Add-ins inventory and no Quick Access or Backstage. No fourth toolbar mode is added.
+
+Save Document and Form / Code share the leading Document group in Code and Form, in that order, for both profiles. The latter dispatches the native Switch Between Form and Code action with its native tooltip. Classic retains its original native toolbar inventory/order/handlers while showing the corresponding Ribbon glyphs and tooltips without button labels; selectors retain their native display.
+
+With additional styling enabled, main-window surfaces receive 8px side insets and no bottom inset. An 8px top inset applies only with the real OS titlebar disabled. The caption/Quick Access row is excluded from side insets, retaining Quick Access padding and native caption-button geometry.
 
 The Form tab shows MultiPage as a normal group immediately after Grid when a MultiPage host, page or child is selected. This applies to Ribbon and Hybrid; no nested launcher or sub-ribbon is used. Existing native page buttons and command state remain authoritative.
 
@@ -15,8 +19,8 @@ Shane's Office Home/View/Backstage screenshots define the composition. Ribbon mo
 | Quick access | Save, Undo, Redo, Start/Continue, Break, Stop. Undo/Redo and these execution controls are omitted from ribbon groups. |
 | Home | Clipboard: Paste as the large lead command, Cut, Copy, Paste as comment. Editing: Find as the large lead command, Replace, Find in project, Delete, Select all; advanced find/match commands in Find options. |
 | Insert | Direct native Add options grouped into Forms, Code, Resources and Files, with Components as a future fallback. Async/dynamic options remain live; unsupported producer changes retain the native parent as a fallback. |
-| Code | Document: Save Document, in its own leading group. Comments; Formatting: indent/outdent and format selection/document; Navigation: definition, last position, line/column; Outlining: Fold and Unfold dropdowns; Case: Change case dropdown. |
-| Form | Document: Save Document, in its own leading group. Arrange directly exposes Left, Top, Right, Bottom plus other native alignment options; Size directly exposes Widest, Tallest, Narrowest, Shortest. Existing source handlers are reused. Spacing, Position, Protection, Designer preview, the native Grid toggle and remaining grid options remain. Contextual MultiPage follows Grid with New Page, Delete Page, separator, Page Left, Page Right, separator, TabView Refresh and TabView Diagnostics. |
+| Code | Document: Save Document followed by Form / Code, in their own leading group. Comments; Formatting: indent/outdent and format selection/document; Navigation: definition, last position, line/column; Outlining: Fold and Unfold dropdowns; Case: Change case dropdown. |
+| Form | Document: Save Document followed by Form / Code, in their own leading group. Arrange directly exposes Left, Top, Right, Bottom plus other native alignment options; Size directly exposes Widest, Tallest, Narrowest, Shortest. Existing source handlers are reused. Spacing, Position, Protection, Designer preview, the native Grid toggle and remaining grid options remain. Contextual MultiPage follows Grid with New Page, Delete Page, separator, Page Left, Page Right, separator, TabView Refresh and TabView Diagnostics. |
 | View | Views: Code editor, Object designer, Object browser. Show: common Project explorer/Toolbox/Properties commands plus More panels. Zoom: context-sensitive native zoom/font commands and original zoom selector. Window: native panel layouts/features. Appearance: native theme selector. |
 | Project | Project settings/references; Build and Clean with the original build configuration selector; compiler restart/cache controls; project/output folders. |
 | Debug | Stepping, Breakpoints, Watches, Execution, native debugger Options. |

@@ -4,6 +4,10 @@ Committed work is listed first. Exploratory ideas are marked as such.
 
 Every development pass ends with a commit and a verified push to `origin/tbui3-dev`, per Shane's standing instruction of 2026-11-12. Main and PR decisions remain Shane's.
 
+## Current add-in follow-up: 1.3.0.12
+
+Profile parity and the simplified-only scope correction are implemented. Rebuild/reload and verify Form / Code beside Save Document in both editors/profiles, Hybrid full/simplified with its original smaller inventory, Classic glyph-only native/add-in buttons and tooltips, and additional-styling window insets. Check full labels/inline Grid versus simplified icon-only controls/Grid flyout, inset chevron in both with hover-only background, and custom/real OS titlebar geometry. Restart to verify the saved presentation. Native acceptance remains open; 126 tests, 71 mirrors and Edge fixtures pass. Evidence: docs/validation/2026-11-12-profiles-insets-scope.md. Older entries below describe their versions; this pass supersedes earlier scope/Hybrid shortcut statements. Adaptive group overflow/keytips and TabView gates remain open.
+
 ## Current add-in follow-up: 1.3.0.11
 
 - Grid toggle/options split, requested icon-only commands, inset chevron, vertical centering and Quick Access left padding are implemented. Rebuild/reload and confirm native Grid toggle, options values/events, flyout dismissal, Form width, compact centering and 16px Quick Access padding. Native acceptance remains open; source/browser evidence: docs/validation/2026-11-12-grid-split-compact.md (119 tests, 71 mirrors).

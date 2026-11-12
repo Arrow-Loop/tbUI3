@@ -1,5 +1,16 @@
 # Handoff: tbUI3
 
+## Current implementation, 2026-11-12: tbUI3IDE 1.3.0.12
+
+- Added Switch Between Form and Code immediately after Save Document in the Code/Form Document group for Ribbon and Hybrid, reusing the native action and tooltip.
+- Hybrid now supports full/simplified presentation and Ctrl+F1 while keeping its smaller tab/command inventory, native menus and no quick access or Backstage.
+- Corrected 1.3.0.11's scope: only Simplified removes the additional Center in Container, Lock Controls, Preview, Grid, four secondary MultiPage and Insert file-command labels and uses the Grid options flyout. Full layouts restore labels and inline Grid options. The original ten alignment/size icon-only commands remain in both. The chevron stays inside both layouts and has a transparent background at rest, with hover fill and a visible glyph in both WinUI3 themes.
+- Classic retains its native controls, order and handlers, using the same icon resolver as Ribbon. Toolbar/add-in buttons have glyphs and tooltips without visible labels; native selectors remain unchanged. Late contributions and teardown are handled reversibly.
+- Additional styling enables 8px left/right main-window insets without a bottom inset. Custom-titlebar mode also adds 8px above Quick Access, preserving its existing 16px left padding and the caption-button rectangles. Real OS titlebar mode gets no top inset; the caption/Quick Access row is excluded from side insets.
+- 126 automated tests and 71 exact project mirrors pass. Edge checks cover native BETA 1044 toolbar/header/Grid markup, both replacement profiles and presentations, 38 Classic buttons, theme states and inset geometry. Native compiled build/reload and restart acceptance remain pending. Evidence: docs/validation/2026-11-12-profiles-insets-scope.md.
+
+Package 1.0.0.65, adapter v8 and existing project/control identities are unchanged. Commit and verify the push after every development pass. Earlier entries below are historical; this pass supersedes the 1.3.0.11 full-layout scope and the earlier Hybrid shortcut behavior.
+
 ## Current implementation, 2026-11-12: tbUI3IDE 1.3.0.11
 
 Shane's screenshots prompted an inset chevron (no external strip), centered simplified row, more icon-only controls and a Grid toggle/options split. Shared metadata hides the specified labels while preserving help/accessible names. Grid's primary proxy keeps the native action/pressed state; its arrow opens the original options fieldset in the existing top-layer popup lifecycle. The fieldset returns to hidden storage on close and its body returns to the native container during tab/mode/unload cleanup. Routine menu refresh does not tear down inputs during editing. Escape returns focus, and native disabled/form context closes/disables the flyout. Added Shane's follow-up 16px Quick Access left padding. 119 tests/71 mirrors pass; Edge uses the actual BETA 1044 Grid markup/CSS and validates values/events, compact centering, inset chevron and Form fit at 1920px. Native rebuilt-host acceptance remains pending. Evidence: docs/validation/2026-11-12-grid-split-compact.md. Settings/persistence from 1.3.0.10, package 65 and adapter v8 are unchanged. Commit and push every pass to origin/tbui3-dev.

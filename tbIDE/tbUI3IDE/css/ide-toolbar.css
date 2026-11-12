@@ -3,7 +3,7 @@
  * tbUI3IDE ribbon composition, not an official WinUI Ribbon control template.
  * The two host-hiding rules override the IDE's own ID-level display rules.
  */
-.tbui3-toolbar-owned, .tbui3-toolbar-option {
+.tbui3-toolbar-owned, .tbui3-toolbar-option, .tbui3-classic-toolbar {
     --tbui3-toolbar-bg: var(--color-card, var(--themeToolbarBackground, var(--themeMenuBackColor, var(--themeGeneralBackColor))));
     --tbui3-toolbar-fg: var(--color-text, var(--themeGeneralTextColor, var(--themeMenuForeColor)));
     /* SubtleFillColorSecondary/Tertiary, same pinned WinUI resources as
@@ -23,7 +23,7 @@
     font-family: 'Segoe UI Variable', 'Segoe UI', sans-serif;
     box-sizing: border-box;
 }
-.darkMode .tbui3-toolbar-owned, .darkMode .tbui3-toolbar-option {
+.darkMode .tbui3-toolbar-owned, .darkMode .tbui3-toolbar-option, .darkMode .tbui3-classic-toolbar {
     color-scheme: dark;
     --tbui3-subtle-hover: #ffffff0f;
     --tbui3-subtle-pressed: #ffffff0a;
@@ -94,6 +94,10 @@
 .tbui3-ribbon-grid-toggle-present .menuBarGridOptionRow:has(.optionGridShow) { display: none; }
 .tbui3-grid-split { display: flex; grid-row: span 3; align-items: stretch; align-self: start; height: 24px; border-radius: 4px; }
 .tbui3-grid-options-store[hidden] { display: none; }
+.tbui3-grid-split[hidden] { display: none; }
+.tbui3-ribbon-grid.tbui3-grid-inline { margin-left: 2px; }
+.tbui3-ribbon-grid.tbui3-grid-inline .menuBarGridOptionsInner { grid-auto-flow: column; grid-template-rows: repeat(3, 24px); grid-template-columns: repeat(2, max-content); gap: 2px 12px; font-size: 11px; }
+.tbui3-ribbon-grid.tbui3-grid-inline .menuBarGridOptionRow { min-height: 24px; gap: 6px; }
 .tbui3-ribbon-content .tbui3-grid-dropdown { width: 18px; min-width: 18px; max-width: 18px; padding: 2px; border-left: var(--tbui3-toolbar-line); }
 .tbui3-grid-dropdown .tbui3-ribbon-icon { width: 12px; height: 12px; }
 .tbui3-grid-flyout { padding: 10px; }
@@ -138,7 +142,7 @@
 /* Full/Simplified is a presentation of Ribbon, independent of the three modes.
    The fixed corner button remains reachable while a long command row scrolls. */
 .tbui3-ribbon-has-toggle .tbui3-ribbon-content { padding-right: 32px; }
-.tbui3-ribbon-toggle { position: absolute; right: 3px; bottom: 4px; display: grid; place-items: center; width: 24px; height: 22px; padding: 3px; border: 0; border-radius: 4px; background: var(--tbui3-toolbar-bg); color: var(--tbui3-toolbar-fg); cursor: default; }
+.tbui3-ribbon-toggle { position: absolute; right: 3px; bottom: 4px; display: grid; place-items: center; width: 24px; height: 22px; padding: 3px; border: 0; border-radius: 4px; background: transparent; color: var(--tbui3-toolbar-fg); cursor: default; }
 .tbui3-ribbon-toggle:hover { background: var(--tbui3-toolbar-hover); }
 .tbui3-ribbon-toggle[aria-pressed='true'] .tbui3-ribbon-icon { transform: rotate(180deg); }
 .tbui3-ribbon-simplified { --tbui3-command-area-height: 48px; }
@@ -159,3 +163,28 @@
 .tbui3-ribbon-simplified .tbui3-ribbon-content .tbui3-grid-dropdown { width: 18px; min-width: 18px; max-width: 18px; padding: 2px; }
 .tbui3-ribbon-simplified .tbui3-grid-dropdown .tbui3-ribbon-icon { width: 12px; height: 12px; }
 .tbui3-ribbon-simplified .tbui3-ribbon-group-divider { height: 24px; align-self: center; }
+
+/* Classic keeps its native control nodes/order/handlers. These narrow paint
+   exceptions suppress the IDE's inline images and optional-skin pseudo icons. */
+body #rootMenu2.tbui3-classic-toolbar > .icon.tbui3-classic-glyph,
+body #rootMenu2.tbui3-classic-toolbar > button.tbui3-classic-glyph,
+body #rootMenu2.tbui3-classic-toolbar > .codicon.tbui3-classic-glyph {
+    position: relative; width: 28px !important; min-width: 28px !important; max-width: 28px !important; padding: 0 !important;
+    background-image: none !important; filter: none !important; -webkit-filter: none !important; transform: none !important; font-size: 0;
+}
+body #rootMenu2.tbui3-classic-toolbar > .tbui3-classic-glyph::before,
+body #rootMenu2.tbui3-classic-toolbar > .tbui3-classic-glyph::after { display: none !important; }
+.tbui3-classic-original { display: none; }
+.tbui3-classic-glyph > .tbui3-classic-icon { position: absolute; inset: 0; margin: auto; width: 16px; height: 16px; font-size: 16px; line-height: 16px; pointer-events: none; }
+body #rootMenu2.tbui3-classic-toolbar > .tbui3-classic-glyph:hover:not(.disabledCommand):not(:disabled) { background-color: var(--tbui3-toolbar-hover) !important; }
+body #rootMenu2.tbui3-classic-toolbar > .tbui3-classic-glyph:active:not(.disabledCommand):not(:disabled) { background-color: var(--tbui3-toolbar-pressed) !important; }
+
+/* Content insets deliberately exclude the caption/Quick Access row and overlays. */
+#root.tbui3-window-insets > #rootTop, #root.tbui3-window-insets > #rootBottom,
+#root.tbui3-window-insets > #rootMenu2, #root.tbui3-window-insets > #rootMenu3,
+#root.tbui3-window-insets > #rootStatusBar, #root.tbui3-window-insets > #codePanel,
+#root.tbui3-window-insets > .tbui3-ribbon, #root.tbui3-window-insets > .tbui3-backstage { margin-left: 8px; margin-right: 8px; }
+/* Hold the native caption row's height so its window buttons do not move. Only
+   its inner command row gains top padding, with matching flow space below. */
+#root.tbui3-window-top-inset > #rootMenu1 { box-sizing: border-box; height: var(--tbui3-caption-row-height); min-height: var(--tbui3-caption-row-height); flex-basis: var(--tbui3-caption-row-height); margin-bottom: 8px; overflow: visible; }
+#root.tbui3-window-top-inset > #rootMenu1 > #rootMenu1Inner { align-self: flex-start; margin-top: var(--tbui3-caption-inner-offset); padding-top: 8px; }

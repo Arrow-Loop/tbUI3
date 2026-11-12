@@ -15,14 +15,16 @@
     let signature='', menuSignature='', fileSection='File', savedFocus, captureSink, refreshAt=0;
     let nativeMenu=api.getShowContextMenu(), wrappedMenu, pendingSubmenu;
     let hydrating=false,layout;
-    let gridFlyout;
+    let gridFlyout,gridParts;
     let fileNavSignature='',fileRenderSignature='';
     const labelWidths=new Map();
+    const classicNodes=new Map();
+    let classicToolbar,insetRoot,insetOriginal,insetSignature='';
     function fontsChanged(){labelWidths.clear();}
     // Measure whole words with the rendered label's font. The best single split
     // gives the narrowest button that can show the caption on at most two lines.
     function sizeLabels(){
-        if(!content||content.hidden||state.mode==='Ribbon'&&state.simplified)return;
+        if(!content||content.hidden||state.mode!=='Classic'&&state.simplified)return;
         let probe;
         for(const button of content.querySelectorAll('.tbui3-ribbon-large')){
             const text=button.querySelector('.tbui3-ribbon-label');if(!text)continue;
@@ -68,7 +70,7 @@
     const quickIds=['saveIcon','undoIcon','redoIcon','playIcon','pauseIcon','stopIcon'];
     // Presentation captions are deliberately shorter than the native help/shortcut tooltip.
     // This table never decides whether a command exists or how it is executed.
-    const sourceLabels={saveIcon:'Save',searchIcon:'Find in project',designSwitchIcon:'Form / code',
+    const sourceLabels={saveIcon:'Save',searchIcon:'Find in project',designSwitchIcon:'Form / Code',
         undoIcon:'Undo',redoIcon:'Redo',playIcon:'Start / Continue',pauseIcon:'Break',stopIcon:'Stop',
         debugStepOverIcon:'Step over',debugStepIntoIcon:'Step into',debugStepOutIcon:'Step out',
         restartIcon:'Restart compiler',trashIcon:'Clean',buildIcon:'Build',menuBarColorMode:'Theme',
@@ -154,13 +156,69 @@
         // Natural mouse sequence covers both native mousedown commands and add-in click handlers.
         for(const type of ['mousedown','mouseup','click'])n.dispatchEvent(new w.MouseEvent(type,init));
     }
+    // Decorate the existing Classic controls; never replace nodes or handlers.
+    function restoreClassicNode(n,record){
+        record.icon.remove();
+        if(record.original.parentNode===n){while(record.original.firstChild)n.insertBefore(record.original.firstChild,record.original);record.original.remove();}
+        n.classList.remove('tbui3-classic-glyph');
+        if(record.addedTitle&&n.title===record.title)n.removeAttribute('title');
+        if(n.getAttribute('aria-label')===record.aria){if(record.oldAria===null)n.removeAttribute('aria-label');else n.setAttribute('aria-label',record.oldAria);}
+    }
+    function clearClassic(){
+        for(const [n,record]of classicNodes)restoreClassicNode(n,record);classicNodes.clear();
+        classicToolbar?.classList.remove('tbui3-classic-toolbar');classicToolbar=null;
+    }
+    function syncClassic(){
+        const toolbar=d.getElementById('rootMenu2');if(!toolbar)return;
+        if(classicToolbar&&classicToolbar!==toolbar)clearClassic();classicToolbar=toolbar;toolbar.classList.add('tbui3-classic-toolbar');
+        const wanted=new Set([...toolbar.children].filter(n=>!n.matches('select,.toolbarSplitter')&&!/^testArea/.test(n.id)&&
+            (n.matches('button,.icon,.codicon')||n.id.startsWith('addinButton-'))&&!n.querySelector('input,select,textarea')));
+        for(const [n,record]of classicNodes)if(!wanted.has(n)){restoreClassicNode(n,record);classicNodes.delete(n);}
+        for(const n of wanted){
+            let record=classicNodes.get(n);
+            const key=JSON.stringify([n.title,n.unalteredTitle,n.style.backgroundImage,[...n.classList].filter(c=>c!=='tbui3-classic-glyph'),n.boundCommand]);
+            if(record&&record.original.parentNode===n&&record.icon.parentNode===n&&record.key===key)continue;
+            if(record){restoreClassicNode(n,record);classicNodes.delete(n);}
+            const text=label(n),addedTitle=!n.hasAttribute('title'),oldAria=n.getAttribute('aria-label');
+            const icon=iconFor(n,{name:sourceCaption(n),action:typeof n.boundCommand==='string'?n.boundCommand:undefined});icon.classList.add('tbui3-classic-icon');
+            const original=el('span','tbui3-classic-original');original.setAttribute('aria-hidden','true');while(n.firstChild)original.append(n.firstChild);n.append(original,icon);
+            if(addedTitle)n.title=text;n.setAttribute('aria-label',text);n.classList.add('tbui3-classic-glyph');
+            record={original,icon,addedTitle,title:n.title,oldAria,aria:text};
+            record.key=JSON.stringify([n.title,n.unalteredTitle,n.style.backgroundImage,[...n.classList].filter(c=>c!=='tbui3-classic-glyph'),n.boundCommand]);classicNodes.set(n,record);
+        }
+    }
+    function clearWindowInsets(){
+        if(!insetRoot)return;
+        insetRoot.classList.toggle('tbui3-window-insets',insetOriginal.sides);insetRoot.classList.toggle('tbui3-window-top-inset',insetOriginal.top);
+        if(insetOriginal.height)insetRoot.style.setProperty('--tbui3-caption-row-height',insetOriginal.height,insetOriginal.priority);else insetRoot.style.removeProperty('--tbui3-caption-row-height');
+        if(insetOriginal.offset)insetRoot.style.setProperty('--tbui3-caption-inner-offset',insetOriginal.offset,insetOriginal.offsetPriority);else insetRoot.style.removeProperty('--tbui3-caption-inner-offset');
+        insetRoot=null;insetOriginal=null;insetSignature='';
+    }
+    function syncWindowInsets(){
+        const root=d.getElementById('root');if(!root)return;
+        if(insetRoot!==root){clearWindowInsets();insetRoot=root;insetOriginal={sides:root.classList.contains('tbui3-window-insets'),top:root.classList.contains('tbui3-window-top-inset'),height:root.style.getPropertyValue('--tbui3-caption-row-height'),priority:root.style.getPropertyPriority('--tbui3-caption-row-height'),offset:root.style.getPropertyValue('--tbui3-caption-inner-offset'),offsetPriority:root.style.getPropertyPriority('--tbui3-caption-inner-offset')};}
+        const enabled=!!api.stylingEnabled?.(),top=enabled&&!api.realTitlebar(),header=d.getElementById('rootMenu1'),inner=d.getElementById('rootMenu1Inner');
+        const natural=inner?Math.max(0,inner.getBoundingClientRect().height-(root.classList.contains('tbui3-window-top-inset')?8:0)):0;
+        const next=JSON.stringify([enabled,top,state.mode,api.themeName?.(),natural]);if(next===insetSignature)return;insetSignature=next;
+        root.classList.remove('tbui3-window-top-inset');root.classList.toggle('tbui3-window-insets',enabled);
+        if(top){
+            const bounds=header?.getBoundingClientRect(),height=bounds?.height||natural||32,style=header&&w.getComputedStyle(header);
+            const offset=header&&inner?inner.getBoundingClientRect().top-bounds.top-(parseFloat(style.paddingTop)||0)-(parseFloat(style.borderTopWidth)||0):0;
+            root.style.setProperty('--tbui3-caption-row-height',height+'px');root.style.setProperty('--tbui3-caption-inner-offset',offset+'px');root.classList.add('tbui3-window-top-inset');
+        }else{
+            if(insetOriginal.height)root.style.setProperty('--tbui3-caption-row-height',insetOriginal.height,insetOriginal.priority);else root.style.removeProperty('--tbui3-caption-row-height');
+            if(insetOriginal.offset)root.style.setProperty('--tbui3-caption-inner-offset',insetOriginal.offset,insetOriginal.offsetPriority);else root.style.removeProperty('--tbui3-caption-inner-offset');
+        }
+        resize();
+    }
     function sourceButton(n,parent,compact=false,large=!!api.present?.({},n.id).large) {
-        compact=compact||!!api.present?.({},n.id).iconOnly;
+        const meta=api.present?.({},n.id),baseCompact=compact||!!meta?.iconOnly;
+        compact=baseCompact||state.simplified&&!!meta?.simplifiedIconOnly;
         const b=el('button','tbui3-ribbon-command'+(compact?' tbui3-ribbon-compact':large?' tbui3-ribbon-large':''));b.type='button';
         b.dataset.source=typeof n.id==='string'?n.id:'';b.title=label(n);b.setAttribute('aria-label',label(n));
         b.append(iconFor(n,{name:sourceCaption(n)}),el('span','tbui3-ribbon-label',sourceCaption(n)));
         b.addEventListener('mousedown',e=>e.preventDefault());
-        b.onclick=e=>{invokeSource(n,e);tick();};parent.append(b);bindings.set(b,{source:n});return b;
+        b.onclick=e=>{invokeSource(n,e);tick();};parent.append(b);bindings.set(b,{source:n,large,compact:baseCompact});return b;
     }
     function park(n,parent) {
         if(!placements.has(n)){const marker=d.createComment('tbUI3IDE restore '+n.id);n.before(marker);placements.set(n,marker);}
@@ -182,10 +240,17 @@
             const split=el('div','tbui3-grid-split');split.setAttribute('role','group');split.setAttribute('aria-label','Grid');
             if(main){main.before(split);split.append(main);}else target.prepend(split);
             const arrow=el('button','tbui3-ribbon-command tbui3-grid-dropdown');arrow.type='button';arrow.title='Grid options';arrow.setAttribute('aria-label','Grid options');arrow.setAttribute('aria-haspopup','dialog');arrow.setAttribute('aria-expanded','false');arrow.append(iconFor(null,{_ribbonGlyph:'chevron_down'}));split.append(arrow);
-            arrow.addEventListener('mousedown',e=>e.preventDefault());arrow.onclick=()=>{if(arrow.disabled)return;if(popupAnchor===arrow)closePopup();else openGridOptions(arrow,box,holder);};
-            const openWithKey=e=>{if(e.key==='ArrowDown'&&(e.currentTarget===arrow||e.altKey)){e.preventDefault();if(!arrow.disabled)openGridOptions(arrow,box,holder);}};
+            arrow.addEventListener('mousedown',e=>e.preventDefault());arrow.onclick=()=>{if(arrow.disabled||!state.simplified)return;if(popupAnchor===arrow)closePopup();else openGridOptions(arrow,box,holder);};
+            const openWithKey=e=>{if(state.simplified&&e.key==='ArrowDown'&&(e.currentTarget===arrow||e.altKey)){e.preventDefault();if(!arrow.disabled)openGridOptions(arrow,box,holder);}};
             arrow.addEventListener('keydown',openWithKey);main?.addEventListener('keydown',openWithKey);bindings.set(arrow,{gridOptions:true,source});
+            gridParts={box,holder,target,split,main};syncGridPresentation();
         }
+    }
+    function syncGridPresentation(){
+        if(!gridParts)return;const {box,holder,target,split,main}=gridParts,simple=state.simplified;
+        split.hidden=!simple;box.classList.toggle('tbui3-grid-inline',!simple);
+        if(simple){if(main)split.prepend(main);holder.append(box);}
+        else{if(main)split.before(main);target.append(box);}
     }
     function addins(parent=content,includeUnknown=false) {
         const used=new Set(Object.values(known).flatMap(gs=>gs.flatMap(g=>g[1])));
@@ -215,7 +280,7 @@
         if(item._sourceId){const n=sources.get(item._sourceId);if(n){if(n.matches('select'))addSources([item._sourceId],parent);else sourceButton(n,parent,false,item._ribbonLarge);}return;}
         if(!item.name){parent.append(el('div','tbui3-ribbon-separator'));return;}
         if(!menuEnabled(item)&&item.superHiddenContext)return;
-        const iconOnly=!!api.present?.(item).iconOnly;
+        const meta=api.present?.(item),baseCompact=!!meta?.iconOnly,iconOnly=baseCompact||state.simplified&&!!meta?.simplifiedIconOnly;
         const b=el('button','tbui3-ribbon-command'+(iconOnly?' tbui3-ribbon-compact':item._ribbonLarge?' tbui3-ribbon-large':''));b.type='button';
         const title=caption(item);
         b.setAttribute('aria-label',title);
@@ -223,7 +288,7 @@
         const shown=api.present?.(item).caption||(/^[^a-z]*[A-Z][^a-z]*$/.test(title)?title.charAt(0)+title.slice(1).toLowerCase():title);
         b.append(iconFor(sources.get(item._ribbonIconSource),item),el('span','tbui3-ribbon-label',shown));
         b.addEventListener('mousedown',e=>e.preventDefault());
-        bindings.set(b,{item});parent.append(b);
+        bindings.set(b,{item,large:!!item._ribbonLarge,compact:baseCompact});parent.append(b);
         if(item.comboOptions){
             const select=el('select','tbui3-ribbon-select');select.setAttribute('aria-label',title);
             for(const value of item.comboOptions){const o=el('option','',value);o.value=value;o.selected=value===item.comboValue;select.append(o);}
@@ -315,6 +380,7 @@
         }}finally{collectingLayout=false;}
         const source=(id,tab,group)=>{if(sources.has(id))records.push({item:{name:sourceCaption(sources.get(id)),_sourceId:id,_ribbonTab:tab,_ribbonGroup:group}});};
         for(const id of ['commentIcon','uncommentIcon'])source(id,'Code','Comments');
+        source('designSwitchIcon','Code','Document');source('designSwitchIcon','Form','Document');
         source('buildConfigSelector','Project','Build');source('debugStepOutIcon','Debug','Stepping');
         source('zoomSelect','View','Zoom');source('menuBarPreview','Form','Designer');source('menuBarGrid','Form','Grid');
         if(!records.some(r=>String(r.item.name).includes('MenuCaptionWindowTheme')))source('menuBarColorMode','View','Appearance');
@@ -366,7 +432,7 @@
         if(m.node.id==='rootMenuFile'||m.node.id==='rootMenuAddins')return 'File';
         return {rootMenuEdit:'Home',rootMenuFormat:'Form',rootMenuView:'View',rootMenuWindows:'View',rootMenuProject:'Project',rootMenuRun:'Debug',rootMenuDebug:'Debug',rootMenuTools:'Project',rootMenuHelp:'File'}[m.node.id]||m.title;
     }
-    function clearContent(){closePopup();returnNodes();for(const [n]of bindings)if(content.contains(n))bindings.delete(n);clear(content);}
+    function clearContent(){closePopup();returnNodes();gridParts=null;for(const [n]of bindings)if(content.contains(n))bindings.delete(n);clear(content);}
     function makeTab(key,title,action) {
         const b=el('button','tbui3-ribbon-tab',title);b.type='button';b.dataset.tab=key;
         b.addEventListener('mousedown',e=>e.preventDefault());
@@ -377,7 +443,7 @@
         state.active=key;menuSignature='';closeFile(false);closePopup();clearContent();
         for(const b of tabs.children){const selected=b.dataset.tab===key;b.setAttribute('aria-selected',String(selected));b.tabIndex=selected?0:-1;if(selected&&focus)b.focus();}
         if(state.mode==='Hybrid'){
-            if(['Code','Form'].includes(key))command({name:'Save Document',action:'tbEditor_Save',_ribbonLarge:true},group('Document'));
+            if(['Code','Form'].includes(key)){const body=group('Document');command({name:'Save Document',action:'tbEditor_Save',_ribbonLarge:true},body);addSources(['designSwitchIcon'],body);}
             if(known[key]){for(const [name,ids]of known[key])addSources(ids,group(name));if(key==='Form'){addGrid();addMultiPageContext();}}
             else addins(content,true);
         }else{menuSignature='';hydrateMenus(true);}
@@ -498,8 +564,13 @@
     function resize(){if(api.changedSize)api.changedSize();}
     function syncRibbonStyle(){
         if(!shell)return;
-        const simple=state.mode==='Ribbon'&&state.simplified;
+        const simple=state.mode!=='Classic'&&state.simplified;
         shell.classList.toggle('tbui3-ribbon-simplified',simple);
+        for(const [b,entry]of bindings)if(content.contains(b)&&b.tagName==='BUTTON'&&!entry.gridOptions){
+            const meta=entry.source?api.present?.({},entry.source.id):api.present?.(entry.item),compact=entry.compact||simple&&meta?.simplifiedIconOnly;
+            b.classList.toggle('tbui3-ribbon-compact',!!compact);b.classList.toggle('tbui3-ribbon-large',!!entry.large&&!compact);
+        }
+        syncGridPresentation();
         if(ribbonToggle){
             ribbonToggle.title=simple?'Switch to Full Ribbon':'Switch to Simplified Ribbon';
             ribbonToggle.setAttribute('aria-label',ribbonToggle.title);
@@ -510,7 +581,7 @@
     function setSimplified(value,dirty=false){
         value=!!value;const changed=state.simplified!==value;state.simplified=value;
         if(changed&&dirty)state.simplifiedDirty=true;
-        if(state.mode==='Ribbon'&&content){
+        if(state.mode!=='Classic'&&content){
             closePopup();content.hidden=false;
             for(const b of content.querySelectorAll('.tbui3-ribbon-large'))b.style.removeProperty('width');
             syncRibbonStyle();sizeLabels();resize();
@@ -518,13 +589,14 @@
         return state.simplified;
     }
     function scrollSimplified(e){
-        if(state.mode!=='Ribbon'||!state.simplified||content.scrollWidth<=content.clientWidth||
+        if(state.mode==='Classic'||!state.simplified||content.scrollWidth<=content.clientWidth||
             e.target.closest('input,select')||Math.abs(e.deltaY)<=Math.abs(e.deltaX))return;
         const before=content.scrollLeft;content.scrollLeft+=e.deltaY;
         if(content.scrollLeft!==before){e.preventDefault();closePopup();}
     }
     function restore() {
-        closePopup();closeFile(false);returnNodes();bindings.clear();
+        clearClassic();
+        closePopup();closeFile(false);returnNodes();gridParts=null;bindings.clear();
         for(const m of menus.values())m.node.classList.remove('tbui3-menu-source');
         for(const n of hiddenNative)n.classList.remove('tbui3-toolbar-native-hidden');hiddenNative.clear();pendingMenus.clear();
         if(shell)shell.remove();if(quick)quick.remove();if(backstage)backstage.remove();
@@ -538,13 +610,13 @@
         tabs=el('div','tbui3-ribbon-tabs');tabs.setAttribute('role','tablist');tabs.setAttribute('aria-label','IDE tools');
         content=el('div','tbui3-ribbon-content');content.setAttribute('role','tabpanel');shell.append(tabs,content);top.before(shell);
         toolbar.classList.add('tbui3-toolbar-native-hidden');
+        shell.classList.add('tbui3-ribbon-has-toggle');content.id='tbUI3RibbonCommands';
+        ribbonToggle=el('button','tbui3-ribbon-toggle');ribbonToggle.type='button';
+        ribbonToggle.setAttribute('aria-controls',content.id);ribbonToggle.append(iconFor(null,{_ribbonGlyph:'chevron_down'}));
+        ribbonToggle.onclick=()=>setSimplified(!state.simplified,true);shell.append(ribbonToggle);
+        content.addEventListener('wheel',scrollSimplified,{passive:false});
+        content.addEventListener('focusin',e=>{if(state.simplified)e.target.scrollIntoView?.({block:'nearest',inline:'nearest'});});
         if(state.mode==='Ribbon'){
-            shell.classList.add('tbui3-ribbon-has-toggle');content.id='tbUI3RibbonCommands';
-            ribbonToggle=el('button','tbui3-ribbon-toggle');ribbonToggle.type='button';
-            ribbonToggle.setAttribute('aria-controls',content.id);ribbonToggle.append(iconFor(null,{_ribbonGlyph:'chevron_down'}));
-            ribbonToggle.onclick=()=>setSimplified(!state.simplified,true);shell.append(ribbonToggle);
-            content.addEventListener('wheel',scrollSimplified,{passive:false});
-            content.addEventListener('focusin',e=>{if(state.simplified)e.target.scrollIntoView?.({block:'nearest',inline:'nearest'});});
             quick=el('div','tbui3-toolbar-owned tbui3-quick');quick.setAttribute('role','toolbar');quick.setAttribute('aria-label','Quick access');
             for(const id of quickIds)if(sources.has(id))sourceButton(sources.get(id),quick,true);syncQuick();
             backstage=el('div','tbui3-toolbar-owned tbui3-backstage');backstage.hidden=true;backstage.setAttribute('role','dialog');
@@ -564,7 +636,7 @@
     function tick(){
         if(state.disposed)return;
         try{
-            syncOptions();if(state.mode==='Classic')return;
+            syncOptions();syncWindowInsets();if(state.mode==='Classic'){syncClassic();return;}
             discover();const next=currentSignature();if(next!==signature){signature=next;menuSignature='';renderTabs();}
             syncEditorTab();syncBindings();syncQuick();
             if(backstage&&!backstage.hidden)syncFileUnderlays();
@@ -576,7 +648,7 @@
         state.requestedMode=mode;
         if(state.mode!==mode||mode!=='Classic'&&!shell){restore();state.mode=mode;state.active='Home';
             try{if(mode!=='Classic')build();}catch(e){fail(e);}}
-        if(dirty)state.dirty=true;syncOptions();return state.mode;
+        if(mode==='Classic')syncClassic();syncWindowInsets();if(dirty)state.dirty=true;syncOptions();return state.mode;
     }
     function keydown(e){
         if(state.mode==='Classic')return;
@@ -587,7 +659,7 @@
                 if(e.shiftKey&&d.activeElement===first){e.preventDefault();last?.focus();}else if(!e.shiftKey&&d.activeElement===last){e.preventDefault();first?.focus();}}
             return;
         }
-        if(e.ctrlKey&&e.key==='F1'){e.preventDefault();if(state.mode==='Ribbon')setSimplified(!state.simplified,true);else{content.hidden=!content.hidden;resize();}return;}
+        if(e.ctrlKey&&e.key==='F1'){e.preventDefault();setSimplified(!state.simplified,true);return;}
         const b=e.target.closest&&e.target.closest('.tbui3-ribbon-tab');if(!b||!tabs.contains(b))return;
         const items=[...tabs.children];let i=items.indexOf(b);
         if(e.key==='ArrowRight')i=(i+1)%items.length;else if(e.key==='ArrowLeft')i=(i+items.length-1)%items.length;
@@ -614,7 +686,7 @@
         api.setShowContextMenu(wrappedMenu);d.addEventListener('keydown',keydown,true);w.addEventListener('pointerdown',pointerdown,true);w.addEventListener('mousedown',pointerdown,true);w.addEventListener('blur',blur);
         interval=w.setInterval(tick,400);setMode(mode);return state;
     }
-    function dispose(){state.disposed=true;w.clearInterval(interval);restore();
+    function dispose(){state.disposed=true;w.clearInterval(interval);restore();clearWindowInsets();resize();
         d.fonts?.removeEventListener('loadingdone',fontsChanged);labelWidths.clear();
         if(api.getShowContextMenu()===wrappedMenu)api.setShowContextMenu(nativeMenu);
         d.removeEventListener('keydown',keydown,true);w.removeEventListener('pointerdown',pointerdown,true);w.removeEventListener('mousedown',pointerdown,true);w.removeEventListener('blur',blur);

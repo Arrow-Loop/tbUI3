@@ -326,16 +326,25 @@ Public Class UI3TabView
         If nextHeader > last Then nextHeader = last
         m_FirstHeader = nextHeader
         m_ManualHeaderScroll = True
-        UserControl.Refresh
+        RepaintHeader
+    End Sub
+
+    Private Sub RepaintHeader()
+        If Ambient.UserMode Then
+            UI3TabMetrics.InvalidateHeader UserControl.hWnd
+        Else
+            ' The IDE requests synchronous control snapshots after edits.
+            UserControl.Refresh
+        End If
     End Sub
 
     Private Sub UserControl_MouseMove(Button As Integer, Shift As Integer, X As Single, Y As Single)
         If Not UserControl.Enabled Then Exit Sub
-        UI3TabMetrics.WatchPointer UserControl.hWnd
+        UI3TabMetrics.TrackPointer UserControl.hWnd
         Dim hit As Long = HotHeader()
         If hit <> m_LastHotHit Then
             m_LastHotHit = hit
-            UserControl.Refresh
+            RepaintHeader
         End If
     End Sub
 
@@ -354,7 +363,7 @@ Public Class UI3TabView
         UserControl.Extender.SetFocus
         m_PointerFocusing = False
         UI3TabMetrics.CapturePointer UserControl.hWnd
-        UserControl.Refresh
+        RepaintHeader
     End Sub
 
     Private Sub UserControl_MouseUp(Button As Integer, Shift As Integer, X As Single, Y As Single)
@@ -378,7 +387,7 @@ Public Class UI3TabView
                 Case Else: SelectedPage = m_Pages(pressed).PageName
             End Select
         End If
-        UserControl.Refresh
+        RepaintHeader
     End Sub
 
     Private Function VisibleHeaderCount(ByVal Available As Single, ByVal Width As Single) As Long
@@ -463,7 +472,7 @@ Public Class UI3TabView
         m_Focused = True
         If Not m_PointerFocusing Then m_KeyboardFocus = True
         If Not Ambient.UserMode Then UI3TabDiagnostics.Note "host " & UserControl.Extender.Name & " GotFocus"
-        UserControl.Refresh
+        RepaintHeader
     End Sub
 
     Private Sub UserControl_LostFocus()
@@ -471,7 +480,7 @@ Public Class UI3TabView
         UI3TabMetrics.ReleasePointer UserControl.hWnd
         m_Focused = False
         If Not Ambient.UserMode Then UI3TabDiagnostics.Note "host " & UserControl.Extender.Name & " LostFocus"
-        UserControl.Refresh
+        RepaintHeader
     End Sub
 
     Private Sub PaintHeader(ByVal Index As Long, ByVal X As Single, ByVal W As Single, ByVal Selected As Boolean, ByVal Hot As Long, ByVal Held As Boolean)
@@ -507,7 +516,7 @@ Public Class UI3TabView
             If Not UserControl.Enabled Then color = LIGHT_TextFillColorDisabled
         End If
         DrawLeftTextStyled m_Target, m_Pages(Index).Caption, UI3TabMetrics.HeaderFontSize, 400, X + UI3TabMetrics.HeaderPadding, UI3TabMetrics.HeaderTop(m_TabStyle), X + W - UI3TabMetrics.HeaderPadding, UI3TabMetrics.ContentTop, color, True
-        If Not Selected And Index + 1 <> ActiveIndex() And Hot <> Index Then UI3TabMetrics.FillBox m_Target, X + W - 1, UI3TabMetrics.HeaderTop(m_TabStyle) + 8, 1, UI3TabMetrics.HeaderHeight(m_TabStyle) - 16, UI3TabMetrics.Divider()
+        If Not Selected And Index + 1 <> ActiveIndex() And Hot <> Index And Hot <> Index + 1 Then UI3TabMetrics.FillBox m_Target, X + W - 1, UI3TabMetrics.HeaderTop(m_TabStyle) + 8, 1, UI3TabMetrics.HeaderHeight(m_TabStyle) - 16, UI3TabMetrics.Divider()
         If m_Focused And m_KeyboardFocus And Selected And UserControl.Enabled Then
             Dim focus As D2D1_ROUNDED_RECT = RoundedRect(X + 10, UI3TabMetrics.HeaderTop(m_TabStyle) + 5, X + W - 10, UI3TabMetrics.ContentTop - 5, 0)
             If IsDarkMode() Then color = &HFFFFFFFF Else color = &HFF000000
@@ -573,14 +582,8 @@ Public Class UI3TabView
         Next
         If active >= m_FirstHeader And active < m_FirstHeader + count Then PaintHeader active, HeaderStart() + (active - m_FirstHeader) * size, size, True, hot, held
         m_Target.PopAxisAlignedClip
-        Dim joinLeft As Single, joinRight As Single
-        joinLeft = w: joinRight = w
-        If active >= m_FirstHeader And active < m_FirstHeader + count Then
-            joinLeft = HeaderStart() + (active - m_FirstHeader) * size - UI3TabMetrics.FootRadius(m_TabStyle)
-            joinRight = joinLeft + size + 2 * UI3TabMetrics.FootRadius(m_TabStyle)
-        End If
-        UI3TabMetrics.FillBox m_Target, 0, UI3TabMetrics.ContentTop - 1, joinLeft, 1, UI3TabMetrics.Divider()
-        UI3TabMetrics.FillBox m_Target, joinRight, UI3TabMetrics.ContentTop - 1, w - joinRight, 1, UI3TabMetrics.Divider()
+        ' No horizontal stroke across the page top: the selected curve joins
+        ' the content surface directly (Shane's Edge/Explorer presentation).
         If m_ShowAddButton Then PaintAuxiliary -1, w - UI3TabMetrics.AddWidth, ChrW$(&HE710&), hot, held, UserControl.Enabled
         If UI3TabMetrics.Overflowing(w, m_Pages.Count, m_ShowAddButton, m_TabStyle) Then
             PaintAuxiliary -2, 0, ChrW$(&HE76B&), hot, held, UserControl.Enabled And m_FirstHeader > 1

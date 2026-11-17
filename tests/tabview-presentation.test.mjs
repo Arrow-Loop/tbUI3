@@ -81,3 +81,14 @@ test('TabStyle enum entries cannot introduce quoted Description tokens into nati
   assert.equal(JSON.parse(response)[0].serialization.TabStyle,member.name);
  }
 });
+
+
+test('native tab separators disappear beside either a selected or hovered tab',()=>{
+ const condition=control.match(/If (.*?) Then UI3TabMetrics\.FillBox m_Target, X \+ W - 1/)[1];
+ const expression=condition.replace(/\bNot\s+/g,'!').replace(/\bAnd\b/g,'&&').replace(/<>/g,'!==');
+ for(let selected=1;selected<=5;selected++)for(let hot=0;hot<=5;hot++)for(let index=1;index<=5;index++){
+  const visible=vm.runInNewContext(expression,{Selected:index===selected,Index:index,Hot:hot,ActiveIndex:()=>selected});
+  assert.equal(visible,index!==selected&&index+1!==selected&&index!==hot&&index+1!==hot,
+   'Separator owned by tab '+index+'; selected='+selected+' hover='+hot);
+ }
+});

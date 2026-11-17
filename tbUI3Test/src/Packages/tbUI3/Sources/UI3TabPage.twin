@@ -5,6 +5,7 @@
 [COMControl]
 [Description("A real page container owned and sized by UI3TabView.")]
 Public Class UI3TabPage
+    Private m_SyncingBackground As Boolean
     Private m_Caption As String
     Private m_PageOrder As Long
     Private m_Target As ID2D1DCRenderTarget
@@ -75,13 +76,35 @@ Public Class UI3TabPage
         container.RefreshPages
     End Sub
 
+    ' Keep the native opaque control's erase color paired with our D2D surface.
+    ' Never change BackColor inside Paint: that can reenter painting and snapshots.
+    Private Sub SyncNativeBackground()
+        If m_SyncingBackground Then Exit Sub
+        m_SyncingBackground = True
+        On Error GoTo Done
+        Dim color As Long = UI3TabMetrics.PageOleColor()
+        If UserControl.BackColor <> color Then UserControl.BackColor = color
+    Done:
+        m_SyncingBackground = False
+    End Sub
+
+    Private Sub UserControl_AmbientChanged(PropertyName As String)
+        If m_SyncingBackground Then Exit Sub
+        If StrComp(PropertyName, "BackColor", vbTextCompare) = 0 Then
+            SyncNativeBackground
+            UserControl.Refresh
+        End If
+    End Sub
+
     Private Sub UserControl_InitProperties()
+        SyncNativeBackground
         m_Caption = "Page"
         m_PageOrder = 0
         MatchContainerScale
     End Sub
 
     Private Sub UserControl_ReadProperties(PropBag As PropertyBag)
+        SyncNativeBackground
         m_Caption = PropBag.ReadProperty("Caption", "Page")
         m_PageOrder = PropBag.ReadProperty("PageOrder", 0)
         If m_PageOrder < 0 Then m_PageOrder = 0
@@ -94,6 +117,7 @@ Public Class UI3TabPage
     End Sub
 
     Private Sub UserControl_Show()
+        SyncNativeBackground
         MatchContainerScale
         NotifyHost
     End Sub

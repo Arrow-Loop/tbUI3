@@ -1,3 +1,7 @@
+### 1.0.0.70
+- Matches native TabView/page BackColor to the D2D theme outside Paint, addressing the remaining light erase surface.
+- Focus cues require keyboard navigation rather than assuming every GotFocus is keyboard input.
+
 ### 1.0.0.69
 - Removes the horizontal stroke at the top of TabView page content.
 - Hover/press/focus/overflow repaint only the header without erasing the native background. The host subclass suppresses class-brush erasing; full opaque Direct2D paint supplies the background. Design-time snapshots retain synchronous refresh.

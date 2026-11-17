@@ -147,6 +147,11 @@ Private Module UI3TabMetrics
         If GetCapture() = hWnd Then ReleaseCapture
     End Sub
 
+    Public Function KeyboardFocusIntent() As Boolean
+        KeyboardFocusIntent = GetKeyState(vbKeyTab) < 0 Or GetKeyState(vbKeyLeft) < 0 Or _
+            GetKeyState(vbKeyRight) < 0 Or GetKeyState(vbKeyHome) < 0 Or GetKeyState(vbKeyEnd) < 0
+    End Function
+
     Public Function PointerPressed(ByVal hWnd As LongPtr) As Boolean
         PointerPressed = GetCapture() = hWnd And GetKeyState(vbLeftButton) < 0
     End Function
@@ -164,6 +169,11 @@ Private Module UI3TabMetrics
 
     Public Function PageBackground() As Long
         If IsDarkMode() Then PageBackground = DARK_SolidBackgroundFillColorTertiary Else PageBackground = LIGHT_SolidBackgroundFillColorTertiary
+    End Function
+
+    Public Function HeaderOleColor() As Long
+        Dim color As Long = HeaderBackground()
+        HeaderOleColor = RGB((color And &HFF0000) \ &H10000, (color And &HFF00&) \ &H100&, color And &HFF&)
     End Function
 
     Public Function PageOleColor() As Long

@@ -1,5 +1,11 @@
 # Roadmap: tbUI3 IDE
 
+## 2026-11-17 - Native backgrounds and focus cues (package 1.0.0.70)
+
+Shane reports package 69 still flickers on physical display during hover, although recording misses the flash. Do not mark 69's repaint change as a successful flicker fix. The outlined selected caption is our 2px focus indicator; GotFocus previously assumed keyboard input. Focus intent now checks held navigation keys and the explicit pointer-focus guard; handled keyboard navigation enables the cue, while unhandled keys no longer enable it or request layout. The white field containing This text belongs to Details is the existing standard TextBox txtDetails (system window background), not a TabView drawing artifact.
+
+The native opaque host/page BackColor still used the default system control color while Direct2D painted dark. Package 70 synchronizes host BackColor to the header surface and page BackColor to the page surface at InitProperties, ReadProperties, Show and ambient background changes, plus before runtime header invalidation. Changes are guarded/idempotent and never performed inside Paint. This addresses another possible light erase surface; the exact remaining physical-display flicker mechanism is not yet captured or proven. Retains header invalidation, separator/line fixes, IDs, control sizes and saved forms. Full package/reference/embedded copy 70; add-in 17/adapter v10 unchanged. 149 tests and 71 mirrors/stored JSON checks pass; native compile/run and physical-display confirmation remain pending.
+
 ## 2026-11-17 - TabView hover repaint and separators (package 1.0.0.69)
 
 Shane confirms package 68 resolves the form-load failure. This pass removes the unwanted horizontal stroke above page content in both Edge and Explorer. Native tab separators now disappear on both sides of a hovered tab; the divider is owned by its left neighbor, so its condition also checks the next tab's hover state. Runtime hover/press/focus/header-scroll changes invalidate only the DPI-scaled header without requesting background erase. The host subclass handles WM_ERASEBKGND without forwarding to the light system brush; opaque Direct2D paint supplies the background. Mouse moves rearm leave tracking without reinstalling the subclass. Design-time edits retain synchronous Refresh for native snapshots.

@@ -92,3 +92,14 @@ test('native tab separators disappear beside either a selected or hovered tab',(
    'Separator owned by tab '+index+'; selected='+selected+' hover='+hot);
  }
 });
+
+
+test('native focus intent distinguishes navigation keys from pointer or programmatic focus',()=>{
+ const body=metrics.match(/Public Function KeyboardFocusIntent\(\) As Boolean\r?\n([\s\S]*?)    End Function/)[1];
+ const expression=body.replace(/\s*_\r?\n\s*/g,' ').trim().replace(/^KeyboardFocusIntent = /,'').replace(/\bOr\b/g,'||');
+ const keys={vbKeyTab:9,vbKeyLeft:37,vbKeyRight:39,vbKeyHome:36,vbKeyEnd:35};
+ for(const held of [null,1,16,17,65,...Object.values(keys)]){
+  const result=vm.runInNewContext(expression,{...keys,GetKeyState:key=>key===held?-32768:0});
+  assert.equal(result,Object.values(keys).includes(held),'held key '+held);
+ }
+});

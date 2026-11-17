@@ -8,6 +8,7 @@ Public Class UI3TabView
     Public Event SelectionChanged()
     Public Event AddTabButtonClick()
 
+    Private m_SyncingBackground As Boolean
     Private m_TabStyle As UI3TabStyle
     Private m_PressedPage As String
     Private m_PressedHit As Long
@@ -331,6 +332,7 @@ Public Class UI3TabView
 
     Private Sub RepaintHeader()
         If Ambient.UserMode Then
+            SyncNativeBackground
             UI3TabMetrics.InvalidateHeader UserControl.hWnd
         Else
             ' The IDE requests synchronous control snapshots after edits.
@@ -398,11 +400,12 @@ Public Class UI3TabView
 
     Private Sub UserControl_KeyDown(KeyCode As Integer, Shift As Integer)
         If Not UserControl.Enabled Then Exit Sub
-        m_KeyboardFocus = True
-        RefreshPages
+        CollectPages
         Dim index As Long = ActiveIndex()
         If (Shift And vbCtrlMask) <> 0 Then
             If KeyCode = vbKeyT Then
+                m_KeyboardFocus = True
+                RepaintHeader
                 KeyCode = 0: RequestNewPage: Exit Sub
             End If
             If KeyCode = vbKeyTab Then
@@ -419,6 +422,7 @@ Public Class UI3TabView
                 Case Else: Exit Sub
             End Select
         End If
+        m_KeyboardFocus = True
         KeyCode = 0
         If m_Pages.Count = 0 Then Exit Sub
         If index < 1 Then index = m_Pages.Count
@@ -430,7 +434,28 @@ Public Class UI3TabView
         If Verb = "New page" Then RequestNewPage
     End Sub
 
+    ' Keep the native opaque control's erase color paired with our D2D surface.
+    ' Never change BackColor inside Paint: that can reenter painting and snapshots.
+    Private Sub SyncNativeBackground()
+        If m_SyncingBackground Then Exit Sub
+        m_SyncingBackground = True
+        On Error GoTo Done
+        Dim color As Long = UI3TabMetrics.HeaderOleColor()
+        If UserControl.BackColor <> color Then UserControl.BackColor = color
+    Done:
+        m_SyncingBackground = False
+    End Sub
+
+    Private Sub UserControl_AmbientChanged(PropertyName As String)
+        If m_SyncingBackground Then Exit Sub
+        If StrComp(PropertyName, "BackColor", vbTextCompare) = 0 Then
+            SyncNativeBackground
+            UserControl.Refresh
+        End If
+    End Sub
+
     Private Sub UserControl_InitProperties()
+        SyncNativeBackground
         m_TabStyle = ui3TabEdge
         m_ShowAddButton = True
         m_FirstHeader = 1
@@ -439,6 +464,7 @@ Public Class UI3TabView
     End Sub
 
     Private Sub UserControl_ReadProperties(PropBag As PropertyBag)
+        SyncNativeBackground
         m_TabStyle = PropBag.ReadProperty("TabStyle", ui3TabEdge)
         If m_TabStyle <> ui3TabEdge And m_TabStyle <> ui3TabExplorer Then m_TabStyle = ui3TabEdge
         m_SelectedPage = PropBag.ReadProperty("SelectedPage", "")
@@ -455,6 +481,7 @@ Public Class UI3TabView
     End Sub
 
     Private Sub UserControl_Show()
+        SyncNativeBackground
         m_PointerHwnd = UserControl.hWnd
         UI3TabMetrics.WatchPointer m_PointerHwnd
         RefreshPages
@@ -470,7 +497,7 @@ Public Class UI3TabView
 
     Private Sub UserControl_GotFocus()
         m_Focused = True
-        If Not m_PointerFocusing Then m_KeyboardFocus = True
+        If m_PointerFocusing Then m_KeyboardFocus = False Else m_KeyboardFocus = UI3TabMetrics.KeyboardFocusIntent()
         If Not Ambient.UserMode Then UI3TabDiagnostics.Note "host " & UserControl.Extender.Name & " GotFocus"
         RepaintHeader
     End Sub

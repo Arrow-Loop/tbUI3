@@ -22,3 +22,13 @@ The erase contract follows Microsoft's [InvalidateRect documentation](https://le
 - The API probe does not compile or run UI3TabView. No compiled BETA 1044 screenshot or flicker-free acceptance is claimed.
 
 Next native check: reopen the updated embedded test project/rebuild package 69, run both styles in Light/Dark, move repeatedly across selected/unselected/adjacent tabs and off the control, press/drag out/release, change keyboard focus, select/scroll and resize. Confirm no white flash, no horizontal page-top stroke, correct neighboring separators and unchanged page children/layout. Newly drawn controls retain their drawn size unless application code resizes them.
+
+## User follow-up: package 69 did not eliminate flicker
+
+Shane reports white flashing remains during hover on the physical display but is absent from his recording. This supersedes any interpretation of the API probes as successful runtime visual acceptance.
+
+Package 70 additionally synchronizes native opaque BackColor to the appropriate host/header or page D2D color, outside Paint, with guarded idempotent setters at InitProperties/ReadProperties/Show/ambient changes and before runtime header invalidation. Both controls previously retained system control backgrounds. This removes a remaining potential light erase surface; the causal mechanism of the recorded-only-on-display flash is not proven. No BackColor setter was added to Paint.
+
+The white outline at Details is the drawn focus cue. GotFocus previously set keyboard intent unconditionally unless inside the explicit SetFocus call. It now requires held navigation keys plus the pointer guard; handled KeyDown paths enable the cue and unrelated keys do not. A regression executes the actual native focus-intent expression with pointer/programmatic/no key, modifier/unrelated keys and each navigation key. 149 tests and 71 mirrors pass. No native BETA 1044 compilation or physical-display acceptance was performed here.
+
+The white text field lower down is the fixture's standard TextBox txtDetails, Text=This text belongs to Details, BackColor=-2147483643 (system window color). It is not a rectangle emitted by the TabView. Existing form data is unchanged. Next check package 70 on the physical display in both styles/themes, mouse selection versus Tab/arrow focus, parent theme changes, page show/switch and save/reopen.

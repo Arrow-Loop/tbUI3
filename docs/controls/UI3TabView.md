@@ -1,6 +1,6 @@
 # UI3TabView and UI3TabPage
 
-Status: package 1.0.0.69 / tbUI3IDE 1.3.0.17 / adapter v10 appearance candidate, 2026-11-17. Shane confirms the designer workflow works. This pass adds shape profiles and core header interaction; it is not a claim of complete TabView fidelity or compiled-native acceptance.
+Status: package 1.0.0.70 / tbUI3IDE 1.3.0.17 / adapter v10 appearance candidate, 2026-11-17. Shane confirms the designer workflow works. This pass adds shape profiles and core header interaction; it is not a claim of complete TabView fidelity or compiled-native acceptance.
 
 Package 68 removes enum-member Description attributes that BETA 1044 interpreted as enum names and emitted with unescaped quotes in designer JSON. The native picker uses ui3TabEdge/ui3TabExplorer; comments and property help describe Edge Style/Explorer Style. The uploaded native response establishes the cause; Shane confirms package 68 resolves the load failure.
 
@@ -16,6 +16,12 @@ Edge is Shane's explicit customized profile from [Smith-Debnam Toolkit 8543201](
 | Explorer | 40 DIP | 8 DIP | 32 DIP | 8 DIP | 4 DIP |
 
 Both styles preserve the page origin at 40 DIP. Their selected outline uses native circular arcs; Edge hover/pressed uses the same profile outline, while Explorer's unselected hover/pressed uses the rounded WinUI container. Selection joins the page surface without a line beneath it. Adjacent selected separators are suppressed. Captions align left with native DirectWrite ellipsis. Focus is keyboard-only with the Toolkit's 2px inset outline treatment, replacing the earlier accent underline.
+
+## Remaining flicker and focus follow-up, package 70
+
+Shane reports physical-display flicker remains after package 69; it did not show in his recording. Package 70 additionally matches the native opaque BackColor of host/page to their respective D2D surfaces outside Paint. Init/Read/Show/ambient changes synchronize the native color with a reentrancy guard and equality check; runtime header invalidation also checks the host color. This is a candidate for remaining light background exposure, not confirmed flicker-free acceptance. The existing rule against changing BackColor during Paint is retained.
+
+The white outline is the keyboard focus indicator. GotFocus now requires held navigation keys (Tab, Left/Right, Home/End) rather than assuming every focus gain is keyboard-originated; explicit pointer focus suppresses it. Handled navigation activates the cue; unrelated keys do not. Preserve and verify the cue when tabbing into the control and using arrows, while mouse selection should hide it. The white txtDetails field is a standard TextBox in the fixture, outside TabView theme rendering.
 
 ## Repaint follow-up, package 69
 

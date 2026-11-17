@@ -563,8 +563,13 @@
         }
     }
     function resize(){if(api.changedSize)api.changedSize();}
+    function syncRibbonTheme(){
+        const name=String(api.themeName?.()||'').trim().toLowerCase();
+        shell?.classList.toggle('tbui3-ribbon-winui',['winui3 dark','winui3 light'].includes(name));
+    }
     function syncRibbonStyle(){
         if(!shell)return;
+        syncRibbonTheme();
         const simple=state.mode!=='Classic'&&state.simplified;
         shell.classList.toggle('tbui3-ribbon-simplified',simple);
         for(const [b,entry]of bindings)if(content.contains(b)&&b.tagName==='BUTTON'&&!entry.gridOptions){
@@ -637,7 +642,7 @@
     function tick(){
         if(state.disposed)return;
         try{
-            syncOptions();api.syncAppearance?.();syncWindowInsets();if(state.mode==='Classic'){syncClassic();return;}
+            syncOptions();api.syncAppearance?.();syncWindowInsets();syncRibbonTheme();if(state.mode==='Classic'){syncClassic();return;}
             discover();const next=currentSignature();if(next!==signature){signature=next;menuSignature='';renderTabs();}
             syncEditorTab();syncBindings();syncQuick();
             if(backstage&&!backstage.hidden)syncFileUnderlays();

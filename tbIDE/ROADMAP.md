@@ -1,5 +1,9 @@
 # Roadmap: tbUI3 IDE
 
+## Current candidate: tbUI3IDE 1.3.0.14
+
+Ribbon elevation is restricted to WinUI3 Dark/Light. Standard and third-party themes have no command-card shadow/bottom border. Native gate: rebuild/reload, switch themes in Ribbon and Hybrid (full/simplified), confirm the bottom line disappears outside WinUI3 and raised WinUI3 rendering remains. 130 tests, 71 mirrors and 32 Edge theme/profile/presentation checks pass. Evidence: docs/validation/2026-11-17-ribbon-elevation.md. Earlier native accent, preference and TabView acceptance gates remain open.
+
 ## Current candidate: tbUI3IDE 1.3.0.13
 
 Neutral Light chrome, theme-restricted insets and Windows accent colors are implemented. Native gate: rebuild/reload the add-in; install the regenerated Light.theme; switch between both WinUI themes, standard/third-party themes and styling On/Off; verify no non-WinUI margin changes, caption readability/hover, unchanged caption-button geometry and system accent updates after changing Windows Personalization. Check both IDE architectures and restart preferences. Static themes retain fallback colors without the add-in. 129 tests, 71 mirrors, x86/x64 UISettings ABI probes and Edge fixtures pass; native compiled-host acceptance remains open. Evidence: docs/validation/2026-11-12-neutral-light-system-accent.md. Earlier candidate notes below are historical; only the two WinUI themes now receive optional insets.

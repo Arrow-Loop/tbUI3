@@ -1,6 +1,8 @@
 # tbUI3 IDE: one add-in for designer tools and optional WinUI 3 styling
 
-The single distributed add-in is **tbUI3IDE 1.3.0.13**, built from `tbUI3IDE/tbUI3IDE.twinproj` as **tbUI3IDE.dll**. It includes TabView adapter v8 and the IDE styling implementation. The established project ID and saved theme preference are retained through the rename.
+The single distributed add-in is **tbUI3IDE 1.3.0.14**, built from `tbUI3IDE/tbUI3IDE.twinproj` as **tbUI3IDE.dll**. It includes TabView adapter v8 and the IDE styling implementation. The established project ID and saved theme preference are retained through the rename.
+
+The ribbon card's shadow and bottom border apply only to WinUI3 Dark/Light. Standard and third-party themes use a flat command surface in both Ribbon and Hybrid, full and simplified. Live theme changes preserve command/control nodes. This presentation choice is independent of additional styling; other layout and interaction behavior is unchanged.
 
 WinUI3 Light uses neutral #F3F3F3 window/menu chrome. Optional styling fixes the IDE's native white caption text/icons and normalizes older installed Light theme chrome. Both WinUI3 themes use the current Windows accent palette while additional styling is enabled. The existing one-second options timer reads Windows.UI.ViewManagement.UISettings; theme changes, styling Off and unload remove the accent overrides. Static themes remain usable independently with fallback blue accents.
 

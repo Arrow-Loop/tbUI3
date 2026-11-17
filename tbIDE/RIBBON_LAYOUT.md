@@ -1,6 +1,8 @@
 # Ribbon command organization
 
-Current implementation: tbUI3IDE 1.3.0.13, 2026-11-12.
+Current implementation: tbUI3IDE 1.3.0.14, 2026-11-17.
+
+The ribbon card's shadow and bottom border apply only to WinUI3 Dark/Light. Standard and third-party themes use a flat command surface in both Ribbon and Hybrid, full and simplified. Live theme changes preserve command/control nodes. This presentation choice is independent of additional styling; other layout and interaction behavior is unchanged.
 
 In both Ribbon and Hybrid, full layouts retain the requested secondary labels and inline Grid options. Only Simplified hides the Center in Container, Lock Controls, Preview, Grid, Page Left/Right, TabView Refresh/Diagnostics and Insert Folder/Other file/Import labels and puts Grid options in a toggle-split flyout. Help, accessible names, original values and events remain. The original ten alignment/size commands stay icon-only in both presentations. The chevron sits inside both cards with a transparent resting background and hover fill; its glyph remains visible. Simplified controls are vertically centered. Quick Access retains 16px internal left padding.
 

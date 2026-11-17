@@ -398,7 +398,7 @@ test('checked menu state and dynamically changed selector values stay synchroniz
     f.d.querySelector('[data-tab=Home]').click();assert.equal(f.d.querySelector('button[title="Toggle "]').getAttribute('aria-pressed'),'false');
     assert.equal(f.d.querySelector('select[aria-label=Choice]').value,'b');f.dispose();
 });
-test('toolbar commands remain theme-independent; logo and optional window insets alone are theme-specific',()=>{
+test('toolbar commands remain theme-independent while WinUI chrome effects are theme-specific',()=>{
     const css=fs.readFileSync('tbIDE/tbUI3IDE/css/ide-toolbar.css','utf8');
     // Pinned WinUI subtle-state alpha fills and shadow4 are effects, not a replacement theme palette.
     const paletteCss=css.replace(/--tbui3-toolbar-shadow:[^;]+;|--tbui3-subtle-(?:hover|pressed):[^;]+;/g,'');
@@ -638,7 +638,7 @@ test('tab strip and command surface are separate, with indicator-only selected a
     const dom=new JSDOM('<head></head>'),style=dom.window.document.createElement('style');style.textContent=fs.readFileSync('tbIDE/tbUI3IDE/css/ide-toolbar.css','utf8');dom.window.document.head.append(style);
     const rules=[...style.sheet.cssRules],rule=selector=>rules.find(r=>r.selectorText===selector).style;
     assert.equal(rule('.tbui3-ribbon').background,'transparent');assert(rule('.tbui3-ribbon-tabs').background.includes('--themeMenuBackColor'));
-    assert(rule('.tbui3-ribbon-tabs').color.includes('--themeMenuForeColor'));assert.equal(rule('.tbui3-ribbon-content').background,'var(--tbui3-toolbar-bg)');assert(rule('.tbui3-ribbon-content').getPropertyValue('box-shadow').includes('--tbui3-toolbar-shadow'));
+    assert(rule('.tbui3-ribbon-tabs').color.includes('--themeMenuForeColor'));assert.equal(rule('.tbui3-ribbon-content').background,'var(--tbui3-toolbar-bg)');assert.equal(rule('.tbui3-ribbon-content').getPropertyValue('box-shadow'),'none');assert.equal(rule('.tbui3-ribbon-content').getPropertyValue('border-bottom'),'0');assert(rule('.tbui3-ribbon-winui > .tbui3-ribbon-content').getPropertyValue('box-shadow').includes('--tbui3-toolbar-shadow'));
     assert.equal(rule('.tbui3-ribbon-tab').background,'transparent');assert(!rules.some(r=>r.selectorText===".tbui3-ribbon-tab[aria-selected='true']"&&r.style.background));
     assert.equal(rule(".tbui3-ribbon-tab[aria-selected='true']::after").background,'var(--tbui3-accent)');
     assert.equal(rule(".tbui3-ribbon-tab:hover:not([aria-selected='true'])::after").background,'var(--tbui3-tab-hover-indicator)');
@@ -814,4 +814,15 @@ test('WinUI Light ships neutral window chrome and native bridge polls documented
     const theme=fs.readFileSync('tbIDE/themes/WinUI3 Light.theme','utf8');assert.match(theme,/MenuBackColor:\s*#F3F3F3;/);assert.match(theme,/MenuForeColor:\s*#1A1A1A;/);
     const main=fs.readFileSync('tbIDE/tbUI3IDE/src/Sources/MainModule.twin','utf8');assert(main.includes('03021BE4-5254-4781-8194-5168F7D06D7B'));assert(main.includes('Windows.UI.ViewManagement.UISettings'));assert(main.includes('For desired = 8 To 2 Step -1'));assert(main.includes('If classId <> 0 Then WindowsDeleteString classId'));assert(main.includes('If initialized Then RoUninitialize'));assert(main.includes('window.__tbUI3Appearance.dispose()'));assert(main.includes("enabled)?'on':'off'"));
     const builder=fs.readFileSync('tbIDE/tools/build-ide-toolbar.mjs','utf8');assert(builder.includes('system-accent.js'));assert(builder.includes('syncAppearance:function()'));
+});
+
+test('ribbon elevation follows only WinUI3 Dark/Light across live theme transitions in both profiles and presentations',()=>{
+    for(const mode of ['Ribbon','Hybrid'])for(const simplified of [false,true]){
+        const f=fixture();let theme='Dark';f.api.themeName=()=>theme;f.api.stylingEnabled=()=>false;f.adapter.setMode(mode);f.adapter.setSimplified(simplified);
+        const shell=f.d.querySelector('.tbui3-ribbon'),controls=[...shell.querySelectorAll('button,input,select')];
+        for(const name of ['Dark','WinUI3 Dark','Light','winui3 light','Aurora','WinUI3 Custom','WINUI3 DARK','Third-party','WinUI3 Light','Dark']){
+            theme=name;f.adapter.tick();assert.equal(shell.classList.contains('tbui3-ribbon-winui'),['winui3 dark','winui3 light'].includes(name.toLowerCase()),mode+' '+name);assert.deepEqual([...shell.querySelectorAll('button,input,select')],controls);
+        }
+        f.dispose();
+    }
 });

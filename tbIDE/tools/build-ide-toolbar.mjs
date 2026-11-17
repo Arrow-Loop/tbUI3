@@ -18,12 +18,14 @@ const contextBridge=fs.readFileSync(dir+'/js/native-toolbar-context.js','utf8').
 const layout=fs.readFileSync(dir+'/js/ribbon-layout.js','utf8').trim();
 const script=`(function(){if(window.__tbUI3Toolbar)return 'toolbar already installed';
 var css=document.createElement('style');css.id='tbUI3ToolbarCss';css.textContent=${JSON.stringify(css)};document.head.appendChild(css);
-var nativeContext=${contextBridge}({selectedEditor:function(){return typeof openEditors==='undefined'?null:openEditors.selectedEditorNode;},addComponent:typeof showContextMenuAddComponent==='function'?showContextMenuAddComponent:undefined});
+var nativeContext=${contextBridge}({selectedEditor:function(){return typeof openEditors==='undefined'?null:openEditors.selectedEditorNode;},projectLoaded:function(){return parseAndEvaluateExpression('projectLoaded');},projectPath:function(){return projectFilePath;},isDirtyEditor:function(n){return openEditors.isDirtyEditor(n);},saveEditor:function(n){openEditors.save(n);},saveProjectAs:typeof saveProjectAs==='function'?saveProjectAs:undefined,
+findFile:function(path){return fs.tree.resolvePath(path);},formCodeHandler:function(){return fileHandler_twin;},formDesignerHandler:function(){return fileHandler_tbform;},
+addComponent:typeof showContextMenuAddComponent==='function'?showContextMenuAddComponent:undefined});
 window.__tbUI3Appearance=${systemAccent}({document:document,themeName:function(){return getThemeName();},enabled:function(){return !!(window.__winui3IdeStyle&&window.__winui3IdeStyle.enabled);}});
-var adapter=${factory}({window:window,brandImage:${JSON.stringify(brandImage)},themeName:function(){return getThemeName();},icons:${JSON.stringify(icons)},buildLayout:${layout},present:${presentation},captureMenu:nativeContext.captureMenu,editorState:nativeContext.editorState,
+var adapter=${factory}({window:window,brandImage:${JSON.stringify(brandImage)},themeName:function(){return getThemeName();},icons:${JSON.stringify(icons)},buildLayout:${layout},present:${presentation},captureMenu:nativeContext.captureMenu,editorState:nativeContext.editorState,canSwitchFormCode:nativeContext.canSwitchFormCode,
 getShowContextMenu:function(){return showContextMenu;},setShowContextMenu:function(fn){showContextMenu=fn;},
-localize:function(s){return evaluateLocalizedString(s);},execute:function(s){return executeIdeCommand(s,true);},
-commandEnabled:function(s){var c=ideCommands[s];return !!c&&(!c.defaultContext||evaluateExpression(c.defaultContext));},
+localize:function(s){return evaluateLocalizedString(s);},execute:function(s){if(s==='tbEditor_Save')return nativeContext.saveDocument();return executeIdeCommand(s,true);},
+commandEnabled:function(s){if(s==='tbEditor_Save')return nativeContext.canSaveDocument();var c=ideCommands[s];return !!c&&(!c.defaultContext||evaluateExpression(c.defaultContext));},
 testContext:function(s){return parseAndEvaluateExpression(s);},shortcut:function(s){return GetIdeCommandShortcutDescription(s)||'';},
 realTitlebar:function(){return !!liveIDEOptions.showRealTitlebar;},projectName:function(){return typeof g_CurrentProjectName==='string'?g_CurrentProjectName:'';},
 syncAppearance:function(){window.__tbUI3Appearance.sync();},

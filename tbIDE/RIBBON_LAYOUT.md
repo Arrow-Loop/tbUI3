@@ -1,6 +1,8 @@
 # Ribbon command organization
 
-Current implementation: tbUI3IDE 1.3.0.14, 2026-11-17.
+Current implementation: tbUI3IDE 1.3.0.15, 2026-11-17.
+
+Save Document follows the selected code/form document's dirty and read-only state. It uses the IDE's native per-editor writer, preserving its completion/failure behavior and leaving other dirty documents alone. A project without a saved path first opens native Save As. Form / Code enables only when the selected document has a matching designer/code file; standalone modules disable it. Both commands use the same behavior in Ribbon/Hybrid, full/simplified.
 
 The ribbon card's shadow and bottom border apply only to WinUI3 Dark/Light. Standard and third-party themes use a flat command surface in both Ribbon and Hybrid, full and simplified. Live theme changes preserve command/control nodes. This presentation choice is independent of additional styling; other layout and interaction behavior is unchanged.
 

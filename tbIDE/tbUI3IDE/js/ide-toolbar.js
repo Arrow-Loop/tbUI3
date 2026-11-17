@@ -150,8 +150,13 @@
         const glyph=api.present?api.present(descriptor,src&&src.id).glyph:'apps_list';
         return mask(api.icons[glyph]||api.icons.apps_list||api.icons.saveIcon);
     }
+    function sourceEnabled(n){
+        if(disabled(n))return false;
+        if(n.id==='designSwitchIcon'&&api.canSwitchFormCode){try{return !!api.canSwitchFormCode();}catch(e){return false;}}
+        return true;
+    }
     function invokeSource(n,event) {
-        if(disabled(n))return;
+        if(!sourceEnabled(n))return;
         const init={bubbles:true,cancelable:true,button:0,ctrlKey:event.ctrlKey,shiftKey:event.shiftKey,altKey:event.altKey,metaKey:event.metaKey};
         // Natural mouse sequence covers both native mousedown commands and add-in click handlers.
         for(const type of ['mousedown','mouseup','click'])n.dispatchEvent(new w.MouseEvent(type,init));
@@ -531,7 +536,7 @@
     function closeFile(restoreFocus=true){if(backstage&&!backstage.hidden){closePopup();backstage.hidden=true;syncQuick();restoreFileUnderlays();if(restoreFocus&&savedFocus?.isConnected)savedFocus.focus();}}
     function syncBindings(){sizeLabels();for(const box of d.querySelectorAll('.tbui3-ribbon-grid'))box.disabled=!(api.formGlobals&&api.formGlobals());for(const [b,entry]of bindings){
         const grid=entry.gridOptions||entry.source?.id==='menuBarGrid';
-        const on=grid?!!(api.formGlobals&&api.formGlobals())&&(!entry.source||!disabled(entry.source)):entry.source?!disabled(entry.source):menuEnabled(entry.item);b.disabled=!on;b.setAttribute('aria-disabled',String(!on));
+        const on=grid?!!(api.formGlobals&&api.formGlobals())&&(!entry.source||!disabled(entry.source)):entry.source?sourceEnabled(entry.source):menuEnabled(entry.item);b.disabled=!on;b.setAttribute('aria-disabled',String(!on));
             if(entry.gridOptions){b.hidden=!!entry.source&&!visible(entry.source);if((!on||b.hidden)&&popupAnchor===b)closePopup();continue;}
             const isChecked=entry.source?entry.source.classList.contains('menuBarToggleOn'):checked(entry.item);
             b.classList.toggle('tbui3-ribbon-checked',isChecked);b.setAttribute('aria-pressed',String(isChecked));

@@ -1,5 +1,9 @@
 # Roadmap: tbUI3 IDE
 
+## Current candidate: tbUI3IDE 1.3.0.15
+
+Save Document now uses the selected editor's native save route instead of the disabled IDE placeholder. Form / Code requires a real designer/code counterpart. Native gate: rebuild/reload, edit both a form and code document, save one and verify the other remains dirty; reopen the saved document, exercise Save As cancel/complete, and switch between standalone modules and paired form/code tabs. Repeat in Ribbon/Hybrid full/simplified. 135 tests, 71 mirrors and eight Edge document flows pass; native compiled-host acceptance remains open. Evidence: docs/validation/2026-11-17-document-commands.md. TabView work is deferred while this reported add-in bug is addressed.
+
 ## Current candidate: tbUI3IDE 1.3.0.14
 
 Ribbon elevation is restricted to WinUI3 Dark/Light. Standard and third-party themes have no command-card shadow/bottom border. Native gate: rebuild/reload, switch themes in Ribbon and Hybrid (full/simplified), confirm the bottom line disappears outside WinUI3 and raised WinUI3 rendering remains. 130 tests, 71 mirrors and 32 Edge theme/profile/presentation checks pass. Evidence: docs/validation/2026-11-17-ribbon-elevation.md. Earlier native accent, preference and TabView acceptance gates remain open.

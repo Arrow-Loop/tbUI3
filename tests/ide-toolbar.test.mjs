@@ -826,3 +826,76 @@ test('ribbon elevation follows only WinUI3 Dark/Light across live theme transiti
         f.dispose();
     }
 });
+
+// Read the installed native objects/classes without redistributing the IDE source.
+function installedValue(prefix,sandbox){
+    const text=fs.readFileSync(process.env.TB_IDE_MAIN_JS,'utf8'),start=text.indexOf(prefix);assert(start>=0,prefix);
+    const valueStart=prefix.startsWith('class ')?start:start+prefix.length;
+    for(let end=text.indexOf('}',valueStart);end>=0;end=text.indexOf('}',end+1)){
+        const value=text.slice(valueStart,end+1);try{new vm.Script('('+value+')');}catch{continue;}
+        return vm.runInNewContext('('+value+')',sandbox);
+    }throw Error('Cannot extract '+prefix);
+}
+function documentNativeFixture(){
+    const writes=[],dialogs=[],opened=[],sandbox={TextEncoder,JSONstringifyOrdered:JSON.stringify},files=new Map();
+    sandbox.fs={writeFile:(file,data,version,ansi,done)=>writes.push({file,data,version,ansi,done}),tree:{resolvePath:path=>files.get(path)}};
+    const Editors=installedValue('class openEditorsCollection',sandbox),editors={selectedEditorNode:null,updateDirtyState:n=>{n.updated=true;}};sandbox.openEditors=editors;
+    editors.isDirtyEditor=Editors.prototype.isDirtyEditor;editors.save=Editors.prototype.save;editors.openFile=file=>opened.push(file);
+    sandbox.fileHandler_twin=installedValue('fileHandler_twin=',sandbox);sandbox.fileHandler_tbform=installedValue('fileHandler_tbform=',sandbox);sandbox.liveIDEOptions={previewDocs:false};sandbox.msgBox=message=>dialogs.push(message);
+    for(const name of ['switchToFormPart','switchToCodePart','toggleFormDesign'])sandbox[name]=nativeFunction(name,sandbox);
+    let projectPath='C:/project.twinproj',loaded=true,saveAs;
+    const native={selectedEditor:()=>editors.selectedEditorNode,projectLoaded:()=>loaded,projectPath:()=>projectPath,isDirtyEditor:n=>editors.isDirtyEditor(n),saveEditor:n=>editors.save(n),saveProjectAs:callback=>{saveAs=callback;},findFile:path=>files.get(path),formCodeHandler:()=>sandbox.fileHandler_twin,formDesignerHandler:()=>sandbox.fileHandler_tbform};
+    function doc(kind,path){
+        let version=2;const n={type:kind,fileNode:{getFullPath:()=>path,ideVersionId:3},domObject_CloseButton:{className:''},fileHandler:kind==='UIDesigner'?sandbox.fileHandler_tbform:sandbox.fileHandler_twin};n.fileNode.openEditorNode=n;
+        if(kind==='CodeEditor'){n.openingAltVersionId=1;n.monacoModelInstance={getAlternativeVersionId:()=>version,getValue:()=> 'unsaved code'};n.edit=()=>version++;}
+        else{n.domContainer={globalVars:{isDirty:true,state:{item:{form:[{Name:'Form1',Caption:'Unsaved form'}]}}}};n.edit=()=>n.domContainer.globalVars.isDirty=true;}
+        return n;
+    }
+    return {native,bridge:contextFactory(native),sandbox,editors,writes,dialogs,opened,files,doc,select:n=>editors.selectedEditorNode=n,setProject:value=>projectPath=value,setLoaded:value=>loaded=value,completeSaveAs:()=>{projectPath='C:/new.twinproj';saveAs();}};
+}
+test('Save Document uses the real native editor writer for code/forms and only clears dirty state after successful completion',t=>{
+    if(!process.env.TB_IDE_MAIN_JS)return t.skip('Set TB_IDE_MAIN_JS for native document save contract');
+    for(const kind of ['CodeEditor','UIDesigner']){
+        const f=documentNativeFixture(),selected=f.doc(kind,'/Project/Selected.'+(kind==='CodeEditor'?'twin':'tbform')),other=f.doc('CodeEditor','/Project/Other.twin');f.select(selected);
+        assert(f.bridge.canSaveDocument());f.bridge.saveDocument();assert.equal(f.writes.length,1);assert.equal(f.writes[0].file,selected.fileNode);assert(f.editors.isDirtyEditor(selected));assert(f.editors.isDirtyEditor(other));
+        f.writes[0].done(-1);assert(f.editors.isDirtyEditor(selected));assert(f.bridge.canSaveDocument());f.bridge.saveDocument();f.writes[1].done(0);assert(!f.editors.isDirtyEditor(selected));assert(!f.bridge.canSaveDocument());assert(f.editors.isDirtyEditor(other));assert(selected.updated);assert.equal(f.writes[1].version,3);assert.equal(f.dialogs.length,0);
+        selected.edit();assert(f.bridge.canSaveDocument());selected.fileNode.readOnly=true;assert(!f.bridge.canSaveDocument());f.bridge.saveDocument();assert.equal(f.writes.length,2);selected.fileNode.readOnly=false;f.setLoaded(false);assert(!f.bridge.canSaveDocument());f.select(null);assert(!f.bridge.canSaveDocument());
+    }
+});
+test('Save As keeps the clicked document target across tab changes and skips a document closed during the prompt',t=>{
+    if(!process.env.TB_IDE_MAIN_JS)return t.skip('Set TB_IDE_MAIN_JS for native document save contract');
+    for(const close of [false,true]){
+        const f=documentNativeFixture(),original=f.doc('CodeEditor','/Original.twin'),other=f.doc('CodeEditor','/Other.twin');f.select(original);f.setProject('');f.bridge.saveDocument();assert.equal(f.writes.length,0);f.select(other);if(close)delete original.fileNode.openEditorNode;f.completeSaveAs();assert.equal(f.writes.length,close?0:1);if(!close)assert.equal(f.writes[0].file,original.fileNode);assert(f.editors.isDirtyEditor(other));
+    }
+});
+test('Form/Code availability matches the real native switch lookup for form, usercontrol, property page and report',t=>{
+    if(!process.env.TB_IDE_MAIN_JS)return t.skip('Set TB_IDE_MAIN_JS for native document switch contract');
+    const f=documentNativeFixture();
+    for(const ext of ['.tbform','.tbcontrol','.tbppage','.tbreport'])for(const type of ['CodeEditor','UIDesigner']){
+        f.files.clear();const source='/Project/Design'+(type==='CodeEditor'?'.twin':ext),target='twinbasic:/Project/Design'+(type==='CodeEditor'?ext:'.twin'),file={target};f.select(f.doc(type,source));assert(!f.bridge.canSwitchFormCode());f.files.set(target,file);assert(f.bridge.canSwitchFormCode());f.sandbox.toggleFormDesign();assert.equal(f.opened.at(-1),file);assert.equal(f.dialogs.length,0);
+    }
+    f.files.clear();f.select(f.doc('CodeEditor','/Project/Module.twin'));assert(!f.bridge.canSwitchFormCode());f.select(null);assert(!f.bridge.canSwitchFormCode());
+});
+test('document buttons follow dirty state and real counterpart availability across both tabs/profiles/presentations',t=>{
+    if(!process.env.TB_IDE_MAIN_JS)return t.skip('Set TB_IDE_MAIN_JS for native document UI contract');
+    for(const mode of ['Ribbon','Hybrid'])for(const simplified of [false,true])for(const tab of ['Code','Form']){
+        const f=fixture(),n=documentNativeFixture(),doc=n.doc(tab==='Code'?'CodeEditor':'UIDesigner','/Design'+(tab==='Code'?'.twin':'.tbform'));n.select(doc);
+        const source=f.button('designSwitchIcon','Switch Between Form And Code');source.onmousedown=()=>n.sandbox.toggleFormDesign();f.items.File.push({name:'Save Document',action:'tbEditor_Save'});
+        f.api.canSwitchFormCode=n.bridge.canSwitchFormCode;f.api.commandEnabled=action=>action==='tbEditor_Save'?n.bridge.canSaveDocument():true;f.api.execute=action=>{if(action==='tbEditor_Save')n.bridge.saveDocument();else f.calls.push(action);};f.adapter.setMode(mode);f.adapter.setSimplified(simplified);f.d.querySelector('[data-tab='+tab+']').click();
+        const buttons=f.d.querySelector('.tbui3-ribbon-content > section').querySelectorAll('button'),save=buttons[0],toggle=buttons[1];assert(!save.disabled);assert(toggle.disabled);toggle.click();assert.equal(n.dialogs.length,0);
+        n.files.set('twinbasic:/Design'+(tab==='Code'?'.tbform':'.twin'),{});f.adapter.tick();assert(!toggle.disabled);toggle.click();assert.equal(n.opened.length,1);
+        save.click();assert.equal(n.writes.length,1);assert(!save.disabled);n.writes[0].done(0);f.adapter.tick();assert(save.disabled);doc.edit();f.adapter.tick();assert(!save.disabled);
+        n.select(n.doc('CodeEditor','/Module.twin'));f.adapter.tick();assert(toggle.disabled);toggle.click();assert.equal(n.opened.length,1);f.dispose();
+    }
+});
+
+test('the actual generated toolbar routes Save Document around the installed disabled placeholder while leaving other commands native',t=>{
+    if(!process.env.TB_IDE_MAIN_JS)return t.skip('Set TB_IDE_MAIN_JS for generated document bridge contract');
+    const f=documentNativeFixture(),selected=f.doc('CodeEditor','/Selected.twin'),dom=new JSDOM('<head></head><body></body>');f.select(selected);
+    const generated=fs.readFileSync('tbIDE/tbUI3IDE/src/Sources/IdeToolbarScript.twin','utf8');let script='';
+    for(const line of generated.split(/\r?\n/)){const m=/^\s*js = js & (.*)$/.exec(line);if(m)for(const token of m[1].match(/"[^"]*"|Chr\(34\)|vbLf/g)||[])script+=token==='Chr(34)'?'"':token==='vbLf'?'\n':token.slice(1,-1);}
+    const adapterSource=source.trim().replace(/\r\n/g,'\n');assert(script.includes(adapterSource));script=script.replace(adapterSource,'(function(api){capturedApi=api;return {install:function(){}};})');
+    const sandbox={...f.sandbox,document:dom.window.document,window:{},capturedApi:null,projectFilePath:'C:/Project.twinproj',getThemeName:()=> 'Dark',parseExpression:s=>s,parseAndEvaluateExpression:()=>true,evaluateExpression:()=>false,executeIdeCommand:action=>f.opened.push(action)};
+    const stub=installedValue('tbEditor_Save:',sandbox);assert(stub.defaultContext.includes('0 &'));sandbox.ideCommands={tbEditor_Save:stub};vm.runInNewContext(script,sandbox);
+    assert.equal(sandbox.capturedApi.commandEnabled('tbEditor_Save'),true);sandbox.capturedApi.execute('tbEditor_Save');assert.equal(f.writes.length,1);assert.equal(f.writes[0].file,selected.fileNode);assert.equal(f.dialogs.length,0);f.writes[0].done(0);assert.equal(sandbox.capturedApi.commandEnabled('tbEditor_Save'),false);sandbox.capturedApi.execute('tbProject_SaveAllChanges');assert.equal(f.opened.at(-1),'tbProject_SaveAllChanges');dom.window.close();
+});

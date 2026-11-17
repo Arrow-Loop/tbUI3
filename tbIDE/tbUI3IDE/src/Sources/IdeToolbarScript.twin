@@ -166,7 +166,81 @@ Private Module IdeToolbarScript
         js = js & vbLf
         js = js & "(function nativeToolbarContext(native) {"
         js = js & vbLf
+        js = js & "    function editable(){"
+        js = js & vbLf
+        js = js & "        const n=native.selectedEditor();"
+        js = js & vbLf
+        js = js & "        return n&&['CodeEditor','UIDesigner'].includes(n.type)&&n.fileNode&&!n.fileNode.readOnly&&typeof n.fileHandler?.save==='function'?n:null;"
+        js = js & vbLf
+        js = js & "    }"
+        js = js & vbLf
+        js = js & "    function canSaveDocument(){"
+        js = js & vbLf
+        js = js & "        try{"
+        js = js & vbLf
+        js = js & "            const n=editable();"
+        js = js & vbLf
+        js = js & "            return !!(n&&native.projectLoaded?.()&&typeof native.saveEditor==='function'&&"
+        js = js & vbLf
+        js = js & "                (native.projectPath?.()||typeof native.saveProjectAs==='function')&&native.isDirtyEditor?.(n));"
+        js = js & vbLf
+        js = js & "        }catch(e){return false;}"
+        js = js & vbLf
+        js = js & "    }"
+        js = js & vbLf
+        js = js & "    function saveDocument(){"
+        js = js & vbLf
+        js = js & "        if(!canSaveDocument())return;"
+        js = js & vbLf
+        js = js & "        const n=editable();"
+        js = js & vbLf
+        js = js & "        // Capture the clicked document. A later Save As callback must not save whichever"
+        js = js & vbLf
+        js = js & "        // tab became selected meanwhile, or a document closed while the dialog was open."
+        js = js & vbLf
+        js = js & "        const save=()=>{if(n.fileNode.openEditorNode===n&&native.isDirtyEditor(n))native.saveEditor(n);};"
+        js = js & vbLf
+        js = js & "        if(native.projectPath?.())save();else native.saveProjectAs(save);"
+        js = js & vbLf
+        js = js & "    }"
+        js = js & vbLf
+        js = js & "    function canSwitchFormCode(){"
+        js = js & vbLf
+        js = js & "        try{"
+        js = js & vbLf
+        js = js & "            const n=native.selectedEditor(),path=n?.fileNode?.getFullPath?.();"
+        js = js & vbLf
+        js = js & "            if(!path||typeof native.findFile!=='function')return false;"
+        js = js & vbLf
+        js = js & "            if(n.type==='CodeEditor'&&n.fileHandler===native.formCodeHandler?.()){"
+        js = js & vbLf
+        js = js & "                let target=path,previous='.twin';"
+        js = js & vbLf
+        js = js & "                for(const ext of ['.tbform','.tbcontrol','.tbppage','.tbreport']){"
+        js = js & vbLf
+        js = js & "                    target=target.replace(previous,ext);previous=ext;"
+        js = js & vbLf
+        js = js & "                    if(target!==path&&native.findFile('twinbasic:'+target))return true;"
+        js = js & vbLf
+        js = js & "                }"
+        js = js & vbLf
+        js = js & "            }else if(n.type==='UIDesigner'&&n.fileHandler===native.formDesignerHandler?.()){"
+        js = js & vbLf
+        js = js & "                const target=path.replace('.tbform','.twin').replace('.tbcontrol','.twin').replace('.tbppage','.twin').replace('.tbreport','.twin');"
+        js = js & vbLf
+        js = js & "                return target!==path&&!!native.findFile('twinbasic:'+target);"
+        js = js & vbLf
+        js = js & "            }"
+        js = js & vbLf
+        js = js & "        }catch(e){}"
+        js = js & vbLf
+        js = js & "        return false;"
+        js = js & vbLf
+        js = js & "    }"
+        js = js & vbLf
         js = js & "    return {"
+        js = js & vbLf
+        js = js & "        canSaveDocument,saveDocument,canSwitchFormCode,"
         js = js & vbLf
         js = js & "        editorState(){const n=native.selectedEditor();return n?{node:n,kind:n.type==='CodeEditor'?'Code':n.type==='UIDesigner'?'Form':null}:null;},"
         js = js & vbLf
@@ -190,8 +264,14 @@ Private Module IdeToolbarScript
         js = js & vbLf
         js = js & "    };"
         js = js & vbLf
-        js = js & "})({selectedEditor:function(){return typeof openEditors==='undefined'?null:openEditors.selectedEditorNode;},addComponent:typeof showContextMenuAddComp"
-        js = js & "onent==='function'?showContextMenuAddComponent:undefined});"
+        js = js & "})({selectedEditor:function(){return typeof openEditors==='undefined'?null:openEditors.selectedEditorNode;},projectLoaded:function(){return parseAndEv"
+        js = js & "aluateExpression('projectLoaded');},projectPath:function(){return projectFilePath;},isDirtyEditor:function(n){return openEditors.isDirtyEditor(n);},sa"
+        js = js & "veEditor:function(n){openEditors.save(n);},saveProjectAs:typeof saveProjectAs==='function'?saveProjectAs:undefined,"
+        js = js & vbLf
+        js = js & "findFile:function(path){return fs.tree.resolvePath(path);},formCodeHandler:function(){return fileHandler_twin;},formDesignerHandler:function(){return "
+        js = js & "fileHandler_tbform;},"
+        js = js & vbLf
+        js = js & "addComponent:typeof showContextMenuAddComponent==='function'?showContextMenuAddComponent:undefined});"
         js = js & vbLf
         js = js & "window.__tbUI3Appearance=// Windows.UI.ViewManagement.UISettings colors arrive from the native add-in."
         js = js & vbLf
@@ -578,9 +658,19 @@ Private Module IdeToolbarScript
         js = js & vbLf
         js = js & "    }"
         js = js & vbLf
+        js = js & "    function sourceEnabled(n){"
+        js = js & vbLf
+        js = js & "        if(disabled(n))return false;"
+        js = js & vbLf
+        js = js & "        if(n.id==='designSwitchIcon'&&api.canSwitchFormCode){try{return !!api.canSwitchFormCode();}catch(e){return false;}}"
+        js = js & vbLf
+        js = js & "        return true;"
+        js = js & vbLf
+        js = js & "    }"
+        js = js & vbLf
         js = js & "    function invokeSource(n,event) {"
         js = js & vbLf
-        js = js & "        if(disabled(n))return;"
+        js = js & "        if(!sourceEnabled(n))return;"
         js = js & vbLf
         js = js & "        const init={bubbles:true,cancelable:true,button:0,ctrlKey:event.ctrlKey,shiftKey:event.shiftKey,altKey:event.altKey,metaKey:event.metaKey};"
         js = js & vbLf
@@ -1391,8 +1481,8 @@ Private Module IdeToolbarScript
         js = js & vbLf
         js = js & "        const grid=entry.gridOptions||entry.source?.id==='menuBarGrid';"
         js = js & vbLf
-        js = js & "        const on=grid?!!(api.formGlobals&&api.formGlobals())&&(!entry.source||!disabled(entry.source)):entry.source?!disabled(entry.source):menuEnable"
-        js = js & "d(entry.item);b.disabled=!on;b.setAttribute('aria-disabled',String(!on));"
+        js = js & "        const on=grid?!!(api.formGlobals&&api.formGlobals())&&(!entry.source||!disabled(entry.source)):entry.source?sourceEnabled(entry.source):menuEn"
+        js = js & "abled(entry.item);b.disabled=!on;b.setAttribute('aria-disabled',String(!on));"
         js = js & vbLf
         js = js & "            if(entry.gridOptions){b.hidden=!!entry.source&&!visible(entry.source);if((!on||b.hidden)&&popupAnchor===b)closePopup();continue;}"
         js = js & vbLf
@@ -2764,13 +2854,15 @@ Private Module IdeToolbarScript
         js = js & "    return {large:(large||a==='tbEditor_Save')&&!iconOnly,iconOnly,simplifiedIconOnly,icon,glyph:item._ribbonGlyph||glyph,caption:sourceCaptions[sourc"
         js = js & "e]||captions[a]||renamed};"
         js = js & vbLf
-        js = js & "}),captureMenu:nativeContext.captureMenu,editorState:nativeContext.editorState,"
+        js = js & "}),captureMenu:nativeContext.captureMenu,editorState:nativeContext.editorState,canSwitchFormCode:nativeContext.canSwitchFormCode,"
         js = js & vbLf
         js = js & "getShowContextMenu:function(){return showContextMenu;},setShowContextMenu:function(fn){showContextMenu=fn;},"
         js = js & vbLf
-        js = js & "localize:function(s){return evaluateLocalizedString(s);},execute:function(s){return executeIdeCommand(s,true);},"
+        js = js & "localize:function(s){return evaluateLocalizedString(s);},execute:function(s){if(s==='tbEditor_Save')return nativeContext.saveDocument();return execute"
+        js = js & "IdeCommand(s,true);},"
         js = js & vbLf
-        js = js & "commandEnabled:function(s){var c=ideCommands[s];return !!c&&(!c.defaultContext||evaluateExpression(c.defaultContext));},"
+        js = js & "commandEnabled:function(s){if(s==='tbEditor_Save')return nativeContext.canSaveDocument();var c=ideCommands[s];return !!c&&(!c.defaultContext||evaluate"
+        js = js & "Expression(c.defaultContext));},"
         js = js & vbLf
         js = js & "testContext:function(s){return parseAndEvaluateExpression(s);},shortcut:function(s){return GetIdeCommandShortcutDescription(s)||'';},"
         js = js & vbLf

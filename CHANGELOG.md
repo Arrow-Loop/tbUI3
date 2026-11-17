@@ -4,6 +4,10 @@ All notable changes to tbUI3. Dates are when the change was made, not released. 
 
 ## Unreleased
 
+### 2026-11-17 - Test-project JSON load investigation (unresolved)
+
+Preserved Shane's uploaded 75b7598 project. All 37 stored files match c109d62 by content; all 11 stored JSON documents parse. Entry order/revision metadata differ. All 71 project mirrors and existing identity/ownership checks pass. Added stored-JSON parsing to the project validator. Local IDE launch identifies BETA 904 and fails at startup with a different error, so BETA 1044 reproduction is still required. Do not discard form persistence or claim this is repaired. Need failure stage and full stack/generated JSON response. Package 67/add-in 16 unchanged. Evidence: docs/validation/2026-11-17-project-load-json.md.
+
 ### 2026-11-17 — Explicit Long glyph literals (package 1.0.0.67)
 
 Changed the Add, Previous and Next glyph literals in UI3TabView to explicit Long values (&HE710&, &HE76B&, &HE76C&), addressing the three BETA 1044 TB0012 warnings Shane reported. Package revision is 1.0.0.67; tbUI3IDE remains 1.3.0.16 / adapter v9. Updated the canonical package, complete embedded test package and version reference. Existing 142 tests and 71 mirror checks pass; warning-free native recompilation remains to be confirmed. No IDs or interaction behavior changed.

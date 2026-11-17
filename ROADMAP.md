@@ -4,6 +4,10 @@ Committed work is listed first. Exploratory ideas are marked as such.
 
 Every development pass ends with a commit and a verified push to `origin/tbui3-dev`, per Shane's standing instruction of 2026-11-12. Main and PR decisions remain Shane's.
 
+## 2026-11-17 - Test-project JSON load investigation (unresolved)
+
+Preserved Shane's uploaded 75b7598 project. All 37 stored files match c109d62 by content; all 11 stored JSON documents parse. Entry order/revision metadata differ. All 71 project mirrors and existing identity/ownership checks pass. Added stored-JSON parsing to the project validator. Local IDE launch identifies BETA 904 and fails at startup with a different error, so BETA 1044 reproduction is still required. Do not discard form persistence or claim this is repaired. Need failure stage and full stack/generated JSON response. Package 67/add-in 16 unchanged. Evidence: docs/validation/2026-11-17-project-load-json.md.
+
 ## Current TabView candidate: package 1.0.0.67 / add-in 1.3.0.16
 
 The three reported TB0012 glyph warnings are addressed with explicit Long suffixes. Rebuild package 67, confirm those warnings are gone, re-import into the test project and continue the native Edge/Explorer/interaction checks from the preceding pass. Adapter v9 and the add-in are unchanged. 142 tests and 71 mirrors pass; native recompilation and remaining TabView feature gates remain open.

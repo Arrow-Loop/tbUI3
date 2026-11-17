@@ -14,6 +14,10 @@ for(const [project,mirror] of projects) {
     const files=content(project);all.push(files);
     for(const [rel,data] of files) {
         assert(data.equals(fs.readFileSync(path.join(mirror,rel))),'Mirror mismatch: '+project+' '+rel);
+        if (/(?:^|\/)(?:Settings|\.meta)$|\.(?:tbform|tbcontrol|tbppage|tbreport|json)$/i.test(rel)) {
+            try { JSON.parse(data.toString('utf8')); }
+            catch (error) { throw new Error('Invalid stored JSON: '+project+' '+rel, {cause:error}); }
+        }
         if(rel.endsWith('.twin')) assert(!/(?<!\r)\n/.test(data.toString()),'Non-CRLF source: '+rel);
     }
     function check(dir,rel='') {for(const e of fs.readdirSync(dir,{withFileTypes:true})){

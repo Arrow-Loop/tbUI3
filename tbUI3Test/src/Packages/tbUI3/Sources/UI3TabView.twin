@@ -3,11 +3,17 @@
 [InterfaceId("162F5756-8BC1-4C2F-95E7-64E7A2130744")]
 [EventInterfaceId("CBF158A3-6300-4966-A26F-8F79A383AC2A")]
 [COMControl]
-[Description("WinUI TabView candidate with real UI3TabPage containers. Designer + requires the TabView Designer add-in.")]
+[Description("TabView with real UI3TabPage containers and Edge/Explorer tab shapes. Designer authoring uses tbUI3IDE.")]
 Public Class UI3TabView
     Public Event SelectionChanged()
     Public Event AddTabButtonClick()
 
+    Private m_TabStyle As UI3TabStyle
+    Private m_PressedPage As String
+    Private m_PressedHit As Long
+    Private m_LastHotHit As Long
+    Private m_ManualHeaderScroll As Boolean
+    Private m_PointerHwnd As LongPtr
     Private m_SelectedPage As String
     Private m_ShowAddButton As Boolean
     Private m_Pages As Collection
@@ -16,6 +22,8 @@ Public Class UI3TabView
     Private m_Refreshing As Boolean
     Private m_LastPaintTrace As String
     Private m_Painting As Boolean
+    Private m_KeyboardFocus As Boolean
+    Private m_PointerFocusing As Boolean
     Private m_Focused As Boolean
     Private m_FirstHeader As Long
     Private m_NewPageRequest As Long
@@ -29,6 +37,7 @@ Public Class UI3TabView
     Public Property Let SelectedPage(ByVal Value As String)
         Dim changed As Boolean = (StrComp(m_SelectedPage, Value, vbTextCompare) <> 0)
         m_SelectedPage = Value
+        m_ManualHeaderScroll = False
         PropertyChanged "SelectedPage"
         RefreshPages
         If changed And Ambient.UserMode Then RaiseEvent SelectionChanged
@@ -175,6 +184,35 @@ Public Class UI3TabView
         If Not m_Painting Then UserControl.Refresh
     End Sub
 
+    [Description("Tab shape profile: Edge Style (Toolkit default) or Explorer Style (WinUI profile).")]
+    Public Property Get TabStyle() As UI3TabStyle
+        TabStyle = m_TabStyle
+    End Property
+
+    Public Property Let TabStyle(ByVal Value As UI3TabStyle)
+        If Value <> ui3TabEdge And Value <> ui3TabExplorer Then Err.Raise 380
+        If m_TabStyle = Value Then Exit Property
+        m_TabStyle = Value
+        m_ManualHeaderScroll = False
+        PropertyChanged "TabStyle"
+        RefreshPages
+    End Property
+
+    ' Transient viewport position; no PropertyBag persistence or child movement.
+    [NonBrowsable]
+    Public Property Get FirstVisibleTabIndex() As Long
+        If m_FirstHeader > 0 Then FirstVisibleTabIndex = m_FirstHeader - 1
+    End Property
+
+    [NonBrowsable]
+    Public Property Let FirstVisibleTabIndex(ByVal Value As Long)
+        CollectPages
+        If Value < 0 Or Value >= m_Pages.Count Then Err.Raise 380
+        m_FirstHeader = Value + 1
+        m_ManualHeaderScroll = True
+        UserControl.Refresh
+    End Property
+
     Private Function ContainsPage(ByVal Pages As Collection, ByVal Candidate As UI3TabPage) As Boolean
         Dim current As UI3TabPage, candidateName As String, i As Long
         candidateName = Candidate.PageName
@@ -218,22 +256,35 @@ Public Class UI3TabView
     End Function
 
     Private Function HeaderSize() As Single
-        HeaderSize = UI3TabMetrics.HeaderWidth(WidthDips(), m_Pages.Count, m_ShowAddButton)
+        HeaderSize = UI3TabMetrics.HeaderWidth(WidthDips(), m_Pages.Count, m_ShowAddButton, m_TabStyle)
+    End Function
+
+    Private Function HeaderStart() As Single
+        HeaderStart = UI3TabMetrics.HeaderStart(WidthDips(), m_Pages.Count, m_ShowAddButton, m_TabStyle)
+    End Function
+
+    Private Function HeaderArea() As Single
+        HeaderArea = UI3TabMetrics.HeaderArea(WidthDips(), m_Pages.Count, m_ShowAddButton, m_TabStyle)
+    End Function
+
+    Private Function HeaderSlots() As Long
+        HeaderSlots = Int(HeaderArea() / HeaderSize())
+        If HeaderSlots < 1 Then HeaderSlots = 1
     End Function
 
     Private Sub EnsureHeaderVisible(ByVal Active As Long)
         If Active = 0 Then m_FirstHeader = 1: Exit Sub
-        If m_FirstHeader < 1 Or m_FirstHeader > m_Pages.Count Then m_FirstHeader = 1
-        Dim available As Single, slots As Long
-        available = WidthDips()
-        If m_ShowAddButton Then available = available - UI3TabMetrics.AddWidth - UI3TabMetrics.AddGap
-        slots = Int(available / HeaderSize())
-        If slots < 1 Then slots = 1
+        If m_FirstHeader < 1 Then m_FirstHeader = 1
+        Dim last As Long = m_Pages.Count - HeaderSlots() + 1
+        If last < 1 Then last = 1
+        If m_FirstHeader > last Then m_FirstHeader = last
+        If m_ManualHeaderScroll Then Exit Sub
         If Active < m_FirstHeader Then m_FirstHeader = Active
-        If Active >= m_FirstHeader + slots Then m_FirstHeader = Active - slots + 1
+        If Active >= m_FirstHeader + HeaderSlots() Then m_FirstHeader = Active - HeaderSlots() + 1
     End Sub
 
     Private Sub RequestNewPage()
+        If Not m_ShowAddButton Then Exit Sub
         If Ambient.UserMode Then
             RaiseEvent AddTabButtonClick
         Else
@@ -243,45 +294,127 @@ Public Class UI3TabView
         End If
     End Sub
 
-    Private Sub UserControl_MouseDown(Button As Integer, Shift As Integer, X As Single, Y As Single)
-        If Button <> vbLeftButton Or Not UserControl.Enabled Then Exit Sub
-        RefreshPages
-        Dim px As Single, py As Single, available As Single, width As Single, index As Long
-        px = UserControl.ScaleX(X, UserControl.ScaleMode, vbPixels) * 96! / UI3TabMetrics.WindowDpi(UserControl.hWnd)
-        py = UserControl.ScaleY(Y, UserControl.ScaleMode, vbPixels) * 96! / UI3TabMetrics.WindowDpi(UserControl.hWnd)
-        If py < UI3TabMetrics.HeaderTop Or py >= UI3TabMetrics.ContentTop Then Exit Sub
-        available = WidthDips()
-        width = HeaderSize()
-        Dim visible As Long
-        visible = VisibleHeaderCount(available, width)
-        If m_ShowAddButton And px >= visible * width + UI3TabMetrics.AddGap And px < visible * width + UI3TabMetrics.AddGap + UI3TabMetrics.AddWidth Then
-            RequestNewPage
-        Else
-            index = m_FirstHeader + Int(px / width)
-            If index >= m_FirstHeader And index < m_FirstHeader + visible Then SelectedPage = m_Pages(index).PageName
+    Private Function HitHeader(ByVal X As Single, ByVal Y As Single) As Long
+        If X < 0 Or X >= WidthDips() Or Y < UI3TabMetrics.HeaderTop(m_TabStyle) Or Y >= UI3TabMetrics.ContentTop Then Exit Function
+        Dim finish As Single = HeaderStart() + HeaderArea()
+        Dim index As Long
+        If UI3TabMetrics.Overflowing(WidthDips(), m_Pages.Count, m_ShowAddButton, m_TabStyle) And Y >= UI3TabMetrics.AuxiliaryTop(m_TabStyle) And Y < UI3TabMetrics.AuxiliaryTop(m_TabStyle) + UI3TabMetrics.AddHeight Then
+            If X < UI3TabMetrics.ScrollWidth Then
+                If m_FirstHeader > 1 Then Return -2 Else Exit Function
+            End If
+            If X >= finish + UI3TabMetrics.FootRadius(m_TabStyle) And X < finish + UI3TabMetrics.FootRadius(m_TabStyle) + UI3TabMetrics.ScrollWidth Then
+                If m_FirstHeader + HeaderSlots() <= m_Pages.Count Then Return -3 Else Exit Function
+            End If
+        End If
+        If m_ShowAddButton And X >= WidthDips() - UI3TabMetrics.AddWidth And Y >= UI3TabMetrics.AuxiliaryTop(m_TabStyle) And Y < UI3TabMetrics.AuxiliaryTop(m_TabStyle) + UI3TabMetrics.AddHeight Then Return -1
+        If X < HeaderStart() Or X >= finish Or HeaderArea() <= 0 Then Exit Function
+        index = m_FirstHeader + Int((X - HeaderStart()) / HeaderSize())
+        If index <= m_Pages.Count Then HitHeader = index
+    End Function
+
+    Private Function HotHeader() As Long
+        If Not UserControl.Enabled Or Not Ambient.UserMode Then Exit Function
+        Dim x As Single, y As Single
+        If UI3TabMetrics.PointerPosition(UserControl.hWnd, x, y) Then HotHeader = HitHeader(x, y)
+    End Function
+
+    Private Sub ScrollHeaders(ByVal Direction As Long)
+        Dim nextHeader As Long = m_FirstHeader + Direction * HeaderSlots()
+        Dim last As Long = m_Pages.Count - HeaderSlots() + 1
+        If last < 1 Then last = 1
+        If nextHeader < 1 Then nextHeader = 1
+        If nextHeader > last Then nextHeader = last
+        m_FirstHeader = nextHeader
+        m_ManualHeaderScroll = True
+        UserControl.Refresh
+    End Sub
+
+    Private Sub UserControl_MouseMove(Button As Integer, Shift As Integer, X As Single, Y As Single)
+        If Not UserControl.Enabled Then Exit Sub
+        UI3TabMetrics.WatchPointer UserControl.hWnd
+        Dim hit As Long = HotHeader()
+        If hit <> m_LastHotHit Then
+            m_LastHotHit = hit
+            UserControl.Refresh
         End If
     End Sub
 
+    Private Sub UserControl_MouseDown(Button As Integer, Shift As Integer, X As Single, Y As Single)
+        If Button <> vbLeftButton Or Not UserControl.Enabled Then Exit Sub
+        CollectPages
+        Dim px As Single = UserControl.ScaleX(X, UserControl.ScaleMode, vbPixels) * 96! / UI3TabMetrics.WindowDpi(UserControl.hWnd)
+        Dim py As Single = UserControl.ScaleY(Y, UserControl.ScaleMode, vbPixels) * 96! / UI3TabMetrics.WindowDpi(UserControl.hWnd)
+        m_PressedHit = HitHeader(px, py)
+        m_PressedPage = ""
+        If m_PressedHit > 0 Then m_PressedPage = m_Pages(m_PressedHit).PageName
+        If m_PressedHit = 0 Then Exit Sub
+        On Error Resume Next
+        m_KeyboardFocus = False
+        m_PointerFocusing = True
+        UserControl.Extender.SetFocus
+        m_PointerFocusing = False
+        UI3TabMetrics.CapturePointer UserControl.hWnd
+        UserControl.Refresh
+    End Sub
+
+    Private Sub UserControl_MouseUp(Button As Integer, Shift As Integer, X As Single, Y As Single)
+        If Button <> vbLeftButton Then Exit Sub
+        Dim pressed As Long = m_PressedHit
+        m_PressedHit = 0
+        UI3TabMetrics.ReleasePointer UserControl.hWnd
+        If Not UserControl.Enabled Then Exit Sub
+        Dim px As Single = UserControl.ScaleX(X, UserControl.ScaleMode, vbPixels) * 96! / UI3TabMetrics.WindowDpi(UserControl.hWnd)
+        Dim py As Single = UserControl.ScaleY(Y, UserControl.ScaleMode, vbPixels) * 96! / UI3TabMetrics.WindowDpi(UserControl.hWnd)
+        CollectPages
+        If pressed > m_Pages.Count Then pressed = 0
+        If pressed > 0 Then
+            If StrComp(m_PressedPage, m_Pages(pressed).PageName, vbTextCompare) <> 0 Then pressed = 0
+        End If
+        If pressed <> 0 And pressed = HitHeader(px, py) Then
+            Select Case pressed
+                Case -1: RequestNewPage
+                Case -2: ScrollHeaders -1
+                Case -3: ScrollHeaders 1
+                Case Else: SelectedPage = m_Pages(pressed).PageName
+            End Select
+        End If
+        UserControl.Refresh
+    End Sub
+
     Private Function VisibleHeaderCount(ByVal Available As Single, ByVal Width As Single) As Long
-        If m_ShowAddButton Then Available = Available - UI3TabMetrics.AddWidth - UI3TabMetrics.AddGap
-        VisibleHeaderCount = Int(Available / Width)
-        If VisibleHeaderCount < 0 Then VisibleHeaderCount = 0
+        If HeaderArea() <= 0 Then Exit Function
+        VisibleHeaderCount = -Int(-HeaderArea() / Width)
         If VisibleHeaderCount > m_Pages.Count - m_FirstHeader + 1 Then VisibleHeaderCount = m_Pages.Count - m_FirstHeader + 1
     End Function
 
     Private Sub UserControl_KeyDown(KeyCode As Integer, Shift As Integer)
         If Not UserControl.Enabled Then Exit Sub
+        m_KeyboardFocus = True
         RefreshPages
         Dim index As Long = ActiveIndex()
-        Select Case KeyCode
-            Case vbKeyLeft: index = index - 1
-            Case vbKeyRight: index = index + 1
-            Case vbKeyHome: index = 1
-            Case vbKeyEnd: index = m_Pages.Count
-            Case Else: Exit Sub
-        End Select
+        If (Shift And vbCtrlMask) <> 0 Then
+            If KeyCode = vbKeyT Then
+                KeyCode = 0: RequestNewPage: Exit Sub
+            End If
+            If KeyCode = vbKeyTab Then
+                If (Shift And vbShiftMask) <> 0 Then index = index - 1 Else index = index + 1
+            Else
+                Exit Sub
+            End If
+        Else
+            Select Case KeyCode
+                Case vbKeyLeft: index = index - 1
+                Case vbKeyRight: index = index + 1
+                Case vbKeyHome: index = 1
+                Case vbKeyEnd: index = m_Pages.Count
+                Case Else: Exit Sub
+            End Select
+        End If
         KeyCode = 0
-        If index >= 1 And index <= m_Pages.Count Then SelectedPage = m_Pages(index).PageName
+        If m_Pages.Count = 0 Then Exit Sub
+        If index < 1 Then index = m_Pages.Count
+        If index > m_Pages.Count Then index = 1
+        SelectedPage = m_Pages(index).PageName
     End Sub
 
     Private Sub UserControl_VerbInvoked(ByVal Verb As String)
@@ -289,6 +422,7 @@ Public Class UI3TabView
     End Sub
 
     Private Sub UserControl_InitProperties()
+        m_TabStyle = ui3TabEdge
         m_ShowAddButton = True
         m_FirstHeader = 1
         Set m_Pages = New Collection
@@ -296,6 +430,8 @@ Public Class UI3TabView
     End Sub
 
     Private Sub UserControl_ReadProperties(PropBag As PropertyBag)
+        m_TabStyle = PropBag.ReadProperty("TabStyle", ui3TabEdge)
+        If m_TabStyle <> ui3TabEdge And m_TabStyle <> ui3TabExplorer Then m_TabStyle = ui3TabEdge
         m_SelectedPage = PropBag.ReadProperty("SelectedPage", "")
         m_ShowAddButton = PropBag.ReadProperty("IsAddTabButtonVisible", True)
         m_FirstHeader = 1
@@ -304,12 +440,19 @@ Public Class UI3TabView
     End Sub
 
     Private Sub UserControl_WriteProperties(PropBag As PropertyBag)
+        PropBag.WriteProperty "TabStyle", m_TabStyle, ui3TabEdge
         PropBag.WriteProperty "SelectedPage", m_SelectedPage, ""
         PropBag.WriteProperty "IsAddTabButtonVisible", m_ShowAddButton, True
     End Sub
 
     Private Sub UserControl_Show()
+        m_PointerHwnd = UserControl.hWnd
+        UI3TabMetrics.WatchPointer m_PointerHwnd
         RefreshPages
+    End Sub
+
+    Private Sub UserControl_Terminate()
+        UI3TabMetrics.UnwatchPointer m_PointerHwnd
     End Sub
 
     Private Sub UserControl_Resize()
@@ -318,14 +461,76 @@ Public Class UI3TabView
 
     Private Sub UserControl_GotFocus()
         m_Focused = True
+        If Not m_PointerFocusing Then m_KeyboardFocus = True
         If Not Ambient.UserMode Then UI3TabDiagnostics.Note "host " & UserControl.Extender.Name & " GotFocus"
         UserControl.Refresh
     End Sub
 
     Private Sub UserControl_LostFocus()
+        m_PressedHit = 0
+        UI3TabMetrics.ReleasePointer UserControl.hWnd
         m_Focused = False
         If Not Ambient.UserMode Then UI3TabDiagnostics.Note "host " & UserControl.Extender.Name & " LostFocus"
         UserControl.Refresh
+    End Sub
+
+    Private Sub PaintHeader(ByVal Index As Long, ByVal X As Single, ByVal W As Single, ByVal Selected As Boolean, ByVal Hot As Long, ByVal Held As Boolean)
+        Dim fill As Long, color As Long, path As ID2D1PathGeometry
+        Dim pressed As Boolean = Held And m_PressedHit = Index And Hot = Index
+        If UserControl.Enabled Then
+            If Selected Then
+                fill = UI3TabMetrics.PageBackground()
+            ElseIf pressed Then
+                fill = UI3TabMetrics.PressedFill()
+            ElseIf Hot = Index Then
+                fill = UI3TabMetrics.HoverFill()
+            End If
+        End If
+        If fill <> 0 Then
+            If m_TabStyle = ui3TabExplorer And Not Selected Then
+                Dim hover As D2D1_ROUNDED_RECT = RoundedRect(X, UI3TabMetrics.HeaderTop(m_TabStyle), X + W, UI3TabMetrics.ContentTop - 1, UI3TabMetrics.HeaderCorner)
+                m_Target.FillRoundedRectangle hover, SolidBrush(m_Target, fill)
+            Else
+                Set path = UI3D2D.TabOutline(X, UI3TabMetrics.HeaderTop(m_TabStyle), W, UI3TabMetrics.HeaderHeight(m_TabStyle), UI3TabMetrics.HeaderCorner, UI3TabMetrics.FootRadius(m_TabStyle))
+                m_Target.FillGeometry path, SolidBrush(m_Target, fill), 0
+            End If
+        End If
+        If IsDarkMode() Then
+            color = DARK_TextFillColorSecondary
+            If Selected Then color = DARK_TextFillColorPrimary
+            If pressed And Not Selected Then color = DARK_TextFillColorTertiary
+            If Not UserControl.Enabled Then color = DARK_TextFillColorDisabled
+        Else
+            color = LIGHT_TextFillColorSecondary
+            If Selected Then color = LIGHT_TextFillColorPrimary
+            If pressed And Not Selected Then color = LIGHT_TextFillColorTertiary
+            If Not UserControl.Enabled Then color = LIGHT_TextFillColorDisabled
+        End If
+        DrawLeftTextStyled m_Target, m_Pages(Index).Caption, UI3TabMetrics.HeaderFontSize, 400, X + UI3TabMetrics.HeaderPadding, UI3TabMetrics.HeaderTop(m_TabStyle), X + W - UI3TabMetrics.HeaderPadding, UI3TabMetrics.ContentTop, color, True
+        If Not Selected And Index + 1 <> ActiveIndex() And Hot <> Index Then UI3TabMetrics.FillBox m_Target, X + W - 1, UI3TabMetrics.HeaderTop(m_TabStyle) + 8, 1, UI3TabMetrics.HeaderHeight(m_TabStyle) - 16, UI3TabMetrics.Divider()
+        If m_Focused And m_KeyboardFocus And Selected And UserControl.Enabled Then
+            Dim focus As D2D1_ROUNDED_RECT = RoundedRect(X + 10, UI3TabMetrics.HeaderTop(m_TabStyle) + 5, X + W - 10, UI3TabMetrics.ContentTop - 5, 0)
+            If IsDarkMode() Then color = &HFFFFFFFF Else color = &HFF000000
+            m_Target.DrawRoundedRectangle focus, SolidBrush(m_Target, color), 2, 0
+        End If
+    End Sub
+
+    Private Sub PaintAuxiliary(ByVal Hit As Long, ByVal X As Single, ByVal Glyph As String, ByVal Hot As Long, ByVal Held As Boolean, ByVal Enabled As Boolean)
+        Dim color As Long
+        If Enabled And Hot = Hit Then
+            Dim box As D2D1_ROUNDED_RECT = RoundedRect(X, UI3TabMetrics.AuxiliaryTop(m_TabStyle), X + UI3TabMetrics.AddWidth, UI3TabMetrics.AuxiliaryTop(m_TabStyle) + UI3TabMetrics.AddHeight, 4)
+            m_Target.FillRoundedRectangle box, SolidBrush(m_Target, UI3TabMetrics.AuxiliaryFill(Held And m_PressedHit = Hit))
+        End If
+        If IsDarkMode() Then
+            color = DARK_TextFillColorPrimary
+            If Not Enabled Then color = DARK_TextFillColorDisabled
+        Else
+            color = LIGHT_TextFillColorPrimary
+            If Not Enabled Then color = LIGHT_TextFillColorDisabled
+        End If
+        Dim fontSize As Single = 8
+        If Hit = -1 Then fontSize = 12
+        UI3D2D.DrawTabGlyph m_Target, Glyph, X, UI3TabMetrics.AuxiliaryTop(m_TabStyle), UI3TabMetrics.AddWidth, UI3TabMetrics.AddHeight, color, fontSize
     End Sub
 
     Private Sub UserControl_Paint()
@@ -353,27 +558,34 @@ Public Class UI3TabView
         drawing = True
         m_Target.Clear clear
         UI3TabMetrics.FillBox m_Target, 0, UI3TabMetrics.ContentTop, w, h - UI3TabMetrics.ContentTop, UI3TabMetrics.PageBackground()
-        Dim size As Single, i As Long, x As Single, color As Long, active As Long, count As Long
-        size = UI3TabMetrics.HeaderWidth(w, m_Pages.Count, m_ShowAddButton)
+        Dim size As Single, i As Long, active As Long, count As Long
+        size = HeaderSize()
         count = VisibleHeaderCount(w, size)
         active = ActiveIndex()
-        If IsDarkMode() Then color = DARK_TextFillColorPrimary Else color = LIGHT_TextFillColorPrimary
+        Dim hot As Long = HotHeader(), held As Boolean = UI3TabMetrics.PointerPressed(UserControl.hWnd)
+        m_LastHotHit = hot
+        Dim clip As D2D1_RECT_F
+        clip.Left = HeaderStart() - UI3TabMetrics.FootRadius(m_TabStyle)
+        clip.Top = 0: clip.Right = HeaderStart() + HeaderArea() + UI3TabMetrics.FootRadius(m_TabStyle): clip.Bottom = UI3TabMetrics.ContentTop
+        m_Target.PushAxisAlignedClip clip, 1
         For i = m_FirstHeader To m_FirstHeader + count - 1
-            If i = active Then UI3TabMetrics.FillBox m_Target, x, UI3TabMetrics.HeaderTop, size, UI3TabMetrics.HeaderHeight, UI3TabMetrics.PageBackground()
-            If IsDarkMode() Then
-                If i = active Then color = DARK_TextFillColorPrimary Else color = DARK_TextFillColorSecondary
-                If Not UserControl.Enabled Then color = DARK_TextFillColorDisabled
-            Else
-                If i = active Then color = LIGHT_TextFillColorPrimary Else color = LIGHT_TextFillColorSecondary
-                If Not UserControl.Enabled Then color = LIGHT_TextFillColorDisabled
-            End If
-            DrawCenteredTextStyled m_Target, m_Pages(i).Caption, UI3TabMetrics.HeaderFontSize, 400, x + UI3TabMetrics.HeaderPadding, UI3TabMetrics.HeaderTop, _
-                x + size - UI3TabMetrics.HeaderPadding, UI3TabMetrics.ContentTop, color
-            If m_Focused And i = active Then UI3TabMetrics.FillBox m_Target, x + UI3TabMetrics.HeaderPadding, UI3TabMetrics.ContentTop - 2, size - UI3TabMetrics.HeaderPadding * 2, 2, AccentShade(ACCENT_BASE)
-            x = x + size
+            If i <> active Then PaintHeader i, HeaderStart() + (i - m_FirstHeader) * size, size, False, hot, held
         Next
-        If m_ShowAddButton Then DrawCenteredTextStyled m_Target, "+", UI3TabMetrics.HeaderFontSize, 400, x + UI3TabMetrics.AddGap, UI3TabMetrics.HeaderTop, _
-            x + UI3TabMetrics.AddGap + UI3TabMetrics.AddWidth, UI3TabMetrics.HeaderTop + UI3TabMetrics.AddHeight, color
+        If active >= m_FirstHeader And active < m_FirstHeader + count Then PaintHeader active, HeaderStart() + (active - m_FirstHeader) * size, size, True, hot, held
+        m_Target.PopAxisAlignedClip
+        Dim joinLeft As Single, joinRight As Single
+        joinLeft = w: joinRight = w
+        If active >= m_FirstHeader And active < m_FirstHeader + count Then
+            joinLeft = HeaderStart() + (active - m_FirstHeader) * size - UI3TabMetrics.FootRadius(m_TabStyle)
+            joinRight = joinLeft + size + 2 * UI3TabMetrics.FootRadius(m_TabStyle)
+        End If
+        UI3TabMetrics.FillBox m_Target, 0, UI3TabMetrics.ContentTop - 1, joinLeft, 1, UI3TabMetrics.Divider()
+        UI3TabMetrics.FillBox m_Target, joinRight, UI3TabMetrics.ContentTop - 1, w - joinRight, 1, UI3TabMetrics.Divider()
+        If m_ShowAddButton Then PaintAuxiliary -1, w - UI3TabMetrics.AddWidth, ChrW$(&HE710), hot, held, UserControl.Enabled
+        If UI3TabMetrics.Overflowing(w, m_Pages.Count, m_ShowAddButton, m_TabStyle) Then
+            PaintAuxiliary -2, 0, ChrW$(&HE76B), hot, held, UserControl.Enabled And m_FirstHeader > 1
+            PaintAuxiliary -3, HeaderStart() + HeaderArea() + UI3TabMetrics.FootRadius(m_TabStyle), ChrW$(&HE76C), hot, held, UserControl.Enabled And m_FirstHeader + HeaderSlots() <= m_Pages.Count
+        End If
         hr = m_Target.EndDraw(0, 0)
         drawing = False
         If Not Ambient.UserMode Or hr <> 0 Then

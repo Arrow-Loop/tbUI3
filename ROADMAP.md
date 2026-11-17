@@ -4,6 +4,10 @@ Committed work is listed first. Exploratory ideas are marked as such.
 
 Every development pass ends with a commit and a verified push to `origin/tbui3-dev`, per Shane's standing instruction of 2026-11-12. Main and PR decisions remain Shane's.
 
+## Current TabView candidate: package 1.0.0.66 / add-in 1.3.0.16
+
+Shane confirms the existing designer workflow works. The next milestone is appearance/interactions. TabStyle now offers Edge (default, Toolkit 36/4/8) and Explorer (WinUI 32/8/4), curved joins, state/focus rendering, ellipsis and header overflow navigation with adapter v9. 142 tests, 71 mirrors, x86/x64 geometry/text API probes and live Toolkit curve comparisons pass. Native IDE launch was blocked by Computer Use Access denied (0x80070005); no compiled-control acceptance is claimed. Build/re-import package 66, rebuild/reload the add-in, then verify both styles, geometry, input/scroll behavior, persistence and existing page authoring. Evidence: docs/validation/2026-11-17-tabview-profiles.md. Close buttons/events, icons, drag/reorder, animation, accessibility/high contrast and remaining template stroke fidelity remain open.
+
 ## Current candidate: tbUI3IDE 1.3.0.15
 
 Save Document now uses the selected editor's native save route instead of the disabled IDE placeholder. Form / Code requires a real designer/code counterpart. Native gate: rebuild/reload, edit both a form and code document, save one and verify the other remains dirty; reopen the saved document, exercise Save As cancel/complete, and switch between standalone modules and paired form/code tabs. Repeat in Ribbon/Hybrid full/simplified. 135 tests, 71 mirrors and eight Edge document flows pass; native compiled-host acceptance remains open. Evidence: docs/validation/2026-11-17-document-commands.md. TabView work is deferred while this reported add-in bug is addressed.

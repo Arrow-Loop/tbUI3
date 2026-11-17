@@ -2,7 +2,9 @@
 
 ## Distribution and identity
 
-One canonical project, tbUI3IDE/tbUI3IDE.twinproj, produces tbUI3IDE.dll per IDE architecture, version 1.3.0.15. Its established project ID is unchanged. Remove legacy WinUI3IdeStyle.dll and TabViewDesigner.dll from both addins architecture directories during migration. Theme files and the tbUI3 runtime control package remain separate; built consumer applications do not need this add-in.
+One canonical project, tbUI3IDE/tbUI3IDE.twinproj, produces tbUI3IDE.dll per IDE architecture, version 1.3.0.16. Its established project ID is unchanged. Remove legacy WinUI3IdeStyle.dll and TabViewDesigner.dll from both addins architecture directories during migration. Theme files and the tbUI3 runtime control package remain separate; built consumer applications do not need this add-in.
+
+TabView adapter v9 supports package 1.0.0.66's Edge/Explorer shape profiles, reserved curve space, right-hand add button and overflow arrows. Viewport scrolling uses the transient native FirstVisibleTabIndex and queued parent snapshots, preserving page selection/ownership. Ribbon/theme/document-command behavior from the previous pass is retained. Rebuild/re-import the package and rebuild/reload the add-in together; native acceptance remains pending.
 
 Save Document follows the selected code/form document's dirty and read-only state. It uses the IDE's native per-editor writer, preserving its completion/failure behavior and leaving other dirty documents alone. A project without a saved path first opens native Save As. Form / Code enables only when the selected document has a matching designer/code file; standalone modules disable it. Both commands use the same behavior in Ribbon/Hybrid, full/simplified.
 

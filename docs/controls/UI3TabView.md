@@ -1,6 +1,26 @@
 # UI3TabView and UI3TabPage
 
-Status: integrated 1.0.0.65 implementation candidate, 2026-11-10 (initial integration 1.0.0.61). This is the first recoverable implementation, not a continuation of a previously committed 1.0.0.61. The earlier chat's candidate never reached the repository.
+Status: package 1.0.0.66 / tbUI3IDE 1.3.0.16 / adapter v9 appearance candidate, 2026-11-17. Shane confirms the designer workflow works. This pass adds shape profiles and core header interaction; it is not a claim of complete TabView fidelity or compiled-native acceptance.
+
+## Shape profile authority and defaults
+
+`TabStyle As UI3TabStyle` is saved per control. `ui3TabEdge = 0` (Edge Style) is the default, including when reading older forms without the property. `ui3TabExplorer = 1` (Explorer Style) is the alternate. Invalid assignments raise error 380; invalid stored numeric values fall back to Edge.
+
+Edge is Shane's explicit customized profile from [Smith-Debnam Toolkit 8543201](https://github.com/Smith-Debnam/twinBASIC-Knowledge/tree/85432018090efc339d21ae7c47fd0e45ac8dea6b/examples/WinUIElementToolbox): its canonical project and 23 mirrors matched. Sources are ui/winui.css tab tokens and shapes, ui/toolbox.js initializeTabView, and docs/fidelity/FIDELITY_068.md. This overrides the generic upstream shape default under Shane's instruction. The reference repository was read only.
+
+| Profile | Track | Top inset | Tab height | Top radius | Concave foot radius |
+| --- | --- | --- | --- | --- | --- |
+| Edge (default) | 40 DIP | 4 DIP | 36 DIP | 8 DIP | 8 DIP |
+| Explorer | 40 DIP | 8 DIP | 32 DIP | 8 DIP | 4 DIP |
+
+Both styles preserve the page origin at 40 DIP. Their selected outline uses native circular arcs; Edge hover/pressed uses the same profile outline, while Explorer's unselected hover/pressed uses the rounded WinUI container. Selection joins the page surface without a line beneath it. Adjacent selected separators are suppressed. Captions align left with native DirectWrite ellipsis. Focus is keyboard-only with the Toolkit's 2px inset outline treatment, replacing the earlier accent underline.
+
+## Header interaction
+
+Native pointer capture activates a tab/add/scroll action only on matching release. Releasing outside cancels activation, and WM_MOUSELEAVE clears hover; lost focus/capture and destruction invalidate or remove the pointer hook. The comctl32 subclass uses LongPtr signatures, no stored COM owner and no per-control timer.
+
+Overflow arrows reserve 32 DIP each and scroll the viewport without changing selection. Selecting a page brings it into view. With the header focused, Left/Right and Ctrl+Tab/Shift+Ctrl+Tab wrap; Home/End reach the ends; Ctrl+T raises the existing add request when enabled. Very narrow headers omit arrows when all their reserved areas cannot fit and retain clipped selected-tab/keyboard access. `FirstVisibleTabIndex` is a zero-based transient viewport convenience, not a saved PropertyBag property. Adapter v9 applies it inside the existing native edit/snapshot protocol without requesting structural changes or an undo checkpoint. Native compiled-host verification must confirm viewport behavior through snapshots and resize.
+
 
 ## Toolbox presentation
 
@@ -78,18 +98,18 @@ Value authority: microsoft/microsoft-ui-xaml commit `3259dc4437540678368c6e7c728
 
 | Area | WinUI resource | Candidate coverage |
 | --- | --- | --- |
-| Header band | TabViewHeaderPadding top 8, TabViewItemMinHeight 32 | 40-DIP total header band |
-| Equal widths | TabViewItemMinWidth 100, TabViewItemMaxWidth 240 | Clamped equal widths, selected header kept in view |
+| Header band | Toolkit Edge override; upstream Explorer profile | Fixed 40-DIP band; profiles above |
+| Equal widths | TabViewItemMinWidth 100, TabViewItemMaxWidth 240 | Clamped widths with reserved feet/add/scroll areas; selected header revealed |
 | Typography | TabViewItemHeaderFontSize 12 | Existing Segoe UI Variable Text / Segoe UI fallback, normal weight |
 | Header padding | TabViewItemHeaderPaddingWithoutCloseButton 8,3,8,3 | 8-DIP horizontal content inset; centered vertical text |
 | Header backdrop | SolidBackgroundFillColorBase | 1.0.0.62 uses an opaque, matching base surface as a tbUI3 hosting convenience; WinUI TabViewBackground is transparent. This avoids white text on the unrelated root form's light ambient color. |
 | Selected fill | TabViewItemHeaderBackgroundSelected -> SolidBackgroundFillColorTertiaryBrush | Existing dark #282828 / light #F9F9F9 tokens, also used for page background |
 | Text | HeaderForeground -> TextFillColorSecondaryBrush; selected -> TextFillColorPrimaryBrush | Existing shared light/dark foreground tokens |
 | Disabled text | HeaderForegroundDisabled -> TextFillColorDisabledBrush | Disabled native header input and text |
-| Add area | AddButtonWidth 32, AddButtonHeight 24, container left padding 3 | Geometry implemented; the literal + is a candidate convenience, not the WinUI glyph template |
-| Focus | Native keyboard focus | Candidate accent underline is a tbUI3 convenience, not the final WinUI focus visual |
-| Corners, seams and borders | TabViewItem/TabView templates | Not complete; selected header is currently rectangular |
-| Hover, pressed, animation | TabView resource/state mappings | Deferred, not claimed |
+| Add area | AddButtonWidth 32, AddButtonHeight 24, container padding 3 | Centered native Segoe Add glyph; scroll glyphs use 8-DIP font |
+| Focus | Toolkit focus-visible outline 2px, inset 2px | Keyboard-only content outline; native acceptance pending |
+| Corners, seams and borders | Toolkit SVG outline and upstream TabView template | Edge/Explorer vector outlines and joined page seam; exact selected stroke-gradient details remain incomplete |
+| Hover, pressed, animation | Toolkit colors and upstream state mappings | Hover/pressed/disabled implemented; animation deferred; native acceptance pending |
 | Close, drag/reorder gestures, icons, accessibility automation, high contrast | WinUI TabViewItem/template and implementation | Deferred; toolbar reordering is implemented only in the designer |
 
 This pass establishes page ownership and authoring behavior. It does not establish complete WinUI TabView visual or accessibility fidelity.
@@ -99,6 +119,6 @@ This pass establishes page ownership and authoring behavior. It does not establi
 - Read BETA 1043 `ide/main.js`, `ide/formDesigner.css`, the VB UserControl/ActiveXExtender sources and tbIDE add-in API directly from the official release archive. Archive SHA-256 and test counts are recorded in the [validation record](../validation/2026-11-09-tabview-candidate.md).
 - `tests/tabview-designer.test.mjs` exercises parent targeting, name allocation, selection, coordinates, Properties reveal, reordering, subtree deletion, undo requests, pending-work guards, cleanup, unsupported internals, narrow hosts and generated-script fidelity. Its optional native contract check loads preparePaste/doPaste from an externally supplied IDE main.js; IDE source is not redistributed.
 - Packed projects and source mirrors are compared, including the full refreshed embedded package in tbUI3Test. Existing package/control IDs are preserved; new IDs have their own checked-in records.
-- Next gate: IDE acceptance and the actual create/switch/drop/save/reopen/delete/reorder/undo editing loop, followed by runtime page ownership and keyboard checks. The source/fixture results above do not establish those results.
+- Shane confirms the designer workflow works as of 2026-11-17. Next gate: compile/run package 66 and adapter v9, verify both styles and input/overflow/persistence at real DPI, then close/icon/drag/accessibility work. Repeat create/switch/drop/save/reopen/delete/reorder/undo checks to detect regressions. The source/fixture results above do not establish those results.
 
 The original research is preserved on main at commit `9f1ee5e88e151fd4f1018d10e18621f6d5a54174`, under `docs/research/2026-11-01-multipage-designer.md`. Its proposed negative-coordinate approaches are historical and are not used by this candidate.

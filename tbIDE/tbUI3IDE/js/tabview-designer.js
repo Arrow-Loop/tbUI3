@@ -5,7 +5,7 @@
  */
 (function createTabViewDesigner(api) {
     'use strict';
-    const version = 8;
+    const version = 9;
     const hostClass = 'tbui3.ui3tabview', pageClass = 'tbui3.ui3tabpage';
     const pageClsid = '{1681A635-13C8-47F3-B96A-FE8123C9F708}';
     const required = ['getCurrentFormEditorGlobals', 'preparePaste', 'deserializeControls',
@@ -177,18 +177,36 @@
         const list = pages(g, host), width = Number(host.properties.Width);
         if (!(width > 0)) return null;
         const add = host.properties.IsAddTabButtonVisible !== false;
-        const available = width - (add ? 35 : 0);
+        const explorer = Number(host.properties.TabStyle) === 1 || /explorer/i.test(String(host.properties.TabStyle || ''));
+        const foot = explorer ? 4 : 8, top = explorer ? 8 : 4;
+        const rawArea = width - (add ? 35 : 0) - 2 * foot;
+        const overflow = list.length * 100 > rawArea && rawArea >= 65;
+        const available = Math.max(0, rawArea - (overflow ? 64 : 0));
         const size = Math.max(100, Math.min(240, list.length ? available / list.length : 100));
-        const slots = Math.max(0, Math.floor(available / size));
-        const current = list.indexOf(active(g, host));
-        let first = firstHeaders.get(host) || 0;
-        if (current >= 0) {
-            if (current < first) first = current;
-            if (slots > 0 && current >= first + slots) first = current - slots + 1;
+        const slots = Math.max(1, Math.floor(available / size));
+        const current = list.indexOf(active(g, host)), selected = name(list[current]);
+        const geometry = [width, explorer, add, list.length].join('|');
+        const prior = firstHeaders.get(host);
+        let first = Math.max(0, Math.min(prior?.first || 0, Math.max(0, list.length - slots)));
+        const manual = prior?.manual && prior.selected === selected && prior.explorer === explorer;
+        if (!manual) {
+            if (current >= 0 && current < first) first = current;
+            if (current >= first + slots) first = current - slots + 1;
         }
-        if (first >= list.length) first = 0;
-        firstHeaders.set(host, first);
-        return { list, size, first, count: Math.min(slots, list.length - first), add };
+        firstHeaders.set(host, { first, selected, geometry, explorer, manual });
+        return { list, size, first, count: Math.min(Math.ceil(available / size), list.length - first), slots, add,
+            start: foot + (overflow ? 32 : 0), available, top, auxiliaryTop: (top + 40 - 24) / 2,
+            addX: width - 32, nextX: foot * 2 + (overflow ? 32 : 0) + available, overflow };
+    }
+    function scrollHeaders(g, host, info, direction) {
+        const first = Math.max(0, Math.min(Math.max(0, info.list.length - info.slots), info.first + direction * info.slots));
+        if (first === info.first) return;
+        edit(g, () => {
+            api.changeProperty(g, host, 'FirstVisibleTabIndex', first);
+            snapshotHost(g, host);
+        }, false);
+        const prior = firstHeaders.get(host);
+        firstHeaders.set(host, { ...prior, first, manual: true });
     }
     function pageNameState(g) {
         // Keep allocation history across adapter refreshes, but outside saved form
@@ -465,14 +483,18 @@
             if (!info || !rect.width || !rect.height) continue;
             const x = (event.clientX - rect.left) * Number(host.properties.Width) / rect.width;
             const y = (event.clientY - rect.top) * Number(host.properties.Height) / rect.height;
-            if (y < 8 || y >= 40 || x < 0) continue;
-            const index = Math.floor(x / info.size);
-            const addX = info.count * info.size + 3;
-            const isNew = info.add && x >= addX && x < addX + 32;
-            if (!isNew && index >= info.count) continue;
+            if (y < info.top || y >= 40 || x < 0 || x >= Number(host.properties.Width)) continue;
+            const index = Math.floor((x - info.start) / info.size);
+            const inAuxiliary = y >= info.auxiliaryTop && y < info.auxiliaryTop + 24;
+            const isNew = info.add && inAuxiliary && x >= info.addX;
+            const previous = info.overflow && inAuxiliary && x < 32;
+            const next = info.overflow && inAuxiliary && x >= info.nextX && x < info.nextX + 32;
+            const isTab = x >= info.start && x < info.start + info.available && index >= 0 && index < info.count;
+            if (!isNew && !previous && !next && !isTab) continue;
             event.preventDefault(); event.stopImmediatePropagation();
             try {
                 if (isNew) newPage(g, host);
+                else if (previous || next) scrollHeaders(g, host, info, previous ? -1 : 1);
                 else setPage(g, host, info.list[info.first + index], true);
                 selections.set(g, g.selectedControls[0]);
             } catch (e) { error = String(e.message || e); }

@@ -37,6 +37,57 @@ End Interface
 Private Interface ID2D1GradientStopCollection Extends ID2D1Resource
 End Interface
 
+[InterfaceId("2CD906A1-12E2-11DC-9FED-001143A055F9")]
+[OleAutomation(False)]
+Private Interface ID2D1Geometry Extends ID2D1Resource
+    Sub Slot00_GetBounds()
+    Sub Slot01_GetWidenedBounds()
+    Sub Slot02_StrokeContainsPoint()
+    Sub Slot03_FillContainsPoint()
+    Sub Slot04_CompareWithGeometry()
+    Sub Slot05_Simplify()
+    Sub Slot06_Tessellate()
+    Sub Slot07_CombineWithGeometry()
+    Sub Slot08_Outline()
+    Sub Slot09_ComputeArea()
+    Sub Slot10_ComputeLength()
+    Sub Slot11_ComputePointAtLength()
+    Sub Slot12_Widen()
+End Interface
+
+[InterfaceId("2CD906A5-12E2-11DC-9FED-001143A055F9")]
+[OleAutomation(False)]
+Private Interface ID2D1PathGeometry Extends ID2D1Geometry
+    Function Open() As ID2D1GeometrySink
+End Interface
+
+[InterfaceId("2CD9069E-12E2-11DC-9FED-001143A055F9")]
+[OleAutomation(False)]
+Private Interface ID2D1SimplifiedGeometrySink Extends stdole.IUnknown
+    Sub Slot00_SetFillMode()
+    Sub Slot01_SetSegmentFlags()
+    [PreserveSig]
+    Sub BeginFigure(ByVal startPoint As D2D1_POINT_2F, ByVal figureBegin As Long)
+    [PreserveSig]
+    Sub AddLines(ByRef points As D2D1_POINT_2F, ByVal pointsCount As Long)
+    Sub Slot04_AddBeziers()
+    [PreserveSig]
+    Sub EndFigure(ByVal figureEnd As Long)
+    Sub Close()
+End Interface
+
+[InterfaceId("2CD9069F-12E2-11DC-9FED-001143A055F9")]
+[OleAutomation(False)]
+Private Interface ID2D1GeometrySink Extends ID2D1SimplifiedGeometrySink
+    [PreserveSig]
+    Sub AddLine(ByVal point As D2D1_POINT_2F)
+    Sub Slot01_AddBezier()
+    Sub Slot02_AddQuadraticBezier()
+    Sub Slot03_AddQuadraticBeziers()
+    [PreserveSig]
+    Sub AddArc(ByRef arc As UI3D2DArc)
+End Interface
+
 [InterfaceId("2CD90694-12E2-11DC-9FED-001143A055F9")]
 [OleAutomation(False)]
 Private Interface ID2D1RenderTarget Extends ID2D1Resource
@@ -61,7 +112,8 @@ Private Interface ID2D1RenderTarget Extends ID2D1Resource
     Sub Slot16_DrawEllipse()
     Sub Slot17_FillEllipse()
     Sub Slot18_DrawGeometry()
-    Sub Slot19_FillGeometry()
+    [PreserveSig]
+    Sub FillGeometry(ByVal geometry As ID2D1Geometry, ByVal brush As ID2D1Brush, ByVal opacityBrush As LongPtr)
     Sub Slot20_FillMesh()
     Sub Slot21_FillOpacityMask()
     [PreserveSig]
@@ -87,8 +139,10 @@ Private Interface ID2D1RenderTarget Extends ID2D1Resource
     Sub Slot38_Flush()
     Sub Slot39_SaveDrawingState()
     Sub Slot40_RestoreDrawingState()
-    Sub Slot41_PushAxisAlignedClip()
-    Sub Slot42_PopAxisAlignedClip()
+    [PreserveSig]
+    Sub PushAxisAlignedClip(ByRef clip As D2D1_RECT_F, ByVal antialiasMode As Long)
+    [PreserveSig]
+    Sub PopAxisAlignedClip()
     [PreserveSig]
     Sub Clear(ByRef clearColor As D2D1_COLOR_F)
     [PreserveSig]
@@ -254,7 +308,7 @@ Private Interface ID2D1Factory Extends stdole.IUnknown
     Sub Slot04_CreateEllipseGeometry()
     Sub Slot05_CreateGeometryGroup()
     Sub Slot06_CreateTransformedGeometry()
-    Sub Slot07_CreatePathGeometry()
+    Function CreatePathGeometry() As ID2D1PathGeometry
     Sub Slot08_CreateStrokeStyle()
     Sub Slot09_CreateDrawingStateBlock()
     Sub Slot10_CreateWicBitmapRenderTarget()
@@ -271,6 +325,11 @@ Private Interface IDWriteFontCollection Extends stdole.IUnknown
     Sub FindFamilyName(ByVal familyName As LongPtr, ByRef index As Long, ByRef exists As Long)
 End Interface
 
+[InterfaceId("8339FDE3-106F-47AB-8373-1C6295EB10B3")]
+[OleAutomation(False)]
+Private Interface IDWriteInlineObject Extends stdole.IUnknown
+End Interface
+
 [InterfaceId("9C906818-31D7-4FD3-A151-7C5E225DB55A")]
 [OleAutomation(False)]
 Private Interface IDWriteTextFormat Extends stdole.IUnknown
@@ -280,7 +339,7 @@ Private Interface IDWriteTextFormat Extends stdole.IUnknown
     Sub Slot03_SetReadingDirection()
     Sub Slot04_SetFlowDirection()
     Sub Slot05_SetIncrementalTabStop()
-    Sub Slot06_SetTrimming()
+    Sub SetTrimming(ByRef trimming As UI3TextTrimming, ByVal trimmingSign As IDWriteInlineObject)
     Sub Slot07_SetLineSpacing()
     Sub Slot08_GetTextAlignment()
     Sub Slot09_GetParagraphAlignment()
@@ -358,6 +417,8 @@ Private Interface IDWriteFactory Extends stdole.IUnknown
     Sub Slot13_CreateTypography()
     Sub Slot14_GetGdiInterop()
     Function CreateTextLayout(ByVal textString As LongPtr, ByVal stringLength As Long, ByVal textFormat As IDWriteTextFormat, ByVal maxWidth As Single, ByVal maxHeight As Single) As IDWriteTextLayout
+    Sub Slot16_CreateGdiCompatibleTextLayout()
+    Function CreateEllipsisTrimmingSign(ByVal textFormat As IDWriteTextFormat) As IDWriteInlineObject
 End Interface
 
 Private Module UI3D2D
@@ -381,6 +442,23 @@ Private Module UI3D2D
         g As Single
         b As Single
         a As Single
+    End Type
+
+    ' d2d1.h D2D1_ARC_SEGMENT; POINT and SIZE are two Singles each.
+    Public Type UI3TextTrimming
+        granularity As Long
+        delimiter As Long
+        delimiterCount As Long
+    End Type
+
+    Public Type UI3D2DArc
+        x As Single
+        y As Single
+        radiusX As Single
+        radiusY As Single
+        rotationAngle As Single
+        sweepDirection As Long
+        arcSize As Long
     End Type
 
     Public Type D2D1_POINT_2F
@@ -535,6 +613,39 @@ Private Module UI3D2D
 
     ' A render target that draws into a GDI device context (BindDC before each BeginDraw).
     ' 32-bit BGRA with premultiplied alpha, as ID2D1DCRenderTarget requires.
+    ' Native circular arcs reproduce the Toolkit SVG path without a raster mask.
+    Public Sub DrawTabGlyph(ByVal Target As ID2D1RenderTarget, ByVal Glyph As String, ByVal X As Single, ByVal Y As Single, ByVal W As Single, ByVal H As Single, ByVal Color As Long, ByVal Size As Single)
+        Dim family As String = "Segoe Fluent Icons"
+        If Not FontFamilyExists(family) Then family = "Segoe MDL2 Assets"
+        DrawTextWithFormat Target, Glyph, IconTextFormat(family, Size), X, Y, X + W, Y + H, Color
+    End Sub
+
+    Public Function TabOutline(ByVal X As Single, ByVal Y As Single, ByVal W As Single, ByVal H As Single, _
+            ByVal Corner As Single, ByVal Foot As Single) As ID2D1PathGeometry
+        Dim path As ID2D1PathGeometry, sink As ID2D1GeometrySink, point As D2D1_POINT_2F
+        Set path = D2DFactory().CreatePathGeometry()
+        Set sink = path.Open()
+        point.x = X - Foot: point.y = Y + H
+        sink.BeginFigure point, 0 ' D2D1_FIGURE_BEGIN_FILLED
+        TabArc sink, X, Y + H - Foot, Foot, 0
+        point.x = X: point.y = Y + Corner: sink.AddLine point
+        TabArc sink, X + Corner, Y, Corner, 1
+        point.x = X + W - Corner: point.y = Y: sink.AddLine point
+        TabArc sink, X + W, Y + Corner, Corner, 1
+        point.x = X + W: point.y = Y + H - Foot: sink.AddLine point
+        TabArc sink, X + W + Foot, Y + H, Foot, 0
+        sink.EndFigure 1 ' D2D1_FIGURE_END_CLOSED
+        sink.Close
+        Set TabOutline = path
+    End Function
+
+    Private Sub TabArc(ByVal Sink As ID2D1GeometrySink, ByVal X As Single, ByVal Y As Single, ByVal Radius As Single, ByVal Sweep As Long)
+        Dim arc As UI3D2DArc
+        arc.x = X: arc.y = Y: arc.radiusX = Radius: arc.radiusY = Radius
+        arc.sweepDirection = Sweep
+        Sink.AddArc arc
+    End Sub
+
     Public Function CreateDCTarget() As ID2D1DCRenderTarget
         Dim props As D2D1_RENDER_TARGET_PROPERTIES
         props.targetType = D2D1_RENDER_TARGET_TYPE_DEFAULT
@@ -1039,7 +1150,7 @@ Failed:
 
     Public Sub DrawLeftTextStyled(ByVal target As ID2D1RenderTarget, ByVal caption As String, _
             ByVal fontSize As Single, ByVal fontWeight As Long, ByVal x0 As Single, ByVal y0 As Single, _
-            ByVal x1 As Single, ByVal y1 As Single, ByVal argb As Long)
+            ByVal x1 As Single, ByVal y1 As Single, ByVal argb As Long, Optional ByVal Ellipsis As Boolean = False)
         If Len(caption) = 0 Then Exit Sub
         Dim family As String
         Dim format As IDWriteTextFormat
@@ -1047,6 +1158,11 @@ Failed:
         If Not FontFamilyExists(family) Then family = "Segoe UI"
         Set format = CreateCenteredTextFormat(family, fontSize, fontWeight)
         format.SetTextAlignment DWRITE_TEXT_ALIGNMENT_LEADING
+        If Ellipsis Then
+            Dim trimming As UI3TextTrimming
+            trimming.granularity = 1 ' DWRITE_TRIMMING_GRANULARITY_CHARACTER
+            format.SetTrimming trimming, DWriteFactory().CreateEllipsisTrimmingSign(format)
+        End If
         DrawTextWithFormat target, caption, format, x0, y0, x1, y1, argb
     End Sub
 

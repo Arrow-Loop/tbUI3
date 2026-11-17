@@ -149,6 +149,8 @@ test('narrow hosts keep the selected overflow tab reachable and the add button s
     f.host.properties.SelectedPage='Page4';f.adapter.install();
     const handler=f.calls.events.get('pointerdown');
     handler({button:0,target:f.host,clientX:100+30*1.5,clientY:50+20*1.5,preventDefault(){},stopImmediatePropagation(){}});
+    assert.equal(f.host.properties.SelectedPage,'Page4');assert.equal(f.host.properties.FirstVisibleTabIndex,2);
+    handler({button:0,target:f.host,clientX:100+60*1.5,clientY:50+20*1.5,preventDefault(){},stopImmediatePropagation(){}});
     assert.equal(f.host.properties.SelectedPage,'Page3');assert.equal(f.g.selectedControls[0],list[2]);
 });
 test('embedded twinBASIC script exactly reconstructs parseable JavaScript',()=>{
@@ -202,7 +204,7 @@ test('diagnostics reveal rejected class/selection state without changing control
     f.form.properties._className='MyProject.frmMultiPage';f.g.selectedControls=[p];
     const before=JSON.stringify([f.form.properties,f.host.properties,p.properties]);
     const text=f.adapter.run('diagnostics');assert(text.startsWith('DIAGNOSTICS '));
-    const report=JSON.parse(text.slice(12));assert.equal(report.adapter,8);assert.equal(report.consumerAccepted,false);
+    const report=JSON.parse(text.slice(12));assert.equal(report.adapter,9);assert.equal(report.consumerAccepted,false);
     assert.equal(report.form.className,'MyProject.frmMultiPage');assert.equal(report.controls.length,2);
     assert.equal(report.selection[0].name,'Page1');assert.equal(f.calls.undo,0);
     assert.equal(JSON.stringify([f.form.properties,f.host.properties,p.properties]),before);
@@ -277,7 +279,7 @@ test('full-form bitmap diagnostics use the background image rather than an empty
 test('one plus gesture on an empty host sends one page insertion',()=>{
     const f=fixture();let insertions=0;const deserialize=f.api.deserializeControls;
     f.api.deserializeControls=(...args)=>{insertions++;return deserialize(...args);};
-    f.adapter.install();f.calls.events.get('pointerdown')({button:0,target:f.host,clientX:115,clientY:80,preventDefault(){},stopImmediatePropagation(){}});
+    f.adapter.install();f.calls.events.get('pointerdown')({button:0,target:f.host,clientX:100+480*1.5,clientY:80,preventDefault(){},stopImmediatePropagation(){}});
     f.adapter.tick();f.adapter.tick();
     assert.equal(insertions,1);assert.equal(f.host.children.length,1);
     assert.equal(f.g.selectedControls[0],f.host.children[0]);
@@ -493,4 +495,31 @@ test('reinstalling the actual options expression preserves an unsaved disabled p
     const timer=main.slice(main.indexOf('Private Sub OptionTimer_Timer()'),main.indexOf('Private Function OptionEnabled()'));
     assert.match(timer,/Host.Themes.ActiveThemeName/);assert.match(timer,/StrComp\(activeName, LastThemeName, vbTextCompare\)/);assert(timer.indexOf('ApplyForActiveTheme')<timer.indexOf('If Len(changed) = 0 Then Exit Sub'));
     assert.match(main,/s.media=\(st\?st.enabled:/);assert.match(main,/s&&s.themeObserver\)s.themeObserver.disconnect\(\)/);
+});
+
+test('Edge and Explorer hit tracks match their distinct top insets and retain the same page contents',()=>{
+    for(const style of [0,1]){
+        const f=fixture(),a=f.page('Page1'),b=f.page('Page2',1);f.host.properties.TabStyle=style;f.adapter.install();const handler=f.calls.events.get('pointerdown');
+        const before=JSON.stringify([a.properties.Left,a.properties.Top,a.properties.Width,a.properties.Height,b.properties.Left,b.properties.Top,b.properties.Width,b.properties.Height]);
+        const click=(x,y)=>handler({button:0,target:f.host,clientX:100+x*1.5,clientY:50+y*1.5,preventDefault(){},stopImmediatePropagation(){}});
+        click(350,5);assert.equal(f.host.properties.SelectedPage,style===0?'Page2':'Page1');click(350,20);assert.equal(f.host.properties.SelectedPage,'Page2');
+        assert.equal(JSON.stringify([a.properties.Left,a.properties.Top,a.properties.Width,a.properties.Height,b.properties.Left,b.properties.Top,b.properties.Width,b.properties.Height]),before);
+        f.adapter.dispose();
+    }
+});
+test('overflow buttons scroll only the header viewport without page selection, structural edits or undo checkpoints',()=>{
+    for(const style of [0,1]){
+        const f=fixture();f.host.properties.Width=235;f.host.properties.TabStyle=style;const items=[f.page('Page1'),f.page('Page2',1),f.page('Page3',2),f.page('Page4',3)];f.adapter.install();const handler=f.calls.events.get('pointerdown'),before=f.calls.undo;
+        const click=x=>handler({button:0,target:f.host,clientX:100+x*1.5,clientY:80,preventDefault(){},stopImmediatePropagation(){}});
+        click(180);assert.equal(f.host.properties.SelectedPage,'Page1');assert.equal(f.host.properties.FirstVisibleTabIndex,1);assert.equal(f.calls.undo,before);assert.equal(f.host.children.length,4);assert.deepEqual(f.g.selectedControls,[f.host]);
+        click(60);assert.equal(f.host.properties.SelectedPage,'Page2');assert.equal(f.g.selectedControls[0],items[1]);
+        click(15);assert.equal(f.host.properties.SelectedPage,'Page2');assert.equal(f.host.properties.FirstVisibleTabIndex,0);f.adapter.dispose();
+    }
+});
+test('empty Edge and Explorer hosts create a page only from the right-hand add button and keep the top padding inert',()=>{
+    for(const style of [0,1]){
+        const f=fixture();f.host.properties.TabStyle=style;f.adapter.install();const handler=f.calls.events.get('pointerdown');
+        const click=(x,y)=>handler({button:0,target:f.host,clientX:100+x*1.5,clientY:50+y*1.5,preventDefault(){},stopImmediatePropagation(){}});
+        click(15,20);click(480,2);assert.equal(f.host.children.length,0);click(480,20);f.adapter.tick();assert.equal(f.host.children.length,1);assert.equal(f.host.children[0].properties.Top,40);f.adapter.dispose();
+    }
 });

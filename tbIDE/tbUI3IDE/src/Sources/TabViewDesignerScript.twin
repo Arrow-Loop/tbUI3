@@ -17,7 +17,7 @@ Private Module TabViewDesignerScript
         js = js & vbLf
         js = js & "    'use strict';"
         js = js & vbLf
-        js = js & "    const version = 8;"
+        js = js & "    const version = 9;"
         js = js & vbLf
         js = js & "    const hostClass = 'tbui3.ui3tabview', pageClass = 'tbui3.ui3tabpage';"
         js = js & vbLf
@@ -361,29 +361,65 @@ Private Module TabViewDesignerScript
         js = js & vbLf
         js = js & "        const add = host.properties.IsAddTabButtonVisible !== false;"
         js = js & vbLf
-        js = js & "        const available = width - (add ? 35 : 0);"
+        js = js & "        const explorer = Number(host.properties.TabStyle) === 1 || /explorer/i.test(String(host.properties.TabStyle || ''));"
+        js = js & vbLf
+        js = js & "        const foot = explorer ? 4 : 8, top = explorer ? 8 : 4;"
+        js = js & vbLf
+        js = js & "        const rawArea = width - (add ? 35 : 0) - 2 * foot;"
+        js = js & vbLf
+        js = js & "        const overflow = list.length * 100 > rawArea && rawArea >= 65;"
+        js = js & vbLf
+        js = js & "        const available = Math.max(0, rawArea - (overflow ? 64 : 0));"
         js = js & vbLf
         js = js & "        const size = Math.max(100, Math.min(240, list.length ? available / list.length : 100));"
         js = js & vbLf
-        js = js & "        const slots = Math.max(0, Math.floor(available / size));"
+        js = js & "        const slots = Math.max(1, Math.floor(available / size));"
         js = js & vbLf
-        js = js & "        const current = list.indexOf(active(g, host));"
+        js = js & "        const current = list.indexOf(active(g, host)), selected = name(list[current]);"
         js = js & vbLf
-        js = js & "        let first = firstHeaders.get(host) || 0;"
+        js = js & "        const geometry = [width, explorer, add, list.length].join('|');"
         js = js & vbLf
-        js = js & "        if (current >= 0) {"
+        js = js & "        const prior = firstHeaders.get(host);"
         js = js & vbLf
-        js = js & "            if (current < first) first = current;"
+        js = js & "        let first = Math.max(0, Math.min(prior?.first || 0, Math.max(0, list.length - slots)));"
         js = js & vbLf
-        js = js & "            if (slots > 0 && current >= first + slots) first = current - slots + 1;"
+        js = js & "        const manual = prior?.manual && prior.selected === selected && prior.explorer === explorer;"
+        js = js & vbLf
+        js = js & "        if (!manual) {"
+        js = js & vbLf
+        js = js & "            if (current >= 0 && current < first) first = current;"
+        js = js & vbLf
+        js = js & "            if (current >= first + slots) first = current - slots + 1;"
         js = js & vbLf
         js = js & "        }"
         js = js & vbLf
-        js = js & "        if (first >= list.length) first = 0;"
+        js = js & "        firstHeaders.set(host, { first, selected, geometry, explorer, manual });"
         js = js & vbLf
-        js = js & "        firstHeaders.set(host, first);"
+        js = js & "        return { list, size, first, count: Math.min(Math.ceil(available / size), list.length - first), slots, add,"
         js = js & vbLf
-        js = js & "        return { list, size, first, count: Math.min(slots, list.length - first), add };"
+        js = js & "            start: foot + (overflow ? 32 : 0), available, top, auxiliaryTop: (top + 40 - 24) / 2,"
+        js = js & vbLf
+        js = js & "            addX: width - 32, nextX: foot * 2 + (overflow ? 32 : 0) + available, overflow };"
+        js = js & vbLf
+        js = js & "    }"
+        js = js & vbLf
+        js = js & "    function scrollHeaders(g, host, info, direction) {"
+        js = js & vbLf
+        js = js & "        const first = Math.max(0, Math.min(Math.max(0, info.list.length - info.slots), info.first + direction * info.slots));"
+        js = js & vbLf
+        js = js & "        if (first === info.first) return;"
+        js = js & vbLf
+        js = js & "        edit(g, () => {"
+        js = js & vbLf
+        js = js & "            api.changeProperty(g, host, 'FirstVisibleTabIndex', first);"
+        js = js & vbLf
+        js = js & "            snapshotHost(g, host);"
+        js = js & vbLf
+        js = js & "        }, false);"
+        js = js & vbLf
+        js = js & "        const prior = firstHeaders.get(host);"
+        js = js & vbLf
+        js = js & "        firstHeaders.set(host, { ...prior, first, manual: true });"
         js = js & vbLf
         js = js & "    }"
         js = js & vbLf
@@ -938,21 +974,29 @@ Private Module TabViewDesignerScript
         js = js & vbLf
         js = js & "            const y = (event.clientY - rect.top) * Number(host.properties.Height) / rect.height;"
         js = js & vbLf
-        js = js & "            if (y < 8 || y >= 40 || x < 0) continue;"
+        js = js & "            if (y < info.top || y >= 40 || x < 0 || x >= Number(host.properties.Width)) continue;"
         js = js & vbLf
-        js = js & "            const index = Math.floor(x / info.size);"
+        js = js & "            const index = Math.floor((x - info.start) / info.size);"
         js = js & vbLf
-        js = js & "            const addX = info.count * info.size + 3;"
+        js = js & "            const inAuxiliary = y >= info.auxiliaryTop && y < info.auxiliaryTop + 24;"
         js = js & vbLf
-        js = js & "            const isNew = info.add && x >= addX && x < addX + 32;"
+        js = js & "            const isNew = info.add && inAuxiliary && x >= info.addX;"
         js = js & vbLf
-        js = js & "            if (!isNew && index >= info.count) continue;"
+        js = js & "            const previous = info.overflow && inAuxiliary && x < 32;"
+        js = js & vbLf
+        js = js & "            const next = info.overflow && inAuxiliary && x >= info.nextX && x < info.nextX + 32;"
+        js = js & vbLf
+        js = js & "            const isTab = x >= info.start && x < info.start + info.available && index >= 0 && index < info.count;"
+        js = js & vbLf
+        js = js & "            if (!isNew && !previous && !next && !isTab) continue;"
         js = js & vbLf
         js = js & "            event.preventDefault(); event.stopImmediatePropagation();"
         js = js & vbLf
         js = js & "            try {"
         js = js & vbLf
         js = js & "                if (isNew) newPage(g, host);"
+        js = js & vbLf
+        js = js & "                else if (previous || next) scrollHeaders(g, host, info, previous ? -1 : 1);"
         js = js & vbLf
         js = js & "                else setPage(g, host, info.list[info.first + index], true);"
         js = js & vbLf

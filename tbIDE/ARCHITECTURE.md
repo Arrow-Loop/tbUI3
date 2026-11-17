@@ -2,7 +2,7 @@
 
 ## Distribution and identity
 
-One canonical project, tbUI3IDE/tbUI3IDE.twinproj, produces tbUI3IDE.dll per IDE architecture, version 1.3.0.16. Its established project ID is unchanged. Remove legacy WinUI3IdeStyle.dll and TabViewDesigner.dll from both addins architecture directories during migration. Theme files and the tbUI3 runtime control package remain separate; built consumer applications do not need this add-in.
+One canonical project, tbUI3IDE/tbUI3IDE.twinproj, produces tbUI3IDE.dll per IDE architecture, version 1.3.0.17. Its established project ID is unchanged. Remove legacy WinUI3IdeStyle.dll and TabViewDesigner.dll from both addins architecture directories during migration. Theme files and the tbUI3 runtime control package remain separate; built consumer applications do not need this add-in.
 
 TabView adapter v9 supports package 1.0.0.67's Edge/Explorer shape profiles, reserved curve space, right-hand add button and overflow arrows. Viewport scrolling uses the transient native FirstVisibleTabIndex and queued parent snapshots, preserving page selection/ownership. Ribbon/theme/document-command behavior from the previous pass is retained. Rebuild/re-import the package and rebuild/reload the add-in together; native acceptance remains pending.
 

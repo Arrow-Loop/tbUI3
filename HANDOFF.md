@@ -1,5 +1,11 @@
 # Handoff: tbUI3
 
+## 2026-11-17 - Native designer response capture (add-in 1.3.0.17 / adapter v10)
+
+Shane's screenshot establishes that the project opens but frmMultiPage remains at 20% with the JSON error. Installed IDE source sets 20% after receiving the saved form data and starts native control synchronization next. Added a reversible observer around gotNewFormSnapshotsResponse. Only when that native handler throws and its response JSON fails parsing, it records the form, payload length, parser position, nearest preceding control name, 420-character context and bounded original stack. The existing controller writes it automatically to tbUI3-tabview.log beside the project and in TEMP. The native exception is rethrown unchanged; no recovery, global JSON.parse override or form/persistence edits are attempted. Corrected the stale log prefix to adapter v10.
+
+Validation: 146 tests pass, including malformed JSON through the actual installed snapshot parser, successful delegation, original failure preservation, invalid transport handling and reversible hook ownership. All 71 mirrors and stored JSON checks pass. Package remains 1.0.0.67. The BETA 1044 failure is not repaired or natively reproduced locally. Rebuild/reload tbUI3IDE 1.3.0.17, reopen the failing form, wait two seconds for the log timer and supply the new Native designer JSON failure line to identify the failing native value. No package rebuild or test-project edit is needed for this diagnostic pass.
+
 ## 2026-11-17 - Test-project JSON load investigation (unresolved)
 
 Preserved Shane's uploaded 75b7598 project. All 37 stored files match c109d62 by content; all 11 stored JSON documents parse. Entry order/revision metadata differ. All 71 project mirrors and existing identity/ownership checks pass. Added stored-JSON parsing to the project validator. Local IDE launch identifies BETA 904 and fails at startup with a different error, so BETA 1044 reproduction is still required. Do not discard form persistence or claim this is repaired. Need failure stage and full stack/generated JSON response. Package 67/add-in 16 unchanged. Evidence: docs/validation/2026-11-17-project-load-json.md.

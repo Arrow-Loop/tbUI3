@@ -17,7 +17,7 @@ Private Module TabViewDesignerScript
         js = js & vbLf
         js = js & "    'use strict';"
         js = js & vbLf
-        js = js & "    const version = 9;"
+        js = js & "    const version = 10;"
         js = js & vbLf
         js = js & "    const hostClass = 'tbui3.ui3tabview', pageClass = 'tbui3.ui3tabpage';"
         js = js & vbLf
@@ -168,6 +168,75 @@ Private Module TabViewDesignerScript
         js = js & "    }"
         js = js & vbLf
         js = js & "    let timer, disposed = false, busy = false, error = '', style;"
+        js = js & vbLf
+        js = js & "    let snapshotOriginal, snapshotHook, nativeJsonFailure;"
+        js = js & vbLf
+        js = js & "    function observeSnapshotFailures() {"
+        js = js & vbLf
+        js = js & "        const page = api.nativePage;"
+        js = js & vbLf
+        js = js & "        if (snapshotHook || typeof page?.gotNewFormSnapshotsResponse !== 'function') return;"
+        js = js & vbLf
+        js = js & "        snapshotOriginal = page.gotNewFormSnapshotsResponse;"
+        js = js & vbLf
+        js = js & "        snapshotHook = function (...args) {"
+        js = js & vbLf
+        js = js & "            try { return snapshotOriginal.apply(this, args); }"
+        js = js & vbLf
+        js = js & "            catch (failure) {"
+        js = js & vbLf
+        js = js & "                // Inspect only a failed native snapshot response. Never repair JSON,"
+        js = js & vbLf
+        js = js & "                // swallow the exception, or intercept JSON.parse globally."
+        js = js & vbLf
+        js = js & "                if (!disposed) try {"
+        js = js & vbLf
+        js = js & "                    const text = new page.TextDecoder().decode(new page.DataView(args[1], 4));"
+        js = js & vbLf
+        js = js & "                    try { JSON.parse(text); }"
+        js = js & vbLf
+        js = js & "                    catch (parseFailure) {"
+        js = js & vbLf
+        js = js & "                        const match = /position (\d+)/.exec(String(parseFailure.message));"
+        js = js & vbLf
+        js = js & "                        const position = match ? Number(match[1]) : null;"
+        js = js & vbLf
+        js = js & "                        const start = position === null ? 0 : Math.max(0, position - 180);"
+        js = js & vbLf
+        js = js & "                        const preceding = text.slice(0, position === null ? 0 : position);"
+        js = js & vbLf
+        js = js & "                        const names = [...preceding.matchAll(/" & Chr(34) & "(?:name|Name)" & Chr(34) & "\s*:\s*" & Chr(34) & "((?:[^" & Chr(34) & "\\]|\\.)*)" & Chr(34) & "/g)];"
+        js = js & vbLf
+        js = js & "                        nativeJsonFailure = {"
+        js = js & vbLf
+        js = js & "                            adapter: version, form: String(args[0]?.designer?.properties?.Name || ''),"
+        js = js & vbLf
+        js = js & "                            message: String(parseFailure.message), length: text.length, position,"
+        js = js & vbLf
+        js = js & "                            nearestName: names.at(-1)?.[1] || '',"
+        js = js & vbLf
+        js = js & "                            contextStart: start, context: text.slice(start, start + 420),"
+        js = js & vbLf
+        js = js & "                            stack: String(failure.stack || failure).slice(0, 1800)"
+        js = js & vbLf
+        js = js & "                        };"
+        js = js & vbLf
+        js = js & "                        error = 'Native designer JSON failure: ' + JSON.stringify(nativeJsonFailure);"
+        js = js & vbLf
+        js = js & "                    }"
+        js = js & vbLf
+        js = js & "                } catch (_) { /* Diagnostics must never replace the native failure. */ }"
+        js = js & vbLf
+        js = js & "                throw failure;"
+        js = js & vbLf
+        js = js & "            }"
+        js = js & vbLf
+        js = js & "        };"
+        js = js & vbLf
+        js = js & "        page.gotNewFormSnapshotsResponse = snapshotHook;"
+        js = js & vbLf
+        js = js & "    }"
+        js = js & vbLf
         js = js & vbLf
         js = js & "    const kind = c => String(c?.properties?._className || '').toLowerCase();"
         js = js & vbLf
@@ -804,7 +873,7 @@ Private Module TabViewDesignerScript
         js = js & vbLf
         js = js & "            selection: (g?.selectedControls || []).map(c => ({ name: name(c), className: kind(c), clsid: c.properties?._clsid,"
         js = js & vbLf
-        js = js & "                parent: name(c.parentElement), parentClass: kind(c.parentElement) })), controls: [], lastError: error };"
+        js = js & "                parent: name(c.parentElement), parentClass: kind(c.parentElement) })), controls: [], lastError: error, nativeJsonFailure };"
         js = js & vbLf
         js = js & "        for (const c of g?.allControls || []) {"
         js = js & vbLf
@@ -1014,6 +1083,10 @@ Private Module TabViewDesignerScript
         js = js & vbLf
         js = js & "        disposed = true;"
         js = js & vbLf
+        js = js & "        if (snapshotHook && api.nativePage?.gotNewFormSnapshotsResponse === snapshotHook)"
+        js = js & vbLf
+        js = js & "            api.nativePage.gotNewFormSnapshotsResponse = snapshotOriginal;"
+        js = js & vbLf
         js = js & "        if (timer) api.clearInterval(timer);"
         js = js & vbLf
         js = js & "        api.document?.removeEventListener('pointerdown', pointer, true);"
@@ -1052,6 +1125,8 @@ Private Module TabViewDesignerScript
         js = js & vbLf
         js = js & "        if (!supported()) return 'Unsupported IDE designer internals; no hooks installed.';"
         js = js & vbLf
+        js = js & "        observeSnapshotFailures();"
+        js = js & vbLf
         js = js & "        style = api.document.createElement('style');"
         js = js & vbLf
         js = js & "        // A narrow designer-only rule must win the IDE's inline display styles."
@@ -1074,21 +1149,22 @@ Private Module TabViewDesignerScript
         js = js & vbLf
         js = js & "    }"
         js = js & vbLf
-        js = js & "    return { version, install, dispose, run, tick, diagnostics, supported, get lastError() { return error; } };"
+        js = js & "    return { version, install, dispose, run, tick, diagnostics, supported, get lastError() { return error; }, get nativeJsonFailure() { return nativeJ"
+        js = js & "sonFailure; } };"
         js = js & vbLf
-        js = js & "})({document:document,setInterval:setInterval.bind(window),clearInterval:clearInterval.bind(window),getCurrentFormEditorGlobals:typeof getCurrentFormE"
-        js = js & "ditorGlobals==='function'?getCurrentFormEditorGlobals:undefined,preparePaste:typeof preparePaste==='function'?preparePaste:undefined,deserializeContro"
-        js = js & "ls:typeof deserializeControls==='function'?deserializeControls:undefined,prepareForMultipleChangeProperties:typeof prepareForMultipleChangeProperties="
-        js = js & "=='function'?prepareForMultipleChangeProperties:undefined,handleMultipleChangeProperties:typeof handleMultipleChangeProperties==='function'?handleMult"
-        js = js & "ipleChangeProperties:undefined,doPaste:typeof doPaste==='function'?doPaste:undefined,getTopLeftOfAllControls:typeof getTopLeftOfAllControls==='functio"
-        js = js & "n'?getTopLeftOfAllControls:undefined,changedSelectedControls:typeof changedSelectedControls==='function'?changedSelectedControls:undefined,unselectAll"
-        js = js & "Controls:typeof unselectAllControls==='function'?unselectAllControls:undefined,changeProperty:typeof changeProperty==='function'?changeProperty:undefi"
-        js = js & "ned,undoPoint:typeof undoPoint==='function'?undoPoint:undefined,getImageFromServer:typeof getImageFromServer==='function'?getImageFromServer:undefined"
-        js = js & ",queueMultipleSnapshot:typeof queueMultipleSnapshot==='function'?queueMultipleSnapshot:undefined,syncPropertySheet:typeof syncPropertySheet==='functio"
-        js = js & "n'?syncPropertySheet:undefined,deleteSelectedControls:typeof deleteSelectedControls==='function'?deleteSelectedControls:undefined,updateAllControlDrag"
-        js = js & "Points:typeof updateAllControlDragPoints==='function'?updateAllControlDragPoints:undefined,lockTheControl:typeof lockTheControl==='function'?lockTheCo"
-        js = js & "ntrol:undefined,unlockTheControl:typeof unlockTheControl==='function'?unlockTheControl:undefined,onSignificantChange:typeof onSignificantChange==='fun"
-        js = js & "ction'?onSignificantChange:undefined});return window.__tbUI3TabDesigner.install()})()"
+        js = js & "})({nativePage:window,document:document,setInterval:setInterval.bind(window),clearInterval:clearInterval.bind(window),getCurrentFormEditorGlobals:type"
+        js = js & "of getCurrentFormEditorGlobals==='function'?getCurrentFormEditorGlobals:undefined,preparePaste:typeof preparePaste==='function'?preparePaste:undefined"
+        js = js & ",deserializeControls:typeof deserializeControls==='function'?deserializeControls:undefined,prepareForMultipleChangeProperties:typeof prepareForMultipl"
+        js = js & "eChangeProperties==='function'?prepareForMultipleChangeProperties:undefined,handleMultipleChangeProperties:typeof handleMultipleChangeProperties==='fu"
+        js = js & "nction'?handleMultipleChangeProperties:undefined,doPaste:typeof doPaste==='function'?doPaste:undefined,getTopLeftOfAllControls:typeof getTopLeftOfAllC"
+        js = js & "ontrols==='function'?getTopLeftOfAllControls:undefined,changedSelectedControls:typeof changedSelectedControls==='function'?changedSelectedControls:und"
+        js = js & "efined,unselectAllControls:typeof unselectAllControls==='function'?unselectAllControls:undefined,changeProperty:typeof changeProperty==='function'?cha"
+        js = js & "ngeProperty:undefined,undoPoint:typeof undoPoint==='function'?undoPoint:undefined,getImageFromServer:typeof getImageFromServer==='function'?getImageFr"
+        js = js & "omServer:undefined,queueMultipleSnapshot:typeof queueMultipleSnapshot==='function'?queueMultipleSnapshot:undefined,syncPropertySheet:typeof syncProper"
+        js = js & "tySheet==='function'?syncPropertySheet:undefined,deleteSelectedControls:typeof deleteSelectedControls==='function'?deleteSelectedControls:undefined,up"
+        js = js & "dateAllControlDragPoints:typeof updateAllControlDragPoints==='function'?updateAllControlDragPoints:undefined,lockTheControl:typeof lockTheControl==='f"
+        js = js & "unction'?lockTheControl:undefined,unlockTheControl:typeof unlockTheControl==='function'?unlockTheControl:undefined,onSignificantChange:typeof onSignif"
+        js = js & "icantChange==='function'?onSignificantChange:undefined});return window.__tbUI3TabDesigner.install()})()"
         js = js & vbLf
         Return js
     End Function

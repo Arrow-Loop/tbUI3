@@ -5,7 +5,7 @@
  */
 (function createTabViewDesigner(api) {
     'use strict';
-    const version = 9;
+    const version = 10;
     const hostClass = 'tbui3.ui3tabview', pageClass = 'tbui3.ui3tabpage';
     const pageClsid = '{1681A635-13C8-47F3-B96A-FE8123C9F708}';
     const required = ['getCurrentFormEditorGlobals', 'preparePaste', 'deserializeControls',
@@ -81,6 +81,41 @@
         }
     }
     let timer, disposed = false, busy = false, error = '', style;
+    let snapshotOriginal, snapshotHook, nativeJsonFailure;
+    function observeSnapshotFailures() {
+        const page = api.nativePage;
+        if (snapshotHook || typeof page?.gotNewFormSnapshotsResponse !== 'function') return;
+        snapshotOriginal = page.gotNewFormSnapshotsResponse;
+        snapshotHook = function (...args) {
+            try { return snapshotOriginal.apply(this, args); }
+            catch (failure) {
+                // Inspect only a failed native snapshot response. Never repair JSON,
+                // swallow the exception, or intercept JSON.parse globally.
+                if (!disposed) try {
+                    const text = new page.TextDecoder().decode(new page.DataView(args[1], 4));
+                    try { JSON.parse(text); }
+                    catch (parseFailure) {
+                        const match = /position (\d+)/.exec(String(parseFailure.message));
+                        const position = match ? Number(match[1]) : null;
+                        const start = position === null ? 0 : Math.max(0, position - 180);
+                        const preceding = text.slice(0, position === null ? 0 : position);
+                        const names = [...preceding.matchAll(/"(?:name|Name)"\s*:\s*"((?:[^"\\]|\\.)*)"/g)];
+                        nativeJsonFailure = {
+                            adapter: version, form: String(args[0]?.designer?.properties?.Name || ''),
+                            message: String(parseFailure.message), length: text.length, position,
+                            nearestName: names.at(-1)?.[1] || '',
+                            contextStart: start, context: text.slice(start, start + 420),
+                            stack: String(failure.stack || failure).slice(0, 1800)
+                        };
+                        error = 'Native designer JSON failure: ' + JSON.stringify(nativeJsonFailure);
+                    }
+                } catch (_) { /* Diagnostics must never replace the native failure. */ }
+                throw failure;
+            }
+        };
+        page.gotNewFormSnapshotsResponse = snapshotHook;
+    }
+
     const kind = c => String(c?.properties?._className || '').toLowerCase();
     const name = c => String(c?.properties?.Name || '');
     const sameName = (a, b) => String(a || '').toLowerCase() === String(b || '').toLowerCase();
@@ -398,7 +433,7 @@
                 marker: String(root.Tag || '').startsWith('tbUI3:') ? root.Tag : '(not a fixture marker)', backColor: root.BackColor },
             pending: { properties: g?.pendingChangesCount, snapshots: g?.outstandingSerializationRequests, dragging: g?.isDragging },
             selection: (g?.selectedControls || []).map(c => ({ name: name(c), className: kind(c), clsid: c.properties?._clsid,
-                parent: name(c.parentElement), parentClass: kind(c.parentElement) })), controls: [], lastError: error };
+                parent: name(c.parentElement), parentClass: kind(c.parentElement) })), controls: [], lastError: error, nativeJsonFailure };
         for (const c of g?.allControls || []) {
             const cls = kind(c);
             if (!cls.includes('ui3tab')) continue;
@@ -503,6 +538,8 @@
     }
     function dispose() {
         disposed = true;
+        if (snapshotHook && api.nativePage?.gotNewFormSnapshotsResponse === snapshotHook)
+            api.nativePage.gotNewFormSnapshotsResponse = snapshotOriginal;
         if (timer) api.clearInterval(timer);
         api.document?.removeEventListener('pointerdown', pointer, true);
         for (const node of touched) node.classList.remove(hiddenClass);
@@ -522,6 +559,7 @@
     }
     function install() {
         if (!supported()) return 'Unsupported IDE designer internals; no hooks installed.';
+        observeSnapshotFailures();
         style = api.document.createElement('style');
         // A narrow designer-only rule must win the IDE's inline display styles.
         style.textContent = '.' + hiddenClass + ',.' + toolboxHiddenClass + '{display:none!important}';
@@ -533,5 +571,5 @@
         tick();
         return 'TabView Designer adapter v' + version + ' installed';
     }
-    return { version, install, dispose, run, tick, diagnostics, supported, get lastError() { return error; } };
+    return { version, install, dispose, run, tick, diagnostics, supported, get lastError() { return error; }, get nativeJsonFailure() { return nativeJsonFailure; } };
 })

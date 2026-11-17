@@ -22,3 +22,11 @@ The installed IDE JavaScript has multiple JSON consumers, including compiler set
 ## Validation improvement
 
 `node tools/validate-tabview-projects.mjs` now parses stored Settings, .meta, form/control/property-page/report and .json entries in addition to verifying exact mirrors. It passes all three projects. This catches malformed stored JSON in future passes; it cannot validate a native compiler/designer response that has not been captured. Package 1.0.0.67 and add-in 1.3.0.16 remain unchanged.
+
+## Screenshot follow-up and diagnostic build
+
+Shane confirms the project opens, while frmMultiPage stalls at 20%. The screenshot shows the same parser position and BETA 1044. The installed main.js sets that progress after receiving saved form data, before native snapshots finish. Its full-form snapshot parser has an uncaught JSON.parse; unlike the per-control parser, it does not show a bad-JSON payload dialog. This is a targeted capture point, not proof of the precise faulty value.
+
+Add-in 1.3.0.17 / adapter v10 observes that handler, preserves its return/this/arguments and original exception, and records only malformed JSON failures. The report contains form, response length, position, nearest preceding name, a 420-character excerpt and a stack capped at 1800 characters. It does not log entire image payloads or alter persisted data. The existing controller polls the report every 1.5 seconds and writes both project-local and TEMP tbUI3-tabview.log. Unload restores the original handler when still owned; newer hooks remain intact. The stale adapter v8 log prefix is corrected to v10.
+
+All 146 tests pass, including the installed native snapshot parser receiving a synthetic malformed packet, successful delegation, failure preservation, short-buffer handling and chained-hook disposal. All 71 exact mirrors and stored JSON checks pass. No native BETA 1044 acceptance is claimed. Package 67 and the uploaded test project are unchanged. Next: rebuild/reload the add-in, reopen the form, wait two seconds and collect the Native designer JSON failure entry. The defect remains unresolved pending that response.

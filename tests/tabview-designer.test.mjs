@@ -204,7 +204,7 @@ test('diagnostics reveal rejected class/selection state without changing control
     f.form.properties._className='MyProject.frmMultiPage';f.g.selectedControls=[p];
     const before=JSON.stringify([f.form.properties,f.host.properties,p.properties]);
     const text=f.adapter.run('diagnostics');assert(text.startsWith('DIAGNOSTICS '));
-    const report=JSON.parse(text.slice(12));assert.equal(report.adapter,9);assert.equal(report.consumerAccepted,false);
+    const report=JSON.parse(text.slice(12));assert.equal(report.adapter,10);assert.equal(report.consumerAccepted,false);
     assert.equal(report.form.className,'MyProject.frmMultiPage');assert.equal(report.controls.length,2);
     assert.equal(report.selection[0].name,'Page1');assert.equal(f.calls.undo,0);
     assert.equal(JSON.stringify([f.form.properties,f.host.properties,p.properties]),before);
@@ -522,4 +522,56 @@ test('empty Edge and Explorer hosts create a page only from the right-hand add b
         const click=(x,y)=>handler({button:0,target:f.host,clientX:100+x*1.5,clientY:50+y*1.5,preventDefault(){},stopImmediatePropagation(){}});
         click(15,20);click(480,2);assert.equal(f.host.children.length,0);click(480,20);f.adapter.tick();assert.equal(f.host.children.length,1);assert.equal(f.host.children[0].properties.Top,40);f.adapter.dispose();
     }
+});
+
+
+function nativeSnapshotPacket(json) {
+    const bytes=new TextEncoder().encode(json),packet=new ArrayBuffer(bytes.length+4);
+    new DataView(packet).setInt32(0,-1,true);new Uint8Array(packet,4).set(bytes);return packet;
+}
+test('failed native snapshot JSON records bounded context and rethrows the original exception',t=>{
+    if(!process.env.TB_IDE_MAIN_JS)return t.skip('Set TB_IDE_MAIN_JS for native snapshot parser contract');
+    const ide=fs.readFileSync(process.env.TB_IDE_MAIN_JS,'utf8');
+    const start=ide.indexOf('function gotNewFormSnapshotsResponse('),end=ide.indexOf('function gotServerMessage(',start);
+    assert(start>=0&&end>start);
+    const original=vm.runInNewContext('('+ide.slice(start,end)+')',{DataView,TextDecoder});
+    const f=fixture();f.api.nativePage={gotNewFormSnapshotsResponse:original,DataView,TextDecoder};
+    const prefix='[{"name":"Tabs1","data":"'+'a'.repeat(16000)+'","serialization":{"TabStyle":';
+    const json=prefix+'0oops}}]';const packet=nativeSnapshotPacket(json);
+    let nativeError;try{original(f.g,packet);}catch(e){nativeError=e;}assert.equal(nativeError.name,'SyntaxError');
+    f.adapter.install();let thrown;try{f.api.nativePage.gotNewFormSnapshotsResponse(f.g,packet);}catch(e){thrown=e;}
+    assert.equal(thrown.message,nativeError.message);assert.equal(thrown.stack.split('\n')[1],nativeError.stack.split('\n')[1]);
+    const report=f.adapter.nativeJsonFailure;assert.equal(report.form,'Form1');assert.equal(report.nearestName,'Tabs1');
+    assert.equal(report.length,json.length);assert.equal(report.context,json.slice(report.contextStart,report.contextStart+420));
+    assert(report.context.includes('0oops'));assert(report.context.length<=420);assert(report.stack.length<=1800);
+    assert.match(f.adapter.lastError,/Native designer JSON failure/);assert(f.adapter.lastError.length<3000);
+    assert.equal(f.calls.undo,0);assert.equal(f.calls.edit,0);assert.equal(new TextDecoder().decode(packet.slice(4)),json);
+    assert.equal(JSON.parse(f.adapter.diagnostics().slice(12)).nativeJsonFailure.position,report.position);
+    f.adapter.dispose();assert.equal(f.api.nativePage.gotNewFormSnapshotsResponse,original);
+});
+test('snapshot hook delegates successful replies and restores the native handler on unload',()=>{
+    const f=fixture();let received;const owner={};
+    const original=function(...args){received={args,owner:this};return 42;};
+    f.api.nativePage={gotNewFormSnapshotsResponse:original,DataView,TextDecoder};f.adapter.install();
+    const packet=nativeSnapshotPacket('[]');assert.equal(f.api.nativePage.gotNewFormSnapshotsResponse.call(owner,f.g,packet),42);
+    assert.equal(received.args[0],f.g);assert.equal(received.args[1],packet);assert.equal(received.owner,owner);
+    assert.equal(f.adapter.nativeJsonFailure,undefined);assert.equal(f.adapter.lastError,'');
+    f.adapter.dispose();assert.equal(f.api.nativePage.gotNewFormSnapshotsResponse,original);
+});
+test('snapshot diagnostics retain unrelated errors and tolerate malformed transport buffers',()=>{
+    for(const packet of [nativeSnapshotPacket('[]'),new ArrayBuffer(1)]){
+        const f=fixture(),failure=new Error('native rendering failed');
+        f.api.nativePage={gotNewFormSnapshotsResponse:()=>{throw failure;},DataView,TextDecoder};f.adapter.install();
+        assert.throws(()=>f.api.nativePage.gotNewFormSnapshotsResponse(f.g,packet),e=>e===failure);
+        assert.equal(f.adapter.nativeJsonFailure,undefined);assert.equal(f.adapter.lastError,'');f.adapter.dispose();
+    }
+});
+test('unload preserves a newer snapshot hook and disables diagnostics in the retained chain',()=>{
+    const f=fixture(),failure=new SyntaxError('original');
+    f.api.nativePage={gotNewFormSnapshotsResponse:()=>{throw failure;},DataView,TextDecoder};f.adapter.install();
+    const ours=f.api.nativePage.gotNewFormSnapshotsResponse,newer=(...args)=>ours(...args);
+    f.api.nativePage.gotNewFormSnapshotsResponse=newer;f.adapter.dispose();
+    assert.equal(f.api.nativePage.gotNewFormSnapshotsResponse,newer);
+    assert.throws(()=>newer(f.g,nativeSnapshotPacket('[invalid]')),e=>e===failure);
+    assert.equal(f.adapter.nativeJsonFailure,undefined);
 });

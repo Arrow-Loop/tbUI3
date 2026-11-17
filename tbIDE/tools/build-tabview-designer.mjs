@@ -12,7 +12,7 @@ const names = ['getCurrentFormEditorGlobals','preparePaste','deserializeControls
     'prepareForMultipleChangeProperties','handleMultipleChangeProperties','doPaste',
     'getTopLeftOfAllControls','changedSelectedControls','unselectAllControls','changeProperty',
     'undoPoint','getImageFromServer','queueMultipleSnapshot','syncPropertySheet','deleteSelectedControls','updateAllControlDragPoints','lockTheControl','unlockTheControl','onSignificantChange'];
-const facade = '{document:document,setInterval:setInterval.bind(window),clearInterval:clearInterval.bind(window),' +
+const facade = '{nativePage:window,document:document,setInterval:setInterval.bind(window),clearInterval:clearInterval.bind(window),' +
     names.map(n => n + ':typeof ' + n + "==='function'?" + n + ':undefined').join(',') + '}';
 const script = "(function(){if(window.__tbUI3TabDesigner)window.__tbUI3TabDesigner.dispose();" +
     'window.__tbUI3TabDesigner=' + js + '(' + facade + ');return window.__tbUI3TabDesigner.install()})()';

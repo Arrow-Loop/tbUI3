@@ -1,5 +1,11 @@
 # Roadmap: tbUI3 IDE
 
+## 2026-11-17 - Native designer response capture (add-in 1.3.0.17 / adapter v10)
+
+Shane's screenshot establishes that the project opens but frmMultiPage remains at 20% with the JSON error. Installed IDE source sets 20% after receiving the saved form data and starts native control synchronization next. Added a reversible observer around gotNewFormSnapshotsResponse. Only when that native handler throws and its response JSON fails parsing, it records the form, payload length, parser position, nearest preceding control name, 420-character context and bounded original stack. The existing controller writes it automatically to tbUI3-tabview.log beside the project and in TEMP. The native exception is rethrown unchanged; no recovery, global JSON.parse override or form/persistence edits are attempted. Corrected the stale log prefix to adapter v10.
+
+Validation: 146 tests pass, including malformed JSON through the actual installed snapshot parser, successful delegation, original failure preservation, invalid transport handling and reversible hook ownership. All 71 mirrors and stored JSON checks pass. Package remains 1.0.0.67. The BETA 1044 failure is not repaired or natively reproduced locally. Rebuild/reload tbUI3IDE 1.3.0.17, reopen the failing form, wait two seconds for the log timer and supply the new Native designer JSON failure line to identify the failing native value. No package rebuild or test-project edit is needed for this diagnostic pass.
+
 ## Current TabView candidate: package 1.0.0.67 / add-in 1.3.0.16
 
 The three reported TB0012 glyph warnings are addressed with explicit Long suffixes. Rebuild package 67, confirm those warnings are gone, re-import into the test project and continue the native Edge/Explorer/interaction checks from the preceding pass. Adapter v9 and the add-in are unchanged. 142 tests and 71 mirrors pass; native recompilation and remaining TabView feature gates remain open.

@@ -1,8 +1,8 @@
 # UI3TabView and UI3TabPage
 
-Status: package 1.0.0.68 / tbUI3IDE 1.3.0.17 / adapter v10 appearance candidate, 2026-11-17. Shane confirms the designer workflow works. This pass adds shape profiles and core header interaction; it is not a claim of complete TabView fidelity or compiled-native acceptance.
+Status: package 1.0.0.69 / tbUI3IDE 1.3.0.17 / adapter v10 appearance candidate, 2026-11-17. Shane confirms the designer workflow works. This pass adds shape profiles and core header interaction; it is not a claim of complete TabView fidelity or compiled-native acceptance.
 
-Package 68 removes enum-member Description attributes that BETA 1044 interpreted as enum names and emitted with unescaped quotes in designer JSON. The native picker uses ui3TabEdge/ui3TabExplorer; comments and property help describe Edge Style/Explorer Style. The uploaded native response establishes the cause; reopening with the fix remains to be confirmed.
+Package 68 removes enum-member Description attributes that BETA 1044 interpreted as enum names and emitted with unescaped quotes in designer JSON. The native picker uses ui3TabEdge/ui3TabExplorer; comments and property help describe Edge Style/Explorer Style. The uploaded native response establishes the cause; Shane confirms package 68 resolves the load failure.
 
 ## Shape profile authority and defaults
 
@@ -16,6 +16,12 @@ Edge is Shane's explicit customized profile from [Smith-Debnam Toolkit 8543201](
 | Explorer | 40 DIP | 8 DIP | 32 DIP | 8 DIP | 4 DIP |
 
 Both styles preserve the page origin at 40 DIP. Their selected outline uses native circular arcs; Edge hover/pressed uses the same profile outline, while Explorer's unselected hover/pressed uses the rounded WinUI container. Selection joins the page surface without a line beneath it. Adjacent selected separators are suppressed. Captions align left with native DirectWrite ellipsis. Focus is keyboard-only with the Toolkit's 2px inset outline treatment, replacing the earlier accent underline.
+
+## Repaint follow-up, package 69
+
+Removed the horizontal page-top stroke for both profiles per Shane's request. Both separators beside a hovered tab are suppressed, including the one drawn by its left neighbor. Runtime hover/press/focus/scroll updates invalidate only the DPI-scaled 40-DIP header with background erase disabled. The host subclass handles WM_ERASEBKGND so the opaque Direct2D frame replaces the background without exposing the native system brush; leave/capture/focus/enable messages also use header-only invalidation. Design-time edits retain synchronous snapshots. See [InvalidateRect](https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-invalidaterect) and [WM_ERASEBKGND](https://learn.microsoft.com/en-us/windows/win32/winmsg/wm-erasebkgnd) for the Win32 erase contract.
+
+The test form's existing Form_Resize stretches UI3TabView1 to nearly fill the form at runtime. This is sample code, not automatic control sizing. Native BETA 1044 hover/leave/capture/focus and Light/Dark confirmation remains pending; API probes and source tests do not establish compiled visual acceptance.
 
 ## Header interaction
 
@@ -110,7 +116,7 @@ Value authority: microsoft/microsoft-ui-xaml commit `3259dc4437540678368c6e7c728
 | Disabled text | HeaderForegroundDisabled -> TextFillColorDisabledBrush | Disabled native header input and text |
 | Add area | AddButtonWidth 32, AddButtonHeight 24, container padding 3 | Centered native Segoe Add glyph; scroll glyphs use 8-DIP font |
 | Focus | Toolkit focus-visible outline 2px, inset 2px | Keyboard-only content outline; native acceptance pending |
-| Corners, seams and borders | Toolkit SVG outline and upstream TabView template | Edge/Explorer vector outlines and joined page seam; exact selected stroke-gradient details remain incomplete |
+| Corners, seams and borders | Toolkit SVG outline and upstream TabView template | Edge/Explorer vector outlines and joined page surface without a top horizontal stroke; exact selected stroke-gradient details remain incomplete |
 | Hover, pressed, animation | Toolkit colors and upstream state mappings | Hover/pressed/disabled implemented; animation deferred; native acceptance pending |
 | Close, drag/reorder gestures, icons, accessibility automation, high contrast | WinUI TabViewItem/template and implementation | Deferred; toolbar reordering is implemented only in the designer |
 

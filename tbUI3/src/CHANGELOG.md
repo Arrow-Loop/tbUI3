@@ -1,3 +1,8 @@
+### 1.0.0.69
+- Removes the horizontal stroke at the top of TabView page content.
+- Hover/press/focus/overflow repaint only the header without erasing the native background. The host subclass suppresses class-brush erasing; full opaque Direct2D paint supplies the background. Design-time snapshots retain synchronous refresh.
+- Hides the separator owned by the left neighbor when hovering an unselected tab.
+
 ### 1.0.0.68
 - Removes TabStyle enum-member Description annotations. BETA 1044 interprets them as enum names and emits their quotes unescaped in native designer JSON, preventing forms from loading. Enum identifiers/values and saved control state are preserved.
 

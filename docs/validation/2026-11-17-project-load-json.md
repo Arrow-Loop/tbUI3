@@ -1,6 +1,6 @@
 # Test-project load failure investigation, 2026-11-17
 
-Status: cause identified from the BETA 1044 response; targeted package 68 repair committed. Native reopen confirmation remains pending. Earlier investigation notes below describe the evidence available at each stage.
+Status: Shane confirms package 68 resolves the native form-load failure. Earlier investigation notes below describe the evidence available at each stage.
 
 Shane uploaded logs in 7742dc7 and the failing project in 75b7598. His BETA 1044 error is `Expected ',' or '}' after property value in JSON at position 16525 (line 1 column 16526)`.
 
@@ -44,3 +44,7 @@ The native parser fails at position 16525, matching Shane's original error. The 
 Removed only the two member attributes from UI3TabStyle. Comments, the enum-level description and property help still explain Edge Style/Explorer Style. ui3TabEdge=0, ui3TabExplorer=1, default/persistence and stable identities are retained. The native picker uses the identifiers, consistent with other enums. Updated package version/reference to 68 and synchronized its complete embedded copy. Add-in 1.3.0.17 / adapter v10 remains unchanged.
 
 Validation: the new regression fails against the original enum body and passes after removal; it enforces plain enum identifiers/values and checks both choices at the observed native raw-string JSON boundary. All 147 tests and 71 exact mirrors/stored JSON checks pass. Compared all nine non-package consumer entries except Settings to a2fe3a0: both forms, source, resources and .meta are byte-identical. No saved _IPersistStreamData was removed or changed. This is source/response evidence and automated validation; reopening in the native BETA 1044 IDE is pending. Pull and reopen the updated test project (the repaired package is embedded). Rebuild package 68 before using an external twinpack so an old package cannot replace it.
+
+## User confirmation
+
+Shane confirmed the load failure is resolved with package 68. Subsequent screenshots show both the designer and running form. Remaining hover/line issues are tracked separately in 2026-11-17-tabview-hover-repaint.md.

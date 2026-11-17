@@ -60,3 +60,24 @@ test('existing public TabView members precede the additive style and viewport pr
  const original=['SelectedPage','SelectedPage','IsAddTabButtonVisible','IsAddTabButtonVisible','ScaleMode','PageCount','Pages','SelectedIndex','SelectedIndex','DesignerNewPageRequest','RefreshPages'];
  assert.deepEqual(members.slice(0,original.length),original);assert.deepEqual(members.slice(original.length),['TabStyle','TabStyle','FirstVisibleTabIndex','FirstVisibleTabIndex']);
 });
+
+
+test('TabStyle enum entries cannot introduce quoted Description tokens into native designer JSON',()=>{
+ const source=fs.readFileSync('tbUI3/src/Sources/UI3Enums.twin','utf8');
+ const body=source.match(/Public Enum UI3TabStyle\r?\n([\s\S]*?)    End Enum/)[1];
+ const entries=body.split(/\r?\n/).map(line=>line.trim()).filter(line=>line&&!line.startsWith("'"));
+ // BETA 1044's captured native response treated member annotations as enum names:
+ // "TabStyle":"Description("Edge Style")". Its raw quote broke the whole form reply.
+ const members=entries.map(line=>{
+  const match=/^(\w+)\s*=\s*(\d+)$/.exec(line);
+  assert(match,'Designer enum entries must be plain identifiers and values: '+line);
+  return {name:match[1],value:Number(match[2])};
+ });
+ assert.deepEqual(members,[{name:'ui3TabEdge',value:0},{name:'ui3TabExplorer',value:1}]);
+ const editor=members.map(({name,value})=>'|'+name+','+value).join('');
+ for(const member of members){
+  // Exercise the unescaped-string boundary observed in the native response.
+  const response='[{"serialization":{"TabStyle":"'+member.name+'","__editor_TabStyle":"'+editor+'"}}]';
+  assert.equal(JSON.parse(response)[0].serialization.TabStyle,member.name);
+ }
+});

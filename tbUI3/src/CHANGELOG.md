@@ -1,3 +1,6 @@
+### 1.0.0.68
+- Removes TabStyle enum-member Description annotations. BETA 1044 interprets them as enum names and emits their quotes unescaped in native designer JSON, preventing forms from loading. Enum identifiers/values and saved control state are preserved.
+
 ### 1.0.0.65
 - Isolates errors per native contained-control entry so a stale deleted page cannot stop discovery of later replacement pages.
 - Discovery diagnostics now include skipped-entry count and the last failure index, stage and HRESULT.

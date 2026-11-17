@@ -1,6 +1,8 @@
 # UI3TabView and UI3TabPage
 
-Status: package 1.0.0.67 / tbUI3IDE 1.3.0.16 / adapter v9 appearance candidate, 2026-11-17. Shane confirms the designer workflow works. This pass adds shape profiles and core header interaction; it is not a claim of complete TabView fidelity or compiled-native acceptance.
+Status: package 1.0.0.68 / tbUI3IDE 1.3.0.17 / adapter v10 appearance candidate, 2026-11-17. Shane confirms the designer workflow works. This pass adds shape profiles and core header interaction; it is not a claim of complete TabView fidelity or compiled-native acceptance.
+
+Package 68 removes enum-member Description attributes that BETA 1044 interpreted as enum names and emitted with unescaped quotes in designer JSON. The native picker uses ui3TabEdge/ui3TabExplorer; comments and property help describe Edge Style/Explorer Style. The uploaded native response establishes the cause; reopening with the fix remains to be confirmed.
 
 ## Shape profile authority and defaults
 

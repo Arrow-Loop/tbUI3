@@ -4,6 +4,12 @@ All notable changes to tbUI3. Dates are when the change was made, not released. 
 
 ## Unreleased
 
+### 2026-11-17 - TabStyle designer JSON repair (package 1.0.0.68)
+
+The uploaded adapter v10 log in a2fe3a0 identifies the exact failure: BETA 1044 serializes UI3TabView2.TabStyle as `"Description("Edge Style")"` and includes both Description annotations as enum entries. Those unescaped quotes break the full native form response at position 16525. Removed the two enum-member attributes, retaining the enum-level/property descriptions, identifiers, values and Edge default. Friendly style names are documented in comments/property help; the native picker uses ui3TabEdge/ui3TabExplorer. This corrects the annotations introduced in package 66, not damaged saved form data.
+
+Updated the canonical package and full embedded test package/reference to 68. All nine non-package consumer entries other than Settings, including both forms and saved control state, are byte-identical to Shane's upload. Add-in 1.3.0.17 / adapter v10 remains unchanged. Regression failed on the old attributes and passes after removal; all 147 tests and 71 mirrors/stored-JSON checks pass. Native BETA 1044 reopening is still pending: pull and reopen the test project with its updated embedded package. Rebuild tbUI3 68 before importing a separately built twinpack. Evidence: docs/validation/2026-11-17-project-load-json.md.
+
 ### 2026-11-17 - Native designer response capture (add-in 1.3.0.17 / adapter v10)
 
 Shane's screenshot establishes that the project opens but frmMultiPage remains at 20% with the JSON error. Installed IDE source sets 20% after receiving the saved form data and starts native control synchronization next. Added a reversible observer around gotNewFormSnapshotsResponse. Only when that native handler throws and its response JSON fails parsing, it records the form, payload length, parser position, nearest preceding control name, 420-character context and bounded original stack. The existing controller writes it automatically to tbUI3-tabview.log beside the project and in TEMP. The native exception is rethrown unchanged; no recovery, global JSON.parse override or form/persistence edits are attempted. Corrected the stale log prefix to adapter v10.

@@ -34,3 +34,7 @@ The Computer Use skill initialized and enumerated desktop apps, but launching th
 Build package 66 in the IDE, re-import the .twinpack into the test project, then rebuild/reload tbUI3IDE 1.3.0.16. Verify both profiles and saved style choice; native compile diagnostics; design/runtime switching, add and overflow; pointer hover/press/drag-off/leave/focus/capture; keyboard navigation; real 100/150/200% DPI and window resize; page ownership/coordinates and save/reopen/undo regressions. Check both architectures. Earlier intermittent reference-reload diagnostics remain historical until explicitly rechecked.
 
 Close buttons/events, per-tab icons, pointer drag/reorder/tear-out, motion, UI Automation/high contrast and exact remaining selected-stroke template details are not complete in this pass. Native reference curves and API probes do not establish those features or waive the compiled-host gate.
+
+## Package 67 compiler-warning follow-up
+
+Shane supplied three BETA 1044 TB0012 diagnostics for the Add/Previous/Next ChrW$ hexadecimal literals. They now use explicit Long suffixes: &HE710&, &HE76B&, &HE76C&. Canonical and embedded package versions are 67; the add-in stays 1.3.0.16 / adapter v9. Existing 142 tests and 71 exact mirrors pass. Native warning-free rebuild remains pending; the diagnostic report does not establish complete native acceptance.

@@ -581,10 +581,10 @@ Public Class UI3TabView
         End If
         UI3TabMetrics.FillBox m_Target, 0, UI3TabMetrics.ContentTop - 1, joinLeft, 1, UI3TabMetrics.Divider()
         UI3TabMetrics.FillBox m_Target, joinRight, UI3TabMetrics.ContentTop - 1, w - joinRight, 1, UI3TabMetrics.Divider()
-        If m_ShowAddButton Then PaintAuxiliary -1, w - UI3TabMetrics.AddWidth, ChrW$(&HE710), hot, held, UserControl.Enabled
+        If m_ShowAddButton Then PaintAuxiliary -1, w - UI3TabMetrics.AddWidth, ChrW$(&HE710&), hot, held, UserControl.Enabled
         If UI3TabMetrics.Overflowing(w, m_Pages.Count, m_ShowAddButton, m_TabStyle) Then
-            PaintAuxiliary -2, 0, ChrW$(&HE76B), hot, held, UserControl.Enabled And m_FirstHeader > 1
-            PaintAuxiliary -3, HeaderStart() + HeaderArea() + UI3TabMetrics.FootRadius(m_TabStyle), ChrW$(&HE76C), hot, held, UserControl.Enabled And m_FirstHeader + HeaderSlots() <= m_Pages.Count
+            PaintAuxiliary -2, 0, ChrW$(&HE76B&), hot, held, UserControl.Enabled And m_FirstHeader > 1
+            PaintAuxiliary -3, HeaderStart() + HeaderArea() + UI3TabMetrics.FootRadius(m_TabStyle), ChrW$(&HE76C&), hot, held, UserControl.Enabled And m_FirstHeader + HeaderSlots() <= m_Pages.Count
         End If
         hr = m_Target.EndDraw(0, 0)
         drawing = False

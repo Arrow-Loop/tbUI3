@@ -1,6 +1,6 @@
 # UI3TabView and UI3TabPage
 
-Status: package 1.0.0.66 / tbUI3IDE 1.3.0.16 / adapter v9 appearance candidate, 2026-11-17. Shane confirms the designer workflow works. This pass adds shape profiles and core header interaction; it is not a claim of complete TabView fidelity or compiled-native acceptance.
+Status: package 1.0.0.67 / tbUI3IDE 1.3.0.16 / adapter v9 appearance candidate, 2026-11-17. Shane confirms the designer workflow works. This pass adds shape profiles and core header interaction; it is not a claim of complete TabView fidelity or compiled-native acceptance.
 
 ## Shape profile authority and defaults
 

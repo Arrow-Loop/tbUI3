@@ -1,6 +1,11 @@
 # Changelog: tbIDE (WinUI 3 look for the twinBASIC IDE)
 
 
+## 2026-11-17, package 1.0.0.67 warning follow-up (add-in unchanged)
+
+Changed the Add, Previous and Next glyph literals in UI3TabView to explicit Long values (&HE710&, &HE76B&, &HE76C&), addressing the three BETA 1044 TB0012 warnings Shane reported. Package revision is 1.0.0.67; tbUI3IDE remains 1.3.0.16 / adapter v9. Updated the canonical package, complete embedded test package and version reference. Existing 142 tests and 71 mirror checks pass; warning-free native recompilation remains to be confirmed. No IDs or interaction behavior changed.
+
+
 ## 2026-11-17, TabView adapter v9 (tbUI3IDE 1.3.0.16)
 
 - Added persisted UI3TabView.TabStyle with UI3TabStyle choices ui3TabEdge (Edge Style, default) and ui3TabExplorer (Explorer Style). Edge follows Shane's customized Toolkit at Smith-Debnam/twinBASIC-Knowledge commit 85432018090efc339d21ae7c47fd0e45ac8dea6b: 36-DIP tabs, 4-DIP top inset and 8-DIP concave feet. Explorer uses the prior WinUI 32/8/4 profile. Both retain a 40-DIP page origin; style changes do not alter page ownership or child coordinates.

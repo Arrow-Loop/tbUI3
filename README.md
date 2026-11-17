@@ -30,7 +30,7 @@ IDE first).
 
 ## Current development state
 
-Current TabView appearance candidate: package **1.0.0.66** with **tbUI3IDE 1.3.0.16 / adapter v9**. TabStyle offers Toolkit Edge (default) and Explorer profiles; state rendering and overflow navigation are implemented. Native compile/run acceptance and remaining close/icon/drag/accessibility work are still open. See [TabView contract](docs/controls/UI3TabView.md) and [validation](docs/validation/2026-11-17-tabview-profiles.md). Older development bullets below record their checkpoints.
+Current TabView appearance candidate: package **1.0.0.67** with **tbUI3IDE 1.3.0.16 / adapter v9**. TabStyle offers Toolkit Edge (default) and Explorer profiles; state rendering and overflow navigation are implemented. Native compile/run acceptance and remaining close/icon/drag/accessibility work are still open. See [TabView contract](docs/controls/UI3TabView.md) and [validation](docs/validation/2026-11-17-tabview-profiles.md). Older development bullets below record their checkpoints.
 
 
 - The working Button, form theme, icon picker and stored-icon milestones have their validation history in CHANGELOG.md. IconList L3 was added in 1.0.0.60; L4 remains planned.

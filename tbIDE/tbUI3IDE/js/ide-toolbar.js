@@ -125,14 +125,13 @@
         const n=el('section','tbui3-ribbon-group'),body=el('div','tbui3-ribbon-group-body');
         n.setAttribute('aria-label',name);n.append(body,el('div','tbui3-ribbon-group-title',name));parent.append(n);return body;
     }
-    function iconFor(n,descriptor={},small=false) {
+    function iconFor(n,descriptor={}) {
         let src=n;
         if(!src&&typeof descriptor.action==='string')
             src=[...sources.values()].find(x=>[].concat(x.boundCommand||[]).includes(descriptor.action));
         const i=el('span','tbui3-ribbon-icon');i.setAttribute('aria-hidden','true');
         const mask=uri=>{i.classList.add('tbui3-ribbon-mask');i.style.setProperty('--tbui3-icon',uri);return i;};
-        const requested=api.present?.(descriptor,src&&src.id).icon;
-        const explicit=requested==='custom/build'&&(small||state.mode==='Classic')?'custom/build-small':requested;
+        const explicit=api.present?.(descriptor,src&&src.id).icon;
         if(explicit){
             i.dataset.iconRef=explicit;
             if(/^segoe\/[0-9a-f]{4,6}$/i.test(explicit)){i.classList.add('tbui3-ribbon-segoe');i.textContent=String.fromCodePoint(parseInt(explicit.split('/')[1],16));return i;}
@@ -223,7 +222,7 @@
         compact=baseCompact||state.simplified&&!!meta?.simplifiedIconOnly;
         const b=el('button','tbui3-ribbon-command'+(compact?' tbui3-ribbon-compact':large?' tbui3-ribbon-large':''));b.type='button';
         b.dataset.source=typeof n.id==='string'?n.id:'';b.title=label(n);b.setAttribute('aria-label',label(n));
-        b.append(iconFor(n,{name:sourceCaption(n)},compact),el('span','tbui3-ribbon-label',sourceCaption(n)));
+        b.append(iconFor(n,{name:sourceCaption(n)}),el('span','tbui3-ribbon-label',sourceCaption(n)));
         b.addEventListener('mousedown',e=>e.preventDefault());
         b.onclick=e=>{invokeSource(n,e);tick();};parent.append(b);bindings.set(b,{source:n,large,compact:baseCompact});return b;
     }

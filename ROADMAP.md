@@ -4,6 +4,12 @@ Committed work is listed first. Exploratory ideas are marked as such.
 
 Every development pass ends with a commit and a verified push to `origin/tbui3-dev`, per Shane's standing instruction of 2026-11-12. Main and PR decisions remain Shane's.
 
+## 2026-11-18 - Replace all Build artwork with buildv3 (add-in 1.3.0.20)
+
+Shane reports the prior small-size adjustment did not resolve the gap and supplied buildv3.svg. Replaced the shared Build asset with that artwork and removed the separate heavier build-small variant/resolver branch. All Build surfaces now use the same supplied geometry: Quick Access, full/simplified Ribbon and Hybrid, and Classic. Only XML/DTD declarations, display dimensions and fill=currentColor were normalized for the existing embedded foreground-colored mask. Path/viewBox/transforms/stroke settings match the supplied file; no outline thickening is applied. Quick Access order, command dispatch and full ribbon padding remain unchanged.
+
+Validation: 150 tests and 71 exact mirrors pass. Playwright/Edge component checks pass for Light/Dark and full/simplified rendering, foreground colors, Quick Access order/dispatch, unchanged spacing and no browser errors. Native add-in reload remains pending; no claim is made that the previous gap fix succeeded. Rebuild/reload tbUI3IDE 1.3.0.20. Package 70 and adapter v10 are unchanged.
+
 ## 2026-11-18 - Small Build icon optical weight (add-in 1.3.0.19)
 
 The supplied thin outline produces weak partial pixels at 16px. Added build-small.svg with identical path/viewBox/transforms and a rounded 90-unit outline in its transformed 3840-unit space (0.375 CSS px at 16px). Quick Access and Classic's 16px Build use this heavier mask. Full/simplified ribbon commands keep the original build.svg; theme coloring, native dispatch, command placement and the 7px full ribbon padding remain unchanged. Both variants are embedded; no loose runtime image is required.

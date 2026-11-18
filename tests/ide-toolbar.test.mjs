@@ -17,8 +17,6 @@ const establishedIcons=Object.fromEntries([...fs.readFileSync('tbIDE/tbUI3IDE/cs
 const extraIcons=JSON.parse(fs.readFileSync('tbIDE/tbUI3IDE/icons/ribbon.json','utf8')).icons;
 const customBuild=fs.readFileSync('tbIDE/tbUI3IDE/icons/custom/build.svg','utf8');
 const customBuildMask="url('data:image/svg+xml,"+encodeURIComponent(customBuild.trim()).replace(/'/g,'%27')+"')";
-const customBuildSmall=fs.readFileSync('tbIDE/tbUI3IDE/icons/custom/build-small.svg','utf8');
-const customBuildSmallMask="url('data:image/svg+xml,"+encodeURIComponent(customBuildSmall.trim()).replace(/'/g,'%27')+"')";
 const requestedIcons=JSON.parse(fs.readFileSync('tbIDE/tbUI3IDE/icons/requested.json','utf8')).icons;
 test('full layouts restore labels and inline Grid while simplified-only compaction preserves the same controls',()=>{
     for(const mode of ['Ribbon','Hybrid']){
@@ -291,7 +289,7 @@ function fixture() {
     <div class='tbis-optionRow'><div class='tbis-optionName'>Enable additional IDE theme styling via add-in</div></div>`);
     const w=dom.window,d=w.document,calls=[];w.setInterval=()=>1;w.clearInterval=()=>{};const computed=w.getComputedStyle.bind(w);w.getComputedStyle=n=>computed(n);
     const toolbar=d.getElementById('rootMenu2'),headers=d.getElementById('rootMenu1Inner');
-    const api={window:w,buildLayout,present,projectName:()=>'Example project',icons:{...establishedIcons,'custom/build':customBuildMask,'custom/build-small':customBuildSmallMask,...Object.fromEntries([...Object.keys(extraIcons),...Object.keys(requestedIcons)].map(key=>[key,"url('data:image/svg+xml,"+key+"')"]))},
+    const api={window:w,buildLayout,present,projectName:()=>'Example project',icons:{...establishedIcons,'custom/build':customBuildMask,...Object.fromEntries([...Object.keys(extraIcons),...Object.keys(requestedIcons)].map(key=>[key,"url('data:image/svg+xml,"+key+"')"]))},
         localize:s=>s,execute:s=>calls.push(s),commandEnabled:s=>s!=='disabled',testContext:()=>true,
         shortcut:()=>'',realTitlebar:()=>false,formGlobals:()=>null,changedSize:()=>{}};
     let show=(anchor,x,y,items)=>calls.push(['nativeMenu',anchor&&anchor.id,items]);
@@ -487,7 +485,7 @@ test('embedded toolbar contains the exact adapter, essential CSS, PNG and all ca
     }
     new vm.Script(js);assert(js.includes(source.trim()));assert(js.includes(layoutSource.trim()));assert(js.includes(presentationSource.trim()));assert(js.includes(contextSource.trim()));
     const css=fs.readFileSync('tbIDE/tbUI3IDE/css/ide-toolbar.css','utf8');assert(js.includes(JSON.stringify(css)));
-    assert.equal((js.match(/data:image\/svg\+xml/g)||[]).length,39+Object.keys(requestedIcons).length);assert(!/(?<!\r)\n/.test(src));
+    assert.equal((js.match(/data:image\/svg\+xml/g)||[]).length,38+Object.keys(requestedIcons).length);assert(!/(?<!\r)\n/.test(src));
     const png=js.match(/brandImage:"data:image\/png;base64,([A-Za-z0-9+/=]+)"/);assert(png);
     assert.deepEqual(Buffer.from(png[1],'base64'),fs.readFileSync('tbIDE/tbUI3IDE/images/twinBASIC_WinUI3.png'));
 });
@@ -910,8 +908,8 @@ test('Build uses supplied artwork in both ribbon layouts and stays between Redo 
  const f=fixture();f.items.Project=[{name:'Build',action:'tbBuild_Start'}];f.menu('Project');f.adapter.setMode('Ribbon');
  const quick=f.d.querySelector('.tbui3-quick');
  assert.deepEqual([...quick.querySelectorAll('button')].map(b=>b.dataset.source),['saveIcon','undoIcon','redoIcon','buildIcon','playIcon','pauseIcon','stopIcon']);
- const build=quick.querySelector('[data-source=buildIcon]');assert.equal(build.querySelector('[data-icon-ref]').dataset.iconRef,'custom/build-small');
- assert.equal(build.querySelector('.tbui3-ribbon-icon').style.getPropertyValue('--tbui3-icon'),customBuildSmallMask);
+ const build=quick.querySelector('[data-source=buildIcon]');assert.equal(build.querySelector('[data-icon-ref]').dataset.iconRef,'custom/build');
+ assert.equal(build.querySelector('.tbui3-ribbon-icon').style.getPropertyValue('--tbui3-icon'),customBuildMask);
  build.click();assert.deepEqual(f.calls,['buildIcon']);
  f.d.querySelector('[data-tab=Project]').click();
  for(const simplified of [false,true]){

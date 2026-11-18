@@ -13,7 +13,6 @@ const requested=JSON.parse(fs.readFileSync(dir+'/icons/requested.json','utf8'));
 for(const [key,{svg}]of Object.entries(requested.icons))icons[key]=`url('data:image/svg+xml,${encodeURIComponent(svg.trim()).replace(/'/g,'%27')}')`;
 // Shane's own vector artwork uses the same foreground-colored mask path as Fluent SVGs.
 icons['custom/build']=`url('data:image/svg+xml,${encodeURIComponent(fs.readFileSync(dir+'/icons/custom/build.svg','utf8').trim()).replace(/'/g,'%27')}')`;
-icons['custom/build-small']=`url('data:image/svg+xml,${encodeURIComponent(fs.readFileSync(dir+'/icons/custom/build-small.svg','utf8').trim()).replace(/'/g,'%27')}')`;
 const presentation=fs.readFileSync(dir+'/js/ribbon-presentation.js','utf8').trim();
 const systemAccent=fs.readFileSync(dir+'/js/system-accent.js','utf8').trim();
 const factory=fs.readFileSync(dir+'/js/ide-toolbar.js','utf8').trim();

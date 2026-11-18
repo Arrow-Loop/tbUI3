@@ -1,3 +1,7 @@
+### 1.0.0.72
+- UI3Button paints through UI3Surface: no host paint or erase before its frame at run time, and property, size and theme changes invalidate without erasing instead of calling Refresh. Its look is unchanged; hover/pressed visuals are still a later step.
+- Icon bitmaps and SVG documents are released when the surface makes a new render target.
+
 ### 1.0.0.71
 - Adds UI3Surface, a shared flicker-free paint base. At run time it owns WM_PAINT (BeginPaint/EndPaint) and swallows WM_ERASEBKGND, so the host paint routine never draws before the Direct2D frame; each frame is composed offscreen and copied once, clipped to the dirty area.
 - UI3TabView paints through UI3Surface. Hover repaints only when the tab under the pointer changes, and only the header. Run-time paint no longer rediscovers pages; the designer still does.

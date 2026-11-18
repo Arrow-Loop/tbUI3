@@ -39,6 +39,7 @@ Private Class UI3Surface
     Private m_HotPart As Long
     Private m_LastResult As Long
     Private m_Trace As Long ' 0 unknown, 1 off, 2 on
+    Private m_Generation As Long
 
     ' Connects the control. OwnsPaint is Ambient.UserMode: True at run time, False in the designer.
     Public Sub Attach(ByVal hWnd As LongPtr, ByVal Client As IUI3SurfaceClient, ByVal OwnsPaint As Boolean)
@@ -81,6 +82,12 @@ Private Class UI3Surface
     Public Sub SyncHot()
         If m_Attached And m_OwnsPaint Then m_HotPart = PointerPart()
     End Sub
+
+    ' Changes whenever a new render target is made. A control holding resources made for the
+    ' previous target (bitmaps, SVG documents) releases them when this differs from its last value.
+    Public Property Get TargetGeneration() As Long
+        TargetGeneration = m_Generation
+    End Property
 
     ' HRESULT of the last EndDraw, for diagnostics.
     Public Property Get LastResult() As Long
@@ -207,6 +214,8 @@ Private Class UI3Surface
         If m_Target Is Nothing Then
             Set m_Target = CreateDCTarget()
             Set m_Brushes = New Collection
+            If m_Generation = &H7FFFFFFF Then m_Generation = 0
+            m_Generation = m_Generation + 1
         End If
         m_Target.SetDpi dpiNow, dpiNow
         m_Target.BindDC dc, client

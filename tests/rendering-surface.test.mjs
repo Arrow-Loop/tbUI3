@@ -12,7 +12,6 @@ const metrics=read('UI3TabMetrics.twin'),tabView=read('UI3TabView.twin');
 // Controls still on twinBASIC's own paint routine, and why. A new control is not listed here,
 // so it must paint through UI3Surface.
 const HOST_PAINT={
- UI3Button:'pending: moves to UI3Surface after TabView is confirmed on a physical display (ROADMAP)',
  UI3TabPage:'container for user controls, which may be windowless and drawn by the host paint routine',
 };
 const body=(source,signature)=>{
@@ -93,6 +92,14 @@ test('TabView keeps page discovery and resource creation out of run-time paint',
  assert(!/HeaderWindowProc|WatchPointer|SetWindowSubclass|InvalidateRect/.test(metrics),'TabView must have one subclass: UI3Surface');
  assert(metrics.includes('Public Function TabDialogCode(ByVal Code As LongPtr) As LongPtr'));
  const show=body(tabView,'Private Sub UserControl_Show(');assert(/EnsureSurface\s*\n\s*RefreshPages/.test(show));
+});
+
+test('UI3Button releases target-bound icon resources when the surface makes a new target',()=>{
+ const button=read('UI3Button.twin'),render=body(button,'Private Sub IUI3SurfaceClient_SurfaceRender(');
+ assert(/If m_Surface\.TargetGeneration <> m_TargetGeneration Then[\s\S]*m_IconImage\.ReleaseDeviceResources[\s\S]*m_ListImage\.ReleaseDeviceResources[\s\S]*DrawButton w, h/.test(render));
+ assert(!/m_Target\.Clear/.test(button),'the surface clears to SurfaceBackground');
+ assert(/IUI3SurfaceClient_SurfaceBackground = ArgbFromOleColor\(ContainerBackColor\(\)\)/.test(button));
+ const create=body(surface,'Private Sub Render(');assert(/Set m_Target = CreateDCTarget\(\)[\s\S]*m_Generation = m_Generation \+ 1/.test(create));
 });
 
 test('brushes, text formats, fonts and outlines are cached rather than created per paint',()=>{

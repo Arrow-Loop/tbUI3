@@ -5,6 +5,8 @@
 [COMControl]
 [Description("tbUI3 button. Direct2D/DirectWrite WinUI rendering with semantic system-icon support.")]
 Public Class UI3Button
+    ' Paint goes through the shared flicker-free surface (docs/RENDERING.md).
+    Implements IUI3SurfaceClient
 
     ' S2 implements the rest state of WinUI's DefaultButtonStyle and AccentButtonStyle.
     ' S3 adds semantic icon content while preserving those visuals. Hover, pressed,
@@ -45,7 +47,10 @@ Public Class UI3Button
     Private m_ListFetchedKey As String
     Private m_ListLookupNote As String
     Private m_RegisteredHwnd As LongPtr
-    Private m_Target As ID2D1DCRenderTarget
+    ' Borrowed from m_Surface for the length of one SurfaceRender call.
+    Private m_Target As ID2D1RenderTarget
+    Private m_Surface As UI3Surface
+    Private m_TargetGeneration As Long
 
     Public Property Get Caption() As String
         Caption = m_Caption
@@ -54,7 +59,7 @@ Public Class UI3Button
     Public Property Let Caption(ByVal Value As String)
         m_Caption = Value
         PropertyChanged "Caption"
-        UserControl.Refresh
+        Repaint
     End Property
 
     Public Property Get Style() As UI3ButtonStyle
@@ -64,7 +69,7 @@ Public Class UI3Button
     Public Property Let Style(ByVal Value As UI3ButtonStyle)
         m_Style = Value
         PropertyChanged "Style"
-        UserControl.Refresh
+        Repaint
     End Property
 
     ' Linked to the UI3IconPage picker: Icon gets its own "..." in the Properties pane, as in VB6
@@ -87,7 +92,7 @@ Public Class UI3Button
         DesignLog "Let Icon " & Hex$(ObjPtr(Me)) & " " & DesignName() & " = " & CLng(Value) & IIf(IconPageApplying, " (from page)", "")
         PropertyChanged "Icon"
         DesignTrace "Let Icon PropertyChanged done " & DesignName()
-        UserControl.Refresh
+        Repaint
         DesignTrace "Let Icon done " & DesignName()
     End Property
 
@@ -103,7 +108,7 @@ Public Class UI3Button
             ClearIconKey
         End If
         PropertyChanged "IconGlyph"
-        UserControl.Refresh
+        Repaint
     End Property
 
     [Description("Font family used only with an explicit IconGlyph. Leave empty for Segoe Fluent Icons with Segoe MDL2 Assets fallback.")]
@@ -114,7 +119,7 @@ Public Class UI3Button
     Public Property Let IconFontName(ByVal Value As String)
         m_IconFontName = Value
         PropertyChanged "IconFontName"
-        UserControl.Refresh
+        Repaint
     End Property
 
     [Description("Position of the icon relative to Caption.")]
@@ -126,7 +131,7 @@ Public Class UI3Button
         If Value < ui3IconLeft Or Value > ui3IconBottom Then Err.Raise 380
         m_IconPosition = Value
         PropertyChanged "IconPosition"
-        UserControl.Refresh
+        Repaint
     End Property
 
     [Description("Gap in DIPs between icon and Caption. Default 8, following WinUI Gallery spacing guidance.")]
@@ -138,7 +143,7 @@ Public Class UI3Button
         If Value < 0 Then Err.Raise 380
         m_IconSpacing = Value
         PropertyChanged "IconSpacing"
-        UserControl.Refresh
+        Repaint
     End Property
 
     [Description("Size in DIPs of the square the icon fills. Default 20, WinUI's SymbolIcon size (SymbolIcon.FontSize).")]
@@ -150,7 +155,7 @@ Public Class UI3Button
         If Value <= 0 Then Err.Raise 380
         m_IconSize = Value
         PropertyChanged "IconSize"
-        UserControl.Refresh
+        Repaint
     End Property
 
     [Description("Key of the UI3IconList entry to show. Setting it replaces Icon, IconGlyph and a stored image. A missing key or list shows no icon.")]
@@ -173,7 +178,7 @@ Public Class UI3Button
             ClearIconImage
         End If
         PropertyChanged "IconKey"
-        UserControl.Refresh
+        Repaint
     End Property
 
     ' The list IconKey refers to: a list's name (typed in the Properties pane), or in code a
@@ -192,7 +197,7 @@ Public Class UI3Button
         Set m_IconListObject = Nothing
         m_ListRevision = 0
         PropertyChanged "IconList"
-        UserControl.Refresh
+        Repaint
     End Property
 
     Public Property Set IconList(ByVal Value As Variant)
@@ -206,7 +211,7 @@ Public Class UI3Button
             Err.Raise 13
         End If
         m_ListRevision = 0
-        UserControl.Refresh
+        Repaint
     End Property
 
     Private Sub ClearIconKey()
@@ -230,14 +235,14 @@ Public Class UI3Button
         Dim data() As Byte
         If IsEmpty(Value) Then
             ClearIconImage
-            UserControl.Refresh
+            Repaint
             Exit Property
         End If
         If Not IsArray(Value) Then Err.Raise 380
         data = Value
         If ByteArrayLength(data) = 0 Then
             ClearIconImage
-            UserControl.Refresh
+            Repaint
             Exit Property
         End If
         StoreIconImage data, ""
@@ -311,7 +316,7 @@ Public Class UI3Button
         PropertyChanged "IconData"
         PropertyChanged "IconSource"
         If IconPageApplying Then UI3PropertyPageLog "BUTTON PropertyChanged done " & DesignName()
-        UserControl.Refresh
+        Repaint
     End Sub
 
     Private Sub ClearIconImage()
@@ -442,10 +447,15 @@ WriteFailed:
     End Sub
 
     Private Sub UserControl_Resize()
-        UserControl.Refresh
+        Repaint
+    End Sub
+
+    Private Sub UserControl_Show()
+        EnsureSurface
     End Sub
 
     Private Sub UserControl_Terminate()
+        If Not m_Surface Is Nothing Then m_Surface.Detach
         If m_RegisteredHwnd <> 0 Then UnregisterIconListUser m_RegisteredHwnd
         m_RegisteredHwnd = 0
         Set m_IconListObject = Nothing
@@ -456,61 +466,71 @@ WriteFailed:
     End Sub
 
     Private Sub UserControl_AmbientChanged(PropertyName As String)
-        If StrComp(PropertyName, "BackColor", vbTextCompare) = 0 Then UserControl.Refresh
+        If StrComp(PropertyName, "BackColor", vbTextCompare) = 0 Then Repaint
     End Sub
 
+    ' Run time: the surface owns WM_PAINT. Design time: the IDE's synchronous snapshots arrive
+    ' through the Paint event, which draws through the same surface render.
+    Private Sub EnsureSurface()
+        If m_Surface Is Nothing Then Set m_Surface = New UI3Surface
+        m_Surface.Attach UserControl.hWnd, Me, IsUserMode()
+    End Sub
+
+    Private Function OwnsPaint() As Boolean
+        If Not m_Surface Is Nothing Then OwnsPaint = m_Surface.OwnsPaint
+    End Function
+
+    ' Property, size and theme changes: no-erase invalidate at run time, synchronous snapshot in the designer.
+    Private Sub Repaint()
+        If OwnsPaint() Then
+            m_Surface.Invalidate
+        Else
+            UserControl.Refresh
+        End If
+    End Sub
+
+    ' Design time (and any paint before Show). At run time this event does not fire.
     Private Sub UserControl_Paint()
-        Dim hr As Long
-        hr = PaintWithDirect2D()
-        If hr <> 0 Then PaintFailure hr
+        EnsureSurface
+        m_Surface.PaintEvent UserControl.hDC
+        If m_Surface.LastResult <> 0 Then PaintFailure m_Surface.LastResult
     End Sub
 
-    ' Returns 0, or the failing HRESULT / error number.
-    Private Function PaintWithDirect2D() As Long
-        Dim hdc As LongPtr
-        Dim client As UI3GdiRect
-        Dim dpi As Single
-        Dim w As Single
-        Dim h As Single
-        Dim drawing As Boolean
-
-        On Error GoTo Failed
-
-        hdc = UserControl.hDC
-        If hdc = 0 Then Exit Function
-        UI3GetClientRect UserControl.hWnd, client
-        If client.Right <= 0 Or client.Bottom <= 0 Then Exit Function
-
-        If m_Target Is Nothing Then
-            Set m_Target = CreateDCTarget()
+    Private Sub IUI3SurfaceClient_SurfaceRender(ByVal Target As ID2D1RenderTarget, ByVal w As Single, ByVal h As Single)
+        ' Icon bitmaps and SVG documents belong to the render target that made them.
+        If m_Surface.TargetGeneration <> m_TargetGeneration Then
             m_IconImage.ReleaseDeviceResources
             m_ListImage.ReleaseDeviceResources
+            m_TargetGeneration = m_Surface.TargetGeneration
         End If
-        dpi = DpiOfDC(hdc)
-        m_Target.SetDpi dpi, dpi
-        m_Target.BindDC hdc, client
-        ' Work in device-independent pixels, as WinUI does.
-        w = client.Right * 96! / dpi
-        h = client.Bottom * 96! / dpi
-
-        m_Target.BeginDraw
-        drawing = True
+        Set m_Target = Target
+        On Error GoTo Failed
         DrawButton w, h
-        drawing = False
-
-        Dim hr As Long
-        hr = m_Target.EndDraw(0, 0)
-        If hr < 0 Then
-            PaintWithDirect2D = hr
-            Set m_Target = Nothing
-        End If
-        Exit Function
-
-Failed:
-        PaintWithDirect2D = Err.Number
-        If PaintWithDirect2D = 0 Then PaintWithDirect2D = -1
-        If drawing Then m_Target.EndDraw 0, 0
         Set m_Target = Nothing
+        Exit Sub
+    Failed:
+        Dim number As Long = Err.Number, description As String = Err.Description
+        Set m_Target = Nothing
+        Err.Raise number, "UI3Button", description
+    End Sub
+
+    ' Hover, pressed, disabled and focus visuals are later roadmap steps, so no part is interactive yet.
+    Private Function IUI3SurfaceClient_SurfaceHitTest(ByVal X As Single, ByVal Y As Single) As Long
+    End Function
+
+    Private Sub IUI3SurfaceClient_SurfaceHotChanged(ByVal OldPart As Long, ByVal NewPart As Long)
+    End Sub
+
+    Private Sub IUI3SurfaceClient_SurfaceStateChanged(ByVal Message As Long)
+    End Sub
+
+    Private Function IUI3SurfaceClient_SurfaceDialogCode(ByVal Code As LongPtr) As LongPtr
+        IUI3SurfaceClient_SurfaceDialogCode = Code
+    End Function
+
+    ' The container shows through the rounded corners.
+    Private Function IUI3SurfaceClient_SurfaceBackground() As Long
+        IUI3SurfaceClient_SurfaceBackground = ArgbFromOleColor(ContainerBackColor())
     End Function
 
     Private Sub DrawButton(ByVal w As Single, ByVal h As Single)
@@ -521,7 +541,6 @@ Failed:
         Dim foreground As Long
         Dim borderAtBottom As Boolean
         Dim fillInset As Single
-        Dim backdrop As D2D1_COLOR_F
         Dim box As D2D1_ROUNDED_RECT
         Dim r As Single
         Dim t As Single
@@ -561,9 +580,7 @@ Failed:
             fillInset = t
         End If
 
-        backdrop = ColorFromArgb(ArgbFromOleColor(ContainerBackColor()))
-        m_Target.Clear backdrop
-
+        ' The surface has already cleared to SurfaceBackground (the container colour).
         box = RoundedRect(fillInset, fillInset, w - fillInset, h - fillInset, r - fillInset)
         m_Target.FillRoundedRectangle box, SolidBrush(m_Target, fill)
 

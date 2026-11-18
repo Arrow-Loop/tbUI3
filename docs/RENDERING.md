@@ -1,6 +1,6 @@
 # How a tbUI3 control paints
 
-Every drawing control paints through `UI3Surface` so that flicker is handled once, not per control. Background and evidence: `docs/2026-11-18-flicker-free-rendering-plan.md`. `tests/rendering-surface.test.mjs` fails when a drawing control does not follow this page, unless it is listed in that test's `HOST_PAINT` with a reason.
+Every drawing control paints through `UI3Surface` so that flicker is handled once, not per control. Background and evidence: `docs/2026-11-18-flicker-free-rendering-plan.md`. `tests/rendering-surface.test.mjs` fails when a drawing control does not follow this page, unless it is listed in that test's `HOST_PAINT` with a reason. As of package 72, UI3TabView and UI3Button use the surface; only UI3TabPage (a container) is listed.
 
 ## The rules
 

@@ -19,7 +19,7 @@ Both styles preserve the page origin at 40 DIP. Their selected outline uses nati
 
 ## Shared paint surface, package 71
 
-UI3TabView paints through UI3Surface (docs/RENDERING.md). At run time the surface owns WM_PAINT and swallows WM_ERASEBKGND, so the host routine never draws before the Direct2D frame; hover is tracked by the surface and repaints only the 40-DIP header when the tab under the pointer changes; run-time paint uses the page list RefreshPages built instead of re-enumerating ContainedControls. The previous UI3TabMetrics subclass is removed; WM_GETDLGCODE arrows/Ctrl+Tab come from TabDialogCode through the surface. Design-time snapshots still use the Paint event and rediscover pages. UI3TabPage stays on host paint because it may contain windowless user controls. Not yet built or seen on a display.
+UI3TabView paints through UI3Surface (docs/RENDERING.md). At run time the surface owns WM_PAINT and swallows WM_ERASEBKGND, so the host routine never draws before the Direct2D frame; hover is tracked by the surface and repaints only the 40-DIP header when the tab under the pointer changes; run-time paint uses the page list RefreshPages built instead of re-enumerating ContainedControls. The previous UI3TabMetrics subclass is removed; WM_GETDLGCODE arrows/Ctrl+Tab come from TabDialogCode through the surface. Design-time snapshots still use the Paint event and rediscover pages. UI3TabPage stays on host paint because it may contain windowless user controls. Shane confirmed on 2026-11-18 (BETA 1044, physical display) that the hover flicker is gone and all requested checks pass.
 
 ## Remaining flicker and focus follow-up, package 70
 

@@ -8,9 +8,10 @@ Public Class UI3Button
     ' Paint goes through the shared flicker-free surface (docs/RENDERING.md).
     Implements IUI3SurfaceClient
 
-    ' S2 implements the rest state of WinUI's DefaultButtonStyle and AccentButtonStyle.
-    ' S3 adds semantic icon content while preserving those visuals. Hover, pressed,
-    ' disabled and focus states remain later roadmap steps.
+    ' Visual states follow WinUI's DefaultButtonStyle, AccentButtonStyle and SubtleButtonStyle
+    ' (Button_themeresources.xaml) and Button::ChangeVisualState: Disabled wins over Pressed,
+    ' Pressed over PointerOver, PointerOver over Normal. Pointer and keyboard behaviour follows
+    ' ButtonBase (ButtonBase_Partial.cpp). Sources and deviations: docs/controls/UI3Button.md.
 
     Public Event Click()
 
@@ -25,6 +26,23 @@ Public Class UI3Button
     Private Const DEFAULT_ICON_POSITION As Long = 0
     Private Const DEFAULT_ICON_KEY As String = ""
     Private Const DEFAULT_ICON_LIST As String = ""
+    Private Const DEFAULT_ENABLED As Boolean = True
+    Private Const DEFAULT_CLICK_MODE As Long = 0
+    Private Const DEFAULT_USE_SYSTEM_FOCUS_VISUALS As Boolean = True
+    Private Const DEFAULT_ACCESS_KEY As String = ""
+    Private Const WM_ENABLE As Long = &HA
+    Private Const WM_CAPTURECHANGED As Long = &H215
+
+    ' Button::ChangeVisualState's CommonStates.
+    Private Const STATE_NORMAL As Long = 0
+    Private Const STATE_POINTER_OVER As Long = 1
+    Private Const STATE_PRESSED As Long = 2
+    Private Const STATE_DISABLED As Long = 3
+
+    ' Border kinds used by the three styles' visual states.
+    Private Const BORDER_NONE As Long = 0        ' a transparent brush (ControlFillColorTransparent and friends)
+    Private Const BORDER_ELEVATION As Long = 1   ' ControlElevationBorderBrush / AccentControlElevationBorderBrush
+    Private Const BORDER_SOLID As Long = 2       ' a solid colour
 
     Private m_Caption As String
     Private m_Style As UI3ButtonStyle
@@ -52,6 +70,20 @@ Public Class UI3Button
     Private m_Surface As UI3Surface
     Private m_TargetGeneration As Long
 
+    Private m_ClickMode As UI3ClickMode
+    Private m_UseSystemFocusVisuals As Boolean
+    Private m_AccessKey As String
+    ' IsPressed is any of: a left-button press with the pointer inside, Space or Enter held,
+    ' or the pointer over a ClickMode Hover button.
+    Private m_PointerDown As Boolean
+    Private m_PointerPressed As Boolean
+    Private m_KeyPressed As Boolean
+    Private m_HeldKey As Integer
+    Private m_HoverPressed As Boolean
+    Private m_Focused As Boolean
+    Private m_KeyboardFocus As Boolean
+    Private m_PointerFocusing As Boolean
+
     Public Property Get Caption() As String
         Caption = m_Caption
     End Property
@@ -67,9 +99,72 @@ Public Class UI3Button
     End Property
 
     Public Property Let Style(ByVal Value As UI3ButtonStyle)
+        If Value < ui3ButtonStandard Or Value > ui3ButtonSubtle Then Err.Raise 380
         m_Style = Value
         PropertyChanged "Style"
         Repaint
+    End Property
+
+    ' The container reads this as the control's Enabled (DISPID_ENABLED), as for VB's own controls.
+    [DispId(-514)]
+    [Description("Whether the button responds to the user. False shows WinUI's Disabled state. WinUI: Control.IsEnabled.")]
+    Public Property Get Enabled() As Boolean
+        Enabled = UserControl.Enabled
+    End Property
+
+    Public Property Let Enabled(ByVal Value As Boolean)
+        UserControl.Enabled = Value
+        If Not Value Then CancelPress
+        PropertyChanged "Enabled"
+        Repaint
+    End Property
+
+    [Description("When Click is raised: Release (default), Press, or Hover. WinUI: ButtonBase.ClickMode.")]
+    Public Property Get ClickMode() As UI3ClickMode
+        ClickMode = m_ClickMode
+    End Property
+
+    Public Property Let ClickMode(ByVal Value As UI3ClickMode)
+        If Value < ui3ClickModeRelease Or Value > ui3ClickModeHover Then Err.Raise 380
+        m_ClickMode = Value
+        CancelPress
+        PropertyChanged "ClickMode"
+        Repaint
+    End Property
+
+    [Description("Show the system focus visual when the button has keyboard focus. Default True. WinUI: Control.UseSystemFocusVisuals.")]
+    Public Property Get UseSystemFocusVisuals() As Boolean
+        UseSystemFocusVisuals = m_UseSystemFocusVisuals
+    End Property
+
+    Public Property Let UseSystemFocusVisuals(ByVal Value As Boolean)
+        m_UseSystemFocusVisuals = Value
+        PropertyChanged "UseSystemFocusVisuals"
+        Repaint
+    End Property
+
+    [Description("Key that clicks the button with Alt, such as S for Alt+S. WinUI: UIElement.AccessKey. Key tips are not shown.")]
+    Public Property Get AccessKey() As String
+        AccessKey = m_AccessKey
+    End Property
+
+    Public Property Let AccessKey(ByVal Value As String)
+        m_AccessKey = Left$(Value, 1)
+        ApplyAccessKey
+        PropertyChanged "AccessKey"
+    End Property
+
+    ' Run-time state, read-only, as in WinUI.
+    [Description("True while the button is pressed (pointer, Space or Enter, or Hover click mode). WinUI: ButtonBase.IsPressed.")]
+    [NonBrowsable]
+    Public Property Get IsPressed() As Boolean
+        IsPressed = PressedNow()
+    End Property
+
+    [Description("True while the pointer is over the button. WinUI: ButtonBase.IsPointerOver.")]
+    [NonBrowsable]
+    Public Property Get IsPointerOver() As Boolean
+        IsPointerOver = PointerOverNow()
     End Property
 
     ' Linked to the UI3IconPage picker: Icon gets its own "..." in the Properties pane, as in VB6
@@ -343,6 +438,10 @@ Public Class UI3Button
         m_IconImage.Clear
         m_IconKey = DEFAULT_ICON_KEY
         m_IconListName = DEFAULT_ICON_LIST
+        m_ClickMode = DEFAULT_CLICK_MODE
+        m_UseSystemFocusVisuals = DEFAULT_USE_SYSTEM_FOCUS_VISUALS
+        m_AccessKey = DEFAULT_ACCESS_KEY
+        ApplyAccessKey
     End Sub
 
     Private Sub UserControl_ReadProperties(PropBag As PropertyBag)
@@ -359,6 +458,12 @@ Public Class UI3Button
         m_IconKey = PropBag.ReadProperty("IconKey", DEFAULT_ICON_KEY)
         m_IconListName = PropBag.ReadProperty("IconList", DEFAULT_ICON_LIST)
         m_ListRevision = 0
+        UserControl.Enabled = PropBag.ReadProperty("Enabled", DEFAULT_ENABLED)
+        m_ClickMode = PropBag.ReadProperty("ClickMode", DEFAULT_CLICK_MODE)
+        If m_ClickMode < ui3ClickModeRelease Or m_ClickMode > ui3ClickModeHover Then m_ClickMode = DEFAULT_CLICK_MODE
+        m_UseSystemFocusVisuals = PropBag.ReadProperty("UseSystemFocusVisuals", DEFAULT_USE_SYSTEM_FOCUS_VISUALS)
+        m_AccessKey = Left$(PropBag.ReadProperty("AccessKey", DEFAULT_ACCESS_KEY), 1)
+        ApplyAccessKey
         DesignLog "ReadProperties " & Hex$(ObjPtr(Me)) & " " & DesignName() & " Icon = " & CLng(m_Icon)
         If Not IsUserMode() Then
             DesignTrace "ReadProperties " & Hex$(ObjPtr(Me)) & " " & DesignName() & " Icon = " & CLng(m_Icon) & _
@@ -434,6 +539,10 @@ Public Class UI3Button
         PropBag.WriteProperty "IconSize", m_IconSize, SymbolIconDefaultFontSize
         PropBag.WriteProperty "IconKey", m_IconKey, DEFAULT_ICON_KEY
         PropBag.WriteProperty "IconList", m_IconListName, DEFAULT_ICON_LIST
+        PropBag.WriteProperty "Enabled", UserControl.Enabled, DEFAULT_ENABLED
+        PropBag.WriteProperty "ClickMode", m_ClickMode, DEFAULT_CLICK_MODE
+        PropBag.WriteProperty "UseSystemFocusVisuals", m_UseSystemFocusVisuals, DEFAULT_USE_SYSTEM_FOCUS_VISUALS
+        PropBag.WriteProperty "AccessKey", m_AccessKey, DEFAULT_ACCESS_KEY
         DesignTrace "WriteProperties " & Hex$(ObjPtr(Me)) & " " & DesignName() & " Icon = " & CLng(m_Icon) & _
             ", IconSource = " & m_IconImage.Source & ", bytes = " & m_IconImage.ByteCount()
         If m_IconImage.HasImage Then
@@ -461,8 +570,158 @@ WriteFailed:
         Set m_IconListObject = Nothing
     End Sub
 
-    Private Sub UserControl_Click()
+    ' ---- Input (ButtonBase_Partial.cpp) ----
+    ' Click is raised here, not from UserControl_Click, so ClickMode, a press dragged off the
+    ' button and keyboard presses all behave as in WinUI.
+
+    Private Sub UserControl_MouseDown(Button As Integer, Shift As Integer, X As Single, Y As Single)
+        If Button <> vbLeftButton Or Not UserControl.Enabled Then Exit Sub
+        ' OnPointerPressed: Hover buttons ignore presses; others take focus (FocusState Pointer,
+        ' so no focus visual), capture the pointer and become pressed.
+        If m_ClickMode = ui3ClickModeHover Then Exit Sub
+        FocusFromPointer
+        ' A press moves focus to FocusState Pointer, which hides a keyboard focus visual.
+        If m_KeyboardFocus Then
+            m_KeyboardFocus = False
+            Repaint
+        End If
+        m_PointerDown = True
+        If Not m_Surface Is Nothing Then m_Surface.CapturePointer
+        If Not m_KeyPressed Then SetPointerPressed True
+        If m_ClickMode = ui3ClickModePress Then RaiseEvent Click
+    End Sub
+
+    Private Sub UserControl_MouseMove(Button As Integer, Shift As Integer, X As Single, Y As Single)
+        If Not m_PointerDown Then Exit Sub
+        If (Button And vbLeftButton) = 0 Then
+            ' The release happened where this control could not see it.
+            m_PointerDown = False
+            SetPointerPressed False
+            Exit Sub
+        End If
+        ' OnPointerMoved: pressed only while the pointer is inside the button.
+        If Not m_KeyPressed Then SetPointerPressed PointInside(X, Y)
+    End Sub
+
+    Private Sub UserControl_MouseUp(Button As Integer, Shift As Integer, X As Single, Y As Single)
+        If Button <> vbLeftButton Or Not m_PointerDown Then Exit Sub
+        ' OnPointerReleased: act only if still pressed and no Space/Enter press is in progress.
+        Dim perform As Boolean
+        perform = PointInside(X, Y) And Not m_KeyPressed And UserControl.Enabled
+        m_PointerDown = False
+        SetPointerPressed False
+        If Not m_Surface Is Nothing Then m_Surface.ReleasePointer
+        If perform And m_ClickMode = ui3ClickModeRelease Then RaiseEvent Click
+    End Sub
+
+    ' Space and Enter press the button on key down and click on key up (ClickMode Release),
+    ' or click on key down (ClickMode Press).
+    Private Sub UserControl_KeyDown(KeyCode As Integer, Shift As Integer)
+        If KeyCode <> vbKeySpace And KeyCode <> vbKeyReturn Then Exit Sub
+        If Not UserControl.Enabled Or m_ClickMode = ui3ClickModeHover Then Exit Sub
+        If m_HeldKey <> 0 Then
+            KeyCode = 0          ' auto-repeat of the held key
+            Exit Sub
+        End If
+        m_HeldKey = KeyCode
+        m_KeyPressed = True
+        KeyCode = 0
+        Repaint
+        If m_ClickMode = ui3ClickModePress Then RaiseEvent Click
+    End Sub
+
+    Private Sub UserControl_KeyUp(KeyCode As Integer, Shift As Integer)
+        If m_HeldKey = 0 Or KeyCode <> m_HeldKey Then Exit Sub
+        Dim perform As Boolean
+        perform = m_KeyPressed And UserControl.Enabled And m_ClickMode = ui3ClickModeRelease
+        m_HeldKey = 0
+        m_KeyPressed = False
+        KeyCode = 0
+        Repaint
+        If perform Then RaiseEvent Click
+    End Sub
+
+    ' Enter on the form's Default button, Esc on its Cancel button (DefaultCancel), or Alt+AccessKey.
+    ' An Enter already being handled through KeyDown/KeyUp is not clicked twice.
+    Private Sub UserControl_AccessKeyPress(KeyAscii As Integer)
+        If Not UserControl.Enabled Then Exit Sub
+        If KeyAscii = vbKeyReturn And m_HeldKey = vbKeyReturn Then Exit Sub
         RaiseEvent Click
+    End Sub
+
+    Private Sub UserControl_GotFocus()
+        m_Focused = True
+        ' Pointer focus never shows the focus visual; Tab or an access key does.
+        m_KeyboardFocus = False
+        If Not m_PointerFocusing And Not m_Surface Is Nothing Then m_KeyboardFocus = m_Surface.KeyboardFocusIntent()
+        Repaint
+    End Sub
+
+    Private Sub UserControl_LostFocus()
+        m_Focused = False
+        m_KeyboardFocus = False
+        ' OnLostFocus: no longer pressed, capture released, Space/Enter state cleared.
+        CancelPress
+        Repaint
+    End Sub
+
+    Private Sub FocusFromPointer()
+        If m_Focused Then Exit Sub
+        On Error Resume Next
+        m_PointerFocusing = True
+        UserControl.Extender.SetFocus
+        m_PointerFocusing = False
+    End Sub
+
+    ' Ends any press without clicking (focus lost, disabled, capture taken away, ClickMode change).
+    Private Sub CancelPress()
+        Dim changed As Boolean
+        changed = m_PointerPressed Or m_KeyPressed Or m_HoverPressed
+        If m_PointerDown And Not m_Surface Is Nothing Then m_Surface.ReleasePointer
+        m_PointerDown = False
+        m_PointerPressed = False
+        m_KeyPressed = False
+        m_HeldKey = 0
+        m_HoverPressed = False
+        If changed Then Repaint
+    End Sub
+
+    Private Sub SetPointerPressed(ByVal Value As Boolean)
+        If m_PointerPressed = Value Then Exit Sub
+        m_PointerPressed = Value
+        Repaint
+    End Sub
+
+    ' The control's own scale, so no DPI conversion is needed. ButtonBase allows 0.05 DIP tolerance.
+    Private Function PointInside(ByVal X As Single, ByVal Y As Single) As Boolean
+        PointInside = X >= 0 And Y >= 0 And X <= UserControl.ScaleWidth And Y <= UserControl.ScaleHeight
+    End Function
+
+    Private Function PressedNow() As Boolean
+        PressedNow = m_PointerPressed Or m_KeyPressed Or m_HoverPressed
+    End Function
+
+    Private Function PointerOverNow() As Boolean
+        If m_Surface Is Nothing Then Exit Function
+        If Not m_Surface.OwnsPaint Then Exit Function
+        PointerOverNow = (m_Surface.HotPart <> 0)
+    End Function
+
+    Private Function VisualState() As Long
+        If Not UserControl.Enabled Then
+            VisualState = STATE_DISABLED
+        ElseIf PressedNow() Then
+            VisualState = STATE_PRESSED
+        ElseIf PointerOverNow() Then
+            VisualState = STATE_POINTER_OVER
+        Else
+            VisualState = STATE_NORMAL
+        End If
+    End Function
+
+    Private Sub ApplyAccessKey()
+        On Error Resume Next
+        UserControl.AccessKeys = m_AccessKey
     End Sub
 
     Private Sub UserControl_AmbientChanged(PropertyName As String)
@@ -514,14 +773,34 @@ WriteFailed:
         Err.Raise number, "UI3Button", description
     End Sub
 
-    ' Hover, pressed, disabled and focus visuals are later roadmap steps, so no part is interactive yet.
+    ' The whole button is one part: 1 while the pointer is over it.
     Private Function IUI3SurfaceClient_SurfaceHitTest(ByVal X As Single, ByVal Y As Single) As Long
+        IUI3SurfaceClient_SurfaceHitTest = 1
     End Function
 
+    ' PointerOver changed. A ClickMode Hover button is pressed, and clicks, when the pointer enters
+    ' (ButtonBase::OnPointerEntered) and is released when it leaves (OnPointerExited).
     Private Sub IUI3SurfaceClient_SurfaceHotChanged(ByVal OldPart As Long, ByVal NewPart As Long)
+        Dim clickNow As Boolean
+        If m_ClickMode = ui3ClickModeHover And UserControl.Enabled Then
+            m_HoverPressed = (NewPart <> 0)
+            clickNow = m_HoverPressed
+        End If
+        m_Surface.Invalidate
+        If clickNow Then RaiseEvent Click
     End Sub
 
     Private Sub IUI3SurfaceClient_SurfaceStateChanged(ByVal Message As Long)
+        Select Case Message
+            Case WM_CAPTURECHANGED
+                ' OnPointerCaptureLost: capture taken away while the button is still held.
+                ' Capture moving to this same window (VB's own capture on mouse down) is not a loss.
+                If m_PointerDown And m_Surface.LeftButtonHeld() And Not m_Surface.HasCapture() Then CancelPress
+            Case WM_ENABLE
+                If Not UserControl.Enabled Then CancelPress
+                m_Surface.SyncHot
+        End Select
+        m_Surface.Invalidate
     End Sub
 
     Private Function IUI3SurfaceClient_SurfaceDialogCode(ByVal Code As LongPtr) As LongPtr
@@ -535,10 +814,13 @@ WriteFailed:
 
     Private Sub DrawButton(ByVal w As Single, ByVal h As Single)
         Dim dark As Boolean
+        Dim state As Long
         Dim fill As Long
+        Dim foreground As Long
+        Dim borderKind As Long
+        Dim borderColor As Long
         Dim strokeDefault As Long
         Dim strokeSecondary As Long
-        Dim foreground As Long
         Dim borderAtBottom As Boolean
         Dim fillInset As Single
         Dim box As D2D1_ROUNDED_RECT
@@ -546,54 +828,118 @@ WriteFailed:
         Dim t As Single
 
         dark = IsDarkMode()
+        state = VisualState()
         r = ControlCornerRadius
         t = ButtonBorderThemeThickness
 
-        If m_Style = ui3ButtonAccent Then
-            If dark Then
-                fill = AccentShade(ACCENT_LIGHT2)
-                foreground = DARK_TextOnAccentFillColorPrimary
-                strokeDefault = DARK_ControlStrokeColorOnAccentDefault
-                strokeSecondary = DARK_ControlStrokeColorOnAccentSecondary
-            Else
-                fill = AccentShade(ACCENT_DARK1)
-                foreground = LIGHT_TextOnAccentFillColorPrimary
-                strokeDefault = LIGHT_ControlStrokeColorOnAccentDefault
-                strokeSecondary = LIGHT_ControlStrokeColorOnAccentSecondary
-            End If
-            borderAtBottom = True
-            fillInset = 0
-        Else
-            If dark Then
-                fill = DARK_ControlFillColorDefault
-                foreground = DARK_TextFillColorPrimary
-                strokeDefault = DARK_ControlStrokeColorDefault
-                strokeSecondary = DARK_ControlStrokeColorSecondary
-                borderAtBottom = False
-            Else
-                fill = LIGHT_ControlFillColorDefault
-                foreground = LIGHT_TextFillColorPrimary
-                strokeDefault = LIGHT_ControlStrokeColorDefault
-                strokeSecondary = LIGHT_ControlStrokeColorSecondary
+        Select Case m_Style
+            Case ui3ButtonAccent
+                ' AccentButtonStyle: BackgroundSizing OuterBorderEdge, so the fill runs under the border.
+                Dim accent As Long
+                If dark Then accent = AccentShade(ACCENT_LIGHT2) Else accent = AccentShade(ACCENT_DARK1)
+                fillInset = 0
                 borderAtBottom = True
-            End If
-            fillInset = t
-        End If
+                If dark Then
+                    strokeDefault = DARK_ControlStrokeColorOnAccentDefault
+                    strokeSecondary = DARK_ControlStrokeColorOnAccentSecondary
+                Else
+                    strokeDefault = LIGHT_ControlStrokeColorOnAccentDefault
+                    strokeSecondary = LIGHT_ControlStrokeColorOnAccentSecondary
+                End If
+                Select Case state
+                    Case STATE_POINTER_OVER
+                        fill = WithOpacity(accent, AccentFillSecondaryOpacity)
+                        foreground = IIf(dark, DARK_TextOnAccentFillColorPrimary, LIGHT_TextOnAccentFillColorPrimary)
+                        borderKind = BORDER_ELEVATION
+                    Case STATE_PRESSED
+                        fill = WithOpacity(accent, AccentFillTertiaryOpacity)
+                        foreground = IIf(dark, DARK_TextOnAccentFillColorSecondary, LIGHT_TextOnAccentFillColorSecondary)
+                        borderKind = BORDER_NONE
+                    Case STATE_DISABLED
+                        fill = IIf(dark, DARK_AccentFillColorDisabled, LIGHT_AccentFillColorDisabled)
+                        foreground = IIf(dark, DARK_TextOnAccentFillColorDisabled, LIGHT_TextOnAccentFillColorDisabled)
+                        borderKind = BORDER_NONE
+                    Case Else
+                        fill = accent
+                        foreground = IIf(dark, DARK_TextOnAccentFillColorPrimary, LIGHT_TextOnAccentFillColorPrimary)
+                        borderKind = BORDER_ELEVATION
+                End Select
+
+            Case ui3ButtonSubtle
+                ' SubtleButtonStyle: InnerBorderEdge; the border uses the same brush as the background.
+                fillInset = t
+                Select Case state
+                    Case STATE_POINTER_OVER
+                        fill = IIf(dark, DARK_SubtleFillColorSecondary, LIGHT_SubtleFillColorSecondary)
+                        foreground = IIf(dark, DARK_TextFillColorPrimary, LIGHT_TextFillColorPrimary)
+                    Case STATE_PRESSED
+                        fill = IIf(dark, DARK_SubtleFillColorTertiary, LIGHT_SubtleFillColorTertiary)
+                        foreground = IIf(dark, DARK_TextFillColorSecondary, LIGHT_TextFillColorSecondary)
+                    Case STATE_DISABLED
+                        fill = IIf(dark, DARK_SubtleFillColorTransparent, LIGHT_SubtleFillColorTransparent)
+                        foreground = IIf(dark, DARK_TextFillColorDisabled, LIGHT_TextFillColorDisabled)
+                    Case Else
+                        fill = IIf(dark, DARK_SubtleFillColorTransparent, LIGHT_SubtleFillColorTransparent)
+                        foreground = IIf(dark, DARK_TextFillColorPrimary, LIGHT_TextFillColorPrimary)
+                End Select
+                borderKind = BORDER_SOLID
+                borderColor = fill
+
+            Case Else
+                ' DefaultButtonStyle: InnerBorderEdge, so the fill sits inside the border.
+                fillInset = t
+                If dark Then
+                    strokeDefault = DARK_ControlStrokeColorDefault
+                    strokeSecondary = DARK_ControlStrokeColorSecondary
+                    borderAtBottom = False
+                Else
+                    strokeDefault = LIGHT_ControlStrokeColorDefault
+                    strokeSecondary = LIGHT_ControlStrokeColorSecondary
+                    borderAtBottom = True
+                End If
+                Select Case state
+                    Case STATE_POINTER_OVER
+                        fill = IIf(dark, DARK_ControlFillColorSecondary, LIGHT_ControlFillColorSecondary)
+                        foreground = IIf(dark, DARK_TextFillColorPrimary, LIGHT_TextFillColorPrimary)
+                        borderKind = BORDER_ELEVATION
+                    Case STATE_PRESSED
+                        fill = IIf(dark, DARK_ControlFillColorTertiary, LIGHT_ControlFillColorTertiary)
+                        foreground = IIf(dark, DARK_TextFillColorSecondary, LIGHT_TextFillColorSecondary)
+                        borderKind = BORDER_SOLID
+                        borderColor = strokeDefault
+                    Case STATE_DISABLED
+                        fill = IIf(dark, DARK_ControlFillColorDisabled, LIGHT_ControlFillColorDisabled)
+                        foreground = IIf(dark, DARK_TextFillColorDisabled, LIGHT_TextFillColorDisabled)
+                        borderKind = BORDER_SOLID
+                        borderColor = strokeDefault
+                    Case Else
+                        fill = IIf(dark, DARK_ControlFillColorDefault, LIGHT_ControlFillColorDefault)
+                        foreground = IIf(dark, DARK_TextFillColorPrimary, LIGHT_TextFillColorPrimary)
+                        borderKind = BORDER_ELEVATION
+                End Select
+        End Select
 
         ' The surface has already cleared to SurfaceBackground (the container colour).
-        box = RoundedRect(fillInset, fillInset, w - fillInset, h - fillInset, r - fillInset)
-        m_Target.FillRoundedRectangle box, SolidBrush(m_Target, fill)
-
-        Dim border As ID2D1LinearGradientBrush
-        If borderAtBottom Then
-            Set border = VerticalGradientBrush(m_Target, h, h - ElevationBorderGradientLength, _
-                ElevationBorderStop0, strokeSecondary, ElevationBorderStop1, strokeDefault)
-        Else
-            Set border = VerticalGradientBrush(m_Target, 0, ElevationBorderGradientLength, _
-                ElevationBorderStop0, strokeSecondary, ElevationBorderStop1, strokeDefault)
+        If (fill And &HFF000000) <> 0 Then
+            box = RoundedRect(fillInset, fillInset, w - fillInset, h - fillInset, r - fillInset)
+            m_Target.FillRoundedRectangle box, SolidBrush(m_Target, fill)
         End If
+
         box = RoundedRect(t / 2, t / 2, w - t / 2, h - t / 2, r - t / 2)
-        m_Target.DrawRoundedRectangle box, border, t, 0
+        Select Case borderKind
+            Case BORDER_ELEVATION
+                Dim border As ID2D1LinearGradientBrush
+                If borderAtBottom Then
+                    Set border = VerticalGradientBrush(m_Target, h, h - ElevationBorderGradientLength, _
+                        ElevationBorderStop0, strokeSecondary, ElevationBorderStop1, strokeDefault)
+                Else
+                    Set border = VerticalGradientBrush(m_Target, 0, ElevationBorderGradientLength, _
+                        ElevationBorderStop0, strokeSecondary, ElevationBorderStop1, strokeDefault)
+                End If
+                m_Target.DrawRoundedRectangle box, border, t, 0
+            Case BORDER_SOLID
+                If (borderColor And &HFF000000) <> 0 Then m_Target.DrawRoundedRectangle box, SolidBrush(m_Target, borderColor), t, 0
+        End Select
 
         Dim iconFamily As String
         Dim glyph As String
@@ -606,7 +952,50 @@ WriteFailed:
         DrawButtonContent m_Target, m_Caption, glyph, iconFamily, m_IconSize, _
             m_IconPosition, m_IconSpacing, ButtonPaddingLeft, ButtonPaddingTop, _
             w - ButtonPaddingRight, h - ButtonPaddingBottom, foreground, iconImage, ink
+
+        If ShowsFocusVisual() Then DrawFocusVisual w, h, dark
     End Sub
+
+    ' Button::ChangeVisualState: focus states apply only while enabled; the system focus visual
+    ' shows for keyboard focus, not pointer focus.
+    Private Function ShowsFocusVisual() As Boolean
+        ShowsFocusVisual = m_UseSystemFocusVisuals And m_Focused And m_KeyboardFocus And UserControl.Enabled
+    End Function
+
+    ' WinUI draws the system focus visual 3 DIPs outside the button (FocusVisualMargin -3): a
+    ' 2-DIP FocusStrokeColorOuter ring with a 1-DIP FocusStrokeColorInner ring inside it, corner
+    ' radius ControlCornerRadius + 3 (FocusRectManager AdjustCornerRadius). A twinBASIC control
+    ' cannot draw outside its own window, so tbUI3 draws the same two rings inside the button's
+    ' edge instead, with radii that keep the same 2 + 1 geometry from ControlCornerRadius.
+    ' Documented deviation: docs/controls/UI3Button.md.
+    Private Sub DrawFocusVisual(ByVal w As Single, ByVal h As Single, ByVal dark As Boolean)
+        Dim outerColor As Long
+        Dim innerColor As Long
+        Dim p As Single
+        Dim q As Single
+        Dim r As Single
+        Dim box As D2D1_ROUNDED_RECT
+
+        If dark Then
+            outerColor = DARK_FocusStrokeColorOuter
+            innerColor = DARK_FocusStrokeColorInner
+        Else
+            outerColor = LIGHT_FocusStrokeColorOuter
+            innerColor = LIGHT_FocusStrokeColorInner
+        End If
+        r = ControlCornerRadius
+        p = FocusVisualPrimaryThickness
+        q = FocusVisualSecondaryThickness
+
+        box = RoundedRect(p / 2, p / 2, w - p / 2, h - p / 2, MaxSingle(r - p / 2, 0))
+        m_Target.DrawRoundedRectangle box, SolidBrush(m_Target, outerColor), p, 0
+        box = RoundedRect(p + q / 2, p + q / 2, w - p - q / 2, h - p - q / 2, MaxSingle(r - p - q / 2, 0))
+        m_Target.DrawRoundedRectangle box, SolidBrush(m_Target, innerColor), q, 0
+    End Sub
+
+    Private Function MaxSingle(ByVal a As Single, ByVal b As Single) As Single
+        If a > b Then MaxSingle = a Else MaxSingle = b
+    End Function
 
     ' The icon to draw: returns the image to draw (or Nothing), or sets Glyph and FontFamily.
     Private Function ResolveIconContent(ByRef Glyph As String, ByRef FontFamily As String) As UI3IconImage

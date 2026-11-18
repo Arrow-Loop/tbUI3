@@ -1,3 +1,10 @@
+### 1.0.0.73
+- UI3Button has WinUI's PointerOver, Pressed and Disabled states for Standard and Accent, from Button_themeresources.xaml.
+- New Subtle style (WinUI SubtleButtonStyle).
+- Keyboard focus shows the system focus visual (two rings), drawn inside the button because a control can't draw outside its window. Pointer focus shows none, as in WinUI.
+- New properties: Enabled, ClickMode (Release, Press, Hover), UseSystemFocusVisuals, AccessKey, and read-only IsPressed and IsPointerOver.
+- Click now follows WinUI's ButtonBase rules: dragging off the button before release cancels it; Space and Enter press on key down and click on key up; Default (Enter), Cancel (Esc) and AccessKey (Alt+key) click the button.
+
 ### 1.0.0.72
 - UI3Button paints through UI3Surface: no host paint or erase before its frame at run time, and property, size and theme changes invalidate without erasing instead of calling Refresh. Its look is unchanged; hover/pressed visuals are still a later step.
 - Icon bitmaps and SVG documents are released when the surface makes a new render target.

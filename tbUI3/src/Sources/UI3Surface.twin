@@ -89,6 +89,32 @@ Private Class UI3Surface
         TargetGeneration = m_Generation
     End Property
 
+    ' Pointer capture for a press that follows the pointer outside the control (a button press).
+    Public Sub CapturePointer()
+        If m_hWnd <> 0 Then UI3SurfaceHost.SurfaceCapture m_hWnd
+    End Sub
+
+    Public Sub ReleasePointer()
+        If m_hWnd <> 0 Then UI3SurfaceHost.SurfaceReleaseCapture m_hWnd
+    End Sub
+
+    ' True while this control's window holds the pointer capture.
+    Public Function HasCapture() As Boolean
+        If m_hWnd <> 0 Then HasCapture = UI3SurfaceHost.SurfaceHasCapture(m_hWnd)
+    End Function
+
+    ' True while the left mouse button is held. A client uses it on WM_CAPTURECHANGED to tell a
+    ' normal release (button up) from capture taken away mid-press (button still down).
+    Public Function LeftButtonHeld() As Boolean
+        LeftButtonHeld = UI3SurfaceHost.SurfaceKeyHeld(vbLeftButton)
+    End Function
+
+    ' True when focus is arriving from the keyboard (Tab, or Alt for an access key), so a
+    ' keyboard focus visual belongs on the control. Read it in GotFocus.
+    Public Function KeyboardFocusIntent() As Boolean
+        KeyboardFocusIntent = UI3SurfaceHost.SurfaceKeyHeld(vbKeyTab) Or UI3SurfaceHost.SurfaceKeyHeld(vbKeyMenu)
+    End Function
+
     ' HRESULT of the last EndDraw, for diagnostics.
     Public Property Get LastResult() As Long
         LastResult = m_LastResult

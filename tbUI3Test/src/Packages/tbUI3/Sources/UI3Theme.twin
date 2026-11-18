@@ -6,6 +6,7 @@
 '   controls/dev/CommonStyles/TextBox_themeresources.xaml
 '   controls/dev/CommonStyles/ScrollBar_themeresources.xaml
 '   controls/dev/CommonStyles/CornerRadius_themeresources.xaml
+'   dxaml/xcp/components/FocusRect/FocusRectManager.cpp           (system focus visual geometry)
 ' Colours are &HAARRGGBB, the same order as XAML's #AARRGGBB.
 ' High contrast is not handled yet.
 
@@ -32,6 +33,11 @@ Private Module UI3Theme
     Public Const DARK_SolidBackgroundFillColorBase As Long = &HFF202020
     Public Const DARK_SolidBackgroundFillColorTertiary As Long = &HFF282828
     Public Const DARK_SystemFillColorCritical As Long = &HFFFF99A4
+    Public Const DARK_SubtleFillColorTransparent As Long = &H00FFFFFF
+    Public Const DARK_SubtleFillColorSecondary As Long = &H0FFFFFFF
+    Public Const DARK_SubtleFillColorTertiary As Long = &H0AFFFFFF
+    Public Const DARK_FocusStrokeColorOuter As Long = &HFFFFFFFF
+    Public Const DARK_FocusStrokeColorInner As Long = &HB3000000
 
     Public Const LIGHT_TextFillColorPrimary As Long = &HE4000000
     Public Const LIGHT_TextFillColorSecondary As Long = &H9E000000
@@ -54,6 +60,23 @@ Private Module UI3Theme
     Public Const LIGHT_SolidBackgroundFillColorBase As Long = &HFFF3F3F3
     Public Const LIGHT_SolidBackgroundFillColorTertiary As Long = &HFFF9F9F9
     Public Const LIGHT_SystemFillColorCritical As Long = &HFFC42B1C
+    Public Const LIGHT_SubtleFillColorTransparent As Long = &H00FFFFFF
+    Public Const LIGHT_SubtleFillColorSecondary As Long = &H09000000
+    Public Const LIGHT_SubtleFillColorTertiary As Long = &H06000000
+    Public Const LIGHT_FocusStrokeColorOuter As Long = &HE4000000
+    Public Const LIGHT_FocusStrokeColorInner As Long = &HB3FFFFFF
+
+    ' ControlFillColorTransparent is #00FFFFFF in both themes.
+    Public Const ControlFillColorTransparent As Long = &H00FFFFFF
+    ' AccentFillColorSecondaryBrush and AccentFillColorTertiaryBrush are AccentFillColorDefault's
+    ' colour with Opacity 0.9 and 0.8 (Common_themeresources_any.xaml).
+    Public Const AccentFillSecondaryOpacity As Single = 0.9
+    Public Const AccentFillTertiaryOpacity As Single = 0.8
+    ' System focus visual (FocusRectManager.cpp; FrameworkElement.FocusVisualPrimaryThickness and
+    ' FocusVisualSecondaryThickness defaults). Button's styles set FocusVisualMargin to -3.
+    Public Const FocusVisualPrimaryThickness As Single = 2
+    Public Const FocusVisualSecondaryThickness As Single = 1
+    Public Const ButtonFocusVisualMargin As Single = -3
 
     Public Const ControlCornerRadius As Single = 4
     Public Const OverlayCornerRadius As Single = 8
@@ -160,6 +183,21 @@ Private Module UI3Theme
             Case Else
                 IsDarkMode = m_SystemDark
         End Select
+    End Function
+
+    ' An opaque &HFFRRGGBB colour with a XAML brush Opacity applied, as &HAARRGGBB.
+    Public Function WithOpacity(ByVal argb As Long, ByVal opacity As Single) As Long
+        Dim alpha As Long
+        alpha = (argb And &H7F000000) \ &H1000000
+        If argb < 0 Then alpha = alpha Or &H80&
+        alpha = CLng(alpha * opacity)
+        If alpha > 255 Then alpha = 255
+        If alpha < 0 Then alpha = 0
+        If alpha >= 128 Then
+            WithOpacity = (argb And &HFFFFFF) Or &H80000000 Or ((alpha - 128) * &H1000000)
+        Else
+            WithOpacity = (argb And &HFFFFFF) Or (alpha * &H1000000)
+        End If
     End Function
 
     Public Function AccentShade(ByVal shade As Long) As Long

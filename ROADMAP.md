@@ -4,6 +4,15 @@ Committed work is listed first. Exploratory ideas are marked as such.
 
 Every development pass ends with a commit and a verified push to `origin/tbui3-dev`, per Shane's standing instruction of 2026-11-12. Main and PR decisions remain Shane's.
 
+## 2026-11-18 - UI3Button visual states, focus and WinUI input behaviour (package 1.0.0.73)
+
+Pass A of Shane's full WinUI Button parity request; details in CHANGELOG.md and docs/controls/UI3Button.md.
+
+- **Next gate (Shane, BETA 1044):** rebuild 73, re-import into tbUI3Test, then check in win32: hover, press, drag off and back, release outside (no Click), Standard/Accent/Subtle in Light and Dark; `Enabled = False` in the designer and from code; Tab onto a button shows the focus rings and a click does not; Space and Enter click once on key up; a Default button clicks on Enter and a Cancel button on Esc, once each; `AccessKey = "S"` clicks on Alt+S; ClickMode Press and Hover; a button that opens a MsgBox in Click returns to Normal afterwards; save and reopen keeps the new properties. Then a win64 smoke test.
+- **Pass B, package 1.0.0.74 (committed):** the appearance properties `FontFamily`, `FontSize`, `FontWeight`, `FontStyle`, `FontStretch`, `Padding`, `HorizontalContentAlignment`, `VerticalContentAlignment`, `CornerRadius`, `BorderThickness`, `BackgroundSizing`, and the brush overrides `Background`, `Foreground`, `BorderBrush`, which (as in WinUI) apply only in the Normal state.
+- **Deferred, committed:** the 83 ms BrushTransition between states (needs a surface timer); high-contrast resources; `CharacterSpacing` (needs IDWriteTextLayout1); MouseDown/MouseUp/MouseMove/KeyDown/KeyUp/KeyPress events on the control.
+- **Exploratory:** a focus adorner window so the focus rings can sit 3 DIPs outside the button as in WinUI; access key tips on Alt; `RequestedTheme` per control; right-to-left (`FlowDirection`); `Flyout` once a UI3Flyout exists.
+
 ## 2026-11-18 - UI3Button on the shared paint surface (package 1.0.0.72)
 
 Shane confirmed package 71 fixed the TabView flicker with all checks passing, and asked for the same base on the other controls. UI3Button now implements IUI3SurfaceClient. At run time UI3Surface owns its WM_PAINT and swallows erase. All 16 run-time `UserControl.Refresh` calls (property setters, Resize, ambient BackColor, icon-list changes) go through `Repaint`, which invalidates without erase at run time and keeps the synchronous Refresh only for designer snapshots. The surface clears to the container colour, which still shows through the rounded corners, and the button draws as before. The surface now exposes `TargetGeneration`, so the button releases icon bitmaps and SVG documents made for a previous render target. The design-time D2D failure text (PaintFailure) is kept. The look is unchanged, and hover, pressed, disabled and focus visuals are still later roadmap steps (SurfaceHitTest returns 0). IDs, public members and saved forms are unchanged.
@@ -158,8 +167,8 @@ The integrated UI3TabView/UI3TabPage and separate TabViewDesigner implementation
 - S4: windowless and transparent. In S2 the control is still windowed and clears to the container's BackColor. S4 must remove that and blend over whatever is behind the control.
 - S5: Mica, building on UI3Window. The title bar and the #202020/#F3F3F3 background are already in place.
 - S6: per-monitor DPI. S2 uses `GetDeviceCaps(LOGPIXELSX)` on the paint DC, which gives the system DPI, not the monitor's.
-- S7: hover, pressed and disabled visuals, compared against the WinUI Gallery.
-- S8: keyboard, focus visuals, and Default and Cancel.
+- S7: hover, pressed and disabled visuals. Implemented in 1.0.0.73 from the Button XAML; awaiting Shane's IDE check and a WinUI Gallery comparison.
+- S8: keyboard, focus visuals, and Default and Cancel. Implemented in 1.0.0.73 (focus rings drawn inside the button, see UI3Button.md); awaiting Shane's IDE check.
 - S9: coexistence with WinDevLib and a GDI+ package, with no name clashes.
 
 ## Committed: designer experience (Shane, 2026-10-06)

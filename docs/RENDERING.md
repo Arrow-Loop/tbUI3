@@ -10,7 +10,8 @@ Every drawing control paints through `UI3Surface` so that flicker is handled onc
 4. Keep layout and discovery out of `SurfaceRender`. Compute them when size, DPI, content or a property changes. Paint only draws.
 5. Get brushes from `SolidBrush` and text through the `UI3D2D` drawing helpers. During a surface frame they come from caches; don't call `CreateSolidColorBrush` or `CreateTextFormat` yourself.
 6. Hover: return a part id from `SurfaceHitTest` (0 for none) and invalidate only the affected area in `SurfaceHotChanged`. Read `m_Surface.HotPart` when drawing. After your own layout moves under a still pointer (scrolling, selection), call `m_Surface.SyncHot`.
-7. Containers that hold user controls stay on host paint until the windowless-children probe in ROADMAP is answered.
+7. A press that must follow the pointer outside the control (a button) uses `m_Surface.CapturePointer` / `ReleasePointer`. On `WM_CAPTURECHANGED` in `SurfaceStateChanged`, cancel the press only when `m_Surface.LeftButtonHeld()` and not `m_Surface.HasCapture()`, so the normal release and VB's own capture are not mistaken for a loss. Read `m_Surface.KeyboardFocusIntent` in GotFocus to decide on a keyboard focus visual.
+8. Containers that hold user controls stay on host paint until the windowless-children probe in ROADMAP is answered.
 
 ## Skeleton
 

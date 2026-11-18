@@ -69,6 +69,10 @@ Private Module UI3SurfaceHost
     Private Declare PtrSafe Function WindowFromPoint Lib "user32" (ByVal Point As SurfacePoint) As LongPtr
     Private Declare PtrSafe Function GetDpiForWindow Lib "user32" (ByVal hWnd As LongPtr) As Long
     Private Declare PtrSafe Function GetTickCount Lib "kernel32" () As Long
+    Private Declare PtrSafe Function SetCapture Lib "user32" (ByVal hWnd As LongPtr) As LongPtr
+    Private Declare PtrSafe Function GetCapture Lib "user32" () As LongPtr
+    Private Declare PtrSafe Function ReleaseCapture Lib "user32" () As Long
+    Private Declare PtrSafe Function GetKeyState Lib "user32" (ByVal nVirtKey As Long) As Integer
 
     ' One surface per window. Looked up by hWnd so no object pointer is ever dereferenced.
     Private m_Surfaces As Collection
@@ -134,6 +138,22 @@ Private Module UI3SurfaceHost
     Public Function SurfaceWindowDpi(ByVal hWnd As LongPtr) As Single
         If hWnd <> 0 Then SurfaceWindowDpi = GetDpiForWindow(hWnd)
         If SurfaceWindowDpi <= 0 Then SurfaceWindowDpi = 96
+    End Function
+
+    Public Sub SurfaceCapture(ByVal hWnd As LongPtr)
+        If hWnd <> 0 And GetCapture() <> hWnd Then SetCapture hWnd
+    End Sub
+
+    Public Sub SurfaceReleaseCapture(ByVal hWnd As LongPtr)
+        If hWnd <> 0 And GetCapture() = hWnd Then ReleaseCapture
+    End Sub
+
+    Public Function SurfaceHasCapture(ByVal hWnd As LongPtr) As Boolean
+        SurfaceHasCapture = (hWnd <> 0 And GetCapture() = hWnd)
+    End Function
+
+    Public Function SurfaceKeyHeld(ByVal VirtualKey As Long) As Boolean
+        SurfaceKeyHeld = GetKeyState(VirtualKey) < 0
     End Function
 
     Public Function SurfaceTicks() As Long

@@ -1,0 +1,163 @@
+' Shared flicker-free paint plumbing for tbUI3 controls (plan: docs/2026-11-18-flicker-free-rendering-plan.md).
+'
+' Every flicker this package has had was cured the same way: subclass the window, swallow
+' WM_ERASEBKGND and handle WM_PAINT with BeginPaint/EndPaint so the host's own paint routine never
+' draws first (UI3PageSurface for the icon picker, UI3Window for the property sheet). Invalidating
+' without erase alone did not cure it (1.0.0.31, 1.0.0.32, 1.0.0.69, 1.0.0.70). UI3Surface does
+' that once for any control; the control implements IUI3SurfaceClient and only draws.
+
+' What a control supplies to its UI3Surface. Coordinates are DIPs from the client's top-left.
+[InterfaceId("D5D4FDDD-E851-4705-9790-BBD5DAAA472D")]
+[OleAutomation(False)]
+Private Interface IUI3SurfaceClient Extends stdole.IUnknown
+    ' Draw the whole control. The surface has already cleared the dirty area and clipped to it.
+    Sub SurfaceRender(ByVal Target As ID2D1RenderTarget, ByVal WidthDips As Single, ByVal HeightDips As Single)
+    ' The interactive part under the pointer, or 0 for none. Called only at run time.
+    Function SurfaceHitTest(ByVal X As Single, ByVal Y As Single) As Long
+    ' The part under the pointer really changed (0 = pointer left). Invalidate only what changed.
+    Sub SurfaceHotChanged(ByVal OldPart As Long, ByVal NewPart As Long)
+    ' Capture, focus or enabled state changed (WM_CAPTURECHANGED, WM_KILLFOCUS, WM_ENABLE).
+    Sub SurfaceStateChanged(ByVal Message As Long)
+    ' WM_GETDLGCODE: return Code plus any keys the control wants.
+    Function SurfaceDialogCode(ByVal Code As LongPtr) As LongPtr
+    ' The opaque colour (ARGB) behind everything the control draws.
+    Function SurfaceBackground() As Long
+End Interface
+
+Private Module UI3SurfaceHost
+    Private Const SURFACE_SUBCLASS_ID As Long = &H55493353 ' "UI3S"
+
+    [UseGetLastError(False), DLLStackCheck(False)]
+    Private Declare PtrSafe Function SetWindowSubclass Lib "comctl32" Alias "#410" (ByVal hWnd As LongPtr, _
+        ByVal pfnSubclass As LongPtr, ByVal uIdSubclass As LongPtr, ByVal dwRefData As LongPtr) As Long
+    [UseGetLastError(False), DLLStackCheck(False)]
+    Private Declare PtrSafe Function RemoveWindowSubclass Lib "comctl32" Alias "#412" (ByVal hWnd As LongPtr, _
+        ByVal pfnSubclass As LongPtr, ByVal uIdSubclass As LongPtr) As Long
+    [UseGetLastError(False), DLLStackCheck(False)]
+    Private Declare PtrSafe Function DefSubclassProc Lib "comctl32" Alias "#413" (ByVal hWnd As LongPtr, _
+        ByVal uMsg As Long, ByVal wParam As LongPtr, ByVal lParam As LongPtr) As LongPtr
+
+    Private Type SurfacePaintStruct
+        hdc As LongPtr
+        fErase As Long
+        rcPaint As UI3GdiRect
+        fRestore As Long
+        fIncUpdate As Long
+        rgbReserved(0 To 31) As Byte
+    End Type
+
+    Private Type SurfacePoint
+        x As Long
+        y As Long
+    End Type
+
+    Private Type SurfaceTrackMouse
+        cbSize As Long
+        dwFlags As Long
+        hwndTrack As LongPtr
+        dwHoverTime As Long
+    End Type
+
+    Private Const TME_LEAVE As Long = &H2
+
+    Private Declare PtrSafe Function BeginPaint Lib "user32" (ByVal hWnd As LongPtr, ByRef lpPaint As SurfacePaintStruct) As LongPtr
+    Private Declare PtrSafe Function EndPaint Lib "user32" (ByVal hWnd As LongPtr, ByRef lpPaint As SurfacePaintStruct) As Long
+    Private Declare PtrSafe Function InvalidateRect Lib "user32" (ByVal hWnd As LongPtr, ByVal lpRect As LongPtr, ByVal bErase As Long) As Long
+    Private Declare PtrSafe Function TrackMouseEvent Lib "user32" (ByRef lpEventTrack As SurfaceTrackMouse) As Long
+    Private Declare PtrSafe Function GetCursorPos Lib "user32" (ByRef Point As SurfacePoint) As Long
+    Private Declare PtrSafe Function ScreenToClient Lib "user32" (ByVal hWnd As LongPtr, ByRef Point As SurfacePoint) As Long
+    Private Declare PtrSafe Function WindowFromPoint Lib "user32" (ByVal Point As SurfacePoint) As LongPtr
+    Private Declare PtrSafe Function GetDpiForWindow Lib "user32" (ByVal hWnd As LongPtr) As Long
+    Private Declare PtrSafe Function GetTickCount Lib "kernel32" () As Long
+
+    ' One surface per window. Looked up by hWnd so no object pointer is ever dereferenced.
+    Private m_Surfaces As Collection
+
+    Public Function SurfaceAttach(ByVal hWnd As LongPtr, ByVal Surface As UI3Surface) As Boolean
+        If hWnd = 0 Then Exit Function
+        If m_Surfaces Is Nothing Then Set m_Surfaces = New Collection
+        SurfaceDetach hWnd
+        m_Surfaces.Add Surface, KeyOf(hWnd)
+        SurfaceAttach = SetWindowSubclass(hWnd, AddressOf SurfaceWindowProc, CLngPtr(SURFACE_SUBCLASS_ID), 0) <> 0
+        If Not SurfaceAttach Then m_Surfaces.Remove KeyOf(hWnd)
+    End Function
+
+    Public Sub SurfaceDetach(ByVal hWnd As LongPtr)
+        If hWnd = 0 Or m_Surfaces Is Nothing Then Exit Sub
+        If Find(hWnd) Is Nothing Then Exit Sub
+        RemoveWindowSubclass hWnd, AddressOf SurfaceWindowProc, CLngPtr(SURFACE_SUBCLASS_ID)
+        m_Surfaces.Remove KeyOf(hWnd)
+    End Sub
+
+    Public Function SurfaceForward(ByVal hWnd As LongPtr, ByVal Message As Long, ByVal wParam As LongPtr, ByVal lParam As LongPtr) As LongPtr
+        SurfaceForward = DefSubclassProc(hWnd, Message, wParam, lParam)
+    End Function
+
+    ' WM_PAINT for a surface that owns its window's paint: BeginPaint, one rendered frame, EndPaint.
+    Public Sub SurfacePaintOwned(ByVal hWnd As LongPtr, ByVal Surface As UI3Surface)
+        Dim ps As SurfacePaintStruct, dc As LongPtr
+        dc = BeginPaint(hWnd, ps)
+        If dc = 0 Then Exit Sub
+        Surface.RenderDirty dc, ps.rcPaint, ps.fErase
+        EndPaint hWnd, ps
+    End Sub
+
+    ' Never asks for an erase: the surface paints an opaque frame.
+    Public Sub SurfaceInvalidatePixels(ByVal hWnd As LongPtr, ByRef Box As UI3GdiRect)
+        If hWnd <> 0 Then InvalidateRect hWnd, VarPtr(Box), 0
+    End Sub
+
+    Public Sub SurfaceInvalidateAll(ByVal hWnd As LongPtr)
+        If hWnd <> 0 Then InvalidateRect hWnd, 0, 0
+    End Sub
+
+    ' Asks for one WM_MOUSELEAVE. Returns True when tracking is armed.
+    Public Function SurfaceTrackLeave(ByVal hWnd As LongPtr) As Boolean
+        Dim track As SurfaceTrackMouse
+        track.cbSize = LenB(track)
+        track.dwFlags = TME_LEAVE
+        track.hwndTrack = hWnd
+        SurfaceTrackLeave = TrackMouseEvent(track) <> 0
+    End Function
+
+    ' The cursor in hWnd's client pixels; False when the cursor is over any other window,
+    ' including hWnd's own child windows.
+    Public Function SurfaceCursorInClient(ByVal hWnd As LongPtr, ByRef X As Long, ByRef Y As Long) As Boolean
+        Dim point As SurfacePoint
+        If GetCursorPos(point) = 0 Then Exit Function
+        If WindowFromPoint(point) <> hWnd Then Exit Function
+        If ScreenToClient(hWnd, point) = 0 Then Exit Function
+        X = point.x: Y = point.y
+        SurfaceCursorInClient = True
+    End Function
+
+    Public Function SurfaceWindowDpi(ByVal hWnd As LongPtr) As Single
+        If hWnd <> 0 Then SurfaceWindowDpi = GetDpiForWindow(hWnd)
+        If SurfaceWindowDpi <= 0 Then SurfaceWindowDpi = 96
+    End Function
+
+    Public Function SurfaceTicks() As Long
+        SurfaceTicks = GetTickCount()
+    End Function
+
+    Private Function KeyOf(ByVal hWnd As LongPtr) As String
+        KeyOf = "w" & Hex$(hWnd)
+    End Function
+
+    Private Function Find(ByVal hWnd As LongPtr) As UI3Surface
+        On Error Resume Next
+        Set Find = m_Surfaces(KeyOf(hWnd))
+    End Function
+
+    Private Function SurfaceWindowProc(ByVal hWnd As LongPtr, ByVal Message As Long, ByVal wParam As LongPtr, _
+            ByVal lParam As LongPtr, ByVal Id As LongPtr, ByVal Data As LongPtr) As LongPtr
+        Dim surface As UI3Surface
+        If Not m_Surfaces Is Nothing Then Set surface = Find(hWnd)
+        If surface Is Nothing Then
+            If Message = &H82 Then RemoveWindowSubclass hWnd, AddressOf SurfaceWindowProc, Id ' WM_NCDESTROY
+            SurfaceWindowProc = DefSubclassProc(hWnd, Message, wParam, lParam)
+            Exit Function
+        End If
+        SurfaceWindowProc = surface.WindowMessage(hWnd, Message, wParam, lParam)
+    End Function
+End Module

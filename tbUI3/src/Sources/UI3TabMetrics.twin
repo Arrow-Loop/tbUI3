@@ -66,77 +66,16 @@ Private Module UI3TabMetrics
         End If
     End Function
 
-    Private Type TabPoint
-        x As Long
-        y As Long
-    End Type
-    Private Type TabTrackMouse
-        cbSize As Long
-        flags As Long
-        hWnd As LongPtr
-        hoverTime As Long
-    End Type
-    Private Const HeaderSubclassId As Long = &H55493354
-    Private Declare PtrSafe Function GetCursorPos Lib "user32" (ByRef Point As TabPoint) As Long
-    Private Declare PtrSafe Function ScreenToClient Lib "user32" (ByVal hWnd As LongPtr, ByRef Point As TabPoint) As Long
-    Private Declare PtrSafe Function WindowFromPoint Lib "user32" (ByVal Point As TabPoint) As LongPtr
     Private Declare PtrSafe Function GetKeyState Lib "user32" (ByVal Key As Long) As Integer
     Private Declare PtrSafe Function SetCapture Lib "user32" (ByVal hWnd As LongPtr) As LongPtr
     Private Declare PtrSafe Function GetCapture Lib "user32" () As LongPtr
     Private Declare PtrSafe Function ReleaseCapture Lib "user32" () As Long
-    Private Declare PtrSafe Function TrackMouseEvent Lib "user32" (ByRef Track As TabTrackMouse) As Long
-    Private Declare PtrSafe Function InvalidateRect Lib "user32" (ByVal hWnd As LongPtr, ByVal Rect As LongPtr, ByVal bErase As Long) As Long
-    Private Declare PtrSafe Function SetWindowSubclass Lib "comctl32" Alias "#410" (ByVal hWnd As LongPtr, ByVal Callback As LongPtr, ByVal Id As LongPtr, ByVal Data As LongPtr) As Long
-    Private Declare PtrSafe Function RemoveWindowSubclass Lib "comctl32" Alias "#412" (ByVal hWnd As LongPtr, ByVal Callback As LongPtr, ByVal Id As LongPtr) As Long
-    Private Declare PtrSafe Function DefSubclassProc Lib "comctl32" Alias "#413" (ByVal hWnd As LongPtr, ByVal Message As Long, ByVal wParam As LongPtr, ByVal lParam As LongPtr) As LongPtr
 
-    Public Sub WatchPointer(ByVal hWnd As LongPtr)
-        SetWindowSubclass hWnd, AddressOf HeaderWindowProc, CLngPtr(HeaderSubclassId), 0
-        TrackPointer hWnd
-    End Sub
-
-    Public Sub TrackPointer(ByVal hWnd As LongPtr)
-        Dim track As TabTrackMouse
-        track.cbSize = LenB(track): track.flags = 2: track.hWnd = hWnd
-        TrackMouseEvent track
-    End Sub
-
-    ' Only the header changes on hover/press/focus. Keep the page and its child
-    ' windows out of the update region and never request a class-brush erase.
-    Public Sub InvalidateHeader(ByVal hWnd As LongPtr)
-        If hWnd = 0 Then Exit Sub
-        Dim rect As UI3GdiRect
-        If UI3GetClientRect(hWnd, rect) = 0 Then Exit Sub
-        Dim bottom As Long = -Int(-ContentTop * WindowDpi(hWnd) / 96!)
-        If rect.Bottom > bottom Then rect.Bottom = bottom
-        If rect.Right <= 0 Or rect.Bottom <= 0 Then Exit Sub
-        InvalidateRect hWnd, VarPtr(rect), 0
-    End Sub
-
-    Public Sub UnwatchPointer(ByVal hWnd As LongPtr)
-        If hWnd <> 0 Then RemoveWindowSubclass hWnd, AddressOf HeaderWindowProc, CLngPtr(HeaderSubclassId)
-    End Sub
-
-    Private Function HeaderWindowProc(ByVal hWnd As LongPtr, ByVal Message As Long, ByVal wParam As LongPtr, ByVal lParam As LongPtr, ByVal Id As LongPtr, ByVal Data As LongPtr) As LongPtr
-        ' The opaque Direct2D paint supplies the background in the same frame as
-        ' the tabs. Default erasing exposes the light system brush between frames.
-        If Message = &H14 Then Return 1 ' WM_ERASEBKGND
-        If Message = &H2A3 Or Message = &H215 Or Message = &H8 Or Message = &HA Then InvalidateHeader hWnd
-        If Message = &H82 Then UnwatchPointer hWnd
-        HeaderWindowProc = DefSubclassProc(hWnd, Message, wParam, lParam)
-        If Message = &H87 Then
-            HeaderWindowProc = HeaderWindowProc Or 1 ' DLGC_WANTARROWS
-            If GetKeyState(vbKeyControl) < 0 Then HeaderWindowProc = HeaderWindowProc Or 2 ' DLGC_WANTTAB
-        End If
-    End Function
-
-    Public Function PointerPosition(ByVal hWnd As LongPtr, ByRef X As Single, ByRef Y As Single) As Boolean
-        Dim point As TabPoint
-        If GetCursorPos(point) = 0 Then Exit Function
-        If WindowFromPoint(point) <> hWnd Then Exit Function
-        If ScreenToClient(hWnd, point) = 0 Then Exit Function
-        X = point.x * 96! / WindowDpi(hWnd): Y = point.y * 96! / WindowDpi(hWnd)
-        PointerPosition = True
+    ' Hover tracking, erase suppression and header-only invalidation moved to UI3Surface in
+    ' 1.0.0.71. WM_GETDLGCODE: arrows always, and Tab while Ctrl is held (Ctrl+Tab switches pages).
+    Public Function TabDialogCode(ByVal Code As LongPtr) As LongPtr
+        TabDialogCode = Code Or 1 ' DLGC_WANTARROWS
+        If GetKeyState(vbKeyControl) < 0 Then TabDialogCode = TabDialogCode Or 2 ' DLGC_WANTTAB
     End Function
 
     Public Sub CapturePointer(ByVal hWnd As LongPtr)

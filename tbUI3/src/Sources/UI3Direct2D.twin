@@ -582,6 +582,17 @@ Private Module UI3D2D
     Private m_IconTextFormatFamily As String
     Private m_IconTextFormatSize As Single
     Private m_WicFactory As IWICImagingFactory
+    ' Shared caches (docs/2026-11-18-flicker-free-rendering-plan.md). Text formats, font lookups and
+    ' path geometries are device-independent factory resources, so one cache serves every target.
+    ' Brushes belong to one render target: UI3Surface lends its own cache for the length of a frame.
+    Private m_TextFormats As Collection
+    Private m_FontExists As Collection
+    Private m_Outlines As Collection
+    Private m_BrushTarget As LongPtr
+    Private m_Brushes As Collection
+    Private m_BrushLimit As Long
+    Private Const MAX_CACHED_TEXT_FORMATS As Long = 32
+    Private Const MAX_CACHED_OUTLINES As Long = 64
 
     Private Function GuidFromString(ByVal guidText As String) As UI3Guid
         Dim id As UI3Guid
@@ -622,6 +633,15 @@ Private Module UI3D2D
 
     Public Function TabOutline(ByVal X As Single, ByVal Y As Single, ByVal W As Single, ByVal H As Single, _
             ByVal Corner As Single, ByVal Foot As Single) As ID2D1PathGeometry
+        Dim key As String = "o" & X & "|" & Y & "|" & W & "|" & H & "|" & Corner & "|" & Foot
+        Set TabOutline = CachedObject(m_Outlines, key)
+        If Not TabOutline Is Nothing Then Exit Function
+        Set TabOutline = BuildTabOutline(X, Y, W, H, Corner, Foot)
+        CacheObject m_Outlines, key, TabOutline, MAX_CACHED_OUTLINES
+    End Function
+
+    Private Function BuildTabOutline(ByVal X As Single, ByVal Y As Single, ByVal W As Single, ByVal H As Single, _
+            ByVal Corner As Single, ByVal Foot As Single) As ID2D1PathGeometry
         Dim path As ID2D1PathGeometry, sink As ID2D1GeometrySink, point As D2D1_POINT_2F
         Set path = D2DFactory().CreatePathGeometry()
         Set sink = path.Open()
@@ -636,8 +656,40 @@ Private Module UI3D2D
         TabArc sink, X + W + Foot, Y + H, Foot, 0
         sink.EndFigure 1 ' D2D1_FIGURE_END_CLOSED
         sink.Close
-        Set TabOutline = path
+        Set BuildTabOutline = path
     End Function
+
+    ' A cached object, or Nothing when Key is not cached.
+    Private Function CachedObject(ByVal Cache As Collection, ByVal Key As String) As stdole.IUnknown
+        If Cache Is Nothing Then Exit Function
+        On Error Resume Next
+        Set CachedObject = Cache(Key)
+    End Function
+
+    ' Adds Item under Key, emptying the cache first when it has reached Limit entries.
+    Private Sub CacheObject(ByRef Cache As Collection, ByVal Key As String, ByVal Item As stdole.IUnknown, ByVal Limit As Long)
+        If Cache Is Nothing Then Set Cache = New Collection
+        If Cache.Count >= Limit Then
+            Do While Cache.Count > 0
+                Cache.Remove 1
+            Loop
+        End If
+        On Error Resume Next
+        Cache.Add Item, Key
+    End Sub
+
+    ' UI3Surface lends its per-target brush cache for one frame; SolidBrush then reuses brushes
+    ' made for that target instead of creating one per fill.
+    Public Sub UseBrushCache(ByVal Target As ID2D1RenderTarget, ByVal Brushes As Collection, ByVal Limit As Long)
+        m_BrushTarget = ObjPtr(Target)
+        Set m_Brushes = Brushes
+        m_BrushLimit = Limit
+    End Sub
+
+    Public Sub EndBrushCache()
+        m_BrushTarget = 0
+        Set m_Brushes = Nothing
+    End Sub
 
     Private Sub TabArc(ByVal Sink As ID2D1GeometrySink, ByVal X As Single, ByVal Y As Single, ByVal Radius As Single, ByVal Sweep As Long)
         Dim arc As UI3D2DArc
@@ -668,12 +720,27 @@ Private Module UI3D2D
     End Function
 
     Public Function FontFamilyExists(ByVal familyName As String) As Boolean
+        Dim key As String = "f" & LCase$(familyName)
+        If Not m_FontExists Is Nothing Then
+            On Error Resume Next
+            FontFamilyExists = m_FontExists(key)
+            If Err.Number = 0 Then Exit Function
+            Err.Clear
+            On Error GoTo 0
+        Else
+            Set m_FontExists = New Collection
+        End If
+        FontFamilyExists = LookupFontFamily(familyName)
+        m_FontExists.Add FontFamilyExists, key
+    End Function
+
+    Private Function LookupFontFamily(ByVal familyName As String) As Boolean
         Dim fonts As IDWriteFontCollection
         Dim index As Long
         Dim exists As Long
         DWriteFactory().GetSystemFontCollection fonts, 0
         fonts.FindFamilyName StrPtr(familyName), index, exists
-        FontFamilyExists = (exists <> 0)
+        LookupFontFamily = (exists <> 0)
     End Function
 
     ' Text format for control content: ContentControlThemeFontFamily at ControlContentThemeFontSize
@@ -860,9 +927,16 @@ Private Module UI3D2D
     End Function
 
     Public Function SolidBrush(ByVal target As ID2D1RenderTarget, ByVal argb As Long) As ID2D1SolidColorBrush
+        Dim key As String
+        If m_BrushTarget <> 0 And m_BrushTarget = ObjPtr(target) Then
+            key = "b" & Hex$(argb)
+            Set SolidBrush = CachedObject(m_Brushes, key)
+            If Not SolidBrush Is Nothing Then Exit Function
+        End If
         Dim c As D2D1_COLOR_F
         c = ColorFromArgb(argb)
         Set SolidBrush = target.CreateSolidColorBrush(c, 0)
+        If Len(key) <> 0 Then CacheObject m_Brushes, key, SolidBrush, m_BrushLimit
     End Function
 
     ' Two-stop vertical gradient in absolute coordinates, clamped beyond its ends.
@@ -1035,8 +1109,14 @@ Private Module UI3D2D
         Dim family As String
         family = "Segoe UI Variable Text"
         If Not FontFamilyExists(family) Then family = "Segoe UI"
-        DrawTextWithFormat target, caption, CreateCenteredTextFormat(family, fontSize, fontWeight), _
-            x0, y0, x1, y1, argb
+        Dim key As String = "c" & family & "|" & fontSize & "|" & fontWeight
+        Dim format As IDWriteTextFormat
+        Set format = CachedObject(m_TextFormats, key)
+        If format Is Nothing Then
+            Set format = CreateCenteredTextFormat(family, fontSize, fontWeight)
+            CacheObject m_TextFormats, key, format, MAX_CACHED_TEXT_FORMATS
+        End If
+        DrawTextWithFormat target, caption, format, x0, y0, x1, y1, argb
     End Sub
 
     ' --- SVG and PNG images (the icon picker's library tabs) ---
@@ -1156,12 +1236,17 @@ Failed:
         Dim format As IDWriteTextFormat
         family = "Segoe UI Variable Text"
         If Not FontFamilyExists(family) Then family = "Segoe UI"
-        Set format = CreateCenteredTextFormat(family, fontSize, fontWeight)
-        format.SetTextAlignment DWRITE_TEXT_ALIGNMENT_LEADING
-        If Ellipsis Then
-            Dim trimming As UI3TextTrimming
-            trimming.granularity = 1 ' DWRITE_TRIMMING_GRANULARITY_CHARACTER
-            format.SetTrimming trimming, DWriteFactory().CreateEllipsisTrimmingSign(format)
+        Dim key As String = "l" & family & "|" & fontSize & "|" & fontWeight & "|" & Ellipsis
+        Set format = CachedObject(m_TextFormats, key)
+        If format Is Nothing Then
+            Set format = CreateCenteredTextFormat(family, fontSize, fontWeight)
+            format.SetTextAlignment DWRITE_TEXT_ALIGNMENT_LEADING
+            If Ellipsis Then
+                Dim trimming As UI3TextTrimming
+                trimming.granularity = 1 ' DWRITE_TRIMMING_GRANULARITY_CHARACTER
+                format.SetTrimming trimming, DWriteFactory().CreateEllipsisTrimmingSign(format)
+            End If
+            CacheObject m_TextFormats, key, format, MAX_CACHED_TEXT_FORMATS
         End If
         DrawTextWithFormat target, caption, format, x0, y0, x1, y1, argb
     End Sub

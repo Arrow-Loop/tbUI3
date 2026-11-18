@@ -1,6 +1,6 @@
 # UI3TabView and UI3TabPage
 
-Status: package 1.0.0.70 / tbUI3IDE 1.3.0.17 / adapter v10 appearance candidate, 2026-11-17. Shane confirms the designer workflow works. This pass adds shape profiles and core header interaction; it is not a claim of complete TabView fidelity or compiled-native acceptance.
+Status: package 1.0.0.71 / tbUI3IDE 1.3.0.17 / adapter v10 appearance candidate, 2026-11-18. Shane confirms the designer workflow works. This pass adds shape profiles and core header interaction; it is not a claim of complete TabView fidelity or compiled-native acceptance.
 
 Package 68 removes enum-member Description attributes that BETA 1044 interpreted as enum names and emitted with unescaped quotes in designer JSON. The native picker uses ui3TabEdge/ui3TabExplorer; comments and property help describe Edge Style/Explorer Style. The uploaded native response establishes the cause; Shane confirms package 68 resolves the load failure.
 
@@ -16,6 +16,10 @@ Edge is Shane's explicit customized profile from [Smith-Debnam Toolkit 8543201](
 | Explorer | 40 DIP | 8 DIP | 32 DIP | 8 DIP | 4 DIP |
 
 Both styles preserve the page origin at 40 DIP. Their selected outline uses native circular arcs; Edge hover/pressed uses the same profile outline, while Explorer's unselected hover/pressed uses the rounded WinUI container. Selection joins the page surface without a line beneath it. Adjacent selected separators are suppressed. Captions align left with native DirectWrite ellipsis. Focus is keyboard-only with the Toolkit's 2px inset outline treatment, replacing the earlier accent underline.
+
+## Shared paint surface, package 71
+
+UI3TabView paints through UI3Surface (docs/RENDERING.md). At run time the surface owns WM_PAINT and swallows WM_ERASEBKGND, so the host routine never draws before the Direct2D frame; hover is tracked by the surface and repaints only the 40-DIP header when the tab under the pointer changes; run-time paint uses the page list RefreshPages built instead of re-enumerating ContainedControls. The previous UI3TabMetrics subclass is removed; WM_GETDLGCODE arrows/Ctrl+Tab come from TabDialogCode through the surface. Design-time snapshots still use the Paint event and rediscover pages. UI3TabPage stays on host paint because it may contain windowless user controls. Not yet built or seen on a display.
 
 ## Remaining flicker and focus follow-up, package 70
 

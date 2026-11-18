@@ -5,6 +5,9 @@
 [COMControl]
 [Description("TabView with real UI3TabPage containers and Edge/Explorer tab shapes. Designer authoring uses tbUI3IDE.")]
 Public Class UI3TabView
+    ' Paint goes through the shared flicker-free surface (UI3Surface.twin).
+    Implements IUI3SurfaceClient
+
     Public Event SelectionChanged()
     Public Event AddTabButtonClick()
 
@@ -12,9 +15,7 @@ Public Class UI3TabView
     Private m_TabStyle As UI3TabStyle
     Private m_PressedPage As String
     Private m_PressedHit As Long
-    Private m_LastHotHit As Long
     Private m_ManualHeaderScroll As Boolean
-    Private m_PointerHwnd As LongPtr
     Private m_SelectedPage As String
     Private m_ShowAddButton As Boolean
     Private m_Pages As Collection
@@ -28,7 +29,9 @@ Public Class UI3TabView
     Private m_Focused As Boolean
     Private m_FirstHeader As Long
     Private m_NewPageRequest As Long
-    Private m_Target As ID2D1DCRenderTarget
+    ' Borrowed from m_Surface for the length of one SurfaceRender call.
+    Private m_Target As ID2D1RenderTarget
+    Private m_Surface As UI3Surface
 
     [Description("tbUI3 convenience: the selected page's control name. Empty selects the first page.")]
     Public Property Get SelectedPage() As String
@@ -51,7 +54,7 @@ Public Class UI3TabView
     Public Property Let IsAddTabButtonVisible(ByVal Value As Boolean)
         m_ShowAddButton = Value
         PropertyChanged "IsAddTabButtonVisible"
-        UserControl.Refresh
+        Repaint
     End Property
 
     [NonBrowsable]
@@ -182,7 +185,7 @@ Public Class UI3TabView
     Done:
         If m_Pages Is Nothing Then Set m_Pages = New Collection
         m_Refreshing = False
-        If Not m_Painting Then UserControl.Refresh
+        If Not m_Painting Then Repaint
     End Sub
 
     [Description("Tab shape profile: Edge Style (Toolkit default) or Explorer Style (WinUI profile).")]
@@ -211,7 +214,7 @@ Public Class UI3TabView
         If Value < 0 Or Value >= m_Pages.Count Then Err.Raise 380
         m_FirstHeader = Value + 1
         m_ManualHeaderScroll = True
-        UserControl.Refresh
+        Repaint
     End Property
 
     Private Function ContainsPage(ByVal Pages As Collection, ByVal Candidate As UI3TabPage) As Boolean
@@ -313,10 +316,10 @@ Public Class UI3TabView
         If index <= m_Pages.Count Then HitHeader = index
     End Function
 
+    ' The part under the pointer, tracked by the surface at run time; 0 in the designer.
     Private Function HotHeader() As Long
-        If Not UserControl.Enabled Or Not Ambient.UserMode Then Exit Function
-        Dim x As Single, y As Single
-        If UI3TabMetrics.PointerPosition(UserControl.hWnd, x, y) Then HotHeader = HitHeader(x, y)
+        If m_Surface Is Nothing Or Not UserControl.Enabled Then Exit Function
+        HotHeader = m_Surface.HotPart
     End Function
 
     Private Sub ScrollHeaders(ByVal Direction As Long)
@@ -330,24 +333,41 @@ Public Class UI3TabView
         RepaintHeader
     End Sub
 
+    ' Hover/press/focus/scroll: at run time only the header is invalidated, never erased.
     Private Sub RepaintHeader()
-        If Ambient.UserMode Then
-            SyncNativeBackground
-            UI3TabMetrics.InvalidateHeader UserControl.hWnd
+        If OwnsPaint() Then
+            ' Scrolling or a selection change can move a different tab under a still pointer.
+            m_Surface.SyncHot
+            InvalidateHeader
         Else
             ' The IDE requests synchronous control snapshots after edits.
             UserControl.Refresh
         End If
     End Sub
 
-    Private Sub UserControl_MouseMove(Button As Integer, Shift As Integer, X As Single, Y As Single)
-        If Not UserControl.Enabled Then Exit Sub
-        UI3TabMetrics.TrackPointer UserControl.hWnd
-        Dim hit As Long = HotHeader()
-        If hit <> m_LastHotHit Then
-            m_LastHotHit = hit
-            RepaintHeader
+    ' Layout or property changes: the whole control, without erase at run time.
+    Private Sub Repaint()
+        If OwnsPaint() Then
+            m_Surface.SyncHot
+            m_Surface.Invalidate
+        Else
+            UserControl.Refresh
         End If
+    End Sub
+
+    Private Sub InvalidateHeader()
+        If Not m_Surface Is Nothing Then m_Surface.InvalidateArea 0, 0, WidthDips(), UI3TabMetrics.ContentTop
+    End Sub
+
+    Private Function OwnsPaint() As Boolean
+        If Not m_Surface Is Nothing Then OwnsPaint = m_Surface.OwnsPaint
+    End Function
+
+    ' Run time: the surface owns WM_PAINT. Design time: it only suppresses erase and adds
+    ' arrow/Ctrl+Tab keys, and the Paint event draws through PaintEvent.
+    Private Sub EnsureSurface()
+        If m_Surface Is Nothing Then Set m_Surface = New UI3Surface
+        m_Surface.Attach UserControl.hWnd, Me, Ambient.UserMode
     End Sub
 
     Private Sub UserControl_MouseDown(Button As Integer, Shift As Integer, X As Single, Y As Single)
@@ -450,7 +470,7 @@ Public Class UI3TabView
         If m_SyncingBackground Then Exit Sub
         If StrComp(PropertyName, "BackColor", vbTextCompare) = 0 Then
             SyncNativeBackground
-            UserControl.Refresh
+            Repaint
         End If
     End Sub
 
@@ -482,13 +502,12 @@ Public Class UI3TabView
 
     Private Sub UserControl_Show()
         SyncNativeBackground
-        m_PointerHwnd = UserControl.hWnd
-        UI3TabMetrics.WatchPointer m_PointerHwnd
+        EnsureSurface
         RefreshPages
     End Sub
 
     Private Sub UserControl_Terminate()
-        UI3TabMetrics.UnwatchPointer m_PointerHwnd
+        If Not m_Surface Is Nothing Then m_Surface.Detach
     End Sub
 
     Private Sub UserControl_Resize()
@@ -569,37 +588,37 @@ Public Class UI3TabView
         UI3D2D.DrawTabGlyph m_Target, Glyph, X, UI3TabMetrics.AuxiliaryTop(m_TabStyle), UI3TabMetrics.AddWidth, UI3TabMetrics.AddHeight, color, fontSize
     End Sub
 
+    ' Design time (and any paint before Show): the IDE's synchronous snapshots arrive here.
+    ' At run time the surface handles WM_PAINT itself and this event does not fire.
     Private Sub UserControl_Paint()
         If m_Painting Then Exit Sub
+        EnsureSurface
+        m_Surface.PaintEvent UserControl.hDC
+        If Not Ambient.UserMode Or m_Surface.LastResult <> 0 Then
+            On Error Resume Next
+            Dim client As UI3GdiRect
+            UI3GetClientRect UserControl.hWnd, client
+            UI3TabDiagnostics.PaintState "host " & UserControl.Extender.Name, UserControl.hWnd, UserControl.hDC, client, _
+                m_Surface.Dpi(), UserControl.ScaleWidth, UserControl.ScaleHeight, m_Surface.LastResult, m_LastPaintTrace
+        End If
+    End Sub
+
+    Private Sub IUI3SurfaceClient_SurfaceRender(ByVal Target As ID2D1RenderTarget, ByVal w As Single, ByVal h As Single)
+        If m_Painting Then Exit Sub
         m_Painting = True
+        Set m_Target = Target
         On Error GoTo Failed
-        CollectPages
+        ' Run time keeps the page list RefreshPages built; only the designer, where pages can
+        ' be deleted underneath the control, rediscovers them on every snapshot.
+        If Not OwnsPaint() Then CollectPages
         EnsureHeaderVisible ActiveIndex()
-        Dim client As UI3GdiRect, dpi As Single, w As Single, h As Single, clear As D2D1_COLOR_F
-        Dim dc As LongPtr, drawing As Boolean, hr As Long
-        dc = UserControl.hDC
-        If dc = 0 Then GoTo Done
-        UI3GetClientRect UserControl.hWnd, client
-        If client.Right <= 0 Or client.Bottom <= 0 Then GoTo Done
-        dpi = UI3TabMetrics.WindowDpi(UserControl.hWnd)
-        If m_Target Is Nothing Then Set m_Target = CreateDCTarget()
-        m_Target.SetDpi dpi, dpi
-        m_Target.BindDC dc, client
-        w = client.Right * 96! / dpi
-        h = client.Bottom * 96! / dpi
-        ' An opaque theme surface keeps dark text/fills paired with their own theme.
-        ' twinBASIC supplies the root form BackColor as ambient even inside a page.
-        clear = ColorFromArgb(UI3TabMetrics.HeaderBackground())
-        m_Target.BeginDraw
-        drawing = True
-        m_Target.Clear clear
+        ' The surface has already cleared to SurfaceBackground (the header surface).
         UI3TabMetrics.FillBox m_Target, 0, UI3TabMetrics.ContentTop, w, h - UI3TabMetrics.ContentTop, UI3TabMetrics.PageBackground()
         Dim size As Single, i As Long, active As Long, count As Long
         size = HeaderSize()
         count = VisibleHeaderCount(w, size)
         active = ActiveIndex()
         Dim hot As Long = HotHeader(), held As Boolean = UI3TabMetrics.PointerPressed(UserControl.hWnd)
-        m_LastHotHit = hot
         Dim clip As D2D1_RECT_F
         clip.Left = HeaderStart() - UI3TabMetrics.FootRadius(m_TabStyle)
         clip.Top = 0: clip.Right = HeaderStart() + HeaderArea() + UI3TabMetrics.FootRadius(m_TabStyle): clip.Bottom = UI3TabMetrics.ContentTop
@@ -616,22 +635,37 @@ Public Class UI3TabView
             PaintAuxiliary -2, 0, ChrW$(&HE76B&), hot, held, UserControl.Enabled And m_FirstHeader > 1
             PaintAuxiliary -3, HeaderStart() + HeaderArea() + UI3TabMetrics.FootRadius(m_TabStyle), ChrW$(&HE76C&), hot, held, UserControl.Enabled And m_FirstHeader + HeaderSlots() <= m_Pages.Count
         End If
-        hr = m_Target.EndDraw(0, 0)
-        drawing = False
-        If Not Ambient.UserMode Or hr <> 0 Then
-            UI3TabDiagnostics.PaintState "host " & UserControl.Extender.Name, UserControl.hWnd, dc, client, dpi, _
-                UserControl.ScaleWidth, UserControl.ScaleHeight, hr, m_LastPaintTrace
-        End If
-        If hr < 0 Then Set m_Target = Nothing
-    Done:
+        Set m_Target = Nothing
         m_Painting = False
         Exit Sub
     Failed:
-        hr = Err.Number
-        UI3TabDiagnostics.Note "host " & UserControl.Extender.Name & " Paint exception &H" & Hex$(hr) & " " & Err.Description
-        On Error Resume Next
-        If drawing And Not m_Target Is Nothing Then m_Target.EndDraw 0, 0
+        Dim number As Long = Err.Number, description As String = Err.Description
         Set m_Target = Nothing
         m_Painting = False
+        UI3TabDiagnostics.Note "host " & UserControl.Extender.Name & " Paint exception &H" & Hex$(number) & " " & description
+        ' Let the surface discard this frame's render target.
+        Err.Raise number, "UI3TabView", description
     End Sub
+
+    Private Function IUI3SurfaceClient_SurfaceHitTest(ByVal X As Single, ByVal Y As Single) As Long
+        If Not UserControl.Enabled Or m_Pages Is Nothing Then Exit Function
+        IUI3SurfaceClient_SurfaceHitTest = HitHeader(X, Y)
+    End Function
+
+    Private Sub IUI3SurfaceClient_SurfaceHotChanged(ByVal OldPart As Long, ByVal NewPart As Long)
+        InvalidateHeader
+    End Sub
+
+    ' Leave/capture/focus/enable changes repaint only the header, as before 1.0.0.71.
+    Private Sub IUI3SurfaceClient_SurfaceStateChanged(ByVal Message As Long)
+        InvalidateHeader
+    End Sub
+
+    Private Function IUI3SurfaceClient_SurfaceDialogCode(ByVal Code As LongPtr) As LongPtr
+        IUI3SurfaceClient_SurfaceDialogCode = UI3TabMetrics.TabDialogCode(Code)
+    End Function
+
+    Private Function IUI3SurfaceClient_SurfaceBackground() As Long
+        IUI3SurfaceClient_SurfaceBackground = UI3TabMetrics.HeaderBackground()
+    End Function
 End Class

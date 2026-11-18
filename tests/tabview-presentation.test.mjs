@@ -19,7 +19,7 @@ for(const name of ['HeaderTop','FootRadius','HeaderHeight','AuxiliaryTop','Overf
  }).join('\n');context[name]=vm.runInNewContext('(function('+params.join(',')+'){let result=0;'+code+';return result;})',context);
 }
 export function nativeTabOutline(x,y,w,h,corner,foot){
- const source=fs.readFileSync('tbUI3/src/Sources/UI3Direct2D.twin','utf8'),body=source.match(/Public Function TabOutline\([\s\S]*?\r?\n([\s\S]*?)    End Function/)[1];
+ const source=fs.readFileSync('tbUI3/src/Sources/UI3Direct2D.twin','utf8'),body=source.match(/Private Function BuildTabOutline\([\s\S]*?\r?\n([\s\S]*?)    End Function/)[1];
  const values={X:x,Y:y,W:w,H:h,Corner:corner,Foot:foot},point={x:0,y:0},commands=[];
  const value=s=>vm.runInNewContext(s.trim(),values);
  for(const statement of body.split(/\r?\n/).flatMap(line=>line.split(':')).map(x=>x.trim())){

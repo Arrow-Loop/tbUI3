@@ -1,3 +1,9 @@
+### 1.0.0.71
+- Adds UI3Surface, a shared flicker-free paint base. At run time it owns WM_PAINT (BeginPaint/EndPaint) and swallows WM_ERASEBKGND, so the host paint routine never draws before the Direct2D frame; each frame is composed offscreen and copied once, clipped to the dirty area.
+- UI3TabView paints through UI3Surface. Hover repaints only when the tab under the pointer changes, and only the header. Run-time paint no longer rediscovers pages; the designer still does.
+- Brushes are cached per render target; text formats, font lookups and tab outlines are cached instead of created on every paint.
+- Set TBUI3_PAINT_TRACE=1 to log erase/paint/invalidate events to tbUI3-paint.log next to the project (fallback %TEMP%).
+
 ### 1.0.0.70
 - Matches native TabView/page BackColor to the D2D theme outside Paint, addressing the remaining light erase surface.
 - Focus cues require keyboard navigation rather than assuming every GotFocus is keyboard input.

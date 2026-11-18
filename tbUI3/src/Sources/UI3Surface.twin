@@ -1,0 +1,321 @@
+' One control's flicker-free paint surface (plan: docs/2026-11-18-flicker-free-rendering-plan.md).
+'
+' At run time the surface owns the window's paint: WM_ERASEBKGND is swallowed and WM_PAINT is
+' drawn with BeginPaint/EndPaint, so twinBASIC's own paint routine (and the control's Paint event)
+' never draws first. Each frame is composed offscreen by one cached Direct2D DC render target and
+' copied to the screen once, clipped to the dirty area. Brushes are cached per render target; the
+' surface tracks the part under the pointer and tells the control only when it really changes.
+'
+' At design time the surface only swallows WM_ERASEBKGND and answers WM_GETDLGCODE; the IDE takes
+' synchronous snapshots through the control's Paint event, which calls PaintEvent so the same
+' drawing code runs. Set the environment variable TBUI3_PAINT_TRACE=1 before starting the IDE or
+' app to log every erase, paint and invalidation to tbUI3-paint.log next to the project (or the
+' built EXE), falling back to %TEMP%.
+
+Private Class UI3Surface
+
+    Private Const WM_ENABLE As Long = &HA
+    Private Const WM_PAINT As Long = &HF
+    Private Const WM_ERASEBKGND As Long = &H14
+    Private Const WM_NCDESTROY As Long = &H82
+    Private Const WM_GETDLGCODE As Long = &H87
+    Private Const WM_KILLFOCUS As Long = &H8
+    Private Const WM_MOUSEMOVE As Long = &H200
+    Private Const WM_CAPTURECHANGED As Long = &H215
+    Private Const WM_MOUSELEAVE As Long = &H2A3
+    Private Const WM_DPICHANGED_AFTERPARENT As Long = &H2E3
+    Private Const WM_PRINTCLIENT As Long = &H318
+    Private Const D2D1_ANTIALIAS_MODE_ALIASED As Long = 1
+    Private Const MAX_CACHED_BRUSHES As Long = 64
+
+    Private m_hWnd As LongPtr
+    Private m_Client As IUI3SurfaceClient
+    Private m_OwnsPaint As Boolean
+    Private m_Attached As Boolean
+    Private m_Target As ID2D1DCRenderTarget
+    Private m_Brushes As Collection
+    Private m_Rendering As Boolean
+    Private m_Tracking As Boolean
+    Private m_HotPart As Long
+    Private m_LastResult As Long
+    Private m_Trace As Long ' 0 unknown, 1 off, 2 on
+
+    ' Connects the control. OwnsPaint is Ambient.UserMode: True at run time, False in the designer.
+    Public Sub Attach(ByVal hWnd As LongPtr, ByVal Client As IUI3SurfaceClient, ByVal OwnsPaint As Boolean)
+        If m_Attached And hWnd = m_hWnd And OwnsPaint = m_OwnsPaint Then
+            Set m_Client = Client
+            Exit Sub
+        End If
+        Detach
+        If hWnd = 0 Then Exit Sub
+        m_hWnd = hWnd
+        Set m_Client = Client
+        m_OwnsPaint = OwnsPaint
+        m_HotPart = 0
+        m_Tracking = False
+        m_Attached = UI3SurfaceHost.SurfaceAttach(hWnd, Me)
+        Trace "attach owns=" & OwnsPaint & " ok=" & m_Attached
+    End Sub
+
+    ' Releases the window and the control. Also runs on WM_NCDESTROY, which breaks the
+    ' control/surface reference cycle before the control terminates.
+    Public Sub Detach()
+        If m_Attached Then UI3SurfaceHost.SurfaceDetach m_hWnd
+        m_Attached = False
+        Set m_Client = Nothing
+        ReleaseTarget
+    End Sub
+
+    ' True when this surface draws the window itself (run time, subclass attached).
+    Public Property Get OwnsPaint() As Boolean
+        OwnsPaint = m_Attached And m_OwnsPaint
+    End Property
+
+    ' The interactive part under the pointer at run time, 0 for none.
+    Public Property Get HotPart() As Long
+        HotPart = m_HotPart
+    End Property
+
+    ' Re-reads the part under the pointer without notifying the client. A client calls this
+    ' when its own layout moved (scrolling, selection) under a pointer that did not move.
+    Public Sub SyncHot()
+        If m_Attached And m_OwnsPaint Then m_HotPart = PointerPart()
+    End Sub
+
+    ' HRESULT of the last EndDraw, for diagnostics.
+    Public Property Get LastResult() As Long
+        LastResult = m_LastResult
+    End Property
+
+    Public Function Dpi() As Single
+        Dpi = UI3SurfaceHost.SurfaceWindowDpi(m_hWnd)
+    End Function
+
+    ' Repaints the whole control without erasing.
+    Public Sub Invalidate()
+        If m_hWnd = 0 Then Exit Sub
+        Trace "invalidate all"
+        UI3SurfaceHost.SurfaceInvalidateAll m_hWnd
+    End Sub
+
+    ' Repaints one area, given in DIPs, rounded out to whole device pixels. Never erases.
+    Public Sub InvalidateArea(ByVal X As Single, ByVal Y As Single, ByVal W As Single, ByVal H As Single)
+        If m_hWnd = 0 Or W <= 0 Or H <= 0 Then Exit Sub
+        Dim factor As Single = Dpi() / 96!
+        Dim box As UI3GdiRect
+        box.Left = Int(X * factor)
+        box.Top = Int(Y * factor)
+        box.Right = -Int(-(X + W) * factor)
+        box.Bottom = -Int(-(Y + H) * factor)
+        Trace "invalidate " & RectText(box)
+        UI3SurfaceHost.SurfaceInvalidatePixels m_hWnd, box
+    End Sub
+
+    ' The design-time route: the control's Paint event passes UserControl.hDC.
+    Public Sub PaintEvent(ByVal hdc As LongPtr)
+        Dim client As UI3GdiRect
+        If m_hWnd = 0 Or hdc = 0 Then Exit Sub
+        UI3GetClientRect m_hWnd, client
+        Render hdc, client
+    End Sub
+
+    ' Called by UI3SurfaceHost for every message to the attached window.
+    Public Function WindowMessage(ByVal hWnd As LongPtr, ByVal Message As Long, ByVal wParam As LongPtr, ByVal lParam As LongPtr) As LongPtr
+        Select Case Message
+            Case WM_ERASEBKGND
+                ' Rendering supplies an opaque background in the same frame.
+                Trace "erase swallowed"
+                WindowMessage = 1
+                Exit Function
+
+            Case WM_PAINT
+                If m_OwnsPaint Then
+                    UI3SurfaceHost.SurfacePaintOwned hWnd, Me
+                    WindowMessage = 0
+                    Exit Function
+                End If
+
+            Case WM_PRINTCLIENT
+                If m_OwnsPaint And wParam <> 0 Then
+                    Dim whole As UI3GdiRect
+                    UI3GetClientRect hWnd, whole
+                    Trace "printclient"
+                    Render wParam, whole
+                    WindowMessage = 0
+                    Exit Function
+                End If
+
+            Case WM_MOUSEMOVE
+                If m_OwnsPaint Then
+                    TrackLeave
+                    SetHot PointerPart()
+                End If
+
+            Case WM_MOUSELEAVE
+                m_Tracking = False
+                If m_OwnsPaint Then SetHot PointerPart()
+
+            Case WM_CAPTURECHANGED, WM_KILLFOCUS, WM_ENABLE
+                NotifyState Message
+
+            Case WM_DPICHANGED_AFTERPARENT
+                Invalidate
+
+            Case WM_GETDLGCODE
+                WindowMessage = UI3SurfaceHost.SurfaceForward(hWnd, Message, wParam, lParam)
+                If Not m_Client Is Nothing Then
+                    On Error Resume Next
+                    WindowMessage = m_Client.SurfaceDialogCode(WindowMessage)
+                End If
+                Exit Function
+
+            Case WM_NCDESTROY
+                Trace "destroy"
+                WindowMessage = UI3SurfaceHost.SurfaceForward(hWnd, Message, wParam, lParam)
+                Detach
+                Exit Function
+        End Select
+        WindowMessage = UI3SurfaceHost.SurfaceForward(hWnd, Message, wParam, lParam)
+    End Function
+
+    ' Called by UI3SurfaceHost.SurfacePaintOwned between BeginPaint and EndPaint.
+    Public Sub RenderDirty(ByVal dc As LongPtr, ByRef Dirty As UI3GdiRect, ByVal EraseFlag As Long)
+        Dim started As Long
+        If TraceOn() Then started = UI3SurfaceHost.SurfaceTicks()
+        Render dc, Dirty
+        If TraceOn() Then Trace "paint " & RectText(Dirty) & " erase=" & EraseFlag & " ms=" & (UI3SurfaceHost.SurfaceTicks() - started) & " hr=&H" & Hex$(m_LastResult)
+    End Sub
+
+    ' Composes one frame offscreen and copies it to Dc once. Dirty is in device pixels.
+    Private Sub Render(ByVal dc As LongPtr, ByRef Dirty As UI3GdiRect)
+        If m_Rendering Or m_Client Is Nothing Then Exit Sub
+        Dim client As UI3GdiRect
+        UI3GetClientRect m_hWnd, client
+        If client.Right <= 0 Or client.Bottom <= 0 Then Exit Sub
+        m_Rendering = True
+        On Error GoTo Failed
+        Dim drawing As Boolean, clipped As Boolean, hr As Long
+        Dim dpiNow As Single = Dpi()
+        Dim w As Single = client.Right * 96! / dpiNow
+        Dim h As Single = client.Bottom * 96! / dpiNow
+        Dim clip As D2D1_RECT_F
+        clip.Left = Dirty.Left * 96! / dpiNow
+        clip.Top = Dirty.Top * 96! / dpiNow
+        clip.Right = Dirty.Right * 96! / dpiNow
+        clip.Bottom = Dirty.Bottom * 96! / dpiNow
+        If clip.Right <= clip.Left Or clip.Bottom <= clip.Top Then GoTo Done
+        If m_Target Is Nothing Then
+            Set m_Target = CreateDCTarget()
+            Set m_Brushes = New Collection
+        End If
+        m_Target.SetDpi dpiNow, dpiNow
+        m_Target.BindDC dc, client
+        m_Target.BeginDraw
+        drawing = True
+        UI3D2D.UseBrushCache m_Target, m_Brushes, MAX_CACHED_BRUSHES
+        m_Target.PushAxisAlignedClip clip, D2D1_ANTIALIAS_MODE_ALIASED
+        clipped = True
+        m_Target.Clear ColorFromArgb(m_Client.SurfaceBackground())
+        m_Client.SurfaceRender m_Target, w, h
+        m_Target.PopAxisAlignedClip
+        clipped = False
+        hr = m_Target.EndDraw(0, 0)
+        drawing = False
+        UI3D2D.EndBrushCache
+        m_LastResult = hr
+        If hr < 0 Then
+            ' D2DERR_RECREATE_TARGET or any other failure: start again with a new target.
+            Trace "enddraw failed hr=&H" & Hex$(hr)
+            ReleaseTarget
+            If hr = D2DERR_RECREATE_TARGET And m_OwnsPaint Then Invalidate
+        End If
+    Done:
+        m_Rendering = False
+        Exit Sub
+    Failed:
+        m_LastResult = Err.Number
+        Trace "render exception &H" & Hex$(Err.Number) & " " & Err.Description
+        On Error Resume Next
+        If clipped Then m_Target.PopAxisAlignedClip
+        If drawing Then m_Target.EndDraw 0, 0
+        UI3D2D.EndBrushCache
+        ReleaseTarget
+        m_Rendering = False
+    End Sub
+
+    Private Sub ReleaseTarget()
+        Set m_Brushes = Nothing
+        Set m_Target = Nothing
+    End Sub
+
+    Private Sub TrackLeave()
+        If m_Tracking Then Exit Sub
+        m_Tracking = UI3SurfaceHost.SurfaceTrackLeave(m_hWnd)
+    End Sub
+
+    ' The client's part under the cursor, or 0 when the cursor is over another window
+    ' (including the control's own child windows).
+    Private Function PointerPart() As Long
+        If m_Client Is Nothing Then Exit Function
+        Dim x As Long, y As Long
+        If Not UI3SurfaceHost.SurfaceCursorInClient(m_hWnd, x, y) Then Exit Function
+        Dim factor As Single = 96! / Dpi()
+        On Error Resume Next
+        PointerPart = m_Client.SurfaceHitTest(x * factor, y * factor)
+    End Function
+
+    Private Sub SetHot(ByVal Part As Long)
+        If Part = m_HotPart Then Exit Sub
+        Dim previous As Long = m_HotPart
+        m_HotPart = Part
+        Trace "hot " & previous & " -> " & Part
+        If m_Client Is Nothing Then Exit Sub
+        On Error Resume Next
+        m_Client.SurfaceHotChanged previous, Part
+    End Sub
+
+    Private Sub NotifyState(ByVal Message As Long)
+        If m_Client Is Nothing Then Exit Sub
+        On Error Resume Next
+        m_Client.SurfaceStateChanged Message
+    End Sub
+
+    Private Function RectText(ByRef Box As UI3GdiRect) As String
+        RectText = "(" & Box.Left & "," & Box.Top & ")-(" & Box.Right & "," & Box.Bottom & ")"
+    End Function
+
+    Private Function TraceOn() As Boolean
+        If m_Trace = 0 Then
+            m_Trace = 1
+            If Environ$("TBUI3_PAINT_TRACE") = "1" Then m_Trace = 2
+        End If
+        TraceOn = (m_Trace = 2)
+    End Function
+
+    Private Sub Trace(ByVal Text As String)
+        If Not TraceOn() Then Exit Sub
+        On Error Resume Next
+        Dim lineText As String
+        lineText = Format$(Now, "hh:nn:ss") & " t=" & UI3SurfaceHost.SurfaceTicks() & " hwnd=&H" & Hex$(m_hWnd) & " " & Text
+        If Not AppendLine(App.Path & "\tbUI3-paint.log", lineText) Then AppendLine Environ$("TEMP") & "\tbUI3-paint.log", lineText
+    End Sub
+
+    Private Function AppendLine(ByVal FilePath As String, ByVal Text As String) As Boolean
+        On Error GoTo Failed
+        Dim file As Integer
+        file = FreeFile
+        Open FilePath For Append As #file
+        Print #file, Text
+        Close #file
+        AppendLine = True
+        Exit Function
+    Failed:
+        On Error Resume Next
+        Close #file
+    End Function
+
+    Private Sub Class_Terminate()
+        Detach
+    End Sub
+
+End Class

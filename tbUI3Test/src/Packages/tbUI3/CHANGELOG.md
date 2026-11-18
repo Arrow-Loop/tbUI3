@@ -1,3 +1,8 @@
+### 1.0.0.74
+- UI3Button appearance properties with WinUI names and defaults: FontFamily, FontSize, FontWeight, FontStyle, FontStretch, Padding (XAML Thickness text), HorizontalContentAlignment, VerticalContentAlignment, CornerRadius, BorderThickness and BackgroundSizing.
+- Background, Foreground and BorderBrush colours. As in WinUI, they show in the Normal state; hover, pressed and disabled keep the theme colours. ui3ThemeBrush (-1) returns to the theme.
+- Content now sits inside BorderThickness plus Padding, as WinUI's ContentPresenter does. Centred content looks the same as before.
+
 ### 1.0.0.73
 - UI3Button has WinUI's PointerOver, Pressed and Disabled states for Standard and Accent, from Button_themeresources.xaml.
 - New Subtle style (WinUI SubtleButtonStyle).

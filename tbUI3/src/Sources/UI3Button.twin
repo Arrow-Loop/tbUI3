@@ -30,6 +30,15 @@ Public Class UI3Button
     Private Const DEFAULT_CLICK_MODE As Long = 0
     Private Const DEFAULT_USE_SYSTEM_FOCUS_VISUALS As Boolean = True
     Private Const DEFAULT_ACCESS_KEY As String = ""
+    ' Appearance defaults (1.0.0.74): WinUI's own values from DefaultButtonStyle.
+    Private Const DEFAULT_FONT_FAMILY As String = ""          ' ContentControlThemeFontFamily
+    Private Const DEFAULT_FONT_WEIGHT As Long = 400           ' FontWeight Normal
+    Private Const DEFAULT_FONT_STYLE As Long = 0              ' FontStyle Normal
+    Private Const DEFAULT_FONT_STRETCH As Long = 5            ' FontStretch Normal
+    Private Const DEFAULT_PADDING As String = "11,5,11,6"     ' ButtonPadding
+    Private Const DEFAULT_CONTENT_ALIGNMENT As Long = 1       ' Center (Button's starting value)
+    Private Const DEFAULT_BACKGROUND_SIZING As Long = -1      ' from the Style
+    Private Const THEME_BRUSH As Long = -1                    ' ui3ThemeBrush
     Private Const WM_ENABLE As Long = &HA
     Private Const WM_CAPTURECHANGED As Long = &H215
 
@@ -83,6 +92,26 @@ Public Class UI3Button
     Private m_Focused As Boolean
     Private m_KeyboardFocus As Boolean
     Private m_PointerFocusing As Boolean
+
+    Private m_FontFamily As String
+    Private m_FontSize As Single
+    Private m_FontWeight As Long
+    Private m_FontStyle As UI3FontStyle
+    Private m_FontStretch As UI3FontStretch
+    Private m_PadLeft As Single
+    Private m_PadTop As Single
+    Private m_PadRight As Single
+    Private m_PadBottom As Single
+    Private m_HContent As UI3HorizontalAlignment
+    Private m_VContent As UI3VerticalAlignment
+    Private m_CornerRadius As Single
+    Private m_BorderThickness As Single
+    Private m_BackgroundSizing As UI3BackgroundSizing
+    ' OLE colours, or THEME_BRUSH for the WinUI theme resource. As in WinUI, a set brush shows only
+    ' in the Normal state: the template's other states set the presenter's brushes themselves.
+    Private m_Background As Long
+    Private m_Foreground As Long
+    Private m_BorderBrush As Long
 
     Public Property Get Caption() As String
         Caption = m_Caption
@@ -153,6 +182,242 @@ Public Class UI3Button
         ApplyAccessKey
         PropertyChanged "AccessKey"
     End Property
+
+    ' ---- Appearance (1.0.0.74) ----
+
+    [Description("Caption font. Empty means WinUI's ContentControlThemeFontFamily (Segoe UI Variable, or Segoe UI on Windows 10). WinUI: Control.FontFamily.")]
+    Public Property Get FontFamily() As String
+        FontFamily = m_FontFamily
+    End Property
+
+    Public Property Let FontFamily(ByVal Value As String)
+        m_FontFamily = Trim$(Value)
+        PropertyChanged "FontFamily"
+        Repaint
+    End Property
+
+    [Description("Caption size in DIPs. Default 14 (ControlContentThemeFontSize). WinUI: Control.FontSize.")]
+    Public Property Get FontSize() As Single
+        FontSize = m_FontSize
+    End Property
+
+    Public Property Let FontSize(ByVal Value As Single)
+        If Value <= 0 Then Err.Raise 380
+        m_FontSize = Value
+        PropertyChanged "FontSize"
+        Repaint
+    End Property
+
+    [Description("Caption weight, 1 to 999. Default Normal (400). WinUI: Control.FontWeight.")]
+    Public Property Get FontWeight() As UI3FontWeight
+        FontWeight = m_FontWeight
+    End Property
+
+    Public Property Let FontWeight(ByVal Value As UI3FontWeight)
+        If Value < 1 Or Value > 999 Then Err.Raise 380
+        m_FontWeight = Value
+        PropertyChanged "FontWeight"
+        Repaint
+    End Property
+
+    [Description("Normal, Oblique or Italic. WinUI: Control.FontStyle.")]
+    Public Property Get FontStyle() As UI3FontStyle
+        FontStyle = m_FontStyle
+    End Property
+
+    Public Property Let FontStyle(ByVal Value As UI3FontStyle)
+        If Value < ui3FontStyleNormal Or Value > ui3FontStyleItalic Then Err.Raise 380
+        m_FontStyle = Value
+        PropertyChanged "FontStyle"
+        Repaint
+    End Property
+
+    [Description("Condensed to expanded. Default Normal. WinUI: Control.FontStretch.")]
+    Public Property Get FontStretch() As UI3FontStretch
+        FontStretch = m_FontStretch
+    End Property
+
+    Public Property Let FontStretch(ByVal Value As UI3FontStretch)
+        If Value < ui3FontStretchUltraCondensed Or Value > ui3FontStretchUltraExpanded Then Err.Raise 380
+        m_FontStretch = Value
+        PropertyChanged "FontStretch"
+        Repaint
+    End Property
+
+    [Description("Space inside the border in DIPs, written as in XAML: one value for all sides, two for horizontal and vertical, or four for left, top, right and bottom. Default 11,5,11,6 (ButtonPadding). WinUI: Control.Padding.")]
+    Public Property Get Padding() As String
+        Padding = ThicknessText(m_PadLeft, m_PadTop, m_PadRight, m_PadBottom)
+    End Property
+
+    Public Property Let Padding(ByVal Value As String)
+        Dim l As Single, t As Single, r As Single, b As Single
+        If Not ParseThickness(Value, l, t, r, b) Then Err.Raise 380
+        m_PadLeft = l: m_PadTop = t: m_PadRight = r: m_PadBottom = b
+        PropertyChanged "Padding"
+        Repaint
+    End Property
+
+    [Description("Horizontal placement of the caption and icon inside the padding. Default Center. Stretch draws as Left. WinUI: Control.HorizontalContentAlignment.")]
+    Public Property Get HorizontalContentAlignment() As UI3HorizontalAlignment
+        HorizontalContentAlignment = m_HContent
+    End Property
+
+    Public Property Let HorizontalContentAlignment(ByVal Value As UI3HorizontalAlignment)
+        If Value < ui3HAlignLeft Or Value > ui3HAlignStretch Then Err.Raise 380
+        m_HContent = Value
+        PropertyChanged "HorizontalContentAlignment"
+        Repaint
+    End Property
+
+    [Description("Vertical placement of the caption and icon inside the padding. Default Center. Stretch draws as Top. WinUI: Control.VerticalContentAlignment.")]
+    Public Property Get VerticalContentAlignment() As UI3VerticalAlignment
+        VerticalContentAlignment = m_VContent
+    End Property
+
+    Public Property Let VerticalContentAlignment(ByVal Value As UI3VerticalAlignment)
+        If Value < ui3VAlignTop Or Value > ui3VAlignStretch Then Err.Raise 380
+        m_VContent = Value
+        PropertyChanged "VerticalContentAlignment"
+        Repaint
+    End Property
+
+    [Description("Corner radius in DIPs, the same on every corner. Default 4 (ControlCornerRadius). WinUI: Control.CornerRadius.")]
+    Public Property Get CornerRadius() As Single
+        CornerRadius = m_CornerRadius
+    End Property
+
+    Public Property Let CornerRadius(ByVal Value As Single)
+        If Value < 0 Then Err.Raise 380
+        m_CornerRadius = Value
+        PropertyChanged "CornerRadius"
+        Repaint
+    End Property
+
+    [Description("Border width in DIPs, the same on every side. Default 1 (ButtonBorderThemeThickness). WinUI: Control.BorderThickness.")]
+    Public Property Get BorderThickness() As Single
+        BorderThickness = m_BorderThickness
+    End Property
+
+    Public Property Let BorderThickness(ByVal Value As Single)
+        If Value < 0 Then Err.Raise 380
+        m_BorderThickness = Value
+        PropertyChanged "BorderThickness"
+        Repaint
+    End Property
+
+    [Description("Whether the background runs under the border (OuterBorderEdge) or stops inside it (InnerBorderEdge). FromStyle uses the Style's setting: Inner for Standard and Subtle, Outer for Accent. WinUI: Control.BackgroundSizing.")]
+    Public Property Get BackgroundSizing() As UI3BackgroundSizing
+        BackgroundSizing = m_BackgroundSizing
+    End Property
+
+    Public Property Let BackgroundSizing(ByVal Value As UI3BackgroundSizing)
+        If Value < ui3BackgroundSizingFromStyle Or Value > ui3OuterBorderEdge Then Err.Raise 380
+        m_BackgroundSizing = Value
+        PropertyChanged "BackgroundSizing"
+        Repaint
+    End Property
+
+    [Description("Background colour in the Normal state. ui3ThemeBrush (-1) uses the Style's theme resource. Hover, pressed and disabled keep WinUI's colours, as in WinUI. WinUI: Control.Background.")]
+    Public Property Get Background() As OLE_COLOR
+        Background = m_Background
+    End Property
+
+    Public Property Let Background(ByVal Value As OLE_COLOR)
+        m_Background = Value
+        PropertyChanged "Background"
+        Repaint
+    End Property
+
+    [Description("Caption and icon colour in the Normal state. ui3ThemeBrush (-1) uses the Style's theme resource. WinUI: Control.Foreground.")]
+    Public Property Get Foreground() As OLE_COLOR
+        Foreground = m_Foreground
+    End Property
+
+    Public Property Let Foreground(ByVal Value As OLE_COLOR)
+        m_Foreground = Value
+        PropertyChanged "Foreground"
+        Repaint
+    End Property
+
+    [Description("Border colour in the Normal state. ui3ThemeBrush (-1) uses the Style's theme resource. WinUI: Control.BorderBrush.")]
+    Public Property Get BorderBrush() As OLE_COLOR
+        BorderBrush = m_BorderBrush
+    End Property
+
+    Public Property Let BorderBrush(ByVal Value As OLE_COLOR)
+        m_BorderBrush = Value
+        PropertyChanged "BorderBrush"
+        Repaint
+    End Property
+
+    ' XAML Thickness text: one value, two (horizontal, vertical) or four (left, top, right, bottom),
+    ' separated by commas or spaces. Negative values are refused.
+    Private Function ParseThickness(ByVal Text As String, ByRef L As Single, ByRef T As Single, ByRef R As Single, ByRef B As Single) As Boolean
+        Dim parts() As String
+        Dim values(0 To 3) As Single
+        Dim count As Long
+        Dim i As Long
+        Dim item As String
+
+        Text = Trim$(Replace(Text, ",", " "))
+        Do While InStr(Text, "  ") > 0
+            Text = Replace(Text, "  ", " ")
+        Loop
+        If Len(Text) = 0 Then Exit Function
+        parts = Split(Text, " ")
+        If UBound(parts) > 3 Then Exit Function
+        On Error GoTo Bad
+        For i = 0 To UBound(parts)
+            item = parts(i)
+            If Not IsNumeric(item) Then Exit Function
+            values(i) = Val(item)
+            If values(i) < 0 Then Exit Function
+            count = count + 1
+        Next i
+        Select Case count
+            Case 1: L = values(0): T = values(0): R = values(0): B = values(0)
+            Case 2: L = values(0): T = values(1): R = values(0): B = values(1)
+            Case 4: L = values(0): T = values(1): R = values(2): B = values(3)
+            Case Else: Exit Function
+        End Select
+        ParseThickness = True
+    Bad:
+    End Function
+
+    Private Function ThicknessText(ByVal L As Single, ByVal T As Single, ByVal R As Single, ByVal B As Single) As String
+        If L = T And T = R And R = B Then
+            ThicknessText = NumberText(L)
+        ElseIf L = R And T = B Then
+            ThicknessText = NumberText(L) & "," & NumberText(T)
+        Else
+            ThicknessText = NumberText(L) & "," & NumberText(T) & "," & NumberText(R) & "," & NumberText(B)
+        End If
+    End Function
+
+    ' Locale-independent: always a full stop for decimals, as XAML writes them.
+    Private Function NumberText(ByVal Value As Single) As String
+        NumberText = Trim$(Str$(Value))
+        If Left$(NumberText, 1) = "." Then NumberText = "0" & NumberText
+        If Left$(NumberText, 2) = "-." Then NumberText = "-0" & Mid$(NumberText, 2)
+    End Function
+
+    Private Sub ResetAppearance()
+        m_FontFamily = DEFAULT_FONT_FAMILY
+        m_FontSize = ControlContentThemeFontSize
+        m_FontWeight = DEFAULT_FONT_WEIGHT
+        m_FontStyle = DEFAULT_FONT_STYLE
+        m_FontStretch = DEFAULT_FONT_STRETCH
+        m_PadLeft = ButtonPaddingLeft: m_PadTop = ButtonPaddingTop
+        m_PadRight = ButtonPaddingRight: m_PadBottom = ButtonPaddingBottom
+        m_HContent = DEFAULT_CONTENT_ALIGNMENT
+        m_VContent = DEFAULT_CONTENT_ALIGNMENT
+        m_CornerRadius = ControlCornerRadius
+        m_BorderThickness = ButtonBorderThemeThickness
+        m_BackgroundSizing = DEFAULT_BACKGROUND_SIZING
+        m_Background = THEME_BRUSH
+        m_Foreground = THEME_BRUSH
+        m_BorderBrush = THEME_BRUSH
+    End Sub
 
     ' Run-time state, read-only, as in WinUI.
     [Description("True while the button is pressed (pointer, Space or Enter, or Hover click mode). WinUI: ButtonBase.IsPressed.")]
@@ -442,6 +707,7 @@ Public Class UI3Button
         m_UseSystemFocusVisuals = DEFAULT_USE_SYSTEM_FOCUS_VISUALS
         m_AccessKey = DEFAULT_ACCESS_KEY
         ApplyAccessKey
+        ResetAppearance
     End Sub
 
     Private Sub UserControl_ReadProperties(PropBag As PropertyBag)
@@ -464,6 +730,7 @@ Public Class UI3Button
         m_UseSystemFocusVisuals = PropBag.ReadProperty("UseSystemFocusVisuals", DEFAULT_USE_SYSTEM_FOCUS_VISUALS)
         m_AccessKey = Left$(PropBag.ReadProperty("AccessKey", DEFAULT_ACCESS_KEY), 1)
         ApplyAccessKey
+        ReadAppearance PropBag
         DesignLog "ReadProperties " & Hex$(ObjPtr(Me)) & " " & DesignName() & " Icon = " & CLng(m_Icon)
         If Not IsUserMode() Then
             DesignTrace "ReadProperties " & Hex$(ObjPtr(Me)) & " " & DesignName() & " Icon = " & CLng(m_Icon) & _
@@ -502,6 +769,37 @@ Public Class UI3Button
         PropertyChanged "IconData"
         PropertyChanged "IconSource"
         ClearIconKey
+    End Sub
+
+    ' Out-of-range saved values fall back to the WinUI default rather than failing the load.
+    Private Sub ReadAppearance(ByVal PropBag As PropertyBag)
+        Dim l As Single, t As Single, r As Single, b As Single
+        ResetAppearance
+        m_FontFamily = PropBag.ReadProperty("FontFamily", DEFAULT_FONT_FAMILY)
+        m_FontSize = PropBag.ReadProperty("FontSize", ControlContentThemeFontSize)
+        If m_FontSize <= 0 Then m_FontSize = ControlContentThemeFontSize
+        m_FontWeight = PropBag.ReadProperty("FontWeight", DEFAULT_FONT_WEIGHT)
+        If m_FontWeight < 1 Or m_FontWeight > 999 Then m_FontWeight = DEFAULT_FONT_WEIGHT
+        m_FontStyle = PropBag.ReadProperty("FontStyle", DEFAULT_FONT_STYLE)
+        If m_FontStyle < ui3FontStyleNormal Or m_FontStyle > ui3FontStyleItalic Then m_FontStyle = DEFAULT_FONT_STYLE
+        m_FontStretch = PropBag.ReadProperty("FontStretch", DEFAULT_FONT_STRETCH)
+        If m_FontStretch < ui3FontStretchUltraCondensed Or m_FontStretch > ui3FontStretchUltraExpanded Then m_FontStretch = DEFAULT_FONT_STRETCH
+        If ParseThickness(PropBag.ReadProperty("Padding", DEFAULT_PADDING), l, t, r, b) Then
+            m_PadLeft = l: m_PadTop = t: m_PadRight = r: m_PadBottom = b
+        End If
+        m_HContent = PropBag.ReadProperty("HorizontalContentAlignment", DEFAULT_CONTENT_ALIGNMENT)
+        If m_HContent < ui3HAlignLeft Or m_HContent > ui3HAlignStretch Then m_HContent = DEFAULT_CONTENT_ALIGNMENT
+        m_VContent = PropBag.ReadProperty("VerticalContentAlignment", DEFAULT_CONTENT_ALIGNMENT)
+        If m_VContent < ui3VAlignTop Or m_VContent > ui3VAlignStretch Then m_VContent = DEFAULT_CONTENT_ALIGNMENT
+        m_CornerRadius = PropBag.ReadProperty("CornerRadius", ControlCornerRadius)
+        If m_CornerRadius < 0 Then m_CornerRadius = ControlCornerRadius
+        m_BorderThickness = PropBag.ReadProperty("BorderThickness", ButtonBorderThemeThickness)
+        If m_BorderThickness < 0 Then m_BorderThickness = ButtonBorderThemeThickness
+        m_BackgroundSizing = PropBag.ReadProperty("BackgroundSizing", DEFAULT_BACKGROUND_SIZING)
+        If m_BackgroundSizing < ui3BackgroundSizingFromStyle Or m_BackgroundSizing > ui3OuterBorderEdge Then m_BackgroundSizing = DEFAULT_BACKGROUND_SIZING
+        m_Background = PropBag.ReadProperty("Background", THEME_BRUSH)
+        m_Foreground = PropBag.ReadProperty("Foreground", THEME_BRUSH)
+        m_BorderBrush = PropBag.ReadProperty("BorderBrush", THEME_BRUSH)
     End Sub
 
     Private Sub ReadIconImage(ByVal PropBag As PropertyBag)
@@ -543,6 +841,20 @@ Public Class UI3Button
         PropBag.WriteProperty "ClickMode", m_ClickMode, DEFAULT_CLICK_MODE
         PropBag.WriteProperty "UseSystemFocusVisuals", m_UseSystemFocusVisuals, DEFAULT_USE_SYSTEM_FOCUS_VISUALS
         PropBag.WriteProperty "AccessKey", m_AccessKey, DEFAULT_ACCESS_KEY
+        PropBag.WriteProperty "FontFamily", m_FontFamily, DEFAULT_FONT_FAMILY
+        PropBag.WriteProperty "FontSize", m_FontSize, ControlContentThemeFontSize
+        PropBag.WriteProperty "FontWeight", m_FontWeight, DEFAULT_FONT_WEIGHT
+        PropBag.WriteProperty "FontStyle", m_FontStyle, DEFAULT_FONT_STYLE
+        PropBag.WriteProperty "FontStretch", m_FontStretch, DEFAULT_FONT_STRETCH
+        PropBag.WriteProperty "Padding", Padding, DEFAULT_PADDING
+        PropBag.WriteProperty "HorizontalContentAlignment", m_HContent, DEFAULT_CONTENT_ALIGNMENT
+        PropBag.WriteProperty "VerticalContentAlignment", m_VContent, DEFAULT_CONTENT_ALIGNMENT
+        PropBag.WriteProperty "CornerRadius", m_CornerRadius, ControlCornerRadius
+        PropBag.WriteProperty "BorderThickness", m_BorderThickness, ButtonBorderThemeThickness
+        PropBag.WriteProperty "BackgroundSizing", m_BackgroundSizing, DEFAULT_BACKGROUND_SIZING
+        PropBag.WriteProperty "Background", m_Background, THEME_BRUSH
+        PropBag.WriteProperty "Foreground", m_Foreground, THEME_BRUSH
+        PropBag.WriteProperty "BorderBrush", m_BorderBrush, THEME_BRUSH
         DesignTrace "WriteProperties " & Hex$(ObjPtr(Me)) & " " & DesignName() & " Icon = " & CLng(m_Icon) & _
             ", IconSource = " & m_IconImage.Source & ", bytes = " & m_IconImage.ByteCount()
         If m_IconImage.HasImage Then
@@ -829,8 +1141,8 @@ WriteFailed:
 
         dark = IsDarkMode()
         state = VisualState()
-        r = ControlCornerRadius
-        t = ButtonBorderThemeThickness
+        r = m_CornerRadius
+        t = m_BorderThickness
 
         Select Case m_Style
             Case ui3ButtonAccent
@@ -919,13 +1231,31 @@ WriteFailed:
                 End Select
         End Select
 
+        ' BackgroundSizing set on the control wins over the Style's setter.
+        If m_BackgroundSizing = ui3InnerBorderEdge Then
+            fillInset = t
+        ElseIf m_BackgroundSizing = ui3OuterBorderEdge Then
+            fillInset = 0
+        End If
+
+        ' Brushes set on the control show in the Normal state only (the other states replace them).
+        If state = STATE_NORMAL Then
+            If m_Background <> THEME_BRUSH Then fill = ArgbFromOleColor(m_Background)
+            If m_Foreground <> THEME_BRUSH Then foreground = ArgbFromOleColor(m_Foreground)
+            If m_BorderBrush <> THEME_BRUSH Then
+                borderKind = BORDER_SOLID
+                borderColor = ArgbFromOleColor(m_BorderBrush)
+            End If
+        End If
+
         ' The surface has already cleared to SurfaceBackground (the container colour).
         If (fill And &HFF000000) <> 0 Then
-            box = RoundedRect(fillInset, fillInset, w - fillInset, h - fillInset, r - fillInset)
+            box = RoundedRect(fillInset, fillInset, w - fillInset, h - fillInset, MaxSingle(r - fillInset, 0))
             m_Target.FillRoundedRectangle box, SolidBrush(m_Target, fill)
         End If
 
-        box = RoundedRect(t / 2, t / 2, w - t / 2, h - t / 2, r - t / 2)
+        box = RoundedRect(t / 2, t / 2, w - t / 2, h - t / 2, MaxSingle(r - t / 2, 0))
+        If t <= 0 Then borderKind = BORDER_NONE
         Select Case borderKind
             Case BORDER_ELEVATION
                 Dim border As ID2D1LinearGradientBrush
@@ -949,9 +1279,12 @@ WriteFailed:
         ' A recolouring SVG takes the text colour, made opaque over the button's own fill.
         ink = ComposeArgb(foreground, ComposeArgb(fill, ArgbFromOleColor(ContainerBackColor())))
 
+        ' The ContentPresenter places content inside BorderThickness plus Padding. (Before 1.0.0.74 the
+        ' padding was measured from the outer edge; centred content lands in the same place either way.)
         DrawButtonContent m_Target, m_Caption, glyph, iconFamily, m_IconSize, _
-            m_IconPosition, m_IconSpacing, ButtonPaddingLeft, ButtonPaddingTop, _
-            w - ButtonPaddingRight, h - ButtonPaddingBottom, foreground, iconImage, ink
+            m_IconPosition, m_IconSpacing, t + m_PadLeft, t + m_PadTop, _
+            w - t - m_PadRight, h - t - m_PadBottom, foreground, iconImage, ink, _
+            ContentTextFormat(m_FontFamily, m_FontSize, m_FontWeight, m_FontStyle, m_FontStretch), m_HContent, m_VContent
 
         If ShowsFocusVisual() Then DrawFocusVisual w, h, dark
     End Sub
@@ -983,7 +1316,7 @@ WriteFailed:
             outerColor = LIGHT_FocusStrokeColorOuter
             innerColor = LIGHT_FocusStrokeColorInner
         End If
-        r = ControlCornerRadius
+        r = m_CornerRadius
         p = FocusVisualPrimaryThickness
         q = FocusVisualSecondaryThickness
 

@@ -118,6 +118,68 @@ test('new public members keep WinUI names, DISPID_ENABLED and saved defaults',()
 });
 
 test('changed sources keep CRLF',()=>{
- for(const name of ['UI3Button.twin','UI3Theme.twin','UI3Enums.twin','UI3Surface.twin','UI3SurfaceHost.twin'])
+ for(const name of ["UI3Button.twin","UI3Theme.twin","UI3Enums.twin","UI3Surface.twin","UI3SurfaceHost.twin","UI3Direct2D.twin"])
   assert(!/(?<!\r)\n/.test(read(name)),name);
+});
+
+// ---- Package 1.0.0.74: appearance properties ----
+const d2d=read('UI3Direct2D.twin');
+
+test('appearance defaults are DefaultButtonStyle values and enums use WinUI numbering',()=>{
+ assert(/DEFAULT_PADDING As String = "11,5,11,6"/.test(button),'ButtonPadding');
+ assert(/ButtonPaddingLeft As Single = 11[\s\S]*ButtonPaddingTop As Single = 5[\s\S]*ButtonPaddingRight As Single = 11[\s\S]*ButtonPaddingBottom As Single = 6/.test(theme));
+ assert(/ControlContentThemeFontSize As Single = 14\b/.test(theme));
+ assert(/DEFAULT_FONT_WEIGHT As Long = 400\b/.test(button)&&/DEFAULT_FONT_STYLE As Long = 0\b/.test(button)&&/DEFAULT_FONT_STRETCH As Long = 5\b/.test(button));
+ assert(/DEFAULT_CONTENT_ALIGNMENT As Long = 1\b/.test(button),'Button starts with Center content alignment');
+ const reset=body(button,'Private Sub ResetAppearance(');
+ for(const s of ['m_CornerRadius = ControlCornerRadius','m_BorderThickness = ButtonBorderThemeThickness','m_FontSize = ControlContentThemeFontSize','m_Background = THEME_BRUSH','m_Foreground = THEME_BRUSH','m_BorderBrush = THEME_BRUSH']) assert(reset.includes(s),s);
+ assert(/ui3HAlignLeft = 0\s+ui3HAlignCenter = 1\s+ui3HAlignRight = 2\s+ui3HAlignStretch = 3/.test(enums));
+ assert(/ui3VAlignTop = 0\s+ui3VAlignCenter = 1\s+ui3VAlignBottom = 2\s+ui3VAlignStretch = 3/.test(enums));
+ assert(/ui3FontStyleNormal = 0\s+ui3FontStyleOblique = 1\s+ui3FontStyleItalic = 2/.test(enums));
+ assert(/ui3FontStretchUltraCondensed = 1[\s\S]*ui3FontStretchNormal = 5[\s\S]*ui3FontStretchUltraExpanded = 9/.test(enums));
+ assert(/ui3InnerBorderEdge = 0\s+ui3OuterBorderEdge = 1/.test(enums));
+ assert(/ui3FontWeightNormal = 400[\s\S]*ui3FontWeightBold = 700/.test(enums));
+ for(const name of ['FontFamily','FontSize','FontWeight','FontStyle','FontStretch','Padding','HorizontalContentAlignment','VerticalContentAlignment','CornerRadius','BorderThickness','BackgroundSizing','Background','Foreground','BorderBrush'])
+  assert(new RegExp('PropBag\\.WriteProperty "'+name+'"').test(button)&&new RegExp('PropBag\\.ReadProperty\\("'+name+'"').test(button),name);
+ // Attribute strings must not hold quote characters (BETA 1044 designer JSON).
+ for(const m of button.matchAll(/\[Description\("([^\r\n]*)"\)\]/g)) assert(!m[1].includes('"'),m[1]);
+});
+
+test('brushes set on the control show only in Normal, as the template states override them',()=>{
+ const draw=body(button,'Private Sub DrawButton(');
+ const normal=draw.slice(draw.indexOf('If state = STATE_NORMAL Then'));
+ const end=normal.indexOf('\n        End If');
+ const block=normal.slice(0,end);
+ for(const s of ['m_Background <> THEME_BRUSH','m_Foreground <> THEME_BRUSH','m_BorderBrush <> THEME_BRUSH']) assert(block.includes(s),s);
+ for(const n of ['m_Background\\b','m_Foreground\\b','m_BorderBrush\\b'])
+  assert.equal((draw.match(new RegExp(n,'g'))||[]).length,(block.match(new RegExp(n,'g'))||[]).length,n+' is read only inside the Normal block');
+ // A local BackgroundSizing overrides the style's; the content box is BorderThickness plus Padding.
+ assert(/If m_BackgroundSizing = ui3InnerBorderEdge Then\s+fillInset = t\s+ElseIf m_BackgroundSizing = ui3OuterBorderEdge Then\s+fillInset = 0/.test(draw));
+ assert(/t \+ m_PadLeft, t \+ m_PadTop, _\s+w - t - m_PadRight, h - t - m_PadBottom/.test(draw));
+ assert(/ContentTextFormat\(m_FontFamily, m_FontSize, m_FontWeight, m_FontStyle, m_FontStretch\), m_HContent, m_VContent/.test(draw));
+});
+
+test('Padding parses XAML Thickness text with one, two or four values',()=>{
+ // JS mirror of ParseThickness and ThicknessText; the source shape is checked below.
+ const parse=t=>{t=t.replace(/,/g,' ').trim().replace(/ +/g,' ');if(!t)return null;const p=t.split(' ');if(p.length>4)return null;
+  const v=p.map(Number);if(v.some(x=>isNaN(x)||x<0))return null;
+  if(v.length===1)return [v[0],v[0],v[0],v[0]];if(v.length===2)return [v[0],v[1],v[0],v[1]];if(v.length===4)return v;return null;};
+ const text=([l,t,r,b])=>l===t&&t===r&&r===b?String(l):(l===r&&t===b?l+','+t:[l,t,r,b].join(','));
+ assert.deepEqual(parse('11,5,11,6'),[11,5,11,6]);assert.deepEqual(parse('8'),[8,8,8,8]);assert.deepEqual(parse('4, 2'),[4,2,4,2]);
+ assert.equal(parse('1,2,3'),null);assert.equal(parse('-1'),null);assert.equal(parse('a'),null);assert.equal(parse(''),null);
+ assert.equal(text([11,5,11,6]),'11,5,11,6');assert.equal(text([8,8,8,8]),'8');assert.equal(text([4,2,4,2]),'4,2');
+ const p=body(button,'Private Function ParseThickness(');
+ assert(/Replace\(Text, ",", " "\)/.test(p)&&/If UBound\(parts\) > 3 Then Exit Function/.test(p)&&/If values\(i\) < 0 Then Exit Function/.test(p));
+ assert(/Case 1:[\s\S]*Case 2: L = values\(0\): T = values\(1\): R = values\(0\): B = values\(1\)[\s\S]*Case 4:[\s\S]*Case Else: Exit Function/.test(p));
+});
+
+test('centred content keeps the original drawing path; other alignments use the aligned layout',()=>{
+ const dbc=body(d2d,'Public Sub DrawButtonContent(');
+ assert(/If hAlign <> 1 Or vAlign <> 1 Then\s+DrawAlignedContent[\s\S]*?Exit Sub/.test(dbc));
+ assert(!dbc.includes('ControlTextFormat(), '),'the caption format is the control\'s');
+ assert(/If textFormat Is Nothing Then Set fmt = ControlTextFormat\(\) Else Set fmt = textFormat/.test(dbc));
+ const align=body(d2d,'Private Function AlignStart(');
+ assert(/Case 1: AlignStart = Low \+ \(\(High - Low\) - Size\) \/ 2\s+Case 2: AlignStart = High - Size\s+Case Else: AlignStart = Low/.test(align),'Stretch draws at the near edge');
+ const fmt=body(d2d,'Public Function ContentTextFormat(');
+ assert(/CachedObject\(m_TextFormats, key\)/.test(fmt)&&fmt.indexOf('CreateCenteredTextFormat')>fmt.indexOf('If format Is Nothing Then'));
 });

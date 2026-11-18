@@ -757,6 +757,24 @@ Private Module UI3D2D
         Set ControlTextFormat = m_ControlTextFormat
     End Function
 
+    ' Text format for a control's own FontFamily/FontSize/FontWeight/FontStyle/FontStretch, cached.
+    ' An empty Family means ContentControlThemeFontFamily, resolved as in ControlTextFormat.
+    Public Function ContentTextFormat(ByVal family As String, ByVal fontSize As Single, ByVal fontWeight As Long, _
+            ByVal fontStyle As Long, ByVal fontStretch As Long) As IDWriteTextFormat
+        If Len(family) = 0 Then
+            family = "Segoe UI Variable Text"
+            If Not FontFamilyExists(family) Then family = "Segoe UI"
+        End If
+        Dim key As String = "b" & family & "|" & fontSize & "|" & fontWeight & "|" & fontStyle & "|" & fontStretch
+        Dim format As IDWriteTextFormat
+        Set format = CachedObject(m_TextFormats, key)
+        If format Is Nothing Then
+            Set format = CreateCenteredTextFormat(family, fontSize, fontWeight, fontStyle, fontStretch)
+            CacheObject m_TextFormats, key, format, MAX_CACHED_TEXT_FORMATS
+        End If
+        Set ContentTextFormat = format
+    End Function
+
     Public Function IconTextFormat(ByVal family As String, ByVal fontSize As Single) As IDWriteTextFormat
         If m_IconTextFormat Is Nothing Or StrComp(m_IconTextFormatFamily, family, vbTextCompare) <> 0 Or m_IconTextFormatSize <> fontSize Then
             Set m_IconTextFormat = CreateCenteredTextFormat(family, fontSize)
@@ -767,10 +785,12 @@ Private Module UI3D2D
     End Function
 
     Private Function CreateCenteredTextFormat(ByVal family As String, ByVal fontSize As Single, _
-            Optional ByVal fontWeight As Long = DWRITE_FONT_WEIGHT_NORMAL) As IDWriteTextFormat
+            Optional ByVal fontWeight As Long = DWRITE_FONT_WEIGHT_NORMAL, _
+            Optional ByVal fontStyle As Long = DWRITE_FONT_STYLE_NORMAL, _
+            Optional ByVal fontStretch As Long = DWRITE_FONT_STRETCH_NORMAL) As IDWriteTextFormat
         Dim format As IDWriteTextFormat
         Set format = DWriteFactory().CreateTextFormat(StrPtr(family), 0, _
-            fontWeight, DWRITE_FONT_STYLE_NORMAL, DWRITE_FONT_STRETCH_NORMAL, fontSize, StrPtr("en-us"))
+            fontWeight, fontStyle, fontStretch, fontSize, StrPtr("en-us"))
         format.SetTextAlignment DWRITE_TEXT_ALIGNMENT_CENTER
         format.SetParagraphAlignment DWRITE_PARAGRAPH_ALIGNMENT_CENTER
         format.SetWordWrapping DWRITE_WORD_WRAPPING_NO_WRAP
@@ -815,10 +835,14 @@ Private Module UI3D2D
     ' glyph, or Image when it holds one: an image fills an IconFontSize-DIP square and a recolouring
     ' SVG is drawn in InkArgb (Argb when InkArgb is 0). A glyph keeps its own text-box measurement, so
     ' glyph buttons draw exactly as before images existed.
+    ' TextFormat is the caption's format (ControlTextFormat when Nothing). HAlign and VAlign place the
+    ' content block in the box: 0 Left/Top, 1 Center, 2 Right/Bottom, 3 Stretch (drawn as Left/Top,
+    ' as a stretched TextBlock left-aligns its text). Centred content takes the original code path.
     Public Sub DrawButtonContent(ByVal target As ID2D1RenderTarget, ByVal caption As String, ByVal glyph As String, ByVal iconFamily As String, _
             ByVal iconFontSize As Single, ByVal iconPosition As UI3IconPosition, ByVal iconSpacing As Single, _
             ByVal x0 As Single, ByVal y0 As Single, ByVal x1 As Single, ByVal y1 As Single, ByVal argb As Long, _
-            Optional ByVal image As UI3IconImage, Optional ByVal inkArgb As Long = 0)
+            Optional ByVal image As UI3IconImage, Optional ByVal inkArgb As Long = 0, _
+            Optional ByVal textFormat As IDWriteTextFormat, Optional ByVal hAlign As Long = 1, Optional ByVal vAlign As Long = 1)
         Dim hasText As Boolean
         Dim hasIcon As Boolean
         Dim textW As Single
@@ -837,8 +861,10 @@ Private Module UI3D2D
         hasIcon = hasImage Or (Len(glyph) <> 0)
         If Not hasText And Not hasIcon Then Exit Sub
         If inkArgb = 0 Then inkArgb = argb
+        Dim fmt As IDWriteTextFormat
+        If textFormat Is Nothing Then Set fmt = ControlTextFormat() Else Set fmt = textFormat
 
-        If hasText Then MeasureControlText caption, textW, textH
+        If hasText Then MeasureTextWithFormat caption, fmt, textW, textH
         If hasImage Then
             iconW = iconFontSize
             iconH = iconFontSize
@@ -846,8 +872,15 @@ Private Module UI3D2D
             MeasureIconText glyph, iconFamily, iconFontSize, iconW, iconH
         End If
 
+        If iconSpacing < 0 Then iconSpacing = 0
+        If hAlign <> 1 Or vAlign <> 1 Then
+            DrawAlignedContent target, caption, fmt, textW, textH, image, hasText, hasImage, hasIcon, glyph, iconFamily, iconFontSize, _
+                iconW, iconH, iconPosition, iconSpacing, x0, y0, x1, y1, argb, inkArgb, hAlign, vAlign
+            Exit Sub
+        End If
+
         If hasText And Not hasIcon Then
-            DrawCenteredText target, caption, x0, y0, x1, y1, argb
+            DrawTextWithFormat target, caption, fmt, x0, y0, x1, y1, argb
             Exit Sub
         End If
 
@@ -856,30 +889,92 @@ Private Module UI3D2D
             Exit Sub
         End If
 
-        If iconSpacing < 0 Then iconSpacing = 0
-
         If iconPosition = ui3IconTop Or iconPosition = ui3IconBottom Then
             totalH = iconH + iconSpacing + textH
             startY = y0 + ((y1 - y0) - totalH) / 2
             If iconPosition = ui3IconTop Then
                 DrawIconPart target, image, hasImage, glyph, iconFamily, iconFontSize, x0, startY, x1, startY + iconH, argb, inkArgb
-                DrawTextWithFormat target, caption, ControlTextFormat(), x0, startY + iconH + iconSpacing, x1, startY + totalH, argb
+                DrawTextWithFormat target, caption, fmt, x0, startY + iconH + iconSpacing, x1, startY + totalH, argb
             Else
-                DrawTextWithFormat target, caption, ControlTextFormat(), x0, startY, x1, startY + textH, argb
+                DrawTextWithFormat target, caption, fmt, x0, startY, x1, startY + textH, argb
                 DrawIconPart target, image, hasImage, glyph, iconFamily, iconFontSize, x0, startY + textH + iconSpacing, x1, startY + totalH, argb, inkArgb
             End If
         Else
             totalW = iconW + iconSpacing + textW
             startX = x0 + ((x1 - x0) - totalW) / 2
             If iconPosition = ui3IconRight Then
-                DrawTextWithFormat target, caption, ControlTextFormat(), startX, y0, startX + textW, y1, argb
+                DrawTextWithFormat target, caption, fmt, startX, y0, startX + textW, y1, argb
                 DrawIconPart target, image, hasImage, glyph, iconFamily, iconFontSize, startX + textW + iconSpacing, y0, startX + totalW, y1, argb, inkArgb
             Else
                 DrawIconPart target, image, hasImage, glyph, iconFamily, iconFontSize, startX, y0, startX + iconW, y1, argb, inkArgb
-                DrawTextWithFormat target, caption, ControlTextFormat(), startX + iconW + iconSpacing, y0, startX + totalW, y1, argb
+                DrawTextWithFormat target, caption, fmt, startX + iconW + iconSpacing, y0, startX + totalW, y1, argb
             End If
         End If
     End Sub
+
+    ' DrawButtonContent for a block that is not centred both ways: the block (icon, gap, caption)
+    ' is measured, placed by HAlign/VAlign, and each part is drawn centred in its own slot.
+    Private Sub DrawAlignedContent(ByVal target As ID2D1RenderTarget, ByVal caption As String, ByVal fmt As IDWriteTextFormat, _
+            ByVal textW As Single, ByVal textH As Single, ByVal image As UI3IconImage, ByVal hasText As Boolean, _
+            ByVal hasImage As Boolean, ByVal hasIcon As Boolean, ByVal glyph As String, ByVal iconFamily As String, _
+            ByVal iconFontSize As Single, ByVal iconW As Single, ByVal iconH As Single, ByVal iconPosition As UI3IconPosition, _
+            ByVal iconSpacing As Single, ByVal x0 As Single, ByVal y0 As Single, ByVal x1 As Single, ByVal y1 As Single, _
+            ByVal argb As Long, ByVal inkArgb As Long, ByVal hAlign As Long, ByVal vAlign As Long)
+        Dim stacked As Boolean
+        Dim blockW As Single
+        Dim blockH As Single
+        Dim bLeft As Single
+        Dim bTop As Single
+
+        stacked = (iconPosition = ui3IconTop Or iconPosition = ui3IconBottom)
+        If hasText And hasIcon Then
+            If stacked Then
+                blockW = IIf(iconW > textW, iconW, textW)
+                blockH = iconH + iconSpacing + textH
+            Else
+                blockW = iconW + iconSpacing + textW
+                blockH = IIf(iconH > textH, iconH, textH)
+            End If
+        ElseIf hasText Then
+            blockW = textW: blockH = textH
+        Else
+            blockW = iconW: blockH = iconH
+        End If
+
+        bLeft = AlignStart(x0, x1, blockW, hAlign)
+        bTop = AlignStart(y0, y1, blockH, vAlign)
+
+        If hasText And Not hasIcon Then
+            DrawTextWithFormat target, caption, fmt, bLeft, bTop, bLeft + blockW, bTop + blockH, argb
+        ElseIf hasIcon And Not hasText Then
+            DrawIconPart target, image, hasImage, glyph, iconFamily, iconFontSize, bLeft, bTop, bLeft + blockW, bTop + blockH, argb, inkArgb
+        ElseIf stacked Then
+            If iconPosition = ui3IconTop Then
+                DrawIconPart target, image, hasImage, glyph, iconFamily, iconFontSize, bLeft, bTop, bLeft + blockW, bTop + iconH, argb, inkArgb
+                DrawTextWithFormat target, caption, fmt, bLeft, bTop + iconH + iconSpacing, bLeft + blockW, bTop + blockH, argb
+            Else
+                DrawTextWithFormat target, caption, fmt, bLeft, bTop, bLeft + blockW, bTop + textH, argb
+                DrawIconPart target, image, hasImage, glyph, iconFamily, iconFontSize, bLeft, bTop + textH + iconSpacing, bLeft + blockW, bTop + blockH, argb, inkArgb
+            End If
+        Else
+            If iconPosition = ui3IconRight Then
+                DrawTextWithFormat target, caption, fmt, bLeft, bTop, bLeft + textW, bTop + blockH, argb
+                DrawIconPart target, image, hasImage, glyph, iconFamily, iconFontSize, bLeft + textW + iconSpacing, bTop, bLeft + blockW, bTop + blockH, argb, inkArgb
+            Else
+                DrawIconPart target, image, hasImage, glyph, iconFamily, iconFontSize, bLeft, bTop, bLeft + iconW, bTop + blockH, argb, inkArgb
+                DrawTextWithFormat target, caption, fmt, bLeft + iconW + iconSpacing, bTop, bLeft + blockW, bTop + blockH, argb
+            End If
+        End If
+    End Sub
+
+    ' Start of a Size-long block in Low..High: 0 near edge, 1 centred, 2 far edge, 3 (Stretch) near edge.
+    Private Function AlignStart(ByVal Low As Single, ByVal High As Single, ByVal Size As Single, ByVal Align As Long) As Single
+        Select Case Align
+            Case 1: AlignStart = Low + ((High - Low) - Size) / 2
+            Case 2: AlignStart = High - Size
+            Case Else: AlignStart = Low
+        End Select
+    End Function
 
     ' The icon half of DrawButtonContent: Image centred in the box as a Size-DIP square, else the glyph.
     Private Sub DrawIconPart(ByVal target As ID2D1RenderTarget, ByVal image As UI3IconImage, ByVal hasImage As Boolean, _

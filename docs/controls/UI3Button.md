@@ -1,6 +1,6 @@
 # UI3Button
 
-Status: S3 icons validated in package 1.0.0.3 (win32 and win64, 2026-10-06); 1.0.0.4 Caption fix validated in win32 and win64. Package 1.0.0.73 adds the WinUI visual states, the Subtle style, the keyboard focus visual and ButtonBase input behaviour; it is **not yet built or tested in twinBASIC**.
+Status: S3 icons validated in package 1.0.0.3 (win32 and win64, 2026-10-06); 1.0.0.4 Caption fix validated in win32 and win64. Package 1.0.0.73 adds the WinUI visual states, the Subtle style, the keyboard focus visual and ButtonBase input behaviour; it is **not yet built or tested in twinBASIC**. Package 1.0.0.74 adds the appearance properties (fonts, padding, content alignment, corner radius, border thickness, background sizing, brushes); also not yet built.
 
 ## WinUI family
 
@@ -23,7 +23,7 @@ S3 adds icon content, validated on 2026-10-06.
 
 | Area | WinUI source | Current tbUI3 status |
 | --- | --- | --- |
-| Button padding | `Button_themeresources.xaml` → `ButtonPadding = 11,5,11,6` | exact source-derived token |
+| Button padding | `Button_themeresources.xaml` → `ButtonPadding = 11,5,11,6` | exact source-derived default of the `Padding` property (1.0.0.74), inside BorderThickness |
 | Border thickness | `ButtonBorderThemeThickness = 1` | exact source-derived token |
 | Corner radius | Button template → `ControlCornerRadius` | exact referenced shared resource |
 | Font family | Button template → `ContentControlThemeFontFamily` | implemented through DirectWrite family selection |
@@ -93,7 +93,24 @@ Implemented as WinUI properties (same name and meaning): `Enabled` (IsEnabled), 
 
 Provided by the twinBASIC extender rather than the control: `Visible` (Visibility), `TabStop` (IsTabStop), `TabIndex`, `ToolTipText` (ToolTipService.ToolTip), `Tag`, `Left`/`Top`/`Width`/`Height`, `Name`, `Default`/`Cancel`.
 
-Planned for package 1.0.0.74 (appearance pass): `FontFamily`, `FontSize`, `FontWeight`, `FontStyle`, `FontStretch`, `Padding`, `HorizontalContentAlignment`, `VerticalContentAlignment`, `CornerRadius`, `BorderThickness`, `BackgroundSizing`, and the brush overrides `Background`, `Foreground`, `BorderBrush`. In WinUI a locally set Background only shows in the Normal state, because the template's visual states set the ContentPresenter's brushes directly; tbUI3 will copy that.
+Appearance properties (1.0.0.74), same names and defaults as WinUI's DefaultButtonStyle:
+
+| Property | Default (source) | Notes |
+| --- | --- | --- |
+| `FontFamily` | empty = ContentControlThemeFontFamily | Segoe UI Variable Text, Segoe UI on Windows 10; DirectWrite falls back for a missing font |
+| `FontSize` | 14 (ControlContentThemeFontSize) | DIPs |
+| `FontWeight` | 400 Normal | `UI3FontWeight` names WinUI's FontWeights; any 1 to 999 |
+| `FontStyle` | Normal | Normal, Oblique, Italic |
+| `FontStretch` | Normal | UltraCondensed to UltraExpanded; WinUI's Undefined is refused (DirectWrite cannot use it) |
+| `Padding` | `11,5,11,6` (ButtonPadding) | XAML Thickness text: one, two or four values; content sits inside BorderThickness plus Padding, as in the ContentPresenter |
+| `HorizontalContentAlignment` | Center (Button's starting value, per the Control.HorizontalContentAlignment docs) | Stretch draws as Left, as a stretched TextBlock left-aligns its text |
+| `VerticalContentAlignment` | Center | Stretch draws as Top |
+| `CornerRadius` | 4 (ControlCornerRadius) | **uniform only**: WinUI's per-corner CornerRadius is not supported yet; the focus rings follow it |
+| `BorderThickness` | 1 (ButtonBorderThemeThickness) | **uniform only**; 0 draws no border |
+| `BackgroundSizing` | FromStyle | `ui3BackgroundSizingFromStyle` (-1) is a **tbUI3 convenience** meaning the Style's setter (Inner for Standard and Subtle, Outer for Accent); InnerBorderEdge and OuterBorderEdge are WinUI's values |
+| `Background`, `Foreground`, `BorderBrush` | `ui3ThemeBrush` (-1) = the Style's theme resource | OLE colours, so opaque only. As in WinUI they show only in the Normal state, because the template's PointerOver, Pressed and Disabled states set the ContentPresenter's brushes directly |
+
+Before 1.0.0.74 the padding was measured from the button's outer edge, 1 DIP short of WinUI's ContentPresenter. Centred content is unaffected; left, right, top and bottom alignment now match WinUI.
 
 Not applicable in twinBASIC, so not exposed:
 
@@ -123,6 +140,7 @@ Not applicable in twinBASIC, so not exposed:
 - `IconSize As Single`, `IconKey As String`, `IconList`, `IconData`/`IconSource` (icon library)
 - `Enabled As Boolean`, `ClickMode As UI3ClickMode`, `UseSystemFocusVisuals As Boolean`, `AccessKey As String` (1.0.0.73)
 - `IsPressed As Boolean`, `IsPointerOver As Boolean` (read-only, 1.0.0.73)
+- `FontFamily`, `FontSize`, `FontWeight`, `FontStyle`, `FontStretch`, `Padding`, `HorizontalContentAlignment`, `VerticalContentAlignment`, `CornerRadius`, `BorderThickness`, `BackgroundSizing`, `Background`, `Foreground`, `BorderBrush` (1.0.0.74)
 
 `IconGlyph` overrides the semantic `Icon`. `IconFontName` applies to the raw-glyph path; semantic icons deliberately use tbUI3's system-font selection so their Fluent/MDL2 code-point mapping remains portable.
 

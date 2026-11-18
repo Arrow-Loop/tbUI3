@@ -4,12 +4,20 @@ Committed work is listed first. Exploratory ideas are marked as such.
 
 Every development pass ends with a commit and a verified push to `origin/tbui3-dev`, per Shane's standing instruction of 2026-11-12. Main and PR decisions remain Shane's.
 
+## 2026-11-18 - UI3Button appearance properties (package 1.0.0.74)
+
+Pass B of Shane's full WinUI Button parity request; details in CHANGELOG.md and docs/controls/UI3Button.md. Builds on package 73.
+
+- **Next gate (Shane, BETA 1044), after the package 73 checks:** set each new property in the designer and from code and check the button redraws: a different FontFamily, FontSize 20, FontWeight Bold, Italic, Condensed; Padding `20` and `4,2`; each Horizontal/VerticalContentAlignment with text only, icon only and icon plus text; CornerRadius 0 and 12 (focus rings follow); BorderThickness 0 and 2; BackgroundSizing on Accent; Background, Foreground and BorderBrush colours show at rest and give way to the theme colours on hover, press and disabled; save and reopen keeps them; existing buttons look unchanged. Then a win64 smoke test.
+- **Deferred, committed:** per-corner CornerRadius and per-side BorderThickness (needs a path geometry instead of a rounded rectangle); translucent brushes (an ARGB route alongside OLE colours); CharacterSpacing (IDWriteTextLayout1).
+- **Exploratory:** a colour picker that offers "Theme" in the Properties pane instead of typing -1, if twinBASIC's pane allows it.
+
 ## 2026-11-18 - UI3Button visual states, focus and WinUI input behaviour (package 1.0.0.73)
 
 Pass A of Shane's full WinUI Button parity request; details in CHANGELOG.md and docs/controls/UI3Button.md.
 
 - **Next gate (Shane, BETA 1044):** rebuild 73, re-import into tbUI3Test, then check in win32: hover, press, drag off and back, release outside (no Click), Standard/Accent/Subtle in Light and Dark; `Enabled = False` in the designer and from code; Tab onto a button shows the focus rings and a click does not; Space and Enter click once on key up; a Default button clicks on Enter and a Cancel button on Esc, once each; `AccessKey = "S"` clicks on Alt+S; ClickMode Press and Hover; a button that opens a MsgBox in Click returns to Normal afterwards; save and reopen keeps the new properties. Then a win64 smoke test.
-- **Pass B, package 1.0.0.74 (committed):** the appearance properties `FontFamily`, `FontSize`, `FontWeight`, `FontStyle`, `FontStretch`, `Padding`, `HorizontalContentAlignment`, `VerticalContentAlignment`, `CornerRadius`, `BorderThickness`, `BackgroundSizing`, and the brush overrides `Background`, `Foreground`, `BorderBrush`, which (as in WinUI) apply only in the Normal state.
+- Pass B (appearance properties) is done in package 1.0.0.74, above.
 - **Deferred, committed:** the 83 ms BrushTransition between states (needs a surface timer); high-contrast resources; `CharacterSpacing` (needs IDWriteTextLayout1); MouseDown/MouseUp/MouseMove/KeyDown/KeyUp/KeyPress events on the control.
 - **Exploratory:** a focus adorner window so the focus rings can sit 3 DIPs outside the button as in WinUI; access key tips on Alt; `RequestedTheme` per control; right-to-left (`FlowDirection`); `Flyout` once a UI3Flyout exists.
 

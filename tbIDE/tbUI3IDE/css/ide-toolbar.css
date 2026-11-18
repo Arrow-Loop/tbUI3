@@ -147,6 +147,13 @@
 .tbui3-ribbon-toggle { position: absolute; right: 3px; bottom: 4px; display: grid; place-items: center; width: 24px; height: 22px; padding: 3px; border: 0; border-radius: 4px; background: transparent; color: var(--tbui3-toolbar-fg); cursor: default; }
 .tbui3-ribbon-toggle:hover { background: var(--tbui3-toolbar-hover); }
 .tbui3-ribbon-toggle[aria-pressed='true'] .tbui3-ribbon-icon { transform: rotate(180deg); }
+/* Full presentation: move commands down 3px while retaining their bottom edge and card height. */
+.tbui3-ribbon:not(.tbui3-ribbon-simplified) { --tbui3-large-button-height: 73px; }
+.tbui3-ribbon:not(.tbui3-ribbon-simplified) > .tbui3-ribbon-content { padding-top: 7px; }
+.tbui3-ribbon:not(.tbui3-ribbon-simplified) .tbui3-ribbon-group-body { grid-template-rows: repeat(3, 23px); flex-basis: 73px; }
+.tbui3-ribbon:not(.tbui3-ribbon-simplified) .tbui3-ribbon-content .tbui3-ribbon-command:not(.tbui3-ribbon-large) { height: 23px; min-height: 23px; }
+.tbui3-ribbon:not(.tbui3-ribbon-simplified) .tbui3-ribbon-content .tbui3-ribbon-large { grid-template-rows: 32px 4px 28px 2px 5px; }
+.tbui3-ribbon:not(.tbui3-ribbon-simplified) .tbui3-ribbon-group:not(:last-child)::after { height: 86px; }
 .tbui3-ribbon-simplified { --tbui3-command-area-height: 48px; }
 .tbui3-ribbon-simplified .tbui3-ribbon-content { padding: 0 32px 0 4px; align-items: center; }
 .tbui3-ribbon-simplified .tbui3-ribbon-group { flex-direction: row; align-items: center; height: 32px; padding: 0 4px; }

@@ -4,6 +4,14 @@ All notable changes to tbUI3. Dates are when the change was made, not released. 
 
 ## Unreleased
 
+### 2026-11-18 - Custom Build icon, Quick Access and full ribbon spacing (add-in 1.3.0.18)
+
+Uses Shane's supplied build.svg for Build through the shared icon resolver in full/simplified Ribbon and Hybrid (and the existing Classic glyph mapping). Normalized only XML/DTD declarations, display dimensions and fill=currentColor; path geometry/viewBox/transforms are retained. The local custom asset is embedded as a foreground-colored CSS mask, white on dark themes and dark on light themes, without a loose runtime SVG dependency. Build is added between Redo and Play in Ribbon Quick Access, forwarding the native button's handler/state. Build remains on the Project tab; it is explicitly excluded from the history/debug-only Quick Access suppression set. Hybrid retains its structure without Quick Access.
+
+Full Ribbon/Hybrid now have 7px top padding (was 4), a 73px command area (was 76) and three 23px small-command rows (was 24). Large buttons lose 3px from the unused bottom grid row; icons/labels retain their dimensions. Group-title/bottom positions and the 100px ribbon card remain fixed. Scoped full-mode rules leave Simplified and Quick Access dimensions unchanged.
+
+Validation: 150 tests and all 71 exact mirrors pass. Browser plugin not available; a temporary Playwright/Edge component fixture verifies four Light/Dark x full/simplified states, custom mask/foreground colors, Quick Access order and click dispatch without console/page errors. Before/after rendered geometry checks cover Ribbon and Hybrid: padding 4->7, command area/large buttons -3, first button top +3, unchanged ribbon/Quick Access heights and identical simplified geometry. Screenshots/scripts remain outside the repo in .workspace-tools. Native compiled add-in reload is pending. Rebuild/reload tbUI3IDE 1.3.0.18; package 1.0.0.70 and adapter v10 are unchanged. Remaining TabView flicker acceptance is unchanged by this pass.
+
 ### 2026-11-17 - Native backgrounds and focus cues (package 1.0.0.70)
 
 Shane reports package 69 still flickers on physical display during hover, although recording misses the flash. Do not mark 69's repaint change as a successful flicker fix. The outlined selected caption is our 2px focus indicator; GotFocus previously assumed keyboard input. Focus intent now checks held navigation keys and the explicit pointer-focus guard; handled keyboard navigation enables the cue, while unhandled keys no longer enable it or request layout. The white field containing This text belongs to Details is the existing standard TextBox txtDetails (system window background), not a TabView drawing artifact.

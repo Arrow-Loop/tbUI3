@@ -1,0 +1,1 @@
+build.svg is Shane's supplied Build artwork (2026-11-18). XML/DTD declarations were removed, display dimensions normalized, and the black fill changed to currentColor; path data, viewBox and transforms are preserved. The toolbar embeds it as a CSS mask using the button foreground color.

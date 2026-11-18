@@ -1,6 +1,8 @@
 # tbUI3 IDE: one add-in for designer tools and optional WinUI 3 styling
 
-The single distributed add-in is **tbUI3IDE 1.3.0.17**, built from `tbUI3IDE/tbUI3IDE.twinproj` as **tbUI3IDE.dll**. It includes TabView adapter v10 and the IDE styling implementation. The established project ID and saved theme preference are retained through the rename.
+Build uses Shane's custom build.svg, embedded as a theme-colored mask in full/simplified layouts. Ribbon Quick Access includes Build between Redo and Play while retaining Project-tab Build. Full Ribbon/Hybrid top padding is 7px with a 73px command area; overall ribbon height, Simplified and Quick Access sizing remain unchanged. Rebuild/reload 1.3.0.18 to apply this pass.
+
+The single distributed add-in is **tbUI3IDE 1.3.0.18**, built from `tbUI3IDE/tbUI3IDE.twinproj` as **tbUI3IDE.dll**. It includes TabView adapter v10 and the IDE styling implementation. The established project ID and saved theme preference are retained through the rename.
 
 Adapter v10 additionally captures malformed native full-form snapshot JSON to tbUI3-tabview.log with a bounded context and stack, while preserving the original IDE error. For the current form-load investigation, rebuild/reload the add-in, reopen the failing form and wait two seconds before collecting the log. The captured response identified the TabStyle enum annotations as the cause; package 1.0.0.68 removes them. Shane confirms package 68 resolves the load failure.
 

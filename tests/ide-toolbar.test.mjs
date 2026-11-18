@@ -15,6 +15,8 @@ const rawBuildLayout=vm.runInNewContext(layoutSource);
 const buildLayout=(records,quick)=>rawBuildLayout(records,quick,present);
 const establishedIcons=Object.fromEntries([...fs.readFileSync('tbIDE/tbUI3IDE/css/winui3-ide-icons.css','utf8').matchAll(/>\s*#([\w-]+)\s*\{\s*--fluent-icon:\s*(url\('[^']+'\))/g)].map(m=>[m[1],m[2]]));
 const extraIcons=JSON.parse(fs.readFileSync('tbIDE/tbUI3IDE/icons/ribbon.json','utf8')).icons;
+const customBuild=fs.readFileSync('tbIDE/tbUI3IDE/icons/custom/build.svg','utf8');
+const customBuildMask="url('data:image/svg+xml,"+encodeURIComponent(customBuild.trim()).replace(/'/g,'%27')+"')";
 const requestedIcons=JSON.parse(fs.readFileSync('tbIDE/tbUI3IDE/icons/requested.json','utf8')).icons;
 test('full layouts restore labels and inline Grid while simplified-only compaction preserves the same controls',()=>{
     for(const mode of ['Ribbon','Hybrid']){
@@ -166,7 +168,7 @@ test('explicit icon selections match the requested Home, Insert, Code, Form, Vie
         ['tbFileSystem_AddWindowsForm','segoe/EB3B'],['tbFileSystem_AddWindowsMDIForm','fluent/window_multiple'],['tbFileSystem_AddWindowsUserControl','fluent/button'],['tbFileSystem_AddWindowsPropertyPage','fluent/tab_desktop'],['tbFileSystem_AddWindowsReport','fluent/calendar_data_bar'],['tbFileSystem_AddCustomControlsForm','fluent/window_toolbox'],['tbFileSystem_AddModuleTWIN','fluent/code_block'],['tbFileSystem_AddClassTWIN','fluent/code_block_edit'],['tbFileSystem_AddModuleBAS','fluent/code_block'],['tbFileSystem_AddClassCLS','fluent/code_block_edit'],['tbFileSystem_AddResourceVisualStylesManifest','fluent/apps_list_detail'],['tbFileSystem_AddResourceMessageTable','fluent/group_list'],['tbFileSystem_AddFolder','segoe/E8F4'],['tbFileSystem_AddOtherFile','fluent/document_add'],['tbFileSystem_ImportFile','fluent/add_square_multiple'],
         ['tbEditor_FormatSelection','fluent/rename'],['tbEditor_FormatDocument','fluent/document_margins'],['tbEditor_GotoLineColumn','segoe/E8D1'],['tbEditor_GoToDefinition','segoe/E82D'],['tbEditor_LastPosition','fluent/arrow_step_back'],['tbFormDesigner_ToggleLockSelectedControls','segoe/E72E'],
         ['tbEditor_SwitchToCode','fluent/code'],['tbEditor_SwitchToFormDesign','fluent/design_ideas'],['tbShowObjectBrowser','segoe/EC50'],['tbProjectExplorer_ShowPanel','fluent/code_circle'],['tbToolbox_ShowPanel','fluent/toolbox'],['tbProperties_ShowPanel','fluent/slide_settings'],['tbEditor_IncreaseFontSize','segoe/E8A3'],['tbEditor_DecreaseFontSize','segoe/E71F'],
-        ['tbProject_ShowReferences','fluent/library'],['tbProject_ShowSettings','fluent/apps_settings'],['tbBuild_Start','fluent/cube_tree'],['tbBuild_Clean','fluent/broom'],['tbCompiler_Restart','fluent/arrow_reset'],['tbCompiler_RestartAndFlushLlvmCache','segoe/EBC4'],['tbProject_OpenProjectFolder','fluent/folder_open'],['tbProject_OpenBuildFolder','fluent/folder_arrow_right'],['tbDebug_SetNextExecutionStatement','fluent/skip_forward_tab'],
+        ['tbProject_ShowReferences','fluent/library'],['tbProject_ShowSettings','fluent/apps_settings'],['tbBuild_Start','custom/build'],['tbBuild_Clean','fluent/broom'],['tbCompiler_Restart','fluent/arrow_reset'],['tbCompiler_RestartAndFlushLlvmCache','segoe/EBC4'],['tbProject_OpenProjectFolder','fluent/folder_open'],['tbProject_OpenBuildFolder','fluent/folder_arrow_right'],['tbDebug_SetNextExecutionStatement','fluent/skip_forward_tab'],
         ['tbProject_New','segoe/ECC8'],['tbProject_Open','segoe/E838'],['tbProject_SaveAllChanges','segoe/E74E'],['tbProject_SaveAs','segoe/E792'],['tbEditor_Save','fluent/document_save'],['tbProject_Export','segoe/EDE1'],['tbProject_Close','fluent/share_screen_stop'],['tbHelp_ShowAboutWindow','fluent/chat_help'],['tbHelp_ShowLicenceAgreement','segoe/EF3F'],['tbHelp_PurchaseALicence','fluent/wallet_credit_card'],['tbHelp_EnterLicenceKey','segoe/E8D7'],['tbHelp_OpenKofiWebsite','fluent/drink_coffee'],['tbHelp_ToggleCompilerTraceMode','fluent/table_settings'],['tbIde_ShowIDEOptions','fluent/content_settings'],['tbIdeWindow_Close','fluent/arrow_exit']
     ];
     for(const [action,icon]of rows){assert.equal(present({action}).icon,icon,action);if(icon.startsWith('fluent/'))assert(requestedIcons[icon],icon);}
@@ -287,7 +289,7 @@ function fixture() {
     <div class='tbis-optionRow'><div class='tbis-optionName'>Enable additional IDE theme styling via add-in</div></div>`);
     const w=dom.window,d=w.document,calls=[];w.setInterval=()=>1;w.clearInterval=()=>{};const computed=w.getComputedStyle.bind(w);w.getComputedStyle=n=>computed(n);
     const toolbar=d.getElementById('rootMenu2'),headers=d.getElementById('rootMenu1Inner');
-    const api={window:w,buildLayout,present,projectName:()=>'Example project',icons:{...establishedIcons,...Object.fromEntries([...Object.keys(extraIcons),...Object.keys(requestedIcons)].map(key=>[key,"url('data:image/svg+xml,"+key+"')"]))},
+    const api={window:w,buildLayout,present,projectName:()=>'Example project',icons:{...establishedIcons,'custom/build':customBuildMask,...Object.fromEntries([...Object.keys(extraIcons),...Object.keys(requestedIcons)].map(key=>[key,"url('data:image/svg+xml,"+key+"')"]))},
         localize:s=>s,execute:s=>calls.push(s),commandEnabled:s=>s!=='disabled',testContext:()=>true,
         shortcut:()=>'',realTitlebar:()=>false,formGlobals:()=>null,changedSize:()=>{}};
     let show=(anchor,x,y,items)=>calls.push(['nativeMenu',anchor&&anchor.id,items]);
@@ -298,7 +300,8 @@ function fixture() {
     for(const name of Object.keys(items))menu(name);
     function button(id,title=id){const n=d.createElement('div');n.id=id;n.className='icon';n.title=title;n.boundCommand=id;
         n.onmousedown=()=>calls.push(id);toolbar.append(n);return n;}
-    for(const id of ['saveIcon','undoIcon','redoIcon','playIcon','pauseIcon','stopIcon','commentIcon','menuBarColorMode'])button(id);
+    for(const id of ['saveIcon','undoIcon','redoIcon','buildIcon','playIcon','pauseIcon','stopIcon','commentIcon','menuBarColorMode'])button(id);
+    d.getElementById('buildIcon').boundCommand='tbBuild_Start';
     const build=d.createElement('select');build.id='buildConfigSelector';build.title='Build configuration';build.innerHTML='<option>win64</option>';toolbar.append(build);
     const original=[...toolbar.childNodes],adapter=factory(api);adapter.install();
     return {w,d,adapter,api,calls,button,menu,items,toolbar,original,show:(...args)=>show(...args),dispose(){adapter.dispose();w.close();}};
@@ -374,7 +377,7 @@ test('MultiPage commands appear directly after Grid only with host or child sele
 });
 test('quick access stays above the ribbon and follows the titlebar option',()=>{
     const f=fixture();f.adapter.setMode('Ribbon');const q=f.d.querySelector('.tbui3-quick');assert.equal(q.parentElement.id,'rootMenu1Inner');
-    assert.equal(q.querySelectorAll('button').length,6);f.api.realTitlebar=()=>true;f.adapter.tick();assert(q.classList.contains('tbui3-quick-real-titlebar'));f.dispose();
+    assert.equal(q.querySelectorAll('button').length,7);f.api.realTitlebar=()=>true;f.adapter.tick();assert(q.classList.contains('tbui3-quick-real-titlebar'));f.dispose();
 });
 test('unload restores native menus, controls, handlers and removes owned UI',()=>{
     const f=fixture(),original=f.api.getShowContextMenu();f.adapter.setMode('Ribbon');f.adapter.dispose();
@@ -482,7 +485,7 @@ test('embedded toolbar contains the exact adapter, essential CSS, PNG and all ca
     }
     new vm.Script(js);assert(js.includes(source.trim()));assert(js.includes(layoutSource.trim()));assert(js.includes(presentationSource.trim()));assert(js.includes(contextSource.trim()));
     const css=fs.readFileSync('tbIDE/tbUI3IDE/css/ide-toolbar.css','utf8');assert(js.includes(JSON.stringify(css)));
-    assert.equal((js.match(/data:image\/svg\+xml/g)||[]).length,37+Object.keys(requestedIcons).length);assert(!/(?<!\r)\n/.test(src));
+    assert.equal((js.match(/data:image\/svg\+xml/g)||[]).length,38+Object.keys(requestedIcons).length);assert(!/(?<!\r)\n/.test(src));
     const png=js.match(/brandImage:"data:image\/png;base64,([A-Za-z0-9+/=]+)"/);assert(png);
     assert.deepEqual(Buffer.from(png[1],'base64'),fs.readFileSync('tbIDE/tbUI3IDE/images/twinBASIC_WinUI3.png'));
 });
@@ -726,7 +729,7 @@ test('all full-size buttons share a fixed top glyph row for one-line, two-line a
 });
 test('File hides quick access immediately and restores its buttons and focus on exit',()=>{
     const f=fixture();f.adapter.setMode('Ribbon');const quick=f.d.querySelector('.tbui3-quick'),save=quick.querySelector('[data-source=saveIcon]');save.focus();f.adapter.openFile();assert(quick.hidden);f.adapter.tick();assert(quick.hidden);
-    f.adapter.closeFile();assert(!quick.hidden);assert.equal(f.d.activeElement,save);assert.equal(quick.querySelectorAll('button').length,6);f.adapter.openFile();f.d.querySelector('[data-file-section=Save]').click();assert(!quick.hidden);f.dispose();
+    f.adapter.closeFile();assert(!quick.hidden);assert.equal(f.d.activeElement,save);assert.equal(quick.querySelectorAll('button').length,7);f.adapter.openFile();f.d.querySelector('[data-file-section=Save]').click();assert(!quick.hidden);f.dispose();
 });
 test('Zoom drops its visible duplicate caption while retaining the exact selector and accessible label',()=>{
     const f=fixture(),zoom=f.d.createElement('select');zoom.id='zoomSelect';zoom.innerHTML='<option>100%</option>';f.toolbar.append(zoom);let changes=0;zoom.onchange=()=>changes++;
@@ -898,4 +901,22 @@ test('the actual generated toolbar routes Save Document around the installed dis
     const sandbox={...f.sandbox,document:dom.window.document,window:{},capturedApi:null,projectFilePath:'C:/Project.twinproj',getThemeName:()=> 'Dark',parseExpression:s=>s,parseAndEvaluateExpression:()=>true,evaluateExpression:()=>false,executeIdeCommand:action=>f.opened.push(action)};
     const stub=installedValue('tbEditor_Save:',sandbox);assert(stub.defaultContext.includes('0 &'));sandbox.ideCommands={tbEditor_Save:stub};vm.runInNewContext(script,sandbox);
     assert.equal(sandbox.capturedApi.commandEnabled('tbEditor_Save'),true);sandbox.capturedApi.execute('tbEditor_Save');assert.equal(f.writes.length,1);assert.equal(f.writes[0].file,selected.fileNode);assert.equal(f.dialogs.length,0);f.writes[0].done(0);assert.equal(sandbox.capturedApi.commandEnabled('tbEditor_Save'),false);sandbox.capturedApi.execute('tbProject_SaveAllChanges');assert.equal(f.opened.at(-1),'tbProject_SaveAllChanges');dom.window.close();
+});
+
+
+test('Build uses supplied artwork in both ribbon layouts and stays between Redo and Play in Quick Access',()=>{
+ const f=fixture();f.items.Project=[{name:'Build',action:'tbBuild_Start'}];f.menu('Project');f.adapter.setMode('Ribbon');
+ const quick=f.d.querySelector('.tbui3-quick');
+ assert.deepEqual([...quick.querySelectorAll('button')].map(b=>b.dataset.source),['saveIcon','undoIcon','redoIcon','buildIcon','playIcon','pauseIcon','stopIcon']);
+ const build=quick.querySelector('[data-source=buildIcon]');assert.equal(build.querySelector('[data-icon-ref]').dataset.iconRef,'custom/build');
+ assert.equal(build.querySelector('.tbui3-ribbon-icon').style.getPropertyValue('--tbui3-icon'),customBuildMask);
+ build.click();assert.deepEqual(f.calls,['buildIcon']);
+ f.d.querySelector('[data-tab=Project]').click();
+ for(const simplified of [false,true]){
+  f.adapter.setSimplified(simplified);
+  const command=[...f.d.querySelectorAll('.tbui3-ribbon-content button')].find(b=>b.textContent==='Build');assert(command);
+  assert.equal(command.querySelector('[data-icon-ref]').dataset.iconRef,'custom/build');
+  command.click();assert.equal(f.calls.at(-1),'tbBuild_Start');
+ }
+ f.dispose();
 });

@@ -63,7 +63,7 @@
         tbEditor_IncreaseFontSize:'segoe/E8A3',tbFormDesigner_ZoomIncrease:'segoe/E8A3',
         tbEditor_DecreaseFontSize:'segoe/E71F',tbFormDesigner_ZoomDecrease:'segoe/E71F',
         tbProject_ShowReferences:'fluent/library',tbProject_ShowSettings:'fluent/apps_settings',
-        tbBuild_Start:'fluent/cube_tree',tbBuild_Clean:'fluent/broom',tbCompiler_Restart:'fluent/arrow_reset',
+        tbBuild_Start:'custom/build',tbBuild_Clean:'fluent/broom',tbCompiler_Restart:'fluent/arrow_reset',
         tbCompiler_RestartAndFlushLlvmCache:'segoe/EBC4',tbProject_OpenProjectFolder:'fluent/folder_open',tbProject_OpenBuildFolder:'fluent/folder_arrow_right',
         tbDebug_SetNextExecutionStatement:'fluent/skip_forward_tab',
         tbProject_New:'segoe/ECC8',tbProject_Open:'segoe/E838',tbProject_OpenRecent:'segoe/E838',
@@ -74,7 +74,7 @@
         tbHelp_OpenKofiWebsite:'fluent/drink_coffee',tbHelp_ToggleCompilerTraceMode:'fluent/table_settings',
         tbIde_ShowIDEOptions:'fluent/content_settings',tbIdeWindow_Close:'fluent/arrow_exit'
     };
-    const sourceIcons={saveIcon:'segoe/E74E',searchIcon:'fluent/calendar_search',buildIcon:'fluent/cube_tree',trashIcon:'fluent/broom',restartIcon:'fluent/arrow_reset',menuBarColorMode:'fluent/dark_theme',
+    const sourceIcons={saveIcon:'segoe/E74E',searchIcon:'fluent/calendar_search',buildIcon:'custom/build',trashIcon:'fluent/broom',restartIcon:'fluent/arrow_reset',menuBarColorMode:'fluent/dark_theme',
         'addinButton-tbUI3TabNew':'fluent/document_one_page_add','addinButton-tbUI3TabDelete':'fluent/document_header_dismiss',
         'addinButton-tbUI3TabLeft':'fluent/tab_desktop_arrow_left','addinButton-tbUI3TabRight':'fluent/tab_desktop_arrow_right_composite',
         'addinButton-tbUI3TabRefresh':'fluent/tab_desktop_arrow_clockwise','addinButton-tbUI3TabDiagnostics':'fluent/stethoscope'};

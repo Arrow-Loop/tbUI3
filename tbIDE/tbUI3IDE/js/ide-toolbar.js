@@ -67,7 +67,7 @@
             ['Size',['menuBarSizeWidest','menuBarSizeTallest','menuBarSizeNarrowest','menuBarSizeShortest']],
             ['Grid',['menuBarGrid']],['Arrange',['menuBarBringToFront','menuBarSendToBack']],['View',['zoomSelect','menuBarPreview']]]
     };
-    const quickIds=['saveIcon','undoIcon','redoIcon','playIcon','pauseIcon','stopIcon'];
+    const quickIds=['saveIcon','undoIcon','redoIcon','buildIcon','playIcon','pauseIcon','stopIcon'];
     // Presentation captions are deliberately shorter than the native help/shortcut tooltip.
     // This table never decides whether a command exists or how it is executed.
     const sourceLabels={saveIcon:'Save',searchIcon:'Find in project',designSwitchIcon:'Form / Code',
@@ -390,7 +390,7 @@
         source('buildConfigSelector','Project','Build');source('debugStepOutIcon','Debug','Stepping');
         source('zoomSelect','View','Zoom');source('menuBarPreview','Form','Designer');source('menuBarGrid','Form','Grid');
         if(!records.some(r=>String(r.item.name).includes('MenuCaptionWindowTheme')))source('menuBarColorMode','View','Appearance');
-        const quickActions=new Set();for(const id of quickIds)for(const a of [].concat(sources.get(id)?.boundCommand||[]))quickActions.add(a);
+        const quickActions=new Set();for(const id of quickIds)for(const a of [].concat(sources.get(id)?.boundCommand||[]))if(a!=='tbBuild_Start')quickActions.add(a);
         return api.buildLayout(records,quickActions,api.present);
     }
     function hydrateMenus(refresh=false) {

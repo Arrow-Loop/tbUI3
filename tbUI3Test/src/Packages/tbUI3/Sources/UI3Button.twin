@@ -39,6 +39,8 @@ Public Class UI3Button
     Private Const DEFAULT_CONTENT_ALIGNMENT As Long = 1       ' Center (Button's starting value)
     Private Const DEFAULT_BACKGROUND_SIZING As Long = -1      ' from the Style
     Private Const THEME_BRUSH As Long = -1                    ' ui3ThemeBrush
+    Private Const DEFAULT_DESTRUCTIVE As Boolean = False
+    Private Const DEFAULT_REQUESTED_THEME As Long = 0         ' ui3ThemeSystem: follow the app theme
     Private Const WM_ENABLE As Long = &HA
     Private Const WM_CAPTURECHANGED As Long = &H215
 
@@ -112,6 +114,14 @@ Public Class UI3Button
     Private m_Background As Long
     Private m_Foreground As Long
     Private m_BorderBrush As Long
+    ' Package 75. Destructive is a tbUI3 convenience (not WinUI); the rest are WinUI properties.
+    Private m_Destructive As Boolean
+    Private m_FocusPrimaryBrush As Long
+    Private m_FocusSecondaryBrush As Long
+    Private m_FocusPrimaryThickness As Single
+    Private m_FocusSecondaryThickness As Single
+    Private m_FocusMargin As Single
+    Private m_RequestedTheme As UI3ThemeMode
 
     Public Property Get Caption() As String
         Caption = m_Caption
@@ -350,6 +360,86 @@ Public Class UI3Button
         Repaint
     End Property
 
+    [Description("tbUI3 extension, not part of WinUI. Marks a button whose action destroys or removes something: the caption and icon use SystemFillColorCritical at rest and on hover. Pressed and disabled keep WinUI colours. Ignored on the Accent style. A Foreground you set still wins at rest.")]
+    Public Property Get Destructive() As Boolean
+        Destructive = m_Destructive
+    End Property
+
+    Public Property Let Destructive(ByVal Value As Boolean)
+        m_Destructive = Value
+        PropertyChanged "Destructive"
+        Repaint
+    End Property
+
+    [Description("Colour of the outer focus ring. ui3ThemeBrush (-1) uses FocusStrokeColorOuter. WinUI: FrameworkElement.FocusVisualPrimaryBrush.")]
+    Public Property Get FocusVisualPrimaryBrush() As OLE_COLOR
+        FocusVisualPrimaryBrush = m_FocusPrimaryBrush
+    End Property
+
+    Public Property Let FocusVisualPrimaryBrush(ByVal Value As OLE_COLOR)
+        m_FocusPrimaryBrush = Value
+        PropertyChanged "FocusVisualPrimaryBrush"
+        Repaint
+    End Property
+
+    [Description("Colour of the inner focus ring. ui3ThemeBrush (-1) uses FocusStrokeColorInner. WinUI: FrameworkElement.FocusVisualSecondaryBrush.")]
+    Public Property Get FocusVisualSecondaryBrush() As OLE_COLOR
+        FocusVisualSecondaryBrush = m_FocusSecondaryBrush
+    End Property
+
+    Public Property Let FocusVisualSecondaryBrush(ByVal Value As OLE_COLOR)
+        m_FocusSecondaryBrush = Value
+        PropertyChanged "FocusVisualSecondaryBrush"
+        Repaint
+    End Property
+
+    [Description("Width of the outer focus ring in DIPs. Default 2. WinUI: FrameworkElement.FocusVisualPrimaryThickness (uniform here).")]
+    Public Property Get FocusVisualPrimaryThickness() As Single
+        FocusVisualPrimaryThickness = m_FocusPrimaryThickness
+    End Property
+
+    Public Property Let FocusVisualPrimaryThickness(ByVal Value As Single)
+        If Value < 0 Then Err.Raise 380
+        m_FocusPrimaryThickness = Value
+        PropertyChanged "FocusVisualPrimaryThickness"
+        Repaint
+    End Property
+
+    [Description("Width of the inner focus ring in DIPs. Default 1. WinUI: FrameworkElement.FocusVisualSecondaryThickness (uniform here).")]
+    Public Property Get FocusVisualSecondaryThickness() As Single
+        FocusVisualSecondaryThickness = m_FocusSecondaryThickness
+    End Property
+
+    Public Property Let FocusVisualSecondaryThickness(ByVal Value As Single)
+        If Value < 0 Then Err.Raise 380
+        m_FocusSecondaryThickness = Value
+        PropertyChanged "FocusVisualSecondaryThickness"
+        Repaint
+    End Property
+
+    [Description("Distance of the focus visual from the button edge in DIPs, negative meaning outside. Default -3. tbUI3 cannot draw outside the control, so -3 or less draws at the edge and larger values move the rings inward. WinUI: FrameworkElement.FocusVisualMargin (uniform here).")]
+    Public Property Get FocusVisualMargin() As Single
+        FocusVisualMargin = m_FocusMargin
+    End Property
+
+    Public Property Let FocusVisualMargin(ByVal Value As Single)
+        m_FocusMargin = Value
+        PropertyChanged "FocusVisualMargin"
+        Repaint
+    End Property
+
+    [Description("Theme for this button only. ui3ThemeSystem follows the app theme (WinUI ElementTheme.Default). WinUI: FrameworkElement.RequestedTheme.")]
+    Public Property Get RequestedTheme() As UI3ThemeMode
+        RequestedTheme = m_RequestedTheme
+    End Property
+
+    Public Property Let RequestedTheme(ByVal Value As UI3ThemeMode)
+        If Value < ui3ThemeSystem Or Value > ui3ThemeDark Then Err.Raise 380
+        m_RequestedTheme = Value
+        PropertyChanged "RequestedTheme"
+        Repaint
+    End Property
+
     ' XAML Thickness text: one value, two (horizontal, vertical) or four (left, top, right, bottom),
     ' separated by commas or spaces. Negative values are refused.
     Private Function ParseThickness(ByVal Text As String, ByRef L As Single, ByRef T As Single, ByRef R As Single, ByRef B As Single) As Boolean
@@ -417,6 +507,13 @@ Public Class UI3Button
         m_Background = THEME_BRUSH
         m_Foreground = THEME_BRUSH
         m_BorderBrush = THEME_BRUSH
+        m_Destructive = DEFAULT_DESTRUCTIVE
+        m_FocusPrimaryBrush = THEME_BRUSH
+        m_FocusSecondaryBrush = THEME_BRUSH
+        m_FocusPrimaryThickness = FocusVisualPrimaryThicknessDefault
+        m_FocusSecondaryThickness = FocusVisualSecondaryThicknessDefault
+        m_FocusMargin = ButtonFocusVisualMargin
+        m_RequestedTheme = DEFAULT_REQUESTED_THEME
     End Sub
 
     ' Run-time state, read-only, as in WinUI.
@@ -800,6 +897,16 @@ Public Class UI3Button
         m_Background = PropBag.ReadProperty("Background", THEME_BRUSH)
         m_Foreground = PropBag.ReadProperty("Foreground", THEME_BRUSH)
         m_BorderBrush = PropBag.ReadProperty("BorderBrush", THEME_BRUSH)
+        m_Destructive = PropBag.ReadProperty("Destructive", DEFAULT_DESTRUCTIVE)
+        m_FocusPrimaryBrush = PropBag.ReadProperty("FocusVisualPrimaryBrush", THEME_BRUSH)
+        m_FocusSecondaryBrush = PropBag.ReadProperty("FocusVisualSecondaryBrush", THEME_BRUSH)
+        m_FocusPrimaryThickness = PropBag.ReadProperty("FocusVisualPrimaryThickness", FocusVisualPrimaryThicknessDefault)
+        If m_FocusPrimaryThickness < 0 Then m_FocusPrimaryThickness = FocusVisualPrimaryThicknessDefault
+        m_FocusSecondaryThickness = PropBag.ReadProperty("FocusVisualSecondaryThickness", FocusVisualSecondaryThicknessDefault)
+        If m_FocusSecondaryThickness < 0 Then m_FocusSecondaryThickness = FocusVisualSecondaryThicknessDefault
+        m_FocusMargin = PropBag.ReadProperty("FocusVisualMargin", ButtonFocusVisualMargin)
+        m_RequestedTheme = PropBag.ReadProperty("RequestedTheme", DEFAULT_REQUESTED_THEME)
+        If m_RequestedTheme < ui3ThemeSystem Or m_RequestedTheme > ui3ThemeDark Then m_RequestedTheme = DEFAULT_REQUESTED_THEME
     End Sub
 
     Private Sub ReadIconImage(ByVal PropBag As PropertyBag)
@@ -855,6 +962,13 @@ Public Class UI3Button
         PropBag.WriteProperty "Background", m_Background, THEME_BRUSH
         PropBag.WriteProperty "Foreground", m_Foreground, THEME_BRUSH
         PropBag.WriteProperty "BorderBrush", m_BorderBrush, THEME_BRUSH
+        PropBag.WriteProperty "Destructive", m_Destructive, DEFAULT_DESTRUCTIVE
+        PropBag.WriteProperty "FocusVisualPrimaryBrush", m_FocusPrimaryBrush, THEME_BRUSH
+        PropBag.WriteProperty "FocusVisualSecondaryBrush", m_FocusSecondaryBrush, THEME_BRUSH
+        PropBag.WriteProperty "FocusVisualPrimaryThickness", m_FocusPrimaryThickness, FocusVisualPrimaryThicknessDefault
+        PropBag.WriteProperty "FocusVisualSecondaryThickness", m_FocusSecondaryThickness, FocusVisualSecondaryThicknessDefault
+        PropBag.WriteProperty "FocusVisualMargin", m_FocusMargin, ButtonFocusVisualMargin
+        PropBag.WriteProperty "RequestedTheme", m_RequestedTheme, DEFAULT_REQUESTED_THEME
         DesignTrace "WriteProperties " & Hex$(ObjPtr(Me)) & " " & DesignName() & " Icon = " & CLng(m_Icon) & _
             ", IconSource = " & m_IconImage.Source & ", bytes = " & m_IconImage.ByteCount()
         If m_IconImage.HasImage Then
@@ -1139,7 +1253,7 @@ WriteFailed:
         Dim r As Single
         Dim t As Single
 
-        dark = IsDarkMode()
+        dark = ButtonIsDark()
         state = VisualState()
         r = m_CornerRadius
         t = m_BorderThickness
@@ -1238,6 +1352,15 @@ WriteFailed:
             fillInset = 0
         End If
 
+        ' Destructive (tbUI3, from the tbUI3 CSS library's button--danger): the critical text colour
+        ' at rest and on hover; pressed and disabled keep their WinUI colours. Not applied to Accent,
+        ' whose fill is the accent colour.
+        If m_Destructive And m_Style <> ui3ButtonAccent Then
+            If state = STATE_NORMAL Or state = STATE_POINTER_OVER Then
+                foreground = IIf(dark, DARK_SystemFillColorCritical, LIGHT_SystemFillColorCritical)
+            End If
+        End If
+
         ' Brushes set on the control show in the Normal state only (the other states replace them).
         If state = STATE_NORMAL Then
             If m_Background <> THEME_BRUSH Then fill = ArgbFromOleColor(m_Background)
@@ -1300,6 +1423,7 @@ WriteFailed:
     ' radius ControlCornerRadius + 3 (FocusRectManager AdjustCornerRadius). A twinBASIC control
     ' cannot draw outside its own window, so tbUI3 draws the same two rings inside the button's
     ' edge instead, with radii that keep the same 2 + 1 geometry from ControlCornerRadius.
+    ' FocusVisualMargin moves the rings in from that edge by (margin + 3) DIPs, never outward.
     ' Documented deviation: docs/controls/UI3Button.md.
     Private Sub DrawFocusVisual(ByVal w As Single, ByVal h As Single, ByVal dark As Boolean)
         Dim outerColor As Long
@@ -1307,6 +1431,7 @@ WriteFailed:
         Dim p As Single
         Dim q As Single
         Dim r As Single
+        Dim d As Single
         Dim box As D2D1_ROUNDED_RECT
 
         If dark Then
@@ -1316,15 +1441,38 @@ WriteFailed:
             outerColor = LIGHT_FocusStrokeColorOuter
             innerColor = LIGHT_FocusStrokeColorInner
         End If
-        r = m_CornerRadius
-        p = FocusVisualPrimaryThickness
-        q = FocusVisualSecondaryThickness
+        If m_FocusPrimaryBrush <> THEME_BRUSH Then outerColor = ArgbFromOleColor(m_FocusPrimaryBrush)
+        If m_FocusSecondaryBrush <> THEME_BRUSH Then innerColor = ArgbFromOleColor(m_FocusSecondaryBrush)
+        p = m_FocusPrimaryThickness
+        q = m_FocusSecondaryThickness
+        d = FocusVisualInset()
+        r = MaxSingle(m_CornerRadius - d, 0)
+        If w - 2 * d <= 0 Or h - 2 * d <= 0 Then Exit Sub
 
-        box = RoundedRect(p / 2, p / 2, w - p / 2, h - p / 2, MaxSingle(r - p / 2, 0))
-        m_Target.DrawRoundedRectangle box, SolidBrush(m_Target, outerColor), p, 0
-        box = RoundedRect(p + q / 2, p + q / 2, w - p - q / 2, h - p - q / 2, MaxSingle(r - p - q / 2, 0))
-        m_Target.DrawRoundedRectangle box, SolidBrush(m_Target, innerColor), q, 0
+        If p > 0 Then
+            box = RoundedRect(d + p / 2, d + p / 2, w - d - p / 2, h - d - p / 2, MaxSingle(r - p / 2, 0))
+            m_Target.DrawRoundedRectangle box, SolidBrush(m_Target, outerColor), p, 0
+        End If
+        If q > 0 Then
+            box = RoundedRect(d + p + q / 2, d + p + q / 2, w - d - p - q / 2, h - d - p - q / 2, MaxSingle(r - p - q / 2, 0))
+            m_Target.DrawRoundedRectangle box, SolidBrush(m_Target, innerColor), q, 0
+        End If
     End Sub
+
+    ' How far in from the button edge the focus visual starts. The WinUI default (-3, outside)
+    ' maps to the edge; anything further out is clamped to the edge.
+    Private Function FocusVisualInset() As Single
+        FocusVisualInset = MaxSingle(m_FocusMargin - ButtonFocusVisualMargin, 0)
+    End Function
+
+    ' RequestedTheme: ui3ThemeSystem follows the app theme (UI3Theme.IsDarkMode).
+    Private Function ButtonIsDark() As Boolean
+        Select Case m_RequestedTheme
+            Case ui3ThemeLight: ButtonIsDark = False
+            Case ui3ThemeDark: ButtonIsDark = True
+            Case Else: ButtonIsDark = IsDarkMode()
+        End Select
+    End Function
 
     Private Function MaxSingle(ByVal a As Single, ByVal b As Single) As Single
         If a > b Then MaxSingle = a Else MaxSingle = b

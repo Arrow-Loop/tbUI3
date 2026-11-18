@@ -1,3 +1,8 @@
+### 1.0.0.75
+- UI3Button.Destructive (tbUI3 extension, from the tbUI3 CSS library): the caption and icon use the critical colour (SystemFillColorCritical) at rest and on hover, for buttons that delete or remove something. Ignored on the Accent style.
+- UI3Button focus visual properties with WinUI names and defaults: FocusVisualPrimaryBrush, FocusVisualSecondaryBrush, FocusVisualPrimaryThickness (2), FocusVisualSecondaryThickness (1) and FocusVisualMargin (-3). The rings still draw inside the button; a larger margin moves them inward.
+- UI3Button.RequestedTheme: Light or Dark for one button; ui3ThemeSystem follows the app theme.
+
 ### 1.0.0.74
 - UI3Button appearance properties with WinUI names and defaults: FontFamily, FontSize, FontWeight, FontStyle, FontStretch, Padding (XAML Thickness text), HorizontalContentAlignment, VerticalContentAlignment, CornerRadius, BorderThickness and BackgroundSizing.
 - Background, Foreground and BorderBrush colours. As in WinUI, they show in the Normal state; hover, pressed and disabled keep the theme colours. ui3ThemeBrush (-1) returns to the theme.

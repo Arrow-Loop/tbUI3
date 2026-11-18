@@ -39,8 +39,8 @@ test('new theme tokens match Common_themeresources_any.xaml',()=>{
  for(const [name,value] of Object.entries(expected)) assert.equal(constant(name),value,name);
  assert(/AccentFillSecondaryOpacity As Single = 0\.9\b/.test(theme));
  assert(/AccentFillTertiaryOpacity As Single = 0\.8\b/.test(theme));
- assert(/FocusVisualPrimaryThickness As Single = 2\b/.test(theme));
- assert(/FocusVisualSecondaryThickness As Single = 1\b/.test(theme));
+ assert(/FocusVisualPrimaryThicknessDefault As Single = 2\b/.test(theme));
+ assert(/FocusVisualSecondaryThicknessDefault As Single = 1\b/.test(theme));
 });
 
 test('WithOpacity applies a XAML brush Opacity to an opaque colour',()=>{

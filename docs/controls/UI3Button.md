@@ -1,6 +1,6 @@
 # UI3Button
 
-Status: S3 icons validated in package 1.0.0.3 (win32 and win64, 2026-10-06); 1.0.0.4 Caption fix validated in win32 and win64. Package 1.0.0.73 adds the WinUI visual states, the Subtle style, the keyboard focus visual and ButtonBase input behaviour; it is **not yet built or tested in twinBASIC**. Package 1.0.0.74 adds the appearance properties (fonts, padding, content alignment, corner radius, border thickness, background sizing, brushes); also not yet built.
+Status: S3 icons validated in package 1.0.0.3 (win32 and win64, 2026-10-06); 1.0.0.4 Caption fix validated in win32 and win64. Package 1.0.0.73 adds the WinUI visual states, the Subtle style, the keyboard focus visual and ButtonBase input behaviour; it is **not yet built or tested in twinBASIC**. Package 1.0.0.74 adds the appearance properties (fonts, padding, content alignment, corner radius, border thickness, background sizing, brushes); also not yet built. Package 1.0.0.75 adds `Destructive` (a tbUI3 extension), the focus visual properties and `RequestedTheme`; also not yet built.
 
 ## WinUI family
 
@@ -83,7 +83,7 @@ Source: `dxaml/xcp/dxaml/lib/ButtonBase_Partial.cpp` and `Button_Partial.cpp`.
 
 ## Focus visual deviation
 
-WinUI draws the system focus visual outside the button: `FocusVisualMargin = -3` grows the bounds by 3 DIPs, then a 2-DIP `FocusStrokeColorOuter` ring with a 1-DIP `FocusStrokeColorInner` ring inside it (`FocusVisualPrimaryThickness`/`SecondaryThickness` defaults), corner radius ControlCornerRadius + 3 (`FocusRectManager.cpp` `AdjustCornerRadius`). A twinBASIC UserControl can only draw inside its own window, so those rings would be invisible. tbUI3 draws the same two rings, same colours and thicknesses, inside the button's edge (outer ring flush with the edge, radius following ControlCornerRadius), on top of the border. This is a known, documented difference. A focus adorner window that draws outside the control is listed in ROADMAP as an option.
+WinUI draws the system focus visual outside the button: `FocusVisualMargin = -3` grows the bounds by 3 DIPs, then a 2-DIP `FocusStrokeColorOuter` ring with a 1-DIP `FocusStrokeColorInner` ring inside it (`FocusVisualPrimaryThickness`/`SecondaryThickness` defaults), corner radius ControlCornerRadius + 3 (`FocusRectManager.cpp` `AdjustCornerRadius`). A twinBASIC UserControl can only draw inside its own window, so those rings would be invisible. tbUI3 draws the same two rings, same colours and thicknesses, inside the button's edge (outer ring flush with the edge, radius following ControlCornerRadius), on top of the border. This is a known, documented difference. Since 1.0.0.75 the `FocusVisual*` properties change the colours and widths, and `FocusVisualMargin` moves the rings inward by (margin + 3) DIPs; a margin of -3 or less keeps them on the edge, because nothing can be drawn further out. A focus adorner window that draws outside the control is listed in ROADMAP as an option.
 
 The visual shows only for keyboard focus: focus that arrives while Tab or Alt is held. A click focuses the button without it, and a click on a button already showing it hides it, as WinUI's FocusState Pointer does. Programmatic `SetFocus` shows no visual.
 
@@ -110,6 +110,21 @@ Appearance properties (1.0.0.74), same names and defaults as WinUI's DefaultButt
 | `BackgroundSizing` | FromStyle | `ui3BackgroundSizingFromStyle` (-1) is a **tbUI3 convenience** meaning the Style's setter (Inner for Standard and Subtle, Outer for Accent); InnerBorderEdge and OuterBorderEdge are WinUI's values |
 | `Background`, `Foreground`, `BorderBrush` | `ui3ThemeBrush` (-1) = the Style's theme resource | OLE colours, so opaque only. As in WinUI they show only in the Normal state, because the template's PointerOver, Pressed and Disabled states set the ContentPresenter's brushes directly |
 
+Focus and theme properties (1.0.0.75), WinUI names and defaults:
+
+| Property | Default (source) | Notes |
+| --- | --- | --- |
+| `FocusVisualPrimaryBrush`, `FocusVisualSecondaryBrush` | `ui3ThemeBrush` (-1) = FocusStrokeColorOuter / FocusStrokeColorInner | OLE colours, opaque only |
+| `FocusVisualPrimaryThickness`, `FocusVisualSecondaryThickness` | 2 and 1 (FocusRectManager defaults) | **uniform only**; 0 hides that ring |
+| `FocusVisualMargin` | -3 (Button styles) | **uniform only**; see the focus visual deviation above |
+| `RequestedTheme` | `ui3ThemeSystem` = ElementTheme.Default | Light or Dark for this button only; same numbering as ElementTheme |
+
+tbUI3 extension, not part of WinUI (1.0.0.75):
+
+| Property | Default | Notes |
+| --- | --- | --- |
+| `Destructive` | False | From the tbUI3 CSS library's `button--danger`. The caption and icon use SystemFillColorCritical (#C42B1C light, #FF99A4 dark) at rest and on hover; pressed and disabled keep WinUI's colours. Ignored on Accent, where red text on the accent fill would be unreadable. A `Foreground` you set still wins at rest |
+
 Before 1.0.0.74 the padding was measured from the button's outer edge, 1 DIP short of WinUI's ContentPresenter. Centred content is unaffected; left, right, top and bottom alignment now match WinUI.
 
 Not applicable in twinBASIC, so not exposed:
@@ -118,14 +133,20 @@ Not applicable in twinBASIC, so not exposed:
 - `Flyout`, `ContextFlyout`: need tbUI3 flyout/menu controls, which don't exist yet. Revisit with a future UI3Flyout.
 - `ContentTemplate`, `ContentTemplateSelector`, `ContentTransitions`, `Template`, `Style` (as a XAML Style object), `Resources`, `DataContext`: XAML templating, resources and binding have no twinBASIC counterpart.
 - `KeyboardAccelerators`: a form-level shortcut (Ctrl+S and so on) belongs to the form's KeyPreview or menus in twinBASIC.
-- `RequestedTheme`: tbUI3 takes light/dark from UI3FormTheme for the whole form; a per-control theme override may be added later.
 - `Margin`, `HorizontalAlignment`, `VerticalAlignment`, `MinWidth`/`MaxWidth`/`MinHeight`/`MaxHeight`: layout-panel concepts. A twinBASIC form places controls absolutely with Left/Top/Width/Height.
 - `FlowDirection`: right-to-left layout is not supported by tbUI3 yet (roadmap).
 - `ElementSoundMode`: XAML's ElementSoundPlayer has no twinBASIC equivalent.
 - `IsFocusEngagementEnabled`, `RequiresPointer`, `XYFocus*`: Xbox/gamepad focus navigation.
 - `Opacity`, `Translation`, `Rotation`, `Scale`, `CenterPoint`, `Shadow`, composition and animation properties: a Win32 child window cannot be composited this way.
 - `AllowDrop`, `CanDrag` and the drag events: twinBASIC's OLE drag-and-drop properties would be the route; out of Button scope.
-- `IsTextScaleFactorEnabled`: Windows text-scaling support is a later accessibility pass (roadmap).
+
+Deferred, with reasons (on the roadmap, not ruled out):
+
+- `AutomationProperties.Name`, `HelpText` and the rest of UI Automation: a screen reader needs a real accessibility provider (MSAA or UIA) behind the control window. That provider should be shared by every tbUI3 control, so it is its own pass rather than a Button property. Until then a screen reader sees the button's window without a name.
+- `AllowFocusOnInteraction`: twinBASIC moves focus to a control when it is clicked, before the control's code runs. Refusing that focus means handing it back afterwards, which fires LostFocus/GotFocus on both controls. It needs an IDE test before it is offered.
+- `IsTextScaleFactorEnabled`: Windows' Text size setting should scale every tbUI3 control's text together, or a form's layout breaks. It belongs in a library-wide accessibility pass, not one control.
+- `CharacterSpacing`: needs IDWriteTextLayout1, which the private Direct2D declarations do not cover yet.
+- High-contrast resources, the 83 ms BrushTransition, and access key tips on Alt.
 - Pointer, key, focus and manipulation events other than Click: the extender supplies GotFocus/LostFocus; MouseDown/MouseUp/MouseMove/KeyDown/KeyUp/KeyPress events are on the roadmap.
 
 ## Current properties
@@ -141,6 +162,7 @@ Not applicable in twinBASIC, so not exposed:
 - `Enabled As Boolean`, `ClickMode As UI3ClickMode`, `UseSystemFocusVisuals As Boolean`, `AccessKey As String` (1.0.0.73)
 - `IsPressed As Boolean`, `IsPointerOver As Boolean` (read-only, 1.0.0.73)
 - `FontFamily`, `FontSize`, `FontWeight`, `FontStyle`, `FontStretch`, `Padding`, `HorizontalContentAlignment`, `VerticalContentAlignment`, `CornerRadius`, `BorderThickness`, `BackgroundSizing`, `Background`, `Foreground`, `BorderBrush` (1.0.0.74)
+- `FocusVisualPrimaryBrush`, `FocusVisualSecondaryBrush`, `FocusVisualPrimaryThickness`, `FocusVisualSecondaryThickness`, `FocusVisualMargin`, `RequestedTheme`, and the tbUI3 extension `Destructive` (1.0.0.75)
 
 `IconGlyph` overrides the semantic `Icon`. `IconFontName` applies to the raw-glyph path; semantic icons deliberately use tbUI3's system-font selection so their Fluent/MDL2 code-point mapping remains portable.
 

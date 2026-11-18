@@ -4,6 +4,12 @@ All notable changes to tbUI3. Dates are when the change was made, not released. 
 
 ## Unreleased
 
+### 2026-11-18 - Small Build icon optical weight (add-in 1.3.0.19)
+
+The supplied thin outline produces weak partial pixels at 16px. Added build-small.svg with identical path/viewBox/transforms and a rounded 90-unit outline in its transformed 3840-unit space (0.375 CSS px at 16px). Quick Access and Classic's 16px Build use this heavier mask. Full/simplified ribbon commands keep the original build.svg; theme coloring, native dispatch, command placement and the 7px full ribbon padding remain unchanged. Both variants are embedded; no loose runtime image is required.
+
+Validation: 150 tests and 71 mirrors pass. Playwright/Edge renders show the original 16px mask fragmented into eight four-connected regions at alpha>=128; the adjusted mask forms one connected region at that threshold. Light/Dark full/simplified component checks pass with both mask variants, correct foreground colors and Quick Access order/dispatch, without page/console errors. Raster comparisons and screenshots live outside the repo in .workspace-tools. Browser plugin remains unavailable; native compiled reload is pending. Rebuild/reload tbUI3IDE 1.3.0.19. Package 70 and adapter v10 remain unchanged.
+
 ### 2026-11-18 - Custom Build icon, Quick Access and full ribbon spacing (add-in 1.3.0.18)
 
 Uses Shane's supplied build.svg for Build through the shared icon resolver in full/simplified Ribbon and Hybrid (and the existing Classic glyph mapping). Normalized only XML/DTD declarations, display dimensions and fill=currentColor; path geometry/viewBox/transforms are retained. The local custom asset is embedded as a foreground-colored CSS mask, white on dark themes and dark on light themes, without a loose runtime SVG dependency. Build is added between Redo and Play in Ribbon Quick Access, forwarding the native button's handler/state. Build remains on the Project tab; it is explicitly excluded from the history/debug-only Quick Access suppression set. Hybrid retains its structure without Quick Access.

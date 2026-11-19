@@ -1,5 +1,9 @@
 # Roadmap: tbUI3 IDE
 
+## Planned: unified twinBASIC / tbUI3 updater (agreed 2026-11-19)
+
+Build a small standalone `Updater.exe` alongside the twinBASIC IDE and an update-check/consent flow in the unified `tbUI3IDE` add-in. Manage official twinBASIC portable IDE releases, both add-in architectures, WinUI3 IDE themes, and the existing tbUI3 icon/resource pack. Include tbUI3 control-package release downloads without silently rewriting embedded copies inside user projects. User choices: **Update Now**, **Update on Exit**, **Remind Me Later**; select components; optional IDE restart. Approved policy is **in-place overwrite** of the existing portable IDE directory, not permanent versioned folders. Require verified downloads, locked-process wait, backups and rollback, target allowlists, preservation of user files and a detached helper for updater self-update. Release endpoint/manifest and actual implementation remain open. Full implementation specification: [Unified updater plan](UPDATER_PLAN.md).
+
 ## 2026-11-18 - Replace all Build artwork with buildv3 (add-in 1.3.0.20)
 
 Shane reports the prior small-size adjustment did not resolve the gap and supplied buildv3.svg. Replaced the shared Build asset with that artwork and removed the separate heavier build-small variant/resolver branch. All Build surfaces now use the same supplied geometry: Quick Access, full/simplified Ribbon and Hybrid, and Classic. Only XML/DTD declarations, display dimensions and fill=currentColor were normalized for the existing embedded foreground-colored mask. Path/viewBox/transforms/stroke settings match the supplied file; no outline thickening is applied. Quick Access order, command dispatch and full ribbon padding remain unchanged.

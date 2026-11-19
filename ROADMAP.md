@@ -1,5 +1,9 @@
 # Roadmap
 
+## 2026-11-19 - Prerelease version numbering migration (coordinated, pending)
+
+First-party tbUI3IDE 1.3.0.20 and tbUI3 package 1.0.0.75 used major version 1 before a stable release. Agreed corrected prerelease identities: 0.3.0.20 and 0.0.0.75. The canonical packed projects, mirrors, tbUI3Test embedded reference, update manifests and current-state documentation must change together; do not blindly rewrite historical build evidence or third-party versions. Coordinate with the active updater development before source edits. Policy and complete checklist: [docs/VERSIONING_POLICY.md](docs/VERSIONING_POLICY.md). **Canonical version migration is pending.**
+
 ## Planned (2026-11-19): unified portable IDE and tbUI3 updater
 
 The tbUI3IDE add-in will discover and offer updates for the official twinBASIC IDE, both tbUI3IDE add-in architectures, the WinUI3 themes, and the developer-only tbUI3 icon/resource library. A standalone `Updater.exe` beside twinBASIC will update the existing installation **in place** only after IDE shutdown, with verification, backups, rollback and self-update handoff. tbUI3 control-package downloads must not silently modify users' embedded project packages. Choices are Update Now, Update on Exit, and Remind Me Later. **Planned only.** See [tbIDE/UPDATER_PLAN.md](tbIDE/UPDATER_PLAN.md) and [tbIDE/ROADMAP.md](tbIDE/ROADMAP.md).

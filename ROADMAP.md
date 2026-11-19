@@ -1,5 +1,9 @@
 # Roadmap
 
+## Planned (2026-11-19): unified portable IDE and tbUI3 updater
+
+The tbUI3IDE add-in will discover and offer updates for the official twinBASIC IDE, both tbUI3IDE add-in architectures, the WinUI3 themes, and the developer-only tbUI3 icon/resource library. A standalone `Updater.exe` beside twinBASIC will update the existing installation **in place** only after IDE shutdown, with verification, backups, rollback and self-update handoff. tbUI3 control-package downloads must not silently modify users' embedded project packages. Choices are Update Now, Update on Exit, and Remind Me Later. **Planned only.** See [tbIDE/UPDATER_PLAN.md](tbIDE/UPDATER_PLAN.md) and [tbIDE/ROADMAP.md](tbIDE/ROADMAP.md).
+
 Committed work is listed first. Exploratory ideas are marked as such.
 
 Every development pass ends with a commit and a verified push to `origin/tbui3-dev`, per Shane's standing instruction of 2026-11-12. Main and PR decisions remain Shane's.

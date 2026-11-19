@@ -1,5 +1,9 @@
 # Changelog
 
+## 2026-11-19 - Prerelease version policy documentation
+
+Recorded the agreed convention reserving major version 1 for first stable releases, and audited tbUI3IDE (original 1.3.0.20) and core tbUI3 package (original 1.0.0.75) as needing a coordinated prerelease version correction. Added docs/VERSIONING_POLICY.md and a roadmap migration entry. **No packed project version metadata or binaries changed in this documentation pass.**
+
 All notable changes to tbUI3. Dates are when the change was made, not released. Nothing has been released yet.
 
 ## Unreleased

@@ -24,6 +24,7 @@ Private Class tbUI3IDEAddin
     Private WithEvents SettleTimer As AddinTimer
     ' Picks up a change to the add-in's own option in IDE Options (see InstallOption) and saves it.
     Private WithEvents OptionTimer As AddinTimer
+    Private Updater As UpdaterController
     Private TabDesigner As TabViewDesignerController
     Private LastThemeName As String
     Private ToolbarInstalled As Boolean
@@ -55,6 +56,8 @@ Private Class tbUI3IDEAddin
         Log "loaded: " & Architecture() & ", IDE compiler " & SafeCompilerVersion()
         ApplyForActiveTheme "start-up"
         StartSettleTimer
+        On Error Resume Next
+        Set Updater = New UpdaterController(Host)
     End Sub
 
     Private Sub Class_Terminate()
@@ -70,6 +73,8 @@ Private Class tbUI3IDEAddin
         Set OptionTimer = Nothing
         If Not TabDesigner Is Nothing Then TabDesigner.Dispose
         Set TabDesigner = Nothing
+        If Not Updater Is Nothing Then Updater.Dispose
+        Set Updater = Nothing
         If Not StyleWindow Is Nothing Then
             RunJs "(function(){var t=window.__tbUI3Toolbar;if(t)t.dispose();delete window.__tbUI3Toolbar;if(window.__tbUI3Appearance)window.__tbUI3Appearance.dispose();delete window.__tbUI3Appearance;var s=document.getElementById('tbUI3ToolbarCss');if(s)s.remove();return 'toolbar removed';})()"
         End If
@@ -241,6 +246,7 @@ Private Class tbUI3IDEAddin
 
     Private Sub OptionTimer_Timer()
         On Error GoTo Failed
+        If Not Updater Is Nothing Then Updater.Poll
         If Not ToolbarInstalled Then InstallToolbar
         ' Saving Colour Theme in BETA 1044 Options calls changedIdeOptions without notifyChangedTheme.
         ' Reconcile the actual name even when the host event was omitted; never reset unsaved page options.

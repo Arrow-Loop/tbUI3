@@ -1,5 +1,10 @@
 # Third-party notices and implementation provenance
 
+## Updater WebView2 reference (2026-11-19)
+
+At Shane's request, the updater adapts the WebView2 host/theme/Runtime-detection patterns and embeds the shared Master CSS/control/theme JavaScript from Smith-Debnam/twinBASIC-Knowledge commit 0babc88f55f4077df7d309826734240cc63796e5. Exact unchanged shared assets and source paths are recorded in tbIDE/Updater/REFERENCE.json. The updater uses Windows system glyph fonts, not the toolkit's image/icon archives. Existing upstream WinUI/Gallery provenance comments are retained in the shared resources.
+
+
 tbUI3 is MIT-licensed. It is intentionally self-contained and does not require the projects/packages below at runtime.
 
 ## Microsoft microsoft-ui-xaml

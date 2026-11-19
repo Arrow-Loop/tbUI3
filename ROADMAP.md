@@ -1,12 +1,21 @@
 # Roadmap
 
+## 2026-11-19 - Updater source implementation delivered; native acceptance next
+
+tbUI3IDE 0.3.0.21 and Updater 0.1.0.0 implement the agreed discovery/notification, WebView2 sidecar, verified staging, normal-exit consent, in-place journal/backup/rollback, self-update handoff and release-packaging contract. Quill coordination is complete; the separate core-package numbering migration remains outside this pass.
+
+**Next gate (Shane, deferred at his request):** fresh native builds of both add-in architectures and the Win32 WebView2 sidecar; live save/cancel/On Exit/crash/other-session/locked-cache cases; combined update, interrupted recovery and self-update; Windows theme/accent, DPI and missing Runtime. Then publish the first release assets. [Detailed checklist](tbIDE/Updater/README.md#validation-and-tomorrows-acceptance).
+
+Automated validation is complete as recorded in CHANGELOG.md. Remaining follow-ups: a real vendor stable-channel contract, optional control-package distribution when published, original working-directory/launch-context capture where supported, and automated release CI after native acceptance. No main merge or PR is part of this pass.
+
+
 ## 2026-11-19 - Prerelease version numbering migration (coordinated, pending)
 
 First-party tbUI3IDE 1.3.0.20 and tbUI3 package 1.0.0.75 used major version 1 before a stable release. Agreed corrected prerelease identities: 0.3.0.20 and 0.0.0.75. The canonical packed projects, mirrors, tbUI3Test embedded reference, update manifests and current-state documentation must change together; do not blindly rewrite historical build evidence or third-party versions. Coordinate with the active updater development before source edits. Policy and complete checklist: [docs/VERSIONING_POLICY.md](docs/VERSIONING_POLICY.md). **Canonical version migration is pending.**
 
-## Planned (2026-11-19): unified portable IDE and tbUI3 updater
+## Agreed scope (2026-11-19): unified portable IDE and tbUI3 updater
 
-The tbUI3IDE add-in will discover and offer updates for the official twinBASIC IDE, both tbUI3IDE add-in architectures, the WinUI3 themes, and the developer-only tbUI3 icon/resource library. A standalone `Updater.exe` beside twinBASIC will update the existing installation **in place** only after IDE shutdown, with verification, backups, rollback and self-update handoff. tbUI3 control-package downloads must not silently modify users' embedded project packages. Choices are Update Now, Update on Exit, and Remind Me Later. **Planned only.** See [tbIDE/UPDATER_PLAN.md](tbIDE/UPDATER_PLAN.md) and [tbIDE/ROADMAP.md](tbIDE/ROADMAP.md).
+The tbUI3IDE add-in will discover and offer updates for the official twinBASIC IDE, both tbUI3IDE add-in architectures, the WinUI3 themes, and the developer-only tbUI3 icon/resource library. A standalone `Updater.exe` beside twinBASIC will update the existing installation **in place** only after IDE shutdown, with verification, backups, rollback and self-update handoff. tbUI3 control-package downloads must not silently modify users' embedded project packages. Choices are Update Now, Update on Exit, and Remind Me Later. **Source candidate implemented; native acceptance/publication pending.** See [tbIDE/UPDATER_PLAN.md](tbIDE/UPDATER_PLAN.md) and [tbIDE/ROADMAP.md](tbIDE/ROADMAP.md).
 
 Committed work is listed first. Exploratory ideas are marked as such.
 

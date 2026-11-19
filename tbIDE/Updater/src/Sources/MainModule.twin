@@ -1,0 +1,63 @@
+' Native entry point. Check/Stage/Cancel run hidden; Apply/Recover use the embedded WebView2 UI.
+Module MainModule
+    Public UpdateContext As String
+    Public UpdateMode As String
+    Public ContextValidated As Boolean
+    Public StartupError As String
+
+    Public Sub Main()
+        On Error GoTo Failed
+        WinUI_InitializeDpiAwareness
+        Dim args As String = Trim$(Command$())
+        If Len(args) = 0 Then
+            ShowUpdaterWindow
+            Exit Sub
+        End If
+        Dim splitAt As Long = InStr(1, args, " -Context ", vbBinaryCompare)
+        If Left$(args, 6) <> "-Mode " Or splitAt <= 7 Then Err.Raise 5, , "Open updates from the tbUI3IDE add-in."
+        UpdateMode = Mid$(args, 7, splitAt - 7)
+        Dim quoted As String = Trim$(Mid$(args, splitAt + 10))
+        If Left$(quoted, 1) = Chr$(34) Then
+            If Right$(quoted, 1) <> Chr$(34) Then Err.Raise 5, , "The update context path is not correctly quoted."
+            UpdateContext = Mid$(quoted, 2, Len(quoted) - 2)
+        Else
+            UpdateContext = quoted
+        End If
+        If InStr(UpdateContext, Chr$(34)) > 0 Then Err.Raise 5, , "Invalid update context."
+        Dim fso As Object = CreateObject("Scripting.FileSystemObject")
+        Dim base As String = Environ$("LOCALAPPDATA") & "\tbUI3\Updater\"
+        UpdateContext = fso.GetAbsolutePathName(UpdateContext)
+        If StrComp(Left$(UpdateContext, Len(base)), base, vbTextCompare) <> 0 Or _
+            LCase$(fso.GetFileName(UpdateContext)) <> "context.json" Or Not fso.FileExists(UpdateContext) Then _
+            Err.Raise 5, , "This is not a saved tbUI3 update session."
+        ContextValidated = True
+        Select Case UpdateMode
+            Case "Check", "Stage", "Cancel"
+                Dim worker As LongPtr = StartUpdateEngine(UpdateMode)
+                If worker <> 0 Then ReleaseWorker worker
+            Case "Apply", "Recover"
+                ' The installed EXE and engine must be unlocked during updater self-update/recovery.
+                Dim parent As String = fso.GetParentFolderName(UpdateContext)
+                Dim isRunner As Boolean = (StrComp(fso.GetParentFolderName(App.Path), parent, vbTextCompare) = 0 And _
+                    LCase$(Left$(fso.GetFileName(App.Path), 7)) = "runner-")
+                If Not isRunner Then
+                    Dim runner As String = parent & "\runner-" & Replace(fso.GetTempName(), ".", "-")
+                    fso.CreateFolder runner
+                    fso.CopyFile App.Path & "\Updater.exe", runner & "\Updater.exe", True
+                    fso.CopyFile App.Path & "\Updater.ps1", runner & "\Updater.ps1", True
+                    Shell QuoteArg(runner & "\Updater.exe") & " -Mode " & UpdateMode & " -Context " & QuoteArg(UpdateContext), vbNormalFocus
+                    Exit Sub
+                End If
+                ShowUpdaterWindow
+            Case Else
+                Err.Raise 5, , "Unsupported updater operation."
+        End Select
+        Exit Sub
+    Failed:
+        StartupError = Err.Description
+        If Not ContextValidated Then UpdateContext = ""
+        ReportStartupFailure StartupError
+        ShowUpdaterWindow
+    End Sub
+End Module
+

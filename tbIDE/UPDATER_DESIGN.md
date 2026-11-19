@@ -1,7 +1,7 @@
-# Unified updater design (planned)
+# Unified updater design
 
 **Decision recorded:** 2026-11-19  
-**Status:** Approved functional direction, not implemented. No binary, release pipeline, updater UI or installation workflow is claimed to exist.
+**Status:** Source implementation candidate exists in tbUI3IDE 0.3.0.21 and Updater 0.1.0.0. Final native compilation/runtime and first release publication are pending; see [current implementation](Updater/README.md).
 
 ## Goal and scope
 
@@ -61,7 +61,7 @@ For a multi-component operation, the implementation must define and test its rol
 - Record exact approved release endpoints, release artifact formats, compatibility rules, staging/backup paths, persisted update schema and privilege policy before implementing.
 - Test normal update, deferred update, saved/unsaved/cancelled exit, running/lingering process, locked file, interrupted download, corrupt archive, insufficient permissions/disk space, partial replacement/rollback, updater self-update, repeated run, offline mode, and both IDE architectures. Include component-only and combined updates.
 
-## Delivery plan (all pending)
+## Original delivery sequence (current status in Updater/README.md)
 
 1. Finalize release asset/manifest contracts and decide how private add-in distribution is made accessible.
 2. Implement a read-only update detector and nonblocking user notification in tbUI3IDE.
@@ -70,4 +70,4 @@ For a multi-component operation, the implementation must define and test its rol
 5. Integrate all four component types, self-update and existing icon-library setup; validate win32/win64 and recovery scenarios.
 6. Document user-facing installation and maintenance after the implementation has real evidence.
 
-This document records the agreed behavior and outstanding engineering decisions. **No updater implementation is included in the 2026-11-19 documentation pass.**
+This document records the agreed behavior and outstanding engineering decisions. The initial documentation-only pass included no implementation; the subsequent coordinated source implementation is now recorded in the changelog.

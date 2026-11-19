@@ -1,0 +1,367 @@
+' Adapted from Smith-Debnam/twinBASIC-Knowledge 0babc88f (native theme schema 2).
+Module WinUIThemeReference
+    Private Declare PtrSafe Function WinUI_SystemMenuDelay Lib "user32.dll" Alias "SystemParametersInfoW" (ByVal action As Long, ByVal parameter As Long, ByRef value As Long, ByVal flags As Long) As Long
+
+    ' Canonical live theme bridge, schemaVersion 2. One UI-thread host per module.
+    ' Independently written from Microsoft API contracts and the lifecycle pattern
+    ' documented in NATIVE_INTEROP_PATTERNS.md; no package dependency or copied helpers.
+    Private Const WIN_DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2 As Long = -4
+
+    Private Const WIN_DWMWA_USE_IMMERSIVE_DARK_MODE_LEGACY As Long = 19
+    Private Const WIN_DWMWA_USE_IMMERSIVE_DARK_MODE As Long = 20
+    Private Const WIN_DWMWA_WINDOW_CORNER_PREFERENCE As Long = 33
+    Private Const WIN_DWMWA_CAPTION_COLOR As Long = 35
+    Private Const WIN_DWMWA_TEXT_COLOR As Long = 36
+    Private Const WIN_DWMWA_SYSTEMBACKDROP_TYPE As Long = 38
+
+    Private Const WIN_DWMWCP_ROUND As Long = 2
+    Private Const WIN_DWMSBT_MAINWINDOW As Long = 2
+
+    Private Const WIN_SWP_NOSIZE As Long = &H1
+    Private Const WIN_SWP_NOMOVE As Long = &H2
+    Private Const WIN_SWP_NOZORDER As Long = &H4
+    Private Const WIN_SWP_NOACTIVATE As Long = &H10
+    Private Const WIN_SWP_FRAMECHANGED As Long = &H20
+
+    Private Declare PtrSafe Function WinUI_SetProcessDpiAwarenessContext Lib "user32.dll" Alias "SetProcessDpiAwarenessContext" (ByVal value As LongPtr) As Long
+    Private Declare PtrSafe Function WinUI_SetThreadDpiAwarenessContext Lib "user32.dll" Alias "SetThreadDpiAwarenessContext" (ByVal value As LongPtr) As LongPtr
+    Private Declare PtrSafe Function WinUI_DwmSetWindowAttribute Lib "dwmapi.dll" Alias "DwmSetWindowAttribute" (ByVal hWnd As LongPtr, ByVal dwAttribute As Long, ByRef pvAttribute As Any, ByVal cbAttribute As Long) As Long
+    Private Declare PtrSafe Function WinUI_SetWindowPos Lib "user32.dll" Alias "SetWindowPos" (ByVal hWnd As LongPtr, ByVal hWndInsertAfter As LongPtr, ByVal x As Long, ByVal y As Long, ByVal cx As Long, ByVal cy As Long, ByVal uFlags As Long) As Long
+
+
+    Private Const WIN_HKEY_CURRENT_USER As Long = &H80000001
+    Private Const WIN_RRF_RT_REG_BINARY As Long = &H8
+    Private Const WIN_RRF_RT_REG_DWORD As Long = &H10
+    Private Const WIN_WM_SETTINGCHANGE As Long = &H1A
+    Private Const WIN_WM_THEMECHANGED As Long = &H31A
+    Private Const WIN_WM_DWMCOLORIZATIONCOLORCHANGED As Long = &H320
+    Private Const WIN_WM_NCDESTROY As Long = &H82
+    Private Const WIN_THEME_SUBCLASS_ID As Long = 1
+    Private Const WIN_DWMWA_COLOR_DEFAULT As Long = -1
+
+    Private Declare PtrSafe Function WinUI_RegGetValue Lib "advapi32.dll" Alias "RegGetValueW" (ByVal hKey As LongPtr, ByVal subKey As LongPtr, ByVal valueName As LongPtr, ByVal flags As Long, ByRef valueType As Long, ByRef data As Any, ByRef dataSize As Long) As Long
+    Private Declare PtrSafe Function WinUI_DwmGetColorizationColor Lib "dwmapi.dll" Alias "DwmGetColorizationColor" (ByRef color As Long, ByRef opaque As Long) As Long
+    Private Declare PtrSafe Function WinUI_SetWindowSubclass Lib "comctl32.dll" Alias "SetWindowSubclass" (ByVal hWnd As LongPtr, ByVal callback As LongPtr, ByVal subclassId As LongPtr, ByVal refData As LongPtr) As Long
+    Private Declare PtrSafe Function WinUI_RemoveWindowSubclass Lib "comctl32.dll" Alias "RemoveWindowSubclass" (ByVal hWnd As LongPtr, ByVal callback As LongPtr, ByVal subclassId As LongPtr) As Long
+    Private Declare PtrSafe Function WinUI_DefSubclassProc Lib "comctl32.dll" Alias "DefSubclassProc" (ByVal hWnd As LongPtr, ByVal message As Long, ByVal wParam As LongPtr, ByVal lParam As LongPtr) As LongPtr
+    Private Declare PtrSafe Function WinUI_lstrcmpi Lib "kernel32.dll" Alias "lstrcmpiW" (ByVal leftText As LongPtr, ByVal rightText As LongPtr) As Long
+
+    Private mDpiInitialized As Boolean
+    Private mThemeValid As Boolean
+    Private mMode As String
+    Private mAccent(0 To 6) As String
+    Private mWindow As LongPtr
+    Private mHost As Object
+    Private mWebViewReady As Boolean
+    Private mRefreshing As Boolean
+
+    Public Sub WinUI_InitializeDpiAwareness()
+        On Error Resume Next
+
+        If mDpiInitialized Then Exit Sub
+        mDpiInitialized = True
+
+        WinUI_SetProcessDpiAwarenessContext WIN_DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2
+        WinUI_SetThreadDpiAwarenessContext WIN_DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2
+    End Sub
+
+
+    Public Function WinUITheme_Attach(ByVal hWnd As LongPtr, ByVal host As Object) As Boolean
+        On Error GoTo Failed
+        If hWnd = 0 Or host Is Nothing Then Exit Function
+        If mWindow <> 0 Then
+            If mWindow = hWnd Then
+                If host Is mHost Then WinUITheme_Attach = True
+            End If
+            Exit Function
+        End If
+        If WinUI_SetWindowSubclass(hWnd, AddressOf WinUITheme_SubclassProc, WIN_THEME_SUBCLASS_ID, 0) = 0 Then Exit Function
+        mWindow = hWnd
+        Set mHost = host
+        mWebViewReady = False
+        WinUITheme_Refresh
+        WinUITheme_Attach = True
+        Exit Function
+Failed:
+        WinUITheme_Detach hWnd
+    End Function
+
+    Public Sub WinUITheme_Detach(ByVal hWnd As LongPtr)
+        If hWnd = 0 Or hWnd <> mWindow Then Exit Sub
+        ' Keep the owner alive if removal fails; the callback is still installed.
+        If WinUI_RemoveWindowSubclass(hWnd, AddressOf WinUITheme_SubclassProc, WIN_THEME_SUBCLASS_ID) = 0 Then Exit Sub
+        WinUITheme_ReleaseHost
+    End Sub
+
+    Private Sub WinUITheme_ReleaseHost()
+        mWebViewReady = False
+        mWindow = 0
+        Set mHost = Nothing
+    End Sub
+
+    Private Function WinUITheme_SubclassProc(ByVal hWnd As LongPtr, ByVal message As Long, ByVal wParam As LongPtr, ByVal lParam As LongPtr, ByVal subclassId As LongPtr, ByVal refData As LongPtr) As LongPtr
+        On Error GoTo Forward
+        If message = WIN_WM_NCDESTROY Then
+            WinUI_RemoveWindowSubclass hWnd, AddressOf WinUITheme_SubclassProc, subclassId
+            If hWnd = mWindow Then WinUITheme_ReleaseHost
+        ElseIf hWnd = mWindow Then
+            Select Case message
+                Case WIN_WM_SETTINGCHANGE
+                    If lParam <> 0 Then
+                        If WinUI_lstrcmpi(lParam, StrPtr("ImmersiveColorSet")) = 0 Then WinUITheme_Refresh
+                    End If
+                    WinUITheme_SendSettings
+                Case WIN_WM_THEMECHANGED, WIN_WM_DWMCOLORIZATIONCOLORCHANGED
+                    WinUITheme_Refresh
+            End Select
+        End If
+Forward:
+        ' Every notification is forwarded, including WM_NCDESTROY after cleanup.
+        WinUITheme_SubclassProc = WinUI_DefSubclassProc(hWnd, message, wParam, lParam)
+    End Function
+
+    Private mThemePreference As String
+    Public Function WinUITheme_HandlePreference(ByVal message As String) As Boolean
+        Dim mode As Variant
+        For Each mode In Array("system", "light", "dark")
+            If message = "{" & Chr(34) & "type" & Chr(34) & ":" & Chr(34) & "themePreference" & Chr(34) & "," & Chr(34) & "mode" & Chr(34) & ":" & Chr(34) & CStr(mode) & Chr(34) & "}" Then
+                mThemePreference = CStr(mode)
+                WinUI_ApplyTitleBarTheme mWindow
+                Return True
+            End If
+        Next
+        Return False
+    End Function
+
+    Public Sub WinUITheme_Refresh()
+        On Error GoTo Finished
+        If mRefreshing Then Exit Sub
+        mRefreshing = True
+        If WinUI_GetAppsUseLightTheme() Then mMode = "light" Else mMode = "dark"
+        WinUITheme_ReadAccentPalette
+        mThemeValid = True
+        If mWindow <> 0 Then WinUI_ApplyTitleBarTheme mWindow
+        WinUITheme_SendSnapshotToWebView "system-change"
+Finished:
+        mRefreshing = False
+    End Sub
+
+    Public Function WinUI_GetAppsUseLightTheme() As Boolean
+        On Error GoTo Fallback
+        Dim value As Long, valueType As Long, dataSize As Long
+        dataSize = 4
+        If WinUI_RegGetValue(CLngPtr(WIN_HKEY_CURRENT_USER), StrPtr("Software\Microsoft\Windows\CurrentVersion\Themes\Personalize"), StrPtr("AppsUseLightTheme"), WIN_RRF_RT_REG_DWORD, valueType, value, dataSize) <> 0 Then GoTo Fallback
+        If dataSize <> 4 Then GoTo Fallback
+        WinUI_GetAppsUseLightTheme = (value <> 0)
+        Exit Function
+Fallback:
+        WinUI_GetAppsUseLightTheme = True
+    End Function
+
+    Private Sub WinUITheme_ReadAccentPalette()
+        On Error GoTo Fallback
+        Dim dataSize As Long, valueType As Long, i As Long
+        ' Explorer currently stores eight DWORD entries. Only the first seven
+        ' are accent shades: Light3, Light2, Light1, Accent, Dark1, Dark2, Dark3.
+        Dim data(0 To 31) As Byte
+        dataSize = 32
+        If WinUI_RegGetValue(CLngPtr(WIN_HKEY_CURRENT_USER), StrPtr("Software\Microsoft\Windows\CurrentVersion\Explorer\Accent"), StrPtr("AccentPalette"), WIN_RRF_RT_REG_BINARY, valueType, data(0), dataSize) <> 0 Then GoTo Fallback
+        If dataSize < 28 Or dataSize Mod 4 <> 0 Then GoTo Fallback
+        For i = 0 To 6
+            mAccent(i) = "#" & WinUI_HexByte(data(i * 4)) & WinUI_HexByte(data(i * 4 + 1)) & WinUI_HexByte(data(i * 4 + 2))
+        Next
+        Exit Sub
+Fallback:
+        Dim baseColor As String
+        baseColor = WinUITheme_DwmAccent()
+        For i = 0 To 6
+            mAccent(i) = baseColor
+        Next
+    End Sub
+
+    Private Function WinUITheme_DwmAccent() As String
+        On Error GoTo Fallback
+        Dim color As Long, opaque As Long, unsignedColor As Double
+        If WinUI_DwmGetColorizationColor(color, opaque) <> 0 Then GoTo Fallback
+        unsignedColor = color
+        If unsignedColor < 0 Then unsignedColor = unsignedColor + 4294967296#
+        ' DWM returns AARRGGBB, not the registry's RGB byte sequence/COLORREF.
+        WinUITheme_DwmAccent = "#" & WinUI_HexByte(CLng(Fix(unsignedColor / 65536#)) Mod 256) & WinUI_HexByte(CLng(Fix(unsignedColor / 256#)) Mod 256) & WinUI_HexByte(CLng(unsignedColor - Fix(unsignedColor / 256#) * 256#))
+        Exit Function
+Fallback:
+        WinUITheme_DwmAccent = "#0078D4"
+    End Function
+
+    Public Sub WinUITheme_SetWebViewReady(ByVal hWnd As LongPtr, ByVal ready As Boolean)
+        If hWnd = 0 Or hWnd <> mWindow Then Exit Sub
+        Dim becameReady As Boolean
+        becameReady = ready And Not mWebViewReady
+        mWebViewReady = ready
+        If becameReady Then WinUITheme_SendSnapshotToWebView "startup"
+    End Sub
+
+    Public Sub WinUITheme_SendSnapshotToWebView(ByVal reason As String)
+        On Error GoTo Failed
+        If Not mWebViewReady Or mHost Is Nothing Then Exit Sub
+        Dim payload As String
+        payload = WinUITheme_GetSnapshot(reason)
+        mHost.WinUIThemePostSnapshot payload
+        WinUITheme_SendSettings
+        Exit Sub
+Failed:
+        ' A failed send does not invalidate the native cache; the page can request again.
+        Debug.Print "[WinUI theme] Snapshot delivery failed: " & Err.Description
+    End Sub
+
+    ' Windows NLS user preferences, separate from the Windows display language.
+    Private Const WIN_LOCALE_NAME_MAX_LENGTH As Long = 85
+    Private Const WIN_LOCALE_ITIME As Long = &H23
+    Private Declare PtrSafe Function WinUI_GetUserDefaultLocaleName Lib "kernel32.dll" Alias "GetUserDefaultLocaleName" (ByVal buffer As LongPtr, ByVal capacity As Long) As Long
+    Private Declare PtrSafe Function WinUI_GetLocaleInfoEx Lib "kernel32.dll" Alias "GetLocaleInfoEx" (ByVal localeName As LongPtr, ByVal info As Long, ByVal buffer As LongPtr, ByVal capacity As Long) As Long
+
+    Private Sub WinUIRegion_SendSettings()
+        On Error GoTo Failed
+        Dim localeBuffer As String, clockBuffer As String, count As Long, hourClock As Long
+        localeBuffer = String$(WIN_LOCALE_NAME_MAX_LENGTH, vbNullChar)
+        count = WinUI_GetUserDefaultLocaleName(StrPtr(localeBuffer), Len(localeBuffer))
+        If count < 2 Or count > Len(localeBuffer) Then Exit Sub
+        localeBuffer = Left$(localeBuffer, count - 1)
+        clockBuffer = String$(2, vbNullChar)
+        If WinUI_GetLocaleInfoEx(0, WIN_LOCALE_ITIME, StrPtr(clockBuffer), Len(clockBuffer)) <> 2 Then Exit Sub
+        Select Case Left$(clockBuffer, 1)
+            Case "0": hourClock = 12
+            Case "1": hourClock = 24
+            Case Else: Exit Sub
+        End Select
+        Dim q As String, safeLocale As String
+        q = Chr(34)
+        safeLocale = Replace(localeBuffer, "\", "\\")
+        safeLocale = Replace(safeLocale, q, "\" & q)
+        mHost.WinUIThemePostSnapshot "{" & q & "type" & q & ":" & q & "winUIRegionSettings" & q & "," & q & "schemaVersion" & q & ":1," & q & "locale" & q & ":" & q & safeLocale & q & "," & q & "hourClock" & q & ":" & CStr(hourClock) & "}"
+Failed:
+    End Sub
+
+    Public Sub WinUITheme_SendSettings()
+        On Error GoTo Failed
+        If Not mWebViewReady Or mHost Is Nothing Then Exit Sub
+        WinUIRegion_SendSettings
+        Dim delay As Long
+        If WinUI_SystemMenuDelay(&H6A, 0, delay, 0) = 0 Or delay < 0 Then Exit Sub
+        mHost.WinUIThemePostSnapshot "{" & Chr(34) & "type" & Chr(34) & ":" & Chr(34) & "winUISettings" & Chr(34) & "," & Chr(34) & "schemaVersion" & Chr(34) & ":1," & Chr(34) & "menuShowDelay" & Chr(34) & ":" & CStr(delay) & "}"
+Failed:
+    End Sub
+
+    Public Function WinUITheme_GetSnapshot(Optional ByVal reason As String = "request") As String
+        If Not mThemeValid Then WinUITheme_Refresh
+        Select Case reason
+            Case "startup", "request", "system-change"
+            Case Else: reason = "request"
+        End Select
+        Dim q As String, payload As String, names As Variant, i As Long
+        q = Chr(34)
+        names = Array("accentLight3", "accentLight2", "accentLight1", "accent", "accentDark1", "accentDark2", "accentDark3")
+        payload = "{" & q & "type" & q & ":" & q & "themeSnapshotResult" & q & "," & q & "schemaVersion" & q & ":2," & q & "reason" & q & ":" & q & reason & q & "," & q & "theme" & q & ":{" & q & "mode" & q & ":" & q & mMode & q
+        For i = 0 To 6
+            payload = payload & "," & q & names(i) & q & ":" & q & mAccent(i) & q
+        Next
+        WinUITheme_GetSnapshot = payload & "}}"
+    End Function
+
+    Public Function WinUITheme_IsSnapshotRequest(ByVal message As String) As Boolean
+        ' Strict one-operation grammar, not a general JSON parser. Whitespace
+        ' outside strings is allowed; extra keys/escaped names are rejected.
+        If Len(message) > 128 Then Exit Function
+        Dim i As Long, character As String, inString As Boolean, compact As String
+        For i = 1 To Len(message)
+            character = Mid$(message, i, 1)
+            If character = Chr(34) Then inString = Not inString
+            If inString Or (character <> " " And character <> vbTab And character <> vbCr And character <> vbLf) Then compact = compact & character
+        Next
+        WinUITheme_IsSnapshotRequest = (compact = "{" & Chr(34) & "type" & Chr(34) & ":" & Chr(34) & "requestThemeSnapshot" & Chr(34) & "}")
+    End Function
+
+    Public Sub WinUI_ApplyTitleBarTheme(ByVal hWnd As LongPtr)
+        On Error GoTo Finished
+        If hWnd = 0 Then Exit Sub
+        If Not mThemeValid Then WinUITheme_Refresh
+        Dim useDarkMode As Long, resultCode As Long, defaultColor As Long, corners As Long
+        If mThemePreference = "dark" Or (mThemePreference <> "light" And mMode = "dark") Then useDarkMode = 1
+        resultCode = WinUI_DwmSetWindowAttribute(hWnd, WIN_DWMWA_USE_IMMERSIVE_DARK_MODE, useDarkMode, 4)
+        If resultCode <> 0 Then WinUI_DwmSetWindowAttribute hWnd, WIN_DWMWA_USE_IMMERSIVE_DARK_MODE_LEGACY, useDarkMode, 4
+        defaultColor = WIN_DWMWA_COLOR_DEFAULT
+        WinUI_DwmSetWindowAttribute hWnd, WIN_DWMWA_CAPTION_COLOR, defaultColor, 4
+        WinUI_DwmSetWindowAttribute hWnd, WIN_DWMWA_TEXT_COLOR, defaultColor, 4
+        corners = WIN_DWMWCP_ROUND
+        WinUI_DwmSetWindowAttribute hWnd, WIN_DWMWA_WINDOW_CORNER_PREFERENCE, corners, 4
+        WinUI_SetWindowPos hWnd, 0, 0, 0, 0, 0, WIN_SWP_NOMOVE Or WIN_SWP_NOSIZE Or WIN_SWP_NOZORDER Or WIN_SWP_NOACTIVATE Or WIN_SWP_FRAMECHANGED
+Finished:
+        ' Unsupported DWM attributes keep system defaults; no forced full client redraw.
+    End Sub
+
+    Public Sub WinUI_ApplyWindows11Backdrop(ByVal hWnd As LongPtr)
+        On Error Resume Next
+
+        If hWnd = 0 Then Exit Sub
+
+        Dim backdrop As Long
+        backdrop = WIN_DWMSBT_MAINWINDOW
+        WinUI_DwmSetWindowAttribute hWnd, WIN_DWMWA_SYSTEMBACKDROP_TYPE, backdrop, LenB(backdrop)
+
+        Dim corners As Long
+        corners = WIN_DWMWCP_ROUND
+        WinUI_DwmSetWindowAttribute hWnd, WIN_DWMWA_WINDOW_CORNER_PREFERENCE, corners, LenB(corners)
+    End Sub
+
+
+    Private Function WinUI_HexByte(ByVal value As Long) As String
+        WinUI_HexByte = Right$("0" & Hex$(value), 2)
+    End Function
+
+    ' MessageBeep uses the current user's configured Windows event sound.
+    Private Declare PtrSafe Function WinUIDialog_MessageBeep Lib "user32" Alias "MessageBeep" (ByVal kind As Long) As Long
+    Public Function UIX_WebViewUserDataFolder() As String
+        Dim basePath As String
+        basePath = Environ$("LOCALAPPDATA")
+        If Len(basePath) = 0 Then basePath = App.Path
+        UIX_WebViewUserDataFolder = basePath & "\tbUI3\Updater\WebView2"
+    End Function
+
+    Private Declare PtrSafe Function DecodeUtf8 Lib "kernel32" Alias "MultiByteToWideChar" (ByVal codePage As Long, ByVal flags As Long, ByVal bytes As LongPtr, ByVal byteCount As Long, ByVal text As LongPtr, ByVal capacity As Long) As Long
+    Public Function UIX_ResourceText(ByVal resourceName As String) As String
+        Dim bytes() As Byte = LoadResData(resourceName, "OTHER")
+        Dim count As Long = UBound(bytes) - LBound(bytes) + 1
+        Dim characters As Long = DecodeUtf8(65001, 8, VarPtr(bytes(LBound(bytes))), count, 0, 0)
+        If characters <= 0 Then Err.Raise 5, , "Invalid UTF-8 resource: " & resourceName
+        Dim text As String = String$(characters, vbNullChar)
+        If DecodeUtf8(65001, 8, VarPtr(bytes(LBound(bytes))), count, StrPtr(text), characters) <> characters Then Err.Raise 5, , "Could not decode resource: " & resourceName
+        Return text
+    End Function
+
+    Public Function UIX_JsonString(ByVal value As String) As String
+        UIX_JsonString = Chr(34) & UIX_JsonEscape(value) & Chr(34)
+    End Function
+
+    Public Function UIX_JsonEscape(ByVal value As String) As String
+        Dim result As String
+        result = Replace(value, "\", "\\")
+        result = Replace(result, Chr(34), "\" & Chr(34))
+        result = Replace(result, vbCrLf, "\n")
+        result = Replace(result, vbCr, "\n")
+        result = Replace(result, vbLf, "\n")
+        result = Replace(result, vbTab, "\t")
+        UIX_JsonEscape = result
+    End Function
+
+    Public Sub UIX_Log(ByVal messageText As String)
+        On Error Resume Next
+        Debug.Print "[tbUI3 Updater] " & messageText
+        Dim fso As Object = CreateObject("Scripting.FileSystemObject")
+        Dim folder As String = Environ$("LOCALAPPDATA") & "\tbUI3"
+        If Not fso.FolderExists(folder) Then fso.CreateFolder folder
+        folder = folder & "\Updater"
+        If Not fso.FolderExists(folder) Then fso.CreateFolder folder
+        Dim stream As Object = fso.OpenTextFile(folder & "\startup.log", 8, True, -1)
+        stream.WriteLine Format$(Now, "yyyy-mm-dd hh:nn:ss") & " " & messageText
+        stream.Close
+    End Sub
+End Module

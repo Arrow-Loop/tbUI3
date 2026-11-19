@@ -1,5 +1,20 @@
 # Handoff: tbUI3
 
+## 2026-11-19 - Updater implementation candidate (tbUI3IDE 0.3.0.21, Updater 0.1.0.0)
+
+Implemented asynchronous release checks and an IDE Options update panel with automatic-check opt-out, per-component installed/available versions, notification, selection, Update Now/On Exit/Later and normal-shutdown approval. Source failures are independent. The add-in never replaces its loaded DLL.
+
+Added a native twinBASIC sidecar with an embedded WebView2 interface based on Smith-Debnam/twinBASIC-Knowledge 0babc88f: shared named controls/Master CSS, live Windows theme/accent, local browser profile, restricted bridge, in-memory script resources, progress, retry/recovery and Runtime remediation without classic message boxes. A separate Windows PowerShell 5.1 engine verifies/stages published assets, waits for the owning IDE/other installation processes, protects locally modified vendor files, journals replacements, backs up and rolls back selected components, handles detached self-update, rejects downgrades on retry and optionally restarts the same IDE. Projects/embedded control packages are not rewritten.
+
+Coordinated with Quill and incorporated the corrected add-in baseline 0.3.0.20; this feature pass is 0.3.0.21. Only the documented historical add-in identities are aliased; verified future stable receipts preserve real 1.x identities. Core tbUI3 1.0.0.75 and resource-library versions are unchanged. Added a release-manifest contract and architecture/version/stale-build-checked packager; no release was published.
+
+Validation: 183 Node tests and 23 actual-filesystem/ZIP/recovery PowerShell 5.1 tests; 93 exact canonical/mirror files, embedded package, stable IDs and CRLF checks. Headless Edge Light/Dark + desktop/narrow interaction checks pass without browser errors. Actual official BETA 1044 ZIP: size/digest/signature checks and 197 managed files verified; BETA 997 baseline: 196 managed files verified, including zero-padded release-tag handling. tbUI3 currently returns public API 404; other sources remain usable.
+
+Shane explicitly deferred final native compilation/runtime until tomorrow. The earlier minimal launcher was compiled before the WebView2 UI was added; it is stale and must not be distributed. Reopen the projects before building. See [Updater build, release and acceptance checklist](tbIDE/Updater/README.md).
+
+**Next action (Shane):** close/reopen any IDE window holding the earlier Updater project before saving; build tbUI3IDE in win32/win64 and Updater in win32, copy the newly built EXE and Updater.ps1 beside twinBASIC.exe, restart, then follow the native acceptance list. Public repository visibility alone does not publish binary updates: the matching GitHub release, ZIPs and tbUI3-update.json are still required.
+
+
 ## 2026-11-18 - UI3Button Destructive, focus visual properties and RequestedTheme (package 1.0.0.75)
 
 Shane asked for the useful non-WinUI ideas from his WinUI3 HTML/CSS library, starting with the Destructive button, and for the remaining meaningful WinUI Button properties. Built from the GitHub version of the library (`twinBASIC-Knowledge`, branch feature/winui3-html-css-js-reference); Shane confirmed the concepts there match his newer local copy.

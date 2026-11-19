@@ -1,6 +1,6 @@
 # Unified updater for twinBASIC and tbUI3
 
-Status: **Agreed future work, not implemented**. Decision date: 2026-11-19. This document is the implementation handoff for the tbUI3IDE update feature and its standalone helper.
+Status: **Source implementation candidate delivered in tbUI3IDE 0.3.0.21 and Updater 0.1.0.0; native acceptance/publication pending**. See [implementation and checklist](Updater/README.md). Decision date: 2026-11-19. This document is the implementation handoff for the tbUI3IDE update feature and its standalone helper.
 
 ## Scope and ownership
 
@@ -63,4 +63,4 @@ Do not treat `main` or `tbui3-dev` heads as published binaries. CI/release packa
 4. **Release pipeline**: publish both add-in architectures, themes and helper with hashes; coordinate tbUI3 library pack and control package download contracts.
 5. **Acceptance**: test IDE open/closed, canceled unsaved changes, compiler still running, simultaneous IDE instances, blocked/partial downloads, corrupt archives, invalid paths, no write access, mixed component updates, crash/power interruption recovery, rollback, restart, offline/ratelimited GitHub, win32/win64, beta channel transitions and updater self-update.
 
-All code changes must follow the repository's canonical `.twinproj`/mirror and changelog workflow. No updater functionality is claimed delivered by this planning document.
+All code changes must follow the repository's canonical `.twinproj`/mirror and changelog workflow. This planning document defines the agreed behavior; current implementation and validation evidence are tracked in Updater/README.md and the changelogs.

@@ -1,0 +1,199 @@
+' WebView2 lifecycle and native theme bridge adapted from twinBASIC-Knowledge 8c832b9.
+[Description("")]
+[FormDesignerId("AA6A1949-4A01-4574-A9E6-665A3A5D05BB")]
+[PredeclaredId]
+Class frmMain
+    Private mNavigated As Boolean
+    Private mPageReady As Boolean
+    Private mWorker As LongPtr
+    Private mStarted As Boolean
+    Private mExitCode As Long
+    Private mLastState As String
+    Private mScriptFilterInstalled As Boolean
+
+    Private Sub wvMain_Create() Handles wvMain.Create
+        wvMain.EnvironmentOptions.UserDataFolder = UIX_WebViewUserDataFolder()
+    End Sub
+
+    Private Sub Form_Load()
+        On Error GoTo Failed
+        Me.Caption = "tbUI3 Updater"
+        Me.Font.Name = "Segoe UI"
+        Me.Font.Size = 9
+        WinUI_ApplyWindows11Backdrop Me.hWnd
+        If Not WinUITheme_Attach(Me.hWnd, Me) Then Err.Raise 5, , "Could not attach the Windows theme bridge."
+        ResizeWebView
+        Exit Sub
+    Failed:
+        RuntimeHelp Err.Description
+        Unload Me
+    End Sub
+
+    Private Sub Form_Activate()
+        WinUITheme_Refresh
+    End Sub
+
+    Private Sub Form_Resize()
+        ResizeWebView
+    End Sub
+
+    Private Sub ResizeWebView()
+        On Error Resume Next
+        If Me.WindowState = vbMinimized Then Exit Sub
+        wvMain.Move 0, 0, Me.ScaleWidth, Me.ScaleHeight
+    End Sub
+
+    Private Sub wvMain_Ready() Handles wvMain.Ready
+        On Error GoTo Failed
+        If mNavigated Then Exit Sub
+        wvMain.ZoomFactor = 1
+        Dim html As String = UIX_ResourceText("updater.html")
+        If Len(html) = 0 Then Err.Raise 53, , "The embedded updater page is missing."
+        html = Replace(html, "{{STYLE_BLOCK}}", "<style>" & UIX_ResourceText("winui.css") & UIX_ResourceText("updater.css") & "</style>")
+        html = Replace(html, "{{THEME_SCRIPT}}", "<script>" & UIX_ResourceText("theme-bridge.js") & "</" & "script>")
+        If Not mScriptFilterInstalled Then
+            wvMain.AddWebResourceRequestedFilter "https://tbui3-updater.invalid/*", 0
+            mScriptFilterInstalled = True
+        End If
+        html = Replace(html, "{{CONTROLS_SCRIPT}}", "<script src=" & Chr(34) & "https://tbui3-updater.invalid/winui-controls.js" & Chr(34) & "></" & "script>")
+        html = Replace(html, "{{APP_SCRIPT}}", "<script src=" & Chr(34) & "https://tbui3-updater.invalid/updater.js" & Chr(34) & "></" & "script>")
+        mNavigated = True
+        wvMain.NavigateToString html
+        Exit Sub
+    Failed:
+        RuntimeHelp Err.Description
+        Unload Me
+    End Sub
+
+    Private Sub wvMain_Error(ByVal code As Long, ByVal message As String) Handles wvMain.Error
+        RuntimeHelp "WebView2 error " & Hex$(code) & ": " & message
+        Unload Me
+    End Sub
+
+    Private Sub wvMain_NavigationStarting(ByVal uri As String, ByVal userInitiated As Boolean, ByVal redirected As Boolean, ByVal headers As WebView2RequestHeaders, Cancel As Boolean) Handles wvMain.NavigationStarting
+        If uri <> "about:blank" Then Cancel = True
+    End Sub
+
+    Private Sub wvMain_JsMessage(ByVal message As Variant) Handles wvMain.JsMessage
+        On Error GoTo Failed
+        ' Only exact fixed messages from our locked local origin. No paths, executable names,
+        ' shell commands, or file selection are accepted from the web content.
+        If WinUITheme_IsSnapshotRequest(CStr(message)) Then
+            WinUITheme_SetWebViewReady Me.hWnd, True
+            SendTheme
+            Exit Sub
+        End If
+        Select Case CStr(message)
+            Case "requestThemeSnapshot"
+                SendTheme
+            Case "updater:ready"
+                If mPageReady Then Exit Sub
+                mPageReady = True
+                WinUITheme_SetWebViewReady Me.hWnd, True
+                SendTheme
+                Dim plan As String = ReadSessionFile("plan.json")
+                If Len(plan) > 0 Then wvMain.PostWebMessageJSON "{" & UIX_JsonString("type") & ":" & UIX_JsonString("planSnapshot") & "," & UIX_JsonString("plan") & ":" & plan & "}"
+                If Len(StartupError) > 0 Then
+                    SendError StartupError
+                ElseIf Len(UpdateContext) > 0 And Not mStarted Then
+                    mStarted = True
+                    mExitCode = 0
+                mWorker = StartUpdateEngine(UpdateMode)
+                End If
+                PollState
+            Case "updater:poll"
+                If Not mPageReady Then Exit Sub
+                PollState
+            Case "updater:retry"
+                If Not mPageReady Or WorkerRunning(mWorker) Or Len(UpdateContext) = 0 Then Exit Sub
+                ReleaseWorker mWorker
+                mWorker = StartUpdateEngine(UpdateMode)
+            Case "updater:recover"
+                If Not mPageReady Or WorkerRunning(mWorker) Or Not HasJournal() Then Exit Sub
+                ReleaseWorker mWorker
+                mExitCode = 0
+                mWorker = StartUpdateEngine("Recover")
+            Case "updater:cancel"
+                If Not mPageReady Then Exit Sub
+                RequestCancel
+            Case "updater:close"
+                If Not WorkerRunning(mWorker) Then Unload Me
+        End Select
+        Exit Sub
+    Failed:
+        SendError Err.Description
+    End Sub
+
+    Private Sub PollState()
+        Dim running As Boolean = WorkerRunning(mWorker)
+        If Not running And mWorker <> 0 Then
+            mExitCode = WorkerExitCode(mWorker)
+            ReleaseWorker mWorker
+            mWorker = 0
+        End If
+        Dim state As String = ReadSessionFile("state.json")
+        Dim key As String = state & CStr(running) & CStr(mExitCode)
+        If Len(state) = 0 Or key = mLastState Then Exit Sub
+        mLastState = key
+        wvMain.PostWebMessageJSON "{" & UIX_JsonString("type") & ":" & UIX_JsonString("updateState") & "," & _
+            UIX_JsonString("state") & ":" & state & "," & UIX_JsonString("running") & ":" & IIf(running, "true", "false") & "," & _
+            UIX_JsonString("canRecover") & ":" & IIf(HasJournal(), "true", "false") & "," & _
+            UIX_JsonString("exitCode") & ":" & CStr(mExitCode) & "," & UIX_JsonString("context") & ":" & UIX_JsonString(UpdateContext) & "}"
+    End Sub
+
+    Private Sub SendError(ByVal message As String)
+        On Error Resume Next
+        UIX_Log message
+        If Not mPageReady Then Exit Sub
+        wvMain.PostWebMessageJSON "{" & UIX_JsonString("type") & ":" & UIX_JsonString("hostError") & "," & UIX_JsonString("message") & ":" & UIX_JsonString(message) & "}"
+    End Sub
+
+    Public Sub WinUIThemePostSnapshot(ByVal payload As String)
+        wvMain.PostWebMessageJSON payload
+    End Sub
+
+    Private Sub SendTheme()
+        WinUITheme_SendSnapshotToWebView "request"
+    End Sub
+
+    Private Sub wvMain_WebResourceRequested(ByVal request As WebView2Request, ByVal response As WebView2Response) Handles wvMain.WebResourceRequested
+        On Error GoTo Failed
+        Dim name As String
+        Select Case request.Uri
+            Case "https://tbui3-updater.invalid/winui-controls.js": name = "winui-controls.js"
+            Case "https://tbui3-updater.invalid/updater.js": name = "updater.js"
+            Case Else
+                response.StatusCode = 404
+                response.ReasonPhrase = "Not Found"
+                Exit Sub
+        End Select
+        If request.Method <> "GET" Then
+            response.StatusCode = 405
+            response.ReasonPhrase = "Method Not Allowed"
+            Exit Sub
+        End If
+        response.Headers.AppendHeader "Content-Type", "application/javascript; charset=utf-8"
+        response.Headers.AppendHeader "Cache-Control", "no-store"
+        response.Headers.AppendHeader "X-Content-Type-Options", "nosniff"
+        response.ContentBytes = LoadResData(name, "OTHER")
+        Exit Sub
+    Failed:
+        response.StatusCode = 500
+        response.ReasonPhrase = "Embedded Script Unavailable"
+        UIX_Log Err.Description
+    End Sub
+
+    Private Sub Form_Unload(Cancel As Integer)
+        On Error Resume Next
+        If WorkerRunning(mWorker) Then
+            Cancel = True
+            SendError "An update operation is still running. Cancel it before installation starts, or wait for verification to finish."
+            Exit Sub
+        End If
+        ReleaseWorker mWorker
+        mWorker = 0
+        WinUITheme_SetWebViewReady Me.hWnd, False
+        WinUITheme_Detach Me.hWnd
+    End Sub
+End Class
+

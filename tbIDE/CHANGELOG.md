@@ -1,5 +1,18 @@
 # Changelog: tbIDE (WinUI 3 look for the twinBASIC IDE)
 
+## 2026-11-19 - Updater implementation candidate (tbUI3IDE 0.3.0.21, Updater 0.1.0.0)
+
+Implemented asynchronous release checks and an IDE Options update panel with automatic-check opt-out, per-component installed/available versions, notification, selection, Update Now/On Exit/Later and normal-shutdown approval. Source failures are independent. The add-in never replaces its loaded DLL.
+
+Added a native twinBASIC sidecar with an embedded WebView2 interface based on Smith-Debnam/twinBASIC-Knowledge 0babc88f: shared named controls/Master CSS, live Windows theme/accent, local browser profile, restricted bridge, in-memory script resources, progress, retry/recovery and Runtime remediation without classic message boxes. A separate Windows PowerShell 5.1 engine verifies/stages published assets, waits for the owning IDE/other installation processes, protects locally modified vendor files, journals replacements, backs up and rolls back selected components, handles detached self-update, rejects downgrades on retry and optionally restarts the same IDE. Projects/embedded control packages are not rewritten.
+
+Coordinated with Quill and incorporated the corrected add-in baseline 0.3.0.20; this feature pass is 0.3.0.21. Only the documented historical add-in identities are aliased; verified future stable receipts preserve real 1.x identities. Core tbUI3 1.0.0.75 and resource-library versions are unchanged. Added a release-manifest contract and architecture/version/stale-build-checked packager; no release was published.
+
+Validation: 183 Node tests and 23 actual-filesystem/ZIP/recovery PowerShell 5.1 tests; 93 exact canonical/mirror files, embedded package, stable IDs and CRLF checks. Headless Edge Light/Dark + desktop/narrow interaction checks pass without browser errors. Actual official BETA 1044 ZIP: size/digest/signature checks and 197 managed files verified; BETA 997 baseline: 196 managed files verified, including zero-padded release-tag handling. tbUI3 currently returns public API 404; other sources remain usable.
+
+Shane explicitly deferred final native compilation/runtime until tomorrow. The earlier minimal launcher was compiled before the WebView2 UI was added; it is stale and must not be distributed. Reopen the projects before building. See [Updater build, release and acceptance checklist](Updater/README.md).
+
+
 ## 2026-11-19 - Prerelease version policy documentation
 
 Documented first-party version mapping (original tbUI3IDE 1.3.0.20 => corrected designation 0.3.0.20), with the independent tbUI3 package reference migration and updater compatibility still pending. Historical build evidence remains intact. See ../docs/VERSIONING_POLICY.md. **No canonical project or compiled DLL was renumbered by this documentation pass.**

@@ -1,0 +1,76 @@
+' Detection only, adapted from Smith-Debnam/twinBASIC-Knowledge 0babc88f.
+' We do not install prerequisites silently or present classic Win32 dialogs.
+Private Module UpdaterWebViewRuntime
+    Private Const UIX_RUNTIME_KEY As String = "SOFTWARE\Microsoft\EdgeUpdate\Clients\{F3017226-FE2A-4295-8BDF-00C3A9A7E4C5}"
+    Private Const UIX_HKLM As Long = &H80000002
+    Private Const UIX_HKCU As Long = &H80000001
+    Private Declare PtrSafe Function UIX_RegGetValueW Lib "advapi32.dll" Alias "RegGetValueW" (ByVal rootKey As LongPtr, ByVal subKey As LongPtr, ByVal valueName As LongPtr, ByVal flags As Long, ByVal valueType As LongPtr, ByVal data As LongPtr, ByRef dataSize As Long) As Long
+    Public Function UIX_IsRuntimeVersion(ByVal value As String) As Boolean
+        Dim i As Long, groups As Long, digits As Long, code As Long
+        Dim nonzero As Boolean
+        value = Trim$(value)
+        If Len(value) = 0 Or Len(value) > 64 Then Exit Function
+        For i = 1 To Len(value)
+            code = AscW(Mid$(value, i, 1))
+            If code = 46 Then
+                If digits = 0 Then Exit Function
+                groups = groups + 1
+                digits = 0
+            ElseIf code >= 48 And code <= 57 Then
+                digits = digits + 1
+                If code <> 48 Then nonzero = True
+            Else
+                Exit Function
+            End If
+        Next
+        UIX_IsRuntimeVersion = (groups = 3 And digits > 0 And nonzero)
+    End Function
+
+    Private Function UIX_ReadRuntimeView(ByVal rootKey As Long, ByVal view As Long, ByRef versionText As String) As Boolean
+        Dim buffer As String, size As Long, result As Long, terminator As Long
+        buffer = String$(128, Chr(0))
+        size = LenB(buffer)
+        result = UIX_RegGetValueW(CLngPtr(rootKey), StrPtr(UIX_RUNTIME_KEY), StrPtr("pv"), 2 Or view, 0, StrPtr(buffer), size)
+        If result <> 0 Then Exit Function
+        terminator = InStr(1, buffer, Chr(0), vbBinaryCompare)
+        If terminator = 0 Then Exit Function
+        buffer = Trim$(Left$(buffer, terminator - 1))
+        If Not UIX_IsRuntimeVersion(buffer) Then Exit Function
+        versionText = buffer
+        UIX_ReadRuntimeView = True
+    End Function
+
+    Public Function UIX_DetectWebView2Runtime(ByRef versionText As String, ByRef detectionMethod As String) As Boolean
+        On Error GoTo Failed
+        versionText = vbNullString
+        detectionMethod = vbNullString
+        If UIX_ReadRuntimeView(UIX_HKLM, &H20000, versionText) Then
+            detectionMethod = "HKLM 32-bit Evergreen registration"
+        ElseIf UIX_ReadRuntimeView(UIX_HKLM, &H10000, versionText) Then
+            detectionMethod = "HKLM 64-bit Evergreen registration"
+        ElseIf UIX_ReadRuntimeView(UIX_HKCU, &H20000, versionText) Then
+            detectionMethod = "HKCU 32-bit Evergreen registration"
+        ElseIf UIX_ReadRuntimeView(UIX_HKCU, &H10000, versionText) Then
+            detectionMethod = "HKCU 64-bit Evergreen registration"
+        Else
+            detectionMethod = "No valid Evergreen Runtime registration"
+            Exit Function
+        End If
+        UIX_DetectWebView2Runtime = True
+        Exit Function
+Failed:
+        versionText = vbNullString
+        detectionMethod = "Runtime detection failed: " & Err.Description
+    End Function
+
+
+    Public Sub ShowUpdaterWindow()
+        Dim version As String, method As String
+        If Not UIX_DetectWebView2Runtime(version, method) Then
+            RuntimeHelp method
+            Exit Sub
+        End If
+        UIX_Log "WebView2 Runtime " & version & "; " & method
+        frmMain.Show
+    End Sub
+End Module

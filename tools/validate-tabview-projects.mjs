@@ -8,7 +8,7 @@ function content(file) {
     return files;
 }
 const projects=[['tbUI3/tbUI3.twinproj','tbUI3/src'],['tbUI3Test/tbUI3Test.twinproj','tbUI3Test/src'],
-    ['tbIDE/tbUI3IDE/tbUI3IDE.twinproj','tbIDE/tbUI3IDE/src']];
+    ['tbIDE/tbUI3IDE/tbUI3IDE.twinproj','tbIDE/tbUI3IDE/src'],['tbIDE/Updater/Updater.twinproj','tbIDE/Updater/src']];
 const all=[];
 for(const [project,mirror] of projects) {
     const files=content(project);all.push(files);

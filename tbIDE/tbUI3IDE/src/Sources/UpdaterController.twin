@@ -1,0 +1,168 @@
+' Native bridge: no HTTP or replacement work runs in the IDE/compiler process.
+Private Class UpdaterController
+    Private Declare PtrSafe Function GetModuleFileNameW Lib "kernel32" (ByVal hModule As LongPtr, ByVal buffer As LongPtr, ByVal count As Long) As Long
+    Private Declare PtrSafe Function GetCurrentProcessId Lib "kernel32" () As Long
+    Private mHost As Host
+    Private mWindow As ToolWindow
+    Private mRoot As String
+    Private mSession As String
+    Private mContext As String
+    Private mLastState As String
+    Private mBusy As Boolean
+    Private mClosing As Boolean
+    Private mExitRequested As Boolean
+    Private mInstalled As Boolean
+    Private Const SettingsApp As String = "tbUI3Updater"
+
+    Public Sub New(ByVal host As Host)
+        Set mHost = host
+        Dim buffer As String = String$(32768, vbNullChar)
+        Dim count As Long = GetModuleFileNameW(0, StrPtr(buffer), Len(buffer))
+        If count = 0 Or count >= Len(buffer) Then Err.Raise 5, , "Cannot resolve compiler executable."
+        Dim fso As Object = CreateObject("Scripting.FileSystemObject")
+        mRoot = fso.GetParentFolderName(Left$(buffer, count))
+        If LCase$(fso.GetFileName(mRoot)) = "bin" Then mRoot = fso.GetParentFolderName(mRoot)
+        If Not fso.FileExists(mRoot & "\twinBASIC.exe") Then Err.Raise 5, , "Cannot resolve twinBASIC installation."
+    End Sub
+
+    Private Function Js(ByVal text As String) As String
+        text = Replace(text, "\", "\\")
+        text = Replace(text, "'", "\'")
+        text = Replace(text, vbCr, "\r")
+        text = Replace(text, vbLf, "\n")
+        text = Replace(text, vbTab, "\t")
+        Return "'" & text & "'"
+    End Function
+
+    Private Function Eval(ByVal expression As String) As String
+        If mWindow Is Nothing Then Set mWindow = mHost.ToolWindows.Add("tbUI3 updates", "tbUI3UpdaterHost")
+        Return CStr(mWindow.RootDomElement.Properties.ownerDocument.defaultView.eval(expression))
+    End Function
+
+    Private Sub WriteText(ByVal path As String, ByVal text As String)
+        Dim fso As Object = CreateObject("Scripting.FileSystemObject")
+        Dim stream As Object = fso.CreateTextFile(path, True, True)
+        stream.Write text
+        stream.Close
+    End Sub
+
+    Private Function ReadText(ByVal path As String) As String
+        Dim fso As Object = CreateObject("Scripting.FileSystemObject")
+        If Not fso.FileExists(path) Then Return ""
+        Dim stream As Object = fso.OpenTextFile(path, 1, False, -1)
+        ReadText = stream.ReadAll()
+        stream.Close
+    End Function
+
+    Private Sub Launch(ByVal mode As String)
+        Dim fso As Object = CreateObject("Scripting.FileSystemObject")
+        If Not fso.FileExists(mRoot & "\Updater.exe") Or Not fso.FileExists(mRoot & "\Updater.ps1") Then _
+            Err.Raise 53, , "Install Updater.exe and Updater.ps1 beside twinBASIC.exe, then check again."
+        Shell Chr$(34) & mRoot & "\Updater.exe" & Chr$(34) & " -Mode " & mode & " -Context " & Chr$(34) & mContext & Chr$(34), vbHide
+    End Sub
+
+    Private Sub CreateSession()
+        Dim fso As Object = CreateObject("Scripting.FileSystemObject")
+        Dim folder As String = Environ$("LOCALAPPDATA") & "\tbUI3"
+        If Not fso.FolderExists(folder) Then fso.CreateFolder folder
+        folder = folder & "\Updater"
+        If Not fso.FolderExists(folder) Then fso.CreateFolder folder
+        mSession = folder & "\" & CStr(GetCurrentProcessId()) & "-" & Replace(fso.GetTempName(), ".", "-")
+        fso.CreateFolder mSession
+        mContext = mSession & "\context.json"
+        mLastState = ""
+        mExitRequested = False
+        SaveContext
+    End Sub
+
+    Private Sub SaveContext()
+        WriteText mContext, Eval("JSON.stringify({installRoot:" & Js(mRoot) & ",ideExe:" & Js(mRoot & "\twinBASIC.exe") & _
+            ",compilerPid:" & CStr(GetCurrentProcessId()) & ",selected:(window.__tbUI3UpdateRequest||{}).selected||[]," & _
+            "choice:(window.__tbUI3UpdateRequest||{}).action||'',restart:!!(window.__tbUI3UpdateRequest||{}).restart})")
+    End Sub
+
+    Public Sub Poll()
+        On Error GoTo Failed
+        If mClosing Then Exit Sub
+        If Not mInstalled Then
+            Eval UpdaterScript.Build()
+            Eval "window.__tbUI3Updater=" & UpdaterScript.Factory() & "({document:document,window:window,automatic:" & _
+                IIf(GetSetting(SettingsApp, "Options", "Automatic", "1") = "1", "true", "false") & _
+                ",deferredUntil:" & GetSetting(SettingsApp, "Options", "DeferredUntil", "0") & _
+                ",checkDue:" & IIf(GetSetting(SettingsApp, "Options", "LastCheck", "") <> Format$(Date, "yyyy-mm-dd"), "true", "false") & _
+                ",closeIde:function(){closeProjectSafely(function(){window.__tbUI3UpdateExit=function(){hostAppObject.Exit('ignore');};});}});'updater installed'"
+            mInstalled = True
+        End If
+        Dim action As String = Eval("(function(){var raw=window.__tbUI3Updater.take();if(!raw)return '';window.__tbUI3UpdateRequest=JSON.parse(raw);return window.__tbUI3UpdateRequest.action;})()")
+        Select Case action
+            Case "check"
+                If Not mBusy Then
+                    CreateSession
+                    Launch "Check"
+                    mBusy = True
+                End If
+            Case "now", "exit"
+                If Not mBusy And Len(mContext) > 0 Then
+                    ' A fresh approved transaction never overwrites an earlier session/journal
+                    ' or its running helper. Retain the checked catalog and owning IDE identity.
+                    Dim catalog As String = ReadText(mSession & "\catalog.json")
+                    If Len(catalog) = 0 Then Err.Raise 5, , "Check for updates before selecting an update."
+                    CreateSession
+                    WriteText mSession & "\catalog.json", catalog
+                    SaveContext
+                    Launch "Stage"
+                    mBusy = True
+                End If
+            Case "cancel"
+                If Len(mContext) > 0 Then Launch "Cancel"
+                Eval "window.__tbUI3UpdatePending=false;'cancelled'"
+                mBusy = False
+            Case "preferences"
+                SaveSetting SettingsApp, "Options", "Automatic", Eval("window.__tbUI3UpdateRequest.automatic?'1':'0'")
+            Case "later"
+                SaveSetting SettingsApp, "Options", "DeferredUntil", Eval("String(window.__tbUI3UpdateRequest.deferredUntil)")
+        End Select
+        If Len(mSession) = 0 Then Exit Sub
+        Dim result As String = ReadText(mSession & "\state.json")
+        If Len(result) > 0 And result <> mLastState Then
+            mLastState = result
+            Dim status As String = Eval("(function(){var s=JSON.parse(" & Js(result) & ");window.__tbUI3Updater.publish(s);window.__tbUI3UpdateState=s;return s.status;})()")
+            If status = "checked" Or status = "error" Or status = "cancelled" Or status = "complete" Or status = "rolledBack" Then mBusy = False
+            If status = "checked" Then SaveSetting SettingsApp, "Options", "LastCheck", Format$(Date, "yyyy-mm-dd")
+            If status = "error" Or status = "cancelled" Or status = "complete" Or status = "rolledBack" Then Eval "window.__tbUI3UpdatePending=false;'pending update ended'"
+            If status = "ready" Or status = "waiting" Then
+                Eval "window.__tbUI3UpdatePending=true;'pending'"
+                If status = "waiting" And Not mExitRequested Then
+                    If Eval("window.__tbUI3UpdateState.choice") = "now" Then
+                        mExitRequested = True
+                        Eval "window.__tbUI3Updater.closeIde();'normal shutdown requested'"
+                    End If
+                End If
+            End If
+        End If
+        ' The adapter parks only the IDE-exit callback after its normal save prompts succeed.
+        ' Persist consent before resuming it; a crash/cancel without this marker never installs.
+        If Eval("typeof window.__tbUI3UpdateExit==='function'?'yes':'no'") = "yes" Then
+            WriteText mSession & "\approved.json", "{" & Chr$(34) & "normalShutdown" & Chr$(34) & ":true}"
+            mClosing = True
+            Eval "(function(){var next=window.__tbUI3UpdateExit;delete window.__tbUI3UpdateExit;next();return 'normal exit resumed';})()"
+        End If
+        Exit Sub
+    Failed:
+        Dim message As String = Err.Description
+        mBusy = False
+        On Error Resume Next
+        If Len(message) = 0 Then message = "Update bridge could not complete the request."
+        Eval "if(window.__tbUI3Updater)window.__tbUI3Updater.publish({status:'error',message:" & Js(message) & "});'update error'"
+        mHost.DebugConsole.PrintText "[tbUI3 updater] " & message
+    End Sub
+
+    Public Sub Dispose()
+        On Error Resume Next
+        If mInstalled Then Eval "if(window.__tbUI3Updater)window.__tbUI3Updater.dispose();delete window.__tbUI3Updater;'updater removed'"
+        If mInstalled Then Eval "if(closeProjectSafely===window.__tbUI3UpdaterCloseHook)closeProjectSafely=window.__tbUI3UpdaterOriginalClose;delete window.__tbUI3UpdaterFactory;delete window.__tbUI3UpdatePending;'updater exit hook removed'"
+        Set mWindow = Nothing
+        Set mHost = Nothing
+    End Sub
+End Class
+

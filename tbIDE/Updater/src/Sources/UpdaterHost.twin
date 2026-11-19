@@ -1,0 +1,148 @@
+' Host/process bridge. Uses only fixed operations; the WebView never supplies paths or commands.
+Private Module UpdaterHost
+    Private Type StartupInfo
+        cb As Long
+        lpReserved As LongPtr
+        lpDesktop As LongPtr
+        lpTitle As LongPtr
+        dwX As Long
+        dwY As Long
+        dwXSize As Long
+        dwYSize As Long
+        dwXCountChars As Long
+        dwYCountChars As Long
+        dwFillAttribute As Long
+        dwFlags As Long
+        wShowWindow As Integer
+        cbReserved2 As Integer
+        lpReserved2 As LongPtr
+        hStdInput As LongPtr
+        hStdOutput As LongPtr
+        hStdError As LongPtr
+    End Type
+    Private Type ProcessInfo
+        hProcess As LongPtr
+        hThread As LongPtr
+        dwProcessId As Long
+        dwThreadId As Long
+    End Type
+    Private Declare PtrSafe Function CreateProcessW Lib "kernel32" (ByVal application As LongPtr, ByVal commandLine As LongPtr, ByVal processSecurity As LongPtr, ByVal threadSecurity As LongPtr, ByVal inheritHandles As Long, ByVal flags As Long, ByVal environment As LongPtr, ByVal directory As LongPtr, ByRef startup As StartupInfo, ByRef process As ProcessInfo) As Long
+    Private Declare PtrSafe Function GetExitCodeProcess Lib "kernel32" (ByVal process As LongPtr, ByRef exitCode As Long) As Long
+    Private Declare PtrSafe Function CloseHandle Lib "kernel32" (ByVal handle As LongPtr) As Long
+    Private Declare PtrSafe Function MoveFileExW Lib "kernel32" (ByVal source As LongPtr, ByVal destination As LongPtr, ByVal flags As Long) As Long
+    Private Declare PtrSafe Function ShellExecuteW Lib "shell32" (ByVal window As LongPtr, ByVal verb As LongPtr, ByVal file As LongPtr, ByVal parameters As LongPtr, ByVal directory As LongPtr, ByVal show As Long) As LongPtr
+
+    Public Function QuoteArg(ByVal value As String) As String
+        If InStr(value, Chr$(34)) > 0 Then Err.Raise 5, , "Invalid quoted path."
+        Return Chr$(34) & value & Chr$(34)
+    End Function
+
+    Public Function SessionFolder() As String
+        If Len(UpdateContext) = 0 Then Return ""
+        Dim fso As Object = CreateObject("Scripting.FileSystemObject")
+        Return fso.GetParentFolderName(UpdateContext)
+    End Function
+
+    Public Function ReadSessionFile(ByVal name As String) As String
+        If Len(SessionFolder()) = 0 Then Return ""
+        Select Case name
+            Case "state.json", "plan.json", "catalog.json", "journal.json"
+            Case Else
+                Err.Raise 5, , "Unsupported session file."
+        End Select
+        Dim fso As Object = CreateObject("Scripting.FileSystemObject")
+        Dim path As String = SessionFolder() & "\" & name
+        If Not fso.FileExists(path) Then Return ""
+        Dim stream As Object = fso.OpenTextFile(path, 1, False, -1)
+        ReadSessionFile = stream.ReadAll()
+        stream.Close
+    End Function
+
+    Public Function StartUpdateEngine(ByVal mode As String) As LongPtr
+        Select Case mode
+            Case "Check", "Stage", "Cancel", "Apply", "Recover"
+            Case Else
+                Err.Raise 5, , "Unsupported engine operation."
+        End Select
+        Dim fso As Object = CreateObject("Scripting.FileSystemObject")
+        Dim engine As String = App.Path & "\Updater.ps1"
+        If Not fso.FileExists(engine) Then Err.Raise 53, , "Updater.ps1 is missing beside Updater.exe."
+        If Len(UpdateContext) = 0 Then Err.Raise 5, , "Choose updates in the tbUI3IDE add-in first."
+        Dim powershell As String = Environ$("SystemRoot") & "\System32\WindowsPowerShell\v1.0\powershell.exe"
+        Dim commandLine As String = QuoteArg(powershell) & " -NoProfile -NonInteractive -ExecutionPolicy Bypass -File " & _
+            QuoteArg(engine) & " -Mode " & mode & " -Context " & QuoteArg(UpdateContext)
+        Dim startup As StartupInfo
+        Dim process As ProcessInfo
+        startup.cb = LenB(startup)
+        If CreateProcessW(StrPtr(powershell), StrPtr(commandLine), 0, 0, 0, &H8000000, 0, 0, startup, process) = 0 Then _
+            Err.Raise 5, , "Windows could not start the updater engine (error " & CStr(Err.LastDllError) & ")."
+        CloseHandle process.hThread
+        Return process.hProcess
+    End Function
+
+    Public Function WorkerRunning(ByVal handle As LongPtr) As Boolean
+        If handle = 0 Then Return False
+        Dim exitCode As Long
+        If GetExitCodeProcess(handle, exitCode) = 0 Then Err.Raise 5, , "Could not inspect the updater process."
+        Return exitCode = 259
+    End Function
+
+    Public Function WorkerExitCode(ByVal handle As LongPtr) As Long
+        If handle = 0 Then Return 0
+        Dim code As Long
+        If GetExitCodeProcess(handle, code) = 0 Then Err.Raise 5, , "Could not read the engine exit code."
+        Return code
+    End Function
+
+    Public Function HasJournal() As Boolean
+        If Len(SessionFolder()) = 0 Then Return False
+        Dim fso As Object = CreateObject("Scripting.FileSystemObject")
+        Return fso.FileExists(SessionFolder() & "\journal.json")
+    End Function
+
+    Public Sub ReleaseWorker(ByVal handle As LongPtr)
+        If handle <> 0 Then CloseHandle handle
+    End Sub
+
+    Public Sub RequestCancel()
+        If Len(SessionFolder()) = 0 Then Exit Sub
+        Dim fso As Object = CreateObject("Scripting.FileSystemObject")
+        Dim stream As Object = fso.CreateTextFile(SessionFolder() & "\cancel.json", True, True)
+        stream.Write "{ " & UIX_JsonString("cancel") & ":true }"
+        stream.Close
+    End Sub
+
+    Public Sub ReportStartupFailure(ByVal reason As String)
+        On Error Resume Next
+        UIX_Log reason
+        If Not ContextValidated Or Len(SessionFolder()) = 0 Then Exit Sub
+        Dim fso As Object = CreateObject("Scripting.FileSystemObject")
+        Dim temp As String = SessionFolder() & "\state-" & fso.GetTempName()
+        Dim destination As String = SessionFolder() & "\state.json"
+        Dim stream As Object = fso.CreateTextFile(temp, True, True)
+        stream.Write "{" & UIX_JsonString("status") & ":" & UIX_JsonString("error") & "," & UIX_JsonString("message") & ":" & UIX_JsonString(reason) & "}"
+        stream.Close
+        MoveFileExW StrPtr(temp), StrPtr(destination), 1 Or 8
+    End Sub
+
+    Public Sub RuntimeHelp(ByVal reason As String)
+        ' No Win32 message box. If WebView2 cannot start, show a static embedded remediation
+        ' page in the user's browser. No engine/installation work starts before UI bootstrap.
+        On Error Resume Next
+        ReportStartupFailure reason
+        Dim fso As Object = CreateObject("Scripting.FileSystemObject")
+        Dim base As String = Environ$("LOCALAPPDATA") & "\tbUI3"
+        If Not fso.FolderExists(base) Then fso.CreateFolder base
+        base = base & "\Updater"
+        If Not fso.FolderExists(base) Then fso.CreateFolder base
+        Dim path As String = base & "\WebView2-help.html"
+        Dim stream As Object = fso.CreateTextFile(path, True, False)
+        Dim html As String = UIX_ResourceText("runtime-help.html")
+        html = Replace(html, "{{STYLE_BLOCK}}", "<style>" & UIX_ResourceText("winui.css") & "</style>")
+        stream.Write html
+        stream.Close
+        Dim verb As String = "open"
+        ShellExecuteW 0, StrPtr(verb), StrPtr(path), 0, 0, 1
+    End Sub
+End Module
+

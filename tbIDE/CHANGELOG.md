@@ -1,5 +1,8 @@
 # Changelog: tbIDE (WinUI 3 look for the twinBASIC IDE)
 
+## 2026-11-19, unified updater design documentation only
+
+Documented the agreed standalone `Updater.exe` and tbUI3IDE update-check workflow, covering in-place twinBASIC replacement, both add-in architectures, WinUI3 themes, existing developer icon library, optional control-package release downloads, user consent, safe IDE shutdown, staging, integrity checks, backups/rollback, self-update and release packaging follow-ups. Added `UPDATER_PLAN.md` and roadmap entry. **No updater code, install capability, release assets or runtime validation was implemented in this pass.**
 
 ## 2026-11-17, package 1.0.0.67 warning follow-up (add-in unchanged)
 

@@ -1,5 +1,9 @@
 # Changelog: tbIDE (WinUI 3 look for the twinBASIC IDE)
 
+## 2026-11-19 - Prerelease version policy documentation
+
+Documented first-party version mapping (original tbUI3IDE 1.3.0.20 => corrected designation 0.3.0.20), with the independent tbUI3 package reference migration and updater compatibility still pending. Historical build evidence remains intact. See ../docs/VERSIONING_POLICY.md. **No canonical project or compiled DLL was renumbered by this documentation pass.**
+
 ## 2026-11-19, unified updater design documentation only
 
 Documented the agreed standalone `Updater.exe` and tbUI3IDE update-check workflow, covering in-place twinBASIC replacement, both add-in architectures, WinUI3 themes, existing developer icon library, optional control-package release downloads, user consent, safe IDE shutdown, staging, integrity checks, backups/rollback, self-update and release packaging follow-ups. Added `UPDATER_PLAN.md` and roadmap entry. **No updater code, install capability, release assets or runtime validation was implemented in this pass.**

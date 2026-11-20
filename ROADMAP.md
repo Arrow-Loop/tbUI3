@@ -1,5 +1,10 @@
 # Roadmap
 
+## 2026-11-20 - Updater compile correction awaiting recheck
+
+Fixed Shane's BETA 997 TB5172 duplicate-label report by separating the three DPI initialization/window-opening call sequences in MainModule. Canonical project/mirror validation passes. Next: reopen the updated Updater project and compile again; native build/runtime and the executable self-tests remain pending.
+
+
 ## 2026-11-20 - Native updater engine source delivered; compile acceptance pending
 
 Updater 0.1.0.1 now contains its update/recovery engine as twinBASIC code; tbUI3IDE 0.3.0.22 expects only the EXE. The PowerShell runtime script is removed. WebView2 UI and hidden worker are separate processes of the same executable, with verified detached self-update. Current architecture and native test instructions: [Updater README](tbIDE/Updater/README.md#native-engine-and-executable-self-tests).

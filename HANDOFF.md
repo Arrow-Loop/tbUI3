@@ -1,5 +1,10 @@
 # Handoff: tbUI3
 
+## 2026-11-20 - Updater compile correction awaiting recheck
+
+Fixed Shane's BETA 997 TB5172 duplicate-label report by separating the three DPI initialization/window-opening call sequences in MainModule. Canonical project/mirror validation passes. Next: reopen the updated Updater project and compile again; native build/runtime and the executable self-tests remain pending.
+
+
 ## 2026-11-20 - Native updater port, source complete; compile next
 
 Shane requested all updater runtime logic be twinBASIC. This pass replaces `tbIDE/Updater/Updater.ps1` with ten private native source files in the canonical `Updater.twinproj`. Updater 0.1.0.1 hosts WebView2 and launches another hidden instance as its worker; Apply/Recover must use a verified session copy, freeing the installed EXE for replacement. The add-in prerequisite check now requires only `Updater.exe`; add-in source is 0.3.0.22, corrected baseline still 0.3.0.20. No control-package, library-version or upstream-version changes.

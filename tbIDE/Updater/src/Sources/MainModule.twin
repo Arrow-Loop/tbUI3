@@ -15,7 +15,9 @@ Module MainModule
         End If
         If Left$(args, 8) = "-Worker " Then worker = True: args = Mid$(args, 9)
         If Len(args) = 0 Then
-            WinUI_InitializeDpiAwareness: ShowUpdaterWindow: Exit Sub
+            WinUI_InitializeDpiAwareness
+            ShowUpdaterWindow
+            Exit Sub
         End If
         Dim splitAt As Long = InStr(1, args, " -Context ", vbBinaryCompare)
         If Left$(args, 6) <> "-Mode " Or splitAt <= 7 Then UFail "Open updates from the tbUI3IDE add-in."
@@ -50,7 +52,8 @@ Module MainModule
                     UContextValid context: UDetached context, SessionFolder(), UpdateMode
                     Exit Sub
                 End If
-                WinUI_InitializeDpiAwareness: ShowUpdaterWindow
+                WinUI_InitializeDpiAwareness
+                ShowUpdaterWindow
             Case Else: UFail "Unsupported updater operation."
         End Select
         Exit Sub
@@ -59,7 +62,8 @@ Module MainModule
         If Not ContextValidated Then UpdateContext = ""
         ReportStartupFailure StartupError
         If worker Then ExitProcess 1
-        WinUI_InitializeDpiAwareness: ShowUpdaterWindow
+        WinUI_InitializeDpiAwareness
+        ShowUpdaterWindow
     End Sub
     Private Function IsSessionRunner() As Boolean
         Dim fso As Object = UFso()

@@ -1,5 +1,10 @@
 # Changelog: tbIDE (WinUI 3 look for the twinBASIC IDE)
 
+## 2026-11-20 - Updater BETA 997 duplicate-label correction
+
+Shane reported TB5172 in MainModule at the repeated DPI initialization lines. Split all three colon-separated parameterless-call sequences into separate statements: `WinUI_InitializeDpiAwareness:` was parsed as a line label rather than a Sub call. The no-argument, detached GUI and startup-error paths now explicitly execute DPI initialization before opening the WebView window. Patched canonical Updater.twinproj and matching CRLF source; 104 exact mirror/ID/package checks pass. Native recompilation remains Shane's next check; no successful build is claimed yet.
+
+
 ## 2026-11-20 - Native twinBASIC updater engine (tbUI3IDE 0.3.0.22, Updater 0.1.0.1)
 
 At Shane's request, moved the update engine into the canonical twinBASIC sidecar project and removed the distributed `Updater.ps1` and its obsolete PowerShell engine tests. The WebView2 UI now starts a hidden native worker instance of the same EXE. Discovery, four-part/major-zero/legacy version policy, streaming WinHTTP downloads, CNG SHA-256, publisher trust, strict JSON, ZIP/DEFLATE/CRC32 validation, PE/version checks, vendor-baseline preservation, consent/process waits, cancellation, durable backup/journal/atomic swaps, rollback/recovery, detached self-update, retention and restart are twinBASIC code. No new compiler references or control-package changes. Runtime distribution is one EXE; release packaging is a separate self-contained development tool.

@@ -1,5 +1,14 @@
 # Changelog
 
+## 2026-11-20 - Native twinBASIC updater engine (tbUI3IDE 0.3.0.22, Updater 0.1.0.1)
+
+At Shane's request, moved the update engine into the canonical twinBASIC sidecar project and removed the distributed `Updater.ps1` and its obsolete PowerShell engine tests. The WebView2 UI now starts a hidden native worker instance of the same EXE. Discovery, four-part/major-zero/legacy version policy, streaming WinHTTP downloads, CNG SHA-256, publisher trust, strict JSON, ZIP/DEFLATE/CRC32 validation, PE/version checks, vendor-baseline preservation, consent/process waits, cancellation, durable backup/journal/atomic swaps, rollback/recovery, detached self-update, retention and restart are twinBASIC code. No new compiler references or control-package changes. Runtime distribution is one EXE; release packaging is a separate self-contained development tool.
+
+Plans/journals use schema 2 and exact FILETIME strings for owning-process identity. Stale script-engine sessions must be rechecked; unresolved old backups are retained for inspection. Added `Updater.exe -SelfTest`: 28 policy/filesystem cases plus 19 embedded ZIP fixtures generated independently with Node zlib (47 native cases). The previous PowerShell results do not validate the new native implementation.
+
+Validation performed: all 186 Node tests pass, including independent ZIP-fixture zlib/hash verification, no interpreter/distributed-script regression checks and existing UI tests; release-tool PowerShell syntax parses; canonical/mirror, stable IDs, embedded package and CRLF checks pass (104 exact mirrored files). Source/ABI review: new Windows handles and pointer fields use LongPtr; DWORDs/status/length fields remain Long; FILETIME is two DWORDs; the sidecar remains a Win32 build for both IDE architectures. Native compilation, the 47 compiled self-tests and live installation/recovery remain explicitly unrun under Shane's deferred-compile instruction. No production installation or release publication performed.
+
+
 ## 2026-11-19 - Updater implementation candidate (tbUI3IDE 0.3.0.21, Updater 0.1.0.0)
 
 Implemented asynchronous release checks and an IDE Options update panel with automatic-check opt-out, per-component installed/available versions, notification, selection, Update Now/On Exit/Later and normal-shutdown approval. Source failures are independent. The add-in never replaces its loaded DLL.

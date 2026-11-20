@@ -1,5 +1,16 @@
 # Handoff: tbUI3
 
+## 2026-11-20 - Native updater port, source complete; compile next
+
+Shane requested all updater runtime logic be twinBASIC. This pass replaces `tbIDE/Updater/Updater.ps1` with ten private native source files in the canonical `Updater.twinproj`. Updater 0.1.0.1 hosts WebView2 and launches another hidden instance as its worker; Apply/Recover must use a verified session copy, freeing the installed EXE for replacement. The add-in prerequisite check now requires only `Updater.exe`; add-in source is 0.3.0.22, corrected baseline still 0.3.0.20. No control-package, library-version or upstream-version changes.
+
+The full release/staging/consent/transaction/recovery behavior is ported. Native JSON parsing, streaming WinHTTP/CNG, ZIP central-directory validation and private RFC 1951 decoding avoid script/managed runtime dependencies. Schema-2 journals and exact FILETIME identities replace script-era sessions. The standalone packager remains development-only PowerShell and now emits only the native EXE for the updater component.
+
+Validation: 186 Node tests pass; fixture zlib/hashes, no-interpreter/source-ordering contracts, existing UI behavior, package/reference/IDs/CRLF and 104 exact mirror files checked. Packaging syntax parsed. New native code has NOT been compiled or executed; the earlier script engine's 23 tests are historical evidence only. No live installation modified.
+
+**Next action (Shane):** close/reopen the canonical projects before saving/building. Build the add-in in win32/win64 and Updater in win32. Run `Updater.exe -SelfTest` and require all 47 cases to pass (results pointer: `%TEMP%/tbUI3-native-updater-latest.json`). Copy only the fresh EXE beside twinBASIC.exe, recheck updates to create a native session, then follow the disposable-installation acceptance list in [Updater README](tbIDE/Updater/README.md). Native compile/runtime remains deferred as requested. Previous instructions to copy Updater.ps1 are superseded.
+
+
 ## 2026-11-19 - Updater implementation candidate (tbUI3IDE 0.3.0.21, Updater 0.1.0.0)
 
 Implemented asynchronous release checks and an IDE Options update panel with automatic-check opt-out, per-component installed/available versions, notification, selection, Update Now/On Exit/Later and normal-shutdown approval. Source failures are independent. The add-in never replaces its loaded DLL.

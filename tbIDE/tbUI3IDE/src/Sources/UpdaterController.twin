@@ -56,8 +56,8 @@ Private Class UpdaterController
 
     Private Sub Launch(ByVal mode As String)
         Dim fso As Object = CreateObject("Scripting.FileSystemObject")
-        If Not fso.FileExists(mRoot & "\Updater.exe") Or Not fso.FileExists(mRoot & "\Updater.ps1") Then _
-            Err.Raise 53, , "Install Updater.exe and Updater.ps1 beside twinBASIC.exe, then check again."
+        If Not fso.FileExists(mRoot & "\Updater.exe") Then _
+            Err.Raise 53, , "Install the native Updater.exe beside twinBASIC.exe, then check again."
         Shell Chr$(34) & mRoot & "\Updater.exe" & Chr$(34) & " -Mode " & mode & " -Context " & Chr$(34) & mContext & Chr$(34), vbHide
     End Sub
 

@@ -1,7 +1,7 @@
 # Unified updater design
 
 **Decision recorded:** 2026-11-19  
-**Status:** Source implementation candidate exists in tbUI3IDE 0.3.0.21 and Updater 0.1.0.0. Final native compilation/runtime and first release publication are pending; see [current implementation](Updater/README.md).
+**Status:** Source implementation candidate exists in tbUI3IDE 0.3.0.22 and Updater 0.1.0.1. Final native compilation/runtime and first release publication are pending; see [current implementation](Updater/README.md).
 
 ## Goal and scope
 

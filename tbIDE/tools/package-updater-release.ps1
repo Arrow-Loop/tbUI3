@@ -8,7 +8,39 @@ param(
     [string]$Output
 )
 $ErrorActionPreference='Stop'
-. (Join-Path $PSScriptRoot '../Updater/Updater.ps1') -Mode Functions
+# Development-time release tooling only. The distributed updater is one native EXE.
+Add-Type -AssemblyName System.IO.Compression.FileSystem
+Add-Type -AssemblyName System.IO.Compression
+function Hash($Path) { (Get-FileHash -LiteralPath $Path -Algorithm SHA256).Hash.ToLowerInvariant() }
+function Binary-Version($Path) {
+    $v=[Diagnostics.FileVersionInfo]::GetVersionInfo($Path)
+    return ('{0}.{1}.{2}.{3}' -f $v.FileMajorPart,$v.FileMinorPart,$v.FileBuildPart,$v.FilePrivatePart)
+}
+function Normalize-AddinVersion([string]$Version) {
+    if ($Version -match '^1\.([123])\.0\.(\d+)$') {
+        $minor=[int]$Matches[1]; $revision=[int]$Matches[2]
+        $limit=switch($minor){1{0}2{2}3{20}}
+        if ($revision -le $limit) {return ('0.'+$minor+'.0.'+$revision)}
+    }
+    return $Version
+}
+function Assert-Target($Id,$Target) {
+    $ok=switch($Id){
+        'addin' {$Target -cin @('addins/win32/tbUI3IDE.dll','addins/win64/tbUI3IDE.dll')}
+        'themes' {$Target -cin @('WinUI3 Dark.theme','WinUI3 Light.theme')}
+        'updater' {$Target -ceq 'Updater.exe'}
+        default {$false}
+    }
+    if (!$ok) {throw "Unsupported packaging destination: $Target"}
+}
+function Assert-Pe($Path,$Machine) {
+    $stream=[IO.File]::OpenRead($Path);$reader=[IO.BinaryReader]::new($stream)
+    try {
+        if($reader.ReadUInt16() -ne 0x5a4d){throw 'Missing MZ header.'}
+        $stream.Position=0x3c;$offset=$reader.ReadInt32();$stream.Position=$offset
+        if($reader.ReadUInt32() -ne 0x4550 -or $reader.ReadUInt16() -ne $Machine){throw 'PE architecture mismatch.'}
+    }finally{$reader.Dispose()}
+}
 $repo=[IO.Path]::GetFullPath((Join-Path $PSScriptRoot '../..'))
 $Win32Dll=(Resolve-Path -LiteralPath $Win32Dll).Path
 $Win64Dll=(Resolve-Path -LiteralPath $Win64Dll).Path
@@ -51,7 +83,7 @@ $c=Pack 'addin' $version ('tbUI3IDE-'+$version+'.zip') @(@{path=$Win32Dll;target
 $c | Add-Member NoteProperty minIdeBuild $MinIdeBuild;$c | Add-Member NoteProperty maxIdeBuild $MaxIdeBuild;$components += $c
 $components += Pack 'themes' $version ('WinUI3-Themes-'+$version+'.zip') @(@{path=(Join-Path $repo 'tbIDE/themes/WinUI3 Dark.theme');target='WinUI3 Dark.theme'},@{path=(Join-Path $repo 'tbIDE/themes/WinUI3 Light.theme');target='WinUI3 Light.theme'}) 'WinUI3 Light and Dark theme files; selected theme and preferences are preserved.'
 $updaterVersion=Binary-Version $UpdaterExe
-$components += Pack 'updater' $updaterVersion ('tbUI3-Updater-'+$updaterVersion+'.zip') @(@{path=$UpdaterExe;target='Updater.exe'},@{path=(Join-Path $repo 'tbIDE/Updater/Updater.ps1');target='Updater.ps1'}) 'Native launcher and Windows PowerShell update/recovery engine.'
+$components += Pack 'updater' $updaterVersion ('tbUI3-Updater-'+$updaterVersion+'.zip') @(@{path=$UpdaterExe;target='Updater.exe'}) 'Native twinBASIC WebView2 updater, verification and recovery engine.'
 $manifest=[pscustomobject]@{schema=1;releaseTag=$tag;channel=$Channel;components=@($components)}
 $manifestPath=Join-Path $Output 'tbUI3-update.json'
 if (Test-Path -LiteralPath $manifestPath) {throw 'Use a fresh release output directory.'}

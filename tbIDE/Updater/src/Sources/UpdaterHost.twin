@@ -64,21 +64,24 @@ Private Module UpdaterHost
             Case Else
                 Err.Raise 5, , "Unsupported engine operation."
         End Select
-        Dim fso As Object = CreateObject("Scripting.FileSystemObject")
-        Dim engine As String = App.Path & "\Updater.ps1"
-        If Not fso.FileExists(engine) Then Err.Raise 53, , "Updater.ps1 is missing beside Updater.exe."
-        If Len(UpdateContext) = 0 Then Err.Raise 5, , "Choose updates in the tbUI3IDE add-in first."
-        Dim powershell As String = Environ$("SystemRoot") & "\System32\WindowsPowerShell\v1.0\powershell.exe"
-        Dim commandLine As String = QuoteArg(powershell) & " -NoProfile -NonInteractive -ExecutionPolicy Bypass -File " & _
-            QuoteArg(engine) & " -Mode " & mode & " -Context " & QuoteArg(UpdateContext)
+        If Len(UpdateContext) = 0 Then UFail "Choose updates in the tbUI3IDE add-in first."
+        Dim executable As String = App.Path & "\Updater.exe"
+        Dim commandLine As String = QuoteArg(executable) & " -Worker -Mode " & mode & " -Context " & QuoteArg(UpdateContext)
         Dim startup As StartupInfo
         Dim process As ProcessInfo
         startup.cb = LenB(startup)
-        If CreateProcessW(StrPtr(powershell), StrPtr(commandLine), 0, 0, 0, &H8000000, 0, 0, startup, process) = 0 Then _
+        If CreateProcessW(StrPtr(executable), StrPtr(commandLine), 0, 0, 0, &H8000000, 0, 0, startup, process) = 0 Then _
             Err.Raise 5, , "Windows could not start the updater engine (error " & CStr(Err.LastDllError) & ")."
         CloseHandle process.hThread
         Return process.hProcess
     End Function
+
+    Public Sub StartIde(ByVal executable As String, ByVal directory As String)
+        Dim startup As StartupInfo, process As ProcessInfo, commandLine As String = QuoteArg(executable)
+        startup.cb = LenB(startup)
+        If CreateProcessW(StrPtr(executable), StrPtr(commandLine), 0, 0, 0, 0, 0, StrPtr(directory), startup, process) = 0 Then UFail "Update completed, but restarting the IDE failed."
+        CloseHandle process.hThread: CloseHandle process.hProcess
+    End Sub
 
     Public Function WorkerRunning(ByVal handle As LongPtr) As Boolean
         If handle = 0 Then Return False

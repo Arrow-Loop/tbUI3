@@ -1,0 +1,370 @@
+' Windows primitives used by the compiled engine. All handles/pointers are pointer-sized.
+' Downloads stream to disk through WinHTTP; hashes use CNG; swaps are same-volume renames.
+Private Module UpdaterPlatform
+    Private Declare PtrSafe Function CreateFileW Lib "kernel32" (ByVal path As LongPtr, ByVal access As Long, ByVal share As Long, ByVal security As LongPtr, ByVal disposition As Long, ByVal flags As Long, ByVal template As LongPtr) As LongPtr
+    Private Declare PtrSafe Function FlushFileBuffers Lib "kernel32" (ByVal handle As LongPtr) As Long
+    Private Declare PtrSafe Function CloseHandle Lib "kernel32" (ByVal handle As LongPtr) As Long
+    Private Declare PtrSafe Function MoveFileExW Lib "kernel32" (ByVal source As LongPtr, ByVal target As LongPtr, ByVal flags As Long) As Long
+    Private Declare PtrSafe Function GetFileAttributesW Lib "kernel32" (ByVal path As LongPtr) As Long
+    Private Declare PtrSafe Sub Sleep Lib "kernel32" (ByVal milliseconds As Long)
+    Private Declare PtrSafe Function BCryptOpenAlgorithmProvider Lib "bcrypt" (ByRef algorithm As LongPtr, ByVal id As LongPtr, ByVal implementation As LongPtr, ByVal flags As Long) As Long
+    Private Declare PtrSafe Function BCryptCreateHash Lib "bcrypt" (ByVal algorithm As LongPtr, ByRef hash As LongPtr, ByVal hashObject As LongPtr, ByVal objectSize As Long, ByVal secret As LongPtr, ByVal secretSize As Long, ByVal flags As Long) As Long
+    Private Declare PtrSafe Function BCryptHashData Lib "bcrypt" (ByVal hash As LongPtr, ByVal data As LongPtr, ByVal size As Long, ByVal flags As Long) As Long
+    Private Declare PtrSafe Function BCryptFinishHash Lib "bcrypt" (ByVal hash As LongPtr, ByVal data As LongPtr, ByVal size As Long, ByVal flags As Long) As Long
+    Private Declare PtrSafe Function BCryptDestroyHash Lib "bcrypt" (ByVal hash As LongPtr) As Long
+    Private Declare PtrSafe Function BCryptCloseAlgorithmProvider Lib "bcrypt" (ByVal algorithm As LongPtr, ByVal flags As Long) As Long
+    Private Declare PtrSafe Function WinHttpOpen Lib "winhttp" (ByVal agent As LongPtr, ByVal access As Long, ByVal proxy As LongPtr, ByVal bypass As LongPtr, ByVal flags As Long) As LongPtr
+    Private Declare PtrSafe Function WinHttpConnect Lib "winhttp" (ByVal session As LongPtr, ByVal server As LongPtr, ByVal port As Integer, ByVal reserved As Long) As LongPtr
+    Private Declare PtrSafe Function WinHttpOpenRequest Lib "winhttp" (ByVal connection As LongPtr, ByVal verb As LongPtr, ByVal objectName As LongPtr, ByVal version As LongPtr, ByVal referrer As LongPtr, ByVal types As LongPtr, ByVal flags As Long) As LongPtr
+    Private Declare PtrSafe Function WinHttpSetTimeouts Lib "winhttp" (ByVal handle As LongPtr, ByVal resolve As Long, ByVal connect As Long, ByVal send As Long, ByVal receive As Long) As Long
+    Private Declare PtrSafe Function WinHttpSetOption Lib "winhttp" (ByVal handle As LongPtr, ByVal optionId As Long, ByVal data As LongPtr, ByVal size As Long) As Long
+    Private Declare PtrSafe Function WinHttpSendRequest Lib "winhttp" (ByVal request As LongPtr, ByVal headers As LongPtr, ByVal length As Long, ByVal data As LongPtr, ByVal dataSize As Long, ByVal total As Long, ByVal context As LongPtr) As Long
+    Private Declare PtrSafe Function WinHttpReceiveResponse Lib "winhttp" (ByVal request As LongPtr, ByVal reserved As LongPtr) As Long
+    Private Declare PtrSafe Function WinHttpQueryHeaders Lib "winhttp" (ByVal request As LongPtr, ByVal info As Long, ByVal name As LongPtr, ByVal buffer As LongPtr, ByRef length As Long, ByVal index As LongPtr) As Long
+    Private Declare PtrSafe Function WinHttpReadData Lib "winhttp" (ByVal request As LongPtr, ByVal buffer As LongPtr, ByVal size As Long, ByRef read As Long) As Long
+    Private Declare PtrSafe Function WinHttpCloseHandle Lib "winhttp" (ByVal handle As LongPtr) As Long
+    Private Declare PtrSafe Function GetFileVersionInfoSizeW Lib "version" (ByVal path As LongPtr, ByRef ignored As Long) As Long
+    Private Declare PtrSafe Function GetFileVersionInfoW Lib "version" (ByVal path As LongPtr, ByVal ignored As Long, ByVal size As Long, ByVal data As LongPtr) As Long
+    Private Declare PtrSafe Function VerQueryValueW Lib "version" (ByVal block As LongPtr, ByVal subBlock As LongPtr, ByRef value As LongPtr, ByRef size As Long) As Long
+    Private Declare PtrSafe Sub CopyMemory Lib "kernel32" Alias "RtlMoveMemory" (ByRef target As Any, ByRef source As Any, ByVal size As LongPtr)
+    Private Type TrustFile
+        cb As Long
+        path As LongPtr
+        file As LongPtr
+        subject As LongPtr
+    End Type
+    Private Type TrustData
+        cb As Long
+        policy As LongPtr
+        sip As LongPtr
+        ui As Long
+        revocation As Long
+        choice As Long
+        info As LongPtr
+        action As Long
+        state As LongPtr
+        url As LongPtr
+        flags As Long
+        context As Long
+        signatureSettings As LongPtr
+    End Type
+    Private Type NativeGuid
+        data1 As Long
+        data2 As Integer
+        data3 As Integer
+        data4(0 To 7) As Byte
+    End Type
+    Private Declare PtrSafe Function WinVerifyTrust Lib "wintrust" (ByVal window As LongPtr, ByRef action As NativeGuid, ByRef data As TrustData) As Long
+
+    Public Function UFso() As Object
+        Set UFso = CreateObject("Scripting.FileSystemObject")
+    End Function
+    Public Function UExists(ByVal path As String) As Boolean
+        Return UFso().FileExists(path)
+    End Function
+    Public Function UFull(ByVal path As String) As String
+        Return UFso().GetAbsolutePathName(path)
+    End Function
+    Public Function UParent(ByVal path As String) As String
+        Return UFso().GetParentFolderName(path)
+    End Function
+    Public Sub UDirectory(ByVal path As String)
+        Dim fso As Object = UFso()
+        If fso.FolderExists(path) Then Exit Sub
+        If Len(fso.GetParentFolderName(path)) = 0 Then UFail "Invalid folder."
+        UDirectory fso.GetParentFolderName(path)
+        fso.CreateFolder path
+    End Sub
+    Public Function UUnique() As String
+        Return Replace(UFso().GetTempName(), ".", "-")
+    End Function
+    Public Sub UPause(Optional ByVal milliseconds As Long = 500)
+        Sleep milliseconds
+    End Sub
+    Public Sub URelative(ByVal path As String)
+        If Len(path) = 0 Or Left$(path, 1) = "/" Or InStr(path, "//") > 0 Then UFail "Unsafe relative path."
+        Dim parts() As String = Split(path, "/"), part As Variant, ch As String, i As Long, base As String
+        For Each part In parts
+            If part = "." Or part = ".." Or Len(part) = 0 Then UFail "Unsafe relative segment."
+            If Right$(part, 1) = "." Or Right$(part, 1) = " " Then UFail "Unsafe Windows segment."
+            For i = 1 To Len(part)
+                ch = Mid$(part, i, 1)
+                If (AscW(ch) And &HFFFF&) < 32 Or InStr(1, "\:<>" & Chr$(34) & "|?*", ch) > 0 Then UFail "Unsafe Windows path."
+            Next
+            base = UCase$(CStr(part))
+            If InStr(base, ".") > 0 Then base = Left$(base, InStr(base, ".") - 1)
+            If base = "CON" Or base = "PRN" Or base = "AUX" Or base = "NUL" Then UFail "Device path forbidden."
+            If Len(base) = 4 Then
+                If (Left$(base, 3) = "COM" Or Left$(base, 3) = "LPT") And InStr("0123456789" & ChrW$(&HB9) & ChrW$(&HB2) & ChrW$(&HB3), Right$(base, 1)) > 0 Then UFail "Device path forbidden."
+            End If
+        Next
+    End Sub
+    Public Sub UNoLinks(ByVal path As String)
+        Dim cursor As String = UFull(path), attrs As Long, parent As String
+        Do While Len(cursor) > 0
+            attrs = GetFileAttributesW(StrPtr(cursor))
+            If attrs <> -1 Then
+                If (attrs And &H400) <> 0 Then UFail "Reparse point forbidden: " & cursor
+            End If
+            parent = UParent(cursor)
+            If parent = cursor Then Exit Do
+            cursor = parent
+        Loop
+    End Sub
+    Public Function USafe(ByVal root As String, ByVal relative As String) As String
+        URelative relative
+        Dim base As String = UFull(root)
+        If Right$(base, 1) <> "\" Then base = base & "\"
+        Dim path As String = UFull(base & Replace(relative, "/", "\"))
+        If StrComp(Left$(path, Len(base)), base, vbTextCompare) <> 0 Then UFail "Path escapes root."
+        UNoLinks path
+        Return path
+    End Function
+    Public Function UBytes(ByVal path As String, ByVal offset As Long, ByVal size As Long) As Byte()
+        Dim file As Integer = FreeFile(), bytes() As Byte
+        On Error GoTo Failed
+        Open path For Binary Access Read As #file
+        If size <= 0 Or offset < 0 Or CDbl(offset) + size > LOF(file) Then UFail "Truncated file."
+        ReDim bytes(0 To size - 1)
+        Get #file, offset + 1, bytes
+        Close #file
+        Return bytes
+    Failed:
+        Dim reason As String = Err.Description
+        On Error Resume Next: Close #file
+        On Error GoTo 0
+        UFail reason
+    End Function
+    Public Function UText(ByVal path As String) As String
+        Dim stream As Object = CreateObject("ADODB.Stream")
+        stream.Type = 1: stream.Open: stream.LoadFromFile path
+        Dim charset As String = "utf-8"
+        If stream.Size >= 2 Then
+            Dim bytes As Variant = stream.Read(2)
+            If bytes(0) = 255 And bytes(1) = 254 Then charset = "unicode"
+        End If
+        stream.Position = 0: stream.Type = 2: stream.Charset = charset
+        UText = stream.ReadText(): stream.Close
+    End Function
+    Public Function UReadJson(ByVal path As String) As UpdateJson
+        If UFso().GetFile(path).Size > 16777216 Then UFail "Session JSON exceeds size limit."
+        Set UReadJson = JParse(UText(path))
+    End Function
+    Public Sub UFlush(ByVal path As String)
+        Dim handle As LongPtr = CreateFileW(StrPtr(path), &H40000000, 1, 0, 3, 0, 0)
+        If handle = -1 Then UFail "Could not open file for durable flush."
+        Dim ok As Long = FlushFileBuffers(handle)
+        CloseHandle handle
+        If ok = 0 Then UFail "Could not flush file."
+    End Sub
+    Public Sub UUnlocked(ByVal path As String)
+        If Not UExists(path) Then Exit Sub
+        Dim handle As LongPtr = CreateFileW(StrPtr(path), &HC0000000, 0, 0, 3, 0, 0)
+        If handle = -1 Then UFail "File is in use or not writable: " & path
+        CloseHandle handle
+    End Sub
+    Public Sub UWriteJson(ByVal path As String, ByVal value As UpdateJson)
+        Dim temp As String = path & "." & UUnique() & ".new", stream As Object
+        On Error GoTo Failed
+        Set stream = UFso().CreateTextFile(temp, False, True)
+        stream.Write value.Encode(): stream.Close: UFlush temp
+        Dim attempt As Long
+        For attempt = 1 To 10
+            If MoveFileExW(StrPtr(temp), StrPtr(path), 1 Or 8) <> 0 Then Exit Sub
+            UPause 50
+        Next
+        UFail "Atomic JSON replacement failed."
+    Failed:
+        Dim reason As String = Err.Description
+        On Error Resume Next
+        If Not stream Is Nothing Then stream.Close
+        If UExists(temp) Then Kill temp
+        On Error GoTo 0
+        UFail reason
+    End Sub
+    Public Sub UReplace(ByVal source As String, ByVal destination As String)
+        UNoLinks source: UNoLinks destination
+        UDirectory UParent(destination)
+        Dim temp As String = UParent(destination) & "\.tbUI3-" & UUnique() & ".tmp"
+        On Error GoTo Failed
+        FileCopy source, temp: UFlush temp
+        If MoveFileExW(StrPtr(temp), StrPtr(destination), 1 Or 8) = 0 Then UFail "Atomic file replacement failed: " & destination
+        Exit Sub
+    Failed:
+        Dim reason As String = Err.Description
+        On Error Resume Next
+        If UExists(temp) Then Kill temp
+        On Error GoTo 0
+        UFail reason
+    End Sub
+    Public Sub UHashValue(ByVal hash As String)
+        Dim i As Long
+        If Len(hash) <> 64 Then UFail "Invalid SHA-256 metadata."
+        For i = 1 To 64
+            If InStr(1, "0123456789abcdef", Mid$(hash, i, 1), vbBinaryCompare) = 0 Then UFail "Invalid SHA-256 metadata."
+        Next
+    End Sub
+    Public Function UHash(ByVal path As String) As String
+        Dim algorithm As LongPtr, hash As LongPtr, file As Integer, opened As Boolean
+        Dim name As String = "SHA256", buffer() As Byte, digest(0 To 31) As Byte, size As Long, i As Long, result As String
+        On Error GoTo Failed
+        If BCryptOpenAlgorithmProvider(algorithm, StrPtr(name), 0, 0) <> 0 Then UFail "SHA-256 unavailable."
+        If BCryptCreateHash(algorithm, hash, 0, 0, 0, 0, 0) <> 0 Then UFail "Could not create SHA-256 hash."
+        file = FreeFile(): Open path For Binary Access Read As #file: opened = True
+        Do While Seek(file) <= LOF(file)
+            size = LOF(file) - Seek(file) + 1
+            If size > 65536 Then size = 65536
+            ReDim buffer(0 To size - 1): Get #file, , buffer
+            If BCryptHashData(hash, VarPtr(buffer(0)), size, 0) <> 0 Then UFail "Hash read failed."
+        Loop
+        Close #file: opened = False
+        If BCryptFinishHash(hash, VarPtr(digest(0)), 32, 0) <> 0 Then UFail "Hash finalization failed."
+        BCryptDestroyHash hash: hash = 0: BCryptCloseAlgorithmProvider algorithm, 0: algorithm = 0
+        For i = 0 To 31: result = result & LCase$(Right$("0" & Hex$(digest(i)), 2)): Next
+        Return result
+    Failed:
+        Dim reason As String = Err.Description
+        On Error Resume Next
+        If opened Then Close #file
+        If hash <> 0 Then BCryptDestroyHash hash
+        If algorithm <> 0 Then BCryptCloseAlgorithmProvider algorithm, 0
+        On Error GoTo 0
+        UFail reason
+    End Function
+    Public Function UBinaryVersion(ByVal path As String) As String
+        Dim ignored As Long, size As Long = GetFileVersionInfoSizeW(StrPtr(path), ignored), bytes() As Byte
+        If size = 0 Then UFail "Binary has no numeric version: " & path
+        ReDim bytes(0 To size - 1)
+        If GetFileVersionInfoW(StrPtr(path), 0, size, VarPtr(bytes(0))) = 0 Then UFail "Binary version read failed."
+        Dim root As String = "\", pointer As LongPtr, count As Long, fixed(0 To 12) As Long
+        If VerQueryValueW(VarPtr(bytes(0)), StrPtr(root), pointer, count) = 0 Or count < 52 Then UFail "Missing fixed PE version."
+        CopyMemory fixed(0), ByVal pointer, 52
+        If fixed(0) <> &HFEEF04BD Then UFail "Invalid fixed version signature."
+        Return CStr((fixed(2) And &H7FFF0000) \ 65536 + IIf(fixed(2) < 0, 32768, 0)) & "." & CStr(fixed(2) And &HFFFF&) & "." & CStr((fixed(3) And &H7FFF0000) \ 65536 + IIf(fixed(3) < 0, 32768, 0)) & "." & CStr(fixed(3) And &HFFFF&)
+    End Function
+    Public Sub UPe(ByVal path As String, ByVal machine As Long)
+        Dim bytes() As Byte = UBytes(path, 0, 64), offset As Double = U32(bytes, 60)
+        If U16(bytes, 0) <> &H5A4D Then UFail "Missing MZ header."
+        If offset > 2147483600# Then UFail "Invalid PE offset."
+        bytes = UBytes(path, CLng(offset), 6)
+        If U32(bytes, 0) <> &H4550 Then UFail "Missing PE header."
+        Dim actual As Long = U16(bytes, 4)
+        If machine = 0 Then
+            If actual <> &H14C And actual <> &H8664 Then UFail "Unsupported PE architecture."
+        ElseIf actual <> machine Then
+            UFail "PE architecture mismatch."
+        End If
+    End Sub
+    Public Function U16(ByRef bytes() As Byte, ByVal offset As Long) As Long
+        Return CLng(bytes(offset)) + CLng(bytes(offset + 1)) * 256
+    End Function
+    Public Function U32(ByRef bytes() As Byte, ByVal offset As Long) As Double
+        Return CDbl(U16(bytes, offset)) + CDbl(U16(bytes, offset + 2)) * 65536#
+    End Function
+    Public Sub USignature(ByVal path As String)
+        Dim ext As String = LCase$(UFso().GetExtensionName(path))
+        If ext <> "exe" And ext <> "dll" Then Exit Sub
+        Dim action As NativeGuid, info As TrustFile, trust As TrustData
+        action.data1 = &HAAC56B: action.data2 = &HCD44: action.data3 = &H11D0
+        action.data4(0) = &H8C: action.data4(1) = &HC2: action.data4(2) = 0: action.data4(3) = &HC0
+        action.data4(4) = &H4F: action.data4(5) = &HC2: action.data4(6) = &H95: action.data4(7) = &HEE
+        info.cb = LenB(info): info.path = StrPtr(path)
+        trust.cb = LenB(trust): trust.ui = 2: trust.choice = 1: trust.info = VarPtr(info): trust.action = 1
+        Dim status As Long = WinVerifyTrust(-1, action, trust)
+        trust.action = 2: WinVerifyTrust -1, action, trust
+        ' Only explicitly unsigned binaries are accepted using authenticated archive/file digests.
+        If status <> 0 And status <> &H800B0100 Then UFail "Invalid/untrusted publisher signature: " & path
+    End Sub
+    Public Sub UUrl(ByVal url As String, ByVal repository As String, Optional ByVal tag As String = "")
+        Dim prefix As String = "https://github.com/" & repository & "/releases/download/"
+        If Len(tag) > 0 Then prefix = prefix & tag & "/"
+        If StrComp(Left$(url, Len(prefix)), prefix, vbTextCompare) <> 0 Then UFail "Unapproved release repository/tag."
+        Dim tail As String = Mid$(url, Len(prefix) + 1)
+        If Len(tail) = 0 Or InStr(tail, "%") > 0 Or InStr(tail, "?") > 0 Or InStr(tail, "#") > 0 Then UFail "Noncanonical release URL."
+        URelative tail
+    End Sub
+    Private Function Header(ByVal request As LongPtr, ByVal info As Long) As String
+        Dim size As Long = 8192, buffer As String = String$(4096, vbNullChar)
+        If WinHttpQueryHeaders(request, info, 0, StrPtr(buffer), size, 0) <> 0 Then Header = Replace(Left$(buffer, size \ 2), vbNullChar, "")
+    End Function
+    Public Sub UFetch(ByVal url As String, ByVal destination As String, ByVal limit As Long, Optional ByVal expectedSize As Long = 0, Optional ByVal sha As String = "", Optional ByVal metadata As Boolean = False)
+        Dim session As LongPtr, connection As LongPtr, request As LongPtr, file As Integer, opened As Boolean
+        Dim current As String = url, redirect As Long, deadline As Date = DateAdd("n", 15, Now)
+        On Error GoTo Failed
+        Dim agent As String = "tbUI3-Updater/0.1.0.1", verb As String = "GET", headers As String = "Accept: application/vnd.github+json" & vbCrLf
+        session = WinHttpOpen(StrPtr(agent), 0, 0, 0, 0)
+        If session = 0 Then UFail "WinHTTP initialization failed."
+        WinHttpSetTimeouts session, 30000, 30000, 30000, 30000
+        Dim tls As Long = &H800
+        If WinHttpSetOption(session, 84, VarPtr(tls), 4) = 0 Then UFail "TLS 1.2 configuration failed."
+        For redirect = 0 To 5
+            If Left$(current, 8) <> "https://" Then UFail "HTTPS required."
+            Dim slash As Long = InStr(9, current, "/"), host As String, path As String
+            If slash = 0 Then UFail "Invalid HTTP URL."
+            host = LCase$(Mid$(current, 9, slash - 9)): path = Mid$(current, slash)
+            If InStr(current, "#") > 0 Or InStr(current, "\") > 0 Then UFail "Invalid URL."
+            If metadata Then
+                If current <> url Or (host <> "api.github.com" And host <> "raw.githubusercontent.com") Then UFail "Metadata redirect forbidden."
+            Else
+                If host <> "github.com" And host <> "release-assets.githubusercontent.com" And host <> "objects.githubusercontent.com" Then UFail "Unapproved CDN redirect."
+            End If
+            connection = WinHttpConnect(session, StrPtr(host), 443, 0)
+            If connection = 0 Then UFail "HTTP connection failed."
+            request = WinHttpOpenRequest(connection, StrPtr(verb), StrPtr(path), 0, 0, 0, &H800000)
+            If request = 0 Then UFail "HTTP request creation failed."
+            Dim disable As Long = 7
+            If WinHttpSetOption(request, 63, VarPtr(disable), 4) = 0 Then UFail "Could not disable HTTP redirects."
+            If WinHttpSendRequest(request, StrPtr(headers), Len(headers), 0, 0, 0, 0) = 0 Then UFail "HTTP send failed."
+            If WinHttpReceiveResponse(request, 0) = 0 Then UFail "HTTP response failed."
+            Dim status As Long = Val(Header(request, 19))
+            If status = 301 Or status = 302 Or status = 303 Or status = 307 Or status = 308 Then
+                current = Header(request, 33)
+                If Left$(current, 1) = "/" Then current = "https://" & host & current
+                If metadata Then UFail "Metadata redirect forbidden."
+                WinHttpCloseHandle request: request = 0: WinHttpCloseHandle connection: connection = 0
+            Else
+                If status <> 200 Then UFail "HTTP status " & CStr(status) & "."
+                Dim length As String = Header(request, 5)
+                If Len(length) > 0 Then
+                    If Val(length) > limit Or (expectedSize > 0 And Val(length) <> expectedSize) Then UFail "Unexpected HTTP content length."
+                End If
+                If UExists(destination) Then Kill destination
+                file = FreeFile(): Open destination For Binary Access Write As #file: opened = True
+                Dim buffer(0 To 65535) As Byte, count As Long, total As Long, piece() As Byte
+                Do
+                    If Now > deadline Then UFail "Download exceeded 15 minutes."
+                    If WinHttpReadData(request, VarPtr(buffer(0)), 65536, count) = 0 Then UFail "HTTP stream failed."
+                    If count = 0 Then Exit Do
+                    If CDbl(total) + count > limit Then UFail "Download exceeds supported size."
+                    total = total + count
+                    ReDim piece(0 To count - 1): CopyMemory piece(0), buffer(0), count: Put #file, , piece
+                Loop
+                Close #file: opened = False
+                WinHttpCloseHandle request: request = 0: WinHttpCloseHandle connection: connection = 0: WinHttpCloseHandle session: session = 0
+                If expectedSize > 0 And total <> expectedSize Then UFail "Downloaded length mismatch."
+                If Len(sha) > 0 Then
+                    UHashValue sha
+                    If UHash(destination) <> sha Then UFail "Downloaded SHA-256 mismatch."
+                End If
+                Exit Sub
+            End If
+        Next
+        UFail "Too many release redirects."
+    Failed:
+        Dim reason As String = Err.Description
+        On Error Resume Next
+        If opened Then Close #file
+        If request <> 0 Then WinHttpCloseHandle request
+        If connection <> 0 Then WinHttpCloseHandle connection
+        If session <> 0 Then WinHttpCloseHandle session
+        If UExists(destination) Then Kill destination
+        On Error GoTo 0
+        UFail reason
+    End Sub
+    Public Sub UDownload(ByVal asset As UpdateJson, ByVal path As String)
+        Dim size As Double = JD(asset, "size")
+        If size <= 0 Or size > 536870912 Or Fix(size) <> size Then UFail "Invalid asset size."
+        UHashValue JT(asset, "sha256")
+        UFetch JT(asset, "url"), path, 536870912, CLng(size), JT(asset, "sha256")
+    End Sub
+End Module

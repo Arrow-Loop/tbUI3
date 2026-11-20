@@ -1,5 +1,12 @@
 # Roadmap: tbUI3 IDE
 
+## 2026-11-20 - Native updater engine source delivered; compile acceptance pending
+
+Updater 0.1.0.1 now contains its update/recovery engine as twinBASIC code; tbUI3IDE 0.3.0.22 expects only the EXE. The PowerShell runtime script is removed. WebView2 UI and hidden worker are separate processes of the same executable, with verified detached self-update. Current architecture and native test instructions: [Updater README](Updater/README.md#native-engine-and-executable-self-tests).
+
+Next gate: reopen/build both canonical projects, run the compiled EXE's 47 `-SelfTest` cases, then use a disposable portable IDE to validate normal shutdown/On Exit/cancel, real download/staging, vendor-file preservation, locks, interrupted recovery and self-update. The 186 Node checks validate fixtures/source contracts/UI; they do not establish that the native engine compiles or runs. Native compilation remains deferred at Shane's request. No `main` merge, PR or release publication.
+
+
 ## 2026-11-19 - Updater source implementation delivered; native acceptance next
 
 tbUI3IDE 0.3.0.21 and Updater 0.1.0.0 implement the agreed discovery/notification, WebView2 sidecar, verified staging, normal-exit consent, in-place journal/backup/rollback, self-update handoff and release-packaging contract. Quill coordination is complete; the separate core-package numbering migration remains outside this pass.

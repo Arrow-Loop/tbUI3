@@ -1,0 +1,72 @@
+' ZIP central-directory validation precedes extraction of any selected file.
+' ZIP64/multi-volume/encrypted archives and links are rejected, not delegated to a shell.
+Private Module UpdaterZip
+    Private Declare PtrSafe Function MultiByteToWideChar Lib "kernel32" (ByVal codepage As Long, ByVal flags As Long, ByVal bytes As LongPtr, ByVal byteCount As Long, ByVal text As LongPtr, ByVal charCount As Long) As Long
+    Private Function ZipName(ByRef bytes() As Byte, ByVal offset As Long, ByVal count As Long, ByVal flags As Long) As String
+        Dim codepage As Long = 437, options As Long
+        If (flags And &H800) <> 0 Then codepage = 65001: options = 8
+        Dim size As Long = MultiByteToWideChar(codepage, options, VarPtr(bytes(offset)), count, 0, 0)
+        If size = 0 Then UFail "Invalid ZIP filename encoding."
+        Dim result As String = String$(size, vbNullChar)
+        If MultiByteToWideChar(codepage, options, VarPtr(bytes(offset)), count, StrPtr(result), size) <> size Then UFail "ZIP filename decode failed."
+        Return result
+    End Function
+    Public Function UZipEntries(ByVal path As String) As Object
+        Dim size As Double = UFso().GetFile(path).Size
+        If size < 22 Or size > 536870912 Then UFail "Unsupported ZIP size."
+        Dim count As Long = CLng(size)
+        If count > 65557 Then count = 65557
+        Dim tail() As Byte = UBytes(path, CLng(size) - count, count), endAt As Long = -1, i As Long
+        For i = count - 22 To 0 Step -1
+            If U32(tail, i) = &H6054B50 Then
+                If i + 22 + U16(tail, i + 20) = count Then endAt = i: Exit For
+            End If
+        Next
+        If endAt < 0 Then UFail "ZIP end directory missing."
+        If U16(tail, endAt + 4) <> 0 Or U16(tail, endAt + 6) <> 0 Or U16(tail, endAt + 8) <> U16(tail, endAt + 10) Then UFail "Multi-volume ZIP unsupported."
+        Dim entries As Long = U16(tail, endAt + 10), cdSize As Double = U32(tail, endAt + 12), cdOffset As Double = U32(tail, endAt + 16)
+        If entries = 65535 Or cdOffset + cdSize <> size - count + endAt Or cdOffset < 0 Then UFail "ZIP64 or invalid central directory."
+        Dim result As Object = CreateObject("Scripting.Dictionary"): result.CompareMode = vbTextCompare
+        Dim offset As Long = CLng(cdOffset), total As Double, header() As Byte, name As String, canonical As String
+        Dim entry As UpdateJson, flags As Long, method As Long, packed As Double, expanded As Double, localOffset As Double
+        For i = 1 To entries
+            If CDbl(offset) + 46 > cdOffset + cdSize Then UFail "ZIP central directory truncated."
+            header = UBytes(path, offset, 46)
+            If U32(header, 0) <> &H2014B50 Then UFail "ZIP central header missing."
+            flags = U16(header, 8): method = U16(header, 10)
+            If (flags And &HF041) <> 0 Or (method <> 0 And method <> 8) Then UFail "Encrypted/unsupported ZIP entry."
+            packed = U32(header, 20): expanded = U32(header, 24): localOffset = U32(header, 42)
+            If packed > 536870912 Or expanded > 536870912 Or localOffset + 30 > cdOffset Or U16(header, 34) <> 0 Then UFail "ZIP entry exceeds supported bounds."
+            Dim nameSize As Long = U16(header, 28), extraSize As Long = U16(header, 30), commentSize As Long = U16(header, 32)
+            If nameSize = 0 Or CDbl(offset) + 46 + nameSize + extraSize + commentSize > cdOffset + cdSize Then UFail "Invalid ZIP filename length."
+            Dim nameBytes() As Byte = UBytes(path, offset + 46, nameSize)
+            name = ZipName(nameBytes, 0, nameSize, flags): canonical = name
+            If Right$(canonical, 1) = "/" Then canonical = Left$(canonical, Len(canonical) - 1)
+            URelative canonical
+            If result.Exists(canonical) Then UFail "Duplicate/case-colliding ZIP destination."
+            Dim attrs As Double = U32(header, 38), unixMode As Long = CLng(Fix(attrs / 65536#)) And &HF000
+            If unixMode = &HA000 Or ((U16(header, 38) And &H400) <> 0) Then UFail "Archive links forbidden."
+            total = total + expanded
+            If total > 2147483648# Then UFail "Archive expansion exceeds 2 GiB."
+            Dim local() As Byte = UBytes(path, CLng(localOffset), 30)
+            If U32(local, 0) <> &H4034B50 Or U16(local, 6) <> flags Or U16(local, 8) <> method Or U16(local, 26) <> nameSize Then UFail "ZIP local/central mismatch."
+            Dim localName() As Byte = UBytes(path, CLng(localOffset) + 30, nameSize)
+            If ZipName(localName, 0, nameSize, flags) <> name Then UFail "ZIP local filename mismatch."
+            Dim dataOffset As Double = localOffset + 30 + nameSize + U16(local, 28)
+            If dataOffset + packed > cdOffset Then UFail "ZIP data overlaps directory."
+            Set entry = JO()
+            entry.Assign "name", JS(name): entry.Assign "directory", JB(Right$(name, 1) = "/")
+            entry.Assign "offset", JN(dataOffset): entry.Assign "packed", JN(packed): entry.Assign "size", JN(expanded)
+            entry.Assign "crc", JN(U32(header, 16)): entry.Assign "method", JN(method)
+            result.Add canonical, entry
+            offset = offset + 46 + nameSize + extraSize + commentSize
+        Next
+        If offset <> cdOffset + cdSize Then UFail "Unexpected ZIP central directory tail."
+        Set UZipEntries = result
+    End Function
+    Public Sub UZipExtract(ByVal archive As String, ByVal entry As UpdateJson, ByVal target As String)
+        If JBool(entry, "directory") Then UFail "Expected a ZIP file."
+        Dim decoder As New UpdateInflate
+        decoder.Extract archive, CLng(JD(entry, "offset")), CLng(JD(entry, "packed")), CLng(JD(entry, "size")), CLng(JD(entry, "method")), JD(entry, "crc"), target
+    End Sub
+End Module

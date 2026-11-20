@@ -1,63 +1,68 @@
-' Native entry point. Check/Stage/Cancel run hidden; Apply/Recover use the embedded WebView2 UI.
+' One compiled executable: hidden native worker, or the embedded WebView2 interface.
 Module MainModule
     Public UpdateContext As String
     Public UpdateMode As String
     Public ContextValidated As Boolean
     Public StartupError As String
+    Private Declare PtrSafe Sub ExitProcess Lib "kernel32" (ByVal exitCode As Long)
 
     Public Sub Main()
         On Error GoTo Failed
-        WinUI_InitializeDpiAwareness
-        Dim args As String = Trim$(Command$())
-        If Len(args) = 0 Then
-            ShowUpdaterWindow
+        Dim args As String = Trim$(Command$()), worker As Boolean
+        If args = "-SelfTest" Then
+            ExitProcess RunUpdaterSelfTests()
             Exit Sub
         End If
+        If Left$(args, 8) = "-Worker " Then worker = True: args = Mid$(args, 9)
+        If Len(args) = 0 Then
+            WinUI_InitializeDpiAwareness: ShowUpdaterWindow: Exit Sub
+        End If
         Dim splitAt As Long = InStr(1, args, " -Context ", vbBinaryCompare)
-        If Left$(args, 6) <> "-Mode " Or splitAt <= 7 Then Err.Raise 5, , "Open updates from the tbUI3IDE add-in."
+        If Left$(args, 6) <> "-Mode " Or splitAt <= 7 Then UFail "Open updates from the tbUI3IDE add-in."
         UpdateMode = Mid$(args, 7, splitAt - 7)
         Dim quoted As String = Trim$(Mid$(args, splitAt + 10))
         If Left$(quoted, 1) = Chr$(34) Then
-            If Right$(quoted, 1) <> Chr$(34) Then Err.Raise 5, , "The update context path is not correctly quoted."
+            If Right$(quoted, 1) <> Chr$(34) Then UFail "Incorrectly quoted update context."
             UpdateContext = Mid$(quoted, 2, Len(quoted) - 2)
         Else
             UpdateContext = quoted
         End If
-        If InStr(UpdateContext, Chr$(34)) > 0 Then Err.Raise 5, , "Invalid update context."
-        Dim fso As Object = CreateObject("Scripting.FileSystemObject")
-        Dim base As String = Environ$("LOCALAPPDATA") & "\tbUI3\Updater\"
-        UpdateContext = fso.GetAbsolutePathName(UpdateContext)
+        If InStr(UpdateContext, Chr$(34)) > 0 Then UFail "Invalid update context."
+        Dim fso As Object = UFso(), base As String = Environ$("LOCALAPPDATA") & "\tbUI3\Updater\"
+        UpdateContext = UFull(UpdateContext)
         If StrComp(Left$(UpdateContext, Len(base)), base, vbTextCompare) <> 0 Or _
-            LCase$(fso.GetFileName(UpdateContext)) <> "context.json" Or Not fso.FileExists(UpdateContext) Then _
-            Err.Raise 5, , "This is not a saved tbUI3 update session."
+            StrComp(UParent(UParent(UpdateContext)), Left$(base, Len(base) - 1), vbTextCompare) <> 0 Or _
+            fso.GetFileName(UpdateContext) <> "context.json" Or Not UExists(UpdateContext) Then UFail "This is not a saved tbUI3 update session."
+        UNoLinks UpdateContext
         ContextValidated = True
         Select Case UpdateMode
             Case "Check", "Stage", "Cancel"
-                Dim worker As LongPtr = StartUpdateEngine(UpdateMode)
-                If worker <> 0 Then ReleaseWorker worker
+                ExitProcess RunNativeEngine(UpdateMode)
             Case "Apply", "Recover"
-                ' The installed EXE and engine must be unlocked during updater self-update/recovery.
-                Dim parent As String = fso.GetParentFolderName(UpdateContext)
-                Dim isRunner As Boolean = (StrComp(fso.GetParentFolderName(App.Path), parent, vbTextCompare) = 0 And _
-                    LCase$(Left$(fso.GetFileName(App.Path), 7)) = "runner-")
-                If Not isRunner Then
-                    Dim runner As String = parent & "\runner-" & Replace(fso.GetTempName(), ".", "-")
-                    fso.CreateFolder runner
-                    fso.CopyFile App.Path & "\Updater.exe", runner & "\Updater.exe", True
-                    fso.CopyFile App.Path & "\Updater.ps1", runner & "\Updater.ps1", True
-                    Shell QuoteArg(runner & "\Updater.exe") & " -Mode " & UpdateMode & " -Context " & QuoteArg(UpdateContext), vbNormalFocus
+                If worker Then
+                    ' Apply workers must run from a session copy, keeping the installed EXE unlocked.
+                    If Not IsSessionRunner() Then UFail "Installation worker must run from its detached session copy."
+                    ExitProcess RunNativeEngine(UpdateMode)
                     Exit Sub
                 End If
-                ShowUpdaterWindow
-            Case Else
-                Err.Raise 5, , "Unsupported updater operation."
+                If Not IsSessionRunner() Then
+                    Dim context As UpdateJson = UReadJson(UpdateContext)
+                    UContextValid context: UDetached context, SessionFolder(), UpdateMode
+                    Exit Sub
+                End If
+                WinUI_InitializeDpiAwareness: ShowUpdaterWindow
+            Case Else: UFail "Unsupported updater operation."
         End Select
         Exit Sub
     Failed:
         StartupError = Err.Description
         If Not ContextValidated Then UpdateContext = ""
         ReportStartupFailure StartupError
-        ShowUpdaterWindow
+        If worker Then ExitProcess 1
+        WinUI_InitializeDpiAwareness: ShowUpdaterWindow
     End Sub
+    Private Function IsSessionRunner() As Boolean
+        Dim fso As Object = UFso()
+        Return StrComp(UParent(App.Path), SessionFolder(), vbTextCompare) = 0 And Left$(LCase$(fso.GetFileName(App.Path)), 7) = "runner-"
+    End Function
 End Module
-

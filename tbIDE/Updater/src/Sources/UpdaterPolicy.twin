@@ -1,0 +1,331 @@
+' Release contracts, installed identities and component/path policy.
+Private Module UpdaterPolicy
+    Public Function UVersionParts(ByVal version As String) As Variant
+        Dim parts() As String = Split(version, "."), values(0 To 3) As Double, i As Long, j As Long, ch As String
+        If UBound(parts) > 3 Then UFail "Versions need one to four numeric components."
+        For i = 0 To UBound(parts)
+            If Len(parts(i)) = 0 Or Len(parts(i)) > 10 Then UFail "Invalid version component."
+            For j = 1 To Len(parts(i))
+                ch = Mid$(parts(i), j, 1)
+                If ch < "0" Or ch > "9" Then UFail "Nonnumeric version component."
+            Next
+            values(i) = Val(parts(i))
+            If values(i) > 4294967295# Then UFail "Version component overflow."
+        Next
+        Return values
+    End Function
+    Public Function UCompare(ByVal a As String, ByVal b As String) As Long
+        Dim aa As Variant = UVersionParts(a), bb As Variant = UVersionParts(b), i As Long
+        For i = 0 To 3
+            If aa(i) < bb(i) Then Return -1
+            If aa(i) > bb(i) Then Return 1
+        Next
+        Return 0
+    End Function
+    Public Function UNormalizeAddin(ByVal version As String, Optional ByVal stable As Boolean = False) As String
+        Dim parts As Variant = UVersionParts(version)
+        If Not stable And UBound(Split(version, ".")) = 3 And parts(0) = 1 And parts(2) = 0 Then
+            Dim limit As Long = -1
+            Select Case parts(1)
+                Case 1: limit = 0
+                Case 2: limit = 2
+                Case 3: limit = 20
+            End Select
+            If limit >= 0 And parts(3) <= limit Then Return "0." & CStr(parts(1)) & ".0." & CStr(parts(3))
+        End If
+        Return version
+    End Function
+    Public Function URoot(ByVal id As String, ByVal install As String) As String
+        Select Case id
+            Case "themes": Return Environ$("APPDATA") & "\twinBASIC\themes"
+            Case "library": Return Environ$("LOCALAPPDATA") & "\tbUI3"
+            Case "controlPackage": Return Environ$("LOCALAPPDATA") & "\tbUI3\Downloads"
+            Case Else: Return install
+        End Select
+    End Function
+    Public Function UTargetAllowed(ByVal id As String, ByVal path As String) As Boolean
+        URelative path
+        Select Case id
+            Case "ide"
+                Return path = "twinBASIC.exe" Or Left$(path, 4) = "bin/" Or Left$(path, 4) = "ide/" Or Left$(path, 7) = "locale/" Or Left$(path, 9) = "packages/"
+            Case "addin": Return path = "addins/win32/tbUI3IDE.dll" Or path = "addins/win64/tbUI3IDE.dll"
+            Case "themes": Return path = "WinUI3 Dark.theme" Or path = "WinUI3 Light.theme"
+            Case "library": Return path = "tbUI3-Icons.dat" Or path = "NOTICE.txt"
+            Case "updater": Return path = "Updater.exe"
+            Case "controlPackage"
+                If Left$(path, 6) <> "tbUI3-" Or Right$(path, 9) <> ".twinpack" Then Return False
+                Dim ignored As Variant = UVersionParts(Mid$(path, 7, Len(path) - 15))
+                Return True
+        End Select
+        Return False
+    End Function
+    Public Sub UTarget(ByVal id As String, ByVal path As String)
+        If Not UTargetAllowed(id, path) Then UFail "Unmanaged destination for " & id & ": " & path
+    End Sub
+    Public Sub UComponentValid(ByVal component As UpdateJson)
+        Dim id As String = JT(component, "id"), repository As String
+        Select Case id
+            Case "ide": repository = "twinbasic/twinbasic"
+            Case "library": repository = "Arrow-Loop/tbUI3-Libraries"
+            Case "addin", "themes", "updater", "controlPackage": repository = "Arrow-Loop/tbUI3"
+            Case Else: UFail "Unknown update component."
+        End Select
+        Dim ignored As Variant = UVersionParts(JT(component, "version")), asset As UpdateJson = component.Member("asset")
+        UUrl JT(asset, "url"), repository: UHashValue JT(asset, "sha256")
+        If JD(asset, "size") <= 0 Or JD(asset, "size") > 536870912 Or Fix(JD(asset, "size")) <> JD(asset, "size") Then UFail "Invalid asset size."
+        Dim sources As Object = UMap(), targets As Object = UMap(), file As UpdateJson
+        For Each file In component.Member("files").Items
+            URelative JT(file, "source"): UTarget id, JT(file, "target"): UHashValue JT(file, "sha256")
+            If JD(file, "size") <= 0 Or JD(file, "size") > 536870912 Or Fix(JD(file, "size")) <> JD(file, "size") Then UFail "Invalid component file size."
+            If sources.Exists(JT(file, "source")) Or targets.Exists(JT(file, "target")) Then UFail "Duplicate file metadata."
+            sources.Add JT(file, "source"), True: targets.Add JT(file, "target"), True
+        Next
+        If id <> "ide" And id <> "library" And targets.Count = 0 Then UFail "Empty release component."
+        If id = "addin" Then
+            If targets.Count <> 2 Or Not targets.Exists("addins/win32/tbUI3IDE.dll") Or Not targets.Exists("addins/win64/tbUI3IDE.dll") Then UFail "Both add-in architectures are required."
+        End If
+        If id = "updater" Then
+            If targets.Count <> 1 Or Not targets.Exists("Updater.exe") Then UFail "Native updater release must contain exactly Updater.exe."
+        End If
+    End Sub
+    Public Function UMap() As Object
+        Dim result As Object = CreateObject("Scripting.Dictionary")
+        result.CompareMode = vbTextCompare
+        Set UMap = result
+    End Function
+    Public Function UInstalledIde(ByVal root As String) As String
+        Dim text As String = UText(USafe(root, "ide/build.js")), marker As String = "twinBASIC IDE BETA "
+        Dim pos As Long = InStr(1, text, marker, vbBinaryCompare), result As String, ch As String
+        If pos = 0 Then UFail "Unrecognized IDE channel; automatic IDE update disabled."
+        pos = pos + Len(marker)
+        Do While pos <= Len(text)
+            ch = Mid$(text, pos, 1)
+            If ch < "0" Or ch > "9" Then Exit Do
+            result = result & ch: pos = pos + 1
+        Loop
+        If Len(result) = 0 Then UFail "Missing IDE build."
+        Return CStr(Val(result))
+    End Function
+    Public Function UReceiptVersion(ByVal id As String, ByVal root As String) As String
+        Dim path As String = USafe(root, "tbUI3-" & id & ".json")
+        If Not UExists(path) Then Return "0"
+        Dim receipt As UpdateJson = UReadJson(path), seen As Object = UMap(), file As UpdateJson
+        If receipt.Member("files").Items.Count = 0 Then Return "0"
+        For Each file In receipt.Member("files").Items
+            UTarget id, JT(file, "target"): UHashValue JT(file, "sha256")
+            If seen.Exists(JT(file, "target")) Then UFail "Duplicate installed receipt file."
+            seen.Add JT(file, "target"), True
+            path = USafe(root, JT(file, "target"))
+            If Not UExists(path) Then Return "0"
+            If UHash(path) <> JT(file, "sha256") Then Return "0"
+        Next
+        If id = "addin" And (seen.Count <> 2 Or Not seen.Exists("addins/win32/tbUI3IDE.dll") Or Not seen.Exists("addins/win64/tbUI3IDE.dll")) Then Return "0"
+        Return JT(receipt, "version")
+    End Function
+    Public Function UInstalledAddin(ByVal root As String, ByVal architecture As String) As String
+        Dim path As String = USafe(root, "addins/" & architecture & "/tbUI3IDE.dll")
+        If Not UExists(path) Then Return "0"
+        Dim version As String = UBinaryVersion(path), stable As Boolean, receipt As String = USafe(root, "tbUI3-addin.json")
+        If UExists(receipt) Then
+            Dim saved As UpdateJson = UReadJson(receipt)
+            If JT(saved, "channel") = "stable" And JT(saved, "version") = version Then stable = UReceiptVersion("addin", root) = version
+        End If
+        Return UNormalizeAddin(version, stable)
+    End Function
+    Public Function UInstalledLibrary(Optional ByVal path As String = "") As String
+        If Len(path) = 0 Then path = Environ$("LOCALAPPDATA") & "\tbUI3\tbUI3-Icons.dat"
+        UNoLinks path
+        If Not UExists(path) Then Return "0"
+        Dim header() As Byte = UBytes(path, 0, 32), i As Long, magic As String
+        For i = 0 To 7: magic = magic & Chr$(header(i)): Next
+        If magic <> "tbUI3LIB" Or U32(header, 8) <> 1 Then UFail "Invalid icon library header."
+        Dim offset As Double = U32(header, 16), size As Double = U32(header, 20)
+        If offset < 32 Or size <= 0 Or offset + size > UFso().GetFile(path).Size Then UFail "Invalid icon library index."
+        If size > 256 Then size = 256
+        Dim bytes() As Byte = UBytes(path, CLng(offset), CLng(size)), text As String
+        For i = 0 To UBound(bytes): text = text & Chr$(bytes(i)): Next
+        If Left$(text, 12) <> "#tbUI3-Icons|" Then UFail "Missing icon library version."
+        Dim parts() As String = Split(text, "|")
+        If UBound(parts) < 2 Then UFail "Invalid library index."
+        Dim ignored As Variant = UVersionParts(parts(1))
+        Return parts(1)
+    End Function
+    Public Function UComponent(ByVal id As String, ByVal version As String, ByVal installed As String, ByVal asset As UpdateJson, ByVal files As UpdateJson, ByVal source As String, ByVal summary As String) As UpdateJson
+        Dim entry As UpdateJson = JO()
+        entry.Assign "id", JS(id): entry.Assign "version", JS(version): entry.Assign "installed", JS(installed)
+        entry.Assign "available", JB(UCompare(installed, version) < 0): entry.Assign "compatible", JB(True)
+        entry.Assign "asset", asset: entry.Assign "files", files: entry.Assign "source", JS(source): entry.Assign "summary", JS(summary)
+        Set UComponent = entry
+    End Function
+    Public Function UAsset(ByVal release As UpdateJson, ByVal name As String, ByVal repository As String) As UpdateJson
+        Dim candidate As UpdateJson, found As UpdateJson, count As Long
+        For Each candidate In release.Member("assets").Items
+            If JT(candidate, "name") = name And JT(candidate, "state") = "uploaded" Then Set found = candidate: count = count + 1
+        Next
+        If count <> 1 Then UFail "Missing/ambiguous release asset: " & name
+        UUrl JT(found, "browser_download_url"), repository, JT(release, "tag_name")
+        Dim digest As String = JT(found, "digest")
+        If Left$(digest, 7) <> "sha256:" Then UFail "No authenticated GitHub SHA-256 for " & name
+        UHashValue Mid$(digest, 8)
+        Dim asset As UpdateJson = JO()
+        asset.Assign "name", JS(name): asset.Assign "url", JS(JT(found, "browser_download_url"))
+        asset.Assign "size", found.Member("size"): asset.Assign "sha256", JS(Mid$(digest, 8))
+        Set UAsset = asset
+    End Function
+    Public Function UReleases(ByVal repository As String, ByVal session As String, ByVal name As String) As UpdateJson
+        Dim path As String = USafe(session, name & "-releases.json")
+        UFetch "https://api.github.com/repos/" & repository & "/releases?per_page=100", path, 16777216, 0, "", True
+        Dim result As UpdateJson = UReadJson(path)
+        If result.Kind <> "array" Then UFail "Expected GitHub release list."
+        Set UReleases = result
+    End Function
+    Public Function UIdeDiscovery(ByVal context As UpdateJson, ByVal session As String) As UpdateJson
+        Dim installed As String = UInstalledIde(JT(context, "installRoot")), releases As UpdateJson = UReleases("twinbasic/twinbasic", session, "ide")
+        Dim release As UpdateJson, best As UpdateJson, old As UpdateJson, newest As String = "0", tag As String, version As String
+        For Each release In releases.Items
+            tag = JT(release, "tag_name")
+            If Not JBool(release, "draft") And Left$(tag, 7) = "beta-x-" Then
+                version = Mid$(tag, 8)
+                If InStr(version, ".") = 0 And Len(version) > 0 Then
+                    ' Reject unrelated beta tag suffixes without failing the whole source.
+                    If UDigits(version) Then
+                        version = CStr(Val(version))
+                        If UCompare(version, newest) > 0 Then newest = version: Set best = release
+                        If UCompare(version, installed) = 0 Then Set old = release
+                    End If
+                End If
+            End If
+        Next
+        If best Is Nothing Then UFail "No official beta release found."
+        Dim entry As UpdateJson = UComponent("ide", newest, installed, UAsset(best, "twinBASIC_IDE_BETA_" & newest & ".zip", "twinbasic/twinbasic"), JA(), JT(best, "html_url"), "Official portable beta; preserves user files and checks the existing vendor baseline.")
+        If Not old Is Nothing Then entry.Assign "baselineAsset", UAsset(old, "twinBASIC_IDE_BETA_" & installed & ".zip", "twinbasic/twinbasic")
+        Set UIdeDiscovery = entry
+    End Function
+    Public Function UDigits(ByVal text As String) As Boolean
+        Dim i As Long, ch As String
+        If Len(text) = 0 Then Return False
+        For i = 1 To Len(text)
+            ch = Mid$(text, i, 1)
+            If ch < "0" Or ch > "9" Then Return False
+        Next
+        Return True
+    End Function
+    Public Function UAddinTag(ByVal tag As String) As Boolean
+        If Left$(tag, 10) <> "tbUI3IDE-v" Then Return False
+        Dim parts() As String = Split(Mid$(tag, 11), "."), part As Variant
+        If UBound(parts) <> 3 Then Return False
+        For Each part In parts
+            If Not UDigits(CStr(part)) Then Return False
+        Next
+        Return True
+    End Function
+    Public Function UTbDiscovery(ByVal context As UpdateJson, ByVal session As String, ByVal ideBuild As String) As UpdateJson
+        Dim releases As UpdateJson = UReleases("Arrow-Loop/tbUI3", session, "tbui3"), release As UpdateJson, best As UpdateJson, version As String, newest As String = "0", candidate As UpdateJson, hasManifest As Boolean
+        For Each release In releases.Items
+            If Not JBool(release, "draft") And UAddinTag(JT(release, "tag_name")) Then
+                hasManifest = False
+                For Each candidate In release.Member("assets").Items
+                    If JT(candidate, "name") = "tbUI3-update.json" Then hasManifest = True
+                Next
+                version = Mid$(JT(release, "tag_name"), 11)
+                ' Known historical mislabeled builds cannot become stable remote candidates.
+                If hasManifest And UNormalizeAddin(version) = version Then
+                    If best Is Nothing Then
+                        newest = version: Set best = release
+                    ElseIf UCompare(version, newest) > 0 Then
+                        newest = version: Set best = release
+                    End If
+                End If
+            End If
+        Next
+        If best Is Nothing Then UFail "No published tbUI3IDE release with a manifest yet."
+        Dim asset As UpdateJson = UAsset(best, "tbUI3-update.json", "Arrow-Loop/tbUI3")
+        If JD(asset, "size") > 1048576 Then UFail "Release manifest too large."
+        Dim path As String = USafe(session, "release.json")
+        UDownload asset, path
+        Dim manifest As UpdateJson = UReadJson(path), development As Boolean = Left$(newest, 2) = "0."
+        If JD(manifest, "schema") <> 1 Or JT(manifest, "releaseTag") <> JT(best, "tag_name") Then UFail "Manifest/release identity mismatch."
+        If development Then
+            If Not JBool(best, "prerelease") Or JT(manifest, "channel") <> "development" Then UFail "Development release designation mismatch."
+        Else
+            If JBool(best, "prerelease") Or JT(manifest, "channel") <> "stable" Then UFail "Stable release designation mismatch."
+        End If
+        Dim result As UpdateJson = JA(), ids As Object = UMap(), c As UpdateJson, id As String, installed As String, entry As UpdateJson, root As String = JT(context, "installRoot")
+        For Each c In manifest.Member("components").Items
+            id = JT(c, "id")
+            If id <> "addin" And id <> "themes" And id <> "updater" And id <> "controlPackage" Then UFail "Unsupported release component."
+            If ids.Exists(id) Then UFail "Duplicate release component."
+            ids.Add id, True
+            Set asset = UAsset(best, JT(c, "asset"), "Arrow-Loop/tbUI3")
+            Dim v32 As String, v64 As String
+            If id = "addin" Then
+                v32 = UInstalledAddin(root, "win32"): v64 = UInstalledAddin(root, "win64")
+                installed = v32
+                If UCompare(v64, installed) < 0 Then installed = v64
+                If JT(c, "version") <> newest Or JT(c, "asset") <> "tbUI3IDE-" & newest & ".zip" Then UFail "Add-in tag/version/asset mismatch."
+            ElseIf id = "updater" And UExists(USafe(root, "Updater.exe")) Then
+                installed = UBinaryVersion(USafe(root, "Updater.exe"))
+            Else
+                installed = UReceiptVersion(id, URoot(id, root))
+            End If
+            Set entry = UComponent(id, JT(c, "version"), installed, asset, c.Member("files"), JT(best, "html_url"), JT(c, "summary"))
+            entry.Assign "channel", manifest.Member("channel"): UComponentValid entry
+            If id = "addin" Then
+                Dim architectures As UpdateJson = JO()
+                architectures.Assign "win32", JS(v32): architectures.Assign "win64", JS(v64): entry.Assign "architectures", architectures
+                entry.Assign "minIdeBuild", c.Member("minIdeBuild"): entry.Assign "maxIdeBuild", c.Member("maxIdeBuild")
+                If JD(c, "minIdeBuild") > JD(c, "maxIdeBuild") Then UFail "Invalid compatibility interval."
+                entry.Assign "compatible", JB(Len(ideBuild) > 0 And Val(ideBuild) >= JD(c, "minIdeBuild") And Val(ideBuild) <= JD(c, "maxIdeBuild"))
+            End If
+            result.Push entry
+        Next
+        Set UTbDiscovery = result
+    End Function
+    Public Function ULibraryDiscovery(ByVal session As String) As UpdateJson
+        Dim path As String = USafe(session, "library-manifest.txt")
+        UFetch "https://raw.githubusercontent.com/Arrow-Loop/tbUI3-Libraries/main/icons/manifest.txt", path, 1048576, 0, "", True
+        Dim lines() As String = Split(Replace(UText(path), vbCr, ""), vbLf), line As Variant, fields As Object = UMap(), at As Long, key As String
+        For Each line In lines
+            at = InStr(CStr(line), "=")
+            If at > 1 Then
+                key = LCase$(Trim$(Left$(CStr(line), at - 1)))
+                If fields.Exists(key) Then UFail "Duplicate library manifest field."
+                fields.Add key, Trim$(Mid$(CStr(line), at + 1))
+            End If
+        Next
+        If fields("format") <> "1" Then UFail "Unsupported library format."
+        Dim name As String = fields("file")
+        URelative name
+        If InStr(name, "/") > 0 Then UFail "Library asset must have a filename."
+        Dim asset As UpdateJson = JO()
+        asset.Assign "name", JS(name): asset.Assign "url", JS(fields("url")): asset.Assign "size", JN(Val(fields("size"))): asset.Assign "sha256", JS(fields("sha256"))
+        Dim entry As UpdateJson = UComponent("library", fields("version"), UInstalledLibrary(), asset, JA(), "https://github.com/Arrow-Loop/tbUI3-Libraries/releases", "Developer icon/resource library; installed version is read from the existing DAT header.")
+        UHashValue fields("datsha256"): entry.Assign "datsha256", JS(fields("datsha256")): UComponentValid entry
+        Set ULibraryDiscovery = entry
+    End Function
+    Public Function UDiscover(ByVal context As UpdateJson, ByVal session As String) As UpdateJson
+        Dim result As UpdateJson = JO(), components As UpdateJson = JA(), errors As UpdateJson = JA(), entry As UpdateJson, entries As UpdateJson, ide As String
+        On Error GoTo IdeFailed
+        Set entry = UIdeDiscovery(context, session): ide = JT(entry, "installed"): components.Push entry
+        GoTo TbSource
+    IdeFailed:
+        errors.Push JS("twinBASIC: " & Err.Description): Resume TbSource
+    TbSource:
+        On Error GoTo TbFailed
+        Set entries = UTbDiscovery(context, session, ide)
+        For Each entry In entries.Items: components.Push entry: Next
+        GoTo LibrarySource
+    TbFailed:
+        errors.Push JS("tbUI3: " & Err.Description): Resume LibrarySource
+    LibrarySource:
+        On Error GoTo LibraryFailed
+        components.Push ULibraryDiscovery(session)
+        GoTo Done
+    LibraryFailed:
+        errors.Push JS("Icon library: " & Err.Description): Resume Done
+    Done:
+        On Error GoTo 0
+        result.Assign "components", components: result.Assign "errors", errors: result.Assign "engineSchema", JN(2)
+        Set UDiscover = result
+    End Function
+End Module

@@ -1,0 +1,154 @@
+' Compiled worker dispatch. Never constructs a WebView or invokes a command interpreter.
+Private Module UpdaterEngine
+    Public Sub UState(ByVal session As String, ByVal status As String, ByVal message As String, Optional ByVal choice As String = "")
+        Dim state As UpdateJson = JO()
+        state.Assign "status", JS(status): state.Assign "message", JS(message)
+        If Len(choice) > 0 Then state.Assign "choice", JS(choice)
+        UWriteJson USafe(session, "state.json"), state
+    End Sub
+    Public Sub UContextValid(ByVal context As UpdateJson)
+        Dim supplied As String = JT(context, "installRoot"), root As String = UFull(supplied)
+        Do While Right$(root, 1) = "\" And Len(root) > 3: root = Left$(root, Len(root) - 1): Loop
+        Dim exe As String = USafe(root, "twinBASIC.exe")
+        If Not UExists(exe) Or StrComp(JT(context, "ideExe"), exe, vbTextCompare) <> 0 Then UFail "Context does not identify an existing twinBASIC installation."
+        context.Assign "installRoot", JS(root)
+    End Sub
+    Public Sub UDetached(ByVal context As UpdateJson, ByVal session As String, ByVal mode As String)
+        Dim runner As String = USafe(session, "runner-" & UUnique())
+        UDirectory runner
+        Dim source As String = App.Path & "\Updater.exe", destination As String = runner & "\Updater.exe"
+        UNoLinks source: UPe source, &H14C: FileCopy source, destination
+        If UHash(source) <> UHash(destination) Then UFail "Detached updater copy verification failed."
+        Shell QuoteArg(destination) & " -Mode " & mode & " -Context " & QuoteArg(UpdateContext), vbNormalFocus
+    End Sub
+    Public Sub UApproval(ByVal session As String)
+        Dim path As String = USafe(session, "approved.json")
+        If Not UExists(path) Then UFail "No normal-shutdown approval was received. Retry from the IDE."
+        If Not JBool(UReadJson(path), "normalShutdown") Then UFail "Cancelled/abnormal shutdown cannot install updates."
+    End Sub
+    Private Function UCancelled(ByVal session As String) As Boolean
+        Return UExists(USafe(session, "cancel.json"))
+    End Function
+    Private Sub UApply(ByVal mode As String, ByVal context As UpdateJson, ByVal session As String)
+        Dim planPath As String = USafe(session, "plan.json"), journalPath As String = USafe(session, "journal.json"), plan As UpdateJson = UReadJson(planPath)
+        UValidatePlan plan, context, session
+        Dim keyPath As String = USafe(session, "installation-key.json")
+        UWriteJson keyPath, JS(LCase$(JT(context, "installRoot")))
+        Dim key As String = UHash(keyPath), mutex As LongPtr = UAcquire("Local\tbUI3Updater-" & key)
+        On Error GoTo Failed
+        UState session, "waiting", "Waiting for normal IDE shutdown. Close other sessions for this installation.", JT(context, "choice")
+        Dim seconds As Long = 120
+        If JT(context, "choice") = "exit" Then seconds = 43200
+        Dim deadline As Date = DateAdd("s", seconds, Now)
+        Do While UOwnerAlive(plan.Member("identity"))
+            If mode = "Apply" And UCancelled(session) Then GoTo Cancelled
+            If Now >= deadline Then UFail "Timed out waiting for normal IDE shutdown. Close normally and retry."
+            UPause
+        Loop
+        If mode = "Apply" Then UApproval session
+        UWaitInstallation context, plan.Member("identity")
+        If mode = "Apply" And UCancelled(session) Then GoTo Cancelled
+        UState session, "installing", "Installing verified updates..."
+        If mode = "Recover" Then
+            Dim recovery As UpdateJson = UReadJson(journalPath)
+            UValidateJournal recovery, plan, session: URollback recovery, journalPath
+            UState session, "rolledBack", "Previous installation restored."
+            URelease mutex: Exit Sub
+        End If
+        Dim active As String = USafe(UParent(session), "active-" & key & ".json")
+        If UExists(active) Then
+            Dim previous As UpdateJson = UReadJson(active), previousPath As String = JT(previous, "journal"), previousContext As String = JT(previous, "context")
+            ' Active markers are trusted only inside an immediate saved updater session.
+            UNoLinks previousPath
+            If StrComp(UParent(UParent(previousPath)), UParent(session), vbTextCompare) <> 0 Or UFso().GetFileName(previousPath) <> "journal.json" Then UFail "Active journal marker escapes updater sessions."
+            If StrComp(previousPath, journalPath, vbTextCompare) <> 0 And UExists(previousPath) Then
+                Dim old As UpdateJson = UReadJson(previousPath), status As String = JT(old, "status")
+                If status <> "complete" And status <> "rolledBack" Then UFail "An interrupted transaction needs recovery first: " & previousContext
+            End If
+        End If
+        UNoDowngrade plan, context
+        Dim marker As UpdateJson = JO()
+        marker.Assign "journal", JS(journalPath): marker.Assign "context", JS(UpdateContext): UWriteJson active, marker
+        UInstall plan, journalPath, USafe(session, "state.json")
+        UState session, "complete", "Selected updates installed and verified."
+        URelease mutex: mutex = 0
+        If JBool(context, "restart") Then StartIde JT(context, "ideExe"), JT(context, "installRoot")
+        Exit Sub
+    Cancelled:
+        UState session, "cancelled", "Update cancelled. Your installation was not changed."
+        URelease mutex: Exit Sub
+    Failed:
+        Dim reason As String = Err.Description
+        On Error Resume Next: URelease mutex
+        On Error GoTo 0
+        UFail reason
+    End Sub
+    Public Function RunNativeEngine(ByVal mode As String) As Long
+        Dim session As String = SessionFolder()
+        On Error GoTo Failed
+        If Not ContextValidated Or Len(session) = 0 Then UFail "A validated saved session is required."
+        UNoLinks UpdateContext
+        Dim context As UpdateJson = UReadJson(UpdateContext)
+        UContextValid context
+        Select Case mode
+            Case "Check"
+                UCleanSessions session
+                UState session, "checking", "Checking published releases..."
+                Dim catalog As UpdateJson = UDiscover(context, session)
+                catalog.Assign "identity", UCaptureIdentity(context)
+                UWriteJson USafe(session, "catalog.json"), catalog
+                Dim state As UpdateJson = JO()
+                state.Assign "status", JS("checked"): state.Assign "message", JS("Release check complete."): state.Assign "catalog", catalog
+                UWriteJson USafe(session, "state.json"), state
+            Case "Stage"
+                UState session, "staging", "Downloading and verifying selected updates..."
+                Dim plan As UpdateJson = UMakePlan(context, UReadJson(USafe(session, "catalog.json")), session)
+                UValidatePlan plan, context, session
+                If UCancelled(session) Then UState session, "cancelled", "Pending update cancelled.": Return 0
+                UWriteJson USafe(session, "plan.json"), plan
+                UState session, "ready", "Verified and ready. Installation waits for normal IDE shutdown.", JT(context, "choice")
+                UDetached context, session, "Apply"
+            Case "Cancel"
+                Dim cancel As UpdateJson = JO()
+                cancel.Assign "cancel", JB(True): UWriteJson USafe(session, "cancel.json"), cancel
+                UState session, "cancelled", "Pending update cancelled."
+            Case "Apply", "Recover": UApply mode, context, session
+            Case Else: UFail "Unsupported native worker operation."
+        End Select
+        Return 0
+    Failed:
+        Dim reason As String = Err.Description
+        On Error Resume Next
+        If Len(session) > 0 Then
+            UState session, "error", reason
+            Dim stream As Object = UFso().OpenTextFile(session & "\updater.log", 8, True, -1)
+            stream.WriteLine Format$(Now, "yyyy-mm-dd hh:nn:ss") & " " & mode & ": " & reason: stream.Close
+        End If
+        Return 1
+    End Function
+    Private Sub UCleanSessions(ByVal current As String)
+        Dim root As String = UParent(current), folder As Object
+        For Each folder In UFso().GetFolder(root).SubFolders
+            If StrComp(folder.Path, current, vbTextCompare) <> 0 And folder.DateLastModified < DateAdd("d", -7, Now) Then UCleanOne folder.Path, root
+        Next
+    End Sub
+    Private Sub UCleanOne(ByVal directory As String, ByVal root As String)
+        On Error GoTo Retain
+        If StrComp(UParent(UFull(directory)), UFull(root), vbTextCompare) <> 0 Then Exit Sub
+        UNoLinks directory
+        Dim path As String = USafe(directory, "journal.json")
+        If Not UExists(path) Then Exit Sub
+        Dim journal As UpdateJson = UReadJson(path), status As String = JT(journal, "status")
+        If status <> "complete" And status <> "rolledBack" Then Exit Sub
+        UCheckTree directory
+        UFso().DeleteFolder directory, True
+    Retain:
+        ' Unresolved, linked or locked sessions are retained with their evidence.
+    End Sub
+    Private Sub UCheckTree(ByVal directory As String)
+        UNoLinks directory
+        Dim folder As Object = UFso().GetFolder(directory), item As Object
+        For Each item In folder.Files: UNoLinks item.Path: Next
+        For Each item In folder.SubFolders: UCheckTree item.Path: Next
+    End Sub
+End Module

@@ -1,0 +1,211 @@
+' Run the real compiled engine against disposable local fixtures, without network or an IDE.
+' Updater.exe -SelfTest writes results.json and returns a nonzero exit code on any failure.
+Private Module UpdaterSelfTest
+    Private mRoot As String
+    Private mResults As UpdateJson
+    Private mFailed As Long
+    Public Function RunUpdaterSelfTests() As Long
+        On Error GoTo Fatal
+        mRoot = Environ$("TEMP") & "\tbUI3-native-updater-tests-" & UUnique()
+        UNoLinks mRoot: UDirectory mRoot
+        Set mResults = JA(): mFailed = 0
+        Dim i As Long
+        For i = 1 To 28: RunCase i: Next
+        Dim fixtures As UpdateJson = JParse(UIX_ResourceText("native-engine-fixtures.json")), fixture As UpdateJson
+        For Each fixture In fixtures.Member("fixtures").Items: RunZipCase fixture: Next
+        Dim report As UpdateJson = JO()
+        report.Assign "failed", JN(mFailed): report.Assign "total", JN(mResults.Items.Count): report.Assign "results", mResults
+        UWriteJson mRoot & "\results.json", report
+        Dim pointer As UpdateJson = JO()
+        pointer.Assign "results", JS(mRoot & "\results.json"): pointer.Assign "failed", JN(mFailed)
+        UWriteJson Environ$("TEMP") & "\tbUI3-native-updater-latest.json", pointer
+        Return IIf(mFailed = 0, 0, 1)
+    Fatal:
+        UIX_Log "Native self-test failed: " & Err.Description
+        Return 1
+    End Function
+    Private Sub Record(ByVal name As String, ByVal passed As Boolean, ByVal message As String)
+        Dim result As UpdateJson = JO()
+        result.Assign "name", JS(name): result.Assign "passed", JB(passed): result.Assign "message", JS(message)
+        mResults.Push result
+        If Not passed Then mFailed = mFailed + 1
+    End Sub
+    Private Sub Check(ByVal condition As Boolean, ByVal message As String)
+        If Not condition Then UFail message
+    End Sub
+    Private Sub TextFile(ByVal path As String, ByVal text As String)
+        UDirectory UParent(path)
+        Dim stream As Object = UFso().CreateTextFile(path, True, False)
+        stream.Write text: stream.Close
+    End Sub
+    Private Function FixturePlan(ByVal name As String) As UpdateJson
+        Dim root As String = mRoot & "\" & name, staging As String = root & "\stage"
+        UDirectory staging
+        TextFile staging & "\one.txt", "new one": TextFile staging & "\two.txt", "new two"
+        TextFile root & "\install\one.txt", "old one"
+        Dim plan As UpdateJson = JO(), operations As UpdateJson = JA()
+        operations.Push UOperation(root & "\install", "one.txt", staging & "\one.txt", UHash(staging & "\one.txt"))
+        operations.Push UOperation(root & "\install", "two.txt", staging & "\two.txt", UHash(staging & "\two.txt"))
+        plan.Assign "schema", JN(2): plan.Assign "operations", operations
+        Set FixturePlan = plan
+    End Function
+    Private Sub RunCase(ByVal number As Long)
+        On Error GoTo Failed
+        Dim name As String = "native-" & CStr(number), plan As UpdateJson, path As String, journal As UpdateJson, operation As UpdateJson, parsed As UpdateJson
+        Dim ignored As Variant, handle As Integer, lockOpen As Boolean
+        Select Case number
+            Case 1: name = "major-zero four-part comparison": Check UCompare("0.3.0.20", "0.3.0.21") = -1, name
+            Case 2: name = "official stable transition": Check UCompare("0.99.99.99", "1.0.0.0") = -1, name
+            Case 3: name = "numeric revision": Check UCompare("0.3.0.9", "0.3.0.20") = -1, name
+            Case 4: name = "missing numeric components": Check UCompare("0.3", "0.3.0.0") = 0, name
+            Case 5: name = "legacy add-in alias": Check UNormalizeAddin("1.3.0.20") = "0.3.0.20", name
+            Case 6: name = "stable receipt prevents alias": Check UNormalizeAddin("1.3.0.20", True) = "1.3.0.20", name
+            Case 7: name = "alias range stays narrow": Check UNormalizeAddin("1.3.0.21") = "1.3.0.21" And UNormalizeAddin("1.0.0.0") = "1.0.0.0", name
+            Case 8: name = "reject fifth version component": MustReject 1
+            Case 9: name = "reject version overflow": MustReject 2
+            Case 10: name = "reject negative version": MustReject 3
+            Case 11
+                name = "JSON control-character roundtrip"
+                Dim text As String = Chr$(0) & Chr$(8) & vbCrLf & Chr$(34) & "\" & ChrW$(&HE9)
+                Set parsed = JParse(JQuote(text)): Check parsed.Text = text, name
+            Case 12: name = "duplicate JSON fields rejected": MustReject 4
+            Case 13: name = "JSON trailing data rejected": MustReject 5
+            Case 14: name = "JSON numeric grammar rejected": MustReject 6
+            Case 15: name = "path traversal rejected": MustReject 7
+            Case 16: name = "Windows device path rejected": MustReject 8
+            Case 17: name = "alternate stream rejected": MustReject 9
+            Case 18
+                name = "streaming CNG SHA-256"
+                path = mRoot & "\abc": TextFile path, "abc"
+                Check UHash(path) = "ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad", name
+            Case 19
+                name = "atomic JSON Unicode roundtrip"
+                path = mRoot & "\atomic.json": Set parsed = JO(): parsed.Assign "version", JS("0.3.0.20")
+                UWriteJson path, parsed: Check JT(UReadJson(path), "version") = "0.3.0.20", name
+            Case 20
+                name = "install backup and new-file creation"
+                Set plan = FixturePlan("install"): path = mRoot & "\install\journal.json"
+                UInstall plan, path
+                Check UText(mRoot & "\install\install\one.txt") = "new one", name
+                Check JT(UReadJson(path), "status") = "complete", name
+                UInstall plan, path
+            Case 21
+                name = "rollback restores original and removes new file"
+                Set plan = FixturePlan("rollback"): path = mRoot & "\rollback\journal.json"
+                UInstall plan, path: Set journal = UReadJson(path): UValidateJournal journal, plan, UParent(path): URollback journal, path
+                Check UText(mRoot & "\rollback\install\one.txt") = "old one", name
+                Check Not UExists(mRoot & "\rollback\install\two.txt"), name
+            Case 22
+                name = "preflight rejects corrupt staging before writes"
+                Set plan = FixturePlan("badstage"): Set operation = plan.Member("operations").Items.Item(2)
+                TextFile JT(operation, "staged"), "changed"
+                RejectInstall plan, mRoot & "\badstage\journal.json"
+                Check UText(mRoot & "\badstage\install\one.txt") = "old one", name
+            Case 23
+                name = "completed transaction preserves later user edits"
+                Set plan = FixturePlan("changed"): path = mRoot & "\changed\journal.json": UInstall plan, path
+                TextFile mRoot & "\changed\install\one.txt", "user edit": RejectInstall plan, path
+                Check UText(mRoot & "\changed\install\one.txt") = "user edit", name
+            Case 24
+                name = "rollback rejects corrupt backup"
+                Set plan = FixturePlan("backup"): path = mRoot & "\backup\journal.json": UInstall plan, path
+                Set journal = UReadJson(path): Set operation = journal.Member("operations").Items.Item(1)
+                TextFile JT(operation, "backup"), "corrupt"
+                RejectRollback journal, path
+            Case 25
+                name = "vendor collision preserved"
+                Set plan = FixturePlan("vendor"): Set operation = plan.Member("operations").Items.Item(1)
+                RejectVendor operation, UMap()
+                Check UText(mRoot & "\vendor\install\one.txt") = "old one", name
+            Case 26
+                name = "vendor expectation rechecked at preflight"
+                Set plan = FixturePlan("vendor-race"): Set operation = plan.Member("operations").Items.Item(1)
+                operation.Assign "expectedOriginal", JS(UHash(mRoot & "\vendor-race\install\one.txt"))
+                TextFile mRoot & "\vendor-race\install\one.txt", "changed": RejectInstall plan, mRoot & "\vendor-race\journal.json"
+            Case 27
+                name = "locked destination fails before any replacement"
+                Set plan = FixturePlan("locked"): path = mRoot & "\locked\install\one.txt"
+                handle = FreeFile(): Open path For Binary Access Read Write Lock Read Write As #handle: lockOpen = True
+                RejectInstall plan, mRoot & "\locked\journal.json"
+                Close #handle: lockOpen = False
+                Check UText(path) = "old one", name
+            Case 28
+                name = "journal destination tampering rejected"
+                Set plan = FixturePlan("journal"): path = mRoot & "\journal\journal.json": UInstall plan, path
+                Set journal = UReadJson(path): Set operation = journal.Member("operations").Items.Item(1)
+                operation.Assign "target", JS("../escape"): RejectJournal journal, plan, UParent(path)
+        End Select
+        Record name, True, "": Exit Sub
+    Failed:
+        Dim reason As String = Err.Description
+        On Error Resume Next
+        If lockOpen Then Close #handle
+        Record name, False, reason
+    End Sub
+    Private Sub MustReject(ByVal number As Long)
+        On Error GoTo Expected
+        Dim ignored As Variant, json As UpdateJson
+        Select Case number
+            Case 1: ignored = UVersionParts("0.1.2.3.4")
+            Case 2: ignored = UVersionParts("4294967296")
+            Case 3: ignored = UVersionParts("-1.2")
+            Case 4: Set json = JParse("{""a"":1,""a"":2}")
+            Case 5: Set json = JParse("true false")
+            Case 6: Set json = JParse("01")
+            Case 7: URelative "a/../escape"
+            Case 8: URelative "NUL.txt"
+            Case 9: URelative "file:stream"
+        End Select
+        On Error GoTo 0: UFail "Unsafe input was accepted."
+    Expected:
+    End Sub
+    Private Sub RejectInstall(ByVal plan As UpdateJson, ByVal path As String)
+        On Error GoTo Expected
+        UInstall plan, path
+        On Error GoTo 0: UFail "Unsafe installation was accepted."
+    Expected:
+    End Sub
+    Private Sub RejectRollback(ByVal journal As UpdateJson, ByVal path As String)
+        On Error GoTo Expected
+        URollback journal, path
+        On Error GoTo 0: UFail "Corrupt backup was accepted."
+    Expected:
+    End Sub
+    Private Sub RejectVendor(ByVal operation As UpdateJson, ByVal baseline As Object)
+        On Error GoTo Expected
+        UProtectVendor operation, baseline
+        On Error GoTo 0: UFail "Vendor collision was accepted."
+    Expected:
+    End Sub
+    Private Sub RejectJournal(ByVal journal As UpdateJson, ByVal plan As UpdateJson, ByVal session As String)
+        On Error GoTo Expected
+        UValidateJournal journal, plan, session
+        On Error GoTo 0: UFail "Tampered journal was accepted."
+    Expected:
+    End Sub
+    Private Sub RunZipCase(ByVal fixture As UpdateJson)
+        Dim name As String = JT(fixture, "name"), path As String = mRoot & "\zip-" & name & ".zip", directory As String = mRoot & "\zip-" & name
+        On Error GoTo Failed
+        Dim hex As String = JT(fixture, "archiveHex"), bytes() As Byte, i As Long, file As Integer, opened As Boolean
+        ReDim bytes(0 To Len(hex) \ 2 - 1)
+        For i = 0 To UBound(bytes): bytes(i) = CByte("&H" & Mid$(hex, i * 2 + 1, 2)): Next
+        file = FreeFile(): Open path For Binary Access Write As #file: opened = True: Put #file, , bytes: Close #file: opened = False
+        Dim entries As Object = UZipEntries(path), key As Variant, entry As UpdateJson, expected As UpdateJson
+        For Each key In entries.Keys
+            Set entry = entries.Item(key)
+            If Not JBool(entry, "directory") Then UZipExtract path, entry, USafe(directory, JT(entry, "name"))
+        Next
+        If JBool(fixture, "reject") Then
+            Record "ZIP " & name, False, "Unsafe ZIP was accepted.": Exit Sub
+        End If
+        For Each expected In fixture.Member("files").Items
+            Check UHash(USafe(directory, JT(expected, "name"))) = JT(expected, "sha256"), "ZIP contents differ."
+        Next
+        Record "ZIP " & name, True, "": Exit Sub
+    Failed:
+        Dim reason As String = Err.Description
+        On Error Resume Next
+        If opened Then Close #file
+        Record "ZIP " & name, JBool(fixture, "reject"), reason
+    End Sub
+End Module

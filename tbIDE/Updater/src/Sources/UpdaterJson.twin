@@ -1,0 +1,180 @@
+Private Module UpdaterJson
+    Public Sub UFail(ByVal message As String)
+        Err.Raise vbObjectError + 2100, "tbUI3 Updater", message
+    End Sub
+
+    Public Function JNew(ByVal kind As String) As UpdateJson
+        Dim value As New UpdateJson
+        value.Init kind
+        Set JNew = value
+    End Function
+    Public Function JO() As UpdateJson
+        Set JO = JNew("object")
+    End Function
+    Public Function JA() As UpdateJson
+        Set JA = JNew("array")
+    End Function
+    Public Function JS(ByVal text As String) As UpdateJson
+        Dim value As UpdateJson = JNew("string")
+        value.Text = text
+        Set JS = value
+    End Function
+    Public Function JN(ByVal number As Double) As UpdateJson
+        Dim value As UpdateJson = JNew("number")
+        value.Number = number
+        Set JN = value
+    End Function
+    Public Function JB(ByVal flag As Boolean) As UpdateJson
+        Dim value As UpdateJson = JNew("boolean")
+        value.Flag = flag
+        Set JB = value
+    End Function
+    Public Function JT(ByVal value As UpdateJson, ByVal name As String, Optional ByVal fallback As String = "") As String
+        If Not value.Has(name) Then Return fallback
+        Dim child As UpdateJson = value.Member(name)
+        If child.Kind <> "string" Then UFail "Expected text: " & name
+        Return child.Text
+    End Function
+    Public Function JD(ByVal value As UpdateJson, ByVal name As String) As Double
+        Dim child As UpdateJson = value.Member(name)
+        If child.Kind <> "number" Then UFail "Expected a number: " & name
+        Return child.Number
+    End Function
+    Public Function JBool(ByVal value As UpdateJson, ByVal name As String) As Boolean
+        If Not value.Has(name) Then Return False
+        Dim child As UpdateJson = value.Member(name)
+        If child.Kind <> "boolean" Then UFail "Expected a boolean: " & name
+        Return child.Flag
+    End Function
+    Public Function JQuote(ByVal text As String) As String
+        Dim result As String = Chr$(34), i As Long, code As Long, ch As String
+        For i = 1 To Len(text)
+            ch = Mid$(text, i, 1): code = AscW(ch) And &HFFFF&
+            Select Case code
+                Case 34: result = result & "\" & Chr$(34)
+                Case 92: result = result & "\\"
+                Case 0 To 31: result = result & "\u" & Right$("0000" & Hex$(code), 4)
+                Case Else: result = result & ch
+            End Select
+        Next
+        Return result & Chr$(34)
+    End Function
+    Public Function JParse(ByVal text As String) As UpdateJson
+        Dim pos As Long = 1
+        If Left$(text, 1) = ChrW$(&HFEFF) Then pos = 2
+        Set JParse = ParseValue(text, pos, 0)
+        SkipSpace text, pos
+        If pos <= Len(text) Then UFail "Trailing JSON data."
+    End Function
+    Private Sub SkipSpace(ByRef text As String, ByRef pos As Long)
+        Do While pos <= Len(text)
+            If InStr(1, " " & vbTab & vbCr & vbLf, Mid$(text, pos, 1), vbBinaryCompare) = 0 Then Exit Do
+            pos = pos + 1
+        Loop
+    End Sub
+    Private Function ParseString(ByRef text As String, ByRef pos As Long) As String
+        If Mid$(text, pos, 1) <> Chr$(34) Then UFail "Expected a JSON string."
+        pos = pos + 1
+        Dim result As String, ch As String, hex As String, i As Long
+        Do While pos <= Len(text)
+            ch = Mid$(text, pos, 1): pos = pos + 1
+            If ch = Chr$(34) Then Return result
+            If ch = "\" Then
+                ch = Mid$(text, pos, 1): pos = pos + 1
+                Select Case ch
+                    Case Chr$(34), "\", "/": result = result & ch
+                    Case "b": result = result & Chr$(8)
+                    Case "f": result = result & Chr$(12)
+                    Case "n": result = result & vbLf
+                    Case "r": result = result & vbCr
+                    Case "t": result = result & vbTab
+                    Case "u"
+                        hex = Mid$(text, pos, 4)
+                        If Len(hex) <> 4 Then UFail "Truncated Unicode escape."
+                        For i = 1 To 4
+                            If InStr(1, "0123456789abcdef", LCase$(Mid$(hex, i, 1))) = 0 Then UFail "Invalid Unicode escape."
+                        Next
+                        result = result & ChrW$(CLng("&H" & hex)): pos = pos + 4
+                    Case Else: UFail "Invalid JSON escape."
+                End Select
+            Else
+                If (AscW(ch) And &HFFFF&) < 32 Then UFail "Control character in JSON."
+                result = result & ch
+            End If
+        Loop
+        UFail "Unterminated JSON string."
+    End Function
+    Private Function ParseValue(ByRef text As String, ByRef pos As Long, ByVal depth As Long) As UpdateJson
+        If depth > 64 Then UFail "JSON nesting limit exceeded."
+        SkipSpace text, pos
+        Dim value As UpdateJson, key As String, ch As String, start As Long, token As String
+        ch = Mid$(text, pos, 1)
+        Select Case ch
+            Case "{", "["
+                Set value = JNew(IIf(ch = "{", "object", "array"))
+                Dim closing As String = IIf(ch = "{", "}", "]")
+                pos = pos + 1: SkipSpace text, pos
+                If Mid$(text, pos, 1) = closing Then
+                    pos = pos + 1: Set ParseValue = value: Exit Function
+                End If
+                Do
+                    If value.Kind = "object" Then
+                        key = ParseString(text, pos)
+                        If value.Has(key) Then UFail "Duplicate JSON key: " & key
+                        SkipSpace text, pos
+                        If Mid$(text, pos, 1) <> ":" Then UFail "Expected JSON colon."
+                        pos = pos + 1
+                        value.Assign key, ParseValue(text, pos, depth + 1)
+                    Else
+                        value.Push ParseValue(text, pos, depth + 1)
+                    End If
+                    SkipSpace text, pos: ch = Mid$(text, pos, 1): pos = pos + 1
+                    If ch = closing Then Exit Do
+                    If ch <> "," Then UFail "Expected JSON separator."
+                    SkipSpace text, pos
+                Loop
+            Case Chr$(34): Set value = JS(ParseString(text, pos))
+            Case "t", "f", "n"
+                Select Case ch
+                    Case "t": token = "true": Set value = JB(True)
+                    Case "f": token = "false": Set value = JB(False)
+                    Case "n": token = "null": Set value = JNew("null")
+                End Select
+                If Mid$(text, pos, Len(token)) <> token Then UFail "Invalid JSON literal."
+                pos = pos + Len(token)
+            Case Else
+                start = pos
+                If ch = "-" Then pos = pos + 1
+                ch = Mid$(text, pos, 1)
+                If ch = "0" Then
+                    pos = pos + 1
+                Else
+                    If ch < "1" Or ch > "9" Then UFail "Invalid JSON number."
+                    ReadDigits text, pos
+                End If
+                If Mid$(text, pos, 1) = "." Then
+                    pos = pos + 1
+                    If Not IsDigitAt(text, pos) Then UFail "Invalid JSON fraction."
+                    ReadDigits text, pos
+                End If
+                ch = Mid$(text, pos, 1)
+                If ch = "e" Or ch = "E" Then
+                    pos = pos + 1: ch = Mid$(text, pos, 1)
+                    If ch = "+" Or ch = "-" Then pos = pos + 1
+                    If Not IsDigitAt(text, pos) Then UFail "Invalid JSON exponent."
+                    ReadDigits text, pos
+                End If
+                Set value = JN(Val(Mid$(text, start, pos - start)))
+        End Select
+        Set ParseValue = value
+    End Function
+    Private Function IsDigitAt(ByRef text As String, ByVal pos As Long) As Boolean
+        Dim ch As String = Mid$(text, pos, 1)
+        Return Len(ch) = 1 And ch >= "0" And ch <= "9"
+    End Function
+    Private Sub ReadDigits(ByRef text As String, ByRef pos As Long)
+        Do While IsDigitAt(text, pos)
+            pos = pos + 1
+        Loop
+    End Sub
+End Module

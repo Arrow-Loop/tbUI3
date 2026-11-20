@@ -1,6 +1,6 @@
 # Unified updater for twinBASIC and tbUI3
 
-Status: **Source implementation candidate delivered in tbUI3IDE 0.3.0.21 and Updater 0.1.0.0; native acceptance/publication pending**. See [implementation and checklist](Updater/README.md). Decision date: 2026-11-19. This document is the implementation handoff for the tbUI3IDE update feature and its standalone helper.
+Status: **Source implementation candidate delivered in tbUI3IDE 0.3.0.22 and Updater 0.1.0.1; native acceptance/publication pending**. See [implementation and checklist](Updater/README.md). Decision date: 2026-11-19. This document is the implementation handoff for the tbUI3IDE update feature and its standalone helper.
 
 ## Scope and ownership
 

@@ -30,3 +30,16 @@ export function namedResource(pe,name){
  if(found.some(([,b])=>!b.equals(found[0][1])))throw Error('Resource languages disagree: '+name);
  return found[0][1];
 }
+
+// RT_MANIFEST / CREATEPROCESS_MANIFEST_RESOURCE_ID. Inspect bytes, never execute the EXE.
+export function requireAsInvokerManifest(pe){
+ const manifests=[...pe.resources].filter(([key])=>key.startsWith('#24/#1/'));
+ if(!manifests.length)throw Error('Updater requires an embedded #1 application manifest declaring asInvoker; otherwise Windows installer detection can prompt for UAC at startup.');
+ for(const [,bytes]of manifests){
+  const xml=(bytes[0]===255&&bytes[1]===254?bytes.subarray(2).toString('utf16le'):bytes.toString('utf8')).replace(/<!--[^]*?-->/g,'');
+  if(/<!DOCTYPE|<!ENTITY/i.test(xml))throw Error('Unsupported updater application manifest declarations');
+  const levels=[...xml.matchAll(/<requestedExecutionLevel\b([^>]*?)\/?\s*>/g)];
+  const attribute=(text,name)=>new RegExp('(?:^|\\s)'+name+'\\s*=\\s*(["\x27])([^]*?)\\1').exec(text)?.[2];
+  if(levels.length!==1||attribute(levels[0][1],'level')!=='asInvoker'||attribute(levels[0][1],'uiAccess')!=='false')throw Error('Updater application manifest must declare exactly one requestedExecutionLevel asInvoker with uiAccess=false');
+ }
+}

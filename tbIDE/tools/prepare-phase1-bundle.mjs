@@ -1,11 +1,12 @@
 // Run AFTER the native updater build and BEFORE either add-in architecture is compiled.
 import fs from 'node:fs';import path from 'node:path';import {createHash} from 'node:crypto';
-import {scan,edit} from '../../tools/twinproj-edit.mjs';import {readPE} from './pe-resources.mjs';
+import {scan,edit} from '../../tools/twinproj-edit.mjs';import {readPE,requireAsInvokerManifest} from './pe-resources.mjs';
 const config=JSON.parse(fs.readFileSync('tbIDE/phase1-config.json'));
 const hash=bytes=>createHash('sha256').update(bytes).digest('hex');
 const at=process.argv.indexOf('--updater'),file=at>=0?process.argv[at+1]:undefined;
 if(!file)throw Error('Build the canonical Win32 updater, then pass --updater <fresh Updater.exe>. No placeholder or stale binary is embedded.');
 const project='tbIDE/Updater/Updater.twinproj',addin='tbIDE/tbUI3IDE/tbUI3IDE.twinproj',src='tbIDE/tbUI3IDE/src',bytes=fs.readFileSync(file),pe=readPE(bytes);
+requireAsInvokerManifest(pe);
 if(pe.machine!==0x14c||pe.version!==config.updaterVersion)throw Error(`Expected Win32 updater ${config.updaterVersion}; got machine ${pe.machine.toString(16)}, version ${pe.version}`);
 if(fs.statSync(file).mtimeMs<fs.statSync(project).mtimeMs)throw Error('Updater predates the canonical project. Rebuild it first.');
 const resources=[

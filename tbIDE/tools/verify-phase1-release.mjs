@@ -1,8 +1,9 @@
-import fs from 'node:fs';import {createHash}from'node:crypto';import{readPE,namedResource}from'./pe-resources.mjs';
+import fs from 'node:fs';import {createHash}from'node:crypto';import{readPE,namedResource,requireAsInvokerManifest}from'./pe-resources.mjs';
 const config=JSON.parse(fs.readFileSync('tbIDE/phase1-config.json'));
 const hash=b=>createHash('sha256').update(b).digest('hex');
 const args=process.argv.slice(2);if(args.length!==3)throw Error('Pass win32 DLL, win64 DLL and Updater.exe');
 const [win32,win64,updater]=args.map(p=>readPE(fs.readFileSync(p))),updaterBytes=fs.readFileSync(args[2]);
+requireAsInvokerManifest(updater);
 if(win32.machine!==0x14c||win64.machine!==0x8664||updater.machine!==0x14c)throw Error('Release architecture mismatch');
 if(win32.version!==config.addinVersion||win64.version!==config.addinVersion||updater.version!==config.updaterVersion)throw Error('Release fixed PE version mismatch');
 let manifestBytes;

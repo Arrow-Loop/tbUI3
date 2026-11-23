@@ -1,7 +1,7 @@
 // Synthetic PE fixtures test a byte parser; these are never build or release artifacts.
 import test from 'node:test';import assert from 'node:assert/strict';
 import fs from 'node:fs';import {spawnSync}from'node:child_process';
-import {readPE,namedResource}from'../tbIDE/tools/pe-resources.mjs';
+import {readPE,namedResource,requireAsInvokerManifest}from'../tbIDE/tools/pe-resources.mjs';
 function image(resources,machine=0x14c){
  const b=Buffer.alloc(8704);b.writeUInt16LE(0x5a4d);b.writeUInt32LE(128,60);b.writeUInt32LE(0x4550,128);b.writeUInt16LE(machine,132);b.writeUInt16LE(1,134);b.writeUInt16LE(224,148);b.writeUInt16LE(0x10b,152);b.writeUInt32LE(4096,264);b.writeUInt32LE(8192,268);b.writeUInt32LE(4096,388);b.writeUInt32LE(8192,392);b.writeUInt32LE(512,396);
  const tree=new Map();for(const [key,data]of resources){const names=key.split('/');let node=tree;for(const name of names.slice(0,-1)){if(!node.has(name))node.set(name,new Map());node=node.get(name);}node.set(names.at(-1),data);}
@@ -18,3 +18,20 @@ test('truncated or invalid PE headers cannot supply release identities',()=>{ass
 test('cyclic resource directories and payload RVA escape fail closed',()=>{const cycle=image([['OTHER/a/#1033',Buffer.from('x')]]);cycle.writeUInt32LE(0x80000000,512+20);assert.throws(()=>readPE(cycle),/nesting limit/);const b=image([['OTHER/a/#1033',Buffer.from('x')]]);b.writeUInt32LE(0xffffff00,388);assert.throws(()=>readPE(b),/RVA escapes/);});
 test('bundle preparation refuses a missing binary without modifying canonical inputs',()=>{const path='tbIDE/tbUI3IDE/tbUI3IDE.twinproj',before=fs.readFileSync(path),r=spawnSync(process.execPath,['tbIDE/tools/prepare-phase1-bundle.mjs'],{encoding:'utf8'});assert.notEqual(r.status,0);assert.match(r.stderr,/No placeholder or stale binary/);assert(fs.readFileSync(path).equals(before));});
 test('release verification cannot pass before both actual architecture DLLs are supplied',()=>{const r=spawnSync(process.execPath,['tbIDE/tools/verify-phase1-release.mjs'],{encoding:'utf8'});assert.notEqual(r.status,0);assert.match(r.stderr,/win32 DLL, win64 DLL and Updater/);});
+
+test('updater launch manifest must explicitly run as the invoking user',()=>{
+ const xml=fs.readFileSync('tbIDE/Updater/src/Resources/MANIFEST/#1.xml');
+ assert.doesNotThrow(()=>requireAsInvokerManifest(readPE(image([['#24/#1/#1033',xml]]))));
+ assert.throws(()=>requireAsInvokerManifest(readPE(image([]))),/embedded #1 application manifest/);
+ for(const level of ['requireAdministrator','highestAvailable'])assert.throws(()=>requireAsInvokerManifest(readPE(image([['#24/#1/#1033',Buffer.from(xml.toString().replace('asInvoker',level))]]))),/asInvoker/);
+ assert.throws(()=>requireAsInvokerManifest(readPE(image([['#24/#1/#1033',Buffer.from(xml.toString().replace('uiAccess="false"','uiAccess="true"'))]]))),/uiAccess=false/);
+});
+test('every updater manifest language must be safe; comment-only declarations cannot pass',()=>{
+ const safe=fs.readFileSync('tbIDE/Updater/src/Resources/MANIFEST/#1.xml');
+ const unsafe=Buffer.from(safe.toString().replace('asInvoker','requireAdministrator'));
+ assert.throws(()=>requireAsInvokerManifest(readPE(image([['#24/#1/#1033',safe],['#24/#1/#1036',unsafe]]))),/asInvoker/);
+ const comment=Buffer.from('<assembly><!-- <requestedExecutionLevel level="asInvoker" uiAccess="false"/> --></assembly>');
+ assert.throws(()=>requireAsInvokerManifest(readPE(image([['#24/#1/#1033',comment]]))),/asInvoker/);
+ const utf16=Buffer.concat([Buffer.from([255,254]),Buffer.from(safe.toString(),'utf16le')]);
+ assert.doesNotThrow(()=>requireAsInvokerManifest(readPE(image([['#24/#1/#1033',utf16]]))));
+});

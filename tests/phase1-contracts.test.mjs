@@ -27,3 +27,15 @@ test('native source procedure boundaries and endings are structurally intact',()
   for(const kind of ['Sub','Function','Class','Module','Type']){const starts=[...text.matchAll(new RegExp('^\\s*(?:(?:Public|Private|Friend|Static)\\s+)*'+kind+'\\s+','gm'))].length,ends=[...text.matchAll(new RegExp('\\bEnd '+kind+'\\b','gm'))].length;assert.equal(starts,ends,file+' '+kind+' boundaries');}
  }
 });
+
+test('canonical updater embeds valid asInvoker XML as executable manifest resource #1',async()=>{
+ const {scan}=await import('../tools/twinproj-edit.mjs');
+ const {JSDOM}=await import(process.env.TB_JSDOM_MODULE||'jsdom');
+ const path='Resources/MANIFEST/#1.xml',project=fs.readFileSync('tbIDE/Updater/Updater.twinproj'),entry=scan(project)[path];
+ assert(entry,'Manifest must be embedded in the canonical project, not a loose sidecar');
+ const bytes=fs.readFileSync('tbIDE/Updater/src/'+path);assert(bytes.equals(project.subarray(entry.cStart+4,entry.cEnd)));
+ const dom=new JSDOM(bytes.toString(),{contentType:'application/xml'});try{
+  const levels=dom.window.document.getElementsByTagNameNS('urn:schemas-microsoft-com:asm.v3','requestedExecutionLevel');
+  assert.equal(levels.length,1);assert.equal(levels[0].getAttribute('level'),'asInvoker');assert.equal(levels[0].getAttribute('uiAccess'),'false');
+ }finally{dom.window.close();}
+});

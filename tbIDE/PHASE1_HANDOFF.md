@@ -1,5 +1,7 @@
 # Phase 1 source handoff — native acceptance, then embedding
 
+> Startup UAC correction: rebuild the canonical updater with the new embedded MANIFEST/#1.xml (asInvoker / uiAccess=false). Normal launch must work as a standard user. The already compiled EXE is unchanged. Protected-folder UAC acceptance remains separate. Fifteen focused regression tests and 127 mirror/ID/CRLF/hex checks pass for this correction; native launch has not been run.
+
 2026-11-23. Authoritative product plan: INSTALLATION_MANAGER_SPEC.md. **This is source implementation, not a claim of a compiled or production-accepted release.** Shane subsequently directed that embedding the actual helper is a separate Phase 1 pass after the native updater compiles and works. Both parts still gate the first public release. Phases 2/3 remain deferred.
 
 ## Delivered

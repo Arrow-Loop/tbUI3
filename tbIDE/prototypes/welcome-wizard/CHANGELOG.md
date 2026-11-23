@@ -1,5 +1,11 @@
 # Welcome Wizard changelog
 
+## 2026-11-23: Confirmation and installation-health presentation cleanup
+
+- Replaced four fixed oversized summary cards with a compact, data-driven definition list. Labels and selected values now use balanced text sizes, and update restart preference is also displayed. The list can grow without changing its layout.
+- Replaced raw installation-resource IDs, colon/status output and pipe separators with readable component names, descriptive details and separate state indicators. Repair buttons remain attached to their corresponding resources, and native recheck and confirmation behavior are unchanged.
+- Kept native bootstrap status messages and recovery warnings separate from the resource rows. Added source checks for both changes; no production/native code modified.
+
 ## 2026-11-23: Compact theme-derived selector previews
 
 - Replaced the old bare theme strip with a shared 86px miniature IDE renderer. Theme previews now use the native-provided validated four-color palette and up to six additional optional resolved colors: titlebar, toolbar, panel, editor, muted and border.

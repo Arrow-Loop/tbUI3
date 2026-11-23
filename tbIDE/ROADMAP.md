@@ -1,5 +1,9 @@
 # Roadmap: tbUI3 IDE
 
+## 2026-11-23 - Agent-ready consolidated updater and installation manager specification
+
+Created [INSTALLATION_MANAGER_SPEC.md](INSTALLATION_MANAGER_SPEC.md) as the authoritative complete product handoff for Cody/Claude: combined first-release updater/bootstrap/Welcome scope, user AppData DLLs and themes, LocalAppData helper and per-installation state, preferences and low-prompt interaction, InPlace/InstallAlongside/ArchivePrevious, cross-drive full archives, extra-content archive/new/both choices, dynamically validated official release inventories, optional discovery/reorganization and shortcut caveats, shared-versus-local add-in compatibility and verified phase gates. **The specification is documentation only, not a shipped feature.** Follow its phase boundaries; preserve unresolved host-loader and elevation questions for explicit investigation.
+
 ## 2026-11-23 - Release milestone consolidation: native updater + bootstrap + Welcome Wizard
 
 **Agreed change:** Combine former Phases 1 and 2 into the **first production release**. Ship only after native updater acceptance *and* verified two-DLL per-user deployment, embedded/updater/theme self-provisioning, re-openable Welcome Wizard, IDE Options, and release packaging are implemented and validated together. In-place remains the default IDE update strategy. See [detailed phase boundaries, compatibility and future-proofing](BOOTSTRAP_WELCOME_PLAN.md#delivery-sequencing-decision-merged-first-production-milestone-2026-11-23).

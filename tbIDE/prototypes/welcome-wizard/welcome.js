@@ -285,11 +285,14 @@
       close.type='button';
       close.setAttribute('aria-label','Close Welcome Wizard');
       close.setAttribute('title','Close');
-      const cross=dom('svg','welcome-caption-cross',undefined,close);
+      const cross=inner.createElementNS('http://www.w3.org/2000/svg','svg');
+      cross.setAttribute('class','welcome-caption-cross');
+      close.appendChild(cross);
       cross.setAttribute('viewBox','0 0 12 12');
       cross.setAttribute('width','12');cross.setAttribute('height','12');
       cross.setAttribute('aria-hidden','true');
-      const strokes=dom('path','',undefined,cross);
+      const strokes=inner.createElementNS('http://www.w3.org/2000/svg','path');
+      cross.appendChild(strokes);
       strokes.setAttribute('d','M1 1L11 11M11 1L1 11');
       strokes.setAttribute('fill','none');
       strokes.setAttribute('stroke','currentColor');

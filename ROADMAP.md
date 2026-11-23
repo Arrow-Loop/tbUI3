@@ -1,5 +1,9 @@
 # Roadmap
 
+## 2026-11-23 - Wizard UI preferences and installed-theme integration
+
+**Deferred until an actual twinBASIC stable channel exists:** Restore the stable/development release-channel choice in the tbUI3IDE Welcome Wizard, after verifying real channel semantics; it is intentionally absent from current onboarding. **Phase 1 integration dependency:** Native IDE inventory of all installed themes (including trustworthy resolved preview palette), exact-member validation in `choose-theme`, and tests. The Toolkit-backed view features WinUI3 Light and Dark while offering other installed themes; no TabView/TabPage marketing because those are core tbUI3 controls. See `tbIDE/prototypes/welcome-wizard/README.md` for the updated native snapshot contract. No native bridge change is claimed by this documentation entry.
+
 ## 2026-11-23 - Native report: 42/54 passed; typed byte-buffer correction
 
 Shane supplied `tbUI3-native-updater-tests-rad87A03-tmp.zip`: 54 native cases completed, 42 passed and 12 failed; all 19 ZIP cases passed. Archived atomic JSON, Unicode JSON, installed-file bytes and journals are well-formed, while text/JSON reads and comparison-dependent transaction assertions fail. This points to the native text-reader boundary: `UDecodeText` took addresses/indexed ByRef values through a Variant byte array rather than typed Byte storage. The same unsafe pattern existed in bundled payload output.

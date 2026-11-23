@@ -6,6 +6,12 @@ This pass replaces the earlier hand-styled dialog/control templates with **actua
 
 The control runtime and Master CSS are the preserved complete shared Toolkit code from the selected development checkpoint; do not trim individual component definitions or replace the shared library with handmade approximations. Their existing XAML resource references and token definitions remain unchanged. The wizard-specific layout includes only application-composition geometry (not claims about native XAML control templates). The isolated iframe keeps the Toolkit's `:root`, global selectors and runtime initialization from modifying twinBASIC's original IDE DOM.
 
+## One-click Windows preview (no Python required)
+
+Double-click **`Preview.bat`** in this directory. It launches the bundled `preview-server.cjs` using the Node.js already used by the project, opens the default browser at `http://127.0.0.1:8765/`, and serves the five fixed local UI assets via loopback only. No npm install, Python or external network access is needed. Press **Ctrl+C** in the terminal or close it to stop the preview.
+
+If Node.js is not on `PATH`, the BAT prints an actionable message. If port 8765 is occupied, the server reports the error instead of running another hidden instance. The browser preview uses simulated native state, never changes actual IDE settings or installations. The server intentionally denies any request outside the fixed asset list.
+
 ## Files and packaging
 
 - `controls.js`: the shared WinUI control runtime, without the example application's Gallery-specific handlers.

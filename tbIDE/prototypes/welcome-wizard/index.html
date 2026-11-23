@@ -3,59 +3,55 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>tbUI3IDE Welcome Wizard | Standalone integration preview</title>
-<link rel="stylesheet" href="welcome.css">
+<title>tbUI3IDE Welcome | Shared WinUI control preview</title>
 <style>
-:root{font-family:"Segoe UI",sans-serif;color:#202020;background:#f5f5f5;--color-accent:#0067c0;--color-text:#202020;--color-text-muted:#626262;--color-divider:#d5d5d5;--color-flyout:#f9f9f9;--color-card:#f3f3f3;--color-accent-text:#fff}
-:root.dark{color:#f8f8f8;background:#202020;--color-accent:#60cdff;--color-text:#fff;--color-text-muted:#bbb;--color-divider:#444;--color-flyout:#2c2c2c;--color-card:#323232;--color-accent-text:#000}
-body{padding:32px}main.preview{max-width:760px;margin:auto;line-height:1.6}button{font:inherit;padding:9px 14px;border:1px solid #888;border-radius:6px;background:transparent;color:inherit;cursor:pointer}
-pre{overflow:auto;padding:12px;border:1px solid #8885;border-radius:8px;font-size:12px}
+body { font-family: "Segoe UI", sans-serif; margin: 24px; }
+#mount { width: min(880px, 95vw); height: min(690px, 80vh); border: 1px solid #888; }
+pre { white-space: pre-wrap; overflow: auto; max-height: 180px; }
 </style>
 </head>
 <body>
-<main class="preview">
-<h1>tbUI3IDE Welcome Wizard</h1>
-<p>This standalone file is a <strong>local development preview</strong>. It exercises the actual embeddable wizard and a deliberately simulated native adapter. No IDE settings, files, installed themes or updater components are changed.</p>
-<p><button id="open">Open Welcome Wizard</button> <button id="dark">Toggle preview color scheme</button></p>
-<h2>Simulated native snapshot</h2>
-<pre id="snapshot"></pre>
-<h2>Action log</h2><pre id="log">No actions yet.</pre>
-</main>
+<h1>Welcome Wizard integration preview</h1>
+<p>This is a development preview using the bundled shared WinUI control runtime and Master CSS. Native requests below are simulated in memory; no IDE, theme files, settings or updater components are modified.</p>
+<p><button id="reopen" type="button">Reopen Welcome Wizard</button></p>
+<div id="mount" aria-label="Wizard preview container"></div>
+<h2>Simulated native state</h2><pre id="snapshot"></pre>
+<h2>Sent native requests</h2><pre id="requests"></pre>
 <script src="welcome.js"></script>
 <script>
-(function(){
-  const out=document.getElementById('snapshot'),log=document.getElementById('log');
-  const snapshot={
-    schema:1,root:'C:\\twinBASIC',installationId:'preview-only',preferences:{schema:1,strategy:'InPlace',automatic:true,restart:false,channel:'development'},
+(async function () {
+  const read=path=>fetch(path).then(response=>{if(!response.ok)throw Error('Missing '+path);return response.text();});
+  const [masterCss,controlsJs,welcomeCss]=await Promise.all([
+    read('master.css'),read('controls.js'),read('welcome.css')
+  ]);
+  const snap={
+    schema:1,root:'C:\\twinBASIC',installationId:'demo-only',
     theme:'WinUI3 Light',toolbar:'Classic',
-    bootstrap:{status:'ready',message:'Bundled updater and themes verified in this simulated preview.',resources:[
-      {id:'updater',status:'ready',path:'%LOCALAPPDATA%\\tbUI3\\Updater\\Updater.exe',message:'Verified',repairable:false},
-      {id:'themeDark',status:'ready',path:'%APPDATA%\\twinBASIC\\themes\\WinUI3 Dark.theme',message:'Verified',repairable:false},
-      {id:'themeLight',status:'ready',path:'%APPDATA%\\twinBASIC\\themes\\WinUI3 Light.theme',message:'Verified',repairable:false}
-    ]},
-    recovery:false,message:''
+    preferences:{schema:1,strategy:'InPlace',automatic:true,restart:false,channel:'development'},
+    bootstrap:{status:'ready',message:'Simulated bundled assets are ready.',resources:[
+      {id:'updater',status:'ready',message:'Demo verified',repairable:false},
+      {id:'themeDark',status:'ready',message:'Demo verified',repairable:false},
+      {id:'themeLight',status:'modified',message:'Demo customization',repairable:true}
+    ]},recovery:false,message:''
   };
-  let count=0;
+  const output=document.querySelector('#snapshot'),logs=document.querySelector('#requests');
   const wizard=window.tbUI3CreateWelcomeWizard({
-    document,mount:document.body,cssText:'',
-    send(request){
-      log.textContent=(++count)+'. '+JSON.stringify(request)+'\n'+(count===1?'':log.textContent);
-      if(request.action==='choose-theme')snapshot.theme=request.name;
-      else if(request.action==='choose-toolbar')snapshot.toolbar=request.name;
-      else if(request.action==='installation-preferences')Object.assign(snapshot.preferences,request);
-      else if(request.action==='bootstrap-retry')snapshot.bootstrap.message='Bundled assets checked again (simulation).';
-      else if(request.action==='repair-resource')snapshot.bootstrap.message='Simulated repair requested for '+request.id+'.';
-      snapshot.message='Native preview acknowledged: '+request.action;
-      setTimeout(()=>{showSnapshot();wizard.setSnapshot(structuredClone(snapshot));},80);
+    document,mount:document.querySelector('#mount'),
+    assets:{masterCss,controlsJs,welcomeCss},
+    send(request) {
+      logs.textContent+=JSON.stringify(request)+'\n';
+      if(request.action==='choose-theme')snap.theme=request.name;
+      if(request.action==='choose-toolbar')snap.toolbar=request.name;
+      if(request.action==='installation-preferences')Object.assign(snap.preferences,request);
+      snap.message='Simulated native acknowledgement: '+request.action;
+      setTimeout(()=>{output.textContent=JSON.stringify(snap,null,2);wizard.setSnapshot(structuredClone(snap));},30);
     },
-    confirmRepair(resource){return window.confirm('Simulate restoring '+resource.id+'?');}
+    confirmRepair:resource=>Promise.resolve(window.confirm('Simulate native confirmation for '+resource.id+'?'))
   });
-  function showSnapshot(){out.textContent=JSON.stringify(snapshot,null,2)}
-  showSnapshot();
-  document.getElementById('open').onclick=()=>wizard.open(structuredClone(snapshot));
-  document.getElementById('dark').onclick=()=>document.documentElement.classList.toggle('dark');
-  wizard.open(structuredClone(snapshot));
-})();
+  output.textContent=JSON.stringify(snap,null,2);
+  wizard.open(structuredClone(snap));
+  document.querySelector('#reopen').onclick=()=>wizard.open(structuredClone(snap));
+})().catch(error=>document.querySelector('#requests').textContent='Preview assets failed to load: '+error.message);
 </script>
 </body>
 </html>

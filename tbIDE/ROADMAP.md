@@ -1,5 +1,12 @@
 # Roadmap: tbUI3 IDE
 
+## 2026-11-23 - Self-provisioning add-in and Welcome Wizard (approved, not implemented)
+
+**Agreed future architecture:** the user manually installs only architecture-appropriate `tbUI3IDE.dll` files. Each DLL embeds the portable Win32 `Updater.exe` and WinUI3 Light/Dark themes; on every add-in load it validates/provisions missing or eligible outdated dependencies, independent of the online update setting. Shared updater location is `%LOCALAPPDATA%\tbUI3\Updater\Updater.exe`; themes remain in `%APPDATA%\twinBASIC\themes`. Multiple separate twinBASIC IDE installations share the per-user executable but keep per-installation update settings/transactions, backed by stable installation IDs. Preserve custom themes, never downgrade newer updater, use atomic writes/locks and no silent UAC. Approved changes to protected IDE files need a separately implemented consented elevation path.
+
+An embedded HTML/CSS/JS Welcome Wizard introduces updates, WinUI3 themes, Classic/Hybrid/Ribbon and designer capabilities, allows relevant preferences to be set, persists completion independently of resource repair, and can be reopened through the add-in. The existing updater path contract, packaging, canonical projects and native tests must be revised before claiming this behavior works. See [complete bootstrap and welcome design](BOOTSTRAP_WELCOME_PLAN.md). **The present first install remains manual; implementation and acceptance pending.**
+
+
 ## 2026-11-23 - BETA 1045 hex-literal warnings corrected; automated gate added
 
 Explicitly typed the updater's Unicode, PE and ZIP literals and its intentional signed GUID field. AGENTS.md now defines the required width rule; both the normal project validator and Node suite enforce it against active canonical projects and mirrors. Source checks pass; reopen/recompile Updater in BETA 1045, then run its native self-tests. Public repository access is available, but end-to-end binary update acceptance still needs a published release with ZIPs and tbUI3-update.json. No release is published by this pass.

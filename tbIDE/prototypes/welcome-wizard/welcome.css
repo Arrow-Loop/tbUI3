@@ -103,3 +103,87 @@
   .welcome-footer,.welcome-top { padding: var(--space-3); }
   .welcome-heading { font-size: 20px; }
 }
+
+/* Theme cards are application-owned previews, not substitutes for Toolkit controls.
+ * Values are native-enumerated theme colors passed as sanitized CSS custom properties.
+ * WinUI3 Light/Dark preview fallback is the pinned Master CSS theme palette.
+ */
+.welcome-theme-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--space-3);
+  margin-bottom: var(--space-4);
+}
+.welcome-theme-featured { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.welcome-theme-card { min-width: 0; }
+.welcome-theme-sample {
+  --welcome-preview-bg: var(--color-flyout);
+  --welcome-preview-text: var(--color-text);
+  --welcome-preview-surface: var(--color-card);
+  --welcome-preview-accent: var(--color-accent);
+  display: flex;
+  flex-direction: column;
+  height: 116px;
+  width: 100%;
+  overflow: hidden;
+  color: var(--welcome-preview-text);
+  background: var(--welcome-preview-bg);
+  border: 1px solid var(--color-divider);
+  border-radius: var(--ControlCornerRadius, 4px);
+}
+.welcome-theme-light {
+  --welcome-preview-bg: #f9f9f9;
+  --welcome-preview-text: #202020;
+  --welcome-preview-surface: #f3f3f3;
+  --welcome-preview-accent: #0067c0;
+}
+.welcome-theme-dark {
+  --welcome-preview-bg: #202020;
+  --welcome-preview-text: #ffffff;
+  --welcome-preview-surface: #2c2c2c;
+  --welcome-preview-accent: #60cdff;
+}
+.welcome-theme-sample-top {
+  padding: var(--space-2);
+  font-weight: 600;
+  font-size: 11px;
+  background: var(--welcome-preview-surface);
+  border-bottom: 2px solid var(--welcome-preview-accent);
+}
+.welcome-theme-sample-body {
+  flex: 1;
+  display: flex;
+  gap: var(--space-2);
+  padding: var(--space-2);
+}
+.welcome-theme-sample-pane {
+  flex: 0 0 28%;
+  background: var(--welcome-preview-surface);
+  border-radius: var(--ControlCornerRadius, 4px);
+}
+.welcome-theme-sample-lines {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding-top: var(--space-2);
+}
+.welcome-theme-sample-lines span {
+  height: 6px;
+  background: var(--welcome-preview-text);
+  opacity: .18;
+  border-radius: var(--ControlCornerRadius, 4px);
+}
+.welcome-theme-sample-lines span:nth-child(2) { width: 75%; }
+.welcome-theme-sample-lines span:nth-child(3) { width: 50%; }
+.welcome-preview-empty {
+  margin: auto;
+  font-size: 12px;
+  color: var(--color-text-muted);
+  text-align: center;
+}
+.welcome-preview-panel { max-width: 400px; }
+.welcome-preview-panel .welcome-theme-sample { height: 175px; }
+@media(max-width:650px) {
+  .welcome-theme-grid,.welcome-theme-featured { grid-template-columns: 1fr; }
+}

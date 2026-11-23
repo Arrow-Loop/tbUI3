@@ -189,3 +189,10 @@ test('Setup inserts immediately after Welcome and preserves logical page on refr
   assert.match(js,/const refreshedIndex=refreshedPages\.indexOf\(previousPage\)/);
   assert.match(js,/step=refreshedIndex>=0\?refreshedIndex:Math\.min\(1,refreshedPages\.length-1\)/);
 });
+
+test('Setup recheck action has separation from resources and warnings',()=>{
+  assert.match(js,/dom\('div','welcome-setup-retry',undefined,parent\)/);
+  assert.match(js,/button\(retryArea,'Check again'/);
+  assert.match(css,/\.welcome-setup-retry \{/);
+  assert.match(css,/margin-top:var\(--space-5\)/);
+});

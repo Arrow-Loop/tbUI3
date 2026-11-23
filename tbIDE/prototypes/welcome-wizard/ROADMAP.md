@@ -1,5 +1,12 @@
 # Welcome Wizard roadmap and integration dependencies
 
+## Native startup and conditional setup review
+
+- Cody: verify silent bundled-resource provisioning and status publication before first-run Welcome Wizard, without making failed provisioning an onboarding blocker. Confirm actual resource embedding only after native updater acceptance.
+- Validate that a healthy snapshot produces a clean Finish page with preferences only; test warnings, missing resources, customized files requiring a repair decision and recovery on a conditional Setup step **before** Finish.
+- Confirm bootstrap recheck and approved repair results replace the Setup step when healthy; unresolved issues remain visible and do not falsely claim repair. Native integration, project resource embedding and acceptance remain Cody-owned.
+- Review responsive layout and focus behavior when the optional step appears or disappears.
+
 ## UI acceptance: finish and installation health
 
 - Review the compact preference list and clean installation-health rows in the live native modal, including narrow widths, customized resources, missing files and repair confirmation.

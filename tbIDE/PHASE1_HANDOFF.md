@@ -1,6 +1,8 @@
 # Phase 1 source handoff — native acceptance, then embedding
 
-> Latest native evidence: Shane supplied a completed pre-fix 54-case report (42 pass, 12 fail; all ZIP cases pass). Corrected Variant-indexed native byte pointers to typed Byte() storage and added three cases. Current acceptance target is 57 cases; corrected binary rerun remains pending. Original evidence is retained in Updater/validation/native-2026-11-23-before-byte-buffer-fix.json. Historical unexecuted-suite statements below describe the earlier source handoff.
+> Current handoff: the user's follow-up archive reports **57/57 native self-tests passed** after the byte-buffer fix; preserved in Updater/validation/native-2026-11-23-byte-buffer-fix-passed.json. Quill's approved Toolkit wizard through 79be9e5 is integrated with native installed-theme data. New native theme parsing, iframe/focus/CSP behavior and live updates remain acceptance work. The subsequently reported blank native updater form is not yet confirmed fixed: this pass corrects IDE arguments and fallback output and adds stage/error-number diagnostics. Read [all diagnostic locations](../docs/DIAGNOSTICS.md).
+
+> Diagnostics now live under **%LOCALAPPDATA%\tbUI3\Diagnostics\**: `updater-startup.log`, `updater-engine.log`, `updater-startup-help.html`, `native-updater-latest.json`, `NativeSelfTests\...`, plus the TabView/property-page/paint/design logs. Old TEMP pointers below are historical. Rebuild all updated projects/re-import the control package to adopt these paths. Actual compiled-helper embedding remains a separate Phase 1 pass.
 
 > Startup UAC correction: rebuild the canonical updater with the new embedded MANIFEST/#1.xml (asInvoker / uiAccess=false). Normal launch must work as a standard user. The already compiled EXE is unchanged. Protected-folder UAC acceptance remains separate. Fifteen focused regression tests and 127 mirror/ID/CRLF/hex checks pass for this correction; native launch has not been run.
 
@@ -8,7 +10,7 @@
 
 ## Delivered
 
-Native updater source 0.2.0.0; add-in source 0.4.0.0. Corrected baseline remains 0.3.0.20; four-part major-zero versions and future stable transition remain supported. Separate tbUI3 core 1.0.0.75 is unchanged.
+Native updater source 0.2.0.0; add-in source 0.4.0.0. Corrected baseline remains 0.3.0.20; four-part major-zero versions and future stable transition remain supported. The separate tbUI3 core version remains 1.0.0.75; only its diagnostic routes changed in this pass.
 
 - Per-user deployment, offline provisioning/repair services, recognized hash/version/protocol ledger, no downgrade/customized overwrite, explicit verified backups and shared locks.
 - Per-root canonical identity/preferences/receipts/session/approval/recovery, versioned planning/strategy/operations/inventories and scoped shared-helper protocol. See INSTALLATION_CONTRACTS.md.
@@ -19,7 +21,7 @@ Native updater source 0.2.0.0; add-in source 0.4.0.0. Corrected baseline remains
 ## Build order and separate embedding pass
 
 1. Close/reopen canonical projects so an old IDE buffer cannot overwrite source changes. Build `tbIDE/Updater/Updater.twinproj` as **Win32**, BETA 1045. Do not use the old minimal `Build/Updater.exe` (35,328 bytes); tooling rejects its version/staleness.
-2. Run the new EXE `-SelfTest` unelevated. Require **57 cases** (38 policy/filesystem/contracts plus 19 independently generated ZIP fixtures), zero failures; inspect `%TEMP%\tbUI3-native-updater-latest.json` and its results file. These native tests have NOT been run by Cody.
+2. Run the new EXE `-SelfTest` unelevated. Require **57 cases** (38 policy/filesystem/contracts plus 19 independently generated ZIP fixtures), zero failures; inspect `%LOCALAPPDATA%\tbUI3\Diagnostics\native-updater-latest.json` and its results file. These native tests have NOT been run by Cody.
 3. Build/test add-in architectures from source for integration acceptance if needed; these development DLLs intentionally report missing bundle. Existing helper cannot be adopted merely by copying an unrecognized EXE. Use disposable per-user test data and retain accepted native test results. Current source does not provide DLL-only first install until step 4.
 4. **Following updater acceptance, separate Phase 1 embedding pass:** from repo root run `node tbIDE/tools/prepare-phase1-bundle.mjs --updater <accepted fresh Updater.exe>`. It validates real PE/version/timestamp and embeds helper, both exact themes and manifest in canonical add-in/mirrors. Then compile **both** DLL architectures. Never edit project/source after compiling without rebuilding.
 5. Run `node tbIDE/tools/verify-phase1-release.mjs <win32 DLL> <win64 DLL> <Updater.exe>`. It inspects real DLL resource bytes, architecture, versions, identical manifests, project digest and exact payload hashes. No dummy/stale helper or loose-files-only package can pass.
@@ -64,3 +66,7 @@ Cody uses Node unit/DOM tests, exact mirror/IDs/CRLF/hex checks, PowerShell pars
 - Development release packager PowerShell AST parse and Git whitespace/diff checks pass. Negative packaging tests reject missing native build inputs; real compiled-DLL packaging validation is unperformed because accepted binaries do not exist yet.
 
 The native self-test suite is **54 authored cases, unexecuted**, not 54 passing cases. No GUI automation, native compilation, installed-file mutation, PR, main merge or release publication occurred.
+
+## Refined wizard native acceptance additions
+
+Compile the add-in with InstalledThemeCatalog and shared DiagnosticPaths. Check local and AppData themes (including duplicate names), inherited RGB/hex/alpha colors, third-party unresolvable palettes, exact-name selection, failed-save rollback and refresh cancellation. No preview should activate a theme without a click. Validate the actual same-origin iframe runtime/CSP and keyboard/focus across outer confirmation, conditional Setup/recovery and normal healthy six-page flow. Channel choice is intentionally absent. Recompile the updater and inspect Diagnostics/updater-startup.log if its window remains blank; the old unqualified error did not establish its failing stage. Native -SelfTest remains 57 cases, with the argument case expanded for Command-tail parsing.

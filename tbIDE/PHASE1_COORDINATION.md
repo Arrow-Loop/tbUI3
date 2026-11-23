@@ -12,7 +12,7 @@ Production bridge requests are structured objects from the add-in-hosted JS queu
 
 | Intent | Payload | Native effect |
 |---|---|---|
-| `choose-theme` | `name`: exact `WinUI3 Light` or `WinUI3 Dark` | Reload actual IDE theme list, select/persist via the verified BETA 1045 IDE APIs, acknowledge actual result. No selection during preview. |
+| `choose-theme` | `name`: exact current installed-theme inventory member | Reload actual IDE theme list, select/persist via the verified BETA 1045 IDE APIs, acknowledge actual result. No selection during preview. |
 | `choose-toolbar` | `name`: exact `Classic`, `Hybrid`, `Ribbon` | Existing toolbar controller and the existing per-user toolbar setting. |
 | `installation-preferences` | Optional Boolean `automatic`, Boolean `restart`, `channel`: `development` or `stable` | Persist versioned preferences for the originating installation; synchronize existing update UI. |
 | `welcome-record` | `schema`: 1; `disposition`: `completed` or `dismissed` | Persist user-global Welcome completion, independently of bootstrap and per-IDE settings. |
@@ -28,3 +28,9 @@ The prototype may choose its own documented JavaScript mounting API. The product
 ## Integrated source candidate
 
 Quill prototype through 5966da3 is embedded unchanged in production resources; the reserved directory has not been edited by Cody. The adapter adds correlated request ids/acknowledgements, modal HTML hosting, scoped Windows theme/accent tokens and Promise-based explicit repair confirmation. Actual native state is published after settled requests. See [INSTALLATION_CONTRACTS.md](INSTALLATION_CONTRACTS.md) and [PHASE1_HANDOFF.md](PHASE1_HANDOFF.md). Actual helper binary embedding is the separately authorized Phase 1 pass after native updater acceptance, per Shane's latest instruction.
+
+## Approved Toolkit view integration through 79be9e5
+
+The production adapter now embeds welcome.js, welcome.css, the full master.css and controls.js unchanged, with hashes in tbUI3IDE/WELCOME_REFERENCE.json. Shared component assets initialize only inside the same-origin iframe; the outer HTML dialog retains modality. Native InstalledThemeCatalog resolves data from the actual IDE loader's both-directory list and parent links. Only validated hex preview fields enter view snapshots; no raw theme text or arbitrary CSS enters the iframe. Exact inventory names gate selection. Native status vocabulary is projected into Quill's health contract, including conditional Setup and theme-discovery errors. Channel selectors are removed in both wizard and production settings; roadmap return remains deferred. Prototype sources remain Quill-owned and unmodified by Cody.
+
+Latest native engine evidence is 57/57 passed. GUI startup is a separate open acceptance issue; see ../docs/DIAGNOSTICS.md. Diagnostics are now centralized; no helper binary has been embedded during this pass.

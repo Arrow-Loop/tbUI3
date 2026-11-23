@@ -16,7 +16,7 @@
   const keys=['light3','light2','light1','','dark1','dark2','dark3'];
   if(Array.isArray(state.accent)&&state.accent.length===7)state.accent.forEach((color,i)=>{if(/^#[0-9a-f]{6}$/i.test(color))element.style.setProperty('--win-accent'+(keys[i]?'-'+keys[i]:''),color);});
  }
- function syncTheme(){if(shadow)tokens(shadow.host);if(welcomeShell)tokens(welcomeShell);if(confirmationContent)tokens(confirmationContent.getRootNode().host);}
+ function syncTheme(){syncFrame();if(shadow)tokens(shadow.host);if(welcomeShell)tokens(welcomeShell);if(confirmationContent)tokens(confirmationContent.getRootNode().host);}
  function modal(className){const dialog=node('dialog',undefined,d.body,className);dialog.addEventListener('keydown',e=>e.stopPropagation());return dialog;}
  function shadowView(dialog){const host=node('div',undefined,dialog),root=host.attachShadow({mode:'open'}),style=node('style',undefined,root);style.textContent=env.styles.replace(/:root/g,':host');return {root,main:node('main',undefined,root,'installation-content')};}
  function confirmRepair(resource,fromWizard=false){
@@ -25,18 +25,27 @@
   confirmationContent.replaceChildren();node('h1','Back up and reset this resource?',confirmationContent);node('p',resource.path||resource.id,confirmationContent,'installation-path');
   node('p','This replaces the customized file with the verified bundled copy after retaining a verified backup. A newer updater will never be downgraded. Your selected IDE theme will stay unchanged.',confirmationContent);
   const row=field('I approve keeping a backup and resetting this file',confirmationContent),approve=node('input',undefined,row);approve.type='checkbox';
-  const actions=node('footer',undefined,confirmationContent,'installation-actions');const settle=approved=>{closeDialog(confirmation);if(repairDecision){repairDecision(approved);repairDecision=null;}else if(approved)request('repair-resource',{id:resource.id,confirmed:true});};
+  const actions=node('footer',undefined,confirmationContent,'installation-actions');const settle=approved=>{closeDialog(confirmation);welcomeShell?.querySelector('iframe')?.focus();if(repairDecision){repairDecision(approved);repairDecision=null;}else if(approved)request('repair-resource',{id:resource.id,confirmed:true});};
   button('Cancel',()=>settle(false),actions);
   const reset=button('Back up and reset',()=>settle(true),actions,true);reset.disabled=true;approve.onchange=()=>{reset.disabled=!approve.checked;};
   tokens(confirmationContent.getRootNode().host);openDialog(confirmation);approve.focus();if(fromWizard)return new Promise(resolve=>{repairDecision=resolve;});return false;
+ }
+ function wizardSnapshot(next){
+  const original=next.bootstrap||{},statuses={'provisioned':'installed','customized-preserved':'modified','blocked':'error','newer-preserved':'installed'};
+  const bootstrap={...original,status:['attention','busy'].includes(original.status)?'warning':original.status,
+   resources:(original.resources||[]).map(resource=>({...resource,status:statuses[resource.status]||resource.status}))};
+  if(next.themeDiscovery?.error){
+   if(bootstrap.status!=='error')bootstrap.status='warning';
+   bootstrap.message=(bootstrap.message||'')+' Theme discovery needs attention: '+next.themeDiscovery.error+' Use Check again to retry.';
+  }
+  return {...next,bootstrap};
  }
  function ensureWelcome(){
   if(welcome)return;
   if(typeof w.tbUI3CreateWelcomeWizard!=='function')throw Error('The embedded Welcome Wizard is unavailable.');
   welcomeShell=modal('tbUI3-welcome-shell');welcomeShell.setAttribute('aria-label','Welcome to tbUI3IDE');
-  const tokenStyle=node('style',undefined,welcomeShell);tokenStyle.textContent=env.welcomeTokens;
-  welcome=w.tbUI3CreateWelcomeWizard({document:d,mount:welcomeShell,cssText:env.welcomeStyles,source:'native-addin',
-   send:message=>{if(!message||!wizardActions.has(message.action))throw Error('Unsupported wizard operation.');const {action,...data}=message;request(action,data);},
+  welcome=w.tbUI3CreateWelcomeWizard({document:d,mount:welcomeShell,assets:{masterCss:env.welcomeMaster,controlsJs:env.welcomeControls,welcomeCss:env.welcomeStyles},source:'native-addin',
+   send:message=>{if(!message||!wizardActions.has(message.action))throw Error('Unsupported wizard operation.');const {action,...data}=message;if(action==='choose-theme')welcome.setPreviewMode(null);request(action,data);},
    confirmRepair:resource=>confirmRepair(resource,true),
    onClose:()=>{closeDialog(welcomeShell);if(previousFocus&&previousFocus.isConnected)previousFocus.focus();}
   });
@@ -44,7 +53,23 @@
  }
  function showWelcome(){
   if(settingsDialog)closeDialog(settingsDialog);
-  ensureWelcome();previousFocus=d.activeElement;tokens(welcomeShell);openDialog(welcomeShell);welcome.open(state);
+  ensureWelcome();previousFocus=d.activeElement;tokens(welcomeShell);openDialog(welcomeShell);welcome.open(wizardSnapshot(state));watchFrame();
+ }
+ function syncFrame(){
+  const frame=welcomeShell?.querySelector('iframe'),inner=frame?.contentDocument;if(!inner)return;
+  tokens(inner.documentElement);
+  const mode=state.installedThemes?.find(t=>t.name===state.theme)?.mode;
+  if(welcome&&pending.size===0&&(mode==='light'||mode==='dark'))welcome.setPreviewMode(mode);
+ }
+ function watchFrame(){
+  const frame=welcomeShell.querySelector('iframe');if(!frame||frame.dataset.nativeWatched)return;
+  frame.dataset.nativeWatched='true';frame.addEventListener('load',()=>{
+   if(disposed)return;
+   if(!frame.contentWindow?.WinUIControls){
+    frame.hidden=true;const view=shadowView(welcomeShell);tokens(view.root.host);node('h1','Welcome controls unavailable',view.main);const alert=node('p','The IDE could not initialize the embedded iframe runtime. Close this dialog and inspect the IDE Debug Console.',view.main);alert.setAttribute('role','alert');button('Close',()=>welcome.close(),view.main);return;
+   }
+   syncFrame();frame.focus();
+  },{once:true});
  }
  function preferences(parent){
   if(state.settingsError){
@@ -53,9 +78,6 @@
    const reset=button('Back up and reset preferences',()=>request('reset-installation-settings',{confirmed:true}),parent);reset.disabled=true;approve.onchange=()=>{reset.disabled=!approve.checked;};return;
   }
   const autoRow=field('Check for updates once a day for this IDE',parent),auto=node('input',undefined,autoRow);auto.type='checkbox';auto.checked=state.preferences.automatic;auto.dataset.focusKey='automatic';auto.onchange=()=>request('installation-preferences',{automatic:auto.checked});
-  const channelRow=field('tbUI3 release channel',parent),channel=node('select',undefined,channelRow,'settings-row__control');channel.setAttribute('aria-label','tbUI3 release channel');channel.dataset.focusKey='channel';
-  for(const [value,label]of[['development','Development prereleases'],['stable','Stable releases only']]){const option=node('option',label,channel);option.value=value;}
-  channel.value=state.preferences.channel;channel.onchange=()=>request('installation-preferences',{channel:channel.value});
   const restartRow=field('Restart this IDE after a successful update',parent),restart=node('input',undefined,restartRow);restart.type='checkbox';restart.checked=state.preferences.restart;restart.dataset.focusKey='restart';restart.onchange=()=>request('installation-preferences',{restart:restart.checked});
  }
  function renderSettings(){
@@ -78,6 +100,7 @@
    if(resource.backup)node('p','Backup: '+resource.backup,row,'installation-path');
    if(resource.repairable)button('Review reset and backup',()=>confirmRepair(resource),row);
   }
+  if(state.themeDiscovery?.error)status('Theme discovery: '+state.themeDiscovery.error,content);
   button('Recheck and repair missing resources',()=>request('bootstrap-retry'),content);
   if(state.recovery){status('An unfinished transaction needs recovery. It will wait for IDE processes to close normally.',content);button('Open recovery',()=>request('open-recovery'),content);}
   if(state.message)status(state.message,content);
@@ -102,7 +125,7 @@
  if(env.showWelcome)welcomeTimer=w.setTimeout(()=>{if(!disposed)showWelcome();},1000);
  return {show:which=>which==='welcome'?showWelcome():showSettings(),hide:()=>{if(welcome)welcome.close();closeDialog(settingsDialog);},
   take:()=>{const next=queue.shift();return next?JSON.stringify(next):'';},
-  publish:next=>{state=next;if(next.ack?.id)pending.delete(next.ack.id);renderSettings();syncTheme();if(welcome&&pending.size===0){welcome.setSnapshot(next);if(welcome.getState().open&&!welcomeShell.contains(d.activeElement))welcomeShell.querySelector('button')?.focus();}},
+  publish:next=>{state=next;if(next.ack?.id)pending.delete(next.ack.id);renderSettings();syncTheme();if(welcome&&pending.size===0){welcome.setSnapshot(wizardSnapshot(next));syncFrame();if(welcome.getState().open&&!welcomeShell.contains(d.activeElement))welcomeShell.querySelector('iframe')?.focus();}},
   dispose:()=>{disposed=true;if(repairDecision){repairDecision(false);repairDecision=null;}w.clearTimeout(welcomeTimer);observer.disconnect();themeObserver.disconnect();if(welcome)welcome.destroy();for(const dialog of[welcomeShell,settingsDialog,confirmation])if(dialog)dialog.remove();style.remove();d.querySelectorAll('.tbUI3InstallationOptions').forEach(n=>n.remove());}
  };
 })

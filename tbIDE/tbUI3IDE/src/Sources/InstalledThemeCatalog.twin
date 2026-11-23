@@ -1,0 +1,124 @@
+' Resolve preview paint from the actual IDE loader's parent-first inheritance chain.
+' Read-only: no theme activation, browser CSS evaluation, paths or raw theme text in view snapshots.
+Private Module InstalledThemeCatalog
+    Public Function TCatalog(ByVal source As UpdateJson, ByVal windowsAccent As String) As UpdateJson
+        Dim result As UpdateJson = JA(), theme As UpdateJson
+        For Each theme In source.Member("themes").Items
+            result.Push TEntry(theme, windowsAccent)
+        Next
+        Set TCatalog = result
+    End Function
+    Private Function TEntry(ByVal theme As UpdateJson, ByVal windowsAccent As String) As UpdateJson
+        Dim entry As UpdateJson = JO(), name As String = JT(theme, "name"), mode As String = JT(theme, "mode")
+        entry.Assign "name", JS(name)
+        If mode = "light" Or mode = "dark" Then entry.Assign "mode", JS(mode)
+        On Error GoTo Unavailable
+        If Len(JT(theme, "error")) > 0 Then UFail JT(theme, "error")
+        Dim values As Object = CreateObject("Scripting.Dictionary"), part As UpdateJson
+        For Each part In theme.Member("chain").Items: TParse part.Text, values: Next
+        Dim palette As UpdateJson = JO(), background As String = TPaint(values, "GeneralBackColor"), surface As String = TPaint(values, "PanelBackground")
+        Dim foreground As String = TPaint(values, "GeneralTextColor"), accent As String = TPaint(values, "AddinAccentBackColor")
+        If name = "WinUI3 Light" Or name = "WinUI3 Dark" Then
+            If Len(THex(windowsAccent)) > 0 Then accent = THex(windowsAccent)
+        End If
+        If Len(background) = 0 Or Len(surface) = 0 Or Len(foreground) = 0 Or Len(accent) = 0 Then UFail "Effective base theme colors are unavailable."
+        palette.Assign "background", JS(background): palette.Assign "surface", JS(surface)
+        palette.Assign "foreground", JS(foreground): palette.Assign "accent", JS(accent)
+        TOptional palette, "titlebar", TPaint(values, "MenuBackColor")
+        TOptional palette, "toolbar", TPaint(values, "ToolbarBackground")
+        TOptional palette, "panel", surface
+        TOptional palette, "editor", TPaint(values, "CodePanelBackColor")
+        TOptional palette, "muted", TPaint(values, "GeneralSubTextColor")
+        TOptional palette, "border", TPaint(values, "AddinBorderColor")
+        entry.Assign "preview", palette
+        Set TEntry = entry: Exit Function
+    Unavailable:
+        entry.Assign "previewError", JS(Err.Description)
+        Set TEntry = entry
+    End Function
+    Private Sub TOptional(ByVal palette As UpdateJson, ByVal key As String, ByVal value As String)
+        If Len(value) > 0 Then palette.Assign key, JS(value)
+    End Sub
+    Private Sub TParse(ByVal text As String, ByVal values As Object)
+        Dim at As Long, finish As Long
+        Do
+            at = InStr(text, "/*"): If at = 0 Then Exit Do
+            finish = InStr(at + 2, text, "*/")
+            If finish = 0 Then UFail "Unterminated theme comment."
+            text = Left$(text, at - 1) & Mid$(text, finish + 2)
+        Loop
+        ' Match BETA 1045 applyThemeData delimiters; do not interpret other theme content as CSS.
+        text = text & vbCrLf
+        text = Replace(text, "; ", "%;%"): text = Replace(text, ";" & vbTab, "%;%")
+        text = Replace(text, ";" & vbCrLf, "%;%"): text = Replace(text, ";" & vbLf, "%;%")
+        Dim declaration As Variant, parts() As String
+        For Each declaration In Split(text, "%;%")
+            Dim line As String = Replace(Replace(CStr(declaration), vbCr, ""), vbLf, "")
+            line = Replace(Replace(line, ": ", "%:%"), ":" & vbTab, "%:%")
+            parts = Split(line, "%:%")
+            If UBound(parts) = 1 Then
+                Dim key As String = LTrim$(Replace(parts(0), vbTab, " ")), value As String = Trim$(Replace(Replace(parts(1), "!important", ""), vbTab, " "))
+                values.Item(key) = value
+            End If
+        Next
+    End Sub
+    Private Function TPaint(ByVal values As Object, ByVal key As String, Optional ByVal depth As Long = 0) As String
+        If depth > 16 Or Not values.Exists(key) Then Return ""
+        Dim value As String = LCase$(Trim$(CStr(values.Item(key))))
+        If Left$(value, 11) = "var(--theme" And Right$(value, 1) = ")" Then Return TPaint(values, Mid$(CStr(values.Item(key)), 12, Len(value) - 12), depth + 1)
+        Dim hex As String = THex(value)
+        If Len(hex) > 0 Then Return hex
+        Select Case value
+            Case "white": Return "#ffffff"
+            Case "black": Return "#000000"
+            Case "transparent": Return "#00000000"
+        End Select
+        If Left$(value, 4) <> "rgb(" And Left$(value, 5) <> "rgba(" Then Return ""
+        If Right$(value, 1) <> ")" Then Return ""
+        Dim start As Long = InStr(value, "("), fields() As String, i As Long, count As Long, n As Double, output As String = "#"
+        value = Mid$(value, start + 1, Len(value) - start - 1)
+        value = Replace(Replace(Replace(value, ",", " "), "/", " "), vbTab, " ")
+        Do While InStr(value, "  ") > 0: value = Replace(value, "  ", " "): Loop
+        fields = Split(Trim$(value), " "): count = UBound(fields) + 1
+        If count <> 3 And count <> 4 Then Return ""
+        For i = 0 To count - 1
+            Dim token As String = fields(i), percent As Boolean = Right$(token, 1) = "%", j As Long, dots As Long
+            If percent Then token = Left$(token, Len(token) - 1)
+            If Len(token) = 0 Then Return ""
+            dots = 0
+            For j = 1 To Len(token)
+                Dim ch As String = Mid$(token, j, 1)
+                If ch = "." Then
+                    dots = dots + 1: If dots > 1 Then Return ""
+                ElseIf ch < "0" Or ch > "9" Then
+                    Return ""
+                End If
+            Next
+            If token = "." Then Return ""
+            n = Val(token)
+            If percent Then
+                If n > 100 Then Return ""
+                n = n * 255 / 100
+            ElseIf i = 3 Then
+                If n > 1 Then Return ""
+                n = n * 255
+            ElseIf n > 255 Then
+                Return ""
+            End If
+            output = output & LCase$(Right$("0" & Hex$(CLng(Int(n + 0.5))), 2))
+        Next
+        Return output
+    End Function
+    Private Function THex(ByVal value As String) As String
+        If Left$(value, 1) <> "#" Then Return ""
+        Dim count As Long = Len(value) - 1, i As Long, result As String = "#"
+        If count <> 3 And count <> 4 And count <> 6 And count <> 8 Then Return ""
+        For i = 2 To Len(value)
+            Dim ch As String = LCase$(Mid$(value, i, 1))
+            If InStr("0123456789abcdef", ch) = 0 Then Return ""
+            result = result & ch
+            If count <= 4 Then result = result & ch
+        Next
+        Return result
+    End Function
+End Module

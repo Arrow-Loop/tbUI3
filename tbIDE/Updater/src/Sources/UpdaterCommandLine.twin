@@ -1,12 +1,16 @@
 ' Windows parses quoted Unicode paths; no command interpreter participates.
 Private Module UpdaterCommandLine
-    Private Declare PtrSafe Function CLine Lib "kernel32" Alias "GetCommandLineW" () As LongPtr
     Private Declare PtrSafe Function CArgv Lib "shell32" Alias "CommandLineToArgvW" (ByVal command As LongPtr, ByRef count As Long) As LongPtr
     Private Declare PtrSafe Function CFree Lib "kernel32" Alias "LocalFree" (ByVal memory As LongPtr) As LongPtr
     Private Declare PtrSafe Function CLength Lib "kernel32" Alias "lstrlenW" (ByVal text As LongPtr) As Long
     Private Declare PtrSafe Sub CMemory Lib "kernel32" Alias "RtlMoveMemory" (ByRef target As Any, ByRef source As Any, ByVal size As LongPtr)
     Public Function NativeArguments() As Collection
-        Dim count As Long, vector As LongPtr = CArgv(CLine(), count), result As New Collection
+        ' The debugger supplies the application argument tail through Command$.
+        Set NativeArguments = ParseNativeArguments(Command$())
+    End Function
+    Public Function ParseNativeArguments(ByVal tail As String) As Collection
+        Dim command As String = "Updater.exe " & tail
+        Dim count As Long, vector As LongPtr = CArgv(StrPtr(command), count), result As New Collection
         If vector = 0 Then UFail "Could not parse updater arguments."
         On Error GoTo Failed
         Dim i As Long, pointer As LongPtr, slot As LongPtr, value As String
@@ -18,7 +22,7 @@ Private Module UpdaterCommandLine
             result.Add value
         Next
         CFree vector
-        Set NativeArguments = result: Exit Function
+        Set ParseNativeArguments = result: Exit Function
     Failed:
         Dim reason As String = Err.Description
         CFree vector: UFail reason

@@ -137,8 +137,8 @@ Private Module UpdaterEngine
         If Len(session) > 0 Then
             UState session, "error", reason
             If IIsElevated() Then Return 1
-            Dim stream As Object = UFso().OpenTextFile(session & "\updater.log", 8, True, -1)
-            stream.WriteLine Format$(Now, "yyyy-mm-dd hh:nn:ss") & " " & mode & ": " & reason: stream.Close
+            Dim stream As Object = UFso().OpenTextFile(DiagnosticsFile("updater-engine.log"), 8, True, -1)
+            stream.WriteLine Format$(Now, "yyyy-mm-dd hh:nn:ss") & " " & mode & " [session " & session & "]: " & reason: stream.Close
         End If
         Return 1
     End Function

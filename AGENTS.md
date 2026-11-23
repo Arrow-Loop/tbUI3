@@ -30,6 +30,12 @@ For any tbUI3IDE updater, first-install, Welcome Wizard, per-user add-in, IDE up
 - Review high-bit 32-bit literals separately when converting to LongPtr, LongLong or unsigned values: an explicit Long literal can still sign-extend when widened. Specify the intended width/bit pattern; never suppress TB0012 to hide an unintended conversion.
 - Before every development-pass commit, run `node tools/validate-hex-literals.mjs` (also included in `node tools/validate-tabview-projects.mjs` and `node --test tests/*.mjs`). It checks active first-party canonical projects, source mirrors and the embedded tbUI3 copy, excluding third-party compiler packages. It ignores quoted strings/comments and requires an explicit suffix for the ambiguous 16-bit range. Historical probe snapshots and reference-package donor code are outside that automatic gate; apply the same rule to any first-party code brought back into active development.
 
+## Diagnostic output routing
+
+- Active first-party runtime diagnostics belong under `%LOCALAPPDATA%\tbUI3\Diagnostics\`. Use the shared private `DiagnosticPaths.twin`; never add TEMP/project/App.Path fallback log copies. See `docs/DIAGNOSTICS.md` for basenames and native-test report locations.
+- Preserve opt-in trace flags. Keep transactional recovery state/backups, settings, resource payloads and browser profiles in their documented operational locations. Do not treat those files as diagnostic logs.
+- Synchronize the core package and tbUI3Test embedded copy after package diagnostic changes (`node tools/sync-diagnostic-projects.mjs`); the Phase 1 generator copies the common path helper into add-in/updater. Preserve canonical IDs/version conventions.
+
 ## Native byte-buffer pointers
 
 - Windows APIs that read/write raw array bytes must receive pointers into an explicitly typed `Byte()` array. Do not take `VarPtr(value(index))` or pass an indexed value ByRef As Any when `value` is declared `Variant`, even when it currently contains a byte SAFEARRAY: indexing/conversion can expose a temporary Variant instead of the byte storage.

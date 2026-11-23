@@ -9,8 +9,7 @@
 ' At design time the surface only swallows WM_ERASEBKGND and answers WM_GETDLGCODE; the IDE takes
 ' synchronous snapshots through the control's Paint event, which calls PaintEvent so the same
 ' drawing code runs. Set the environment variable TBUI3_PAINT_TRACE=1 before starting the IDE or
-' app to log every erase, paint and invalidation to tbUI3-paint.log next to the project (or the
-' built EXE), falling back to %TEMP%.
+' app to log every erase, paint and invalidation to %LOCALAPPDATA%\tbUI3\Diagnostics\tbUI3-paint.log.
 
 Private Class UI3Surface
 
@@ -332,7 +331,7 @@ Private Class UI3Surface
         On Error Resume Next
         Dim lineText As String
         lineText = Format$(Now, "hh:nn:ss") & " t=" & UI3SurfaceHost.SurfaceTicks() & " hwnd=&H" & Hex$(m_hWnd) & " " & Text
-        If Not AppendLine(App.Path & "\tbUI3-paint.log", lineText) Then AppendLine Environ$("TEMP") & "\tbUI3-paint.log", lineText
+        AppendLine DiagnosticsFile("tbUI3-paint.log"), lineText
     End Sub
 
     Private Function AppendLine(ByVal FilePath As String, ByVal Text As String) As Boolean

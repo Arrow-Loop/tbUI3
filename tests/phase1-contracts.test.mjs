@@ -1,3 +1,4 @@
+import {createHash}from'node:crypto';
 import fs from 'node:fs';import vm from 'node:vm';import test from 'node:test';import assert from 'node:assert/strict';
 const read=p=>fs.readFileSync(p,'utf8');
 test('all standalone production native IDE Eval snippets parse as JavaScript',()=>{
@@ -8,10 +9,12 @@ test('all standalone production native IDE Eval snippets parse as JavaScript',()
 test('shared native contracts remain byte-identical in both projects',()=>{
  for(const name of ['UpdateJson','UpdaterJson','UpdaterPlatform','UpdaterProcesses','InstallationContracts','ManagedResources','Phase1Config'])assert(fs.readFileSync('tbIDE/Updater/src/Sources/'+name+'.twin').equals(fs.readFileSync('tbIDE/tbUI3IDE/src/Sources/'+name+'.twin')),name);
 });
-test('production embeds Quill view unchanged and excludes preview adapter',()=>{
- for(const [name,resource]of [['welcome.js','tbUI3-welcome.js'],['welcome.css','tbUI3-welcome.css']])assert.equal(read('tbIDE/prototypes/welcome-wizard/'+name),read('tbIDE/tbUI3IDE/src/Resources/OTHER/'+resource));
- assert(!fs.existsSync('tbIDE/tbUI3IDE/src/Resources/OTHER/index.html'));
- const tokens=read('tbIDE/tbUI3IDE/src/Resources/OTHER/tbUI3-welcome-tokens.css');assert(!tokens.includes(':root'));assert(!tokens.includes('@layer components'));assert(tokens.includes('.tbUI3-welcome-shell'));
+test('production embeds the approved full Toolkit and view unchanged without preview tools',()=>{
+ for(const [name,resource]of [['welcome.js','tbUI3-welcome.js'],['welcome.css','tbUI3-welcome.css'],['master.css','tbUI3-welcome-master.css'],['controls.js','tbUI3-welcome-controls.js']])assert.equal(read('tbIDE/prototypes/welcome-wizard/'+name),read('tbIDE/tbUI3IDE/src/Resources/OTHER/'+resource));
+ for(const name of ['index.html','Preview.bat','preview-server.ps1','preview-server.cjs','tbUI3-welcome-tokens.css'])assert(!fs.existsSync('tbIDE/tbUI3IDE/src/Resources/OTHER/'+name));
+ const reference=JSON.parse(read('tbIDE/tbUI3IDE/WELCOME_REFERENCE.json'));
+ for(const [name,sha]of Object.entries(reference.sha256))assert.equal(createHash('sha256').update(fs.readFileSync('tbIDE/prototypes/welcome-wizard/'+name)).digest('hex'),sha,name);
+ const ui=read('tbIDE/tbUI3IDE/js/installation-ui.js');assert(ui.includes('assets:{masterCss:env.welcomeMaster,controlsJs:env.welcomeControls,welcomeCss:env.welcomeStyles}'));
 });
 test('every source version matches configuration without renumbering core control package',()=>{
  const config=JSON.parse(read('tbIDE/phase1-config.json'));

@@ -1,6 +1,6 @@
 # Native tbUI3 updater
 
-> Native test evidence received: 42/54 passed before the typed byte-buffer correction; all 19 ZIP cases passed. See validation/native-2026-11-23-before-byte-buffer-fix.json. Rebuild and run the revised 57-case suite. The source correction is statically validated but has not yet passed a native rerun.
+> Latest native evidence: **57/57 tests passed** in Shane's second archive after the byte-buffer fix; report retained under validation/. That result does not validate WebView2 startup. The reported blank form remains an open native acceptance issue. IDE command-tail parsing and verified fallback output are corrected; new stage/error-number logs are in **%LOCALAPPDATA%\tbUI3\Diagnostics\updater-startup.log**. Rebuild before retesting. All runtime diagnostic locations are listed in [docs/DIAGNOSTICS.md](../../docs/DIAGNOSTICS.md).
 
 Current source: **Updater 0.2.0.0**, **tbUI3IDE 0.4.0.0**; corrected add-in baseline **0.3.0.20**. Native twinBASIC engine with WebView2 UI. No PowerShell runtime, classic Win32 updater dialog, managed runtime or arbitrary command execution. PowerShell is used only by the development release packager.
 
@@ -10,7 +10,7 @@ The executable now embeds `MANIFEST/#1.xml` declaring **asInvoker / uiAccess=fal
 
 ## Build and deployment
 
-Build canonical `Updater.twinproj` as Win32 using BETA 1045; reopen before building to avoid saving older IDE buffers over source. Its `src/` is a synchronized mirror, not an independent project. Run fresh `Updater.exe -SelfTest` unelevated and require all **57** cases to pass. The native report pointer is `%TEMP%\tbUI3-native-updater-latest.json`. Node fixture/source validation does not execute these tests. The old minimal 35,328-byte launcher is stale and must never be embedded or distributed.
+Build canonical `Updater.twinproj` as Win32 using BETA 1045; reopen before building to avoid saving older IDE buffers over source. Its `src/` is a synchronized mirror, not an independent project. Run fresh `Updater.exe -SelfTest` unelevated and require all **57** cases to pass. The native report pointer is `%LOCALAPPDATA%\tbUI3\Diagnostics\native-updater-latest.json`. Node fixture/source validation does not execute these tests. The old minimal 35,328-byte launcher is stale and must never be embedded or distributed.
 
 After native acceptance, run `node tbIDE/tools/prepare-phase1-bundle.mjs --updater <fresh accepted Updater.exe>` from repo root, then compile both add-in architectures. The tool embeds the real helper and both themes, checks PE architecture/version/freshness and records hashes/project revision. `verify-phase1-release.mjs <win32 DLL> <win64 DLL> <Updater.exe>` inspects real compiled resource bytes. Release packaging refuses absent/different payloads. See the handoff for exact build order and compatibility parameters.
 

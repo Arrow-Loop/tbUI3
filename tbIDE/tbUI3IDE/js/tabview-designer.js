@@ -20,7 +20,7 @@
         tbUI3TabLeft: 'Move the active page one position left in its TabView.',
         tbUI3TabRight: 'Move the active page one position right in its TabView.',
         tbUI3TabRefresh: 'Reinstall the TabView designer adapter and request a fresh header snapshot.',
-        tbUI3TabDiagnostics: 'Write TabView state and native/designer page counts to tbUI3-tabview.log beside the project.'
+        tbUI3TabDiagnostics: 'Write TabView state and native/designer page counts to %LOCALAPPDATA%/tbUI3/Diagnostics/tbUI3-tabview.log.'
     };
     function describeToolbar() {
         for (const [id, help] of Object.entries(toolbarHelp)) {

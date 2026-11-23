@@ -13,21 +13,34 @@ Class frmMain
     Private mScriptFilterInstalled As Boolean
 
     Private Sub wvMain_Create() Handles wvMain.Create
-        wvMain.EnvironmentOptions.UserDataFolder = UIX_WebViewUserDataFolder()
+        On Error GoTo Failed
+        UIX_Log "WebView2 Create: configuring per-user profile"
+        Dim profile As String = UIX_WebViewUserDataFolder()
+        UDirectory profile
+        wvMain.EnvironmentOptions.UserDataFolder = profile
+        UIX_Log "WebView2 Create: profile configured"
+        Exit Sub
+    Failed:
+        UIX_Log "WebView2 Create failed (" & CStr(Err.Number) & "): " & Err.Description
     End Sub
 
     Private Sub Form_Load()
         On Error GoTo Failed
+        Dim stage As String = "form initialization"
+        UIX_Log "Form_Load: begin"
         mOperation = UpdateMode
         Me.Caption = "tbUI3 Updater"
+        stage = "form font"
         Me.Font.Name = "Segoe UI"
         Me.Font.Size = 9
+        stage = "window theme bridge"
         WinUI_ApplyWindows11Backdrop Me.hWnd
         If Not WinUITheme_Attach(Me.hWnd, Me) Then Err.Raise 5, , "Could not attach the Windows theme bridge."
         ResizeWebView
+        UIX_Log "Form_Load: completed; awaiting WebView2 Ready"
         Exit Sub
     Failed:
-        RuntimeHelp Err.Description
+        RuntimeHelp "Form_Load / " & stage & " (" & CStr(Err.Number) & "): " & Err.Description
         Unload Me
     End Sub
 
@@ -48,22 +61,30 @@ Class frmMain
     Private Sub wvMain_Ready() Handles wvMain.Ready
         On Error GoTo Failed
         If mNavigated Then Exit Sub
+        Dim stage As String = "Ready zoom"
+        UIX_Log "WebView2 Ready: begin"
         wvMain.ZoomFactor = 1
+        stage = "embedded resource assembly"
         Dim html As String = UIX_ResourceText("updater.html")
         If Len(html) = 0 Then Err.Raise 53, , "The embedded updater page is missing."
         html = Replace(html, "{{STYLE_BLOCK}}", "<style>" & UIX_ResourceText("winui.css") & UIX_ResourceText("updater.css") & "</style>")
         html = Replace(html, "{{THEME_SCRIPT}}", "<script>" & UIX_ResourceText("theme-bridge.js") & "</" & "script>")
         If Not mScriptFilterInstalled Then
+            stage = "script resource filter"
             wvMain.AddWebResourceRequestedFilter "https://tbui3-updater.invalid/*", 0
             mScriptFilterInstalled = True
         End If
         html = Replace(html, "{{CONTROLS_SCRIPT}}", "<script src=" & Chr(34) & "https://tbui3-updater.invalid/winui-controls.js" & Chr(34) & "></" & "script>")
         html = Replace(html, "{{APP_SCRIPT}}", "<script src=" & Chr(34) & "https://tbui3-updater.invalid/updater.js" & Chr(34) & "></" & "script>")
-        mNavigated = True
+        stage = "NavigateToString"
+        UIX_Log "WebView2 navigation: chars=" & CStr(Len(html))
         wvMain.NavigateToString html
+        mNavigated = True
+        UIX_Log "WebView2 navigation: submitted; awaiting updater:ready"
         Exit Sub
     Failed:
-        RuntimeHelp Err.Description
+        mNavigated = False
+        RuntimeHelp "WebView2 Ready / " & stage & " (" & CStr(Err.Number) & "): " & Err.Description
         Unload Me
     End Sub
 
@@ -91,6 +112,7 @@ Class frmMain
             Case "updater:ready"
                 If mPageReady Then Exit Sub
                 mPageReady = True
+                UIX_Log "WebView2 page bootstrap: updater:ready received"
                 WinUITheme_SetWebViewReady Me.hWnd, True
                 SendTheme
                 Dim plan As String = ReadSessionFile("plan.json")
@@ -167,6 +189,7 @@ Class frmMain
     Private Sub wvMain_WebResourceRequested(ByVal request As WebView2Request, ByVal response As WebView2Response) Handles wvMain.WebResourceRequested
         On Error GoTo Failed
         Dim name As String
+        UIX_Log "WebView2 resource request: " & request.Method & " " & request.Uri
         Select Case request.Uri
             Case "https://tbui3-updater.invalid/winui-controls.js": name = "winui-controls.js"
             Case "https://tbui3-updater.invalid/updater.js": name = "updater.js"

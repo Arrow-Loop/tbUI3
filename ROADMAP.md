@@ -1,8 +1,20 @@
 # Roadmap
 
+## 2026-11-23 - Refined Wizard integration, native 57/57 evidence, unified diagnostics
+
+Integrated Quill's approved view through **79be9e5** unchanged: full Master CSS/shared controls in an isolated iframe under the native HTML dialog, real native installed-theme inventory/parent inheritance/color data, exact-name apply validation, Windows accent, correlated acknowledgements, conditional Setup, async repair, hidden channel selector and revised feature copy. Production settings also omit channel selection; internal release safety/channel metadata remains. Known BETA 1045 loader behavior determines effective duplicate-name selection; no guessed AppData/local precedence. New native palette/host code still needs native acceptance; unresolved colors are explicitly unavailable.
+
+Shane's second archive reports **57 native self-tests passed, zero failed** after the byte-buffer correction. The original 42/54 report and the passing report/archive digest are retained in `tbIDE/Updater/validation/`. These results establish the tested engine cases, not WebView2 or live installation acceptance. Actual helper binary embedding remains the separate Phase 1 pass.
+
+Consolidated active TabView, property-page, paint/designer, updater startup/worker and native-test diagnostics under **%LOCALAPPDATA%\tbUI3\Diagnostics\**; [diagnostic locations](docs/DIAGNOSTICS.md). Operational recovery/settings/profile data stays in place. Canonical core, test embedded package, add-in and updater are synchronized; rebuild/re-import existing consumers to adopt the new routes. No trace flags enabled, user projects rewritten or old logs deleted.
+
+Shane reported a blank updater form and blank browser fallback despite detected WebView2. Corrected IDE argument parsing (`Command$` instead of host-process command line), changed fallback to verified atomic UTF-8 output with actual escaped error, added startup-stage/error-number logs and guarded repeated fallback. **The blank native window's exact failing operation remains unconfirmed pending the new stage log; no GUI/native startup success is claimed.** See the diagnostic guide. No Screen Control/GUI automation, main merge, PR, release or compiled-helper embedding.
+
 ## 2026-11-23 - Wizard UI preferences and installed-theme integration
 
 **Deferred until an actual twinBASIC stable channel exists:** Restore the stable/development release-channel choice in the tbUI3IDE Welcome Wizard, after verifying real channel semantics; it is intentionally absent from current onboarding. **Phase 1 integration dependency:** Native IDE inventory of all installed themes (including trustworthy resolved preview palette), exact-member validation in `choose-theme`, and tests. The Toolkit-backed view features WinUI3 Light and Dark while offering other installed themes; no TabView/TabPage marketing because those are core tbUI3 controls. See `tbIDE/prototypes/welcome-wizard/README.md` for the updated native snapshot contract. No native bridge change is claimed by this documentation entry.
+
+Validation for this integration/diagnostics pass: **232 repository Node tests and 24 Quill source tests pass**; **134 exact mirrors** across core, embedded test package, add-in and updater, stable IDs/CRLF/hex rules, generator idempotence and diff checks pass. These are automated/static results; no new native build or GUI automation was run by Cody.
 
 ## 2026-11-23 - Native report: 42/54 passed; typed byte-buffer correction
 

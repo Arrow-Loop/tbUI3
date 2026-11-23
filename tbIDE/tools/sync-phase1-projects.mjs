@@ -7,15 +7,17 @@ const configuration=`' Generated from tbIDE/phase1-config.json.\nPrivate Module 
 twin('tbIDE/Updater/src/Sources/Phase1Config.twin',configuration);
 const shared=['UpdateJson','UpdaterJson','UpdaterPlatform','UpdaterProcesses','InstallationContracts','ManagedResources','Phase1Config'];
 for(const name of shared)write(`tbIDE/tbUI3IDE/src/Sources/${name}.twin`,fs.readFileSync(`tbIDE/Updater/src/Sources/${name}.twin`));
+for(const folder of ['tbIDE/Updater','tbIDE/tbUI3IDE'])write(folder+'/src/Sources/DiagnosticPaths.twin',fs.readFileSync('tbUI3/src/Sources/DiagnosticPaths.twin'));
 const resources='tbIDE/tbUI3IDE/src/Resources/OTHER/';
+write(resources+'tbUI3-theme-service.js',fs.readFileSync('tbIDE/tbUI3IDE/js/theme-service.js'));
 write(resources+'tbUI3-installation.js',fs.readFileSync('tbIDE/tbUI3IDE/js/installation-ui.js'));
 write(resources+'tbUI3-installation.css',fs.readFileSync('tbIDE/Updater/src/Resources/OTHER/winui.css','utf8')+'\n'+fs.readFileSync('tbIDE/tbUI3IDE/js/installation-layout.css','utf8'));
 write(resources+'tbUI3-dialog.css',fs.readFileSync('tbIDE/tbUI3IDE/js/installation-dialog.css'));
 const prototype='tbIDE/prototypes/welcome-wizard/';
 write(resources+'tbUI3-welcome.js',fs.readFileSync(prototype+'welcome.js'));
 write(resources+'tbUI3-welcome.css',fs.readFileSync(prototype+'welcome.css'));
-const master=fs.readFileSync('tbIDE/Updater/src/Resources/OTHER/winui.css','utf8');
-write(resources+'tbUI3-welcome-tokens.css',master.slice(0,master.indexOf('@layer base')).replace(/:root/g,'.tbUI3-welcome-shell'));
+write(resources+'tbUI3-welcome-master.css',fs.readFileSync(prototype+'master.css'));
+write(resources+'tbUI3-welcome-controls.js',fs.readFileSync(prototype+'controls.js'));
 for(const [folder,version]of[['tbIDE/Updater',config.updaterVersion],['tbIDE/tbUI3IDE',config.addinVersion]]){
  const file=folder+'/src/Settings',old=fs.readFileSync(file,'utf8'),settings=JSON.parse(old),parts=version.split('.').map(Number);
  for(const [i,key]of['Major','Minor','Build','Revision'].entries())settings['project.version'+key]=parts[i];

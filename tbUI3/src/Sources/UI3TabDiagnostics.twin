@@ -1,5 +1,5 @@
 ' Temporary, local diagnostics for the TabView designer paint/snapshot investigation.
-' Uses the same App.Path / TEMP file routes as this repository's proven probe logger.
+' Writes to the shared per-user Diagnostics folder.
 Private Module UI3TabDiagnostics
     Private Declare PtrSafe Function GetPixel Lib "gdi32" (ByVal hdc As LongPtr, ByVal x As Long, ByVal y As Long) As Long
 
@@ -36,8 +36,7 @@ Private Module UI3TabDiagnostics
         On Error Resume Next
         Dim lineText As String
         lineText = Format$(Now, "hh:nn:ss") & " [native 1.0.0.65] " & Text
-        AppendLog App.Path & "\tbUI3-tabview.log", lineText
-        AppendLog Environ$("TEMP") & "\tbUI3-tabview.log", lineText
+        AppendLog DiagnosticsFile("tbUI3-tabview.log"), lineText
     End Sub
 
     Private Sub AppendLog(ByVal FilePath As String, ByVal Text As String)

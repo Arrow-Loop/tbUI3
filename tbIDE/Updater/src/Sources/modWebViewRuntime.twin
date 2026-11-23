@@ -65,12 +65,17 @@ Failed:
 
 
     Public Sub ShowUpdaterWindow()
+        On Error GoTo Failed
         Dim version As String, method As String
         If Not UIX_DetectWebView2Runtime(version, method) Then
             RuntimeHelp method
             Exit Sub
         End If
         UIX_Log "WebView2 Runtime " & version & "; " & method
+        UIX_Log "Opening updater WebView2 form"
         frmMain.Show
+        Exit Sub
+    Failed:
+        RuntimeHelp "Opening WebView2 form (" & CStr(Err.Number) & "): " & Err.Description
     End Sub
 End Module

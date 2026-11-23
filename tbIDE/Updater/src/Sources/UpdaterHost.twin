@@ -1,5 +1,6 @@
 ' Host/process bridge. Uses only fixed operations; the WebView never supplies paths or commands.
 Private Module UpdaterHost
+    Private mHelpShown As Boolean
     Private Type StartupInfo
         cb As Long
         lpReserved As LongPtr
@@ -152,22 +153,39 @@ Private Module UpdaterHost
     End Sub
 
     Public Sub RuntimeHelp(ByVal reason As String)
-        ' No Win32 message box. If WebView2 cannot start, show a static embedded remediation
-        ' page in the user's browser. No engine/installation work starts before UI bootstrap.
-        On Error Resume Next
+        ' Verify a complete page before opening it; never launch an empty fallback file.
         ReportStartupFailure reason
-        Dim fso As Object = CreateObject("Scripting.FileSystemObject")
-        Dim base As String = Environ$("LOCALAPPDATA") & "\tbUI3"
-        If Not fso.FolderExists(base) Then fso.CreateFolder base
-        base = base & "\Updater"
-        If Not fso.FolderExists(base) Then fso.CreateFolder base
-        Dim path As String = base & "\WebView2-help.html"
-        Dim stream As Object = fso.CreateTextFile(path, True, False)
+        If mHelpShown Then Exit Sub
+        mHelpShown = True
+        Dim temp As String, memory As Object
+        On Error GoTo Failed
+        Dim base As String = DiagnosticsRoot(), path As String = DiagnosticsFile("updater-startup-help.html")
+        If Len(base) = 0 Or Len(path) = 0 Then UFail "The per-user diagnostics folder is unavailable."
+        UDirectory base
+        temp = USafe(base, "help-" & UUnique() & ".html")
         Dim html As String = UIX_ResourceText("runtime-help.html")
         html = Replace(html, "{{STYLE_BLOCK}}", "<style>" & UIX_ResourceText("winui.css") & "</style>")
-        stream.Write html
-        stream.Close
+        Dim detail As String = Replace(Replace(Replace(reason, "&", "&amp;"), "<", "&lt;"), ">", "&gt;")
+        html = Replace(html, "{{ERROR_DETAIL}}", detail)
+        If InStr(1, html, "<body", vbTextCompare) = 0 Then UFail "The embedded startup-help page is invalid."
+        Set memory = CreateObject("ADODB.Stream")
+        memory.Type = 2: memory.Charset = "utf-8": memory.Open: memory.WriteText html
+        memory.Position = 0: memory.Type = 1
+        Dim bytes() As Byte = memory.Read(): memory.Close
+        UWriteRaw temp, bytes
+        If USize(temp) < 100 Or InStr(1, UText(temp), "<body", vbTextCompare) = 0 Then UFail "Startup-help page could not be verified."
+        UReplace temp, path: UDelete temp: temp = ""
+        UIX_Log "Startup help written: " & path & "; bytes=" & CStr(USize(path))
         Dim verb As String = "open"
-        ShellExecuteW 0, StrPtr(verb), StrPtr(path), 0, 0, 1
+        If ShellExecuteW(0, StrPtr(verb), StrPtr(path), 0, 0, 1) <= 32 Then UFail "Windows could not open the verified startup-help page."
+        Exit Sub
+    Failed:
+        Dim failure As String = Err.Description, number As Long = Err.Number
+        On Error Resume Next
+        If Not memory Is Nothing Then memory.Close
+        If Len(temp) > 0 Then
+            If UExists(temp) Then UDelete temp
+        End If
+        UIX_Log "Startup help failed (" & CStr(number) & "): " & failure
     End Sub
 End Module

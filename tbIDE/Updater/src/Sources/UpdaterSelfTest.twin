@@ -6,7 +6,9 @@ Private Module UpdaterSelfTest
     Private mFailed As Long
     Public Function RunUpdaterSelfTests() As Long
         On Error GoTo Fatal
-        mRoot = Environ$("TEMP") & "\tbUI3-native-updater-tests-" & UUnique()
+        Dim diagnostics As String = DiagnosticsRoot()
+        If Len(diagnostics) = 0 Then UFail "The per-user diagnostics folder is unavailable."
+        mRoot = UFull(diagnostics & "\NativeSelfTests\tbUI3-native-updater-tests-" & UUnique())
         UNoLinks mRoot: UDirectory mRoot
         Set mResults = JA(): mFailed = 0
         Dim i As Long
@@ -18,7 +20,7 @@ Private Module UpdaterSelfTest
         UWriteJson mRoot & "\results.json", report
         Dim pointer As UpdateJson = JO()
         pointer.Assign "results", JS(mRoot & "\results.json"): pointer.Assign "failed", JN(mFailed)
-        UWriteJson Environ$("TEMP") & "\tbUI3-native-updater-latest.json", pointer
+        UWriteJson DiagnosticsFile("native-updater-latest.json"), pointer
         Return IIf(mFailed = 0, 0, 1)
     Fatal:
         UIX_Log "Native self-test failed: " & Err.Description
@@ -163,6 +165,9 @@ Private Module UpdaterSelfTest
             Case 34
                 name = "Windows argument quoting retains trailing separators"
                 Check IQuoteArg("C:\path with space\") = Chr(34) & "C:\path with space\\" & Chr(34), name
+                Dim arguments As Collection = ParseNativeArguments("-Mode Apply -Context " & IQuoteArg("C:\space dir\context.json"))
+                Check arguments.Count = 4 And CStr(arguments(4)) = "C:\space dir\context.json", name
+                Set arguments = ParseNativeArguments(""): Check arguments.Count = 0, name
             Case 35
                 name = "future operation kind fails before changes"
                 Set plan = FixturePlan("future-op"): Set operation = plan.Member("operations").Items.Item(1)

@@ -1,0 +1,24 @@
+' Common per-user diagnostic paths. This private module is shared by package/add-in/updater.
+' Diagnostics never fall back into a project, executable directory or TEMP.
+Private Module DiagnosticPaths
+    Private mFileSystem As Object
+    Public Function DiagnosticsRoot() As String
+        On Error GoTo Unavailable
+        Dim base As String = Environ$("LOCALAPPDATA")
+        If Len(base) = 0 Then Return ""
+        If mFileSystem Is Nothing Then Set mFileSystem = CreateObject("Scripting.FileSystemObject")
+        Dim folder As String = base & "\tbUI3"
+        If Not mFileSystem.FolderExists(folder) Then mFileSystem.CreateFolder folder
+        folder = folder & "\Diagnostics"
+        If Not mFileSystem.FolderExists(folder) Then mFileSystem.CreateFolder folder
+        Return folder
+    Unavailable:
+        Return ""
+    End Function
+    Public Function DiagnosticsFile(ByVal name As String) As String
+        If Len(name) = 0 Or InStr(name, "\") > 0 Or InStr(name, "/") > 0 Or InStr(name, ":") > 0 Or InStr(name, vbNullChar) > 0 Then Return ""
+        Dim folder As String = DiagnosticsRoot()
+        If Len(folder) > 0 Then Return folder & "\" & name
+        Return ""
+    End Function
+End Module

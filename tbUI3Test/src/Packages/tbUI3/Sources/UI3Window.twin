@@ -175,7 +175,7 @@ Public Module UI3Window
     Private m_PropertySheetTarget As ID2D1DCRenderTarget
     Private m_PropertyPageCaption As String
 
-    ' Set True to write %TEMP%\tbUI3-propertypage.log (host tree, subclass results, layout snapshots).
+    ' Set True to write %LOCALAPPDATA%\tbUI3\Diagnostics\tbUI3-propertypage.log (host tree, subclass results, layout snapshots).
     Private Const PROPERTY_PAGE_LOG_ENABLED As Boolean = True
 
     ' PropertyPage hooks: the confirmed native TextBox colour route and the page-move trigger
@@ -945,7 +945,7 @@ CleanUp:
             " text=[" & WindowCaption(hWnd) & "]"
     End Function
 
-    ' One line in %TEMP%\tbUI3-propertypage.log from a property page (only while the log is on).
+    ' One line in %LOCALAPPDATA%\tbUI3\Diagnostics\tbUI3-propertypage.log from a property page (only while the log is on).
     ' Lines from page and control code carry the time, process id and bitness, since the designer may
     ' host controls and pages in a different process in win64.
     Public Sub UI3PropertyPageLog(ByVal Text As String)
@@ -958,15 +958,11 @@ CleanUp:
         ProbeLog "[" & Format$(Now, "hh:nn:ss") & " pid " & GetCurrentProcessId() & " " & bits & "] " & Text
     End Sub
 
-    ' Writes to %TEMP%\tbUI3-propertypage.log and, so Shane needn't hunt for it, to a copy beside the
-    ' project (App.Path; in the designer that is expected to be the host project's folder, unverified).
+    ' Writes only to the shared per-user Diagnostics folder.
     Private Sub ProbeLog(ByVal text As String)
         If Not PROPERTY_PAGE_LOG_ENABLED Then Exit Sub
         On Error Resume Next
-        AppendLogLine Environ$("TEMP") & "\tbUI3-propertypage.log", text
-        If StrComp(App.Path, Environ$("TEMP"), vbTextCompare) <> 0 Then
-            AppendLogLine App.Path & "\tbUI3-propertypage.log", text
-        End If
+        AppendLogLine DiagnosticsFile("tbUI3-propertypage.log"), text
         On Error GoTo 0
     End Sub
 

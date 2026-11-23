@@ -51,7 +51,7 @@
     if(msg.type==='hostError'){state={status:'error',message:String(msg.message||'The updater could not complete this request.')};render();return;}
     if(msg.type!=='updateState'||!msg.state||typeof msg.state.status!=='string')return;
     state=msg.state;running=msg.running===true;canRecover=msg.canRecover===true;
-    if(!running&&msg.exitCode&& !['error','complete','rolledBack','cancelled'].includes(state.status)) state={status:'error',message:'The updater engine stopped before reporting completion. Check the session log, then retry.'};
+    if(!running&&msg.exitCode&& !['error','complete','rolledBack','cancelled'].includes(state.status)) state={status:'error',message:'The updater engine stopped before reporting completion. Check updater-engine.log in your tbUI3 Diagnostics folder, then retry.'};
     text('recovery-path',msg.context?'Session: '+msg.context:'No update session is open.');render();
   }
   function start(){

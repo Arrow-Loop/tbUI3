@@ -785,7 +785,7 @@ Private Module UI3Icons
         m_PendingLibrary.Remove LCase$(ControlName)
     End Sub
 
-    ' Set True to append designer events to %TEMP%\tbUI3-design.log while diagnosing the picker.
+    ' Set True to append designer events to %LOCALAPPDATA%\tbUI3\Diagnostics\tbUI3-design.log while diagnosing the picker.
     Private Const DESIGN_LOG_ENABLED As Boolean = False
 
     Public Sub DesignLog(ByVal Text As String)
@@ -793,7 +793,7 @@ Private Module UI3Icons
         On Error Resume Next
         Dim f As Integer
         f = FreeFile
-        Open Environ$("TEMP") & "\tbUI3-design.log" For Append As #f
+        Open DiagnosticsFile("tbUI3-design.log") For Append As #f
         Print #f, Format$(Now, "hh:nn:ss") & "  " & Text
         Close #f
     End Sub

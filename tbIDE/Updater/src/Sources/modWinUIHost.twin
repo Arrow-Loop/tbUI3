@@ -356,11 +356,9 @@ Finished:
         On Error Resume Next
         Debug.Print "[tbUI3 Updater] " & messageText
         Dim fso As Object = CreateObject("Scripting.FileSystemObject")
-        Dim folder As String = Environ$("LOCALAPPDATA") & "\tbUI3"
-        If Not fso.FolderExists(folder) Then fso.CreateFolder folder
-        folder = folder & "\Updater"
-        If Not fso.FolderExists(folder) Then fso.CreateFolder folder
-        Dim stream As Object = fso.OpenTextFile(folder & "\startup.log", 8, True, -1)
+        Dim path As String = DiagnosticsFile("updater-startup.log")
+        If Len(path) = 0 Then Exit Sub
+        Dim stream As Object = fso.OpenTextFile(path, 8, True, -1)
         stream.WriteLine Format$(Now, "yyyy-mm-dd hh:nn:ss") & " " & messageText
         stream.Close
     End Sub

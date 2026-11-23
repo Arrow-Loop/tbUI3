@@ -178,9 +178,21 @@
           make('strong','',str(r.id),row);make('span','',str(r.status)+(r.message?' · '+r.message:''),row);
           if(r.repairable) {
             const repair=make('button','tbw-small-button','Repair',row);repair.type='button';repair.disabled=disabledBy('repair-resource');
-            repair.onclick=()=>{if(typeof options.confirmRepair==='function' && !options.confirmRepair(r))return;
-              if(typeof options.confirmRepair!=='function' && !win.confirm('Restore a managed copy of '+r.id+'? A verified backup will be retained.'))return;
-              send('repair-resource',{id:r.id,confirmed:true});draw();
+            repair.onclick=()=>{
+              // Confirmation is owned by the native-styled host UI and may be asynchronous.
+              // No browser confirm/alert/prompt fallback is permitted in production.
+              if(typeof options.confirmRepair!=='function'){
+                lastMessage='Repair confirmation is unavailable. Open IDE Options to repair this resource.';
+                draw();return;
+              }
+              repair.disabled=true;
+              Promise.resolve().then(()=>options.confirmRepair(r)).then(approved=>{
+                if(disposed || !approved)return;
+                send('repair-resource',{id:r.id,confirmed:true});draw();
+              }).catch(error=>{
+                if(disposed)return;
+                lastMessage='Repair confirmation failed: '+(error && error.message || String(error));draw();
+              }).finally(()=>{if(!disposed && repair.isConnected)repair.disabled=false;});
             };
           }
         });

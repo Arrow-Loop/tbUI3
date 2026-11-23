@@ -7,24 +7,22 @@ Private Module UpdaterEngine
         UWriteJson USafe(session, "state.json"), state
     End Sub
     Public Sub UContextValid(ByVal context As UpdateJson)
-        Dim supplied As String = JT(context, "installRoot"), root As String = UFull(supplied)
-        Do While Right$(root, 1) = "\" And Len(root) > 3: root = Left$(root, Len(root) - 1): Loop
-        Dim exe As String = USafe(root, "twinBASIC.exe")
-        If Not UExists(exe) Or StrComp(JT(context, "ideExe"), exe, vbTextCompare) <> 0 Then UFail "Context does not identify an existing twinBASIC installation."
-        context.Assign "installRoot", JS(root)
+        IValidateContext context, UpdateContext
     End Sub
     Public Sub UDetached(ByVal context As UpdateJson, ByVal session As String, ByVal mode As String)
         Dim runner As String = USafe(session, "runner-" & UUnique())
         UDirectory runner
         Dim source As String = App.Path & "\Updater.exe", destination As String = runner & "\Updater.exe"
-        UNoLinks source: UPe source, &H14C: FileCopy source, destination
+        UNoLinks source: UPe source, &H14C: UCopy source, destination
         If UHash(source) <> UHash(destination) Then UFail "Detached updater copy verification failed."
         Shell QuoteArg(destination) & " -Mode " & mode & " -Context " & QuoteArg(UpdateContext), vbNormalFocus
     End Sub
     Public Sub UApproval(ByVal session As String)
         Dim path As String = USafe(session, "approved.json")
         If Not UExists(path) Then UFail "No normal-shutdown approval was received. Retry from the IDE."
-        If Not JBool(UReadJson(path), "normalShutdown") Then UFail "Cancelled/abnormal shutdown cannot install updates."
+        Dim approval As UpdateJson = UReadJson(path), context As UpdateJson = UReadJson(UpdateContext)
+        If Not JBool(approval, "normalShutdown") Or JD(approval, "schema") <> 1 Then UFail "Cancelled/abnormal shutdown cannot install updates."
+        If JT(approval, "installationId") <> JT(context, "installationId") Or JT(approval, "contextSha256") <> UHash(UpdateContext) Or JT(approval, "planSha256") <> UHash(USafe(session, "plan.json")) Then UFail "Approval does not bind the current installation and plan."
     End Sub
     Private Function UCancelled(ByVal session As String) As Boolean
         Return UExists(USafe(session, "cancel.json"))
@@ -32,9 +30,7 @@ Private Module UpdaterEngine
     Private Sub UApply(ByVal mode As String, ByVal context As UpdateJson, ByVal session As String)
         Dim planPath As String = USafe(session, "plan.json"), journalPath As String = USafe(session, "journal.json"), plan As UpdateJson = UReadJson(planPath)
         UValidatePlan plan, context, session
-        Dim keyPath As String = USafe(session, "installation-key.json")
-        UWriteJson keyPath, JS(LCase$(JT(context, "installRoot")))
-        Dim key As String = UHash(keyPath), mutex As LongPtr = UAcquire("Local\tbUI3Updater-" & key)
+        Dim key As String = JT(context, "installationId"), mutex As LongPtr = IRequireLock("installation-" & key), sharedLock As LongPtr
         On Error GoTo Failed
         UState session, "waiting", "Waiting for normal IDE shutdown. Close other sessions for this installation.", JT(context, "choice")
         Dim seconds As Long = 120
@@ -48,14 +44,30 @@ Private Module UpdaterEngine
         If mode = "Apply" Then UApproval session
         UWaitInstallation context, plan.Member("identity")
         If mode = "Apply" And UCancelled(session) Then GoTo Cancelled
+        Dim c As UpdateJson
+        For Each c In plan.Member("components").Items
+            If JT(c, "id") <> "ide" And sharedLock = 0 Then sharedLock = IRequireLock("shared-resources")
+        Next
+        If Not IIsElevated() Then
+            If RequiresElevation(plan) Then
+                UState session, "elevationRequired", "This approved transaction needs administrator access. Continue in this window to review Windows UAC. Denial leaves the installation unchanged."
+                IUnlock sharedLock: sharedLock = 0: IUnlock mutex: mutex = 0
+                Exit Sub
+            End If
+        End If
         UState session, "installing", "Installing verified updates..."
         If mode = "Recover" Then
-            Dim recovery As UpdateJson = UReadJson(journalPath)
+            Dim recovery As UpdateJson
+            If IIsElevated() Then
+                Set recovery = ElevatedRecoveryJournal()
+            Else
+                Set recovery = UReadJson(journalPath)
+            End If
             UValidateJournal recovery, plan, session: URollback recovery, journalPath
             UState session, "rolledBack", "Previous installation restored."
-            URelease mutex: Exit Sub
+            IUnlock sharedLock: sharedLock = 0: IUnlock mutex: Exit Sub
         End If
-        Dim active As String = USafe(UParent(session), "active-" & key & ".json")
+        Dim active As String = USafe(JT(context, "stateRoot"), "active.json")
         If UExists(active) Then
             Dim previous As UpdateJson = UReadJson(active), previousPath As String = JT(previous, "journal"), previousContext As String = JT(previous, "context")
             ' Active markers are trusted only inside an immediate saved updater session.
@@ -71,15 +83,15 @@ Private Module UpdaterEngine
         marker.Assign "journal", JS(journalPath): marker.Assign "context", JS(UpdateContext): UWriteJson active, marker
         UInstall plan, journalPath, USafe(session, "state.json")
         UState session, "complete", "Selected updates installed and verified."
-        URelease mutex: mutex = 0
+        IUnlock sharedLock: sharedLock = 0: IUnlock mutex: mutex = 0
         If JBool(context, "restart") Then StartIde JT(context, "ideExe"), JT(context, "installRoot")
         Exit Sub
     Cancelled:
         UState session, "cancelled", "Update cancelled. Your installation was not changed."
-        URelease mutex: Exit Sub
+        IUnlock sharedLock: sharedLock = 0: IUnlock mutex: Exit Sub
     Failed:
         Dim reason As String = Err.Description
-        On Error Resume Next: URelease mutex
+        On Error Resume Next: IUnlock sharedLock: sharedLock = 0: IUnlock mutex
         On Error GoTo 0
         UFail reason
     End Sub
@@ -106,6 +118,9 @@ Private Module UpdaterEngine
                 UValidatePlan plan, context, session
                 If UCancelled(session) Then UState session, "cancelled", "Pending update cancelled.": Return 0
                 UWriteJson USafe(session, "plan.json"), plan
+                Dim pending As UpdateJson = JO()
+                pending.Assign "schema", JN(1): pending.Assign "context", JS(UpdateContext): pending.Assign "planSha256", JS(UHash(USafe(session, "plan.json")))
+                UWriteJson USafe(JT(context, "stateRoot"), "pending.json"), pending
                 UState session, "ready", "Verified and ready. Installation waits for normal IDE shutdown.", JT(context, "choice")
                 UDetached context, session, "Apply"
             Case "Cancel"
@@ -121,16 +136,20 @@ Private Module UpdaterEngine
         On Error Resume Next
         If Len(session) > 0 Then
             UState session, "error", reason
+            If IIsElevated() Then Return 1
             Dim stream As Object = UFso().OpenTextFile(session & "\updater.log", 8, True, -1)
             stream.WriteLine Format$(Now, "yyyy-mm-dd hh:nn:ss") & " " & mode & ": " & reason: stream.Close
         End If
         Return 1
     End Function
     Private Sub UCleanSessions(ByVal current As String)
+        On Error GoTo Retain
         Dim root As String = UParent(current), folder As Object
         For Each folder In UFso().GetFolder(root).SubFolders
             If StrComp(folder.Path, current, vbTextCompare) <> 0 And folder.DateLastModified < DateAdd("d", -7, Now) Then UCleanOne folder.Path, root
         Next
+    Retain:
+        ' Optional cleanup never blocks checking, including unsupported enumeration paths.
     End Sub
     Private Sub UCleanOne(ByVal directory As String, ByVal root As String)
         On Error GoTo Retain

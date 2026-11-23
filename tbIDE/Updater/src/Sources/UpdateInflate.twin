@@ -1,8 +1,8 @@
 ' RFC 1951 raw DEFLATE decoder. Streaming input/output; only a 32-KiB history is retained.
 ' Private implementation, deliberately supports ZIP methods 0 and 8 only.
 Private Class UpdateInflate
-    Private mInput As Integer
-    Private mOutput As Integer
+    Private mInput As LongPtr
+    Private mOutput As LongPtr
     Private mRemaining As Long
     Private mIn(0 To 65535) As Byte
     Private mInSize As Long
@@ -26,9 +26,9 @@ Private Class UpdateInflate
         On Error GoTo Failed
         If UExists(target) Then UFail "Refusing to overwrite staged file."
         UDirectory UParent(target)
-        mInput = FreeFile(): Open archive For Binary Access Read As #mInput: inputOpen = True
-        Seek #mInput, offset + 1
-        mOutput = FreeFile(): Open target For Binary Access Write As #mOutput: outputOpen = True
+        mInput = UOpenRead(archive): inputOpen = True
+        USeekStream mInput, offset
+        mOutput = UOpenNew(target): outputOpen = True
         mRemaining = packed: mLimit = expanded: mTotal = 0: mOutCount = 0
         mInSize = 0: mInPos = 0: mBits = 0: mBitCount = 0: mCrc = -1
         InitCrc
@@ -44,15 +44,15 @@ Private Class UpdateInflate
         Dim actual As Long = Not mCrc, unsigned As Double = CDbl(actual And &H7FFFFFFF)
         If actual < 0 Then unsigned = unsigned + 2147483648#
         If unsigned <> crc Then UFail "ZIP CRC32 mismatch."
-        Close #mInput: inputOpen = False: Close #mOutput: outputOpen = False
+        UCloseStream mInput: inputOpen = False: UCloseStream mOutput: outputOpen = False
         UFlush target
         Exit Sub
     Failed:
         Dim reason As String = Err.Description
         On Error Resume Next
-        If inputOpen Then Close #mInput
-        If outputOpen Then Close #mOutput
-        If UExists(target) Then Kill target
+        If inputOpen Then UCloseStream mInput
+        If outputOpen Then UCloseStream mOutput
+        If UExists(target) Then UDelete target
         On Error GoTo 0
         UFail reason
     End Sub
@@ -75,7 +75,7 @@ Private Class UpdateInflate
             If mInSize > 65536 Then mInSize = 65536
             If mInSize = 0 Then UFail "Truncated DEFLATE stream."
             Dim part() As Byte: ReDim part(0 To mInSize - 1)
-            Get #mInput, , part
+            If UReadBuffer(mInput, VarPtr(part(0)), mInSize) <> mInSize Then UFail "Truncated ZIP data."
             Dim i As Long
             For i = 0 To mInSize - 1: mIn(i) = part(i): Next
             mRemaining = mRemaining - mInSize: mInPos = 0
@@ -103,7 +103,7 @@ Private Class UpdateInflate
         Dim part() As Byte: ReDim part(0 To mOutCount - 1)
         Dim i As Long
         For i = 0 To mOutCount - 1: part(i) = mOut(i): Next
-        Put #mOutput, , part: mOutCount = 0
+        UWriteBuffer mOutput, VarPtr(part(0)), mOutCount: mOutCount = 0
     End Sub
     Private Sub Build(ByRef tree As HuffmanTree, ByRef lengths() As Long, ByVal count As Long)
         Dim i As Long, n As Long, remaining As Long = 1, offsets(0 To 15) As Long

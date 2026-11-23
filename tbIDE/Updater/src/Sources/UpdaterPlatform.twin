@@ -2,6 +2,15 @@
 ' Downloads stream to disk through WinHTTP; hashes use CNG; swaps are same-volume renames.
 Private Module UpdaterPlatform
     Private Declare PtrSafe Function CreateFileW Lib "kernel32" (ByVal path As LongPtr, ByVal access As Long, ByVal share As Long, ByVal security As LongPtr, ByVal disposition As Long, ByVal flags As Long, ByVal template As LongPtr) As LongPtr
+    Private Declare PtrSafe Function GetFullPathNameW Lib "kernel32" (ByVal path As LongPtr, ByVal count As Long, ByVal buffer As LongPtr, ByVal filePart As LongPtr) As Long
+    Private Declare PtrSafe Function CreateDirectoryW Lib "kernel32" (ByVal path As LongPtr, ByVal security As LongPtr) As Long
+    Private Declare PtrSafe Function DeleteFileW Lib "kernel32" (ByVal path As LongPtr) As Long
+    Private Declare PtrSafe Function CopyFileW Lib "kernel32" (ByVal source As LongPtr, ByVal destination As LongPtr, ByVal failIfExists As Long) As Long
+    Private Declare PtrSafe Function ReadFile Lib "kernel32" (ByVal handle As LongPtr, ByVal buffer As LongPtr, ByVal count As Long, ByRef completed As Long, ByVal overlapped As LongPtr) As Long
+    Private Declare PtrSafe Function WriteFile Lib "kernel32" (ByVal handle As LongPtr, ByVal buffer As LongPtr, ByVal count As Long, ByRef completed As Long, ByVal overlapped As LongPtr) As Long
+    Private Declare PtrSafe Function GetFileSizeEx Lib "kernel32" (ByVal handle As LongPtr, ByRef size As LongLong) As Long
+    Private Declare PtrSafe Function SetFilePointerEx Lib "kernel32" (ByVal handle As LongPtr, ByVal offset As LongLong, ByRef position As LongLong, ByVal origin As Long) As Long
+    Private Declare PtrSafe Function MultiByteToWideChar Lib "kernel32" (ByVal codepage As Long, ByVal flags As Long, ByVal bytes As LongPtr, ByVal count As Long, ByVal text As LongPtr, ByVal capacity As Long) As Long
     Private Declare PtrSafe Function FlushFileBuffers Lib "kernel32" (ByVal handle As LongPtr) As Long
     Private Declare PtrSafe Function CloseHandle Lib "kernel32" (ByVal handle As LongPtr) As Long
     Private Declare PtrSafe Function MoveFileExW Lib "kernel32" (ByVal source As LongPtr, ByVal target As LongPtr, ByVal flags As Long) As Long
@@ -59,21 +68,97 @@ Private Module UpdaterPlatform
     Public Function UFso() As Object
         Set UFso = CreateObject("Scripting.FileSystemObject")
     End Function
+    Public Function UWinPath(ByVal path As String) As String
+        If Left$(path, 4) = "\\?\" Then Return path
+        If Left$(path, 2) = "\\" Then Return "\\?\UNC\" & Mid$(path, 3)
+        Return "\\?\" & path
+    End Function
     Public Function UExists(ByVal path As String) As Boolean
-        Return UFso().FileExists(path)
+        Dim native As String = UWinPath(UFull(path)), attrs As Long = GetFileAttributesW(StrPtr(native))
+        Return attrs <> -1 And (attrs And &H10) = 0
+    End Function
+    Public Function UFolder(ByVal path As String) As Boolean
+        Dim native As String = UWinPath(UFull(path)), attrs As Long = GetFileAttributesW(StrPtr(native))
+        Return attrs <> -1 And (attrs And &H10) <> 0
     End Function
     Public Function UFull(ByVal path As String) As String
-        Return UFso().GetAbsolutePathName(path)
+        Dim result As String = String$(32768, vbNullChar), count As Long = GetFullPathNameW(StrPtr(path), Len(result), StrPtr(result), 0)
+        If count = 0 Or count >= Len(result) Then UFail "Invalid/unsupported absolute path."
+        Return Left$(result, count)
     End Function
     Public Function UParent(ByVal path As String) As String
-        Return UFso().GetParentFolderName(path)
+        If Len(path) = 3 And Mid$(path, 2, 2) = ":\" Then Return ""
+        Dim at As Long = InStrRev(path, "\")
+        If at = 3 And Mid$(path, 2, 1) = ":" Then Return Left$(path, 3)
+        If Left$(path, 2) = "\\" Then
+            Dim first As Long = InStr(3, path, "\")
+            If first = 0 Or at <= first Then Return ""
+        End If
+        If at > 0 Then Return Left$(path, at - 1)
+        Return ""
     End Function
     Public Sub UDirectory(ByVal path As String)
-        Dim fso As Object = UFso()
-        If fso.FolderExists(path) Then Exit Sub
-        If Len(fso.GetParentFolderName(path)) = 0 Then UFail "Invalid folder."
-        UDirectory fso.GetParentFolderName(path)
-        fso.CreateFolder path
+        UNoLinks path
+        If UFolder(path) Then Exit Sub
+        Dim parent As String = UParent(path)
+        If Len(parent) = 0 Then UFail "Invalid folder."
+        UDirectory parent
+        Dim native As String = UWinPath(UFull(path))
+        If CreateDirectoryW(StrPtr(native), 0) = 0 And Not UFolder(path) Then UFail "Could not create folder: " & path
+        UNoLinks path
+    End Sub
+    Public Function UOpenRead(ByVal path As String) As LongPtr
+        Dim native As String = UWinPath(UFull(path)), handle As LongPtr = CreateFileW(StrPtr(native), &H80000000, 1, 0, 3, 0, 0)
+        If handle = -1 Then UFail "Cannot read file: " & path
+        Return handle
+    End Function
+    Public Function UOpenNew(ByVal path As String) As LongPtr
+        Dim native As String = UWinPath(UFull(path)), handle As LongPtr = CreateFileW(StrPtr(native), &H40000000, 1, 0, 1, 0, 0)
+        If handle = -1 Then UFail "Cannot create a new file: " & path
+        Return handle
+    End Function
+    Public Sub UCloseStream(ByVal handle As LongPtr)
+        If handle <> 0 And handle <> -1 Then CloseHandle handle
+    End Sub
+    Public Function UReadBuffer(ByVal handle As LongPtr, ByVal buffer As LongPtr, ByVal count As Long) As Long
+        Dim completed As Long
+        If ReadFile(handle, buffer, count, completed, 0) = 0 Then UFail "File read failed."
+        Return completed
+    End Function
+    Public Sub UWriteBuffer(ByVal handle As LongPtr, ByVal buffer As LongPtr, ByVal count As Long)
+        Dim completed As Long
+        If WriteFile(handle, buffer, count, completed, 0) = 0 Or completed <> count Then UFail "File write failed."
+    End Sub
+    Public Sub USeekStream(ByVal handle As LongPtr, ByVal offset As Long)
+        Dim position As LongLong
+        If SetFilePointerEx(handle, CLngLng(offset), position, 0) = 0 Then UFail "File seek failed."
+    End Sub
+    Public Function USize(ByVal path As String) As Double
+        Dim handle As LongPtr = UOpenRead(path), size As LongLong, ok As Long = GetFileSizeEx(handle, size)
+        UCloseStream handle
+        If ok = 0 Or size < 0 Then UFail "File size unavailable."
+        Return CDbl(size)
+    End Function
+    Public Sub UWriteRaw(ByVal path As String, ByRef bytes As Variant)
+        Dim handle As LongPtr
+        On Error GoTo Failed
+        handle = UOpenNew(path)
+        UWriteBuffer handle, VarPtr(bytes(LBound(bytes))), UBound(bytes) - LBound(bytes) + 1
+        If FlushFileBuffers(handle) = 0 Then UFail "Payload durable flush failed."
+        UCloseStream handle: Exit Sub
+    Failed:
+        Dim reason As String = Err.Description
+        UCloseStream handle: UFail reason
+    End Sub
+    Public Sub UDelete(ByVal path As String)
+        UNoLinks path
+        Dim native As String = UWinPath(UFull(path))
+        If DeleteFileW(StrPtr(native)) = 0 Then UFail "Could not remove file: " & path
+    End Sub
+    Public Sub UCopy(ByVal source As String, ByVal destination As String)
+        UNoLinks source: UNoLinks destination
+        Dim nativeSource As String = UWinPath(UFull(source)), target As String = UWinPath(UFull(destination))
+        If CopyFileW(StrPtr(nativeSource), StrPtr(target), 1) = 0 Then UFail "Verified copy could not be created: " & destination
     End Sub
     Public Function UUnique() As String
         Return Replace(UFso().GetTempName(), ".", "-")
@@ -102,7 +187,8 @@ Private Module UpdaterPlatform
     Public Sub UNoLinks(ByVal path As String)
         Dim cursor As String = UFull(path), attrs As Long, parent As String
         Do While Len(cursor) > 0
-            attrs = GetFileAttributesW(StrPtr(cursor))
+            Dim native As String = UWinPath(cursor)
+            attrs = GetFileAttributesW(StrPtr(native))
             If attrs <> -1 Then
                 If (attrs And &H400) <> 0 Then UFail "Reparse point forbidden: " & cursor
             End If
@@ -121,37 +207,45 @@ Private Module UpdaterPlatform
         Return path
     End Function
     Public Function UBytes(ByVal path As String, ByVal offset As Long, ByVal size As Long) As Byte()
-        Dim file As Integer = FreeFile(), bytes() As Byte
+        Dim handle As LongPtr = UOpenRead(path), bytes() As Byte
         On Error GoTo Failed
-        Open path For Binary Access Read As #file
-        If size <= 0 Or offset < 0 Or CDbl(offset) + size > LOF(file) Then UFail "Truncated file."
-        ReDim bytes(0 To size - 1)
-        Get #file, offset + 1, bytes
-        Close #file
-        Return bytes
+        If size <= 0 Or offset < 0 Or CDbl(offset) + size > USize(path) Then UFail "Truncated file."
+        ReDim bytes(0 To size - 1): USeekStream handle, offset
+        If UReadBuffer(handle, VarPtr(bytes(0)), size) <> size Then UFail "Truncated file read."
+        UCloseStream handle: Return bytes
     Failed:
         Dim reason As String = Err.Description
-        On Error Resume Next: Close #file
-        On Error GoTo 0
-        UFail reason
+        UCloseStream handle: UFail reason
+    End Function
+    Public Function UDecodeText(ByRef bytes As Variant) As String
+        Dim count As Long = UBound(bytes) - LBound(bytes) + 1
+        If count >= 2 Then
+            If bytes(0) = 255 And bytes(1) = 254 Then
+                If (count Mod 2) <> 0 Then UFail "Invalid UTF-16 byte length."
+                Dim text As String = String$((count - 2) \ 2, vbNullChar)
+                If count > 2 Then CopyMemory ByVal StrPtr(text), bytes(2), count - 2
+                Return text
+            End If
+        End If
+        Dim size As Long = MultiByteToWideChar(65001, 8, VarPtr(bytes(0)), count, 0, 0)
+        If size = 0 Then UFail "Invalid UTF-8 text."
+        Dim result As String = String$(size, vbNullChar)
+        If MultiByteToWideChar(65001, 8, VarPtr(bytes(0)), count, StrPtr(result), size) <> size Then UFail "UTF-8 conversion failed."
+        Return result
     End Function
     Public Function UText(ByVal path As String) As String
-        Dim stream As Object = CreateObject("ADODB.Stream")
-        stream.Type = 1: stream.Open: stream.LoadFromFile path
-        Dim charset As String = "utf-8"
-        If stream.Size >= 2 Then
-            Dim bytes As Variant = stream.Read(2)
-            If bytes(0) = 255 And bytes(1) = 254 Then charset = "unicode"
-        End If
-        stream.Position = 0: stream.Type = 2: stream.Charset = charset
-        UText = stream.ReadText(): stream.Close
+        Dim count As Double = USize(path)
+        If count = 0 Then Return ""
+        If count > 16777216 Then UFail "Text file exceeds supported size."
+        Dim bytes As Variant = UBytes(path, 0, CLng(count))
+        Return UDecodeText(bytes)
     End Function
     Public Function UReadJson(ByVal path As String) As UpdateJson
-        If UFso().GetFile(path).Size > 16777216 Then UFail "Session JSON exceeds size limit."
         Set UReadJson = JParse(UText(path))
     End Function
     Public Sub UFlush(ByVal path As String)
-        Dim handle As LongPtr = CreateFileW(StrPtr(path), &H40000000, 1, 0, 3, 0, 0)
+        Dim native As String = UWinPath(UFull(path))
+        Dim handle As LongPtr = CreateFileW(StrPtr(native), &H40000000, 1, 0, 3, 0, 0)
         If handle = -1 Then UFail "Could not open file for durable flush."
         Dim ok As Long = FlushFileBuffers(handle)
         CloseHandle handle
@@ -159,41 +253,47 @@ Private Module UpdaterPlatform
     End Sub
     Public Sub UUnlocked(ByVal path As String)
         If Not UExists(path) Then Exit Sub
-        Dim handle As LongPtr = CreateFileW(StrPtr(path), &HC0000000, 0, 0, 3, 0, 0)
+        Dim native As String = UWinPath(UFull(path))
+        Dim handle As LongPtr = CreateFileW(StrPtr(native), &HC0000000, 0, 0, 3, 0, 0)
         If handle = -1 Then UFail "File is in use or not writable: " & path
         CloseHandle handle
     End Sub
     Public Sub UWriteJson(ByVal path As String, ByVal value As UpdateJson)
-        Dim temp As String = path & "." & UUnique() & ".new", stream As Object
+        Dim temp As String = path & "." & UUnique() & ".new", handle As LongPtr
         On Error GoTo Failed
-        Set stream = UFso().CreateTextFile(temp, False, True)
-        stream.Write value.Encode(): stream.Close: UFlush temp
-        Dim attempt As Long
+        handle = UOpenNew(temp)
+        Dim bom(0 To 1) As Byte, text As String = value.Encode()
+        bom(0) = 255: bom(1) = 254
+        UWriteBuffer handle, VarPtr(bom(0)), 2
+        UWriteBuffer handle, StrPtr(text), LenB(text)
+        If FlushFileBuffers(handle) = 0 Then UFail "JSON durable flush failed."
+        UCloseStream handle: handle = 0
+        Dim attempt As Long, source As String = UWinPath(temp), destination As String = UWinPath(path)
         For attempt = 1 To 10
-            If MoveFileExW(StrPtr(temp), StrPtr(path), 1 Or 8) <> 0 Then Exit Sub
+            If MoveFileExW(StrPtr(source), StrPtr(destination), 1 Or 8) <> 0 Then Exit Sub
             UPause 50
         Next
         UFail "Atomic JSON replacement failed."
     Failed:
         Dim reason As String = Err.Description
         On Error Resume Next
-        If Not stream Is Nothing Then stream.Close
-        If UExists(temp) Then Kill temp
-        On Error GoTo 0
-        UFail reason
+        UCloseStream handle
+        If UExists(temp) Then UDelete temp
+        On Error GoTo 0: UFail reason
     End Sub
     Public Sub UReplace(ByVal source As String, ByVal destination As String)
         UNoLinks source: UNoLinks destination
         UDirectory UParent(destination)
         Dim temp As String = UParent(destination) & "\.tbUI3-" & UUnique() & ".tmp"
         On Error GoTo Failed
-        FileCopy source, temp: UFlush temp
-        If MoveFileExW(StrPtr(temp), StrPtr(destination), 1 Or 8) = 0 Then UFail "Atomic file replacement failed: " & destination
+        UCopy source, temp: UFlush temp
+        Dim nativeTemp As String = UWinPath(temp), nativeDestination As String = UWinPath(destination)
+        If MoveFileExW(StrPtr(nativeTemp), StrPtr(nativeDestination), 1 Or 8) = 0 Then UFail "Atomic file replacement failed: " & destination
         Exit Sub
     Failed:
         Dim reason As String = Err.Description
         On Error Resume Next
-        If UExists(temp) Then Kill temp
+        If UExists(temp) Then UDelete temp
         On Error GoTo 0
         UFail reason
     End Sub
@@ -205,19 +305,19 @@ Private Module UpdaterPlatform
         Next
     End Sub
     Public Function UHash(ByVal path As String) As String
-        Dim algorithm As LongPtr, hash As LongPtr, file As Integer, opened As Boolean
+        Dim algorithm As LongPtr, hash As LongPtr, file As LongPtr, opened As Boolean
         Dim name As String = "SHA256", buffer() As Byte, digest(0 To 31) As Byte, size As Long, i As Long, result As String
         On Error GoTo Failed
         If BCryptOpenAlgorithmProvider(algorithm, StrPtr(name), 0, 0) <> 0 Then UFail "SHA-256 unavailable."
         If BCryptCreateHash(algorithm, hash, 0, 0, 0, 0, 0) <> 0 Then UFail "Could not create SHA-256 hash."
-        file = FreeFile(): Open path For Binary Access Read As #file: opened = True
-        Do While Seek(file) <= LOF(file)
-            size = LOF(file) - Seek(file) + 1
-            If size > 65536 Then size = 65536
-            ReDim buffer(0 To size - 1): Get #file, , buffer
+        file = UOpenRead(path): opened = True
+        ReDim buffer(0 To 65535)
+        Do
+            size = UReadBuffer(file, VarPtr(buffer(0)), 65536)
+            If size = 0 Then Exit Do
             If BCryptHashData(hash, VarPtr(buffer(0)), size, 0) <> 0 Then UFail "Hash read failed."
         Loop
-        Close #file: opened = False
+        UCloseStream file: opened = False
         If BCryptFinishHash(hash, VarPtr(digest(0)), 32, 0) <> 0 Then UFail "Hash finalization failed."
         BCryptDestroyHash hash: hash = 0: BCryptCloseAlgorithmProvider algorithm, 0: algorithm = 0
         For i = 0 To 31: result = result & LCase$(Right$("0" & Hex$(digest(i)), 2)): Next
@@ -225,17 +325,36 @@ Private Module UpdaterPlatform
     Failed:
         Dim reason As String = Err.Description
         On Error Resume Next
-        If opened Then Close #file
+        If opened Then UCloseStream file
         If hash <> 0 Then BCryptDestroyHash hash
         If algorithm <> 0 Then BCryptCloseAlgorithmProvider algorithm, 0
         On Error GoTo 0
         UFail reason
     End Function
+    Public Function UHashText(ByVal text As String) As String
+        Dim algorithm As LongPtr, hash As LongPtr, digest(0 To 31) As Byte
+        Dim name As String = "SHA256", result As String, i As Long
+        On Error GoTo Failed
+        If BCryptOpenAlgorithmProvider(algorithm, StrPtr(name), 0, 0) <> 0 Then UFail "SHA-256 unavailable."
+        If BCryptCreateHash(algorithm, hash, 0, 0, 0, 0, 0) <> 0 Then UFail "SHA-256 initialization failed."
+        If BCryptHashData(hash, StrPtr(text), LenB(text), 0) <> 0 Then UFail "Identity hash failed."
+        If BCryptFinishHash(hash, VarPtr(digest(0)), 32, 0) <> 0 Then UFail "Identity hash finalization failed."
+        BCryptDestroyHash hash: hash = 0: BCryptCloseAlgorithmProvider algorithm, 0: algorithm = 0
+        For i = 0 To 31: result = result & LCase$(Right$("0" & Hex$(digest(i)), 2)): Next
+        Return result
+    Failed:
+        Dim reason As String = Err.Description
+        On Error Resume Next
+        If hash <> 0 Then BCryptDestroyHash hash
+        If algorithm <> 0 Then BCryptCloseAlgorithmProvider algorithm, 0
+        On Error GoTo 0: UFail reason
+    End Function
     Public Function UBinaryVersion(ByVal path As String) As String
-        Dim ignored As Long, size As Long = GetFileVersionInfoSizeW(StrPtr(path), ignored), bytes() As Byte
+        Dim native As String = UWinPath(UFull(path))
+        Dim ignored As Long, size As Long = GetFileVersionInfoSizeW(StrPtr(native), ignored), bytes() As Byte
         If size = 0 Then UFail "Binary has no numeric version: " & path
         ReDim bytes(0 To size - 1)
-        If GetFileVersionInfoW(StrPtr(path), 0, size, VarPtr(bytes(0))) = 0 Then UFail "Binary version read failed."
+        If GetFileVersionInfoW(StrPtr(native), 0, size, VarPtr(bytes(0))) = 0 Then UFail "Binary version read failed."
         Dim root As String = "\", pointer As LongPtr, count As Long, fixed(0 To 12) As Long
         If VerQueryValueW(VarPtr(bytes(0)), StrPtr(root), pointer, count) = 0 Or count < 52 Then UFail "Missing fixed PE version."
         CopyMemory fixed(0), ByVal pointer, 52
@@ -288,10 +407,10 @@ Private Module UpdaterPlatform
         If WinHttpQueryHeaders(request, info, 0, StrPtr(buffer), size, 0) <> 0 Then Header = Replace(Left$(buffer, size \ 2), vbNullChar, "")
     End Function
     Public Sub UFetch(ByVal url As String, ByVal destination As String, ByVal limit As Long, Optional ByVal expectedSize As Long = 0, Optional ByVal sha As String = "", Optional ByVal metadata As Boolean = False)
-        Dim session As LongPtr, connection As LongPtr, request As LongPtr, file As Integer, opened As Boolean
+        Dim session As LongPtr, connection As LongPtr, request As LongPtr, file As LongPtr, opened As Boolean
         Dim current As String = url, redirect As Long, deadline As Date = DateAdd("n", 15, Now)
         On Error GoTo Failed
-        Dim agent As String = "tbUI3-Updater/0.1.0.1", verb As String = "GET", headers As String = "Accept: application/vnd.github+json" & vbCrLf
+        Dim agent As String = "tbUI3-Updater/0.2.0.0", verb As String = "GET", headers As String = "Accept: application/vnd.github+json" & vbCrLf
         session = WinHttpOpen(StrPtr(agent), 0, 0, 0, 0)
         If session = 0 Then UFail "WinHTTP initialization failed."
         WinHttpSetTimeouts session, 30000, 30000, 30000, 30000
@@ -328,8 +447,8 @@ Private Module UpdaterPlatform
                 If Len(length) > 0 Then
                     If Val(length) > limit Or (expectedSize > 0 And Val(length) <> expectedSize) Then UFail "Unexpected HTTP content length."
                 End If
-                If UExists(destination) Then Kill destination
-                file = FreeFile(): Open destination For Binary Access Write As #file: opened = True
+                If UExists(destination) Then UDelete destination
+                file = UOpenNew(destination): opened = True
                 Dim buffer(0 To 65535) As Byte, count As Long, total As Long, piece() As Byte
                 Do
                     If Now > deadline Then UFail "Download exceeded 15 minutes."
@@ -337,9 +456,9 @@ Private Module UpdaterPlatform
                     If count = 0 Then Exit Do
                     If CDbl(total) + count > limit Then UFail "Download exceeds supported size."
                     total = total + count
-                    ReDim piece(0 To count - 1): CopyMemory piece(0), buffer(0), count: Put #file, , piece
+                    UWriteBuffer file, VarPtr(buffer(0)), count
                 Loop
-                Close #file: opened = False
+                UCloseStream file: opened = False
                 WinHttpCloseHandle request: request = 0: WinHttpCloseHandle connection: connection = 0: WinHttpCloseHandle session: session = 0
                 If expectedSize > 0 And total <> expectedSize Then UFail "Downloaded length mismatch."
                 If Len(sha) > 0 Then
@@ -353,11 +472,11 @@ Private Module UpdaterPlatform
     Failed:
         Dim reason As String = Err.Description
         On Error Resume Next
-        If opened Then Close #file
+        If opened Then UCloseStream file
         If request <> 0 Then WinHttpCloseHandle request
         If connection <> 0 Then WinHttpCloseHandle connection
         If session <> 0 Then WinHttpCloseHandle session
-        If UExists(destination) Then Kill destination
+        If UExists(destination) Then UDelete destination
         On Error GoTo 0
         UFail reason
     End Sub

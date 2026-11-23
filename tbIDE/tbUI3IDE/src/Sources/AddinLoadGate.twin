@@ -1,0 +1,55 @@
+' Resolve duplicates before constructing any add-in or registering any callbacks.
+Private Module AddinLoadGate
+    Private Declare PtrSafe Function LModule Lib "kernel32" Alias "GetModuleFileNameW" (ByVal moduleHandle As LongPtr, ByVal buffer As LongPtr, ByVal count As Long) As Long
+    Private Declare PtrSafe Function LModuleForAddress Lib "kernel32" Alias "GetModuleHandleExW" (ByVal flags As Long, ByVal address As LongPtr, ByRef moduleHandle As LongPtr) As Long
+    Private Declare PtrSafe Function LEvent Lib "kernel32" Alias "CreateEventW" (ByVal security As LongPtr, ByVal manualReset As Long, ByVal initialState As Long, ByVal name As LongPtr) As LongPtr
+    Private Declare PtrSafe Function LPid Lib "kernel32" Alias "GetCurrentProcessId" () As Long
+    Private Declare PtrSafe Function LClose Lib "kernel32" Alias "CloseHandle" (ByVal handle As LongPtr) As Long
+    Public Function LCompilerRoot() As String
+        Dim buffer As String = String$(32768, vbNullChar), count As Long = LModule(0, StrPtr(buffer), Len(buffer))
+        If count = 0 Or count >= Len(buffer) Then UFail "Compiler executable path unavailable."
+        Dim root As String = UParent(Left$(buffer, count))
+        If LCase$(UFso().GetFileName(root)) = "bin" Then root = UParent(root)
+        Return ICanonicalRoot(root)
+    End Function
+    Public Function LBegin(ByVal factoryAddress As LongPtr, ByVal host As Host) As LongPtr
+        On Error GoTo Failed
+        Dim root As String = LCompilerRoot(), build As Long = CLng(Val(UInstalledIde(root)))
+        If build < Phase1Config.MinIdeBuild Or build > Phase1Config.MaxIdeBuild Then UFail "This add-in candidate supports BETA 1045. Use a release explicitly compatible with this IDE."
+        Dim moduleHandle As LongPtr, buffer As String = String$(32768, vbNullChar), count As Long
+        If LModuleForAddress(6, factoryAddress, moduleHandle) = 0 Then UFail "Add-in module identity unavailable."
+        count = LModule(moduleHandle, StrPtr(buffer), Len(buffer))
+        If count = 0 Or count >= Len(buffer) Then UFail "Add-in module path unavailable."
+        Dim ownPath As String = UFull(Left$(buffer, count)), ownArch As String = "win32"
+        #If Win64 Then
+            ownArch = "win64"
+        #End If
+        Dim sharedPath As String = USafe(IAddinRoot(), "addins/" & ownArch & "/tbUI3IDE.dll")
+        Dim localPath As String = USafe(root, "addins/" & ownArch & "/tbUI3IDE.dll"), candidate As Variant
+        For Each candidate In Array(sharedPath, localPath)
+            If StrComp(CStr(candidate), ownPath, vbTextCompare) <> 0 And UExists(CStr(candidate)) Then
+                If UCompare(UNormalizeAddin(UBinaryVersion(CStr(candidate))), Phase1Config.AddinVersion) < 0 Then UFail "A legacy tbUI3IDE DLL can load duplicate handlers. Remove the older local/shared copy and restart this IDE before using the new add-in."
+            End If
+        Next
+        ' Separate predecessor add-ins cannot participate in the new factory guard.
+        Dim oldName As Variant, oldRoot As Variant
+        For Each oldRoot In Array(root, IAddinRoot())
+            For Each oldName In Array("WinUI3IdeStyle.dll", "TabViewDesigner.dll")
+                If UExists(USafe(CStr(oldRoot), "addins/" & ownArch & "/" & CStr(oldName))) Then UFail "Remove the obsolete " & CStr(oldName) & " add-in and restart before loading unified tbUI3IDE."
+            Next
+        Next
+        If StrComp(ownPath, sharedPath, vbTextCompare) <> 0 And UExists(sharedPath) Then Return 0
+        Dim tokenName As String = "Local\tbUI3IDE-Factory-" & CStr(LPid()), token As LongPtr = LEvent(0, 1, 0, StrPtr(tokenName)), existed As Long = Err.LastDllError
+        If token = 0 Then UFail "Duplicate-load guard unavailable."
+        If existed = 183 Then LClose token: Return 0
+        Return token
+    Failed:
+        Dim reason As String = Err.Description
+        On Error Resume Next
+        host.DebugConsole.PrintText "[tbUI3IDE loader] " & reason
+        Return 0
+    End Function
+    Public Sub LEnd(ByVal token As LongPtr)
+        If token <> 0 Then LClose token
+    End Sub
+End Module

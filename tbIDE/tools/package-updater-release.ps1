@@ -63,7 +63,14 @@ if ((Binary-Version $Win64Dll) -cne $version) {throw 'Both add-in DLLs must have
 if ($version.StartsWith('0.') -ne ($Channel -eq 'development')) {throw 'Major zero requires a development prerelease; stable requires its explicit channel.'}
 if ($Channel -eq 'development' -and (Normalize-AddinVersion $version) -cne $version) {throw 'Historical mislabeled development binaries cannot be republished.'}
 if ($MinIdeBuild -gt $MaxIdeBuild) {throw 'Invalid IDE compatibility bounds.'}
+$phase1Config=Get-Content -LiteralPath (Join-Path $repo 'tbIDE/phase1-config.json') -Raw | ConvertFrom-Json
+if ($MinIdeBuild -ne $phase1Config.minIdeBuild -or $MaxIdeBuild -ne $phase1Config.maxIdeBuild) {throw 'Release compatibility must match the compiled Phase1Config bounds. Update configuration, synchronize and rebuild first.'}
 Assert-Pe $Win32Dll 0x14c;Assert-Pe $Win64Dll 0x8664;Assert-Pe $UpdaterExe 0x14c
+Push-Location -LiteralPath $repo
+try {
+    & node ./tbIDE/tools/verify-phase1-release.mjs $Win32Dll $Win64Dll $UpdaterExe
+    if ($LASTEXITCODE -ne 0) {throw 'Both real DLLs must embed the exact accepted updater and themes before release packaging.'}
+} finally {Pop-Location}
 $tag='tbUI3IDE-v'+$version
 $components=@()
 function Pack($Id,$Version,$Name,$InputFiles,$Summary) {
@@ -84,11 +91,12 @@ $c | Add-Member NoteProperty minIdeBuild $MinIdeBuild;$c | Add-Member NoteProper
 $components += Pack 'themes' $version ('WinUI3-Themes-'+$version+'.zip') @(@{path=(Join-Path $repo 'tbIDE/themes/WinUI3 Dark.theme');target='WinUI3 Dark.theme'},@{path=(Join-Path $repo 'tbIDE/themes/WinUI3 Light.theme');target='WinUI3 Light.theme'}) 'WinUI3 Light and Dark theme files; selected theme and preferences are preserved.'
 $updaterVersion=Binary-Version $UpdaterExe
 $components += Pack 'updater' $updaterVersion ('tbUI3-Updater-'+$updaterVersion+'.zip') @(@{path=$UpdaterExe;target='Updater.exe'}) 'Native twinBASIC WebView2 updater, verification and recovery engine.'
-$manifest=[pscustomobject]@{schema=1;releaseTag=$tag;channel=$Channel;components=@($components)}
+$components[-1] | Add-Member NoteProperty protocolMin 1
+$components[-1] | Add-Member NoteProperty protocolMax 1
+$manifest=[pscustomobject]@{schema=2;protocolMin=1;protocolMax=1;deployment='perUser';releaseTag=$tag;channel=$Channel;components=@($components)}
 $manifestPath=Join-Path $Output 'tbUI3-update.json'
 if (Test-Path -LiteralPath $manifestPath) {throw 'Use a fresh release output directory.'}
 [IO.File]::WriteAllText($manifestPath,($manifest|ConvertTo-Json -Depth 20),[Text.UTF8Encoding]::new($false))
 $hashes=Get-ChildItem -LiteralPath $Output -File | ForEach-Object { (Hash $_.FullName)+'  '+$_.Name }
 [IO.File]::WriteAllLines((Join-Path $Output 'SHA256SUMS.txt'),[string[]]$hashes)
 Write-Output "Prepared $tag ($Channel). Upload ZIPs and tbUI3-update.json to that same GitHub release; development releases MUST be marked prerelease. Publishing is a separate action."
-

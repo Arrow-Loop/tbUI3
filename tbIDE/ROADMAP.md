@@ -1,5 +1,11 @@
 # Roadmap: tbUI3 IDE
 
+## 2026-11-23 - Phase 1 native installation-manager source and wizard integration
+
+Implemented source candidate tbUI3IDE **0.4.0.0** / Updater **0.2.0.0**: shared per-user deployment/bootstrap and explicit backed-up repair, per-root identity/settings/approval/recovery, schema-versioned strategy/transaction/inventory contracts, protected IDE scoped UAC verification, detached native self-update, Options integration and Quill's committed Welcome Wizard through real native services. Canonical projects and mirrors are synchronized. Corrected add-in baseline remains 0.3.0.20; separate core tbUI3 1.0.0.75 is unchanged.
+
+Shane's subsequent sequencing instruction makes **actual compiled Updater.exe embedding a separate Phase 1 pass after native acceptance**. Bundle generation and real compiled-DLL verification are implemented; no stale/mock payload is embedded. The combined first public release remains gated on accepted updater, both embedded DLLs, shared-loader evidence and complete first-install/runtime acceptance. Phases 2/3 remain deferred. See [Phase 1 handoff](PHASE1_HANDOFF.md) for build order, static loader evidence, open native gates and focused acceptance. This source pass does not claim successful native compilation or a production-ready release.
+
 ## 2026-11-23 - Agent-ready consolidated updater and installation manager specification
 
 Created [INSTALLATION_MANAGER_SPEC.md](INSTALLATION_MANAGER_SPEC.md) as the authoritative complete product handoff for Cody/Claude: combined first-release updater/bootstrap/Welcome scope, user AppData DLLs and themes, LocalAppData helper and per-installation state, preferences and low-prompt interaction, InPlace/InstallAlongside/ArchivePrevious, cross-drive full archives, extra-content archive/new/both choices, dynamically validated official release inventories, optional discovery/reorganization and shortcut caveats, shared-versus-local add-in compatibility and verified phase gates. **The specification is documentation only, not a shipped feature.** Follow its phase boundaries; preserve unresolved host-loader and elevation questions for explicit investigation.

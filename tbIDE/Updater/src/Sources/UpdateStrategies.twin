@@ -1,0 +1,33 @@
+' Strategy boundary: Phase 1 implements InPlace only. Verification/transactions are strategy-neutral.
+Private Module UpdateStrategies
+    Public Function InPlaceTargets(ByVal context As UpdateJson, ByVal components As UpdateJson) As UpdateJson
+        Dim targets As UpdateJson = JA(), component As UpdateJson, seen As Object = UMap()
+        For Each component In components.Items
+            Dim id As String = JT(component, "id"), record As UpdateJson = JO(), root As String = URoot(id, JT(context, "installRoot"))
+            If seen.Exists(id) Then UFail "Duplicate strategy target."
+            seen.Add id, True
+            record.Assign "component", JS(id): record.Assign "root", JS(root)
+            record.Assign "scope", JS(IIf(id = "ide", "installation", "userShared"))
+            record.Assign "installationId", context.Member("installationId")
+            targets.Push record
+        Next
+        Set InPlaceTargets = targets
+    End Function
+    Public Sub ValidateStrategy(ByVal plan As UpdateJson, ByVal context As UpdateJson)
+        If JT(plan, "strategy") <> IStrategy Or JD(plan, "strategyVersion") <> 1 Then UFail "Unsupported strategy contract."
+        If plan.Member("targets").Encode() <> InPlaceTargets(context, plan.Member("components")).Encode() Then UFail "The target scopes differ from the approved InPlace policy."
+    End Sub
+    Public Function StrategyAllows(ByVal plan As UpdateJson, ByVal context As UpdateJson, ByVal operation As UpdateJson) As Boolean
+        If JT(plan, "strategy") <> "InPlace" Then UFail "No implementation for the selected update strategy."
+        Dim component As UpdateJson, id As String, root As String = JT(context, "installRoot")
+        For Each component In plan.Member("components").Items
+            UComponentValid component: id = JT(component, "id")
+            If id <> "library" And JT(operation, "target") = "tbUI3-" & id & ".json" And StrComp(JT(operation, "root"), IReceiptRoot(id, root), vbTextCompare) = 0 Then Return True
+            If StrComp(JT(operation, "root"), URoot(id, root), vbTextCompare) = 0 Then
+                If UTargetAllowed(id, JT(operation, "target")) Then Return True
+            End If
+            If (id = "themes" Or id = "updater") And StrComp(JT(operation, "root"), ISharedRoot(), vbTextCompare) = 0 And JT(operation, "target") = "Shared/managed.json" Then Return True
+        Next
+        Return False
+    End Function
+End Module

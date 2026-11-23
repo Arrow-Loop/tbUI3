@@ -1,55 +1,72 @@
-' One compiled executable: hidden native worker, or the embedded WebView2 interface.
+' One native EXE: GUI, hidden worker, or isolated executable self-tests.
 Module MainModule
     Public UpdateContext As String
     Public UpdateMode As String
     Public ContextValidated As Boolean
     Public StartupError As String
+    Public AuthorizedPlanHash As String
+    Public AuthorizedContextHash As String
     Private Declare PtrSafe Sub ExitProcess Lib "kernel32" (ByVal exitCode As Long)
-
     Public Sub Main()
         On Error GoTo Failed
-        Dim args As String = Trim$(Command$()), worker As Boolean
-        If args = "-SelfTest" Then
-            ExitProcess RunUpdaterSelfTests()
-            Exit Sub
+        Dim args As Collection = NativeArguments(), worker As Boolean, i As Long = 1, key As String, seen As Object = UMap()
+        If args.Count = 1 Then
+            If CStr(args(1)) = "-SelfTest" Then
+                If IIsElevated() Then ExitProcess 5
+                ExitProcess RunUpdaterSelfTests()
+                Exit Sub
+            End If
         End If
-        If Left$(args, 8) = "-Worker " Then worker = True: args = Mid$(args, 9)
-        If Len(args) = 0 Then
+        If args.Count = 0 Then
+            If IIsElevated() Then ExitProcess 5
             WinUI_InitializeDpiAwareness
             ShowUpdaterWindow
             Exit Sub
         End If
-        Dim splitAt As Long = InStr(1, args, " -Context ", vbBinaryCompare)
-        If Left$(args, 6) <> "-Mode " Or splitAt <= 7 Then UFail "Open updates from the tbUI3IDE add-in."
-        UpdateMode = Mid$(args, 7, splitAt - 7)
-        Dim quoted As String = Trim$(Mid$(args, splitAt + 10))
-        If Left$(quoted, 1) = Chr$(34) Then
-            If Right$(quoted, 1) <> Chr$(34) Then UFail "Incorrectly quoted update context."
-            UpdateContext = Mid$(quoted, 2, Len(quoted) - 2)
-        Else
-            UpdateContext = quoted
-        End If
-        If InStr(UpdateContext, Chr$(34)) > 0 Then UFail "Invalid update context."
-        Dim fso As Object = UFso(), base As String = Environ$("LOCALAPPDATA") & "\tbUI3\Updater\"
-        UpdateContext = UFull(UpdateContext)
-        If StrComp(Left$(UpdateContext, Len(base)), base, vbTextCompare) <> 0 Or _
-            StrComp(UParent(UParent(UpdateContext)), Left$(base, Len(base) - 1), vbTextCompare) <> 0 Or _
-            fso.GetFileName(UpdateContext) <> "context.json" Or Not UExists(UpdateContext) Then UFail "This is not a saved tbUI3 update session."
+        Do While i <= args.Count
+            key = CStr(args(i))
+            If seen.Exists(key) Then UFail "Duplicate updater argument."
+            seen.Add key, True
+            If key = "-Worker" Then
+                worker = True
+            Else
+                i = i + 1
+                If i > args.Count Then UFail "Missing updater argument value."
+                Select Case key
+                    Case "-Mode": UpdateMode = CStr(args(i))
+                    Case "-Context": UpdateContext = UFull(CStr(args(i)))
+                    Case "-PlanSha256": AuthorizedPlanHash = CStr(args(i))
+                    Case "-ContextSha256": AuthorizedContextHash = CStr(args(i))
+                    Case Else: UFail "Unsupported updater argument."
+                End Select
+            End If
+            i = i + 1
+        Loop
+        If Len(UpdateContext) = 0 Or Not UExists(UpdateContext) Then UFail "Open updates from the tbUI3IDE add-in."
         UNoLinks UpdateContext
+        Dim context As UpdateJson = UReadJson(UpdateContext)
+        IValidateContext context, UpdateContext
         ContextValidated = True
         Select Case UpdateMode
             Case "Check", "Stage", "Cancel"
+                If IIsElevated() Then UFail "Start checks and staging from the unelevated IDE. Elevation is scoped to an approved install/recovery only."
                 ExitProcess RunNativeEngine(UpdateMode)
             Case "Apply", "Recover"
                 If worker Then
-                    ' Apply workers must run from a session copy, keeping the installed EXE unlocked.
-                    If Not IsSessionRunner() Then UFail "Installation worker must run from its detached session copy."
+                    If Not IsSessionRunner() Then UFail "Installation worker must use its detached session copy."
+                    If IIsElevated() Then
+                        UHashValue AuthorizedPlanHash: UHashValue AuthorizedContextHash
+                        SecureElevatedSession
+                    ElseIf Len(AuthorizedPlanHash) > 0 Or Len(AuthorizedContextHash) > 0 Then
+                        UFail "Administrator approval was not obtained. No installation was changed."
+                    End If
                     ExitProcess RunNativeEngine(UpdateMode)
                     Exit Sub
                 End If
+                If IIsElevated() Then UFail "Only an approved hidden transaction worker can run elevated."
+                If Len(AuthorizedPlanHash) > 0 Or Len(AuthorizedContextHash) > 0 Then UFail "Authorization hashes are worker-only arguments."
                 If Not IsSessionRunner() Then
-                    Dim context As UpdateJson = UReadJson(UpdateContext)
-                    UContextValid context: UDetached context, SessionFolder(), UpdateMode
+                    UDetached context, SessionFolder(), UpdateMode
                     Exit Sub
                 End If
                 WinUI_InitializeDpiAwareness
@@ -60,13 +77,13 @@ Module MainModule
     Failed:
         StartupError = Err.Description
         If Not ContextValidated Then UpdateContext = ""
-        ReportStartupFailure StartupError
+        If Not IIsElevated() Or ElevatedStateSafe Then ReportStartupFailure StartupError
+        If IIsElevated() Then ExitProcess 1
         If worker Then ExitProcess 1
         WinUI_InitializeDpiAwareness
         ShowUpdaterWindow
     End Sub
     Private Function IsSessionRunner() As Boolean
-        Dim fso As Object = UFso()
-        Return StrComp(UParent(App.Path), SessionFolder(), vbTextCompare) = 0 And Left$(LCase$(fso.GetFileName(App.Path)), 7) = "runner-"
+        Return StrComp(UParent(App.Path), SessionFolder(), vbTextCompare) = 0 And Left$(LCase$(UFso().GetFileName(App.Path)), 7) = "runner-"
     End Function
 End Module

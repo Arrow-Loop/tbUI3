@@ -1,0 +1,70 @@
+' Private, strict JSON tree. No script host, eval, .NET or external package.
+Private Class UpdateJson
+    Public Kind As String
+    Public Text As String
+    Public Number As Double
+    Public Flag As Boolean
+    Private mFields As Object
+    Private mItems As Collection
+
+    Public Sub Init(ByVal valueKind As String)
+        Kind = valueKind
+        Set mFields = CreateObject("Scripting.Dictionary")
+        mFields.CompareMode = 0
+        Set mItems = New Collection
+    End Sub
+
+    Public Function Has(ByVal name As String) As Boolean
+        Return mFields.Exists(name)
+    End Function
+
+    Public Function Member(ByVal name As String) As UpdateJson
+        If Kind <> "object" Or Not mFields.Exists(name) Then UFail "Missing JSON field: " & name
+        Set Member = mFields.Item(name)
+    End Function
+
+    Public Sub Assign(ByVal name As String, ByVal value As UpdateJson)
+        If Kind <> "object" Then UFail "Expected a JSON object."
+        If mFields.Exists(name) Then mFields.Remove name
+        mFields.Add name, value
+    End Sub
+
+    Public Sub Push(ByVal value As UpdateJson)
+        If Kind <> "array" Then UFail "Expected a JSON array."
+        mItems.Add value
+    End Sub
+
+    Public Property Get Items() As Collection
+        If Kind <> "array" Then UFail "Expected a JSON array."
+        Set Items = mItems
+    End Property
+
+    Public Property Get Fields() As Object
+        If Kind <> "object" Then UFail "Expected a JSON object."
+        Set Fields = mFields
+    End Property
+
+    Public Function Encode() As String
+        Dim result As String, key As Variant, value As UpdateJson
+        Select Case Kind
+            Case "string": Return JQuote(Text)
+            Case "number": Return Trim$(Str$(Number))
+            Case "boolean": Return IIf(Flag, "true", "false")
+            Case "null": Return "null"
+            Case "array"
+                For Each value In mItems
+                    If Len(result) > 0 Then result = result & ","
+                    result = result & value.Encode()
+                Next
+                Return "[" & result & "]"
+            Case "object"
+                For Each key In mFields.Keys
+                    Set value = mFields.Item(key)
+                    If Len(result) > 0 Then result = result & ","
+                    result = result & JQuote(CStr(key)) & ":" & value.Encode()
+                Next
+                Return "{" & result & "}"
+        End Select
+        UFail "Invalid JSON kind."
+    End Function
+End Class

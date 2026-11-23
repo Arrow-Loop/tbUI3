@@ -1,5 +1,11 @@
 # Handoff: tbUI3
 
+## 2026-11-23 - Phase 1 native installation-manager source and wizard integration
+
+Implemented source candidate tbUI3IDE **0.4.0.0** / Updater **0.2.0.0**: shared per-user deployment/bootstrap and explicit backed-up repair, per-root identity/settings/approval/recovery, schema-versioned strategy/transaction/inventory contracts, protected IDE scoped UAC verification, detached native self-update, Options integration and Quill's committed Welcome Wizard through real native services. Canonical projects and mirrors are synchronized. Corrected add-in baseline remains 0.3.0.20; separate core tbUI3 1.0.0.75 is unchanged.
+
+Shane's subsequent sequencing instruction makes **actual compiled Updater.exe embedding a separate Phase 1 pass after native acceptance**. Bundle generation and real compiled-DLL verification are implemented; no stale/mock payload is embedded. The combined first public release remains gated on accepted updater, both embedded DLLs, shared-loader evidence and complete first-install/runtime acceptance. Phases 2/3 remain deferred. See [Phase 1 handoff](tbIDE/PHASE1_HANDOFF.md) for build order, static loader evidence, open native gates and focused acceptance. This source pass does not claim successful native compilation or a production-ready release. Validation: 211 Node tests plus 9 Quill smoke tests pass; 126 exact mirrors/IDs/CRLF/hex checks, regeneration idempotence, release-tool syntax and diff checks pass. Native builds, 54 authored executable self-tests, live loader/update acceptance and actual DLL payload verification remain unperformed.
+
 ## 2026-11-23 - BETA 1045 hex-literal warnings corrected; automated gate added
 
 Explicitly typed the updater's Unicode, PE and ZIP literals and its intentional signed GUID field. AGENTS.md now defines the required width rule; both the normal project validator and Node suite enforce it against active canonical projects and mirrors. Source checks pass; reopen/recompile Updater in BETA 1045, then run its native self-tests. Public repository access is available, but end-to-end binary update acceptance still needs a published release with ZIPs and tbUI3-update.json. No release is published by this pass.
@@ -428,4 +434,3 @@ Things that need Shane's decision, not a pass of their own: a dark icon-picker p
 - Update CHANGELOG.md and ROADMAP.md in every pass. Record only what was actually run as verified.
 - Keep instructions to Shane short and one step at a time, with the exact thing to click or type.
 - win32 and win64 (Shane, 2026-10-20): Shane tests each build in win32 only. At the end of each pass, first review that pass's changes for x64 traps (Long vs LongPtr in declares, struct sizes, COM interface layouts, subclassing), then Shane runs one short win64 smoke test: open a form, open the picker, apply, reopen, run the app.
-

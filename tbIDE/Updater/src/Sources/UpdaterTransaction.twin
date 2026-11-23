@@ -1,19 +1,11 @@
-' Verified archive staging and a schema-2 durable per-file transaction.
+' Verified archive staging and a schema-3 durable per-file transaction.
 Private Module UpdaterTransaction
     Public Function UExtract(ByVal component As UpdateJson, ByVal archive As String, ByVal directory As String) As UpdateJson
         UComponentValid component
         Dim entries As Object = UZipEntries(archive), files As UpdateJson = component.Member("files"), id As String = JT(component, "id"), key As Variant, entry As UpdateJson, file As UpdateJson
         UDirectory directory
         If id = "ide" Then
-            Set files = JA()
-            For Each key In entries.Keys
-                Set entry = entries.Item(key)
-                If Not JBool(entry, "directory") Then
-                    If UTargetAllowed("ide", JT(entry, "name")) Then
-                        files.Push UFileRecord(JT(entry, "name"), JT(entry, "name"), JD(entry, "size"), "")
-                    End If
-                End If
-            Next
+            Set files = VOfficialFiles(component, archive, directory, entries)
             If Not entries.Exists("twinBASIC.exe") Or Not entries.Exists("ide/build.js") Then UFail "Unexpected official portable layout."
         ElseIf id = "library" Then
             If Not entries.Exists("tbUI3-Icons.dat") Or Not entries.Exists("NOTICE.txt") Then UFail "Library ZIP files missing."
@@ -29,7 +21,7 @@ Private Module UpdaterTransaction
             Set entry = entries.Item(JT(file, "source"))
             If JT(entry, "name") <> JT(file, "source") Or JD(entry, "size") <> JD(file, "size") Then UFail "ZIP file identity/size mismatch."
             Dim target As String = USafe(directory, JT(file, "source"))
-            UZipExtract archive, entry, target
+            If Not UExists(target) Then UZipExtract archive, entry, target
             Dim sha As String = UHash(target)
             If Len(JT(file, "sha256")) > 0 And JT(file, "sha256") <> sha Then UFail "Extracted file hash mismatch."
             file.Assign "sha256", JS(sha): USignature target
@@ -61,7 +53,7 @@ Private Module UpdaterTransaction
     Public Function UBaseline(ByVal context As UpdateJson, ByVal component As UpdateJson, ByVal session As String) As Object
         Dim version As String = UInstalledIde(JT(context, "installRoot"))
         If version <> JT(component, "installed") Then UFail "Installed IDE changed after discovery."
-        Dim path As String = USafe(JT(context, "installRoot"), "tbUI3-ide.json"), records As UpdateJson = JA()
+        Dim path As String = IReceiptPath("ide", JT(context, "installRoot")), records As UpdateJson = JA()
         If UExists(path) Then
             Dim receipt As UpdateJson = UReadJson(path)
             If JT(receipt, "version") = version Then Set records = receipt.Member("files")
@@ -93,13 +85,22 @@ Private Module UpdaterTransaction
             operation.Assign "expectedOriginal", JS(expected): operation.Assign "expectAbsent", JB(False)
         End If
     End Sub
+    Private Sub UProtectTheme(ByVal operation As UpdateJson, ByVal version As String)
+        Dim path As String = USafe(JT(operation, "root"), JT(operation, "target"))
+        operation.Assign "expectAbsent", JB(Not UExists(path))
+        If Not UExists(path) Then Exit Sub
+        Dim id As String = IIf(JT(operation, "target") = "WinUI3 Dark.theme", "themeDark", "themeLight"), sha As String = UHash(path)
+        If Not MRecognized(MLedger(), id, sha) Then UFail "A customized or unknown theme was preserved. Use explicit backed-up resource reset before updating this theme."
+        If UCompare(JT(MLedger().Member("resources").Member(id), "version"), version) > 0 Then UFail "A newer theme was preserved. Check again."
+        operation.Assign "expectedOriginal", JS(sha)
+    End Sub
     Public Function UOperation(ByVal root As String, ByVal target As String, ByVal staged As String, ByVal hash As String) As UpdateJson
         Dim operation As UpdateJson = JO()
-        operation.Assign "root", JS(root): operation.Assign "target", JS(target): operation.Assign "staged", JS(staged): operation.Assign "sha256", JS(hash)
+        operation.Assign "kind", JS("ReplaceFile"): operation.Assign "version", JN(1): operation.Assign "root", JS(root): operation.Assign "target", JS(target): operation.Assign "staged", JS(staged): operation.Assign "sha256", JS(hash)
         Set UOperation = operation
     End Function
     Public Function UMakePlan(ByVal context As UpdateJson, ByVal catalog As UpdateJson, ByVal session As String) As UpdateJson
-        If JD(catalog, "engineSchema") <> 2 Then UFail "Check again with the native updater before staging."
+        If JD(catalog, "engineSchema") <> IContextSchema Then UFail "Check again with the native updater before staging."
         Dim chosen As UpdateJson = JA(), operations As UpdateJson = JA(), ids As Object = UMap(), selected As UpdateJson, component As UpdateJson, found As UpdateJson, matches As Long, id As String
         For Each selected In context.Member("selected").Items
             If selected.Kind <> "string" Then UFail "Invalid selection."
@@ -118,6 +119,11 @@ Private Module UpdaterTransaction
         For Each component In chosen.Items
             If JT(component, "id") = "ide" Then ide = JT(component, "version")
         Next
+        Dim compatibility As Boolean
+        For Each component In chosen.Items
+            If JT(component, "id") = "addin" Then compatibility = Val(ide) >= JD(component, "minIdeBuild") And Val(ide) <= JD(component, "maxIdeBuild")
+        Next
+        If Not compatibility And (Val(ide) < JD(context, "clientMinIdeBuild") Or Val(ide) > JD(context, "clientMaxIdeBuild")) Then UFail "The resulting IDE build is outside this add-in release compatibility range. Select a compatible add-in release or update manually."
         For Each component In chosen.Items
             id = JT(component, "id"): UComponentValid component
             If id = "addin" Then
@@ -131,31 +137,37 @@ Private Module UpdaterTransaction
             For Each file In files.Items
                 Set operation = UOperation(root, JT(file, "target"), USafe(directory, JT(file, "source")), JT(file, "sha256"))
                 If id = "ide" Then UProtectVendor operation, baseline
+                If id = "themes" Then UProtectTheme operation, JT(component, "version")
                 operations.Push operation
             Next
+            If id = "ide" Then VClassify component, operations, baseline
             If id <> "library" Then
                 Dim receipt As UpdateJson = JO(), path As String = USafe(session, id & "-receipt.json")
                 receipt.Assign "version", component.Member("version"): receipt.Assign "channel", JS(JT(component, "channel", "development")): receipt.Assign "files", files
+                receipt.Assign "schema", JN(1): receipt.Assign "asset", component.Member("asset")
+                If component.Has("releaseInventory") Then receipt.Assign "inventory", component.Member("releaseInventory")
+                If component.Has("classifications") Then receipt.Assign "classifications", component.Member("classifications")
                 UWriteJson path, receipt
-                operations.Push UOperation(root, "tbUI3-" & id & ".json", path, UHash(path))
+                operations.Push UOperation(IReceiptRoot(id, JT(context, "installRoot")), "tbUI3-" & id & ".json", path, UHash(path))
             End If
         Next
+        UAddLedgerOperation chosen, operations, session
         Dim plan As UpdateJson = JO()
-        plan.Assign "schema", JN(2): plan.Assign "operations", operations: plan.Assign "components", chosen: plan.Assign "identity", catalog.Member("identity")
+        plan.Assign "schema", JN(IPlanSchema): plan.Assign "protocol", JN(IProtocol): plan.Assign "strategy", JS(IStrategy)
+        plan.Assign "strategyVersion", JN(1): plan.Assign "targets", InPlaceTargets(context, chosen)
+        plan.Assign "settings", ISettings(JT(context, "installRoot"))
+        plan.Assign "installRoot", context.Member("installRoot")
+        plan.Assign "installationId", context.Member("installationId"): plan.Assign "operations", operations: plan.Assign "components", chosen: plan.Assign "identity", catalog.Member("identity")
         Set UMakePlan = plan
     End Function
     Public Sub UValidatePlan(ByVal plan As UpdateJson, ByVal context As UpdateJson, ByVal session As String)
-        If JD(plan, "schema") <> 2 Or plan.Member("operations").Items.Count = 0 Then UFail "Unsupported/empty staged plan. Check again with this native updater."
+        If JD(plan, "schema") <> IPlanSchema Or plan.Member("operations").Items.Count = 0 Then UFail "Unsupported/empty staged plan. Check again with this native updater."
+        If JT(plan, "strategy") <> IStrategy Or JD(plan, "protocol") <> IProtocol Or JT(plan, "installationId") <> IId(JT(context, "installRoot")) Then UFail "Unsupported strategy or mismatched installation plan."
+        ValidateStrategy plan, context
         Dim operation As UpdateJson, component As UpdateJson, valid As Boolean, id As String, base As String = UFull(session) & "\", staged As String, checked As String, seen As Object = UMap()
         For Each operation In plan.Member("operations").Items
-            valid = False
-            For Each component In plan.Member("components").Items
-                UComponentValid component: id = JT(component, "id")
-                If StrComp(JT(operation, "root"), URoot(id, JT(context, "installRoot")), vbTextCompare) = 0 Then
-                    If id <> "library" And JT(operation, "target") = "tbUI3-" & id & ".json" Then valid = True
-                    If UTargetAllowed(id, JT(operation, "target")) Then valid = True
-                End If
-            Next
+            If JT(operation, "kind") <> "ReplaceFile" Or JD(operation, "version") <> 1 Then UFail "Unsupported transaction operation contract."
+            valid = StrategyAllows(plan, context, operation)
             If Not valid Then UFail "Plan destination is outside selected component policy."
             checked = USafe(JT(operation, "root"), JT(operation, "target"))
             If seen.Exists(checked) Then UFail "Two operations target the same file."
@@ -178,15 +190,16 @@ Private Module UpdaterTransaction
                     version = UInstalledAddin(root, "win64")
                 Case "updater"
                     version = "0"
-                    If UExists(USafe(root, "Updater.exe")) Then version = UBinaryVersion(USafe(root, "Updater.exe"))
+                    If UExists(ISharedExe()) Then version = UBinaryVersion(ISharedExe())
                 Case "library": version = UInstalledLibrary()
-                Case Else: version = UReceiptVersion(id, URoot(id, root))
+                Case Else: version = UReceiptVersion(id, root)
             End Select
             If UCompare(version, JT(component, "version")) > 0 Then UFail "A newer " & id & " is installed. Check again."
         Next
     End Sub
     Public Sub UValidateJournal(ByVal journal As UpdateJson, ByVal plan As UpdateJson, ByVal session As String)
-        If JD(journal, "schema") <> 2 Then UFail "Unsupported recovery journal."
+        If JD(journal, "schema") <> IPlanSchema Then UFail "Unsupported recovery journal."
+        If JT(journal, "planDigest") <> UHashText(plan.Encode()) Then UFail "Journal does not bind the approved plan."
         Dim status As String = JT(journal, "status")
         If status <> "preparing" And status <> "applying" And status <> "rollingBack" And status <> "rolledBack" And status <> "complete" Then UFail "Invalid recovery status."
         Dim expected As Object = UMap(), operation As UpdateJson, key As String, seen As Object = UMap(), baseline As UpdateJson, backup As String, state As String
@@ -230,7 +243,7 @@ Private Module UpdaterTransaction
                     UReplace backup, path
                     If UHash(path) <> JT(operation, "originalSha256") Then UFail "Restored backup failed verification."
                 ElseIf UExists(path) Then
-                    Kill path
+                    UDelete path
                 End If
                 operation.Assign "state", JS("reverted"): UWriteJson journalPath, journal
             End If
@@ -252,10 +265,11 @@ Private Module UpdaterTransaction
             If JT(old, "status") <> "rolledBack" Then URollback old, journalPath
         End If
         Dim journal As UpdateJson = JO(), operations As UpdateJson = JA(), backupDir As String = UParent(journalPath) & "\backup", seen As Object = UMap()
-        journal.Assign "schema", JN(2): journal.Assign "status", JS("preparing"): journal.Assign "operations", operations
+        journal.Assign "schema", JN(IPlanSchema): journal.Assign "planDigest", JS(UHashText(plan.Encode())): journal.Assign "status", JS("preparing"): journal.Assign "operations", operations
         UDirectory backupDir
         ' Validate and back up every replacement before any live file is touched.
         For Each operation In plan.Member("operations").Items
+            If JT(operation, "kind") <> "ReplaceFile" Or JD(operation, "version") <> 1 Then UFail "Unsupported transaction operation."
             path = USafe(JT(operation, "root"), JT(operation, "target"))
             If seen.Exists(path) Then UFail "Duplicate transaction destination."
             seen.Add path, True
@@ -269,8 +283,8 @@ Private Module UpdaterTransaction
             End If
             If existed Then
                 original = UHash(path)
-                If UExists(backup) Then Kill backup
-                FileCopy path, backup: UFlush backup
+                If UExists(backup) Then UDelete backup
+                UCopy path, backup: UFlush backup
                 If UHash(backup) <> original Then UFail "Backup verification failed."
             End If
             Dim record As UpdateJson = UOperation(JT(operation, "root"), JT(operation, "target"), JT(operation, "staged"), JT(operation, "sha256"))
@@ -314,5 +328,31 @@ Private Module UpdaterTransaction
         Dim state As UpdateJson = JO()
         state.Assign "status", JS("installing"): state.Assign "message", JS("Installing and verifying selected updates...")
         state.Assign "completed", JN(completed): state.Assign "total", JN(total): UWriteJson path, state
+    End Sub
+    Private Sub UAddLedgerOperation(ByVal chosen As UpdateJson, ByVal operations As UpdateJson, ByVal session As String)
+        Dim ledger As UpdateJson = MLedger(), component As UpdateJson, file As UpdateJson, changed As Boolean
+        For Each component In chosen.Items
+            Dim id As String = JT(component, "id")
+            If id = "updater" Or id = "themes" Then
+                For Each file In component.Member("files").Items
+                    Dim key As String
+                    If id = "updater" Then
+                        key = "updater"
+                        ledger.Member("resources").Assign key, MRecord(JT(component, "version"), JT(file, "sha256"), CLng(JD(component, "protocolMin")), CLng(JD(component, "protocolMax")))
+                    Else
+                        key = IIf(JT(file, "target") = "WinUI3 Dark.theme", "themeDark", "themeLight")
+                        ledger.Member("resources").Assign key, MRecord(JT(component, "version"), JT(file, "sha256"))
+                    End If
+                    changed = True
+                Next
+            End If
+        Next
+        If Not changed Then Exit Sub
+        Dim staged As String = USafe(session, "managed-ledger.json")
+        UWriteJson staged, ledger
+        Dim operation As UpdateJson = UOperation(ISharedRoot(), "Shared/managed.json", staged, UHash(staged))
+        operation.Assign "expectAbsent", JB(Not UExists(MLedgerPath()))
+        If UExists(MLedgerPath()) Then operation.Assign "expectedOriginal", JS(UHash(MLedgerPath()))
+        operations.Push operation
     End Sub
 End Module

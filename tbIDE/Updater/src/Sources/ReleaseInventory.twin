@@ -1,0 +1,55 @@
+' Verified archive inventory is data. Only the InPlace policy authorizes live destinations.
+Private Module ReleaseInventory
+    Public Function VOfficialFiles(ByVal component As UpdateJson, ByVal archive As String, ByVal directory As String, ByVal entries As Object) As UpdateJson
+        Dim inventory As UpdateJson = JO(), all As UpdateJson = JA(), managed As UpdateJson = JA(), key As Variant, entry As UpdateJson
+        inventory.Assign "schema", JN(IInventorySchema): inventory.Assign "version", component.Member("version")
+        inventory.Assign "asset", component.Member("asset"): inventory.Assign "files", all
+        Dim unsupported As String
+        For Each key In entries.Keys
+            Set entry = entries.Item(key)
+            If Not JBool(entry, "directory") Then
+                Dim name As String = JT(entry, "name"), target As String = USafe(directory, name)
+                UZipExtract archive, entry, target
+                Dim record As UpdateJson = UFileRecord(name, name, JD(entry, "size"), UHash(target)), isManaged As Boolean = UTargetAllowed("ide", name)
+                record.Assign "managed", JB(isManaged): record.Assign "official", JB(True)
+                record.Assign "disposition", JS(IIf(isManaged, "InPlaceCandidate", "PreserveUnmanaged"))
+                all.Push record
+                If isManaged Then
+                    managed.Push record
+                Else
+                    Dim top As String = name
+                    If InStr(top, "/") > 0 Then top = Left$(top, InStr(top, "/") - 1)
+                    ' Known optional distribution content is inventoried but never installed over user data.
+                    If top <> "projects" And top <> "themes" And top <> "addins" Then unsupported = name
+                End If
+            End If
+        Next
+        component.Assign "releaseInventory", inventory
+        If Len(unsupported) > 0 Then UFail "The verified official release introduces an unsupported vendor path: " & unsupported & ". It is official content, not presumed user data. No installation was changed; this layout needs policy review."
+        Set VOfficialFiles = managed
+    End Function
+    Public Sub VClassify(ByVal component As UpdateJson, ByVal operations As UpdateJson, ByVal baseline As Object)
+        Dim classifications As UpdateJson = JA(), operation As UpdateJson, seen As Object = UMap(), record As UpdateJson, key As Variant
+        For Each operation In operations.Items
+            If JT(operation, "root") = "" Then UFail "Missing classification root."
+            If operation.Has("expectedOriginal") Then
+                Set record = JO(): record.Assign "target", operation.Member("target")
+                Dim kind As String = "newOfficialPath"
+                If Not JBool(operation, "expectAbsent") Then
+                    kind = "updatedOfficial"
+                    If JT(operation, "expectedOriginal") = JT(operation, "sha256") Then kind = "unchangedOfficial"
+                End If
+                operation.Assign "classification", JS(kind): record.Assign "classification", JS(kind)
+                classifications.Push record: seen.Add JT(operation, "target"), True
+            End If
+        Next
+        For Each key In baseline.Keys
+            If Not seen.Exists(CStr(key)) Then
+                Set record = JO(): record.Assign "target", JS(CStr(key)): record.Assign "classification", JS("previouslyOfficialAbsent")
+                record.Assign "disposition", JS("Preserve; no deletion authorized by InPlace v1")
+                classifications.Push record
+            End If
+        Next
+        component.Assign "classifications", classifications
+    End Sub
+End Module

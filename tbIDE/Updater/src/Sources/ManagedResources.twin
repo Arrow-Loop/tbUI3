@@ -1,0 +1,51 @@
+' Shared provisioning ledger is separate from per-installation transaction receipts.
+Private Module ManagedResources
+    Public Function MTarget(ByVal id As String) As String
+        Select Case id
+            Case "updater": Return ISharedExe()
+            Case "themeDark": Return USafe(IAddinRoot(), "themes/WinUI3 Dark.theme")
+            Case "themeLight": Return USafe(IAddinRoot(), "themes/WinUI3 Light.theme")
+        End Select
+        UFail "Unknown bundled resource."
+    End Function
+    Public Function MLedgerPath() As String
+        Return USafe(ISharedRoot(), "Shared/managed.json")
+    End Function
+    Public Function MLedger() As UpdateJson
+        Dim ledger As UpdateJson
+        If UExists(MLedgerPath()) Then
+            Set ledger = UReadJson(MLedgerPath())
+            If JD(ledger, "schema") <> 1 Or ledger.Member("resources").Kind <> "object" Then UFail "Unrecognized shared resource ledger. Preserve it and use explicit repair."
+        Else
+            Set ledger = JO(): ledger.Assign "schema", JN(1): ledger.Assign "resources", JO()
+        End If
+        Set MLedger = ledger
+    End Function
+    Public Function MRecord(ByVal version As String, ByVal sha As String, Optional ByVal minProtocol As Long = 1, Optional ByVal maxProtocol As Long = 1) As UpdateJson
+        UHashValue sha
+        Dim ignored As Variant = UVersionParts(version), record As UpdateJson = JO()
+        record.Assign "version", JS(version): record.Assign "sha256", JS(sha)
+        record.Assign "protocolMin", JN(minProtocol): record.Assign "protocolMax", JN(maxProtocol)
+        Set MRecord = record
+    End Function
+    Public Function MRecognized(ByVal ledger As UpdateJson, ByVal id As String, ByVal sha As String) As Boolean
+        If Not ledger.Member("resources").Has(id) Then Return False
+        Dim record As UpdateJson = ledger.Member("resources").Member(id)
+        UHashValue JT(record, "sha256")
+        Return JT(record, "sha256") = sha
+    End Function
+    Public Function MHelperReady() As Boolean
+        If Not UExists(ISharedExe()) Then Return False
+        Dim ledger As UpdateJson = MLedger()
+        If Not MRecognized(ledger, "updater", UHash(ISharedExe())) Then Return False
+        Dim record As UpdateJson = ledger.Member("resources").Member("updater")
+        If JD(record, "protocolMin") > IProtocol Or JD(record, "protocolMax") < IProtocol Then Return False
+        UPe ISharedExe(), &H14C
+        Return UCompare(UBinaryVersion(ISharedExe()), JT(record, "version")) = 0
+    End Function
+    Public Function MResourceText(ByVal name As String) As String
+        Dim stream As Object = CreateObject("ADODB.Stream"), bytes As Variant = LoadResData(name, "OTHER")
+        stream.Type = 1: stream.Open: stream.Write bytes: stream.Position = 0: stream.Type = 2: stream.Charset = "utf-8"
+        MResourceText = stream.ReadText(): stream.Close
+    End Function
+End Module

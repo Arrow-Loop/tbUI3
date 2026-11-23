@@ -12,7 +12,7 @@ Private Module UpdaterZip
         Return result
     End Function
     Public Function UZipEntries(ByVal path As String) As Object
-        Dim size As Double = UFso().GetFile(path).Size
+        Dim size As Double = USize(path)
         If size < 22 Or size > 536870912 Then UFail "Unsupported ZIP size."
         Dim count As Long = CLng(size)
         If count > 65557 Then count = 65557

@@ -1,0 +1,264 @@
+' Schema-versioned contracts shared byte-for-byte by the add-in and native sidecar.
+Private Module InstallationContracts
+    Public Const IProtocol As Long = 1
+    Public Const IContextSchema As Long = 3
+    Public Const IPlanSchema As Long = 3
+    Public Const ISettingsSchema As Long = 1
+    Public Const IInventorySchema As Long = 1
+    Public Const IStrategy As String = "InPlace"
+    Private Declare PtrSafe Function ICreateFile Lib "kernel32" Alias "CreateFileW" (ByVal path As LongPtr, ByVal access As Long, ByVal share As Long, ByVal security As LongPtr, ByVal creation As Long, ByVal flags As Long, ByVal template As LongPtr) As LongPtr
+    Private Declare PtrSafe Function IFinalPath Lib "kernel32" Alias "GetFinalPathNameByHandleW" (ByVal handle As LongPtr, ByVal buffer As LongPtr, ByVal count As Long, ByVal flags As Long) As Long
+    Private Declare PtrSafe Function IClose Lib "kernel32" Alias "CloseHandle" (ByVal handle As LongPtr) As Long
+    Private Declare PtrSafe Function ICreateMutex Lib "kernel32" Alias "CreateMutexW" (ByVal security As LongPtr, ByVal owner As Long, ByVal name As LongPtr) As LongPtr
+    Private Declare PtrSafe Function IWait Lib "kernel32" Alias "WaitForSingleObject" (ByVal handle As LongPtr, ByVal timeout As Long) As Long
+    Private Declare PtrSafe Function IReleaseMutex Lib "kernel32" Alias "ReleaseMutex" (ByVal handle As LongPtr) As Long
+    Private Declare PtrSafe Function IMapCase Lib "kernel32" Alias "LCMapStringEx" (ByVal locale As LongPtr, ByVal flags As Long, ByVal source As LongPtr, ByVal count As Long, ByVal target As LongPtr, ByVal capacity As Long, ByVal version As LongPtr, ByVal reserved As LongPtr, ByVal sort As LongPtr) As Long
+    Private Declare PtrSafe Function IProcess Lib "kernel32" Alias "GetCurrentProcess" () As LongPtr
+    Private Declare PtrSafe Function IOpenToken Lib "advapi32" Alias "OpenProcessToken" (ByVal process As LongPtr, ByVal access As Long, ByRef token As LongPtr) As Long
+    Private Declare PtrSafe Function ITokenInfo Lib "advapi32" Alias "GetTokenInformation" (ByVal token As LongPtr, ByVal infoClass As Long, ByVal info As LongPtr, ByVal capacity As Long, ByRef needed As Long) As Long
+    Private Declare PtrSafe Function ISidText Lib "advapi32" Alias "ConvertSidToStringSidW" (ByVal sid As LongPtr, ByRef text As LongPtr) As Long
+    Private Declare PtrSafe Function IFree Lib "kernel32" Alias "LocalFree" (ByVal memory As LongPtr) As LongPtr
+    Private Declare PtrSafe Function ITextLength Lib "kernel32" Alias "lstrlenW" (ByVal text As LongPtr) As Long
+    Private Declare PtrSafe Sub IMemory Lib "kernel32" Alias "RtlMoveMemory" (ByRef target As Any, ByRef source As Any, ByVal size As LongPtr)
+    Public Function ISharedRoot() As String
+        Dim root As String = UFull(Environ$("LOCALAPPDATA") & "\tbUI3\Updater")
+        UNoLinks root: Return root
+    End Function
+    Public Function ISharedExe() As String
+        Return USafe(ISharedRoot(), "Updater.exe")
+    End Function
+    Public Function IAddinRoot() As String
+        Dim root As String = UFull(Environ$("APPDATA") & "\twinBASIC")
+        UNoLinks root: Return root
+    End Function
+    Public Function ILower(ByVal text As String) As String
+        Dim locale As String = vbNullChar, result As String = String$(Len(text), vbNullChar)
+        If IMapCase(StrPtr(locale), &H100, StrPtr(text), Len(text), StrPtr(result), Len(result), 0, 0, 0) <> Len(text) Then UFail "Invariant path normalization failed."
+        Return result
+    End Function
+    Public Function ICanonicalRoot(ByVal root As String) As String
+        Dim folder As String = UFull(root), native As String = UWinPath(folder), handle As LongPtr, result As String = String$(32768, vbNullChar)
+        UNoLinks folder
+        handle = ICreateFile(StrPtr(native), 0, 7, 0, 3, &H2000000, 0)
+        If handle = -1 Then UFail "Cannot resolve the IDE installation directory."
+        Dim count As Long = IFinalPath(handle, StrPtr(result), Len(result), 0)
+        IClose handle
+        If count = 0 Or count >= Len(result) Then UFail "IDE canonical path unavailable."
+        result = Left$(result, count)
+        If Left$(result, 8) = "\\?\UNC\" Then
+            result = "\\" & Mid$(result, 9)
+        ElseIf Left$(result, 4) = "\\?\" Then
+            result = Mid$(result, 5)
+        End If
+        UNoLinks result
+        Return result
+    End Function
+    Public Function IIdForCanonicalRoot(ByVal root As String) As String
+        Return "v1-" & UHashText(ILower(root))
+    End Function
+    Public Function IId(ByVal root As String) As String
+        Return IIdForCanonicalRoot(ICanonicalRoot(root))
+    End Function
+    Public Function IHome(ByVal root As String) As String
+        Return USafe(ISharedRoot(), "Installations/" & IId(root))
+    End Function
+    Public Function IReceiptRoot(ByVal id As String, ByVal root As String) As String
+        If id = "ide" Then Return USafe(IHome(root), "Receipts")
+        Return USafe(ISharedRoot(), "Shared/Receipts")
+    End Function
+    Public Function IReceiptPath(ByVal id As String, ByVal root As String) As String
+        Return USafe(IReceiptRoot(id, root), "tbUI3-" & id & ".json")
+    End Function
+    Public Function ILock(ByVal name As String, Optional ByVal timeout As Long = 0) As LongPtr
+        Dim handle As LongPtr = ICreateMutex(0, 0, StrPtr("Local\tbUI3-" & name))
+        If handle = 0 Then UFail "Cross-process guard unavailable."
+        Dim result As Long = IWait(handle, timeout)
+        If result <> 0 And result <> &H80 Then IClose handle: Return 0
+        Return handle
+    End Function
+    Public Function IRequireLock(ByVal name As String) As LongPtr
+        Dim handle As LongPtr = ILock(name)
+        If handle = 0 Then UFail "Another updater is using these resources. Retry after it finishes."
+        Return handle
+    End Function
+    Public Sub IUnlock(ByVal handle As LongPtr)
+        If handle <> 0 Then
+            IReleaseMutex handle
+            IClose handle
+        End If
+    End Sub
+    Public Function IUserSid() As String
+        Dim token As LongPtr, pointer As LongPtr, sid As LongPtr, needed As Long, bytes() As Byte, result As String
+        On Error GoTo Failed
+        If IOpenToken(IProcess(), 8, token) = 0 Then UFail "Current user token unavailable."
+        ITokenInfo token, 1, 0, 0, needed
+        If needed <= 0 Then UFail "Current user identity unavailable."
+        ReDim bytes(0 To needed - 1)
+        If ITokenInfo(token, 1, VarPtr(bytes(0)), needed, needed) = 0 Then UFail "Could not read current user identity."
+        IMemory sid, bytes(0), LenB(sid)
+        If ISidText(sid, pointer) = 0 Then UFail "Could not format current user identity."
+        result = String$(ITextLength(pointer), vbNullChar)
+        IMemory ByVal StrPtr(result), ByVal pointer, LenB(result)
+        IFree pointer: pointer = 0: IClose token: token = 0
+        Return result
+    Failed:
+        Dim reason As String = Err.Description
+        On Error Resume Next
+        If pointer <> 0 Then IFree pointer
+        If token <> 0 Then IClose token
+        On Error GoTo 0: UFail reason
+    End Function
+    Public Function IIsElevated() As Boolean
+        Dim token As LongPtr, value As Long, needed As Long
+        If IOpenToken(IProcess(), 8, token) = 0 Then UFail "Current access token unavailable."
+        Dim ok As Long = ITokenInfo(token, 20, VarPtr(value), 4, needed)
+        IClose token
+        If ok = 0 Then UFail "Could not inspect elevation state."
+        Return value <> 0
+    End Function
+    Public Function ISettings(ByVal root As String) As UpdateJson
+        Dim path As String = USafe(IHome(root), "settings.json"), settings As UpdateJson
+        If UExists(path) Then
+            Set settings = UReadJson(path)
+            If JD(settings, "schema") <> ISettingsSchema Or JT(settings, "installationId") <> IId(root) Then UFail "Unsupported settings schema or installation identity."
+        Else
+            Set settings = IDefaultSettings(root)
+        End If
+        If JT(settings, "strategy") <> IStrategy Then UFail "This version supports InPlace only. Future preferences were preserved."
+        Set ISettings = settings
+    End Function
+    Public Sub ISaveSettings(ByVal root As String, ByVal settings As UpdateJson)
+        If JD(settings, "schema") <> ISettingsSchema Or JT(settings, "installationId") <> IId(root) Then UFail "Invalid settings identity/schema."
+        If JT(settings, "strategy") <> IStrategy Then UFail "This release supports InPlace only."
+        If JT(settings, "channel") <> "development" And JT(settings, "channel") <> "stable" Then UFail "Unsupported release channel."
+        Dim guard As LongPtr = IRequireLock("settings-" & IId(root))
+        On Error GoTo Failed
+        UDirectory IHome(root): UWriteJson USafe(IHome(root), "settings.json"), settings
+        IUnlock guard: Exit Sub
+    Failed:
+        Dim reason As String = Err.Description
+        IUnlock guard: UFail reason
+    End Sub
+    Public Sub IRegister(ByVal root As String)
+        Dim canonical As String = ICanonicalRoot(root), home As String = IHome(canonical), path As String = USafe(home, "identity.json")
+        Dim guard As LongPtr = IRequireLock("settings-" & IId(canonical)), record As UpdateJson
+        On Error GoTo Failed
+        UPe USafe(canonical, "twinBASIC.exe"), 0
+        UDirectory home
+        If UExists(path) Then
+            Set record = UReadJson(path)
+            If JD(record, "schema") <> 1 Or StrComp(JT(record, "root"), canonical, vbTextCompare) <> 0 Or JT(record, "id") <> IId(canonical) Then UFail "Installation registry conflict; existing state was preserved."
+        Else
+            Set record = JO()
+            record.Assign "schema", JN(1): record.Assign "id", JS(IId(canonical)): record.Assign "root", JS(canonical)
+            record.Assign "created", JS(Format$(Now, "yyyy-mm-dd hh:nn:ss"))
+        End If
+        record.Assign "root", JS(canonical)
+        record.Assign "lastSeen", JS(Format$(Now, "yyyy-mm-dd hh:nn:ss")): record.Assign "originSid", JS(IUserSid())
+        record.Assign "protocol", JN(IProtocol): record.Assign "exe", JS(USafe(canonical, "twinBASIC.exe"))
+        UWriteJson path, record
+        IUnlock guard: Exit Sub
+    Failed:
+        Dim reason As String = Err.Description
+        IUnlock guard: UFail reason
+    End Sub
+    Public Sub IValidateContext(ByVal context As UpdateJson, ByVal path As String)
+        If JD(context, "schema") <> IContextSchema Or JD(context, "protocol") <> IProtocol Then UFail "Older/incompatible session. Check again with the current add-in."
+        If JT(context, "originSid") <> IUserSid() Then UFail "Update belongs to another Windows user. Elevation with different credentials is not supported."
+        Dim root As String = ICanonicalRoot(JT(context, "installRoot")), home As String = IHome(root)
+        If JT(context, "installationId") <> IId(root) Or StrComp(JT(context, "stateRoot"), home, vbTextCompare) <> 0 Then UFail "Update context installation identity mismatch."
+        If StrComp(JT(context, "updaterPath"), ISharedExe(), vbTextCompare) <> 0 Then UFail "Unexpected shared updater location."
+        If JT(context, "strategy") <> IStrategy Then UFail "This updater supports InPlace only."
+        If StrComp(JT(context, "ideExe"), USafe(root, "twinBASIC.exe"), vbTextCompare) <> 0 Then UFail "Incorrect IDE executable."
+        Dim session As String = UParent(UFull(path)), sessions As String = USafe(home, "Sessions")
+        If StrComp(UParent(session), sessions, vbTextCompare) <> 0 Or UFso().GetFileName(path) <> "context.json" Then UFail "Session escapes its installation."
+        UNoLinks path
+    End Sub
+    Public Function UVersionParts(ByVal version As String) As Variant
+        Dim parts() As String = Split(version, "."), values(0 To 3) As Double, i As Long, j As Long, ch As String
+        If UBound(parts) > 3 Then UFail "Versions need one to four numeric components."
+        For i = 0 To UBound(parts)
+            If Len(parts(i)) = 0 Or Len(parts(i)) > 10 Then UFail "Invalid version component."
+            For j = 1 To Len(parts(i))
+                ch = Mid$(parts(i), j, 1)
+                If ch < "0" Or ch > "9" Then UFail "Nonnumeric version component."
+            Next
+            values(i) = Val(parts(i))
+            If values(i) > 4294967295# Then UFail "Version component overflow."
+        Next
+        Return values
+    End Function
+    Public Function UCompare(ByVal a As String, ByVal b As String) As Long
+        Dim aa As Variant = UVersionParts(a), bb As Variant = UVersionParts(b), i As Long
+        For i = 0 To 3
+            If aa(i) < bb(i) Then Return -1
+            If aa(i) > bb(i) Then Return 1
+        Next
+        Return 0
+    End Function
+    Public Function UNormalizeAddin(ByVal version As String, Optional ByVal stable As Boolean = False) As String
+        Dim parts As Variant = UVersionParts(version)
+        If Not stable And UBound(Split(version, ".")) = 3 And parts(0) = 1 And parts(2) = 0 Then
+            Dim limit As Long = -1
+            Select Case parts(1)
+                Case 1: limit = 0
+                Case 2: limit = 2
+                Case 3: limit = 20
+            End Select
+            If limit >= 0 And parts(3) <= limit Then Return "0." & CStr(parts(1)) & ".0." & CStr(parts(3))
+        End If
+        Return version
+    End Function
+    Public Function UInstalledIde(ByVal root As String) As String
+        Dim text As String = UText(USafe(root, "ide/build.js")), marker As String = "twinBASIC IDE BETA "
+        Dim pos As Long = InStr(1, text, marker, vbBinaryCompare), result As String, ch As String
+        If pos = 0 Then UFail "Unrecognized IDE channel; automatic IDE update disabled."
+        pos = pos + Len(marker)
+        Do While pos <= Len(text)
+            ch = Mid$(text, pos, 1)
+            If ch < "0" Or ch > "9" Then Exit Do
+            result = result & ch: pos = pos + 1
+        Loop
+        If Len(result) = 0 Then UFail "Missing IDE build."
+        Return CStr(Val(result))
+    End Function
+    Public Function IQuoteArg(ByVal value As String) As String
+        If InStr(value, Chr$(34)) > 0 Or InStr(value, vbCr) > 0 Or InStr(value, vbLf) > 0 Or InStr(value, vbNullChar) > 0 Then UFail "Invalid command argument."
+        Dim at As Long = Len(value)
+        Do While at > 0
+            If Mid$(value, at, 1) <> "\" Then Exit Do
+            at = at - 1
+        Loop
+        Return Chr$(34) & value & String$(Len(value) - at, "\") & Chr$(34)
+    End Function
+    Public Sub IApplySettings(ByVal root As String, ByVal patch As UpdateJson)
+        Dim guard As LongPtr = IRequireLock("settings-" & IId(root))
+        On Error GoTo Failed
+        Dim settings As UpdateJson = ISettings(root)
+        If patch.Has("automatic") Then settings.Assign "automatic", JB(JBool(patch, "automatic"))
+        If patch.Has("restart") Then settings.Assign "restart", JB(JBool(patch, "restart"))
+        If patch.Has("channel") Then settings.Assign "channel", JS(JT(patch, "channel"))
+        If patch.Has("lastCheck") Then settings.Assign "lastCheck", JS(JT(patch, "lastCheck"))
+        If patch.Has("deferredUntil") Then
+            Dim untilValue As Double = JD(patch, "deferredUntil")
+            If untilValue < 0 Or untilValue > 9007199254740991# Then UFail "Invalid deferral."
+            settings.Assign "deferredUntil", JN(untilValue)
+        End If
+        ' Named Windows mutexes are recursive on the owning thread. ISaveSettings performs
+        ' the final type/schema validation while this outer lock protects read/modify/write.
+        ISaveSettings root, settings
+        IUnlock guard: Exit Sub
+    Failed:
+        Dim reason As String = Err.Description
+        IUnlock guard: UFail reason
+    End Sub
+    Public Function IDefaultSettings(ByVal root As String) As UpdateJson
+        Dim settings As UpdateJson
+            Set settings = JO()
+            settings.Assign "schema", JN(ISettingsSchema): settings.Assign "installationId", JS(IId(root))
+            settings.Assign "automatic", JB(True): settings.Assign "deferredUntil", JN(0)
+            settings.Assign "lastCheck", JS(""): settings.Assign "channel", JS("development")
+            settings.Assign "restart", JB(False): settings.Assign "strategy", JS(IStrategy)
+        Set IDefaultSettings = settings
+    End Function
+End Module

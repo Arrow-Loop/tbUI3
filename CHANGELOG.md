@@ -1,5 +1,11 @@
 # Changelog
 
+## 2026-11-23 - Phase 1 native installation-manager source and wizard integration
+
+Implemented source candidate tbUI3IDE **0.4.0.0** / Updater **0.2.0.0**: shared per-user deployment/bootstrap and explicit backed-up repair, per-root identity/settings/approval/recovery, schema-versioned strategy/transaction/inventory contracts, protected IDE scoped UAC verification, detached native self-update, Options integration and Quill's committed Welcome Wizard through real native services. Canonical projects and mirrors are synchronized. Corrected add-in baseline remains 0.3.0.20; separate core tbUI3 1.0.0.75 is unchanged.
+
+Shane's subsequent sequencing instruction makes **actual compiled Updater.exe embedding a separate Phase 1 pass after native acceptance**. Bundle generation and real compiled-DLL verification are implemented; no stale/mock payload is embedded. The combined first public release remains gated on accepted updater, both embedded DLLs, shared-loader evidence and complete first-install/runtime acceptance. Phases 2/3 remain deferred. See [Phase 1 handoff](tbIDE/PHASE1_HANDOFF.md) for build order, static loader evidence, open native gates and focused acceptance. This source pass does not claim successful native compilation or a production-ready release. Validation: 211 Node tests plus 9 Quill smoke tests pass; 126 exact mirrors/IDs/CRLF/hex checks, regeneration idempotence, release-tool syntax and diff checks pass. Native builds, 54 authored executable self-tests, live loader/update acceptance and actual DLL payload verification remain unperformed.
+
 ## 2026-11-23 - Consolidated full updater product decisions for collaborating agents
 
 Added `tbIDE/INSTALLATION_MANAGER_SPEC.md` with a complete approved UX, implementation strategy and phase-based acceptance contract for Cody and Claude, including installation layouts, AppData placement, Welcome Wizard, verified official release inventories, archiving custom content to old/new/both, multi-root state and conservative reorganization. Linked this from AGENTS and relevant design/runbooks; updated roadmaps. **Documentation only; existing updater implementation and publication state unchanged.**

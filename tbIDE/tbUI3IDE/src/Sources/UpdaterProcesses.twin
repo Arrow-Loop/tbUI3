@@ -1,0 +1,84 @@
+' Process identities use exact FILETIME hexadecimal strings, avoiding JSON floating-point ticks.
+Private Module UpdaterProcesses
+    Private Type FileTime
+        low As Long
+        high As Long
+    End Type
+    Private Declare PtrSafe Function OpenProcess Lib "kernel32" (ByVal access As Long, ByVal inherit As Long, ByVal pid As Long) As LongPtr
+    Private Declare PtrSafe Function GetProcessTimes Lib "kernel32" (ByVal handle As LongPtr, ByRef created As FileTime, ByRef exited As FileTime, ByRef kernel As FileTime, ByRef user As FileTime) As Long
+    Private Declare PtrSafe Function WaitForSingleObject Lib "kernel32" (ByVal handle As LongPtr, ByVal timeout As Long) As Long
+    Private Declare PtrSafe Function CloseHandle Lib "kernel32" (ByVal handle As LongPtr) As Long
+    Private Declare PtrSafe Function CreateMutexW Lib "kernel32" (ByVal security As LongPtr, ByVal owner As Long, ByVal name As LongPtr) As LongPtr
+    Private Declare PtrSafe Function ReleaseMutex Lib "kernel32" (ByVal handle As LongPtr) As Long
+    Public Function UProcessTime(ByVal pid As Long) As String
+        Dim handle As LongPtr = OpenProcess(&H1000 Or &H100000, 0, pid)
+        If handle = 0 Then
+            If Err.LastDllError = 87 Then Return ""
+            UFail "Could not inspect IDE identity; close normally and retry."
+        End If
+        If WaitForSingleObject(handle, 0) = 0 Then CloseHandle handle: Return ""
+        Dim created As FileTime, exited As FileTime, kernel As FileTime, user As FileTime
+        Dim ok As Long = GetProcessTimes(handle, created, exited, kernel, user)
+        CloseHandle handle
+        If ok = 0 Then UFail "IDE creation time unavailable."
+        Return Right$("00000000" & Hex$(created.high), 8) & Right$("00000000" & Hex$(created.low), 8)
+    End Function
+    Public Function UCaptureIdentity(ByVal context As UpdateJson) As UpdateJson
+        Dim service As Object = GetObject("winmgmts:\\.\root\cimv2"), pid As Long = CLng(JD(context, "compilerPid")), i As Long
+        Dim processes As Object, process As Object, found As Boolean, path As String, root As String = JT(context, "installRoot") & "\"
+        For i = 1 To 8
+            Set processes = service.ExecQuery("SELECT ProcessId, ParentProcessId, ExecutablePath FROM Win32_Process WHERE ProcessId=" & CStr(pid))
+            found = False
+            For Each process In processes
+                found = True
+                If IsNull(process.ExecutablePath) Then UFail "Compiler path unavailable."
+                path = CStr(process.ExecutablePath)
+                If StrComp(path, JT(context, "ideExe"), vbTextCompare) = 0 Then
+                    Dim result As UpdateJson = JO(), time As String = UProcessTime(pid)
+                    If Len(time) = 0 Then UFail "Owning IDE already exited."
+                    result.Assign "pid", JN(pid): result.Assign "startTime", JS(time)
+                    Set UCaptureIdentity = result: Exit Function
+                End If
+                If i = 1 And StrComp(Left$(path, Len(root)), root, vbTextCompare) <> 0 Then UFail "Compiler is outside installation."
+                pid = CLng(process.ParentProcessId)
+            Next
+            If Not found Then Exit For
+        Next
+        UFail "Could not identify the owning IDE. Open updates from inside twinBASIC."
+    End Function
+    Public Function UOwnerAlive(ByVal identity As UpdateJson) As Boolean
+        Dim saved As String = JT(identity, "startTime")
+        If Len(saved) <> 16 Then UFail "Unsupported IDE identity. Check for updates again."
+        Return UProcessTime(CLng(JD(identity, "pid"))) = saved
+    End Function
+    Public Sub UWaitInstallation(ByVal context As UpdateJson, ByVal identity As UpdateJson)
+        Dim deadline As Date = DateAdd("s", 120, Now), service As Object = GetObject("winmgmts:\\.\root\cimv2"), busy As Boolean
+        Dim processes As Object, process As Object, path As String, bin As String = JT(context, "installRoot") & "\bin\", name As String
+        Do
+            busy = UOwnerAlive(identity)
+            Set processes = service.ExecQuery("SELECT ExecutablePath, Name FROM Win32_Process")
+            For Each process In processes
+                If Not IsNull(process.ExecutablePath) Then
+                    path = CStr(process.ExecutablePath)
+                    If StrComp(path, JT(context, "ideExe"), vbTextCompare) = 0 Or StrComp(Left$(path, Len(bin)), bin, vbTextCompare) = 0 Then busy = True
+                ElseIf Not IsNull(process.Name) Then
+                    name = LCase$(CStr(process.Name))
+                    If Left$(name, 9) = "twinbasic" Then UFail "Cannot inspect another twinBASIC process. Close it normally and retry."
+                End If
+            Next
+            If Not busy Then Exit Sub
+            UPause
+        Loop While Now < deadline
+        UFail "IDE shutdown was cancelled, another session is open, or compiler/cache processes still hold this installation. Close them normally and retry."
+    End Sub
+    Public Function UAcquire(ByVal name As String) As LongPtr
+        Dim handle As LongPtr = CreateMutexW(0, 0, StrPtr(name))
+        If handle = 0 Then UFail "Installation mutex unavailable."
+        Dim result As Long = WaitForSingleObject(handle, 0)
+        If result <> 0 And result <> &H80 Then CloseHandle handle: UFail "Another updater is using this installation."
+        Return handle
+    End Function
+    Public Sub URelease(ByVal handle As LongPtr)
+        If handle <> 0 Then ReleaseMutex handle: CloseHandle handle
+    End Sub
+End Module

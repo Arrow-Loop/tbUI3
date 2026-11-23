@@ -24,3 +24,7 @@ State snapshots (schema 1): `root`, `installationId`, `preferences` (schema 1, s
 Automatic online opt-out does not disable bootstrap or manual checks. Wizard completion is per user; preferences and transaction approvals are per installation. Future schemas are preserved instead of overwritten by an older wizard. Native updater production compilation and binary payload generation remain acceptance/build steps; a resource must never be replaced by a mock EXE.
 
 The prototype may choose its own documented JavaScript mounting API. The production adapter will translate that API to these native services and feed acknowledged snapshots back. Quill's committed interface documentation is the integration authority for its view lifecycle.
+
+## Integrated source candidate
+
+Quill prototype through 5966da3 is embedded unchanged in production resources; the reserved directory has not been edited by Cody. The adapter adds correlated request ids/acknowledgements, modal HTML hosting, scoped Windows theme/accent tokens and Promise-based explicit repair confirmation. Actual native state is published after settled requests. See [INSTALLATION_CONTRACTS.md](INSTALLATION_CONTRACTS.md) and [PHASE1_HANDOFF.md](PHASE1_HANDOFF.md). Actual helper binary embedding is the separately authorized Phase 1 pass after native updater acceptance, per Shane's latest instruction.

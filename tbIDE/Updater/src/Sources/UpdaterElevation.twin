@@ -1,0 +1,202 @@
+' Same-account UAC only. A privileged worker never trusts user-writable staged hashes alone.
+Private Module UpdaterElevation
+    Private Declare PtrSafe Function ECreate Lib "kernel32" Alias "CreateFileW" (ByVal path As LongPtr, ByVal access As Long, ByVal share As Long, ByVal security As LongPtr, ByVal creation As Long, ByVal flags As Long, ByVal template As LongPtr) As LongPtr
+    Private Declare PtrSafe Function EClose Lib "kernel32" Alias "CloseHandle" (ByVal handle As LongPtr) As Long
+    Public ElevatedStateSafe As Boolean
+    Private mRecovery As UpdateJson
+    Private mPins As Collection
+    Private mPinned As Object
+    Private Sub Pin(ByVal path As String, ByVal directory As Boolean)
+        UNoLinks path
+        If mPinned.Exists(path) Then Exit Sub
+        Dim flags As Long = &H200000
+        If directory Then flags = flags Or &H2000000
+        Dim native As String = UWinPath(path)
+        Dim handle As LongPtr = ECreate(StrPtr(native), &H80000000, 1, 0, 3, flags, 0)
+        If handle = -1 Then UFail "Could not hold an immutable transaction input: " & path
+        UNoLinks path
+        mPins.Add handle: mPinned.Add path, True
+    End Sub
+    Private Sub PinParents(ByVal path As String)
+        Dim parent As String = UParent(path)
+        If Len(parent) > 0 Then PinParents parent
+        Pin path, True
+    End Sub
+    Public Sub SecureElevatedSession()
+        If Not IIsElevated() Then UFail "A privileged transaction was not authorized."
+        Set mPins = New Collection: Set mPinned = UMap()
+        PinParents UParent(UpdateContext)
+        Pin UpdateContext, False
+        Dim planPath As String = USafe(SessionFolder(), "plan.json")
+        Pin planPath, False
+        If UHash(UpdateContext) <> AuthorizedContextHash Or UHash(planPath) <> AuthorizedPlanHash Then UFail "The approved transaction changed before elevation."
+        Dim context As UpdateJson = UReadJson(UpdateContext), plan As UpdateJson = UReadJson(planPath)
+        IValidateContext context, UpdateContext: UValidatePlan plan, context, SessionFolder()
+        ElevatedStateSafe = True
+        Dim operation As UpdateJson
+        For Each operation In plan.Member("operations").Items
+            If UpdateMode <> "Recover" Or UExists(JT(operation, "staged")) Then
+                PinParents UParent(JT(operation, "staged")): Pin JT(operation, "staged"), False
+            End If
+        Next
+        ' Recover never consumes a user-swapped journal/backup after validation.
+        If UpdateMode = "Recover" Then
+            Dim journalPath As String = USafe(SessionFolder(), "journal.json")
+            ' Journal is atomically rewritten during recovery, so bind its bytes in memory later.
+            Dim journal As UpdateJson = UReadJson(journalPath)
+            Set mRecovery = journal
+            UValidateJournal journal, plan, SessionFolder()
+            For Each operation In journal.Member("operations").Items
+                If JBool(operation, "existed") Then
+                    PinParents UParent(JT(operation, "backup")): Pin JT(operation, "backup"), False
+                End If
+            Next
+        End If
+        VerifyElevatedProvenance context, plan
+        ' Directory handles deny rename/reparse writes while allowing child file replacements.
+        For Each operation In plan.Member("operations").Items
+            Dim destination As String = USafe(JT(operation, "root"), JT(operation, "target"))
+            UDirectory UParent(destination): PinParents UParent(destination)
+        Next
+    End Sub
+    Public Function RequiresElevation(ByVal plan As UpdateJson) As Boolean
+        Dim operation As UpdateJson, root As String, component As UpdateJson, ideRoot As String
+        For Each component In plan.Member("components").Items
+            If JT(component, "id") = "ide" Then
+                For Each operation In plan.Member("operations").Items
+                    root = JT(operation, "root")
+                    If StrComp(root, ISharedRoot(), vbTextCompare) <> 0 And UTargetAllowed("ide", JT(operation, "target")) Then
+                        Dim folder As String = UParent(USafe(root, JT(operation, "target")))
+                        Do While Not UFolder(folder): folder = UParent(folder): Loop
+                        Dim probe As String = USafe(folder, ".tbUI3-access-" & UUnique()), handle As LongPtr
+                        Dim nativeProbe As String = UWinPath(probe)
+                        handle = ECreate(StrPtr(nativeProbe), &H40010000, 7, 0, 1, &H4000100, 0)
+                        If handle <> -1 Then
+                            EClose handle
+                        ElseIf Err.LastDllError = 5 Then
+                            Return True
+                        Else
+                            UFail "The destination is locked or cannot be safely probed. Close other sessions and retry."
+                        End If
+                    End If
+                Next
+            End If
+        Next
+        Return False
+    End Function
+    Private Sub VerifyElevatedProvenance(ByVal context As UpdateJson, ByVal plan As UpdateJson)
+        ' Re-authenticate current release metadata: staged files are in the unelevated user's profile.
+        ' Older plans are refused if releases have moved on; the UI can stage them again.
+        Dim verifiedRoot As String = USafe(SessionFolder(), "AdminVerification-" & UUnique())
+        UDirectory verifiedRoot
+        Dim fresh As UpdateJson = UDiscover(context, verifiedRoot), expected As Object = UMap(), oldIde As Object
+        Dim selected As UpdateJson, candidate As UpdateJson, trusted As UpdateJson, matches As Long, files As UpdateJson, file As UpdateJson, operation As UpdateJson
+        For Each selected In plan.Member("components").Items
+            matches = 0: Set trusted = Nothing
+            For Each candidate In fresh.Member("components").Items
+                If JT(candidate, "id") = JT(selected, "id") And JT(candidate, "version") = JT(selected, "version") Then Set trusted = candidate: matches = matches + 1
+            Next
+            If matches <> 1 Then UFail "Release metadata changed or cannot be authenticated for elevation. Recheck updates."
+            If JT(trusted.Member("asset"), "sha256") <> JT(selected.Member("asset"), "sha256") Or JT(trusted.Member("asset"), "url") <> JT(selected.Member("asset"), "url") Then UFail "Privileged release identity mismatch."
+            Dim id As String = JT(trusted, "id"), archive As String = USafe(verifiedRoot, id & ".zip")
+            UDownload trusted.Member("asset"), archive
+            Set files = UExtract(trusted, archive, USafe(verifiedRoot, "files-" & id))
+            For Each file In files.Items
+                expected.Add USafe(URoot(id, JT(context, "installRoot")), JT(file, "target")), JT(file, "sha256")
+            Next
+            If UpdateMode <> "Recover" Then VerifyReceipt trusted, files, context, plan
+            If id = "ide" Then
+                ' Never authorize privileged writes from a locally editable install receipt.
+                Dim baselineAsset As UpdateJson
+                Set baselineAsset = FindOfficialBaseline(JT(selected, "installed"), verifiedRoot)
+                Dim baselineArchive As String = USafe(verifiedRoot, "original.zip")
+                UDownload baselineAsset, baselineArchive
+                Dim baselineComponent As UpdateJson = UComponent("ide", JT(selected, "installed"), JT(selected, "installed"), baselineAsset, JA(), "", "")
+                Dim baselineFiles As UpdateJson = UExtract(baselineComponent, baselineArchive, USafe(verifiedRoot, "original"))
+                Set oldIde = UMap()
+                For Each file In baselineFiles.Items: oldIde.Add JT(file, "target"), JT(file, "sha256"): Next
+                Dim exe As String = USafe(JT(context, "installRoot"), "twinBASIC.exe")
+                If UpdateMode = "Apply" Then
+                    If UHash(exe) <> oldIde.Item("twinBASIC.exe") Then UFail "The protected IDE is not the authenticated installed vendor build."
+                End If
+            End If
+        Next
+        If UpdateMode = "Recover" And Not oldIde Is Nothing Then
+            Dim oldOperation As UpdateJson
+            For Each oldOperation In mRecovery.Member("operations").Items
+                If StrComp(JT(oldOperation, "root"), JT(context, "installRoot"), vbTextCompare) = 0 And JBool(oldOperation, "existed") Then
+                    If Not oldIde.Exists(JT(oldOperation, "target")) Then UFail "No official original backup for privileged recovery."
+                    If JT(oldOperation, "originalSha256") <> oldIde.Item(JT(oldOperation, "target")) Or UHash(JT(oldOperation, "backup")) <> oldIde.Item(JT(oldOperation, "target")) Then UFail "Privileged recovery backup is not the authenticated prior vendor file."
+                End If
+            Next
+        End If
+        For Each operation In plan.Member("operations").Items
+            Dim target As String = USafe(JT(operation, "root"), JT(operation, "target"))
+            If expected.Exists(target) Then
+                If JT(operation, "sha256") <> expected.Item(target) Then UFail "Privileged staged payload differs from the authenticated release."
+                If StrComp(JT(operation, "root"), JT(context, "installRoot"), vbTextCompare) = 0 Then
+                    If oldIde Is Nothing Then UFail "No official prior inventory for protected IDE."
+                    If oldIde.Exists(JT(operation, "target")) Then
+                        If JT(operation, "expectedOriginal") <> oldIde.Item(JT(operation, "target")) Then UFail "Privileged prior inventory mismatch."
+                    ElseIf Not JBool(operation, "expectAbsent") Then
+                        UFail "An unrecognized protected destination would be overwritten."
+                    End If
+                End If
+            Else
+                VerifyMetadataOperation operation, context, plan
+            End If
+        Next
+    End Sub
+    Private Function FindOfficialBaseline(ByVal version As String, ByVal session As String) As UpdateJson
+        Dim releases As UpdateJson = UReleases("twinbasic/twinbasic", session, "original"), release As UpdateJson
+        For Each release In releases.Items
+            Dim tag As String = JT(release, "tag_name")
+            If Left$(tag, 7) = "beta-x-" And Not JBool(release, "draft") Then
+                If UDigits(Mid$(tag, 8)) Then
+                    If UCompare(Mid$(tag, 8), version) = 0 Then
+                        Set FindOfficialBaseline = UAsset(release, "twinBASIC_IDE_BETA_" & version & ".zip", "twinbasic/twinbasic")
+                        Exit Function
+                    End If
+                End If
+            End If
+        Next
+        UFail "The prior official baseline is unavailable for elevation. Update manually."
+    End Function
+    Private Sub VerifyReceipt(ByVal component As UpdateJson, ByVal files As UpdateJson, ByVal context As UpdateJson, ByVal plan As UpdateJson)
+        If JT(component, "id") = "library" Then Exit Sub
+        Dim operation As UpdateJson, found As Boolean
+        For Each operation In plan.Member("operations").Items
+            If StrComp(JT(operation, "root"), IReceiptRoot(JT(component, "id"), JT(context, "installRoot")), vbTextCompare) = 0 And JT(operation, "target") = "tbUI3-" & JT(component, "id") & ".json" Then
+                Dim receipt As UpdateJson = UReadJson(JT(operation, "staged"))
+                If JT(receipt, "channel") <> JT(component, "channel", "development") Or JT(receipt, "version") <> JT(component, "version") Or JT(receipt.Member("asset"), "sha256") <> JT(component.Member("asset"), "sha256") Then UFail "Privileged receipt identity mismatch."
+                Dim expected As Object = UMap(), file As UpdateJson
+                For Each file In files.Items: expected.Add JT(file, "target"), JT(file, "sha256"): Next
+                If receipt.Member("files").Items.Count <> expected.Count Then UFail "Privileged receipt inventory mismatch."
+                For Each file In receipt.Member("files").Items
+                    If Not expected.Exists(JT(file, "target")) Then UFail "Privileged receipt destination mismatch."
+                    If expected.Item(JT(file, "target")) <> JT(file, "sha256") Then UFail "Privileged receipt hash mismatch."
+                    expected.Remove JT(file, "target")
+                Next
+                found = True
+            End If
+        Next
+        If Not found Then UFail "Privileged transaction receipt is missing."
+    End Sub
+    Private Sub VerifyMetadataOperation(ByVal operation As UpdateJson, ByVal context As UpdateJson, ByVal plan As UpdateJson)
+        Dim component As UpdateJson
+        For Each component In plan.Member("components").Items
+            If JT(component, "id") <> "library" And JT(operation, "target") = "tbUI3-" & JT(component, "id") & ".json" And StrComp(JT(operation, "root"), IReceiptRoot(JT(component, "id"), JT(context, "installRoot")), vbTextCompare) = 0 Then Exit Sub
+        Next
+        If StrComp(JT(operation, "root"), ISharedRoot(), vbTextCompare) = 0 And JT(operation, "target") = "Shared/managed.json" Then
+            If UpdateMode = "Recover" Then Exit Sub
+            Dim ledger As UpdateJson = UReadJson(JT(operation, "staged"))
+            If JD(ledger, "schema") <> 1 Then UFail "Invalid privileged resource ledger."
+            Exit Sub
+        End If
+        UFail "Privileged operation is not authenticated payload or constrained per-user metadata."
+    End Sub
+    Public Function ElevatedRecoveryJournal() As UpdateJson
+        If mRecovery Is Nothing Then UFail "No immutable elevated recovery snapshot."
+        Set ElevatedRecoveryJournal = mRecovery
+    End Function
+End Module

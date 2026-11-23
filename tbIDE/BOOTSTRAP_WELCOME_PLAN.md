@@ -1,5 +1,7 @@
 # Self-provisioning tbUI3IDE bootstrap and Welcome Wizard
 
+> 2026-11-23 implementation status: native/integration source candidate is now in the canonical projects. [PHASE1_HANDOFF.md](PHASE1_HANDOFF.md) records actual evidence and pending native acceptance. Shane subsequently split actual compiled-helper embedding into a separate Phase 1 pass after the updater works; the combined public release gate and all Phase 2/3 requirements below remain intact. No compiled or runtime acceptance is claimed by source implementation.
+
 **Agent implementation entry point:** [INSTALLATION_MANAGER_SPEC.md](INSTALLATION_MANAGER_SPEC.md) is the consolidated cross-phase specification capturing Shane's exact UX, preservation, update strategy, release inventory, discovery and compatibility decisions from the full planning discussion. This bootstrap plan expands first-install and Welcome Wizard details. If older phase planning prose differs, follow the newer approved decisions in the consolidated specification; actual source behavior must still be verified independently.
 
 ## Delivery sequencing decision: merged first production milestone (2026-11-23)

@@ -1,42 +1,9 @@
 ' Release contracts, installed identities and component/path policy.
 Private Module UpdaterPolicy
-    Public Function UVersionParts(ByVal version As String) As Variant
-        Dim parts() As String = Split(version, "."), values(0 To 3) As Double, i As Long, j As Long, ch As String
-        If UBound(parts) > 3 Then UFail "Versions need one to four numeric components."
-        For i = 0 To UBound(parts)
-            If Len(parts(i)) = 0 Or Len(parts(i)) > 10 Then UFail "Invalid version component."
-            For j = 1 To Len(parts(i))
-                ch = Mid$(parts(i), j, 1)
-                If ch < "0" Or ch > "9" Then UFail "Nonnumeric version component."
-            Next
-            values(i) = Val(parts(i))
-            If values(i) > 4294967295# Then UFail "Version component overflow."
-        Next
-        Return values
-    End Function
-    Public Function UCompare(ByVal a As String, ByVal b As String) As Long
-        Dim aa As Variant = UVersionParts(a), bb As Variant = UVersionParts(b), i As Long
-        For i = 0 To 3
-            If aa(i) < bb(i) Then Return -1
-            If aa(i) > bb(i) Then Return 1
-        Next
-        Return 0
-    End Function
-    Public Function UNormalizeAddin(ByVal version As String, Optional ByVal stable As Boolean = False) As String
-        Dim parts As Variant = UVersionParts(version)
-        If Not stable And UBound(Split(version, ".")) = 3 And parts(0) = 1 And parts(2) = 0 Then
-            Dim limit As Long = -1
-            Select Case parts(1)
-                Case 1: limit = 0
-                Case 2: limit = 2
-                Case 3: limit = 20
-            End Select
-            If limit >= 0 And parts(3) <= limit Then Return "0." & CStr(parts(1)) & ".0." & CStr(parts(3))
-        End If
-        Return version
-    End Function
     Public Function URoot(ByVal id As String, ByVal install As String) As String
         Select Case id
+            Case "addin": Return IAddinRoot()
+            Case "updater": Return ISharedRoot()
             Case "themes": Return Environ$("APPDATA") & "\twinBASIC\themes"
             Case "library": Return Environ$("LOCALAPPDATA") & "\tbUI3"
             Case "controlPackage": Return Environ$("LOCALAPPDATA") & "\tbUI3\Downloads"
@@ -85,6 +52,7 @@ Private Module UpdaterPolicy
             If targets.Count <> 2 Or Not targets.Exists("addins/win32/tbUI3IDE.dll") Or Not targets.Exists("addins/win64/tbUI3IDE.dll") Then UFail "Both add-in architectures are required."
         End If
         If id = "updater" Then
+            If JD(component, "protocolMin") > IProtocol Or JD(component, "protocolMax") < IProtocol Then UFail "Updater protocol would strand installed clients."
             If targets.Count <> 1 Or Not targets.Exists("Updater.exe") Then UFail "Native updater release must contain exactly Updater.exe."
         End If
     End Sub
@@ -93,21 +61,8 @@ Private Module UpdaterPolicy
         result.CompareMode = vbTextCompare
         Set UMap = result
     End Function
-    Public Function UInstalledIde(ByVal root As String) As String
-        Dim text As String = UText(USafe(root, "ide/build.js")), marker As String = "twinBASIC IDE BETA "
-        Dim pos As Long = InStr(1, text, marker, vbBinaryCompare), result As String, ch As String
-        If pos = 0 Then UFail "Unrecognized IDE channel; automatic IDE update disabled."
-        pos = pos + Len(marker)
-        Do While pos <= Len(text)
-            ch = Mid$(text, pos, 1)
-            If ch < "0" Or ch > "9" Then Exit Do
-            result = result & ch: pos = pos + 1
-        Loop
-        If Len(result) = 0 Then UFail "Missing IDE build."
-        Return CStr(Val(result))
-    End Function
     Public Function UReceiptVersion(ByVal id As String, ByVal root As String) As String
-        Dim path As String = USafe(root, "tbUI3-" & id & ".json")
+        Dim path As String = IReceiptPath(id, root)
         If Not UExists(path) Then Return "0"
         Dim receipt As UpdateJson = UReadJson(path), seen As Object = UMap(), file As UpdateJson
         If receipt.Member("files").Items.Count = 0 Then Return "0"
@@ -115,7 +70,7 @@ Private Module UpdaterPolicy
             UTarget id, JT(file, "target"): UHashValue JT(file, "sha256")
             If seen.Exists(JT(file, "target")) Then UFail "Duplicate installed receipt file."
             seen.Add JT(file, "target"), True
-            path = USafe(root, JT(file, "target"))
+            path = USafe(URoot(id, root), JT(file, "target"))
             If Not UExists(path) Then Return "0"
             If UHash(path) <> JT(file, "sha256") Then Return "0"
         Next
@@ -123,9 +78,9 @@ Private Module UpdaterPolicy
         Return JT(receipt, "version")
     End Function
     Public Function UInstalledAddin(ByVal root As String, ByVal architecture As String) As String
-        Dim path As String = USafe(root, "addins/" & architecture & "/tbUI3IDE.dll")
+        Dim path As String = USafe(IAddinRoot(), "addins/" & architecture & "/tbUI3IDE.dll")
         If Not UExists(path) Then Return "0"
-        Dim version As String = UBinaryVersion(path), stable As Boolean, receipt As String = USafe(root, "tbUI3-addin.json")
+        Dim version As String = UBinaryVersion(path), stable As Boolean, receipt As String = IReceiptPath("addin", root)
         If UExists(receipt) Then
             Dim saved As UpdateJson = UReadJson(receipt)
             If JT(saved, "channel") = "stable" And JT(saved, "version") = version Then stable = UReceiptVersion("addin", root) = version
@@ -140,7 +95,7 @@ Private Module UpdaterPolicy
         For i = 0 To 7: magic = magic & Chr$(header(i)): Next
         If magic <> "tbUI3LIB" Or U32(header, 8) <> 1 Then UFail "Invalid icon library header."
         Dim offset As Double = U32(header, 16), size As Double = U32(header, 20)
-        If offset < 32 Or size <= 0 Or offset + size > UFso().GetFile(path).Size Then UFail "Invalid icon library index."
+        If offset < 32 Or size <= 0 Or offset + size > USize(path) Then UFail "Invalid icon library index."
         If size > 256 Then size = 256
         Dim bytes() As Byte = UBytes(path, CLng(offset), CLng(size)), text As String
         For i = 0 To UBound(bytes): text = text & Chr$(bytes(i)): Next
@@ -229,7 +184,7 @@ Private Module UpdaterPolicy
                 Next
                 version = Mid$(JT(release, "tag_name"), 11)
                 ' Known historical mislabeled builds cannot become stable remote candidates.
-                If hasManifest And UNormalizeAddin(version) = version Then
+                If hasManifest And UNormalizeAddin(version) = version And (JT(context, "channel", "development") <> "stable" Or Left$(version, 2) <> "0.") Then
                     If best Is Nothing Then
                         newest = version: Set best = release
                     ElseIf UCompare(version, newest) > 0 Then
@@ -244,12 +199,13 @@ Private Module UpdaterPolicy
         Dim path As String = USafe(session, "release.json")
         UDownload asset, path
         Dim manifest As UpdateJson = UReadJson(path), development As Boolean = Left$(newest, 2) = "0."
-        If JD(manifest, "schema") <> 1 Or JT(manifest, "releaseTag") <> JT(best, "tag_name") Then UFail "Manifest/release identity mismatch."
+        If JD(manifest, "schema") <> 2 Or JT(manifest, "releaseTag") <> JT(best, "tag_name") Then UFail "Manifest/release identity mismatch."
         If development Then
             If Not JBool(best, "prerelease") Or JT(manifest, "channel") <> "development" Then UFail "Development release designation mismatch."
         Else
             If JBool(best, "prerelease") Or JT(manifest, "channel") <> "stable" Then UFail "Stable release designation mismatch."
         End If
+        If JD(manifest, "protocolMin") > IProtocol Or JD(manifest, "protocolMax") < IProtocol Or JT(manifest, "deployment") <> "perUser" Then UFail "Release uses an incompatible client/deployment contract."
         Dim result As UpdateJson = JA(), ids As Object = UMap(), c As UpdateJson, id As String, installed As String, entry As UpdateJson, root As String = JT(context, "installRoot")
         For Each c In manifest.Member("components").Items
             id = JT(c, "id")
@@ -263,13 +219,17 @@ Private Module UpdaterPolicy
                 installed = v32
                 If UCompare(v64, installed) < 0 Then installed = v64
                 If JT(c, "version") <> newest Or JT(c, "asset") <> "tbUI3IDE-" & newest & ".zip" Then UFail "Add-in tag/version/asset mismatch."
-            ElseIf id = "updater" And UExists(USafe(root, "Updater.exe")) Then
-                installed = UBinaryVersion(USafe(root, "Updater.exe"))
+            ElseIf id = "updater" And UExists(ISharedExe()) Then
+                installed = UBinaryVersion(ISharedExe())
             Else
-                installed = UReceiptVersion(id, URoot(id, root))
+                installed = UReceiptVersion(id, root)
             End If
             Set entry = UComponent(id, JT(c, "version"), installed, asset, c.Member("files"), JT(best, "html_url"), JT(c, "summary"))
-            entry.Assign "channel", manifest.Member("channel"): UComponentValid entry
+            entry.Assign "channel", manifest.Member("channel")
+            If id = "updater" Then
+                entry.Assign "protocolMin", c.Member("protocolMin"): entry.Assign "protocolMax", c.Member("protocolMax")
+            End If
+            UComponentValid entry
             If id = "addin" Then
                 Dim architectures As UpdateJson = JO()
                 architectures.Assign "win32", JS(v32): architectures.Assign "win64", JS(v64): entry.Assign "architectures", architectures
@@ -325,7 +285,7 @@ Private Module UpdaterPolicy
         errors.Push JS("Icon library: " & Err.Description): Resume Done
     Done:
         On Error GoTo 0
-        result.Assign "components", components: result.Assign "errors", errors: result.Assign "engineSchema", JN(2)
+        result.Assign "components", components: result.Assign "errors", errors: result.Assign "engineSchema", JN(IContextSchema)
         Set UDiscover = result
     End Function
 End Module

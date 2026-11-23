@@ -1,0 +1,135 @@
+' Offline resource provisioning runs on each add-in load, independently of online checks/welcome.
+Private Class BundledResources
+    Private mSnapshot As UpdateJson
+    Public Property Get Snapshot() As UpdateJson
+        If mSnapshot Is Nothing Then Set mSnapshot = JO()
+        Set Snapshot = mSnapshot
+    End Property
+    Public Sub Refresh(Optional ByVal repairId As String = "")
+        Dim guard As LongPtr
+        On Error GoTo Failed
+        Set mSnapshot = JO(): mSnapshot.Assign "status", JS("checking"): mSnapshot.Assign "resources", JA()
+        guard = ILock("shared-resources")
+        If guard = 0 Then
+            mSnapshot.Assign "status", JS("busy"): mSnapshot.Assign "message", JS("Another update is using shared resources. Bootstrap will retry safely.")
+            Exit Sub
+        End If
+        Dim manifest As UpdateJson = BundleManifest()
+        If JD(manifest, "schema") <> 1 Or JD(manifest, "protocol") <> IProtocol Then UFail "Unsupported embedded bundle. Rebuild using prepare-phase1-bundle.mjs."
+        Dim ledger As UpdateJson = ReadLedger(), entry As UpdateJson, ids As Object = CreateObject("Scripting.Dictionary"), partial As Boolean
+        For Each entry In manifest.Member("resources").Items
+            Dim id As String = JT(entry, "id")
+            If ids.Exists(id) Then UFail "Duplicate embedded resource identity."
+            ids.Add id, True
+            If Not Provision(entry, ledger, repairId = id) Then partial = True
+        Next
+        If ids.Count <> 3 Or Not ids.Exists("updater") Or Not ids.Exists("themeDark") Or Not ids.Exists("themeLight") Then UFail "The DLL bundle must contain the updater and both themes."
+        UDirectory UParent(MLedgerPath()): UWriteJson MLedgerPath(), ledger
+        mSnapshot.Assign "status", JS(IIf(partial, "attention", "ready"))
+        mSnapshot.Assign "message", JS(IIf(partial, "Some resources were preserved or deferred. Review their status below.", "Updater and themes are provisioned and verified."))
+        IUnlock guard: Exit Sub
+    Failed:
+        Dim reason As String = Err.Description
+        On Error Resume Next
+        IUnlock guard
+        If mSnapshot Is Nothing Then Set mSnapshot = JO()
+        mSnapshot.Assign "status", JS("error"): mSnapshot.Assign "message", JS(reason)
+    End Sub
+    Private Function ReadLedger() As UpdateJson
+        On Error GoTo Failed
+        Set ReadLedger = MLedger(): Exit Function
+    Failed:
+        Dim reason As String = Err.Description
+        mSnapshot.Assign "ledgerError", JS(reason): UFail reason
+    End Function
+    Public Sub ResetLedger()
+        Dim guard As LongPtr = IRequireLock("shared-resources")
+        On Error GoTo Failed
+        Dim path As String = MLedgerPath(), backup As String = USafe(ISharedRoot(), "Shared/Repairs/" & UUnique() & "/managed.json")
+        If UExists(path) Then
+            UUnlocked path: UDirectory UParent(backup): UCopy path, backup: UFlush backup
+            If UHash(path) <> UHash(backup) Then UFail "Shared ledger backup verification failed."
+            UDelete path
+        End If
+        IUnlock guard: guard = 0
+        Refresh
+        mSnapshot.Assign "ledgerBackup", JS(backup): Exit Sub
+    Failed:
+        Dim reason As String = Err.Description
+        IUnlock guard: UFail reason
+    End Sub
+    Private Function Provision(ByVal entry As UpdateJson, ByVal ledger As UpdateJson, ByVal repair As Boolean) As Boolean
+        Dim id As String = JT(entry, "id"), target As String = MTarget(id), resource As String = JT(entry, "resource"), status As UpdateJson = JO()
+        status.Assign "id", JS(id): status.Assign "path", JS(target): status.Assign "repairable", JB(False)
+        mSnapshot.Member("resources").Push status
+        On Error GoTo Failed
+        UHashValue JT(entry, "sha256")
+        Dim tempRoot As String = USafe(ISharedRoot(), "BundleStaging/" & UUnique())
+        UDirectory tempRoot
+        Dim temp As String = USafe(tempRoot, IIf(id = "updater", "Updater.exe", "payload")), bytes As Variant = LoadResData(resource, "OTHER")
+        UWriteRaw temp, bytes
+        If USize(temp) <> JD(entry, "size") Or UHash(temp) <> JT(entry, "sha256") Then UFail "Embedded payload failed size/SHA-256 verification."
+        If id = "updater" Then
+            UPe temp, &H14C: USignature temp
+            If UCompare(UBinaryVersion(temp), JT(entry, "version")) <> 0 Then UFail "Bundled updater fixed PE version mismatch."
+            If JD(entry, "protocolMin") > IProtocol Or JD(entry, "protocolMax") < IProtocol Then UFail "Bundled updater protocol is incompatible."
+        End If
+        Dim existing As String, recognized As Boolean, newer As Boolean
+        If UExists(target) Then
+            existing = UHash(target): recognized = MRecognized(ledger, id, existing)
+            If id = "updater" Then newer = UCompare(InspectVersion(target), JT(entry, "version")) > 0
+            If recognized And id <> "updater" Then newer = UCompare(JT(ledger.Member("resources").Member(id), "version"), JT(entry, "version")) > 0
+            If newer Then
+                status.Assign "status", JS("newer-preserved")
+                status.Assign "message", JS("A newer managed component was preserved. Updater launch additionally requires a recognized compatible receipt.")
+                UDelete temp: RmDir tempRoot
+                If id = "updater" Then Return MHelperReady()
+                Return True
+            End If
+            If existing = JT(entry, "sha256") Then
+                ledger.Member("resources").Assign id, MRecord(JT(entry, "version"), existing, CLng(JD(entry, "protocolMin")), CLng(JD(entry, "protocolMax")))
+                status.Assign "status", JS("verified"): status.Assign "message", JS("Verified; no replacement needed.")
+                UDelete temp: RmDir tempRoot: Return True
+            End If
+            If Not recognized And Not repair Then
+                status.Assign "status", JS("customized-preserved"): status.Assign "repairable", JB(True)
+                status.Assign "message", JS("An unknown or modified file was preserved. Explicit reset keeps a backup before replacement.")
+                UDelete temp: RmDir tempRoot: Return False
+            End If
+            UUnlocked target
+            If repair Then
+                Dim backup As String = USafe(ISharedRoot(), "Shared/Repairs/" & UUnique() & "/" & UFso().GetFileName(target))
+                UDirectory UParent(backup): UCopy target, backup: UFlush backup
+                If UHash(backup) <> existing Then UFail "Repair backup verification failed."
+                status.Assign "backup", JS(backup)
+            End If
+        End If
+        UReplace temp, target
+        If UHash(target) <> JT(entry, "sha256") Then UFail "Provisioned payload failed verification."
+        ledger.Member("resources").Assign id, MRecord(JT(entry, "version"), JT(entry, "sha256"), CLng(JD(entry, "protocolMin")), CLng(JD(entry, "protocolMax")))
+        status.Assign "status", JS("provisioned"): status.Assign "message", JS("Installed and verified from the DLL. Theme selection was not changed.")
+        UDelete temp: RmDir tempRoot: Return True
+    Failed:
+        Dim reason As String = Err.Description
+        On Error Resume Next
+        If Len(temp) > 0 Then
+            If UExists(temp) Then UDelete temp: RmDir tempRoot
+        End If
+        status.Assign "status", JS("blocked"): status.Assign "message", JS(reason)
+        Return False
+    End Function
+    Private Function InspectVersion(ByVal path As String) As String
+        On Error GoTo Unknown
+        Return UBinaryVersion(path)
+    Unknown:
+        Return "0"
+    End Function
+    Private Function BundleManifest() As UpdateJson
+        On Error GoTo Missing
+        Set BundleManifest = JParse(MResourceText("tbUI3-bundle.json"))
+        Exit Function
+    Missing:
+        On Error GoTo 0
+        UFail "This development DLL has no prepared verified bundle. Compile and accept the native updater first; the separate embedding pass runs prepare-phase1-bundle.mjs before compiling both DLLs. Existing files were preserved."
+    End Function
+End Class

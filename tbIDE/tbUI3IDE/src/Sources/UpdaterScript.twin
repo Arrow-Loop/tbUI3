@@ -23,7 +23,9 @@ Private Module UpdaterScript
         js = js & vbLf
         js = js & "        automatic: env.automatic !== false,"
         js = js & vbLf
-        js = js & "        deferredUntil: Number(env.deferredUntil || 0)"
+        js = js & "        deferredUntil: Number(env.deferredUntil || 0),"
+        js = js & vbLf
+        js = js & "        restart: !!env.restart"
         js = js & vbLf
         js = js & "    };"
         js = js & vbLf
@@ -168,8 +170,8 @@ Private Module UpdaterScript
         js = js & vbLf
         js = js & "        const restartLabel=node('label',undefined,panel), restart=node('input',undefined,restartLabel);"
         js = js & vbLf
-        js = js & "        restart.type='checkbox'; restart.setAttribute('data-restart',''); restartLabel.appendChild(d.createTextNode(' Restart this IDE after a success"
-        js = js & "ful update'));"
+        js = js & "        restart.type='checkbox'; restart.checked=preferences.restart; restart.setAttribute('data-restart',''); restartLabel.appendChild(d.createTextNo"
+        js = js & "de(' Restart this IDE after a successful update'));"
         js = js & vbLf
         js = js & "        const actions=node('div',undefined,panel); actions.className='tbUI3UpdateActions';"
         js = js & vbLf
@@ -188,6 +190,8 @@ Private Module UpdaterScript
         js = js & "        if (state.status==='error' && state.recovery) node('p','Recovery journal: '+state.recovery+'. Use Updater.exe -Mode Recover with this session "
         js = js & "context after closing the IDE.',panel);"
         js = js & vbLf
+        js = js & "        if(env.installationSettings)button('Installation settings and repair',()=>{panel.close();env.installationSettings();},actions);"
+        js = js & vbLf
         js = js & "        button('Close',()=>panel.close(),actions);"
         js = js & vbLf
         js = js & "    }"
@@ -202,7 +206,7 @@ Private Module UpdaterScript
         js = js & vbLf
         js = js & "            const anchor=name.closest('.tbis-optionRow'); if (!anchor || anchor.parentElement.querySelector('.tbUI3UpdateOptions')) continue;"
         js = js & vbLf
-        js = js & "            const row=node('div'); row.className='tbis-optionRow tbUI3UpdateOptions';"
+        js = js & "            const row=node('div'); row.className='tbis-optionRow tbUI3UpdateOptions tbUI3OptionActions';"
         js = js & vbLf
         js = js & "            const label=node('div','tbUI3 updates',row); label.className='tbis-optionLabelCol';"
         js = js & vbLf
@@ -247,7 +251,7 @@ Private Module UpdaterScript
         js = js & "    style.textContent='#tbUI3UpdaterDialog{color:var(--themeGeneralTextColor,CanvasText);background:var(--themeGeneralBackColor,Canvas);border:1px sol"
         js = js & "id GrayText;border-radius:8px;padding:24px;max-width:700px;width:calc(100% - 80px);max-height:80vh;overflow:auto;font:14px Segoe UI,sans-serif}#tbUI3U"
         js = js & "pdaterDialog,#tbUI3UpdateNotice{color-scheme:light}.darkMode #tbUI3UpdaterDialog,.darkMode #tbUI3UpdateNotice{color-scheme:dark}#tbUI3UpdaterDialog h2"
-        js = js & "{font-size:20px}#tbUI3UpdaterDialog p{white-space:pre-wrap;overflow-wrap:anywhere}#tbUI3UpdaterDialog button,#tbUI3UpdateNotice button,.tbUI3UpdateOpt"
+        js = js & "{font-size:20px}#tbUI3UpdaterDialog p{white-space:pre-wrap;overflow-wrap:anywhere}#tbUI3UpdaterDialog button,#tbUI3UpdateNotice button,.tbUI3OptionAct"
         js = js & "ions button{font:inherit;padding:6px 12px;margin:4px;border-radius:4px}#tbUI3UpdaterDialog section{border-bottom:1px solid GrayText;padding:12px 0}.tb"
         js = js & "UI3UpdateActions{margin-top:16px}#tbUI3UpdateNotice{position:fixed;right:16px;bottom:16px;z-index:2147483646;padding:12px;background:var(--themeGenera"
         js = js & "lBackColor,Canvas);color:var(--themeGeneralTextColor,CanvasText);border:1px solid GrayText;border-radius:8px}';"
@@ -261,6 +265,9 @@ Private Module UpdaterScript
         js = js & "    return {"
         js = js & vbLf
         js = js & "        show, publish,"
+        js = js & vbLf
+        js = js & "        setPreferences:next=>{const changed=preferences.automatic!==next.automatic;preferences.automatic=next.automatic;preferences.deferredUntil=next"
+        js = js & ".deferredUntil;preferences.restart=next.restart;if(changed)scheduleAutomatic(10000);render();},"
         js = js & vbLf
         js = js & "        take:()=>{const q=queue.shift();return q?JSON.stringify(q):'';},"
         js = js & vbLf

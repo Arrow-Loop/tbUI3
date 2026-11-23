@@ -3,7 +3,18 @@ Module MainModule
     Public Function tbCreateCompilerAddin(ByVal Host As Host) As AddIn
         ' Entry point the twinBASIC IDE calls for every add-in DLL in its addins\win32 or addins\win64 folder.
         ' The IDE releases the returned object when it unloads the add-in.
-        Return New tbUI3IDEAddin(Host)
+        On Error GoTo Failed
+        Dim token As LongPtr = LBegin(AddressOf tbCreateCompilerAddin, Host)
+        If token = 0 Then Return Nothing
+        Dim instance As tbUI3IDEAddin = New tbUI3IDEAddin(Host)
+        instance.OwnFactoryToken token
+        token = 0
+        Return instance
+    Failed:
+        Dim reason As String = Err.Description
+        LEnd token
+        Host.DebugConsole.PrintText "[tbUI3IDE] could not initialize: " & reason
+        Return Nothing
     End Function
 End Module
 
@@ -24,6 +35,7 @@ Private Class tbUI3IDEAddin
     Private WithEvents SettleTimer As AddinTimer
     ' Picks up a change to the add-in's own option in IDE Options (see InstallOption) and saves it.
     Private WithEvents OptionTimer As AddinTimer
+    Private LoadToken As LongPtr
     Private Updater As UpdaterController
     Private TabDesigner As TabViewDesignerController
     Private LastThemeName As String
@@ -56,10 +68,16 @@ Private Class tbUI3IDEAddin
         Log "loaded: " & Architecture() & ", IDE compiler " & SafeCompilerVersion()
         ApplyForActiveTheme "start-up"
         StartSettleTimer
-        On Error Resume Next
+        On Error GoTo UpdaterFailed
         Set Updater = New UpdaterController(Host)
+        Exit Sub
+    UpdaterFailed:
+        Log "updater initialization failed: " & Err.Description
     End Sub
 
+    Public Sub OwnFactoryToken(ByVal token As LongPtr)
+        LoadToken = token
+    End Sub
     Private Sub Class_Terminate()
         On Error Resume Next
         If ToolbarInstalled Then
@@ -85,6 +103,7 @@ Private Class tbUI3IDEAddin
                 "delete window.__winui3IdeStyle;return 'theme option removed';})()"
         End If
         Set StyleWindow = Nothing
+        LEnd LoadToken: LoadToken = 0
     End Sub
 
     Private Property Get AddIn_Name() As String

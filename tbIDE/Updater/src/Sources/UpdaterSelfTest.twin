@@ -10,7 +10,7 @@ Private Module UpdaterSelfTest
         UNoLinks mRoot: UDirectory mRoot
         Set mResults = JA(): mFailed = 0
         Dim i As Long
-        For i = 1 To 28: RunCase i: Next
+        For i = 1 To 35: RunCase i: Next
         Dim fixtures As UpdateJson = JParse(UIX_ResourceText("native-engine-fixtures.json")), fixture As UpdateJson
         For Each fixture In fixtures.Member("fixtures").Items: RunZipCase fixture: Next
         Dim report As UpdateJson = JO()
@@ -46,7 +46,7 @@ Private Module UpdaterSelfTest
         Dim plan As UpdateJson = JO(), operations As UpdateJson = JA()
         operations.Push UOperation(root & "\install", "one.txt", staging & "\one.txt", UHash(staging & "\one.txt"))
         operations.Push UOperation(root & "\install", "two.txt", staging & "\two.txt", UHash(staging & "\two.txt"))
-        plan.Assign "schema", JN(2): plan.Assign "operations", operations
+        plan.Assign "schema", JN(IPlanSchema): plan.Assign "operations", operations
         Set FixturePlan = plan
     End Function
     Private Sub RunCase(ByVal number As Long)
@@ -134,6 +134,41 @@ Private Module UpdaterSelfTest
                 Set plan = FixturePlan("journal"): path = mRoot & "\journal\journal.json": UInstall plan, path
                 Set journal = UReadJson(path): Set operation = journal.Member("operations").Items.Item(1)
                 operation.Assign "target", JS("../escape"): RejectJournal journal, plan, UParent(path)
+            Case 29
+                name = "installation identity invariant casing"
+                Check IIdForCanonicalRoot("C:\Portable\TwinBASIC") = IIdForCanonicalRoot("c:\portable\twinbasic"), name
+                Check Len(IIdForCanonicalRoot("C:\Portable\TwinBASIC")) = 67, name
+            Case 30
+                name = "installation identities isolate roots"
+                Check IIdForCanonicalRoot("C:\One") <> IIdForCanonicalRoot("C:\Two"), name
+            Case 31
+                name = "Unicode JSON durable IO"
+                path = mRoot & "\" & ChrW$(&H4E2D) & ChrW$(&HE9) & ".json"
+                Set parsed = JO(): parsed.Assign "text", JS(ChrW$(&H4E2D) & ChrW$(&HD83D&) & ChrW$(&HDE00&))
+                UWriteJson path, parsed: Check UText(path) = parsed.Encode(), name
+            Case 32
+                name = "extended-length native IO and atomic replacement"
+                path = mRoot
+                For ignored = 1 To 12: path = path & "\abcdefghijklmnopqrstuvwx": Next
+                UDirectory path: Set parsed = JO(): parsed.Assign "value", JS("before")
+                UWriteJson path & "\one.json", parsed
+                UCopy path & "\one.json", path & "\backup.json"
+                parsed.Assign "value", JS("after"): UWriteJson path & "\one.json", parsed
+                Check JT(UReadJson(path & "\one.json"), "value") = "after", name
+                UReplace path & "\backup.json", path & "\one.json"
+                Check JT(UReadJson(path & "\one.json"), "value") = "before", name
+                UDelete path & "\backup.json": Check Not UExists(path & "\backup.json"), name
+            Case 33
+                name = "future context protocol fails closed": MustReject 10
+            Case 34
+                name = "Windows argument quoting retains trailing separators"
+                Check IQuoteArg("C:\path with space\") = Chr(34) & "C:\path with space\\" & Chr(34), name
+            Case 35
+                name = "future operation kind fails before changes"
+                Set plan = FixturePlan("future-op"): Set operation = plan.Member("operations").Items.Item(1)
+                operation.Assign "kind", JS("UnknownOperationV2")
+                RejectInstall plan, mRoot & "\future-op\journal.json"
+                Check UText(mRoot & "\future-op\install\one.txt") = "old one", name
         End Select
         Record name, True, "": Exit Sub
     Failed:
@@ -149,12 +184,15 @@ Private Module UpdaterSelfTest
             Case 1: ignored = UVersionParts("0.1.2.3.4")
             Case 2: ignored = UVersionParts("4294967296")
             Case 3: ignored = UVersionParts("-1.2")
-            Case 4: Set json = JParse("{""a"":1,""a"":2}")
+            Case 4: Set json = JParse("{" & Chr(34) & "a" & Chr(34) & ":1," & Chr(34) & "a" & Chr(34) & ":2}")
             Case 5: Set json = JParse("true false")
             Case 6: Set json = JParse("01")
             Case 7: URelative "a/../escape"
             Case 8: URelative "NUL.txt"
             Case 9: URelative "file:stream"
+            Case 10
+                Set json = JO(): json.Assign "schema", JN(IContextSchema): json.Assign "protocol", JN(IProtocol + 1)
+                IValidateContext json, "not-a-session"
         End Select
         On Error GoTo 0: UFail "Unsafe input was accepted."
     Expected:

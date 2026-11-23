@@ -32,15 +32,49 @@ Private Module UpdaterHost
     Private Declare PtrSafe Function MoveFileExW Lib "kernel32" (ByVal source As LongPtr, ByVal destination As LongPtr, ByVal flags As Long) As Long
     Private Declare PtrSafe Function ShellExecuteW Lib "shell32" (ByVal window As LongPtr, ByVal verb As LongPtr, ByVal file As LongPtr, ByVal parameters As LongPtr, ByVal directory As LongPtr, ByVal show As Long) As LongPtr
 
+    Private Type ElevationInfo
+        cb As Long
+        mask As Long
+        window As LongPtr
+        verb As LongPtr
+        file As LongPtr
+        parameters As LongPtr
+        directory As LongPtr
+        show As Long
+        instance As LongPtr
+        idList As LongPtr
+        className As LongPtr
+        classKey As LongPtr
+        hotKey As Long
+        icon As LongPtr
+        process As LongPtr
+    End Type
+    Private Declare PtrSafe Function ShellExecuteExW Lib "shell32" (ByRef info As ElevationInfo) As Long
+    Public Function StartElevatedEngine(ByVal mode As String, ByVal window As LongPtr) As LongPtr
+        If mode <> "Apply" And mode <> "Recover" Then UFail "Only installation and recovery can request elevation."
+        If Not HasJournal() And mode = "Recover" Then UFail "No journal is available."
+        Dim plan As String = USafe(SessionFolder(), "plan.json"), executable As String = App.Path & "\Updater.exe"
+        IValidateContext UReadJson(UpdateContext), UpdateContext
+        Dim verb As String = "runas", parameters As String = "-Worker -Mode " & mode & " -Context " & QuoteArg(UpdateContext) & _
+            " -PlanSha256 " & UHash(plan) & " -ContextSha256 " & UHash(UpdateContext)
+        Dim info As ElevationInfo
+        info.cb = LenB(info): info.mask = &H40 Or &H400: info.window = window
+        info.verb = StrPtr(verb): info.file = StrPtr(executable): info.parameters = StrPtr(parameters): info.show = 0
+        If ShellExecuteExW(info) = 0 Then
+            If Err.LastDllError = 1223 Then UFail "Administrator approval was cancelled. Your installation was not changed."
+            UFail "Windows could not start the scoped administrator worker."
+        End If
+        If info.process = 0 Then UFail "Windows did not return an administrator worker handle."
+        Return info.process
+    End Function
+
     Public Function QuoteArg(ByVal value As String) As String
-        If InStr(value, Chr$(34)) > 0 Then Err.Raise 5, , "Invalid quoted path."
-        Return Chr$(34) & value & Chr$(34)
+        Return IQuoteArg(value)
     End Function
 
     Public Function SessionFolder() As String
         If Len(UpdateContext) = 0 Then Return ""
-        Dim fso As Object = CreateObject("Scripting.FileSystemObject")
-        Return fso.GetParentFolderName(UpdateContext)
+        Return UParent(UpdateContext)
     End Function
 
     Public Function ReadSessionFile(ByVal name As String) As String
@@ -50,12 +84,9 @@ Private Module UpdaterHost
             Case Else
                 Err.Raise 5, , "Unsupported session file."
         End Select
-        Dim fso As Object = CreateObject("Scripting.FileSystemObject")
-        Dim path As String = SessionFolder() & "\" & name
-        If Not fso.FileExists(path) Then Return ""
-        Dim stream As Object = fso.OpenTextFile(path, 1, False, -1)
-        ReadSessionFile = stream.ReadAll()
-        stream.Close
+        Dim path As String = USafe(SessionFolder(), name)
+        If Not UExists(path) Then Return ""
+        Return UText(path)
     End Function
 
     Public Function StartUpdateEngine(ByVal mode As String) As LongPtr
@@ -99,8 +130,7 @@ Private Module UpdaterHost
 
     Public Function HasJournal() As Boolean
         If Len(SessionFolder()) = 0 Then Return False
-        Dim fso As Object = CreateObject("Scripting.FileSystemObject")
-        Return fso.FileExists(SessionFolder() & "\journal.json")
+        Return UExists(USafe(SessionFolder(), "journal.json"))
     End Function
 
     Public Sub ReleaseWorker(ByVal handle As LongPtr)
@@ -109,23 +139,16 @@ Private Module UpdaterHost
 
     Public Sub RequestCancel()
         If Len(SessionFolder()) = 0 Then Exit Sub
-        Dim fso As Object = CreateObject("Scripting.FileSystemObject")
-        Dim stream As Object = fso.CreateTextFile(SessionFolder() & "\cancel.json", True, True)
-        stream.Write "{ " & UIX_JsonString("cancel") & ":true }"
-        stream.Close
+        Dim record As UpdateJson = JO()
+        record.Assign "cancel", JB(True): UWriteJson USafe(SessionFolder(), "cancel.json"), record
     End Sub
 
     Public Sub ReportStartupFailure(ByVal reason As String)
         On Error Resume Next
-        UIX_Log reason
+        If Not IIsElevated() Then UIX_Log reason
         If Not ContextValidated Or Len(SessionFolder()) = 0 Then Exit Sub
-        Dim fso As Object = CreateObject("Scripting.FileSystemObject")
-        Dim temp As String = SessionFolder() & "\state-" & fso.GetTempName()
-        Dim destination As String = SessionFolder() & "\state.json"
-        Dim stream As Object = fso.CreateTextFile(temp, True, True)
-        stream.Write "{" & UIX_JsonString("status") & ":" & UIX_JsonString("error") & "," & UIX_JsonString("message") & ":" & UIX_JsonString(reason) & "}"
-        stream.Close
-        MoveFileExW StrPtr(temp), StrPtr(destination), 1 Or 8
+        If IIsElevated() And Not ElevatedStateSafe Then Exit Sub
+        UState SessionFolder(), "error", reason
     End Sub
 
     Public Sub RuntimeHelp(ByVal reason As String)
@@ -148,4 +171,3 @@ Private Module UpdaterHost
         ShellExecuteW 0, StrPtr(verb), StrPtr(path), 0, 0, 1
     End Sub
 End Module
-

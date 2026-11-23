@@ -13,7 +13,7 @@
     const status=document.getElementById('status');
     const failed=state.status==='error', complete=state.status==='complete', recovered=state.status==='rolledBack';
     const active=running||['waiting','installing','rollingBack'].includes(state.status);
-    const titles={idle:'Ready when you are',ready:'Waiting for twinBASIC',waiting:'Waiting for twinBASIC',installing:'Installing updates',rollingBack:'Restoring your installation',error:'The update needs attention',complete:'You are up to date',rolledBack:'Backup restored',cancelled:'Update cancelled'};
+    const titles={idle:'Ready when you are',ready:'Waiting for twinBASIC',waiting:'Waiting for twinBASIC',elevationRequired:'Administrator approval required',installing:'Installing updates',rollingBack:'Restoring your installation',error:'The update needs attention',complete:'You are up to date',rolledBack:'Backup restored',cancelled:'Update cancelled'};
     status.setAttribute('title',titles[state.status]||'Preparing updates');
     status.setAttribute('severity',failed?'error':complete||recovered?'success':'informational');
     status.setAttribute('message',state.message||'');
@@ -25,12 +25,14 @@
     text('progress-value',total?completed+' of '+total+' files verified':complete?'Verified':active?'Working...':'Not running');
     text('message',state.message||'Your projects and embedded control packages stay unchanged.');
     show('retry',failed,!running);
+    show('elevate',state.status==='elevationRequired'||failed&&state.canElevate===true,!running);
     show('recover',failed&&canRecover,!running);
     show('cancel',running&&['ready','waiting','staging'].includes(state.status));
     show('close',true,!running);
     WinUIControls.initialize(status);
   }
   function planSnapshot(plan){
+    text('scope','In-place target: '+(plan.installRoot||'selected IDE')+'. Per-user add-in, updater and themes are shared; projects remain unchanged.');
     const container=document.getElementById('components');container.replaceChildren();
     for(const c of plan.components||[]){
       const row=document.createElement('div');row.className='settings-row';
@@ -55,6 +57,7 @@
   function start(){
     WinUIControls.initialize(document);
     port?.addEventListener('message',receive);
+    document.getElementById('elevate').addEventListener('click',()=>send('updater:elevate'));
     document.getElementById('retry').addEventListener('click',()=>send('updater:retry'));
     document.getElementById('recover').addEventListener('click',()=>send('updater:recover'));
     document.getElementById('cancel').addEventListener('click',()=>send('updater:cancel'));
@@ -64,4 +67,3 @@
   }
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',start,{once:true});else start();
 })();
-

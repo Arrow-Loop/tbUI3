@@ -1,5 +1,9 @@
 # Working on tbUI3
 
+## Agent entry point: updater and installation management
+
+For any tbUI3IDE updater, first-install, Welcome Wizard, per-user add-in, IDE update strategy, release-inventory, archive, or installation-discovery work, read **[tbIDE/INSTALLATION_MANAGER_SPEC.md](tbIDE/INSTALLATION_MANAGER_SPEC.md)** *before* development. It is Shane's consolidated approved requirements and phase boundaries, including deferred work, safety constraints and unresolved IDE loader questions. Cross-check [tbIDE/BOOTSTRAP_WELCOME_PLAN.md](tbIDE/BOOTSTRAP_WELCOME_PLAN.md), [tbIDE/Updater/README.md](tbIDE/Updater/README.md) and current roadmaps. Do not mistake approved design for implemented code or native acceptance. Do not merge to main or publish a release without Shane's approval.
+
 ## Project files
 
 - Each `.twinproj` is the canonical project.

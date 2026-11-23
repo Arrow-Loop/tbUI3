@@ -182,3 +182,10 @@ test('unresolved setup requires explicit acknowledgment and awaits native repair
   assert.match(js,/Continue with current setup/);
   assert.match(js,/pages\[step\]==='Setup' && \(waiting\.has\('bootstrap-retry'\) \|\| waiting\.has\('repair-resource'\)\)/);
 });
+
+test('Setup inserts immediately after Welcome and preserves logical page on refreshed status',()=>{
+  assert.match(js,/if\(setupNeedsAttention\(\)\)names\.splice\(1,0,'Setup'\)/);
+  assert.match(js,/const previousPage=pageNames\(\)\[step\]/);
+  assert.match(js,/const refreshedIndex=refreshedPages\.indexOf\(previousPage\)/);
+  assert.match(js,/step=refreshedIndex>=0\?refreshedIndex:Math\.min\(1,refreshedPages\.length-1\)/);
+});

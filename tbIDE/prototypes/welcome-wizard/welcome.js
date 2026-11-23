@@ -36,7 +36,7 @@
       } catch (e) {
         pending.delete(action);
         lastMessage='Could not send request: '+(e && e.message || String(e));
-        draw();
+        state.changed.clear(); hydrateSelections(); draw();
         return false;
       }
     }
@@ -52,13 +52,11 @@
     function setSnapshot(value) {
       if (disposed) return;
       if (!value || typeof value!=='object') return;
-      snapshot=value; pending.clear();
-      // Acknowledged values are authoritative. Do not pretend requested values have been applied.
+      // Every delivered snapshot is an authoritative acknowledgement of all in-flight
+      // requests. A rejected value MUST roll back visually, including preferences.
+      // The host must send a snapshot only after settling the dispatched request(s).
+      snapshot=value; pending.clear(); state.changed.clear();
       if (value.message!==undefined) lastMessage=typeof value.message==='string'?value.message:(value.message && (value.message.text || value.message.message)) || '';
-      // Native can return updates unrelated to a setting. Clear only selections reflected in it.
-      if (state.changed.has('theme') && value.theme===state.selectedTheme) state.changed.delete('theme');
-      if (state.changed.has('toolbar') && value.toolbar===state.selectedToolbar) state.changed.delete('toolbar');
-      for (const k of ['automatic','restart','channel']) if (state.changed.has(k) && prefs()[k]===state[k]) state.changed.delete(k);
       hydrateSelections(); draw();
     }
     function announce(text) { if(status) status.textContent=String(text || ''); }
@@ -74,6 +72,7 @@
     function open(newSnapshot) {
       if (disposed) return;
       if (newSnapshot) snapshot=newSnapshot;
+      pending.clear(); state.changed.clear();
       hydrateSelections();
       if (!root) build();
       initialFocus=doc.activeElement;

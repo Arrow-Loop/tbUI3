@@ -65,7 +65,13 @@
     }
     function settle(value) {
       if(dead || !isObject(value))return;
+      const previousPage=pageNames()[step];
       snap=value;waiting.clear();changed.clear();
+      const refreshedPages=pageNames();
+      // Preserve the logical page when the optional Setup step appears or clears.
+      // A resolved Setup issue takes the user to Updates, not an unrelated step.
+      const refreshedIndex=refreshedPages.indexOf(previousPage);
+      step=refreshedIndex>=0?refreshedIndex:Math.min(1,refreshedPages.length-1);
       if(value.message!==undefined)message=typeof value.message==='string'?value.message:text(value.message && (value.message.message||value.message.text));
       if(preview && (!installedThemes().some(theme=>theme.name===preview) || (value.theme!==preview && !changed.has('theme'))))preview=null;
       paint();
@@ -322,7 +328,7 @@
     }
     function pageNames(){
       const names=PAGES.slice();
-      if(setupNeedsAttention())names.splice(names.length-1,0,'Setup');
+      if(setupNeedsAttention())names.splice(1,0,'Setup');
       return names;
     }
     function setupAttention(parent){

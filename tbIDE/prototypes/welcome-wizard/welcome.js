@@ -20,6 +20,8 @@
     const doc = options.document, host=options.mount, assets=options.assets;
     let frame=null, hostStyles=null, inner=null, app=null, status=null, snap={}, step=0, open=false, dead=false;
     let waiting=new Set(), changed=new Map(), message='', priorFocus=null, preview=null, loaded=false;
+    // Preview-only appearance, never sent to native services or persisted.
+    let previewAppearance=null;
     const instance = options.source || 'manual';
     function dom(tag, cls, label, parent) {
       const e=inner.createElement(tag);
@@ -65,7 +67,7 @@
       if(dead || !isObject(value))return;
       snap=value;waiting.clear();changed.clear();
       if(value.message!==undefined)message=typeof value.message==='string'?value.message:text(value.message && (value.message.message||value.message.text));
-      if(preview && !installedThemes().some(theme=>theme.name===preview))preview=null;
+      if(preview && (!installedThemes().some(theme=>theme.name===preview) || (value.theme!==preview && !changed.has('theme'))))preview=null;
       paint();
     }
     function style(container,css) {
@@ -151,44 +153,33 @@
       dom('span','','',right);dom('span','','',right);dom('span','','',right);
     }
     function chooseTheme(parent) {
-      heading(parent,'Choose your appearance','Our WinUI3 themes are featured, and you can preview and select any theme installed in this IDE.');
+      heading(parent,'Choose your appearance','Select a theme to preview its palette and apply it to twinBASIC. The IDE confirms the change.');
       const listed=installedThemes();
-      const featured=listed.filter(item=>FEATURED_THEMES.includes(item.name));
-      const others=listed.filter(item=>!FEATURED_THEMES.includes(item.name));
       const renderGroup=(title,entries,featuredGroup)=>{
         if(!entries.length)return;
         dom('h3','welcome-subheading',title,parent);
         const list=dom('div','welcome-theme-grid'+(featuredGroup?' welcome-theme-featured':''),undefined,parent);
         for(const item of entries) {
-          const block=dom('div','welcome-choice welcome-theme-card',undefined,list);
+          // A single accessible tile both previews and requests the native selection.
+          const block=dom('button','welcome-choice welcome-theme-card'+(choice('theme')===item.name?' welcome-theme-selected':''),undefined,list);
+          block.type='button';
+          block.setAttribute('aria-label','Select '+item.name+' theme');
+          block.setAttribute('aria-pressed',String(choice('theme')===item.name));
+          if(waiting.has('choose-theme'))block.disabled=true;
           previewTile(block,item);
-          dom('strong','',item.name,block);
-          if(item.name===snap.theme)dom('p','welcome-note','Current IDE theme',block);
-          const controls=dom('div','welcome-actions',undefined,block);
-          const look=button(controls,'Preview',()=>{
-            preview=item.name;paint();
+          dom('strong','welcome-theme-name',item.name,block);
+          if(item.name===snap.theme)dom('span','welcome-theme-current','Current theme',block);
+          block.addEventListener('click',()=>{
+            preview=item.name;
+            commit('theme',item.name,'choose-theme','name');
           });
-          look.setAttribute('aria-pressed',String(preview===item.name));
-          const use=button(controls,'Use theme',()=>commit('theme',item.name,'choose-theme','name'),choice('theme')===item.name?'primary':undefined);
-          use.setAttribute('aria-label','Use '+item.name+' theme');
-          if(waiting.has('choose-theme'))use.setAttribute('disabled','');
         }
       };
-      renderGroup('Featured WinUI3 themes',featured,true);
-      renderGroup('Other installed themes',others,false);
-      if(!listed.length)info(parent,'Theme list unavailable','The native IDE has not supplied its installed theme inventory. No theme change can be made safely.','warning');
-      else if(!featured.length)info(parent,'WinUI3 themes not installed','The bundled WinUI3 themes will appear here when installed and reported by the IDE.');
-      const selected=listed.find(x=>x.name===preview);
-      if(selected){
-        dom('h3','welcome-subheading','Selected preview: '+selected.name,parent);
-        const panel=dom('div','welcome-preview-panel',undefined,parent);
-        previewTile(panel,selected);
-        if(!themePalette(selected) && !themeMode(selected))
-          info(parent,'Preview details unavailable','This theme is installed, but the IDE has not provided its color palette. Preview is limited until the native bridge exposes its actual colors.');
-        dom('p','welcome-note','Preview does not apply or save a theme. Select Use theme to request a native change.',parent);
-      } else {
-        dom('p','welcome-note','Select Preview to inspect an installed theme, or Use theme to apply it. Your current IDE theme remains unchanged until you choose Use.',parent);
-      }
+      renderGroup('Featured WinUI3 themes',listed.filter(item=>FEATURED_THEMES.includes(item.name)),true);
+      renderGroup('Other installed themes',listed.filter(item=>!FEATURED_THEMES.includes(item.name)),false);
+      if(!listed.length)info(parent,'Theme list unavailable','The native IDE has not supplied its installed theme inventory. No theme can be selected safely.','warning');
+      else if(!listed.some(item=>FEATURED_THEMES.includes(item.name)))info(parent,'WinUI3 themes not installed','These themes will appear when installed and reported by the IDE.');
+      dom('p','welcome-note','Click any tile to select it. Its preview is local; the actual IDE theme changes only after native confirmation.',parent);
     }
     function setPreference(parent,name,title,desc) {
       const row=dom('winui-settings-row','',undefined,parent);
@@ -208,7 +199,7 @@
       const rows=dom('div','settings-list',undefined,parent);
       setPreference(rows,'automatic','Check automatically','Manual checks stay available even when automatic checks are off.');
       setPreference(rows,'restart','Restart after approved update','Restart this IDE after a successful update, when appropriate.');
-      info(parent,'Your approval is required','Automatic checks never authorize downloading or installing an IDE update.');
+      dom('p','welcome-note','Automatic checks never authorize downloading or installing an IDE update. Your approval is always required.',parent);
     }
     function toolbar(parent) {
       heading(parent,'Choose your toolbar','Your choice changes the actual IDE toolbar only after the native service confirms it.');
@@ -285,11 +276,25 @@
       if(dead||!loaded||!app)return;
       // Real IDE theme is the default; preview is local and never dispatched.
       const selectedPreview=installedThemes().find(theme=>theme.name===preview);
-      inner.documentElement.setAttribute('data-theme',themeMode(selectedPreview)||snapshotMode(snap));
+      inner.documentElement.setAttribute('data-theme',previewAppearance||themeMode(selectedPreview)||snapshotMode(snap));
       app.replaceChildren();
       const head=dom('header','welcome-top',undefined,app);
+      head.setAttribute('role','toolbar');head.setAttribute('aria-label','Welcome Wizard titlebar');
       dom('span','welcome-brand','tbUI3IDE',head);
-      button(head,'Close',()=>dismiss('dismissed'));
+      const close=dom('button','welcome-caption-close',undefined,head);
+      close.type='button';
+      close.setAttribute('aria-label','Close Welcome Wizard');
+      close.setAttribute('title','Close');
+      const cross=dom('svg','welcome-caption-cross',undefined,close);
+      cross.setAttribute('viewBox','0 0 12 12');
+      cross.setAttribute('width','12');cross.setAttribute('height','12');
+      cross.setAttribute('aria-hidden','true');
+      const strokes=dom('path','',undefined,cross);
+      strokes.setAttribute('d','M1 1L11 11M11 1L1 11');
+      strokes.setAttribute('fill','none');
+      strokes.setAttribute('stroke','currentColor');
+      strokes.setAttribute('stroke-width','1');
+      close.addEventListener('click',()=>dismiss('dismissed'));
       const steps=dom('nav','welcome-steps',undefined,app);steps.setAttribute('aria-label','Wizard progress');
       PAGES.forEach((label,index)=>{
         const s=dom('span','welcome-step'+(index===step?' active':''),label,steps);
@@ -324,6 +329,12 @@
       priorFocus=doc.activeElement;open=true;frame.hidden=false;
       if(loaded){paint();frame.focus();}
     }
+    function setPreviewMode(mode) {
+      // Used by the local browser preview only. Never changes native theme/settings.
+      if(mode!==null && mode!=='light' && mode!=='dark')throw new TypeError('Preview mode must be light, dark or null');
+      previewAppearance=mode;
+      paint();
+    }
     function destroy(){
       dead=true;open=false;waiting.clear();changed.clear();
       if(frame)frame.remove();
@@ -331,7 +342,7 @@
       frame=null;hostStyles=null;inner=null;app=null;
     }
     return Object.freeze({
-      open:show,setSnapshot:settle,close:()=>dismiss('none'),destroy,
+      open:show,setSnapshot:settle,setPreviewMode,close:()=>dismiss('none'),destroy,
       getState:()=>({page:PAGES[step].toLowerCase(),open,source:instance,pending:[...waiting]})
     });
   }

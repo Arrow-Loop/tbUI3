@@ -196,3 +196,10 @@ test('Setup recheck action has separation from resources and warnings',()=>{
   assert.match(css,/\.welcome-setup-retry \{/);
   assert.match(css,/margin-top:var\(--space-5\)/);
 });
+
+test('theme and toolbar selected styling does not add redundant current labels',()=>{
+  assert.doesNotMatch(js,/['"]Current theme['"]|['"]Current toolbar['"]/);
+  assert.doesNotMatch(css,/\.welcome-theme-current/);
+  assert.match(js,/aria-pressed/);
+  assert.match(js,/welcome-theme-selected/);
+});

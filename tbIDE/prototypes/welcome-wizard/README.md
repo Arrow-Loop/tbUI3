@@ -69,6 +69,14 @@ The iframe and its internal DOM are instantiated only on first open. Code instal
 
 **Cody handoff:** production must re-embed the latest `welcome.js` and `welcome.css` into the canonical resource pipeline. There is no change to the six native intent names or `installedThemes` snapshot shape. `master.css` and `controls.js` remain unchanged. Do not change native bridge/settings/bootstrap files in response to these view-only refinements without normal coordination.
 
+## Conditional setup attention before Finish (2026-11-23)
+
+Shane decided that offline bundled resources should be installed or verified at add-in startup, *before* the wizard. The Finish page must never contain a routine installation-health dashboard, resource rows or repair buttons. It only summarizes the user's confirmed choices.
+
+If the authoritative native bootstrap snapshot reports error/warning, update recovery, missing/damaged resources or a resource requiring an explicit repair choice, the wizard inserts a **Setup** step immediately before Finish. This step presents readable status, any appropriate repair action, a manual Check again command and native recovery guidance. For healthy snapshots the step does not exist, preserving the original six-stage onboarding. Once the native snapshot clears the issue, the conditional step disappears; no resource files are ever altered merely by rendering. Users can still continue or dismiss the tour, because provisioning failure must not make onboarding inaccessible. Acknowledging an unresolved issue is not represented as successful repair.
+
+This view-only sequencing change **does not start/bootstrap native provisioning**. Cody still owns silent offline provisioning on each add-in load and publishing accurate bootstrap status before opening the wizard. Actual updater EXE embedding remains a separate Phase 1 acceptance pass.
+
 ## Finish-page confirmation and installation-health layout (2026-11-23)
 
 The Finish page now shows user choices in a compact, extensible label/value list instead of four oversized WinUI summary cards. It includes theme, toolbar, automatic update checks, restart preference and update strategy. Adding another confirmed preference simply adds another row; there is no fixed tile count or exaggerated value typography.

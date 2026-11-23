@@ -1,5 +1,11 @@
 # Welcome Wizard roadmap and integration dependencies
 
+## UI acceptance: finish and installation health
+
+- Review the compact preference list and clean installation-health rows in the live native modal, including narrow widths, customized resources, missing files and repair confirmation.
+- Future confirmed preferences may be appended to the summary-entry data array without introducing more fixed-format tiles. Keep actual native state authoritative.
+- Native component status IDs remain intact for repair actions; friendly labels are presentation-only, and future resource identifiers should be named explicitly when incorporated into production.
+
 ## Phase 1 native integration, deferred to Cody
 
 - Enumerate all *effective* installed twinBASIC IDE themes from both the per-user AppData themes folder and the active portable IDE installation themes folder, including built-ins exposed by the IDE.

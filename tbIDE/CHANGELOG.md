@@ -1,5 +1,10 @@
 # Changelog: tbIDE (WinUI 3 look for the twinBASIC IDE)
 
+## 2026-11-23 - Approved embedded bootstrap and Welcome Wizard design documented
+
+Added `tbIDE/BOOTSTRAP_WELCOME_PLAN.md` specifying a future two-DLL-only first installation: embedded native Updater EXE and WinUI3 themes, shared per-user dependency provisioning, installation-specific update/recovery state, safe versioned repair, protected-directory handling, and a native IDE-hosted HTML/CSS/JS Welcome Wizard for updates, themes, toolbar modes and designer tooling. Added implementation/acceptance work to ROADMAP. **Documentation only; no source, packed project, runtime behavior, build output or release asset changed.** The existing manual first-install instructions remain current until implementation.
+
+
 ## 2026-11-23 - Updater hexadecimal widths and mandatory TB0012 guard
 
 Shane's BETA 1045 report identified six unintended signed-Integer literal conversions. The JSON BOM, both x64 PE machine checks, ZIP flags mask, Unix mode mask and symlink comparison now use explicit positive Long literals (`&HFEFF&`, `&H8664&`, `&HF041&`, `&HF000&`, `&HA000&`). An updater audit also made the GUID's intentionally signed Integer literal explicit as `&HCD44%`, preserving its 16-bit structure field. This corrects actual x64 PE/link-validation comparisons, not just warning text. Canonical Updater.twinproj and CRLF sources are synchronized; versions and native layouts are unchanged during compile acceptance.

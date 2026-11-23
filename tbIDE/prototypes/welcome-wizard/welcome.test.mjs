@@ -41,10 +41,24 @@ test('native bridge contract survives the rebuild',()=>{
   for(const name of ['open:show','setSnapshot:settle','close:','destroy','getState:'])assert.ok(js.includes(name),name);
   assert.match(js,/waiting\.clear\(\);changed\.clear\(\)/);
 });
-test('preview-only light/dark toggle cannot dispatch native theme change',()=>{
-  assert.match(js,/preview=mode;paint\(\)/);
-  assert.match(js,/commit\('theme',name,'choose-theme','name'\)/);
-  assert.match(js,/inner\.documentElement\.setAttribute\('data-theme',preview\|\|snapshotMode\(snap\)\)/);
+test('all installed native themes are listed and preview is independent from apply',()=>{
+  assert.match(js,/Array\.isArray\(snap\.installedThemes\)/);
+  assert.match(js,/FEATURED_THEMES\.indexOf/);
+  assert.match(js,/renderGroup\('Featured WinUI3 themes'/);
+  assert.match(js,/renderGroup\('Other installed themes'/);
+  assert.match(js,/preview=item\.name;paint\(\)/);
+  assert.match(js,/commit\('theme',item\.name,'choose-theme','name'\)/);
+  assert.match(js,/themePalette\(selected\)/);
+  assert.match(js,/Theme palette unavailable/);
+  assert.match(js,/inner\.documentElement\.setAttribute\('data-theme',themeMode\(selectedPreview\)\|\|snapshotMode\(snap\)\)/);
+  assert.match(readme,/current trusted native inventory/);
+});
+test('release channel hidden and core tbUI3 controls not advertised as IDE features',()=>{
+  assert.doesNotMatch(js,/Release channel|commit\('channel'/);
+  assert.doesNotMatch(js,/TabView and TabPage|Access TabView design/);
+  assert.match(js,/IDE themes and accent/);
+  assert.match(readme,/Release channel selection has been removed/);
+  assert.match(readme,/TabView\/TabPage feature marketing/);
 });
 test('repair requires asynchronous host approval',()=>{
   assert.match(js,/Promise\.resolve\(\)\.then\(\(\)=>options\.confirmRepair\(resource\)\)/);

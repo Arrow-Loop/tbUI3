@@ -128,29 +128,70 @@
       if(item && FEATURED_THEMES.includes(item.name))return item.name==='WinUI3 Dark'?'dark':'light';
       return null;
     }
+    // The host resolves the .theme inheritance chain and precedence before
+    // providing sanitized paint values. Raw .theme CSS is never evaluated here.
+    const COLOR_FIELDS = ['background','surface','foreground','accent','titlebar','toolbar','panel','editor','muted','border'];
     function themePalette(item) {
-      const palette=item && item.preview;
-      if(!isObject(palette))return null;
-      const valid=v=>typeof v==='string' && /^(#[0-9a-fA-F]{6}|#[0-9a-fA-F]{8})$/.test(v);
-      // These palette values come from native theme enumeration, not arbitrary URLs
-      // or CSS snippets. No theme is applied during preview.
-      if(!valid(palette.background)||!valid(palette.foreground)||!valid(palette.accent)||!valid(palette.surface))return null;
+      const raw=item && item.preview;
+      if(!isObject(raw))return null;
+      const color=v=>typeof v==='string' && /^#[0-9a-fA-F]{6}(?:[0-9a-fA-F]{2})?$/.test(v);
+      const base=['background','surface','foreground','accent'];
+      if(!base.every(key=>color(raw[key])))return null;
+      const palette={};
+      for(const key of COLOR_FIELDS)if(color(raw[key]))palette[key]=raw[key];
       return palette;
     }
-    function previewTile(parent,item) {
-      const palette=themePalette(item),mode=themeMode(item);
-      const tile=dom('div','welcome-theme-sample'+(mode?' welcome-theme-'+mode:''),undefined,parent);
-      if(palette)for(const [property,cssName] of [['background','--welcome-preview-bg'],['foreground','--welcome-preview-text'],['accent','--welcome-preview-accent'],['surface','--welcome-preview-surface']])
-        tile.style.setProperty(cssName,palette[property]);
-      if(!palette && !mode) {
-        dom('span','welcome-preview-empty','Theme palette unavailable',tile);
-        return;
+    function paletteTheme() {
+      const selected=installedThemes().find(item=>item.name===choice('theme')) ||
+        installedThemes().find(item=>item.name===snap.theme);
+      return selected || null;
+    }
+    function miniIde(parent,item,mode) {
+      const palette=themePalette(item);
+      const kind=themeMode(item);
+      const outer=dom('div','welcome-mini-ide'+(kind?' welcome-theme-'+kind:''),undefined,parent);
+      outer.setAttribute('aria-hidden','true');
+      if(!palette && !kind) {
+        dom('span','welcome-preview-empty','Theme palette unavailable',outer);
+        return outer;
       }
-      const top=dom('div','welcome-theme-sample-top','twinBASIC IDE',tile);
-      const content=dom('div','welcome-theme-sample-body',undefined,tile);
-      dom('span','welcome-theme-sample-pane','',content);
-      const right=dom('div','welcome-theme-sample-lines',undefined,content);
-      dom('span','','',right);dom('span','','',right);dom('span','','',right);
+      if(palette){
+        const cssMap={background:'--mini-bg',surface:'--mini-surface',foreground:'--mini-text',
+          accent:'--mini-accent',titlebar:'--mini-title',toolbar:'--mini-toolbar',
+          panel:'--mini-panel',editor:'--mini-editor',muted:'--mini-muted',border:'--mini-border'};
+        for(const key of Object.keys(cssMap))if(palette[key])outer.style.setProperty(cssMap[key],palette[key]);
+      }
+      const head=dom('div','welcome-mini-title',undefined,outer);
+      dom('span','welcome-mini-title-name','twinBASIC',head);
+      dom('span','welcome-mini-caption','×',head);
+      const command=dom('div','welcome-mini-command welcome-mini-'+(mode||'Classic').toLowerCase(),undefined,outer);
+      if(mode==='Hybrid'||mode==='Ribbon'){
+        const tabs=dom('div','welcome-mini-tabs',undefined,command);
+        for(const name of mode==='Ribbon'?['Home','Code','Forms']:['File','Edit','View']){
+          dom('span','welcome-mini-tab',name,tabs);
+        }
+      }
+      if(mode==='Classic'){
+        const menus=dom('div','welcome-mini-tabs',undefined,command);
+        for(const name of ['File','Edit','View'])dom('span','welcome-mini-tab',name,menus);
+      }
+      const tools=dom('div','welcome-mini-tools',undefined,command);
+      const count=mode==='Ribbon'?4:mode==='Hybrid'?5:6;
+      for(let i=0;i<count;i++){
+        const tool=dom('span','welcome-mini-tool'+(i===0?' primary':''),undefined,tools);
+        if(mode==='Ribbon' && i<2)dom('i','welcome-mini-tool-label',undefined,tool);
+      }
+      const area=dom('div','welcome-mini-work',undefined,outer);
+      dom('span','welcome-mini-explorer',undefined,area);
+      const editor=dom('div','welcome-mini-editor',undefined,area);
+      for(const width of ['72%','56%','78%']){
+        const line=dom('span','welcome-mini-code',undefined,editor);
+        line.style.width=width;
+      }
+      return outer;
+    }
+    function previewTile(parent,item) {
+      return miniIde(parent,item,'Classic');
     }
     function chooseTheme(parent) {
       heading(parent,'Choose your appearance','Select a theme to preview its palette and apply it to twinBASIC. The IDE confirms the change.');
@@ -202,16 +243,27 @@
       dom('p','welcome-note','Automatic checks never authorize downloading or installing an IDE update. Your approval is always required.',parent);
     }
     function toolbar(parent) {
-      heading(parent,'Choose your toolbar','Your choice changes the actual IDE toolbar only after the native service confirms it.');
-      const grid=dom('div','welcome-choice-grid',undefined,parent);
-      const descriptions={Classic:'The familiar twinBASIC menus and toolbar.',Hybrid:'Traditional menus with modern command surfaces.',Ribbon:'Organized command tabs with Quick Access tools.'};
+      heading(parent,'Choose your toolbar','Select a layout. These compact previews use the currently selected IDE theme.');
+      const grid=dom('div','welcome-choice-grid welcome-toolbar-grid',undefined,parent);
+      const descriptions={
+        Classic:'Original menus and compact toolbar.',
+        Hybrid:'Menus with modern command groups.',
+        Ribbon:'Tabbed commands and Quick Access.'
+      };
+      const selectedTheme=paletteTheme();
       for(const name of TOOLBARS){
-        const card=dom('div','welcome-choice',undefined,grid);
-        dom('strong','',name,card);dom('p','welcome-description',descriptions[name],card);
-        const b=button(card,'Use '+name,()=>commit('toolbar',name,'choose-toolbar','name'),choice('toolbar')===name?'primary':undefined);
-        if(waiting.has('choose-toolbar'))b.setAttribute('disabled','');
-        if(snap.toolbar===name)dom('p','welcome-note','Current toolbar',card);
+        const card=dom('button','welcome-choice welcome-toolbar-card'+(choice('toolbar')===name?' welcome-theme-selected':''),undefined,grid);
+        card.type='button';
+        card.setAttribute('aria-label','Select '+name+' toolbar');
+        card.setAttribute('aria-pressed',String(choice('toolbar')===name));
+        if(waiting.has('choose-toolbar'))card.disabled=true;
+        miniIde(card,selectedTheme,name);
+        dom('strong','',name,card);
+        dom('span','welcome-toolbar-caption',descriptions[name],card);
+        if(snap.toolbar===name)dom('span','welcome-theme-current','Current toolbar',card);
+        card.addEventListener('click',()=>commit('toolbar',name,'choose-toolbar','name'));
       }
+      if(!selectedTheme)dom('p','welcome-note','Toolbar previews use a neutral appearance until the IDE supplies its theme inventory.',parent);
     }
     function features(parent) {
       heading(parent,'Explore your new tools','The IDE enhancements are available whenever you need them.');

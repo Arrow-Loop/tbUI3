@@ -1,5 +1,8 @@
 # Self-provisioning tbUI3IDE bootstrap and Welcome Wizard
 
+> 2026-11-23 embedding completed: the canonical add-in now embeds the tracked `Updater/Build/Updater.exe` (0.2.0.0, SHA-256 677d86b4a9fe368282e4c1464e0ad549e5309b838f2929570c13e4803dd2ee68), both WinUI3 themes and their verified bundle manifest. Reopen `tbUI3IDE/tbUI3IDE.twinproj` and compile **Win32 and Win64**. Then inspect both DLLs with `verify-phase1-release.mjs` and test DLL-only offline bootstrap/repair/shared launch. Earlier statements below describing missing payloads are historical; this source packaging pass is complete, native add-in acceptance remains pending.
+
+
 > 2026-11-23 implementation status: native/integration source candidate is now in the canonical projects. [PHASE1_HANDOFF.md](PHASE1_HANDOFF.md) records actual evidence and pending native acceptance. Shane subsequently split actual compiled-helper embedding into a separate Phase 1 pass after the updater works; the combined public release gate and all Phase 2/3 requirements below remain intact. No compiled or runtime acceptance is claimed by source implementation.
 
 **Agent implementation entry point:** [INSTALLATION_MANAGER_SPEC.md](INSTALLATION_MANAGER_SPEC.md) is the consolidated cross-phase specification capturing Shane's exact UX, preservation, update strategy, release inventory, discovery and compatibility decisions from the full planning discussion. This bootstrap plan expands first-install and Welcome Wizard details. If older phase planning prose differs, follow the newer approved decisions in the consolidated specification; actual source behavior must still be verified independently.

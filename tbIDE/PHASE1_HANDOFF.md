@@ -1,5 +1,8 @@
 # Phase 1 source handoff — native acceptance, then embedding
 
+> 2026-11-23 embedding completed: the canonical add-in now embeds the tracked `Updater/Build/Updater.exe` (0.2.0.0, SHA-256 677d86b4a9fe368282e4c1464e0ad549e5309b838f2929570c13e4803dd2ee68), both WinUI3 themes and their verified bundle manifest. Reopen `tbUI3IDE/tbUI3IDE.twinproj` and compile **Win32 and Win64**. Then inspect both DLLs with `verify-phase1-release.mjs` and test DLL-only offline bootstrap/repair/shared launch. Earlier statements below describing missing payloads are historical; this source packaging pass is complete, native add-in acceptance remains pending.
+
+
 > Latest native evidence (2026-11-23, diagnostics 5235529): **58/58 self-tests pass** and compiled EXE startup reaches `updater:ready` with successful navigation. Screenshot confirms the updater-specific ready screen without an update context. This supersedes older compiled blank-window uncertainty below. IDE debug startup, live installation/update acceptance and actual helper embedding remain pending. See `Updater/validation/native-startup-2026-11-23-passed.json` (path relative to tbIDE).
 
 
@@ -29,8 +32,8 @@ Native updater source 0.2.0.0; add-in source 0.4.0.0. Corrected baseline remains
 
 1. Close/reopen canonical projects so an old IDE buffer cannot overwrite source changes. Build `tbIDE/Updater/Updater.twinproj` as **Win32**, BETA 1045. Do not use the old minimal `Build/Updater.exe` (35,328 bytes); tooling rejects its version/staleness.
 2. Run the new EXE `-SelfTest` unelevated. Require **58 cases** (39 policy/filesystem/contracts plus 19 independently generated ZIP fixtures), zero failures; inspect `%LOCALAPPDATA%\tbUI3\Diagnostics\native-updater-latest.json` and its results file. These native tests have NOT been run by Cody.
-3. Build/test add-in architectures from source for integration acceptance if needed; these development DLLs intentionally report missing bundle. Existing helper cannot be adopted merely by copying an unrecognized EXE. Use disposable per-user test data and retain accepted native test results. Current source does not provide DLL-only first install until step 4.
-4. **Following updater acceptance, separate Phase 1 embedding pass:** from repo root run `node tbIDE/tools/prepare-phase1-bundle.mjs --updater <accepted fresh Updater.exe>`. It validates real PE/version/timestamp and embeds helper, both exact themes and manifest in canonical add-in/mirrors. Then compile **both** DLL architectures. Never edit project/source after compiling without rebuilding.
+3. The embedding pass is now complete in the canonical add-in. Reopen that project before building **Win32 and Win64** so older IDE buffers cannot overwrite the embedded resources. Use disposable per-user test data for integration acceptance; existing unrecognized helper files remain preserved until explicit repair.
+4. **Completed embedding; regeneration when needed:** from repo root run `node tbIDE/tools/prepare-phase1-bundle.mjs --updater <accepted fresh Updater.exe>`. It validates real PE/version/timestamp and embeds helper, both exact themes and manifest in canonical add-in/mirrors. Then compile **both** DLL architectures. Never edit project/source after compiling without rebuilding.
 5. Run `node tbIDE/tools/verify-phase1-release.mjs <win32 DLL> <win64 DLL> <Updater.exe>`. It inspects real DLL resource bytes, architecture, versions, identical manifests, project digest and exact payload hashes. No dummy/stale helper or loose-files-only package can pass.
 6. Development packager: `tbIDE/tools/package-updater-release.ps1 -Win32Dll ... -Win64Dll ... -UpdaterExe ... -MinIdeBuild 1045 -MaxIdeBuild 1045 -Channel development`. It writes manifest schema 2/perUser/protocol bounds and versioned ZIPs; it does not publish. No GitHub release is authorized by this handoff.
 
@@ -77,3 +80,10 @@ The native self-test suite is **54 authored cases, unexecuted**, not 54 passing 
 ## Refined wizard native acceptance additions
 
 Compile the add-in with InstalledThemeCatalog and shared DiagnosticPaths. Check local and AppData themes (including duplicate names), inherited RGB/hex/alpha colors, third-party unresolvable palettes, exact-name selection, failed-save rollback and refresh cancellation. No preview should activate a theme without a click. Validate the actual same-origin iframe runtime/CSP and keyboard/focus across outer confirmation, conditional Setup/recovery and normal healthy six-page flow. Channel choice is intentionally absent. Recompile the updater and inspect Diagnostics/updater-startup.log if its window remains blank; the old unqualified error did not establish its failing stage. Native -SelfTest now contains 58 cases, including trusted document encoding/navigation and resource conversion.
+
+## Focused embedded-bundle acceptance
+
+- Compile both add-in architectures from the reopened canonical project. Verify their exact compiled resources using `node tbIDE/tools/verify-phase1-release.mjs <win32 DLL> <win64 DLL> tbIDE/Updater/Build/Updater.exe`; no loose payload files should be needed at runtime.
+- In a disposable standard-user setup, install only matching DLL(s), disable online checks and start the IDE offline. Verify shared Updater.exe and both AppData themes are provisioned with the manifest hashes, without UAC. Both IDE architectures must use the same helper.
+- Restart to verify no unnecessary replacement. Test missing helper/theme repair, preserve customized themes and unknown helpers pending explicit backed-up repair, and preserve a newer helper. Verify first-run/reopened wizard and saved theme/toolbar preferences survive bootstrap.
+- Launch the updater from the add-in and inspect the ready handshake and selected context. Live transaction, rollback/recovery, self-update and protected-folder consent retain the complete acceptance checklist above; successful embedding alone does not establish those outcomes.

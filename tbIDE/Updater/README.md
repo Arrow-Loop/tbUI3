@@ -1,5 +1,8 @@
 # Native tbUI3 updater
 
+> 2026-11-23 embedding completed: the canonical add-in now embeds the tracked `Updater/Build/Updater.exe` (0.2.0.0, SHA-256 677d86b4a9fe368282e4c1464e0ad549e5309b838f2929570c13e4803dd2ee68), both WinUI3 themes and their verified bundle manifest. Reopen `tbUI3IDE/tbUI3IDE.twinproj` and compile **Win32 and Win64**. Then inspect both DLLs with `verify-phase1-release.mjs` and test DLL-only offline bootstrap/repair/shared launch. Earlier statements below describing missing payloads are historical; this source packaging pass is complete, native add-in acceptance remains pending.
+
+
 > Latest native evidence (2026-11-23, diagnostics 5235529): **58/58 self-tests pass** and compiled EXE startup reaches `updater:ready` with successful navigation. Screenshot confirms the updater-specific ready screen without an update context. This supersedes older compiled blank-window uncertainty below. IDE debug startup, live installation/update acceptance and actual helper embedding remain pending. See `Updater/validation/native-startup-2026-11-23-passed.json` (path relative to tbIDE).
 
 

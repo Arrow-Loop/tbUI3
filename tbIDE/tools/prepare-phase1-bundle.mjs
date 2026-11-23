@@ -1,6 +1,6 @@
 // Run AFTER the native updater build and BEFORE either add-in architecture is compiled.
 import fs from 'node:fs';import path from 'node:path';import {createHash} from 'node:crypto';
-import {scan,edit} from '../../tools/twinproj-edit.mjs';import {readPE,requireAsInvokerManifest} from './pe-resources.mjs';
+import {scan,edit} from '../../tools/twinproj-edit.mjs';import {readPE,namedResource,requireAsInvokerManifest} from './pe-resources.mjs';
 const config=JSON.parse(fs.readFileSync('tbIDE/phase1-config.json'));
 const hash=bytes=>createHash('sha256').update(bytes).digest('hex');
 const at=process.argv.indexOf('--updater'),file=at>=0?process.argv[at+1]:undefined;
@@ -9,6 +9,13 @@ const project='tbIDE/Updater/Updater.twinproj',addin='tbIDE/tbUI3IDE/tbUI3IDE.tw
 requireAsInvokerManifest(pe);
 if(pe.machine!==0x14c||pe.version!==config.updaterVersion)throw Error(`Expected Win32 updater ${config.updaterVersion}; got machine ${pe.machine.toString(16)}, version ${pe.version}`);
 if(fs.statSync(file).mtimeMs<fs.statSync(project).mtimeMs)throw Error('Updater predates the canonical project. Rebuild it first.');
+// A matching version alone cannot identify the intended updater. Require its real embedded
+// UI/fixture bytes to match the current canonical project before packaging either DLL.
+const updaterProject=fs.readFileSync(project),updaterEntries=scan(updaterProject);
+for(const [name,entry]of Object.entries(updaterEntries))if(name.startsWith('Resources/OTHER/')&&entry.type==='file'){
+ const resource=name.slice('Resources/OTHER/'.length);
+ if(!namedResource(pe,resource).equals(updaterProject.subarray(entry.cStart+4,entry.cEnd)))throw Error('Compiled updater resource differs from canonical project: '+resource);
+}
 const resources=[
  {id:'updater',resource:'tbUI3-updater.payload',version:config.updaterVersion,bytes},
  {id:'themeDark',resource:'tbUI3-dark.theme',version:config.addinVersion,bytes:fs.readFileSync('tbIDE/themes/WinUI3 Dark.theme')},

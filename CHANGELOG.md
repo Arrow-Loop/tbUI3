@@ -1,5 +1,11 @@
 # Changelog
 
+## 2026-11-23 - Real updater and themes embedded in the add-in
+
+Completed the separately authorized Phase 1 embedding pass: canonical tbUI3IDE 0.4.0.0 and its synchronized mirrors now contain Shane's committed Win32 Updater 0.2.0.0 (2,117,120 bytes, SHA-256 677d86b4a9fe368282e4c1464e0ad549e5309b838f2929570c13e4803dd2ee68), both exact WinUI3 themes and a version/hash/protocol inventory. The same project supplies both DLL architectures. Existing offline provisioning/repair and shared-helper launch services consume these resources; no Wizard view changes. Updater provenance: commit 03904cc, source 1225eb2, 58/58 native tests and compiled startup confirmed in the recorded incoming diagnostics.
+
+Packaging now checks the real updater's embedded UI/fixtures against its canonical project, and PE resource lookup recognizes twinBASIC's uppercase names while rejecting conflicting aliases/languages. **241 Node tests and 24 isolated Wizard source tests pass**, plus **139 exact mirrors**, IDs/CRLF/hex checks and bundle/generator idempotence. Reopen the canonical add-in and compile both architectures, then verify real DLL payloads and DLL-only/offline provisioning, preserved custom/newer components and shared-helper launch. Those native add-in acceptance checks remain pending; no native build, GUI automation, GitHub release, main merge or Phase 2/3 work was performed.
+
 ## 2026-11-23 - Allow the native updater executable in Git
 
 Added a narrowly scoped ignore exception for `tbIDE/Updater/Build/Updater.exe`. All other contents of that Build folder and all other Build folders remain ignored. The only local EXE available to Cody is the stale November 19 launcher (35,328 bytes), so it was deliberately not committed; Shane's newly compiled/tested updater can now be added from his build checkout. This pass changes ignore rules and documentation only; it does not embed the helper or publish a release.

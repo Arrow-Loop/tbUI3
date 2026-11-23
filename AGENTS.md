@@ -63,6 +63,10 @@ For any tbUI3IDE updater, first-install, Welcome Wizard, per-user add-in, IDE up
 - The loose `reference-packages/src/` mirror is for search and review. The validated `.twinproj` remains the canonical snapshot of the laboratory project.
 - For native window subclassing, prefer the pointer-width-safe comctl32 `SetWindowSubclass` / `RemoveWindowSubclass` / `DefSubclassProc` pattern evidenced by WinRT/VBCCR18. Do not copy TBMANLIB 1.0.29.0's legacy `GetWindowLongW` / `SetWindowLongW` helper into win64-capable tbUI3 code.
 
+## Approved project-specific build artifact exception
+
+Shane explicitly authorized tracking only `tbIDE/Updater/Build/Updater.exe` on 2026-11-23, as the native payload input for embedding into both add-in architectures. Retain this exception to the knowledge repository's general Build-output prohibition. Other Build contents remain ignored; prepared `.payload` and theme resources belong in the canonical add-in and synchronized mirror. Continue working exclusively on `tbui3-dev`.
+
 ## Branches
 
 - Work goes on `tbui3-dev`. Shane decides what reaches `main`.

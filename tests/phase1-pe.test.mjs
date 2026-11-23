@@ -35,3 +35,11 @@ test('every updater manifest language must be safe; comment-only declarations ca
  const utf16=Buffer.concat([Buffer.from([255,254]),Buffer.from(safe.toString(),'utf16le')]);
  assert.doesNotThrow(()=>requireAsInvokerManifest(readPE(image([['#24/#1/#1033',utf16]]))));
 });
+
+test('compiled twinBASIC uppercase resources resolve without weakening language/case conflict checks',()=>{
+ const actual=readPE(image([['OTHER/TBUI3-BUNDLE.JSON/#0',Buffer.from('bundle')],['#10/TBUI3-UPDATER.PAYLOAD/#0',Buffer.from('exe')]]));
+ assert.equal(namedResource(actual,'tbUI3-bundle.json').toString(),'bundle');
+ assert.equal(namedResource(actual,'tbUI3-updater.payload').toString(),'exe');
+ const conflict=readPE(image([['OTHER/TBUI3-BUNDLE.JSON/#0',Buffer.from('a')],['OTHER/tbUI3-bundle.json/#1033',Buffer.from('b')]]));
+ assert.throws(()=>namedResource(conflict,'tbUI3-bundle.json'),/languages disagree/);
+});

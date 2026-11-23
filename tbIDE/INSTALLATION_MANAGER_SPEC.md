@@ -1,5 +1,7 @@
 # tbUI3IDE updater and installation manager: authoritative product and implementation specification
 
+> 2026-11-23 packaging update: the separate helper-embedding pass is complete in the canonical add-in and mirror. The committed 0.2.0.0 updater and both themes are included for either DLL architecture. Updater 58/58 self-tests and compiled startup are confirmed; native add-in DLL compilation, offline bootstrap and full live-update acceptance remain pending. Phase 2/3 scope is unchanged.
+
 > 2026-11-23 implementation status: native/integration source candidate is now in the canonical projects. [PHASE1_HANDOFF.md](PHASE1_HANDOFF.md) records actual evidence and pending native acceptance. Shane subsequently split actual compiled-helper embedding into a separate Phase 1 pass after the updater works; the combined public release gate and all Phase 2/3 requirements below remain intact. No compiled or runtime acceptance is claimed by source implementation.
 
 **Decision owner:** Shane. **Conversation decision window:** 2026-11-19 through 2026-11-23. **Status:** Approved product behavior and staged architecture; implementation gaps explicitly identified below. **Branch:** `tbui3-dev`; do not merge to `main` or publish a release without Shane's authorization.

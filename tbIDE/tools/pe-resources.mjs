@@ -25,7 +25,9 @@ export function readPE(bytes){
  return {machine,version,resources};
 }
 export function namedResource(pe,name){
- const found=[...pe.resources].filter(([key])=>key.startsWith('OTHER/'+name+'/')||key.startsWith('#10/'+name+'/'));
+ // twinBASIC uppercases named resources in compiled images; reject differing case/language aliases below.
+ const prefixes=['OTHER/'+name+'/', '#10/'+name+'/'].map(p=>p.toUpperCase());
+ const found=[...pe.resources].filter(([key])=>prefixes.some(prefix=>key.toUpperCase().startsWith(prefix)));
  if(!found.length)throw Error('Missing embedded PE resource: '+name);
  if(found.some(([,b])=>!b.equals(found[0][1])))throw Error('Resource languages disagree: '+name);
  return found[0][1];

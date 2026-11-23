@@ -1,5 +1,9 @@
 # Handoff: tbUI3
 
+## 2026-11-23 - Allow the native updater executable in Git
+
+Added a narrowly scoped ignore exception for `tbIDE/Updater/Build/Updater.exe`. All other contents of that Build folder and all other Build folders remain ignored. The only local EXE available to Cody is the stale November 19 launcher (35,328 bytes), so it was deliberately not committed; Shane's newly compiled/tested updater can now be added from his build checkout. This pass changes ignore rules and documentation only; it does not embed the helper or publish a release.
+
 ## 2026-11-23 - Native updater startup confirmed; 58/58 tests pass
 
 Shane's new diagnostic snapshot 5235529 reports **58/58 native self-tests passed**, including trusted UTF-8 document navigation. The compiled startup log confirms the generated data page is allowed, both embedded scripts are requested, `updater:ready` arrives, and final navigation succeeds (status 0). The supplied screenshot shows the updater's own expected no-context ready screen. This confirms the compiled blank-window fix; it does not establish IDE debug startup, live update/elevation/recovery/self-update or add-in embedding acceptance. Sanitized evidence references: `tbIDE/Updater/validation/native-startup-2026-11-23-passed.json`. No production source, canonical projects, Wizard or binaries changed in this evidence-only pass.

@@ -18,6 +18,14 @@
   - After rebuilding tbUI3, re-import the `.twinpack` into tbUI3Test (Ctrl+T, then Available Packages). `tbUI3Test/src/Packages/tbUI3` is the embedded copy.
 - Never change the FormDesignerId, class, interface or event IDs of an existing control. Each public control's stable IDs are recorded in `tbUI3/UI3*-ids.json` (currently `UI3Button-ids.json`, `UI3FormTheme-ids.json` and `UI3IconList-ids.json`). Add a new record when a new public control is created; preserve it thereafter.
 
+## Hexadecimal literal widths (required)
+
+- Never leave `&H8000` through `&HFFFF` untyped in first-party twinBASIC code, even inside `ChrW$`, casts, constant declarations, comparisons, API arguments or bitwise expressions. VB-compatible inference treats these as **negative 16-bit Integer** values; assignment/conversion to Long does not repair that sign extension (TB0012).
+- For a positive Unicode code point, PE machine identifier, mask or other Long value, append `&`: `ChrW$(&HFEFF&)`, `&H8664&`, `&HF041&`, `&HF000&`, `&HA000&`. Prefer named, explicitly typed constants when reused, and type the literal itself as well.
+- Use `%` only when a signed 16-bit Integer is intentional, and keep its width consistent with the destination. Example: the WinTrust GUID's Integer field uses `&HCD44%` to preserve those 16 bits. Do not mechanically widen such fields or change native structure layouts.
+- Review high-bit 32-bit literals separately when converting to LongPtr, LongLong or unsigned values: an explicit Long literal can still sign-extend when widened. Specify the intended width/bit pattern; never suppress TB0012 to hide an unintended conversion.
+- Before every development-pass commit, run `node tools/validate-hex-literals.mjs` (also included in `node tools/validate-tabview-projects.mjs` and `node --test tests/*.mjs`). It checks active first-party canonical projects, source mirrors and the embedded tbUI3 copy, excluding third-party compiler packages. It ignores quoted strings/comments and requires an explicit suffix for the ambiguous 16-bit range. Historical probe snapshots and reference-package donor code are outside that automatic gate; apply the same rule to any first-party code brought back into active development.
+
 ## WinUI fidelity
 
 - Read `docs/CONTROL_FIDELITY_POLICY.md` before implementing or restyling any control.

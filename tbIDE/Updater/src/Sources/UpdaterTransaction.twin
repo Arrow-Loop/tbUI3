@@ -36,7 +36,7 @@ Private Module UpdaterTransaction
             If id = "ide" And JT(file, "target") = "twinBASIC.exe" Then UPe target, 0
             If id = "addin" Then
                 Dim machine As Long = &H14C
-                If InStr(JT(file, "target"), "win64") > 0 Then machine = &H8664
+                If InStr(JT(file, "target"), "win64") > 0 Then machine = &H8664&
                 UPe target, machine
                 If UCompare(UBinaryVersion(target), JT(component, "version")) <> 0 Then UFail "Add-in binary version differs from manifest."
             End If

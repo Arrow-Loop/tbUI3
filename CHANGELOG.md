@@ -1,5 +1,12 @@
 # Changelog
 
+## 2026-11-23 - Updater hexadecimal widths and mandatory TB0012 guard
+
+Shane's BETA 1045 report identified six unintended signed-Integer literal conversions. The JSON BOM, both x64 PE machine checks, ZIP flags mask, Unix mode mask and symlink comparison now use explicit positive Long literals (`&HFEFF&`, `&H8664&`, `&HF041&`, `&HF000&`, `&HA000&`). An updater audit also made the GUID's intentionally signed Integer literal explicit as `&HCD44%`, preserving its 16-bit structure field. This corrects actual x64 PE/link-validation comparisons, not just warning text. Canonical Updater.twinproj and CRLF sources are synchronized; versions and native layouts are unchanged during compile acceptance.
+
+AGENTS.md now mandates explicit widths for the ambiguous 16-bit range and explains signed-Integer exceptions and wider-type sign extension. The new lexical gate checks active first-party source mirrors and packed canonical project entries, including embedded tbUI3, while ignoring strings/comments and third-party packages. It runs through the normal project validator and Node test suite. Validation: 189 Node tests pass; 104 exact mirrors/IDs/package/CRLF checks and 63 mirror plus 63 canonical hex scans pass. Native warning-free rebuild and executable self-tests remain Shane's next check; no successful native build is claimed by these source checks. Shane confirmed the repository is public; no release is published yet, so binary update acceptance still awaits release assets.
+
+
 ## 2026-11-20 - Updater BETA 997 duplicate-label correction
 
 Shane reported TB5172 in MainModule at the repeated DPI initialization lines. Split all three colon-separated parameterless-call sequences into separate statements: `WinUI_InitializeDpiAwareness:` was parsed as a line label rather than a Sub call. The no-argument, detached GUI and startup-error paths now explicitly execute DPI initialization before opening the WebView window. Patched canonical Updater.twinproj and matching CRLF source; 104 exact mirror/ID/package checks pass. Native recompilation remains Shane's next check; no successful build is claimed yet.

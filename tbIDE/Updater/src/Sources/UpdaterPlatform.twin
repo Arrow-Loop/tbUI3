@@ -250,7 +250,7 @@ Private Module UpdaterPlatform
         If U32(bytes, 0) <> &H4550 Then UFail "Missing PE header."
         Dim actual As Long = U16(bytes, 4)
         If machine = 0 Then
-            If actual <> &H14C And actual <> &H8664 Then UFail "Unsupported PE architecture."
+            If actual <> &H14C And actual <> &H8664& Then UFail "Unsupported PE architecture."
         ElseIf actual <> machine Then
             UFail "PE architecture mismatch."
         End If
@@ -265,7 +265,7 @@ Private Module UpdaterPlatform
         Dim ext As String = LCase$(UFso().GetExtensionName(path))
         If ext <> "exe" And ext <> "dll" Then Exit Sub
         Dim action As NativeGuid, info As TrustFile, trust As TrustData
-        action.data1 = &HAAC56B: action.data2 = &HCD44: action.data3 = &H11D0
+        action.data1 = &HAAC56B: action.data2 = &HCD44%: action.data3 = &H11D0
         action.data4(0) = &H8C: action.data4(1) = &HC2: action.data4(2) = 0: action.data4(3) = &HC0
         action.data4(4) = &H4F: action.data4(5) = &HC2: action.data4(6) = &H95: action.data4(7) = &HEE
         info.cb = LenB(info): info.path = StrPtr(path)

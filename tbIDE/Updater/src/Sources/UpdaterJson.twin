@@ -61,7 +61,7 @@ Private Module UpdaterJson
     End Function
     Public Function JParse(ByVal text As String) As UpdateJson
         Dim pos As Long = 1
-        If Left$(text, 1) = ChrW$(&HFEFF) Then pos = 2
+        If Left$(text, 1) = ChrW$(&HFEFF&) Then pos = 2
         Set JParse = ParseValue(text, pos, 0)
         SkipSpace text, pos
         If pos <= Len(text) Then UFail "Trailing JSON data."

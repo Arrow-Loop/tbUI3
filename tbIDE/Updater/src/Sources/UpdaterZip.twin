@@ -34,7 +34,7 @@ Private Module UpdaterZip
             header = UBytes(path, offset, 46)
             If U32(header, 0) <> &H2014B50 Then UFail "ZIP central header missing."
             flags = U16(header, 8): method = U16(header, 10)
-            If (flags And &HF041) <> 0 Or (method <> 0 And method <> 8) Then UFail "Encrypted/unsupported ZIP entry."
+            If (flags And &HF041&) <> 0 Or (method <> 0 And method <> 8) Then UFail "Encrypted/unsupported ZIP entry."
             packed = U32(header, 20): expanded = U32(header, 24): localOffset = U32(header, 42)
             If packed > 536870912 Or expanded > 536870912 Or localOffset + 30 > cdOffset Or U16(header, 34) <> 0 Then UFail "ZIP entry exceeds supported bounds."
             Dim nameSize As Long = U16(header, 28), extraSize As Long = U16(header, 30), commentSize As Long = U16(header, 32)
@@ -44,8 +44,8 @@ Private Module UpdaterZip
             If Right$(canonical, 1) = "/" Then canonical = Left$(canonical, Len(canonical) - 1)
             URelative canonical
             If result.Exists(canonical) Then UFail "Duplicate/case-colliding ZIP destination."
-            Dim attrs As Double = U32(header, 38), unixMode As Long = CLng(Fix(attrs / 65536#)) And &HF000
-            If unixMode = &HA000 Or ((U16(header, 38) And &H400) <> 0) Then UFail "Archive links forbidden."
+            Dim attrs As Double = U32(header, 38), unixMode As Long = CLng(Fix(attrs / 65536#)) And &HF000&
+            If unixMode = &HA000& Or ((U16(header, 38) And &H400) <> 0) Then UFail "Archive links forbidden."
             total = total + expanded
             If total > 2147483648# Then UFail "Archive expansion exceeds 2 GiB."
             Dim local() As Byte = UBytes(path, CLng(localOffset), 30)

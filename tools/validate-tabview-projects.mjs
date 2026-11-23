@@ -2,6 +2,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import assert from 'node:assert/strict';
 import { scan } from './twinproj-edit.mjs';
+import {validateHexLiterals} from './validate-hex-literals.mjs';
 function content(file) {
     const b=fs.readFileSync(file),files=new Map();
     for(const [p,e] of Object.entries(scan(b))) if(e.type==='file') files.set(p,b.subarray(e.cStart+4,e.cEnd));
@@ -48,3 +49,7 @@ const form=JSON.parse(test.get('Sources/frmMultiPage.tbform'))[0],host=form._chi
 assert.equal(host._className,'tbUI3.UI3TabView');assert.equal(host._children.length,3);
 for(const page of host._children) {assert.equal(page._className,'tbUI3.UI3TabPage');assert(page._children.length>0);}
 console.log('Package reference, full embedded package, control IDs, form IDs, real page ownership and CRLF verified.');
+
+const hex=validateHexLiterals();
+assert.deepEqual(hex.diagnostics,[],'Ambiguous signed-Integer hex literals; run node tools/validate-hex-literals.mjs for locations.');
+console.log('Explicit high-bit hexadecimal literal widths verified in mirrors and canonical source entries.');

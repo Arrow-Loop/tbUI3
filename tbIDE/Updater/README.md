@@ -33,3 +33,9 @@ WebView2 hosting, native theme schema 2 and unmodified shared controls/Master CS
 Quill's separate wizard is integrated by the add-in; its preview/mock page is not distributed. IDE Options installation settings use scoped toolkit styles, with no global IDE CSS override.
 
 Regenerate updater bridge with `node tbIDE/tools/build-updater-script.mjs`; regenerate shared contracts/resources/config/canonical entries with `node tbIDE/tools/sync-phase1-projects.mjs`. Validate `node --test tests/*.mjs`, Quill's isolated tests and `node tools/validate-tabview-projects.mjs`. Native self-tests, compilation, actual DLL payload verification and live installation acceptance are separate gates. Phases 2/3 remain documented/deferred; they are not inactive controls pretending to work.
+
+## Working Toolkit host alignment
+
+The updater's native WebView host now follows the current [Smith Debnam WinUIElementToolbox](https://github.com/Smith-Debnam/twinBASIC-Knowledge/tree/218871daaae25c81df668d174b80284edae22ec2/examples/WinUIElementToolbox) event/lifecycle and form-default pattern. REFERENCE.json records the reference and canonical mirror hashes alongside the existing shared asset provenance. UI resource text uses the Toolkit's whole-buffer conversion with explicit UTF-8, avoiding the previous custom pointer decoder. Updater-specific workers, per-user paths, asInvoker, exact navigation/script policies and error reporting are retained. No Gallery/splash/tab-window dependency is introduced.
+
+Updater.exe has its own updater.html/updater.js for selected updates, progress, consent, cancellation and recovery. It never loads the add-in Welcome Wizard; only tbUI3IDE embeds that separate surface. Working native Toolkit behavior is reference evidence, not proof that this adapted updater has passed native acceptance. Reopen/rebuild the canonical updater before assessing this change; incoming logs are read from sdlaw-sdelorme/Diagnostics.

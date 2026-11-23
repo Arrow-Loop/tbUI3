@@ -326,15 +326,17 @@ Finished:
         UIX_WebViewUserDataFolder = basePath & "\tbUI3\Updater\WebView2"
     End Function
 
-    Private Declare PtrSafe Function DecodeUtf8 Lib "kernel32" Alias "MultiByteToWideChar" (ByVal codePage As Long, ByVal flags As Long, ByVal bytes As LongPtr, ByVal byteCount As Long, ByVal text As LongPtr, ByVal capacity As Long) As Long
     Public Function UIX_ResourceText(ByVal resourceName As String) As String
-        Dim bytes() As Byte = LoadResData(resourceName, "OTHER")
-        Dim count As Long = UBound(bytes) - LBound(bytes) + 1
-        Dim characters As Long = DecodeUtf8(65001, 8, VarPtr(bytes(LBound(bytes))), count, 0, 0)
-        If characters <= 0 Then Err.Raise 5, , "Invalid UTF-8 resource: " & resourceName
-        Dim text As String = String$(characters, vbNullChar)
-        If DecodeUtf8(65001, 8, VarPtr(bytes(LBound(bytes))), count, StrPtr(text), characters) <> characters Then Err.Raise 5, , "Could not decode resource: " & resourceName
+        ' Toolkit LoadResData -> StrConv pattern. Explicit UTF-8 preserves our Unicode resources.
+        On Error GoTo Failed
+        Dim data As Variant
+        data = LoadResData(resourceName, "OTHER")
+        Dim text As String = CStr(StrConv(data, vbFromUTF8))
+        If Len(text) = 0 Then Err.Raise 53, , "The embedded resource is empty."
         Return text
+    Failed:
+        Dim failureNumber As Long = Err.Number, description As String = Err.Description
+        Err.Raise failureNumber, "tbUI3 resource reader", "Embedded resource " & resourceName & ": " & description
     End Function
 
     Public Function UIX_JsonString(ByVal value As String) As String

@@ -1,5 +1,17 @@
 # Changelog
 
+## 2026-11-23 - Updater host aligned to the working Smith Debnam Toolkit
+
+Shane designated the private **sdlaw-sdelorme/Diagnostics** repository as the ongoing incoming diagnostic source. Read it through the Smith Debnam connection; local output remains `%LOCALAPPDATA%\tbUI3\Diagnostics\`. No automatic upload or writes to the diagnostics repository are added.
+
+The latest snapshot again records 57/57 native self-tests passing. Its startup log shows one embedded-resource-assembly E_FAIL, then another run submitting a 192,315-character HTML document without a recorded page-ready handshake. This narrows the evidence without proving the precise blank-window cause.
+
+Compared the current Smith-Debnam Toolkit example at **218871daaae25c81df668d174b80284edae22ec2** against its canonical mirror hashes. Aligned updater event conventions, constructor DPI initialization, complete IDE-created form defaults, black native underlay, Ready reentrancy guard and navigation-completion lifecycle. Replaced the custom pointer-based UI resource conversion with the Toolkit's whole-buffer LoadResData/StrConv pattern, explicitly selecting UTF-8 for our resources. Per-resource error context is retained. Form identities, updater dimensions and security restrictions remain; Gallery, tab windows, splash and installer/message-box dependencies are not imported.
+
+**Updater.exe retains its separate update/progress/recovery UI. The Welcome Wizard remains add-in-only.** Native form/UI launch and the changed resource reader still require rebuild/runtime confirmation; no native success is claimed by source/DOM checks. Canonical projects/mirrors are synchronized. No main merge, PR, release, binary embedding or GUI automation.
+
+Validation: **235 Node tests pass**, with **134 exact canonical/source mirrors**, stable IDs/CRLF/hex checks, generator idempotence and diff checks passing. The existing user-provided 57/57 native result predates this host change; no new native compile or GUI run was performed by Cody.
+
 ## 2026-11-23 - Refined Wizard integration, native 57/57 evidence, unified diagnostics
 
 Integrated Quill's approved view through **79be9e5** unchanged: full Master CSS/shared controls in an isolated iframe under the native HTML dialog, real native installed-theme inventory/parent inheritance/color data, exact-name apply validation, Windows accent, correlated acknowledgements, conditional Setup, async repair, hidden channel selector and revised feature copy. Production settings also omit channel selection; internal release safety/channel metadata remains. Known BETA 1045 loader behavior determines effective duplicate-name selection; no guessed AppData/local precedence. New native palette/host code still needs native acceptance; unresolved colors are explicitly unavailable.

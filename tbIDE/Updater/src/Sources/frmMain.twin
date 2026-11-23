@@ -12,7 +12,11 @@ Class frmMain
     Private mLastState As String
     Private mScriptFilterInstalled As Boolean
 
-    Private Sub wvMain_Create() Handles wvMain.Create
+    Sub New()
+        WinUI_InitializeDpiAwareness
+    End Sub
+
+    Private Sub wvMain_Create()
         On Error GoTo Failed
         UIX_Log "WebView2 Create: configuring per-user profile"
         Dim profile As String = UIX_WebViewUserDataFolder()
@@ -33,6 +37,7 @@ Class frmMain
         stage = "form font"
         Me.Font.Name = "Segoe UI"
         Me.Font.Size = 9
+        Me.BackColor = vbBlack
         stage = "window theme bridge"
         WinUI_ApplyWindows11Backdrop Me.hWnd
         If Not WinUITheme_Attach(Me.hWnd, Me) Then Err.Raise 5, , "Could not attach the Windows theme bridge."
@@ -58,13 +63,13 @@ Class frmMain
         wvMain.Move 0, 0, Me.ScaleWidth, Me.ScaleHeight
     End Sub
 
-    Private Sub wvMain_Ready() Handles wvMain.Ready
+    Private Sub wvMain_Ready()
         On Error GoTo Failed
         If mNavigated Then Exit Sub
-        Dim stage As String = "Ready zoom"
+        mNavigated = True
+        Dim stage As String = "embedded resource assembly"
         UIX_Log "WebView2 Ready: begin"
-        wvMain.ZoomFactor = 1
-        stage = "embedded resource assembly"
+        WinUITheme_SetWebViewReady Me.hWnd, False
         Dim html As String = UIX_ResourceText("updater.html")
         If Len(html) = 0 Then Err.Raise 53, , "The embedded updater page is missing."
         html = Replace(html, "{{STYLE_BLOCK}}", "<style>" & UIX_ResourceText("winui.css") & UIX_ResourceText("updater.css") & "</style>")
@@ -79,7 +84,6 @@ Class frmMain
         stage = "NavigateToString"
         UIX_Log "WebView2 navigation: chars=" & CStr(Len(html))
         wvMain.NavigateToString html
-        mNavigated = True
         UIX_Log "WebView2 navigation: submitted; awaiting updater:ready"
         Exit Sub
     Failed:
@@ -88,16 +92,25 @@ Class frmMain
         Unload Me
     End Sub
 
-    Private Sub wvMain_Error(ByVal code As Long, ByVal message As String) Handles wvMain.Error
+    Private Sub wvMain_Error(ByVal code As Long, ByVal message As String)
         RuntimeHelp "WebView2 error " & Hex$(code) & ": " & message
         Unload Me
     End Sub
 
-    Private Sub wvMain_NavigationStarting(ByVal uri As String, ByVal userInitiated As Boolean, ByVal redirected As Boolean, ByVal headers As WebView2RequestHeaders, Cancel As Boolean) Handles wvMain.NavigationStarting
-        If uri <> "about:blank" Then Cancel = True
+    Private Sub wvMain_NavigationStarting(ByVal uri As String, ByVal userInitiated As Boolean, ByVal redirected As Boolean, ByVal headers As WebView2RequestHeaders, Cancel As Boolean)
+        Cancel = StrComp(Trim$(uri), "about:blank", vbTextCompare) <> 0
+        UIX_Log "WebView2 NavigationStarting: uri=" & Left$(Replace(Replace(uri, vbCr, ""), vbLf, ""), 256) & "; cancelled=" & CStr(Cancel)
     End Sub
 
-    Private Sub wvMain_JsMessage(ByVal message As Variant) Handles wvMain.JsMessage
+    ' Match the Toolkit: completion can describe intermediate about:blank/replacement navigations.
+    ' Only updater:ready authorizes starting a worker; this event never starts installation.
+    Private Sub wvMain_NavigationComplete(ByVal IsSuccess As Boolean, ByVal WebErrorStatus As Long)
+        On Error Resume Next
+        UIX_Log "WebView2 NavigationComplete: success=" & CStr(IsSuccess) & "; status=" & CStr(WebErrorStatus)
+        If Not IsSuccess Then UIX_Log "Awaiting the updater application page; no worker has been authorized by navigation."
+    End Sub
+
+    Private Sub wvMain_JsMessage(ByVal message As Variant)
         On Error GoTo Failed
         ' Only exact fixed messages from our locked local origin. No paths, executable names,
         ' shell commands, or file selection are accepted from the web content.
@@ -186,7 +199,7 @@ Class frmMain
         WinUITheme_SendSnapshotToWebView "request"
     End Sub
 
-    Private Sub wvMain_WebResourceRequested(ByVal request As WebView2Request, ByVal response As WebView2Response) Handles wvMain.WebResourceRequested
+    Private Sub wvMain_WebResourceRequested(ByVal request As WebView2Request, ByVal response As WebView2Response)
         On Error GoTo Failed
         Dim name As String
         UIX_Log "WebView2 resource request: " & request.Method & " " & request.Uri

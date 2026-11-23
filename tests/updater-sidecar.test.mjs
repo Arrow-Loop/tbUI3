@@ -58,3 +58,11 @@ test('sidecar validates native theme snapshots, reports actual progress and esca
  }finally{f.close();}
 });
 
+
+test('native host retains Toolkit form defaults and application-owned startup boundary',()=>{
+ const packed=files(),form=JSON.parse(packed.get('Sources/frmMain.tbform'))[0],source=packed.get('Sources/frmMain.twin').toString();
+ assert.equal(form.Visible,true);assert.equal(form.Opacity,100);assert.equal(form.WindowState,'vbNormal');assert.equal(form.FontName,'Segoe UI');assert(form.ScaleWidth>0&&form.ScaleHeight>0);
+ assert.match(source,/Sub New\(\)[\s\S]*?WinUI_InitializeDpiAwareness/);assert.match(source,/Me.BackColor = vbBlack/);
+ const event=source.slice(source.indexOf('Private Sub wvMain_NavigationComplete'),source.indexOf('Private Sub wvMain_JsMessage'));
+ assert.doesNotMatch(event,/StartUpdateEngine|StartElevatedEngine/);
+});

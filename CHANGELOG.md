@@ -1,5 +1,9 @@
 # Changelog
 
+## 2026-11-23 - Consolidated full updater product decisions for collaborating agents
+
+Added `tbIDE/INSTALLATION_MANAGER_SPEC.md` with a complete approved UX, implementation strategy and phase-based acceptance contract for Cody and Claude, including installation layouts, AppData placement, Welcome Wizard, verified official release inventories, archiving custom content to old/new/both, multi-root state and conservative reorganization. Linked this from AGENTS and relevant design/runbooks; updated roadmaps. **Documentation only; existing updater implementation and publication state unchanged.**
+
 ## 2026-11-23 - Updater release sequencing decision recorded
 
 Documented combined first production milestone (native updater plus self-provisioning two-DLL install, themes and Welcome Wizard), with future-proof installation-management contracts and later separate-version/archive/reorganization phases. See `tbIDE/BOOTSTRAP_WELCOME_PLAN.md` and roadmaps. **No application or package code, binaries, tests or releases changed in this pass.**

@@ -151,7 +151,7 @@
       const kind=themeMode(item);
       const outer=dom('div','welcome-mini-ide'+(kind?' welcome-theme-'+kind:''),undefined,parent);
       outer.setAttribute('aria-hidden','true');
-      if(!palette && !kind) {
+      if(!palette && (!item || !FEATURED_THEMES.includes(item.name))) {
         dom('span','welcome-preview-empty','Theme palette unavailable',outer);
         return outer;
       }

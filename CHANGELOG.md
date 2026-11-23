@@ -1,5 +1,9 @@
 # Changelog
 
+## 2026-11-23 - Welcome Wizard uses shared Toolkit controls and updated onboarding scope
+
+Updated isolated tbUI3IDE Welcome Wizard view to use shared WinUI runtime and consolidated Master CSS, with a documented iframe isolation and native adapter contract. Changed onboarding to hide the unavailable stable/development channel selector, feature WinUI3 themes while listing other installed themes via a documented native inventory/palette extension, and describe only tbUI3IDE functionality on the Features page (not core tbUI3 TabView/TabPage controls). Added focused source-level tests. The production native bridge and canonical projects were not modified by this isolated view pass; acceptance remains pending.
+
 ## 2026-11-23 - Native report: 42/54 passed; typed byte-buffer correction
 
 Shane supplied `tbUI3-native-updater-tests-rad87A03-tmp.zip`: 54 native cases completed, 42 passed and 12 failed; all 19 ZIP cases passed. Archived atomic JSON, Unicode JSON, installed-file bytes and journals are well-formed, while text/JSON reads and comparison-dependent transaction assertions fail. This points to the native text-reader boundary: `UDecodeText` took addresses/indexed ByRef values through a Variant byte array rather than typed Byte storage. The same unsafe pattern existed in bundled payload output.

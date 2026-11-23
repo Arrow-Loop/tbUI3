@@ -1,5 +1,9 @@
 # Changelog
 
+## 2026-11-23 - Updater release sequencing decision recorded
+
+Documented combined first production milestone (native updater plus self-provisioning two-DLL install, themes and Welcome Wizard), with future-proof installation-management contracts and later separate-version/archive/reorganization phases. See `tbIDE/BOOTSTRAP_WELCOME_PLAN.md` and roadmaps. **No application or package code, binaries, tests or releases changed in this pass.**
+
 ## 2026-11-23 - Add-in first-install and Welcome Wizard architecture documented
 
 Documented the approved future tbUI3IDE self-provisioning contract in `tbIDE/BOOTSTRAP_WELCOME_PLAN.md`: add-in DLLs embed updater/themes, use local and roaming per-user resource directories, independently track multiple IDE installations, preserve newer/customized files, and offer a reopenable HTML/CSS/JS Welcome Wizard. Updated both project roadmaps. **No implementation or compiled/released binaries changed; existing manual bootstrap behavior is unchanged.**

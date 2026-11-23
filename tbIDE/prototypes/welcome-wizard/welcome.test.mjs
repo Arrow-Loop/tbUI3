@@ -41,17 +41,41 @@ test('native bridge contract survives the rebuild',()=>{
   for(const name of ['open:show','setSnapshot:settle','close:','destroy','getState:'])assert.ok(js.includes(name),name);
   assert.match(js,/waiting\.clear\(\);changed\.clear\(\)/);
 });
-test('all installed native themes are listed and preview is independent from apply',()=>{
+test('all installed native themes render as single-click selection and local palette previews',()=>{
   assert.match(js,/Array\.isArray\(snap\.installedThemes\)/);
   assert.match(js,/FEATURED_THEMES\.indexOf/);
   assert.match(js,/renderGroup\('Featured WinUI3 themes'/);
   assert.match(js,/renderGroup\('Other installed themes'/);
-  assert.match(js,/preview=item\.name;paint\(\)/);
+  assert.match(js,/dom\('button','welcome-choice welcome-theme-card'/);
+  assert.match(js,/preview=item\.name;/);
   assert.match(js,/commit\('theme',item\.name,'choose-theme','name'\)/);
-  assert.match(js,/themePalette\(selected\)/);
+  assert.match(js,/themePalette\(item\)/);
   assert.match(js,/Theme palette unavailable/);
-  assert.match(js,/inner\.documentElement\.setAttribute\('data-theme',themeMode\(selectedPreview\)\|\|snapshotMode\(snap\)\)/);
+  assert.match(js,/inner\.documentElement\.setAttribute\('data-theme',previewAppearance\|\|themeMode\(selectedPreview\)\|\|snapshotMode\(snap\)\)/);
   assert.match(readme,/current trusted native inventory/);
+});
+test('WinUI caption button replaces Close text in header',()=>{
+  assert.match(js,/welcome-caption-close/);
+  assert.match(js,/Close Welcome Wizard/);
+  assert.match(js,/M1 1L11 11M11 1L1 11/);
+  assert.doesNotMatch(js,/button\(head,'Close'/);
+  assert.match(css,/\.welcome-caption-close:hover \{ background: #c42b1c; color: #ffffff; \}/);
+});
+test('updates explanation is plain text, not an info bar',()=>{
+  assert.match(js,/Automatic checks never authorize downloading or installing an IDE update/);
+  assert.doesNotMatch(js,/info\(parent,'Your approval is required'/);
+});
+test('compact page scroll and pinned footer remain available',()=>{
+  assert.match(css,/height: 100dvh/);
+  assert.match(css,/overflow-y: auto/);
+  assert.match(css,/\.welcome-footer \{[^}]*flex: 0 0 auto/s);
+});
+test('browser preview can toggle light and dark without native theme writes',()=>{
+  assert.match(html,/id="preview-light"/);
+  assert.match(html,/id="preview-dark"/);
+  assert.match(html,/wizard\.setPreviewMode\(mode\)/);
+  assert.match(js,/function setPreviewMode\(mode\)/);
+  assert.match(js,/setPreviewMode,close:/);
 });
 test('release channel hidden and core tbUI3 controls not advertised as IDE features',()=>{
   assert.doesNotMatch(js,/Release channel|commit\('channel'/);

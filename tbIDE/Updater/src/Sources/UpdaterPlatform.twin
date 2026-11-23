@@ -139,7 +139,7 @@ Private Module UpdaterPlatform
         If ok = 0 Or size < 0 Then UFail "File size unavailable."
         Return CDbl(size)
     End Function
-    Public Sub UWriteRaw(ByVal path As String, ByRef bytes As Variant)
+    Public Sub UWriteRaw(ByVal path As String, ByRef bytes() As Byte)
         Dim handle As LongPtr
         On Error GoTo Failed
         handle = UOpenNew(path)
@@ -217,27 +217,28 @@ Private Module UpdaterPlatform
         Dim reason As String = Err.Description
         UCloseStream handle: UFail reason
     End Function
-    Public Function UDecodeText(ByRef bytes As Variant) As String
-        Dim count As Long = UBound(bytes) - LBound(bytes) + 1
+    ' Never take element addresses through Variant indexing: native APIs require Byte storage.
+    Public Function UDecodeText(ByRef bytes() As Byte) As String
+        Dim first As Long = LBound(bytes), count As Long = UBound(bytes) - first + 1
         If count >= 2 Then
-            If bytes(0) = 255 And bytes(1) = 254 Then
+            If bytes(first) = 255 And bytes(first + 1) = 254 Then
                 If (count Mod 2) <> 0 Then UFail "Invalid UTF-16 byte length."
                 Dim text As String = String$((count - 2) \ 2, vbNullChar)
-                If count > 2 Then CopyMemory ByVal StrPtr(text), bytes(2), count - 2
+                If count > 2 Then CopyMemory ByVal StrPtr(text), bytes(first + 2), count - 2
                 Return text
             End If
         End If
-        Dim size As Long = MultiByteToWideChar(65001, 8, VarPtr(bytes(0)), count, 0, 0)
+        Dim size As Long = MultiByteToWideChar(65001, 8, VarPtr(bytes(first)), count, 0, 0)
         If size = 0 Then UFail "Invalid UTF-8 text."
         Dim result As String = String$(size, vbNullChar)
-        If MultiByteToWideChar(65001, 8, VarPtr(bytes(0)), count, StrPtr(result), size) <> size Then UFail "UTF-8 conversion failed."
+        If MultiByteToWideChar(65001, 8, VarPtr(bytes(first)), count, StrPtr(result), size) <> size Then UFail "UTF-8 conversion failed."
         Return result
     End Function
     Public Function UText(ByVal path As String) As String
         Dim count As Double = USize(path)
         If count = 0 Then Return ""
         If count > 16777216 Then UFail "Text file exceeds supported size."
-        Dim bytes As Variant = UBytes(path, 0, CLng(count))
+        Dim bytes() As Byte = UBytes(path, 0, CLng(count))
         Return UDecodeText(bytes)
     End Function
     Public Function UReadJson(ByVal path As String) As UpdateJson

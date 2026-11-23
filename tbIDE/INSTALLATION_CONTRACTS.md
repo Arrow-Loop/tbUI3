@@ -1,6 +1,6 @@
 # Installation contracts, revision 1
 
-Implemented source contract, 2026-11-23. Read INSTALLATION_MANAGER_SPEC.md for product requirements and PHASE1_HANDOFF.md for evidence and acceptance limits. Native compilation is pending. JSON is UTF-16LE with BOM on disk (strict UTF-8 input is also accepted); all hashes are lowercase SHA-256. Unknown protocol/schema/operation versions fail closed, retaining state. No arbitrary executable, script or remote command is accepted by the view bridge.
+Implemented source contract, 2026-11-23. Read INSTALLATION_MANAGER_SPEC.md for product requirements and PHASE1_HANDOFF.md for evidence and acceptance limits. Native acceptance remains pending; the handoff records user-supplied pre-fix self-test evidence (42/54) and the unrun typed-buffer correction. JSON is UTF-16LE with BOM on disk (strict UTF-8 input is also accepted); all hashes are lowercase SHA-256. Unknown protocol/schema/operation versions fail closed, retaining state. No arbitrary executable, script or remote command is accepted by the view bridge.
 
 ## Identity and storage
 

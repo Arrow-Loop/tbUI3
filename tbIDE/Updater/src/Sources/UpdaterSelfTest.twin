@@ -10,7 +10,7 @@ Private Module UpdaterSelfTest
         UNoLinks mRoot: UDirectory mRoot
         Set mResults = JA(): mFailed = 0
         Dim i As Long
-        For i = 1 To 35: RunCase i: Next
+        For i = 1 To 38: RunCase i: Next
         Dim fixtures As UpdateJson = JParse(UIX_ResourceText("native-engine-fixtures.json")), fixture As UpdateJson
         For Each fixture In fixtures.Member("fixtures").Items: RunZipCase fixture: Next
         Dim report As UpdateJson = JO()
@@ -169,6 +169,20 @@ Private Module UpdaterSelfTest
                 operation.Assign "kind", JS("UnknownOperationV2")
                 RejectInstall plan, mRoot & "\future-op\journal.json"
                 Check UText(mRoot & "\future-op\install\one.txt") = "old one", name
+            Case 36
+                name = "raw payload native byte-buffer roundtrip"
+                Dim payload(0 To 5) As Byte, readback() As Byte, j As Long
+                payload(0) = 0: payload(1) = 255: payload(2) = 128: payload(3) = 65: payload(4) = 254: payload(5) = 1
+                path = mRoot & "\raw-payload": UWriteRaw path, payload
+                readback = UBytes(path, 0, 6)
+                For j = 0 To 5: Check readback(j) = payload(j), name: Next
+            Case 37
+                name = "UTF-8 native typed-buffer decode"
+                Dim utf8(1 To 6) As Byte
+                utf8(1) = 97: utf8(2) = 195: utf8(3) = 169: utf8(4) = 228: utf8(5) = 184: utf8(6) = 173
+                Check UDecodeText(utf8) = "a" & ChrW$(&HE9) & ChrW$(&H4E2D), name
+            Case 38
+                name = "invalid UTF-8 typed buffer rejected": MustReject 11
         End Select
         Record name, True, "": Exit Sub
     Failed:
@@ -193,6 +207,9 @@ Private Module UpdaterSelfTest
             Case 10
                 Set json = JO(): json.Assign "schema", JN(IContextSchema): json.Assign "protocol", JN(IProtocol + 1)
                 IValidateContext json, "not-a-session"
+            Case 11
+                Dim invalidUtf8(0 To 0) As Byte: invalidUtf8(0) = 255
+                ignored = UDecodeText(invalidUtf8)
         End Select
         On Error GoTo 0: UFail "Unsafe input was accepted."
     Expected:

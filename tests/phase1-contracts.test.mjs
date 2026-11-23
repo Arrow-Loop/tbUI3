@@ -39,3 +39,13 @@ test('canonical updater embeds valid asInvoker XML as executable manifest resour
   assert.equal(levels.length,1);assert.equal(levels[0].getAttribute('level'),'asInvoker');assert.equal(levels[0].getAttribute('uiAccess'),'false');
  }finally{dom.window.close();}
 });
+
+test('native text and bootstrap byte pointers use typed storage rather than Variant indexing',()=>{
+ const platform=read('tbIDE/Updater/src/Sources/UpdaterPlatform.twin');
+ assert.match(platform,/UDecodeText\(ByRef bytes\(\) As Byte\)/);
+ assert.match(platform,/UWriteRaw\(ByVal path As String, ByRef bytes\(\) As Byte\)/);
+ assert.match(platform,/Dim bytes\(\) As Byte = UBytes\(path, 0, CLng\(count\)\)/);
+ assert.match(read('tbIDE/tbUI3IDE/src/Sources/BundledResources.twin'),/bytes\(\) As Byte = LoadResData/);
+ const native=read('tbIDE/Updater/src/Sources/UpdaterSelfTest.twin');
+ for(const name of ['raw payload native byte-buffer roundtrip','UTF-8 native typed-buffer decode','invalid UTF-8 typed buffer rejected'])assert(native.includes(name));
+});

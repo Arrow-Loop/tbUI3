@@ -30,6 +30,11 @@ For any tbUI3IDE updater, first-install, Welcome Wizard, per-user add-in, IDE up
 - Review high-bit 32-bit literals separately when converting to LongPtr, LongLong or unsigned values: an explicit Long literal can still sign-extend when widened. Specify the intended width/bit pattern; never suppress TB0012 to hide an unintended conversion.
 - Before every development-pass commit, run `node tools/validate-hex-literals.mjs` (also included in `node tools/validate-tabview-projects.mjs` and `node --test tests/*.mjs`). It checks active first-party canonical projects, source mirrors and the embedded tbUI3 copy, excluding third-party compiler packages. It ignores quoted strings/comments and requires an explicit suffix for the ambiguous 16-bit range. Historical probe snapshots and reference-package donor code are outside that automatic gate; apply the same rule to any first-party code brought back into active development.
 
+## Native byte-buffer pointers
+
+- Windows APIs that read/write raw array bytes must receive pointers into an explicitly typed `Byte()` array. Do not take `VarPtr(value(index))` or pass an indexed value ByRef As Any when `value` is declared `Variant`, even when it currently contains a byte SAFEARRAY: indexing/conversion can expose a temporary Variant instead of the byte storage.
+- Convert resource/Variant byte arrays into typed `Byte()` storage before native pointer use. Native text decoding, raw payload output and their callers must retain typed buffers. Keep executable byte-roundtrip/UTF-8/UTF-16 tests alongside source contract checks; Node/static validation cannot prove the native ABI behavior.
+
 ## WinUI fidelity
 
 - Read `docs/CONTROL_FIDELITY_POLICY.md` before implementing or restyling any control.

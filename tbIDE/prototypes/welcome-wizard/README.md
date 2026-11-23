@@ -87,7 +87,7 @@ The view owns only presentation. Production bootstrap and resource verification 
 
 ## Compact selector previews and native theme-resolution contract (2026-11-23)
 
-Theme and Toolbar selectors now share an **86px-high miniature IDE silhouette**. They depict just the window chrome, command strip, project panel and editor. They are **not** screenshots, a full IDE recreation or executable toolbar controls. Each whole tile is keyboard-accessible and clickable, preserving the selected native state and compact size.
+Theme and Toolbar selectors now share an **86px-high miniature IDE silhouette**. They depict just the window chrome, command strip, project panel and editor. They are **not** screenshots, a full IDE recreation or executable toolbar controls. Each whole tile is keyboard-accessible and clickable, preserving the selected native state and compact size. The selected border and aria-pressed state communicate the choice without redundant Current theme or Current toolbar labels.
 
 **Theme previews:** WinUI3 Light/Dark are featured first, followed by other effective installed IDE themes. Each miniature uses the actual resolved color values delivered by the trusted native bridge, not guessed theme-specific colors. Merely viewing a theme never changes the running IDE. Clicking its tile previews locally and requests the existing choose-theme intent; a rejected request reverts on the settled native snapshot.
 

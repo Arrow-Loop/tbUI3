@@ -313,30 +313,28 @@
       if(['checking','pending','verifying'].includes(raw))return {label:'Checking',tone:'neutral',symbol:'…'};
       return {label:'Status unavailable',tone:'neutral',symbol:'?'};
     }
-    function finish(parent){
-      heading(parent,"You're ready to go",'Your preferences can be changed later. Reopen this tour from IDE Options.');
-      dom('h3','welcome-subheading','Your preferences',parent);
-      const summary=dom('dl','welcome-summary-list',undefined,parent);
-      const current=snap.preferences||{};
-      // Data-driven rows: future confirmed preferences can be added without
-      // introducing an additional fixed tile or changing the grid geometry.
-      const entries=[
-        ['IDE theme',snap.theme||'Unchanged'],
-        ['Toolbar layout',snap.toolbar||'Unchanged'],
-        ['Check for updates',current.automatic===false?'Off':'On'],
-        ['Restart after update',current.restart===true?'On':'Off'],
-        ['Update strategy','In place']
-      ];
-      for(const [name,value] of entries){
-        const row=dom('div','welcome-summary-row',undefined,summary);
-        dom('dt','welcome-summary-label',name,row);
-        dom('dd','welcome-summary-value',value,row);
-      }
+    function setupNeedsAttention(){
       const bootstrap=snap.bootstrap||{};
-      dom('h3','welcome-subheading','Installation health',parent);
       const resources=Array.isArray(bootstrap.resources)?bootstrap.resources:[];
+      const critical=new Set(['missing','error','failed','corrupt','damaged']);
+      return bootstrap.status==='error' || bootstrap.status==='warning' || snap.recovery===true ||
+        resources.some(resource=>critical.has(text(resource&&resource.status).toLowerCase()) || resource.repairable===true);
+    }
+    function pageNames(){
+      const names=PAGES.slice();
+      if(setupNeedsAttention())names.splice(names.length-1,0,'Setup');
+      return names;
+    }
+    function setupAttention(parent){
+      heading(parent,'Installation needs attention','Review any outstanding setup issues before finishing. Your existing files and customizations are preserved.');
+      const bootstrap=snap.bootstrap||{};
+      const resources=Array.isArray(bootstrap.resources)?bootstrap.resources:[];
+      const relevant=resources.filter(resource=>{
+        const state=resourceState(resource);
+        return state.tone==='error' || resource.repairable===true;
+      });
       const list=dom('div','welcome-health-list',undefined,parent);
-      for(const resource of resources){
+      for(const resource of relevant){
         const state=resourceState(resource);
         const line=dom('div','welcome-health-row',undefined,list);
         const details=dom('div','welcome-health-details',undefined,line);
@@ -361,16 +359,36 @@
           if(waiting.has('repair-resource'))b.setAttribute('disabled','');
         }
       }
-      if(!resources.length)dom('p','welcome-health-description','Resource status will appear when the IDE completes its installation check.',list);
+      if(!relevant.length)dom('p','welcome-health-description','The add-in reported an installation issue. You can check resources again or review the details in IDE Options.',list);
       if(bootstrap.status==='error')
         info(parent,'Installation check needs attention',text(bootstrap.message)||'Some bundled resources could not be verified.','error');
       else if(bootstrap.status==='warning')
         info(parent,'Review installation resources',text(bootstrap.message)||'One or more components may need attention.','warning');
-      else if(text(bootstrap.message))
-        dom('p','welcome-health-note',bootstrap.message,parent);
+      if(snap.recovery)info(parent,'Update recovery needed','An unfinished native transaction must be recovered separately.','warning');
       const retry=button(parent,'Check again',()=>{dispatch('bootstrap-retry');paint();});
       if(waiting.has('bootstrap-retry'))retry.setAttribute('disabled','');
-      if(snap.recovery)info(parent,'Update recovery needed','An unfinished native transaction must be recovered separately.','warning');
+      dom('p','welcome-note','You can continue after reviewing these issues, or close the tour and return through IDE Options. Repairs are never performed without approval.',parent);
+    }
+    function finish(parent){
+      heading(parent,"You're ready to go",'Your preferences can be changed later. Reopen this tour from IDE Options.');
+      dom('h3','welcome-subheading','Your preferences',parent);
+      const summary=dom('dl','welcome-summary-list',undefined,parent);
+      const current=snap.preferences||{};
+      // Data-driven rows: future confirmed preferences can be added without
+      // introducing an additional fixed tile or changing the grid geometry.
+      const entries=[
+        ['IDE theme',snap.theme||'Unchanged'],
+        ['Toolbar layout',snap.toolbar||'Unchanged'],
+        ['Check for updates',current.automatic===false?'Off':'On'],
+        ['Restart after update',current.restart===true?'On':'Off'],
+        ['Update strategy','In place']
+      ];
+      for(const [name,value] of entries){
+        const row=dom('div','welcome-summary-row',undefined,summary);
+        dom('dt','welcome-summary-label',name,row);
+        dom('dd','welcome-summary-value',value,row);
+      }
+
     }
     function paint(){
       if(dead||!loaded||!app)return;
@@ -399,23 +417,25 @@
       strokes.setAttribute('stroke-width','1');
       close.addEventListener('click',()=>dismiss('dismissed'));
       const steps=dom('nav','welcome-steps',undefined,app);steps.setAttribute('aria-label','Wizard progress');
-      PAGES.forEach((label,index)=>{
+      const pages=pageNames();
+      if(step>=pages.length)step=pages.length-1;
+      pages.forEach((label,index)=>{
         const s=dom('span','welcome-step'+(index===step?' active':''),label,steps);
         if(index===step)s.setAttribute('aria-current','step');
       });
       const main=dom('main','welcome-page',undefined,app);
-      [welcome,updates,chooseTheme,toolbar,features,finish][step](main);
+      ({Welcome:welcome,Updates:updates,Themes:chooseTheme,Toolbar:toolbar,Features:features,Setup:setupAttention,Finish:finish})[pages[step]](main);
       const footer=dom('footer','welcome-footer',undefined,app);
-      button(footer,step===PAGES.length-1?'Close':'Skip tour',()=>dismiss('dismissed'));
+      button(footer,step===pages.length-1?'Close':'Skip tour',()=>dismiss('dismissed'));
       const right=dom('div','welcome-actions',undefined,footer);
       const back=button(right,'Back',()=>move(-1));
       if(step===0)back.setAttribute('disabled','');
-      button(right,step===PAGES.length-1?'Finish':'Continue',()=>step===PAGES.length-1?dismiss('completed'):move(1),'primary');
-      status=dom('div','welcome-status',message|| (waiting.size?'Waiting for IDE confirmation…':'Step '+(step+1)+' of '+PAGES.length),app);
+      button(right,step===pages.length-1?'Finish':'Continue',()=>step===pages.length-1?dismiss('completed'):move(1),'primary');
+      status=dom('div','welcome-status',message|| (waiting.size?'Waiting for IDE confirmation…':'Step '+(step+1)+' of '+pages.length),app);
       status.setAttribute('role','status');status.setAttribute('aria-live','polite');
       inner.defaultView.WinUIControls.initialize(app);
     }
-    function move(delta){step=Math.max(0,Math.min(PAGES.length-1,step+delta));paint();const h=app&&app.querySelector('h2');if(h)h.focus();}
+    function move(delta){step=Math.max(0,Math.min(pageNames().length-1,step+delta));paint();const h=app&&app.querySelector('h2');if(h)h.focus();}
     function dismiss(disposition){
       if(!open)return;
       if(disposition!=='none')dispatch('welcome-record',{schema:1,disposition});
@@ -446,7 +466,7 @@
     }
     return Object.freeze({
       open:show,setSnapshot:settle,setPreviewMode,close:()=>dismiss('none'),destroy,
-      getState:()=>({page:PAGES[step].toLowerCase(),open,source:instance,pending:[...waiting]})
+      getState:()=>({page:pageNames()[Math.min(step,pageNames().length-1)].toLowerCase(),open,source:instance,pending:[...waiting]})
     });
   }
   global.tbUI3CreateWelcomeWizard=createWelcomeWizard;

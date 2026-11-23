@@ -371,7 +371,8 @@
       else if(bootstrap.status==='warning')
         info(parent,'Review installation resources',text(bootstrap.message)||'One or more components may need attention.','warning');
       if(snap.recovery)info(parent,'Update recovery needed','An unfinished native transaction must be recovered separately.','warning');
-      const retry=button(parent,'Check again',()=>{dispatch('bootstrap-retry');paint();});
+      const retryArea=dom('div','welcome-setup-retry',undefined,parent);
+      const retry=button(retryArea,'Check again',()=>{dispatch('bootstrap-retry');paint();});
       if(waiting.has('bootstrap-retry'))retry.setAttribute('disabled','');
       dom('p','welcome-note','You can continue after reviewing these issues, or close the tour and return through IDE Options. Repairs are never performed without approval.',parent);
     }

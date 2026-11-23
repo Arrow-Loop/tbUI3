@@ -27,6 +27,12 @@ pre { white-space: pre-wrap; overflow: auto; max-height: 180px; }
   const snap={
     schema:1,root:'C:\\twinBASIC',installationId:'demo-only',
     theme:'WinUI3 Light',toolbar:'Classic',
+    installedThemes:[
+      {name:'WinUI3 Light',mode:'light',preview:{background:'#f9f9f9',surface:'#f3f3f3',foreground:'#202020',accent:'#0067c0'}},
+      {name:'WinUI3 Dark',mode:'dark',preview:{background:'#202020',surface:'#2c2c2c',foreground:'#ffffff',accent:'#60cdff'}},
+      {name:'twinBASIC Default',mode:'light',preview:{background:'#f4f4f4',surface:'#ffffff',foreground:'#222222',accent:'#47688c'}},
+      {name:'Custom Midnight',mode:'dark',preview:{background:'#171923',surface:'#292d3c',foreground:'#f1f5f9',accent:'#8b5cf6'}}
+    ],
     preferences:{schema:1,strategy:'InPlace',automatic:true,restart:false,channel:'development'},
     bootstrap:{status:'ready',message:'Simulated bundled assets are ready.',resources:[
       {id:'updater',status:'ready',message:'Demo verified',repairable:false},
@@ -40,7 +46,7 @@ pre { white-space: pre-wrap; overflow: auto; max-height: 180px; }
     assets:{masterCss,controlsJs,welcomeCss},
     send(request) {
       logs.textContent+=JSON.stringify(request)+'\n';
-      if(request.action==='choose-theme')snap.theme=request.name;
+      if(request.action==='choose-theme' && snap.installedThemes.some(t=>t.name===request.name))snap.theme=request.name;
       if(request.action==='choose-toolbar')snap.toolbar=request.name;
       if(request.action==='installation-preferences')Object.assign(snap.preferences,request);
       snap.message='Simulated native acknowledgement: '+request.action;

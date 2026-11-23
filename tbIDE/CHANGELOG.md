@@ -1,5 +1,9 @@
 # Changelog: tbIDE (WinUI 3 look for the twinBASIC IDE)
 
+## 2026-11-23 - Toolkit-backed Welcome Wizard redesign and user-approved content corrections
+
+In Quill's isolated `tbIDE/prototypes/welcome-wizard/`, replaced hand-built control visuals with the shared WinUI Toolkit runtime and Master CSS in an isolated document, retaining native action/snapshot methods. Refactored wizard CSS to layout-only, with an updated standalone simulated preview and contract checks. Subsequently removed the release-channel selector because twinBASIC has no stable release, featured WinUI3 Light/Dark while adding installed-theme cards/previews with a native-enumeration contract, and removed TabView/TabPage product marketing from Features. Updated isolated contract/tests and ROADMAP. **This is view/source work only; native theme inventory and production integration are not claimed, and GUI/native acceptance has not been performed.**
+
 ## 2026-11-23 - Native report: 42/54 passed; typed byte-buffer correction
 
 Shane supplied `tbUI3-native-updater-tests-rad87A03-tmp.zip`: 54 native cases completed, 42 passed and 12 failed; all 19 ZIP cases passed. Archived atomic JSON, Unicode JSON, installed-file bytes and journals are well-formed, while text/JSON reads and comparison-dependent transaction assertions fail. This points to the native text-reader boundary: `UDecodeText` took addresses/indexed ByRef values through a Variant byte array rather than typed Byte storage. The same unsafe pattern existed in bundled payload output.

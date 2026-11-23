@@ -1,5 +1,12 @@
 # Welcome Wizard changelog
 
+## 2026-11-23: Installation health moved out of normal Finish
+
+- Removed all resource/repair/recheck diagnostics from the normal Finish page, leaving only the expandable preference confirmation.
+- Added a conditional Setup attention step immediately before Finish for native-reported bootstrap warnings/errors, recovery, missing/damaged resources and explicit repair choices. Healthy snapshots keep the original six pages.
+- Preserved native repair confirmation, Check again, resource identity and bootstrap snapshot authority. An unresolved issue is never represented as successfully repaired; wizard remains dismissible.
+- Added source-level regression checks. Did not modify native bootstrap sequencing or embed an updater binary.
+
 ## 2026-11-23: Confirmation and installation-health presentation cleanup
 
 - Replaced four fixed oversized summary cards with a compact, data-driven definition list. Labels and selected values now use balanced text sizes, and update restart preference is also displayed. The list can grow without changing its layout.

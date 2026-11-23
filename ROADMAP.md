@@ -1,5 +1,10 @@
 # Roadmap
 
+## 2026-11-23 - tbUI3IDE embedded bootstrap and first-run Welcome Wizard (approved, pending)
+
+Public-install goal: user copies only the `tbUI3IDE.dll` architecture file(s). Each add-in embeds the native updater and WinUI3 themes; startup silently provisions missing known-good dependencies to per-user locations, repairing when needed without downgrades or overwriting user customizations. `Updater.exe` becomes shared at `%LOCALAPPDATA%\tbUI3\Updater\Updater.exe`, with independent per-IDE-root state, while themes are shared in `%APPDATA%\twinBASIC\themes`. An embedded HTML/CSS/JS Welcome Wizard explains and configures new update, theme, toolbar and designer features; it can be reopened, and missing files alone must not retrigger onboarding. Protected IDE update writes require approved, scoped elevation rather than elevation during bootstrap. See [tbIDE detailed plan](tbIDE/BOOTSTRAP_WELCOME_PLAN.md). **Planning only; existing updater implementation and release packaging must be migrated and validated before publication.**
+
+
 ## 2026-11-23 - BETA 1045 hex-literal warnings corrected; automated gate added
 
 Explicitly typed the updater's Unicode, PE and ZIP literals and its intentional signed GUID field. AGENTS.md now defines the required width rule; both the normal project validator and Node suite enforce it against active canonical projects and mirrors. Source checks pass; reopen/recompile Updater in BETA 1045, then run its native self-tests. Public repository access is available, but end-to-end binary update acceptance still needs a published release with ZIPs and tbUI3-update.json. No release is published by this pass.

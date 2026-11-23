@@ -27,7 +27,7 @@ test('full shared runtime and Master CSS present, without Gallery startup',()=>{
   assert.doesNotMatch(shared,/function initializeCatalog\(/);
 });
 test('wizard authors shared WinUI declarations instead of presentation templates',()=>{
-  for(const name of ['winui-button','winui-toggle-switch','winui-settings-row','winui-info-bar','winui-summary-card'])
+  for(const name of ['winui-button','winui-toggle-switch','winui-settings-row','winui-info-bar'])
     assert.ok(js.includes("'"+name+"'"),name);
   assert.match(js,/WinUIControls\.initialize\(app\)/);
   assert.match(js,/frame\.srcdoc/);
@@ -147,4 +147,16 @@ test('installation health presents friendly resource labels and separate status 
   assert.match(css,/\.welcome-health-actions/);
   assert.match(js,/dispatch\('repair-resource',\{id:resource.id,confirmed:true\}\)/);
   assert.match(js,/dispatch\('bootstrap-retry'\)/);
+});
+
+test('finish summary uses extensible compact rows instead of oversized fixed cards',()=>{
+  assert.match(js,/dom\('dl','welcome-summary-list'/);
+  assert.match(js,/const entries=\[/);
+  assert.match(js,/dom\('dt','welcome-summary-label'/);
+  assert.match(js,/dom\('dd','welcome-summary-value'/);
+  assert.match(js,/Restart after update/);
+  assert.doesNotMatch(js,/dom\('winui-summary-card'/);
+  assert.match(css,/\.welcome-summary-row/);
+  assert.match(css,/\.welcome-summary-value/);
+  assert.doesNotMatch(css,/\.welcome-summary \{ display: grid/);
 });

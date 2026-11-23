@@ -58,6 +58,7 @@ test('WinUI caption button replaces Close text in header',()=>{
   assert.match(js,/welcome-caption-close/);
   assert.match(js,/Close Welcome Wizard/);
   assert.match(js,/M1 1L11 11M11 1L1 11/);
+  assert.match(js,/createElementNS\('http:\/\/www\.w3\.org\/2000\/svg','svg'\)/);
   assert.doesNotMatch(js,/button\(head,'Close'/);
   assert.match(css,/\.welcome-caption-close:hover \{ background: #c42b1c; color: #ffffff; \}/);
 });

@@ -69,6 +69,14 @@ The iframe and its internal DOM are instantiated only on first open. Code instal
 
 **Cody handoff:** production must re-embed the latest `welcome.js` and `welcome.css` into the canonical resource pipeline. There is no change to the six native intent names or `installedThemes` snapshot shape. `master.css` and `controls.js` remain unchanged. Do not change native bridge/settings/bootstrap files in response to these view-only refinements without normal coordination.
 
+## Finish-page confirmation and installation-health layout (2026-11-23)
+
+The Finish page now shows user choices in a compact, extensible label/value list instead of four oversized WinUI summary cards. It includes theme, toolbar, automatic update checks, restart preference and update strategy. Adding another confirmed preference simply adds another row; there is no fixed tile count or exaggerated value typography.
+
+Installation health uses readable resource labels (e.g. Update manager, WinUI3 Dark theme, WinUI3 Light theme), individual descriptive messages and separate status indicators (Ready, Customized, Needs attention, Checking or Status unavailable). There are no printed raw IDs, colon-delimited diagnostics or pipe separators. Actual resource IDs are preserved internally for native repair requests and verified-backup confirmation. Retry and recovery behavior are unchanged.
+
+The view owns only presentation. Production bootstrap and resource verification remain under Cody's native authority.
+
 ## Compact selector previews and native theme-resolution contract (2026-11-23)
 
 Theme and Toolbar selectors now share an **86px-high miniature IDE silhouette**. They depict just the window chrome, command strip, project panel and editor. They are **not** screenshots, a full IDE recreation or executable toolbar controls. Each whole tile is keyboard-accessible and clickable, preserving the selected native state and compact size.

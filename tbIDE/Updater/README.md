@@ -1,5 +1,7 @@
 # tbUI3 Updater
 
+**Consolidated agreed future product design:** [INSTALLATION_MANAGER_SPEC.md](../INSTALLATION_MANAGER_SPEC.md). It records the full conversation decisions including first-release gate, later folder strategies and preservation policies, distinct from the current build/run instructions below. Use it together with the current canonical source; do not infer that planned behavior has already shipped.
+
 **Pending change to first-install behavior (approved 2026-11-23):** [Embedded bootstrap and Welcome Wizard plan](../BOOTSTRAP_WELCOME_PLAN.md). The add-in DLLs will eventually embed and provision Updater.exe to `%LOCALAPPDATA%\tbUI3\Updater\Updater.exe` and both themes to `%APPDATA%\twinBASIC\themes`, with per-installation state. The instructions below describe the **current implementation**, not the future bootstrap. Do not represent the current DLL as self-provisioning until that work is delivered and validated.
 
 Source implementation: **Updater 0.1.0.1**, coordinated with **tbUI3IDE 0.3.0.22**. The final WebView2 project and add-in are ready for Shane's native compilation and acceptance checks. The earlier minimal launcher build predates this interface and must not be distributed.

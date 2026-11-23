@@ -315,11 +315,22 @@
     }
     function finish(parent){
       heading(parent,"You're ready to go",'Your preferences can be changed later. Reopen this tour from IDE Options.');
-      const grid=dom('div','welcome-summary',undefined,parent);
+      dom('h3','welcome-subheading','Your preferences',parent);
+      const summary=dom('dl','welcome-summary-list',undefined,parent);
       const current=snap.preferences||{};
-      for(const [name,value] of [['Theme',snap.theme||'Unchanged'],['Toolbar',snap.toolbar||'Unchanged'],['Automatic checks',current.automatic===false?'Off':'On'],['Update strategy','In place']]){
-        const card=dom('winui-summary-card','',undefined,grid);
-        card.setAttribute('label',name);card.setAttribute('value',String(value));
+      // Data-driven rows: future confirmed preferences can be added without
+      // introducing an additional fixed tile or changing the grid geometry.
+      const entries=[
+        ['IDE theme',snap.theme||'Unchanged'],
+        ['Toolbar layout',snap.toolbar||'Unchanged'],
+        ['Check for updates',current.automatic===false?'Off':'On'],
+        ['Restart after update',current.restart===true?'On':'Off'],
+        ['Update strategy','In place']
+      ];
+      for(const [name,value] of entries){
+        const row=dom('div','welcome-summary-row',undefined,summary);
+        dom('dt','welcome-summary-label',name,row);
+        dom('dd','welcome-summary-value',value,row);
       }
       const bootstrap=snap.bootstrap||{};
       dom('h3','welcome-subheading','Installation health',parent);

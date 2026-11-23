@@ -1,5 +1,10 @@
 # Welcome Wizard changelog
 
+## 2026-11-23: Selector label cleanup
+
+- Removed redundant Current theme and Current toolbar text from the compact selection tiles. The selected border and aria-pressed state still indicate the choice; no changes to native selection or intents.
+- Removed the unused label style and added a focused source check.
+
 ## 2026-11-23: Installation health moved out of normal Finish
 
 - Removed all resource/repair/recheck diagnostics from the normal Finish page, leaving only the expandable preference confirmation.

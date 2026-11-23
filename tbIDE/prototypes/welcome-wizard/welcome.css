@@ -104,7 +104,39 @@
 .welcome-choice winui-button { margin-top: auto; }
 .welcome-subheading { font-size: 14px; margin: var(--space-5) 0 var(--space-3); }
 .welcome-note { color: var(--color-text-muted); font-size: 12px; margin: var(--space-3) 0; }
-.welcome-summary { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: var(--space-3); }
+/* Confirmation uses a flexible definition list with equal-scale text.
+ * Additional native-approved preferences simply create additional rows. */
+.welcome-summary-list {
+  display:flex;
+  flex-direction:column;
+  gap:0;
+  margin:0;
+  border:1px solid var(--color-divider);
+  border-radius:var(--ControlCornerRadius,4px);
+  background:var(--color-card);
+  overflow:hidden;
+}
+.welcome-summary-row {
+  display:flex;
+  justify-content:space-between;
+  align-items:baseline;
+  gap:var(--space-4);
+  padding:var(--space-3) var(--space-4);
+  min-width:0;
+}
+.welcome-summary-row+.welcome-summary-row { border-top:1px solid var(--color-divider); }
+.welcome-summary-label {
+  font-size:13px;
+  font-weight:400;
+  color:var(--color-text-muted);
+}
+.welcome-summary-value {
+  margin:0;
+  font-size:13px;
+  font-weight:600;
+  text-align:right;
+  overflow-wrap:anywhere;
+}
 /* Installation health uses composed WinUI-style settings rows instead of
  * raw resource IDs, ASCII separators or a terminal-like diagnostics stream. */
 .welcome-health-list {
@@ -181,7 +213,7 @@
 }
 @media(max-width:650px) {
   .welcome-page { padding: var(--space-3); }
-  .welcome-choice-grid,.welcome-summary { grid-template-columns: 1fr; }
+  .welcome-choice-grid { grid-template-columns: 1fr; }
   .welcome-steps { padding: var(--space-2); }
   .welcome-step { font-size: 9px; }
   .welcome-footer { padding: var(--space-3); }
@@ -305,4 +337,9 @@
 @media(max-width:650px) {
   .welcome-theme-grid,.welcome-theme-featured { grid-template-columns: 1fr; }
   .welcome-toolbar-grid { grid-template-columns: 1fr; }
+}
+
+@media(max-width:500px) {
+  .welcome-summary-row { align-items:flex-start;flex-direction:column;gap:4px; }
+  .welcome-summary-value { text-align:left; }
 }

@@ -132,3 +132,19 @@ test('whole-toolbar selection uses existing action and theme palette',()=>{
   assert.match(js,/function paletteTheme\(\)/);
   assert.doesNotMatch(js,/dom\('winui-button'.*'Use '\+name/);
 });
+
+test('installation health presents friendly resource labels and separate status indicators',()=>{
+  assert.match(js,/updater:'Update manager'/);
+  assert.match(js,/themeDark:'WinUI3 Dark theme'/);
+  assert.match(js,/themeLight:'WinUI3 Light theme'/);
+  assert.match(js,/function resourceState\(resource\)/);
+  assert.match(js,/welcome-health-row/);
+  assert.match(js,/welcome-health-status/);
+  assert.match(js,/welcome-health-description/);
+  assert.doesNotMatch(js,/text\(resource.id\)\+': '\+text\(resource.status\)/);
+  assert.doesNotMatch(js,/resource.message\?' \| '/);
+  assert.match(css,/\.welcome-health-list/);
+  assert.match(css,/\.welcome-health-actions/);
+  assert.match(js,/dispatch\('repair-resource',\{id:resource.id,confirmed:true\}\)/);
+  assert.match(js,/dispatch\('bootstrap-retry'\)/);
+});

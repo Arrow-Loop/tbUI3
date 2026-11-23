@@ -215,7 +215,6 @@
           if(waiting.has('choose-theme'))block.disabled=true;
           previewTile(block,item);
           dom('strong','welcome-theme-name',item.name,block);
-          if(item.name===snap.theme)dom('span','welcome-theme-current','Current theme',block);
           block.addEventListener('click',()=>{
             preview=item.name;
             commit('theme',item.name,'choose-theme','name');
@@ -266,7 +265,6 @@
         miniIde(card,selectedTheme,name);
         dom('strong','',name,card);
         dom('span','welcome-toolbar-caption',descriptions[name],card);
-        if(snap.toolbar===name)dom('span','welcome-theme-current','Current toolbar',card);
         card.addEventListener('click',()=>commit('toolbar',name,'choose-toolbar','name'));
       }
       if(!selectedTheme)dom('p','welcome-note','Toolbar previews use a neutral appearance until the IDE supplies its theme inventory.',parent);

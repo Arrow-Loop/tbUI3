@@ -53,3 +53,22 @@ test('no direct storage, shell, remote fetch or arbitrary source evaluation',()=
   assert.doesNotMatch(js, /\b(?:localStorage|sessionStorage)\s*\./);
   assert.doesNotMatch(js, /\binnerHTML\s*=/);
 });
+
+test('native snapshots resolve rejected choices by restoring authoritative state',()=>{
+  assert.match(js,/snapshot=value; pending.clear\(\); state.changed.clear\(\)/);
+  assert.match(js,/state.changed.clear\(\); hydrateSelections\(\); draw\(\)/);
+  assert.match(js,/pending.clear\(\); state.changed.clear\(\);\s*hydrateSelections\(\)/);
+  assert.match(readme,/rejected changes/i);
+});
+test('host confirmation can be asynchronous and browser confirm is not used',()=>{
+  assert.match(js,/Promise.resolve\(\)\.then\(\(\)=>options.confirmRepair\(r\)\)/);
+  assert.doesNotMatch(js,/win\.confirm\(/);
+  assert.match(readme,/asynchronous host-styled confirmation/i);
+});
+test('dialog and controls use mapped overlay/control corner tokens',()=>{
+  assert.match(css,/--tbw-overlay-radius:var\(--OverlayCornerRadius,8px\)/);
+  assert.match(css,/--tbw-control-radius:var\(--ControlCornerRadius,4px\)/);
+  assert.match(css,/\.tbw-dialog\{[^\n]*border-radius:var\(--tbw-overlay-radius\)/);
+  assert.match(css,/\.tbw-close\{[^\n]*border-radius:var\(--tbw-control-radius\)/);
+  assert.doesNotMatch(css,/border-radius:12px|border-radius:6px/);
+});

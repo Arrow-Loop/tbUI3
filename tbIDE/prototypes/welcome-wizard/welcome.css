@@ -14,22 +14,52 @@
 .welcome-app {
   display: flex;
   flex-direction: column;
-  min-height: 100vh;
+  height: 100vh;
+  height: 100dvh;
+  min-height: 0;
+  overflow: hidden;
   color: var(--color-text);
   background: var(--color-flyout);
   font-family: "Segoe UI Variable", "Segoe UI", sans-serif;
 }
+/* Fake WinUI desktop titlebar, purely visual inside Cody's native modal host.
+ * Caption close geometry follows Windows caption affordance, not Toolkit Button.
+ */
 .welcome-top {
   display: flex;
+  flex: 0 0 36px;
+  height: 36px;
+  min-height: 36px;
   align-items: center;
   justify-content: space-between;
-  gap: var(--space-4);
-  padding: var(--space-4) var(--space-6);
+  padding: 0 0 0 var(--space-4);
+  background: var(--color-flyout);
   border-bottom: 1px solid var(--color-divider);
 }
-.welcome-brand { font-size: 18px; font-weight: 600; }
+.welcome-brand { font-size: 12px; font-weight: 600; }
+.welcome-caption-close {
+  appearance: none;
+  -webkit-appearance: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 46px;
+  width: 46px;
+  height: 32px;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  color: var(--color-text);
+  cursor: default;
+}
+.welcome-caption-close:hover { background: #c42b1c; color: #ffffff; }
+.welcome-caption-close:active { background: #b22222; color: #ffffff; }
+.welcome-caption-close:focus-visible { outline: 2px solid var(--color-accent); outline-offset: -3px; }
+.welcome-caption-cross { display: block; pointer-events: none; }
 .welcome-steps {
   display: flex;
+  flex: 0 0 auto;
   gap: var(--space-2);
   padding: var(--space-3) var(--space-6);
   border-bottom: 1px solid var(--color-divider);
@@ -43,9 +73,11 @@
 }
 .welcome-step.active { font-weight: 600; color: var(--color-text); }
 .welcome-page {
-  flex: 1;
+  flex: 1 1 0;
   min-height: 0;
-  overflow: auto;
+  overflow-y: auto;
+  overflow-x: hidden;
+  overscroll-behavior: contain;
   padding: var(--space-6);
 }
 .welcome-heading { font-size: 24px; font-weight: 600; margin: 0 0 var(--space-2); }
@@ -83,6 +115,7 @@
 }
 .welcome-footer {
   display: flex;
+  flex: 0 0 auto;
   justify-content: space-between;
   align-items: center;
   gap: var(--space-3);
@@ -90,6 +123,7 @@
   border-top: 1px solid var(--color-divider);
 }
 .welcome-status {
+  flex: 0 0 auto;
   padding: var(--space-2) var(--space-6);
   color: var(--color-text-muted);
   font-size: 12px;
@@ -100,7 +134,8 @@
   .welcome-choice-grid,.welcome-summary { grid-template-columns: 1fr; }
   .welcome-steps { padding: var(--space-2); }
   .welcome-step { font-size: 9px; }
-  .welcome-footer,.welcome-top { padding: var(--space-3); }
+  .welcome-footer { padding: var(--space-3); }
+  .welcome-top { padding-left: var(--space-3); }
   .welcome-heading { font-size: 20px; }
 }
 
@@ -110,12 +145,30 @@
  */
 .welcome-theme-grid {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: var(--space-3);
   margin-bottom: var(--space-4);
 }
 .welcome-theme-featured { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-.welcome-theme-card { min-width: 0; }
+/* Full tile is the accessible selection control. No separate preview/apply buttons. */
+.welcome-theme-card {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 100%;
+  min-width: 0;
+  align-items: stretch;
+  text-align: left;
+  color: var(--color-text);
+  cursor: pointer;
+  font-family: inherit;
+  font-size: inherit;
+}
+.welcome-theme-card:hover { background: var(--color-neutral-hover,var(--color-control-hover)); }
+.welcome-theme-card:focus-visible { outline: 2px solid var(--color-accent); outline-offset: 2px; }
+.welcome-theme-card:disabled { opacity: .6; cursor: default; }
+.welcome-theme-selected { border: 2px solid var(--color-accent); padding: calc(var(--space-4) - 1px); }
+.welcome-theme-current { font-size: 11px; color: var(--color-text-muted); }
+.welcome-theme-name { overflow-wrap: anywhere; }
 .welcome-theme-sample {
   --welcome-preview-bg: var(--color-flyout);
   --welcome-preview-text: var(--color-text);
@@ -123,7 +176,7 @@
   --welcome-preview-accent: var(--color-accent);
   display: flex;
   flex-direction: column;
-  height: 116px;
+  height: 86px;
   width: 100%;
   overflow: hidden;
   color: var(--welcome-preview-text);
@@ -182,8 +235,6 @@
   color: var(--color-text-muted);
   text-align: center;
 }
-.welcome-preview-panel { max-width: 400px; }
-.welcome-preview-panel .welcome-theme-sample { height: 175px; }
-@media(max-width:650px) {
+ @media(max-width:650px) {
   .welcome-theme-grid,.welcome-theme-featured { grid-template-columns: 1fr; }
 }

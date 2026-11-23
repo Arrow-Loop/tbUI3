@@ -140,7 +140,7 @@ test('conditional setup attention presents friendly resource labels and statuses
   assert.match(js,/function resourceState\(resource\)/);
   assert.match(js,/function setupNeedsAttention\(\)/);
   assert.match(js,/function setupAttention\(parent\)/);
-  assert.match(js,/names\.splice\(names\.length-1,0,'Setup'\)/);
+  assert.match(js,/names\.splice\(1,0,'Setup'\)/);
   assert.match(js,/Setup:setupAttention,Finish:finish/);
   const finishBody=js.slice(js.indexOf('    function finish(parent){'),js.indexOf('    function paint(){'));
   assert.doesNotMatch(finishBody,/Installation health|welcome-health-list|bootstrap-retry|repair-resource|Update recovery needed/);
@@ -170,7 +170,7 @@ test('finish summary uses extensible compact rows instead of oversized fixed car
 
 test('healthy setup skips optional attention page and keeps six-step finish',()=>{
   assert.match(js,/const PAGES = \['Welcome', 'Updates', 'Themes', 'Toolbar', 'Features', 'Finish'\]/);
-  assert.match(js,/if\(setupNeedsAttention\(\)\)names\.splice\(names\.length-1,0,'Setup'\)/);
+  assert.match(js,/if\(setupNeedsAttention\(\)\)names\.splice\(1,0,'Setup'\)/);
   assert.match(js,/bootstrap\.status==='error' \|\| bootstrap\.status==='warning' \|\| snap\.recovery===true/);
   assert.match(js,/resource\.repairable===true/);
   assert.match(js,/function pageNames\(\)/);

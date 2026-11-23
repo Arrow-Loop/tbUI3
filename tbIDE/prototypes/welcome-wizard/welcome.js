@@ -430,7 +430,9 @@
       const right=dom('div','welcome-actions',undefined,footer);
       const back=button(right,'Back',()=>move(-1));
       if(step===0)back.setAttribute('disabled','');
-      button(right,step===pages.length-1?'Finish':'Continue',()=>step===pages.length-1?dismiss('completed'):move(1),'primary');
+      const nextLabel=step===pages.length-1?'Finish':pages[step]==='Setup'?'Continue with current setup':'Continue';
+      const next=button(right,nextLabel,()=>step===pages.length-1?dismiss('completed'):move(1),'primary');
+      if(pages[step]==='Setup' && (waiting.has('bootstrap-retry') || waiting.has('repair-resource')))next.setAttribute('disabled','');
       status=dom('div','welcome-status',message|| (waiting.size?'Waiting for IDE confirmation…':'Step '+(step+1)+' of '+pages.length),app);
       status.setAttribute('role','status');status.setAttribute('aria-live','polite');
       inner.defaultView.WinUIControls.initialize(app);

@@ -18,7 +18,7 @@
     if (!options.assets || !options.assets.masterCss || !options.assets.controlsJs || !options.assets.welcomeCss)
       throw new TypeError('Welcome Wizard requires embedded Master CSS, shared controls JS and Welcome layout CSS.');
     const doc = options.document, host=options.mount, assets=options.assets;
-    let frame=null, inner=null, app=null, status=null, snap={}, step=0, open=false, dead=false;
+    let frame=null, hostStyles=null, inner=null, app=null, status=null, snap={}, step=0, open=false, dead=false;
     let waiting=new Set(), changed=new Map(), message='', priorFocus=null, preview=null, loaded=false;
     const instance = options.source || 'manual';
     function dom(tag, cls, label, parent) {
@@ -86,6 +86,11 @@
       inner.addEventListener('keydown',event=>{if(open&&event.key==='Escape'){event.preventDefault();dismiss('dismissed');}});
     }
     function setup() {
+      // Layout CSS is scoped by class; its frame sizing rule must also reach
+      // the native dialog document. The complete Master CSS never enters it.
+      hostStyles=doc.createElement('style');
+      hostStyles.textContent=assets.welcomeCss;
+      host.appendChild(hostStyles);
       frame=doc.createElement('iframe');
       frame.className='tbw-isolated-frame';frame.title='Welcome to tbUI3IDE';
       frame.setAttribute('aria-label','Welcome to tbUI3IDE');
@@ -262,7 +267,8 @@
     function destroy(){
       dead=true;open=false;waiting.clear();changed.clear();
       if(frame)frame.remove();
-      frame=null;inner=null;app=null;
+      if(hostStyles)hostStyles.remove();
+      frame=null;hostStyles=null;inner=null;app=null;
     }
     return Object.freeze({
       open:show,setSnapshot:settle,close:()=>dismiss('none'),destroy,

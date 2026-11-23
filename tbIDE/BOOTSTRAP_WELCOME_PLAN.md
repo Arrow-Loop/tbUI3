@@ -1,5 +1,7 @@
 # Self-provisioning tbUI3IDE bootstrap and Welcome Wizard
 
+**Agent implementation entry point:** [INSTALLATION_MANAGER_SPEC.md](INSTALLATION_MANAGER_SPEC.md) is the consolidated cross-phase specification capturing Shane's exact UX, preservation, update strategy, release inventory, discovery and compatibility decisions from the full planning discussion. This bootstrap plan expands first-install and Welcome Wizard details. If older phase planning prose differs, follow the newer approved decisions in the consolidated specification; actual source behavior must still be verified independently.
+
 ## Delivery sequencing decision: merged first production milestone (2026-11-23)
 
 **Shane approved combining the former Phase 1 (production-ready native updater) and Phase 2 (self-provisioning and Welcome Wizard) into one FIRST PUBLIC / SMITH DEBNAM PRODUCTION RELEASE gate.** Do not ship a final release that requires separately copying `Updater.exe` or the two themes. The currently implemented updater remains the starting point for native validation, not a substitute for the agreed first-install deliverable.

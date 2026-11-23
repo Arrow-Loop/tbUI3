@@ -27,7 +27,7 @@ test('fallback template is a real readable error page without assuming Runtime i
 
 test('updater resource conversion uses the Toolkit whole-buffer pattern with explicit UTF-8',()=>{
  const host=source('modWinUIHost');const reader=host.slice(host.indexOf('Public Function UIX_ResourceText'),host.indexOf('Public Function UIX_JsonString'));
- assert.match(reader,/Dim data As Variant/);assert.match(reader,/data = LoadResData\(resourceName, "OTHER"\)/);assert.match(reader,/StrConv\(data, vbFromUTF8\)/);
+ assert.match(reader,/Dim data As Variant/);assert.match(reader,/data = LoadResData\(resourceName, "OTHER"\)/);assert.match(reader,/StrConv\(CStr\(data\), vbFromUTF8\)/);
  assert.doesNotMatch(reader,/VarPtr|MultiByteToWideChar|ByRef.*bytes/);assert.match(reader,/Embedded resource.*resourceName/);
 });
 test('Updater has its own application UI and never mounts the add-in Welcome Wizard',()=>{
@@ -35,4 +35,23 @@ test('Updater has its own application UI and never mounts the add-in Welcome Wiz
  assert.match(html,/Selected updates/);assert.match(html,/Installation progress/);assert.match(js,/updater:recover/);
  assert.doesNotMatch(html+js+source('frmMain'),/tbUI3CreateWelcomeWizard|tbUI3-welcome\.js|welcome\.open/);
  assert(!fs.existsSync('tbIDE/Updater/src/Resources/OTHER/tbUI3-welcome.js'));
+});
+
+test('generated document authorization is established before navigation and fails closed',()=>{
+ const form=source('frmMain'),policy=source('UpdaterDocument');
+ assert(form.indexOf('mExpectedDocumentUri = UpdaterDocumentUri(html)')<form.indexOf('wvMain.NavigateToString html'));
+ assert.match(form,/Cancel = Not UpdaterDocumentAllowed\(uri, mExpectedDocumentUri\)/);
+ assert.match(policy,/If Len\(expected\) = 0 Then Return False/);
+ assert.match(policy,/StrComp\(uri, expected, vbBinaryCompare\) = 0/);
+ assert.doesNotMatch(policy,/Left\$\(uri|InStr\(uri|Trim\$\(uri|vbTextCompare/);
+ assert.match(policy,/StrConv\(html, vbUTF8\)/);
+ assert.match(policy,/StrPtr\(bytes\), LenB\(bytes\)/);
+ assert.match(policy,/&H40000001/); // Base64 without CR/LF, matching the observed WebView2 transport.
+});
+
+test('native navigation self-test has an independent non-ASCII UTF-8 base64 oracle and rejection cases',()=>{
+ const native=source('UpdaterSelfTest'),expected='data:text/html;charset=utf-8;base64,'+Buffer.from('<p>é中</p>','utf8').toString('base64');
+ assert(native.includes('Dim expectedUri As String = "'+expected+'"'));
+ for(const label of ['exact document','initial blank','modified document','foreign data','remote','uninitialized','resource conversion'])assert(native.includes('name & " '+label+'"'),label);
+ assert.match(native,/Check Not UpdaterDocumentAllowed\(expectedUri & "A", expectedUri\)/);
 });

@@ -12,7 +12,7 @@ Private Module UpdaterSelfTest
         UNoLinks mRoot: UDirectory mRoot
         Set mResults = JA(): mFailed = 0
         Dim i As Long
-        For i = 1 To 38: RunCase i: Next
+        For i = 1 To 39: RunCase i: Next
         Dim fixtures As UpdateJson = JParse(UIX_ResourceText("native-engine-fixtures.json")), fixture As UpdateJson
         For Each fixture In fixtures.Member("fixtures").Items: RunZipCase fixture: Next
         Dim report As UpdateJson = JO()
@@ -188,6 +188,19 @@ Private Module UpdaterSelfTest
                 Check UDecodeText(utf8) = "a" & ChrW$(&HE9) & ChrW$(&H4E2D), name
             Case 38
                 name = "invalid UTF-8 typed buffer rejected": MustReject 11
+            Case 39
+                name = "trusted UTF-8 application navigation"
+                Dim document As String = "<p>" & ChrW$(&HE9) & ChrW$(&H4E2D) & "</p>"
+                Dim expectedUri As String = "data:text/html;charset=utf-8;base64,PHA+w6nkuK08L3A+"
+                Check UpdaterDocumentUri(document) = expectedUri, name & " encoding"
+                Check UpdaterDocumentUri("a") = "data:text/html;charset=utf-8;base64,YQ==", name & " odd byte length"
+                Check UpdaterDocumentAllowed(expectedUri, expectedUri), name & " exact document"
+                Check UpdaterDocumentAllowed("about:blank", expectedUri), name & " initial blank"
+                Check Not UpdaterDocumentAllowed(expectedUri & "A", expectedUri), name & " modified document"
+                Check Not UpdaterDocumentAllowed("data:text/html,<script>bad</script>", expectedUri), name & " foreign data"
+                Check Not UpdaterDocumentAllowed("https://example.com/", expectedUri), name & " remote"
+                Check Not UpdaterDocumentAllowed("", ""), name & " uninitialized"
+                Check InStr(UIX_ResourceText("updater.html"), "Selected updates") > 0, name & " resource conversion"
         End Select
         Record name, True, "": Exit Sub
     Failed:

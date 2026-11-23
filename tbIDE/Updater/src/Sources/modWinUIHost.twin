@@ -329,14 +329,16 @@ Finished:
     Public Function UIX_ResourceText(ByVal resourceName As String) As String
         ' Toolkit LoadResData -> StrConv pattern. Explicit UTF-8 preserves our Unicode resources.
         On Error GoTo Failed
+        Dim stage As String = "resource lookup"
         Dim data As Variant
         data = LoadResData(resourceName, "OTHER")
-        Dim text As String = CStr(StrConv(data, vbFromUTF8))
+        stage = "UTF-8 conversion"
+        Dim text As String = CStr(StrConv(CStr(data), vbFromUTF8))
         If Len(text) = 0 Then Err.Raise 53, , "The embedded resource is empty."
         Return text
     Failed:
         Dim failureNumber As Long = Err.Number, description As String = Err.Description
-        Err.Raise failureNumber, "tbUI3 resource reader", "Embedded resource " & resourceName & ": " & description
+        Err.Raise failureNumber, "tbUI3 resource reader", "Embedded resource " & resourceName & " / " & stage & ": " & description
     End Function
 
     Public Function UIX_JsonString(ByVal value As String) As String

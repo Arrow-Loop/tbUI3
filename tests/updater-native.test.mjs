@@ -38,7 +38,7 @@ test('compiled self-test data covers stored, fixed and dynamic streams with inde
   assert.equal(index,fixture.files.length);
  }
  assert.deepEqual([...blockTypes].sort(),[0,1,2]);assert.equal(valid,7);assert.equal(reject,12);
- assert.match(source('UpdaterSelfTest'),/For i = 1 To 38: RunCase i: Next/);
+ assert.match(source('UpdaterSelfTest'),/For i = 1 To 39: RunCase i: Next/);
 });
 
 test('native transaction preserves consent, policy and durable intent ordering',()=>{

@@ -4,6 +4,7 @@
 [PredeclaredId]
 Class frmMain
     Private mOperation As String
+    Private mExpectedDocumentUri As String
     Private mNavigated As Boolean
     Private mPageReady As Boolean
     Private mWorker As LongPtr
@@ -81,6 +82,8 @@ Class frmMain
         End If
         html = Replace(html, "{{CONTROLS_SCRIPT}}", "<script src=" & Chr(34) & "https://tbui3-updater.invalid/winui-controls.js" & Chr(34) & "></" & "script>")
         html = Replace(html, "{{APP_SCRIPT}}", "<script src=" & Chr(34) & "https://tbui3-updater.invalid/updater.js" & Chr(34) & "></" & "script>")
+        stage = "document authorization"
+        mExpectedDocumentUri = UpdaterDocumentUri(html)
         stage = "NavigateToString"
         UIX_Log "WebView2 navigation: chars=" & CStr(Len(html))
         wvMain.NavigateToString html
@@ -98,7 +101,7 @@ Class frmMain
     End Sub
 
     Private Sub wvMain_NavigationStarting(ByVal uri As String, ByVal userInitiated As Boolean, ByVal redirected As Boolean, ByVal headers As WebView2RequestHeaders, Cancel As Boolean)
-        Cancel = StrComp(Trim$(uri), "about:blank", vbTextCompare) <> 0
+        Cancel = Not UpdaterDocumentAllowed(uri, mExpectedDocumentUri)
         UIX_Log "WebView2 NavigationStarting: uri=" & Left$(Replace(Replace(uri, vbCr, ""), vbLf, ""), 256) & "; cancelled=" & CStr(Cancel)
     End Sub
 

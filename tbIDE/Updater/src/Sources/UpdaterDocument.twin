@@ -1,0 +1,23 @@
+' Permit only the exact generated application document, including WebView2's data-URI transport.
+Private Module UpdaterDocument
+    Private Declare PtrSafe Function DocumentBase64 Lib "crypt32.dll" Alias "CryptBinaryToStringW" (ByVal bytes As LongPtr, ByVal size As Long, ByVal flags As Long, ByVal output As LongPtr, ByRef characters As Long) As Long
+
+    Public Function UpdaterDocumentUri(ByVal html As String) As String
+        If Len(html) = 0 Then UFail "Cannot authorize an empty updater document."
+        ' The WebView2 package uses this same raw UTF-8 string representation.
+        Dim bytes As String = CStr(StrConv(html, vbUTF8)), count As Long
+        Const flags As Long = &H40000001 ' CRYPT_STRING_BASE64 Or CRYPT_STRING_NOCRLF
+        If DocumentBase64(StrPtr(bytes), LenB(bytes), flags, 0, count) = 0 Then UFail "Cannot size the updater document encoding."
+        Dim encoded As String = String$(count, vbNullChar)
+        If DocumentBase64(StrPtr(bytes), LenB(bytes), flags, StrPtr(encoded), count) = 0 Then UFail "Cannot encode the updater document."
+        Dim terminator As Long = InStr(encoded, vbNullChar)
+        If terminator > 0 Then encoded = Left$(encoded, terminator - 1)
+        Return "data:text/html;charset=utf-8;base64," & encoded
+    End Function
+
+    Public Function UpdaterDocumentAllowed(ByVal uri As String, ByVal expected As String) As Boolean
+        If StrComp(uri, "about:blank", vbBinaryCompare) = 0 Then Return True
+        If Len(expected) = 0 Then Return False
+        Return StrComp(uri, expected, vbBinaryCompare) = 0
+    End Function
+End Module

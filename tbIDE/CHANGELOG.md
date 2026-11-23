@@ -1,5 +1,11 @@
 # Changelog: tbIDE (WinUI 3 look for the twinBASIC IDE)
 
+## 2026-11-23 - Updater trusted document navigation and IDE resource decoding
+
+The latest private diagnostic snapshot (12d1846, startup blob f1c6aa9) identifies the compiled blank window: the generated HTML navigates as a UTF-8 Base64 data URL, which the old about:blank-only guard cancelled. The host now computes and authorizes only that exact generated document, preserving rejection of external and unrelated data pages. Resource decoding now uses the WebView2 package's raw-string conversion before explicit UTF-8 decoding; failures distinguish resource lookup from decoding. The updater retains its own UI; no Welcome Wizard changes.
+
+Canonical updater and mirrors are synchronized. **237 Node tests pass**; the executable native suite now contains **58 cases**, adding an independent Unicode/Base64/navigation-policy test. Previous native evidence remains 57/57 before this patch. Native compilation, IDE and compiled-EXE page-ready confirmation remain pending Shane's acceptance; no GUI automation, binary embedding, release or main merge.
+
 ## 2026-11-23 - Updater host aligned to the working Smith Debnam Toolkit
 
 Shane designated the private **sdlaw-sdelorme/Diagnostics** repository as the ongoing incoming diagnostic source. Read it through the Smith Debnam connection; local output remains `%LOCALAPPDATA%\tbUI3\Diagnostics\`. No automatic upload or writes to the diagnostics repository are added.

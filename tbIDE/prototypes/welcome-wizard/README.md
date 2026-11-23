@@ -6,11 +6,13 @@ This pass replaces the earlier hand-styled dialog/control templates with **actua
 
 The control runtime and Master CSS are the preserved complete shared Toolkit code from the selected development checkpoint; do not trim individual component definitions or replace the shared library with handmade approximations. Their existing XAML resource references and token definitions remain unchanged. The wizard-specific layout includes only application-composition geometry (not claims about native XAML control templates). The isolated iframe keeps the Toolkit's `:root`, global selectors and runtime initialization from modifying twinBASIC's original IDE DOM.
 
-## One-click Windows preview (no Python required)
+## One-click Windows preview (built into Windows)
 
-Double-click **`Preview.bat`** in this directory. It launches the bundled `preview-server.cjs` using the Node.js already used by the project, opens the default browser at `http://127.0.0.1:8765/`, and serves the five fixed local UI assets via loopback only. No npm install, Python or external network access is needed. Press **Ctrl+C** in the terminal or close it to stop the preview.
+Double-click **`Preview.bat`** in this folder. It launches **`preview-server.ps1`** using Windows PowerShell 5.1 and .NET, then opens your default browser at `http://127.0.0.1:8765/`. This requires **no Python, Node.js, npm, administrator rights or software installation**. The BAT invokes PowerShell with a one-process execution-policy override; it does not change the machine's execution policy.
 
-If Node.js is not on `PATH`, the BAT prints an actionable message. If port 8765 is occupied, the server reports the error instead of running another hidden instance. The browser preview uses simulated native state, never changes actual IDE settings or installations. The server intentionally denies any request outside the fixed asset list.
+The preview server listens on **127.0.0.1 only**, serves a fixed read-only allowlist of wizard assets, and never serves other repository files or accepts uploads. Press Ctrl+C or close the command window to stop it. A port conflict or missing file is shown as an error. The preview simulates native settings/actions: it cannot modify the real twinBASIC IDE or install anything.
+
+An optional Node-based development server (`preview-server.cjs`) also remains available for environments with Node, but it is not required by the BAT.
 
 ## Files and packaging
 

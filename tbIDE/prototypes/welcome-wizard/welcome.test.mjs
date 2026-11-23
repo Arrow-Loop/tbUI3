@@ -177,3 +177,8 @@ test('healthy setup skips optional attention page and keeps six-step finish',()=
   assert.match(js,/const pages=pageNames\(\)/);
   assert.match(js,/pageNames\(\)\.length-1/);
 });
+
+test('unresolved setup requires explicit acknowledgment and awaits native repair completion',()=>{
+  assert.match(js,/Continue with current setup/);
+  assert.match(js,/pages\[step\]==='Setup' && \(waiting\.has\('bootstrap-retry'\) \|\| waiting\.has\('repair-resource'\)\)/);
+});

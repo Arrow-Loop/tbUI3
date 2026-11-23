@@ -1,5 +1,9 @@
 # Changelog: tbIDE (WinUI 3 look for the twinBASIC IDE)
 
+## 2026-11-23 - Complete updater and installation-manager agent handoff documented
+
+Created `INSTALLATION_MANAGER_SPEC.md` consolidating Shane's updater, self-provisioning, Welcome Wizard, update strategy, custom-content handling, cross-drive archival, release inventory, existing-installation discovery/reorganization, add-in compatibility, settings, safety and validation decisions. Linked from AGENTS and supporting documents and refreshed ROADMAP. **Documentation only: no canonical project, source, runtime behavior, test result or release publication changed.**
+
 ## 2026-11-23 - Combined updater first-release milestone documented
 
 Recorded Shane's decision to combine native-updater production acceptance with DLL self-provisioning and the Welcome Wizard into one release gate. Expanded the bootstrap architecture to reserve versioned per-installation settings, strategy, release inventory and later alongside/archive/reorganization behaviors without implementing them. Updated ROADMAP. **Documentation only, no source/build/release change.**

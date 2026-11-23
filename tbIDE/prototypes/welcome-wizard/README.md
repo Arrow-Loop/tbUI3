@@ -49,22 +49,56 @@ welcome.destroy();                  // Unload; iframe and listeners removed
 
 The iframe and its internal DOM are instantiated only on first open. Code installs shared CSS + scoped layout CSS into the iframe and initializes the real shared `WinUIControls` runtime before initializing wizard controls. If the full runtime cannot load, the host must show a meaningful error instead of substituting custom-looking buttons. For production, verify the native IDE's CSP allows trusted bundled inline script initialization in the `srcdoc` context. Do not fetch runtime/styles from GitHub or any network host, and do not persist preferences in browser storage. The standalone preview needs a local static HTTP server (for example `python -m http.server 8765` from this directory), then open `http://localhost:8765/index.html`. Opening it directly as `file://` will generally fail because the browser disallows `fetch` of adjacent files.
 
-## Native action/snapshot contract (unchanged)
+## Native action/snapshot contract and 2026-11-23 changes
 
-The view sends only these allowlisted native objects:
+The original six **action names are unchanged**:
 
 | action | payload |
 | --- | --- |
-| `choose-theme` | `name: 'WinUI3 Light'\|'WinUI3 Dark'` |
+| `choose-theme` | `name: <exact installed IDE theme name>` |
 | `choose-toolbar` | `name: 'Classic'\|'Hybrid'\|'Ribbon'` |
-| `installation-preferences` | Optional `automatic` boolean, `restart` boolean or `channel:'development'\|'stable'` |
+| `installation-preferences` | Optional `automatic` boolean or `restart` boolean; `channel` is no longer offered in onboarding |
 | `welcome-record` | `schema:1`, `disposition:'completed'\|'dismissed'` |
 | `bootstrap-retry` | none |
 | `repair-resource` | `id:'updater'\|'themeDark'\|'themeLight'`, `confirmed:true` only after explicit host confirmation |
 
-`setSnapshot(snapshot)` accepts Cody's schema 1 authoritative snapshot containing `root`, `installationId`, `preferences`, actual `theme`/`toolbar`, `bootstrap` (including resource status/messages), `message` and `recovery`. On each **settled native acknowledgement**, pending/optimistic selection state is cleared, so rejected choices revert to actual values. Cody must filter unrelated background snapshots until outstanding correlated request IDs settle, as his production adapter already does. Native action success/errors are displayed in the wizard status; application code never reads/writes files, launches processes or approves a software update.
+**IMPORTANT production adapter update required:** The previous native `choose-theme` service only accepted the literal names `WinUI3 Light` and `WinUI3 Dark`. Shane now requires selection and previews of **all actually installed IDE themes**. Cody must extend the native service to enumerate installed themes using verified IDE APIs, publish that inventory in the snapshot, and validate `choose-theme.name` by exact membership in the *current trusted native inventory*. Do not accept arbitrary theme filenames, paths, URLs or unknown values. The wizard itself never reads theme files. WinUI3 themes remain visually featured, but must be present in the inventory before they can be selected.
 
-The six pages remain Welcome, Updates, Themes, Toolbar, Features and Finish. **Theme preview** sets only the isolated iframe's Toolkit `data-theme` selector; only clicking **Use** dispatches a native theme action. Actual native theme selection remains authoritative. Skip/Escape/Close record `dismissed`; Finish records `completed`; the wizard does not open merely because a managed file is missing. First-run completion is per user; update settings/consent are per installation. The native layer owns durable persistence and repair safety. `confirmRepair(resource)` returns `Promise<Boolean>` and must be a styled, explicit host confirmation with backup/reset choice.
+### Required native snapshot extension
+
+Preserve all existing schema 1 fields (`root`, `installationId`, `preferences`, actual `theme`, `toolbar`, `bootstrap`, `message`, `recovery`) and add:
+
+```js
+installedThemes: [
+  {
+    name: 'WinUI3 Light',
+    mode: 'light',
+    preview: {
+      background: '#f9f9f9',
+      surface: '#f3f3f3',
+      foreground: '#202020',
+      accent: '#0067c0'
+    }
+  },
+  { name: 'WinUI3 Dark', mode: 'dark', preview: { /* real native colors */ } },
+  { name: 'A locally installed theme', mode: 'light', preview: { /* real native colors */ } }
+]
+```
+
+The `installedThemes` entries must come from the **actual IDE theme enumeration**. The `mode` is optional, but, when supplied, must be `light` or `dark`. The `preview` requires all four safely formatted `#RRGGBB` or `#RRGGBBAA` colors, based on the actual theme values resolved by the host. The wizard treats the palette as data, restricts its CSS values to those formats, and renders only a miniature theme palette preview. It never constructs CSS from arbitrary strings. Theme preview never calls `choose-theme`. For installed themes lacking preview colors and a known light/dark mode, the UI says **Theme palette unavailable**, not a misleading generic imitation. For truly accurate previews of third-party themes, Cody must supply the extracted resolved colors. If native support for enumerating the colors is unavailable, that is a clearly surfaced integration gap rather than permission to silently activate each theme for preview.
+
+The WinUI3 Light and Dark previews remain the visual focal point through a featured group. Other installed themes follow in a separate group. When the native inventory is missing/empty, the wizard does not invent selectable options or bypass the native adapter; it shows the unavailable-inventory explanation.
+
+### Removed onboarding material
+
+- **Release channel selection has been removed** because twinBASIC does not currently have a stable IDE release. The wizard no longer emits an `installation-preferences` action containing `channel`; the existing internal setting may remain for compatibility. Restore a stable/development UI choice only when there is an actual stable distribution, as tracked in both tbUI3 IDE and repository ROADMAPs.
+- **TabView/TabPage feature marketing has been removed.** Those controls belong to the core tbUI3 toolkit even though tbUI3IDE supports them. The Features page now highlights actual tbUI3IDE functionality: IDE themes/accent, toolbar/layout commands, Classic/Hybrid/Ribbon, and updater/installation settings.
+
+### Existing acknowledgement semantics
+
+`setSnapshot(snapshot)` must receive a *settled native response* with the actual theme/toolbar/settings. It clears pending/optimistic state so rejected choices revert to actual values. Cody's production adapter must filter unrelated background snapshots until outstanding correlated request IDs settle. All native action success/error messages are shown in the wizard status; application code never reads/writes files or launches processes.
+
+**Native bridge inventory update is not yet implemented by this isolated UI pass.** Cody owns that change, canonical resource embedding, and production acceptance.
 
 ## Validation and next owner handoff
 

@@ -1,5 +1,9 @@
 # Changelog: tbIDE (WinUI 3 look for the twinBASIC IDE)
 
+## 2026-11-23 - Combined updater first-release milestone documented
+
+Recorded Shane's decision to combine native-updater production acceptance with DLL self-provisioning and the Welcome Wizard into one release gate. Expanded the bootstrap architecture to reserve versioned per-installation settings, strategy, release inventory and later alongside/archive/reorganization behaviors without implementing them. Updated ROADMAP. **Documentation only, no source/build/release change.**
+
 ## 2026-11-23 - Approved embedded bootstrap and Welcome Wizard design documented
 
 Added `tbIDE/BOOTSTRAP_WELCOME_PLAN.md` specifying a future two-DLL-only first installation: embedded native Updater EXE and WinUI3 themes, shared per-user dependency provisioning, installation-specific update/recovery state, safe versioned repair, protected-directory handling, and a native IDE-hosted HTML/CSS/JS Welcome Wizard for updates, themes, toolbar modes and designer tooling. Added implementation/acceptance work to ROADMAP. **Documentation only; no source, packed project, runtime behavior, build output or release asset changed.** The existing manual first-install instructions remain current until implementation.

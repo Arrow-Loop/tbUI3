@@ -1,5 +1,9 @@
 # Handoff: tbUI3
 
+## 2026-11-23 - Native updater startup confirmed; 58/58 tests pass
+
+Shane's new diagnostic snapshot 5235529 reports **58/58 native self-tests passed**, including trusted UTF-8 document navigation. The compiled startup log confirms the generated data page is allowed, both embedded scripts are requested, `updater:ready` arrives, and final navigation succeeds (status 0). The supplied screenshot shows the updater's own expected no-context ready screen. This confirms the compiled blank-window fix; it does not establish IDE debug startup, live update/elevation/recovery/self-update or add-in embedding acceptance. Sanitized evidence references: `tbIDE/Updater/validation/native-startup-2026-11-23-passed.json`. No production source, canonical projects, Wizard or binaries changed in this evidence-only pass.
+
 ## 2026-11-23 - Updater trusted document navigation and IDE resource decoding
 
 The latest private diagnostic snapshot (12d1846, startup blob f1c6aa9) identifies the compiled blank window: the generated HTML navigates as a UTF-8 Base64 data URL, which the old about:blank-only guard cancelled. The host now computes and authorizes only that exact generated document, preserving rejection of external and unrelated data pages. Resource decoding now uses the WebView2 package's raw-string conversion before explicit UTF-8 decoding; failures distinguish resource lookup from decoding. The updater retains its own UI; no Welcome Wizard changes.

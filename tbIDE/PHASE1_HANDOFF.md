@@ -1,5 +1,8 @@
 # Phase 1 source handoff — native acceptance, then embedding
 
+> Latest native evidence (2026-11-23, diagnostics 5235529): **58/58 self-tests pass** and compiled EXE startup reaches `updater:ready` with successful navigation. Screenshot confirms the updater-specific ready screen without an update context. This supersedes older compiled blank-window uncertainty below. IDE debug startup, live installation/update acceptance and actual helper embedding remain pending. See `Updater/validation/native-startup-2026-11-23-passed.json` (path relative to tbIDE).
+
+
 > 2026-11-23 startup correction: diagnostic snapshot 12d1846 proves the compiled host cancelled its generated data-URL document. The allowlist now accepts only the exact UTF-8/Base64 document and about:blank. IDE resource decoding adds the standard CStr(raw bytes) conversion before StrConv(..., vbFromUTF8), with lookup/decoding error stages. Rebuild and run the updated **58-case** native suite; prior 57/57 evidence predates this change. UI acceptance is still pending.
 
 > Host alignment update: the updater now follows the current working Smith Debnam Toolkit lifecycle/form defaults and whole-buffer UI resource conversion (explicit UTF-8), reference 218871d. Incoming diagnostics are read from the private sdlaw-sdelorme/Diagnostics repository through the Smith Debnam connection. Its latest observed report passes 57/57; GUI success remains unconfirmed. Updater.exe uses its own update/progress/recovery UI; the Welcome Wizard remains exclusively in the add-in.

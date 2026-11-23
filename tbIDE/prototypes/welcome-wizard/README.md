@@ -69,6 +69,43 @@ The iframe and its internal DOM are instantiated only on first open. Code instal
 
 **Cody handoff:** production must re-embed the latest `welcome.js` and `welcome.css` into the canonical resource pipeline. There is no change to the six native intent names or `installedThemes` snapshot shape. `master.css` and `controls.js` remain unchanged. Do not change native bridge/settings/bootstrap files in response to these view-only refinements without normal coordination.
 
+## Compact selector previews and native theme-resolution contract (2026-11-23)
+
+Theme and Toolbar selectors now share an **86px-high miniature IDE silhouette**. They depict just the window chrome, command strip, project panel and editor. They are **not** screenshots, a full IDE recreation or executable toolbar controls. Each whole tile is keyboard-accessible and clickable, preserving the selected native state and compact size.
+
+**Theme previews:** WinUI3 Light/Dark are featured first, followed by other effective installed IDE themes. Each miniature uses the actual resolved color values delivered by the trusted native bridge, not guessed theme-specific colors. Merely viewing a theme never changes the running IDE. Clicking its tile previews locally and requests the existing choose-theme intent; a rejected request reverts on the settled native snapshot.
+
+**Toolbar previews:** Classic, Hybrid and Ribbon share that same miniature composition, with distinct abbreviated command/menu silhouettes. All three are colored from the currently selected theme's resolved palette. A click sends the unchanged choose-toolbar intent. This is an intentionally schematic preview, not a maintained copy of the full toolbar source/commands.
+
+**Required native discovery:** Enumerate effective themes from BOTH the per-user AppData twinBASIC themes directory and the active installation's themes directory, including built-in themes exposed through the IDE. Confirm actual IDE precedence for duplicate names and resolve inheritance through the IDE's verified loader behavior. Only expose a single effective theme by name, matching what choose-theme would actually select. A .theme file contains twinBASIC declarations (e.g. inherits: light; ToolbarBackground: #F3F3F3;), **not browser-ready CSS**. Parse and resolve the theme declarations natively and send validated colors, never raw file text, URLs or arbitrary CSS.
+
+### Native installedThemes[].preview extension
+
+The existing required preview fields remain background, surface, foreground and accent. To improve fidelity, the view also accepts optional hex color fields:
+
+| Field | Theme-derived meaning |
+| --- | --- |
+| titlebar | effective menu/titlebar background, such as MenuBackColor |
+| toolbar | effective ToolbarBackground |
+| panel | effective PanelBackground or dock fill |
+| editor | effective editor background |
+| muted | resolved secondary foreground |
+| border | effective divider/border color |
+
+All preview fields must be individually validated single #RRGGBB or #RRGGBBAA values. Optional fields fall back to the valid base paint values when absent. A missing/unresolved base palette is reported as unavailable, not an invented third-party preview. The browser never loads theme files, and the native theme is not temporarily switched to generate previews.
+
+For illustration only, a native snapshot theme may contain:
+
+```js
+{ name: 'WinUI3 Dark', mode: 'dark', preview: {
+  background:'#202020', surface:'#2c2c2c', foreground:'#ffffff', accent:'#60cdff',
+  titlebar:'#202020', toolbar:'#202020', panel:'#282828',
+  editor:'#1e1e1e', muted:'#bbbbbb', border:'#444444'
+}}
+```
+
+**Cody integration:** Native code owns both-directory discovery, duplicate-name loader precedence, inheritance, colors and trusted exact-name selection. Quill owns only the miniature view in this directory. No additional native action name or change to existing snapshot schema is required. This source-only pass does not establish that native enumeration or resolved palette extraction is implemented.
+
 ## Native action/snapshot contract and 2026-11-23 changes
 
 The original six **action names are unchanged**:
@@ -105,7 +142,7 @@ installedThemes: [
 ]
 ```
 
-The `installedThemes` entries must come from the **actual IDE theme enumeration**. The `mode` is optional, but, when supplied, must be `light` or `dark`. The `preview` requires all four safely formatted `#RRGGBB` or `#RRGGBBAA` colors, based on the actual theme values resolved by the host. The wizard treats the palette as data, restricts its CSS values to those formats, and renders only a miniature theme palette preview. It never constructs CSS from arbitrary strings. Theme preview never calls `choose-theme`. For installed themes lacking preview colors and a known light/dark mode, the UI says **Theme palette unavailable**, not a misleading generic imitation. For truly accurate previews of third-party themes, Cody must supply the extracted resolved colors. If native support for enumerating the colors is unavailable, that is a clearly surfaced integration gap rather than permission to silently activate each theme for preview.
+The `installedThemes` entries must come from the **actual IDE theme enumeration**. The `mode` is optional, but, when supplied, must be `light` or `dark`. The `preview` requires all four safely formatted `#RRGGBB` or `#RRGGBBAA` colors, based on the actual theme values resolved by the host. The wizard treats the palette as data, restricts its CSS values to those formats, and renders only a miniature theme palette preview. It never constructs CSS from arbitrary strings. Viewing the miniature does not call choose-theme. Clicking its whole selection tile does request choose-theme. For installed themes lacking preview colors and a known light/dark mode, the UI says **Theme palette unavailable**, not a misleading generic imitation. For truly accurate previews of third-party themes, Cody must supply the extracted resolved colors. If native support for enumerating the colors is unavailable, that is a clearly surfaced integration gap rather than permission to silently activate each theme for preview.
 
 The WinUI3 Light and Dark previews remain the visual focal point through a featured group. Other installed themes follow in a separate group. When the native inventory is missing/empty, the wizard does not invent selectable options or bypass the native adapter; it shows the unavailable-inventory explanation.
 

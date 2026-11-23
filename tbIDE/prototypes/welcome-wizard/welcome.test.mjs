@@ -133,11 +133,18 @@ test('whole-toolbar selection uses existing action and theme palette',()=>{
   assert.doesNotMatch(js,/dom\('winui-button'.*'Use '\+name/);
 });
 
-test('installation health presents friendly resource labels and separate status indicators',()=>{
+test('conditional setup attention presents friendly resource labels and statuses before Finish',()=>{
   assert.match(js,/updater:'Update manager'/);
   assert.match(js,/themeDark:'WinUI3 Dark theme'/);
   assert.match(js,/themeLight:'WinUI3 Light theme'/);
   assert.match(js,/function resourceState\(resource\)/);
+  assert.match(js,/function setupNeedsAttention\(\)/);
+  assert.match(js,/function setupAttention\(parent\)/);
+  assert.match(js,/names\.splice\(names\.length-1,0,'Setup'\)/);
+  assert.match(js,/Setup:setupAttention,Finish:finish/);
+  const finishBody=js.slice(js.indexOf('    function finish(parent){'),js.indexOf('    function paint(){'));
+  assert.doesNotMatch(finishBody,/Installation health|welcome-health-list|bootstrap-retry|repair-resource|Update recovery needed/);
+
   assert.match(js,/welcome-health-row/);
   assert.match(js,/welcome-health-status/);
   assert.match(js,/welcome-health-description/);
@@ -159,4 +166,14 @@ test('finish summary uses extensible compact rows instead of oversized fixed car
   assert.match(css,/\.welcome-summary-row/);
   assert.match(css,/\.welcome-summary-value/);
   assert.doesNotMatch(css,/\.welcome-summary \{ display: grid/);
+});
+
+test('healthy setup skips optional attention page and keeps six-step finish',()=>{
+  assert.match(js,/const PAGES = \['Welcome', 'Updates', 'Themes', 'Toolbar', 'Features', 'Finish'\]/);
+  assert.match(js,/if\(setupNeedsAttention\(\)\)names\.splice\(names\.length-1,0,'Setup'\)/);
+  assert.match(js,/bootstrap\.status==='error' \|\| bootstrap\.status==='warning' \|\| snap\.recovery===true/);
+  assert.match(js,/resource\.repairable===true/);
+  assert.match(js,/function pageNames\(\)/);
+  assert.match(js,/const pages=pageNames\(\)/);
+  assert.match(js,/pageNames\(\)\.length-1/);
 });

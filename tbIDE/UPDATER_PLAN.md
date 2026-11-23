@@ -1,5 +1,7 @@
 # Unified updater for twinBASIC and tbUI3
 
+**Future first-install design (approved 2026-11-23):** [Embedded add-in bootstrap and Welcome Wizard](BOOTSTRAP_WELCOME_PLAN.md) supersedes the *planned deployment location* of the sidecar described below. The currently implemented source still requires manual placement beside twinBASIC.exe; no self-provisioning is implemented yet. This document otherwise remains the record of the present update engine and safety requirements.
+
 Status: **Source implementation candidate delivered in tbUI3IDE 0.3.0.22 and Updater 0.1.0.1; native acceptance/publication pending**. See [implementation and checklist](Updater/README.md). Decision date: 2026-11-19. This document is the implementation handoff for the tbUI3IDE update feature and its standalone helper.
 
 ## Scope and ownership

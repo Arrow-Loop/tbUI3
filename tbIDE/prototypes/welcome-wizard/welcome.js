@@ -293,6 +293,26 @@
       }
       dom('p','welcome-note','Nothing changes until you choose an option.',parent);
     }
+    const RESOURCE_NAMES={
+      updater:'Update manager',
+      themeDark:'WinUI3 Dark theme',
+      themeLight:'WinUI3 Light theme'
+    };
+    function resourceLabel(id){
+      if(Object.prototype.hasOwnProperty.call(RESOURCE_NAMES,id))return RESOURCE_NAMES[id];
+      // Unknown future resource names must be presented as readable text,
+      // never as raw camelCase IDs or filename/path markup.
+      const cleaned=text(id).replace(/([a-z0-9])([A-Z])/g,'$1 $2').replace(/[_-]+/g,' ').trim();
+      return cleaned ? cleaned.charAt(0).toUpperCase()+cleaned.slice(1) : 'Bundled component';
+    }
+    function resourceState(resource){
+      const raw=text(resource && resource.status).toLowerCase();
+      if(['ready','ok','healthy','verified','installed'].includes(raw))return {label:'Ready',tone:'success',symbol:'✓'};
+      if(['modified','customized','customised'].includes(raw))return {label:'Customized',tone:'attention',symbol:'!'};
+      if(['missing','error','failed','corrupt','damaged'].includes(raw))return {label:'Needs attention',tone:'error',symbol:'!'};
+      if(['checking','pending','verifying'].includes(raw))return {label:'Checking',tone:'neutral',symbol:'…'};
+      return {label:'Status unavailable',tone:'neutral',symbol:'?'};
+    }
     function finish(parent){
       heading(parent,"You're ready to go",'Your preferences can be changed later. Reopen this tour from IDE Options.');
       const grid=dom('div','welcome-summary',undefined,parent);
@@ -303,12 +323,21 @@
       }
       const bootstrap=snap.bootstrap||{};
       dom('h3','welcome-subheading','Installation health',parent);
-      info(parent,'Bundled resources',text(bootstrap.message)||'Resource status will be shown when reported by the native host.',bootstrap.status==='error'?'error':'informational');
-      for(const resource of Array.isArray(bootstrap.resources)?bootstrap.resources:[]){
-        const line=dom('div','welcome-resource',undefined,parent);
-        dom('span','',text(resource.id)+': '+text(resource.status)+(resource.message?' | '+text(resource.message):''),line);
+      const resources=Array.isArray(bootstrap.resources)?bootstrap.resources:[];
+      const list=dom('div','welcome-health-list',undefined,parent);
+      for(const resource of resources){
+        const state=resourceState(resource);
+        const line=dom('div','welcome-health-row',undefined,list);
+        const details=dom('div','welcome-health-details',undefined,line);
+        dom('strong','welcome-health-name',resourceLabel(resource.id),details);
+        if(text(resource.message))dom('p','welcome-health-description',resource.message,details);
+        const actions=dom('div','welcome-health-actions',undefined,line);
+        const badge=dom('span','welcome-health-status welcome-health-'+state.tone,undefined,actions);
+        badge.setAttribute('aria-label','Status: '+state.label);
+        dom('span','welcome-health-status-icon',state.symbol,badge).setAttribute('aria-hidden','true');
+        dom('span','',state.label,badge);
         if(resource.repairable){
-          const b=button(line,'Repair',()=>{
+          const b=button(actions,'Repair',()=>{
             if(typeof options.confirmRepair!=='function'){
               message='Repair confirmation is unavailable. Open IDE Options to repair this resource.';paint();return;
             }
@@ -317,10 +346,18 @@
               paint();
             }).catch(error=>{message='Repair confirmation failed: '+(error&&error.message||String(error));paint();});
           });
+          b.setAttribute('aria-label','Repair '+resourceLabel(resource.id));
           if(waiting.has('repair-resource'))b.setAttribute('disabled','');
         }
       }
-      const retry=button(parent,'Check bundled resources again',()=>{dispatch('bootstrap-retry');paint();});
+      if(!resources.length)dom('p','welcome-health-description','Resource status will appear when the IDE completes its installation check.',list);
+      if(bootstrap.status==='error')
+        info(parent,'Installation check needs attention',text(bootstrap.message)||'Some bundled resources could not be verified.','error');
+      else if(bootstrap.status==='warning')
+        info(parent,'Review installation resources',text(bootstrap.message)||'One or more components may need attention.','warning');
+      else if(text(bootstrap.message))
+        dom('p','welcome-health-note',bootstrap.message,parent);
+      const retry=button(parent,'Check again',()=>{dispatch('bootstrap-retry');paint();});
       if(waiting.has('bootstrap-retry'))retry.setAttribute('disabled','');
       if(snap.recovery)info(parent,'Update recovery needed','An unfinished native transaction must be recovered separately.','warning');
     }

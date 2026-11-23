@@ -107,3 +107,28 @@ test('view has no filesystem, network or browser persistence side effects',()=>{
   assert.doesNotMatch(js,/\b(?:localStorage|sessionStorage|XMLHttpRequest|fetch|ActiveXObject|eval)\s*\(/);
   assert.doesNotMatch(js,/\binnerHTML\s*=/);
 });
+
+test('theme and toolbar selector previews share compact miniature renderer',()=>{
+  assert.match(js,/function miniIde\(parent,item,mode\)/);
+  assert.match(js,/return miniIde\(parent,item,'Classic'\)/);
+  assert.match(js,/miniIde\(card,selectedTheme,name\)/);
+  assert.match(js,/welcome-toolbar-card/);
+  assert.match(css,/\.welcome-mini-ide \{/);
+  assert.match(css,/height: 86px/);
+  assert.match(css,/\.welcome-mini-classic|\.welcome-mini-hybrid|\.welcome-mini-ribbon/);
+  assert.match(css,/\.welcome-toolbar-grid \{ grid-template-columns:repeat\(3,minmax\(0,1fr\)\)/);
+});
+test('resolved theme paint is validated and not interpreted as raw CSS',()=>{
+  assert.match(js,/COLOR_FIELDS = \['background','surface','foreground','accent','titlebar','toolbar','panel','editor','muted','border'\]/);
+  assert.match(js,/\^#\[0-9a-fA-F\]/);
+  assert.match(js,/outer\.style\.setProperty\(cssMap\[key\],palette\[key\]\)/);
+  assert.match(js,/!palette && \(!item \|\| !FEATURED_THEMES\.includes\(item\.name\)\)/);
+  assert.match(readme,/per-user AppData twinBASIC themes directory/);
+  assert.match(readme,/active installation's themes directory/);
+});
+test('whole-toolbar selection uses existing action and theme palette',()=>{
+  assert.match(js,/dom\('button','welcome-choice welcome-toolbar-card'/);
+  assert.match(js,/commit\('toolbar',name,'choose-toolbar','name'\)/);
+  assert.match(js,/function paletteTheme\(\)/);
+  assert.doesNotMatch(js,/dom\('winui-button'.*'Use '\+name/);
+});

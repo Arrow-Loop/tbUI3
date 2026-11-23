@@ -7,7 +7,7 @@ The wizard is implemented as plain modern-browser JavaScript and a scoped WinUI-
 ## Source files
 
 - `welcome.js`: small embeddable view factory, no modules, bundler or third-party dependencies.
-- `welcome.css`: scoped under `.tbw-root`, uses existing tbUI3IDE `--color-*` and `--theme*` tokens with fallbacks; no global/body overrides.
+- `welcome.css`: scoped under `.tbw-root`, uses existing tbUI3IDE `--color-*` and `--theme*` tokens and centralized `--tbw-*` fallbacks; no global/body overrides. The dialog uses `OverlayCornerRadius` 8px; normal controls use `ControlCornerRadius` 4px, matching the known mapped WinUI resources. Decorative preview geometry is not a claim of 1:1 native IDE screenshots.
 - `index.html`: run locally in a browser for a development preview; uses fake in-memory native snapshot and explicitly simulated acknowledgements. **Not shipped** with production add-in.
 - This README is the **view integration interface contract**. The authoritative product scope remains `tbIDE/INSTALLATION_MANAGER_SPEC.md`; Cody's native intent and state model is `tbIDE/PHASE1_COORDINATION.md`.
 
@@ -25,10 +25,10 @@ const welcome = window.tbUI3CreateWelcomeWizard({
     // Example: { action: 'choose-theme', name: 'WinUI3 Dark' }
     enqueueValidatedWelcomeNativeRequest(request);
   },
-  confirmRepair(resource) {
-    // Optional: native-styled, user-approved confirmation.
-    // Return true only for an explicit user confirmation.
-    return confirmExplicitResourceRepair(resource);
+  async confirmRepair(resource) {
+    // Required for repair actions: native-styled asynchronous confirmation.
+    // Resolve true ONLY after explicit user confirmation; false means cancel.
+    return await confirmExplicitResourceRepair(resource);
   },
   onClose(disposition) {
     // Optional: release host focus/visibility as needed.
@@ -44,6 +44,8 @@ welcome.destroy();                         // on add-in unload; removes injected
 `getState()` returns public view state `{page,open,source,pending}` for debugging. The `source` option (optional) is descriptive, not used as a persistence key. The factory is suitable for the same IDE DOM used by Classic, Hybrid and Ribbon; it does **not** launch a separate WebView2 instance. It doesn't own filesystem/process privileges.
 
 Native adapter **must call** `welcome.setSnapshot(...)` with a new authoritative snapshot after processing each sent action. `send` is an outbound command; no UI change is considered persisted until native state is acknowledged. A native error should be returned in the snapshot's `message`, which the wizard displays in a live status region. In-flight choice controls are disabled until a snapshot arrives. If a bridge returns an asynchronous error without a snapshot, the adapter must synthesize a refreshed snapshot containing the error; do not leave controls perpetually pending.
+
+Every authoritative `setSnapshot` is treated as the settled native acknowledgement for all in-flight view requests, **including rejected changes**: it clears pending requests and discards optimistic theme, toolbar and preference selections, then renders the actual native `theme`, `toolbar` and `preferences`. The adapter must not push unrelated intermediate snapshots while a request remains unsettled; otherwise the view could treat an intermediate state as an acknowledgement. If an action fails, publish a settled snapshot with the actual unchanged values and a useful error message. A synchronous `send` exception likewise restores the previous native snapshot immediately. Opening the wizard anew resets any stale optimistic selections.
 
 When completion/dismissal is selected, the wizard queues `welcome-record` and closes. The native layer owns whether the record was actually committed; a failed persistence should be recorded/reported by the host, **not** quietly treated as successfully completed. The wizard never automatically records first-run completion simply because assets already exist.
 
@@ -89,7 +91,7 @@ Compatible with Cody's `tbIDE/PHASE1_COORDINATION.md`:
 }
 ```
 
-`theme`, `toolbar`, and `preferences` values displayed on Finish are read from **native snapshot** rather than assumed from button clicks. A pending user choice is marked in the view and reconciled when the native snapshot confirms the new value; on failure, the host must send a meaningful `message` and actual unchanged value. The preview supplies dummy snapshots and in-memory mutations, but production must use native truth.
+`theme`, `toolbar`, and `preferences` values displayed on Finish are read from **native snapshot** rather than assumed from button clicks. A pending user choice is marked in the view and reconciled when the native snapshot confirms the new value; on failure, the host must send a meaningful `message` and actual unchanged value. The preview supplies dummy snapshots and in-memory mutations, but production must use native truth. Rejected choices revert on the next settled native snapshot, rather than remaining visually selected.
 
 When several IDE installations are running, each add-in instance creates its own wizard instance and receives only its originating installation snapshot. Do not share update approvals or per-installation preferences. The global Welcome completion record is per-user and checked by the native layer before `open()`; missing files alone do not open the wizard.
 
@@ -109,7 +111,7 @@ When several IDE installations are running, each add-in instance creates its own
 - Wire **real native snapshot/actions** for all six intents; no browser `localStorage` preference persistence, no direct filesystem/network side effects.
 - Implement first-run schema check and explicit reopen entry point in Help or IDE Options. Avoid duplicate welcome views after reload/add-in reinitialization.
 - Keep old themes, toolbar modes and auto-check preferences when wizard is dismissed or skipped. Do not silently enable a WinUI3 theme.
-- In production supply `confirmRepair` with native WinUI-styled confirmation; the view has a browser `confirm` fallback for non-hosted demos, but **do not ship browser confirm/prompt flows** in the final add-in.
+- In production supply `confirmRepair(resource)` as an **asynchronous host-styled confirmation** returning a Boolean or Promise<Boolean>. The view only queues `repair-resource` after explicit affirmative resolution. If the callback is unavailable, repair is refused with guidance; the view **never uses browser confirm/prompt/alert**. The preview itself supplies a demo-only confirmation.
 - Synchronize canonical `.twinproj` and source mirrors/line endings; update ROADMAP/CHANGELOG for actual integration; run native and automated checks at the agreed acceptance gate.
 - Never use this functional **view** as evidence that native theme APIs, EXE embedding, updater transactions or first install have passed acceptance.
 

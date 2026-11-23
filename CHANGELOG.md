@@ -1,5 +1,10 @@
 # Changelog
 
+## 2026-11-23 - Add-in first-install and Welcome Wizard architecture documented
+
+Documented the approved future tbUI3IDE self-provisioning contract in `tbIDE/BOOTSTRAP_WELCOME_PLAN.md`: add-in DLLs embed updater/themes, use local and roaming per-user resource directories, independently track multiple IDE installations, preserve newer/customized files, and offer a reopenable HTML/CSS/JS Welcome Wizard. Updated both project roadmaps. **No implementation or compiled/released binaries changed; existing manual bootstrap behavior is unchanged.**
+
+
 ## 2026-11-23 - Updater hexadecimal widths and mandatory TB0012 guard
 
 Shane's BETA 1045 report identified six unintended signed-Integer literal conversions. The JSON BOM, both x64 PE machine checks, ZIP flags mask, Unix mode mask and symlink comparison now use explicit positive Long literals (`&HFEFF&`, `&H8664&`, `&HF041&`, `&HF000&`, `&HA000&`). An updater audit also made the GUID's intentionally signed Integer literal explicit as `&HCD44%`, preserving its 16-bit structure field. This corrects actual x64 PE/link-validation comparisons, not just warning text. Canonical Updater.twinproj and CRLF sources are synchronized; versions and native layouts are unchanged during compile acceptance.

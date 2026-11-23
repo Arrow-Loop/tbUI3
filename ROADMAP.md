@@ -1,5 +1,9 @@
 # Roadmap
 
+## 2026-11-23 - Consolidated agent handoff for updater and installation manager
+
+New authoritative [tbIDE/INSTALLATION_MANAGER_SPEC.md](tbIDE/INSTALLATION_MANAGER_SPEC.md) captures all approved product decisions for Cody/Claude, with implementation acceptance and staged scope: combined first public/native updater + self-provisioning/Welcome release, then alongside/archive, then discovery/reorganization. It specifies per-user DLL/helper/theme paths, per-installation settings, custom content routing, verified future vendor release directory changes, cross-drive safety, compatibility, shortcut cautions, and non-goals. **Planning/documentation only; no code or releases updated.**
+
 ## 2026-11-23 - Combined first updater release; installation-manager phases deferred
 
 Shane merged the previously proposed production-updater and DLL bootstrap/Welcome Wizard phases. **First production milestone:** native updater acceptance, safe in-place updating, release packaging, shared per-user `tbUI3IDE.dll` installation, embedded updater and two themes with silent repair, shared LocalAppData helper, separate per-IDE installation state and an embedded re-openable Welcome Wizard. Preserve extensible installation identity, strategy/transaction and dynamic verified-release inventory interfaces from the start. **Later:** alongside and full-installation archival strategies with configurable cross-drive destinations and user-content routing to archive/new/both; later still: discovered-installation reorganization and shortcut management. No routine prompts or destructive automatic reorganization. Full details: [bootstrap plan](tbIDE/BOOTSTRAP_WELCOME_PLAN.md#delivery-sequencing-decision-merged-first-production-milestone-2026-11-23). **Not implemented in this documentation pass.**

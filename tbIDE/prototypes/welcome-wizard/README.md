@@ -51,11 +51,23 @@ welcome.setSnapshot(actualNativeSnapshot);
 welcome.open(actualNativeSnapshot);
 welcome.close();                    // Programmatic close; no persisted disposition
 welcome.destroy();                  // Unload; iframe and listeners removed
+welcome.setPreviewMode('dark');      // OPTIONAL local preview appearance override only
 ```
 
 **Important migration notice:** Cody's earlier integration passed `cssText` and mounted the hand-drawn wizard directly. This revision requires the three string assets under `assets` and now mounts the application inside a same-origin iframe underneath the supplied container. The host MUST pack the full shared runtime and Master CSS. It should NOT create a duplicate modal surface; Cody's native modal dialog remains the actual modality owner.
 
 The iframe and its internal DOM are instantiated only on first open. Code installs shared CSS + scoped layout CSS into the iframe and initializes the real shared `WinUIControls` runtime before initializing wizard controls. If the full runtime cannot load, the host must show a meaningful error instead of substituting custom-looking buttons. For production, verify the native IDE's CSP allows trusted bundled inline script initialization in the `srcdoc` context. Do not fetch runtime/styles from GitHub or any network host, and do not persist preferences in browser storage. The standalone preview needs a local static HTTP server (for example `python -m http.server 8765` from this directory), then open `http://localhost:8765/index.html`. Opening it directly as `file://` will generally fail because the browser disallows `fetch` of adjacent files.
+
+## Wizard UI refinements and preview-only appearance (2026-11-23)
+
+- A fake WinUI desktop titlebar occupies the top of the wizard iframe. Its 46 x 32 caption-close target contains the familiar thin X glyph, shows the Windows-style red Close hover and uses an accessible `Close Welcome Wizard` label. The **native modal host** still owns actual window modality; no minimize/maximize controls are created.
+- The Updates page displays the download/install consent explanation as **plain paragraph text** under the two preference switches, not as an InfoBar.
+- The entire theme tile is now a single keyboard-accessible button. Clicking the tile immediately previews its palette within the wizard **and requests native selection** through the existing `choose-theme` action. A rejected native choice reverts to the authoritative theme on the settled snapshot. A mere hover does not apply the theme. There are no separate Preview/Use buttons.
+- The wizard uses a viewport-height flex layout: titlebar and step headers are fixed, the central page scrolls vertically as needed, and the footer/status remain reachable at the bottom even with numerous installed themes or smaller preview windows.
+- The standalone browser `index.html` exposes Light/Dark appearance buttons. They call the new optional `welcome.setPreviewMode('light'|'dark'|null)` method. **This is a preview/debug-only UI appearance override**, never an IDE theme operation, never persisted, and never sent to the native bridge. Production can omit it; all existing factory methods and native actions remain unchanged.
+- The selected theme's preview may switch the wizard's internal palette before native acknowledgement; that does not count as an actual IDE change. The native snapshot remains the only source of persisted selected theme. All installed themes still require verified trusted native inventory membership.
+
+**Cody handoff:** production must re-embed the latest `welcome.js` and `welcome.css` into the canonical resource pipeline. There is no change to the six native intent names or `installedThemes` snapshot shape. `master.css` and `controls.js` remain unchanged. Do not change native bridge/settings/bootstrap files in response to these view-only refinements without normal coordination.
 
 ## Native action/snapshot contract and 2026-11-23 changes
 

@@ -1,5 +1,11 @@
 # Roadmap: tbUI3 IDE
 
+## 2026-11-23 - Release milestone consolidation: native updater + bootstrap + Welcome Wizard
+
+**Agreed change:** Combine former Phases 1 and 2 into the **first production release**. Ship only after native updater acceptance *and* verified two-DLL per-user deployment, embedded/updater/theme self-provisioning, re-openable Welcome Wizard, IDE Options, and release packaging are implemented and validated together. In-place remains the default IDE update strategy. See [detailed phase boundaries, compatibility and future-proofing](BOOTSTRAP_WELCOME_PLAN.md#delivery-sequencing-decision-merged-first-production-milestone-2026-11-23).
+
+Subsequent phases: (1) alongside and archive update strategies, configurable cross-drive archival and release-inventory classification with preserved custom content; (2) installation discovery/reorganization, shortcuts, advanced archived-add-in compatibility. Define identity, settings, release inventory and strategy boundaries during the combined first phase, but do not implement advanced workflows before they're needed. **Planning only; implementation/first release pending.**
+
 ## 2026-11-23 - Self-provisioning add-in and Welcome Wizard (approved, not implemented)
 
 **Agreed future architecture:** the user manually installs only architecture-appropriate `tbUI3IDE.dll` files. Each DLL embeds the portable Win32 `Updater.exe` and WinUI3 Light/Dark themes; on every add-in load it validates/provisions missing or eligible outdated dependencies, independent of the online update setting. Shared updater location is `%LOCALAPPDATA%\tbUI3\Updater\Updater.exe`; themes remain in `%APPDATA%\twinBASIC\themes`. Multiple separate twinBASIC IDE installations share the per-user executable but keep per-installation update settings/transactions, backed by stable installation IDs. Preserve custom themes, never downgrade newer updater, use atomic writes/locks and no silent UAC. Approved changes to protected IDE files need a separately implemented consented elevation path.

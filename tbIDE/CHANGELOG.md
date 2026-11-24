@@ -1,5 +1,9 @@
 # Changelog: tbIDE (WinUI 3 look for the twinBASIC IDE)
 
+## 2026-11-24 - Development prerelease publication and retention policy
+
+Documented the owner-approved distinction between development-testing publication, internal team deployment and stable release. Known functional failures and incomplete native acceptance may be disclosed in explicitly authorized testing prereleases, without weakening package integrity, security or traceability. Recorded the specific 0.4.0.6 testing authorization and deferred owner-approved cleanup of obsolete prereleases. Documentation only; no release, tag, runtime or binary was changed by this pass.
+
 ## 2026-11-24 - Optional package isolation (add-in 0.4.0.6)
 
 The designer checks the active project’s applied reference settings for the tbUI3 package GUID and requires the current compiler control list to resolve the TabView and TabPage IDs for the active form. Project, reference and form changes retire the old adapter and its owned state. Classic hides ineligible native buttons without adding a separator. Hybrid and Ribbon omit the MultiPage group in both presentations unless a TabView or child is selected. General IDE features have no dependency on this gate.

@@ -16,7 +16,7 @@ Use [PHASE1_HANDOFF.md](PHASE1_HANDOFF.md) for the current evidence and build/ac
 - Validate the integrated Welcome/settings (healthy six-page flow; conditional Setup directly after Welcome, before Updates), actual installed themes/inheritance, exact-name apply/rollback, toolbar modes, Windows theme/accent, focus/keyboard/Escape, skip/reopen, settings persistence, DPI and missing Runtime. The view is approved; no additional redesign without direction.
 - Validate two IDE roots and concurrent shared operations, release checking/staging, normal-exit approval/cancel, preservation of projects/custom files, rollback/recovery, detached self-update, protected-folder consent/UAC denial and verified prerelease packaging. Use disposable roots/profile state for destructive cases.
 - Generate the add-in-only release in a fresh output directory from both verified DLLs and the accepted helper. Run the complete regression suite; verify the ZIP contains only both DLLs, the schema-2 manifest has only the add-in component, and SHA256SUMS matches the ZIP and manifest. Exercise an add-in-only update followed by startup provisioning of recognized older updater/themes; preserve newer and customized resources. Separate helper/theme release assets remain an optional future distribution strategy, not a Phase 1 requirement.
-- Ship only after the approved combined first-release gate passes. Official IDE in-place updates remain in scope; retain all verification, backups, rollback and consent. No main merge, PR or public release without approval.
+- Deploy to the internal team only after the approved combined Phase 1 acceptance gate passes. Explicitly authorized development-testing prereleases may be published sooner under the specification and versioning policy, with disclosed known functional defects and pending acceptance; release integrity, security and traceability gates remain mandatory. Official IDE in-place updates remain in scope; retain all verification, backups, rollback and consent. No main merge, PR or public release without approval.
 
 ## Ribbon, Hybrid and Classic acceptance
 
@@ -31,7 +31,7 @@ The [Ribbon mapping](RIBBON_LAYOUT.md) is the command organization authority. Ke
 ## Permanent independence from the optional tbUI3 package
 
 - Retain the existing TabView/MultiPage implementation and tooling in the add-in; full control-package and designer feature acceptance is deferred to its independent development milestone. Internal IDE prerelease distribution requires non-interference with normal projects, not completed TabView functionality. The overall project remains prerelease until the planned controls are complete and stable release is explicitly approved; independence is a permanent product requirement, not a temporary prerelease workaround.
-- Confirm native isolation on BETA 1043 through 1045. Test ordinary projects with the package installed but unreferenced, disabled or unresolved references, no project, project switches and reference removal/re-enable. Verify no stale MultiPage UI or hooks and exercise ordinary form editing and Save in all toolbar modes and both presentations. Source implementation and fixture coverage landed in 0.4.0.6. The four existing BETA 1045 Ribbon fixture failures, including missing File/Save presentation, need resolution or conclusive native acceptance before publication.
+- Confirm native isolation on BETA 1043 through 1045. Test ordinary projects with the package installed but unreferenced, disabled or unresolved references, no project, project switches and reference removal/re-enable. Verify no stale MultiPage UI or hooks and exercise ordinary form editing and Save in all toolbar modes and both presentations. Source implementation and fixture coverage landed in 0.4.0.6. The four existing BETA 1045 Ribbon fixture failures, including missing File/Save presentation, need resolution or conclusive native acceptance before team deployment. The owner approved development-testing publication of 0.4.0.6 for the 0.4.0.5 upgrade path; initially test natively on BETA 1043 and 1044.
 
 ## TabView designer acceptance (deferred independent milestone)
 
@@ -53,6 +53,10 @@ Use [UI3TabView contract](../docs/controls/UI3TabView.md) and [architecture](ARC
 [Installation Manager specification](INSTALLATION_MANAGER_SPEC.md) owns approved constraints. Phase 2: InstallAlongside and ArchivePrevious strategies, configurable cross-volume archive locations and archive/new/both custom-content routing. Phase 3: conservative installation discovery/reorganization, optional shortcut management and advanced historical add-in override after loader behavior is verified. Do not expand Phase 1 to include them.
 
 Restore the visible stable/development channel selector only once a genuine stable twinBASIC channel exists. Consider optional control-package distribution when real release assets exist (never silently rewrite embedded packages), working-directory/launch-context capture where supported and automated release CI after native acceptance.
+
+## Development release retention
+
+- After the updater is accepted as reliable, inventory obsolete/defective prereleases and their asset dependencies, identify a known-good recovery release and retain versions needed for upgrade/rollback/compatibility testing. Propose a cleanup list for owner approval under the [versioning policy](../docs/VERSIONING_POLICY.md). Preserve tags by default, Git history and changelog evidence; never reuse published versions. No release deletion is authorized or completed by this roadmap entry.
 
 ## Public distribution hygiene
 

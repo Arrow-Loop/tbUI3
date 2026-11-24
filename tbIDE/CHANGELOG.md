@@ -1,5 +1,9 @@
 # Changelog: tbIDE (WinUI 3 look for the twinBASIC IDE)
 
+## 2026-11-24 - Recorded 0.4.0.9 native feedback and next UI refinement requirements
+
+Confirmed published 0.4.0.9 at 8b2907a. The owner reports the Welcome Wizard looks and works as intended. Native BETA 1043 screenshots establish remaining Options placement/button styling, Resource Repair theme/geometry and updater preference/status/footer presentation issues; automatic toast absence was reported, not root-caused. Source review confirmed the standalone quiet notification path still exists and is gated by automatic preference, daily check and deferral. Updated specification, roadmap and acceptance handoff; no runtime changes or new release in this documentation pass.
+
 ## 2026-11-24 - Record Wizard Builder design decision
 
 Documented the future design-time toolbar Builder, Phone Link/OOBE visual direction, independently optional per-page split panes and editable generated forms in the [IDE roadmap](ROADMAP.md#planned-wizard-builder-2026-11-24). No implementation, version change or publication.

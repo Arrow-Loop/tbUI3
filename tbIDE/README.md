@@ -2,7 +2,7 @@
 
 tbUI3IDE is a single twinBASIC add-in that brings a WinUI 3 look to the IDE, offers Classic, Hybrid and Ribbon toolbar layouts, and adds TabView/MultiPage designer tools. It includes WinUI3 Dark and Light themes and a shared native updater. The add-in is a developer tool intended to work independently of the optional tbUI3 control package, whether or not a developer ever uses that package. Applications built with the tbUI3 control package do not require the add-in. The overall tbUI3/tbIDE project remains prerelease until its planned controls are complete and stable release is explicitly approved; accepted add-in prereleases may be distributed internally.
 
-**Current release:** [tbUI3IDE 0.4.0.8 development prerelease](https://github.com/Arrow-Loop/tbUI3/releases/tag/tbUI3IDE-v0.4.0.8) (Welcome initialization and modal placement correction; native acceptance remains pending).
+**Current release:** [tbUI3IDE 0.4.0.9 development prerelease](https://github.com/Arrow-Loop/tbUI3/releases/tag/tbUI3IDE-v0.4.0.9) (Welcome positioning refinement; wider native acceptance remains pending).
 
 ## Requirements
 
@@ -22,7 +22,7 @@ Use the matching DLL from a verified build or release.
 
 3. Start the IDE and open a project.
 
-The add-in provisions the bundled updater and themes in your user profile and provides the first-run Welcome Wizard. The approved startup improvement is to show Welcome immediately and complete prerequisite work while it is displayed; implementation and native acceptance remain pending (see the Phase 1 handoff). It does not need a separate installer or network access for this setup. Subsequent loads check for missing resources, preserve customized themes and avoid downgrading a newer updater. The wizard offers repair guidance if setup needs attention.
+The add-in provisions the bundled updater and themes in your user profile and provides the first-run Welcome Wizard. Welcome appears before staged prerequisite work; the owner reports near-instant presentation and the intended Wizard experience in the current prerelease. See the Phase 1 handoff for remaining native acceptance. It does not need a separate installer or network access for this setup. Subsequent loads check for missing resources, preserve customized themes and avoid downgrading a newer updater. The wizard offers repair guidance if setup needs attention.
 
 The current development candidate is undergoing native installation and update acceptance; see the contributor handoff before distributing builds.
 

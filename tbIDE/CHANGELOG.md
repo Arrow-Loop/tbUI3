@@ -1,5 +1,9 @@
 # Changelog: tbIDE (WinUI 3 look for the twinBASIC IDE)
 
+## 2026-11-23 - Release launcher PowerShell compatibility fix
+
+The first Windows PowerShell 5.1 Embed attempts stopped during portable Node discovery because `$home` collides case-insensitively with the read-only automatic `$HOME` variable. Renamed the local variable to `$portableNodeDirectory` in the shared Embed/Package launcher and included failure position and stack details in the transcript. Static inspection of assignment names in all three development PowerShell scripts found no remaining assignments to the checked automatic-variable names. No project, payload or release verification rules changed. Successful Windows execution remains pending.
+
 ## 2026-11-23 - Double-click add-in build preparation and release packaging
 
 Added `tbIDE/Prepare-Addin.bat` and `tbIDE/Package-Release.bat` with a shared development-only PowerShell entry point. The first reuses the existing portable Node cache, checks the rebuilt Win32 helper, runs native self-tests and requires a fresh successful report, embeds using the existing PE/resource verification tool and checks mirrors and focused contracts. The second reads versions and compatibility from configuration and invokes the existing release packager against both DLL architectures in a fresh output directory. Both log outside the checkout, pause on completion and leave publication manual. No updater engine or release packager changes. Windows execution and native acceptance of these launchers are pending.

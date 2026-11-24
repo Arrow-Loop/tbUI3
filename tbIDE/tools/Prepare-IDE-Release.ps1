@@ -31,11 +31,11 @@ try {
     else {
         $arch=if ($env:PROCESSOR_ARCHITEW6432) {$env:PROCESSOR_ARCHITEW6432} else {$env:PROCESSOR_ARCHITECTURE}
         $platform=switch ($arch.ToUpperInvariant()) {'AMD64' {'win-x64'} 'ARM64' {'win-arm64'} 'X86' {'win-x86'} default {throw "Unsupported architecture: $arch"}}
-        $home=Get-ChildItem -LiteralPath (Join-Path $cache 'Node22') -Directory -ErrorAction SilentlyContinue |
+        $portableNodeDirectory=Get-ChildItem -LiteralPath (Join-Path $cache 'Node22') -Directory -ErrorAction SilentlyContinue |
             Where-Object {$_.Name -match ('^node-v22\.\d+\.\d+-'+[regex]::Escape($platform)+'$') -and (Test-Path -LiteralPath (Join-Path $_.FullName 'node.exe') -PathType Leaf)} |
             Sort-Object LastWriteTime -Descending | Select-Object -First 1
-        if (-not $home) {throw 'No Node runtime found. Complete the portable development runtime setup through Apply-Welcome-Repair.bat or install Node.js.'}
-        $script:node=Join-Path $home.FullName 'node.exe'
+        if (-not $portableNodeDirectory) {throw 'No Node runtime found. Complete the portable development runtime setup through Apply-Welcome-Repair.bat or install Node.js.'}
+        $script:node=Join-Path $portableNodeDirectory.FullName 'node.exe'
     }
     $env:PATH=(Split-Path -Parent $script:node)+';'+$env:PATH
     Write-Host "Using Node: $script:node"
@@ -85,6 +85,8 @@ try {
     $exitCode=0
 } catch {
     Write-Host ('FAILED: '+$_.Exception.Message) -ForegroundColor Red
+    if ($_.InvocationInfo.PositionMessage) {Write-Host $_.InvocationInfo.PositionMessage}
+    if ($_.ScriptStackTrace) {Write-Host $_.ScriptStackTrace}
     Write-Host 'Inspect the log before continuing. No release was published.'
 } finally {
     Write-Host "Log: $log"

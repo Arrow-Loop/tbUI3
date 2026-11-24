@@ -22,7 +22,7 @@ Use the matching DLL from a verified build or release.
 
 3. Start the IDE and open a project.
 
-On first load, the add-in provisions the bundled updater and themes in your user profile, then opens the Welcome Wizard. It does not need a separate installer or network access for this setup. Subsequent loads check for missing resources, preserve customized themes and avoid downgrading a newer updater. The wizard offers repair guidance if setup needs attention.
+The add-in provisions the bundled updater and themes in your user profile and provides the first-run Welcome Wizard. The approved startup improvement is to show Welcome immediately and complete prerequisite work while it is displayed; implementation and native acceptance remain pending (see the Phase 1 handoff). It does not need a separate installer or network access for this setup. Subsequent loads check for missing resources, preserve customized themes and avoid downgrading a newer updater. The wizard offers repair guidance if setup needs attention.
 
 The current development candidate is undergoing native installation and update acceptance; see the contributor handoff before distributing builds.
 

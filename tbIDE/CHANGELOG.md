@@ -1,5 +1,9 @@
 # Changelog: tbIDE (WinUI 3 look for the twinBASIC IDE)
 
+## 2026-11-24 - Documented Welcome-first startup correction
+
+Recorded the native BETA 1043 first-run timing observation (39.82 s to theme settle messages, 43.83 s to updater appearance, no Welcome) and successful full reset rerun. Source review confirmed the fixed 2.5 s Welcome gate and the 10 s automatic-check scheduling delay, without attributing the full measured delay to either. Updated approved onboarding requirements, pending bridge contract, roadmap and acceptance checks for Welcome-first rendering, live conditional Setup and notification coordination. Documentation only; no runtime fix or new release in this pass.
+
 ## 2026-11-24 - Fixed reset-menu backup path and removed confirmation
 
 The first full-reset attempt reported a null Path. Source inspection identified the invoked payload's local backup variable shadowing the script-scoped assignment. Start-Backup now returns its directory directly to the menu's local variable before registry or file operations. Renamed the recovery loop variable to avoid PowerShell's reserved HOME variable. Menu selection now runs the chosen operation without typing RESET; the existing backup and recovery safeguards remain. Errors include the failing line and stack. Reviewed source and verified matching downloadable/repository bytes; Windows rerun remains pending.

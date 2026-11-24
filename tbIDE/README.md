@@ -48,6 +48,8 @@ When a tbUI3 TabView is selected, use the contextual MultiPage commands to creat
 
 ### Updates
 
+**Development status:** the current prerelease uses an IDE-hosted update review and a standalone installation worker. The approved next Phase 1 architecture moves the toast, update review, preferences and entire update lifecycle into Updater.exe, leaving only entry points and a minimal normal-exit bridge in the add-in. Live self-update acceptance is not complete. See the [specification](INSTALLATION_MANAGER_SPEC.md) and [handoff](PHASE1_HANDOFF.md).
+
 The updater checks published releases for the twinBASIC IDE, tbUI3IDE and developer icon resources. The initial add-in release contains both DLL architectures with the updater and themes embedded; they are provisioned or safely upgraded when the add-in loads. Open **Check for Updates** to review available versions and choose which published components to update. Separate updater/theme components can be supported when explicitly published in future releases.
 
 - **Update Now:** Stages approved updates and follows the IDE's normal save and exit prompts.

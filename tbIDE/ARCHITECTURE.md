@@ -2,6 +2,10 @@
 
 The unified add-in includes native TabView management, optional WinUI styling, toolbar modes, update coordination and offline resource provisioning. The accepted Win32 updater and both themes are embedded in the canonical DLL project. See [installation contracts](INSTALLATION_CONTRACTS.md) for the native services and [Phase 1 acceptance](PHASE1_HANDOFF.md) for current validation. Build uses the single embedded buildv3.svg asset; Quick Access includes Build between Redo and Play. Full Ribbon/Hybrid uses 7px top padding and a 73px command area within the 100px card; Simplified and Quick Access retain their own geometry.
 
+## Update ownership boundary
+
+The current add-in contains an embedded update-review UI, state polling and shutdown coordination. This is now migration debt, not the desired architecture. The [approved Phase 1 application ownership decision](INSTALLATION_MANAGER_SPEC.md#binding-application-ownership-approved-2026-11-24) requires a thin add-in: Wizard, offline provisioning/repair, entry points, context registration and a minimal native save/exit bridge. The standalone Updater.exe owns all update notifications, review, preferences, scheduling, staging/progress, transaction and recovery. Reuse the existing shared Toolkit visual design without retaining a second update surface. The new shutdown handshake must support normal exit during staging without weakening final plan authorization. See the roadmap for implementation and acceptance; no runtime change is implied by this decision.
+
 ## Distribution and identity
 
 One canonical project, tbUI3IDE/tbUI3IDE.twinproj, produces tbUI3IDE.dll per IDE architecture, current source version 0.4.0.0. Its established project ID is unchanged. Remove legacy WinUI3IdeStyle.dll and TabViewDesigner.dll from both addins architecture directories during migration. Theme files and the tbUI3 runtime control package remain separate; built consumer applications do not need this add-in.

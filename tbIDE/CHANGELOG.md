@@ -1,5 +1,9 @@
 # Changelog: tbIDE (WinUI 3 look for the twinBASIC IDE)
 
+## 2026-11-24 - Update ownership specification and live test findings
+
+Documented the approved Phase 1 architecture: Updater.exe will exclusively own update UI (including toast), ongoing preferences and update transaction lifecycle; tbUI3IDE retains onboarding, offline provisioning, entry points and a narrow native shutdown bridge. Updated specification, contracts, architecture, READMEs, roadmap and acceptance handoff to distinguish existing implementation from the approved migration. Reviewed the live diagnostic evidence: Update Now timed out waiting for normal shutdown, forced termination was refused because approval was absent, and Update on Exit eventually reported an IDE identity inspection failure. The displayed installed updater was 0.2.0.0. These are observed outcomes, not a completed root-cause fix. No code, packed projects, protocol, payload or release assets changed in this documentation pass.
+
 ## 2026-11-23 - Embed launcher test-runtime fix
 
 The corrected Windows launcher located portable Node, ran all 58 native updater self-tests successfully, embedded the verified helper/themes, and passed all 140 exact mirror checks and hex validation. The focused suite passed 10 of 11 tests; the remaining XML manifest check could not import jsdom because the new PowerShell process lacked the Welcome launcher's transient environment variable. The Embed launcher now resolves the cached jsdom module using the existing TB_JSDOM_MODULE file-URL contract and checks importability before changing the project. No validation assertions or release gates are removed. Repeat focused validation remains pending.

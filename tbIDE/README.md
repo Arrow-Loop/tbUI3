@@ -6,7 +6,7 @@ tbUI3IDE is a single twinBASIC add-in that brings a WinUI 3 look to the IDE, off
 
 ## Requirements
 
-- twinBASIC BETA 1045 (BETA 1043 and 1044 are no longer supported from add-in 0.4.0.10).
+- twinBASIC BETA 1045. From add-in 0.4.0.11, BETA 1044 also loads, for updater testing only; it has no Add-ins menu entries. BETA 1043 is not supported.
 - A matching Win32 or Win64 add-in DLL for your IDE architecture.
 - Microsoft Edge WebView2 Runtime for the updater interface. The Welcome Wizard uses the IDE's existing web host.
 

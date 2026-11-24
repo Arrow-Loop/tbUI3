@@ -107,8 +107,14 @@ Private Class tbUI3IDEAddin
 
     ' Adds the tbUI3 entries to the native Add-ins menu (BETA 1045 Host.Menus). A failure is logged and
     ' leaves the IDE Options buttons as the entry points.
+    ' BETA 1044 (kept loadable for updater testing) passes an IHostV1 host: Menus lies beyond its vtable,
+    ' so the entries are skipped there rather than called.
     Private Sub InstallMenus()
         On Error GoTo Failed
+        If CLng(Val(UInstalledIde(LCompilerRoot()))) < 1045 Then
+            Log "menu entries need BETA 1045; using the IDE Options buttons on this build"
+            Exit Sub
+        End If
         Set Menus = New IdeMenus(Host, Updater)
         Exit Sub
     Failed:

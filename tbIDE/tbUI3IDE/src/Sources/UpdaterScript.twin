@@ -4,279 +4,368 @@ Private Module UpdaterScript
         Dim js As String
         js = js & "(function(){if(window.__tbUI3UpdaterFactory)return 'updater factory ready';"
         js = js & vbLf
-        js = js & "window.__tbUI3UpdaterFactory=/* Shared by Classic, Hybrid and Ribbon. Native bridge owns all file/process access. */"
+        js = js & "window.__tbUI3UpdaterFactory=/* Shared by Classic, Hybrid and Ribbon. Native bridge owns all file/process access."
+        js = js & vbLf
+        js = js & " * The pinned Welcome Master CSS owns control paint and interaction states. Only"
+        js = js & vbLf
+        js = js & " * dialog geometry and application composition are defined here; no IDE-root CSS. */"
         js = js & vbLf
         js = js & "(function createUpdaterUI(env) {"
         js = js & vbLf
         js = js & "    'use strict';"
         js = js & vbLf
-        js = js & "    const d = env.document, w = env.window;"
+        js = js & "    const d=env.document,w=env.window;"
         js = js & vbLf
-        js = js & "    let state = { status: 'idle', message: 'Check published releases for this installation.' };"
+        js = js & "    let state={status:'idle',message:'Check published releases for this installation.'};"
         js = js & vbLf
-        js = js & "    let queue = [], busy = false, panel, notice, observer, autoTimer;"
+        js = js & "    let queue=[],busy=false,panel,panelHost,panelBody,notice,noticeHost,observer,autoTimer;"
+        js = js & vbLf
+        js = js & "    let appearance={themeMode:env.themeMode?.(),accent:env.accent};"
+        js = js & vbLf
+        js = js & "    const selected=new Map();"
         js = js & vbLf
         js = js & "    const componentNames={ide:'twinBASIC IDE',addin:'tbUI3IDE add-in',themes:'WinUI3 themes',library:'Icon and resource library',updater:'Updater',con"
         js = js & "trolPackage:'Control package download'};"
         js = js & vbLf
-        js = js & "    const preferences = {"
+        js = js & "    const preferences={automatic:env.automatic!==false,deferredUntil:Number(env.deferredUntil||0),restart:!!env.restart};"
         js = js & vbLf
-        js = js & "        automatic: env.automatic !== false,"
+        js = js & "    function node(tag,text,parent,cls){"
         js = js & vbLf
-        js = js & "        deferredUntil: Number(env.deferredUntil || 0),"
-        js = js & vbLf
-        js = js & "        restart: !!env.restart"
-        js = js & vbLf
-        js = js & "    };"
-        js = js & vbLf
-        js = js & "    function node(tag, text, parent) {"
-        js = js & vbLf
-        js = js & "        const n = d.createElement(tag); if (text !== undefined) n.textContent = text;"
-        js = js & vbLf
-        js = js & "        if (parent) parent.appendChild(n); return n;"
+        js = js & "        const n=d.createElement(tag);if(text!==undefined)n.textContent=text;if(cls)n.className=cls;if(parent)parent.appendChild(n);return n;"
         js = js & vbLf
         js = js & "    }"
         js = js & vbLf
-        js = js & "    function button(label, fn, parent) {"
+        js = js & "    function button(label,fn,parent,kind=''){"
         js = js & vbLf
-        js = js & "        const b = node('button', label, parent); b.type = 'button'; b.onclick = fn; return b;"
-        js = js & vbLf
-        js = js & "    }"
-        js = js & vbLf
-        js = js & "    function send(action, data) {"
-        js = js & vbLf
-        js = js & "        if (busy && action !== 'cancel' && action !== 'preferences' && action !== 'later') return;"
-        js = js & vbLf
-        js = js & "        queue.push({ action, ...(data || {}) });"
+        js = js & "        const b=node('button',label,parent,'button'+(kind?' button--'+kind:''));b.type='button';b.onclick=fn;return b;"
         js = js & vbLf
         js = js & "    }"
         js = js & vbLf
-        js = js & "    function requestCheck() { if (busy) return; busy = true; state = { status: 'checking', message: 'Checking published releases...' }; render(); queu"
-        js = js & "e.push({ action: 'check' }); }"
+        js = js & "    function applyTokens(host){"
         js = js & vbLf
-        js = js & "    function show() {"
+        js = js & "        if(!host)return;"
         js = js & vbLf
-        js = js & "        if (!panel) {"
+        js = js & "        const mode=String(appearance.themeMode||env.themeMode?.()||'light').toLowerCase();"
         js = js & vbLf
-        js = js & "            panel = node('dialog'); panel.id = 'tbUI3UpdaterDialog'; panel.setAttribute('aria-labelledby', 'tbUI3UpdaterTitle');"
+        js = js & "        host.setAttribute('data-theme',mode==='dark'?'dark':'light');"
         js = js & vbLf
-        js = js & "            panel.addEventListener('cancel', () => {});"
+        js = js & "        const names=['light3','light2','light1','','dark1','dark2','dark3'];"
+        js = js & vbLf
+        js = js & "        if(Array.isArray(appearance.accent)&&appearance.accent.length===7)appearance.accent.forEach((c,i)=>{"
+        js = js & vbLf
+        js = js & "            if(/^#[0-9a-f]{6}$/i.test(c))host.style.setProperty('--win-accent'+(names[i]?'-'+names[i]:''),c);"
+        js = js & vbLf
+        js = js & "        });"
+        js = js & vbLf
+        js = js & "    }"
+        js = js & vbLf
+        js = js & "    function toolkitSurface(parent,cls){"
+        js = js & vbLf
+        js = js & "        const host=node('div',undefined,parent),root=host.attachShadow({mode:'open'});"
+        js = js & vbLf
+        js = js & "        const css=node('style',undefined,root);"
+        js = js & vbLf
+        js = js & "        css.textContent=String(env.masterCss||'').replace(/(?:html)?:root(\[[^\]]+\])?/g,(_,selector)=>selector?':host('+selector+')':':host');"
+        js = js & vbLf
+        js = js & "        const layout=node('style',undefined,root);"
+        js = js & vbLf
+        js = js & "        layout.textContent='@layer layout{.update-view{display:flex;flex-direction:column;gap:var(--space-3);font:var(--font-size-body,14px) var(--fon"
+        js = js & "t-family);color:var(--color-text);background:var(--color-flyout);padding:var(--space-6);max-height:78vh;overflow:auto;box-sizing:border-box}.update-vi"
+        js = js & "ew h2,.update-view p{margin:0}.update-view h2{font-size:var(--font-size-page-title,20px);font-weight:600}.update-list{display:flex;flex-direction:colu"
+        js = js & "mn;gap:var(--space-2)}.update-row{display:flex;flex-direction:column;gap:var(--space-2);padding:var(--space-3);overflow-wrap:anywhere}.update-actions,"
+        js = js & ".update-links{display:flex;flex-wrap:wrap;align-items:center;gap:var(--space-2)}.update-actions{justify-content:flex-end;padding-top:var(--space-3);bo"
+        js = js & "rder-top:1px solid var(--color-divider)}.update-meta{color:var(--color-text-muted);font-size:var(--font-size-caption,12px)}.update-notice{font:var(--f"
+        js = js & "ont-size-body,14px) var(--font-family);color:var(--color-text)}.update-notice .update-actions{border:0;padding-top:var(--space-2);justify-content:flex"
+        js = js & "-start}.update-view a{color:var(--color-accent-link)}}';"
+        js = js & vbLf
+        js = js & "        applyTokens(host);return{host,body:node('div',undefined,root,cls)};"
+        js = js & vbLf
+        js = js & "    }"
+        js = js & vbLf
+        js = js & "    function closePanel(){if(!panel)return;if(typeof panel.close==='function')panel.close();else panel.removeAttribute('open');}"
+        js = js & vbLf
+        js = js & "    function removeNotice(){notice?.remove();notice=null;noticeHost=null;}"
+        js = js & vbLf
+        js = js & "    function send(action,data){"
+        js = js & vbLf
+        js = js & "        if(busy&&action!=='cancel'&&action!=='preferences'&&action!=='later')return;"
+        js = js & vbLf
+        js = js & "        queue.push({action,...(data||{})});"
+        js = js & vbLf
+        js = js & "    }"
+        js = js & vbLf
+        js = js & "    function requestCheck(){"
+        js = js & vbLf
+        js = js & "        if(busy)return;busy=true;state={...state,status:'checking',message:'Checking published releases...'};"
+        js = js & vbLf
+        js = js & "        render();queue.push({action:'check'});"
+        js = js & vbLf
+        js = js & "    }"
+        js = js & vbLf
+        js = js & "    function show(){"
+        js = js & vbLf
+        js = js & "        if(!panel){"
+        js = js & vbLf
+        js = js & "            panel=node('dialog');panel.id='tbUI3UpdaterDialog';panel.setAttribute('aria-label','Updates for twinBASIC and tbUI3');"
+        js = js & vbLf
+        js = js & "            panel.addEventListener('keydown',e=>e.stopPropagation());"
         js = js & vbLf
         js = js & "            d.body.appendChild(panel);"
         js = js & vbLf
+        js = js & "            const view=toolkitSurface(panel,'update-view');panelHost=view.host;panelBody=view.body;"
+        js = js & vbLf
         js = js & "        }"
         js = js & vbLf
-        js = js & "        render();"
+        js = js & "        render();removeNotice();"
         js = js & vbLf
-        js = js & "        if (!panel.open) { if (typeof panel.showModal === 'function') panel.showModal(); else panel.setAttribute('open',''); }"
+        js = js & "        if(!panel.open){if(typeof panel.showModal==='function')panel.showModal();else panel.setAttribute('open','');}"
         js = js & vbLf
         js = js & "    }"
         js = js & vbLf
-        js = js & "    function scheduleAutomatic(delay) {"
+        js = js & "    function scheduleAutomatic(delay){"
         js = js & vbLf
         js = js & "        w.clearTimeout(autoTimer);"
         js = js & vbLf
-        js = js & "        if (!preferences.automatic) return;"
+        js = js & "        if(!preferences.automatic)return;"
         js = js & vbLf
         js = js & "        autoTimer=w.setTimeout(()=>{"
         js = js & vbLf
-        js = js & "            if(preferences.automatic && !busy) requestCheck();"
+        js = js & "            if(preferences.automatic&&!busy)requestCheck();"
         js = js & vbLf
-        js = js & "            scheduleAutomatic(24*60*60*1000);"
+        js = js & "            if(preferences.automatic)scheduleAutomatic(24*60*60*1000);"
         js = js & vbLf
         js = js & "        },delay);"
         js = js & vbLf
         js = js & "    }"
         js = js & vbLf
-        js = js & "    function selectedUpdates() {"
+        js = js & "    function selectedUpdates(){"
         js = js & vbLf
-        js = js & "        return [...panel.querySelectorAll('input[data-component]:checked')].map(n => n.getAttribute('data-component'));"
-        js = js & vbLf
-        js = js & "    }"
-        js = js & vbLf
-        js = js & "    function stage(choice) {"
-        js = js & vbLf
-        js = js & "        const selected = selectedUpdates();"
-        js = js & vbLf
-        js = js & "        if (!selected.length) return;"
-        js = js & vbLf
-        js = js & "        const restart = panel.querySelector('[data-restart]').checked;"
-        js = js & vbLf
-        js = js & "        send(choice, { selected, restart }); busy = true;"
-        js = js & vbLf
-        js = js & "        state = { ...state, status:'staging', message:'Downloading and verifying selected updates...' }; render();"
+        js = js & "        return [...panelBody.querySelectorAll('input[data-component]:checked:not(:disabled)')].map(n=>n.getAttribute('data-component'));"
         js = js & vbLf
         js = js & "    }"
         js = js & vbLf
-        js = js & "    function later() {"
+        js = js & "    function stage(choice){"
         js = js & vbLf
-        js = js & "        if (['staging','ready','waiting'].includes(state.status)) send('cancel');"
+        js = js & "        if(busy)return;"
         js = js & vbLf
-        js = js & "        preferences.deferredUntil = Date.now() + 24 * 60 * 60 * 1000;"
+        js = js & "        const selection=selectedUpdates();if(!selection.length)return;"
         js = js & vbLf
-        js = js & "        send('later', { deferredUntil: preferences.deferredUntil });"
+        js = js & "        const restart=panelBody.querySelector('[data-restart]').checked;"
         js = js & vbLf
-        js = js & "        if (notice) notice.remove(); notice = null; if (panel) panel.close();"
+        js = js & "        send(choice,{selected:selection,restart});busy=true;"
         js = js & vbLf
-        js = js & "    }"
-        js = js & vbLf
-        js = js & "    function render() {"
-        js = js & vbLf
-        js = js & "        if (!panel) return;"
-        js = js & vbLf
-        js = js & "        panel.replaceChildren();"
-        js = js & vbLf
-        js = js & "        const heading = node('h2','Updates for twinBASIC and tbUI3',panel); heading.id='tbUI3UpdaterTitle';"
-        js = js & vbLf
-        js = js & "        node('p',state.message || '',panel).setAttribute('role','status');"
-        js = js & vbLf
-        js = js & "        const autoLabel=node('label',undefined,panel), auto=node('input',undefined,autoLabel);"
-        js = js & vbLf
-        js = js & "        auto.type='checkbox'; auto.checked=preferences.automatic;"
-        js = js & vbLf
-        js = js & "        auto.onchange=() => {preferences.automatic=auto.checked;scheduleAutomatic(10000);send('preferences',{automatic:auto.checked});};"
-        js = js & vbLf
-        js = js & "        autoLabel.appendChild(d.createTextNode(' Check automatically once a day'));"
-        js = js & vbLf
-        js = js & "        const catalog=state.catalog || {components:[],errors:[]};"
-        js = js & vbLf
-        js = js & "        const list=node('div',undefined,panel); list.className='tbUI3UpdateComponents';"
-        js = js & vbLf
-        js = js & "        for (const c of catalog.components || []) {"
-        js = js & vbLf
-        js = js & "            const row=node('section',undefined,list), label=node('label',undefined,row), input=node('input',undefined,label);"
-        js = js & vbLf
-        js = js & "            input.type='checkbox'; input.setAttribute('data-component',c.id);"
-        js = js & vbLf
-        js = js & "            input.disabled=!c.available || busy;"
-        js = js & vbLf
-        js = js & "            input.checked=!!c.available;"
-        js = js & vbLf
-        js = js & "            label.appendChild(d.createTextNode((componentNames[c.id]||c.id)+' — installed '+(c.installed==='0'?'not installed / unversioned':c.install"
-        js = js & "ed)+'; available '+c.version));"
-        js = js & vbLf
-        js = js & "            node('p',c.summary,row);"
-        js = js & vbLf
-        js = js & "            if(c.architectures) node('p','win32 installed '+c.architectures.win32+'; win64 installed '+c.architectures.win64,row);"
-        js = js & vbLf
-        js = js & "            if (c.compatible===false) node('p','Compatibility: this add-in supports IDE builds '+c.minIdeBuild+'–'+c.maxIdeBuild+'. Select a compatibl"
-        js = js & "e IDE/add-in combination.',row);"
-        js = js & vbLf
-        js = js & "            const link=node('a','Published release',row); link.href=c.source; link.target='_blank'; link.rel='noopener noreferrer';"
-        js = js & vbLf
-        js = js & "        }"
-        js = js & vbLf
-        js = js & "        for (const error of catalog.errors || []) node('p',error,panel);"
-        js = js & vbLf
-        js = js & "        const restartLabel=node('label',undefined,panel), restart=node('input',undefined,restartLabel);"
-        js = js & vbLf
-        js = js & "        restart.type='checkbox'; restart.checked=preferences.restart; restart.setAttribute('data-restart',''); restartLabel.appendChild(d.createTextNo"
-        js = js & "de(' Restart this IDE after a successful update'));"
-        js = js & vbLf
-        js = js & "        const actions=node('div',undefined,panel); actions.className='tbUI3UpdateActions';"
-        js = js & vbLf
-        js = js & "        button('Check for Updates',requestCheck,actions).disabled=busy;"
-        js = js & vbLf
-        js = js & "        const available=(catalog.components || []).some(c=>c.available);"
-        js = js & vbLf
-        js = js & "        button('Update Now',()=>stage('now'),actions).disabled=busy || !available;"
-        js = js & vbLf
-        js = js & "        button('Update on Exit',()=>stage('exit'),actions).disabled=busy || !available;"
-        js = js & vbLf
-        js = js & "        button('Remind Me Later',later,actions);"
-        js = js & vbLf
-        js = js & "        if (['ready','waiting'].includes(state.status)) button('Cancel Pending Update',()=>send('cancel'),actions);"
-        js = js & vbLf
-        js = js & "        if (state.status==='error' && state.recovery) node('p','Recovery journal: '+state.recovery+'. Use Updater.exe -Mode Recover with this session "
-        js = js & "context after closing the IDE.',panel);"
-        js = js & vbLf
-        js = js & "        if(env.installationSettings)button('Installation settings and repair',()=>{panel.close();env.installationSettings();},actions);"
-        js = js & vbLf
-        js = js & "        button('Close',()=>panel.close(),actions);"
+        js = js & "        state={...state,status:'staging',message:'Downloading and verifying selected updates...'};render();"
         js = js & vbLf
         js = js & "    }"
         js = js & vbLf
-        js = js & "    function attachOptions() {"
+        js = js & "    function later(){"
         js = js & vbLf
-        js = js & "        // Works even when native Options is rebuilt/filtered and in all toolbar modes."
+        js = js & "        if(['staging','ready','waiting'].includes(state.status))send('cancel');"
         js = js & vbLf
-        js = js & "        for (const name of d.querySelectorAll('.tbis-optionName')) {"
+        js = js & "        preferences.deferredUntil=Date.now()+24*60*60*1000;"
         js = js & vbLf
-        js = js & "            if (name.textContent.trim() !== 'Colour Theme') continue;"
-        js = js & vbLf
-        js = js & "            const anchor=name.closest('.tbis-optionRow'); if (!anchor || anchor.parentElement.querySelector('.tbUI3UpdateOptions')) continue;"
-        js = js & vbLf
-        js = js & "            const row=node('div'); row.className='tbis-optionRow tbUI3UpdateOptions tbUI3OptionActions';"
-        js = js & vbLf
-        js = js & "            const label=node('div','tbUI3 updates',row); label.className='tbis-optionLabelCol';"
-        js = js & vbLf
-        js = js & "            const value=node('div',undefined,row); value.className='tbis-optionValueCol';"
-        js = js & vbLf
-        js = js & "            button('Check for Updates',()=>{show();if(!busy)requestCheck();},value); anchor.after(row);"
-        js = js & vbLf
-        js = js & "        }"
+        js = js & "        send('later',{deferredUntil:preferences.deferredUntil});removeNotice();closePanel();"
         js = js & vbLf
         js = js & "    }"
         js = js & vbLf
-        js = js & "    function publish(result) {"
+        js = js & "    function choice(label,parent,checked,onchange){"
         js = js & vbLf
-        js = js & "        if (!result || typeof result.status !== 'string') return;"
+        js = js & "        const row=node('label',undefined,parent,'choice'),input=node('input',undefined,row);"
         js = js & vbLf
-        js = js & "        const oldCatalog=state.catalog;"
+        js = js & "        input.type='checkbox';input.checked=checked;node('span',label,row);"
         js = js & vbLf
-        js = js & "        state={...result,catalog:result.catalog || oldCatalog};"
+        js = js & "        input.onchange=()=>onchange(input);return input;"
         js = js & vbLf
-        js = js & "        busy=['checking','staging','ready','waiting','installing','rollingBack'].includes(state.status);"
+        js = js & "    }"
         js = js & vbLf
-        js = js & "        render();"
+        js = js & "    function info(parent,title,message,kind='info'){"
         js = js & vbLf
-        js = js & "        if (state.status==='checked' && (state.catalog.components || []).some(c=>c.available) && Date.now()>=preferences.deferredUntil) {"
+        js = js & "        const box=node('div',undefined,parent,'info-bar info-bar--'+kind);"
         js = js & vbLf
-        js = js & "            if (!notice) {"
+        js = js & "        node('span',undefined,box,'info-bar__icon').setAttribute('aria-hidden','true');"
         js = js & vbLf
-        js = js & "                notice=node('aside'); notice.id='tbUI3UpdateNotice'; notice.setAttribute('role','status');"
+        js = js & "        const copy=node('div',undefined,box);node('div',title,copy,'info-bar__title');"
         js = js & vbLf
-        js = js & "                node('span','Updates are available for twinBASIC / tbUI3. ',notice);"
+        js = js & "        if(message)node('div',message,copy,'info-bar__message');return copy;"
         js = js & vbLf
-        js = js & "                button('Review updates',show,notice); button('Remind Me Later',later,notice); d.body.appendChild(notice);"
+        js = js & "    }"
+        js = js & vbLf
+        js = js & "    function render(){"
+        js = js & vbLf
+        js = js & "        if(!panelBody)return;"
+        js = js & vbLf
+        js = js & "        applyTokens(panelHost);panelBody.replaceChildren();"
+        js = js & vbLf
+        js = js & "        node('h2','Updates for twinBASIC and tbUI3',panelBody);"
+        js = js & vbLf
+        js = js & "        const message=state.message||'';"
+        js = js & vbLf
+        js = js & "        if(message){if(state.status==='error')info(panelBody,'Update check needs attention',message,'warning');else node('p',message,panelBody).setAtt"
+        js = js & "ribute('role','status');}"
+        js = js & vbLf
+        js = js & "        const links=node('div',undefined,panelBody,'update-links');"
+        js = js & vbLf
+        js = js & "        button('Check for Updates',requestCheck,links,'subtle').disabled=busy;"
+        js = js & vbLf
+        js = js & "        if(env.installationSettings)button('Settings and repair',()=>{closePanel();env.installationSettings();},links,'subtle');"
+        js = js & vbLf
+        js = js & "        const automatic=choice('Check automatically once a day',panelBody,preferences.automatic,input=>{"
+        js = js & vbLf
+        js = js & "            preferences.automatic=input.checked;scheduleAutomatic(10000);send('preferences',{automatic:input.checked});"
+        js = js & vbLf
+        js = js & "        });automatic.dataset.automatic='';"
+        js = js & vbLf
+        js = js & "        const catalog=state.catalog||{components:[],errors:[]};"
+        js = js & vbLf
+        js = js & "        const list=node('div',undefined,panelBody,'update-list');"
+        js = js & vbLf
+        js = js & "        for(const c of catalog.components||[]){"
+        js = js & vbLf
+        js = js & "            const row=node('section',undefined,list,'card update-row');"
+        js = js & vbLf
+        js = js & "            const input=choice(componentNames[c.id]||c.id,row,!!c.available&&(selected.get(c.id)??true),control=>{"
+        js = js & vbLf
+        js = js & "                selected.set(c.id,control.checked);updateActions();"
+        js = js & vbLf
+        js = js & "            });"
+        js = js & vbLf
+        js = js & "            input.setAttribute('data-component',c.id);input.disabled=!c.available||busy;"
+        js = js & vbLf
+        js = js & "            node('p','Installed: '+(c.installed==='0'?'Not installed / unversioned':c.installed)+'; Available: '+c.version,row,'update-meta');"
+        js = js & vbLf
+        js = js & "            if(c.summary)node('p',c.summary,row);"
+        js = js & vbLf
+        js = js & "            if(c.architectures)node('p','Win32 installed '+c.architectures.win32+'; Win64 installed '+c.architectures.win64,row,'update-meta');"
+        js = js & vbLf
+        js = js & "            if(c.compatible===false)info(row,'Compatibility','This add-in supports IDE builds '+c.minIdeBuild+' to '+c.maxIdeBuild+'. Select a compati"
+        js = js & "ble IDE/add-in combination.','warning');"
+        js = js & vbLf
+        js = js & "            if(typeof c.source==='string'&&/^https:\/\/github\.com\//i.test(c.source)){"
+        js = js & vbLf
+        js = js & "                const link=node('a','Published release',row);link.href=c.source;link.target='_blank';link.rel='noopener noreferrer';"
         js = js & vbLf
         js = js & "            }"
         js = js & vbLf
         js = js & "        }"
         js = js & vbLf
+        js = js & "        for(const error of catalog.errors||[]){"
+        js = js & vbLf
+        js = js & "            if(/icon library:\s*missing icon library version\.?/i.test(String(error))){"
+        js = js & vbLf
+        js = js & "                info(panelBody,'Optional icon library','Its version could not be determined. IDE and add-in updates remain available. Manage the icon "
+        js = js & "library from the icon picker Setup controls.','info');"
+        js = js & vbLf
+        js = js & "            }else info(panelBody,'Release source unavailable',String(error),'warning');"
+        js = js & vbLf
+        js = js & "        }"
+        js = js & vbLf
+        js = js & "        const restart=choice('Restart this IDE after a successful update',panelBody,preferences.restart,input=>{preferences.restart=input.checked;});"
+        js = js & vbLf
+        js = js & "        restart.setAttribute('data-restart','');"
+        js = js & vbLf
+        js = js & "        if(!busy&&(catalog.components||[]).some(c=>c.available))button('Remind Me Later',later,panelBody,'subtle');"
+        js = js & vbLf
+        js = js & "        if(state.status==='error'&&state.recovery)node('p','Recovery journal: '+state.recovery+'. Open installation settings and repair for recovery.'"
+        js = js & ",panelBody,'update-meta');"
+        js = js & vbLf
+        js = js & "        const actions=node('footer',undefined,panelBody,'update-actions');let now,exit;"
+        js = js & vbLf
+        js = js & "        function updateActions(){const disabled=busy||selectedUpdates().length===0;if(now)now.disabled=disabled;if(exit)exit.disabled=disabled;}"
+        js = js & vbLf
+        js = js & "        if(['staging','ready','waiting'].includes(state.status))button('Cancel Pending Update',()=>send('cancel'),actions,'primary');"
+        js = js & vbLf
+        js = js & "        else if((catalog.components||[]).some(c=>c.available)){"
+        js = js & vbLf
+        js = js & "            now=button('Update Now',()=>stage('now'),actions,'primary');"
+        js = js & vbLf
+        js = js & "            exit=button('Update on Exit',()=>stage('exit'),actions);updateActions();"
+        js = js & vbLf
+        js = js & "        }"
+        js = js & vbLf
+        js = js & "        button('Close',closePanel,actions);"
+        js = js & vbLf
         js = js & "    }"
         js = js & vbLf
-        js = js & "    const style=node('style'); style.id='tbUI3UpdaterCss';"
+        js = js & "    function attachOptions(){"
         js = js & vbLf
-        js = js & "    style.textContent='#tbUI3UpdaterDialog{color:var(--themeGeneralTextColor,CanvasText);background:var(--themeGeneralBackColor,Canvas);border:1px sol"
-        js = js & "id GrayText;border-radius:8px;padding:24px;max-width:700px;width:calc(100% - 80px);max-height:80vh;overflow:auto;font:14px Segoe UI,sans-serif}#tbUI3U"
-        js = js & "pdaterDialog,#tbUI3UpdateNotice{color-scheme:light}.darkMode #tbUI3UpdaterDialog,.darkMode #tbUI3UpdateNotice{color-scheme:dark}#tbUI3UpdaterDialog h2"
-        js = js & "{font-size:20px}#tbUI3UpdaterDialog p{white-space:pre-wrap;overflow-wrap:anywhere}#tbUI3UpdaterDialog button,#tbUI3UpdateNotice button,.tbUI3OptionAct"
-        js = js & "ions button{font:inherit;padding:6px 12px;margin:4px;border-radius:4px}#tbUI3UpdaterDialog section{border-bottom:1px solid GrayText;padding:12px 0}.tb"
-        js = js & "UI3UpdateActions{margin-top:16px}#tbUI3UpdateNotice{position:fixed;right:16px;bottom:16px;z-index:2147483646;padding:12px;background:var(--themeGenera"
-        js = js & "lBackColor,Canvas);color:var(--themeGeneralTextColor,CanvasText);border:1px solid GrayText;border-radius:8px}';"
+        js = js & "        for(const name of d.querySelectorAll('.tbis-optionName')){"
         js = js & vbLf
-        js = js & "    d.head.appendChild(style); attachOptions();"
+        js = js & "            if(name.textContent.trim()!=='Colour Theme')continue;"
         js = js & vbLf
-        js = js & "    observer=new w.MutationObserver(attachOptions); observer.observe(d.body,{childList:true,subtree:true});"
+        js = js & "            const anchor=name.closest('.tbis-optionRow');if(!anchor||anchor.parentElement.querySelector('.tbUI3UpdateOptions'))continue;"
+        js = js & vbLf
+        js = js & "            const row=node('div');row.className='tbis-optionRow tbUI3UpdateOptions tbUI3OptionActions';"
+        js = js & vbLf
+        js = js & "            node('div','tbUI3 updates',row,'tbis-optionLabelCol');const value=node('div',undefined,row,'tbis-optionValueCol');"
+        js = js & vbLf
+        js = js & "            button('Check for Updates',()=>{show();if(!busy)requestCheck();},value);anchor.after(row);"
+        js = js & vbLf
+        js = js & "        }"
+        js = js & vbLf
+        js = js & "    }"
+        js = js & vbLf
+        js = js & "    function publish(result){"
+        js = js & vbLf
+        js = js & "        if(!result||typeof result.status!=='string')return;"
+        js = js & vbLf
+        js = js & "        const oldCatalog=state.catalog;"
+        js = js & vbLf
+        js = js & "        if(result.catalog&&result.catalog!==oldCatalog&&result.status==='checked')selected.clear();"
+        js = js & vbLf
+        js = js & "        state={...result,catalog:result.catalog||oldCatalog};"
+        js = js & vbLf
+        js = js & "        busy=['checking','staging','ready','waiting','installing','rollingBack'].includes(state.status);"
+        js = js & vbLf
+        js = js & "        render();"
+        js = js & vbLf
+        js = js & "        const available=(state.catalog?.components||[]).some(c=>c.available);"
+        js = js & vbLf
+        js = js & "        if(state.status==='checked'&&available&&Date.now()>=preferences.deferredUntil&&!panel?.open&&!notice){"
+        js = js & vbLf
+        js = js & "            notice=node('aside');notice.id='tbUI3UpdateNotice';notice.setAttribute('role','status');d.body.appendChild(notice);"
+        js = js & vbLf
+        js = js & "            const view=toolkitSurface(notice,'update-notice');noticeHost=view.host;"
+        js = js & vbLf
+        js = js & "            const copy=info(view.body,'Updates are available','New versions are available for twinBASIC or tbUI3.');"
+        js = js & vbLf
+        js = js & "            const actions=node('div',undefined,copy,'update-actions');"
+        js = js & vbLf
+        js = js & "            button('Review updates',show,actions,'primary');button('Remind Me Later',later,actions,'subtle');"
+        js = js & vbLf
+        js = js & "        }else if(state.status==='checked'&&!available)removeNotice();"
+        js = js & vbLf
+        js = js & "    }"
+        js = js & vbLf
+        js = js & "    const style=node('style');style.id='tbUI3UpdaterCss';"
+        js = js & vbLf
+        js = js & "    // Outer placement and native top-layer modality only. Toolkit tokens style the content."
+        js = js & vbLf
+        js = js & "    style.textContent='#tbUI3UpdaterDialog{box-sizing:border-box;border:0;border-radius:8px;padding:0;margin:auto;width:min(700px,calc(100vw - 48px));"
+        js = js & "max-height:86vh;overflow:hidden;background:Canvas;color:CanvasText}#tbUI3UpdaterDialog::backdrop{background:rgba(0,0,0,.40)}#tbUI3UpdateNotice{positio"
+        js = js & "n:fixed;right:16px;bottom:16px;z-index:2147483646;width:min(440px,calc(100vw - 32px))}.tbUI3OptionActions button{font:inherit;padding:6px 12px;margin:"
+        js = js & "4px;border-radius:4px}';"
+        js = js & vbLf
+        js = js & "    d.head.appendChild(style);attachOptions();"
+        js = js & vbLf
+        js = js & "    observer=new w.MutationObserver(attachOptions);observer.observe(d.body,{childList:true,subtree:true});"
         js = js & vbLf
         js = js & "    scheduleAutomatic(env.checkDue===false?24*60*60*1000:10000);"
         js = js & vbLf
-        js = js & "    return {"
+        js = js & "    return{"
         js = js & vbLf
-        js = js & "        show, publish,"
+        js = js & "        show,publish,"
+        js = js & vbLf
+        js = js & "        setAppearance:next=>{appearance={themeMode:next.themeMode,accent:next.accent};applyTokens(panelHost);applyTokens(noticeHost);},"
         js = js & vbLf
         js = js & "        setPreferences:next=>{const changed=preferences.automatic!==next.automatic;preferences.automatic=next.automatic;preferences.deferredUntil=next"
         js = js & ".deferredUntil;preferences.restart=next.restart;if(changed)scheduleAutomatic(10000);render();},"
         js = js & vbLf
         js = js & "        take:()=>{const q=queue.shift();return q?JSON.stringify(q):'';},"
         js = js & vbLf
-        js = js & "        // Normal native IDE command runs its save/unsaved-document close path."
-        js = js & vbLf
         js = js & "        closeIde:()=>env.closeIde(),"
         js = js & vbLf
-        js = js & "        dispose:()=>{observer.disconnect();w.clearTimeout(autoTimer);if(panel)panel.remove();if(notice)notice.remove();style.remove();d.querySelectorA"
-        js = js & "ll('.tbUI3UpdateOptions').forEach(n=>n.remove());}"
+        js = js & "        dispose:()=>{observer.disconnect();w.clearTimeout(autoTimer);panel?.remove();removeNotice();style.remove();d.querySelectorAll('.tbUI3UpdateOpt"
+        js = js & "ions').forEach(n=>n.remove());}"
         js = js & vbLf
         js = js & "    };"
         js = js & vbLf

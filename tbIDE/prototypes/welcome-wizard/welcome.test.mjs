@@ -109,9 +109,9 @@ test('view has no filesystem, network or browser persistence side effects',()=>{
 });
 
 test('theme and toolbar selector previews share compact miniature renderer',()=>{
-  assert.match(js,/function miniIde\(parent,item,mode\)/);
+  assert.match(js,/function miniIde\(parent,item,mode,toolbarPreview=false\)/);
   assert.match(js,/return miniIde\(parent,item,'Classic'\)/);
-  assert.match(js,/miniIde\(card,selectedTheme,name\)/);
+  assert.match(js,/miniIde\(card,selectedTheme,name,true\)/);
   assert.match(js,/welcome-toolbar-card/);
   assert.match(css,/\.welcome-mini-ide \{/);
   assert.match(css,/height: 86px/);
@@ -121,7 +121,7 @@ test('theme and toolbar selector previews share compact miniature renderer',()=>
 test('resolved theme paint is validated and not interpreted as raw CSS',()=>{
   assert.match(js,/COLOR_FIELDS = \['background','surface','foreground','accent','titlebar','toolbar','panel','editor','muted','border'\]/);
   assert.match(js,/\^#\[0-9a-fA-F\]/);
-  assert.match(js,/outer\.style\.setProperty\(cssMap\[key\],palette\[key\]\)/);
+  assert.match(js,/outer\.style\.setProperty\(cssMap\[key\],fixed\[key\]\)/);
   assert.match(js,/!palette && \(!item \|\| !FEATURED_THEMES\.includes\(item\.name\)\)/);
   assert.match(readme,/per-user AppData twinBASIC themes directory/);
   assert.match(readme,/active installation's themes directory/);

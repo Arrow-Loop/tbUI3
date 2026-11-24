@@ -64,6 +64,14 @@ Private Class tbUI3IDEAddin
 
     Public Sub New(ByVal Host As Host)
         Set Me.Host = Host
+        ' Automatic Welcome is allowed only during the initial idle startup window.
+        ' Register before toolbar/bootstrap work; do not take focus from a working user.
+        On Error Resume Next
+        RunJs "(function(){if(window.__tbUI3StartupWelcome)return 'startup gate ready';var start=performance.now(),used=false;" & _
+            "var mark=function(e){if(e.isTrusted)used=true;};document.addEventListener('pointerdown',mark,true);document.addEventListener('keydown',mark,true);" & _
+            "var dispose=function(){document.removeEventListener('pointerdown',mark,true);document.removeEventListener('keydown',mark,true);};" & _
+            "window.__tbUI3StartupWelcome={consume:function(){var allow=!used&&performance.now()-start<=2500;used=true;dispose();return allow;},dispose:dispose};return 'startup gate ready';})()"
+        On Error GoTo 0
         Set TabDesigner = New TabViewDesignerController(Host)
         Log "loaded: " & Architecture() & ", IDE compiler " & SafeCompilerVersion()
         ApplyForActiveTheme "start-up"
@@ -94,6 +102,7 @@ Private Class tbUI3IDEAddin
         If Not Updater Is Nothing Then Updater.Dispose
         Set Updater = Nothing
         If Not StyleWindow Is Nothing Then
+            RunJs "if(window.__tbUI3StartupWelcome)window.__tbUI3StartupWelcome.dispose();delete window.__tbUI3StartupWelcome;'startup gate removed'"
             RunJs "(function(){var t=window.__tbUI3Toolbar;if(t)t.dispose();delete window.__tbUI3Toolbar;if(window.__tbUI3Appearance)window.__tbUI3Appearance.dispose();delete window.__tbUI3Appearance;var s=document.getElementById('tbUI3ToolbarCss');if(s)s.remove();return 'toolbar removed';})()"
         End If
         ClearStyle

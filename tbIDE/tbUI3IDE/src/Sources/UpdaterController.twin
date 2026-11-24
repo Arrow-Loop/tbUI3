@@ -21,8 +21,7 @@ Private Class UpdaterController
     Private mThemeCatalog As UpdateJson
     Private mCatalogAccent As String
     Private mDiscoveryDeadline As Date
-    Private mThemeRequestId As String
-    Private mThemeDeadline As Date
+    Private mPolling As Boolean
     Private mLastPalette As String
     Private mLastViewTheme As String
     Private mLastViewToolbar As String
@@ -116,6 +115,7 @@ Private Class UpdaterController
         state.Assign "settingsError", JS(mPreferenceFault)
         state.Assign "preferences", settings: state.Assign "bootstrap", mBundle.Snapshot
         state.Assign "theme", JS(mHost.Themes.ActiveThemeName)
+        state.Assign "themeMode", JS(LCase$(mHost.Themes.ActiveThemeNameGroup))
         state.Assign "accent", JParse(WinUI3SystemAccent.ReadPalette())
         state.Assign "installedThemes", InstalledThemes()
         Dim discovery As UpdateJson = JParse(mThemeSource), themeStatus As UpdateJson = JO()
@@ -157,17 +157,20 @@ Private Class UpdaterController
     End Function
     Private Sub PublishPreferences()
         If Not mInstalled Then Exit Sub
-        Eval "window.__tbUI3Installation.publish(" & Snapshot().Encode() & ");window.__tbUI3Updater.setPreferences(" & ReadPreferences().Encode() & ");'settings synchronized'"
+        Dim state As String = Snapshot().Encode()
+        Eval "(function(){var s=" & state & ";window.__tbUI3Installation.publish(s);window.__tbUI3Updater.setAppearance(s);window.__tbUI3Updater.setPreferences(" & ReadPreferences().Encode() & ");return 'settings synchronized';})()"
     End Sub
     Private Sub InitializeUI()
         Dim settings As UpdateJson = ReadPreferences()
         Eval "window.__tbUI3ThemeFactory=" & MResourceText("tbUI3-theme-service.js") & ";'theme service factory loaded'"
-        Eval "window.__tbUI3Themes=window.__tbUI3ThemeFactory({themes:function(){return customThemes;},afterRefresh:function(){return afterRefreshedThemes;},setAfterRefresh:function(fn){afterRefreshedThemes=fn;},reload:function(){reloadThemesFromDisk();},current:function(){return liveIDEOptions.colorTheme;},setCurrent:function(name){liveIDEOptions.colorTheme=name;},save:function(){saveIDEOptions();},changed:function(){changedIdeOptions();},notify:function(){root.notifyChangedTheme();},pendingId:function(){return window.__tbUI3ThemePendingId;},setPendingId:function(id){window.__tbUI3ThemePendingId=id;},result:function(value){window.__tbUI3ThemeResult=value;}});window.__tbUI3Themes.refresh();'installed theme discovery started'"
-        mDiscoveryDeadline = DateAdd("s", 15, Now)
+        Eval "window.__tbUI3Themes=window.__tbUI3ThemeFactory({themes:function(){return customThemes;},afterRefresh:function(){return afterRefreshedThemes;},setAfterRefresh:function(fn){afterRefreshedThemes=fn;},reload:function(){reloadThemesFromDisk();},current:function(){return liveIDEOptions.colorTheme;},setCurrent:function(name){liveIDEOptions.colorTheme=name;},save:function(){saveIDEOptions();},changed:function(){changedIdeOptions();},notify:function(){root.notifyChangedTheme();}});'installed theme adapter ready'"
+        RefreshThemeDiscovery True
         Eval UpdaterScript.Build()
         Eval "window.__tbUI3Updater=" & UpdaterScript.Factory() & "({document:document,window:window,automatic:" & IIf(JBool(settings, "automatic"), "true", "false") & _
             ",restart:" & IIf(JBool(settings, "restart"), "true", "false") & ",deferredUntil:" & Trim$(Str$(JD(settings, "deferredUntil"))) & _
             ",checkDue:" & IIf(JT(settings, "lastCheck") <> Format$(Date, "yyyy-mm-dd"), "true", "false") & _
+            ",masterCss:" & JQuote(MResourceText("tbUI3-welcome-master.css")) & _
+            ",themeMode:function(){return typeof getBaseThemeName==='function'?getBaseThemeName():'light';},accent:" & WinUI3SystemAccent.ReadPalette() & _
             ",installationSettings:function(){window.__tbUI3Installation.show('settings');},closeIde:function(){closeProjectSafely(function(){window.__tbUI3UpdateExit=function(){hostAppObject.Exit('ignore');};});}});'updater installed'"
         Eval MResourceText("tbUI3-welcome.js") & vbLf & ";'welcome wizard loaded'"
         Eval "window.__tbUI3InstallationFactory=" & MResourceText("tbUI3-installation.js") & ";'installation factory loaded'"
@@ -175,7 +178,7 @@ Private Class UpdaterController
             ",styles:" & JQuote(MResourceText("tbUI3-installation.css")) & ",dialogStyles:" & JQuote(MResourceText("tbUI3-dialog.css")) & _
             ",welcomeStyles:" & JQuote(MResourceText("tbUI3-welcome.css")) & ",welcomeMaster:" & JQuote(MResourceText("tbUI3-welcome-master.css")) & _
             ",welcomeControls:" & JQuote(MResourceText("tbUI3-welcome-controls.js")) & _
-            ",showWelcome:" & IIf(WelcomeNeeded(), "true", "false") & ",themeMode:function(){return typeof getBaseThemeName==='function'?getBaseThemeName():'light';},showUpdates:function(){window.__tbUI3Installation.hide();window.__tbUI3Updater.show();}});'installation UI loaded'"
+            ",showWelcome:" & IIf(WelcomeNeeded(), "true", "false") & ",canAutoWelcome:function(){var g=window.__tbUI3StartupWelcome;return !!g&&g.consume();},themeMode:function(){return typeof getBaseThemeName==='function'?getBaseThemeName():'light';},showUpdates:function(){window.__tbUI3Installation.hide();window.__tbUI3Updater.show();}});'installation UI loaded'"
         mInstalled = True
     End Sub
     Private Sub SavePreferences(ByVal request As UpdateJson)
@@ -202,14 +205,19 @@ Private Class UpdaterController
         IUnlock guard: UFail reason
     End Sub
     Private Sub ApplyTheme(ByVal name As String, ByVal requestId As String)
-        If Len(mThemeRequestId) > 0 Then UFail "Wait for the current theme request to finish."
-        mThemeRequestId = requestId: mThemeDeadline = DateAdd("s", 15, Now): mDiscoveryDeadline = mThemeDeadline
+        ' The loader has already discovered these exact names. No second reload, and
+        ' no asynchronous theme lock can survive a rejected or completed request.
         Dim theme As UpdateJson, allowed As Boolean
         For Each theme In InstalledThemes().Items
             If JT(theme, "name") = name Then allowed = True
         Next
         If Not allowed Then UFail "Choose an exact theme from the current installed IDE inventory."
-        Eval "window.__tbUI3ThemePendingId=" & JQuote(requestId) & ";window.__tbUI3Themes.choose(" & JQuote(name) & "," & JQuote(requestId) & ");'installed theme change requested'"
+        Dim raw As String = Eval("JSON.stringify(window.__tbUI3Themes.choose(" & JQuote(name) & "," & JQuote(requestId) & "))")
+        Dim result As UpdateJson = JParse(raw)
+        If JT(result, "requestId") <> requestId Then UFail "Unexpected theme confirmation."
+        mAckOk = JBool(result, "ok")
+        mMessage = JT(result, "message")
+        If Not mAckOk Then mMessage = "Error: " & mMessage
     End Sub
     Private Function RecoveryContext() As String
         Dim path As String = USafe(mHome, "active.json")
@@ -238,13 +246,18 @@ Private Class UpdaterController
     End Sub
     Public Sub Poll()
         On Error GoTo Failed
-        If mClosing Then Exit Sub
+        If mClosing Or mPolling Then Exit Sub
+        mPolling = True
+        Dim fromInstallation As Boolean
         If Not mInstalled Then InitializeUI
         If Now >= mRefreshAt Then
             mBundle.Refresh: RefreshThemeDiscovery: mRefreshAt = DateAdd("s", 30, Now): PublishPreferences
         End If
         Dim raw As String = Eval("window.__tbUI3Updater.take()")
-        If Len(raw) = 0 Then raw = Eval("window.__tbUI3Installation.take()")
+        If Len(raw) = 0 Then
+            raw = Eval("window.__tbUI3Installation.take()")
+            fromInstallation = Len(raw) > 0
+        End If
         If Len(raw) > 0 Then
             Dim request As UpdateJson = JParse(raw), action As String = JT(request, "action")
             mAckId = JT(request, "requestId"): mAckOk = True
@@ -289,23 +302,8 @@ Private Class UpdaterController
                     Launch "Recover", recovery
                 Case Else: UFail "Unsupported installation request."
             End Select
-            If action <> "choose-theme" Then PublishPreferences
-        End If
-        Dim themeResult As String = Eval("(function(){var r=window.__tbUI3ThemeResult;if(!r)return '';delete window.__tbUI3ThemeResult;return JSON.stringify(r);})()")
-        If Len(themeResult) > 0 Then
-            Dim themeAck As UpdateJson = JParse(themeResult)
-            If JT(themeAck, "requestId") = mThemeRequestId Then
-                mAckId = mThemeRequestId: mThemeRequestId = "": mAckOk = JBool(themeAck, "ok")
-                mMessage = JT(themeAck, "message")
-                If Not mAckOk Then mMessage = "Error: " & mMessage
-                PublishPreferences
-            End If
-        End If
-        If Len(mThemeRequestId) > 0 And Now > mThemeDeadline Then
-            Eval "window.__tbUI3ThemePendingId=null;window.__tbUI3Themes.timeout();'theme request expired'"
-            mAckId = mThemeRequestId: mThemeRequestId = "": mAckOk = False
-            mMessage = "Error: the IDE theme refresh timed out. The late request was cancelled; retry after checking provisioning."
             PublishPreferences
+            fromInstallation = False
         End If
         If Now > mDiscoveryDeadline Then
             Eval "window.__tbUI3Themes.timeout();'theme discovery deadline checked'"
@@ -318,7 +316,7 @@ Private Class UpdaterController
             mLastPalette = palette: mLastViewTheme = actualTheme: mLastViewToolbar = actualToolbar
             PublishPreferences
         End If
-        If Len(mSession) = 0 Then Exit Sub
+        If Len(mSession) = 0 Then GoTo Finished
         Dim result As String = ReadText(USafe(mSession, "state.json"))
         If Len(result) > 0 And result <> mLastState Then
             mLastState = result
@@ -345,23 +343,27 @@ Private Class UpdaterController
             mClosing = True
             Eval "(function(){var next=window.__tbUI3UpdateExit;delete window.__tbUI3UpdateExit;next();return 'normal exit resumed';})()"
         End If
+    Finished:
+        mPolling = False
         Exit Sub
     Failed:
         Dim reason As String = Err.Description
-        mBusy = False: mMessage = "Error: " & reason: mAckOk = False
-        If Len(mThemeRequestId) > 0 And mAckId = mThemeRequestId Then
-            mThemeRequestId = ""
-            Eval "window.__tbUI3ThemePendingId=null;'theme cancelled'"
-        End If
+        mMessage = "Error: " & reason: mAckOk = False
         On Error Resume Next
-        Eval "if(window.__tbUI3Updater)window.__tbUI3Updater.publish({status:'error',message:" & JQuote(reason) & "});'request failed'"
+        ' A wizard/appearance failure must not cancel an independent native update
+        ' or replace its current transaction status with an unrelated message.
+        If Not fromInstallation Then
+            mBusy = False
+            Eval "if(window.__tbUI3Updater)window.__tbUI3Updater.publish({status:'error',message:" & JQuote(reason) & "});'request failed'"
+        End If
         PublishPreferences
         mHost.DebugConsole.PrintText "[tbUI3 updater] " & reason
+        mPolling = False
     End Sub
     Public Sub Dispose()
         On Error Resume Next
         If mInstalled Then Eval "if(window.__tbUI3Installation)window.__tbUI3Installation.dispose();delete window.__tbUI3Installation;if(window.__tbUI3Updater)window.__tbUI3Updater.dispose();delete window.__tbUI3Updater;'updater UI removed'"
-        If mInstalled Then Eval "if(closeProjectSafely===window.__tbUI3UpdaterCloseHook)closeProjectSafely=window.__tbUI3UpdaterOriginalClose;delete window.__tbUI3UpdaterFactory;delete window.__tbUI3InstallationFactory;delete window.__tbUI3ThemeFactory;delete window.__tbUI3Themes;window.__tbUI3ThemePendingId=null;delete window.__tbUI3UpdatePending;'hooks removed'"
+        If mInstalled Then Eval "if(closeProjectSafely===window.__tbUI3UpdaterCloseHook)closeProjectSafely=window.__tbUI3UpdaterOriginalClose;delete window.__tbUI3UpdaterFactory;delete window.__tbUI3InstallationFactory;delete window.__tbUI3ThemeFactory;if(window.__tbUI3Themes)window.__tbUI3Themes.dispose();delete window.__tbUI3Themes;delete window.__tbUI3UpdatePending;'hooks removed'"
         Set mWindow = Nothing: Set mHost = Nothing
     End Sub
     Private Sub ResetPreferences()

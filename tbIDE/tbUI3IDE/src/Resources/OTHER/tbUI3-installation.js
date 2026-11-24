@@ -1,7 +1,7 @@
 (function createInstallationUI(env) {
  'use strict';
  const d=env.document,w=env.window,queue=[],pending=new Set();
- let state=env.state,settingsDialog,shadow,content,welcomeShell,welcome,confirmation,confirmationContent,disposed=false,serial=0,previousFocus,welcomeTimer,repairDecision;
+ let state=env.state,settingsDialog,shadow,content,welcomeShell,welcome,confirmation,confirmationContent,disposed=false,serial=0,previousFocus,repairDecision;
  const wizardActions=new Set(['choose-theme','choose-toolbar','installation-preferences','welcome-record','bootstrap-retry','repair-resource']);
  function node(tag,text,parent,className){const n=d.createElement(tag);if(text!==undefined)n.textContent=text;if(className)n.className=className;if(parent)parent.append(n);return n;}
  function button(text,action,parent,accent=false){const n=node('button',text,parent,'button'+(accent?' button--accent':''));n.type='button';n.onclick=action;return n;}
@@ -11,8 +11,8 @@
  function closeDialog(dialog){if(!dialog)return;if(typeof dialog.close==='function')dialog.close();else dialog.removeAttribute('open');}
  function openDialog(dialog){if(dialog.open)return;if(typeof dialog.showModal==='function')dialog.showModal();else dialog.setAttribute('open','');}
  function themeMode(){return env.themeMode&&String(env.themeMode()).toLowerCase()==='dark'?'dark':'light';}
- function tokens(element){
-  element.setAttribute('data-theme',themeMode());
+ function tokens(element,applyMode=true){
+  if(applyMode)element.setAttribute('data-theme',themeMode());
   const keys=['light3','light2','light1','','dark1','dark2','dark3'];
   if(Array.isArray(state.accent)&&state.accent.length===7)state.accent.forEach((color,i)=>{if(/^#[0-9a-f]{6}$/i.test(color))element.style.setProperty('--win-accent'+(keys[i]?'-'+keys[i]:''),color);});
  }
@@ -57,9 +57,8 @@
  }
  function syncFrame(){
   const frame=welcomeShell?.querySelector('iframe'),inner=frame?.contentDocument;if(!inner)return;
-  tokens(inner.documentElement);
-  const mode=state.installedThemes?.find(t=>t.name===state.theme)?.mode;
-  if(welcome&&pending.size===0&&(mode==='light'||mode==='dark'))welcome.setPreviewMode(mode);
+  // The Wizard owns its preview mode; apply only the system accent here.
+  tokens(inner.documentElement,false);
  }
  function watchFrame(){
   const frame=welcomeShell.querySelector('iframe');if(!frame||frame.dataset.nativeWatched)return;
@@ -122,10 +121,10 @@
  const style=node('style',undefined,d.head);style.textContent=env.dialogStyles;
  attach();const observer=new w.MutationObserver(attach);observer.observe(d.body,{childList:true,subtree:true});
  const themeObserver=new w.MutationObserver(syncTheme);themeObserver.observe(d.documentElement,{attributes:true,attributeFilter:['class','style','data-theme']});
- if(env.showWelcome)welcomeTimer=w.setTimeout(()=>{if(!disposed)showWelcome();},1000);
+ if(env.showWelcome&&env.canAutoWelcome?.()&&!disposed)showWelcome();
  return {show:which=>which==='welcome'?showWelcome():showSettings(),hide:()=>{if(welcome)welcome.close();closeDialog(settingsDialog);},
   take:()=>{const next=queue.shift();return next?JSON.stringify(next):'';},
-  publish:next=>{state=next;if(next.ack?.id)pending.delete(next.ack.id);renderSettings();syncTheme();if(welcome&&pending.size===0){welcome.setSnapshot(wizardSnapshot(next));syncFrame();if(welcome.getState().open&&!welcomeShell.contains(d.activeElement))welcomeShell.querySelector('iframe')?.focus();}},
-  dispose:()=>{disposed=true;if(repairDecision){repairDecision(false);repairDecision=null;}w.clearTimeout(welcomeTimer);observer.disconnect();themeObserver.disconnect();if(welcome)welcome.destroy();for(const dialog of[welcomeShell,settingsDialog,confirmation])if(dialog)dialog.remove();style.remove();d.querySelectorAll('.tbUI3InstallationOptions').forEach(n=>n.remove());}
+  publish:next=>{state=next;if(next.ack?.id)pending.delete(next.ack.id);renderSettings();syncTheme();if(welcome&&pending.size===0){welcome.setSnapshot(wizardSnapshot(next));syncFrame();if(welcome.getState().open&&!confirmation?.open&&!welcomeShell.contains(d.activeElement))welcomeShell.querySelector('iframe')?.focus();}},
+  dispose:()=>{disposed=true;if(repairDecision){repairDecision(false);repairDecision=null;}observer.disconnect();themeObserver.disconnect();if(welcome)welcome.destroy();for(const dialog of[welcomeShell,settingsDialog,confirmation])if(dialog)dialog.remove();style.remove();d.querySelectorAll('.tbUI3InstallationOptions').forEach(n=>n.remove());}
  };
 })

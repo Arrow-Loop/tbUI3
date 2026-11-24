@@ -468,7 +468,8 @@ test('the actual theme option restores its saved disabled state without disablin
     assert.equal(window.__tbUI3TabDesigner.run('new'),'Tabs1_Page1');
 });
 
-test('actual native theme changes remove optional CSS and stale theme keys without the host notification',async()=>{
+test('actual native theme changes remove optional CSS and stale theme keys without the host notification',async t=>{
+    if(!process.env.TB_IDE_MAIN_JS)return t.skip('Set TB_IDE_MAIN_JS for native theme-change contract');
     const {JSDOM}=await import(process.env.TB_JSDOM_MODULE||'jsdom');
     const dom=new JSDOM('<html><head><style id="winui3IdeStyleCss">body { --color-text: white; }</style></head><body><div class="sectionHeaderInner">TOOLBOX</div></body></html>',{runScripts:'outside-only'}),w=dom.window;
     const native=fs.readFileSync(process.env.TB_IDE_MAIN_JS,'utf8');

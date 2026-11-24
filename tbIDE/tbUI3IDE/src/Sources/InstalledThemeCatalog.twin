@@ -13,14 +13,27 @@ Private Module InstalledThemeCatalog
         entry.Assign "name", JS(name)
         If mode = "light" Or mode = "dark" Then entry.Assign "mode", JS(mode)
         On Error GoTo Unavailable
-        If Len(JT(theme, "error")) > 0 Then UFail JT(theme, "error")
         Dim values As Object = CreateObject("Scripting.Dictionary"), part As UpdateJson
-        For Each part In theme.Member("chain").Items: TParse part.Text, values: Next
-        Dim palette As UpdateJson = JO(), background As String = TPaint(values, "GeneralBackColor"), surface As String = TPaint(values, "PanelBackground")
-        Dim foreground As String = TPaint(values, "GeneralTextColor"), accent As String = TPaint(values, "AddinAccentBackColor")
-        If name = "WinUI3 Light" Or name = "WinUI3 Dark" Then
-            If Len(THex(windowsAccent)) > 0 Then accent = THex(windowsAccent)
+        values.CompareMode = vbTextCompare
+        If Len(JT(theme, "error")) = 0 Then
+            For Each part In theme.Member("chain").Items: TParse part.Text, values: Next
+        Else
+            If InStr(1, JT(theme, "error"), "Recursive", vbTextCompare) > 0 Then UFail JT(theme, "error")
+            ' Some IDE builds expose names but omit the original declaration text.
+            ' Read only an exact matching theme file, never an arbitrary browser path.
+            Dim visited As Object = CreateObject("Scripting.Dictionary")
+            visited.CompareMode = vbTextCompare
+            TReadChain name, values, visited, 0
         End If
+        Dim palette As UpdateJson = JO()
+        Dim background As String = TFirstPaint(values, "GeneralBackColor|GeneralPanelBackColor|CodePanelBackColor|MenuBackColor")
+        Dim surface As String = TFirstPaint(values, "PanelBackground|DockContainerBackground|GeneralPanelBackColor|ToolbarBackground|GeneralBackColor")
+        Dim foreground As String = TFirstPaint(values, "GeneralTextColor|MenuForeColor|PanelHeaderTextColor|ToolWindowBodyForeColor")
+        ' AddinAccentBackColor is not required by native themes. Use their real accent or
+        ' selection declarations, not the currently active IDE theme's computed palette.
+        Dim accent As String = TFirstPaint(values, "AddinAccentBackColor|FindResultColor|FrontPageIconColor|DebugIntellisensePartialMatchColor|SelectedTextBackColor|ToolbarPreviewButtonColor")
+        If Len(surface) = 0 Then surface = background
+        If Len(accent) = 0 Then accent = foreground
         If Len(background) = 0 Or Len(surface) = 0 Or Len(foreground) = 0 Or Len(accent) = 0 Then UFail "Effective base theme colors are unavailable."
         palette.Assign "background", JS(background): palette.Assign "surface", JS(surface)
         palette.Assign "foreground", JS(foreground): palette.Assign "accent", JS(accent)
@@ -29,7 +42,7 @@ Private Module InstalledThemeCatalog
         TOptional palette, "panel", surface
         TOptional palette, "editor", TPaint(values, "CodePanelBackColor")
         TOptional palette, "muted", TPaint(values, "GeneralSubTextColor")
-        TOptional palette, "border", TPaint(values, "AddinBorderColor")
+        TOptional palette, "border", TFirstPaint(values, "AddinBorderColor|GeneralSubTextColor|GeneralTextColor")
         entry.Assign "preview", palette
         Set TEntry = entry: Exit Function
     Unavailable:
@@ -39,7 +52,45 @@ Private Module InstalledThemeCatalog
     Private Sub TOptional(ByVal palette As UpdateJson, ByVal key As String, ByVal value As String)
         If Len(value) > 0 Then palette.Assign key, JS(value)
     End Sub
+    Private Sub TReadChain(ByVal name As String, ByVal values As Object, ByVal visited As Object, ByVal depth As Long)
+        If depth > 32 Or visited.Exists(name) Then UFail "Recursive or excessive theme inheritance."
+        If Len(name) = 0 Or Len(name) > 160 Or name = "." Or name = ".." Then UFail "Invalid installed theme name."
+        Dim bad As Variant
+        For Each bad In Split("\|/|:|*|?|<|>|" & Chr(34), "|")
+            If InStr(name, CStr(bad)) > 0 Then UFail "Invalid installed theme filename."
+        Next
+        If InStr(name, "|") > 0 Then UFail "Invalid installed theme filename."
+        visited.Item(name) = True
+        Dim localPath As String = USafe(LCompilerRoot(), "themes/" & name & ".theme")
+        Dim appRoot As String = Environ$("APPDATA"), userPath As String
+        If Len(appRoot) = 0 Then UFail "Theme directory is unavailable."
+        userPath = USafe(appRoot, "twinBASIC/themes/" & name & ".theme")
+        Dim found As Boolean, body As String
+        If UExists(localPath) Then
+            If USize(localPath) > 1048576 Then UFail "Theme text is too large."
+            body = UText(localPath): found = True
+        End If
+        If UExists(userPath) Then
+            If USize(userPath) > 1048576 Then UFail "Theme text is too large."
+            Dim userText As String = UText(userPath)
+            If found And userText <> body Then UFail "Duplicate theme files require the IDE loader's effective text."
+            body = userText: found = True
+        End If
+        If Not found Then UFail "The exact installed theme file could not be read."
+        Dim declarations As Object = CreateObject("Scripting.Dictionary")
+        declarations.CompareMode = vbTextCompare
+        TParse body, declarations
+        If declarations.Exists("inherits") Then
+            Dim parent As String = Trim$(CStr(declarations.Item("inherits")))
+            If Len(parent) > 0 Then TReadChain parent, values, visited, depth + 1
+        End If
+        Dim key As Variant
+        For Each key In declarations.Keys
+            values.Item(key) = declarations.Item(key)
+        Next
+    End Sub
     Private Sub TParse(ByVal text As String, ByVal values As Object)
+        If Left$(text, 1) = ChrW$(&HFEFF&) Then text = Mid$(text, 2)
         Dim at As Long, finish As Long
         Do
             at = InStr(text, "/*"): If at = 0 Then Exit Do
@@ -47,21 +98,28 @@ Private Module InstalledThemeCatalog
             If finish = 0 Then UFail "Unterminated theme comment."
             text = Left$(text, at - 1) & Mid$(text, finish + 2)
         Loop
-        ' Match BETA 1045 applyThemeData delimiters; do not interpret other theme content as CSS.
-        text = text & vbCrLf
-        text = Replace(text, "; ", "%;%"): text = Replace(text, ";" & vbTab, "%;%")
-        text = Replace(text, ";" & vbCrLf, "%;%"): text = Replace(text, ";" & vbLf, "%;%")
-        Dim declaration As Variant, parts() As String
-        For Each declaration In Split(text, "%;%")
-            Dim line As String = Replace(Replace(CStr(declaration), vbCr, ""), vbLf, "")
-            line = Replace(Replace(line, ": ", "%:%"), ":" & vbTab, "%:%")
-            parts = Split(line, "%:%")
-            If UBound(parts) = 1 Then
-                Dim key As String = LTrim$(Replace(parts(0), vbTab, " ")), value As String = Trim$(Replace(Replace(parts(1), "!important", ""), vbTab, " "))
-                values.Item(key) = value
+        ' Parse declarations independently of indentation, capitalization and line endings.
+        ' Only the allowlisted paint keys are consumed below; no CSS is executed.
+        Dim declaration As Variant
+        For Each declaration In Split(text, ";")
+            Dim line As String = Trim$(Replace(Replace(Replace(CStr(declaration), vbCr, ""), vbLf, ""), vbTab, " "))
+            Dim separator As Long = InStr(line, ":")
+            If separator > 1 Then
+                Dim key As String = Trim$(Left$(line, separator - 1))
+                Dim value As String = Trim$(Mid$(line, separator + 1))
+                If Right$(LCase$(value), 10) = "!important" Then value = Trim$(Left$(value, Len(value) - 10))
+                If Len(key) > 0 And Len(value) > 0 Then values.Item(key) = value
             End If
         Next
     End Sub
+    Private Function TFirstPaint(ByVal values As Object, ByVal names As String) As String
+        Dim name As Variant
+        For Each name In Split(names, "|")
+            Dim paint As String = TPaint(values, CStr(name))
+            If Len(paint) > 0 Then Return paint
+        Next
+        Return ""
+    End Function
     Private Function TPaint(ByVal values As Object, ByVal key As String, Optional ByVal depth As Long = 0) As String
         If depth > 16 Or Not values.Exists(key) Then Return ""
         Dim value As String = LCase$(Trim$(CStr(values.Item(key))))

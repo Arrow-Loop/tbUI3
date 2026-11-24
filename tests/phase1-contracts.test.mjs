@@ -7,9 +7,16 @@ test('all standalone production native IDE Eval snippets parse as JavaScript',()
  for(const m of snippets)assert.doesNotThrow(()=>new vm.Script(m[1]),m[1]);
 });
 test('shared native contracts remain byte-identical in both projects',()=>{
- for(const name of ['UpdateJson','UpdaterJson','UpdaterPlatform','UpdaterProcesses','InstallationContracts','ManagedResources','Phase1Config'])assert(fs.readFileSync('tbIDE/Updater/src/Sources/'+name+'.twin').equals(fs.readFileSync('tbIDE/tbUI3IDE/src/Sources/'+name+'.twin')),name);
+ for(const name of ['UpdateJson','UpdaterJson','UpdaterPlatform','UpdaterProcesses','InstallationContracts','ManagedResources'])assert(fs.readFileSync('tbIDE/Updater/src/Sources/'+name+'.twin').equals(fs.readFileSync('tbIDE/tbUI3IDE/src/Sources/'+name+'.twin')),name);
 });
-test('production embeds the approved full Toolkit and view unchanged without preview tools',()=>{
+test('generated helper and add-in configurations share protocol bounds and helper version, with independently revised add-in version',()=>{
+ const config=JSON.parse(read('tbIDE/phase1-config.json'));
+ const u=read('tbIDE/Updater/src/Sources/Phase1Config.twin'),a=read('tbIDE/tbUI3IDE/src/Sources/Phase1Config.twin');
+ const withoutAddinVersion=text=>text.replace(/^.*Public Const AddinVersion As String = .*\r?\n/m,'');
+ assert.equal(withoutAddinVersion(u),withoutAddinVersion(a));
+ assert(a.includes('Public Const AddinVersion As String = "'+config.addinVersion+'"'));
+});
+test('production embeds the approved full Toolkit and synchronized view without preview tools',()=>{
  for(const [name,resource]of [['welcome.js','tbUI3-welcome.js'],['welcome.css','tbUI3-welcome.css'],['master.css','tbUI3-welcome-master.css'],['controls.js','tbUI3-welcome-controls.js']])assert.equal(read('tbIDE/prototypes/welcome-wizard/'+name),read('tbIDE/tbUI3IDE/src/Resources/OTHER/'+resource));
  for(const name of ['index.html','Preview.bat','preview-server.ps1','preview-server.cjs','tbUI3-welcome-tokens.css'])assert(!fs.existsSync('tbIDE/tbUI3IDE/src/Resources/OTHER/'+name));
  const reference=JSON.parse(read('tbIDE/tbUI3IDE/WELCOME_REFERENCE.json'));

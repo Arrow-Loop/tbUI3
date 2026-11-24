@@ -10,7 +10,13 @@
   const ALLOW = new Set(['choose-theme','choose-toolbar','installation-preferences','welcome-record','bootstrap-retry','repair-resource']);
   const isObject = x => x !== null && typeof x === 'object';
   const text = x => typeof x === 'string' ? x : '';
-  const snapshotMode = x => text(x && x.theme).toLowerCase().includes('dark') ? 'dark' : 'light';
+  const sameTheme=(a,b)=>text(a).trim().toLowerCase()===text(b).trim().toLowerCase();
+  const snapshotMode = x => {
+    const item=(x?.installedThemes||[]).find(t=>sameTheme(t?.name,x?.theme));
+    return item?.mode==='dark'||item?.mode==='light'?item.mode:
+      x?.themeMode==='dark'||x?.themeMode==='light'?x.themeMode:
+      text(x?.theme).toLowerCase().includes('dark')?'dark':'light';
+  };
 
   function createWelcomeWizard(options) {
     if (!options || !options.document || !options.mount || typeof options.send !== 'function')
@@ -46,7 +52,7 @@
       const h=dom('h2','welcome-heading',title,parent);h.tabIndex=-1;
       dom('p','welcome-description',desc,parent);return h;
     }
-    function actual(name) { const p=snap.preferences||{};return name==='theme'?snap.theme:name==='toolbar'?snap.toolbar:p[name]; }
+    function actual(name) { const p=snap.preferences||{};return name==='theme'?(installedThemes().find(t=>sameTheme(t.name,snap.theme))?.name||snap.theme):name==='toolbar'?snap.toolbar:p[name]; }
     function choice(name,value) {return changed.has(name)?changed.get(name):actual(name);}
     function dispatch(action,params) {
       if(dead || !ALLOW.has(action) || waiting.has(action))return false;
@@ -73,7 +79,7 @@
       const refreshedIndex=refreshedPages.indexOf(previousPage);
       step=refreshedIndex>=0?refreshedIndex:Math.min(1,refreshedPages.length-1);
       if(value.message!==undefined)message=typeof value.message==='string'?value.message:text(value.message && (value.message.message||value.message.text));
-      if(preview && (!installedThemes().some(theme=>theme.name===preview) || (value.theme!==preview && !changed.has('theme'))))preview=null;
+      if(preview && (!installedThemes().some(theme=>sameTheme(theme.name,preview)) || !sameTheme(value.theme,preview)))preview=null;
       paint();
     }
     function style(container,css) {
@@ -148,16 +154,22 @@
       return palette;
     }
     function paletteTheme() {
-      const selected=installedThemes().find(item=>item.name===choice('theme')) ||
-        installedThemes().find(item=>item.name===snap.theme);
+      const selected=installedThemes().find(item=>sameTheme(item.name,choice('theme'))) ||
+        installedThemes().find(item=>sameTheme(item.name,snap.theme));
       return selected || null;
     }
-    function miniIde(parent,item,mode) {
-      const palette=themePalette(item);
-      const kind=themeMode(item);
+    function miniIde(parent,item,mode,toolbarPreview=false) {
+      const resolved=themePalette(item);
+      const kind=themeMode(item)||(toolbarPreview?snapshotMode(snap):'light');
+      // Fixed fallback paint only for our own featured themes or a toolbar skeleton.
+      const fallback=kind==='dark'?{background:'#202020',surface:'#282828',foreground:'#ffffff',accent:'#60cdff'}:{background:'#f3f3f3',surface:'#f9f9f9',foreground:'#1a1a1a',accent:'#005fb8'};
+      const palette=resolved||((item&&FEATURED_THEMES.includes(item.name))||toolbarPreview?fallback:null);
       const outer=dom('div','welcome-mini-ide'+(kind?' welcome-theme-'+kind:''),undefined,parent);
       outer.setAttribute('aria-hidden','true');
       if(!palette && (!item || !FEATURED_THEMES.includes(item.name))) {
+        outer.style.setProperty('--mini-bg',fallback.background);
+        outer.style.setProperty('--mini-text',fallback.foreground);
+        outer.style.setProperty('--mini-border',fallback.surface);
         dom('span','welcome-preview-empty','Theme palette unavailable',outer);
         return outer;
       }
@@ -165,7 +177,10 @@
         const cssMap={background:'--mini-bg',surface:'--mini-surface',foreground:'--mini-text',
           accent:'--mini-accent',titlebar:'--mini-title',toolbar:'--mini-toolbar',
           panel:'--mini-panel',editor:'--mini-editor',muted:'--mini-muted',border:'--mini-border'};
-        for(const key of Object.keys(cssMap))if(palette[key])outer.style.setProperty(cssMap[key],palette[key]);
+        const fixed={...palette,titlebar:palette.titlebar||palette.background,toolbar:palette.toolbar||palette.surface,
+          panel:palette.panel||palette.surface,editor:palette.editor||palette.background,
+          muted:palette.muted||palette.foreground,border:palette.border||palette.surface};
+        for(const key of Object.keys(cssMap))if(fixed[key])outer.style.setProperty(cssMap[key],fixed[key]);
       }
       const head=dom('div','welcome-mini-title',undefined,outer);
       dom('span','welcome-mini-title-name','twinBASIC',head);
@@ -262,12 +277,12 @@
         card.setAttribute('aria-label','Select '+name+' toolbar');
         card.setAttribute('aria-pressed',String(choice('toolbar')===name));
         if(waiting.has('choose-toolbar'))card.disabled=true;
-        miniIde(card,selectedTheme,name);
+        miniIde(card,selectedTheme,name,true);
         dom('strong','',name,card);
         dom('span','welcome-toolbar-caption',descriptions[name],card);
         card.addEventListener('click',()=>commit('toolbar',name,'choose-toolbar','name'));
       }
-      if(!selectedTheme)dom('p','welcome-note','Toolbar previews use a neutral appearance until the IDE supplies its theme inventory.',parent);
+      if(!themePalette(selectedTheme))dom('p','welcome-note','Toolbar layout previews use the current light/dark fallback until theme paint is available.',parent);
     }
     function features(parent) {
       heading(parent,'Explore your new tools','The IDE enhancements are available whenever you need them.');

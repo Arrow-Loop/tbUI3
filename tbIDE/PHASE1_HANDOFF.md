@@ -26,6 +26,8 @@ Native updater source 0.2.0.0; add-in source 0.4.0.0. Corrected baseline remains
 
 ## Build and verification sequence
 
+For Windows development convenience, after building a changed helper and closing the add-in project, double-click `tbIDE/Prepare-Addin.bat`. It runs native self-tests and existing bundle preparation/validation using the portable Node cache. Reopen and build both add-in architectures, then double-click `tbIDE/Package-Release.bat` to create the verified prerelease assets and open their output directory. These launchers do not commit, push, publish or replace native startup/live acceptance.
+
 1. First complete the changed-updater build and embedding procedure in step 4 below, then use BETA 1045. Close/reopen the canonical `tbUI3IDE/tbUI3IDE.twinproj` before building so an older IDE buffer cannot overwrite resources. Build both Win32 and Win64; do not substitute a stale DLL.
 2. Verify from the repository root: `node tbIDE/tools/verify-phase1-release.mjs <win32 DLL> <win64 DLL> tbIDE/Updater/Build/Updater.exe`. This checks actual DLL architecture/version, manifest identity, project digest and payload hashes. Do not proceed with missing or unequal resources.
 3. Follow the embedded-bundle and focused native acceptance checklists below. Keep native output in `%LOCALAPPDATA%\tbUI3\Diagnostics\`; see [diagnostic locations](../docs/DIAGNOSTICS.md).

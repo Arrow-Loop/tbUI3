@@ -4,6 +4,8 @@ Outstanding work and deferred decisions. [CHANGELOG](CHANGELOG.md) records compl
 
 ## Immediate priority: Phase 1 native acceptance
 
+- Validate the new development-only `tbIDE/Prepare-Addin.bat` after rebuilding the helper, then `tbIDE/Package-Release.bat` after building both DLLs. Keep the native startup and live update acceptance gates; these launchers do not publish releases.
+
 - **Pending guarded 0.4.0.3 UI repair assembly:** the complete source candidate and local apply/validation tool are under `tbIDE/tools/pending-welcome-repair/`. Canonical projects and active mirrors are still at their original revision. Double-click `tbIDE/Apply-Welcome-Repair.bat` from a clean synchronized development checkout with twinBASIC closed (the launcher provisions portable Node.js and jsdom if needed); do not publish the candidate until canonical assembly and tests succeed. First-run assembly and mirror validation passed; two test-harness issues have been corrected in the pending candidate. Repeat the guarded run, then exercise live BETA 1043/1045 and self-update acceptance.
 
 Use [PHASE1_HANDOFF.md](PHASE1_HANDOFF.md) for the authoritative build/test sequence. The previously accepted Updater 0.2.0.0 (58/58 self-tests and compiled startup) and both themes remain embedded in canonical tbUI3IDE 0.4.0.0. The updater source now has a neutral stylesheet comment. Next gate: rebuild and accept the helper, re-embed it, compile both add-in architectures, verify compiled resource hashes, then test live. Refresh this checkpoint if new evidence arrives.

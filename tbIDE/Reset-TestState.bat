@@ -196,7 +196,15 @@ while ($true) {
             '6' { Reset-Native; Reset-Reg $appearance @('*') 'addin-options'; Reset-Reg $legacy @('*') 'legacy-updater-options'; Archive-Path $up 'Updater'; Reset-Themes; Reset-Caches }
             '7' { Remove-Addins }
             '8' { Reset-Caches }
-            '9' { Archive-Path (Join-Path $base 'Diagnostics') 'Diagnostics' }
+            '9' {
+                $diagnostics = Join-Path $base 'Diagnostics'
+                if (Test-Path -LiteralPath (Join-Path $diagnostics '.git')) {
+                    Assert-NoLinks $diagnostics
+                    Get-ChildItem -LiteralPath $diagnostics -Force | Where-Object { $_.Name -notin @('.git','.gitattributes','.gitignore') } | ForEach-Object {
+                        Archive-Path $_.FullName ('Diagnostics\' + $_.Name)
+                    }
+                } else { Archive-Path $diagnostics 'Diagnostics' }
+            }
         }
         Write-Host "Reset complete. Backup: $backup" -ForegroundColor Green
     } catch {

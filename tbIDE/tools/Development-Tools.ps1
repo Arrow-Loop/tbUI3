@@ -43,6 +43,10 @@ function Find-Git {
     if (!$candidate) {throw 'Git was not found. Install GitHub Desktop or Git.'}
     return $candidate
 }
+function Sync-Diagnostics {
+    $diagnosticGit=Find-Git
+    & (Join-Path $PSScriptRoot 'Sync-Diagnostics.ps1') -GitPath $diagnosticGit
+}
 function Git-Output([string[]]$arguments) {
     $lines=@(& $script:git @arguments)
     if ($LASTEXITCODE -ne 0) {throw "Git command failed: $($arguments -join ' ')"}
@@ -361,12 +365,14 @@ try {
         Write-Host '  4  Reset test state'
         Write-Host '  5  Prepare add-in only'
         Write-Host '  6  Package existing native builds'
+        Write-Host '  D  Sync Diagnostics'
         Write-Host '  L  Open Diagnostics'
         Write-Host '  Q  Quit'
         $choice=(Read-Host 'Choose an option').Trim().ToUpperInvariant()
         } else {$choice=$nextChoice;$nextChoice=''}
         if ($choice -eq 'Q') {break}
         try {
+            if ($choice -eq 'D') {Sync-Diagnostics;continue}
             if ($choice -eq 'L') {Invoke-Item -LiteralPath $logs;continue}
             if ($choice -eq '4') {& (Join-Path $root 'tbIDE\Reset-TestState.bat');continue}
             if ($choice -notin @('1','2','3','5','6')) {continue}
@@ -380,7 +386,17 @@ try {
                 '5' {Assert-Closed; $head=Assert-Checkout -ForBuild;Run-Prep @('-Action','Embed');Save-Generated $head;Commit-Workspace 'Checkpoint prepared add-in resources' -GeneratedOnly;Save-Generated (Git-Output @('rev-parse','HEAD'))}
                 '6' {$package=Package-Existing;Invoke-Item -LiteralPath $package}
             }
-        } catch {Say ("FAILED: "+$_.Exception.Message) Red; if ($_.ScriptStackTrace) {Add-Content -LiteralPath $sessionLog -Value $_.ScriptStackTrace}}
+        } catch {
+            $failure=$_
+            Say ("FAILED: "+$failure.Exception.Message) Red
+            if ($failure.ScriptStackTrace) {Add-Content -LiteralPath $sessionLog -Value $failure.ScriptStackTrace}
+            if ($choice -ne 'D') {
+                # Child tools have exited and flushed their logs. Keep the original
+                # failure visible even if the separate diagnostics upload fails.
+                try {Sync-Diagnostics}
+                catch {Say ("Diagnostics sync warning: "+$_.Exception.Message) Yellow}
+            }
+        }
         Write-Host "Diagnostics: $logs"
     }
 } finally {if ($locked) {$mutex.ReleaseMutex()};$mutex.Dispose()}

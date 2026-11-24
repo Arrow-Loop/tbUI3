@@ -257,18 +257,34 @@ try {
         if ($releaseId -notmatch '^\d+$') {throw 'Draft creation could not be confirmed.'}
     }
     $release=Api "repos/$repository/releases/$releaseId"
-    Assert-Draft $release $tag $commit
+    $draftCommit=[string]$release.target_commitish
+    Assert-Draft $release $tag $draftCommit
     $draftUrl=[string]$release.html_url
+    if ($draftCommit -cne $commit) {
+        # A publisher-only fix or documentation edit must not strand a valid draft.
+        # Require a real ancestor SHA and an exact allowlist of non-build inputs.
+        if ($draftCommit -notmatch '^[0-9a-f]{40}$') {throw 'Draft does not target a concrete commit. Review the existing draft.'}
+        $base=Git @('merge-base',$draftCommit,$commit)
+        if ($base -cne $draftCommit) {throw 'Existing draft targets a different source history. Review the existing draft.'}
+        $changes=@(Git @('diff','--no-renames','--name-only',$draftCommit,$commit,'--'))
+        $allowed=@('tbIDE/tools/Publish-IDE-Release.ps1','tbIDE/Publish-Release.bat','tbIDE/README.md','tbIDE/CHANGELOG.md','tbIDE/ROADMAP.md','tbIDE/PHASE1_HANDOFF.md','docs/DIAGNOSTICS.md','README.md','CHANGELOG.md','ROADMAP.md')
+        $buildChanges=@($changes | Where-Object {$_ -cnotin $allowed})
+        if ($buildChanges.Count -gt 0) {
+            $buildChanges | ForEach-Object {Write-Host "Changed build input or unapproved path: $_"}
+            throw 'Existing draft targets different build inputs. Review that draft before replacing its assets.'
+        }
+        Write-Host 'Resuming existing draft: only publisher/documentation files changed. The verified release will target the current commit.'
+    }
     $uploaded=Assert-Assets $release $expected -AllowMissing
     foreach ($name in $names) {
         if (-not $uploaded.ContainsKey($name)) {
-            Assert-Draft (Api "repos/$repository/releases/$releaseId") $tag $commit
+            Assert-Draft (Api "repos/$repository/releases/$releaseId") $tag $draftCommit
             Write-Host "Uploading $name..."
             Gh @('release','upload',$tag,$expected[$name].path,'--repo',"github.com/$repository") | ForEach-Object {Write-Host $_}
         }
     }
     $release=Api "repos/$repository/releases/$releaseId"
-    Assert-Draft $release $tag $commit
+    Assert-Draft $release $tag $draftCommit
     $assetIds=Assert-Assets $release $expected
     Write-Host 'All three GitHub asset SHA-256 digests and sizes verified.'
     Write-Host "Draft: $draftUrl"
@@ -283,7 +299,7 @@ try {
         $null=Assert-Synchronized $commit
         Assert-NoTag $tag
         $release=Api "repos/$repository/releases/$releaseId"
-        Assert-Draft $release $tag $commit
+        Assert-Draft $release $tag $draftCommit
         $finalIds=Assert-Assets $release $expected
         foreach ($name in $names) {if ($finalIds[$name] -cne $assetIds[$name]) {throw 'Draft assets changed during confirmation.'}}
         $publishAttempted=$true

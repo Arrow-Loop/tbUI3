@@ -1,5 +1,9 @@
 # Changelog: tbIDE (WinUI 3 look for the twinBASIC IDE)
 
+## 2026-11-24 - Resume verified drafts after publisher-only changes
+
+The 0.4.0.8 draft was created at f33c66b before the Y/N prompt update. The later 719dc20 commit changed only the publisher and documentation, yet the existing draft check rejected it despite successful local DLL/package verification. The publisher now accepts an unpublished prerelease draft at an ancestor commit only when every changed path is on a narrow non-build-input allowlist. It still verifies existing assets, freezes the draft identity and rechecks source/account/tag/assets before final confirmation, and publishes the exact current synchronized commit. No existing asset is overwritten and no published release or tag is altered. Static source inspection only; Windows resume and publication are pending. No project or binary changed.
+
 ## 2026-11-24 - Simplified publication confirmation
 
 Replaced the typed release-tag confirmation with a case-insensitive Y/N prompt defaulting to No. Only Y (with optional surrounding whitespace) proceeds; all other responses retain the verified draft. The exact version and commit remain visible, and account, source, package, draft, asset and tag checks are unchanged. Verified the script diff is confined to the prompt and its condition. No runtime version, binary or release changes.

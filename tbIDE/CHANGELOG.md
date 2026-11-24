@@ -1,5 +1,9 @@
 # Changelog: tbIDE (WinUI 3 look for the twinBASIC IDE)
 
+## 2026-11-23 - Double-click add-in build preparation and release packaging
+
+Added `tbIDE/Prepare-Addin.bat` and `tbIDE/Package-Release.bat` with a shared development-only PowerShell entry point. The first reuses the existing portable Node cache, checks the rebuilt Win32 helper, runs native self-tests and requires a fresh successful report, embeds using the existing PE/resource verification tool and checks mirrors and focused contracts. The second reads versions and compatibility from configuration and invokes the existing release packager against both DLL architectures in a fresh output directory. Both log outside the checkout, pause on completion and leave publication manual. No updater engine or release packager changes. Windows execution and native acceptance of these launchers are pending.
+
 ## 2026-11-23 - Repair assembly first-run diagnostics and test harness corrections
 
 The Windows launcher successfully provisioned portable Node and jsdom, assembled 12 canonical entries, passed the second synchronization without changes, and verified 140 exact mirrors plus 86 canonical and mirrored hex checks. The first regression run reported 227 passes, 2 failures and 21 optional skips (250 total); the guard correctly withheld commit/push. The pending candidate now checks manual update results in the already-open dialog, retains separate background-toast coverage, and makes the pre-existing native theme-change test conditional on the required TB_IDE_MAIN_JS fixture, consistently with the other native contract tests. Known jsdom CSS-layer parser diagnostics are filtered only in the update UI test harness. No production behavior or integrity checks changed in this follow-up; repeat validation is pending.

@@ -1,5 +1,9 @@
 # Changelog
 
+## 2026-11-24 - Simplified test reset execution
+
+Fixed the backup-path scoping fault in the developer reset menu and removed the redundant typed confirmation. See the [IDE changelog](tbIDE/CHANGELOG.md). No shipped application changes.
+
 ## 2026-11-24 - Added a development test reset utility
 
 Added the standalone per-user IDE/add-in test reset menu at `tbIDE/Reset-TestState.bat`. See the [IDE changelog](tbIDE/CHANGELOG.md) and [test reset instructions](tbIDE/README.md#development-test-reset). No application or published release changes.

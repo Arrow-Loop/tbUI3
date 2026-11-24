@@ -1,5 +1,9 @@
 # Changelog: tbIDE (WinUI 3 look for the twinBASIC IDE)
 
+## 2026-11-24 - Fixed reset-menu backup path and removed confirmation
+
+The first full-reset attempt reported a null Path. Source inspection identified the invoked payload's local backup variable shadowing the script-scoped assignment. Start-Backup now returns its directory directly to the menu's local variable before registry or file operations. Renamed the recovery loop variable to avoid PowerShell's reserved HOME variable. Menu selection now runs the chosen operation without typing RESET; the existing backup and recovery safeguards remain. Errors include the failing line and stack. Reviewed source and verified matching downloadable/repository bytes; Windows rerun remains pending.
+
 ## 2026-11-24 - Developer test reset menu
 
 Added a self-contained `Reset-TestState.bat` using Windows PowerShell and the current user profile. It offers independent native options/layout/window, add-in preferences, Welcome record, updater installation state, shared theme, shared DLL, WebView2 cache and diagnostics resets, plus a combined first-run reset retaining the DLLs. Selected registry values are backed up and removed; files and folders are moved into a dated local backup. Preserves native licence, publisher credentials, project files/state, packages and unrelated themes. Checks running IDE/updater processes, rejects reparse points and refuses to archive unfinished or unverified recovery journals. Confirmations and errors are visible. Source and path review performed; Windows execution and recovery scenarios remain pending. No runtime or release assets changed.

@@ -54,9 +54,9 @@ function Assert-NoLinks([string]$path, [switch]$Tree) {
 function Assert-RecoverySafe {
     if (!(Test-Path -LiteralPath $inst)) { return }
     Assert-NoLinks $inst -Tree
-    foreach ($home in Get-ChildItem -LiteralPath $inst -Directory -Force) {
-        $sessions = Join-Path $home.FullName 'Sessions'
-        $marker = Join-Path $home.FullName 'active.json'
+    foreach ($installation in Get-ChildItem -LiteralPath $inst -Directory -Force) {
+        $sessions = Join-Path $installation.FullName 'Sessions'
+        $marker = Join-Path $installation.FullName 'active.json'
         if (Test-Path -LiteralPath $marker) {
             $active = Get-Content -LiteralPath $marker -Raw | ConvertFrom-Json
             if (!$active.journal -or !$active.context) { throw "Unreadable active marker: $marker. Recover before resetting." }
@@ -85,8 +85,9 @@ function Assert-RecoverySafe {
 function Start-Backup {
     Assert-NoLinks $base
     Assert-NoLinks $backupRoot
-    $script:backup = Join-Path $backupRoot ((Get-Date -Format 'yyyyMMdd-HHmmss-fff') + '-' + [Guid]::NewGuid().ToString('N').Substring(0,8))
-    New-Item -ItemType Directory -Path $script:backup -Force | Out-Null
+    $path = Join-Path $backupRoot ((Get-Date -Format 'yyyyMMdd-HHmmss-fff') + '-' + [Guid]::NewGuid().ToString('N').Substring(0,8))
+    New-Item -ItemType Directory -Path $path -Force | Out-Null
+    return $path
 }
 
 function Archive-Path([string]$source, [string]$relative) {
@@ -179,14 +180,13 @@ while ($true) {
     if ($choice -eq '6') { Write-Host 'FULL: Shared DLLs remain installed so bootstrap can recreate the helper and themes. All updater state is archived.' -ForegroundColor Yellow }
     if ($choice -in @('3','6')) { Write-Host 'All registered IDE roots are affected. Incomplete recovery journals block this reset.' -ForegroundColor Yellow }
     if ($choice -eq '7') { Write-Host 'Only the shared per-user DLLs are removed; portable IDE-local copies are untouched.' -ForegroundColor Yellow }
-    if ((Read-Host 'Type RESET to confirm') -cne 'RESET') { continue }
     $backup = $null
     try {
         Assert-Closed
         Assert-NoLinks $base; Assert-NoLinks $up; Assert-NoLinks $tb
         if ($choice -in @('3','6')) { Assert-RecoverySafe }
         if ($choice -eq '6') { Assert-NoLinks $up -Tree }
-        Start-Backup
+        $backup = Start-Backup
         switch ($choice) {
             '1' { Reset-Native }
             '2' { Reset-Addin }
@@ -201,6 +201,8 @@ while ($true) {
         Write-Host "Reset complete. Backup: $backup" -ForegroundColor Green
     } catch {
         Write-Host "RESET STOPPED: $($_.Exception.Message)" -ForegroundColor Red
+        if ($_.InvocationInfo.PositionMessage) { Write-Host $_.InvocationInfo.PositionMessage }
+        if ($_.ScriptStackTrace) { Write-Host $_.ScriptStackTrace }
         if ($backup) { Write-Host "Any completed changes are preserved in: $backup" }
         Write-Host 'Do not proceed with a fresh-install test until the issue is resolved.'
     }

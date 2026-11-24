@@ -7,12 +7,12 @@
 | Area | Evidence / remaining gate |
 | --- | --- |
 | Updater 0.2.0.0 (Win32) | Shane's native report: **58/58 passed**; compiled no-context startup reached `updater:ready`. Retained [native report](Updater/validation/native-startup-2026-11-23-passed.json). |
-| Embedded payload | Complete in canonical add-in/mirror: accepted tracked `Updater/Build/Updater.exe`, both WinUI3 themes, verified manifest. Updater SHA-256: `677d86b4a9fe368282e4c1464e0ad549e5309b838f2929570c13e4803dd2ee68`. |
+| Embedded payload | Previous accepted bundle (replacement required): tracked `Updater/Build/Updater.exe`, both WinUI3 themes, verified manifest. Updater SHA-256: `677d86b4a9fe368282e4c1464e0ad549e5309b838f2929570c13e4803dd2ee68`. |
 | Add-in 0.4.0.0 | BETA 1045 resource-reader and color-format diagnostics addressed in source; **reopen and build both Win32/Win64 DLLs**, then verify compiled resource bytes. Accepted updater/bundled payload unchanged by that fix. |
 | Automated source validation | Latest recorded development pass: 243 Node tests, 140 exact mirrors, IDs/CRLF/hex checks and generator idempotence. These do not establish native DLL or live update acceptance. |
 | Remaining live gates | DLL-only offline bootstrap, loader behavior, integrated Welcome/settings, real release checks and transactions, preservation, rollback/recovery, self-update, protected-folder consent and release packaging. |
 
-The next action is **add-in compilation and embedded-bundle acceptance**, not another embedding pass or a mandatory rebuild of the unchanged accepted helper. Use disposable IDE roots and a disposable Windows profile for tests that alter installation or shared AppData state. No release or main merge is authorized.
+The next action is **rebuild the canonical updater, repeat native acceptance, and re-embed the clean helper before compiling both add-in architectures**. The neutral stylesheet comment is now packed in the canonical source and synchronized mirror; the previously accepted EXE and add-in payload predate that change. Do not distribute the old payload. The bundle digest and compiled-resource tests must reject the old payload against the updated project until regenerated. Use disposable IDE roots and a disposable Windows profile for tests that alter installation or shared AppData state. No release or main merge is authorized.
 
 ## Delivered
 
@@ -26,7 +26,7 @@ Native updater source 0.2.0.0; add-in source 0.4.0.0. Corrected baseline remains
 
 ## Build and verification sequence
 
-1. Use BETA 1045. Close/reopen the canonical `tbUI3IDE/tbUI3IDE.twinproj` before building so an older IDE buffer cannot overwrite resources. Build both Win32 and Win64; do not substitute a stale DLL.
+1. First complete the changed-updater build and embedding procedure in step 4 below, then use BETA 1045. Close/reopen the canonical `tbUI3IDE/tbUI3IDE.twinproj` before building so an older IDE buffer cannot overwrite resources. Build both Win32 and Win64; do not substitute a stale DLL.
 2. Verify from the repository root: `node tbIDE/tools/verify-phase1-release.mjs <win32 DLL> <win64 DLL> tbIDE/Updater/Build/Updater.exe`. This checks actual DLL architecture/version, manifest identity, project digest and payload hashes. Do not proceed with missing or unequal resources.
 3. Follow the embedded-bundle and focused native acceptance checklists below. Keep native output in `%LOCALAPPDATA%\tbUI3\Diagnostics\`; see [diagnostic locations](../docs/DIAGNOSTICS.md).
 4. Only if the updater changes: reopen/build `tbIDE/Updater/Updater.twinproj` as Win32, run `Updater.exe -SelfTest` unelevated, require the current suite to pass (58 cases at this checkpoint), verify no-context startup, then run `node tbIDE/tools/prepare-phase1-bundle.mjs --updater <accepted fresh Updater.exe>`. Rebuild and verify both DLLs after re-embedding. The old 35,328-byte launcher is stale; never use it.

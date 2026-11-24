@@ -1,5 +1,9 @@
 # Changelog
 
+## 2026-11-23 - Neutral updater stylesheet attribution and repository identity rule
+
+Replaced the organization-specific header comment in updater.css with neutral shared WinUI Master CSS wording in the canonical Updater.twinproj and its exact source mirror. No CSS rules, project identity or other packed entry changed. Verified all 37 original packed file entries against repository mirror blobs, confirmed the updated stylesheet matches its packed resource and all other packed bytes are identical. The previously accepted native executable and add-in bundle remain unchanged; they require a new native updater build, acceptance and re-embedding before distribution. Established a mandatory independent repository identity and confidentiality rule covering source, documents, metadata, embedded assets, binaries and release materials. No new native test or compiled binary is claimed.
+
 ## 2026-11-23 - User-facing IDE README and private-reference cleanup
 
 Replaced the IDE README's change narrative with current requirements, install, features, settings and troubleshooting. Moved enduring theme/styling implementation details to architecture and the visual acceptance checklist to the Phase 1 handoff. Consolidated the diagnostic startup guidance. Neutralized the shared Toolkit provenance repository label, test title and private diagnostic origin without changing test assertions, recorded commit/blob hashes or native results. The remaining embedded CSS header cleanup requires a fresh accepted helper and verified DLL bundle; it is explicitly tracked in the IDE roadmap. Existing canonical projects, embedded payloads and accepted binaries are unchanged. No new native acceptance is claimed.

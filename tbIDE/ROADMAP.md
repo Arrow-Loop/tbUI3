@@ -4,7 +4,7 @@ Outstanding work and deferred decisions. [CHANGELOG](CHANGELOG.md) records compl
 
 ## Immediate priority: Phase 1 native acceptance
 
-Use [PHASE1_HANDOFF.md](PHASE1_HANDOFF.md) for the authoritative build/test sequence. Accepted Updater 0.2.0.0 (58/58 self-tests and compiled startup) and both themes are embedded in canonical tbUI3IDE 0.4.0.0. Next gate: compile both add-in architectures, verify compiled resource hashes, then test live. Refresh this checkpoint if new evidence arrives.
+Use [PHASE1_HANDOFF.md](PHASE1_HANDOFF.md) for the authoritative build/test sequence. The previously accepted Updater 0.2.0.0 (58/58 self-tests and compiled startup) and both themes remain embedded in canonical tbUI3IDE 0.4.0.0. The updater source now has a neutral stylesheet comment. Next gate: rebuild and accept the helper, re-embed it, compile both add-in architectures, verify compiled resource hashes, then test live. Refresh this checkpoint if new evidence arrives.
 
 - Verify DLL-only offline first install, silent missing-resource repair, preserved custom/newer files, shared/local duplicate loader behavior and compatibility on the supported IDE build. Retain both architecture checks.
 - Validate the integrated Welcome/settings (healthy six-page flow; conditional Setup directly after Welcome, before Updates), actual installed themes/inheritance, exact-name apply/rollback, toolbar modes, Windows theme/accent, focus/keyboard/Escape, skip/reopen, settings persistence, DPI and missing Runtime. The view is approved; no additional redesign without direction.
@@ -44,7 +44,7 @@ Restore the visible stable/development channel selector only once a genuine stab
 
 ## Public distribution hygiene
 
-- **Before public distribution: neutralize the remaining employer-specific CSS header in tbIDE/Updater/src/Resources/OTHER/updater.css** (use "shared WinUI toolkit CSS"). This resource is embedded in the accepted helper and add-in payload, so change the canonical updater and mirror together, rebuild the Win32 helper, repeat native self-test/startup acceptance, run prepare-phase1-bundle.mjs with the freshly accepted EXE, rebuild both DLLs and verify exact compiled payloads. Keep the currently accepted binary and its project/resource digests intact until that coordinated pass. Do not patch compiled EXE bytes or relax resource equality tests. Audit remaining source/embedded assets and tracked logs separately; preserve required legal attribution and historical evidence.
+- **Complete compiled-resource sanitization before distribution.** The canonical updater and CSS mirror now contain neutral wording. Rebuild the Win32 helper, repeat native self-test/startup acceptance, run `prepare-phase1-bundle.mjs` with the freshly accepted EXE, rebuild both DLLs and verify exact compiled payloads. The previously accepted executable and embedded payload are superseded for distribution; their bytes and historical evidence are retained until replacement. Bundle/project resource equality checks are expected to fail until the rebuild and re-embedding are completed. Never patch compiled EXE bytes or relax verification. Audit other source, metadata, tracked logs and generated artifacts for prohibited identifiers under AGENTS before distribution.
 
 ## Documentation maintenance
 

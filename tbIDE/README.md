@@ -1,6 +1,6 @@
 # tbUI3IDE
 
-tbUI3IDE is a single twinBASIC add-in that brings a WinUI 3 look to the IDE, offers Classic, Hybrid and Ribbon toolbar layouts, and adds TabView/MultiPage designer tools. It includes WinUI3 Dark and Light themes and a shared native updater. The add-in is a developer tool; applications built with the tbUI3 control package do not require it.
+tbUI3IDE is a single twinBASIC add-in that brings a WinUI 3 look to the IDE, offers Classic, Hybrid and Ribbon toolbar layouts, and adds TabView/MultiPage designer tools. It includes WinUI3 Dark and Light themes and a shared native updater. The add-in is a developer tool intended to work independently of the optional tbUI3 control package, whether or not a developer ever uses that package. Applications built with the tbUI3 control package do not require the add-in. The overall tbUI3/tbIDE project remains prerelease until its planned controls are complete and stable release is explicitly approved; accepted add-in prereleases may be distributed internally.
 
 **Current version:** 0.4.0.5 (development)
 
@@ -44,7 +44,7 @@ Hybrid and Ribbon support full and simplified layouts. Use the corner chevron or
 
 ### TabView/MultiPage designer (development preview)
 
-The add-in retains experimental TabView/MultiPage designer tooling for the separately developed tbUI3 control package. Full designer functionality is not part of the initial IDE add-in release. The initial release requires these commands and behaviors to be hidden or inactive in projects without an enabled, resolved tbUI3 package reference; this isolation is pending implementation/acceptance. Normal projects do not require the control package.
+The add-in retains experimental TabView/MultiPage designer tooling for the separately developed tbUI3 control package. Full designer functionality is not required for internal IDE prerelease distribution. All versions of the add-in must keep these commands and behaviors hidden or inactive in projects without an enabled, resolved tbUI3 package reference; this isolation is pending implementation/acceptance. Normal projects do not require the control package.
 
 ### Updates
 

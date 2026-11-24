@@ -8,6 +8,8 @@ The initial internally distributed IDE prerelease covers themes, optional stylin
 
 ## Current status and next action
 
+**Next development pass:** The owner prioritizes the Welcome-first startup correction ahead of the outstanding BETA 1045 Ribbon compatibility fixes. Preserve silent background verification/repair after Welcome has been completed or dismissed. Build and validate the targeted correction first; the 1045 defects remain deferred, not resolved. Publication of a new prerelease requires separate owner authorization.
+
 First-run native observation on BETA 1043 after the reset utility successfully completed: 39.82 s from Open to the theme settle messages, 43.83 s to the updater appearance, and no Welcome Wizard. The user reports that an updater appearing behind the IDE may be missed while working. The source has a 2.5 s auto-Welcome gate and 10 s automatic-check scheduling delay; the exact startup bottleneck remains unmeasured. The approved correction is Welcome-first rendering, responsive staged setup and deferred/non-activating automatic notification, as specified in INSTALLATION_MANAGER_SPEC.md. This is pending implementation and native acceptance, not a claim of a fix.
 
 The 0.4.0.5 add-in and 0.2.0.3 helper implement the standalone ownership boundary on `tbui3-dev`. Prior 0.4.0.2 live testing found delayed staging UI and shutdown timing failures. The 0.4.0.4 fixes remain represented in the native workflow and versioned process inspection. The revised bridge records the IDE's accepted close before tearing down its compiler. Run the remaining live matrix below in disposable installations before distribution.

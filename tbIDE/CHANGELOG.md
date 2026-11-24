@@ -1,5 +1,9 @@
 # Changelog: tbIDE (WinUI 3 look for the twinBASIC IDE)
 
+## 2026-11-24 - Prioritized Welcome-first startup correction
+
+Updated the IDE roadmap and Phase 1 handoff to record the owner's priority: implement the responsive first-run Welcome flow and preserve quiet subsequent repair before addressing the known BETA 1045 Ribbon issues. Documentation only; no runtime or release changes.
+
 ## 2026-11-24 - Documented Welcome-first startup correction
 
 Recorded the native BETA 1043 first-run timing observation (39.82 s to theme settle messages, 43.83 s to updater appearance, no Welcome) and successful full reset rerun. Source review confirmed the fixed 2.5 s Welcome gate and the 10 s automatic-check scheduling delay, without attributing the full measured delay to either. Updated approved onboarding requirements, pending bridge contract, roadmap and acceptance checks for Welcome-first rendering, live conditional Setup and notification coordination. Documentation only; no runtime fix or new release in this pass.

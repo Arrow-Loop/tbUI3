@@ -58,6 +58,8 @@ The privileged worker pins context, plan, staged inputs, recovery backups and di
 
 ## Wizard/native adapter
 
+The 0.4.0.8 pending source candidate uses bounded binary replacement passes to quote embedded UI assets without changing the shared transaction JSON contract. Outer dialog centering is explicit in the host viewport; CSS uses the pinned native ContentDialog shadow recipe as a browser translation, not a native Composition shadow. Inner-stage diagnostics isolate resource reads, encoding, initial snapshot and IDE eval. Native timing and visual confirmation remain open.
+
 Quill owns `prototypes/welcome-wizard`; production embeds its committed JS/CSS unchanged and never ships its preview/mock adapter. The allowlisted intents are defined below. Each queued request gains a native `requestId`; snapshots carry `ack:{id,ok}` and actual theme/toolbar/preferences. The adapter withholds authoritative wizard snapshots until all outstanding ids settle, so unrelated bootstrap refreshes cannot acknowledge pending choices. Native failures restore actual values and report an error. Theme reload has a 15-second cancellation token; toolbar failure restores the previous requested mode. Settings/repair views use scoped shared toolkit CSS; Wizard uses the full approved shared Master CSS/control runtime inside an isolated same-origin iframe under a modal HTML dialog, with live Windows accent. Resource reset requires a styled asynchronous confirmation plus explicit checkbox. Welcome schema 1 is user-global; dismiss/finish are independent of file provisioning. IDE Options exposes settings/repair and reopen in every toolbar mode.
 
 ### Welcome-first startup sequence

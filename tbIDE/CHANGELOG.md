@@ -1,5 +1,9 @@
 # Changelog: tbIDE (WinUI 3 look for the twinBASIC IDE)
 
+## 2026-11-24 - Welcome initialization hot path and modal placement (0.4.0.8 pending assembly)
+
+Changed the add-in-only UI bridge to escape large embedded assets using a bounded sequence of binary Replace passes instead of repeated one-character concatenation through JQuote. Added individual monotonic timings for tool-window creation, script injection, snapshot, each asset read/quote, expression assembly and factory invocation. Kept the shared transaction JSON module and Updater 0.2.0.4 unchanged. Explicitly centered the native HTML dialog in the IDE viewport and applied the light/dark two-shadow CSS translation of pinned WinUI ContentDialog Translation.Z=128 (source and blur limitation documented in CSS). Added source regression assertions. Source and generated CSS mirror updated; connector cannot retrieve the canonical binary, so Prepare-Addin.bat now consumes a versioned, exact-blob-guarded local assembly request using the existing add-in-only sync tool. No native build, timing improvement or release claimed. The completion-screen launch action remains outstanding.
+
 ## 2026-11-24 - Isolated remaining Welcome startup bottleneck
 
 Reviewed native 0.4.0.7 startup diagnostics: the 36.50 s observed Welcome delay is dominated by the 36,125 ms `InitializeUI` stage, with eligibility already determined at 234 ms and paint acknowledged at 36,468 ms. Source inspection identified bulk per-character `JQuote` concatenation as a likely contributor; inner-stage timing and correction are pending. Recorded measured evidence and next work in the Phase 1 handoff and roadmap. Also observed the add-in-only update engine reaching `complete`. Documentation/diagnostic review only; no runtime or release changes.

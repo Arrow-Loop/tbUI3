@@ -2,6 +2,8 @@
 
 tbUI3IDE is a single twinBASIC add-in that brings a WinUI 3 look to the IDE, offers Classic, Hybrid and Ribbon toolbar layouts, and adds TabView/MultiPage designer tools. It includes WinUI3 Dark and Light themes and a shared native updater. The add-in is a developer tool intended to work independently of the optional tbUI3 control package, whether or not a developer ever uses that package. Applications built with the tbUI3 control package do not require the add-in. The overall tbUI3/tbIDE project remains prerelease until its planned controls are complete and stable release is explicitly approved; accepted add-in prereleases may be distributed internally.
 
+**Pending source candidate:** 0.4.0.8 (Welcome hot-path and modal placement correction; run Prepare-Addin.bat before opening the project to consume the guarded assembly request).
+
 **Current release:** [tbUI3IDE 0.4.0.7 development prerelease](https://github.com/Arrow-Loop/tbUI3/releases/tag/tbUI3IDE-v0.4.0.7)
 
 ## Requirements

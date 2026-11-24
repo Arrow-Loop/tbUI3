@@ -1,5 +1,21 @@
 /* Native HTML dialog modality and geometry; view/control styles are scoped separately. */
 .tbUI3-installation-dialog { padding:0; width:min(760px,calc(100vw - 48px)); max-height:86vh; border:0; border-radius:8px; background:Canvas; color:CanvasText; }
 .tbUI3-installation-dialog::backdrop { background:color-mix(in srgb,CanvasText 35%,transparent); }
-.tbUI3-welcome-shell { box-sizing:border-box; width:min(1080px,calc(100vw - 48px)); max-width:calc(100vw - 48px); height:min(760px,calc(100vh - 48px)); max-height:calc(100vh - 48px); padding:0; margin:auto; border:0; border-radius:8px; background:Canvas; color:CanvasText; overflow:hidden; }
+/* ContentDialog ThemeShadow, Translation.Z=128 (elevation=64).
+ * Microsoft WinUI pinned bfb0e2afa07627505c87f56d687b0483fe917d53:
+ * dxaml/xcp/dxaml/lib/ContentDialog_Partial.cpp, ApplyElevationEffect;
+ * dxaml/xcp/components/graphics/inc/DropShadowRecipe.h, GetDropShadowRecipe.
+ * Two CSS shadows translate the native ambient and directional recipe;
+ * CSS blur is a browser approximation of the Composition compositor. */
+dialog.tbUI3-welcome-shell {
+ --tbui3-content-dialog-shadow:0 2px 21.333333px rgba(0,0,0,.15),0 32px 64px rgba(0,0,0,.19);
+ box-sizing:border-box; position:fixed; inset:0; margin:auto; transform:none;
+ width:min(1080px,calc(100vw - 48px)); max-width:calc(100vw - 48px);
+ height:min(760px,calc(100vh - 48px)); max-height:calc(100vh - 48px);
+ padding:0; border:0; border-radius:8px; background:Canvas; color:CanvasText;
+ overflow:hidden; box-shadow:var(--tbui3-content-dialog-shadow);
+}
+dialog.tbUI3-welcome-shell[data-theme="dark"] {
+ --tbui3-content-dialog-shadow:0 2px 21.333333px rgba(0,0,0,.37),0 32px 64px rgba(0,0,0,.37);
+}
 .tbUI3-welcome-shell::backdrop { background:rgba(0,0,0,.40); }

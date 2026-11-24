@@ -71,3 +71,21 @@ test('native text and bootstrap byte pointers use typed storage rather than Vari
  const native=read('tbIDE/Updater/src/Sources/UpdaterSelfTest.twin');
  for(const name of ['raw payload native byte-buffer roundtrip','UTF-8 native typed-buffer decode','invalid UTF-8 typed buffer rejected'])assert(native.includes(name));
 });
+
+test('Welcome startup avoids per-character bulk quoting and records inner-stage timings',()=>{
+ const source=read('tbIDE/tbUI3IDE/src/Sources/UpdaterController.twin');
+ const quote=source.slice(source.indexOf('Private Function QuoteUIAsset'),source.indexOf('Private Sub InitializeUI'));
+ const ui=source.slice(source.indexOf('Private Sub InitializeUI'),source.indexOf('Private Sub SavePreferences'));
+ assert.match(quote,/For code = 0 To 31/);
+ assert.match(quote,/Replace\(value,/);
+ assert(!quote.includes('For i = 1 To Len'));
+ assert.equal((ui.match(/QuoteUIAsset\(/g)||[]).length,5);
+ assert(!ui.includes('JQuote('));
+ for(const marker of ['UI tool window created','UI initial snapshot encoded','UI factory expression assembled','UI factory invoked'])assert(ui.includes(marker));
+ const css=read('tbIDE/tbUI3IDE/js/installation-dialog.css');
+ assert.equal(css,read('tbIDE/tbUI3IDE/src/Resources/OTHER/tbUI3-dialog.css'));
+ assert.match(css,/position:fixed; inset:0; margin:auto; transform:none/);
+ assert.match(css,/box-shadow:var\(--tbui3-content-dialog-shadow\)/);
+ assert.match(css,/0 32px 64px rgba\(0,0,0,\.19\)/);
+ assert.match(css,/0 32px 64px rgba\(0,0,0,\.37\)/);
+});

@@ -341,14 +341,54 @@ Private Class UpdaterController
         Eval "window.__tbUI3Themes=window.__tbUI3ThemeFactory({themes:function(){return customThemes;},afterRefresh:function(){return afterRefreshedThemes;},setAfterRefresh:function(fn){afterRefreshedThemes=fn;},reload:function(){reloadThemesFromDisk();},current:function(){return liveIDEOptions.colorTheme;},setCurrent:function(name){liveIDEOptions.colorTheme=name;},save:function(){saveIDEOptions();},changed:function(){changedIdeOptions();},notify:function(){root.notifyChangedTheme();}});'installed theme adapter ready'"
     End Sub
 
+    ' Static UI resources are large. Escape in bounded whole-string passes, never append
+    ' one UTF-16 code unit at a time. Keep the shared transaction JSON encoder unchanged.
+    Private Function QuoteUIAsset(ByVal name As String) As String
+        Dim started As LongLong = StartupTick()
+        Dim value As String = MResourceText(name)
+        StartupLog "UI resource read " & name, started
+        started = StartupTick()
+        value = Replace(value, "\", "\\", 1, -1, vbBinaryCompare)
+        value = Replace(value, Chr$(34), "\" & Chr$(34), 1, -1, vbBinaryCompare)
+        Dim code As Long, ch As String
+        For code = 0 To 31
+            ch = ChrW$(code)
+            If InStr(1, value, ch, vbBinaryCompare) > 0 Then
+                value = Replace(value, ch, "\u" & Right$("0000" & Hex$(code), 4), 1, -1, vbBinaryCompare)
+            End If
+        Next
+        QuoteUIAsset = Chr$(34) & value & Chr$(34)
+        StartupLog "UI resource quoted " & name, started
+    End Function
+
     Private Sub InitializeUI()
+        Dim started As LongLong = StartupTick()
+        If mWindow Is Nothing Then Set mWindow = mHost.ToolWindows.Add("tbUI3 updates", "tbUI3UpdaterHost")
+        StartupLog "UI tool window created", started
+        started = StartupTick()
         Eval MResourceText("tbUI3-welcome.js") & vbLf & ";'welcome wizard loaded'"
+        StartupLog "UI welcome script injected", started
+        started = StartupTick()
         Eval "window.__tbUI3InstallationFactory=" & MResourceText("tbUI3-installation.js") & ";'installation factory loaded'"
-        Eval "window.__tbUI3Installation=window.__tbUI3InstallationFactory({document:document,window:window,state:" & Snapshot().Encode() & _
-            ",styles:" & JQuote(MResourceText("tbUI3-installation.css")) & ",dialogStyles:" & JQuote(MResourceText("tbUI3-dialog.css")) & _
-            ",welcomeStyles:" & JQuote(MResourceText("tbUI3-welcome.css")) & ",welcomeMaster:" & JQuote(MResourceText("tbUI3-welcome-master.css")) & _
-            ",welcomeControls:" & JQuote(MResourceText("tbUI3-welcome-controls.js")) & _
+        StartupLog "UI factory script injected", started
+        started = StartupTick()
+        Dim initialState As String = Snapshot().Encode()
+        StartupLog "UI initial snapshot encoded", started
+        Dim styles As String = QuoteUIAsset("tbUI3-installation.css")
+        Dim dialogStyles As String = QuoteUIAsset("tbUI3-dialog.css")
+        Dim welcomeStyles As String = QuoteUIAsset("tbUI3-welcome.css")
+        Dim welcomeMaster As String = QuoteUIAsset("tbUI3-welcome-master.css")
+        Dim welcomeControls As String = QuoteUIAsset("tbUI3-welcome-controls.js")
+        started = StartupTick()
+        Dim expression As String = "window.__tbUI3Installation=window.__tbUI3InstallationFactory({document:document,window:window,state:" & initialState & _
+            ",styles:" & styles & ",dialogStyles:" & dialogStyles & _
+            ",welcomeStyles:" & welcomeStyles & ",welcomeMaster:" & welcomeMaster & _
+            ",welcomeControls:" & welcomeControls & _
             ",showWelcome:" & IIf(mWelcomePending, "true", "false") & ",canAutoWelcome:function(){return !Array.from(document.querySelectorAll('.modalDialogContainer')).some(function(element){return getComputedStyle(element).display!=='none'&&getComputedStyle(element).visibility!=='hidden';});},themeMode:function(){return typeof getBaseThemeName==='function'?getBaseThemeName():'light';}});'installation UI loaded'"
+        StartupLog "UI factory expression assembled", started
+        started = StartupTick()
+        Eval expression
+        StartupLog "UI factory invoked", started
         mInstalled = True
     End Sub
     Private Sub SavePreferences(ByVal request As UpdateJson)

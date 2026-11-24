@@ -1,5 +1,9 @@
 # Changelog: tbIDE (WinUI 3 look for the twinBASIC IDE)
 
+## 2026-11-23 - Add-in 0.4.0.1 and updater 0.2.0.1 accept BETA 1043 to 1045
+
+Shane chose to widen the IDE compatibility range so the updater can be tested by updating a BETA 1043 installation to 1045. `phase1-config.json` now sets minIdeBuild 1043 and maxIdeBuild 1045, with add-in 0.4.0.1 and updater 0.2.0.1; `sync-phase1-projects.mjs` regenerated both canonical projects. The load gate message now names the supported range and the detected build instead of a hard-coded 1045. The add-in's IDE hooks were last tuned against 1045, so presentation on 1043 is unverified. Pending: rebuild Updater.exe, re-embed it with prepare-phase1-bundle, rebuild both DLLs. Until then phase1-bundle tests 134 and 136 fail on the stale embedded updater; the other 242 tests pass.
+
 ## 2026-11-23 - Add-in-only release packaging
 
 Changed the development release packager to emit one versioned ZIP containing both architecture DLLs, the schema-2 update manifest listing only the add-in, and SHA256SUMS for those two assets. The independently versioned updater and themes remain embedded and subject to existing binary, version, compatibility and exact-payload verification; the native update engine and bootstrap are unchanged. Nonempty output directories are rejected to prevent publishing obsolete standalone ZIPs. Updated the packaging source regression assertions. Full repository regression, real-binary package generation and live upgrade acceptance remain pending; no release published.

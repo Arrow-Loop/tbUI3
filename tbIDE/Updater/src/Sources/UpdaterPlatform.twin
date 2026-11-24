@@ -411,7 +411,7 @@ Private Module UpdaterPlatform
         Dim session As LongPtr, connection As LongPtr, request As LongPtr, file As LongPtr, opened As Boolean
         Dim current As String = url, redirect As Long, deadline As Date = DateAdd("n", 15, Now)
         On Error GoTo Failed
-        Dim agent As String = "tbUI3-Updater/0.2.0.0", verb As String = "GET", headers As String = "Accept: application/vnd.github+json" & vbCrLf
+        Dim agent As String = "tbUI3-Updater/0.2.0.1", verb As String = "GET", headers As String = "Accept: application/vnd.github+json" & vbCrLf
         session = WinHttpOpen(StrPtr(agent), 0, 0, 0, 0)
         If session = 0 Then UFail "WinHTTP initialization failed."
         WinHttpSetTimeouts session, 30000, 30000, 30000, 30000

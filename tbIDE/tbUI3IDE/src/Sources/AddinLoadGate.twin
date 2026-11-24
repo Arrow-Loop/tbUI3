@@ -15,7 +15,7 @@ Private Module AddinLoadGate
     Public Function LBegin(ByVal factoryAddress As LongPtr, ByVal host As Host) As LongPtr
         On Error GoTo Failed
         Dim root As String = LCompilerRoot(), build As Long = CLng(Val(UInstalledIde(root)))
-        If build < Phase1Config.MinIdeBuild Or build > Phase1Config.MaxIdeBuild Then UFail "This add-in candidate supports BETA 1045. Use a release explicitly compatible with this IDE."
+        If build < Phase1Config.MinIdeBuild Or build > Phase1Config.MaxIdeBuild Then UFail "This add-in supports twinBASIC BETA " & CStr(Phase1Config.MinIdeBuild) & IIf(Phase1Config.MaxIdeBuild = Phase1Config.MinIdeBuild, "", " to " & CStr(Phase1Config.MaxIdeBuild)) & "; this IDE is build " & CStr(build) & ". Use a release compatible with this IDE."
         Dim moduleHandle As LongPtr, buffer As String = String$(32768, vbNullChar), count As Long
         If LModuleForAddress(6, factoryAddress, moduleHandle) = 0 Then UFail "Add-in module identity unavailable."
         count = LModule(moduleHandle, StrPtr(buffer), Len(buffer))

@@ -1,12 +1,10 @@
 # tbUI3 IDE: one add-in for designer tools and optional WinUI 3 styling
 
-Current source: **tbUI3IDE 0.4.0.0**, with asynchronous update checks/notification and the embedded **Updater 0.2.0.0 WebView2 sidecar** plus both WinUI3 themes. Updater startup and 58/58 native self-tests are confirmed; both add-in architectures now require compilation and embedded-bootstrap acceptance. See [build, first installation, release contracts and tomorrow's checks](Updater/README.md). Historical add-in 1.3.0.20 is treated as corrected baseline 0.3.0.20; the control-package version is unchanged.
+Current source: **tbUI3IDE 0.4.0.0**, with asynchronous update checks/notification and the embedded **Updater 0.2.0.0 WebView2 sidecar** plus both WinUI3 themes. Updater startup and 58/58 native self-tests are confirmed; both add-in architectures now require compilation and embedded-bootstrap acceptance. See [updater architecture and deployment](Updater/README.md). Historical add-in 1.3.0.20 is treated as corrected baseline 0.3.0.20; the control-package version is unchanged.
 
-Every Build icon now uses Shane's buildv3.svg geometry through the shared embedded asset; the earlier heavier small-size variant was removed.
+Start with the [current Phase 1 handoff](PHASE1_HANDOFF.md) for the next build and acceptance sequence. The [Installation Manager specification](INSTALLATION_MANAGER_SPEC.md) defines approved scope; [technical contracts](INSTALLATION_CONTRACTS.md) define the interfaces. The accepted helper and themes are embedded in the canonical project; live DLL bootstrap and update acceptance remain open. The control package remains independently versioned.
 
-Build uses Shane's custom build.svg, embedded as a theme-colored mask in full/simplified layouts. Ribbon Quick Access includes Build between Redo and Play while retaining Project-tab Build. Full Ribbon/Hybrid top padding is 7px with a 73px command area; overall ribbon height, Simplified and Quick Access sizing remain unchanged. Rebuild/reload 1.3.0.20 to apply this pass.
-
-The current add-in source is **tbUI3IDE 0.4.0.0**, built from `tbUI3IDE/tbUI3IDE.twinproj` as **tbUI3IDE.dll**. It includes TabView adapter v10 and the IDE styling implementation. The established project ID and saved theme preference are retained through the rename.
+The add-in is built from `tbUI3IDE/tbUI3IDE.twinproj` as `tbUI3IDE.dll`, with TabView adapter v10, optional styling, and Classic/Hybrid/Ribbon. All Build icons use the embedded buildv3.svg geometry; Quick Access includes Build between Redo and Play while retaining the Project-tab command.
 
 Adapter v10 additionally captures malformed native full-form snapshot JSON to tbUI3-tabview.log with a bounded context and stack, while preserving the original IDE error. For the current form-load investigation, rebuild/reload the add-in, reopen the failing form and wait two seconds before collecting the log. The captured response identified the TabStyle enum annotations as the cause; package 1.0.0.68 removes them. Shane confirms package 68 resolves the load failure.
 
@@ -38,7 +36,7 @@ Both replacement modes share centered 32px full-size / 16px small glyph canvases
 
 ### Migration from two add-ins
 
-Install tbUI3IDE.dll in each architecture's addins folder. Remove the old **WinUI3IdeStyle.dll** and **TabViewDesigner.dll** from both `addins\win32` and `addins\win64` before loading the unified build, then restart the IDE. The standalone TabViewDesigner project has been retired. Its old DLL must not be distributed or loaded alongside this one. Existing theme preferences are retained.
+Install the appropriate tbUI3IDE.dll architecture in the shared per-user AppData addins folder for the current Phase 1 acceptance candidate. See the handoff for the native loader compatibility gate. Remove the old **WinUI3IdeStyle.dll** and **TabViewDesigner.dll** from both `addins\win32` and `addins\win64` before loading the unified build, then restart the IDE. The standalone TabViewDesigner project has been retired. Its old DLL must not be distributed or loaded alongside this one. Existing theme preferences are retained.
 
 This folder provides:
 
@@ -75,10 +73,12 @@ The layout follows WinUI Gallery:
 - The theme name in the menu is the file name without `.theme`. The shipped Dark.theme lists every property except a few that only Aurora uses (`DialogButtonFocusBackColor`, `DialogNavBarBackColor`, `DialogNavButtonBackColorSelected`).
 - The IDE reads themes from its own `themes` folder and from `%APPDATA%\twinBASIC\themes`. The second survives IDE upgrades.
 
-## Install the themes
+## Optional standalone theme installation
+
+The add-in provisions its bundled themes automatically on load. The following manual procedure is only for using the themes without the add-in; back up existing customized themes rather than overwriting them.
 
 1. In File Explorer, type `%APPDATA%\twinBASIC\themes` in the address bar and press Enter.
-2. Copy `WinUI3 Dark.theme` and `WinUI3 Light.theme` into that folder, replacing any older copies.
+2. Copy `WinUI3 Dark.theme` and `WinUI3 Light.theme` into that folder if absent; preserve or back up existing customized copies.
 3. In twinBASIC, choose **Window > Theme > Reload from disk**.
 4. Choose **Window > Theme > WinUI3 Dark** (or **WinUI3 Light**).
 
@@ -141,13 +141,11 @@ This is not a documented use of the add-in API. The official `ToolWindow.ApplyCs
 
 ### Build and install
 
-1. Open `tbUI3IDE/tbUI3IDE.twinproj` in twinBASIC. When rebuilding, hold Shift while the project opens: the IDE loads add-ins whenever a project opens, so otherwise the old `tbUI3IDE.dll` is in use and cannot be overwritten.
-2. Build it for win32 and again for win64 (switch the architecture in the toolbar). The build path is the sample's `${IdePath}\addins\${Architecture}\${ProjectName}.${FileExtension}`, so the DLLs land in the IDE's `addins\win32` and `addins\win64` folders.
-3. Restart the IDE and open any project (add-ins load when a project opens, not at IDE start; holding Shift skips them). If the IDE lists add-ins in its options, its display name is tbUI3 IDE.
-4. Switch to WinUI3 Dark or WinUI3 Light. The Debug Console should show `[WinUI3 IDE Style] stylesheet applied for WinUI3 Dark (... characters)`.
-5. Commit the IDE-saved project through the normal repository workflow; regenerate its source mirrors from that canonical project.
+Follow the [Phase 1 handoff](PHASE1_HANDOFF.md), which owns the exact build order, bundle verification and acceptance checklist. Current source targets BETA 1045 for add-in/updater acceptance. Reopen the canonical add-in project before building both architectures; avoid loading/locking an older DLL while compiling (hold Shift when opening a project to skip add-ins).
 
-To remove all add-in features, delete `tbUI3IDE.dll` from both `addins` folders and restart the IDE. To disable only styling, use the existing additional-styling setting.
+The preferred test deployment uses only the matching DLL(s) in `%APPDATA%\twinBASIC\addins\win32` and/or `win64`. Remove obsolete duplicate unified/predecessor DLLs from the IDE-local and shared locations before testing normal first install. Launch with a project, verify offline provisioning of the embedded helper and both themes, and confirm the Welcome Wizard and normal operations. The wizard does not require successful provisioning to open; Setup appears only when attention is needed.
+
+To remove the add-in, close the IDE and remove its DLL(s) from the locations where installed. To disable only styling, use the additional-styling setting. Do not delete shared updater/settings or customized themes merely to disable styling.
 
 ### What to check
 

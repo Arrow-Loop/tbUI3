@@ -2,8 +2,8 @@
 
 2026-11-23, Shane's explicit parallel-work direction. The consolidated INSTALLATION_MANAGER_SPEC.md remains authoritative.
 
-- **Quill:** owns only `tbIDE/prototypes/welcome-wizard/`, including its functional wizard, accessibility and documented integration interface. Cody must not modify this directory.
-- **Cody:** owns active production add-in/native updater source, canonical projects/mirrors, offline bundle provisioning, shared deployment, per-installation settings and recovery, IDE Options installation settings, packaging, validation and final integration. Preserve Quill's prototype intact; adapt its documented interface from production integration code.
+- **Quill:** owns only `tbIDE/prototypes/welcome-wizard/`, including its functional wizard, accessibility and documented integration interface. The production agent must preserve this approved prototype unless Shane requests view changes.
+- **Production agent (currently Claude, following Cody's implementation pass):** owns active production add-in/native updater source, canonical projects/mirrors, offline bundle provisioning, shared deployment, per-installation settings and recovery, IDE Options installation settings, packaging, validation and final integration. Preserve Quill's prototype intact; adapt its documented interface from production integration code.
 - No independent competing production Welcome Wizard is to be shipped. Prototype completion is not native integration acceptance. Neither owner publishes a release, opens a PR or merges main.
 
 ## Native services available to the wizard adapter

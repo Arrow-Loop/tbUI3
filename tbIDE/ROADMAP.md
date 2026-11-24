@@ -4,6 +4,8 @@ Outstanding work and deferred decisions. [CHANGELOG](CHANGELOG.md) records compl
 
 ## Immediate priority: Phase 1 native acceptance
 
+- **Pending guarded 0.4.0.3 UI repair assembly:** the complete source candidate and local apply/validation tool are under `tools/pending-welcome-repair/`. Canonical projects and active mirrors are still at their original revision. Run the guard from a clean synchronized development checkout; do not publish the candidate until canonical assembly and tests succeed. Then exercise live BETA 1043/1045 and self-update acceptance.
+
 Use [PHASE1_HANDOFF.md](PHASE1_HANDOFF.md) for the authoritative build/test sequence. The previously accepted Updater 0.2.0.0 (58/58 self-tests and compiled startup) and both themes remain embedded in canonical tbUI3IDE 0.4.0.0. The updater source now has a neutral stylesheet comment. Next gate: rebuild and accept the helper, re-embed it, compile both add-in architectures, verify compiled resource hashes, then test live. Refresh this checkpoint if new evidence arrives.
 
 - Verify DLL-only offline first install, silent missing-resource repair, preserved custom/newer files, shared/local duplicate loader behavior and compatibility on the supported IDE build. Retain both architecture checks.

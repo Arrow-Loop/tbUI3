@@ -1,5 +1,9 @@
 # Changelog: tbIDE (WinUI 3 look for the twinBASIC IDE)
 
+## 2026-11-24 - Clarified prerelease distribution and permanent package independence
+
+Reconciled the version policy, product specification, IDE handoff, roadmaps and READMEs with the owner's clarification: internal IDE prerelease distribution is separate from project-wide stable readiness, and general IDE functionality must remain independent of the optional control package. Documented pending reference-based isolation without claiming implementation or native acceptance. Documentation only; no runtime, version, binary or release changed.
+
 ## 2026-11-24 - Guarded GitHub prerelease publication launcher
 
 Added Publish-Release.bat and its development-only PowerShell publisher. It resolves GitHub CLI and Git (including GitHub Desktop), checks the authenticated Arrow-Loop identity and live synchronized development commit, verifies the existing add-in-only package and current DLLs with the existing compiled-payload verifier, creates/resumes a matching draft, checks remote asset sizes and SHA-256 digests, and requires exact-tag confirmation before publishing. It refuses existing tags/published releases and never overwrites assets. Documented per-PC prerequisites and pending Windows/live publication acceptance. No runtime, project binary, version, existing packaging script or GitHub release changed.

@@ -8,6 +8,8 @@ Outstanding work and deferred decisions. [CHANGELOG](CHANGELOG.md) records compl
 - Measure actual transfer, ZIP/CRC, SHA-256, baseline inventory and detached launch on a disposable update. Evaluate authenticated baseline caching or redundant reads only after measuring. Preserve privileged provenance, signature and containment checks.
 - Check notification placement and activation across DPI and multiple monitors, and assess reusing an existing manual review across concurrent IDE instances where the initiating IDE identity stays unambiguous.
 
+- Exercise the new development-only Publish-Release.bat on an authorized prerelease: verify wrong-account, stale/dirty source, corrupt assets and existing-release refusal, draft upload/resume, cancel-before-publish, remote digest verification and exact-commit tag. Validate on both development PCs; do not publish merely to test the launcher.
+
 Use [PHASE1_HANDOFF.md](PHASE1_HANDOFF.md) for the current evidence and build/acceptance sequence.
 
 - Verify DLL-only offline first install, silent missing-resource repair, preserved custom/newer files, shared/local duplicate loader behavior and compatibility on the supported IDE build. Retain both architecture checks.

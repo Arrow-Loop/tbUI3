@@ -72,3 +72,7 @@ With a project containing a form and module, exercise both WinUI3 themes, then s
 
 Compile the add-in with InstalledThemeCatalog and shared DiagnosticPaths. Check local and AppData themes (including duplicate names), inherited RGB/hex/alpha colors, third-party unresolvable palettes, exact-name selection, failed-save rollback and refresh cancellation. No preview should activate a theme without a click. Validate the actual same-origin iframe runtime/CSP and keyboard/focus across outer confirmation, conditional Setup/recovery and normal healthy six-page flow. Channel choice is intentionally absent. 
 
+
+## Optional guarded publication
+
+After the existing build/package checks and explicit release authorization, run Publish-Release.bat as documented in [Development release publication](README.md#development-release-publication). It does not replace the native acceptance gates. Validate the launcher before relying on it; no live publication was performed in the tooling pass.

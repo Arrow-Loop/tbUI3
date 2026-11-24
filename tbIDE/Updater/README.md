@@ -37,3 +37,5 @@ Regenerate the IDE shutdown bridge with `node tbIDE/tools/build-updater-script.m
 The native WebView host follows the shared Toolkit event/lifecycle and form-default pattern. Resource text conversion uses the whole buffer with explicit UTF-8. Updater-specific workers, per-user paths, asInvoker, exact navigation/script policies and error reporting are retained. No Gallery/splash/tab-window dependency is introduced.
 
 Updater.exe has its own updater.html/updater.js for selected updates, progress, consent, cancellation and recovery. It never loads the add-in Welcome Wizard; only tbUI3IDE embeds that separate surface. See the handoff for current native evidence and remaining acceptance.
+
+Development publication is separate from packaging: see [Development release publication](../README.md#development-release-publication) and use Publish-Release.bat only after approval and native acceptance. GitHub CLI is a development-only prerequisite.

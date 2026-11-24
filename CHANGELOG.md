@@ -1,5 +1,9 @@
 # Changelog
 
+## 2026-11-24 - Development prerelease publishing tooling
+
+Added the guarded IDE release publication launcher; see [IDE changelog](tbIDE/CHANGELOG.md) and [publication instructions](tbIDE/README.md#development-release-publication). No core/runtime changes or release publication.
+
 ## 2026-11-23 - IDE Welcome and update review repair (0.4.0.3 source)
 
 Addressed reported BETA 1043 / add-in 0.4.0.2 theme preview and selection failures: tolerant native theme declaration parsing with actual-theme paint fallbacks, retained loader inventory, synchronous exact-name selection with rollback and request correlation, and case-insensitive reconciliation of native theme names. Miniature paint is isolated per theme, toolbar layouts render with an explicitly identified fallback if paint is unavailable, and selected tiles use a persistent outline. Welcome uses a bounded startup eligibility gate and a centered dimmed modal; late automatic onboarding is suppressed for the session. Update review and notification use scoped pinned Toolkit classes and tokens, streamlined footer actions and an explanation for optional icon-library version issues. Add-in-only synchronization preserves the existing updater project and executable, validates embedded payloads, and updates the add-in and bundled theme version metadata. Native updater engine and release packaging are unchanged. The configured repository Node regression suite and isolated Wizard suite exited successfully, and exact mirror/hex validation and add-in-only generator idempotence passed during assembly. Optional installed-IDE fixture checks are reported as skipped if their inputs are absent. Actual BETA 1043/1045 rendering, theme application and self-update acceptance remain pending.

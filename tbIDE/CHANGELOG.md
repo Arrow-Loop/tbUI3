@@ -1,5 +1,9 @@
 # Changelog: tbIDE (WinUI 3 look for the twinBASIC IDE)
 
+## 2026-11-24 - Guarded GitHub prerelease publication launcher
+
+Added Publish-Release.bat and its development-only PowerShell publisher. It resolves GitHub CLI and Git (including GitHub Desktop), checks the authenticated Arrow-Loop identity and live synchronized development commit, verifies the existing add-in-only package and current DLLs with the existing compiled-payload verifier, creates/resumes a matching draft, checks remote asset sizes and SHA-256 digests, and requires exact-tag confirmation before publishing. It refuses existing tags/published releases and never overwrites assets. Documented per-PC prerequisites and pending Windows/live publication acceptance. No runtime, project binary, version, existing packaging script or GitHub release changed.
+
 ## 2026-11-24 - Shutdown bridge cannot block IDE close (add-in 0.4.0.5)
 
 Review fixes to the new shutdown bridge before the first 0.4.0.5 build. (1) An armed close that was interrupted (Save As cancelled, or save failed) left a stale attempt that made every later close a no-op until the add-in reloaded; a new close now replaces a stale attempt, while a held continuation still blocks duplicates. (2) A held exit is now released after 10 seconds if the add-in never acknowledges it, so the IDE always closes; without the native-exit record the updater still refuses to install. Added two bridge tests that fail on the previous bridge. 250/250 tests pass with the 1044 IDE fixtures. Not yet run natively. Separately, 4 ribbon tests fail with the BETA 1045 main.js fixture (the File tab Save section does not build from 1045's native menus); unrelated to the updater and not addressed here.

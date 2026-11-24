@@ -1,5 +1,9 @@
 # Changelog: tbIDE (WinUI 3 look for the twinBASIC IDE)
 
+## 2026-11-23 - Documentation consolidation: roadmap and handoff
+
+Replaced stale candidate narratives and duplicated completed work in the root and IDE roadmaps with pending-only, component-scoped acceptance and future work; kept historical evidence in the existing changelogs and Git history. Converted the root HANDOFF into an authoritative-document navigation entry, and synchronized the approved Wizard's pending native acceptance. Preserved the combined Phase 1 release scope, native validation gates, deferred installation strategies, separate core package migration and outstanding control/Ribbon requirements. No application code, canonical projects, assets, release policy or native test results changed.
+
 ## 2026-11-23 - Immediate documentation reconciliation for active handoff
 
 Reconciled the current Phase 1 acceptance walkthrough, updater/add-in READMEs, product and native interface documentation, bootstrap plan, version policy, diagnostics guidance and ownership. The current handoff now distinguishes the accepted 58/58 helper and completed canonical embedding from pending compiled DLL and live installation/update acceptance. Corrected the Welcome flow to match the approved conditional Setup and preferences-only Finish. Marked the earlier beside-IDE updater plan historical, removed recently duplicated completed entries from both roadmaps, retained outstanding and deferred requirements, and established an in-place current-state documentation rule. Removed direct private-source references from the active handoff guidance; the broader repository-wide reference and Markdown inventory audit remains deferred to the dedicated consolidation pass. No source, project, binary, release scope or accepted safety policy was changed.

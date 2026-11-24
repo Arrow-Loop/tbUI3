@@ -1,29 +1,8 @@
-# Welcome Wizard roadmap and integration dependencies
+# Welcome Wizard roadmap
 
-## Native startup and conditional setup review
+Approved view source is integrated in the canonical add-in, including native theme inventory and compact previews. Current production acceptance is tracked in [Phase 1 handoff](../../PHASE1_HANDOFF.md) and [IDE roadmap](../../ROADMAP.md).
 
-- Cody: verify silent bundled-resource provisioning and status publication before first-run Welcome Wizard, without making failed provisioning an onboarding blocker. Confirm actual resource embedding only after native updater acceptance.
-- Validate that a healthy snapshot produces a clean Finish page with preferences only; test warnings, missing resources, customized files requiring a repair decision and recovery on a conditional Setup step **after Welcome, before Updates**.
-- Confirm bootstrap recheck and approved repair results remove the Setup step when healthy without jumping to an unrelated page; unresolved issues remain visible and do not falsely claim repair. Native integration, project resource embedding and acceptance remain Cody-owned.
-- Review responsive layout and focus behavior when the optional step appears or disappears.
-
-## UI acceptance: finish and installation health
-
-- Review the compact preference list and clean installation-health rows in the live native modal, including narrow widths, customized resources, missing files and repair confirmation.
-- Future confirmed preferences may be appended to the summary-entry data array without introducing more fixed-format tiles. Keep actual native state authoritative.
-- Native component status IDs remain intact for repair actions; friendly labels are presentation-only, and future resource identifiers should be named explicitly when incorporated into production.
-
-## Phase 1 native integration, deferred to Cody
-
-- Enumerate all *effective* installed twinBASIC IDE themes from both the per-user AppData themes folder and the active portable IDE installation themes folder, including built-ins exposed by the IDE.
-- Verify the actual theme-loading precedence for duplicate names, file inheritance, and native selection behavior rather than guessing. Derive actual effective colors from trusted IDE theme values; maintain one selected entry per effective theme.
-- Extend the existing installedThemes[].preview native snapshot with optional resolved titlebar, toolbar, panel, editor, muted and border hex colors, retaining the four existing base colors. Do not send raw theme text or construct arbitrary CSS.
-- Use the trusted actual installed theme inventory for choose-theme validation. Re-embed welcome.js/css in the canonical add-in resources and regenerate/validate synchronized projects.
-- Confirm mini selector geometry, theme values, accessible click/focus, Light/Dark/third-party themes and pinned footer within the real modal IDE host. Browser preview and source checks do not establish native acceptance.
-
-## Deferred product work
-
-- Reintroduce the release-channel selector only when a genuine stable twinBASIC channel exists and native release policy supports it.
-- Consider fuller preview fidelity only if a concrete user-facing discrepancy is demonstrated; current intent is a small, consistent, schematic view, not full toolbar/IDE screenshots.
-- Preserve future archive/side-by-side strategy architecture under the authoritative Installation Manager specification.
-
+- Verify native startup provisioning precedes onboarding; healthy six-page flow and conditional Setup after Welcome, before Updates; repairs/rechecks, unresolved acknowledgment, missing Runtime, custom resources, focus and narrow layouts. Finish shows only confirmed preferences.
+- Verify actual both-directory theme discovery, effective inheritance/duplicate precedence, validated palette fields, exact-name selection, rollback and native snapshot acknowledgment. One isolated iframe and one Toolkit runtime; previews remain lightweight.
+- Verify toolbar selection, Windows theme/accent, keyboard/Escape, skip/reopen and persistence. No production redesign without approval.
+- Deferred: visible stable/development selector only after a genuine stable twinBASIC channel exists; richer previews only for a demonstrated need; future preference rows without fixed tile counts. See [approved specification](../../INSTALLATION_MANAGER_SPEC.md).

@@ -1,5 +1,5 @@
 // Run AFTER the native updater build and BEFORE either add-in architecture is compiled.
-import fs from 'node:fs';import path from 'node:path';import {createHash} from 'node:crypto';
+import fs from 'node:fs';import path from 'node:path';import {execFileSync} from 'node:child_process';import {createHash} from 'node:crypto';
 import {scan,edit} from '../../tools/twinproj-edit.mjs';import {readPE,namedResource,requireAsInvokerManifest} from './pe-resources.mjs';
 const config=JSON.parse(fs.readFileSync('tbIDE/phase1-config.json'));
 const hash=bytes=>createHash('sha256').update(bytes).digest('hex');
@@ -8,13 +8,41 @@ if(!file)throw Error('Build the canonical Win32 updater, then pass --updater <fr
 const project='tbIDE/Updater/Updater.twinproj',addin='tbIDE/tbUI3IDE/tbUI3IDE.twinproj',src='tbIDE/tbUI3IDE/src',bytes=fs.readFileSync(file),pe=readPE(bytes);
 requireAsInvokerManifest(pe);
 if(pe.machine!==0x14c||pe.version!==config.updaterVersion)throw Error(`Expected Win32 updater ${config.updaterVersion}; got machine ${pe.machine.toString(16)}, version ${pe.version}`);
-if(fs.statSync(file).mtimeMs<fs.statSync(project).mtimeMs)throw Error('Updater predates the canonical project. Rebuild it first.');
+
 // A matching version alone cannot identify the intended updater. Require its real embedded
 // UI/fixture bytes to match the current canonical project before packaging either DLL.
 const updaterProject=fs.readFileSync(project),updaterEntries=scan(updaterProject);
 for(const [name,entry]of Object.entries(updaterEntries))if(name.startsWith('Resources/OTHER/')&&entry.type==='file'){
  const resource=name.slice('Resources/OTHER/'.length);
  if(!namedResource(pe,resource).equals(updaterProject.subarray(entry.cStart+4,entry.cEnd)))throw Error('Compiled updater resource differs from canonical project: '+resource);
+}
+const current=fs.readFileSync(addin),entries=scan(current);
+if(fs.statSync(file).mtimeMs<fs.statSync(project).mtimeMs){
+ // Git checkout sets filesystem timestamps in path order. For the previously
+ // prepared tracked helper, verify exact Git blobs and the existing packed binding.
+ const committed=path=>execFileSync('git',['show','HEAD:'+path],{maxBuffer:16*1024*1024});
+ const packed=name=>{
+  const entry=entries['Resources/OTHER/'+name];
+  return entry&&current.subarray(entry.cStart+4,entry.cEnd);
+ };
+ let verified=false;
+ try{
+  const manifest=JSON.parse(packed('tbUI3-bundle.json'));
+  const records=manifest.resources.filter(record=>record.id==='updater');
+  const record=records[0];
+  verified=committed(project).equals(updaterProject)&&
+   committed('tbIDE/Updater/Build/Updater.exe').equals(bytes)&&
+   manifest.schema===1&&manifest.protocol===config.protocol&&
+   manifest.updaterProjectSha256===hash(updaterProject)&&records.length===1&&
+   record.version===config.updaterVersion&&record.size===bytes.length&&
+   record.sha256===hash(bytes)&&packed(record.resource)?.equals(bytes);
+ }catch{}
+ if(!verified)throw Error('Updater predates the canonical project and is not the verified tracked bundle. Rebuild it first.');
+ console.log('Verified tracked updater and packed project binding despite checkout timestamps.');
+}
+if(process.argv.includes('--verify-only')){
+ console.log('Verified native updater architecture, version, manifest and canonical resources.');
+ process.exit(0);
 }
 const resources=[
  {id:'updater',resource:'tbUI3-updater.payload',version:config.updaterVersion,bytes},
@@ -23,7 +51,8 @@ const resources=[
 ];
 const manifest={schema:1,protocol:config.protocol,updaterProjectSha256:hash(fs.readFileSync(project)),resources:resources.map(({bytes,...entry})=>({...entry,size:bytes.length,sha256:hash(bytes),protocolMin:1,protocolMax:1}))};
 const input=new Map(resources.map(r=>['Resources/OTHER/'+r.resource,r.bytes]));input.set('Resources/OTHER/tbUI3-bundle.json',Buffer.from(JSON.stringify(manifest,null,2)+'\n'));
-const current=fs.readFileSync(addin),entries=scan(current),replace={},add={};
+const replace={},add={};
 for(const [name,data]of input){fs.mkdirSync(path.dirname(src+'/'+name),{recursive:true});fs.writeFileSync(src+'/'+name,data);(entries[name]?replace:add)[name]=data;}
-fs.writeFileSync(addin,edit(current,{replace,add}));
+const prepared=edit(current,{replace,add});
+if(!prepared.equals(current))fs.writeFileSync(addin,prepared);
 console.log('Embedded the verified native updater and exact themes in the canonical add-in and mirrors. Now compile BOTH DLL architectures.');

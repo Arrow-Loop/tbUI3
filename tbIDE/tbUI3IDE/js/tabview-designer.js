@@ -122,7 +122,7 @@
     function supported() { return required.every(k => typeof api[k] === 'function'); }
     function globals() {
         const g = api.getCurrentFormEditorGlobals();
-        if (!g?.designer || !Array.isArray(g.allControls) || !Array.isArray(g.selectedControls)) return null;
+        if (!g?.designer || (api.eligible && !api.eligible(g)) || !Array.isArray(g.allControls) || !Array.isArray(g.selectedControls)) return null;
         // Report designers and control-definition designers are not consumer Forms.
         if (g.designerContainerOUTER?.parentNode?.isReportMode) return null;
         if (!['form', 'mdiform'].includes(kind(g.designer))) return null;

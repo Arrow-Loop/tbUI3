@@ -526,19 +526,7 @@ Private Module IdeToolbarScript
         js = js & vbLf
         js = js & "    const pageSource=n=>pageIds.some(id=>n.id==='addinButton-'+id);"
         js = js & vbLf
-        js = js & "    function currentHost() {"
-        js = js & vbLf
-        js = js & "        const g=api.formGlobals&&api.formGlobals();"
-        js = js & vbLf
-        js = js & "        if(!g||!g.selectedControls)return null;"
-        js = js & vbLf
-        js = js & "        for(let n of g.selectedControls)for(;n&&n!==g.designer;n=n.parentElement)"
-        js = js & vbLf
-        js = js & "            if(n.properties&&/^(tbUI3\.)?UI3TabView$/i.test(n.properties._className||''))return n;"
-        js = js & vbLf
-        js = js & "        return null;"
-        js = js & vbLf
-        js = js & "    }"
+        js = js & "    const currentHost = () => api.tabViewHost?.() || null;"
         js = js & vbLf
         js = js & "    function discover() {"
         js = js & vbLf
@@ -666,7 +654,7 @@ Private Module IdeToolbarScript
         js = js & vbLf
         js = js & "    function sourceEnabled(n){"
         js = js & vbLf
-        js = js & "        if(disabled(n))return false;"
+        js = js & "        if(disabled(n)||pageSource(n)&&!currentHost())return false;"
         js = js & vbLf
         js = js & "        if(n.id==='designSwitchIcon'&&api.canSwitchFormCode){try{return !!api.canSwitchFormCode();}catch(e){return false;}}"
         js = js & vbLf
@@ -1246,7 +1234,7 @@ Private Module IdeToolbarScript
         js = js & vbLf
         js = js & "    function addMultiPageContext(){"
         js = js & vbLf
-        js = js & "        if(!currentHost())return;"
+        js = js & "        if(!currentHost()||!pageIds.some(id=>sources.has('addinButton-'+id)))return;"
         js = js & vbLf
         js = js & "        const body=group('MultiPage');"
         js = js & vbLf
@@ -2891,6 +2879,8 @@ Private Module IdeToolbarScript
         js = js & "syncAppearance:function(){window.__tbUI3Appearance.sync();},"
         js = js & vbLf
         js = js & "stylingEnabled:function(){return !!(window.__winui3IdeStyle&&window.__winui3IdeStyle.enabled);},"
+        js = js & vbLf
+        js = js & "tabViewHost:function(){return window.__tbUI3TabDesigner?.selectedHost();},"
         js = js & vbLf
         js = js & "formGlobals:function(){return getCurrentFormEditorGlobals();},changedSize:function(){changedSize();}});"
         js = js & vbLf

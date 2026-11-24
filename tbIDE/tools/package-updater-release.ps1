@@ -43,9 +43,15 @@ $repo=[IO.Path]::GetFullPath((Join-Path $PSScriptRoot '../..'))
 $Win32Dll=(Resolve-Path -LiteralPath $Win32Dll).Path
 $Win64Dll=(Resolve-Path -LiteralPath $Win64Dll).Path
 $UpdaterExe=(Resolve-Path -LiteralPath $UpdaterExe).Path
-foreach ($check in @(@($Win32Dll,'tbIDE/tbUI3IDE/tbUI3IDE.twinproj'),@($Win64Dll,'tbIDE/tbUI3IDE/tbUI3IDE.twinproj'),@($UpdaterExe,'tbIDE/Updater/Updater.twinproj'))) {
+foreach ($check in @(@($Win32Dll,'tbIDE/tbUI3IDE/tbUI3IDE.twinproj'),@($Win64Dll,'tbIDE/tbUI3IDE/tbUI3IDE.twinproj'))) {
     if ((Get-Item -LiteralPath $check[0]).LastWriteTimeUtc -lt (Get-Item -LiteralPath (Join-Path $repo $check[1])).LastWriteTimeUtc) { throw ('Rebuild this binary after the current canonical project changes: '+$check[0]) }
 }
+
+Push-Location -LiteralPath $repo
+try {
+    & node tbIDE/tools/prepare-phase1-bundle.mjs --updater $UpdaterExe --verify-only
+    if ($LASTEXITCODE -ne 0) { throw 'Updater verification failed.' }
+} finally { Pop-Location }
 
 if (!$Output) {$Output=Join-Path $repo 'Build/Release'}
 [void][IO.Directory]::CreateDirectory($Output)

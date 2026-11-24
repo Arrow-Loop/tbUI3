@@ -82,13 +82,7 @@
     const sourceCaption=n=>api.present?.({},n.id).caption||sourceLabels[n.id]||label(n).replace(/\s*\([^)]*\)\s*$/,'');
     const pageIds=['tbUI3TabNew','tbUI3TabDelete','tbUI3TabLeft','tbUI3TabRight','tbUI3TabRefresh','tbUI3TabDiagnostics'];
     const pageSource=n=>pageIds.some(id=>n.id==='addinButton-'+id);
-    function currentHost() {
-        const g=api.formGlobals&&api.formGlobals();
-        if(!g||!g.selectedControls)return null;
-        for(let n of g.selectedControls)for(;n&&n!==g.designer;n=n.parentElement)
-            if(n.properties&&/^(tbUI3\.)?UI3TabView$/i.test(n.properties._className||''))return n;
-        return null;
-    }
+    const currentHost = () => api.tabViewHost?.() || null;
     function discover() {
         const toolbar=d.getElementById('rootMenu2'), headers=d.getElementById('rootMenu1Inner');
         if(!toolbar||!headers)throw Error('Native toolbar/menu structure is unavailable');
@@ -151,7 +145,7 @@
         return mask(api.icons[glyph]||api.icons.apps_list||api.icons.saveIcon);
     }
     function sourceEnabled(n){
-        if(disabled(n))return false;
+        if(disabled(n)||pageSource(n)&&!currentHost())return false;
         if(n.id==='designSwitchIcon'&&api.canSwitchFormCode){try{return !!api.canSwitchFormCode();}catch(e){return false;}}
         return true;
     }
@@ -424,7 +418,7 @@
         syncBindings();resize();
     }
     function addMultiPageContext(){
-        if(!currentHost())return;
+        if(!currentHost()||!pageIds.some(id=>sources.has('addinButton-'+id)))return;
         const body=group('MultiPage');
         for(const ids of [pageIds.slice(0,2),pageIds.slice(2,4),pageIds.slice(4)]){
             const nodes=ids.map(id=>sources.get('addinButton-'+id)).filter(Boolean);if(!nodes.length)continue;

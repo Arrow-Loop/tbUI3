@@ -21,6 +21,7 @@ Private Class TabViewDesignerController
     ' The single add-in owns project lifecycle; tab behavior is independent of its theme setting.
     Public Sub ProjectLoaded()
         Install
+        If m_Installed Then RunJs "window.__tbUI3TabDesigner.invalidate();'reference state invalidated'"
     End Sub
 
     Private Sub LoadTimer_Timer()
@@ -40,9 +41,14 @@ Private Class TabViewDesignerController
 
     Private Sub Install()
         On Error GoTo Failed
+        If PageWindow Is Nothing Then Set PageWindow = Host.ToolWindows.Add("tbUI3TabViewDesigner", "tbUI3TabViewDesignerHost")
+        If Not m_Installed Then
+            Log RunJs(TabViewDesignerScript.Build())
+            m_Installed = True
+            m_LastError = ""
+        End If
         If NewPageButton Is Nothing Then
             With Host.Toolbars(0)
-                .AddSplitter()
                 Set NewPageButton = .AddButton("tbUI3TabNew", "New page")
                 Set DeletePageButton = .AddButton("tbUI3TabDelete", "Delete page")
                 Set MoveLeftButton = .AddButton("tbUI3TabLeft", "Page left")
@@ -50,12 +56,6 @@ Private Class TabViewDesignerController
                 Set RefreshButton = .AddButton("tbUI3TabRefresh", "TabView refresh")
                 Set DiagnosticsButton = .AddButton("tbUI3TabDiagnostics", "TabView diagnostics")
             End With
-        End If
-        If PageWindow Is Nothing Then Set PageWindow = Host.ToolWindows.Add("tbUI3TabViewDesigner", "tbUI3TabViewDesignerHost")
-        If Not m_Installed Then
-            Log RunJs(TabViewDesignerScript.Build())
-            m_Installed = True
-            m_LastError = ""
         End If
         Exit Sub
     Failed:
@@ -70,7 +70,6 @@ Private Class TabViewDesignerController
 
     Private Sub RunCommand(ByVal Command As String)
         On Error GoTo Failed
-        If Command = "refresh" Then m_Installed = False
         Install
         If Not m_Installed Then Exit Sub
         Log RunJs("window.__tbUI3TabDesigner.run('" & Command & "')")

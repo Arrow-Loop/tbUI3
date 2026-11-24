@@ -1,5 +1,13 @@
 # Changelog: tbIDE (WinUI 3 look for the twinBASIC IDE)
 
+## 2026-11-24 - Optional package isolation (add-in 0.4.0.6)
+
+The designer checks the active project’s applied reference settings for the tbUI3 package GUID and requires the current compiler control list to resolve the TabView and TabPage IDs for the active form. Project, reference and form changes retire the old adapter and its owned state. Classic hides ineligible native buttons without adding a separator. Hybrid and Ribbon omit the MultiPage group in both presentations unless a TabView or child is selected. General IDE features have no dependency on this gate.
+
+Preparation and packaging now verify the committed updater bytes and the canonical bundle binding when Git checkout timestamps would otherwise reject the unchanged helper. The version, architecture, startup manifest, canonical resources and fresh native self-tests still gate preparation. Locally built DLLs still require fresh timestamps.
+
+BETA 1045 produced both 0.4.0.6 DLLs and compiled PE verification confirmed the exact 0.2.0.3 helper and themes. The helper passed 62/62 native self-tests. Repository tests passed 256/256 with each of the BETA 1043 and 1044 fixtures and 252/256 with BETA 1045 fixtures. The same four Ribbon failures reproduce on the unmodified base, including File/Save and the native menu capture paths used for alignment and Insert. The 24 Wizard tests and canonical mirror/hex checks pass. Native in-IDE isolation acceptance and the BETA 1045 Ribbon findings remain open. Publication is on hold.
+
 ## 2026-11-24 - Clarified prerelease distribution and permanent package independence
 
 Reconciled the version policy, product specification, IDE handoff, roadmaps and READMEs with the owner's clarification: internal IDE prerelease distribution is separate from project-wide stable readiness, and general IDE functionality must remain independent of the optional control package. Documented pending reference-based isolation without claiming implementation or native acceptance. Documentation only; no runtime, version, binary or release changed.

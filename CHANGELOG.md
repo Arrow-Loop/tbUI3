@@ -1,5 +1,9 @@
 # Changelog
 
+## 2026-11-24 - Isolate optional designer tooling in tbUI3IDE 0.4.0.6
+
+The add-in activates MultiPage tooling only when the current project references tbUI3 and the active form has the compiler-resolved controls. See the [IDE changelog](tbIDE/CHANGELOG.md) for build and test evidence.
+
 ## 2026-11-24 - Development prerelease publishing tooling
 
 Added the guarded IDE release publication launcher; see [IDE changelog](tbIDE/CHANGELOG.md) and [publication instructions](tbIDE/README.md#development-release-publication). No core/runtime changes or release publication.

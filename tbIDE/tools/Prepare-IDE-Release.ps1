@@ -41,9 +41,8 @@ try {
     Write-Host "Using Node: $script:node"
     $config=Get-Content -LiteralPath 'tbIDE\phase1-config.json' -Raw | ConvertFrom-Json
     $updater=Join-Path $root 'tbIDE\Updater\Build\Updater.exe'
-    $project=Join-Path $root 'tbIDE\Updater\Updater.twinproj'
     if (-not (Test-Path -LiteralPath $updater -PathType Leaf)) {throw 'Build the Win32 Updater project first.'}
-    if ((Get-Item -LiteralPath $updater).LastWriteTimeUtc -lt (Get-Item -LiteralPath $project).LastWriteTimeUtc) {throw 'Updater.exe is older than its canonical project. Build it again.'}
+    Invoke-NodeChecked -Arguments @('tbIDE/tools/prepare-phase1-bundle.mjs','--updater',$updater,'--verify-only')
     if ($Action -eq 'Embed') {
         # Resolve the same cached ESM dependency used by the Welcome assembly.
         # A fresh PowerShell process does not inherit that launcher's environment.

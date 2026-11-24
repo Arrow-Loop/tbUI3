@@ -21,7 +21,7 @@ const requestedIcons=JSON.parse(fs.readFileSync('tbIDE/tbUI3IDE/icons/requested.
 test('full layouts restore labels and inline Grid while simplified-only compaction preserves the same controls',()=>{
     for(const mode of ['Ribbon','Hybrid']){
         const f=fixture(),sourceIds=['menuBarGrid','menuBarPreview','addinButton-tbUI3TabLeft','addinButton-tbUI3TabRight','addinButton-tbUI3TabRefresh','addinButton-tbUI3TabDiagnostics'];for(const id of sourceIds)f.button(id,'Native tooltip '+id);f.button('addinButton-tbUI3TabNew','New Page');f.button('addinButton-tbUI3TabDelete','Delete Page');
-        const host=f.d.createElement('div');host.properties={_className:'tbUI3.UI3TabView'};f.api.formGlobals=()=>({selectedControls:[host]});const native=f.d.createElement('div');native.id='menuBarGridOptions';native.innerHTML='<div class="menuBarGridOptionsInner"><label class="menuBarGridOptionRow">Width<input class="optionGridWidth" type="number" value="10"></label></div>';f.toolbar.after(native);const width=native.querySelector('input');
+        const host=f.d.createElement('div');host.properties={_className:'tbUI3.UI3TabView'};f.api.formGlobals=()=>({selectedControls:[host]});f.api.tabViewHost=()=>host;const native=f.d.createElement('div');native.id='menuBarGridOptions';native.innerHTML='<div class="menuBarGridOptionsInner"><label class="menuBarGridOptionRow">Width<input class="optionGridWidth" type="number" value="10"></label></div>';f.toolbar.after(native);const width=native.querySelector('input');
         f.items.Format.push({name:'Center Horizontal',action:'tbFormDesigner_CenterSelectedGroupInContainerHorizontal'},{name:'Lock Controls',action:'tbFormDesigner_ToggleLockSelectedControls'});
         const style=f.d.createElement('style');style.textContent=fs.readFileSync('tbIDE/tbUI3IDE/css/ide-toolbar.css','utf8');f.d.head.append(style);f.adapter.setMode(mode);f.d.querySelector('[data-tab=Form]').click();
         const buttons=sourceIds.map(id=>f.d.querySelector(`[data-source="${id}"]`));if(mode==='Ribbon')buttons.push(...[...f.d.querySelectorAll('.tbui3-ribbon-content button')].filter(b=>b.title==='Center Horizontal '||b.title==='Lock Controls '));
@@ -130,7 +130,7 @@ test('corner chevron switches Full/Simplified Ribbon without replacing tabs, com
 test('simplification retains native Grid nodes/events, lazy dropdown dispatch and dynamic/contextual commands',()=>{
     const f=fixture(),native=f.d.createElement('div');native.id='menuBarGridOptions';native.innerHTML='<div class="menuBarGridOptionsInner"><label class="menuBarGridOptionRow">Width<input class="optionGridWidth" type="number" value="8"></label></div>';f.toolbar.after(native);
     const input=native.querySelector('input');let changes=0;input.onchange=()=>changes++;
-    const host=f.d.createElement('div');host.properties={_className:'tbUI3.UI3TabView'};let selected=[host];f.api.formGlobals=()=>({selectedControls:selected});f.button('menuBarGrid','Grid');f.button('addinButton-tbUI3TabNew','New page');
+    const host=f.d.createElement('div');host.properties={_className:'tbUI3.UI3TabView'};let selected=[host];f.api.formGlobals=()=>({selectedControls:selected});f.api.tabViewHost=()=>{for(let node=selected[0];node;node=node.parentElement)if(node.properties?._className==='tbUI3.UI3TabView')return node;return null;};f.button('menuBarGrid','Grid');f.button('addinButton-tbUI3TabNew','New page');
     f.adapter.setMode('Ribbon');f.adapter.setSimplified(true,true);f.d.querySelector('[data-tab=Form]').click();
     assert.equal(f.d.querySelector('.tbui3-ribbon-grid input'),input);input.value='12';input.dispatchEvent(new f.w.Event('change'));assert.equal(changes,1);
     f.d.querySelector('[aria-haspopup=menu]').click();const popup=f.d.querySelector('.tbui3-ribbon-popup');assert(popup);popup.querySelector('button').click();assert.deepEqual(f.calls,['left']);
@@ -204,7 +204,7 @@ test('MultiPage uses renamed labels, original tooltips and two vertical separato
         const f=fixture(),ids=['tbUI3TabNew','tbUI3TabDelete','tbUI3TabLeft','tbUI3TabRight','tbUI3TabRefresh','tbUI3TabDiagnostics'];
         const labels=['New Page','Delete Page','Page Left','Page Right','TabView Refresh','TabView Diagnostics'];
         const icons=['document_one_page_add','document_header_dismiss','tab_desktop_arrow_left','tab_desktop_arrow_right_composite','tab_desktop_arrow_clockwise','stethoscope'];
-        for(const id of ids)f.button('addinButton-'+id,'Original help '+id);const host=f.d.createElement('div');host.properties={_className:'tbUI3.UI3TabView'};f.api.formGlobals=()=>({selectedControls:[host]});
+        for(const id of ids)f.button('addinButton-'+id,'Original help '+id);const host=f.d.createElement('div');host.properties={_className:'tbUI3.UI3TabView'};f.api.formGlobals=()=>({selectedControls:[host]});f.api.tabViewHost=()=>host;
         f.adapter.setMode(mode);f.d.querySelector('[data-tab=Form]').click();const group=f.d.querySelector('section[aria-label=MultiPage]');assert.equal(group.querySelectorAll('[role=separator]').length,2);
         const children=[...group.querySelector('.tbui3-ribbon-group-body').children];assert.deepEqual(children.map(n=>n.getAttribute('role')==='separator'?'|':n.querySelector('.tbui3-ribbon-label').textContent),[labels[0],labels[1],'|',labels[2],labels[3],'|',labels[4],labels[5]]);
         for(const [index,b]of [...group.querySelectorAll('button')].entries()){assert.equal(b.title,'Original help '+ids[index]);assert.equal(b.querySelector('.tbui3-ribbon-icon').dataset.iconRef,'fluent/'+icons[index]);b.click();}
@@ -359,7 +359,7 @@ test('MultiPage commands appear directly after Grid only with host or child sele
         const f=fixture(),ids=['tbUI3TabNew','tbUI3TabDelete','tbUI3TabLeft','tbUI3TabRight','tbUI3TabRefresh','tbUI3TabDiagnostics'];
         for(const id of ids){const n=f.button('addinButton-'+id,id);n.onmousedown=null;n.onclick=()=>f.calls.push(id);}
         f.button('menuBarGrid','Grid');
-        let selected=[];f.api.formGlobals=()=>({selectedControls:selected});f.adapter.setMode(mode);f.d.querySelector('[data-tab=Form]').click();
+        let selected=[];f.api.formGlobals=()=>({selectedControls:selected});f.api.tabViewHost=()=>{for(let node=selected[0];node;node=node.parentElement)if(node.properties?._className==='tbUI3.UI3TabView')return node;return null;};f.adapter.setMode(mode);f.d.querySelector('[data-tab=Form]').click();
         const section=()=>f.d.querySelector('.tbui3-ribbon-group[aria-label="MultiPage"]');assert(!section());
         const host=f.d.createElement('div');host.properties={_className:'tbUI3.UI3TabView'};const page=host.appendChild(f.d.createElement('div'));page.properties={_className:'tbUI3.UI3TabPage'};const child=page.appendChild(f.d.createElement('div'));
         for(const control of [host,page,child]){
@@ -919,4 +919,33 @@ test('Build uses supplied artwork in both ribbon layouts and stays between Redo 
   command.click();assert.equal(f.calls.at(-1),'tbBuild_Start');
  }
  f.dispose();
+});
+
+test('all toolbar modes follow the authoritative TabView context without disturbing native commands',()=>{
+    for(const mode of ['Classic','Hybrid','Ribbon']){
+        const f=fixture();
+        try{
+            const page=f.button('addinButton-tbUI3TabNew','New Page');
+            const save=f.d.getElementById('saveIcon');
+            const nativeSaveHandler=save.onmousedown;
+            const host=f.d.createElement('div');
+            let eligible=false;
+            f.api.formGlobals=()=>({selectedControls:[host]});
+            f.api.tabViewHost=()=>eligible?host:null;
+            f.adapter.setMode(mode);
+            if(mode!=='Classic')f.d.querySelector('[data-tab=Form]').click();
+            for(const simplified of [false,true]){
+                f.adapter.setSimplified(simplified);
+                for(const allowed of [false,true,false]){
+                    eligible=allowed;
+                    f.adapter.tick();
+                    const group=f.d.querySelector('[aria-label="MultiPage"]');
+                    assert.equal(!!group,mode!=='Classic'&&allowed);
+                    if(group)assert.equal(group.querySelector('[data-source=addinButton-tbUI3TabNew]').disabled,false);
+                    assert.equal(save.onmousedown,nativeSaveHandler);
+                    assert(page.isConnected);
+                }
+            }
+        }finally{f.dispose();}
+    }
 });

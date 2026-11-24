@@ -35,7 +35,7 @@ IDE first).
 ## Current development state
 
 - Core package: **1.0.0.75** (prerelease metadata correction to 0.0.0.75 remains separate pending work). Shared flicker-free paint surface; TabView/TabPage and UI3Button use it. See [rendering](docs/RENDERING.md), [TabView contract](docs/controls/UI3TabView.md) and the control inventory.
-- IDE add-in: **0.4.0.0**, TabView designer adapter v10, optional styling, Classic/Hybrid/Ribbon and integrated Welcome Wizard. Native updater **0.2.0.0** and both themes are embedded in the canonical add-in. The helper passed 58/58 native self-tests and compiled startup; add-in and live update acceptance remain open.
+- IDE add-in: **0.4.0.6**, optional styling, Classic/Hybrid/Ribbon and integrated Welcome Wizard. Experimental TabView designer tooling is scoped to projects with an enabled, resolved tbUI3 package reference. Updater **0.2.0.3** and both themes are embedded. Both DLLs passed compiled resource verification and the helper passed 62 native self-tests. Native isolation and live update acceptance remain open.
 - [Current IDE/updater acceptance walkthrough](tbIDE/PHASE1_HANDOFF.md) is the starting point for continuation. [Product requirements](tbIDE/INSTALLATION_MANAGER_SPEC.md) and [technical contracts](tbIDE/INSTALLATION_CONTRACTS.md) define the approved scope and implementation boundaries.
 - Earlier development checkpoints and validation history belong in CHANGELOG; outstanding work belongs in ROADMAP. See [the IDE add-in README](tbIDE/README.md) for its features and deployment.
 

@@ -2,8 +2,321 @@
 Private Module TabViewDesignerScript
     Public Function Build() As String
         Dim js As String
-        js = js & "(function(){if(window.__tbUI3TabDesigner)window.__tbUI3TabDesigner.dispose();window.__tbUI3TabDesigner=/* tbUI3 designer adapter. IDE BETA 1043/1044, "
-        js = js & "plus the BETA 1033 insertion probe."
+        js = js & "(function(){"
+        js = js & vbLf
+        js = js & "if(window.__tbUI3TabDesigner)window.__tbUI3TabDesigner.dispose();"
+        js = js & vbLf
+        js = js & "window.__tbUI3TabDesigner=/* Active-project gate for the TabView designer. The IDE's project Settings and"
+        js = js & vbLf
+        js = js & " * compiler-published control list are independent inputs. Both must agree. */"
+        js = js & vbLf
+        js = js & "(function createDesignerEligibility(api, createAdapter) {"
+        js = js & vbLf
+        js = js & "    'use strict';"
+        js = js & vbLf
+        js = js & "    const packageId = '{abd18105-b38a-427b-9933-289331d44da7}';"
+        js = js & vbLf
+        js = js & "    const tabViewId = '{ff14322e-c9bc-4f3a-bce8-0fde58f230e0}';"
+        js = js & vbLf
+        js = js & "    const tabPageId = '{1681a635-13c8-47f3-b96a-fe8123c9f708}';"
+        js = js & vbLf
+        js = js & "    const contextClass = 'tbui3-tabview-context';"
+        js = js & vbLf
+        js = js & "    const lower = value => typeof value === 'string' ? value.toLowerCase() : '';"
+        js = js & vbLf
+        js = js & "    const pageCommands = ['New', 'Delete', 'Left', 'Right', 'Refresh', 'Diagnostics'];"
+        js = js & vbLf
+        js = js & "    const document = api.document;"
+        js = js & vbLf
+        js = js & "    const style = document.createElement('style');"
+        js = js & vbLf
+        js = js & "    const selectors = pageCommands.map(name => '#addinButton-tbUI3Tab' + name);"
+        js = js & vbLf
+        js = js & "    selectors.push('.tbui3-ribbon-group[aria-label=" & Chr(34) & "MultiPage" & Chr(34) & "]');"
+        js = js & vbLf
+        js = js & "    style.textContent = selectors.map(s => 'html:not(.' + contextClass + ') ' + s).join(',') + '{display:none!important}';"
+        js = js & vbLf
+        js = js & "    document.head.appendChild(style);"
+        js = js & vbLf
+        js = js & vbLf
+        js = js & "    let project, settingsEntry, compiler, controls, staleControls;"
+        js = js & vbLf
+        js = js & "    let referenced = false, request, validUntil = 0, nextRead = 0;"
+        js = js & vbLf
+        js = js & "    let adapter, activeDesigner, disposed = false;"
+        js = js & vbLf
+        js = js & vbLf
+        js = js & "    function deactivate() {"
+        js = js & vbLf
+        js = js & "        document.documentElement.classList.remove(contextClass);"
+        js = js & vbLf
+        js = js & "        const previous = adapter;"
+        js = js & vbLf
+        js = js & "        adapter = activeDesigner = undefined;"
+        js = js & vbLf
+        js = js & "        previous?.dispose();"
+        js = js & vbLf
+        js = js & "    }"
+        js = js & vbLf
+        js = js & vbLf
+        js = js & "    function resetReference() {"
+        js = js & vbLf
+        js = js & "        referenced = false;"
+        js = js & vbLf
+        js = js & "        request = undefined;"
+        js = js & vbLf
+        js = js & "        validUntil = nextRead = 0;"
+        js = js & vbLf
+        js = js & "        deactivate();"
+        js = js & vbLf
+        js = js & "    }"
+        js = js & vbLf
+        js = js & vbLf
+        js = js & "    function sample() {"
+        js = js & vbLf
+        js = js & "        const input = api.projectState();"
+        js = js & vbLf
+        js = js & "        if (input?.project !== project || input?.settings !== settingsEntry || input?.compiler !== compiler) {"
+        js = js & vbLf
+        js = js & "            // A compiler can briefly retain the old project's list during open/restart."
+        js = js & vbLf
+        js = js & "            if (controls) staleControls = controls;"
+        js = js & vbLf
+        js = js & "            project = input?.project;"
+        js = js & vbLf
+        js = js & "            settingsEntry = input?.settings;"
+        js = js & vbLf
+        js = js & "            compiler = input?.compiler;"
+        js = js & vbLf
+        js = js & "            resetReference();"
+        js = js & vbLf
+        js = js & "        }"
+        js = js & vbLf
+        js = js & "        controls = input?.controls;"
+        js = js & vbLf
+        js = js & "        if (controls && controls !== staleControls) staleControls = undefined;"
+        js = js & vbLf
+        js = js & "        return input;"
+        js = js & vbLf
+        js = js & "    }"
+        js = js & vbLf
+        js = js & vbLf
+        js = js & "    function hasReference(settings) {"
+        js = js & vbLf
+        js = js & "        const references = settings?.['project.references'];"
+        js = js & vbLf
+        js = js & "        if (!Array.isArray(references)) return false;"
+        js = js & vbLf
+        js = js & "        const matches = references.filter(ref => lower(ref?.id) === packageId);"
+        js = js & vbLf
+        js = js & "        return matches.length === 1 && (matches[0].isDisabled == null || matches[0].isDisabled === false);"
+        js = js & vbLf
+        js = js & "    }"
+        js = js & vbLf
+        js = js & vbLf
+        js = js & "    function currentDesigner() {"
+        js = js & vbLf
+        js = js & "        if (disposed) return;"
+        js = js & vbLf
+        js = js & "        const input = sample();"
+        js = js & vbLf
+        js = js & "        if (!input || !referenced || api.now() >= validUntil || !Array.isArray(controls) ||"
+        js = js & vbLf
+        js = js & "            controls === staleControls) return;"
+        js = js & vbLf
+        js = js & "        // The active designer must already have received this compiler response."
+        js = js & vbLf
+        js = js & "        // The raw list stays complete even when the visible toolbox is filtered."
+        js = js & vbLf
+        js = js & "        const designer = api.formGlobals();"
+        js = js & vbLf
+        js = js & "        if (!designer?.designer || designer.customControlsArray !== controls ||"
+        js = js & vbLf
+        js = js & "            !Array.isArray(designer.allControls) || !Array.isArray(designer.selectedControls) ||"
+        js = js & vbLf
+        js = js & "            designer.designerContainerOUTER?.parentNode?.isReportMode ||"
+        js = js & vbLf
+        js = js & "            !['form', 'mdiform'].includes(lower(designer.designer.properties?._className))) return;"
+        js = js & vbLf
+        js = js & "        const resolved = (name, clsid) => controls.some(control =>"
+        js = js & vbLf
+        js = js & "            lower(control.package) === 'tbui3' && lower(control.name) === name && lower(control.clsid) === clsid);"
+        js = js & vbLf
+        js = js & "        if (resolved('ui3tabview', tabViewId) && resolved('ui3tabpage', tabPageId)) return designer;"
+        js = js & vbLf
+        js = js & "    }"
+        js = js & vbLf
+        js = js & vbLf
+        js = js & "    function selectedHost(designer) {"
+        js = js & vbLf
+        js = js & "        if (designer?.selectedControls.length !== 1) return null;"
+        js = js & vbLf
+        js = js & "        for (let node = designer.selectedControls[0]; node && node !== designer.designer; node = node.parentElement) {"
+        js = js & vbLf
+        js = js & "            if (designer.allControls.includes(node) && !node.isDeleted &&"
+        js = js & vbLf
+        js = js & "                lower(node.properties?._className) === 'tbui3.ui3tabview' &&"
+        js = js & vbLf
+        js = js & "                lower(node.properties?._clsid) === tabViewId) return node;"
+        js = js & vbLf
+        js = js & "        }"
+        js = js & vbLf
+        js = js & "        return null;"
+        js = js & vbLf
+        js = js & "    }"
+        js = js & vbLf
+        js = js & vbLf
+        js = js & "    function reconcile() {"
+        js = js & vbLf
+        js = js & "        const designer = currentDesigner();"
+        js = js & vbLf
+        js = js & "        if (activeDesigner !== designer) {"
+        js = js & vbLf
+        js = js & "            deactivate();"
+        js = js & vbLf
+        js = js & "            if (designer) {"
+        js = js & vbLf
+        js = js & "                activeDesigner = designer;"
+        js = js & vbLf
+        js = js & "                adapter = createAdapter(g => g === activeDesigner && g === currentDesigner());"
+        js = js & vbLf
+        js = js & "                adapter.install();"
+        js = js & vbLf
+        js = js & "            }"
+        js = js & vbLf
+        js = js & "        }"
+        js = js & vbLf
+        js = js & "        document.documentElement.classList.toggle(contextClass, !!adapter && !!selectedHost(designer));"
+        js = js & vbLf
+        js = js & "    }"
+        js = js & vbLf
+        js = js & vbLf
+        js = js & "    function refresh() {"
+        js = js & vbLf
+        js = js & "        if (disposed) return;"
+        js = js & vbLf
+        js = js & "        try {"
+        js = js & vbLf
+        js = js & "            const input = sample();"
+        js = js & vbLf
+        js = js & "            const now = api.now();"
+        js = js & vbLf
+        js = js & "            if (request && now >= request.deadline) resetReference();"
+        js = js & vbLf
+        js = js & "            if (input && !request && now >= nextRead) {"
+        js = js & vbLf
+        js = js & "                const pending = {deadline: now + 1000};"
+        js = js & vbLf
+        js = js & "                request = pending;"
+        js = js & vbLf
+        js = js & "                nextRead = now + 500;"
+        js = js & vbLf
+        js = js & "                api.readSettings(settingsEntry, settings => {"
+        js = js & vbLf
+        js = js & "                    if (disposed || request !== pending) return;"
+        js = js & vbLf
+        js = js & "                    try {"
+        js = js & vbLf
+        js = js & "                        sample();"
+        js = js & vbLf
+        js = js & "                        if (request !== pending) return;"
+        js = js & vbLf
+        js = js & "                        request = undefined;"
+        js = js & vbLf
+        js = js & "                        referenced = hasReference(settings);"
+        js = js & vbLf
+        js = js & "                        validUntil = api.now() + 1000;"
+        js = js & vbLf
+        js = js & "                        reconcile();"
+        js = js & vbLf
+        js = js & "                    } catch (_) { resetReference(); }"
+        js = js & vbLf
+        js = js & "                });"
+        js = js & vbLf
+        js = js & "            }"
+        js = js & vbLf
+        js = js & "            reconcile();"
+        js = js & vbLf
+        js = js & "        } catch (_) { resetReference(); }"
+        js = js & vbLf
+        js = js & "    }"
+        js = js & vbLf
+        js = js & vbLf
+        js = js & "    const timer = api.setInterval(refresh, 150);"
+        js = js & vbLf
+        js = js & "    refresh();"
+        js = js & vbLf
+        js = js & "    return {"
+        js = js & vbLf
+        js = js & "        invalidate() { resetReference(); refresh(); },"
+        js = js & vbLf
+        js = js & "        selectedHost() { return adapter && selectedHost(currentDesigner()); },"
+        js = js & vbLf
+        js = js & "        run(command) {"
+        js = js & vbLf
+        js = js & "            refresh();"
+        js = js & vbLf
+        js = js & "            if (!adapter || !selectedHost(currentDesigner())) return 'TabView designer context unavailable.';"
+        js = js & vbLf
+        js = js & "            if (command === 'refresh') { deactivate(); reconcile(); }"
+        js = js & vbLf
+        js = js & "            return adapter?.run(command) || '';"
+        js = js & vbLf
+        js = js & "        },"
+        js = js & vbLf
+        js = js & "        get lastError() { return adapter?.lastError || ''; },"
+        js = js & vbLf
+        js = js & "        dispose() {"
+        js = js & vbLf
+        js = js & "            disposed = true;"
+        js = js & vbLf
+        js = js & "            api.clearInterval(timer);"
+        js = js & vbLf
+        js = js & "            resetReference();"
+        js = js & vbLf
+        js = js & "            style.remove();"
+        js = js & vbLf
+        js = js & "        }"
+        js = js & vbLf
+        js = js & "    };"
+        js = js & vbLf
+        js = js & "})({"
+        js = js & vbLf
+        js = js & " document:document,setInterval:setInterval.bind(window),clearInterval:clearInterval.bind(window),now:Date.now,"
+        js = js & vbLf
+        js = js & " formGlobals:function(){return typeof getCurrentFormEditorGlobals==='function'&&getCurrentFormEditorGlobals();},"
+        js = js & vbLf
+        js = js & " projectState:function(){"
+        js = js & vbLf
+        js = js & "  if(typeof context==='undefined'||!context.projectLoaded?.value||typeof fs==='undefined'||typeof lspSocket==='undefined')return;"
+        js = js & vbLf
+        js = js & "  const roots=fs.tree?.rootFolder?.entries;"
+        js = js & vbLf
+        js = js & "  const project=roots&&roots[Object.keys(roots)[0]];"
+        js = js & vbLf
+        js = js & "  const settings=project?.entries?.settings;"
+        js = js & vbLf
+        js = js & "  if(!settings||!lspSocket)return;"
+        js = js & vbLf
+        js = js & "  return {project:project,settings:settings,compiler:lspSocket,controls:lspSocket.latestCustomControls};"
+        js = js & vbLf
+        js = js & " },"
+        js = js & vbLf
+        js = js & " readSettings:function(entry,callback){"
+        js = js & vbLf
+        js = js & "  fs.readFile(entry,function(_,bytes){"
+        js = js & vbLf
+        js = js & "   let data;"
+        js = js & vbLf
+        js = js & "   if(bytes)try{data=JSON.parse(new TextDecoder().decode(bytes));}catch(_){}"
+        js = js & vbLf
+        js = js & "   callback(data);"
+        js = js & vbLf
+        js = js & "  });"
+        js = js & vbLf
+        js = js & " }"
+        js = js & vbLf
+        js = js & "},function(eligible){return /* tbUI3 designer adapter. IDE BETA 1043/1044, plus the BETA 1033 insertion probe."
         js = js & vbLf
         js = js & " * Native controls own geometry and persistence. This adapter only suppresses inactive"
         js = js & vbLf
@@ -250,7 +563,7 @@ Private Module TabViewDesignerScript
         js = js & vbLf
         js = js & "        const g = api.getCurrentFormEditorGlobals();"
         js = js & vbLf
-        js = js & "        if (!g?.designer || !Array.isArray(g.allControls) || !Array.isArray(g.selectedControls)) return null;"
+        js = js & "        if (!g?.designer || (api.eligible && !api.eligible(g)) || !Array.isArray(g.allControls) || !Array.isArray(g.selectedControls)) return null;"
         js = js & vbLf
         js = js & "        // Report designers and control-definition designers are not consumer Forms."
         js = js & vbLf
@@ -1152,19 +1465,23 @@ Private Module TabViewDesignerScript
         js = js & "    return { version, install, dispose, run, tick, diagnostics, supported, get lastError() { return error; }, get nativeJsonFailure() { return nativeJ"
         js = js & "sonFailure; } };"
         js = js & vbLf
-        js = js & "})({nativePage:window,document:document,setInterval:setInterval.bind(window),clearInterval:clearInterval.bind(window),getCurrentFormEditorGlobals:type"
-        js = js & "of getCurrentFormEditorGlobals==='function'?getCurrentFormEditorGlobals:undefined,preparePaste:typeof preparePaste==='function'?preparePaste:undefined"
-        js = js & ",deserializeControls:typeof deserializeControls==='function'?deserializeControls:undefined,prepareForMultipleChangeProperties:typeof prepareForMultipl"
-        js = js & "eChangeProperties==='function'?prepareForMultipleChangeProperties:undefined,handleMultipleChangeProperties:typeof handleMultipleChangeProperties==='fu"
-        js = js & "nction'?handleMultipleChangeProperties:undefined,doPaste:typeof doPaste==='function'?doPaste:undefined,getTopLeftOfAllControls:typeof getTopLeftOfAllC"
-        js = js & "ontrols==='function'?getTopLeftOfAllControls:undefined,changedSelectedControls:typeof changedSelectedControls==='function'?changedSelectedControls:und"
-        js = js & "efined,unselectAllControls:typeof unselectAllControls==='function'?unselectAllControls:undefined,changeProperty:typeof changeProperty==='function'?cha"
-        js = js & "ngeProperty:undefined,undoPoint:typeof undoPoint==='function'?undoPoint:undefined,getImageFromServer:typeof getImageFromServer==='function'?getImageFr"
-        js = js & "omServer:undefined,queueMultipleSnapshot:typeof queueMultipleSnapshot==='function'?queueMultipleSnapshot:undefined,syncPropertySheet:typeof syncProper"
-        js = js & "tySheet==='function'?syncPropertySheet:undefined,deleteSelectedControls:typeof deleteSelectedControls==='function'?deleteSelectedControls:undefined,up"
-        js = js & "dateAllControlDragPoints:typeof updateAllControlDragPoints==='function'?updateAllControlDragPoints:undefined,lockTheControl:typeof lockTheControl==='f"
-        js = js & "unction'?lockTheControl:undefined,unlockTheControl:typeof unlockTheControl==='function'?unlockTheControl:undefined,onSignificantChange:typeof onSignif"
-        js = js & "icantChange==='function'?onSignificantChange:undefined});return window.__tbUI3TabDesigner.install()})()"
+        js = js & "})({eligible:eligible,nativePage:window,document:document,setInterval:setInterval.bind(window),clearInterval:clearInterval.bind(window),getCurrentForm"
+        js = js & "EditorGlobals:typeof getCurrentFormEditorGlobals==='function'?getCurrentFormEditorGlobals:undefined,preparePaste:typeof preparePaste==='function'?prep"
+        js = js & "arePaste:undefined,deserializeControls:typeof deserializeControls==='function'?deserializeControls:undefined,prepareForMultipleChangeProperties:typeof"
+        js = js & " prepareForMultipleChangeProperties==='function'?prepareForMultipleChangeProperties:undefined,handleMultipleChangeProperties:typeof handleMultipleChan"
+        js = js & "geProperties==='function'?handleMultipleChangeProperties:undefined,doPaste:typeof doPaste==='function'?doPaste:undefined,getTopLeftOfAllControls:typeo"
+        js = js & "f getTopLeftOfAllControls==='function'?getTopLeftOfAllControls:undefined,changedSelectedControls:typeof changedSelectedControls==='function'?changedSe"
+        js = js & "lectedControls:undefined,unselectAllControls:typeof unselectAllControls==='function'?unselectAllControls:undefined,changeProperty:typeof changePropert"
+        js = js & "y==='function'?changeProperty:undefined,undoPoint:typeof undoPoint==='function'?undoPoint:undefined,getImageFromServer:typeof getImageFromServer==='fu"
+        js = js & "nction'?getImageFromServer:undefined,queueMultipleSnapshot:typeof queueMultipleSnapshot==='function'?queueMultipleSnapshot:undefined,syncPropertySheet"
+        js = js & ":typeof syncPropertySheet==='function'?syncPropertySheet:undefined,deleteSelectedControls:typeof deleteSelectedControls==='function'?deleteSelectedCon"
+        js = js & "trols:undefined,updateAllControlDragPoints:typeof updateAllControlDragPoints==='function'?updateAllControlDragPoints:undefined,lockTheControl:typeof l"
+        js = js & "ockTheControl==='function'?lockTheControl:undefined,unlockTheControl:typeof unlockTheControl==='function'?unlockTheControl:undefined,onSignificantChan"
+        js = js & "ge:typeof onSignificantChange==='function'?onSignificantChange:undefined});});"
+        js = js & vbLf
+        js = js & "return 'TabView designer eligibility monitor installed';"
+        js = js & vbLf
+        js = js & "})()"
         js = js & vbLf
         Return js
     End Function

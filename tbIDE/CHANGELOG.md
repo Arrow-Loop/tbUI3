@@ -10,6 +10,8 @@ BETA 1045 built Updater 0.2.0.4 and both add-in DLLs. All 62 native updater self
 
 Use this development prerelease for testing, starting with BETA 1043 and 1044. Four known BETA 1045 Ribbon fixture failures remain in File/Save, native menu capture, compact alignment and sizing, and asynchronous Insert Add presentation. In-IDE startup timing, focus behavior, provisioning and the live update acceptance matrix remain pending.
 
+Published the [tbUI3IDE 0.4.0.7 development prerelease](https://github.com/Arrow-Loop/tbUI3/releases/tag/tbUI3IDE-v0.4.0.7) for development testing. The tag resolves to the synchronized build commit `f6e06479ee425e5d1e59498ef98186bebb615f70`. The publisher verified all three uploaded assets. An independent GitHub API read confirmed the prerelease and its digests, and the public ZIP, manifest and checksum file matched the original local package by SHA-256 and size.
+
 ## 2026-11-24 - Prioritized Welcome-first startup correction
 
 Updated the IDE roadmap and Phase 1 handoff to record the owner's priority: implement the responsive first-run Welcome flow and preserve quiet subsequent repair before addressing the known BETA 1045 Ribbon issues. Documentation only; no runtime or release changes.

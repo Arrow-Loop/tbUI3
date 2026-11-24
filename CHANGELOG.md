@@ -2,7 +2,7 @@
 
 ## 2026-11-24 - Welcome-first startup for tbUI3IDE 0.4.0.7
 
-First-run Welcome now precedes staged bootstrap, and the updater waits for onboarding and its saved preferences. See the [IDE changelog](tbIDE/CHANGELOG.md) for build evidence and the [handoff](tbIDE/PHASE1_HANDOFF.md) for pending acceptance.
+First-run Welcome now precedes staged bootstrap, and the updater waits for onboarding and its saved preferences. Published the verified [tbUI3IDE 0.4.0.7 development prerelease](https://github.com/Arrow-Loop/tbUI3/releases/tag/tbUI3IDE-v0.4.0.7). See the [IDE changelog](tbIDE/CHANGELOG.md) for build evidence and the [handoff](tbIDE/PHASE1_HANDOFF.md) for pending acceptance.
 
 ## 2026-11-24 - Simplified test reset execution
 

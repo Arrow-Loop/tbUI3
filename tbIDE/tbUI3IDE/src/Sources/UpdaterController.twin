@@ -57,6 +57,25 @@ Private Class UpdaterController
         Return mSetupStage >= 7
     End Property
 
+    ' Runs an entry point chosen from the IDE menus (IdeMenus). Errors go to the Debug Console.
+    Public Sub MenuCommand(ByVal action As String)
+        On Error GoTo Failed
+        Select Case action
+            Case "check", "update-settings"
+                If LaunchUpdater(IIf(action = "check", "Review", "Settings")) Then Exit Sub
+                mMessage = "The compatible updater is unavailable. Recheck the bundled resources or review repair."
+                action = "repair"
+            Case "repair", "welcome"
+            Case Else: UFail "Unsupported menu command."
+        End Select
+        If Not mInstalled Then UFail "tbUI3IDE is still starting. Try again in a moment."
+        PublishPreferences
+        Eval "window.__tbUI3Installation.show(" & JQuote(action) & ");'menu command shown'"
+        Exit Sub
+    Failed:
+        mHost.DebugConsole.PrintText "[tbUI3 updater] " & Err.Description
+    End Sub
+
     Public Sub ToolbarStarted(ByVal ready As Boolean)
         mToolbarAttempted = True
         mToolbarReady = ready

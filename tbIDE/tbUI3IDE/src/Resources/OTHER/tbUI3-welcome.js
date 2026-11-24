@@ -6,7 +6,7 @@
   'use strict';
   const PAGES = ['Welcome', 'Updates', 'Themes', 'Toolbar', 'Features', 'Finish'];
   const FEATURED_THEMES = ['WinUI3 Light','WinUI3 Dark'];
-  const TOOLBARS = ['Classic','Hybrid','Ribbon'];
+  const TOOLBARS = ['Ribbon','Hybrid','Classic'];
   const ALLOW = new Set(['choose-theme','choose-toolbar','installation-preferences','welcome-record','bootstrap-retry','repair-resource']);
   const isObject = x => x !== null && typeof x === 'object';
   const text = x => typeof x === 'string' ? x : '';
@@ -292,7 +292,7 @@
       for(const [name,desc] of [
         ['IDE themes and accent','Choose WinUI3 Light, WinUI3 Dark or another installed IDE theme.'],
         ['Form alignment tools','Access layout and arrangement commands through the tbUI3IDE toolbar.'],
-        ['Classic, Hybrid and Ribbon','Switch your preferred command layout through IDE Options.'],
+        ['Ribbon, Hybrid and Classic','Switch your preferred command layout through IDE Options.'],
         ['Updater and installation settings','Manage update preferences independently for each IDE installation.']
       ]) {
         const card=dom('div','welcome-choice',undefined,cards);
@@ -305,7 +305,7 @@
       const grid=dom('div','welcome-choice-grid',undefined,parent);
       for(const [name,desc] of [
         ['WinUI3 Light and Dark','Choose the appearance that fits your workspace.'],
-        ['Classic, Hybrid and Ribbon','Put the IDE commands where they work best for you.'],
+        ['Ribbon, Hybrid and Classic','Put the IDE commands where they work best for you.'],
         ['Safe updates','Check for updates without installing them without consent.'],
         ['IDE productivity','Customize toolbar commands, appearance and update preferences.']
       ]) {

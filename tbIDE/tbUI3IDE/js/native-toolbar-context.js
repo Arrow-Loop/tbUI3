@@ -1,5 +1,5 @@
 /* Native producers are re-evaluated in their own JavaScript realm with only
- * showContextMenu shadowed. This captures their live descriptors, including
+ * showContextMenu (and BETA 1045's showContextMenuNew) shadowed. This captures their live descriptors, including
  * asynchronous callbacks, without swapping the IDE's global menu function.
  * A private closure/bound-function incompatibility leaves the native parent
  * command available as a fallback rather than dropping its options. */
@@ -47,8 +47,11 @@
             const producer=kind==='Insert'?native.addComponent:item.hoverAction;
             if(typeof producer!=='function')return false;
             try{
-                const isolated=producer.constructor('showContextMenu','return ('+producer.toString()+');')(
-                    (target,x,y,items)=>done(items||[]));
+                // BETA 1045 producers call showContextMenuNew(menuId, ...) instead; shadow both.
+                // Add-in entries that 1045 merges into native menus are not captured here.
+                const capture=(target,x,y,items)=>done(items||[]);
+                const isolated=producer.constructor('showContextMenu','showContextMenuNew','return ('+producer.toString()+');')(
+                    capture,(menuId,...rest)=>capture(...rest));
                 isolated(kind==='Insert'?{clientX:0,clientY:0}:anchor);return true;
             }catch(e){return false;}
         }

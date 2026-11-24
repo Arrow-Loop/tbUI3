@@ -41,6 +41,7 @@ Private Class tbUI3IDEAddin
     Private WithEvents OptionTimer As AddinTimer
     Private LoadToken As LongPtr
     Private Updater As UpdaterController
+    Private Menus As IdeMenus
     Private TabDesigner As TabViewDesignerController
     Private LastThemeName As String
     Private ToolbarInstalled As Boolean
@@ -87,6 +88,7 @@ Private Class tbUI3IDEAddin
                 ApplyForActiveTheme "start-up"
                 StartupLog "toolbar and IDE style initialization", started
                 Updater.ToolbarStarted ToolbarInstalled
+                InstallMenus
             ElseIf HostStartupStage = 1 Then
                 HostStartupStage = 2
                 Dim designerStarted As LongLong = StartupTick()
@@ -101,6 +103,17 @@ Private Class tbUI3IDEAddin
         Exit Sub
     Failed:
         Log "startup timer: " & Err.Description
+    End Sub
+
+    ' Adds the tbUI3 entries to the native Add-ins menu (BETA 1045 Host.Menus). A failure is logged and
+    ' leaves the IDE Options buttons as the entry points.
+    Private Sub InstallMenus()
+        On Error GoTo Failed
+        Set Menus = New IdeMenus(Host, Updater)
+        Exit Sub
+    Failed:
+        Set Menus = Nothing
+        Log "could not add the tbUI3 menu entries: " & Err.Description
     End Sub
 
     Public Sub OwnFactoryToken(ByVal token As LongPtr)
@@ -121,6 +134,8 @@ Private Class tbUI3IDEAddin
         Set OptionTimer = Nothing
         If Not TabDesigner Is Nothing Then TabDesigner.Dispose
         Set TabDesigner = Nothing
+        If Not Menus Is Nothing Then Menus.Dispose
+        Set Menus = Nothing
         If Not Updater Is Nothing Then Updater.Dispose
         Set Updater = Nothing
         If Not StyleWindow Is Nothing Then
@@ -285,8 +300,8 @@ Private Class tbUI3IDEAddin
         On Error GoTo Failed
         If ToolbarInstalled Then Exit Sub
         Log "page: " & RunJs(IdeToolbarScript.Build())
-        Dim mode As String = GetSetting(SettingsApp, SettingsSection, SettingToolbar, "Classic")
-        If mode <> "Classic" And mode <> "Hybrid" And mode <> "Ribbon" Then mode = "Classic"
+        Dim mode As String = GetSetting(SettingsApp, SettingsSection, SettingToolbar, "Ribbon")
+        If mode <> "Classic" And mode <> "Hybrid" And mode <> "Ribbon" Then mode = "Ribbon"
         RunJs "window.__tbUI3Toolbar.setMode(" & JsString(mode) & ",false);'toolbar mode restored'"
         RunJs "window.__tbUI3Toolbar.setSimplified(" & IIf(GetSetting(SettingsApp, SettingsSection, SettingSimplified, "0") = "1", "true", "false") & ",false);'ribbon presentation restored'"
         ToolbarInstalled = True

@@ -1,0 +1,50 @@
+' BETA 1045 menu entries (Host.Menus). The entries sit at the end of the native Add-ins menu,
+' flat rather than in a submenu, because the Ribbon replaces native popups and runs flat entries directly.
+Private Class IdeMenus
+    Private mUpdater As UpdaterController
+    Private mEntries As Collection
+    Private WithEvents mCheck As MenuEntry
+    Private WithEvents mSettings As MenuEntry
+    Private WithEvents mRepair As MenuEntry
+    Private WithEvents mWelcome As MenuEntry
+
+    Public Sub New(ByVal host As Host, ByVal updater As UpdaterController)
+        Set mUpdater = updater
+        Set mEntries = New Collection
+        Dim addins As Menu = host.Menus.AddinsMenu
+        mEntries.Add addins.AddEntry("")
+        Set mCheck = Track(addins.AddEntry("tbUI3: Check for Updates..."))
+        Set mSettings = Track(addins.AddEntry("tbUI3: Update Settings..."))
+        Set mRepair = Track(addins.AddEntry("tbUI3: Resource Repair..."))
+        Set mWelcome = Track(addins.AddEntry("tbUI3: Welcome..."))
+    End Sub
+
+    Private Function Track(ByVal entry As MenuEntry) As MenuEntry
+        mEntries.Add entry
+        Return entry
+    End Function
+
+    Private Sub mCheck_Click()
+        mUpdater.MenuCommand "check"
+    End Sub
+    Private Sub mSettings_Click()
+        mUpdater.MenuCommand "update-settings"
+    End Sub
+    Private Sub mRepair_Click()
+        mUpdater.MenuCommand "repair"
+    End Sub
+    Private Sub mWelcome_Click()
+        mUpdater.MenuCommand "welcome"
+    End Sub
+
+    Public Sub Dispose()
+        On Error Resume Next
+        Dim entry As MenuEntry
+        For Each entry In mEntries
+            entry.Remove
+        Next
+        Set mEntries = Nothing
+        Set mCheck = Nothing: Set mSettings = Nothing: Set mRepair = Nothing: Set mWelcome = Nothing
+        Set mUpdater = Nothing
+    End Sub
+End Class

@@ -162,7 +162,7 @@ Private Module IdeToolbarScript
         js = js & vbLf
         js = js & "var nativeContext=/* Native producers are re-evaluated in their own JavaScript realm with only"
         js = js & vbLf
-        js = js & " * showContextMenu shadowed. This captures their live descriptors, including"
+        js = js & " * showContextMenu (and BETA 1045's showContextMenuNew) shadowed. This captures their live descriptors, including"
         js = js & vbLf
         js = js & " * asynchronous callbacks, without swapping the IDE's global menu function."
         js = js & vbLf
@@ -258,9 +258,15 @@ Private Module IdeToolbarScript
         js = js & vbLf
         js = js & "            try{"
         js = js & vbLf
-        js = js & "                const isolated=producer.constructor('showContextMenu','return ('+producer.toString()+');')("
+        js = js & "                // BETA 1045 producers call showContextMenuNew(menuId, ...) instead; shadow both."
         js = js & vbLf
-        js = js & "                    (target,x,y,items)=>done(items||[]));"
+        js = js & "                // Add-in entries that 1045 merges into native menus are not captured here."
+        js = js & vbLf
+        js = js & "                const capture=(target,x,y,items)=>done(items||[]);"
+        js = js & vbLf
+        js = js & "                const isolated=producer.constructor('showContextMenu','showContextMenuNew','return ('+producer.toString()+');')("
+        js = js & vbLf
+        js = js & "                    capture,(menuId,...rest)=>capture(...rest));"
         js = js & vbLf
         js = js & "                isolated(kind==='Insert'?{clientX:0,clientY:0}:anchor);return true;"
         js = js & vbLf
@@ -365,7 +371,7 @@ Private Module IdeToolbarScript
         js = js & vbLf
         js = js & "    'use strict';"
         js = js & vbLf
-        js = js & "    const w=api.window, d=w.document, modes=['Classic','Hybrid','Ribbon'];"
+        js = js & "    const w=api.window, d=w.document, modes=['Ribbon','Hybrid','Classic'];"
         js = js & vbLf
         js = js & "    const state={mode:'Classic',requestedMode:'Classic',dirty:false,simplified:false,simplifiedDirty:false,lastError:'',active:'Home',disposed:false};"
         js = js & vbLf

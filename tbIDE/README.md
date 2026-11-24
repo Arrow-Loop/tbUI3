@@ -6,7 +6,7 @@ tbUI3IDE is a single twinBASIC add-in that brings a WinUI 3 look to the IDE, off
 
 ## Requirements
 
-- twinBASIC BETA 1043 through 1045 (the configured development range).
+- twinBASIC BETA 1045 (BETA 1043 and 1044 are no longer supported from add-in 0.4.0.10).
 - A matching Win32 or Win64 add-in DLL for your IDE architecture.
 - Microsoft Edge WebView2 Runtime for the updater interface. The Welcome Wizard uses the IDE's existing web host.
 
@@ -63,11 +63,13 @@ Automatic checks do not authorize downloads or installations. Updates preserve u
 In IDE Options, find the add-in settings near **Colour Theme**:
 
 - **Enable additional IDE theme styling via add-in:** Turn optional styling on or off.
-- **IDE Toolbar:** Choose Classic, Hybrid or Ribbon.
+- **IDE Toolbar:** Choose Ribbon (default), Hybrid or Classic.
 - **Check for Updates:** Open the update review.
 - **Update settings:** Open the standalone updater's automatic-check and restart preferences.
 - **Resource repair:** Review and repair embedded updater and theme resources from the IDE.
 - **Welcome to tbUI3IDE:** Reopen the onboarding wizard.
+
+The last four are also at the end of the **Add-ins** menu (and the Ribbon's Add-ins page) as **tbUI3: Check for Updates...**, **tbUI3: Update Settings...**, **tbUI3: Resource Repair...** and **tbUI3: Welcome...**.
 
 Your toolbar and styling choices persist across restarts. Installation-specific update preferences are saved separately for each IDE installation. Welcome completion is saved per user.
 

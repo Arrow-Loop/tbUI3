@@ -308,7 +308,7 @@ function fixture() {
 }
 test('Classic preserves the original toolbar and creates the independent three-mode option',()=>{
     const f=fixture();assert.equal(f.adapter.mode,'Classic');assert(!f.d.querySelector('.tbui3-ribbon'));
-    assert.deepEqual([...f.d.querySelector('select[aria-label="IDE Toolbar"]').options].map(x=>x.value),['Classic','Hybrid','Ribbon']);
+    assert.deepEqual([...f.d.querySelector('select[aria-label="IDE Toolbar"]').options].map(x=>x.value),['Ribbon','Hybrid','Classic']);
     assert.deepEqual([...f.toolbar.childNodes],f.original);f.dispose();
 });
 test('Hybrid reuses the selected native command exactly once and keeps native menus',()=>{
@@ -446,6 +446,16 @@ function installedFunction(text,name) {
     let end=start;while((end=text.indexOf('}',end+1))>=0){try{const fn=text.slice(start,end+1);new vm.Script('('+fn+')');return fn;}catch{}}
     throw Error('Cannot read '+name);
 }
+// BETA 1045 menu producers call the async showContextMenuNew(menuId, ...), which merges add-in
+// menu entries and then calls showContextMenu. Install the shipped function when the IDE has it.
+function withMenuNew(sandbox,text){
+    const start=text.indexOf('async function showContextMenuNew(');if(start<0)return sandbox;
+    let end=start,fn;while((end=text.indexOf('}',end+1))>=0){try{new vm.Script('('+text.slice(start,end+1)+')');fn=text.slice(start,end+1);break;}catch{}}
+    assert(fn,'Cannot read showContextMenuNew');
+    sandbox.g_ExtensibilityMenus={};
+    sandbox.showContextMenuNew=vm.runInNewContext('('+fn+')',sandbox);
+    return sandbox;
+}
 test('shipped BETA native binding and context alternatives still execute exactly once',t=>{
     if(!process.env.TB_IDE_MAIN_JS)return t.skip('Set TB_IDE_MAIN_JS for official IDE command contract');
     const text=fs.readFileSync(process.env.TB_IDE_MAIN_JS,'utf8'),f=fixture(),registered=[];
@@ -463,7 +473,7 @@ test('shipped native File/Edit/Format/Tools and async Add-ins descriptors popula
     if(!process.env.TB_IDE_MAIN_JS)return t.skip('Set TB_IDE_MAIN_JS for official IDE menu contract');
     const text=fs.readFileSync(process.env.TB_IDE_MAIN_JS,'utf8'),f=fixture();
     const sandbox={showContextMenu:(...args)=>f.show(...args),menuRightTriangle:'>',
-        root:{getAddinsList:cb=>setTimeout(()=>cb([{name:'Native loaded add-in'}]),0)},notSupportedMenuOption:()=>{}};
+        root:{getAddinsList:cb=>setTimeout(()=>cb([{name:'Native loaded add-in'}]),0)},notSupportedMenuOption:()=>{}};withMenuNew(sandbox,text);
     for(const name of ['File','Edit','Format','Tools','Addins']){
         const n=f.d.getElementById('rootMenu'+name);sandbox['rootMenu'+name]=n;
         const fn=vm.runInNewContext('('+installedFunction(text,'show'+name+'Menu')+')',sandbox);n.onmousedown=()=>fn();
@@ -535,7 +545,7 @@ test('unknown future commands survive every semantic fallback with their native 
 test('all shipped BETA 1044 menu descriptors remain reachable after semantic organization',t=>{
     if(!process.env.TB_IDE_MAIN_JS)return t.skip('Set TB_IDE_MAIN_JS for official IDE menu contract');
     const text=fs.readFileSync(process.env.TB_IDE_MAIN_JS,'utf8'),records=[],sandbox={menuRightTriangle:'>',g_TraceMode:false,
-        context:{projectLoaded:{value:true}},root:{getAddinsList:cb=>cb([{name:'Native add-in'}])},showContextMenu:()=>{}};
+        context:{projectLoaded:{value:true}},root:{getAddinsList:cb=>cb([{name:'Native add-in'}])},showContextMenu:()=>{}};withMenuNew(sandbox,text);
     for(const name of ['File','Edit','View','Project','Format','Debug','Run','Tools','Addins','Windows','Help']){
         const menuId='rootMenu'+name;sandbox[menuId]={offsetLeft:0,offsetTop:0,offsetHeight:0};
         sandbox.showContextMenu=(n,x,y,items)=>{for(const entry of items){const item=Array.isArray(entry)?entry[0]:entry;if(item.name)records.push({menuId,menuTitle:name,item});}};
@@ -677,7 +687,7 @@ test('grid input background overrides the actual native BETA forced-white import
     const popup=rules.find(r=>r.selectorText==='.tbui3-ribbon-popup');assert(popup.style.background.includes('--color-flyout'));assert(!popup.style.background.includes('--themeContextMenuBackColor'));f.dispose();
 });
 
-function nativeFunction(name,sandbox){return vm.runInNewContext('('+installedFunction(fs.readFileSync(process.env.TB_IDE_MAIN_JS,'utf8'),name)+')',sandbox);}
+function nativeFunction(name,sandbox){const text=fs.readFileSync(process.env.TB_IDE_MAIN_JS,'utf8');if(!('showContextMenuNew' in sandbox))withMenuNew(sandbox,text);return vm.runInNewContext('('+installedFunction(text,name)+')',sandbox);}
 function attachNativeBridge(f,sandbox={}){
     const bridge=contextFactory({selectedEditor:()=>sandbox.selectedEditor||null,addComponent:sandbox.addComponent});
     f.api.captureMenu=bridge.captureMenu;f.api.editorState=bridge.editorState;return bridge;

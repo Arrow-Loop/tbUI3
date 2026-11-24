@@ -4,7 +4,7 @@
  */
 (function createIdeToolbar(api) {
     'use strict';
-    const w=api.window, d=w.document, modes=['Classic','Hybrid','Ribbon'];
+    const w=api.window, d=w.document, modes=['Ribbon','Hybrid','Classic'];
     const state={mode:'Classic',requestedMode:'Classic',dirty:false,simplified:false,simplifiedDirty:false,lastError:'',active:'Home',disposed:false};
     const sources=new Map(), menus=new Map(), bindings=new Map(), placements=new Map(), pendingMenus=new Map();
     const hiddenNative=new Set();

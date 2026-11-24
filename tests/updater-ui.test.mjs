@@ -70,8 +70,8 @@ test('a held exit is released after the fail-safe delay without an acknowledgeme
 test('the IDE surface owns only update entry points and offline provisioning views', () => {
  const ui = fs.readFileSync(root + 'js/installation-ui.js', 'utf8');
  const native = fs.readFileSync(root + 'src/Sources/UpdaterController.twin', 'utf8');
- assert.match(ui, /Check for Updates/);
- assert.match(ui, /Update settings/);
+ assert.match(ui, /Check for updates/);
+ assert.match(ui, /Update preferences/);
  assert.match(ui, /Resource repair/);
  assert.doesNotMatch(ui+native, /tbUI3UpdateNotice|tbUI3UpdaterDialog|RunNativeEngine|catalog\.json|plan\.json|pending\.json/);
 });

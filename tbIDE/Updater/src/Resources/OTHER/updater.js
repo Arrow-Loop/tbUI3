@@ -68,12 +68,18 @@
     status.setAttribute('title', toast ? 'Updates are available' : (titles[state.status] || 'Updates'));
     status.setAttribute('severity', failed ? 'error' : complete || restored ? 'success' : 'informational');
     status.setAttribute('message', toast ? 'Review available versions for twinBASIC and tbUI3.' : review && !available ? (catalog?.errors?.length ? 'No updates found from the sources that responded.' : 'You are up to date.') : (state.message || ''));
+    // The component list already says updates were found, so the status bar would only repeat it.
+    status.toggleAttribute('open', !(!toast && review && available && !catalog?.errors?.length));
     byId('review').hidden = toast || !review;
     byId('preferences').hidden = toast || !configuring || active;
     byId('automatic').disabled = byId('restart').disabled = !settings;
     if (settings) {
       byId('automatic').checked = settings.automatic;
       byId('restart').checked = settings.restart;
+    }
+    for (const id of ['automatic','restart']) {
+      const label = byId(id).parentElement.querySelector('[data-switch-text]');
+      if (label) label.textContent = byId(id).checked ? 'On' : 'Off';
     }
     byId('preferences-error').hidden = !settingsError;
     text('preferences-reason', settingsError);
@@ -107,7 +113,8 @@
     show('elevate', state.status === 'elevationRequired', !active);
     show('recover', !toast && canRecover && !restored && !complete, !active);
     show('cancel', active && ['arming','ready','waiting','staging'].includes(state.status));
-    show('close', true, !active);
+    // Remind Me Later already closes the window, so a second Close button would only crowd the footer.
+    show('close', byId('later').hidden, !active);
     WinUIControls.initialize(status);
   }
   function receive(event) {

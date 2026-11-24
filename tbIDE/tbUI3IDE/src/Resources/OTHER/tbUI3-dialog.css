@@ -1,13 +1,12 @@
 /* Native HTML dialog modality and geometry; view/control styles are scoped separately. */
-.tbUI3-installation-dialog { padding:0; width:min(760px,calc(100vw - 48px)); max-height:86vh; border:0; border-radius:8px; background:Canvas; color:CanvasText; }
-.tbUI3-installation-dialog::backdrop { background:color-mix(in srgb,CanvasText 35%,transparent); }
 /* ContentDialog ThemeShadow, Translation.Z=128 (elevation=64).
  * Microsoft WinUI pinned bfb0e2afa07627505c87f56d687b0483fe917d53:
  * dxaml/xcp/dxaml/lib/ContentDialog_Partial.cpp, ApplyElevationEffect;
  * dxaml/xcp/components/graphics/inc/DropShadowRecipe.h, GetDropShadowRecipe.
  * Two CSS shadows translate the native ambient and directional recipe;
  * CSS blur is a browser approximation of the Composition compositor. */
-dialog.tbUI3-welcome-shell {
+dialog.tbUI3-welcome-shell,
+dialog.tbUI3-installation-dialog {
  --tbui3-content-dialog-shadow:0 2px 21.333333px rgba(0,0,0,.15),0 32px 64px rgba(0,0,0,.19);
  /* The IDE owns the outer document and may override generic dialog geometry.
   * Isolate placement of this dialog from host margins, insets and transforms. */
@@ -19,7 +18,15 @@ dialog.tbUI3-welcome-shell {
  padding:0; border:0; border-radius:8px; background:Canvas; color:CanvasText;
  overflow:hidden; box-shadow:var(--tbui3-content-dialog-shadow);
 }
-dialog.tbUI3-welcome-shell[data-theme="dark"] {
+dialog.tbUI3-welcome-shell[data-theme="dark"],
+dialog.tbUI3-installation-dialog[data-theme="dark"] {
  --tbui3-content-dialog-shadow:0 2px 21.333333px rgba(0,0,0,.37),0 32px 64px rgba(0,0,0,.37);
 }
-.tbUI3-welcome-shell::backdrop { background:rgba(0,0,0,.40); }
+.tbUI3-welcome-shell::backdrop,
+.tbUI3-installation-dialog::backdrop { background:rgba(0,0,0,.40); }
+/* Repair views size to their content; the shadow view paints the themed surface,
+ * so the dialog itself stays transparent instead of the IDE document's Canvas. */
+dialog.tbUI3-installation-dialog { width:min(760px,calc(100vw - 48px)); height:auto; max-height:min(86vh,calc(100vh - 48px)); background:transparent; color:inherit; }
+dialog.tbUI3-installation-dialog--confirm { width:min(548px,calc(100vw - 48px)); }
+/* tbUI3 Updates category in IDE Options: native tbis-control surface, centered as a button. */
+.tbUI3OptionButton { cursor:pointer; text-align:center; }

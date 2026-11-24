@@ -4,13 +4,15 @@
 <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'; script-src 'unsafe-inline' https://tbui3-updater.invalid; img-src data:; base-uri 'none'; form-action 'none'">
 <title>tbUI3 Updater</title>{{STYLE_BLOCK}}{{THEME_SCRIPT}}</head>
 <body><main class="updater-window">
-<header class="updater-header"><span class="updater-mark" aria-hidden="true">&#xE896;</span><div><h1>Updates</h1><p class="text-muted">twinBASIC and tbUI3 developer tools</p></div></header>
+<header class="updater-header"><span class="updater-mark" aria-hidden="true">&#xE896;</span><div class="updater-heading"><h1>Updates</h1><p class="text-muted">twinBASIC and tbUI3 developer tools</p></div><winui-button id="check" hidden>Check for updates</winui-button></header>
 <section class="updater-content" aria-label="Update progress">
 <winui-info-bar id="status" open not-closable severity="informational" title="Updates" message="Open this updater from twinBASIC to check an installation."></winui-info-bar>
 <section id="review" aria-labelledby="components-heading" hidden><h2 id="components-heading">Components</h2><p class="updater-path text-muted" id="scope"></p><div class="settings-list" id="components"></div><ul id="sources" class="text-muted"></ul></section>
 <section id="preferences" aria-label="Update preferences" hidden>
-<label class="choice"><input id="automatic" type="checkbox"> Check automatically once a day when twinBASIC starts</label>
-<label class="choice"><input id="restart" type="checkbox"> Restart this IDE after a successful update</label>
+<h2>Preferences</h2><div class="settings-list">
+<div class="settings-row"><span class="settings-row__glyph" aria-hidden="true">&#xE895;</span><div><div class="settings-row__title" id="automatic-title">Check for updates automatically</div><div class="settings-row__description" id="automatic-description">Once a day when twinBASIC starts</div></div><label class="toggle settings-row__control"><input id="automatic" class="toggle__input" type="checkbox" role="switch" aria-labelledby="automatic-title" aria-describedby="automatic-description"><span class="toggle__track" aria-hidden="true"></span><span data-switch-text>Off</span></label></div>
+<div class="settings-row"><span class="settings-row__glyph" aria-hidden="true">&#xE777;</span><div><div class="settings-row__title" id="restart-title">Restart twinBASIC after updating</div><div class="settings-row__description" id="restart-description">Reopens this IDE and closes the updater when the update succeeds</div></div><label class="toggle settings-row__control"><input id="restart" class="toggle__input" type="checkbox" role="switch" aria-labelledby="restart-title" aria-describedby="restart-description"><span class="toggle__track" aria-hidden="true"></span><span data-switch-text>Off</span></label></div>
+</div>
 <div id="preferences-error" hidden><p id="preferences-reason" role="alert"></p><label class="choice"><input id="reset-approval" type="checkbox"> Approve backing up and resetting these preferences</label><winui-button id="reset">Back up and reset preferences</winui-button></div>
 </section>
 <section class="updater-progress" id="progress-panel" aria-labelledby="progress-heading" hidden><div class="progress-label"><strong id="progress-heading">Progress</strong><span class="text-muted" id="progress-value"></span></div>
@@ -18,7 +20,7 @@
 <p class="process-status" id="message" role="status" aria-live="polite"></p><p class="text-muted" id="operation-detail"></p></section>
 </section>
 <footer class="updater-footer"><span class="text-muted" id="version"></span><div class="command-row">
-<winui-button id="review-updates" appearance="primary" hidden>Review updates</winui-button><winui-button id="check" hidden>Check for Updates</winui-button>
+<winui-button id="review-updates" appearance="primary" hidden>Review updates</winui-button>
 <winui-button id="later" hidden>Remind Me Later</winui-button><winui-button id="exit" hidden>Update on Exit</winui-button><winui-button id="now" appearance="primary" hidden>Update Now</winui-button>
 <winui-button id="recover" hidden>Restore backup</winui-button><winui-button id="cancel" hidden>Cancel update</winui-button>
 <winui-button id="elevate" appearance="primary" hidden>Continue with administrator approval</winui-button><winui-button id="retry" appearance="primary" hidden>Retry</winui-button><winui-button id="close">Close</winui-button>

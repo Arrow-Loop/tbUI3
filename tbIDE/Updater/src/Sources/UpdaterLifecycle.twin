@@ -36,6 +36,21 @@ Private Module UpdaterLifecycle
         UWriteJson USafe(SessionFolder(), "identity.json"), LaunchIdentity
     End Sub
 
+    ' Available components only: id, installed and offered version, for the add-in's in-IDE notification.
+    Public Function QuietNotice() As UpdateJson
+        Dim catalog As UpdateJson = UReadJson(USafe(SessionFolder(), "catalog.json")), item As UpdateJson
+        Dim notice As UpdateJson = JO(), components As UpdateJson = JA(), entry As UpdateJson
+        notice.Assign "schema", JN(1): notice.Assign "components", components
+        For Each item In catalog.Member("components").Items
+            If JBool(item, "available") Then
+                Set entry = JO()
+                entry.Assign "id", JS(JT(item, "id")): entry.Assign "installed", JS(JT(item, "installed")): entry.Assign "version", JS(JT(item, "version"))
+                components.Push entry
+            End If
+        Next
+        Set QuietNotice = notice
+    End Function
+
     Public Function CatalogAvailable(ByVal catalog As UpdateJson) As Boolean
         Dim item As UpdateJson
         For Each item In catalog.Member("components").Items

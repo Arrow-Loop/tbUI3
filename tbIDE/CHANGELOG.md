@@ -1,5 +1,23 @@
 # Changelog: tbIDE (WinUI 3 look for the twinBASIC IDE)
 
+## 2026-11-24 - In-IDE update toast, updater review cleanup, themed Resource Repair and a tbUI3 Updates Options category (add-in 0.4.0.12, updater 0.2.0.7 source)
+
+Owner screenshots and feedback (0.4.0.9 era, still present): there was no real toast, only the updater window opening without focus over the IDE; the updater used checkboxes for its two preferences, repeated "Release check complete" above the list, and had five footer buttons; Resource Repair opened light in a dark IDE, top-anchored with no shadow; the four tbUI3 commands sat as plain stacked buttons in the Appearance options.
+
+Toast: in Quiet mode the updater no longer shows a window. After the check it writes `notify.json` (schema 1, the available components with installed and offered versions) into its session folder and exits. The add-in's BridgePoll, on seeing `closed.json`, reads `notify.json` and calls `window.__tbUI3Installation.toast(names)`, which shows an in-IDE card styled after a Windows 11 notification (not routed through the Windows notification center): bottom-right, 364 px, acrylic-like themed surface, app header with close, "Updates available" title, component names, equal-width Review (accent) and Dismiss buttons, slide-in and fade-out, Escape to close. Review queues the existing `check` request, which opens the updater in Review mode.
+
+Updater review: the two preferences are WinUI ToggleSwitch rows in a settings card (glyph, title, description, On/Off); the info bar is closed when the check lists available updates with no source errors (it stays for "You are up to date", errors and progress); Check for updates moved to the header; Close is hidden while Remind Me Later shows (that button already closes), so the review footer is Remind Me Later, Update on Exit, Update Now.
+
+Resource Repair: root cause of the light dialog was the shadow-view stylesheet translation. `:root[data-theme="dark"]` became `:host[data-theme="dark"]`, which never matches, so dark tokens never applied (the toast had the same issue). A new `hostCss` emits `:host([data-theme=...])`. The repair and confirmation dialogs now share the Welcome shell placement (fixed, centered, isolated from host margins), the ContentDialog shadow and the 40% backdrop, with a transparent dialog so the themed view paints the surface; confirmations are 548 px wide.
+
+IDE Options: a "tbUI3 Updates" nav category with four described rows (Check for updates, Update preferences, Resource repair, Welcome to tbUI3IDE), each with a themed `tbis-control` button. It shows under All and when selected, hides while the native filter is active, and is re-added after every `tips_initUI` rebuild. The same tbis layout was confirmed in the BETA 1043, 1044 and 1045 main.js.
+
+Validation: jsdom tests added for the toast, the updater review layout, the Options category and the dark selector translation; full suite 264 tests, 261 pass. The 3 failures are the expected bundle checks that need the rebuilt Updater.exe 0.2.0.7 embedded. Not yet run natively.
+
+## 2026-11-24 - Updater closes itself after a clean update that restarts twinBASIC (updater 0.2.0.7 source)
+
+Owner request: with the "start twinBASIC" preference on, the final confirmation window is unnecessary when everything succeeded. After a verified install the Apply worker launches the IDE and then rewrites state.json as complete with `restarted: true` (only on that path; a failed launch still raises "Update completed, but restarting the IDE failed." and stays visible). frmMain.PollState unloads the updater when the Apply worker exited with code 0, status is complete and that flag is set. Errors, rollbacks, cancellations, elevation and runs without the preference keep the final screen. The planned Launch twinBASIC button is dropped as redundant. Not compiled yet.
+
 ## 2026-11-24 - Native evidence: 0.4.0.11 on BETA 1044 and faster IDE staging
 
 Owner run, 2026-11-24 13:29 to 13:31, Updater 0.2.0.6: the 1045-compiled 0.4.0.11 DLL loaded on BETA 1044 and launched the updater, which updated BETA 1044 to 1045 (complete). Compared with the 0.2.0.4 run earlier that day: ZIP directory 0.9 s (was 7.2 s), new-archive extraction and hashing 13.2 s (was 89.9 s), baseline 12.8 s (was 96.7 s); staging from Stage launch to ready took 37 s (was about 3.5 minutes). Downloads stayed about 1.5 to 2.6 s.

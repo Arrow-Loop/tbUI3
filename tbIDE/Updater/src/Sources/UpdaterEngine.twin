@@ -119,6 +119,12 @@ Private Module UpdaterEngine
         If JBool(context, "restart") Then
             BLog context, session, "restarting originating IDE"
             StartIde JT(context, "ideExe"), JT(context, "installRoot")
+            ' Only a clean, verified completion followed by a successful IDE launch carries this flag;
+            ' the updater window closes itself on it. A launch failure raises instead and stays visible.
+            Dim restarted As UpdateJson = JO()
+            restarted.Assign "status", JS("complete"): restarted.Assign "message", JS("Selected updates installed and verified. twinBASIC restarted.")
+            restarted.Assign "restarted", JB(True)
+            UWriteJson USafe(session, "state.json"), restarted
         End If
         Exit Sub
     Cancelled:

@@ -330,6 +330,14 @@ Class frmMain
                 If status = "error" Then RequestCancel
                 IUnlock TransactionLock: TransactionLock = 0
             End If
+            ' With "start twinBASIC" on, a clean install that relaunched the IDE needs no confirmation screen.
+            If mOperation = "Apply" And status = "complete" And mExitCode = 0 Then
+                If JBool(JParse(state), "restarted") Then
+                    UIX_Log "update complete and twinBASIC restarted; closing the updater"
+                    Unload Me
+                    Exit Sub
+                End If
+            End If
         End If
         Dim key As String = state & CStr(running) & CStr(mExitCode)
         If key = mLastState Then Exit Sub

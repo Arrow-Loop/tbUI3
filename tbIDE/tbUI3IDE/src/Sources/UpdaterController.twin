@@ -197,6 +197,29 @@ Private Class UpdaterController
         If IsNull(result) Or IsEmpty(result) Then Return ""
         Return CStr(result)
     End Function
+    ' A quiet automatic check found updates: show the in-IDE notification. Review opens the updater.
+    Private Sub ShowUpdateToast(ByVal path As String)
+        On Error GoTo Failed
+        Dim notice As UpdateJson = UReadJson(path), item As UpdateJson, names As String, count As Long, name As String
+        For Each item In notice.Member("components").Items
+            Select Case JT(item, "id")
+                Case "ide": name = "twinBASIC BETA " & JT(item, "version")
+                Case "addin": name = "tbUI3IDE " & JT(item, "version")
+                Case "library": name = "the icon library"
+                Case Else: name = ""
+            End Select
+            If Len(name) > 0 Then
+                count = count + 1
+                names = names & IIf(Len(names) > 0, "|", "") & name
+            End If
+        Next
+        If count = 0 Then Exit Sub
+        Eval "window.__tbUI3Installation.toast(" & JQuote(names) & ".split('|'));'toast shown'"
+        Exit Sub
+    Failed:
+        mHost.DebugConsole.PrintText "[tbUI3 updater] could not show the update notification: " & Err.Description
+    End Sub
+
     Private Function LaunchUpdater(ByVal mode As String) As Boolean
         If Not mRegistered Or Not mPreferencesReady Then Return False
         Dim started As LongLong = StartupTick()
@@ -228,6 +251,7 @@ Private Class UpdaterController
             For Each origin In mLaunches.Keys
                 Dim directory As String = UParent(CStr(origin))
                 If UExists(USafe(directory, "closed.json")) Then
+                    If UExists(USafe(directory, "notify.json")) Then ShowUpdateToast USafe(directory, "notify.json")
                     mLaunches.Remove origin
                 Else
                     ArmFromLaunch CStr(origin), CStr(mLaunches.Item(origin))

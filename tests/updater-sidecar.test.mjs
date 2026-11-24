@@ -97,3 +97,19 @@ test('native host retains Toolkit form defaults and application-owned startup bo
  const event=source.slice(source.indexOf('Private Sub wvMain_NavigationComplete'),source.indexOf('Private Sub wvMain_JsMessage'));
  assert.doesNotMatch(event,/StartUpdateEngine|StartElevatedEngine/);
 });
+test('review shows preference switches, no redundant status bar and a three-button footer',async()=>{
+ const f=await fixture();try{
+ f.send({type:'preferences',settings:{automatic:true,restart:false},toast:false});
+ f.send({type:'updateState',state:{status:'checked',message:'Release check complete.',catalog},running:false});
+ const automatic=f.d.getElementById('automatic');assert.equal(automatic.getAttribute('role'),'switch');assert(automatic.closest('.toggle'));
+ assert.equal(automatic.parentElement.querySelector('[data-switch-text]').textContent,'On');
+ assert.equal(f.d.getElementById('restart').parentElement.querySelector('[data-switch-text]').textContent,'Off');
+ assert.equal(f.d.getElementById('status').hidden,true);
+ assert(f.d.getElementById('check').closest('header'));
+ const footer=[...f.d.querySelectorAll('.updater-footer winui-button')].filter(b=>!b.hidden).map(b=>b.id);
+ assert.deepEqual(footer,['later','exit','now']);
+ f.send({type:'updateState',state:{status:'checked',catalog:{components:[{id:'addin',installed:'1',version:'1',available:false}],errors:[]}},running:false});
+ assert.equal(f.d.getElementById('status').hidden,false);assert.match(f.d.getElementById('status').getAttribute('message'),/up to date/);
+ assert.equal(f.d.getElementById('close').hidden,false);
+ }finally{f.close();}
+});

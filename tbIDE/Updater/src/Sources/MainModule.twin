@@ -62,6 +62,12 @@ Module MainModule
                     Exit Sub
                 End If
                 If Not OpenLifecycle(context) Then CloseLaunch: Exit Sub
+                If UpdateMode = "Quiet" Then
+                    ' The add-in shows the notification inside the IDE and opens Review only when asked.
+                    UWriteJson USafe(SessionFolder(), "notify.json"), QuietNotice()
+                    CloseLaunch
+                    Exit Sub
+                End If
                 WinUI_InitializeDpiAwareness
                 ShowUpdaterWindow
             Case "Check", "Stage"

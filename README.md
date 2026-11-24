@@ -3,6 +3,10 @@
 WinUI 3 style UserControls for twinBASIC, packaged as a TWINPACK so they can be dropped onto
 twinBASIC forms like the built-in VB6-compatible controls.
 
+## Release status
+
+The entire tbUI3/tbIDE project is prerelease until the planned control library is complete and stable release is explicitly approved. Accepted tbUI3IDE prereleases may be distributed internally ahead of that milestone. The IDE add-in is intended to remain independently useful without the optional tbUI3 control package; package-specific tooling must be isolated from ordinary projects. See [versioning policy](docs/VERSIONING_POLICY.md) and the [IDE roadmap](tbIDE/ROADMAP.md).
+
 ## Layout
 
 | Path | Contents |

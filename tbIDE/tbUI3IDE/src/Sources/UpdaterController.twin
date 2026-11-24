@@ -171,7 +171,7 @@ Private Class UpdaterController
             ",checkDue:" & IIf(JT(settings, "lastCheck") <> Format$(Date, "yyyy-mm-dd"), "true", "false") & _
             ",masterCss:" & JQuote(MResourceText("tbUI3-welcome-master.css")) & _
             ",themeMode:function(){return typeof getBaseThemeName==='function'?getBaseThemeName():'light';},accent:" & WinUI3SystemAccent.ReadPalette() & _
-            ",installationSettings:function(){window.__tbUI3Installation.show('settings');},closeIde:function(){closeProjectSafely(function(){window.__tbUI3UpdateExit=function(){hostAppObject.Exit('ignore');};});}});'updater installed'"
+            ",installationSettings:function(){window.__tbUI3Installation.show('settings');},closeIde:function(){window.__tbUI3UpdaterOriginalClose(function(){window.__tbUI3UpdateExit=function(){hostAppObject.Exit('ignore');};});}});'updater installed'"
         Eval MResourceText("tbUI3-welcome.js") & vbLf & ";'welcome wizard loaded'"
         Eval "window.__tbUI3InstallationFactory=" & MResourceText("tbUI3-installation.js") & ";'installation factory loaded'"
         Eval "window.__tbUI3Installation=window.__tbUI3InstallationFactory({document:document,window:window,state:" & Snapshot().Encode() & _

@@ -13,8 +13,12 @@ Private Module UpdaterProcesses
     Public Function UProcessTime(ByVal pid As Long) As String
         Dim handle As LongPtr = OpenProcess(&H1000 Or &H100000, 0, pid)
         If handle = 0 Then
-            If Err.LastDllError = 87 Then Return ""
-            UFail "Could not inspect IDE identity; close normally and retry."
+            Dim code As Long = Err.LastDllError
+            If code = 87 Then Return ""
+            ' An exited IDE can fail OpenProcess with a code other than 87; a PID absent from the
+            ' process list has exited. A PID still listed but unopenable stays a safe failure.
+            If Not UProcessListed(pid) Then Return ""
+            UFail "Could not inspect IDE identity (Win32 error " & CStr(code) & "); close normally and retry."
         End If
         If WaitForSingleObject(handle, 0) = 0 Then CloseHandle handle: Return ""
         Dim created As FileTime, exited As FileTime, kernel As FileTime, user As FileTime
@@ -22,6 +26,10 @@ Private Module UpdaterProcesses
         CloseHandle handle
         If ok = 0 Then UFail "IDE creation time unavailable."
         Return Right$("00000000" & Hex$(created.high), 8) & Right$("00000000" & Hex$(created.low), 8)
+    End Function
+    Private Function UProcessListed(ByVal pid As Long) As Boolean
+        Dim processes As Object = GetObject("winmgmts:\\.\root\cimv2").ExecQuery("SELECT ProcessId FROM Win32_Process WHERE ProcessId=" & CStr(pid))
+        Return processes.Count > 0
     End Function
     Public Function UCaptureIdentity(ByVal context As UpdateJson) As UpdateJson
         Dim service As Object = GetObject("winmgmts:\\.\root\cimv2"), pid As Long = CLng(JD(context, "compilerPid")), i As Long

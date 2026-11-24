@@ -1,5 +1,9 @@
 # Changelog: tbIDE (WinUI 3 look for the twinBASIC IDE)
 
+## 2026-11-23 - Portable development runtime for the repair launcher
+
+The double-click repair launcher now prepares a cached official Node.js 22 LTS ZIP (verified against the published SHA-256 checksum) and pinned jsdom 26.1.0 test dependency outside the repository, without administrator rights or a system-wide Node installation. GitHub Desktop's Git remains supported. The launcher captures a transcript in the per-user development cache and retains all existing guarded assembly and validation checks. Windows execution remains to be verified.
+
 ## 2026-11-23 - Double-click assembly launcher
 
 Added `tbIDE/Apply-Welcome-Repair.bat` to launch the existing guarded 0.4.0.3 assembly, validation and commit/push workflow from Explorer. It resolves the repository location, checks Node and Git availability, retains the command result and pauses for inspection. The launcher does not bypass validation, compile DLLs or publish a release.

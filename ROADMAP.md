@@ -6,6 +6,8 @@ Outstanding and deferred work only. Completed implementation and actual validati
 
 The active [IDE roadmap](tbIDE/ROADMAP.md) owns add-in/updater work, including the approved combined first-release gate and later installation-manager phases. The [Phase 1 handoff](tbIDE/PHASE1_HANDOFF.md) owns the live acceptance sequence. Do not substitute older candidate versions, source-only checks or helper self-tests for compiled DLL and live acceptance. The 0.4.0.6 development prerelease is published. The IDE roadmap tracks live acceptance of the upgrade from 0.4.0.5. The release distributes the add-in ZIP only; the IDE roadmap owns real package generation, embedded-resource upgrade acceptance and the current 0.4.0.6 designer isolation and Ribbon compatibility acceptance.
 
+The IDE roadmap also tracks Windows acceptance of the developer test reset utility; this is separate from shipped updater behavior.
+
 ## Core package: next acceptance
 
 Current project metadata: 1.0.0.75. The independent prerelease correction to 0.0.0.75 is still pending; coordinate canonical package, embedded test copy, package references and release metadata together under [versioning policy](docs/VERSIONING_POLICY.md). Preserve historical version evidence and stable control identities.

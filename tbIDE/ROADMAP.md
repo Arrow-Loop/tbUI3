@@ -4,6 +4,8 @@ Outstanding work and deferred decisions. [CHANGELOG](CHANGELOG.md) records compl
 
 ## Immediate priority: Phase 1 updater ownership correction and native acceptance
 
+- Validate the development-only `Reset-TestState.bat` in a disposable Windows profile: each independent reset, full bootstrap with both shared DLLs retained, native settings/licence preservation, theme reprovisioning, legacy preference migration reset, backup restoration, process/unfinished journal refusal and redirected profile/error handling. The utility is not a distributed runtime component.
+
 - Complete live acceptance of the standalone updater and versioned shutdown bridge on BETA 1043 through 1045. Extend the observed quiet/manual discovery, notification, Update Now and Update on Exit results across the supported builds and architectures. Cover deferral, dirty-project Save/Discard/Cancel, forced exit, process reuse/access failure, minimization, elevation and recovery. Confirm the Save As and asynchronous save-error paths preserve native decisions.
 - Measure actual transfer, ZIP/CRC, SHA-256, baseline inventory and detached launch on a disposable update. Evaluate authenticated baseline caching or redundant reads only after measuring. Preserve privileged provenance, signature and containment checks.
 - Check notification placement and activation across DPI and multiple monitors, and assess reusing an existing manual review across concurrent IDE instances where the initiating IDE identity stays unambiguous.

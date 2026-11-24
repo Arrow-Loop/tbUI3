@@ -1,5 +1,9 @@
 # Changelog
 
+## 2026-11-24 - Added a development test reset utility
+
+Added the standalone per-user IDE/add-in test reset menu at `tbIDE/Reset-TestState.bat`. See the [IDE changelog](tbIDE/CHANGELOG.md) and [test reset instructions](tbIDE/README.md#development-test-reset). No application or published release changes.
+
 ## 2026-11-24 - Published the 0.4.0.6 development prerelease
 
 Published the verified add-in package for standalone updater acceptance testing from 0.4.0.5. See the [IDE changelog](tbIDE/CHANGELOG.md) for exact tag and asset verification. [tbUI3IDE 0.4.0.6 development prerelease](https://github.com/Arrow-Loop/tbUI3/releases/tag/tbUI3IDE-v0.4.0.6).

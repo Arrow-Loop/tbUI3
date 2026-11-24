@@ -1,5 +1,9 @@
 # Changelog: tbIDE (WinUI 3 look for the twinBASIC IDE)
 
+## 2026-11-23 - Embed launcher test-runtime fix
+
+The corrected Windows launcher located portable Node, ran all 58 native updater self-tests successfully, embedded the verified helper/themes, and passed all 140 exact mirror checks and hex validation. The focused suite passed 10 of 11 tests; the remaining XML manifest check could not import jsdom because the new PowerShell process lacked the Welcome launcher's transient environment variable. The Embed launcher now resolves the cached jsdom module using the existing TB_JSDOM_MODULE file-URL contract and checks importability before changing the project. No validation assertions or release gates are removed. Repeat focused validation remains pending.
+
 ## 2026-11-23 - Release launcher PowerShell compatibility fix
 
 The first Windows PowerShell 5.1 Embed attempts stopped during portable Node discovery because `$home` collides case-insensitively with the read-only automatic `$HOME` variable. Renamed the local variable to `$portableNodeDirectory` in the shared Embed/Package launcher and included failure position and stack details in the transcript. Static inspection of assignment names in all three development PowerShell scripts found no remaining assignments to the checked automatic-variable names. No project, payload or release verification rules changed. Successful Windows execution remains pending.

@@ -4,7 +4,7 @@ Outstanding work and deferred decisions. [CHANGELOG](CHANGELOG.md) records compl
 
 ## Immediate priority: Phase 1 native acceptance
 
-- Verify the corrected PowerShell 5.1 portable-runtime lookup and validate the development-only `tbIDE/Prepare-Addin.bat` after rebuilding the helper, then `tbIDE/Package-Release.bat` after building both DLLs. Keep the native startup and live update acceptance gates; these launchers do not publish releases.
+- Portable-runtime lookup, native self-tests (58/58), embedding and 140 exact mirror checks passed on Windows. Repeat `tbIDE/Prepare-Addin.bat` with the corrected jsdom preflight, then `tbIDE/Package-Release.bat` after building both DLLs. Keep the native startup and live update acceptance gates; these launchers do not publish releases.
 
 - **0.4.0.3 UI repair assembly completed:** canonical project and mirrors were assembled and the configured regression and Wizard suites passed; optional native fixture checks were skipped when unavailable. Proceed with both DLL builds, verified development prerelease packaging and live BETA 1043/1045 self-update acceptance.
 

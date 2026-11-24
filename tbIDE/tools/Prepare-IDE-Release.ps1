@@ -45,6 +45,14 @@ try {
     if (-not (Test-Path -LiteralPath $updater -PathType Leaf)) {throw 'Build the Win32 Updater project first.'}
     if ((Get-Item -LiteralPath $updater).LastWriteTimeUtc -lt (Get-Item -LiteralPath $project).LastWriteTimeUtc) {throw 'Updater.exe is older than its canonical project. Build it again.'}
     if ($Action -eq 'Embed') {
+        # Resolve the same cached ESM dependency used by the Welcome assembly.
+        # A fresh PowerShell process does not inherit that launcher's environment.
+        $cachedJsdomApi=Join-Path $cache 'jsdom-26.1.0\node_modules\jsdom\lib\api.js'
+        if (Test-Path -LiteralPath $cachedJsdomApi -PathType Leaf) {
+            $env:TB_JSDOM_MODULE=([uri]::new($cachedJsdomApi)).AbsoluteUri
+        }
+        Write-Host 'Checking regression-test runtime before changing the project...'
+        Invoke-NodeChecked -Arguments @('--input-type=module','-e','const m=await import(process.env.TB_JSDOM_MODULE||String.fromCharCode(106,115,100,111,109)); if(!m.JSDOM)throw new Error()')
         Write-Host "Preparing add-in $($config.addinVersion) with updater $($config.updaterVersion)."
         $before=(Get-FileHash -LiteralPath $updater -Algorithm SHA256).Hash
         $pointer=Join-Path $env:LOCALAPPDATA 'tbUI3\Diagnostics\native-updater-latest.json'

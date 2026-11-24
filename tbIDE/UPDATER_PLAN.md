@@ -1,12 +1,6 @@
-# Unified updater for twinBASIC and tbUI3
+# Unified updater for twinBASIC and tbUI3 (historical design)
 
-> 2026-11-23 implementation status: native/integration source candidate is now in the canonical projects. [PHASE1_HANDOFF.md](PHASE1_HANDOFF.md) records actual evidence and pending native acceptance. Shane subsequently split actual compiled-helper embedding into a separate Phase 1 pass after the updater works; the combined public release gate and all Phase 2/3 requirements below remain intact. No compiled or runtime acceptance is claimed by source implementation.
-
-**Full consolidated requirements for Cody/Claude:** [INSTALLATION_MANAGER_SPEC.md](INSTALLATION_MANAGER_SPEC.md), including approved first-release combination, AppData DLLs, optional multi-install strategies, dynamic verified release inventories, custom content, per-root settings and later reorganization. This older document records the in-place engine architecture and current/initial assumptions; do not treat every original deployment choice as the latest approved target.
-
-**Future first-install design (approved 2026-11-23):** [Embedded add-in bootstrap and Welcome Wizard](BOOTSTRAP_WELCOME_PLAN.md) supersedes the *planned deployment location* of the sidecar described below. The currently implemented source still requires manual placement beside twinBASIC.exe; no self-provisioning is implemented yet. This document otherwise remains the record of the present update engine and safety requirements.
-
-Status: **Source implementation candidate delivered in tbUI3IDE 0.3.0.22 and Updater 0.1.0.1; native acceptance/publication pending**. See [implementation and checklist](Updater/README.md). Decision date: 2026-11-19. This document is the implementation handoff for the tbUI3IDE update feature and its standalone helper.
+**Historical reference, not current deployment instructions.** The November 19 original in-place engine design is retained below. Its beside-IDE helper placement, early versions and pending implementation descriptions are superseded by [INSTALLATION_MANAGER_SPEC.md](INSTALLATION_MANAGER_SPEC.md), [INSTALLATION_CONTRACTS.md](INSTALLATION_CONTRACTS.md), [Updater/README.md](Updater/README.md) and the current [Phase 1 handoff](PHASE1_HANDOFF.md). Use those documents for development and testing.
 
 ## Scope and ownership
 

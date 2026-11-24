@@ -17,7 +17,6 @@ All active first-party runtime diagnostics and development-tool transcripts now 
 | Prepare-Addin.bat | `Embed-<timestamp>.log` | Preparation, prerequisite setup, native self-tests, assembly and verification |
 | Package-Release.bat | `Package-<timestamp>.log` | Release packaging and verification |
 | Publish-Release.bat | `Publish-<timestamp>.log` | Release publication and verification |
-| Apply-Welcome-Repair.bat | `WelcomeRepair-<timestamp>.log` | Legacy repair preparation and assembly |
 
 Development-tool transcripts are written directly into Diagnostics with their existing timestamped names. The portable Node/jsdom cache and transient publication work remain in `%LOCALAPPDATA%\ArrowLoop\tbUI3\DevTools\`; existing historical logs there are not moved. Reset-TestState.bat retains its separate recovery backups and manifests; its archive-diagnostics option includes new development transcripts. Preview and reset launchers do not gain a new transcript in this change.
 

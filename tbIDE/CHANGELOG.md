@@ -1,5 +1,9 @@
 # Changelog: tbIDE (WinUI 3 look for the twinBASIC IDE)
 
+## 2026-11-24 - Retired one-time Welcome repair tooling
+
+Removed the superseded 0.4.0.3 Apply-Welcome-Repair launcher, PowerShell implementation and leftover version-docs assembly payload. Removed the obsolete preparation guard and active documentation references. Prepare-Addin.bat owns current prerequisite setup and guarded add-in assembly. Retained the historical changelog and existing local transcripts, and left the active 0.4.0.8 assembly request and all release verification intact. Development tooling only; no binary or version changes.
+
 ## 2026-11-24 - Unified development-tool log routing
 
 Redirected the existing timestamped preparation, packaging, publication and legacy Welcome-repair PowerShell transcripts to `%LOCALAPPDATA%\tbUI3\Diagnostics`, alongside native diagnostics. Preserved portable runtime cache, publication scratch files, reset backups and existing historical logs. Verified the script changes are limited to the log directory assignments; no binary rebuild or runtime version change. Windows transcript creation remains to be observed.

@@ -78,4 +78,6 @@ Restore the visible stable/development channel selector only once a genuine stab
 
 ## Documentation maintenance
 
+Keep one-time assembly launchers and payloads out of the active tree after their purpose is fulfilled. Use the maintained preparation/packaging/publication tools; preserve historical repair evidence in Git history and changelogs.
+
 Keep current status in the handoff, product decisions in the specification, implementation contracts in the technical references and history in CHANGELOG. The retired preliminary plans are in Git history; do not recreate competing sources of truth. Retain older candidate notes in Git history; do not treat old version checkpoints as pending tasks. The root [ROADMAP](../ROADMAP.md) owns the separate core package migration.

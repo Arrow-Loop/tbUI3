@@ -23,9 +23,6 @@ try {
     Start-Transcript -Path $log | Out-Null
     $transcribing=$true
     Set-Location -LiteralPath $root
-    if (Test-Path -LiteralPath 'tbIDE\tools\pending-welcome-repair\apply.mjs') {
-        throw 'Complete the pending Welcome repair assembly first; do not package the old project.'
-    }
     if (-not (Get-Command git.exe -ErrorAction SilentlyContinue)) {
         $desktop = Join-Path $env:LOCALAPPDATA 'GitHubDesktop'
         $git = Get-ChildItem -LiteralPath $desktop -Directory -Filter 'app-*' -ErrorAction SilentlyContinue |

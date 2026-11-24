@@ -28,7 +28,7 @@ Native updater source 0.2.0.0; add-in source 0.4.0.0. Corrected baseline remains
 
 1. Use BETA 1045. Close/reopen the canonical `tbUI3IDE/tbUI3IDE.twinproj` before building so an older IDE buffer cannot overwrite resources. Build both Win32 and Win64; do not substitute a stale DLL.
 2. Verify from the repository root: `node tbIDE/tools/verify-phase1-release.mjs <win32 DLL> <win64 DLL> tbIDE/Updater/Build/Updater.exe`. This checks actual DLL architecture/version, manifest identity, project digest and payload hashes. Do not proceed with missing or unequal resources.
-3. Follow the embedded-bundle and focused native acceptance checklists below. Keep native output in `%LOCALAPPDATA%\\tbUI3\\Diagnostics\\`; see [diagnostic locations](../docs/DIAGNOSTICS.md).
+3. Follow the embedded-bundle and focused native acceptance checklists below. Keep native output in `%LOCALAPPDATA%\tbUI3\Diagnostics\`; see [diagnostic locations](../docs/DIAGNOSTICS.md).
 4. Only if the updater changes: reopen/build `tbIDE/Updater/Updater.twinproj` as Win32, run `Updater.exe -SelfTest` unelevated, require the current suite to pass (58 cases at this checkpoint), verify no-context startup, then run `node tbIDE/tools/prepare-phase1-bundle.mjs --updater <accepted fresh Updater.exe>`. Rebuild and verify both DLLs after re-embedding. The old 35,328-byte launcher is stale; never use it.
 5. After acceptance, prepare (not publish) release assets: `tbIDE/tools/package-updater-release.ps1 -Win32Dll ... -Win64Dll ... -UpdaterExe ... -MinIdeBuild 1045 -MaxIdeBuild 1045 -Channel development`. It writes schema-2 per-user protocol metadata and versioned ZIPs.
 

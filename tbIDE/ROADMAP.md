@@ -4,7 +4,7 @@ Outstanding work and deferred decisions. [CHANGELOG](CHANGELOG.md) records compl
 
 ## Immediate priority: Phase 1 updater ownership correction and native acceptance
 
-- **Unified developer workflow (source candidate):** Validate Development-Tools.bat on both Windows PCs with the pinned upstream CDP harness, BETA 1045, a changed helper and an unchanged helper, both DLL architectures, exact artifact identity, no shared add-in loading, unchanged canonical GUIDs, registry cleanup, safe retry of generated inputs, and existing draft publication. Verify first-use IDE selection/cache, reset remains opt-in and diagnostics remain consolidated. Native acceptance and actual release are separate. Retain individual launchers until the unified tool has been exercised.
+- **Unified developer workflow (source candidate):** Validate Development-Tools.bat on both Windows PCs with the pinned upstream CDP harness, BETA 1045, a changed helper and an unchanged helper, both DLL architectures, exact artifact identity, no shared add-in loading, unchanged canonical GUIDs, registry cleanup, safe retry of generated inputs, package receipt validation before generated-source synchronization, and existing draft publication. Verify first-use IDE selection/cache, reset remains opt-in and diagnostics remain consolidated. Native acceptance and actual release are separate. Retain individual launchers until the unified tool has been exercised.
 
 - Confirm portable GitHub CLI first-use download/cache and browser login, wrong-account refusal, Y/N confirmation (Y publishes, N/Enter retain draft), and unchanged exact-commit tag verification on both development PCs. 0.4.0.8 has been published; confirm the revised release-note handling on the next authorized publication.
 

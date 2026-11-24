@@ -19,6 +19,7 @@ $generated=@($upExe,$addinProject,'tbIDE/tbUI3IDE/src/Resources/OTHER/tbUI3-upda
 $sha=[Security.Cryptography.SHA256]::Create()
 try {$key=([BitConverter]::ToString($sha.ComputeHash([Text.Encoding]::UTF8.GetBytes($root.ToLowerInvariant())))).Replace('-','').ToLowerInvariant()} finally {$sha.Dispose()}
 $receipt=Join-Path $cache "generated-$key.json"
+$packageReceipt=Join-Path $cache "package-$key.json"
 function Say([string]$message,[string]$color='Gray') {
     Write-Host $message -ForegroundColor $color
     if (!(Test-Path -LiteralPath $logs)) {$null=New-Item -ItemType Directory -Path $logs -Force}
@@ -54,11 +55,11 @@ function Find-Node {
     }
     $arch=if ($env:PROCESSOR_ARCHITEW6432) {$env:PROCESSOR_ARCHITEW6432} else {$env:PROCESSOR_ARCHITECTURE}
     $platform=switch ($arch.ToUpperInvariant()) {'AMD64' {'win-x64'} 'ARM64' {'win-arm64'} 'X86' {'win-x86'} default {throw 'Unsupported Windows architecture.'}}
-    $home=Get-ChildItem -LiteralPath (Join-Path $cache 'Node22') -Directory -ErrorAction SilentlyContinue |
+    $nodeHome=Get-ChildItem -LiteralPath (Join-Path $cache 'Node22') -Directory -ErrorAction SilentlyContinue |
         Where-Object {$_.Name -match ('^node-v22\.\d+\.\d+-'+[regex]::Escape($platform)+'$') -and (Test-Path -LiteralPath (Join-Path $_.FullName 'node.exe') -PathType Leaf)} |
         Sort-Object LastWriteTime -Descending | Select-Object -First 1
-    if (!$home) {throw 'Node 22 bootstrap did not produce the expected executable.'}
-    return (Join-Path $home.FullName 'node.exe')
+    if (!$nodeHome) {throw 'Node 22 bootstrap did not produce the expected executable.'}
+    return (Join-Path $nodeHome.FullName 'node.exe')
 }
 function Assert-Closed {
     $running=@(Get-Process | Where-Object {$_.ProcessName -match '^(twinBASIC|tbcompiler)(?:$|[_-])'})
@@ -100,8 +101,8 @@ function Resolve-Ide([int]$build) {
     return $candidate
 }
 function Initialize-Harness {
-    $home=Join-Path $cache ("CDP-"+$harnessCommit)
-    if (!(Test-Path -LiteralPath (Join-Path $home '.git'))) {
+    $harnessHome=Join-Path $cache ("CDP-"+$harnessCommit)
+    if (!(Test-Path -LiteralPath (Join-Path $harnessHome '.git'))) {
         Say 'Caching the pinned twinBASIC CDP build harness...'
         $stage=Join-Path $cache ('cdp-download-'+[guid]::NewGuid().ToString('N'))
         $null=New-Item -ItemType Directory -Path $stage
@@ -112,13 +113,13 @@ function Initialize-Harness {
             Run-Child $script:git @('-C',$stage,'fetch','--quiet','--depth=1','origin',$harnessCommit)
             Run-Child $script:git @('-C',$stage,'sparse-checkout','set','--no-cone','/scripts/','/lib/','/test/harness.json','/LICENSE','/package.json')
             Run-Child $script:git @('-C',$stage,'checkout','--quiet','--detach',$harnessCommit)
-            if (Test-Path -LiteralPath $home) {throw 'Incomplete CDP cache exists; inspect the cache.'}
-            Move-Item -LiteralPath $stage -Destination $home
+            if (Test-Path -LiteralPath $harnessHome) {throw 'Incomplete CDP cache exists; inspect the cache.'}
+            Move-Item -LiteralPath $stage -Destination $harnessHome
         } finally {if (Test-Path -LiteralPath $stage) {Remove-Item -LiteralPath $stage -Recurse -Force}}
     }
-    if ((Git-Output @('-C',$home,'rev-parse','HEAD')) -cne $harnessCommit -or @(Git-Output @('-C',$home,'status','--porcelain','--untracked-files=all')).Count) {throw 'Cached CDP harness differs from its pinned upstream commit.'}
-    if (!(Test-Path -LiteralPath (Join-Path $home 'scripts\lib\tb-build.mjs') -PathType Leaf)) {throw 'CDP harness cache is incomplete.'}
-    return $home
+    if ((Git-Output @('-C',$harnessHome,'rev-parse','HEAD')) -cne $harnessCommit -or @(Git-Output @('-C',$harnessHome,'status','--porcelain','--untracked-files=all')).Count) {throw 'Cached CDP harness differs from its pinned upstream commit.'}
+    if (!(Test-Path -LiteralPath (Join-Path $harnessHome 'scripts\lib\tb-build.mjs') -PathType Leaf)) {throw 'CDP harness cache is incomplete.'}
+    return $harnessHome
 }
 function Changed-Paths {
     @( @(Git-Output @('diff','--no-renames','--name-only','HEAD','--')) + @(Git-Output @('diff','--cached','--no-renames','--name-only','--')) + @(Git-Output @('ls-files','--others','--exclude-standard')) | Sort-Object -Unique )
@@ -149,6 +150,29 @@ function Save-Generated([string]$head) {
     if (!$paths.Count) {if (Test-Path -LiteralPath $receipt) {Remove-Item -LiteralPath $receipt};return}
     $files=@(Fingerprint $paths)
     @{head=$head;files=$files} | ConvertTo-Json -Depth 4 | Set-Content -LiteralPath $receipt -Encoding UTF8
+}
+function Package-Fingerprint([string]$package) {
+    $config=Get-Content -LiteralPath 'tbIDE\phase1-config.json' -Raw | ConvertFrom-Json
+    $names=@("tbUI3IDE-$($config.addinVersion).zip",'tbUI3-update.json','SHA256SUMS.txt')
+    $paths=@($upProject,$addinProject,$upExe,'tbIDE/tbUI3IDE/Build/win32/tbUI3IDE.dll','tbIDE/tbUI3IDE/Build/win64/tbUI3IDE.dll')
+    foreach ($name in $names) {$paths+=Join-Path $package $name}
+    foreach ($p in $paths) {
+        if (!(Test-Path -LiteralPath $p -PathType Leaf)) {throw "Verified package input is missing: $p"}
+        "$p=$((Get-FileHash -LiteralPath $p -Algorithm SHA256).Hash)"
+    }
+}
+function Save-Package([string]$package,[string]$head) {
+    Save-Generated $head
+    @{head=$head;package=$package;files=@(Package-Fingerprint $package)} | ConvertTo-Json -Depth 4 | Set-Content -LiteralPath $packageReceipt -Encoding UTF8
+}
+function Package-Existing {
+    $head=Assert-Checkout
+    $config=Get-Content -LiteralPath 'tbIDE\phase1-config.json' -Raw | ConvertFrom-Json
+    $output=Join-Path $root ("Build\Release-"+$config.addinVersion+"-"+(Get-Date -Format 'yyyyMMdd-HHmmss-fff'))
+    Run-Prep @('-Action','Package','-OutputDirectory',$output,'-NoExplorer')
+    Save-Package $output $head
+    Say "SUCCESS: $output" Green
+    return $output
 }
 function Sync-ForPublication {
     $head=Assert-Checkout
@@ -200,18 +224,26 @@ function Build-Package {
     Build-One $addinProject 'win64' 'tbIDE/tbUI3IDE/Build/win64/tbUI3IDE.dll'
     $output=Join-Path $root ("Build\Release-"+$script:config.addinVersion+"-"+(Get-Date -Format 'yyyyMMdd-HHmmss-fff'))
     Run-Prep @('-Action','Package','-OutputDirectory',$output,'-NoExplorer')
-    Save-Generated $head
+    Save-Package $output $head
     Say "SUCCESS: $output" Green
     return $output
 }
 function Publish([string]$package='') {
+    $head=Assert-Checkout
+    if (@(Changed-Paths).Count) {
+        if (!(Test-Path -LiteralPath $packageReceipt -PathType Leaf)) {throw 'Package the current native builds before synchronizing generated source.'}
+        $proof=Get-Content -LiteralPath $packageReceipt -Raw | ConvertFrom-Json
+        if (!$package) {$package=[string]$proof.package}
+        if ($proof.head -cne $head -or $proof.package -cne $package -or (@(Package-Fingerprint $package) -join '|') -cne (@($proof.files) -join '|')) {throw 'Generated source or package changed since verified packaging. Package the current native builds again.'}
+    }
     Sync-ForPublication
     $arguments=@('-NoLogo','-NoProfile','-ExecutionPolicy','Bypass','-File',$publisher)
     if ($package) {$arguments+=@('-PackageDirectory',$package)}
     # Do not capture device login codes in an outer transcript.
-    Run-Child 'powershell.exe' $arguments
+    & 'powershell.exe' @arguments
+    if ($LASTEXITCODE -ne 0) {throw 'Publication stopped. See the Publish diagnostic log.'}
 }
-$mutex=New-Object Threading.Mutex($false,("Local\tbUI3-Development-"+$key))
+$mutex=[Threading.Mutex]::new($false,("Local\tbUI3-Development-"+$key))
 $locked=$false
 try {
     try {$locked=$mutex.WaitOne(0)} catch [Threading.AbandonedMutexException] {$locked=$true}
@@ -231,7 +263,7 @@ try {
         if ($choice -eq 'Q') {break}
         try {
             if ($choice -eq 'L') {Invoke-Item -LiteralPath $logs;continue}
-            if ($choice -eq '4') {Run-Child (Join-Path $root 'tbIDE\Reset-TestState.bat') @();continue}
+            if ($choice -eq '4') {& (Join-Path $root 'tbIDE\Reset-TestState.bat');continue}
             if ($choice -notin @('1','2','3','5','6')) {continue}
             $script:git=Find-Git
             $env:PATH=(Split-Path -Parent $script:git)+';'+$env:PATH
@@ -240,7 +272,7 @@ try {
                 '2' {$package=Build-Package;Invoke-Item -LiteralPath $package}
                 '3' {Publish}
                 '5' {Assert-Closed; $head=Assert-Checkout;Run-Prep @('-Action','Embed');Save-Generated $head}
-                '6' {Run-Prep @('-Action','Package')}
+                '6' {$package=Package-Existing;Invoke-Item -LiteralPath $package}
             }
         } catch {Say ("FAILED: "+$_.Exception.Message) Red; if ($_.ScriptStackTrace) {Add-Content -LiteralPath $sessionLog -Value $_.ScriptStackTrace}}
         Write-Host "Diagnostics: $logs"

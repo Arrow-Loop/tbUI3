@@ -1,5 +1,9 @@
 # Changelog: tbIDE (WinUI 3 look for the twinBASIC IDE)
 
+## 2026-11-24 - Documented completion-screen launch action
+
+Recorded the requested next-release `Launch twinBASIC` button beside Close in the installation specification, pending native contract, roadmap and acceptance checklist. The owner's screenshot shows Updater 0.2.0.3 reporting successful installation and verification; it does not independently establish the installed DLL version or verify hashes. Documentation only; no runtime or release changes.
+
 ## 2026-11-24 - Welcome-first startup (add-in 0.4.0.7, updater 0.2.0.4)
 
 The add-in checks the Welcome disposition first, waits for native dialogs, and yields through a paint of the existing Wizard before registration, preferences, each bundled file check, theme discovery and toolbar/designer initialization. Setup displays the actual operations and disables dependent choices until their services are available. Returning users get silent offline provisioning. The 2.5-second onboarding cutoff and 10-second automatic check delay are removed. A quiet check waits for onboarding to close after saving the disposition and honors the selected preferences.

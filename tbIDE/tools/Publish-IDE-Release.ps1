@@ -37,7 +37,7 @@ function File-Hash([string]$Path) {(Get-FileHash -LiteralPath $Path -Algorithm S
 function Assert-Account {
     $account=Api 'user'
     if ($account.login -ne 'Arrow-Loop' -or $account.id -ne 5251546) {
-        throw "Wrong GitHub account: $($account.login). Run gh auth switch --hostname github.com --user Arrow-Loop, or gh auth login --hostname github.com --web."
+        throw "Wrong GitHub account: $($account.login). Run & '$script:gh' auth switch --hostname github.com --user Arrow-Loop, or sign in with & '$script:gh' auth login --hostname github.com --web."
     }
     $remoteRepo=Api "repos/$repository"
     if ($remoteRepo.full_name -ine $repository -or $remoteRepo.permissions.push -ne $true) {throw 'Required repository write permission was not verified.'}
@@ -93,8 +93,39 @@ try {
     else {
         $ghPath=Join-Path $env:ProgramFiles 'GitHub CLI\gh.exe'
         if (Test-Path -LiteralPath $ghPath -PathType Leaf) {$script:gh=$ghPath}
-        else {throw 'GitHub CLI is required. Install with winget install --id GitHub.cli --exact, then gh auth login --hostname github.com --web as Arrow-Loop.'}
+        else {
+            # Official cli/cli release v2.105.0, architecture-specific ZIP digests
+            # pinned from GitHub's release asset metadata. No MSI or global PATH changes.
+            $ghVersion='2.105.0'
+            $arch=if ($env:PROCESSOR_ARCHITEW6432) {$env:PROCESSOR_ARCHITEW6432} else {$env:PROCESSOR_ARCHITECTURE}
+            $platform=switch ($arch.ToUpperInvariant()) {'AMD64' {'amd64'} 'ARM64' {'arm64'} 'X86' {'386'} default {throw "Unsupported architecture: $arch"}}
+            $digests=@{
+                amd64='8813a72c899900afaa10e3fec8fbc64b908c89dbfe837e95ed2fa500fc140627'
+                arm64='5282a09c7757210c6e2dfb11a56b11e14e646df9b3b6a49f155465f5f881c3b7'
+                '386'='df02ca46a6655ffa0dd6d2f6d1387d1ebff63ab05272ff76301246925f67b8c7'
+            }
+            $ghHome=Join-Path $cache ('GitHubCLI\'+$ghVersion+'\windows_'+$platform)
+            $ghPath=Join-Path $ghHome 'gh.exe'
+            if (-not (Test-Path -LiteralPath $ghPath -PathType Leaf)) {
+                Write-Host "Downloading official portable GitHub CLI $ghVersion..."
+                [Net.ServicePointManager]::SecurityProtocol=[Net.SecurityProtocolType]::Tls12
+                $zipName='gh_'+$ghVersion+'_windows_'+$platform+'.zip'
+                $zip=Join-Path $work $zipName
+                $uri='https://github.com/cli/cli/releases/download/v'+$ghVersion+'/'+$zipName
+                Invoke-WebRequest -UseBasicParsing -Uri $uri -OutFile $zip
+                if ((File-Hash $zip) -cne $digests[$platform]) {throw 'Portable GitHub CLI archive failed SHA-256 verification.'}
+                $extract=Join-Path $work 'gh-extracted'
+                Expand-Archive -LiteralPath $zip -DestinationPath $extract
+                $executables=@(Get-ChildItem -LiteralPath $extract -Recurse -File -Filter 'gh.exe')
+                if ($executables.Count -ne 1) {throw 'Verified GitHub CLI archive did not contain exactly one gh.exe.'}
+                $null=New-Item -ItemType Directory -Path $ghHome -Force
+                Copy-Item -LiteralPath $executables[0].FullName -Destination $ghPath
+                Write-Host 'Portable GitHub CLI verified and cached.'
+            }
+            $script:gh=$ghPath
+        }
     }
+    Write-Host "Using GitHub CLI: $script:gh"
     $gitCommand=Get-Command git.exe -CommandType Application -ErrorAction SilentlyContinue | Select-Object -First 1
     if ($gitCommand) {$script:git=$gitCommand.Source}
     else {
@@ -105,7 +136,36 @@ try {
         if (-not $desktopGit) {throw 'Git not found. Install Git or GitHub Desktop.'}
         $script:git=$desktopGit
     }
+    # Probe the actual active credential without displaying tokens or auth status.
     $env:GH_PROMPT_DISABLED='1'
+    $oldPreference=$ErrorActionPreference
+    try {
+        $ErrorActionPreference='Continue'
+        $activeLogin=(& $script:gh api --hostname github.com user --jq '.login' 2>$null)
+        $authCode=$LASTEXITCODE
+    } finally {$ErrorActionPreference=$oldPreference}
+    if ($authCode -ne 0) {
+        if ($env:GH_TOKEN -or $env:GITHUB_TOKEN) {throw 'GitHub token environment authentication failed. Review the credential in your environment before publishing.'}
+        Write-Host 'GitHub CLI needs a one-time sign-in. Use the Arrow-Loop account in your browser. If asked to configure Git credentials, choose No.'
+        # Device login codes should not be captured in diagnostic transcripts.
+        Stop-Transcript | Out-Null
+        $transcribing=$false
+        try {
+            Remove-Item Env:GH_PROMPT_DISABLED -ErrorAction SilentlyContinue
+            & $script:gh auth login --hostname github.com --web --git-protocol https
+            $loginCode=$LASTEXITCODE
+        } finally {
+            $env:GH_PROMPT_DISABLED='1'
+            Start-Transcript -Path $log -Append | Out-Null
+            $transcribing=$true
+        }
+        if ($loginCode -ne 0) {throw 'GitHub CLI sign-in did not complete. No release was created.'}
+    } elseif ($activeLogin -cne 'Arrow-Loop') {
+        Write-Host "Active GitHub account is $activeLogin; release publishing requires Arrow-Loop."
+        Write-Host "To select the correct saved account: & '$script:gh' auth switch --hostname github.com --user Arrow-Loop"
+        Write-Host "To sign in to that account if not already saved: & '$script:gh' auth login --hostname github.com --web"
+        throw 'Wrong GitHub account. No release was created.'
+    }
     Assert-Account
     $commit=Assert-Synchronized
     $config=Get-Content -LiteralPath 'tbIDE\phase1-config.json' -Raw | ConvertFrom-Json

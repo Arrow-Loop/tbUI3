@@ -1,5 +1,9 @@
 # Changelog: tbIDE (WinUI 3 look for the twinBASIC IDE)
 
+## 2026-11-24 - Portable GitHub CLI and first-run publication sign-in
+
+After the owner completed and committed the guarded 0.4.0.8 project assembly, publication stopped on a workstation without GitHub CLI. The publisher now reuses installed gh or downloads the architecture-specific official v2.105.0 ZIP, verifies its pinned SHA-256 and caches the executable locally. On missing authentication it requests browser sign-in as Arrow-Loop without transcribing device login codes; wrong-account and repository-permission checks remain mandatory, as do all source, package, draft, asset and tag safeguards. No global installation, elevation or token handling by scripts. Source and lexical checks only; Windows first-use and live publication remain pending. No binaries or releases changed.
+
 ## 2026-11-24 - Retired one-time Welcome repair tooling
 
 Removed the superseded 0.4.0.3 Apply-Welcome-Repair launcher, PowerShell implementation and leftover version-docs assembly payload. Removed the obsolete preparation guard and active documentation references. Prepare-Addin.bat owns current prerequisite setup and guarded add-in assembly. Retained the historical changelog and existing local transcripts, and left the active 0.4.0.8 assembly request and all release verification intact. Development tooling only; no binary or version changes.

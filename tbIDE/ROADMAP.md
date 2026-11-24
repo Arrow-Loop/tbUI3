@@ -4,6 +4,8 @@ Outstanding work and deferred decisions. [CHANGELOG](CHANGELOG.md) records compl
 
 ## Immediate priority: Phase 1 updater ownership correction and native acceptance
 
+- Confirm portable GitHub CLI first-use download/cache and browser login, wrong-account refusal, and unchanged exact-tag publication checks on both development PCs. The current 0.4.0.8 assembly is committed; native acceptance and publication remain pending.
+
 - Confirm the next preparation, packaging and publication transcripts appear in the common Diagnostics directory; retain the development cache and reset backups in their existing locations. No separate runtime work is needed for this routing change.
 
 - **Next updater release: Launch twinBASIC on successful completion.** Add a `Launch twinBASIC` button immediately to the left of `Close` on the verified-success screen. An explicit click launches the originating IDE's updated executable at its validated installation root, then closes the updater window after successful process creation. Applies to add-in-only updates as well as official IDE updates. Keep Close as close-only; do not alter the saved automatic-restart preference. Reuse the native validated restart path, avoid duplicate launches if automatic restart already occurred or that IDE is already running, and keep the completion screen open with a retryable error if launch fails. Do not offer this action for failed, cancelled, partial or unresolved recovery outcomes. Launch under the originating unelevated user, not a privileged worker. Preserve transaction completion and cleanup safeguards. Pending implementation and native acceptance.

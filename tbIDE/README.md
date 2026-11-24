@@ -42,9 +42,9 @@ The current development candidate is undergoing native installation and update a
 
 Hybrid and Ribbon support full and simplified layouts. Use the corner chevron or Ctrl+F1 to switch between them. The toolbar follows your selected IDE theme, independently of additional styling.
 
-### TabView/MultiPage designer
+### TabView/MultiPage designer (development preview)
 
-When a tbUI3 TabView is selected, use the contextual MultiPage commands to create, select, delete and reorder real pages. You can place controls on the selected page and use the usual native form designer. Page management remains available in all toolbar modes, including when optional styling is disabled.
+The add-in retains experimental TabView/MultiPage designer tooling for the separately developed tbUI3 control package. Full designer functionality is not part of the initial IDE add-in release. The initial release requires these commands and behaviors to be hidden or inactive in projects without an enabled, resolved tbUI3 package reference; this isolation is pending implementation/acceptance. Normal projects do not require the control package.
 
 ### Updates
 

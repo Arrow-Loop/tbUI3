@@ -1,6 +1,6 @@
 # Installation contracts, revision 1
 
-Implemented source contract, 2026-11-23. Read INSTALLATION_MANAGER_SPEC.md for product requirements and PHASE1_HANDOFF.md for evidence and acceptance limits. Live native acceptance remains pending; the handoff records user-supplied self-test evidence (42/54 before the fix; 57/57 afterward) and the separate reported WebView2 startup failure. JSON is UTF-16LE with BOM on disk (strict UTF-8 input is also accepted); all hashes are lowercase SHA-256. Unknown protocol/schema/operation versions fail closed, retaining state. No arbitrary executable, script or remote command is accepted by the view bridge.
+Implemented source contract, 2026-11-23. Read INSTALLATION_MANAGER_SPEC.md for product requirements and PHASE1_HANDOFF.md for evidence and acceptance limits. Use the handoff for acceptance status: the embedded helper has passed 58/58 native tests and compiled startup; add-in and live transaction acceptance remain open. JSON is UTF-16LE with BOM on disk (strict UTF-8 input is also accepted); all hashes are lowercase SHA-256. Unknown protocol/schema/operation versions fail closed, retaining state. No arbitrary executable, script or remote command is accepted by the view bridge.
 
 ## Identity and storage
 
@@ -41,7 +41,7 @@ Inventory schema 1 records verified asset identity and **all official ZIP files*
 
 Bundle manifest schema 1/protocol 1 embeds resource ids updater/themeDark/themeLight, exact resource names, versions, sizes, SHA-256 and helper protocol bounds, plus canonical updater project hash. Each DLL architecture must contain identical verified payload bytes. Offline bootstrap runs at every add-in load and retries while shared files are busy, independently of online opt-out and Welcome completion. Missing resources are provisioned atomically. Exact matches are registered; recognized older resources may be upgraded. Newer helper binaries are never downgraded. Unknown/modified files require explicit backed-up reset; a newer helper without a compatible recognized ledger remains preserved but cannot be launched. Resetting a corrupt/future resource registry also requires explicit approval and a verified backup, then treats unknown bytes conservatively.
 
-Detached session copy runs Apply/Recover so the shared EXE can replace itself. Never execute arbitrary helper bytes just because a file exists: launch verifies ledger hash, PE version/architecture and protocol. Embedded payload generation is deliberately a separate pass after Shane accepts the native updater build; current development sources have no pretend embedded EXE.
+Detached session copy runs Apply/Recover so the shared EXE can replace itself. Never execute arbitrary helper bytes just because a file exists: launch verifies ledger hash, PE version/architecture and protocol. The accepted helper and exact themes are embedded in the canonical add-in; compiled resource verification and offline bootstrap acceptance remain required.
 
 ## Protected installations
 

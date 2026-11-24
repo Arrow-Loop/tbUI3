@@ -19,7 +19,11 @@ Private Module UpdaterScript
         js = js & vbLf
         js = js & "    if (!armed) return original(callback);"
         js = js & vbLf
-        js = js & "    if (attempt || continuation) return;"
+        js = js & "    // A held continuation is already exiting. A stale attempt (Save As or save cancelled,"
+        js = js & vbLf
+        js = js & "    // save failed) must not block later closes, so a new close replaces it."
+        js = js & vbLf
+        js = js & "    if (continuation) return;"
         js = js & vbLf
         js = js & "    const request = armed;"
         js = js & vbLf
@@ -91,6 +95,14 @@ Private Module UpdaterScript
         js = js & "    continuation = () => originalClose(callback);"
         js = js & vbLf
         js = js & "    result = { request, status: 'shutdown' };"
+        js = js & vbLf
+        js = js & "    // Fail-safe: if the add-in never acknowledges, let the IDE close anyway. Without the"
+        js = js & vbLf
+        js = js & "    // native-exit record the updater still refuses to install."
+        js = js & vbLf
+        js = js & "    const held = continuation;"
+        js = js & vbLf
+        js = js & "    if (typeof window.setTimeout === 'function') window.setTimeout(() => { if (continuation === held) window.__tbUI3Shutdown.resume(); }, 10000);"
         js = js & vbLf
         js = js & "  }"
         js = js & vbLf

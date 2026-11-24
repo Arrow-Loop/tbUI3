@@ -50,6 +50,23 @@ test('normal frame close is acknowledged while the armed updater is staging', ()
  s.window.__tbUI3Shutdown.disarm();
  assert.equal(s.calls.exits, 1);
 });
+test('an interrupted armed close does not block later closes', () => {
+ const s = host();
+ vm.runInContext('window.__tbUI3Shutdown.arm("a");closeProjectSafely(()=>{hostAppObject.Exit("ignore")})', s);
+ vm.runInContext('closeProjectSafely(()=>{hostAppObject.Exit("ignore")});dialog[0].onclick()', s);
+ assert.equal(s.calls.accepted, 2);
+ assert.deepEqual(JSON.parse(s.window.__tbUI3Shutdown.take()), {request:'a', status:'shutdown'});
+});
+test('a held exit is released after the fail-safe delay without an acknowledgement', () => {
+ const s = host();
+ let timer;
+ s.window.setTimeout = (fn, ms) => { timer = {fn, ms}; };
+ vm.runInContext('window.__tbUI3Shutdown.arm("a");closeProjectSafely(()=>{hostAppObject.Exit("ignore")});dialog[0].onclick()', s);
+ assert.equal(s.calls.exits, 0);
+ assert.equal(timer.ms, 10000);
+ timer.fn();
+ assert.equal(s.calls.exits, 1);
+});
 test('the IDE surface owns only update entry points and offline provisioning views', () => {
  const ui = fs.readFileSync(root + 'js/installation-ui.js', 'utf8');
  const native = fs.readFileSync(root + 'src/Sources/UpdaterController.twin', 'utf8');

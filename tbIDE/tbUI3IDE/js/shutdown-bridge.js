@@ -7,7 +7,9 @@
 
   function start(callback) {
     if (!armed) return original(callback);
-    if (attempt || continuation) return;
+    // A held continuation is already exiting. A stale attempt (Save As or save cancelled,
+    // save failed) must not block later closes, so a new close replaces it.
+    if (continuation) return;
     const request = armed;
     const accepted = () => callback();
     attempt = { request, accepted };
@@ -44,6 +46,10 @@
     // the add-in can disappear as soon as closeProjectNow runs.
     continuation = () => originalClose(callback);
     result = { request, status: 'shutdown' };
+    // Fail-safe: if the add-in never acknowledges, let the IDE close anyway. Without the
+    // native-exit record the updater still refuses to install.
+    const held = continuation;
+    if (typeof window.setTimeout === 'function') window.setTimeout(() => { if (continuation === held) window.__tbUI3Shutdown.resume(); }, 10000);
   }
 
   function hook(callback) {

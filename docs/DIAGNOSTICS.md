@@ -21,6 +21,8 @@ All active first-party runtime diagnostics and development-tool transcripts now 
 
 Development-tool transcripts are written directly into Diagnostics with their existing timestamped names. The portable Node/jsdom cache and transient publication work remain in `%LOCALAPPDATA%\ArrowLoop\tbUI3\DevTools\`; existing historical logs there are not moved. Reset-TestState.bat retains its separate recovery backups and manifests; its archive-diagnostics option includes new development transcripts. Preview and reset launchers do not gain a new transcript in this change.
 
+Local diagnostic logs at known project roots and designated Diagnostics directories are excluded from the development and publication source-cleanliness checks. They remain untouched and are not automatically staged; source/resource trees and operational updater state are not excluded. A diagnostic file that actually conflicts with an incoming Git change is still protected by Git's normal fast-forward rules.
+
 No tracing flag is automatically enabled by this path change. Existing project/TEMP log files remain untouched as historical evidence, but new active code stops writing there. Historical research probe snapshots under docs/research are retained unchanged; they are not active application diagnostics.
 
 Updater transaction contexts, approvals, recovery journals, backups, settings, receipts, downloads and WebView2 profile data remain in their operational locations under `%LOCALAPPDATA%\tbUI3\Updater\`. They are not disposable diagnostic output and were not moved. The updater's elevated worker does not append to user-controlled log files.

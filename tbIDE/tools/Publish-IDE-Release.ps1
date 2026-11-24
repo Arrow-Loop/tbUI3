@@ -3,6 +3,7 @@
 param([string]$PackageDirectory)
 $ErrorActionPreference='Stop'
 $root=(Resolve-Path -LiteralPath (Join-Path $PSScriptRoot '..\..')).Path
+. (Join-Path $PSScriptRoot 'Release-SourcePaths.ps1')
 $repository='Arrow-Loop/tbUI3'
 $branch='tbui3-dev'
 $cache=Join-Path $env:LOCALAPPDATA 'ArrowLoop\tbUI3\DevTools'
@@ -46,7 +47,8 @@ function Assert-Synchronized([string]$ExpectedCommit='') {
     $origin=Git @('remote','get-url','origin')
     if ($origin -notmatch '^(https://github\.com/Arrow-Loop/tbUI3(?:\.git)?/?|git@github\.com:Arrow-Loop/tbUI3(?:\.git)?|ssh://git@github\.com/Arrow-Loop/tbUI3(?:\.git)?)$') {throw 'Origin must be Arrow-Loop/tbUI3 on github.com.'}
     if ((Git @('branch','--show-current')) -cne $branch) {throw "Switch GitHub Desktop to $branch first."}
-    if (@(Git @('status','--porcelain=v1','--untracked-files=normal')).Count -ne 0) {throw 'Commit and push all source changes with GitHub Desktop first.'}
+    $sourceStatus=@(Git (@('status','--porcelain=v1','--untracked-files=all','--no-renames','--')+$script:releaseSourcePaths))
+    if ($sourceStatus.Count -ne 0) {throw ('Uncommitted release source changes: '+($sourceStatus -join '; '))}
     $localCommit=Git @('rev-parse','HEAD')
     $remoteCommit=(Api "repos/$repository/git/ref/heads/$branch").object.sha
     if ($localCommit -notmatch '^[0-9a-f]{40}$' -or $localCommit -cne $remoteCommit) {throw 'Local HEAD differs from the live GitHub branch. Synchronize first.'}
@@ -272,9 +274,8 @@ try {
         if ($draftCommit -notmatch '^[0-9a-f]{40}$') {throw 'Draft does not target a concrete commit. Review the existing draft.'}
         $base=Git @('merge-base',$draftCommit,$commit)
         if ($base -cne $draftCommit) {throw 'Existing draft targets a different source history. Review the existing draft.'}
-        $changes=@(Git @('diff','--no-renames','--name-only',$draftCommit,$commit,'--'))
-        $allowed=@('tbIDE/tools/Publish-IDE-Release.ps1','tbIDE/Publish-Release.bat','tbIDE/README.md','tbIDE/CHANGELOG.md','tbIDE/ROADMAP.md','tbIDE/PHASE1_HANDOFF.md','docs/DIAGNOSTICS.md','README.md','CHANGELOG.md','ROADMAP.md')
-        $buildChanges=@($changes | Where-Object {$_ -cnotin $allowed -and $_ -cnotmatch '^tbIDE/release-notes/\d+\.\d+\.\d+\.\d+\.md$'})
+        $changes=@(Git (@('diff','--no-renames','--name-only',$draftCommit,$commit,'--')+$script:releaseSourcePaths))
+        $buildChanges=@(Get-ReleaseBuildChanges $changes)
         if ($buildChanges.Count -gt 0) {
             $buildChanges | ForEach-Object {Write-Host "Changed build input or unapproved path: $_"}
             throw 'Existing draft targets different build inputs. Review that draft before replacing its assets.'

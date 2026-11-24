@@ -1,8 +1,9 @@
 [CmdletBinding()]
-param([string]$IdePath)
+param([string]$IdePath,[ValidateSet('1','2','5')][string]$InitialChoice)
 $ErrorActionPreference='Stop'
 $root=(Resolve-Path -LiteralPath (Join-Path $PSScriptRoot '..\..')).Path
 Set-Location -LiteralPath $root
+. (Join-Path $PSScriptRoot 'Release-SourcePaths.ps1')
 $cache=Join-Path $env:LOCALAPPDATA 'ArrowLoop\tbUI3\DevTools'
 $logs=Join-Path $env:LOCALAPPDATA 'tbUI3\Diagnostics'
 $null=New-Item -ItemType Directory -Path $cache,$logs -Force
@@ -122,7 +123,7 @@ function Initialize-Harness {
     return $harnessHome
 }
 function Changed-Paths {
-    @( @(Git-Output @('diff','--no-renames','--name-only','HEAD','--')) + @(Git-Output @('diff','--cached','--no-renames','--name-only','--')) + @(Git-Output @('ls-files','--others','--exclude-standard')) | Sort-Object -Unique )
+    @( @(Git-Output (@('diff','--no-renames','--name-only','HEAD','--')+$script:releaseSourcePaths)) + @(Git-Output (@('diff','--cached','--no-renames','--name-only','--')+$script:releaseSourcePaths)) + @(Git-Output (@('ls-files','--others','--exclude-standard','--')+$script:releaseSourcePaths)) | Sort-Object -Unique )
 }
 function Fingerprint([string[]]$paths) {
     foreach ($p in ($paths | Sort-Object)) {
@@ -131,18 +132,46 @@ function Fingerprint([string[]]$paths) {
         "$p=$hash"
     }
 }
-function Assert-Checkout {
+function Assert-Repository {
     $origin=Git-Output @('remote','get-url','origin')
     if ($origin -notmatch '^(https://github\.com/Arrow-Loop/tbUI3(?:\.git)?/?|git@github\.com:Arrow-Loop/tbUI3(?:\.git)?|ssh://git@github\.com/Arrow-Loop/tbUI3(?:\.git)?)$' -or (Git-Output @('branch','--show-current')) -cne $branch) {throw "Use the Arrow-Loop/tbUI3 $branch checkout."}
+}
+function Assert-Checkout([switch]$ForBuild) {
+    Assert-Repository
     $head=Git-Output @('rev-parse','HEAD')
     $paths=@(Changed-Paths)
     if ($paths.Count) {
         $current=@(Fingerprint $paths)
-        if (!(Test-Path -LiteralPath $receipt -PathType Leaf)) {throw 'Uncommitted source changes exist. Review them in GitHub Desktop first.'}
-        $prior=Get-Content -LiteralPath $receipt -Raw | ConvertFrom-Json
-        if ($prior.head -cne $head -or ($current -join '|') -cne (@($prior.files) -join '|')) {throw 'Uncommitted changes do not match the previous tool-generated checkpoint. Review them in GitHub Desktop.'}
+        $matchesReceipt=$false
+        if (Test-Path -LiteralPath $receipt -PathType Leaf) {
+            try {
+                $prior=Get-Content -LiteralPath $receipt -Raw | ConvertFrom-Json
+                $matchesReceipt=$prior.head -ceq $head -and ($current -join '|') -ceq (@($prior.files) -join '|')
+            } catch { $matchesReceipt=$false }
+        }
+        if (!$matchesReceipt) {
+            if (!$ForBuild) {throw ('Generated inputs have not been verified by this tool. Choose option 1 or 2 to build and package: '+($paths -join ', '))}
+            Add-Content -LiteralPath $sessionLog -Value ('Existing generated inputs to verify during build: '+($paths -join ', '))
+        }
     }
     return $head
+}
+function Sync-BeforeBuild {
+    Assert-Repository
+    Assert-Closed
+    Say 'Checking for source updates...'
+    Run-Child $script:git @('fetch','--quiet','origin',"refs/heads/$branch")
+    $head=Git-Output @('rev-parse','HEAD')
+    $remote=Git-Output @('rev-parse','FETCH_HEAD')
+    if ($head -ceq $remote) {return $false}
+    & $script:git merge-base --is-ancestor $remote $head
+    if ($LASTEXITCODE -eq 0) {return $false}
+    & $script:git merge-base --is-ancestor $head $remote
+    if ($LASTEXITCODE -ne 0) {throw 'Local and remote source histories diverged. Resolve the Git conflict; nothing was overwritten.'}
+    Say 'Applying incoming source updates...'
+    Run-Child $script:git @('merge','--ff-only','--no-autostash','--no-overwrite-ignore',$remote)
+    # Reload the updated tool before doing any build work.
+    return $true
 }
 function Save-Generated([string]$head) {
     if ((Git-Output @('rev-parse','HEAD')) -cne $head) {throw 'Source commit changed while building.'}
@@ -174,11 +203,26 @@ function Package-Existing {
     Say "SUCCESS: $output" Green
     return $output
 }
-function Sync-ForPublication {
+function Sync-ForPublication([string]$package) {
     $head=Assert-Checkout
-    Run-Child $script:git @('fetch','--quiet','origin',$branch)
-    & $script:git merge-base --is-ancestor FETCH_HEAD HEAD
-    if ($LASTEXITCODE -ne 0) {throw 'Remote source advanced. Pull/reconcile in GitHub Desktop before publishing.'}
+    Say 'Synchronizing verified release inputs...'
+    Run-Child $script:git @('fetch','--quiet','origin',"refs/heads/$branch")
+    $remote=Git-Output @('rev-parse','FETCH_HEAD')
+    & $script:git merge-base --is-ancestor $remote $head
+    if ($LASTEXITCODE -ne 0) {
+        & $script:git merge-base --is-ancestor $head $remote
+        if ($LASTEXITCODE -ne 0) {throw 'Local and remote source histories diverged. Resolve the Git conflict; no release was published.'}
+        $incoming=@(Git-Output (@('diff','--no-renames','--name-only',$head,$remote,'--')+$script:releaseSourcePaths))
+        $buildChanges=@(Get-ReleaseBuildChanges $incoming)
+        if ($buildChanges.Count) {throw ('Build inputs changed remotely. Choose option 1 again to synchronize and build the new source: '+($buildChanges -join ', '))}
+        if ((Git-Output @('rev-parse','HEAD')) -cne $head) {throw 'Local source advanced while preparing publication.'}
+        Run-Child $script:git @('merge','--ff-only','--no-autostash','--no-overwrite-ignore',$remote)
+        $head=Git-Output @('rev-parse','HEAD')
+        if (@(Changed-Paths).Count) {
+            if (!$package) {throw 'Verified package location is missing.'}
+            Save-Package $package $head
+        }
+    }
     if ((Git-Output @('rev-parse','HEAD')) -cne $head) {throw 'Local source advanced while preparing publication.'}
     $paths=@(Changed-Paths)
     if ($paths.Count) {
@@ -197,7 +241,7 @@ function Build-One([string]$project,[string]$arch,[string]$destination) {
 }
 function Build-Package {
     Assert-Closed
-    $head=Assert-Checkout
+    $head=Assert-Checkout -ForBuild
     $script:config=Get-Content -LiteralPath 'tbIDE\phase1-config.json' -Raw | ConvertFrom-Json
     $script:ide=Resolve-Ide ([int]$script:config.maxIdeBuild)
     Say "Using BETA $($script:config.maxIdeBuild): $script:ide"
@@ -236,7 +280,7 @@ function Publish([string]$package='') {
         if (!$package) {$package=[string]$proof.package}
         if ($proof.head -cne $head -or $proof.package -cne $package -or (@(Package-Fingerprint $package) -join '|') -cne (@($proof.files) -join '|')) {throw 'Generated source or package changed since verified packaging. Package the current native builds again.'}
     }
-    Sync-ForPublication
+    Sync-ForPublication $package
     $arguments=@('-NoLogo','-NoProfile','-ExecutionPolicy','Bypass','-File',$publisher)
     if ($package) {$arguments+=@('-PackageDirectory',$package)}
     # Do not capture device login codes in an outer transcript.
@@ -245,10 +289,13 @@ function Publish([string]$package='') {
 }
 $mutex=[Threading.Mutex]::new($false,("Local\tbUI3-Development-"+$key))
 $locked=$false
+$restartChoice=''
+$nextChoice=$InitialChoice
 try {
     try {$locked=$mutex.WaitOne(0)} catch [Threading.AbandonedMutexException] {$locked=$true}
     if (!$locked) {throw 'Development Tools is already running for this checkout.'}
     while ($true) {
+        if (!$nextChoice) {
         Write-Host ''
         Write-Host 'tbUI3IDE DEVELOPMENT TOOLS' -ForegroundColor Cyan
         Write-Host '  1  Build, package and offer publication (sync generated inputs)'
@@ -260,6 +307,7 @@ try {
         Write-Host '  L  Open Diagnostics'
         Write-Host '  Q  Quit'
         $choice=(Read-Host 'Choose an option').Trim().ToUpperInvariant()
+        } else {$choice=$nextChoice;$nextChoice=''}
         if ($choice -eq 'Q') {break}
         try {
             if ($choice -eq 'L') {Invoke-Item -LiteralPath $logs;continue}
@@ -267,14 +315,21 @@ try {
             if ($choice -notin @('1','2','3','5','6')) {continue}
             $script:git=Find-Git
             $env:PATH=(Split-Path -Parent $script:git)+';'+$env:PATH
+            if ($choice -in @('1','2','5') -and (Sync-BeforeBuild)) {$restartChoice=$choice;break}
             switch ($choice) {
                 '1' {$package=Build-Package;Publish $package}
                 '2' {$package=Build-Package;Invoke-Item -LiteralPath $package}
                 '3' {Publish}
-                '5' {Assert-Closed; $head=Assert-Checkout;Run-Prep @('-Action','Embed');Save-Generated $head}
+                '5' {Assert-Closed; $head=Assert-Checkout -ForBuild;Run-Prep @('-Action','Embed');Save-Generated $head}
                 '6' {$package=Package-Existing;Invoke-Item -LiteralPath $package}
             }
         } catch {Say ("FAILED: "+$_.Exception.Message) Red; if ($_.ScriptStackTrace) {Add-Content -LiteralPath $sessionLog -Value $_.ScriptStackTrace}}
         Write-Host "Diagnostics: $logs"
     }
 } finally {if ($locked) {$mutex.ReleaseMutex()};$mutex.Dispose()}
+if ($restartChoice) {
+    $arguments=@('-NoLogo','-NoProfile','-ExecutionPolicy','Bypass','-File',$PSCommandPath,'-InitialChoice',$restartChoice)
+    if ($IdePath) {$arguments+=@('-IdePath',$IdePath)}
+    & 'powershell.exe' @arguments
+    exit $LASTEXITCODE
+}

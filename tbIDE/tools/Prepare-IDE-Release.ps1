@@ -70,40 +70,7 @@ try {
         if ((Get-FileHash -LiteralPath $updater -Algorithm SHA256).Hash -ne $before) {throw 'Updater changed during self-tests.'}
         if (Test-Path -LiteralPath $pendingSync) {
             $request=Get-Content -LiteralPath $pendingSync -Raw | ConvertFrom-Json
-            if ($request.schema -ne 1 -or $request.addinVersion -ne $config.addinVersion -or $request.updaterVersion -ne $config.updaterVersion -or $request.expectedProjectBlob -notmatch '^[0-9a-f]{40}        Invoke-NodeChecked -Arguments @('tools/validate-tabview-projects.mjs')
-        Invoke-NodeChecked -Arguments @('--test','tests/phase1-bundle.test.mjs','tests/phase1-contracts.test.mjs')
-        Write-Host 'SUCCESS: Verified updater and themes embedded in canonical add-in.'
-        Write-Host 'Reopen tbIDE\tbUI3IDE\tbUI3IDE.twinproj and build BOTH architectures.'
-        Write-Host 'Review and commit the changed project, mirrors and helper through GitHub Desktop.'
-        Write-Host 'No native no-context startup or live installation acceptance is claimed.'
-    } else {
-        $dll32=Join-Path $root 'tbIDE\tbUI3IDE\Build\win32\tbUI3IDE.dll'
-        $dll64=Join-Path $root 'tbIDE\tbUI3IDE\Build\win64\tbUI3IDE.dll'
-        foreach ($dll in @($dll32,$dll64)) {if (-not (Test-Path -LiteralPath $dll -PathType Leaf)) {throw "Build both add-in architectures first. Missing: $dll"}}
-        $version=[string]$config.addinVersion
-        if ($version -notmatch '^0\.\d+\.\d+\.\d+$') {throw 'This convenience launcher is for development prereleases only.'}
-        $output=Join-Path $root ('Build\Release-'+$version)
-        if (Test-Path -LiteralPath $output) {$output+='-'+(Get-Date -Format 'yyyyMMdd-HHmmss-fff')}
-        & (Join-Path $PSScriptRoot 'package-updater-release.ps1') -Win32Dll $dll32 -Win64Dll $dll64 -UpdaterExe $updater -MinIdeBuild ([int]$config.minIdeBuild) -MaxIdeBuild ([int]$config.maxIdeBuild) -Channel development -Output $output
-        foreach ($name in @("tbUI3IDE-$version.zip",'tbUI3-update.json','SHA256SUMS.txt')) {
-            if (-not (Test-Path -LiteralPath (Join-Path $output $name) -PathType Leaf)) {throw "Expected asset missing: $name"}
-        }
-        Write-Host "SUCCESS: Verified development release assets: $output"
-        Write-Host "Tag: tbUI3IDE-v$version (development prerelease). Nothing published."
-        Start-Process explorer.exe -ArgumentList ('"'+$output+'"')
-    }
-    $exitCode=0
-} catch {
-    Write-Host ('FAILED: '+$_.Exception.Message) -ForegroundColor Red
-    if ($_.InvocationInfo.PositionMessage) {Write-Host $_.InvocationInfo.PositionMessage}
-    if ($_.ScriptStackTrace) {Write-Host $_.ScriptStackTrace}
-    Write-Host 'Inspect the log before continuing. No release was published.'
-} finally {
-    Write-Host "Log: $log"
-    if ($transcribing) {Stop-Transcript | Out-Null}
-}
-exit $exitCode
-) {throw 'Invalid pending add-in assembly request.'}
+            if ($request.schema -ne 1 -or $request.addinVersion -ne $config.addinVersion -or $request.updaterVersion -ne $config.updaterVersion -or $request.expectedProjectBlob -notmatch '^[0-9a-f]{40}$') {throw 'Invalid pending add-in assembly request.'}
             $packed='tbIDE/tbUI3IDE/tbUI3IDE.twinproj'
             $actual=(& git hash-object -- $packed).Trim()
             if ($LASTEXITCODE -ne 0 -or $actual -ne $request.expectedProjectBlob) {throw 'Canonical add-in changed since the pending assembly request. Do not overwrite it; reconcile the source first.'}

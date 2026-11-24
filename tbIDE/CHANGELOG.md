@@ -1,5 +1,9 @@
 # Changelog: tbIDE (WinUI 3 look for the twinBASIC IDE)
 
+## 2026-11-24 - Shared Toolkit buttons in IDE Options (0.4.0.14 source; pending assembly)
+
+Owner's BETA 1045 screenshot identified four native-looking outlined action buttons in the tbUI3 Updates category. The Options row factory was replacing the shared Button class with the native IDE tbis-control class. The four actions now keep the shared Toolkit Button class in isolated shadow roots with the existing pinned Master CSS, shared theme/accent propagation, and shared Button metrics and states. Native settings navigation, row layout and callbacks are unchanged. Outer CSS provides host geometry only; the shared stylesheet is reused where constructable stylesheets are available and otherwise installed locally. Updated the DOM fixture and added theme, isolation, rebuild and dispatch coverage. The source/mirror changes are staged for the guarded add-in-only assembly; no native helper change, build or release is claimed.
+
 ## 2026-11-24 - Differing local files no longer block an update (updater 0.2.0.7 source)
 
 Owner report: updating a BETA 1044 test install stopped with "Preserved a vendor-name collision: ...\ide\fin-hypergrid.min.js" and only offered Retry. That file is new in BETA 1045 (not in the 1044 archive), so the 1044 folder must have kept it from an earlier 1045 install. Owner requirement (documented by Quill in INSTALLATION_MANAGER_SPEC and ROADMAP): an update fails only when the official release can't be obtained or installed safely.

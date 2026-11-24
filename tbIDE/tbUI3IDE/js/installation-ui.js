@@ -2,7 +2,7 @@
  'use strict';
  const d=env.document,w=env.window,queue=[],pending=new Set();
  let state=env.state,toastHost,settingsDialog,shadow,content,welcomeShell,welcome,confirmation,confirmationContent,disposed=false,serial=0,previousFocus,repairDecision;
- let autoPending=!!env.showWelcome,painted=!autoPending;
+ let autoPending=!!env.showWelcome,painted=!autoPending,optionSheet;
  const wizardActions=new Set(['choose-theme','choose-toolbar','installation-preferences','welcome-record','bootstrap-retry','repair-resource']);
  function node(tag,text,parent,className){const n=d.createElement(tag);if(text!==undefined)n.textContent=text;if(className)n.className=className;if(parent)parent.append(n);return n;}
  function button(text,action,parent,accent=false){const n=node('button',text,parent,'button'+(accent?' button--accent':''));n.type='button';n.onclick=action;return n;}
@@ -17,7 +17,7 @@
   const keys=['light3','light2','light1','','dark1','dark2','dark3'];
   if(Array.isArray(state.accent)&&state.accent.length===7)state.accent.forEach((color,i)=>{if(/^#[0-9a-f]{6}$/i.test(color))element.style.setProperty('--win-accent'+(keys[i]?'-'+keys[i]:''),color);});
  }
- function syncTheme(){syncFrame();if(toastHost)tokens(toastHost);if(shadow)tokens(shadow.host);if(welcomeShell)tokens(welcomeShell);if(confirmationContent){tokens(confirmation);tokens(confirmationContent.getRootNode().host);}if(settingsDialog)tokens(settingsDialog);}
+ function syncTheme(){syncFrame();if(toastHost)tokens(toastHost);if(shadow)tokens(shadow.host);if(welcomeShell)tokens(welcomeShell);if(confirmationContent){tokens(confirmation);tokens(confirmationContent.getRootNode().host);}if(settingsDialog)tokens(settingsDialog);for(const host of d.querySelectorAll('.tbUI3OptionButtonHost'))tokens(host);}
  // :root[data-theme=...] must become :host([data-theme=...]); a bare :host[...] never matches, which left these views light.
  function hostCss(css){return css.replace(/(?:html)?:root(\[[^\]]*\])/g,':host($1)').replace(/(?:html)?:root/g,':host');}
  function modal(className){const dialog=node('dialog',undefined,d.body,className);dialog.addEventListener('keydown',e=>e.stopPropagation());return dialog;}
@@ -166,6 +166,17 @@
   ['Update preferences','Automatic daily checks and restarting twinBASIC after an update.','Open preferences',()=>request('update-settings')],
   ['Resource repair','Verify or restore the bundled updater and WinUI3 themes.','Open repair',()=>showSettings()],
   ['Welcome to tbUI3IDE','Revisit theme, toolbar and update choices.','Open Welcome',()=>showWelcome()]];
+ // The native IDE owns the settings layout, not our action button presentation.
+ function optionButton(label,action,parent){
+  const host=node('div',undefined,parent,'tbUI3OptionButtonHost'),root=host.attachShadow({mode:'open'});
+  let adopted=false;
+  if('adoptedStyleSheets' in root&&typeof w.CSSStyleSheet==='function'&&typeof w.CSSStyleSheet.prototype.replaceSync==='function'){
+   try{if(!optionSheet){const sheet=new w.CSSStyleSheet();sheet.replaceSync(hostCss(env.styles));optionSheet=sheet;}root.adoptedStyleSheets=[optionSheet];adopted=true;}catch{}
+  }
+  if(!adopted){const style=node('style',undefined,root);style.textContent=hostCss(env.styles);}
+  tokens(host);
+  button(label,action,root).classList.add('tbUI3OptionButton');
+ }
  function attach(){
   const nav=d.querySelector('.tbis-settingsNavList'),pane=d.querySelector('.tbis-settingsPane');
   if(!nav||!pane)return;
@@ -178,7 +189,7 @@
   if(!section){
    section=node('div',undefined,pane,'tbis-groupSection tbUI3InstallationOptions');section.dataset.groupId='tbUI3Updates';node('h2','tbUI3 Updates',section,'tbis-groupTitle');
    const rows=node('div',undefined,section,'tbis-groupRows');
-   for(const [name,description,label,action]of optionRows){const row=node('div',undefined,rows,'tbis-optionRow tbUI3OptionActions'),labels=node('div',undefined,row,'tbis-optionLabelCol');node('div',name,labels,'tbis-optionName');node('div',description,labels,'tbis-optionDesc');const value=node('div',undefined,row,'tbis-optionValueCol');button(label,action,value).className='tbis-control tbUI3OptionButton';}
+   for(const [name,description,label,action]of optionRows){const row=node('div',undefined,rows,'tbis-optionRow tbUI3OptionActions'),labels=node('div',undefined,row,'tbis-optionLabelCol');node('div',name,labels,'tbis-optionName');node('div',description,labels,'tbis-optionDesc');const value=node('div',undefined,row,'tbis-optionValueCol');optionButton(label,action,value);}
   }
   // Visible with All (no filter) or when its own category is selected; a filter never matches it.
   const selected=item?.classList.contains('tbis-navItemSelected'),all=!filtered&&nav.querySelector('.tbis-navItemSelected')?.textContent.startsWith('All');

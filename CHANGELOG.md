@@ -1,5 +1,9 @@
 # Changelog
 
+## 2026-11-24 - Correct IDE Options Button presentation
+
+Replaced native-painted tbUI3 Updates action buttons with the shared Toolkit Button class in isolated roots; add-in 0.4.0.14 source is staged for guarded assembly. See [IDE changelog](tbIDE/CHANGELOG.md). No updater change or release.
+
 ## 2026-11-24 - Interactive development draft recovery
 
 The IDE publisher opens conflicting drafts for owner review and resumes after discard or handles manual publication without replacing an existing release/tag. See the [IDE changelog](tbIDE/CHANGELOG.md). No shipped binary or release changes.

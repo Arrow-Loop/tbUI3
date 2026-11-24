@@ -67,7 +67,11 @@ Private Class UpdaterController
     End Function
     Private Function Eval(ByVal expression As String) As String
         If mWindow Is Nothing Then Set mWindow = mHost.ToolWindows.Add("tbUI3 updates", "tbUI3UpdaterHost")
-        Return CStr(mWindow.RootDomElement.Properties.ownerDocument.defaultView.eval(expression))
+        ' A script whose last statement yields no value comes back as Null or Empty; treat both as no text.
+        Dim result As Variant
+        result = mWindow.RootDomElement.Properties.ownerDocument.defaultView.eval(expression)
+        If IsNull(result) Or IsEmpty(result) Then Return ""
+        Return CStr(result)
     End Function
     Private Function ReadText(ByVal path As String) As String
         If Not UExists(path) Then Return ""
@@ -165,7 +169,7 @@ Private Class UpdaterController
             ",restart:" & IIf(JBool(settings, "restart"), "true", "false") & ",deferredUntil:" & Trim$(Str$(JD(settings, "deferredUntil"))) & _
             ",checkDue:" & IIf(JT(settings, "lastCheck") <> Format$(Date, "yyyy-mm-dd"), "true", "false") & _
             ",installationSettings:function(){window.__tbUI3Installation.show('settings');},closeIde:function(){closeProjectSafely(function(){window.__tbUI3UpdateExit=function(){hostAppObject.Exit('ignore');};});}});'updater installed'"
-        Eval MResourceText("tbUI3-welcome.js")
+        Eval MResourceText("tbUI3-welcome.js") & vbLf & ";'welcome wizard loaded'"
         Eval "window.__tbUI3InstallationFactory=" & MResourceText("tbUI3-installation.js") & ";'installation factory loaded'"
         Eval "window.__tbUI3Installation=window.__tbUI3InstallationFactory({document:document,window:window,state:" & Snapshot().Encode() & _
             ",styles:" & JQuote(MResourceText("tbUI3-installation.css")) & ",dialogStyles:" & JQuote(MResourceText("tbUI3-dialog.css")) & _

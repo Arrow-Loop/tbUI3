@@ -1,5 +1,9 @@
 # Changelog: tbIDE (WinUI 3 look for the twinBASIC IDE)
 
+## 2026-11-24 - Add-in 0.4.0.2 fixes the repeating "Invalid use of Null" updater error
+
+On BETA 1043, add-in 0.4.0.1 printed "[tbUI3 updater] Invalid use of Null" to the Debug Console every second and the updates and Welcome UI never appeared. Cause (inferred from source, not reproduced natively): UpdaterController.InitializeUI evaluates tbUI3-welcome.js, whose last statement yields no value, and Eval passed that Null straight to CStr. InitializeUI therefore stopped before marking itself installed and was retried on every poll. Eval now returns an empty string for Null or Empty results, and the welcome script evaluation ends with a string result. Add-in version bumped to 0.4.0.2 through phase1-config.json and sync-phase1-projects.mjs; the updater stays 0.2.0.1 because only its generated Phase1Config.AddinVersion constant changed. Pending: rebuild Updater.exe, re-embed it with prepare-phase1-bundle, rebuild both DLLs and confirm on 1043. Until then test 134 fails on the stale embedded bundle; the other 243 tests pass.
+
 ## 2026-11-23 - Add-in 0.4.0.1 and updater 0.2.0.1 accept BETA 1043 to 1045
 
 Shane chose to widen the IDE compatibility range so the updater can be tested by updating a BETA 1043 installation to 1045. `phase1-config.json` now sets minIdeBuild 1043 and maxIdeBuild 1045, with add-in 0.4.0.1 and updater 0.2.0.1; `sync-phase1-projects.mjs` regenerated both canonical projects. The load gate message now names the supported range and the detected build instead of a hard-coded 1045. The add-in's IDE hooks were last tuned against 1045, so presentation on 1043 is unverified. Pending: rebuild Updater.exe, re-embed it with prepare-phase1-bundle, rebuild both DLLs. Until then phase1-bundle tests 134 and 136 fail on the stale embedded updater; the other 242 tests pass.

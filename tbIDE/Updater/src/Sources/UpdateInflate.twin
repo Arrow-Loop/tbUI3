@@ -1,28 +1,59 @@
 ' RFC 1951 raw DEFLATE decoder. Streaming input/output; only a 32-KiB history is retained.
 ' Private implementation, deliberately supports ZIP methods 0 and 8 only.
+' Performance: Huffman codes up to 10 bits decode through a 1024-entry lookup table, bits come from a
+' buffered Long with precomputed power/mask tables (no floating-point ^), and CRC32 runs per 64-KiB flush.
+' Every bound, size, CRC and exact-consumption check of the original decoder is retained.
 Private Class UpdateInflate
     Private mInput As LongPtr
     Private mOutput As LongPtr
     Private mRemaining As Long
-    Private mIn(0 To 65535) As Byte
+    Private mIn() As Byte
     Private mInSize As Long
     Private mInPos As Long
     Private mBits As Long
     Private mBitCount As Long
+    Private mOverrun As Long
     Private mHistory(0 To 32767) As Byte
-    Private mOut(0 To 65535) As Byte
+    Private mOut() As Byte
     Private mOutCount As Long
     Private mTotal As Long
     Private mLimit As Long
     Private mCrc As Long
     Private mCrcTable(0 To 255) As Long
+    Private mPow(0 To 30) As Long
+    Private mMask(0 To 30) As Long
+    Private mOrder(0 To 18) As Long
+    Private mLengthBase(0 To 28) As Long
+    Private mLengthExtra(0 To 28) As Long
+    Private mDistanceBase(0 To 29) As Long
+    Private mDistanceExtra(0 To 29) As Long
     Private Type HuffmanTree
+        fast(0 To 1023) As Long
         counts(0 To 15) As Long
         symbols(0 To 319) As Long
     End Type
 
+    Private Sub Class_Initialize()
+        Dim i As Long, values As Variant
+        ReDim mIn(0 To 65535): ReDim mOut(0 To 65535)
+        mPow(0) = 1: mMask(0) = 0
+        For i = 1 To 30: mPow(i) = mPow(i - 1) * 2: mMask(i) = mPow(i) - 1: Next
+        ' RFC order has 19 symbols. Use the explicit list rather than inferred ordering.
+        values = Array(16,17,18,0,8,7,9,6,10,5,11,4,12,3,13,2,14,1,15)
+        For i = 0 To 18: mOrder(i) = values(i): Next
+        values = Array(3,4,5,6,7,8,9,10,11,13,15,17,19,23,27,31,35,43,51,59,67,83,99,115,131,163,195,227,258)
+        For i = 0 To 28: mLengthBase(i) = values(i): Next
+        values = Array(0,0,0,0,0,0,0,0,1,1,1,1,2,2,2,2,3,3,3,3,4,4,4,4,5,5,5,5,0)
+        For i = 0 To 28: mLengthExtra(i) = values(i): Next
+        values = Array(1,2,3,4,5,7,9,13,17,25,33,49,65,97,129,193,257,385,513,769,1025,1537,2049,3073,4097,6145,8193,12289,16385,24577)
+        For i = 0 To 29: mDistanceBase(i) = values(i): Next
+        values = Array(0,0,0,0,1,1,2,2,3,3,4,4,5,5,6,6,7,7,8,8,9,9,10,10,11,11,12,12,13,13)
+        For i = 0 To 29: mDistanceExtra(i) = values(i): Next
+        InitCrc
+    End Sub
+
     Public Sub Extract(ByVal archive As String, ByVal offset As Long, ByVal packed As Long, ByVal expanded As Long, ByVal method As Long, ByVal crc As Double, ByVal target As String)
-        Dim inputOpen As Boolean, outputOpen As Boolean
+        Dim inputOpen As Boolean, outputOpen As Boolean, i As Long
         On Error GoTo Failed
         If UExists(target) Then UFail "Refusing to overwrite staged file."
         UDirectory UParent(target)
@@ -30,13 +61,22 @@ Private Class UpdateInflate
         USeekStream mInput, offset
         mOutput = UOpenNew(target): outputOpen = True
         mRemaining = packed: mLimit = expanded: mTotal = 0: mOutCount = 0
-        mInSize = 0: mInPos = 0: mBits = 0: mBitCount = 0: mCrc = -1
-        InitCrc
+        mInSize = 0: mInPos = 0: mBits = 0: mBitCount = 0: mOverrun = 0: mCrc = -1
         Select Case method
             Case 0
                 If packed <> expanded Then UFail "Invalid stored ZIP entry."
-                Do While mTotal < expanded: Emit ReadByte(): Loop
-            Case 8: Inflate
+                Do While mRemaining > 0
+                    FillInput
+                    For i = 0 To mInSize - 1
+                        mOut(mOutCount) = mIn(i): mOutCount = mOutCount + 1
+                        If mOutCount = 65536 Then FlushOutput
+                    Next
+                    mInPos = mInSize: mTotal = mTotal + mInSize
+                Loop
+            Case 8
+                Inflate
+                ' Bits read ahead past the final block may only be the final byte's padding.
+                If mOverrun > mBitCount Or mBitCount - mOverrun > 7 Then UFail "ZIP stream size mismatch."
             Case Else: UFail "Unsupported ZIP compression method."
         End Select
         If mTotal <> expanded Or mRemaining <> 0 Or mInPos <> mInSize Then UFail "ZIP stream size mismatch."
@@ -69,45 +109,49 @@ Private Class UpdateInflate
             mCrcTable(i) = value
         Next
     End Sub
-    Private Function ReadByte() As Long
-        If mInPos = mInSize Then
-            mInSize = mRemaining
-            If mInSize > 65536 Then mInSize = 65536
-            If mInSize = 0 Then UFail "Truncated DEFLATE stream."
-            Dim part() As Byte: ReDim part(0 To mInSize - 1)
-            If UReadBuffer(mInput, VarPtr(part(0)), mInSize) <> mInSize Then UFail "Truncated ZIP data."
-            Dim i As Long
-            For i = 0 To mInSize - 1: mIn(i) = part(i): Next
-            mRemaining = mRemaining - mInSize: mInPos = 0
-        End If
-        ReadByte = mIn(mInPos): mInPos = mInPos + 1
-    End Function
-    Private Function Bits(ByVal count As Long) As Long
-        Do While mBitCount < count
-            mBits = mBits + ReadByte() * CLng(2 ^ mBitCount): mBitCount = mBitCount + 8
-        Loop
-        Bits = mBits And (CLng(2 ^ count) - 1)
-        mBits = mBits \ CLng(2 ^ count): mBitCount = mBitCount - count
-    End Function
-    Private Sub Emit(ByVal value As Long)
-        If mTotal >= mLimit Then UFail "DEFLATE expands beyond declared size."
-        mHistory(mTotal And 32767) = CByte(value)
-        mOut(mOutCount) = CByte(value): mOutCount = mOutCount + 1: mTotal = mTotal + 1
-        Dim shifted As Long = (mCrc And &H7FFFFFFF) \ 256
-        If mCrc < 0 Then shifted = shifted Or &H800000
-        mCrc = shifted Xor mCrcTable((mCrc Xor value) And 255)
-        If mOutCount = 65536 Then FlushOutput
+    Private Sub FillInput()
+        mInSize = mRemaining
+        If mInSize > 65536 Then mInSize = 65536
+        If mInSize = 0 Then UFail "Truncated DEFLATE stream."
+        If UReadBuffer(mInput, VarPtr(mIn(0)), mInSize) <> mInSize Then UFail "Truncated ZIP data."
+        mRemaining = mRemaining - mInSize: mInPos = 0
     End Sub
+    ' Keeps at least 16 bits buffered (at most 23, so the Long never goes negative). Past the end of the
+    ' entry, zero bits are counted in mOverrun; Extract rejects a stream that actually consumed them.
+    Private Sub Refill()
+        Do While mBitCount < 16
+            If mInPos = mInSize Then
+                If mRemaining > 0 Then FillInput
+            End If
+            If mInPos < mInSize Then
+                mBits = mBits Or (CLng(mIn(mInPos)) * mPow(mBitCount)): mInPos = mInPos + 1
+            Else
+                mOverrun = mOverrun + 8
+                If mOverrun > 256 Then UFail "Truncated DEFLATE stream."
+            End If
+            mBitCount = mBitCount + 8
+        Loop
+    End Sub
+    ' Callers Refill first; count is at most 16.
+    Private Function Take(ByVal count As Long) As Long
+        Take = mBits And mMask(count)
+        mBits = mBits \ mPow(count): mBitCount = mBitCount - count
+    End Function
     Private Sub FlushOutput()
         BCheckCancellation
         If mOutCount = 0 Then Exit Sub
-        Dim part() As Byte: ReDim part(0 To mOutCount - 1)
-        Dim i As Long
-        For i = 0 To mOutCount - 1: part(i) = mOut(i): Next
-        UWriteBuffer mOutput, VarPtr(part(0)), mOutCount: mOutCount = 0
+        Dim i As Long, value As Long = mCrc, shifted As Long
+        For i = 0 To mOutCount - 1
+            shifted = (value And &H7FFFFFFF) \ 256
+            If value < 0 Then shifted = shifted Or &H800000
+            value = shifted Xor mCrcTable((value Xor CLng(mOut(i))) And 255)
+        Next
+        mCrc = value
+        UWriteBuffer mOutput, VarPtr(mOut(0)), mOutCount: mOutCount = 0
     End Sub
     Private Sub Build(ByRef tree As HuffmanTree, ByRef lengths() As Long, ByVal count As Long)
-        Dim i As Long, n As Long, remaining As Long = 1, offsets(0 To 15) As Long
+        Dim i As Long, n As Long, remaining As Long = 1, offsets(0 To 15) As Long, nextCode(0 To 15) As Long
+        Dim code As Long, reversed As Long, j As Long, k As Long, entry As Long
         For i = 0 To 15: tree.counts(i) = 0: Next
         For i = 0 To count - 1
             n = lengths(i)
@@ -118,42 +162,63 @@ Private Class UpdateInflate
             remaining = remaining * 2 - tree.counts(i)
             If remaining < 0 Then UFail "Oversubscribed Huffman tree."
         Next
+        tree.counts(0) = 0
         offsets(1) = 0
         For i = 1 To 14: offsets(i + 1) = offsets(i) + tree.counts(i): Next
+        For i = 1 To 15: code = (code + tree.counts(i - 1)) * 2: nextCode(i) = code: Next
+        For i = 0 To 1023: tree.fast(i) = 0: Next
         For i = 0 To count - 1
             n = lengths(i)
             If n <> 0 Then
                 tree.symbols(offsets(n)) = i: offsets(n) = offsets(n) + 1
+                code = nextCode(n): nextCode(n) = code + 1
+                If n <= 10 Then
+                    ' DEFLATE stores Huffman codes most-significant bit first; the bit buffer is LSB first.
+                    reversed = 0
+                    For k = 1 To n: reversed = reversed * 2 + (code And 1): code = code \ 2: Next
+                    entry = i * 16 + n
+                    For j = reversed To 1023 Step mPow(n): tree.fast(j) = entry: Next
+                End If
             End If
         Next
     End Sub
     Private Function Decode(ByRef tree As HuffmanTree) As Long
+        Refill
+        Dim entry As Long = tree.fast(mBits And 1023), n As Long
+        If entry <> 0 Then
+            n = entry And 15
+            mBits = mBits \ mPow(n): mBitCount = mBitCount - n
+            Return entry \ 16
+        End If
+        ' Codes longer than 10 bits (or invalid prefixes) use the canonical bit-by-bit walk.
         Dim code As Long, first As Long, index As Long, length As Long, count As Long
         For length = 1 To 15
-            code = code * 2 + Bits(1): count = tree.counts(length)
-            If code >= first And code - first < count Then Return tree.symbols(index + code - first)
-            index = index + count: first = (first + count) * 2
+            code = code Or (mBits And 1): mBits = mBits \ 2: mBitCount = mBitCount - 1
+            count = tree.counts(length)
+            If code - count < first Then Return tree.symbols(index + code - first)
+            index = index + count: first = (first + count) * 2: code = code * 2
         Next
         UFail "Invalid DEFLATE Huffman code."
     End Function
     Private Sub Inflate()
-        Dim final As Long, mode As Long, i As Long, j As Long, n As Long, inverse As Long
+        Dim final As Long, mode As Long, i As Long, j As Long, n As Long, inverse As Long, value As Byte
         Dim literal As HuffmanTree, distance As HuffmanTree, codes As HuffmanTree
         Dim lengths(0 To 319) As Long, distLengths(0 To 31) As Long, codeLengths(0 To 18) As Long
-        Dim order As Variant
-        ' RFC order has 19 symbols. Use the explicit list rather than inferred ordering.
-        order = Array(16,17,18,0,8,7,9,6,10,5,11,4,12,3,13,2,14,1,15)
-        Dim lengthBase As Variant = Array(3,4,5,6,7,8,9,10,11,13,15,17,19,23,27,31,35,43,51,59,67,83,99,115,131,163,195,227,258)
-        Dim lengthExtra As Variant = Array(0,0,0,0,0,0,0,0,1,1,1,1,2,2,2,2,3,3,3,3,4,4,4,4,5,5,5,5,0)
-        Dim distanceBase As Variant = Array(1,2,3,4,5,7,9,13,17,25,33,49,65,97,129,193,257,385,513,769,1025,1537,2049,3073,4097,6145,8193,12289,16385,24577)
-        Dim distanceExtra As Variant = Array(0,0,0,0,1,1,2,2,3,3,4,4,5,5,6,6,7,7,8,8,9,9,10,10,11,11,12,12,13,13)
         Do
-            final = Bits(1): mode = Bits(2)
+            Refill
+            final = Take(1): mode = Take(2)
             If mode = 0 Then
-                mBits = 0: mBitCount = 0
-                n = Bits(16): inverse = Bits(16)
+                Take mBitCount Mod 8
+                Refill: n = Take(16)
+                Refill: inverse = Take(16)
                 If (n Xor &HFFFF&) <> inverse Then UFail "Invalid stored DEFLATE block."
-                For i = 1 To n: Emit Bits(8): Next
+                If mTotal + n > mLimit Then UFail "DEFLATE expands beyond declared size."
+                For i = 1 To n
+                    Refill: value = CByte(Take(8))
+                    mHistory(mTotal And 32767) = value
+                    mOut(mOutCount) = value: mOutCount = mOutCount + 1: mTotal = mTotal + 1
+                    If mOutCount = 65536 Then FlushOutput
+                Next
             Else
                 If mode = 3 Then UFail "Reserved DEFLATE block type."
                 If mode = 1 Then
@@ -168,10 +233,11 @@ Private Class UpdateInflate
                     For i = 0 To 31: distLengths(i) = 5: Next
                     Build literal, lengths, 288: Build distance, distLengths, 32
                 Else
-                    Dim hlit As Long = Bits(5) + 257, hdist As Long = Bits(5) + 1, hclen As Long = Bits(4) + 4
+                    Refill
+                    Dim hlit As Long = Take(5) + 257, hdist As Long = Take(5) + 1, hclen As Long = Take(4) + 4
                     If hlit > 286 Or hdist > 32 Then UFail "Invalid dynamic DEFLATE counts."
                     For i = 0 To 18: codeLengths(i) = 0: Next
-                    For i = 0 To hclen - 1: codeLengths(order(i)) = Bits(3): Next
+                    For i = 0 To hclen - 1: Refill: codeLengths(mOrder(i)) = Take(3): Next
                     Build codes, codeLengths, 19
                     i = 0
                     Do While i < hlit + hdist
@@ -179,17 +245,18 @@ Private Class UpdateInflate
                         If n <= 15 Then
                             lengths(i) = n: i = i + 1
                         Else
-                            Dim repeatCount As Long, value As Long = 0
+                            Dim repeatCount As Long, repeated As Long = 0
+                            Refill
                             Select Case n
                                 Case 16
                                     If i = 0 Then UFail "Invalid initial DEFLATE repetition."
-                                    value = lengths(i - 1): repeatCount = Bits(2) + 3
-                                Case 17: repeatCount = Bits(3) + 3
-                                Case 18: repeatCount = Bits(7) + 11
+                                    repeated = lengths(i - 1): repeatCount = Take(2) + 3
+                                Case 17: repeatCount = Take(3) + 3
+                                Case 18: repeatCount = Take(7) + 11
                                 Case Else: UFail "Invalid DEFLATE length symbol."
                             End Select
                             If i + repeatCount > hlit + hdist Then UFail "DEFLATE repetition exceeds tree."
-                            For j = 1 To repeatCount: lengths(i) = value: i = i + 1: Next
+                            For j = 1 To repeatCount: lengths(i) = repeated: i = i + 1: Next
                         End If
                     Loop
                     If lengths(256) = 0 Then UFail "Missing end-of-block code."
@@ -200,15 +267,28 @@ Private Class UpdateInflate
                     n = Decode(literal)
                     If n = 256 Then Exit Do
                     If n < 256 Then
-                        Emit n
+                        If mTotal >= mLimit Then UFail "DEFLATE expands beyond declared size."
+                        value = CByte(n)
+                        mHistory(mTotal And 32767) = value
+                        mOut(mOutCount) = value: mOutCount = mOutCount + 1: mTotal = mTotal + 1
+                        If mOutCount = 65536 Then FlushOutput
                     Else
                         If n > 285 Then UFail "Reserved DEFLATE length code."
-                        Dim length As Long = lengthBase(n - 257) + Bits(lengthExtra(n - 257))
+                        Refill
+                        Dim length As Long = mLengthBase(n - 257) + Take(mLengthExtra(n - 257))
                         Dim ds As Long = Decode(distance)
                         If ds > 29 Then UFail "Reserved DEFLATE distance code."
-                        Dim back As Long = distanceBase(ds) + Bits(distanceExtra(ds))
+                        Refill
+                        Dim back As Long = mDistanceBase(ds) + Take(mDistanceExtra(ds))
                         If back > mTotal Or back > 32768 Then UFail "DEFLATE distance precedes output."
-                        For i = 1 To length: Emit mHistory((mTotal - back) And 32767): Next
+                        If mTotal + length > mLimit Then UFail "DEFLATE expands beyond declared size."
+                        Dim source As Long = mTotal - back
+                        For i = 1 To length
+                            value = mHistory(source And 32767): source = source + 1
+                            mHistory(mTotal And 32767) = value
+                            mOut(mOutCount) = value: mOutCount = mOutCount + 1: mTotal = mTotal + 1
+                            If mOutCount = 65536 Then FlushOutput
+                        Next
                     End If
                 Loop
             End If

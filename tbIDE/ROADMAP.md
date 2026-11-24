@@ -1,127 +1,25 @@
 # Roadmap: tbUI3 IDE
 
-## 2026-11-23 - BETA 1045 add-in compilation corrections
+## Immediate priority: Phase 1 native acceptance (2026-11-23)
 
-Addressed the three reported diagnostics: LoadResData is supplied by the VB forms runtime, which the Standard DLL does not reference. Added a project-local resource compatibility reader using pointer-width-safe Windows APIs, module identity from a function address in this DLL, uppercase resource names, bounded sizes and typed Byte() copying. Both existing provisioning/text callers now resolve without adding a forms runtime dependency. Replaced the rejected nested Hex$ expression in InstalledThemeCatalog with explicit two-nibble formatting and the same nonnegative half-up channel rounding.
+The updater and first-run add-in source, including the accepted embedded helper and themes, are implemented. The updater has recorded 58/58 native self-tests and successful compiled no-context startup. These completed items belong in CHANGELOG, not the pending-work list. **The next gate is native Win32/Win64 add-in compilation and compiled-resource verification, followed by live acceptance.**
 
-The canonical add-in and mirror are synchronized. **243 automated Node tests pass**, with **140 exact mirrors**, IDs/CRLF/hex checks and generator idempotence. Regression contracts cover DLL module ownership and typed resource copying. The accepted Updater.exe, its canonical project and all embedded payload/theme bytes are unchanged; only the add-in needs rebuilding in Win32 and Win64. Native compilation and DLL bootstrap acceptance remain Shane's checks. No GUI automation, Wizard prototype edits, release or main merge.
+- Follow [the current Phase 1 handoff](PHASE1_HANDOFF.md) in order: verify both DLL payloads; test DLL-only offline bootstrap and repairs; confirm shared/local loader behavior, integrated Welcome/settings, per-installation isolation, release checking/staging, update consent, preservation, rollback/recovery, detached self-update and protected-folder consent. Include Windows theme/accent, DPI and missing Runtime behavior. Use disposable installations/profile state and record evidence.
+- Ship the approved combined Phase 1 only after the native gates and verified prerelease packaging succeed. Keep official twinBASIC IDE in-place updates within scope alongside add-in, theme and resource-pack updates. Do not publish or merge to main without authorization.
+- Restore the visible channel selector only when a genuine stable twinBASIC channel exists. Native theme enumeration is implemented in source; verify actual loader precedence, inheritance and exact-name selection in the IDE.
+- Consider optional control-package distribution once it has published release assets (never silently rewrite embedded packages), working-directory/launch-context capture where supported, and automated release CI after native acceptance.
 
-## 2026-11-23 - Real updater and themes embedded in the add-in
+## Deferred installation manager milestones
 
-Completed the separately authorized Phase 1 embedding pass: canonical tbUI3IDE 0.4.0.0 and its synchronized mirrors now contain Shane's committed Win32 Updater 0.2.0.0 (2,117,120 bytes, SHA-256 677d86b4a9fe368282e4c1464e0ad549e5309b838f2929570c13e4803dd2ee68), both exact WinUI3 themes and a version/hash/protocol inventory. The same project supplies both DLL architectures. Existing offline provisioning/repair and shared-helper launch services consume these resources; no Wizard view changes. Updater provenance: commit 03904cc, source 1225eb2, 58/58 native tests and compiled startup confirmed in the recorded incoming diagnostics.
+[Approved specification](INSTALLATION_MANAGER_SPEC.md) defines the full architecture, constraints and phase boundaries. Phase 2: alongside/archive strategies, configurable cross-drive archive destinations and custom-content routing (archive/new/both). Phase 3: installation discovery/reorganization, optional shortcut management and advanced archived-add-in compatibility after actual loader behavior is established. Do not expand the first release to include these.
 
-Packaging now checks the real updater's embedded UI/fixtures against its canonical project, and PE resource lookup recognizes twinBASIC's uppercase names while rejecting conflicting aliases/languages. **241 Node tests and 24 isolated Wizard source tests pass**, plus **139 exact mirrors**, IDs/CRLF/hex checks and bundle/generator idempotence. Reopen the canonical add-in and compile both architectures, then verify real DLL payloads and DLL-only/offline provisioning, preserved custom/newer components and shared-helper launch. Those native add-in acceptance checks remain pending; no native build, GUI automation, GitHub release, main merge or Phase 2/3 work was performed.
+## Separate version migration
 
-## 2026-11-23 - Native updater startup confirmed; 58/58 tests pass
+Core tbUI3 remains 1.0.0.75 in its project settings; coordinate the pending 0.0.0.75 correction with the canonical package, test embedded reference and metadata. Do not rewrite historic build evidence or unrelated versions. See [versioning policy](docs/VERSIONING_POLICY.md).
 
-Shane's new diagnostic snapshot 5235529 reports **58/58 native self-tests passed**, including trusted UTF-8 document navigation. The compiled startup log confirms the generated data page is allowed, both embedded scripts are requested, `updater:ready` arrives, and final navigation succeeds (status 0). The supplied screenshot shows the updater's own expected no-context ready screen. This confirms the compiled blank-window fix; it does not establish IDE debug startup, live update/elevation/recovery/self-update or add-in embedding acceptance. Sanitized evidence references: `tbIDE/Updater/validation/native-startup-2026-11-23-passed.json`. No production source, canonical projects, Wizard or binaries changed in this evidence-only pass.
+## Documentation maintenance
 
-## 2026-11-23 - Updater trusted document navigation and IDE resource decoding
-
-The latest private diagnostic snapshot (12d1846, startup blob f1c6aa9) identifies the compiled blank window: the generated HTML navigates as a UTF-8 Base64 data URL, which the old about:blank-only guard cancelled. The host now computes and authorizes only that exact generated document, preserving rejection of external and unrelated data pages. Resource decoding now uses the WebView2 package's raw-string conversion before explicit UTF-8 decoding; failures distinguish resource lookup from decoding. The updater retains its own UI; no Welcome Wizard changes.
-
-Canonical updater and mirrors are synchronized. **237 Node tests pass**; the executable native suite now contains **58 cases**, adding an independent Unicode/Base64/navigation-policy test. Previous native evidence remains 57/57 before this patch. Native compilation, IDE and compiled-EXE page-ready confirmation remain pending Shane's acceptance; no GUI automation, binary embedding, release or main merge.
-
-## 2026-11-23 - Updater host aligned to the working Smith Debnam Toolkit
-
-Shane designated the private **sdlaw-sdelorme/Diagnostics** repository as the ongoing incoming diagnostic source. Read it through the Smith Debnam connection; local output remains `%LOCALAPPDATA%\tbUI3\Diagnostics\`. No automatic upload or writes to the diagnostics repository are added.
-
-The latest snapshot again records 57/57 native self-tests passing. Its startup log shows one embedded-resource-assembly E_FAIL, then another run submitting a 192,315-character HTML document without a recorded page-ready handshake. This narrows the evidence without proving the precise blank-window cause.
-
-Compared the current Smith-Debnam Toolkit example at **218871daaae25c81df668d174b80284edae22ec2** against its canonical mirror hashes. Aligned updater event conventions, constructor DPI initialization, complete IDE-created form defaults, black native underlay, Ready reentrancy guard and navigation-completion lifecycle. Replaced the custom pointer-based UI resource conversion with the Toolkit's whole-buffer LoadResData/StrConv pattern, explicitly selecting UTF-8 for our resources. Per-resource error context is retained. Form identities, updater dimensions and security restrictions remain; Gallery, tab windows, splash and installer/message-box dependencies are not imported.
-
-**Updater.exe retains its separate update/progress/recovery UI. The Welcome Wizard remains add-in-only.** Native form/UI launch and the changed resource reader still require rebuild/runtime confirmation; no native success is claimed by source/DOM checks. Canonical projects/mirrors are synchronized. No main merge, PR, release, binary embedding or GUI automation.
-
-Validation: **235 Node tests pass**, with **134 exact canonical/source mirrors**, stable IDs/CRLF/hex checks, generator idempotence and diff checks passing. The existing user-provided 57/57 native result predates this host change; no new native compile or GUI run was performed by Cody.
-
-## 2026-11-23 - Refined Wizard integration, native 57/57 evidence, unified diagnostics
-
-Integrated Quill's approved view through **79be9e5** unchanged: full Master CSS/shared controls in an isolated iframe under the native HTML dialog, real native installed-theme inventory/parent inheritance/color data, exact-name apply validation, Windows accent, correlated acknowledgements, conditional Setup, async repair, hidden channel selector and revised feature copy. Production settings also omit channel selection; internal release safety/channel metadata remains. Known BETA 1045 loader behavior determines effective duplicate-name selection; no guessed AppData/local precedence. New native palette/host code still needs native acceptance; unresolved colors are explicitly unavailable.
-
-Shane's second archive reports **57 native self-tests passed, zero failed** after the byte-buffer correction. The original 42/54 report and the passing report/archive digest are retained in `tbIDE/Updater/validation/`. These results establish the tested engine cases, not WebView2 or live installation acceptance. Actual helper binary embedding remains the separate Phase 1 pass.
-
-Consolidated active TabView, property-page, paint/designer, updater startup/worker and native-test diagnostics under **%LOCALAPPDATA%\tbUI3\Diagnostics\**; [diagnostic locations](../docs/DIAGNOSTICS.md). Operational recovery/settings/profile data stays in place. Canonical core, test embedded package, add-in and updater are synchronized; rebuild/re-import existing consumers to adopt the new routes. No trace flags enabled, user projects rewritten or old logs deleted.
-
-Shane reported a blank updater form and blank browser fallback despite detected WebView2. Corrected IDE argument parsing (`Command$` instead of host-process command line), changed fallback to verified atomic UTF-8 output with actual escaped error, added startup-stage/error-number logs and guarded repeated fallback. **The blank native window's exact failing operation remains unconfirmed pending the new stage log; no GUI/native startup success is claimed.** See the diagnostic guide. No Screen Control/GUI automation, main merge, PR, release or compiled-helper embedding.
-
-## 2026-11-23 - Welcome Wizard theme enumeration and deferred release channel
-
-**Future (deferred):** Restore the Welcome Wizard's stable/development **release-channel selector only after twinBASIC has a genuine stable release/channel**, with real available-release semantics, native validation and persistence. Shane explicitly removed it from first-release onboarding on 2026-11-23 because twinBASIC currently has no stable release. Keep existing internal channel compatibility as needed; do not expose a nonfunctional selection.
-
-**Phase 1 native integration requirement:** Extend the `choose-theme` whitelist from two hardcoded WinUI3 theme names to the **trusted current installed IDE theme inventory**. Publish `installedThemes` and resolved theme preview colors to the wizard snapshot; featured WinUI3 Light/Dark remain first, and all other installed IDE themes can be chosen without arbitrary filesystem path acceptance. Quill's isolated Toolkit-based view in `prototypes/welcome-wizard/` implements the UI, but **Cody's production bridge enumeration and native tests remain pending**. Remove TabView/TabPage marketing from the wizard Features page: those controls belong to the core tbUI3 toolkit, although tbUI3IDE supports them.
-
-Validation for this integration/diagnostics pass: **232 repository Node tests and 24 Quill source tests pass**; **134 exact mirrors** across core, embedded test package, add-in and updater, stable IDs/CRLF/hex rules, generator idempotence and diff checks pass. These are automated/static results; no new native build or GUI automation was run by Cody.
-
-## 2026-11-23 - Native report: 42/54 passed; typed byte-buffer correction
-
-Shane supplied `tbUI3-native-updater-tests-rad87A03-tmp.zip`: 54 native cases completed, 42 passed and 12 failed; all 19 ZIP cases passed. Archived atomic JSON, Unicode JSON, installed-file bytes and journals are well-formed, while text/JSON reads and comparison-dependent transaction assertions fail. This points to the native text-reader boundary: `UDecodeText` took addresses/indexed ByRef values through a Variant byte array rather than typed Byte storage. The same unsafe pattern existed in bundled payload output.
-
-Changed text decoding, UText storage, raw byte writes and bootstrap resource callers to typed `Byte()` buffers, including nonzero lower-bound support. Added the ABI rule to AGENTS.md, static regression contracts and three executable native cases (raw byte roundtrip, nonzero-bound UTF-8 decode, invalid UTF-8 rejection). Canonical projects/mirrors are synchronized; revised executable suite is **57 cases**. Preserved the original report and archive SHA-256 under `tbIDE/Updater/validation/` without storing workstation paths.
-
-Validation: 19 focused Node tests and 127 mirror/IDs/CRLF/hex checks pass. **The corrected native EXE has not been compiled/run by Cody; resolution of the 12 failures requires a fresh native rerun.** Existing native evidence remains 42/54, not a passing acceptance gate. No release, GUI automation or payload embedding performed.
-
-## 2026-11-23 - Updater launches without administrator credentials
-
-Shane reported UAC before Updater.exe could start from a standard account. The project omitted an explicit execution-level manifest, leaving the 32-bit executable subject to Windows installer-detection heuristics. Added canonical/mirrored `Resources/MANIFEST/#1.xml` with `requestedExecutionLevel level="asInvoker" uiAccess="false"`. Normal launch and self-tests use the caller's permissions; the existing explicit, approved protected-folder worker still uses `runas` when required. No change to same-account privileged-worker policy.
-
-Bundle preparation and release verification now inspect the real EXE's RT_MANIFEST/#1 in every language and reject missing/elevating manifests. Regression tests cover canonical resource embedding, namespace-valid XML, missing/unsafe/multilingual/comment-only manifests and UTF-16. Validation: all 15 focused PE/contract tests and 127 exact mirror/IDs/CRLF/hex checks pass. Native rebuild and standard-account launch remain unperformed by Cody. Reopen/rebuild Updater.twinproj before retesting; the already compiled EXE is unchanged. No release or embedding pass performed.
-
-## 2026-11-23 - Phase 1 native installation-manager source and wizard integration
-
-Implemented source candidate tbUI3IDE **0.4.0.0** / Updater **0.2.0.0**: shared per-user deployment/bootstrap and explicit backed-up repair, per-root identity/settings/approval/recovery, schema-versioned strategy/transaction/inventory contracts, protected IDE scoped UAC verification, detached native self-update, Options integration and Quill's committed Welcome Wizard through real native services. Canonical projects and mirrors are synchronized. Corrected add-in baseline remains 0.3.0.20; separate core tbUI3 1.0.0.75 is unchanged.
-
-Shane's subsequent sequencing instruction makes **actual compiled Updater.exe embedding a separate Phase 1 pass after native acceptance**. Bundle generation and real compiled-DLL verification are implemented; no stale/mock payload is embedded. The combined first public release remains gated on accepted updater, both embedded DLLs, shared-loader evidence and complete first-install/runtime acceptance. Phases 2/3 remain deferred. See [Phase 1 handoff](PHASE1_HANDOFF.md) for build order, static loader evidence, open native gates and focused acceptance. This source pass does not claim successful native compilation or a production-ready release.
-
-## 2026-11-23 - Agent-ready consolidated updater and installation manager specification
-
-Created [INSTALLATION_MANAGER_SPEC.md](INSTALLATION_MANAGER_SPEC.md) as the authoritative complete product handoff for Cody/Claude: combined first-release updater/bootstrap/Welcome scope, user AppData DLLs and themes, LocalAppData helper and per-installation state, preferences and low-prompt interaction, InPlace/InstallAlongside/ArchivePrevious, cross-drive full archives, extra-content archive/new/both choices, dynamically validated official release inventories, optional discovery/reorganization and shortcut caveats, shared-versus-local add-in compatibility and verified phase gates. **The specification is documentation only, not a shipped feature.** Follow its phase boundaries; preserve unresolved host-loader and elevation questions for explicit investigation.
-
-## 2026-11-23 - Release milestone consolidation: native updater + bootstrap + Welcome Wizard
-
-**Agreed change:** Combine former Phases 1 and 2 into the **first production release**. Ship only after native updater acceptance *and* verified two-DLL per-user deployment, embedded/updater/theme self-provisioning, re-openable Welcome Wizard, IDE Options, and release packaging are implemented and validated together. In-place remains the default IDE update strategy. See [detailed phase boundaries, compatibility and future-proofing](BOOTSTRAP_WELCOME_PLAN.md#delivery-sequencing-decision-merged-first-production-milestone-2026-11-23).
-
-Subsequent phases: (1) alongside and archive update strategies, configurable cross-drive archival and release-inventory classification with preserved custom content; (2) installation discovery/reorganization, shortcuts, advanced archived-add-in compatibility. Define identity, settings, release inventory and strategy boundaries during the combined first phase, but do not implement advanced workflows before they're needed. **Planning only; implementation/first release pending.**
-
-## 2026-11-23 - Self-provisioning add-in and Welcome Wizard (approved, not implemented)
-
-**Agreed future architecture:** the user manually installs only architecture-appropriate `tbUI3IDE.dll` files. Each DLL embeds the portable Win32 `Updater.exe` and WinUI3 Light/Dark themes; on every add-in load it validates/provisions missing or eligible outdated dependencies, independent of the online update setting. Shared updater location is `%LOCALAPPDATA%\tbUI3\Updater\Updater.exe`; themes remain in `%APPDATA%\twinBASIC\themes`. Multiple separate twinBASIC IDE installations share the per-user executable but keep per-installation update settings/transactions, backed by stable installation IDs. Preserve custom themes, never downgrade newer updater, use atomic writes/locks and no silent UAC. Approved changes to protected IDE files need a separately implemented consented elevation path.
-
-An embedded HTML/CSS/JS Welcome Wizard introduces updates, WinUI3 themes, Classic/Hybrid/Ribbon and designer capabilities, allows relevant preferences to be set, persists completion independently of resource repair, and can be reopened through the add-in. The existing updater path contract, packaging, canonical projects and native tests must be revised before claiming this behavior works. See [complete bootstrap and welcome design](BOOTSTRAP_WELCOME_PLAN.md). **The present first install remains manual; implementation and acceptance pending.**
-
-
-## 2026-11-23 - BETA 1045 hex-literal warnings corrected; automated gate added
-
-Explicitly typed the updater's Unicode, PE and ZIP literals and its intentional signed GUID field. AGENTS.md now defines the required width rule; both the normal project validator and Node suite enforce it against active canonical projects and mirrors. Source checks pass; reopen/recompile Updater in BETA 1045, then run its native self-tests. Public repository access is available, but end-to-end binary update acceptance still needs a published release with ZIPs and tbUI3-update.json. No release is published by this pass.
-
-
-## 2026-11-20 - Updater compile correction awaiting recheck
-
-Fixed Shane's BETA 997 TB5172 duplicate-label report by separating the three DPI initialization/window-opening call sequences in MainModule. Canonical project/mirror validation passes. Next: reopen the updated Updater project and compile again; native build/runtime and the executable self-tests remain pending.
-
-
-## 2026-11-20 - Native updater engine source delivered; compile acceptance pending
-
-Updater 0.1.0.1 now contains its update/recovery engine as twinBASIC code; tbUI3IDE 0.3.0.22 expects only the EXE. The PowerShell runtime script is removed. WebView2 UI and hidden worker are separate processes of the same executable, with verified detached self-update. Current architecture and native test instructions: [Updater README](Updater/README.md#native-engine-and-executable-self-tests).
-
-Next gate: reopen/build both canonical projects, run the compiled EXE's 47 `-SelfTest` cases, then use a disposable portable IDE to validate normal shutdown/On Exit/cancel, real download/staging, vendor-file preservation, locks, interrupted recovery and self-update. The 186 Node checks validate fixtures/source contracts/UI; they do not establish that the native engine compiles or runs. Native compilation remains deferred at Shane's request. No `main` merge, PR or release publication.
-
-
-## 2026-11-19 - Updater source implementation delivered; native acceptance next
-
-tbUI3IDE 0.3.0.21 and Updater 0.1.0.0 implement the agreed discovery/notification, WebView2 sidecar, verified staging, normal-exit consent, in-place journal/backup/rollback, self-update handoff and release-packaging contract. Quill coordination is complete; the separate core-package numbering migration remains outside this pass.
-
-**Next gate (Shane, deferred at his request):** fresh native builds of both add-in architectures and the Win32 WebView2 sidecar; live save/cancel/On Exit/crash/other-session/locked-cache cases; combined update, interrupted recovery and self-update; Windows theme/accent, DPI and missing Runtime. Then publish the first release assets. [Detailed checklist](Updater/README.md#validation-and-tomorrows-acceptance).
-
-Automated validation is complete as recorded in CHANGELOG.md. Remaining follow-ups: a real vendor stable-channel contract, optional control-package distribution when published, original working-directory/launch-context capture where supported, and automated release CI after native acceptance. No main merge or PR is part of this pass.
-
-
-## 2026-11-19 - Prerelease version correction (pending coordinated migration)
-
-Current tbUI3IDE 1.3.0.20 will be corrected to 0.3.0.20 in both canonical packed project and source Settings; earlier 1.1/1.2/1.3 development series map retrospectively to 0.1/0.2/0.3 without rewriting historical Git commits. The separate core tbUI3 package 1.0.0.75 similarly maps to 0.0.0.75, including the test-project embedded package reference. Coordinate with active updater implementation before edits and ensure updater migrates known mislabeled versions. See [versioning policy](../docs/VERSIONING_POLICY.md). **Not yet applied to binaries or packed projects.**
-
-## Agreed scope: unified twinBASIC / tbUI3 updater (2026-11-19)
-
-Build a small standalone `Updater.exe` alongside the twinBASIC IDE and an update-check/consent flow in the unified `tbUI3IDE` add-in. Manage official twinBASIC portable IDE releases, both add-in architectures, WinUI3 IDE themes, and the existing tbUI3 icon/resource pack. Include tbUI3 control-package release downloads without silently rewriting embedded copies inside user projects. User choices: **Update Now**, **Update on Exit**, **Remind Me Later**; select components; optional IDE restart. Approved policy is **in-place overwrite** of the existing portable IDE directory, not permanent versioned folders. Require verified downloads, locked-process wait, backups and rollback, target allowlists, preservation of user files and a detached helper for updater self-update. Source implementation, confirmed beta endpoint, release manifest and packager are delivered. Native acceptance and release publication remain open. Full implementation specification: [Unified updater plan](UPDATER_PLAN.md).
+A later dedicated pass will inventory and consolidate redundant Markdown, reconcile older roadmap entries with the changelogs and current implementation, organize specialized references, fix links and audit private references. The older sections retained below are not a current-state handoff; review their outstanding work individually rather than treating old implementation checkpoints as pending. Claude can use the current priority section and Phase 1 handoff now.
 
 ## 2026-11-18 - Replace all Build artwork with buildv3 (add-in 1.3.0.20)
 

@@ -16,7 +16,7 @@ Native build evidence consists of the BETA 1045 Win32 updater and Win32/Win64 DL
 
 ## Delivered
 
-Updater 0.2.0.3 and add-in 0.4.0.6. BETA 1045 built both DLLs for 0.4.0.6, and compiled PE checks verified both embedded bundles. The 62 native helper self-tests pass. The four pre-existing BETA 1045 Ribbon fixture failures block publication pending resolution or conclusive native acceptance. The BETA 1043 and 1044 fixture runs each pass all 256 tests. The configured compatibility range remains BETA 1043 through 1045. Major-zero version ordering and the documented historical version aliases remain supported.
+Updater 0.2.0.3 and add-in 0.4.0.6. BETA 1045 built both DLLs for 0.4.0.6, and compiled PE checks verified both embedded bundles. The 62 native helper self-tests pass. The four pre-existing BETA 1045 Ribbon fixture failures remain open. The owner authorized the published 0.4.0.6 development prerelease for end-to-end testing of the upgrade from 0.4.0.5. Begin native acceptance in disposable BETA 1043 and 1044 installations. See the release notes for the BETA 1045 defects and pending acceptance. [tbUI3IDE 0.4.0.6 development prerelease](https://github.com/Arrow-Loop/tbUI3/releases/tag/tbUI3IDE-v0.4.0.6). The BETA 1043 and 1044 fixture runs each pass all 256 tests. The configured compatibility range remains BETA 1043 through 1045. Major-zero version ordering and the documented historical version aliases remain supported.
 
 - Per-user deployment, offline provisioning/repair services, recognized hash/version/protocol ledger, no downgrade/customized overwrite, explicit verified backups and shared locks.
 - Standalone notification, review, preferences, cancellation, visible staging progress and recovery. The per-root launch/consent bridge binds native exit to the exact asset selection and the final verified plan. See INSTALLATION_CONTRACTS.md.
@@ -53,7 +53,7 @@ Current development configuration admits **1043 through 1045** for the approved 
 
 ## Focused native acceptance
 
-Use disposable installations and a disposable Windows profile/theme state. Record Win32/Win64, IDE build, native results and paths. Do not publish until all applicable native gates and compiled resource verification pass.
+Use disposable installations and a disposable Windows profile/theme state. Record Win32/Win64, IDE build, native results and paths. For an explicitly authorized development-testing prerelease, disclose known defects and pending native acceptance in its notes. Compiled resource and package verification, account authentication, synchronized source and exact-commit tagging remain required. Internal production deployment requires separate approval and applicable native acceptance.
 
 - Verify both add-in builds and the accepted updater's recorded native self-tests, including Unicode/long-path fixtures. Repeat updater tests if its source or binary changes.
 - After accepted-binary embedding, install **only** architecture DLL(s) into AppData. Offline, unelevated first launch creates shared helper/themes and correct root identity. Verify DLL/helper hashes and actual resource contents.

@@ -227,8 +227,8 @@ try {
         $finalIds=Assert-Assets $release $expected
         foreach ($name in $names) {if ($finalIds[$name] -cne $assetIds[$name]) {throw 'Draft assets changed during confirmation.'}}
         $publishAttempted=$true
-        $published=((Gh @('api','--hostname','github.com','--method','PATCH',"repos/$repository/releases/$releaseId",'-F','draft=false','-F','prerelease=true','-f','make_latest=false')) -join [Environment]::NewLine) | ConvertFrom-Json
-        if ($published.draft -ne $false -or $published.prerelease -ne $true -or $published.tag_name -cne $tag) {throw 'GitHub did not confirm the expected published prerelease.'}
+        $published=((Gh @('api','--hostname','github.com','--method','PATCH',"repos/$repository/releases/$releaseId",'-f',"tag_name=$tag",'-f',"target_commitish=$commit",'-F','draft=false','-F','prerelease=true','-f','make_latest=false')) -join [Environment]::NewLine) | ConvertFrom-Json
+        if ($published.draft -ne $false -or $published.prerelease -ne $true -or $published.tag_name -cne $tag -or $published.target_commitish -cne $commit) {throw 'GitHub did not confirm the expected published prerelease.'}
         $null=Assert-Assets $published $expected
         $tagRef=Api "repos/$repository/git/ref/tags/$tag"
         if ($tagRef.object.type -cne 'commit' -or $tagRef.object.sha -cne $commit) {throw 'Published tag does not match the expected source commit. Inspect GitHub immediately.'}

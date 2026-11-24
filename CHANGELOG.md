@@ -1,5 +1,9 @@
 # Changelog
 
+## 2026-11-24 - Published the 0.4.0.6 development prerelease
+
+Published the verified add-in package for standalone updater acceptance testing from 0.4.0.5. See the [IDE changelog](tbIDE/CHANGELOG.md) for exact tag and asset verification. [tbUI3IDE 0.4.0.6 development prerelease](https://github.com/Arrow-Loop/tbUI3/releases/tag/tbUI3IDE-v0.4.0.6).
+
 ## 2026-11-24 - Isolate optional designer tooling in tbUI3IDE 0.4.0.6
 
 The add-in activates MultiPage tooling only when the current project references tbUI3 and the active form has the compiler-resolved controls. See the [IDE changelog](tbIDE/CHANGELOG.md) for build and test evidence.

@@ -8,6 +8,10 @@ The active [IDE roadmap](tbIDE/ROADMAP.md) owns add-in/updater work, including t
 
 The IDE roadmap also tracks Windows acceptance of the developer test reset utility, including the backup-path correction; this is separate from shipped updater behavior.
 
+## Future IDE authoring: Wizard Builder
+
+A toolbar-launched design-time Wizard Builder is approved future scope, not a new toolbox UserControl. See [the IDE roadmap](tbIDE/ROADMAP.md#planned-wizard-builder-2026-11-24) for requirements and design decisions. Existing package and updater priorities are unchanged.
+
 ## Core package: next acceptance
 
 Current project metadata: 1.0.0.75. The independent prerelease correction to 0.0.0.75 is still pending; coordinate canonical package, embedded test copy, package references and release metadata together under [versioning policy](docs/VERSIONING_POLICY.md). Preserve historical version evidence and stable control identities.

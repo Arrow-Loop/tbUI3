@@ -43,9 +43,13 @@ function Find-Git {
     if (!$candidate) {throw 'Git was not found. Install GitHub Desktop or Git.'}
     return $candidate
 }
-function Sync-Diagnostics {
+function Sync-Diagnostics([switch]$Configure) {
     $diagnosticGit=Find-Git
-    & (Join-Path $PSScriptRoot 'Sync-Diagnostics.ps1') -GitPath $diagnosticGit
+    & (Join-Path $PSScriptRoot 'Sync-Diagnostics.ps1') -GitPath $diagnosticGit -Configure:$Configure
+}
+function Sync-DiagnosticsBestEffort {
+    try {Sync-Diagnostics}
+    catch {Say ("Diagnostics sync warning: "+$_.Exception.Message) Yellow}
 }
 function Git-Output([string[]]$arguments) {
     $lines=@(& $script:git @arguments)
@@ -355,6 +359,7 @@ $nextChoice=$InitialChoice
 try {
     try {$locked=$mutex.WaitOne(0)} catch [Threading.AbandonedMutexException] {$locked=$true}
     if (!$locked) {throw 'Development Tools is already running for this checkout.'}
+    if (!$InitialChoice -and (Test-Path -LiteralPath (Join-Path $cache 'diagnostics-sync.json') -PathType Leaf)) {Sync-DiagnosticsBestEffort}
     while ($true) {
         if (!$nextChoice) {
         Write-Host ''
@@ -365,16 +370,21 @@ try {
         Write-Host '  4  Reset test state'
         Write-Host '  5  Prepare add-in only'
         Write-Host '  6  Package existing native builds'
-        Write-Host '  D  Sync Diagnostics'
+        Write-Host '  D  Sync Diagnostics (both repositories)'
+        Write-Host '  C  Configure Diagnostics Sync'
         Write-Host '  L  Open Diagnostics'
         Write-Host '  Q  Quit'
         $choice=(Read-Host 'Choose an option').Trim().ToUpperInvariant()
         } else {$choice=$nextChoice;$nextChoice=''}
-        if ($choice -eq 'Q') {break}
+        if ($choice -eq 'Q') {
+            if (Test-Path -LiteralPath (Join-Path $cache 'diagnostics-sync.json') -PathType Leaf) {Sync-DiagnosticsBestEffort}
+            break
+        }
         try {
+            if ($choice -eq 'C') {Sync-Diagnostics -Configure;continue}
             if ($choice -eq 'D') {Sync-Diagnostics;continue}
             if ($choice -eq 'L') {Invoke-Item -LiteralPath $logs;continue}
-            if ($choice -eq '4') {& (Join-Path $root 'tbIDE\Reset-TestState.bat');continue}
+            if ($choice -eq '4') {& (Join-Path $root 'tbIDE\Reset-TestState.bat');if ($LASTEXITCODE -ne 0) {throw 'Test reset failed. See Diagnostics.'};continue}
             if ($choice -notin @('1','2','3','5','6')) {continue}
             $script:git=Find-Git
             $env:PATH=(Split-Path -Parent $script:git)+';'+$env:PATH
@@ -390,12 +400,10 @@ try {
             $failure=$_
             Say ("FAILED: "+$failure.Exception.Message) Red
             if ($failure.ScriptStackTrace) {Add-Content -LiteralPath $sessionLog -Value $failure.ScriptStackTrace}
-            if ($choice -ne 'D') {
-                # Child tools have exited and flushed their logs. Keep the original
-                # failure visible even if the separate diagnostics upload fails.
-                try {Sync-Diagnostics}
-                catch {Say ("Diagnostics sync warning: "+$_.Exception.Message) Yellow}
-            }
+        } finally {
+            # Child tools have exited and flushed their logs, on success or failure.
+            # Never mask the original build/reset/publication result.
+            if ($choice -in @('1','2','3','4','5','6') -and !$restartChoice) {Sync-DiagnosticsBestEffort}
         }
         Write-Host "Diagnostics: $logs"
     }

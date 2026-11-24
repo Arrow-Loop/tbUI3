@@ -1,5 +1,9 @@
 # Changelog
 
+## 2026-11-24 - Dual private diagnostics synchronization
+
+Added two-account diagnostic mirroring to Development-Tools.bat, including one-time per-PC configuration, automatic workflow sync and matching remote commit verification. See the [IDE changelog](tbIDE/CHANGELOG.md) and [diagnostics documentation](docs/DIAGNOSTICS.md). No shipped binary or release changes.
+
 ## 2026-11-24 - Document Wizard Builder direction
 
 Recorded the future toolbar-based Wizard Builder in the [IDE roadmap](tbIDE/ROADMAP.md#planned-wizard-builder-2026-11-24), including per-page optional split panes and editable generated forms. Documentation only; no package or add-in version change.

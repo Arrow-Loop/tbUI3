@@ -1,5 +1,9 @@
 # Changelog: tbIDE (WinUI 3 look for the twinBASIC IDE)
 
+## 2026-11-24 - Native evidence: 0.4.0.11 on BETA 1044 and faster IDE staging
+
+Owner run, 2026-11-24 13:29 to 13:31, Updater 0.2.0.6: the 1045-compiled 0.4.0.11 DLL loaded on BETA 1044 and launched the updater, which updated BETA 1044 to 1045 (complete). Compared with the 0.2.0.4 run earlier that day: ZIP directory 0.9 s (was 7.2 s), new-archive extraction and hashing 13.2 s (was 89.9 s), baseline 12.8 s (was 96.7 s); staging from Stage launch to ready took 37 s (was about 3.5 minutes). Downloads stayed about 1.5 to 2.6 s.
+
 ## 2026-11-24 - BETA 1044 loadable again for updater testing (add-in 0.4.0.11 source)
 
 Owner decision: keep BETA 1044 testable so the updater's IDE update path can be exercised without waiting for a new beta; new add-in features may be missing there. phase1-config.json minIdeBuild is back to 1044 (max stays 1045), so the load gate, updater compatibility and release manifest accept 1044. On 1044 the host is IHostV1 (same IID, vtable prefix and event interface as 1045's IHostV2), so InstallMenus now skips Host.Menus below build 1045 instead of calling past the V1 vtable; the IDE Options buttons remain the entry points there. Assumes, unverified, that 1044 passes its host to the 1045-compiled factory without a QueryInterface for IHostV2; if 1044 refuses to load the DLL, that assumption is wrong.

@@ -209,12 +209,12 @@ Private Class UpdateInflate
             final = Take(1): mode = Take(2)
             If mode = 0 Then
                 Take mBitCount Mod 8
-                Refill: n = Take(16)
-                Refill: inverse = Take(16)
+                Call Refill: n = Take(16)
+                Call Refill: inverse = Take(16)
                 If (n Xor &HFFFF&) <> inverse Then UFail "Invalid stored DEFLATE block."
                 If mTotal + n > mLimit Then UFail "DEFLATE expands beyond declared size."
                 For i = 1 To n
-                    Refill: value = CByte(Take(8))
+                    Call Refill: value = CByte(Take(8))
                     mHistory(mTotal And 32767) = value
                     mOut(mOutCount) = value: mOutCount = mOutCount + 1: mTotal = mTotal + 1
                     If mOutCount = 65536 Then FlushOutput

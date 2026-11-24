@@ -1,5 +1,9 @@
 # Changelog: tbIDE (WinUI 3 look for the twinBASIC IDE)
 
+## 2026-11-23 - Consolidated current Wizard integration guide
+
+Replaced superseded implementation notices and pending-embedding instructions with one current integration reference, retaining the factory API, four pinned assets, six native intents, palette schema, selection/repair semantics, preview-server instructions and conditional Setup behavior. Production/native acceptance remains in the Phase 1 handoff. No view source or asset bytes changed.
+
 ## 2026-11-23 - Documentation consolidation: installation and reference authority
 
 Merged the retired updater design, original updater plan, bootstrap plan and coordination contract into the enduring Installation Manager specification, native contracts and AGENTS guidance. Removed four superseded Markdown files from the active tree while retaining their history in Git. Reconciled current add-in architecture/geometry descriptions, repaired diagnostic guide duplication, and removed private organizational/repository identifiers from first-party Markdown while retaining commit IDs, hashes and technical evidence. Updated navigation and roadmap boundaries. No application source, test code, canonical project, runtime resource, binary or release changed. Non-Markdown provenance/source/log review remains separately tracked.

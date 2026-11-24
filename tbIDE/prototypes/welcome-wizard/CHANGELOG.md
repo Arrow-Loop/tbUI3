@@ -1,5 +1,9 @@
 # Welcome Wizard changelog
 
+## 2026-11-23 - Consolidated current Wizard integration guide
+
+Replaced superseded implementation notices and pending-embedding instructions with one current integration reference, retaining the factory API, four pinned assets, six native intents, palette schema, selection/repair semantics, preview-server instructions and conditional Setup behavior. Production/native acceptance remains in the Phase 1 handoff. No view source or asset bytes changed.
+
 ## 2026-11-23: Selector label cleanup
 
 - Removed redundant Current theme and Current toolbar text from the compact selection tiles. The selected border and aria-pressed state still indicate the choice; no changes to native selection or intents.

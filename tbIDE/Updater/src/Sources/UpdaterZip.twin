@@ -11,12 +11,23 @@ Private Module UpdaterZip
         If MultiByteToWideChar(codepage, options, VarPtr(bytes(offset)), count, StrPtr(result), size) <> size Then UFail "ZIP filename decode failed."
         Return result
     End Function
+    ' One read handle for the whole directory walk: opening the archive per header (several times per entry)
+    ' cost about 7 s for the 410-entry IDE archive on Windows.
+    Private Function ReadAt(ByVal handle As LongPtr, ByVal offset As Long, ByVal size As Long) As Byte()
+        Dim bytes() As Byte
+        If size <= 0 Or offset < 0 Then UFail "Truncated file."
+        ReDim bytes(0 To size - 1): USeekStream handle, offset
+        If UReadBuffer(handle, VarPtr(bytes(0)), size) <> size Then UFail "Truncated file read."
+        Return bytes
+    End Function
     Public Function UZipEntries(ByVal path As String) As Object
         Dim size As Double = USize(path)
         If size < 22 Or size > 536870912 Then UFail "Unsupported ZIP size."
+        Dim handle As LongPtr = UOpenRead(path)
+        On Error GoTo Failed
         Dim count As Long = CLng(size)
         If count > 65557 Then count = 65557
-        Dim tail() As Byte = UBytes(path, CLng(size) - count, count), endAt As Long = -1, i As Long
+        Dim tail() As Byte = ReadAt(handle, CLng(size) - count, count), endAt As Long = -1, i As Long
         For i = count - 22 To 0 Step -1
             If U32(tail, i) = &H6054B50 Then
                 If i + 22 + U16(tail, i + 20) = count Then endAt = i: Exit For
@@ -31,7 +42,7 @@ Private Module UpdaterZip
         Dim entry As UpdateJson, flags As Long, method As Long, packed As Double, expanded As Double, localOffset As Double
         For i = 1 To entries
             If CDbl(offset) + 46 > cdOffset + cdSize Then UFail "ZIP central directory truncated."
-            header = UBytes(path, offset, 46)
+            header = ReadAt(handle, offset, 46)
             If U32(header, 0) <> &H2014B50 Then UFail "ZIP central header missing."
             flags = U16(header, 8): method = U16(header, 10)
             If (flags And &HF041&) <> 0 Or (method <> 0 And method <> 8) Then UFail "Encrypted/unsupported ZIP entry."
@@ -39,7 +50,7 @@ Private Module UpdaterZip
             If packed > 536870912 Or expanded > 536870912 Or localOffset + 30 > cdOffset Or U16(header, 34) <> 0 Then UFail "ZIP entry exceeds supported bounds."
             Dim nameSize As Long = U16(header, 28), extraSize As Long = U16(header, 30), commentSize As Long = U16(header, 32)
             If nameSize = 0 Or CDbl(offset) + 46 + nameSize + extraSize + commentSize > cdOffset + cdSize Then UFail "Invalid ZIP filename length."
-            Dim nameBytes() As Byte = UBytes(path, offset + 46, nameSize)
+            Dim nameBytes() As Byte = ReadAt(handle, offset + 46, nameSize)
             name = ZipName(nameBytes, 0, nameSize, flags): canonical = name
             If Right$(canonical, 1) = "/" Then canonical = Left$(canonical, Len(canonical) - 1)
             URelative canonical
@@ -48,9 +59,9 @@ Private Module UpdaterZip
             If unixMode = &HA000& Or ((U16(header, 38) And &H400) <> 0) Then UFail "Archive links forbidden."
             total = total + expanded
             If total > 2147483648# Then UFail "Archive expansion exceeds 2 GiB."
-            Dim local() As Byte = UBytes(path, CLng(localOffset), 30)
+            Dim local() As Byte = ReadAt(handle, CLng(localOffset), 30)
             If U32(local, 0) <> &H4034B50 Or U16(local, 6) <> flags Or U16(local, 8) <> method Or U16(local, 26) <> nameSize Then UFail "ZIP local/central mismatch."
-            Dim localName() As Byte = UBytes(path, CLng(localOffset) + 30, nameSize)
+            Dim localName() As Byte = ReadAt(handle, CLng(localOffset) + 30, nameSize)
             If ZipName(localName, 0, nameSize, flags) <> name Then UFail "ZIP local filename mismatch."
             Dim dataOffset As Double = localOffset + 30 + nameSize + U16(local, 28)
             If dataOffset + packed > cdOffset Then UFail "ZIP data overlaps directory."
@@ -62,7 +73,12 @@ Private Module UpdaterZip
             offset = offset + 46 + nameSize + extraSize + commentSize
         Next
         If offset <> cdOffset + cdSize Then UFail "Unexpected ZIP central directory tail."
+        UCloseStream handle
         Set UZipEntries = result
+        Exit Function
+    Failed:
+        Dim reason As String = Err.Description
+        UCloseStream handle: UFail reason
     End Function
     Public Sub UZipExtract(ByVal archive As String, ByVal entry As UpdateJson, ByVal target As String)
         If JBool(entry, "directory") Then UFail "Expected a ZIP file."

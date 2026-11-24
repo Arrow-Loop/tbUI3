@@ -1,5 +1,8 @@
 # Phase 1 source handoff — native acceptance, then embedding
 
+> BETA 1045 compile correction (2026-11-23): the Standard DLL now includes its own LoadResData compatibility reader for embedded bytes, without the VB forms runtime. The theme-color expression flagged by TB5030 uses explicit nibble formatting. Reopen/rebuild the add-in for **both architectures**; the accepted updater and bundle payloads are unchanged, so no updater rebuild is required.
+
+
 > 2026-11-23 embedding completed: the canonical add-in now embeds the tracked `Updater/Build/Updater.exe` (0.2.0.0, SHA-256 677d86b4a9fe368282e4c1464e0ad549e5309b838f2929570c13e4803dd2ee68), both WinUI3 themes and their verified bundle manifest. Reopen `tbUI3IDE/tbUI3IDE.twinproj` and compile **Win32 and Win64**. Then inspect both DLLs with `verify-phase1-release.mjs` and test DLL-only offline bootstrap/repair/shared launch. Earlier statements below describing missing payloads are historical; this source packaging pass is complete, native add-in acceptance remains pending.
 
 

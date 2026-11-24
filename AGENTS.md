@@ -39,6 +39,10 @@ For any tbUI3IDE updater, first-install, Welcome Wizard, per-user add-in, IDE up
 - Preserve opt-in trace flags. Keep transactional recovery state/backups, settings, resource payloads and browser profiles in their documented operational locations. Do not treat those files as diagnostic logs.
 - Synchronize the core package and tbUI3Test embedded copy after package diagnostic changes (`node tools/sync-diagnostic-projects.mjs`); the Phase 1 generator copies the common path helper into add-in/updater. Preserve canonical IDs/version conventions.
 
+## Standard DLL resource API availability
+
+The tbUI3IDE Standard DLL references OLE Automation and IDE Extensibility, without the VB forms runtime. Its LoadResData calls resolve to the project-local AddinResources compatibility module. Keep resource lookup bound to the add-in DLL using a function address; never use the host executable handle. Do not assume a forms-only global API is available merely because the updater EXE uses it. Preserve the accepted updater binary/project when fixing add-in-only resource access.
+
 ## Native byte-buffer pointers
 
 - Windows APIs that read/write raw array bytes must receive pointers into an explicitly typed `Byte()` array. Do not take `VarPtr(value(index))` or pass an indexed value ByRef As Any when `value` is declared `Variant`, even when it currently contains a byte SAFEARRAY: indexing/conversion can expose a temporary Variant instead of the byte storage.

@@ -1,5 +1,11 @@
 # Handoff: tbUI3
 
+## 2026-11-23 - BETA 1045 add-in compilation corrections
+
+Addressed the three reported diagnostics: LoadResData is supplied by the VB forms runtime, which the Standard DLL does not reference. Added a project-local resource compatibility reader using pointer-width-safe Windows APIs, module identity from a function address in this DLL, uppercase resource names, bounded sizes and typed Byte() copying. Both existing provisioning/text callers now resolve without adding a forms runtime dependency. Replaced the rejected nested Hex$ expression in InstalledThemeCatalog with explicit two-nibble formatting and the same nonnegative half-up channel rounding.
+
+The canonical add-in and mirror are synchronized. **243 automated Node tests pass**, with **140 exact mirrors**, IDs/CRLF/hex checks and generator idempotence. Regression contracts cover DLL module ownership and typed resource copying. The accepted Updater.exe, its canonical project and all embedded payload/theme bytes are unchanged; only the add-in needs rebuilding in Win32 and Win64. Native compilation and DLL bootstrap acceptance remain Shane's checks. No GUI automation, Wizard prototype edits, release or main merge.
+
 ## 2026-11-23 - Real updater and themes embedded in the add-in
 
 Completed the separately authorized Phase 1 embedding pass: canonical tbUI3IDE 0.4.0.0 and its synchronized mirrors now contain Shane's committed Win32 Updater 0.2.0.0 (2,117,120 bytes, SHA-256 677d86b4a9fe368282e4c1464e0ad549e5309b838f2929570c13e4803dd2ee68), both exact WinUI3 themes and a version/hash/protocol inventory. The same project supplies both DLL architectures. Existing offline provisioning/repair and shared-helper launch services consume these resources; no Wizard view changes. Updater provenance: commit 03904cc, source 1225eb2, 58/58 native tests and compiled startup confirmed in the recorded incoming diagnostics.

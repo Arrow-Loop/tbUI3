@@ -105,7 +105,8 @@ Private Module InstalledThemeCatalog
             ElseIf n > 255 Then
                 Return ""
             End If
-            output = output & LCase$(Right$("0" & Hex$(CLng(Int(n + 0.5))), 2))
+            Dim rounded As Long = CLng(Fix(n + 0.5))
+            output = output & Mid$("0123456789abcdef", (rounded \ 16) + 1, 1) & Mid$("0123456789abcdef", (rounded Mod 16) + 1, 1)
         Next
         Return output
     End Function

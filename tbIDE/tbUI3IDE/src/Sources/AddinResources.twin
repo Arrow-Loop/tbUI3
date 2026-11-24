@@ -1,0 +1,36 @@
+' Standard DLL projects do not reference the VB forms runtime's LoadResData helper.
+' Resolve resources from this DLL, never from the compiler/IDE host executable.
+Private Module AddinResources
+    Private Declare PtrSafe Function RModuleForAddress Lib "kernel32" Alias "GetModuleHandleExW" (ByVal flags As Long, ByVal address As LongPtr, ByRef moduleHandle As LongPtr) As Long
+    Private Declare PtrSafe Function RFind Lib "kernel32" Alias "FindResourceW" (ByVal moduleHandle As LongPtr, ByVal name As LongPtr, ByVal resourceType As LongPtr) As LongPtr
+    Private Declare PtrSafe Function RSize Lib "kernel32" Alias "SizeofResource" (ByVal moduleHandle As LongPtr, ByVal resource As LongPtr) As Long
+    Private Declare PtrSafe Function RLoad Lib "kernel32" Alias "LoadResource" (ByVal moduleHandle As LongPtr, ByVal resource As LongPtr) As LongPtr
+    Private Declare PtrSafe Function RLock Lib "kernel32" Alias "LockResource" (ByVal resourceData As LongPtr) As LongPtr
+    Private Declare PtrSafe Sub RCopy Lib "kernel32" Alias "RtlMoveMemory" (ByVal destination As LongPtr, ByVal source As LongPtr, ByVal count As LongPtr)
+
+    Private Function ResourceAnchor() As Long
+        Return 0
+    End Function
+
+    ' Project-local compatibility surface for the two existing shared resource callers.
+    Public Function LoadResData(ByVal resourceName As String, ByVal resourceType As String) As Variant
+        If Len(resourceName) = 0 Or Len(resourceType) = 0 Or InStr(resourceName, vbNullChar) > 0 Or InStr(resourceType, vbNullChar) > 0 Then UFail "Invalid embedded resource name/type."
+        Dim moduleHandle As LongPtr
+        ' FROM_ADDRESS Or UNCHANGED_REFCOUNT; resources remain owned by the loaded DLL.
+        If RModuleForAddress(6, AddressOf ResourceAnchor, moduleHandle) = 0 Then UFail "Cannot identify the add-in resource module."
+        ' twinBASIC uppercases resource names in compiled images.
+        Dim name As String = UCase$(resourceName), kind As String = UCase$(resourceType)
+        Dim resource As LongPtr = RFind(moduleHandle, StrPtr(name), StrPtr(kind))
+        If resource = 0 Then UFail "Missing add-in embedded resource: " & resourceName
+        Dim size As Long = RSize(moduleHandle, resource)
+        If size <= 0 Or size > 134217728 Then UFail "Invalid add-in resource size: " & resourceName
+        Dim loaded As LongPtr = RLoad(moduleHandle, resource)
+        If loaded = 0 Then UFail "Cannot load add-in resource: " & resourceName
+        Dim pointer As LongPtr = RLock(loaded)
+        If pointer = 0 Then UFail "Cannot read add-in resource: " & resourceName
+        Dim bytes() As Byte
+        ReDim bytes(0 To size - 1)
+        RCopy VarPtr(bytes(0)), pointer, size
+        Return bytes
+    End Function
+End Module

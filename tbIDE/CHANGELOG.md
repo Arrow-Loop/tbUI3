@@ -1,5 +1,9 @@
 # Changelog: tbIDE (WinUI 3 look for the twinBASIC IDE)
 
+## 2026-11-24 - Explicit updater visibility requirement
+
+Clarified the approved Phase 1 specification, roadmap and acceptance checklist: the standalone updater must appear before the first authorized release-asset download for either update choice and remain accessible with live progress throughout staging and installation. Quiet metadata checks may remain hidden. Documentation only; implementation and native acceptance remain pending.
+
 ## 2026-11-24 - Add-in 0.4.0.4 and updater 0.2.0.2 fix the Update Now exit stall and IDE identity check
 
 Two bounded fixes for the failures recorded in the live BETA 1043 test. These are not the approved updater ownership migration, which is still pending. (1) Update Now never let the IDE exit. The add-in's closeIde called the hooked closeProjectSafely, whose callback text contains hostAppObject.Exit('ignore'), so the hook wrapped it a second time. After the save prompt, the approval handshake ran the outer callback, which only re-armed the exit function instead of exiting; the controller then stopped polling and the updater timed out waiting for shutdown. closeIde now calls the original closeProjectSafely, so the approved continuation performs the real exit. Normal-exit approval and its plan binding are unchanged. (2) The IDE identity check failed with "Could not inspect IDE identity" when OpenProcess on an exited IDE returned an error other than 87. UProcessTime now captures the Win32 error immediately, treats a PID absent from the WMI process list as exited, and otherwise fails safe with the error code in the message. Both fixes are inferred from source and have not been run natively. Pending: rebuild Updater.exe, re-embed it, rebuild both DLLs and repeat the live Update Now and Update on Exit tests. Until then tests 137 and 139 fail on the stale embedded updater; the other 248 of 250 tests pass.

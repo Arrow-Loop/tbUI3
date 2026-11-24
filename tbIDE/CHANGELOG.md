@@ -1,5 +1,9 @@
 # Changelog: tbIDE (WinUI 3 look for the twinBASIC IDE)
 
+## 2026-11-24 - Record Wizard Builder design decision
+
+Documented the future design-time toolbar Builder, Phone Link/OOBE visual direction, independently optional per-page split panes and editable generated forms in the [IDE roadmap](ROADMAP.md#planned-wizard-builder-2026-11-24). No implementation, version change or publication.
+
 ## 2026-11-24 - Correct Welcome modal vertical positioning (0.4.0.9 source)
 
 The owner reports near-instant Welcome presentation in published 0.4.0.8, but the screenshot shows the modal horizontally centered and flush against the top of the IDE. Replaced auto-margin centering with explicit 50% viewport anchoring and a negative half-size translation, scoped to the Welcome shell with important declarations to isolate it from generic host dialog styling. Preserved dimensions, modality and existing light/dark shadow values. In an isolated real Chromium layout test with simulated hostile generic dialog rules, the previous geometry reproduced the top-aligned defect; the replacement centered to within one pixel in both axes at 1920x1032, 1000x600 and 800x500. The precise native host override is not yet established. Updated the resource mirror and source assertion, advanced add-in source to 0.4.0.9 and queued the existing guarded local assembly workflow. No native build or publication; user can finish 0.4.0.8 testing before assembling a combined next pass.

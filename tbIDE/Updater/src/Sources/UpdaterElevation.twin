@@ -143,9 +143,12 @@ Private Module UpdaterElevation
                 If JT(operation, "sha256") <> expected.Item(target) Then UFail "Privileged staged payload differs from the authenticated release."
                 If StrComp(JT(operation, "root"), JT(context, "installRoot"), vbTextCompare) = 0 Then
                     If oldIde Is Nothing Then UFail "No official prior inventory for protected IDE."
+                    ' A differing file at an authenticated official path is replaced with authenticated bytes;
+                    ' its bound original hash is rechecked and backed up by UInstall before any write.
+                    Dim conflict As Boolean = Len(JT(operation, "conflict")) > 0 And Not JBool(operation, "expectAbsent")
                     If oldIde.Exists(JT(operation, "target")) Then
-                        If JT(operation, "expectedOriginal") <> oldIde.Item(JT(operation, "target")) Then UFail "Privileged prior inventory mismatch."
-                    ElseIf Not JBool(operation, "expectAbsent") Then
+                        If JT(operation, "expectedOriginal") <> oldIde.Item(JT(operation, "target")) And Not conflict Then UFail "Privileged prior inventory mismatch."
+                    ElseIf Not JBool(operation, "expectAbsent") And Not conflict Then
                         UFail "An unrecognized protected destination would be overwritten."
                     End If
                 End If

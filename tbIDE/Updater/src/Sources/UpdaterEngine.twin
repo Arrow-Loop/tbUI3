@@ -114,7 +114,7 @@ Private Module UpdaterEngine
         If UCancelled(session) Then GoTo Cancelled
         UApproval session, plan
         UInstall plan, journalPath, USafe(session, "state.json")
-        UState session, "complete", "Selected updates installed and verified."
+        UState session, "complete", "Selected updates installed and verified." & KeepReplaced(plan, journalPath, context, session)
         IUnlock sharedLock: sharedLock = 0: IUnlock mutex: mutex = 0
         If JBool(context, "restart") Then
             BLog context, session, "restarting originating IDE"
@@ -196,6 +196,18 @@ Private Module UpdaterEngine
             BLog UReadJson(UpdateContext), session, mode & " failed: " & reason
         End If
         Return 1
+    End Function
+    Private Function KeepReplaced(ByVal plan As UpdateJson, ByVal journalPath As String, ByVal context As UpdateJson, ByVal session As String) As String
+        ' The install already succeeded; keeping the copies is reported, never turned into an update failure.
+        On Error GoTo Fallback
+        Dim folder As String = UPreserveReplaced(plan, journalPath, JT(context, "installRoot"))
+        If Len(folder) = 0 Then Exit Function
+        BLog context, session, "kept replaced local files in " & folder
+        KeepReplaced = " Files that differed from the official versions were backed up to " & folder & "."
+        Exit Function
+    Fallback:
+        BLog context, session, "copying replaced local files failed: " & Err.Description & "; verified backups remain in " & session & "\backup"
+        KeepReplaced = " Files that differed from the official versions are backed up in " & session & "\backup."
     End Function
     Private Sub UCleanSessions(ByVal current As String)
         On Error GoTo Retain

@@ -115,10 +115,14 @@ Private Module UpdaterSelfTest
                 TextFile JT(operation, "backup"), "corrupt"
                 RejectRollback journal, path
             Case 25
-                name = "vendor collision preserved"
+                name = "vendor collision backed up and replaced"
                 Set plan = FixturePlan("vendor"): Set operation = plan.Member("operations").Items.Item(1)
-                RejectVendor operation, UMap()
-                Check UText(mRoot & "\vendor\install\one.txt") = "old one", name
+                UProtectVendor operation, UMap()
+                Check JT(operation, "conflict") = "unrecognizedAtOfficialPath" And JT(operation, "expectedOriginal") = UHash(mRoot & "\vendor\install\one.txt") And Not JBool(operation, "expectAbsent"), name
+                UInstall plan, mRoot & "\vendor\journal.json"
+                Check UHash(mRoot & "\vendor\install\one.txt") = JT(operation, "sha256"), name
+                Dim kept As UpdateJson = UReadJson(mRoot & "\vendor\journal.json").Member("operations").Items.Item(1)
+                Check UText(JT(kept, "backup")) = "old one", name
             Case 26
                 name = "vendor expectation rechecked at preflight"
                 Set plan = FixturePlan("vendor-race"): Set operation = plan.Member("operations").Items.Item(1)
@@ -282,12 +286,6 @@ Private Module UpdaterSelfTest
         On Error GoTo Expected
         URollback journal, path
         On Error GoTo 0: UFail "Corrupt backup was accepted."
-    Expected:
-    End Sub
-    Private Sub RejectVendor(ByVal operation As UpdateJson, ByVal baseline As Object)
-        On Error GoTo Expected
-        UProtectVendor operation, baseline
-        On Error GoTo 0: UFail "Vendor collision was accepted."
     Expected:
     End Sub
     Private Sub RejectJournal(ByVal journal As UpdateJson, ByVal plan As UpdateJson, ByVal session As String)

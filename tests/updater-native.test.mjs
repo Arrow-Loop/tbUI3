@@ -72,3 +72,15 @@ test('release packaging publishes only the verified dual-architecture add-in and
  assert(guard>=0&&guard<write,'Reject stale release assets before packaging');
  assert(verify>=0&&verify<fail&&fail<write,'Require successful compiled bundle verification before packaging');
 });
+test('differing files at official destinations are backed up and replaced, never a terminal error',()=>{
+ const read=n=>fs.readFileSync('tbIDE/Updater/src/Sources/'+n+'.twin','utf8');
+ const tx=read('UpdaterTransaction'),protect=tx.slice(tx.indexOf('Public Sub UProtectVendor'),tx.indexOf('Public Function UPreserveReplaced'));
+ assert.doesNotMatch(protect,/UFail/);
+ for(const kind of ['modifiedOfficial','alreadyCurrent','unrecognizedAtOfficialPath'])assert.match(protect,new RegExp(kind));
+ assert.match(protect,/"expectedOriginal", JS\(current\)/);
+ assert.doesNotMatch(tx,/vendor-name collision|customized or unknown theme was preserved/);
+ const keep=tx.slice(tx.indexOf('Public Function UPreserveReplaced'));
+ assert.match(keep,/UHash\(copy\) <> JT\(record, "originalSha256"\)/);assert.match(keep,/replaced\.json/);
+ assert.match(read('UpdaterEngine'),/"Selected updates installed and verified\." & KeepReplaced\(/);
+ assert.match(read('UpdaterElevation'),/And Not conflict Then UFail "Privileged prior inventory mismatch\."/);
+});

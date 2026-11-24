@@ -85,19 +85,56 @@ Private Module UpdaterTransaction
     Public Sub UProtectVendor(ByVal operation As UpdateJson, ByVal baseline As Object)
         Dim path As String = USafe(JT(operation, "root"), JT(operation, "target"))
         operation.Assign "expectedOriginal", JS(""): operation.Assign "expectAbsent", JB(True)
-        If UExists(path) Then
-            If Not baseline.Exists(JT(operation, "target")) Then UFail "Preserved a vendor-name collision: " & path
-            Dim expected As String = baseline.Item(JT(operation, "target"))
-            If UHash(path) <> expected Then UFail "Preserved a locally modified vendor file: " & path
-            operation.Assign "expectedOriginal", JS(expected): operation.Assign "expectAbsent", JB(False)
+        If Not UExists(path) Then Exit Sub
+        ' Owner requirement (2026-11-24): a file that differs from the official original at an official
+        ' destination never blocks an approved update. Its current bytes are bound here, rechecked at
+        ' preflight, backed up and verified before replacement, and kept after success (UPreserveReplaced).
+        Dim current As String = UHash(path), target As String = JT(operation, "target")
+        If baseline.Exists(target) Then
+            If current <> baseline.Item(target) Then operation.Assign "conflict", JS("modifiedOfficial")
+        ElseIf current = JT(operation, "sha256") Then
+            operation.Assign "conflict", JS("alreadyCurrent")
+        Else
+            operation.Assign "conflict", JS("unrecognizedAtOfficialPath")
         End If
+        operation.Assign "expectedOriginal", JS(current): operation.Assign "expectAbsent", JB(False)
     End Sub
+    Public Function UPreserveReplaced(ByVal plan As UpdateJson, ByVal journalPath As String, ByVal root As String) As String
+        ' Session backups are pruned after a week, so replaced local files are copied to a durable folder.
+        Dim reasons As Object = UMap(), operation As UpdateJson
+        For Each operation In plan.Member("operations").Items
+            Select Case JT(operation, "conflict")
+                Case "modifiedOfficial", "unrecognizedAtOfficialPath", "customizedTheme"
+                    reasons.Add USafe(JT(operation, "root"), JT(operation, "target")), JT(operation, "conflict")
+            End Select
+        Next
+        If reasons.Count = 0 Then Return ""
+        Dim folder As String = USafe(IHome(root), "Replaced/" & Format$(Now, "yyyymmdd-hhnnss") & "-" & UUnique())
+        Dim files As UpdateJson = JA(), record As UpdateJson, key As String, copy As String, entry As UpdateJson
+        For Each record In UReadJson(journalPath).Member("operations").Items
+            key = USafe(JT(record, "root"), JT(record, "target"))
+            If reasons.Exists(key) And JBool(record, "existed") Then
+                copy = USafe(folder, JT(record, "target"))
+                UDirectory UParent(copy)
+                UCopy JT(record, "backup"), copy: UFlush copy
+                If UHash(copy) <> JT(record, "originalSha256") Then UFail "Kept copy of a replaced file failed verification: " & key
+                Set entry = JO()
+                entry.Assign "path", JS(key): entry.Assign "keptAs", JS(copy): entry.Assign "sha256", record.Member("originalSha256"): entry.Assign "reason", JS(reasons.Item(key))
+                files.Push entry
+            End If
+        Next
+        Dim manifest As UpdateJson = JO()
+        manifest.Assign "schema", JN(1): manifest.Assign "files", files
+        UWriteJson USafe(folder, "replaced.json"), manifest
+        Return folder
+    End Function
     Private Sub UProtectTheme(ByVal operation As UpdateJson, ByVal version As String)
         Dim path As String = USafe(JT(operation, "root"), JT(operation, "target"))
         operation.Assign "expectAbsent", JB(Not UExists(path))
         If Not UExists(path) Then Exit Sub
         Dim id As String = IIf(JT(operation, "target") = "WinUI3 Dark.theme", "themeDark", "themeLight"), sha As String = UHash(path)
-        If Not MRecognized(MLedger(), id, sha) Then UFail "A customized or unknown theme was preserved. Use explicit backed-up resource reset before updating this theme."
+        ' A customized theme is backed up, replaced and kept like other differing files (owner requirement 2026-11-24).
+        If Not MRecognized(MLedger(), id, sha) Then operation.Assign "conflict", JS("customizedTheme")
         If UCompare(JT(MLedger().Member("resources").Member(id), "version"), version) > 0 Then UFail "A newer theme was preserved. Check again."
         operation.Assign "expectedOriginal", JS(sha)
     End Sub

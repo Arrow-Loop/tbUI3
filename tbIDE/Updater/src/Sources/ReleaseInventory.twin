@@ -44,6 +44,7 @@ Private Module ReleaseInventory
                 If Not JBool(operation, "expectAbsent") Then
                     kind = "updatedOfficial"
                     If JT(operation, "expectedOriginal") = JT(operation, "sha256") Then kind = "unchangedOfficial"
+                    If Len(JT(operation, "conflict")) > 0 Then kind = JT(operation, "conflict")
                 End If
                 operation.Assign "classification", JS(kind): record.Assign "classification", JS(kind)
                 classifications.Push record: seen.Add JT(operation, "target"), True

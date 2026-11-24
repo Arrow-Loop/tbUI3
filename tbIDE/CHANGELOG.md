@@ -1,5 +1,9 @@
 # Changelog: tbIDE (WinUI 3 look for the twinBASIC IDE)
 
+## 2026-11-24 - Unified development-tool log routing
+
+Redirected the existing timestamped preparation, packaging, publication and legacy Welcome-repair PowerShell transcripts to `%LOCALAPPDATA%\tbUI3\Diagnostics`, alongside native diagnostics. Preserved portable runtime cache, publication scratch files, reset backups and existing historical logs. Verified the script changes are limited to the log directory assignments; no binary rebuild or runtime version change. Windows transcript creation remains to be observed.
+
 ## 2026-11-24 - Self-contained development preparation prerequisites
 
 The owner reported that Prepare-Addin.bat now parsed but stopped because Node was not installed or cached on this PC. Reused the existing verified portable Node 22 download/cache routine and GitHub Desktop Git discovery in preparation, with pinned local jsdom setup when missing. No system installation, permanent PATH changes or administrator rights are required. Pending assembly now binds the verified helper before running add-in-only sync, accommodating the owner's freshly rebuilt helper without bypassing existing verification/self-tests or the original project hash guard. Static delimiter inspection only; Windows execution and assembly remain pending.

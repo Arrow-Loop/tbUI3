@@ -4,7 +4,7 @@ param()
 $ErrorActionPreference = 'Stop'
 $root = (Resolve-Path (Join-Path $PSScriptRoot '..\..')).Path
 $cache = Join-Path $env:LOCALAPPDATA 'ArrowLoop\tbUI3\DevTools'
-$logs = Join-Path $cache 'Logs'
+$logs = Join-Path $env:LOCALAPPDATA 'tbUI3\Diagnostics'
 $null = New-Item -ItemType Directory -Path $logs -Force
 $log = Join-Path $logs ('WelcomeRepair-' + (Get-Date -Format 'yyyyMMdd-HHmmss-fff') + '.log')
 $exitCode = 1

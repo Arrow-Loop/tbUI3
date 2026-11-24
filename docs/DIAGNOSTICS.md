@@ -1,6 +1,6 @@
 # Diagnostic files
 
-All active first-party runtime diagnostics now use **`%LOCALAPPDATA%\tbUI3\Diagnostics\`**. Open that path in Explorer. The package, add-in and updater share the same private `DiagnosticPaths.twin` implementation. Diagnostic failures do not fall back to TEMP, an executable directory or the user's project directory.
+All active first-party runtime diagnostics and development-tool transcripts now use **`%LOCALAPPDATA%\tbUI3\Diagnostics\`**. Open that path in Explorer. The package, add-in and updater share the same private `DiagnosticPaths.twin` implementation. Diagnostic failures do not fall back to TEMP, an executable directory or the user's project directory.
 
 | Output | Location below Diagnostics | When written |
 | --- | --- | --- |
@@ -14,6 +14,12 @@ All active first-party runtime diagnostics now use **`%LOCALAPPDATA%\tbUI3\Diagn
 | Startup fallback page | `updater-startup-help.html` | Verified complete UTF-8 page after interface startup failure |
 | Latest native self-test pointer | `native-updater-latest.json` | Each completed `Updater.exe -SelfTest` run |
 | Full self-test report/fixtures | `NativeSelfTests\tbUI3-native-updater-tests-<run>\` | Native self-test runs, including `results.json` |
+| Prepare-Addin.bat | `Embed-<timestamp>.log` | Preparation, prerequisite setup, native self-tests, assembly and verification |
+| Package-Release.bat | `Package-<timestamp>.log` | Release packaging and verification |
+| Publish-Release.bat | `Publish-<timestamp>.log` | Release publication and verification |
+| Apply-Welcome-Repair.bat | `WelcomeRepair-<timestamp>.log` | Legacy repair preparation and assembly |
+
+Development-tool transcripts are written directly into Diagnostics with their existing timestamped names. The portable Node/jsdom cache and transient publication work remain in `%LOCALAPPDATA%\ArrowLoop\tbUI3\DevTools\`; existing historical logs there are not moved. Reset-TestState.bat retains its separate recovery backups and manifests; its archive-diagnostics option includes new development transcripts. Preview and reset launchers do not gain a new transcript in this change.
 
 No tracing flag is automatically enabled by this path change. Existing project/TEMP log files remain untouched as historical evidence, but new active code stops writing there. Historical research probe snapshots under docs/research are retained unchanged; they are not active application diagnostics.
 

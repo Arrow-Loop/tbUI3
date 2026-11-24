@@ -1,9 +1,6 @@
 # Self-provisioning tbUI3IDE bootstrap and Welcome Wizard
 
-> 2026-11-23 embedding completed: the canonical add-in now embeds the tracked `Updater/Build/Updater.exe` (0.2.0.0, SHA-256 677d86b4a9fe368282e4c1464e0ad549e5309b838f2929570c13e4803dd2ee68), both WinUI3 themes and their verified bundle manifest. Reopen `tbUI3IDE/tbUI3IDE.twinproj` and compile **Win32 and Win64**. Then inspect both DLLs with `verify-phase1-release.mjs` and test DLL-only offline bootstrap/repair/shared launch. Earlier statements below describing missing payloads are historical; this source packaging pass is complete, native add-in acceptance remains pending.
-
-
-> 2026-11-23 implementation status: native/integration source candidate is now in the canonical projects. [PHASE1_HANDOFF.md](PHASE1_HANDOFF.md) records actual evidence and pending native acceptance. Shane subsequently split actual compiled-helper embedding into a separate Phase 1 pass after the updater works; the combined public release gate and all Phase 2/3 requirements below remain intact. No compiled or runtime acceptance is claimed by source implementation.
+**Current checkpoint:** See [PHASE1_HANDOFF.md](PHASE1_HANDOFF.md). Native helper acceptance and canonical embedding are complete; compiled DLL and live bootstrap acceptance remain open. This document describes the approved design.
 
 **Agent implementation entry point:** [INSTALLATION_MANAGER_SPEC.md](INSTALLATION_MANAGER_SPEC.md) is the consolidated cross-phase specification capturing Shane's exact UX, preservation, update strategy, release inventory, discovery and compatibility decisions from the full planning discussion. This bootstrap plan expands first-install and Welcome Wizard details. If older phase planning prose differs, follow the newer approved decisions in the consolidated specification; actual source behavior must still be verified independently.
 
@@ -23,13 +20,13 @@ The combined first milestone includes: native updater compile/runtime/47 self-te
 - Shared user add-ins require **actual host-loader compatibility/precedence verification** before implementing installation-specific archived add-in overrides. Do not assume a shared copy can unregister/unload after local and shared copies have already loaded. Keep a future compatibility opt-out/override as an advanced feature only after host behavior is established.
 - Do not implement bulk reorganization, shortcut surgery, archive transfers or multi-layout detection as first-release blockers. The first-release release-inventory and identity contracts should remain extensible enough to add these without destructive migrations.
 
-The current [Updater README](Updater/README.md) still describes manual helper installation because source migration is pending. ROADMAP entries describe planned rather than completed features.
+The [Updater README](Updater/README.md) describes the current deployment. See the handoff for acceptance.
 
-**Status:** Approved design, 2026-11-23; implementation pending. This supersedes the first-install *placement* assumption in [UPDATER_PLAN.md](UPDATER_PLAN.md) and the currently implemented `Updater.exe`-beside-`twinBASIC.exe` contract in [Updater/README.md](Updater/README.md). Those documents describe the existing source until this migration is implemented. No claim of a working bootstrap or wizard is made here.
+**Status:** Approved design implemented in source; live acceptance remains open. This supersedes the original beside-IDE helper placement in the historical [UPDATER_PLAN.md](UPDATER_PLAN.md).
 
 ## User-facing contract
 
-The only manual first-install payload is the appropriate `tbUI3IDE.dll` for each twinBASIC architecture the user runs, placed in that IDE installation's `addins/win32` and/or `addins/win64` folder. The add-in DLL must *embed* the complete portable **Win32** `Updater.exe` and both `WinUI3 Dark.theme` and `WinUI3 Light.theme`. Either DLL alone must be able to provision these assets; both contain equivalent resource bytes and validated manifest entries. No separate user-installed EXE, setup wizard binary, PowerShell script or loose HTML/CSS/JS is required.
+The only manual first-install payload is the appropriate `tbUI3IDE.dll` for each twinBASIC architecture the user runs, preferably placed in the shared `%APPDATA%\\twinBASIC\\addins\\win32` and/or `win64` folder, subject to loader acceptance. The add-in DLL must *embed* the complete portable **Win32** `Updater.exe` and both `WinUI3 Dark.theme` and `WinUI3 Light.theme`. Either DLL alone must be able to provision these assets; both contain equivalent resource bytes and validated manifest entries. No separate user-installed EXE, setup wizard binary, PowerShell script or loose HTML/CSS/JS is required.
 
 When the add-in loads, it checks for missing/outdated **bundled** dependencies regardless of whether this is the first launch, whether automatic online update checks are enabled, or whether the Welcome Wizard was previously dismissed. It silently restores missing resources where permitted, without replacing a newer installed updater or overwriting modified user themes. Resource bootstrap is local, offline and distinct from user-approved *downloaded* updates.
 
@@ -57,7 +54,7 @@ One updater executable can service multiple IDE roots without combining their st
 
 ### Protected locations and UAC
 
-Bootstrap writes only to the user's data paths and normally needs no elevation. A user-approved update that modifies the IDE under a protected directory may require Windows UAC. Stage and verify in user space first; request elevation *only* when the user approves a specific file-changing transaction and the target requires it. The elevated worker must accept only a validated, constrained plan, retain existing locks and rollback/recovery, and handle UAC denial without damage. This is **planned**, not a claim that the current updater has elevation implemented. Avoid probing protected writes with dangerous partial modifications.
+Bootstrap writes only to the user's data paths and normally needs no elevation. A user-approved update that modifies the IDE under a protected directory may require Windows UAC. Stage and verify in user space first; request elevation *only* when the user approves a specific file-changing transaction and the target requires it. The elevated worker must accept only a validated, constrained plan, retain existing locks and rollback/recovery, and handle UAC denial without damage. The scoped worker is implemented in source; native protected-folder acceptance remains open. Avoid probing protected writes with dangerous partial modifications.
 
 ## Welcome Wizard
 
@@ -65,15 +62,15 @@ An embedded **HTML/CSS/JavaScript** Welcome Wizard runs in the add-in's existing
 
 - Trigger when no per-user completion/dismissal record exists for the current wizard schema; typically after bootstrap on first add-in use. Missing/deleted dependency on a later launch is a repair event, **not** a reason to replay the wizard.
 - Persist wizard completion/dismissal per user independently of each IDE installation, with schema version so a substantial future onboarding revision can be offered deliberately. Provide **Welcome to tbUI3IDE** in the IDE Help/add-in entry point and IDE Options to reopen it at will.
-- Pages: **Welcome** (what the add-in does); **Updates** (twinBASIC IDE, tbUI3IDE, themes and resources, independent availability, daily opt-out, manual check, update consent and safe deferred install); **WinUI3 themes** (Dark/Light preview and opt-in live selection); **Toolbar** (Classic/Hybrid/Ribbon preview and actual option); **Designer features** (TabView/TabPage management, form/command improvements and discoverability); **Finish** (summary, where IDE Options lives, reopen tour).
+- Pages: Welcome; conditional Setup only when attention is required; Updates; Themes (all effective installed themes with compact resolved-color previews); Toolbar (Classic/Hybrid/Ribbon); Features (add-in capabilities); Finish (preferences only). No channel selector until a genuine stable channel exists. The normal flow has six pages.
 - Explain the exact new IDE Options controls and direct user to them. Settings offered in the wizard must use the actual add-in's configuration APIs, not simulated UI state; users can back/skip/finish, and their settings persist. Do not apply a WinUI3 theme without express selection. Default to leaving IDE theme and toolbar preference unchanged unless the user chooses otherwise.
-- Clearly disclose whether bootstrap succeeded, was partially blocked by access/locks, or requires repair. The wizard must still run when `Updater.exe` is missing or cannot launch. A failed bootstrap should not be represented as a successful installation.
+- Silently provision and verify before onboarding. Report only issues requiring attention on the conditional Setup step after Welcome. The wizard must still run when `Updater.exe` is missing or cannot launch. A failed bootstrap should not be represented as a successful installation.
 - Reuse an accessible WinUI-styled view/container for a future **What's New** experience; use responsive layout, keyboard navigation, focus management, screen-reader names, Light/Dark/accent support and non-blocking operation.
 
-## Delivery / acceptance / release sequencing (future work)
+## Delivery / acceptance / release sequencing
 
-1. Finish validating the currently implemented native Updater 0.1.0.1 and tbUI3IDE 0.3.0.22 without conflating it with this unimplemented bootstrap/wizard.
-2. Add embedded-resource generation and validation, change the updater location and installation-id state contracts; synchronize both canonical `.twinproj` files and `src/` mirrors, update CHANGELOG/ROADMAP and packaging metadata as part of the implementation.
+1. The accepted Updater 0.2.0.0 and canonical embedded bundle are complete. Follow the current [Phase 1 handoff](PHASE1_HANDOFF.md) for Win32/Win64 add-in compilation and actual resource verification.
+2. Verify DLL-only deployment, shared updater and per-installation state, not the superseded manual helper model.
 3. Exercise fresh first-install using only architecture-appropriate DLLs, repair after deleting individual resources, older DLL after newer updater, two concurrent IDE installations, Win32/Win64 races, read-only files, customized themes, corrupted resources, locked updater, UAC rejection, offline startup, wizard dismissal/reopen/configuration, and AppData paths with spaces and Unicode.
 4. Test protected `Program Files` IDE with normal (unelevated) bootstrap; for any separately implemented elevated update worker, confirm explicit consent, constrained destination, rollback, cancellation and UAC denial.
 5. Publish a properly marked prerelease only after native acceptance, with DLLs that really contain verified payloads. Do not publish the current manually assembled loose-file ZIP as if it already provides self-provisioning. Preserve separate independently versioned release assets where needed by the updater.

@@ -7,7 +7,7 @@ test('all standalone production native IDE Eval snippets parse as JavaScript',()
  for(const m of snippets)assert.doesNotThrow(()=>new vm.Script(m[1]),m[1]);
 });
 test('shared native contracts remain byte-identical in both projects',()=>{
- for(const name of ['UpdateJson','UpdaterJson','UpdaterPlatform','UpdaterProcesses','InstallationContracts','ManagedResources'])assert(fs.readFileSync('tbIDE/Updater/src/Sources/'+name+'.twin').equals(fs.readFileSync('tbIDE/tbUI3IDE/src/Sources/'+name+'.twin')),name);
+ for(const name of ['UpdateJson','UpdaterJson','UpdaterPlatform','UpdaterProcesses','InstallationContracts','ManagedResources','ShutdownBridge'])assert(fs.readFileSync('tbIDE/Updater/src/Sources/'+name+'.twin').equals(fs.readFileSync('tbIDE/tbUI3IDE/src/Sources/'+name+'.twin')),name);
 });
 test('generated helper and add-in configurations share protocol bounds and helper version, with independently revised add-in version',()=>{
  const config=JSON.parse(read('tbIDE/phase1-config.json'));
@@ -27,6 +27,17 @@ test('every source version matches configuration without renumbering core contro
  const config=JSON.parse(read('tbIDE/phase1-config.json'));
  for(const [folder,version]of [['Updater',config.updaterVersion],['tbUI3IDE',config.addinVersion]]){const s=JSON.parse(read('tbIDE/'+folder+'/src/Settings'));assert.equal(['Major','Minor','Build','Revision'].map(k=>s['project.version'+k]).join('.'),version);}
  assert.equal(JSON.parse(read('tbUI3/src/Settings'))['project.versionMajor'],1);
+});
+
+test('the visible review gates the staging worker and native Apply gates file replacement',()=>{
+ const form=read('tbIDE/Updater/src/Sources/frmMain.twin');
+ const engine=read('tbIDE/Updater/src/Sources/UpdaterEngine.twin');
+ const selection=form.slice(form.indexOf('Case "select"'),form.indexOf('Case "automatic", "restart"'));
+ assert.match(selection,/If Not Me\.Visible/);
+ const arming=form.slice(form.indexOf('Private Sub PollState()'),form.indexOf('Dim running As Boolean = WorkerRunning'));
+ assert.match(arming,/BMatches\(UpdateContext, "armed\.json", "armed"\)[\s\S]+StartUpdateEngine\("Stage"\)/);
+ assert.match(engine,/BSelection\(USelectComponents\(context, approvedCatalog\)\)[\s\S]+UMakePlan\(context/);
+ assert.match(engine,/UApproval session, plan\s+UInstall plan/);
 });
 
 test('native source procedure boundaries and endings are structurally intact',()=>{

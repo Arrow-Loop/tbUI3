@@ -1,5 +1,14 @@
 # Changelog: tbIDE (WinUI 3 look for the twinBASIC IDE)
 
+## 2026-11-24 - Standalone updater ownership (add-in 0.4.0.5, updater 0.2.0.3)
+
+- Moved discovery, notification, review, ongoing preferences, consent, deferral and staging orchestration to Updater.exe. The IDE keeps Welcome, resource repair, launch entry points and the native exit bridge.
+- Added a versioned, expiring shutdown handshake bound to the originating IDE and selected release assets. Recorded the native accepted close before compiler teardown and retained the separately sealed plan, process verification, cancellation and scoped elevation checks.
+- Added worker-driven download, extraction, verification and baseline progress, with session-correlated diagnostics. Removed the IDE-hosted updater view and scheduler.
+- BETA 1045 built the Win32 updater and both add-in architectures. The updater passed 62 native self-tests. Verified both DLL payloads and exercised local package generation.
+- A disposable BETA 1043 installation completed Update on Exit to BETA 1045. Manual discovery worked with automatic checks disabled. The updater was visible before downloads and remained active after normal IDE close during extraction. Extraction plus inventory hashing took 86 seconds for the new release and 87 seconds for its previous baseline on this run.
+- On BETA 1045, automatic discovery displayed the compact standalone notification. Opening it and selecting Update Now closed the IDE normally and installed the published icon library into the disposable profile. Fixed the library version-marker length found by this run and covered it with a native fixture.
+
 ## 2026-11-24 - Explicit updater visibility requirement
 
 Clarified the approved Phase 1 specification, roadmap and acceptance checklist: the standalone updater must appear before the first authorized release-asset download for either update choice and remain accessible with live progress throughout staging and installation. Quiet metadata checks may remain hidden. Documentation only; implementation and native acceptance remain pending.

@@ -4,12 +4,17 @@ Private Module ReleaseInventory
         Dim inventory As UpdateJson = JO(), all As UpdateJson = JA(), managed As UpdateJson = JA(), key As Variant, entry As UpdateJson
         inventory.Assign "schema", JN(IInventorySchema): inventory.Assign "version", component.Member("version")
         inventory.Assign "asset", component.Member("asset"): inventory.Assign "files", all
-        Dim unsupported As String
+        Dim unsupported As String, count As Long, total As Long
+        For Each entry In entries.Items
+            If Not JBool(entry, "directory") Then total = total + 1
+        Next
         For Each key In entries.Keys
             Set entry = entries.Item(key)
             If Not JBool(entry, "directory") Then
                 Dim name As String = JT(entry, "name"), target As String = USafe(directory, name)
+                BProgress "Extracting and hashing official archive", count, total, "files", name
                 UZipExtract archive, entry, target
+                count = count + 1
                 Dim record As UpdateJson = UFileRecord(name, name, JD(entry, "size"), UHash(target)), isManaged As Boolean = UTargetAllowed("ide", name)
                 record.Assign "managed", JB(isManaged): record.Assign "official", JB(True)
                 record.Assign "disposition", JS(IIf(isManaged, "InPlaceCandidate", "PreserveUnmanaged"))
@@ -24,6 +29,7 @@ Private Module ReleaseInventory
                 End If
             End If
         Next
+        BProgress "Extracting and hashing official archive", count, total, "files"
         component.Assign "releaseInventory", inventory
         If Len(unsupported) > 0 Then UFail "The verified official release introduces an unsupported vendor path: " & unsupported & ". It is official content, not presumed user data. No installation was changed; this layout needs policy review."
         Set VOfficialFiles = managed

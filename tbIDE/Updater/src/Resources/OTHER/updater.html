@@ -6,14 +6,20 @@
 <body><main class="updater-window">
 <header class="updater-header"><span class="updater-mark" aria-hidden="true">&#xE896;</span><div><h1>Updates</h1><p class="text-muted">twinBASIC and tbUI3 developer tools</p></div></header>
 <section class="updater-content" aria-label="Update progress">
-<winui-info-bar id="status" open not-closable severity="informational" title="Ready when you are" message="Choose updates from the tbUI3IDE add-in to start."></winui-info-bar>
-<section aria-labelledby="components-heading"><h2 id="components-heading">Selected updates</h2><p class="updater-path text-muted" id="scope"></p><div class="settings-list" id="components"><div class="updater-empty text-muted">Your approved updates will appear here.</div></div></section>
-<section class="updater-progress" aria-labelledby="progress-heading"><div class="progress-label"><strong id="progress-heading">Installation</strong><span class="text-muted" id="progress-value">Not started</span></div>
-<winui-progress-bar id="progress" value="0" maximum="100" aria-label="Installation progress"></winui-progress-bar>
-<p class="process-status" id="message" role="status" aria-live="polite">Your projects and embedded control packages stay unchanged.</p></section>
-<details class="updater-details"><summary>Details and recovery</summary><p class="text-muted">Downloads are verified before installation. Replaced files are backed up, and an interrupted update keeps its recovery journal.</p><p class="updater-path text-muted" id="recovery-path">No update session is open.</p></details>
+<winui-info-bar id="status" open not-closable severity="informational" title="Updates" message="Open this updater from twinBASIC to check an installation."></winui-info-bar>
+<section id="review" aria-labelledby="components-heading" hidden><h2 id="components-heading">Components</h2><p class="updater-path text-muted" id="scope"></p><div class="settings-list" id="components"></div><ul id="sources" class="text-muted"></ul></section>
+<section id="preferences" aria-label="Update preferences" hidden>
+<label class="choice"><input id="automatic" type="checkbox"> Check automatically once a day when twinBASIC starts</label>
+<label class="choice"><input id="restart" type="checkbox"> Restart this IDE after a successful update</label>
+<div id="preferences-error" hidden><p id="preferences-reason" role="alert"></p><label class="choice"><input id="reset-approval" type="checkbox"> Approve backing up and resetting these preferences</label><winui-button id="reset">Back up and reset preferences</winui-button></div>
 </section>
-<footer class="updater-footer"><span class="text-muted">tbUI3 Updater 0.2.0.0</span><div class="command-row">
+<section class="updater-progress" id="progress-panel" aria-labelledby="progress-heading" hidden><div class="progress-label"><strong id="progress-heading">Progress</strong><span class="text-muted" id="progress-value"></span></div>
+<winui-progress-bar id="progress" value="0" maximum="100" aria-label="Update progress"></winui-progress-bar>
+<p class="process-status" id="message" role="status" aria-live="polite"></p><p class="text-muted" id="operation-detail"></p></section>
+</section>
+<footer class="updater-footer"><span class="text-muted" id="version"></span><div class="command-row">
+<winui-button id="review-updates" appearance="primary" hidden>Review updates</winui-button><winui-button id="check" hidden>Check for Updates</winui-button>
+<winui-button id="later" hidden>Remind Me Later</winui-button><winui-button id="exit" hidden>Update on Exit</winui-button><winui-button id="now" appearance="primary" hidden>Update Now</winui-button>
 <winui-button id="recover" hidden>Restore backup</winui-button><winui-button id="cancel" hidden>Cancel update</winui-button>
 <winui-button id="elevate" appearance="primary" hidden>Continue with administrator approval</winui-button><winui-button id="retry" appearance="primary" hidden>Retry</winui-button><winui-button id="close">Close</winui-button>
 </div></footer></main>{{CONTROLS_SCRIPT}}{{APP_SCRIPT}}</body></html>

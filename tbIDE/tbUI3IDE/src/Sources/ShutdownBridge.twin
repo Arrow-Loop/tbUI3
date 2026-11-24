@@ -1,0 +1,128 @@
+' Bridge protocol is independent of the published release and recovery schemas.
+Private Module ShutdownBridge
+    Public Const BVersion As Long = 1
+    Public BProgressContext As String
+    Public BProgressComponent As String
+    Private mProgressKey As String
+    Private mStarted As Single
+    Private mTick As Single
+    Private mMilestone As Long
+    Private mCancellationTick As Single
+
+    Public Sub BCheckCancellation(Optional ByVal force As Boolean = False)
+        If Len(BProgressContext) = 0 Then Exit Sub
+        Dim tick As Single = Timer
+        If Not force And tick >= mCancellationTick And tick - mCancellationTick < 0.25! Then Exit Sub
+        mCancellationTick = tick
+        If UExists(USafe(UParent(BProgressContext), "cancel.json")) Or BMatches(BProgressContext, "native-exit.json", "cancelled") Then UFail "Update cancelled."
+    End Sub
+
+    Public Sub BProgress(ByVal operation As String, Optional ByVal completed As Double = 0, Optional ByVal total As Double = 0, Optional ByVal unit As String = "", Optional ByVal item As String = "")
+        If Len(BProgressContext) = 0 Then Exit Sub
+        Dim tick As Single = Timer, key As String = BProgressComponent & " " & operation
+        Dim session As String = UParent(BProgressContext), context As UpdateJson
+        If key <> mProgressKey Then
+            Set context = UReadJson(BProgressContext)
+            If Len(mProgressKey) > 0 Then BLog context, session, mProgressKey & " duration seconds " & Format$(BElapsed(tick), "0.000")
+            BLog context, session, key & " started"
+            mStarted = tick: mProgressKey = key: mMilestone = 0
+        ElseIf tick >= mTick And tick - mTick < 0.35! And (total = 0 Or completed < total) Then
+            Exit Sub
+        End If
+        BCheckCancellation
+        mTick = tick
+        Dim state As UpdateJson = JO()
+        state.Assign "status", JS("staging"): state.Assign "message", JS(operation)
+        state.Assign "component", JS(BProgressComponent): state.Assign "item", JS(item)
+        state.Assign "completed", JN(completed): state.Assign "total", JN(total): state.Assign "unit", JS(unit)
+        Dim seconds As Double = BElapsed(tick)
+        If unit = "bytes" And seconds >= 0.25 And completed > 0 Then
+            state.Assign "bytesPerSecond", JN(completed / seconds)
+            If total > completed Then state.Assign "etaSeconds", JN((total - completed) * seconds / completed)
+        End If
+        If unit = "bytes" And total > 0 Then
+            Dim milestone As Long = Int(completed * 4 / total)
+            If milestone > mMilestone Then
+                BLog UReadJson(BProgressContext), session, key & " " & CStr(completed) & "/" & CStr(total) & " bytes"
+                mMilestone = milestone
+            End If
+        End If
+        UWriteJson USafe(session, "state.json"), state
+    End Sub
+
+    Private Function BElapsed(ByVal tick As Single) As Double
+        Dim seconds As Double = tick - mStarted
+        If seconds < 0 Then seconds = seconds + 86400#
+        Return seconds
+    End Function
+
+    Public Function BSelection(ByVal components As UpdateJson) As UpdateJson
+        Dim result As UpdateJson = JA(), component As UpdateJson, item As UpdateJson
+        For Each component In components.Items
+            Set item = JO()
+            item.Assign "id", component.Member("id")
+            item.Assign "version", component.Member("version")
+            item.Assign "asset", component.Member("asset")
+            If component.Has("baselineAsset") Then item.Assign "baselineAsset", component.Member("baselineAsset")
+            result.Push item
+        Next
+        Set BSelection = result
+    End Function
+
+    Public Function BRecord(ByVal path As String, ByVal status As String) As UpdateJson
+        Dim context As UpdateJson = UReadJson(path), result As UpdateJson = JO()
+        If JD(context, "bridge") <> BVersion Or JT(context, "sessionId") <> UFso().GetFileName(UParent(path)) Then UFail "Shutdown acknowledgement session mismatch."
+        If JD(context, "expiresUtc") < UtcMilliseconds() Then UFail "The shutdown authorization has expired."
+        result.Assign "schema", JN(BVersion)
+        result.Assign "sessionId", context.Member("sessionId")
+        result.Assign "status", JS(status)
+        result.Assign "requestSha256", JS(UHash(path))
+        result.Assign "installationId", context.Member("installationId")
+        result.Assign "originSha256", context.Member("originSha256")
+        Set BRecord = result
+    End Function
+
+    Public Function BMatches(ByVal path As String, ByVal name As String, ByVal status As String) As Boolean
+        Dim record As String = USafe(UParent(path), name)
+        If Not UExists(record) Then Return False
+        Return UReadJson(record).Encode() = BRecord(path, status).Encode()
+    End Function
+
+    Public Sub BValidateRequest(ByVal path As String, ByVal origin As String, ByVal originHash As String)
+        Dim request As UpdateJson = UReadJson(path), launch As UpdateJson = UReadJson(origin)
+        IValidateContext request, path
+        IValidateContext launch, origin
+        If JD(request, "bridge") <> BVersion Or JD(launch, "bridge") <> BVersion Then UFail "Incompatible shutdown bridge."
+        If JT(launch, "choice") <> "" Or JT(request, "originSha256") <> originHash Or UHash(origin) <> originHash Then UFail "Shutdown request does not belong to this IDE launch."
+        If JT(request, "installationId") <> JT(launch, "installationId") Or JD(request, "compilerPid") <> JD(launch, "compilerPid") Or JT(request, "compilerBirth") <> JT(launch, "compilerBirth") Then UFail "Shutdown request process or installation mismatch."
+        If JT(request, "choice") <> "now" And JT(request, "choice") <> "exit" Then UFail "Unknown update consent choice."
+        If request.Member("selection").Items.Count = 0 Or request.Member("selected").Items.Count <> request.Member("selection").Items.Count Then UFail "Missing authorized selection."
+    End Sub
+
+    Public Sub BLog(ByVal context As UpdateJson, ByVal session As String, ByVal eventName As String)
+        On Error Resume Next
+        If IIsElevated() Then Exit Sub
+        Dim base As String = DiagnosticsRoot(), path As String = DiagnosticsFile("updater-engine.log")
+        If Len(base) = 0 Or Len(path) = 0 Then Exit Sub
+        UDirectory base
+        Dim stream As Object = UFso().OpenTextFile(path, 8, True, -1)
+        stream.WriteLine Format$(Now, "yyyy-mm-dd hh:nn:ss") & " [" & JT(context, "installationId") & "/" & UFso().GetFileName(session) & "] " & eventName
+        stream.Close
+    End Sub
+    Private Type UtcTime
+        year As Integer
+        month As Integer
+        dayOfWeek As Integer
+        day As Integer
+        hour As Integer
+        minute As Integer
+        second As Integer
+        milliseconds As Integer
+    End Type
+    Private Declare PtrSafe Sub GetSystemTime Lib "kernel32" (ByRef value As UtcTime)
+    Public Function UtcMilliseconds() As Double
+        Dim value As UtcTime
+        GetSystemTime value
+        Return (CDbl(DateSerial(value.year, value.month, value.day)) - 25569#) * 86400000# + value.hour * 3600000# + value.minute * 60000# + value.second * 1000# + value.milliseconds
+    End Function
+End Module

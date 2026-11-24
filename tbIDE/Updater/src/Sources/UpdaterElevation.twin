@@ -32,6 +32,12 @@ Private Module UpdaterElevation
         If UHash(UpdateContext) <> AuthorizedContextHash Or UHash(planPath) <> AuthorizedPlanHash Then UFail "The approved transaction changed before elevation."
         Dim context As UpdateJson = UReadJson(UpdateContext), plan As UpdateJson = UReadJson(planPath)
         IValidateContext context, UpdateContext: UValidatePlan plan, context, SessionFolder()
+        If UpdateMode = "Apply" And context.Has("bridge") Then
+            Pin USafe(SessionFolder(), "armed.json"), False
+            Pin USafe(SessionFolder(), "native-exit.json"), False
+            Pin USafe(SessionFolder(), "verified-plan.json"), False
+            UApproval SessionFolder()
+        End If
         ElevatedStateSafe = True
         Dim operation As UpdateJson
         For Each operation In plan.Member("operations").Items
@@ -52,6 +58,7 @@ Private Module UpdaterElevation
                 End If
             Next
         End If
+        UState SessionFolder(), "verifying", "Revalidating the selected releases and protected installation..."
         VerifyElevatedProvenance context, plan
         ' Directory handles deny rename/reparse writes while allowing child file replacements.
         For Each operation In plan.Member("operations").Items

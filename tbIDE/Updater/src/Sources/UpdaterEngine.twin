@@ -5,19 +5,39 @@ Private Module UpdaterEngine
         state.Assign "status", JS(status): state.Assign "message", JS(message)
         If Len(choice) > 0 Then state.Assign "choice", JS(choice)
         UWriteJson USafe(session, "state.json"), state
+        BLog UReadJson(UpdateContext), session, status
     End Sub
     Public Sub UContextValid(ByVal context As UpdateJson)
         IValidateContext context, UpdateContext
     End Sub
     Public Sub UDetached(ByVal context As UpdateJson, ByVal session As String, ByVal mode As String)
+        Dim destination As String = UCopyRunner(session)
+        BLog context, session, "detached launch " & mode
+        Shell QuoteArg(destination) & " -Mode " & mode & " -Context " & QuoteArg(UpdateContext), vbHide
+    End Sub
+    Public Function UCopyRunner(ByVal session As String) As String
         Dim runner As String = USafe(session, "runner-" & UUnique())
         UDirectory runner
-        Dim source As String = App.Path & "\Updater.exe", destination As String = runner & "\Updater.exe"
+        Dim source As String = App.Path & "\Updater.exe", destination As String = USafe(runner, "Updater.exe")
         UNoLinks source: UPe source, &H14C: UCopy source, destination
         If UHash(source) <> UHash(destination) Then UFail "Detached updater copy verification failed."
-        Shell QuoteArg(destination) & " -Mode " & mode & " -Context " & QuoteArg(UpdateContext), vbNormalFocus
-    End Sub
-    Public Sub UApproval(ByVal session As String)
+        Return destination
+    End Function
+    Public Sub UApproval(ByVal session As String, Optional ByVal expectedPlan As UpdateJson = Nothing)
+        Dim request As UpdateJson = UReadJson(UpdateContext)
+        If request.Has("bridge") Then
+            If JD(request, "bridge") <> BVersion Then UFail "Unsupported shutdown approval protocol."
+            If Not BMatches(UpdateContext, "armed.json", "armed") Or Not BMatches(UpdateContext, "native-exit.json", "shutdown") Then UFail "No matching normal-shutdown acknowledgement was received. Retry from the IDE."
+            Dim seal As UpdateJson = UReadJson(USafe(session, "verified-plan.json"))
+            Dim planPath As String = USafe(session, "plan.json")
+            If JD(seal, "schema") <> BVersion Or JT(seal, "requestSha256") <> UHash(UpdateContext) Or JT(seal, "planSha256") <> UHash(planPath) Then UFail "The verified transaction plan changed after staging."
+            Dim plan As UpdateJson = UReadJson(planPath)
+            If Not expectedPlan Is Nothing Then
+                If expectedPlan.Encode() <> plan.Encode() Then UFail "The transaction plan changed while applying."
+            End If
+            If BSelection(plan.Member("components")).Encode() <> request.Member("selection").Encode() Or plan.Member("identity").Encode() <> request.Member("identity").Encode() Then UFail "The verified plan does not match the authorized release selection or IDE identity."
+            Exit Sub
+        End If
         Dim path As String = USafe(session, "approved.json")
         If Not UExists(path) Then UFail "No normal-shutdown approval was received. Retry from the IDE."
         Dim approval As UpdateJson = UReadJson(path), context As UpdateJson = UReadJson(UpdateContext)
@@ -28,6 +48,7 @@ Private Module UpdaterEngine
         Return UExists(USafe(session, "cancel.json"))
     End Function
     Private Sub UApply(ByVal mode As String, ByVal context As UpdateJson, ByVal session As String)
+        If mode = "Apply" And Not context.Has("bridge") Then UFail "Legacy update approvals cannot start a new installation. Check again from the IDE."
         Dim planPath As String = USafe(session, "plan.json"), journalPath As String = USafe(session, "journal.json"), plan As UpdateJson = UReadJson(planPath)
         UValidatePlan plan, context, session
         Dim key As String = JT(context, "installationId"), mutex As LongPtr = IRequireLock("installation-" & key), sharedLock As LongPtr
@@ -36,12 +57,20 @@ Private Module UpdaterEngine
         Dim seconds As Long = 120
         If JT(context, "choice") = "exit" Then seconds = 43200
         Dim deadline As Date = DateAdd("s", seconds, Now)
+        BLog context, session, "checking originating IDE process identity"
         Do While UOwnerAlive(plan.Member("identity"))
+            If mode = "Apply" And context.Has("bridge") Then
+                If BMatches(UpdateContext, "native-exit.json", "cancelled") Then GoTo Cancelled
+            End If
             If mode = "Apply" And UCancelled(session) Then GoTo Cancelled
             If Now >= deadline Then UFail "Timed out waiting for normal IDE shutdown. Close normally and retry."
             UPause
         Loop
-        If mode = "Apply" Then UApproval session
+        If mode = "Apply" Then
+            If UCancelled(session) Then GoTo Cancelled
+            UApproval session, plan
+        End If
+        BLog context, session, "checking installation process locks"
         UWaitInstallation context, plan.Member("identity")
         If mode = "Apply" And UCancelled(session) Then GoTo Cancelled
         Dim c As UpdateJson
@@ -63,6 +92,7 @@ Private Module UpdaterEngine
             Else
                 Set recovery = UReadJson(journalPath)
             End If
+            UState session, "rollingBack", "Restoring and verifying the previous installation..."
             UValidateJournal recovery, plan, session: URollback recovery, journalPath
             UState session, "rolledBack", "Previous installation restored."
             IUnlock sharedLock: sharedLock = 0: IUnlock mutex: Exit Sub
@@ -81,10 +111,15 @@ Private Module UpdaterEngine
         UNoDowngrade plan, context
         Dim marker As UpdateJson = JO()
         marker.Assign "journal", JS(journalPath): marker.Assign "context", JS(UpdateContext): UWriteJson active, marker
+        If UCancelled(session) Then GoTo Cancelled
+        UApproval session, plan
         UInstall plan, journalPath, USafe(session, "state.json")
         UState session, "complete", "Selected updates installed and verified."
         IUnlock sharedLock: sharedLock = 0: IUnlock mutex: mutex = 0
-        If JBool(context, "restart") Then StartIde JT(context, "ideExe"), JT(context, "installRoot")
+        If JBool(context, "restart") Then
+            BLog context, session, "restarting originating IDE"
+            StartIde JT(context, "ideExe"), JT(context, "installRoot")
+        End If
         Exit Sub
     Cancelled:
         UState session, "cancelled", "Update cancelled. Your installation was not changed."
@@ -96,7 +131,7 @@ Private Module UpdaterEngine
         UFail reason
     End Sub
     Public Function RunNativeEngine(ByVal mode As String) As Long
-        Dim session As String = SessionFolder()
+        Dim session As String = SessionFolder(), metadataLock As LongPtr
         On Error GoTo Failed
         If Not ContextValidated Or Len(session) = 0 Then UFail "A validated saved session is required."
         UNoLinks UpdateContext
@@ -104,29 +139,40 @@ Private Module UpdaterEngine
         UContextValid context
         Select Case mode
             Case "Check"
+                metadataLock = IRequireLock("metadata-" & JT(context, "installationId"))
                 UCleanSessions session
                 UState session, "checking", "Checking published releases..."
+                Dim root As String = JT(context, "installRoot"), settings As UpdateJson = ISettings(root)
+                context.Assign "channel", settings.Member("channel")
                 Dim catalog As UpdateJson = UDiscover(context, session)
-                catalog.Assign "identity", UCaptureIdentity(context)
+                catalog.Assign "identity", UReadJson(USafe(session, "identity.json"))
+                catalog.Assign "channel", settings.Member("channel")
                 UWriteJson USafe(session, "catalog.json"), catalog
-                Dim state As UpdateJson = JO()
+                Dim state As UpdateJson = JO(), patch As UpdateJson = JO()
+                If catalog.Member("components").Items.Count > 0 Then
+                    patch.Assign "lastCheck", JS(Format$(Date, "yyyy-mm-dd")): IApplySettings root, patch
+                End If
                 state.Assign "status", JS("checked"): state.Assign "message", JS("Release check complete."): state.Assign "catalog", catalog
                 UWriteJson USafe(session, "state.json"), state
+                BLog context, session, "release discovery complete"
+                IUnlock metadataLock: metadataLock = 0
             Case "Stage"
-                UState session, "staging", "Downloading and verifying selected updates..."
-                Dim plan As UpdateJson = UMakePlan(context, UReadJson(USafe(session, "catalog.json")), session)
+                If Not BMatches(UpdateContext, "armed.json", "armed") Then UFail "The IDE did not arm this request."
+                BProgressContext = UpdateContext
+                UState session, "staging", "Preparing selected updates..."
+                Dim approvedCatalog As UpdateJson = UReadJson(USafe(session, "catalog.json"))
+                If BSelection(USelectComponents(context, approvedCatalog)).Encode() <> context.Member("selection").Encode() Or approvedCatalog.Member("identity").Encode() <> context.Member("identity").Encode() Then UFail "Release selection changed before staging."
+                BCheckCancellation True
+                Dim plan As UpdateJson = UMakePlan(context, approvedCatalog, session)
+                BCheckCancellation True
+                BProgress "Verifying transaction plan"
                 UValidatePlan plan, context, session
-                If UCancelled(session) Then UState session, "cancelled", "Pending update cancelled.": Return 0
-                UWriteJson USafe(session, "plan.json"), plan
-                Dim pending As UpdateJson = JO()
-                pending.Assign "schema", JN(1): pending.Assign "context", JS(UpdateContext): pending.Assign "planSha256", JS(UHash(USafe(session, "plan.json")))
-                UWriteJson USafe(JT(context, "stateRoot"), "pending.json"), pending
-                UState session, "ready", "Verified and ready. Installation waits for normal IDE shutdown.", JT(context, "choice")
-                UDetached context, session, "Apply"
-            Case "Cancel"
-                Dim cancel As UpdateJson = JO()
-                cancel.Assign "cancel", JB(True): UWriteJson USafe(session, "cancel.json"), cancel
-                UState session, "cancelled", "Pending update cancelled."
+                If BSelection(plan.Member("components")).Encode() <> context.Member("selection").Encode() Then UFail "Staged release selection differs from consent."
+                Dim planPath As String = USafe(session, "plan.json"), seal As UpdateJson = JO()
+                UWriteJson planPath, plan
+                seal.Assign "schema", JN(BVersion): seal.Assign "requestSha256", JS(UHash(UpdateContext)): seal.Assign "planSha256", JS(UHash(planPath))
+                UWriteJson USafe(session, "verified-plan.json"), seal
+                UState session, "ready", "Updates verified. Waiting for normal IDE shutdown.", JT(context, "choice")
             Case "Apply", "Recover": UApply mode, context, session
             Case Else: UFail "Unsupported native worker operation."
         End Select
@@ -134,11 +180,14 @@ Private Module UpdaterEngine
     Failed:
         Dim reason As String = Err.Description
         On Error Resume Next
+        IUnlock metadataLock
         If Len(session) > 0 Then
+            If mode = "Stage" And (UCancelled(session) Or BMatches(UpdateContext, "native-exit.json", "cancelled")) Then
+                UState session, "cancelled", "Update cancelled. Your installation was not changed."
+                Return 0
+            End If
             UState session, "error", reason
-            If IIsElevated() Then Return 1
-            Dim stream As Object = UFso().OpenTextFile(DiagnosticsFile("updater-engine.log"), 8, True, -1)
-            stream.WriteLine Format$(Now, "yyyy-mm-dd hh:nn:ss") & " " & mode & " [session " & session & "]: " & reason: stream.Close
+            BLog UReadJson(UpdateContext), session, mode & " failed: " & reason
         End If
         Return 1
     End Function
@@ -156,9 +205,12 @@ Private Module UpdaterEngine
         If StrComp(UParent(UFull(directory)), UFull(root), vbTextCompare) <> 0 Then Exit Sub
         UNoLinks directory
         Dim path As String = USafe(directory, "journal.json")
-        If Not UExists(path) Then Exit Sub
-        Dim journal As UpdateJson = UReadJson(path), status As String = JT(journal, "status")
-        If status <> "complete" And status <> "rolledBack" Then Exit Sub
+        If UExists(path) Then
+            Dim journal As UpdateJson = UReadJson(path), status As String = JT(journal, "status")
+            If status <> "complete" And status <> "rolledBack" Then Exit Sub
+        ElseIf Not UExists(USafe(directory, "closed.json")) Then
+            Exit Sub
+        End If
         UCheckTree directory
         UFso().DeleteFolder directory, True
     Retain:

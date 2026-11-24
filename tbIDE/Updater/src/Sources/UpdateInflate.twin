@@ -99,6 +99,7 @@ Private Class UpdateInflate
         If mOutCount = 65536 Then FlushOutput
     End Sub
     Private Sub FlushOutput()
+        BCheckCancellation
         If mOutCount = 0 Then Exit Sub
         Dim part() As Byte: ReDim part(0 To mOutCount - 1)
         Dim i As Long

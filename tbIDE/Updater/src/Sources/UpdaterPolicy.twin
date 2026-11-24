@@ -99,7 +99,8 @@ Private Module UpdaterPolicy
         If size > 256 Then size = 256
         Dim bytes() As Byte = UBytes(path, CLng(offset), CLng(size)), text As String
         For i = 0 To UBound(bytes): text = text & Chr$(bytes(i)): Next
-        If Left$(text, 12) <> "#tbUI3-Icons|" Then UFail "Missing icon library version."
+        Const VersionMarker As String = "#tbUI3-Icons|"
+        If Left$(text, Len(VersionMarker)) <> VersionMarker Then UFail "Missing icon library version."
         Dim parts() As String = Split(text, "|")
         If UBound(parts) < 2 Then UFail "Invalid library index."
         Dim ignored As Variant = UVersionParts(parts(1))

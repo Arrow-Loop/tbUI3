@@ -33,17 +33,48 @@ async function fixture(){
  await new Promise(resolve=>dom.window.addEventListener('DOMContentLoaded',resolve,{once:true}));
  return {w:dom.window,d:dom.window.document,messages,send:data=>listeners.forEach(fn=>fn({data})),close:()=>dom.window.close()};
 }
-test('sidecar boots the real named controls and sends only its fixed native operations',async()=>{
+const catalog={components:[{id:'addin',installed:'0.4.0.4',version:'0.4.0.5',available:true},{id:'library',installed:'1',version:'1',available:false}],errors:[]};
+const settings={automatic:false,restart:false};
+test('sidecar boots, presents available versions, and sends selection without arbitrary paths',async()=>{
  const f=await fixture();try{
  assert(f.messages.includes('updater:ready'));
- f.send({type:'planSnapshot',plan:{components:[{id:'addin',installed:'0.3.0.20',version:'0.3.0.21'}]}});
- assert.match(f.d.getElementById('components').textContent,/0.3.0.20.*0.3.0.21/);
+ f.send({type:'preferences',settings,toast:false});
+ f.send({type:'updateState',state:{status:'checked',catalog},running:false});
+ assert.match(f.d.getElementById('components').textContent,/0\.4\.0\.4.*0\.4\.0\.5/);
+ assert.equal(f.d.querySelector('input[value=library]').disabled,true);
+ f.d.getElementById('exit').click();
+ assert.deepEqual(JSON.parse(f.messages.at(-1)),{action:'select',choice:'exit',selected:['addin'],restart:false});
+ assert.equal(f.d.getElementById('progress-panel').hidden,false);
  f.send({type:'updateState',state:{status:'error',message:'Close the remaining compiler.'},running:false,canRecover:true});
  f.d.getElementById('retry').click();assert.equal(f.messages.at(-1),'updater:retry');
  f.d.getElementById('recover').click();assert.equal(f.messages.at(-1),'updater:recover');
  f.send({type:'updateState',state:{status:'waiting',message:'Waiting for normal shutdown.'},running:true});
  f.d.getElementById('cancel').click();assert.equal(f.messages.at(-1),'updater:cancel');
  assert(f.d.getElementById('close').querySelector('button').disabled);
+ }finally{f.close();}
+});
+test('quiet results start with a toast and can open review or defer',async()=>{
+ const f=await fixture();try{
+ f.send({type:'preferences',settings,toast:true});
+ f.send({type:'updateState',state:{status:'checked',catalog},running:false});
+ assert.equal(f.d.getElementById('review').hidden,true);
+ f.d.getElementById('review-updates').click();
+ assert.equal(f.messages.at(-1),'updater:review');
+ f.d.getElementById('later').click();
+ assert.equal(f.messages.at(-1),'updater:later');
+ f.send({type:'preferences',settings,toast:false});
+ assert.equal(f.d.getElementById('review').hidden,false);
+ }finally{f.close();}
+});
+test('incompatible preferences require explicit consent to back up and reset',async()=>{
+ const f=await fixture();try{
+ f.send({type:'preferences',settingsError:'Unsupported settings schema'});
+ f.send({type:'updateState',state:{status:'settings'},running:false});
+ assert.equal(f.d.getElementById('automatic').disabled,true);
+ assert.equal(f.d.getElementById('reset').querySelector('button').disabled,true);
+ f.d.getElementById('reset-approval').click();
+ f.d.getElementById('reset').click();
+ assert.deepEqual(JSON.parse(f.messages.at(-1)),{action:'reset',confirmed:true});
  }finally{f.close();}
 });
 test('sidecar validates native theme snapshots, reports actual progress and escapes failures',async()=>{

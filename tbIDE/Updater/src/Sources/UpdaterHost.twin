@@ -54,7 +54,7 @@ Private Module UpdaterHost
     Public Function StartElevatedEngine(ByVal mode As String, ByVal window As LongPtr) As LongPtr
         If mode <> "Apply" And mode <> "Recover" Then UFail "Only installation and recovery can request elevation."
         If Not HasJournal() And mode = "Recover" Then UFail "No journal is available."
-        Dim plan As String = USafe(SessionFolder(), "plan.json"), executable As String = App.Path & "\Updater.exe"
+        Dim plan As String = USafe(SessionFolder(), "plan.json"), executable As String = UCopyRunner(SessionFolder())
         IValidateContext UReadJson(UpdateContext), UpdateContext
         Dim verb As String = "runas", parameters As String = "-Worker -Mode " & mode & " -Context " & QuoteArg(UpdateContext) & _
             " -PlanSha256 " & UHash(plan) & " -ContextSha256 " & UHash(UpdateContext)
@@ -92,12 +92,14 @@ Private Module UpdaterHost
 
     Public Function StartUpdateEngine(ByVal mode As String) As LongPtr
         Select Case mode
-            Case "Check", "Stage", "Cancel", "Apply", "Recover"
+            Case "Check", "Stage", "Apply", "Recover"
             Case Else
                 Err.Raise 5, , "Unsupported engine operation."
         End Select
         If Len(UpdateContext) = 0 Then UFail "Choose updates in the tbUI3IDE add-in first."
         Dim executable As String = App.Path & "\Updater.exe"
+        If mode = "Apply" Or mode = "Recover" Then executable = UCopyRunner(SessionFolder())
+        BLog UReadJson(UpdateContext), SessionFolder(), "worker launch " & mode
         Dim commandLine As String = QuoteArg(executable) & " -Worker -Mode " & mode & " -Context " & QuoteArg(UpdateContext)
         Dim startup As StartupInfo
         Dim process As ProcessInfo

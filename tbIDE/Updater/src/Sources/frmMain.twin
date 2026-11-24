@@ -1,4 +1,4 @@
-' WebView2 lifecycle and native theme bridge adapted from twinBASIC-Knowledge 8c832b9.
+' Shared WinUI Toolkit WebView2 lifecycle and native theme bridge.
 [Description("")]
 [FormDesignerId("AA6A1949-4A01-4574-A9E6-665A3A5D05BB")]
 [PredeclaredId]
@@ -8,7 +8,11 @@ Class frmMain
     Private mNavigated As Boolean
     Private mPageReady As Boolean
     Private mWorker As LongPtr
-    Private mStarted As Boolean
+    Private mArmingDeadline As Date
+    Private mRecovery As String
+    Private mNormalHeight As Long
+    Private mToast As Boolean
+    Private mRoot As String
     Private mExitCode As Long
     Private mLastState As String
     Private mScriptFilterInstalled As Boolean
@@ -34,6 +38,9 @@ Class frmMain
         Dim stage As String = "form initialization"
         UIX_Log "Form_Load: begin"
         mOperation = UpdateMode
+        mToast = UpdateMode = "Quiet" And Len(StartupError) = 0
+        mNormalHeight = Me.Height
+        If mToast Then Me.Height = 4500
         Me.Caption = "tbUI3 Updater"
         stage = "form font"
         Me.Font.Name = "Segoe UI"
@@ -122,69 +129,214 @@ Class frmMain
             SendTheme
             Exit Sub
         End If
-        Select Case CStr(message)
-            Case "requestThemeSnapshot"
-                SendTheme
+        Dim command As String = CStr(message)
+        Select Case command
+            Case "requestThemeSnapshot": SendTheme
             Case "updater:ready"
                 If mPageReady Then Exit Sub
                 mPageReady = True
                 UIX_Log "WebView2 page bootstrap: updater:ready received"
                 WinUITheme_SetWebViewReady Me.hWnd, True
                 SendTheme
-                Dim plan As String = ReadSessionFile("plan.json")
-                If Len(plan) > 0 Then wvMain.PostWebMessageJSON "{" & UIX_JsonString("type") & ":" & UIX_JsonString("planSnapshot") & "," & UIX_JsonString("plan") & ":" & plan & "}"
                 If Len(StartupError) > 0 Then
                     SendError StartupError
-                ElseIf Len(UpdateContext) > 0 And Not mStarted Then
-                    mStarted = True
-                    mExitCode = 0
+                ElseIf Len(LaunchContext) > 0 Then
+                    mRoot = JT(UReadJson(LaunchContext), "installRoot")
+                    mRecovery = RecoveryContext(mRoot)
+                    If UpdateMode = "Review" Then
+                        StartCheck
+                    ElseIf UpdateMode = "Quiet" Then
+                        mOperation = "Check"
+                    Else
+                        mOperation = "Settings"
+                        UState SessionFolder(), "settings", "Preferences for this twinBASIC installation."
+                    End If
+                    SendPreferences
+                ElseIf Len(UpdateContext) > 0 Then
                     mWorker = StartUpdateEngine(mOperation)
                 End If
                 PollState
             Case "updater:poll"
-                If Not mPageReady Then Exit Sub
-                PollState
-            Case "updater:retry"
-                If Not mPageReady Or WorkerRunning(mWorker) Or Len(UpdateContext) = 0 Then Exit Sub
-                ReleaseWorker mWorker
-                mExitCode = 0
-                mWorker = StartUpdateEngine(mOperation)
+                If mPageReady Then PollState
+            Case "updater:review"
+                If Not mPageReady Or Not mToast Then Exit Sub
+                mToast = False: Me.Height = mNormalHeight
+                SendPreferences
+            Case "updater:check", "updater:retry"
+                If Not mPageReady Or mWorker <> 0 Or mOperation = "Arm" Or Len(LaunchContext) = 0 Then Exit Sub
+                StartCheck
+            Case "updater:later"
+                If Not mPageReady Or mWorker <> 0 Or Len(mRoot) = 0 Or (mOperation <> "Check" And mOperation <> "Settings") Then Exit Sub
+                Dim patch As UpdateJson = JO()
+                patch.Assign "deferredUntil", JN(UtcMilliseconds() + 86400000#)
+                IApplySettings mRoot, patch
+                Unload Me
             Case "updater:recover"
-                If Not mPageReady Or WorkerRunning(mWorker) Or Not HasJournal() Then Exit Sub
-                ReleaseWorker mWorker
-                mExitCode = 0
+                If Not mPageReady Or mWorker <> 0 Or mOperation = "Arm" Then Exit Sub
+                If Len(mRecovery) > 0 Then UpdateContext = mRecovery
+                If Not HasJournal() Then Exit Sub
                 mOperation = "Recover"
                 mWorker = StartUpdateEngine(mOperation)
             Case "updater:elevate"
-                If Not mPageReady Or WorkerRunning(mWorker) Then Exit Sub
-                ReleaseWorker mWorker: mWorker = 0: mExitCode = 0
+                If Not mPageReady Or mWorker <> 0 Then Exit Sub
+                If mOperation <> "Apply" And mOperation <> "Recover" Then Exit Sub
+                If JT(JParse(ReadSessionFile("state.json")), "status") <> "elevationRequired" Then Exit Sub
                 mWorker = StartElevatedEngine(mOperation, Me.hWnd)
             Case "updater:cancel"
                 If Not mPageReady Then Exit Sub
-                RequestCancel
+                If mOperation = "Apply" Then
+                    Dim cancelState As String = JT(JParse(ReadSessionFile("state.json")), "status")
+                    If cancelState <> "waiting" And cancelState <> "ready" And cancelState <> "elevationRequired" Then Exit Sub
+                End If
+                Select Case mOperation
+                    Case "Arm", "Stage", "Apply": RequestCancel
+                End Select
             Case "updater:close"
-                If Not WorkerRunning(mWorker) Then Unload Me
+                If mWorker = 0 And mOperation <> "Arm" Then Unload Me
+            Case Else
+                If Not mPageReady Or Len(command) > 2048 Or Left$(command, 1) <> "{" Then Exit Sub
+                HandleIntent JParse(command)
         End Select
         Exit Sub
     Failed:
-        SendError Err.Description
+        Dim reason As String = Err.Description
+        If mOperation = "Arm" Or (mOperation = "Stage" And mWorker = 0) Then
+            If UpdateContext <> LaunchContext Then
+                FailPending reason
+            Else
+                mOperation = "Check"
+                IUnlock TransactionLock: TransactionLock = 0
+                SendError reason
+            End If
+        Else
+            SendError reason
+        End If
+    End Sub
+
+    Private Sub HandleIntent(ByVal request As UpdateJson)
+        If Len(mRoot) = 0 Or mWorker <> 0 Or mToast Then Exit Sub
+        If mOperation <> "Check" And mOperation <> "Settings" Then Exit Sub
+        Select Case JT(request, "action")
+            Case "select"
+                If Not Me.Visible Or mOperation <> "Check" Then Exit Sub
+                If JT(JParse(ReadSessionFile("state.json")), "status") <> "checked" Then Exit Sub
+                If Len(RecoveryContext(mRoot)) > 0 Then UFail "Restore the unfinished transaction before starting an update."
+                mOperation = "Arm"
+                BeginSelection request
+                mArmingDeadline = DateAdd("s", 15, Now)
+                PollState
+            Case "automatic", "restart"
+                If request.Member("enabled").Kind <> "boolean" Then UFail "Invalid preference."
+                Dim patch As UpdateJson = JO()
+                patch.Assign JT(request, "action"), request.Member("enabled")
+                IApplySettings mRoot, patch
+                SendPreferences
+            Case "reset"
+                If Not JBool(request, "confirmed") Then UFail "Explicit settings reset approval is required."
+                ResetSettings
+                SendPreferences
+        End Select
+    End Sub
+
+    Private Sub ResetSettings()
+        Dim guard As LongPtr = IRequireLock("settings-" & IId(mRoot))
+        On Error GoTo Failed
+        Dim home As String = IHome(mRoot), path As String = USafe(home, "settings.json")
+        If UExists(path) Then
+            Dim backup As String = USafe(home, "Repairs/" & UUnique() & "/settings.json")
+            UDirectory UParent(backup): UCopy path, backup: UFlush backup
+            If UHash(path) <> UHash(backup) Then UFail "Could not verify the settings backup."
+        End If
+        Dim settings As UpdateJson = IDefaultSettings(mRoot)
+        settings.Assign "automatic", JB(False)
+        ISaveSettings mRoot, settings
+        IUnlock guard
+        Exit Sub
+    Failed:
+        Dim reason As String = Err.Description
+        IUnlock guard
+        UFail reason
+    End Sub
+
+    Private Sub StartCheck()
+        If TransactionLock <> 0 Then IUnlock TransactionLock: TransactionLock = 0
+        UpdateContext = LaunchContext: mOperation = "Check": mExitCode = 0: mLastState = ""
+        UState SessionFolder(), "checking", "Checking published releases..."
+        mWorker = StartUpdateEngine("Check")
+        SendPreferences
+    End Sub
+
+    Private Sub SendPreferences()
+        Dim snapshot As UpdateJson = JO()
+        snapshot.Assign "type", JS("preferences")
+        snapshot.Assign "toast", JB(mToast)
+        snapshot.Assign "root", JS(mRoot): snapshot.Assign "version", JS(Phase1Config.UpdaterVersion)
+        snapshot.Assign "recovery", JB(Len(mRecovery) > 0)
+        On Error GoTo SettingsError
+        snapshot.Assign "settings", ISettings(mRoot)
+        GoTo Post
+    SettingsError:
+        snapshot.Assign "settingsError", JS(Err.Description)
+        Resume Post
+    Post:
+        wvMain.PostWebMessageJSON snapshot.Encode()
+    End Sub
+
+    Private Sub FailPending(ByVal reason As String)
+        On Error Resume Next
+        RequestCancel
+        UState SessionFolder(), "error", reason
+        mOperation = "Failed"
+        IUnlock TransactionLock: TransactionLock = 0
+        SendError reason
     End Sub
 
     Private Sub PollState()
-        Dim running As Boolean = WorkerRunning(mWorker)
+        If mOperation = "Arm" Then
+            If UExists(USafe(SessionFolder(), "cancel.json")) Then
+                mOperation = "Failed"
+                UState SessionFolder(), "cancelled", "Update cancelled."
+            ElseIf BMatches(UpdateContext, "armed.json", "armed") Then
+                Dim context As UpdateJson = UReadJson(UpdateContext)
+                If Not UOwnerAlive(context.Member("identity")) And Not BMatches(UpdateContext, "native-exit.json", "shutdown") Then
+                    FailPending "twinBASIC exited before acknowledging normal shutdown."
+                Else
+                    If JT(context, "choice") = "now" Then UWriteJson USafe(SessionFolder(), "request-exit.json"), BRecord(UpdateContext, "exit")
+                    mOperation = "Stage"
+                    UState SessionFolder(), "staging", "Shutdown bridge acknowledged. Preparing selected updates..."
+                    mWorker = StartUpdateEngine("Stage")
+                End If
+            ElseIf Now >= mArmingDeadline Or Not UOwnerAlive(LaunchIdentity) Then
+                FailPending "twinBASIC did not acknowledge the shutdown request. Reopen updates from the IDE and try again."
+            End If
+        End If
+        Dim running As Boolean = WorkerRunning(mWorker), state As String = ReadSessionFile("state.json")
         If Not running And mWorker <> 0 Then
             mExitCode = WorkerExitCode(mWorker)
-            ReleaseWorker mWorker
-            mWorker = 0
+            ReleaseWorker mWorker: mWorker = 0
+            If mOperation = "Stage" And mExitCode = 0 And Len(state) > 0 Then
+                If JT(JParse(state), "status") = "ready" Then
+                    mWorker = StartUpdateEngine("Apply")
+                    mOperation = "Apply"
+                    running = True
+                End If
+            End If
         End If
-        Dim state As String = ReadSessionFile("state.json")
+        If Len(state) = 0 Then Exit Sub
+        Dim status As String = JT(JParse(state), "status")
+        If Not running And (status = "cancelled" Or status = "error" Or status = "complete" Or status = "rolledBack") Then
+            If mOperation = "Stage" Or mOperation = "Apply" Then
+                If status = "error" Then RequestCancel
+                IUnlock TransactionLock: TransactionLock = 0
+            End If
+        End If
         Dim key As String = state & CStr(running) & CStr(mExitCode)
-        If Len(state) = 0 Or key = mLastState Then Exit Sub
+        If key = mLastState Then Exit Sub
         mLastState = key
         wvMain.PostWebMessageJSON "{" & UIX_JsonString("type") & ":" & UIX_JsonString("updateState") & "," & _
-            UIX_JsonString("state") & ":" & state & "," & UIX_JsonString("running") & ":" & IIf(running, "true", "false") & "," & _
-            UIX_JsonString("canRecover") & ":" & IIf(HasJournal(), "true", "false") & "," & _
-            UIX_JsonString("exitCode") & ":" & CStr(mExitCode) & "," & UIX_JsonString("context") & ":" & UIX_JsonString(UpdateContext) & "}"
+            UIX_JsonString("state") & ":" & state & "," & UIX_JsonString("running") & ":" & IIf(running Or mOperation = "Arm", "true", "false") & "," & _
+            UIX_JsonString("canRecover") & ":" & IIf(Len(mRecovery) > 0 Or (HasJournal() And status = "error"), "true", "false") & "," & _
+            UIX_JsonString("exitCode") & ":" & CStr(mExitCode) & "}"
     End Sub
 
     Private Sub SendError(ByVal message As String)
@@ -232,7 +384,7 @@ Class frmMain
 
     Private Sub Form_Unload(Cancel As Integer)
         On Error Resume Next
-        If WorkerRunning(mWorker) Then
+        If mWorker <> 0 Or mOperation = "Arm" Then
             Cancel = True
             SendError "An update operation is still running. Cancel it before installation starts, or wait for verification to finish."
             Exit Sub
@@ -240,6 +392,7 @@ Class frmMain
         ReleaseWorker mWorker
         mWorker = 0
         WinUITheme_SetWebViewReady Me.hWnd, False
+        CloseLaunch
         WinUITheme_Detach Me.hWnd
     End Sub
 End Class

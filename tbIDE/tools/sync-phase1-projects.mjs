@@ -31,7 +31,7 @@ const twin=(file,text)=>write(file,text.replace(/\r?\n/g,'\r\n'));
 const configuration=`' Generated from tbIDE/phase1-config.json.\nPrivate Module Phase1Config\n    Public Const MinIdeBuild As Long = ${config.minIdeBuild}\n    Public Const MaxIdeBuild As Long = ${config.maxIdeBuild}\n    Public Const AddinVersion As String = "${config.addinVersion}"\n    Public Const UpdaterVersion As String = "${config.updaterVersion}"\nEnd Module\n`;
 if(!addinOnly)twin('tbIDE/Updater/src/Sources/Phase1Config.twin',configuration);
 twin('tbIDE/tbUI3IDE/src/Sources/Phase1Config.twin',configuration);
-const shared=['UpdateJson','UpdaterJson','UpdaterPlatform','UpdaterProcesses','InstallationContracts','ManagedResources'];
+const shared=['UpdateJson','UpdaterJson','UpdaterPlatform','UpdaterProcesses','InstallationContracts','ManagedResources','ShutdownBridge'];
 for(const name of shared)write(`tbIDE/tbUI3IDE/src/Sources/${name}.twin`,fs.readFileSync(`tbIDE/Updater/src/Sources/${name}.twin`));
 for(const folder of (addinOnly?['tbIDE/tbUI3IDE']:['tbIDE/Updater','tbIDE/tbUI3IDE']))write(folder+'/src/Sources/DiagnosticPaths.twin',fs.readFileSync('tbUI3/src/Sources/DiagnosticPaths.twin'));
 const resources='tbIDE/tbUI3IDE/src/Resources/OTHER/';

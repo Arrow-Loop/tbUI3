@@ -70,23 +70,12 @@
    syncFrame();frame.focus();
   },{once:true});
  }
- function preferences(parent){
-  if(state.settingsError){
-   status('Stored settings are unavailable and were preserved: '+state.settingsError,parent);
-   const row=field('Back up and reset these installation preferences',parent),approve=node('input',undefined,row);approve.type='checkbox';
-   const reset=button('Back up and reset preferences',()=>request('reset-installation-settings',{confirmed:true}),parent);reset.disabled=true;approve.onchange=()=>{reset.disabled=!approve.checked;};return;
-  }
-  const autoRow=field('Check for updates once a day for this IDE',parent),auto=node('input',undefined,autoRow);auto.type='checkbox';auto.checked=state.preferences.automatic;auto.dataset.focusKey='automatic';auto.onchange=()=>request('installation-preferences',{automatic:auto.checked});
-  const restartRow=field('Restart this IDE after a successful update',parent),restart=node('input',undefined,restartRow);restart.type='checkbox';restart.checked=state.preferences.restart;restart.dataset.focusKey='restart';restart.onchange=()=>request('installation-preferences',{restart:restart.checked});
- }
  function renderSettings(){
   if(!content)return;
   const active=shadow.activeElement,key=active?.dataset.focusKey;
   content.replaceChildren();const title=node('h1','tbUI3 installations',content);title.tabIndex=-1;
-  node('p','Preferences, approvals and recovery below belong only to this IDE. The per-user add-in, updater and themes are shared.',content);
+  node('p','The per-user updater and themes are shared across IDE installations.',content);
   node('p',state.root,content,'installation-path');node('p','Installation ID: '+state.installationId,content,'installation-path');
-  node('p','IDE update strategy: In-place (recommended)',content);preferences(content);
-  node('p','Downloads and installation require approval. Update Now follows normal save prompts; Update on Exit waits for an accepted shutdown.',content);
   node('h2','Bundled updater and themes',content);status(state.bootstrap?.message||'No provisioning status is available.',content);
   if(state.bootstrap?.ledgerError){
    status('The resource registry was preserved: '+state.bootstrap.ledgerError,content);
@@ -101,21 +90,20 @@
   }
   if(state.themeDiscovery?.error)status('Theme discovery: '+state.themeDiscovery.error,content);
   button('Recheck and repair missing resources',()=>request('bootstrap-retry'),content);
-  if(state.recovery){status('An unfinished transaction needs recovery. It will wait for IDE processes to close normally.',content);button('Open recovery',()=>request('open-recovery'),content);}
   if(state.message)status(state.message,content);
   const footer=node('footer',undefined,content,'installation-actions');button('Welcome to tbUI3IDE',showWelcome,footer);button('Close',()=>closeDialog(settingsDialog),footer);
   if(key){const next=shadow.querySelector('[data-focus-key='+JSON.stringify(key)+']');if(next)next.focus();}
  }
  function showSettings(){
   if(welcome)welcome.close();
-  if(!settingsDialog){settingsDialog=modal('tbUI3-installation-dialog');settingsDialog.setAttribute('aria-label','tbUI3 installation settings and repair');const view=shadowView(settingsDialog);shadow=view.root;content=view.main;}
+  if(!settingsDialog){settingsDialog=modal('tbUI3-installation-dialog');settingsDialog.setAttribute('aria-label','tbUI3 resource repair');const view=shadowView(settingsDialog);shadow=view.root;content=view.main;}
   renderSettings();syncTheme();openDialog(settingsDialog);shadow.querySelector('h1').focus();
  }
  function attach(){
   for(const name of d.querySelectorAll('.tbis-optionName')){
    if(name.textContent.trim()!=='Colour Theme')continue;
    const anchor=name.closest('.tbis-optionRow');if(!anchor||anchor.parentElement.querySelector('.tbUI3InstallationOptions'))continue;
-   const row=node('div',undefined,undefined,'tbis-optionRow tbUI3InstallationOptions tbUI3OptionActions');node('div','tbUI3 installations',row,'tbis-optionLabelCol');const col=node('div',undefined,row,'tbis-optionValueCol');button('Settings and repair',showSettings,col);button('Welcome to tbUI3IDE',showWelcome,col);anchor.after(row);
+   const row=node('div',undefined,undefined,'tbis-optionRow tbUI3InstallationOptions tbUI3OptionActions');node('div','tbUI3 installations',row,'tbis-optionLabelCol');const col=node('div',undefined,row,'tbis-optionValueCol');button('Check for Updates',()=>request('check'),col);button('Update settings',()=>request('update-settings'),col);button('Resource repair',showSettings,col);button('Welcome to tbUI3IDE',showWelcome,col);anchor.after(row);
   }
  }
  const style=node('style',undefined,d.head);style.textContent=env.dialogStyles;

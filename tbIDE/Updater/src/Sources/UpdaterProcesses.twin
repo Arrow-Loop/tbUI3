@@ -20,11 +20,14 @@ Private Module UpdaterProcesses
             If Not UProcessListed(pid) Then Return ""
             UFail "Could not inspect IDE identity (Win32 error " & CStr(code) & "); close normally and retry."
         End If
-        If WaitForSingleObject(handle, 0) = 0 Then CloseHandle handle: Return ""
+        Dim waitResult As Long = WaitForSingleObject(handle, 0), waitError As Long = Err.LastDllError
+        If waitResult = 0 Then CloseHandle handle: Return ""
+        If waitResult <> 258 Then CloseHandle handle: UFail "Could not inspect IDE process wait (Win32 error " & CStr(waitError) & ")."
         Dim created As FileTime, exited As FileTime, kernel As FileTime, user As FileTime
         Dim ok As Long = GetProcessTimes(handle, created, exited, kernel, user)
+        Dim timeError As Long = Err.LastDllError
         CloseHandle handle
-        If ok = 0 Then UFail "IDE creation time unavailable."
+        If ok = 0 Then UFail "IDE creation time unavailable (Win32 error " & CStr(timeError) & ")."
         Return Right$("00000000" & Hex$(created.high), 8) & Right$("00000000" & Hex$(created.low), 8)
     End Function
     Private Function UProcessListed(ByVal pid As Long) As Boolean

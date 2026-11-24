@@ -5,13 +5,12 @@ Private Class UpdaterController
     Private mWindow As ToolWindow
     Private mRoot As String
     Private mHome As String
-    Private mSession As String
-    Private mContext As String
-    Private mLastState As String
-    Private mBusy As Boolean
-    Private mClosing As Boolean
-    Private mCanApprove As Boolean
+    Private mLaunches As Object
+    Private mArmed As String
+    Private mArmedHash As String
     Private mExitRequested As Boolean
+    Private mAutomaticAt As Date
+    Private mAutomaticStarted As Boolean
     Private mInstalled As Boolean
     Private mBundle As BundledResources
     Private mRefreshAt As Date
@@ -55,7 +54,8 @@ Private Class UpdaterController
             mMessage = "Existing installation settings were preserved. Back up and reset them explicitly before changing preferences or checking updates."
         End If
         mRefreshAt = DateAdd("s", 30, Now)
-        RestorePending
+        Set mLaunches = CreateObject("Scripting.Dictionary")
+        mAutomaticAt = DateAdd("s", 10, Now)
     End Sub
     Private Function ReadPreferences() As UpdateJson
         If Len(mPreferenceFault) > 0 Then
@@ -72,42 +72,87 @@ Private Class UpdaterController
         If IsNull(result) Or IsEmpty(result) Then Return ""
         Return CStr(result)
     End Function
-    Private Function ReadText(ByVal path As String) As String
-        If Not UExists(path) Then Return ""
-        UNoLinks path
-        Return UText(path)
-    End Function
-    Private Sub Launch(ByVal mode As String, Optional ByVal context As String = "")
-        Select Case mode
-            Case "Check", "Stage", "Cancel", "Recover"
-            Case Else: UFail "Unsupported add-in updater action."
-        End Select
-        If Not MHelperReady() Then UFail "The shared updater is missing, unrecognized or incompatible. Open tbUI3 installations to review repair status."
-        If Len(context) = 0 Then context = mContext
-        IValidateContext UReadJson(context), context
-        Shell IQuoteArg(ISharedExe()) & " -Mode " & mode & " -Context " & IQuoteArg(context), vbHide
-    End Sub
-    Private Sub CreateSession(ByVal request As UpdateJson)
+    Private Function LaunchUpdater(ByVal mode As String) As Boolean
+        If Not MHelperReady() Then Return False
+        If UCompare(UBinaryVersion(ISharedExe()), Phase1Config.UpdaterVersion) < 0 Then Return False
         Dim sessions As String = USafe(mHome, "Sessions")
         UDirectory sessions
-        mSession = USafe(sessions, CStr(CurrentPid()) & "-" & UUnique())
-        UDirectory mSession
-        mContext = USafe(mSession, "context.json")
-        mLastState = "": mExitRequested = False: mCanApprove = True
-        If Len(mPreferenceFault) > 0 Then UFail "Reset the preserved, unrecognized settings before starting an update."
-        Dim context As UpdateJson = JO(), settings As UpdateJson = ReadPreferences()
-        context.Assign "schema", JN(IContextSchema): context.Assign "protocol", JN(IProtocol)
+        Dim session As String = USafe(sessions, CStr(CurrentPid()) & "-" & UUnique())
+        UDirectory session
+        Dim contextPath As String = USafe(session, "context.json"), context As UpdateJson = JO()
+        context.Assign "schema", JN(IContextSchema): context.Assign "protocol", JN(IProtocol): context.Assign "bridge", JN(BVersion)
         context.Assign "installationId", JS(IId(mRoot)): context.Assign "stateRoot", JS(mHome)
         context.Assign "installRoot", JS(mRoot): context.Assign "ideExe", JS(USafe(mRoot, "twinBASIC.exe"))
         context.Assign "updaterPath", JS(ISharedExe()): context.Assign "originSid", JS(IUserSid())
         context.Assign "compilerPid", JN(CurrentPid()): context.Assign "compilerBirth", JS(UProcessTime(CurrentPid()))
-        context.Assign "strategy", JS(IStrategy): context.Assign "channel", settings.Member("channel")
+        context.Assign "strategy", JS(IStrategy): context.Assign "choice", JS("")
         context.Assign "clientMinIdeBuild", JN(Phase1Config.MinIdeBuild): context.Assign "clientMaxIdeBuild", JN(Phase1Config.MaxIdeBuild)
-        context.Assign "selected", JA(): context.Assign "choice", JS(JT(request, "action"))
-        context.Assign "restart", settings.Member("restart")
-        If request.Has("selected") Then context.Assign "selected", request.Member("selected")
-        If request.Has("restart") Then context.Assign "restart", request.Member("restart")
-        UWriteJson mContext, context
+        UWriteJson contextPath, context
+        mLaunches.Add contextPath, UHash(contextPath)
+        BLog context, session, "add-in launch " & mode
+        Shell IQuoteArg(ISharedExe()) & " -Mode " & mode & " -Context " & IQuoteArg(contextPath), vbHide
+        Return True
+    End Function
+
+    Private Sub BridgePoll()
+        If Len(mArmed) = 0 Then
+            Dim origin As Variant
+            For Each origin In mLaunches.Keys
+                Dim directory As String = UParent(CStr(origin))
+                If UExists(USafe(directory, "closed.json")) Then
+                    mLaunches.Remove origin
+                Else
+                    ArmFromLaunch CStr(origin), CStr(mLaunches.Item(origin))
+                End If
+                If Len(mArmed) > 0 Then Exit For
+            Next
+        End If
+        If Len(mArmed) = 0 Then Exit Sub
+        Dim session As String = UParent(mArmed)
+        If UExists(USafe(session, "cancel.json")) Or UHash(mArmed) <> mArmedHash Then
+            Eval "window.__tbUI3Shutdown.disarm()"
+            mArmed = ""
+            Exit Sub
+        End If
+        If Not mExitRequested And UExists(USafe(session, "request-exit.json")) Then
+            If Not BMatches(mArmed, "request-exit.json", "exit") Then UFail "Invalid native exit request."
+            mExitRequested = True
+            BLog UReadJson(mArmed), session, "add-in native exit requested"
+            Eval "window.__tbUI3Shutdown.request(" & JQuote(mArmedHash) & ")"
+        End If
+        Dim raw As String = Eval("window.__tbUI3Shutdown.take()")
+        If Len(raw) = 0 Then Exit Sub
+        Dim result As UpdateJson = JParse(raw), status As String = JT(result, "status")
+        If JT(result, "request") <> mArmedHash Then Exit Sub
+        If status <> "shutdown" And status <> "cancelled" Then Exit Sub
+        On Error GoTo ResumeExit
+        UWriteJson USafe(session, "native-exit.json"), BRecord(mArmed, status)
+        BLog UReadJson(mArmed), session, "add-in native exit " & status
+    ResumeExit:
+        mArmed = ""
+        If status = "shutdown" Then
+            Eval "window.__tbUI3Shutdown.resume()"
+        Else
+            Eval "window.__tbUI3Shutdown.disarm()"
+        End If
+    End Sub
+
+    Private Sub ArmFromLaunch(ByVal origin As String, ByVal originHash As String)
+        Dim mailbox As String = USafe(UParent(origin), "arm.json")
+        If Not UExists(mailbox) Then Exit Sub
+        Dim signal As UpdateJson = UReadJson(mailbox), path As String = JT(signal, "context")
+        If JD(signal, "schema") <> BVersion Then UFail "Unsupported updater arming record."
+        BValidateRequest path, origin, originHash
+        Dim session As String = UParent(path), context As UpdateJson = UReadJson(path)
+        If UExists(USafe(session, "cancel.json")) Or UExists(USafe(session, "armed.json")) Then Exit Sub
+        If JD(context, "compilerPid") <> CurrentPid() Or JT(context, "compilerBirth") <> UProcessTime(CurrentPid()) Then UFail "Shutdown request does not belong to this running IDE."
+        Dim owner As UpdateJson = UCaptureIdentity(context)
+        If owner.Encode() <> context.Member("identity").Encode() Then UFail "Shutdown request IDE identity changed."
+        mArmedHash = UHash(path)
+        Eval "window.__tbUI3Shutdown.arm(" & JQuote(mArmedHash) & ")"
+        UWriteJson USafe(session, "armed.json"), BRecord(path, "armed")
+        mArmed = path: mExitRequested = False
+        BLog context, session, "add-in shutdown bridge armed"
     End Sub
     Private Function Snapshot() As UpdateJson
         Dim state As UpdateJson = JO(), settings As UpdateJson = ReadPreferences()
@@ -123,7 +168,7 @@ Private Class UpdaterController
         state.Assign "themeDiscovery", themeStatus
         Dim ack As UpdateJson = JO(): ack.Assign "id", JS(mAckId): ack.Assign "ok", JB(mAckOk): state.Assign "ack", ack
         state.Assign "toolbar", JS(Eval("window.__tbUI3Toolbar?window.__tbUI3Toolbar.mode:''"))
-        state.Assign "message", JS(mMessage): state.Assign "recovery", JB(Len(RecoveryContext()) > 0)
+        state.Assign "message", JS(mMessage)
         Set Snapshot = state
     End Function
     Private Function InstalledThemes() As UpdateJson
@@ -158,27 +203,20 @@ Private Class UpdaterController
     Private Sub PublishPreferences()
         If Not mInstalled Then Exit Sub
         Dim state As String = Snapshot().Encode()
-        Eval "(function(){var s=" & state & ";window.__tbUI3Installation.publish(s);window.__tbUI3Updater.setAppearance(s);window.__tbUI3Updater.setPreferences(" & ReadPreferences().Encode() & ");return 'settings synchronized';})()"
+        Eval "window.__tbUI3Installation.publish(" & state & ");'settings synchronized'"
     End Sub
     Private Sub InitializeUI()
-        Dim settings As UpdateJson = ReadPreferences()
         Eval "window.__tbUI3ThemeFactory=" & MResourceText("tbUI3-theme-service.js") & ";'theme service factory loaded'"
         Eval "window.__tbUI3Themes=window.__tbUI3ThemeFactory({themes:function(){return customThemes;},afterRefresh:function(){return afterRefreshedThemes;},setAfterRefresh:function(fn){afterRefreshedThemes=fn;},reload:function(){reloadThemesFromDisk();},current:function(){return liveIDEOptions.colorTheme;},setCurrent:function(name){liveIDEOptions.colorTheme=name;},save:function(){saveIDEOptions();},changed:function(){changedIdeOptions();},notify:function(){root.notifyChangedTheme();}});'installed theme adapter ready'"
         RefreshThemeDiscovery True
         Eval UpdaterScript.Build()
-        Eval "window.__tbUI3Updater=" & UpdaterScript.Factory() & "({document:document,window:window,automatic:" & IIf(JBool(settings, "automatic"), "true", "false") & _
-            ",restart:" & IIf(JBool(settings, "restart"), "true", "false") & ",deferredUntil:" & Trim$(Str$(JD(settings, "deferredUntil"))) & _
-            ",checkDue:" & IIf(JT(settings, "lastCheck") <> Format$(Date, "yyyy-mm-dd"), "true", "false") & _
-            ",masterCss:" & JQuote(MResourceText("tbUI3-welcome-master.css")) & _
-            ",themeMode:function(){return typeof getBaseThemeName==='function'?getBaseThemeName():'light';},accent:" & WinUI3SystemAccent.ReadPalette() & _
-            ",installationSettings:function(){window.__tbUI3Installation.show('settings');},closeIde:function(){window.__tbUI3UpdaterOriginalClose(function(){window.__tbUI3UpdateExit=function(){hostAppObject.Exit('ignore');};});}});'updater installed'"
         Eval MResourceText("tbUI3-welcome.js") & vbLf & ";'welcome wizard loaded'"
         Eval "window.__tbUI3InstallationFactory=" & MResourceText("tbUI3-installation.js") & ";'installation factory loaded'"
         Eval "window.__tbUI3Installation=window.__tbUI3InstallationFactory({document:document,window:window,state:" & Snapshot().Encode() & _
             ",styles:" & JQuote(MResourceText("tbUI3-installation.css")) & ",dialogStyles:" & JQuote(MResourceText("tbUI3-dialog.css")) & _
             ",welcomeStyles:" & JQuote(MResourceText("tbUI3-welcome.css")) & ",welcomeMaster:" & JQuote(MResourceText("tbUI3-welcome-master.css")) & _
             ",welcomeControls:" & JQuote(MResourceText("tbUI3-welcome-controls.js")) & _
-            ",showWelcome:" & IIf(WelcomeNeeded(), "true", "false") & ",canAutoWelcome:function(){var g=window.__tbUI3StartupWelcome;return !!g&&g.consume();},themeMode:function(){return typeof getBaseThemeName==='function'?getBaseThemeName():'light';},showUpdates:function(){window.__tbUI3Installation.hide();window.__tbUI3Updater.show();}});'installation UI loaded'"
+            ",showWelcome:" & IIf(WelcomeNeeded(), "true", "false") & ",canAutoWelcome:function(){var g=window.__tbUI3StartupWelcome;return !!g&&g.consume();},themeMode:function(){return typeof getBaseThemeName==='function'?getBaseThemeName():'light';}});'installation UI loaded'"
         mInstalled = True
     End Sub
     Private Sub SavePreferences(ByVal request As UpdateJson)
@@ -219,64 +257,30 @@ Private Class UpdaterController
         mMessage = JT(result, "message")
         If Not mAckOk Then mMessage = "Error: " & mMessage
     End Sub
-    Private Function RecoveryContext() As String
-        Dim path As String = USafe(mHome, "active.json")
-        If Not UExists(path) Then Return ""
-        Dim active As UpdateJson = UReadJson(path), context As String = JT(active, "context")
-        If Not UExists(context) Then Return ""
-        IValidateContext UReadJson(context), context
-        Dim journal As String = USafe(UParent(context), "journal.json")
-        If Not UExists(journal) Then Return ""
-        Dim state As String = JT(UReadJson(journal), "status")
-        If state = "complete" Or state = "rolledBack" Then Return ""
-        Return context
-    End Function
-    Private Sub RestorePending()
-        On Error GoTo Retain
-        Dim path As String = USafe(mHome, "pending.json")
-        If Not UExists(path) Then Exit Sub
-        Dim pending As UpdateJson = UReadJson(path), context As String = JT(pending, "context"), saved As UpdateJson = UReadJson(context)
-        IValidateContext saved, context
-        If JT(saved, "compilerBirth") <> UProcessTime(CurrentPid()) Or JD(saved, "compilerPid") <> CurrentPid() Then
-            mMessage = "A prior session was retained. It cannot inherit shutdown approval from this IDE session."
-            Exit Sub
-        End If
-        mContext = context: mSession = UParent(context): mCanApprove = True
-    Retain:
-    End Sub
     Public Sub Poll()
         On Error GoTo Failed
-        If mClosing Or mPolling Then Exit Sub
+        If mPolling Then Exit Sub
         mPolling = True
-        Dim fromInstallation As Boolean
         If Not mInstalled Then InitializeUI
+        BridgePoll
+        If Not mAutomaticStarted And Now >= mAutomaticAt Then
+            mAutomaticStarted = LaunchUpdater("Quiet")
+            mAutomaticAt = DateAdd("s", 30, Now)
+        End If
         If Now >= mRefreshAt Then
             mBundle.Refresh: RefreshThemeDiscovery: mRefreshAt = DateAdd("s", 30, Now): PublishPreferences
         End If
-        Dim raw As String = Eval("window.__tbUI3Updater.take()")
-        If Len(raw) = 0 Then
-            raw = Eval("window.__tbUI3Installation.take()")
-            fromInstallation = Len(raw) > 0
-        End If
+        Dim raw As String = Eval("window.__tbUI3Installation.take()")
         If Len(raw) > 0 Then
             Dim request As UpdateJson = JParse(raw), action As String = JT(request, "action")
             mAckId = JT(request, "requestId"): mAckOk = True
             Select Case action
-                Case "check"
-                    If Not mBusy Then CreateSession request: Launch "Check": mBusy = True
-                Case "now", "exit"
-                    If Not mBusy And Len(mContext) > 0 Then
-                        Dim catalog As UpdateJson = UReadJson(USafe(mSession, "catalog.json"))
-                        CreateSession request: UWriteJson USafe(mSession, "catalog.json"), catalog
-                        Launch "Stage": mBusy = True
+                Case "check", "update-settings"
+                    If Not LaunchUpdater(IIf(action = "check", "Review", "Settings")) Then
+                        mMessage = "The compatible updater is unavailable. Recheck the bundled resources or review repair."
+                        Eval "window.__tbUI3Installation.show('repair');'repair opened'"
                     End If
-                Case "cancel"
-                    If Len(mContext) > 0 Then Launch "Cancel"
-                    Eval "window.__tbUI3UpdatePending=false;'cancel requested'"
-                Case "preferences", "installation-preferences", "later": SavePreferences request
-                Case "reset-installation-settings"
-                    If Not JBool(request, "confirmed") Then UFail "Explicit settings reset approval is required."
-                    ResetPreferences
+                Case "installation-preferences": SavePreferences request
                 Case "reset-shared-resource-ledger"
                     If Not JBool(request, "confirmed") Then UFail "Explicit shared registry reset approval is required."
                     mBundle.ResetLedger: RefreshThemeDiscovery: PublishPreferences
@@ -296,14 +300,9 @@ Private Class UpdaterController
                     SaveSetting "WinUI3IdeStyle", "Options", "ToolbarMode", mode
                     mMessage = "Toolbar preference saved.": PublishPreferences
                 Case "choose-theme": ApplyTheme JT(request, "name"), mAckId
-                Case "open-recovery"
-                    Dim recovery As String = RecoveryContext()
-                    If Len(recovery) = 0 Then UFail "No incomplete native transaction is available."
-                    Launch "Recover", recovery
                 Case Else: UFail "Unsupported installation request."
             End Select
             PublishPreferences
-            fromInstallation = False
         End If
         If Now > mDiscoveryDeadline Then
             Eval "window.__tbUI3Themes.timeout();'theme discovery deadline checked'"
@@ -316,74 +315,19 @@ Private Class UpdaterController
             mLastPalette = palette: mLastViewTheme = actualTheme: mLastViewToolbar = actualToolbar
             PublishPreferences
         End If
-        If Len(mSession) = 0 Then GoTo Finished
-        Dim result As String = ReadText(USafe(mSession, "state.json"))
-        If Len(result) > 0 And result <> mLastState Then
-            mLastState = result
-            Dim state As UpdateJson = JParse(result), status As String = JT(state, "status")
-            Eval "window.__tbUI3Updater.publish(" & result & ");'update state published'"
-            mBusy = status = "checking" Or status = "staging" Or status = "ready" Or status = "waiting" Or status = "installing"
-            If status = "checked" Then
-                Dim checkPatch As UpdateJson = JO()
-                checkPatch.Assign "lastCheck", JS(Format$(Date, "yyyy-mm-dd")): IApplySettings mRoot, checkPatch
-            End If
-            If status = "error" Or status = "cancelled" Or status = "complete" Or status = "rolledBack" Then Eval "window.__tbUI3UpdatePending=false;'pending ended'"
-            If (status = "ready" Or status = "waiting") And mCanApprove Then
-                Eval "window.__tbUI3UpdatePending=true;'pending'"
-                If status = "waiting" And Not mExitRequested And JT(state, "choice") = "now" Then
-                    mExitRequested = True: Eval "window.__tbUI3Updater.closeIde();'normal shutdown requested'"
-                End If
-            End If
-        End If
-        If mCanApprove And Eval("typeof window.__tbUI3UpdateExit==='function'?'yes':'no'") = "yes" Then
-            Dim approval As UpdateJson = JO()
-            approval.Assign "schema", JN(1): approval.Assign "normalShutdown", JB(True): approval.Assign "installationId", JS(IId(mRoot))
-            approval.Assign "contextSha256", JS(UHash(mContext)): approval.Assign "planSha256", JS(UHash(USafe(mSession, "plan.json")))
-            UWriteJson USafe(mSession, "approved.json"), approval
-            mClosing = True
-            Eval "(function(){var next=window.__tbUI3UpdateExit;delete window.__tbUI3UpdateExit;next();return 'normal exit resumed';})()"
-        End If
-    Finished:
         mPolling = False
         Exit Sub
     Failed:
         Dim reason As String = Err.Description
         mMessage = "Error: " & reason: mAckOk = False
         On Error Resume Next
-        ' A wizard/appearance failure must not cancel an independent native update
-        ' or replace its current transaction status with an unrelated message.
-        If Not fromInstallation Then
-            mBusy = False
-            Eval "if(window.__tbUI3Updater)window.__tbUI3Updater.publish({status:'error',message:" & JQuote(reason) & "});'request failed'"
-        End If
         PublishPreferences
         mHost.DebugConsole.PrintText "[tbUI3 updater] " & reason
         mPolling = False
     End Sub
     Public Sub Dispose()
         On Error Resume Next
-        If mInstalled Then Eval "if(window.__tbUI3Installation)window.__tbUI3Installation.dispose();delete window.__tbUI3Installation;if(window.__tbUI3Updater)window.__tbUI3Updater.dispose();delete window.__tbUI3Updater;'updater UI removed'"
-        If mInstalled Then Eval "if(closeProjectSafely===window.__tbUI3UpdaterCloseHook)closeProjectSafely=window.__tbUI3UpdaterOriginalClose;delete window.__tbUI3UpdaterFactory;delete window.__tbUI3InstallationFactory;delete window.__tbUI3ThemeFactory;if(window.__tbUI3Themes)window.__tbUI3Themes.dispose();delete window.__tbUI3Themes;delete window.__tbUI3UpdatePending;'hooks removed'"
+        If mInstalled Then Eval "if(window.__tbUI3Installation)window.__tbUI3Installation.dispose();delete window.__tbUI3Installation;if(window.__tbUI3Shutdown)window.__tbUI3Shutdown.dispose();delete window.__tbUI3Shutdown;delete window.__tbUI3InstallationFactory;delete window.__tbUI3ThemeFactory;if(window.__tbUI3Themes)window.__tbUI3Themes.dispose();delete window.__tbUI3Themes;'hooks removed'"
         Set mWindow = Nothing: Set mHost = Nothing
-    End Sub
-    Private Sub ResetPreferences()
-        Dim guard As LongPtr = IRequireLock("settings-" & IId(mRoot))
-        On Error GoTo Failed
-        Dim path As String = USafe(mHome, "settings.json"), backup As String = USafe(mHome, "Repairs/" & UUnique() & "/settings.json")
-        If UExists(path) Then
-            UDirectory UParent(backup): UCopy path, backup: UFlush backup
-            If UHash(path) <> UHash(backup) Then UFail "Settings backup changed during verification."
-        End If
-        Dim settings As UpdateJson = IDefaultSettings(mRoot)
-        settings.Assign "automatic", JB(False)
-        ISaveSettings mRoot, settings
-        IUnlock guard: guard = 0
-        mPreferenceFault = "": Set mFallback = Nothing
-        mMessage = "Settings reset with automatic checks off. Preserved backup: " & backup
-        PublishPreferences
-        Exit Sub
-    Failed:
-        Dim reason As String = Err.Description
-        IUnlock guard: UFail reason
     End Sub
 End Class

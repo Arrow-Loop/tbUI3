@@ -2,6 +2,7 @@
 Private Module UpdaterTransaction
     Public Function UExtract(ByVal component As UpdateJson, ByVal archive As String, ByVal directory As String) As UpdateJson
         UComponentValid component
+        BProgress "Reading ZIP directory"
         Dim entries As Object = UZipEntries(archive), files As UpdateJson = component.Member("files"), id As String = JT(component, "id"), key As Variant, entry As UpdateJson, file As UpdateJson
         UDirectory directory
         If id = "ide" Then
@@ -15,7 +16,9 @@ Private Module UpdaterTransaction
             Set entry = entries.Item("NOTICE.txt")
             files.Push UFileRecord("NOTICE.txt", "NOTICE.txt", JD(entry, "size"), "")
         End If
+        Dim processed As Long
         For Each file In files.Items
+            BProgress "Extracting and verifying files", processed, files.Items.Count, "files", JT(file, "source")
             UTarget id, JT(file, "target")
             If Not entries.Exists(JT(file, "source")) Then UFail "Missing ZIP file: " & JT(file, "source")
             Set entry = entries.Item(JT(file, "source"))
@@ -23,6 +26,7 @@ Private Module UpdaterTransaction
             Dim target As String = USafe(directory, JT(file, "source"))
             If Not UExists(target) Then UZipExtract archive, entry, target
             Dim sha As String = UHash(target)
+            processed = processed + 1
             If Len(JT(file, "sha256")) > 0 And JT(file, "sha256") <> sha Then UFail "Extracted file hash mismatch."
             file.Assign "sha256", JS(sha): USignature target
             If id = "ide" And JT(file, "target") = "twinBASIC.exe" Then UPe target, 0
@@ -37,6 +41,7 @@ Private Module UpdaterTransaction
                 If UCompare(UBinaryVersion(target), JT(component, "version")) <> 0 Then UFail "Updater binary version differs from manifest."
             End If
         Next
+        BProgress "Extracting and verifying files", processed, files.Items.Count, "files"
         If id = "library" Then
             If UCompare(UInstalledLibrary(USafe(directory, "tbUI3-Icons.dat")), JT(component, "version")) <> 0 Then UFail "Library header/manifest version mismatch."
         End If
@@ -51,6 +56,8 @@ Private Module UpdaterTransaction
         Set UFileRecord = result
     End Function
     Public Function UBaseline(ByVal context As UpdateJson, ByVal component As UpdateJson, ByVal session As String) As Object
+        BProgressComponent = "ide-baseline"
+        BProgress "Locating verified previous IDE baseline"
         Dim version As String = UInstalledIde(JT(context, "installRoot"))
         If version <> JT(component, "installed") Then UFail "Installed IDE changed after discovery."
         Dim path As String = IReceiptPath("ide", JT(context, "installRoot")), records As UpdateJson = JA()
@@ -99,9 +106,9 @@ Private Module UpdaterTransaction
         operation.Assign "kind", JS("ReplaceFile"): operation.Assign "version", JN(1): operation.Assign "root", JS(root): operation.Assign "target", JS(target): operation.Assign "staged", JS(staged): operation.Assign "sha256", JS(hash)
         Set UOperation = operation
     End Function
-    Public Function UMakePlan(ByVal context As UpdateJson, ByVal catalog As UpdateJson, ByVal session As String) As UpdateJson
+    Public Function USelectComponents(ByVal context As UpdateJson, ByVal catalog As UpdateJson) As UpdateJson
         If JD(catalog, "engineSchema") <> IContextSchema Then UFail "Check again with the native updater before staging."
-        Dim chosen As UpdateJson = JA(), operations As UpdateJson = JA(), ids As Object = UMap(), selected As UpdateJson, component As UpdateJson, found As UpdateJson, matches As Long, id As String
+        Dim chosen As UpdateJson = JA(), ids As Object = UMap(), selected As UpdateJson, component As UpdateJson, found As UpdateJson, matches As Long, id As String
         For Each selected In context.Member("selected").Items
             If selected.Kind <> "string" Then UFail "Invalid selection."
             id = selected.Text
@@ -115,6 +122,10 @@ Private Module UpdaterTransaction
             chosen.Push found
         Next
         If chosen.Items.Count = 0 Then UFail "Select at least one update."
+        Set USelectComponents = chosen
+    End Function
+    Public Function UMakePlan(ByVal context As UpdateJson, ByVal catalog As UpdateJson, ByVal session As String) As UpdateJson
+        Dim chosen As UpdateJson = USelectComponents(context, catalog), operations As UpdateJson = JA(), component As UpdateJson, id As String
         Dim ide As String = UInstalledIde(JT(context, "installRoot"))
         For Each component In chosen.Items
             If JT(component, "id") = "ide" Then ide = JT(component, "version")
@@ -129,12 +140,16 @@ Private Module UpdaterTransaction
             If id = "addin" Then
                 If Val(ide) < JD(component, "minIdeBuild") Or Val(ide) > JD(component, "maxIdeBuild") Then UFail "Selected add-in does not support the resulting IDE build."
             End If
+            BProgressComponent = id
             Dim zip As String = USafe(session, id & ".zip")
             UDownload component.Member("asset"), zip
             Dim directory As String = USafe(session, "staged-" & id & "-" & UUnique()), files As UpdateJson = UExtract(component, zip, directory), root As String = URoot(id, JT(context, "installRoot")), baseline As Object
             If id = "ide" Then Set baseline = UBaseline(context, component, session)
+            BProgressComponent = id
+            BProgress "Preparing and verifying destination files"
             Dim file As UpdateJson, operation As UpdateJson
             For Each file In files.Items
+                BCheckCancellation
                 Set operation = UOperation(root, JT(file, "target"), USafe(directory, JT(file, "source")), JT(file, "sha256"))
                 If id = "ide" Then UProtectVendor operation, baseline
                 If id = "themes" Then UProtectTheme operation, JT(component, "version")
@@ -315,6 +330,10 @@ Private Module UpdaterTransaction
         Dim failure As String = Err.Description
         Resume RollBackFailure
     RollBackFailure:
+        If Len(statePath) > 0 Then
+            On Error Resume Next
+            UState UParent(statePath), "rollingBack", "Restoring the previous installation after an update error..."
+        End If
         On Error GoTo RecoveryFailed
         URollback journal, journalPath
         On Error GoTo 0

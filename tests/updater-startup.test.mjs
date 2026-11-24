@@ -32,7 +32,7 @@ test('updater resource conversion uses the Toolkit whole-buffer pattern with exp
 });
 test('Updater has its own application UI and never mounts the add-in Welcome Wizard',()=>{
  const html=fs.readFileSync('tbIDE/Updater/src/Resources/OTHER/updater.html','utf8'),js=fs.readFileSync('tbIDE/Updater/src/Resources/OTHER/updater.js','utf8');
- assert.match(html,/Selected updates/);assert.match(html,/Installation progress/);assert.match(js,/updater:recover/);
+ assert.match(html,/Update on Exit/);assert.match(html,/Update progress/);assert.match(html,/id="recover"/);assert.match(js,/updater:/);
  assert.doesNotMatch(html+js+source('frmMain'),/tbUI3CreateWelcomeWizard|tbUI3-welcome\.js|welcome\.open/);
  assert(!fs.existsSync('tbIDE/Updater/src/Resources/OTHER/tbUI3-welcome.js'));
 });

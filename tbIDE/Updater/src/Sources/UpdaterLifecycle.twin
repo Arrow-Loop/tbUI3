@@ -1,0 +1,97 @@
+' Standalone review owns consent and materializes a fresh immutable transaction.
+Private Module UpdaterLifecycle
+    Public LaunchContext As String
+    Public LaunchHash As String
+    Public LaunchIdentity As UpdateJson
+    Public LaunchLock As LongPtr
+    Public TransactionLock As LongPtr
+
+    Public Function OpenLifecycle(ByVal context As UpdateJson) As Boolean
+        LaunchContext = UpdateContext: LaunchHash = UHash(LaunchContext)
+        If JD(context, "bridge") <> BVersion Or JT(context, "choice") <> "" Then UFail "Open updates from a compatible tbUI3IDE add-in."
+        Dim root As String = JT(context, "installRoot"), id As String = JT(context, "installationId")
+        BLog context, SessionFolder(), "updater launch " & UpdateMode
+        If UpdateMode = "Quiet" Then
+            LaunchLock = ILock("automatic-" & id)
+            If LaunchLock = 0 Then Return False
+            If Not QuietCheckDue(root) Then Return False
+            CaptureLaunch context
+            If RunNativeEngine("Check") <> 0 Then Return False
+            Dim catalog As UpdateJson = UReadJson(USafe(SessionFolder(), "catalog.json"))
+            Return CatalogAvailable(catalog)
+        End If
+        CaptureLaunch context
+        Return True
+    End Function
+
+    Public Function QuietCheckDue(ByVal root As String) As Boolean
+        Dim settings As UpdateJson = ISettings(root)
+        Return JBool(settings, "automatic") And JT(settings, "lastCheck") <> Format$(Date, "yyyy-mm-dd") And JD(settings, "deferredUntil") <= UtcMilliseconds()
+    End Function
+
+    Private Sub CaptureLaunch(ByVal context As UpdateJson)
+        Dim pid As Long = CLng(JD(context, "compilerPid"))
+        If Len(JT(context, "compilerBirth")) <> 16 Or UProcessTime(pid) <> JT(context, "compilerBirth") Then UFail "The IDE session that opened the updater has exited."
+        Set LaunchIdentity = UCaptureIdentity(context)
+        UWriteJson USafe(SessionFolder(), "identity.json"), LaunchIdentity
+    End Sub
+
+    Public Function CatalogAvailable(ByVal catalog As UpdateJson) As Boolean
+        Dim item As UpdateJson
+        For Each item In catalog.Member("components").Items
+            If JBool(item, "available") Then Return True
+        Next
+    End Function
+
+    Public Sub BeginSelection(ByVal consent As UpdateJson)
+        Dim origin As UpdateJson = UReadJson(LaunchContext), selection As UpdateJson = consent.Member("selected")
+        If UHash(LaunchContext) <> LaunchHash Or Not UOwnerAlive(LaunchIdentity) Then UFail "The originating IDE session is no longer available."
+        If selection.Kind <> "array" Or consent.Member("restart").Kind <> "boolean" Then UFail "Invalid update selection."
+        Dim choice As String = JT(consent, "choice")
+        If choice <> "now" And choice <> "exit" Then UFail "Invalid update choice."
+        Dim catalog As UpdateJson = UReadJson(USafe(UParent(LaunchContext), "catalog.json"))
+        origin.Assign "choice", JS(choice): origin.Assign "selected", selection
+        origin.Assign "restart", consent.Member("restart")
+        origin.Assign "channel", catalog.Member("channel")
+        Dim components As UpdateJson = USelectComponents(origin, catalog)
+        TransactionLock = IRequireLock("consent-" & JT(origin, "installationId"))
+        Dim session As String = USafe(UParent(UParent(LaunchContext)), "update-" & UUnique())
+        UDirectory session
+        Dim contextPath As String = USafe(session, "context.json")
+        origin.Assign "sessionId", JS(UFso().GetFileName(session))
+        origin.Assign "expiresUtc", JN(UtcMilliseconds() + 43200000#)
+        origin.Assign "selection", BSelection(components)
+        origin.Assign "identity", LaunchIdentity
+        origin.Assign "originSha256", JS(LaunchHash)
+        UWriteJson contextPath, origin
+        UWriteJson USafe(session, "catalog.json"), catalog
+        Dim signal As UpdateJson = JO()
+        signal.Assign "schema", JN(BVersion): signal.Assign "context", JS(contextPath)
+        UWriteJson USafe(UParent(LaunchContext), "arm.json"), signal
+        UpdateContext = contextPath
+        BLog origin, session, "consent " & choice & " " & selection.Encode() & "; arming requested"
+        UState session, "arming", "Waiting for twinBASIC to acknowledge the shutdown request."
+    End Sub
+
+    Public Sub CloseLaunch()
+        On Error Resume Next
+        If Len(LaunchContext) > 0 Then UWriteJson USafe(UParent(LaunchContext), "closed.json"), JO()
+        IUnlock TransactionLock: TransactionLock = 0
+        IUnlock LaunchLock: LaunchLock = 0
+    End Sub
+
+    Public Function RecoveryContext(ByVal root As String) As String
+        Dim active As String = USafe(IHome(root), "active.json")
+        If Not UExists(active) Then Return ""
+        Dim marker As UpdateJson = UReadJson(active), path As String = JT(marker, "context")
+        If Not UExists(path) Then Return ""
+        Dim context As UpdateJson = UReadJson(path)
+        IValidateContext context, path
+        If JT(context, "installationId") <> IId(root) Then UFail "Recovery belongs to a different IDE installation."
+        Dim journal As String = USafe(UParent(path), "journal.json")
+        If Not UExists(journal) Then Return ""
+        Dim status As String = JT(UReadJson(journal), "status")
+        If status <> "complete" And status <> "rolledBack" Then Return path
+    End Function
+
+End Module

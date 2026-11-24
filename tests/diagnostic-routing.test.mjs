@@ -15,7 +15,8 @@ test('core and designer diagnostic basenames resolve through the shared folder',
 });
 test('updater startup, worker and native tests use the common diagnostics root',()=>{
  assert(read('tbIDE/Updater/src/Sources/modWinUIHost.twin').includes('DiagnosticsFile("updater-startup.log")'));
- assert(read('tbIDE/Updater/src/Sources/UpdaterEngine.twin').includes('DiagnosticsFile("updater-engine.log")'));
+ assert(read('tbIDE/Updater/src/Sources/ShutdownBridge.twin').includes('DiagnosticsFile("updater-engine.log")'));
+ assert(read('tbIDE/Updater/src/Sources/UpdaterEngine.twin').includes('BLog context'));
  const self=read('tbIDE/Updater/src/Sources/UpdaterSelfTest.twin');assert(self.includes('DiagnosticsRoot()'));assert(self.includes('DiagnosticsFile("native-updater-latest.json")'));assert(self.includes('\\NativeSelfTests\\'));
  assert(read('tbIDE/Updater/src/Sources/UpdaterHost.twin').includes('DiagnosticsFile("updater-startup-help.html")'));
 });

@@ -2,11 +2,11 @@
 
 tbUI3IDE is a single twinBASIC add-in that brings a WinUI 3 look to the IDE, offers Classic, Hybrid and Ribbon toolbar layouts, and adds TabView/MultiPage designer tools. It includes WinUI3 Dark and Light themes and a shared native updater. The add-in is a developer tool; applications built with the tbUI3 control package do not require it.
 
-**Current version:** 0.4.0.0 (development)
+**Current version:** 0.4.0.5 (development)
 
 ## Requirements
 
-- twinBASIC BETA 1045 (the current supported build for this development candidate).
+- twinBASIC BETA 1043 through 1045 (the configured development range).
 - A matching Win32 or Win64 add-in DLL for your IDE architecture.
 - Microsoft Edge WebView2 Runtime for the updater interface. The Welcome Wizard uses the IDE's existing web host.
 
@@ -48,7 +48,7 @@ When a tbUI3 TabView is selected, use the contextual MultiPage commands to creat
 
 ### Updates
 
-**Development status:** the current prerelease uses an IDE-hosted update review and a standalone installation worker. The approved next Phase 1 architecture moves the toast, update review, preferences and entire update lifecycle into Updater.exe, leaving only entry points and a minimal normal-exit bridge in the add-in. Live self-update acceptance is not complete. See the [specification](INSTALLATION_MANAGER_SPEC.md) and [handoff](PHASE1_HANDOFF.md).
+Updater.exe owns the desktop notification, review, preferences, progress and recovery. See the [handoff](PHASE1_HANDOFF.md) for current validation.
 
 The updater checks published releases for the twinBASIC IDE, tbUI3IDE and developer icon resources. The initial add-in release contains both DLL architectures with the updater and themes embedded; they are provisioned or safely upgraded when the add-in loads. Open **Check for Updates** to review available versions and choose which published components to update. Separate updater/theme components can be supported when explicitly published in future releases.
 
@@ -65,7 +65,8 @@ In IDE Options, find the add-in settings near **Colour Theme**:
 - **Enable additional IDE theme styling via add-in:** Turn optional styling on or off.
 - **IDE Toolbar:** Choose Classic, Hybrid or Ribbon.
 - **Check for Updates:** Open the update review.
-- **tbUI3 installations > Settings and repair:** Configure automatic checks, restart preference and resource repair.
+- **Update settings:** Open the standalone updater's automatic-check and restart preferences.
+- **Resource repair:** Review and repair embedded updater and theme resources from the IDE.
 - **Welcome to tbUI3IDE:** Reopen the onboarding wizard.
 
 Your toolbar and styling choices persist across restarts. Installation-specific update preferences are saved separately for each IDE installation. Welcome completion is saved per user.

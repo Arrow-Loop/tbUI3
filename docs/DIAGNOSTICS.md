@@ -9,7 +9,7 @@ All active first-party runtime diagnostics now use **`%LOCALAPPDATA%\tbUI3\Diagn
 | Paint tracing | `tbUI3-paint.log` | Existing `TBUI3_PAINT_TRACE=1` environment switch |
 | Icon/designer tracing | `tbUI3-design.log` | Existing design logging flag enabled |
 | Updater startup/WebView2 | `updater-startup.log` | Startup stages and failures |
-| Updater worker failures | `updater-engine.log` | Unelevated worker failures; includes originating session |
+| Updater lifecycle and IDE shutdown bridge | `updater-engine.log` | Unelevated launch, discovery, stage timings, native exit and transaction events correlated by installation and session |
 | Startup fallback page | `updater-startup-help.html` | Verified complete UTF-8 page after interface startup failure |
 | Latest native self-test pointer | `native-updater-latest.json` | Each completed `Updater.exe -SelfTest` run |
 | Full self-test report/fixtures | `NativeSelfTests\tbUI3-native-updater-tests-<run>\` | Native self-test runs, including `results.json` |

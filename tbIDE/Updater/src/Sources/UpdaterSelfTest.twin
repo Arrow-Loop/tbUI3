@@ -12,7 +12,7 @@ Private Module UpdaterSelfTest
         UNoLinks mRoot: UDirectory mRoot
         Set mResults = JA(): mFailed = 0
         Dim i As Long
-        For i = 1 To 39: RunCase i: Next
+        For i = 1 To 43: RunCase i: Next
         Dim fixtures As UpdateJson = JParse(UIX_ResourceText("native-engine-fixtures.json")), fixture As UpdateJson
         For Each fixture In fixtures.Member("fixtures").Items: RunZipCase fixture: Next
         Dim report As UpdateJson = JO()
@@ -200,7 +200,19 @@ Private Module UpdaterSelfTest
                 Check Not UpdaterDocumentAllowed("data:text/html,<script>bad</script>", expectedUri), name & " foreign data"
                 Check Not UpdaterDocumentAllowed("https://example.com/", expectedUri), name & " remote"
                 Check Not UpdaterDocumentAllowed("", ""), name & " uninitialized"
-                Check InStr(UIX_ResourceText("updater.html"), "Selected updates") > 0, name & " resource conversion"
+                Check InStr(UIX_ResourceText("updater.html"), "Update on Exit") > 0, name & " resource conversion"
+            Case 40, 41, 42
+                name = TestBridgeRecord(number)
+            Case 43
+                name = "published icon library index version"
+                Dim marker As String = "tbUI3LIB", indexText As String = "#tbUI3-Icons|2026.10.19.1|digest|notice" & vbCrLf
+                Dim dat() As Byte, pos As Long
+                ReDim dat(0 To 31 + Len(indexText))
+                For pos = 1 To Len(marker): dat(pos - 1) = Asc(Mid$(marker, pos, 1)): Next
+                dat(8) = 1: dat(16) = 32: dat(20) = Len(indexText)
+                For pos = 1 To Len(indexText): dat(31 + pos) = Asc(Mid$(indexText, pos, 1)): Next
+                path = mRoot & "\library-header.dat": UWriteRaw path, dat
+                Check UInstalledLibrary(path) = "2026.10.19.1", name
         End Select
         Record name, True, "": Exit Sub
     Failed:
@@ -209,6 +221,34 @@ Private Module UpdaterSelfTest
         If lockOpen Then Close #handle
         Record name, False, reason
     End Sub
+    Private Function TestBridgeRecord(ByVal number As Long) As String
+        Dim session As String = mRoot & "\shutdown-bridge", path As String = session & "\context.json"
+        UDirectory session
+        Dim request As UpdateJson = JO()
+        request.Assign "bridge", JN(BVersion): request.Assign "sessionId", JS("shutdown-bridge")
+        request.Assign "expiresUtc", JN(UtcMilliseconds() + 60000#)
+        request.Assign "installationId", JS("test-installation"): request.Assign "originSha256", JS(UHashText("origin"))
+        request.Assign "choice", JS("exit"): UWriteJson path, request
+        UWriteJson USafe(session, "native-exit.json"), BRecord(path, "shutdown")
+        Select Case number
+            Case 40
+                Check BMatches(path, "native-exit.json", "shutdown"), "matching shutdown acknowledgement"
+                Check Not BMatches(path, "native-exit.json", "cancelled"), "distinct cancellation"
+                Return "native shutdown and cancellation are distinct"
+            Case 41
+                request.Assign "choice", JS("now"): UWriteJson path, request
+                Check Not BMatches(path, "native-exit.json", "shutdown"), "different request bytes"
+                Return "native acknowledgement rejects changed request"
+            Case 42
+                request.Assign "expiresUtc", JN(1): UWriteJson path, request
+                On Error GoTo Rejected
+                Dim matched As Boolean = BMatches(path, "native-exit.json", "shutdown")
+                On Error GoTo 0
+                UFail "Expired shutdown acknowledgement was accepted."
+        End Select
+    Rejected:
+        Return "expired shutdown acknowledgement rejected"
+    End Function
     Private Sub MustReject(ByVal number As Long)
         On Error GoTo Expected
         Dim ignored As Variant, json As UpdateJson

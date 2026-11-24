@@ -48,7 +48,24 @@ Module MainModule
         IValidateContext context, UpdateContext
         ContextValidated = True
         Select Case UpdateMode
-            Case "Check", "Stage", "Cancel"
+            Case "Quiet", "Review", "Settings"
+                If worker Or IIsElevated() Or Len(AuthorizedPlanHash & AuthorizedContextHash) > 0 Then UFail "Invalid updater launch."
+                If JD(context, "bridge") <> BVersion Then UFail "Incompatible IDE launch protocol."
+                If Not IsSessionRunner() Then
+                    If UpdateMode = "Quiet" Then
+                        If Not QuietCheckDue(JT(context, "installRoot")) Then
+                            LaunchContext = UpdateContext: CloseLaunch
+                            Exit Sub
+                        End If
+                    End If
+                    UDetached context, SessionFolder(), UpdateMode
+                    Exit Sub
+                End If
+                If Not OpenLifecycle(context) Then CloseLaunch: Exit Sub
+                WinUI_InitializeDpiAwareness
+                ShowUpdaterWindow
+            Case "Check", "Stage"
+                If Not worker Or JD(context, "bridge") <> BVersion Or Len(AuthorizedPlanHash & AuthorizedContextHash) > 0 Then UFail "Incompatible metadata/staging worker contract."
                 If IIsElevated() Then UFail "Start checks and staging from the unelevated IDE. Elevation is scoped to an approved install/recovery only."
                 ExitProcess RunNativeEngine(UpdateMode)
             Case "Apply", "Recover"
@@ -79,7 +96,7 @@ Module MainModule
         If Not ContextValidated Then UpdateContext = ""
         If Not IIsElevated() Or ElevatedStateSafe Then ReportStartupFailure StartupError
         If IIsElevated() Then ExitProcess 1
-        If worker Then ExitProcess 1
+        If worker Or UpdateMode = "Quiet" Then CloseLaunch: ExitProcess 1
         WinUI_InitializeDpiAwareness
         ShowUpdaterWindow
     End Sub

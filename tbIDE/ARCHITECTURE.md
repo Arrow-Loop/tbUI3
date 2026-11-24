@@ -4,7 +4,7 @@ The unified add-in includes native TabView management, optional WinUI styling, t
 
 ## Update ownership boundary
 
-The current add-in contains an embedded update-review UI, state polling and shutdown coordination. This is now migration debt, not the desired architecture. The [approved Phase 1 application ownership decision](INSTALLATION_MANAGER_SPEC.md#binding-application-ownership-approved-2026-11-24) requires a thin add-in: Wizard, offline provisioning/repair, entry points, context registration and a minimal native save/exit bridge. The standalone Updater.exe owns all update notifications, review, preferences, scheduling, staging/progress, transaction and recovery. Reuse the existing shared Toolkit visual design without retaining a second update surface. The new shutdown handshake must support normal exit during staging without weakening final plan authorization. See the roadmap for implementation and acceptance; no runtime change is implied by this decision.
+Updater.exe owns automatic checks, its standalone notification and review, installation-specific preferences, consent, progress and recovery. The add-in keeps the Welcome Wizard, offline provisioning/repair and the IDE entry points. Its native bridge acknowledges the IDE's accepted save or discard before compiler teardown. Apply combines that acknowledgement with the sealed verified plan after staging, process exit and lock checks. The [implementation contract](INSTALLATION_CONTRACTS.md#session-and-approval) defines the records and trust boundaries.
 
 ## Distribution and identity
 

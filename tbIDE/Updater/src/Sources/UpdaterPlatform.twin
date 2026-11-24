@@ -411,7 +411,8 @@ Private Module UpdaterPlatform
         Dim session As LongPtr, connection As LongPtr, request As LongPtr, file As LongPtr, opened As Boolean
         Dim current As String = url, redirect As Long, deadline As Date = DateAdd("n", 15, Now)
         On Error GoTo Failed
-        Dim agent As String = "tbUI3-Updater/0.2.0.2", verb As String = "GET", headers As String = "Accept: application/vnd.github+json" & vbCrLf
+        Dim agent As String = "tbUI3-Updater/" & Phase1Config.UpdaterVersion, verb As String = "GET", headers As String = "Accept: application/vnd.github+json" & vbCrLf
+        If Not metadata And expectedSize > 0 Then BProgress "Downloading", 0, expectedSize, "bytes"
         session = WinHttpOpen(StrPtr(agent), 0, 0, 0, 0)
         If session = 0 Then UFail "WinHTTP initialization failed."
         WinHttpSetTimeouts session, 30000, 30000, 30000, 30000
@@ -458,11 +459,13 @@ Private Module UpdaterPlatform
                     If CDbl(total) + count > limit Then UFail "Download exceeds supported size."
                     total = total + count
                     UWriteBuffer file, VarPtr(buffer(0)), count
+                    If Not metadata And expectedSize > 0 Then BProgress "Downloading", total, expectedSize, "bytes"
                 Loop
                 UCloseStream file: opened = False
                 WinHttpCloseHandle request: request = 0: WinHttpCloseHandle connection: connection = 0: WinHttpCloseHandle session: session = 0
                 If expectedSize > 0 And total <> expectedSize Then UFail "Downloaded length mismatch."
                 If Len(sha) > 0 Then
+                    BProgress "Verifying downloaded SHA-256"
                     UHashValue sha
                     If UHash(destination) <> sha Then UFail "Downloaded SHA-256 mismatch."
                 End If

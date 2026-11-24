@@ -2,70 +2,59 @@ import fs from 'node:fs';
 import vm from 'node:vm';
 import test from 'node:test';
 import assert from 'node:assert/strict';
-const {JSDOM,VirtualConsole}=await import(process.env.TB_JSDOM_MODULE||'jsdom');
-const factory=vm.runInNewContext(fs.readFileSync('tbIDE/tbUI3IDE/js/updater.js','utf8'));
-function fixture(){
- // jsdom 26 does not parse the pinned modern CSS layers. Keep all other errors visible.
- const virtualConsole=new VirtualConsole();
- virtualConsole.on('jsdomError',error=>{if(error.type!=='css parsing')console.error(error);});
- const dom=new JSDOM('<!doctype html><html><head></head><body><div class="tbis-optionRow"><div class="tbis-optionName">Colour Theme</div></div></body></html>',{virtualConsole});
- const {window:w}=dom,d=w.document;w.HTMLDialogElement.prototype.showModal=function(){this.setAttribute('open','');};w.HTMLDialogElement.prototype.close=function(){this.removeAttribute('open');};
- const ui=factory({document:d,window:w,automatic:false,checkDue:false,masterCss:fs.readFileSync('tbIDE/prototypes/welcome-wizard/master.css','utf8'),themeMode:()=>'light',closeIde:()=>{}});return{w,d,ui,dialog:()=>d.querySelector('#tbUI3UpdaterDialog > div')?.shadowRoot,notice:()=>d.querySelector('#tbUI3UpdateNotice > div')?.shadowRoot,dispose(){ui.dispose();w.close();}};
+
+const root = 'tbIDE/tbUI3IDE/';
+const bridge = fs.readFileSync(root + 'js/shutdown-bridge.js', 'utf8');
+function host() {
+ const sandbox = vm.createContext({window:{}, calls:{accepted:0, exits:0, project:0}, dialog:null});
+ vm.runInContext(`
+   const hostAppObject = { Exit(){ calls.exits++; } };
+   let showModalDialog = (_, buttons) => { dialog = buttons; };
+   let closeProjectNow = callback => { callback(); };
+   let closeProjectSafely = callback => {
+     calls.accepted++;
+     showModalDialog(null, [
+       {onclick:()=>closeProjectNow(callback)},
+       {onclick(){}, isDefaultCancelAction:true}
+     ]);
+   };
+ `, sandbox);
+ vm.runInContext(bridge, sandbox);
+ return sandbox;
 }
-const catalog={components:[{id:'addin',installed:'0.3.0.20',version:'0.3.0.21',available:true,compatible:true,summary:'Designer tooling',source:'https://github.com/Arrow-Loop/tbUI3/releases/tag/tbUI3IDE-v0.3.0.21'},{id:'library',installed:'2026.10.19.1',version:'2026.10.19.1',available:false,compatible:true,summary:'Icon library',source:'https://github.com/Arrow-Loop/tbUI3-Libraries/releases'}],errors:['One source is offline.']};
-function click(f,label){const buttons=[...(f.dialog()?.querySelectorAll('button')||[]),...(f.notice()?.querySelectorAll('button')||[]),...f.d.querySelectorAll('button')];const button=buttons.find(b=>b.textContent===label);assert(button,label);button.click();}
-test('manual check renders results in the open review without a redundant toast and escapes remote text',()=>{
- const f=fixture();click(f,'Check for Updates');assert.equal(JSON.parse(f.ui.take()).action,'check');
- f.ui.publish({status:'checked',catalog,message:'Release check complete.'});assert(f.d.querySelector('dialog').open);assert.equal(f.d.getElementById('tbUI3UpdateNotice'),null);
- assert.match(f.dialog().textContent,/Installed: 0.3.0.20; Available: 0.3.0.21/);
- assert.match(f.dialog().textContent,/One source is offline/);
- f.ui.publish({status:'error',message:'<img src=x onerror=evil()>',catalog});assert.equal(f.dialog().querySelector('img'),null);f.dispose();
+test('Update Now bypasses the wrapper and resumes the original accepted exit once', () => {
+ const s = host();
+ vm.runInContext("window.__tbUI3Shutdown.arm('a'); window.__tbUI3Shutdown.request('a'); dialog[0].onclick()", s);
+ assert.deepEqual(JSON.parse(s.window.__tbUI3Shutdown.take()), {request:'a', status:'shutdown'});
+ assert.deepEqual(s.calls, {accepted:1, exits:0, project:0});
+ s.window.__tbUI3Shutdown.resume();
+ s.window.__tbUI3Shutdown.resume();
+ assert.deepEqual(s.calls, {accepted:1, exits:1, project:0});
 });
-test('component selection, Now/Exit and restart are explicit native requests',()=>{
- for(const action of ['now','exit']){
-  const f=fixture();f.ui.publish({status:'checked',catalog,message:'Ready'});f.ui.show();
-  assert(f.dialog().querySelector('[data-component=library]').disabled);
-  f.dialog().querySelector('[data-restart]').checked=true;click(f,action==='now'?'Update Now':'Update on Exit');
-  const request=JSON.parse(f.ui.take());assert.equal(request.action,action);assert.deepEqual(request.selected,['addin']);assert.equal(request.restart,true);
-  assert(f.dialog().textContent.includes('Downloading and verifying'));
-  f.dispose();
- }
+test('native project close, cancelled exit and closure before arming cannot acknowledge shutdown', () => {
+ const s = host();
+ vm.runInContext("closeProjectSafely(()=>{hostAppObject.Exit('ignore')});dialog[0].onclick()", s);
+ assert.equal(s.calls.exits, 1);
+ assert.equal(s.window.__tbUI3Shutdown.take(), '');
+ vm.runInContext("window.__tbUI3Shutdown.arm('a');closeProjectSafely(()=>{calls.project++});dialog[0].onclick()", s);
+ assert.equal(s.calls.project, 1);
+ assert.equal(s.window.__tbUI3Shutdown.take(), '');
+ vm.runInContext('closeProjectSafely(()=>{hostAppObject.Exit("ignore")});dialog[1].onclick()', s);
+ assert.deepEqual(JSON.parse(s.window.__tbUI3Shutdown.take()), {request:'a', status:'cancelled'});
+ assert.equal(s.calls.exits, 1);
 });
-test('Later persists a deferral without an install or shutdown request',()=>{
- const f=fixture();f.ui.publish({status:'checked',catalog,message:'Ready'});f.ui.show();click(f,'Remind Me Later');
- const request=JSON.parse(f.ui.take());assert.equal(request.action,'later');assert(request.deferredUntil>Date.now());assert.equal(f.ui.take(),'');
- assert.equal(f.d.querySelector('dialog').open,false);f.dispose();
+test('normal frame close is acknowledged while the armed updater is staging', () => {
+ const s = host();
+ vm.runInContext('window.__tbUI3Shutdown.arm("a");closeProjectSafely(()=>{hostAppObject.Exit("ignore")});dialog[0].onclick()', s);
+ assert.deepEqual(JSON.parse(s.window.__tbUI3Shutdown.take()), {request:'a', status:'shutdown'});
+ s.window.__tbUI3Shutdown.disarm();
+ assert.equal(s.calls.exits, 1);
 });
-test('opt-out, pending cancel and disposal keep one options entry',async()=>{
- const f=fixture();f.ui.show();f.dialog().querySelector('[data-automatic]').click();assert.equal(JSON.parse(f.ui.take()).action,'preferences');
- f.ui.publish({status:'waiting',message:'Waiting for normal exit'});click(f,'Cancel Pending Update');assert.equal(JSON.parse(f.ui.take()).action,'cancel');
- f.d.body.appendChild(f.d.createElement('span'));await new Promise(r=>setTimeout(r,0));assert.equal(f.d.querySelectorAll('.tbUI3UpdateOptions').length,1);
- f.ui.dispose();assert.equal(f.d.querySelectorAll('.tbUI3UpdateOptions,dialog,#tbUI3UpdaterCss').length,0);f.w.close();
+test('the IDE surface owns only update entry points and offline provisioning views', () => {
+ const ui = fs.readFileSync(root + 'js/installation-ui.js', 'utf8');
+ const native = fs.readFileSync(root + 'src/Sources/UpdaterController.twin', 'utf8');
+ assert.match(ui, /Check for Updates/);
+ assert.match(ui, /Update settings/);
+ assert.match(ui, /Resource repair/);
+ assert.doesNotMatch(ui+native, /tbUI3UpdateNotice|tbUI3UpdaterDialog|RunNativeEngine|catalog\.json|plan\.json|pending\.json/);
 });
-test('native exit adapter parks only accepted IDE exit callbacks',()=>{
- const source=fs.readFileSync('tbIDE/tbUI3IDE/src/Sources/UpdaterScript.twin','utf8');
- assert.match(source,/__tbUI3UpdaterOriginalClose/);
- // Execute the same bootstrap code emitted by the builder, decoded from twinBASIC literals.
- const lines=source.split(/\r?\n/),chunks=[];
- for(const line of lines){const m=line.match(/^        js = js & (.*)$/);if(!m)continue;if(m[1]==='vbLf'){chunks.push('\n');continue;}chunks.push(m[1].split(' & Chr(34) & ').map(x=>x.slice(1,-1)).join('"'));}
- const sandbox={window:{},closeProjectSafely:fn=>fn(),hostAppObject:{Exit:()=>{sandbox.exited=true;}}};vm.runInNewContext(chunks.join(''),sandbox);
- sandbox.window.__tbUI3UpdatePending=true;
- vm.runInNewContext('closeProjectSafely(function(){hostAppObject.Exit("ignore");})',sandbox);
- assert.equal(sandbox.exited,undefined);assert.equal(typeof sandbox.window.__tbUI3UpdateExit,'function');
- sandbox.window.__tbUI3UpdateExit();assert.equal(sandbox.exited,true);
- sandbox.projectClosed=false;vm.runInNewContext('closeProjectSafely(function(){projectClosed=true;})',sandbox);assert.equal(sandbox.projectClosed,true);
-});
-
-
-test('automatic opt-out cancels queued startup checks and enabling schedules a guarded check',()=>{
- const f=fixture(),callbacks=[];
- f.w.setTimeout=fn=>{callbacks.push(fn);return callbacks.length;};f.w.clearTimeout=()=>{};
- f.ui.show();const automatic=f.dialog().querySelector('[data-automatic]');
- automatic.click();assert.equal(JSON.parse(f.ui.take()).automatic,true);assert.equal(callbacks.length,1);
- automatic.click();assert.equal(JSON.parse(f.ui.take()).automatic,false);
- callbacks[0]();assert.equal(f.ui.take(),'');assert.equal(callbacks.length,1);
- f.dispose();
-});
-
-test('review dialog and toast use the pinned scoped toolkit with three footer actions',()=>{const f=fixture();try{f.ui.publish({status:'checked',catalog,message:'Ready'});assert(f.notice().querySelector('.info-bar'));click(f,'Review updates');const root=f.dialog();assert(root.querySelector('style').textContent.includes(':host([data-theme="dark"])'));assert.deepEqual([...root.querySelectorAll('footer button')].map(b=>b.textContent),['Update Now','Update on Exit','Close']);assert(root.querySelector('footer .button--primary'));assert(!f.d.querySelector('.info-bar'));f.ui.setAppearance({themeMode:'dark',accent:Array(7).fill('#123456')});assert.equal(root.host.getAttribute('data-theme'),'dark');assert.equal(root.host.style.getPropertyValue('--win-accent'),'#123456');}finally{f.dispose();}});
-test('optional icon-library version issue is actionable and does not block available updates',()=>{const f=fixture();try{f.ui.publish({status:'checked',catalog:{...catalog,errors:['Icon library: Missing icon library version.']},message:'Ready'});f.ui.show();assert.match(f.dialog().textContent,/Manage the icon library from the icon picker Setup controls/);assert(!f.dialog().querySelector('footer .button--primary').disabled);}finally{f.dispose();}});

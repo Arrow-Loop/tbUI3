@@ -11,4 +11,35 @@
     belong to the shared Master CSS. */
  :host(.tbUI3OptionButtonHost) { font:var(--font-size-body)/var(--text-line-height) var(--font-family-ui); }
  .tbUI3OptionButton { width:100%; box-sizing:border-box; }
+
+ /* In-IDE Windows notification composition. Do not reuse the Toolkit's
+    two-column, non-interactive status .toast for this actionable card.
+    Shared Button classes own paint, states and sizing. */
+ :host(.tbUI3-update-toast) { font:var(--font-size-body)/var(--text-line-height) var(--font-family-ui); }
+ .installation-toast {
+  position:fixed; right:var(--space-4); bottom:40px; z-index:2147483000;
+  display:grid; grid-template-columns:minmax(0,1fr); align-content:start; gap:var(--space-2);
+  box-sizing:border-box; width:min(364px,calc(100vw - 32px)); max-height:calc(100vh - 56px); overflow:auto;
+  padding:var(--space-3) var(--space-4) var(--space-4); border-radius:var(--radius-flyout);
+  font:var(--font-size-body)/var(--text-line-height) var(--font-family-ui); color:var(--color-text);
+  background:var(--color-flyout); border:1px solid var(--color-overlay-border);
+  box-shadow:0 8px 16px rgba(0,0,0,.14); pointer-events:auto;
+  animation:installation-toast-in 367ms cubic-bezier(.1,.9,.2,1) both;
+ }
+ :host([data-theme="dark"]) .installation-toast { box-shadow:0 8px 16px rgba(0,0,0,.26); }
+ .installation-toast__header { display:grid; grid-template-columns:auto minmax(0,1fr) auto; align-items:center; gap:var(--space-2); }
+ .installation-toast__icon { font-family:var(--font-family-glyph); font-size:var(--font-size-glyph); color:var(--color-accent); }
+ .installation-toast__app { min-width:0; overflow-wrap:anywhere; font-size:var(--font-size-caption); color:var(--color-text-muted); }
+ .installation-toast__close { font-family:var(--font-family-glyph); font-size:var(--font-size-caption); }
+ .installation-toast__title { margin:0; font-weight:600; }
+ .installation-toast__message { margin:0; min-width:0; overflow-wrap:anywhere; color:var(--color-text-muted); }
+ .installation-toast__actions { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:var(--space-2); margin-top:var(--space-2); align-items:start; }
+ .installation-toast__actions > .button { width:100%; min-width:0; }
+ .installation-toast--leaving { pointer-events:none; animation:installation-toast-out 167ms cubic-bezier(1,0,1,1) both; }
+ @keyframes installation-toast-in { from{opacity:0;transform:translateX(40px)} to{opacity:1;transform:none} }
+ @keyframes installation-toast-out { from{opacity:1} to{opacity:0;transform:translateX(40px)} }
+ @media (prefers-reduced-motion:reduce) {
+  .installation-toast,.installation-toast--leaving { animation:none; }
+  .installation-toast--leaving { opacity:0; }
+ }
 }

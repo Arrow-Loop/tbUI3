@@ -1,5 +1,9 @@
 # Changelog
 
+## 2026-11-24 - Correct actionable IDE update notification layout
+
+Separated the actionable notification from the passive Master toast layout and restored shared Button variants and theme tokens. Part of the existing pending add-in-only 0.4.0.14 assembly. See [IDE changelog](tbIDE/CHANGELOG.md). No helper or release change.
+
 ## 2026-11-24 - Correct IDE Options Button presentation
 
 Replaced native-painted tbUI3 Updates action buttons with the shared Toolkit Button class in isolated roots; add-in 0.4.0.14 source is staged for guarded assembly. See [IDE changelog](tbIDE/CHANGELOG.md). No updater change or release.

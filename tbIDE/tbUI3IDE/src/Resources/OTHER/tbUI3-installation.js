@@ -5,7 +5,7 @@
  let autoPending=!!env.showWelcome,painted=!autoPending,optionSheet;
  const wizardActions=new Set(['choose-theme','choose-toolbar','installation-preferences','welcome-record','bootstrap-retry','repair-resource']);
  function node(tag,text,parent,className){const n=d.createElement(tag);if(text!==undefined)n.textContent=text;if(className)n.className=className;if(parent)parent.append(n);return n;}
- function button(text,action,parent,accent=false){const n=node('button',text,parent,'button'+(accent?' button--accent':''));n.type='button';n.onclick=action;return n;}
+ function button(text,action,parent,accent=false){const n=node('button',text,parent,'button'+(accent?' button--primary':''));n.type='button';n.onclick=action;return n;}
  function request(action,data={}){const requestId='installation-'+(++serial);pending.add(requestId);queue.push({action,...data,requestId});return requestId;}
  function status(text,parent){const n=node('p',text,parent,'installation-status');n.setAttribute('role','status');return n;}
  function field(label,parent){const row=node('label',undefined,parent,'settings-row');node('span','\uE713',row,'settings-row__glyph').setAttribute('aria-hidden','true');node('span',label,row,'settings-row__title');return row;}
@@ -117,44 +117,22 @@
   renderSettings();syncTheme();openDialog(settingsDialog);shadow.querySelector('h1').focus();
  }
  // In-IDE update notification styled as a Windows 11 toast (not routed through the notification center).
- const toastCss=`
-  :host{all:initial}
-  .toast{position:fixed;right:16px;bottom:40px;z-index:2147483000;box-sizing:border-box;width:364px;padding:12px 16px 16px;border-radius:8px;
-   font-family:"Segoe UI Variable Text","Segoe UI",var(--font-family),sans-serif;font-size:14px;line-height:20px;color:var(--color-text);
-   background:var(--toast-bg);border:1px solid var(--toast-border);box-shadow:var(--toast-shadow);
-   -webkit-backdrop-filter:blur(30px) saturate(125%);backdrop-filter:blur(30px) saturate(125%);
-   animation:toast-in 367ms cubic-bezier(.1,.9,.2,1) both}
-  :host([data-theme="dark"]){--toast-bg:rgba(44,44,44,.96);--toast-border:rgba(0,0,0,.4);--toast-shadow:0 8px 16px rgba(0,0,0,.26),0 0 0 1px rgba(255,255,255,.06) inset}
-  :host([data-theme="light"]){--toast-bg:rgba(252,252,252,.96);--toast-border:rgba(0,0,0,.06);--toast-shadow:0 8px 16px rgba(0,0,0,.14)}
-  .toast.leaving{animation:toast-out 167ms cubic-bezier(1,0,1,1) both}
-  @keyframes toast-in{from{opacity:0;transform:translateX(40px)}to{opacity:1;transform:none}}
-  @keyframes toast-out{from{opacity:1}to{opacity:0;transform:translateX(40px)}}
-  .head{display:flex;align-items:center;gap:8px;height:20px;margin-bottom:12px}
-  .icon{font-family:var(--font-family-glyph),"Segoe Fluent Icons","Segoe MDL2 Assets";font-size:16px;line-height:16px;color:var(--color-accent)}
-  .app{flex:1;font-size:12px;line-height:16px;color:var(--color-text-muted)}
-  .close{display:grid;place-items:center;width:32px;height:28px;margin:-4px -8px -4px 0;padding:0;border:0;border-radius:4px;background:transparent;
-   color:var(--color-text-muted);font-family:var(--font-family-glyph),"Segoe Fluent Icons","Segoe MDL2 Assets";font-size:10px;cursor:default}
-  .close:hover{background:var(--color-subtle-hover,rgba(128,128,128,.12))}
-  .title{margin:0;font-weight:600}
-  .body{margin:0;color:var(--color-text-muted)}
-  .actions{display:flex;gap:8px;margin-top:16px}
-  .actions .button{flex:1 1 0;min-width:0}`;
  function closeToast(){
-  const card=toastHost?.shadowRoot.querySelector('.toast');if(!card){toastHost?.remove();toastHost=null;return;}
-  card.classList.add('leaving');const host=toastHost;toastHost=null;w.setTimeout(()=>host.remove(),180);
+  const card=toastHost?.shadowRoot.querySelector('.installation-toast');if(!card){toastHost?.remove();toastHost=null;return;}
+  card.classList.add('installation-toast--leaving');const host=toastHost;toastHost=null;w.setTimeout(()=>host.remove(),180);
  }
  function showToast(names){
   if(!Array.isArray(names)||!names.length)return;
   if(toastHost)toastHost.remove();
   toastHost=node('div',undefined,d.body,'tbUI3-update-toast');const root=toastHost.attachShadow({mode:'open'});
-  const style=node('style',undefined,root);style.textContent=hostCss(env.styles)+toastCss;
-  const card=node('section',undefined,root,'toast');card.setAttribute('role','alert');card.setAttribute('aria-label','tbUI3 Updater notification');
-  const head=node('div',undefined,card,'head');node('span','\uE896',head,'icon').setAttribute('aria-hidden','true');node('span','tbUI3 Updater',head,'app');
-  const x=node('button','\uE8BB',head,'close');x.type='button';x.title='Dismiss';x.setAttribute('aria-label','Dismiss');x.onclick=closeToast;
-  node('p','Updates available',card,'title');
+  const style=node('style',undefined,root);style.textContent=hostCss(env.styles);
+  const card=node('section',undefined,root,'installation-toast');card.setAttribute('role','alert');card.setAttribute('aria-label','tbUI3 Updater notification');
+  const head=node('div',undefined,card,'installation-toast__header');node('span','\uE896',head,'installation-toast__icon').setAttribute('aria-hidden','true');node('span','tbUI3 Updater',head,'installation-toast__app');
+  const x=button('\uE8BB',closeToast,head);x.classList.add('button--subtle','button--icon','installation-toast__close');x.title='Close notification';x.setAttribute('aria-label','Close notification');
+  node('p','Updates available',card,'installation-toast__title');
   const list=names.map(String),text=list.length===1?list[0]:list.slice(0,-1).join(', ')+' and '+list[list.length-1];
-  node('p',text+(list.length===1?' is':' are')+' ready to install.',card,'body');
-  const actions=node('div',undefined,card,'actions');
+  node('p',text+(list.length===1?' is':' are')+' ready to install.',card,'installation-toast__message');
+  const actions=node('div',undefined,card,'installation-toast__actions');
   button('Review',()=>{closeToast();request('check');},actions,true);button('Dismiss',closeToast,actions);
   card.addEventListener('keydown',e=>{if(e.key==='Escape'){e.stopPropagation();closeToast();}});
   tokens(toastHost);

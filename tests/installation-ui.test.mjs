@@ -90,3 +90,32 @@ test('IDE Options gains its own tbUI3 Updates category that follows native navig
 test('shadow views translate document theme selectors so dark mode applies',()=>{const f=fixture({styles:':root{--c:light}:root[data-theme="dark"]{--c:dark}html:root[data-theme]{color-scheme:x}'});try{f.ui.show('repair');const css=f.shadow().querySelector('style').textContent;assert.match(css,/:host\(\[data-theme="dark"\]\)\{--c:dark\}/);assert.match(css,/:host\(\[data-theme\]\)\{color-scheme/);assert.doesNotMatch(css,/:root|:host\[/);assert.equal(f.d.querySelector('dialog.tbUI3-installation-dialog').getAttribute('data-theme'),'dark');}finally{f.dispose();}});
 
 test('IDE Options actions use isolated shared Toolkit buttons and update their theme',async()=>{let mode='Dark';const f=fixture({themeMode:()=>mode,styles:':root{--test:1}:root[data-theme="dark"]{--test:2}.button{min-height:32px}'});try{const section=f.d.querySelector('.tbUI3InstallationOptions'),hosts=[...section.querySelectorAll('.tbUI3OptionButtonHost')];assert.equal(hosts.length,4);assert.equal(section.querySelectorAll('button,.tbis-control').length,0);for(const host of hosts){assert.equal(host.getAttribute('data-theme'),'dark');const button=host.shadowRoot.querySelector('button.button.tbUI3OptionButton');assert(button);assert.equal(button.type,'button');assert(!button.classList.contains('tbis-control'));assert.match(host.shadowRoot.querySelector('style').textContent,/:host\(\[data-theme="dark"\]\)/);assert.equal(host.style.getPropertyValue('--win-accent'),'#040404');}mode='Light';f.publish({accent:['#111111','#222222','#333333','#444444','#555555','#666666','#777777']});for(const host of hosts){assert.equal(host.getAttribute('data-theme'),'light');assert.equal(host.style.getPropertyValue('--win-accent'),'#444444');}f.click('Check now',f.d);assert.equal(f.take().action,'check');assert.equal(f.take(),null);section.remove();await tick();assert.equal(f.d.querySelectorAll('.tbUI3OptionButtonHost').length,4);assert.equal(f.d.querySelectorAll('.tbUI3InstallationOptions').length,1);f.click('Open repair',f.d);assert(f.shadow());}finally{f.dispose();}});
+
+test('actionable update notification uses its own composition and the real Master Button variants',async()=>{
+ let mode='Light';
+ const styles=fs.readFileSync('tbIDE/tbUI3IDE/src/Resources/OTHER/tbUI3-installation.css','utf8');
+ const f=fixture({styles,themeMode:()=>mode});
+ try{
+  f.ui.toast(['twinBASIC BETA 1045','A longer component name that should wrap normally']);
+  const host=f.d.querySelector('.tbUI3-update-toast'),root=host.shadowRoot,card=root.querySelector('.installation-toast');
+  assert(card);assert.equal(root.querySelector('.toast'),null,'never use the passive two-column Master status toast');
+  assert.equal(host.getAttribute('data-theme'),'light');
+  assert.equal(card.children.length,4);
+  assert.equal(card.children[0].className,'installation-toast__header');
+  assert.equal(card.children[1].className,'installation-toast__title');
+  assert.equal(card.children[2].className,'installation-toast__message');
+  const actions=card.querySelector('.installation-toast__actions');
+  assert.deepEqual([...actions.querySelectorAll('button')].map(b=>b.textContent),['Review','Dismiss']);
+  assert(actions.firstElementChild.classList.contains('button--primary'));
+  assert.equal(actions.lastElementChild.className,'button');
+  assert(card.querySelector('[aria-label="Close notification"]').classList.contains('button--subtle'));
+  const css=root.querySelector('style').textContent;
+  assert.match(css,/\.installation-toast\s*\{[^}]*grid-template-columns:minmax\(0,1fr\)/s);
+  assert.match(css,/\.installation-toast__actions\s*\{[^}]*grid-template-columns:repeat\(2,minmax\(0,1fr\)\)/s);
+  assert.match(css,/\.installation-toast\s*\{[^}]*var\(--font-family-ui\)/s);
+  assert.match(css,/\.installation-toast\s*\{[^}]*pointer-events:auto/s);
+  mode='Dark';f.publish({});assert.equal(host.getAttribute('data-theme'),'dark');
+  f.click('Close notification',root);assert.equal(f.take(),null);
+  await new Promise(r=>setTimeout(r,220));assert.equal(f.d.querySelector('.tbUI3-update-toast'),null);
+ }finally{f.dispose();}
+});

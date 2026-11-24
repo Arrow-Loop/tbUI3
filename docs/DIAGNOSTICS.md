@@ -14,6 +14,7 @@ All active first-party runtime diagnostics and development-tool transcripts now 
 | Startup fallback page | `updater-startup-help.html` | Verified complete UTF-8 page after interface startup failure |
 | Latest native self-test pointer | `native-updater-latest.json` | Each completed `Updater.exe -SelfTest` run |
 | Full self-test report/fixtures | `NativeSelfTests\tbUI3-native-updater-tests-<run>\` | Native self-test runs, including `results.json` |
+| Development-Tools.bat | `Development-<timestamp>.log`, `CDP-<timestamp>-<project>-<architecture>.json` | Workflow milestones, compiler diagnostics, build result and input/output hashes |
 | Prepare-Addin.bat | `Embed-<timestamp>.log` | Preparation, prerequisite setup, native self-tests, assembly and verification |
 | Package-Release.bat | `Package-<timestamp>.log` | Release packaging and verification |
 | Publish-Release.bat | `Publish-<timestamp>.log` | Release publication and verification |

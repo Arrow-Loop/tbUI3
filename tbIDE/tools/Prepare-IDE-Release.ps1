@@ -1,6 +1,6 @@
 # Development-only convenience entry point; never installed with the add-in.
 [CmdletBinding()]
-param([Parameter(Mandatory=$true)][ValidateSet('Embed','Package')][string]$Action)
+param([Parameter(Mandatory=$true)][ValidateSet('Bootstrap','Embed','Package')][string]$Action,[string]$OutputDirectory,[switch]$NoExplorer)
 $ErrorActionPreference='Stop'
 $root=(Resolve-Path -LiteralPath (Join-Path $PSScriptRoot '..\..')).Path
 $cache=Join-Path $env:LOCALAPPDATA 'ArrowLoop\tbUI3\DevTools'
@@ -34,6 +34,10 @@ try {
         $env:PATH = (Split-Path -Parent $git) + ';' + $env:PATH
     }
     $installed=Get-Command node.exe -CommandType Application -ErrorAction SilentlyContinue | Select-Object -First 1
+    if ($installed) {
+        $nodeVersion=& $installed.Source --version
+        if ($LASTEXITCODE -ne 0 -or $nodeVersion -notmatch '^v(2[2-9]|[3-9][0-9])\.') {$installed=$null}
+    }
     $cachedJsdomApi=Join-Path $cache 'jsdom-26.1.0\node_modules\jsdom\lib\api.js'
     $npm=$null
     if ($installed) {
@@ -100,6 +104,7 @@ try {
     }
     $env:PATH=(Split-Path -Parent $script:node)+';'+$env:PATH
     Write-Host "Using Node: $script:node"
+    if ($Action -ne 'Bootstrap') {
     $config=Get-Content -LiteralPath 'tbIDE\phase1-config.json' -Raw | ConvertFrom-Json
     $updater=Join-Path $root 'tbIDE\Updater\Build\Updater.exe'
     if (-not (Test-Path -LiteralPath $updater -PathType Leaf)) {throw 'Build the Win32 Updater project first.'}
@@ -159,15 +164,19 @@ try {
         foreach ($dll in @($dll32,$dll64)) {if (-not (Test-Path -LiteralPath $dll -PathType Leaf)) {throw "Build both add-in architectures first. Missing: $dll"}}
         $version=[string]$config.addinVersion
         if ($version -notmatch '^0\.\d+\.\d+\.\d+$') {throw 'This convenience launcher is for development prereleases only.'}
-        $output=Join-Path $root ('Build\Release-'+$version)
-        if (Test-Path -LiteralPath $output) {$output+='-'+(Get-Date -Format 'yyyyMMdd-HHmmss-fff')}
+        $output=$OutputDirectory
+        if (-not $output) {
+            $output=Join-Path $root ('Build\Release-'+$version)
+            if (Test-Path -LiteralPath $output) {$output+='-'+(Get-Date -Format 'yyyyMMdd-HHmmss-fff')}
+        }
         & (Join-Path $PSScriptRoot 'package-updater-release.ps1') -Win32Dll $dll32 -Win64Dll $dll64 -UpdaterExe $updater -MinIdeBuild ([int]$config.minIdeBuild) -MaxIdeBuild ([int]$config.maxIdeBuild) -Channel development -Output $output
         foreach ($name in @("tbUI3IDE-$version.zip",'tbUI3-update.json','SHA256SUMS.txt')) {
             if (-not (Test-Path -LiteralPath (Join-Path $output $name) -PathType Leaf)) {throw "Expected asset missing: $name"}
         }
         Write-Host "SUCCESS: Verified development release assets: $output"
         Write-Host "Tag: tbUI3IDE-v$version (development prerelease). Nothing published."
-        Start-Process explorer.exe -ArgumentList ('"'+$output+'"')
+        if (-not $NoExplorer) {Start-Process explorer.exe -ArgumentList ('"'+$output+'"')}
+    }
     }
     $exitCode=0
 } catch {

@@ -35,6 +35,8 @@ Updater 0.2.0.3 and add-in 0.4.0.6. BETA 1045 built both DLLs for 0.4.0.6, and c
 
 ## Build and verification sequence
 
+The new development-only `Development-Tools.bat` source candidate orchestrates the existing gates and actual native builds through the pinned upstream CDP harness. It stages only build output path changes in private project copies, preserves GUIDs and canonical bytes, and uses a private IDE copy and private APPDATA. Start with option 2 for native first-use verification; option 1 also synchronizes generated release inputs and offers the normal publication confirmation. Reset is intentionally separate. Retain the manual sequence below as fallback until the unattended build has been accepted. No new runtime build or publication is implied by this tooling change.
+
 For Windows development convenience, after building a changed helper and closing the add-in project, double-click `tbIDE/Prepare-Addin.bat`. It runs native self-tests and existing bundle preparation/validation using the portable Node cache. Reopen and build both add-in architectures, then double-click `tbIDE/Package-Release.bat` to create the verified prerelease assets and open their output directory. These launchers do not commit, push, publish or replace native startup/live acceptance.
 
 1. Use the accepted tracked Win32 Updater.exe when its version, resources and project binding verify. Build it using BETA 1045 after any helper source change. Run its 62 unelevated self-tests and verify executable startup. Embed it with Prepare-Addin.bat, then reopen the canonical add-in project and compile both architectures.

@@ -1,5 +1,9 @@
 # Changelog: tbIDE (WinUI 3 look for the twinBASIC IDE)
 
+## 2026-11-24 - Unified development tool and CDP release build candidate
+
+Added Development-Tools.bat as the primary menu for build/package/publication, individual preparation/package steps, test resets and diagnostics. The build adapter uses the pinned MIT-licensed upstream twinBASIC documentation CDP harness, private IDE/project copies, preserved project identity and an explicit private output path. It verifies native diagnostics, architecture/version and unchanged canonical project before promoting each binary. The orchestrator reuses verified unchanged helper payloads, bootstraps prerequisites, invokes existing self-test/embedding/package/publication gates, and can commit and push checkpointed generated inputs before the existing Y/N publication confirmation. Build-only does not push; reset remains an explicitly selected operation. No runtime version or canonical project changes. Native first-use, private-desktop builds and end-to-end pipeline acceptance remain open.
+
 ## 2026-11-24 - In-IDE update toast, updater review cleanup, themed Resource Repair and a tbUI3 Updates Options category (add-in 0.4.0.12, updater 0.2.0.7 source)
 
 Owner screenshots and feedback (0.4.0.9 era, still present): there was no real toast, only the updater window opening without focus over the IDE; the updater used checkboxes for its two preferences, repeated "Release check complete" above the list, and had five footer buttons; Resource Repair opened light in a dark IDE, top-anchored with no shadow; the four tbUI3 commands sat as plain stacked buttons in the Appearance options.

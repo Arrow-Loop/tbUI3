@@ -2,6 +2,10 @@
 
 **Current checkpoint: 2026-11-24.** [INSTALLATION_MANAGER_SPEC.md](INSTALLATION_MANAGER_SPEC.md) defines approved scope; [INSTALLATION_CONTRACTS.md](INSTALLATION_CONTRACTS.md) defines interfaces; [CHANGELOG.md](CHANGELOG.md) retains historical fixes and evidence. Phase 1 remains the combined updater, embedded provisioning and Welcome Wizard first-release gate. Phases 2/3 remain deferred.
 
+## Initial release scope
+
+The first IDE add-in release covers themes, optional styling, Classic/Hybrid/Ribbon, Welcome, provisioning and the standalone updater. The incomplete tbUI3 control package and TabView designer implementation remain in development and are not full-function acceptance gates for this release. Preserve their tooling in the add-in. Before distribution, verify that projects without an enabled, resolved tbUI3 reference (including no project and disabled/unresolved references) expose no tbUI3-specific designer commands or MultiPage UI in any toolbar mode and experience no designer interference. Verify switching between eligible and ordinary projects, reference removal/disable and restoration, plus normal form editing, save and reopen. The reference gate is an outstanding implementation/acceptance item, not an assertion of existing behavior; see the IDE roadmap.
+
 ## Current status and next action
 
 The 0.4.0.5 add-in and 0.2.0.3 helper implement the standalone ownership boundary on `tbui3-dev`. Prior 0.4.0.2 live testing found delayed staging UI and shutdown timing failures. The 0.4.0.4 fixes remain represented in the native workflow and versioned process inspection. The revised bridge records the IDE's accepted close before tearing down its compiler. Run the remaining live matrix below in disposable installations before distribution.

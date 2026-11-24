@@ -84,7 +84,9 @@ test('Welcome startup avoids per-character bulk quoting and records inner-stage 
  for(const marker of ['UI tool window created','UI initial snapshot encoded','UI factory expression assembled','UI factory invoked'])assert(ui.includes(marker));
  const css=read('tbIDE/tbUI3IDE/js/installation-dialog.css');
  assert.equal(css,read('tbIDE/tbUI3IDE/src/Resources/OTHER/tbUI3-dialog.css'));
- assert.match(css,/position:fixed; inset:0; margin:auto; transform:none/);
+ assert.match(css,/position:fixed !important/);
+ assert.match(css,/inset:50% auto auto 50% !important; margin:0 !important/);
+ assert.match(css,/transform:translate\(-50%,-50%\) !important/);
  assert.match(css,/box-shadow:var\(--tbui3-content-dialog-shadow\)/);
  assert.match(css,/0 32px 64px rgba\(0,0,0,\.19\)/);
  assert.match(css,/0 32px 64px rgba\(0,0,0,\.37\)/);

@@ -8,6 +8,8 @@ The initial internally distributed IDE prerelease covers themes, optional stylin
 
 ## Current status and next action
 
+**0.4.0.9 pending source candidate:** Owner reports near-instant Welcome in 0.4.0.8, but its modal is flush with the top of the IDE. The next candidate changes only scoped placement, retaining startup optimization and shadow values. Isolated Chromium tests reproduce the failure under simulated host CSS and verify centering at three viewport sizes; native host cause and acceptance remain open. Finish testing the current release before consuming the pending assembly request through Prepare-Addin.bat.
+
 **0.4.0.8 published development prerelease:** The Welcome hot path uses bulk asset quoting with inner-stage timing, and the outer modal centers in the IDE viewport with a WinUI ContentDialog shadow translation. Updater 0.2.0.4 remains the configured helper version. The owner completed preparation, both DLLs passed release verification, and publication at `584ef47e66fc86c355f46cc3cc7377167e440f87` is confirmed by GitHub with all three asset digests. The release is available for development testing. Confirm native first paint, centered geometry and shadow, then inspect addin-startup.log. Native acceptance remains pending; the four BETA 1045 Ribbon fixture failures remain deferred. Public release notes are now maintained separately from engineering history; the original 0.4.0.8 release description was stale and can be corrected without changing its tag or assets.
 
 

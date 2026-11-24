@@ -9,7 +9,11 @@
  * CSS blur is a browser approximation of the Composition compositor. */
 dialog.tbUI3-welcome-shell {
  --tbui3-content-dialog-shadow:0 2px 21.333333px rgba(0,0,0,.15),0 32px 64px rgba(0,0,0,.19);
- box-sizing:border-box; position:fixed; inset:0; margin:auto; transform:none;
+ /* The IDE owns the outer document and may override generic dialog geometry.
+  * Isolate placement of this dialog from host margins, insets and transforms. */
+ box-sizing:border-box; position:fixed !important;
+ inset:50% auto auto 50% !important; margin:0 !important;
+ transform:translate(-50%,-50%) !important;
  width:min(1080px,calc(100vw - 48px)); max-width:calc(100vw - 48px);
  height:min(760px,calc(100vh - 48px)); max-height:calc(100vh - 48px);
  padding:0; border:0; border-radius:8px; background:Canvas; color:CanvasText;

@@ -8,7 +8,7 @@ Outstanding work and deferred decisions. [CHANGELOG](CHANGELOG.md) records compl
 - Measure actual transfer, ZIP/CRC, SHA-256, baseline inventory and detached launch on a disposable update. Evaluate authenticated baseline caching or redundant reads only after measuring. Preserve privileged provenance, signature and containment checks.
 - Check notification placement and activation across DPI and multiple monitors, and assess reusing an existing manual review across concurrent IDE instances where the initiating IDE identity stays unambiguous.
 
-- Exercise the new development-only Publish-Release.bat on an authorized prerelease: verify wrong-account, stale/dirty source, corrupt assets and existing-release refusal, draft upload/resume, cancel-before-publish, remote digest verification and exact-commit tag. Validate on both development PCs; do not publish merely to test the launcher.
+- The 0.4.0.6 publication exercised the successful path of Publish-Release.bat; finish its remaining acceptance: verify wrong-account, stale/dirty source, corrupt assets and existing-release refusal, draft upload/resume, cancel-before-publish, remote digest verification and exact-commit tag. Validate on both development PCs; do not publish merely to test the launcher.
 
 Use [PHASE1_HANDOFF.md](PHASE1_HANDOFF.md) for the current evidence and build/acceptance sequence.
 
@@ -16,7 +16,7 @@ Use [PHASE1_HANDOFF.md](PHASE1_HANDOFF.md) for the current evidence and build/ac
 - Validate the integrated Welcome/settings (healthy six-page flow; conditional Setup directly after Welcome, before Updates), actual installed themes/inheritance, exact-name apply/rollback, toolbar modes, Windows theme/accent, focus/keyboard/Escape, skip/reopen, settings persistence, DPI and missing Runtime. The view is approved; no additional redesign without direction.
 - Validate two IDE roots and concurrent shared operations, release checking/staging, normal-exit approval/cancel, preservation of projects/custom files, rollback/recovery, detached self-update, protected-folder consent/UAC denial and verified prerelease packaging. Use disposable roots/profile state for destructive cases.
 - Generate the add-in-only release in a fresh output directory from both verified DLLs and the accepted helper. Run the complete regression suite; verify the ZIP contains only both DLLs, the schema-2 manifest has only the add-in component, and SHA256SUMS matches the ZIP and manifest. Exercise an add-in-only update followed by startup provisioning of recognized older updater/themes; preserve newer and customized resources. Separate helper/theme release assets remain an optional future distribution strategy, not a Phase 1 requirement.
-- Ship only after the approved combined first-release gate passes. Official IDE in-place updates remain in scope; retain all verification, backups, rollback and consent. No main merge, PR or public release without approval.
+- Deploy to the internal team only after the approved combined Phase 1 acceptance gate passes. Explicitly authorized development-testing prereleases may be published sooner under the specification and versioning policy, with disclosed known functional defects and pending acceptance; release integrity, security and traceability gates remain mandatory. Official IDE in-place updates remain in scope; retain all verification, backups, rollback and consent. No main merge, PR or public release without approval.
 
 ## Ribbon, Hybrid and Classic acceptance
 
@@ -53,6 +53,10 @@ Use [UI3TabView contract](../docs/controls/UI3TabView.md) and [architecture](ARC
 [Installation Manager specification](INSTALLATION_MANAGER_SPEC.md) owns approved constraints. Phase 2: InstallAlongside and ArchivePrevious strategies, configurable cross-volume archive locations and archive/new/both custom-content routing. Phase 3: conservative installation discovery/reorganization, optional shortcut management and advanced historical add-in override after loader behavior is verified. Do not expand Phase 1 to include them.
 
 Restore the visible stable/development channel selector only once a genuine stable twinBASIC channel exists. Consider optional control-package distribution when real release assets exist (never silently rewrite embedded packages), working-directory/launch-context capture where supported and automated release CI after native acceptance.
+
+## Development release retention
+
+- After the updater is accepted as reliable, inventory obsolete/defective prereleases and their asset dependencies, identify a known-good recovery release and retain versions needed for upgrade/rollback/compatibility testing. Propose a cleanup list for owner approval under the [versioning policy](../docs/VERSIONING_POLICY.md). Preserve tags by default, Git history and changelog evidence; never reuse published versions. No release deletion is authorized or completed by this roadmap entry.
 
 ## Public distribution hygiene
 

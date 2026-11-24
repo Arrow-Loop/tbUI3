@@ -13,6 +13,12 @@ Current identities and proposed separate corrections:
 
 **Historical truth:** Earlier development builds and changelog entries really used the original `1.x` numbers. Do not rewrite Git history, erase evidence, claim previously shipped binaries contained different metadata, or bulk-rewrite source references to unrelated upstream/third-party versions. Where historical documents describe actual builds, retain original identity or annotate it as `original version X (retrospective prerelease designation Y)`. A new dated correction explains the mapping.
 
+## Development testing releases and retention
+
+GitHub development prereleases are a real updater test distribution channel. With explicit owner approval, publish verified builds with disclosed known functional defects or incomplete native acceptance when needed to exercise real update paths. This does not authorize team deployment or waive security, confidentiality, package and compiled-resource integrity, authenticated publication, exact source-commit traceability or update safety safeguards. Do not weaken tests, misstate compatibility or conceal failures. See the [IDE installation specification](../tbIDE/INSTALLATION_MANAGER_SPEC.md) for the separate acceptance gates.
+
+After the owner confirms the updater is working reliably, review obsolete or defective development releases for removal. Cleanup requires separate approval; retain a known-good recovery release and any versions needed for upgrade, rollback, recovery or compatibility testing. Check that remaining release manifests and assets do not depend on removed downloads. Preserve Git history and changelog evidence; release deletion and tag deletion are separate decisions, with tags retained by default. Never reuse a previously published version, move an existing tag, or replace published assets to disguise a defect. Record actual cleanup when performed.
+
 ## Scope boundaries
 
 Apply this version rule to first-party tbUI3IDE and tbUI3 control package. Audit other first-party deliverables individually before modifying them. Do not renumber official twinBASIC releases, third-party package references, WinRT/WinUI versions, Fluent icon assets, test fixtures owned by upstream projects, or the separate tbUI3-Libraries resource-pack version merely because it uses another version convention.

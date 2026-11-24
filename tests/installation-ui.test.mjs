@@ -10,16 +10,18 @@ function fixture(options={}){
  w.HTMLDialogElement.prototype.showModal=function(){this.setAttribute('open','');};w.HTMLDialogElement.prototype.close=function(){this.removeAttribute('open');};
  // JSDOM lacks browser media APIs. Shared runtime is real, not stubbed or replaced.
  d.addEventListener('load',e=>{if(e.target.localName==='iframe'){const child=e.target.contentWindow;child.matchMedia=()=>({matches:false,addEventListener(){},removeEventListener(){},addListener(){},removeListener(){}});}},true);
- w.eval(asset('welcome.js'));
+ const frames=[]; if(options.paintControl)w.requestAnimationFrame=callback=>frames.push(callback);
+ w.eval(fs.readFileSync('tbIDE/tbUI3IDE/src/Resources/OTHER/tbUI3-welcome.js','utf8'));
  const palette={background:'#111111',surface:'#222222',foreground:'#eeeeee',accent:'#123456',toolbar:'#333333',editor:'#444444'};
  let state={schema:1,root:'C:\\IDE <img src=x>',installationId:'v1-test',theme:'WinUI3 Light',toolbar:'Classic',preferences:{automatic:true,restart:false,channel:'development',strategy:'InPlace'},bootstrap:{status:'ready',message:'Resources verified.',resources:[]},installedThemes:[{name:'WinUI3 Light',mode:'light',preview:palette},{name:'WinUI3 Dark',mode:'dark',preview:palette},{name:'Ocean',mode:'dark',preview:palette}],accent:['#010101','#020202','#030303','#040404','#050505','#060606','#070707']};
+ if(options.startup)state.startup=options.startup;
  const ui=factory({document:d,window:w,state,styles:':root{--test:1}',dialogStyles:'.tbUI3-installation-dialog{margin:auto}',welcomeStyles:asset('welcome.css'),welcomeMaster:asset('master.css'),welcomeControls:options.controls??asset('controls.js'),themeMode:()=>'Dark',showWelcome:!!options.auto,canAutoWelcome:options.canAutoWelcome});
  const shadow=()=>d.querySelector('.tbUI3-installation-dialog[open] div')?.shadowRoot;
  const inner=()=>d.querySelector('iframe')?.contentDocument;
  function click(text,root=inner()||d){const n=[...root.querySelectorAll('button')].find(n=>n.textContent.trim()===text||n.getAttribute('aria-label')===text);assert(n,'button '+text);n.click();return n;}
  function publish(patch,ack){state={...state,...patch,...(ack?{ack:{id:ack.requestId,ok:!patch.message?.startsWith('Error')}}:{})};ui.publish(state);}
  async function open(){ui.show('welcome');for(let i=0;i<10&&!inner()?.querySelector('.welcome-app');i++)await tick();assert(inner()?.querySelector('.welcome-app'),'real shared Toolkit initialized inside iframe');assert.equal(errors.length,0,errors.map(e=>e.message).join('\n'));}
- return {w,d,ui,click,shadow,inner,open,publish,take:()=>JSON.parse(ui.take()||'null'),dispose(){ui.dispose();w.close();}};
+ return {w,d,ui,frames,click,shadow,inner,open,publish,take:()=>JSON.parse(ui.take()||'null'),dispose(){ui.dispose();w.close();}};
 }
 test('offline resource repair styles are scoped and escape paths',()=>{const f=fixture();try{f.ui.show('repair');const s=f.shadow();assert.match(s.textContent,/Bundled updater and themes/);assert.equal(s.querySelector('img'),null);assert.equal(s.querySelector('select'),null);assert.match(s.querySelector('style').textContent,/:host/);assert.equal(f.d.documentElement.style.getPropertyValue('--win-accent'),'');assert.equal(s.host.style.getPropertyValue('--win-accent'),'#040404');}finally{f.dispose();}});
 test('IDE entry points request standalone review and settings',()=>{const f=fixture();try{f.click('Check for Updates');assert.equal(f.take().action,'check');f.click('Update settings');assert.equal(f.take().action,'update-settings');assert.equal(f.d.querySelector('dialog'),null);}finally{f.dispose();}});
@@ -38,3 +40,47 @@ test('blocked iframe runtime surfaces a visible scoped error with Close',async()
 test('late startup does not take focus or persist Welcome completion',()=>{const f=fixture({auto:true,canAutoWelcome:()=>false});try{assert.equal(f.d.querySelector('.tbUI3-welcome-shell'),null);assert.equal(f.take(),null);}finally{f.dispose();}});
 test('lowercase native theme acknowledgement retains the selected tile and toolbar palette',async()=>{const f=fixture();try{await f.open();f.click('Continue');f.click('Continue');f.click('Select Ocean theme');const r=f.take();f.publish({theme:'ocean',themeMode:'dark',message:'IDE theme saved.'},r);const selected=f.inner().querySelector('[aria-label="Select Ocean theme"]');assert.equal(selected.getAttribute('aria-pressed'),'true');assert.equal(selected.querySelector('.welcome-mini-ide').style.getPropertyValue('--mini-bg'),'#111111');f.click('Continue');assert.equal(f.inner().querySelectorAll('.welcome-mini-ide').length,3);assert.equal(f.inner().querySelectorAll('.welcome-preview-empty').length,0);}finally{f.dispose();}});
 test('all miniature paint remains fixed when the active theme changes',async()=>{const f=fixture();try{await f.open();f.click('Continue');f.click('Continue');const read=()=>[...f.inner().querySelectorAll('.welcome-mini-ide')].map(e=>e.getAttribute('style'));const before=read();f.publish({theme:'ocean',themeMode:'dark'});assert.deepEqual(read(),before);}finally{f.dispose();}});
+
+test('automatic Welcome waits for the native modal and two frames before setup can begin',async()=>{
+ let allowed=false;
+ const f=fixture({auto:true,paintControl:true,canAutoWelcome:()=>allowed});
+ try{
+  assert(!f.ui.startupReady());assert(f.ui.welcomeOpen());assert.equal(f.inner(),undefined);
+  f.d.dispatchEvent(new f.w.KeyboardEvent('keydown',{key:'A'}));
+  allowed=true;assert(!f.ui.startupReady());
+  for(let i=0;i<10&&!f.frames.length;i++)await tick();
+  assert(f.inner().querySelector('.welcome-app'));
+  assert(!f.ui.startupReady());
+  f.frames.shift()();assert(!f.ui.startupReady());
+  f.frames.shift()();assert(f.ui.startupReady());assert(f.ui.welcomeOpen());
+  f.click('Skip tour');assert(!f.ui.welcomeOpen());assert.equal(f.take().disposition,'dismissed');
+ }finally{f.dispose();}
+});
+
+test('Setup tracks real pending tasks and permits Updates as soon as the required services settle',async()=>{
+ const startup={pending:true,tasks:[{id:'registration',status:'ready'},{id:'updater',status:'running'}]};
+ const f=fixture({startup});
+ try{
+  await f.open();f.click('Continue');
+  assert.match(f.inner().querySelector('h2').textContent,/Setting up/);
+  assert.match(f.inner().querySelector('main').textContent,/Updater verification and provisioningIn progress/);
+  assert(f.click('Continue with current setup').disabled);
+  f.publish({startup:{pending:false,tasks:[{id:'updater',status:'ready'}]}});
+  assert.match(f.inner().querySelector('h2').textContent,/Updates on your terms/);
+  assert.equal(f.take(),null);
+ }finally{f.dispose();}
+});
+
+test('failed setup can continue without operating unavailable settings, themes or toolbar services',async()=>{
+ const startup={pending:false,preferencesReady:false,themeReady:false,toolbarReady:false,tasks:[{id:'preferences',status:'error',message:'Settings unreadable'}]};
+ const f=fixture({startup});
+ try{
+  await f.open();f.click('Continue');
+  assert.match(f.inner().querySelector('main').textContent,/Settings unreadable/);
+  f.click('Continue with current setup');
+  assert(f.inner().querySelector('winui-toggle-switch').hasAttribute('disabled'));
+  f.click('Continue');assert(f.click('Select Ocean theme').disabled);
+  f.click('Continue');assert(f.click('Select Hybrid toolbar').disabled);
+  assert.equal(f.take(),null);
+ }finally{f.dispose();}
+});

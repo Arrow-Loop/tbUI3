@@ -2,6 +2,7 @@
  'use strict';
  const d=env.document,w=env.window,queue=[],pending=new Set();
  let state=env.state,settingsDialog,shadow,content,welcomeShell,welcome,confirmation,confirmationContent,disposed=false,serial=0,previousFocus,repairDecision;
+ let autoPending=!!env.showWelcome,painted=!autoPending;
  const wizardActions=new Set(['choose-theme','choose-toolbar','installation-preferences','welcome-record','bootstrap-retry','repair-resource']);
  function node(tag,text,parent,className){const n=d.createElement(tag);if(text!==undefined)n.textContent=text;if(className)n.className=className;if(parent)parent.append(n);return n;}
  function button(text,action,parent,accent=false){const n=node('button',text,parent,'button'+(accent?' button--accent':''));n.type='button';n.onclick=action;return n;}
@@ -49,8 +50,9 @@
    confirmRepair:resource=>confirmRepair(resource,true),
    onClose:()=>{closeDialog(welcomeShell);if(previousFocus&&previousFocus.isConnected)previousFocus.focus();}
   });
-  welcomeShell.addEventListener('cancel',e=>{e.preventDefault();request('welcome-record',{schema:1,disposition:'dismissed'});welcome.close();});
+  welcomeShell.addEventListener('cancel',e=>{e.preventDefault();dismissWelcome();});
  }
+ function dismissWelcome(){request('welcome-record',{schema:1,disposition:'dismissed'});welcome.close();}
  function showWelcome(){
   if(settingsDialog)closeDialog(settingsDialog);
   ensureWelcome();previousFocus=d.activeElement;tokens(welcomeShell);openDialog(welcomeShell);welcome.open(wizardSnapshot(state));watchFrame();
@@ -65,10 +67,23 @@
   frame.dataset.nativeWatched='true';frame.addEventListener('load',()=>{
    if(disposed)return;
    if(!frame.contentWindow?.WinUIControls){
-    frame.hidden=true;const view=shadowView(welcomeShell);tokens(view.root.host);node('h1','Welcome controls unavailable',view.main);const alert=node('p','The IDE could not initialize the embedded iframe runtime. Close this dialog and inspect the IDE Debug Console.',view.main);alert.setAttribute('role','alert');button('Close',()=>welcome.close(),view.main);return;
+    frame.hidden=true;const view=shadowView(welcomeShell);tokens(view.root.host);node('h1','Welcome controls unavailable',view.main);const alert=node('p','The IDE could not initialize the embedded iframe runtime. Close this dialog and inspect the IDE Debug Console.',view.main);alert.setAttribute('role','alert');button('Close',dismissWelcome,view.main);markPaint();return;
    }
-   syncFrame();frame.focus();
+   syncFrame();frame.focus();markPaint();
   },{once:true});
+ }
+ function markPaint(){
+  // The first callback precedes a paint. Yield through it before admitting work.
+  const frame=w.requestAnimationFrame?.bind(w)||(callback=>w.setTimeout(callback,0));
+  frame(()=>frame(()=>{if(!disposed)painted=true;}));
+ }
+ function startupReady(){
+  if(disposed)return false;
+  if(autoPending && env.canAutoWelcome?.()!==false){
+   showWelcome();
+   autoPending=false;
+  }
+  return !autoPending&&painted;
  }
  function renderSettings(){
   if(!content)return;
@@ -109,8 +124,8 @@
  const style=node('style',undefined,d.head);style.textContent=env.dialogStyles;
  attach();const observer=new w.MutationObserver(attach);observer.observe(d.body,{childList:true,subtree:true});
  const themeObserver=new w.MutationObserver(syncTheme);themeObserver.observe(d.documentElement,{attributes:true,attributeFilter:['class','style','data-theme']});
- if(env.showWelcome&&env.canAutoWelcome?.()&&!disposed)showWelcome();
- return {show:which=>which==='welcome'?showWelcome():showSettings(),hide:()=>{if(welcome)welcome.close();closeDialog(settingsDialog);},
+ startupReady();
+ return {startupReady,welcomeOpen:()=>autoPending||!!welcomeShell?.open,show:which=>which==='welcome'?showWelcome():showSettings(),hide:()=>{if(welcome)welcome.close();closeDialog(settingsDialog);},
   take:()=>{const next=queue.shift();return next?JSON.stringify(next):'';},
   publish:next=>{state=next;if(next.ack?.id)pending.delete(next.ack.id);renderSettings();syncTheme();if(welcome&&pending.size===0){welcome.setSnapshot(wizardSnapshot(next));syncFrame();if(welcome.getState().open&&!confirmation?.open&&!welcomeShell.contains(d.activeElement))welcomeShell.querySelector('iframe')?.focus();}},
   dispose:()=>{disposed=true;if(repairDecision){repairDecision(false);repairDecision=null;}observer.disconnect();themeObserver.disconnect();if(welcome)welcome.destroy();for(const dialog of[welcomeShell,settingsDialog,confirmation])if(dialog)dialog.remove();style.remove();d.querySelectorAll('.tbUI3InstallationOptions').forEach(n=>n.remove());}

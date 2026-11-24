@@ -4,8 +4,10 @@ Module MainModule
         ' Entry point the twinBASIC IDE calls for every add-in DLL in its addins\win32 or addins\win64 folder.
         ' The IDE releases the returned object when it unloads the add-in.
         On Error GoTo Failed
+        StartupBegin
         Dim token As LongPtr = LBegin(AddressOf tbCreateCompilerAddin, Host)
         If token = 0 Then Return Nothing
+        StartupLog "factory identity verified"
         Dim instance As tbUI3IDEAddin = New tbUI3IDEAddin(Host)
         instance.OwnFactoryToken token
         token = 0
@@ -33,6 +35,8 @@ Private Class tbUI3IDEAddin
     ' Re-checks the theme a moment after start-up and project load. The IDE restores the project's
     ' state and clears the Debug Console after loading add-ins, which hid the first log lines.
     Private WithEvents SettleTimer As AddinTimer
+    Private WithEvents StartupTimer As AddinTimer
+    Private HostStartupStage As Long
     ' Picks up a change to the add-in's own option in IDE Options (see InstallOption) and saves it.
     Private WithEvents OptionTimer As AddinTimer
     Private LoadToken As LongPtr
@@ -64,23 +68,39 @@ Private Class tbUI3IDEAddin
 
     Public Sub New(ByVal Host As Host)
         Set Me.Host = Host
-        ' Automatic Welcome is allowed only during the initial idle startup window.
-        ' Register before toolbar/bootstrap work; do not take focus from a working user.
-        On Error Resume Next
-        RunJs "(function(){if(window.__tbUI3StartupWelcome)return 'startup gate ready';var start=performance.now(),used=false;" & _
-            "var mark=function(e){if(e.isTrusted)used=true;};document.addEventListener('pointerdown',mark,true);document.addEventListener('keydown',mark,true);" & _
-            "var dispose=function(){document.removeEventListener('pointerdown',mark,true);document.removeEventListener('keydown',mark,true);};" & _
-            "window.__tbUI3StartupWelcome={consume:function(){var allow=!used&&performance.now()-start<=2500;used=true;dispose();return allow;},dispose:dispose};return 'startup gate ready';})()"
-        On Error GoTo 0
-        Set TabDesigner = New TabViewDesignerController(Host)
-        Log "loaded: " & Architecture() & ", IDE compiler " & SafeCompilerVersion()
-        ApplyForActiveTheme "start-up"
-        StartSettleTimer
         On Error GoTo UpdaterFailed
         Set Updater = New UpdaterController(Host)
+        Set StartupTimer = New AddinTimer
+        StartupTimer.Interval = 200
+        StartupTimer.Enabled = True
         Exit Sub
     UpdaterFailed:
-        Log "updater initialization failed: " & Err.Description
+        Log "startup initialization failed: " & Err.Description
+    End Sub
+
+    Private Sub StartupTimer_Timer()
+        On Error GoTo Failed
+        If Not Updater Is Nothing Then
+            If Updater.CoreReady And HostStartupStage = 0 Then
+                HostStartupStage = 1
+                Dim started As LongLong = StartupTick()
+                ApplyForActiveTheme "start-up"
+                StartupLog "toolbar and IDE style initialization", started
+                Updater.ToolbarStarted ToolbarInstalled
+            ElseIf HostStartupStage = 1 Then
+                HostStartupStage = 2
+                Dim designerStarted As LongLong = StartupTick()
+                Set TabDesigner = New TabViewDesignerController(Host)
+                TabDesigner.ProjectLoaded
+                StartupLog "designer initialization", designerStarted
+                StartupTimer.Interval = 750
+            Else
+                Updater.Poll
+            End If
+        End If
+        Exit Sub
+    Failed:
+        Log "startup timer: " & Err.Description
     End Sub
 
     Public Sub OwnFactoryToken(ByVal token As LongPtr)
@@ -93,6 +113,8 @@ Private Class tbUI3IDEAddin
             OptionTimer_Timer
             OptionTimer_Timer
         End If
+        If Not StartupTimer Is Nothing Then StartupTimer.Enabled = False
+        Set StartupTimer = Nothing
         If Not SettleTimer Is Nothing Then SettleTimer.Enabled = False
         If Not OptionTimer Is Nothing Then OptionTimer.Enabled = False
         Set SettleTimer = Nothing
@@ -102,7 +124,6 @@ Private Class tbUI3IDEAddin
         If Not Updater Is Nothing Then Updater.Dispose
         Set Updater = Nothing
         If Not StyleWindow Is Nothing Then
-            RunJs "if(window.__tbUI3StartupWelcome)window.__tbUI3StartupWelcome.dispose();delete window.__tbUI3StartupWelcome;'startup gate removed'"
             RunJs "(function(){var t=window.__tbUI3Toolbar;if(t)t.dispose();delete window.__tbUI3Toolbar;if(window.__tbUI3Appearance)window.__tbUI3Appearance.dispose();delete window.__tbUI3Appearance;var s=document.getElementById('tbUI3ToolbarCss');if(s)s.remove();return 'toolbar removed';})()"
         End If
         ClearStyle
@@ -120,6 +141,7 @@ Private Class tbUI3IDEAddin
     End Property
 
     Private Sub Host_OnProjectLoaded()
+        If HostStartupStage < 2 Then Exit Sub
         If Not TabDesigner Is Nothing Then TabDesigner.ProjectLoaded
         ApplyForActiveTheme "project loaded"
         StartSettleTimer
@@ -142,6 +164,7 @@ Private Class tbUI3IDEAddin
     End Sub
 
     Private Sub Host_OnChangedTheme(ByVal ThemeName As String)
+        If HostStartupStage = 0 Then Exit Sub
         ' ThemeName is only the theme group ("dark" or "light"), so ask for the theme itself.
         ApplyForActiveTheme "theme changed (event says " & ThemeName & ")"
     End Sub
@@ -274,8 +297,10 @@ Private Class tbUI3IDEAddin
 
     Private Sub OptionTimer_Timer()
         On Error GoTo Failed
-        If Not Updater Is Nothing Then Updater.Poll
-        If Not ToolbarInstalled Then InstallToolbar
+        If Not ToolbarInstalled Then
+            InstallToolbar
+            If ToolbarInstalled And Not Updater Is Nothing Then Updater.ToolbarStarted True
+        End If
         ' Saving Colour Theme in BETA 1044 Options calls changedIdeOptions without notifyChangedTheme.
         ' Reconcile the actual name even when the host event was omitted; never reset unsaved page options.
         Dim activeName As String = Host.Themes.ActiveThemeName

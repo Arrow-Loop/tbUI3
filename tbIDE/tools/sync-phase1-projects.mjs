@@ -1,4 +1,5 @@
 // Keep shared native contracts, UI resources and canonical projects synchronized in one pass.
+import {addWelcomeStartup} from './welcome-startup.mjs';
 import fs from 'node:fs';import {scan,edit}from'../../tools/twinproj-edit.mjs';import {createHash} from 'node:crypto';
 const config=JSON.parse(fs.readFileSync('tbIDE/phase1-config.json'));
 const addinOnly=process.argv.includes('--addin-only');
@@ -40,7 +41,7 @@ write(resources+'tbUI3-installation.js',fs.readFileSync('tbIDE/tbUI3IDE/js/insta
 write(resources+'tbUI3-installation.css',fs.readFileSync('tbIDE/Updater/src/Resources/OTHER/winui.css','utf8')+'\n'+fs.readFileSync('tbIDE/tbUI3IDE/js/installation-layout.css','utf8'));
 write(resources+'tbUI3-dialog.css',fs.readFileSync('tbIDE/tbUI3IDE/js/installation-dialog.css'));
 const prototype='tbIDE/prototypes/welcome-wizard/';
-write(resources+'tbUI3-welcome.js',fs.readFileSync(prototype+'welcome.js'));
+write(resources+'tbUI3-welcome.js',addWelcomeStartup(fs.readFileSync(prototype+'welcome.js','utf8')));
 write(resources+'tbUI3-welcome.css',fs.readFileSync(prototype+'welcome.css'));
 write(resources+'tbUI3-welcome-master.css',fs.readFileSync(prototype+'master.css'));
 write(resources+'tbUI3-welcome-controls.js',fs.readFileSync(prototype+'controls.js'));

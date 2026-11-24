@@ -161,6 +161,7 @@ Class frmMain
             Case "updater:review"
                 If Not mPageReady Or Not mToast Then Exit Sub
                 mToast = False: Me.Height = mNormalHeight
+                ActivateUpdaterReview Me.hWnd
                 SendPreferences
             Case "updater:check", "updater:retry"
                 If Not mPageReady Or mWorker <> 0 Or mOperation = "Arm" Or Len(LaunchContext) = 0 Then Exit Sub

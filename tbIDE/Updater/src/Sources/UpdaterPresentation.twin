@@ -1,0 +1,41 @@
+' Presentation only. The validated lifecycle identity remains the authority for the origin.
+Private Module UpdaterPresentation
+    Private Declare PtrSafe Function ForegroundWindow Lib "user32" Alias "GetForegroundWindow" () As LongPtr
+    Private Declare PtrSafe Function WindowProcess Lib "user32" Alias "GetWindowThreadProcessId" (ByVal window As LongPtr, ByRef pid As Long) As Long
+    Private Declare PtrSafe Function WindowStyle Lib "user32" Alias "GetWindowLongW" (ByVal window As LongPtr, ByVal index As Long) As Long
+    Private Declare PtrSafe Function SetWindowStyle Lib "user32" Alias "SetWindowLongW" (ByVal window As LongPtr, ByVal index As Long, ByVal style As Long) As Long
+    Private Declare PtrSafe Function PutWindow Lib "user32" Alias "SetWindowPos" (ByVal window As LongPtr, ByVal after As LongPtr, ByVal x As Long, ByVal y As Long, ByVal width As Long, ByVal height As Long, ByVal flags As Long) As Long
+    Private Declare PtrSafe Function ActivateWindow Lib "user32" Alias "SetForegroundWindow" (ByVal window As LongPtr) As Long
+    Private Declare PtrSafe Function PresentationTick Lib "kernel32" Alias "GetTickCount64" () As LongLong
+
+    Private Const ExtendedStyle As Long = -20
+    Private Const NoActivate As Long = &H8000000
+    Private Const NoSize As Long = &H1
+    Private Const NoMove As Long = &H2
+    Private Const NoZOrder As Long = &H4
+    Private Const NoFocus As Long = &H10
+    Private Const RefreshFrame As Long = &H20
+    Private Const ShowWindowFlag As Long = &H40
+
+    Public Sub PresentQuietNotification(ByVal window As LongPtr)
+        Dim started As LongLong = PresentationTick()
+        Dim foreground As LongPtr = ForegroundWindow(), pid As Long, order As LongPtr = 1
+        If Not LaunchIdentity Is Nothing Then
+            If foreground <> 0 And UOwnerAlive(LaunchIdentity) Then
+                WindowProcess foreground, pid
+                If pid = CLng(JD(LaunchIdentity, "pid")) Then order = 0
+            End If
+        End If
+        SetWindowStyle window, ExtendedStyle, WindowStyle(window, ExtendedStyle) Or NoActivate
+        If (WindowStyle(window, ExtendedStyle) And NoActivate) = 0 Then UFail "Could not make the update notification non-activating."
+        If PutWindow(window, order, 0, 0, 0, 0, NoSize Or NoMove Or NoFocus Or RefreshFrame Or ShowWindowFlag) = 0 Then UFail "Could not present the update notification."
+        UIX_Log "notification presented without activation; origin foreground=" & CStr(order = 0) & "; stage-ms=" & CStr(PresentationTick() - started)
+    End Sub
+
+    Public Sub ActivateUpdaterReview(ByVal window As LongPtr)
+        SetWindowStyle window, ExtendedStyle, WindowStyle(window, ExtendedStyle) And Not NoActivate
+        PutWindow window, 0, 0, 0, 0, 0, NoSize Or NoMove Or NoZOrder Or NoFocus Or RefreshFrame
+        Dim activated As Long = ActivateWindow(window)
+        UIX_Log "explicit updater review activation allowed=" & CStr(activated <> 0)
+    End Sub
+End Module

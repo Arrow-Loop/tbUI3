@@ -1,0 +1,26 @@
+' Monotonic stage timing on the add-in's host thread.
+Private Module AddinStartupLog
+    Private Declare PtrSafe Function GetTickCount64 Lib "kernel32" () As LongLong
+    Private Declare PtrSafe Function StartupPid Lib "kernel32" Alias "GetCurrentProcessId" () As Long
+    Private mStarted As LongLong
+
+    Public Sub StartupBegin()
+        mStarted = GetTickCount64()
+    End Sub
+
+    Public Function StartupTick() As LongLong
+        Return GetTickCount64()
+    End Function
+
+    Public Sub StartupLog(ByVal message As String, Optional ByVal started As LongLong = 0)
+        On Error Resume Next
+        Dim stamp As LongLong = GetTickCount64()
+        Dim path As String = DiagnosticsFile("addin-startup.log")
+        If Len(path) = 0 Then Exit Sub
+        Dim stream As Object = UFso().OpenTextFile(path, 8, True, -1)
+        Dim duration As String
+        If started > 0 Then duration = " stage-ms=" & CStr(stamp - started)
+        stream.WriteLine "pid=" & CStr(StartupPid()) & " elapsed-ms=" & CStr(stamp - mStarted) & duration & " " & message
+        stream.Close
+    End Sub
+End Module

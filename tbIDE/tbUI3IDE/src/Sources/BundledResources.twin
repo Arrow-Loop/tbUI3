@@ -5,10 +5,17 @@ Private Class BundledResources
         If mSnapshot Is Nothing Then Set mSnapshot = JO()
         Set Snapshot = mSnapshot
     End Property
-    Public Sub Refresh(Optional ByVal repairId As String = "")
+    Public Sub BeginSweep()
+        Set mSnapshot = JO()
+        mSnapshot.Assign "status", JS("checking")
+        mSnapshot.Assign "resources", JA()
+    End Sub
+
+    Public Sub Refresh(Optional ByVal repairId As String = "", Optional ByVal sweepId As String = "")
+
         Dim guard As LongPtr
         On Error GoTo Failed
-        Set mSnapshot = JO(): mSnapshot.Assign "status", JS("checking"): mSnapshot.Assign "resources", JA()
+        If Len(sweepId) = 0 Then BeginSweep
         guard = ILock("shared-resources")
         If guard = 0 Then
             mSnapshot.Assign "status", JS("busy"): mSnapshot.Assign "message", JS("Another update is using shared resources. Bootstrap will retry safely.")
@@ -21,10 +28,26 @@ Private Class BundledResources
             Dim id As String = JT(entry, "id")
             If ids.Exists(id) Then UFail "Duplicate embedded resource identity."
             ids.Add id, True
-            If Not Provision(entry, ledger, repairId = id) Then partial = True
         Next
         If ids.Count <> 3 Or Not ids.Exists("updater") Or Not ids.Exists("themeDark") Or Not ids.Exists("themeLight") Then UFail "The DLL bundle must contain the updater and both themes."
+        For Each entry In manifest.Member("resources").Items
+            Dim entryId As String = JT(entry, "id")
+            If Len(sweepId) = 0 Or sweepId = entryId Then
+                If Not Provision(entry, ledger, repairId = entryId) Then partial = True
+            End If
+        Next
         UDirectory UParent(MLedgerPath()): UWriteJson MLedgerPath(), ledger
+        If Len(sweepId) > 0 Then
+            Dim previous As UpdateJson
+            For Each previous In mSnapshot.Member("resources").Items
+                Dim itemStatus As String = JT(previous, "status")
+                If itemStatus = "blocked" Or itemStatus = "customized-preserved" Then partial = True
+            Next
+            If mSnapshot.Member("resources").Items.Count < 3 And Not partial Then
+                mSnapshot.Assign "status", JS("checking")
+                IUnlock guard: Exit Sub
+            End If
+        End If
         mSnapshot.Assign "status", JS(IIf(partial, "attention", "ready"))
         mSnapshot.Assign "message", JS(IIf(partial, "Some resources were preserved or deferred. Review their status below.", "Updater and themes are provisioned and verified."))
         IUnlock guard: Exit Sub

@@ -157,7 +157,7 @@ Private Module UpdaterHost
     Public Sub RuntimeHelp(ByVal reason As String)
         ' Verify a complete page before opening it; never launch an empty fallback file.
         ReportStartupFailure reason
-        If mHelpShown Then Exit Sub
+        If UpdateMode = "Quiet" Or mHelpShown Then Exit Sub
         mHelpShown = True
         Dim temp As String, memory As Object
         On Error GoTo Failed

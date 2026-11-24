@@ -13,7 +13,7 @@ Private Module UpdaterEngine
     Public Sub UDetached(ByVal context As UpdateJson, ByVal session As String, ByVal mode As String)
         Dim destination As String = UCopyRunner(session)
         BLog context, session, "detached launch " & mode
-        Shell QuoteArg(destination) & " -Mode " & mode & " -Context " & QuoteArg(UpdateContext), vbHide
+        Shell QuoteArg(destination) & " -Mode " & mode & " -Context " & QuoteArg(UpdateContext), IIf(mode = "Quiet", vbHide, vbNormalFocus)
     End Sub
     Public Function UCopyRunner(ByVal session As String) As String
         Dim runner As String = USafe(session, "runner-" & UUnique())

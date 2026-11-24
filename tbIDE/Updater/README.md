@@ -1,6 +1,6 @@
 # Native tbUI3 updater
 
-Current development source: **Updater 0.2.0.3**, **tbUI3IDE 0.4.0.6**. Native twinBASIC engine with WebView2 UI. PowerShell is used only by development tooling.
+Current development source: **Updater 0.2.0.4**, **tbUI3IDE 0.4.0.7**. Native twinBASIC engine with WebView2 UI. PowerShell is used only by development tooling.
 
 Read [Phase 1 handoff and acceptance](../PHASE1_HANDOFF.md), [versioned native contracts](../INSTALLATION_CONTRACTS.md) and [Installation Manager specification](../INSTALLATION_MANAGER_SPEC.md).
 

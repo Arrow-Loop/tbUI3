@@ -1,5 +1,9 @@
 # Changelog
 
+## 2026-11-24 - Welcome-first startup for tbUI3IDE 0.4.0.7
+
+First-run Welcome now precedes staged bootstrap, and the updater waits for onboarding and its saved preferences. See the [IDE changelog](tbIDE/CHANGELOG.md) for build evidence and the [handoff](tbIDE/PHASE1_HANDOFF.md) for pending acceptance.
+
 ## 2026-11-24 - Simplified test reset execution
 
 Fixed the backup-path scoping fault in the developer reset menu and removed the redundant typed confirmation. See the [IDE changelog](tbIDE/CHANGELOG.md). No shipped application changes.

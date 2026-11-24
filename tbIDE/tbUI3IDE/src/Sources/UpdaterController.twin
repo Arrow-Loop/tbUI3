@@ -9,17 +9,28 @@ Private Class UpdaterController
     Private mArmed As String
     Private mArmedHash As String
     Private mExitRequested As Boolean
-    Private mAutomaticAt As Date
+    Private mAutomaticRetry As LongLong
     Private mAutomaticStarted As Boolean
     Private mInstalled As Boolean
     Private mBundle As BundledResources
-    Private mRefreshAt As Date
+    Private mSetupStage As Long
+    Private mStageAnnounced As Boolean
+    Private mTasks As UpdateJson
+    Private mPreferencesReady As Boolean
+    Private mRegistered As Boolean
+    Private mThemeReady As Boolean
+    Private mToolbarReady As Boolean
+    Private mToolbarAttempted As Boolean
+    Private mPresentationReady As Boolean
+    Private mWelcomeChecked As Boolean
+    Private mWelcomePending As Boolean
+    Private mDiscoveryStarted As LongLong
+    Private mRetryBusyAt As LongLong
     Private mAckId As String
     Private mAckOk As Boolean
     Private mThemeSource As String
     Private mThemeCatalog As UpdateJson
     Private mCatalogAccent As String
-    Private mDiscoveryDeadline As Date
     Private mPolling As Boolean
     Private mLastPalette As String
     Private mLastViewTheme As String
@@ -30,11 +41,37 @@ Private Class UpdaterController
 
     Public Sub New(ByVal host As Host)
         Set mHost = host
-        mRoot = LCompilerRoot(): mHome = IHome(mRoot)
         Set mBundle = New BundledResources
-        mBundle.Refresh
-        IRegister mRoot
-        On Error GoTo SettingsUnreadable
+        Set mTasks = JO()
+        Set mLaunches = CreateObject("Scripting.Dictionary")
+        Set mFallback = JO()
+        mFallback.Assign "automatic", JB(False)
+        mFallback.Assign "restart", JB(False)
+        Dim task As Variant
+        For Each task In Array("registration", "preferences", "updater", "themeLight", "themeDark", "themes", "toolbar")
+            SetTask CStr(task), "pending"
+        Next
+    End Sub
+
+    Public Property Get CoreReady() As Boolean
+        Return mSetupStage >= 7
+    End Property
+
+    Public Sub ToolbarStarted(ByVal ready As Boolean)
+        mToolbarAttempted = True
+        mToolbarReady = ready
+        SetTask "toolbar", IIf(ready, "ready", "error")
+        PublishPreferences
+    End Sub
+
+    Private Sub SetTask(ByVal id As String, ByVal status As String, Optional ByVal detail As String = "")
+        Dim item As UpdateJson = JO()
+        item.Assign "id", JS(id): item.Assign "status", JS(status): item.Assign "message", JS(detail)
+        mTasks.Assign id, item
+    End Sub
+
+    Private Sub InitializePreferences()
+        If Len(mRoot) = 0 Then UFail "The originating IDE installation is unavailable."
         If Not UExists(USafe(mHome, "settings.json")) Then
             Dim defaults As UpdateJson = ISettings(mRoot)
             defaults.Assign "automatic", JB(GetSetting("tbUI3Updater", "Options", "Automatic", "1") = "1")
@@ -43,22 +80,91 @@ Private Class UpdaterController
             ISaveSettings mRoot, defaults
         End If
         Dim checked As UpdateJson = ISettings(mRoot)
-        GoTo BootstrapReady
-    SettingsUnreadable:
-        mPreferenceFault = Err.Description
-        Resume BootstrapReady
-    BootstrapReady:
-        On Error GoTo 0
-        If Len(mPreferenceFault) > 0 Then
-            Set mFallback = IDefaultSettings(mRoot): mFallback.Assign "automatic", JB(False)
-            mMessage = "Existing installation settings were preserved. Back up and reset them explicitly before changing preferences or checking updates."
-        End If
-        mRefreshAt = DateAdd("s", 30, Now)
-        Set mLaunches = CreateObject("Scripting.Dictionary")
-        mAutomaticAt = DateAdd("s", 10, Now)
+        mPreferencesReady = True
+        mPreferenceFault = ""
     End Sub
+
+    Private Sub BeginSetup()
+        mSetupStage = 0
+        mStageAnnounced = False
+        mRetryBusyAt = 0
+        mBundle.BeginSweep
+        Dim task As Variant
+        For Each task In Array("registration", "preferences", "updater", "themeLight", "themeDark", "themes")
+            SetTask CStr(task), "pending"
+        Next
+    End Sub
+
+    Private Sub AdvanceSetup()
+        Dim started As LongLong = StartupTick(), names As Variant = Array("registration", "preferences", "updater", "themeLight", "themeDark", "themes", "themes")
+        Dim stage As String = CStr(names(mSetupStage))
+        On Error GoTo Failed
+        If mSetupStage < 6 And Not mStageAnnounced Then
+            mStageAnnounced = True
+            SetTask stage, "running"
+            PublishPreferences
+            Exit Sub
+        End If
+        mStageAnnounced = False
+        Select Case mSetupStage
+            Case 0
+                mBundle.BeginSweep
+                mRoot = LCompilerRoot(): mHome = IHome(mRoot)
+                IRegister mRoot
+                mRegistered = True
+            Case 1
+                InitializePreferences
+            Case 2, 3, 4
+                mBundle.Refresh "", stage
+                Dim item As UpdateJson
+                For Each item In mBundle.Snapshot.Member("resources").Items
+                    If JT(item, "id") = stage Then
+                        Dim status As String = JT(item, "status")
+                        If status = "verified" Or status = "provisioned" Or status = "newer-preserved" Then GoTo Finished
+                        UFail JT(item, "message")
+                    End If
+                Next
+                If JT(mBundle.Snapshot, "status") = "busy" Then mRetryBusyAt = StartupTick() + 5000
+                UFail JT(mBundle.Snapshot, "message")
+            Case 5
+                mThemeReady = False
+                InitializeServices
+                mDiscoveryStarted = StartupTick()
+                RefreshThemeDiscovery True
+                mSetupStage = mSetupStage + 1
+                PublishPreferences
+                Exit Sub
+            Case 6
+                If StartupTick() - mDiscoveryStarted >= 15000 Then Eval "window.__tbUI3Themes.timeout();'theme discovery deadline checked'"
+                Dim catalog As UpdateJson = JParse(Eval("window.__tbUI3Themes.inventory()"))
+                If JBool(catalog, "pending") Then Exit Sub
+                If Len(JT(catalog, "error")) > 0 Then UFail JT(catalog, "error")
+                mThemeReady = True
+                started = mDiscoveryStarted
+        End Select
+    Finished:
+        SetTask stage, "ready"
+        StartupLog stage & " ready", started
+        mSetupStage = mSetupStage + 1
+        PublishPreferences
+        Exit Sub
+    Failed:
+        Dim reason As String = Err.Description
+        If stage = "preferences" Then mPreferencesReady = False: mPreferenceFault = reason
+        If stage = "registration" Then mRegistered = False
+        If stage = "themes" Then
+            mThemeReady = False
+            If mSetupStage = 5 Then mSetupStage = 6
+        End If
+        SetTask stage, "error", reason
+        StartupLog stage & " error: " & reason, started
+        mSetupStage = mSetupStage + 1
+        On Error Resume Next
+        PublishPreferences
+    End Sub
+
     Private Function ReadPreferences() As UpdateJson
-        If Len(mPreferenceFault) > 0 Then
+        If Not mPreferencesReady Or Len(mPreferenceFault) > 0 Then
             Set ReadPreferences = mFallback
         Else
             Set ReadPreferences = ISettings(mRoot)
@@ -73,6 +179,8 @@ Private Class UpdaterController
         Return CStr(result)
     End Function
     Private Function LaunchUpdater(ByVal mode As String) As Boolean
+        If Not mRegistered Or Not mPreferencesReady Then Return False
+        Dim started As LongLong = StartupTick()
         If Not MHelperReady() Then Return False
         If UCompare(UBinaryVersion(ISharedExe()), Phase1Config.UpdaterVersion) < 0 Then Return False
         Dim sessions As String = USafe(mHome, "Sessions")
@@ -90,7 +198,8 @@ Private Class UpdaterController
         UWriteJson contextPath, context
         mLaunches.Add contextPath, UHash(contextPath)
         BLog context, session, "add-in launch " & mode
-        Shell IQuoteArg(ISharedExe()) & " -Mode " & mode & " -Context " & IQuoteArg(contextPath), vbHide
+        Shell IQuoteArg(ISharedExe()) & " -Mode " & mode & " -Context " & IQuoteArg(contextPath), IIf(mode = "Quiet", vbHide, vbNormalFocus)
+        StartupLog "helper launch " & mode, started
         Return True
     End Function
 
@@ -156,16 +265,33 @@ Private Class UpdaterController
     End Sub
     Private Function Snapshot() As UpdateJson
         Dim state As UpdateJson = JO(), settings As UpdateJson = ReadPreferences()
-        state.Assign "schema", JN(1): state.Assign "root", JS(mRoot): state.Assign "installationId", JS(IId(mRoot))
+        state.Assign "schema", JN(1): state.Assign "root", JS(mRoot)
+        If mRegistered Then state.Assign "installationId", JS(IId(mRoot))
         state.Assign "settingsError", JS(mPreferenceFault)
         state.Assign "preferences", settings: state.Assign "bootstrap", mBundle.Snapshot
         state.Assign "theme", JS(mHost.Themes.ActiveThemeName)
         state.Assign "themeMode", JS(LCase$(mHost.Themes.ActiveThemeNameGroup))
         state.Assign "accent", JParse(WinUI3SystemAccent.ReadPalette())
-        state.Assign "installedThemes", InstalledThemes()
-        Dim discovery As UpdateJson = JParse(mThemeSource), themeStatus As UpdateJson = JO()
-        themeStatus.Assign "pending", discovery.Member("pending"): themeStatus.Assign "error", discovery.Member("error")
+        Dim themeStatus As UpdateJson = JO()
+        themeStatus.Assign "pending", JB(Not mThemeReady And mSetupStage < 7)
+        themeStatus.Assign "error", JS("")
         state.Assign "themeDiscovery", themeStatus
+        state.Assign "installedThemes", JA()
+        If mThemeReady Then
+            state.Assign "installedThemes", InstalledThemes()
+            themeStatus.Assign "error", JParse(mThemeSource).Member("error")
+        End If
+        Dim startup As UpdateJson = JO(), tasks As UpdateJson = JA()
+        Dim id As Variant
+        For Each id In mTasks.Fields.Keys
+            tasks.Push mTasks.Member(CStr(id))
+        Next
+        startup.Assign "tasks", tasks
+        startup.Assign "pending", JB(Not CoreReady Or Not mToolbarAttempted)
+        startup.Assign "preferencesReady", JB(mPreferencesReady)
+        startup.Assign "themeReady", JB(mThemeReady)
+        startup.Assign "toolbarReady", JB(mToolbarReady)
+        state.Assign "startup", startup
         Dim ack As UpdateJson = JO(): ack.Assign "id", JS(mAckId): ack.Assign "ok", JB(mAckOk): state.Assign "ack", ack
         state.Assign "toolbar", JS(Eval("window.__tbUI3Toolbar?window.__tbUI3Toolbar.mode:''"))
         state.Assign "message", JS(mMessage)
@@ -192,34 +318,41 @@ Private Class UpdaterController
         End If
         If Not force Then Exit Sub
         Eval "window.__tbUI3Themes.refresh();'theme discovery refreshed'"
-        mDiscoveryDeadline = DateAdd("s", 15, Now)
     End Sub
     Private Function WelcomeNeeded() As Boolean
+        On Error GoTo Unavailable
         Dim path As String = USafe(ISharedRoot(), "Shared/welcome.json")
         If Not UExists(path) Then Return True
         Dim record As UpdateJson = UReadJson(path)
         Return JD(record, "schema") < 1
+    Unavailable:
+        StartupLog "welcome record unavailable: " & Err.Description
+        Return True
     End Function
     Private Sub PublishPreferences()
         If Not mInstalled Then Exit Sub
         Dim state As String = Snapshot().Encode()
         Eval "window.__tbUI3Installation.publish(" & state & ");'settings synchronized'"
     End Sub
-    Private Sub InitializeUI()
+    Private Sub InitializeServices()
+        If Eval("window.__tbUI3Shutdown ? 'yes' : ''") <> "yes" Then Eval UpdaterScript.Build()
+        If Eval("window.__tbUI3Themes ? 'yes' : ''") = "yes" Then Exit Sub
         Eval "window.__tbUI3ThemeFactory=" & MResourceText("tbUI3-theme-service.js") & ";'theme service factory loaded'"
         Eval "window.__tbUI3Themes=window.__tbUI3ThemeFactory({themes:function(){return customThemes;},afterRefresh:function(){return afterRefreshedThemes;},setAfterRefresh:function(fn){afterRefreshedThemes=fn;},reload:function(){reloadThemesFromDisk();},current:function(){return liveIDEOptions.colorTheme;},setCurrent:function(name){liveIDEOptions.colorTheme=name;},save:function(){saveIDEOptions();},changed:function(){changedIdeOptions();},notify:function(){root.notifyChangedTheme();}});'installed theme adapter ready'"
-        RefreshThemeDiscovery True
-        Eval UpdaterScript.Build()
+    End Sub
+
+    Private Sub InitializeUI()
         Eval MResourceText("tbUI3-welcome.js") & vbLf & ";'welcome wizard loaded'"
         Eval "window.__tbUI3InstallationFactory=" & MResourceText("tbUI3-installation.js") & ";'installation factory loaded'"
         Eval "window.__tbUI3Installation=window.__tbUI3InstallationFactory({document:document,window:window,state:" & Snapshot().Encode() & _
             ",styles:" & JQuote(MResourceText("tbUI3-installation.css")) & ",dialogStyles:" & JQuote(MResourceText("tbUI3-dialog.css")) & _
             ",welcomeStyles:" & JQuote(MResourceText("tbUI3-welcome.css")) & ",welcomeMaster:" & JQuote(MResourceText("tbUI3-welcome-master.css")) & _
             ",welcomeControls:" & JQuote(MResourceText("tbUI3-welcome-controls.js")) & _
-            ",showWelcome:" & IIf(WelcomeNeeded(), "true", "false") & ",canAutoWelcome:function(){var g=window.__tbUI3StartupWelcome;return !!g&&g.consume();},themeMode:function(){return typeof getBaseThemeName==='function'?getBaseThemeName():'light';}});'installation UI loaded'"
+            ",showWelcome:" & IIf(mWelcomePending, "true", "false") & ",canAutoWelcome:function(){return !Array.from(document.querySelectorAll('.modalDialogContainer')).some(function(element){return getComputedStyle(element).display!=='none'&&getComputedStyle(element).visibility!=='hidden';});},themeMode:function(){return typeof getBaseThemeName==='function'?getBaseThemeName():'light';}});'installation UI loaded'"
         mInstalled = True
     End Sub
     Private Sub SavePreferences(ByVal request As UpdateJson)
+        If Not mPreferencesReady Then UFail "Installation preferences are unavailable."
         If Len(mPreferenceFault) > 0 Then UFail "Existing settings were preserved; use explicit reset first."
         IApplySettings mRoot, request
         mMessage = "Preferences saved for this IDE."
@@ -245,6 +378,7 @@ Private Class UpdaterController
     Private Sub ApplyTheme(ByVal name As String, ByVal requestId As String)
         ' The loader has already discovered these exact names. No second reload, and
         ' no asynchronous theme lock can survive a rejected or completed request.
+        If Not mThemeReady Then UFail "Installed themes are unavailable."
         Dim theme As UpdateJson, allowed As Boolean
         For Each theme In InstalledThemes().Items
             If JT(theme, "name") = name Then allowed = True
@@ -261,14 +395,22 @@ Private Class UpdaterController
         On Error GoTo Failed
         If mPolling Then Exit Sub
         mPolling = True
-        If Not mInstalled Then InitializeUI
-        BridgePoll
-        If Not mAutomaticStarted And Now >= mAutomaticAt Then
-            mAutomaticStarted = LaunchUpdater("Quiet")
-            mAutomaticAt = DateAdd("s", 30, Now)
+        If Not mWelcomeChecked Then
+            Dim checkStarted As LongLong = StartupTick()
+            mWelcomePending = WelcomeNeeded()
+            mWelcomeChecked = True
+            StartupLog "welcome required=" & CStr(mWelcomePending), checkStarted
         End If
-        If Now >= mRefreshAt Then
-            mBundle.Refresh: RefreshThemeDiscovery: mRefreshAt = DateAdd("s", 30, Now): PublishPreferences
+        If Not mInstalled Then
+            Dim uiStarted As LongLong = StartupTick()
+            InitializeUI
+            StartupLog "welcome bridge initialized", uiStarted
+            GoTo PollDone
+        End If
+        If Not mPresentationReady Then
+            If Eval("window.__tbUI3Installation.startupReady()?'yes':''") <> "yes" Then GoTo PollDone
+            mPresentationReady = True
+            StartupLog "welcome paint or prior onboarding confirmed"
         End If
         Dim raw As String = Eval("window.__tbUI3Installation.take()")
         If Len(raw) > 0 Then
@@ -285,15 +427,19 @@ Private Class UpdaterController
                     If Not JBool(request, "confirmed") Then UFail "Explicit shared registry reset approval is required."
                     mBundle.ResetLedger: RefreshThemeDiscovery: PublishPreferences
                 Case "bootstrap-retry"
-                    mBundle.Refresh
-                    RefreshThemeDiscovery True: PublishPreferences
+                    BeginSetup
                 Case "repair-resource"
                     If Not JBool(request, "confirmed") Then UFail "Explicit resource reset approval is required."
                     Dim id As String = JT(request, "id")
                     If id <> "updater" And id <> "themeDark" And id <> "themeLight" Then UFail "Unsupported repair."
                     mBundle.Refresh id: RefreshThemeDiscovery: PublishPreferences
-                Case "welcome-record": SaveWelcome request
+                    BeginSetup
+                Case "welcome-record"
+                    SaveWelcome request
+                    mWelcomePending = False
+                    StartupLog "welcome disposition saved"
                 Case "choose-toolbar"
+                    If Not mToolbarReady Then UFail "Toolbar is unavailable."
                     Dim mode As String = JT(request, "name")
                     If mode <> "Classic" And mode <> "Hybrid" And mode <> "Ribbon" Then UFail "Unsupported toolbar choice."
                     Eval "if(!window.__tbUI3Toolbar)throw Error('Toolbar is still starting. Retry shortly.');var t=window.__tbUI3Toolbar,previous=t.requestedMode,actual=t.setMode(" & JQuote(mode) & ",true);if(actual!==" & JQuote(mode) & "){var reason=t.lastError||'The requested toolbar could not be activated.';t.setMode(previous,true);throw Error(reason);}'toolbar changed'"
@@ -304,17 +450,36 @@ Private Class UpdaterController
             End Select
             PublishPreferences
         End If
-        If Now > mDiscoveryDeadline Then
-            Eval "window.__tbUI3Themes.timeout();'theme discovery deadline checked'"
+        If Not CoreReady Then
+            AdvanceSetup
+            GoTo PollDone
         End If
-        Dim catalogRaw As String = Eval("window.__tbUI3Themes.inventory()")
-        If catalogRaw <> mThemeSource Then PublishPreferences
+        If mRetryBusyAt > 0 And StartupTick() >= mRetryBusyAt Then
+            BeginSetup
+            GoTo PollDone
+        End If
+        BridgePoll
+        If Not mAutomaticStarted And Not mWelcomePending And mToolbarAttempted And mPreferencesReady And mRegistered Then
+            If Eval("window.__tbUI3Installation.welcomeOpen()?'yes':''") <> "yes" And StartupTick() >= mAutomaticRetry Then
+                If JBool(ReadPreferences(), "automatic") Then
+                    mAutomaticStarted = LaunchUpdater("Quiet")
+                    mAutomaticRetry = StartupTick() + 30000
+                Else
+                    mAutomaticStarted = True
+                End If
+            End If
+        End If
+        If mThemeReady Then
+            Dim catalogRaw As String = Eval("window.__tbUI3Themes.inventory()")
+            If catalogRaw <> mThemeSource Then PublishPreferences
+        End If
         Dim palette As String = WinUI3SystemAccent.ReadPalette(), actualTheme As String = mHost.Themes.ActiveThemeName
         Dim actualToolbar As String = Eval("window.__tbUI3Toolbar?window.__tbUI3Toolbar.mode:''")
         If palette <> mLastPalette Or actualTheme <> mLastViewTheme Or actualToolbar <> mLastViewToolbar Then
             mLastPalette = palette: mLastViewTheme = actualTheme: mLastViewToolbar = actualToolbar
             PublishPreferences
         End If
+    PollDone:
         mPolling = False
         Exit Sub
     Failed:

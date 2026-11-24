@@ -8,6 +8,7 @@ All active first-party runtime diagnostics now use **`%LOCALAPPDATA%\tbUI3\Diagn
 | Property pages | `tbUI3-propertypage.log` | Existing property-page tracing flag enabled |
 | Paint tracing | `tbUI3-paint.log` | Existing `TBUI3_PAINT_TRACE=1` environment switch |
 | Icon/designer tracing | `tbUI3-design.log` | Existing design logging flag enabled |
+| Add-in startup | `addin-startup.log` | Monotonic elapsed milliseconds from factory entry and per-stage durations for Welcome, setup, theming, designer and helper launch |
 | Updater startup/WebView2 | `updater-startup.log` | Startup stages and failures |
 | Updater lifecycle and IDE shutdown bridge | `updater-engine.log` | Unelevated launch, discovery, stage timings, native exit and transaction events correlated by installation and session |
 | Startup fallback page | `updater-startup-help.html` | Verified complete UTF-8 page after interface startup failure |

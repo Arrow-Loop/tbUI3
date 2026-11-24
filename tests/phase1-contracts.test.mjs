@@ -1,3 +1,4 @@
+import {addWelcomeStartup} from '../tbIDE/tools/welcome-startup.mjs';
 import {createHash}from'node:crypto';
 import fs from 'node:fs';import vm from 'node:vm';import test from 'node:test';import assert from 'node:assert/strict';
 const read=p=>fs.readFileSync(p,'utf8');
@@ -17,7 +18,7 @@ test('generated helper and add-in configurations share protocol bounds and helpe
  assert(a.includes('Public Const AddinVersion As String = "'+config.addinVersion+'"'));
 });
 test('production embeds the approved full Toolkit and synchronized view without preview tools',()=>{
- for(const [name,resource]of [['welcome.js','tbUI3-welcome.js'],['welcome.css','tbUI3-welcome.css'],['master.css','tbUI3-welcome-master.css'],['controls.js','tbUI3-welcome-controls.js']])assert.equal(read('tbIDE/prototypes/welcome-wizard/'+name),read('tbIDE/tbUI3IDE/src/Resources/OTHER/'+resource));
+ for(const [name,resource]of [['welcome.js','tbUI3-welcome.js'],['welcome.css','tbUI3-welcome.css'],['master.css','tbUI3-welcome-master.css'],['controls.js','tbUI3-welcome-controls.js']])assert.equal(name==='welcome.js'?addWelcomeStartup(read('tbIDE/prototypes/welcome-wizard/'+name)):read('tbIDE/prototypes/welcome-wizard/'+name),read('tbIDE/tbUI3IDE/src/Resources/OTHER/'+resource));
  for(const name of ['index.html','Preview.bat','preview-server.ps1','preview-server.cjs','tbUI3-welcome-tokens.css'])assert(!fs.existsSync('tbIDE/tbUI3IDE/src/Resources/OTHER/'+name));
  const reference=JSON.parse(read('tbIDE/tbUI3IDE/WELCOME_REFERENCE.json'));
  for(const [name,sha]of Object.entries(reference.sha256))assert.equal(createHash('sha256').update(fs.readFileSync('tbIDE/prototypes/welcome-wizard/'+name)).digest('hex'),sha,name);

@@ -435,7 +435,9 @@ test('one add-in entry point owns both features and preserves the saved theme se
     assert.equal((sources.match(/\[DllExport\]/g)||[]).length,1);assert.equal((sources.match(/Implements AddIn\b/g)||[]).length,1);
     assert(!fs.existsSync('tbIDE/TabViewDesigner/TabViewDesigner.twinproj'));
     const startup=main.slice(main.indexOf('Public Sub New('),main.indexOf('Private Sub Class_Terminate()'));
-    assert(startup.indexOf('New TabViewDesignerController(Host)')<startup.indexOf('ApplyForActiveTheme'));
+    assert(startup.indexOf('New UpdaterController(Host)')<startup.indexOf('Updater.CoreReady'));
+    assert(startup.indexOf('Updater.CoreReady')<startup.indexOf('ApplyForActiveTheme'));
+    assert(startup.indexOf('ApplyForActiveTheme')<startup.indexOf('New TabViewDesignerController(Host)'));
     assert.match(main,/TabDesigner.ProjectLoaded/);assert.match(main,/TabDesigner.Dispose/);
     assert.match(main,/SettingsApp As String = "WinUI3IdeStyle"/);assert.match(main,/SettingEnabled As String = "Enabled"/);
     assert(!controller.includes('OptionEnabled'));assert(!controller.includes('ThemePrefix'));

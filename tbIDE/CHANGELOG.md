@@ -1,5 +1,15 @@
 # Changelog: tbIDE (WinUI 3 look for the twinBASIC IDE)
 
+## 2026-11-24 - Welcome-first startup (add-in 0.4.0.7, updater 0.2.0.4)
+
+The add-in checks the Welcome disposition first, waits for native dialogs, and yields through a paint of the existing Wizard before registration, preferences, each bundled file check, theme discovery and toolbar/designer initialization. Setup displays the actual operations and disables dependent choices until their services are available. Returning users get silent offline provisioning. The 2.5-second onboarding cutoff and 10-second automatic check delay are removed. A quiet check waits for onboarding to close after saving the disposition and honors the selected preferences.
+
+Updater 0.2.0.4 positions a non-activating notification above the active originating IDE and restores normal activation when the user opens review. Manual review requests normal activation subject to Windows foreground rules. Startup timings use monotonic counters in the existing diagnostics directory.
+
+BETA 1045 built Updater 0.2.0.4 and both add-in DLLs. All 62 native updater self-tests passed and both DLLs passed exact payload verification. The BETA 1043 and 1044 fixture suites each passed 259/259. BETA 1045 passed 255/259. All 24 Wizard prototype tests and canonical mirror and hex checks passed.
+
+Use this development prerelease for testing, starting with BETA 1043 and 1044. Four known BETA 1045 Ribbon fixture failures remain in File/Save, native menu capture, compact alignment and sizing, and asynchronous Insert Add presentation. In-IDE startup timing, focus behavior, provisioning and the live update acceptance matrix remain pending.
+
 ## 2026-11-24 - Prioritized Welcome-first startup correction
 
 Updated the IDE roadmap and Phase 1 handoff to record the owner's priority: implement the responsive first-run Welcome flow and preserve quiet subsequent repair before addressing the known BETA 1045 Ribbon issues. Documentation only; no runtime or release changes.

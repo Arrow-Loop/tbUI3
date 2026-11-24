@@ -227,7 +227,7 @@
           block.type='button';
           block.setAttribute('aria-label','Select '+item.name+' theme');
           block.setAttribute('aria-pressed',String(choice('theme')===item.name));
-          if(waiting.has('choose-theme'))block.disabled=true;
+          if(snap.startup?.themeReady===false || waiting.has('choose-theme'))block.disabled=true;
           previewTile(block,item);
           dom('strong','welcome-theme-name',item.name,block);
           block.addEventListener('click',()=>{
@@ -248,15 +248,16 @@
       const sw=dom('winui-toggle-switch','',undefined,row);
       sw.setAttribute('aria-label',title);
       if(choice(name)===true)sw.setAttribute('is-on','');
-      if(waiting.has('installation-preferences'))sw.setAttribute('disabled','');
+      if(snap.startup?.preferencesReady===false || waiting.has('installation-preferences'))sw.setAttribute('disabled','');
       // The shared runtime generates the actual ToggleSwitch control and events.
       sw.addEventListener('toggled',event=>{
-        if(waiting.has('installation-preferences'))return;
+        if(snap.startup?.preferencesReady===false || waiting.has('installation-preferences'))return;
         commit(name,Boolean(event.detail && event.detail.isOn),'installation-preferences',name);
       });
     }
     function updates(parent) {
       heading(parent,'Updates on your terms','Let the updater check published releases while you decide when to install.');
+      if(snap.startup?.preferencesReady===false)info(parent,'Preferences unavailable','Recheck setup or configure preferences later in IDE Options.','warning');
       const rows=dom('div','settings-list',undefined,parent);
       setPreference(rows,'automatic','Check automatically','Manual checks stay available even when automatic checks are off.');
       setPreference(rows,'restart','Restart after approved update','Restart this IDE after a successful update, when appropriate.');
@@ -265,6 +266,7 @@
     function toolbar(parent) {
       heading(parent,'Choose your toolbar','Select a layout. These compact previews use the currently selected IDE theme.');
       const grid=dom('div','welcome-choice-grid welcome-toolbar-grid',undefined,parent);
+      if(snap.startup?.toolbarReady===false)info(parent,'Toolbar selection unavailable','You can choose a toolbar later in IDE Options.','warning');
       const descriptions={
         Classic:'Original menus and compact toolbar.',
         Hybrid:'Menus with modern command groups.',
@@ -276,7 +278,7 @@
         card.type='button';
         card.setAttribute('aria-label','Select '+name+' toolbar');
         card.setAttribute('aria-pressed',String(choice('toolbar')===name));
-        if(waiting.has('choose-toolbar'))card.disabled=true;
+        if(snap.startup?.toolbarReady===false || waiting.has('choose-toolbar'))card.disabled=true;
         miniIde(card,selectedTheme,name,true);
         dom('strong','',name,card);
         dom('span','welcome-toolbar-caption',descriptions[name],card);
@@ -336,7 +338,7 @@
       const bootstrap=snap.bootstrap||{};
       const resources=Array.isArray(bootstrap.resources)?bootstrap.resources:[];
       const critical=new Set(['missing','error','failed','corrupt','damaged']);
-      return bootstrap.status==='error' || bootstrap.status==='warning' || snap.recovery===true ||
+      return snap.startup?.pending || snap.startup?.tasks?.some(task=>task.status==='error') || bootstrap.status==='error' || bootstrap.status==='warning' || snap.recovery===true ||
         resources.some(resource=>critical.has(text(resource&&resource.status).toLowerCase()) || resource.repairable===true);
     }
     function pageNames(){
@@ -345,7 +347,25 @@
       return names;
     }
     function setupAttention(parent){
-      heading(parent,'Installation needs attention','Review any outstanding setup issues before finishing. Your existing files and customizations are preserved.');
+      const running=snap.startup?.pending;
+      heading(parent,running?'Setting up tbUI3IDE':'Installation needs attention',
+        running?'These checks run while you are here.':'Review any outstanding setup issues before finishing. Your existing files and customizations are preserved.');
+      if(snap.startup?.tasks?.length){
+        const labels={registration:'Installation registration',preferences:'Installation preferences',updater:'Updater verification and provisioning',
+          themeLight:'WinUI3 Light verification and provisioning',themeDark:'WinUI3 Dark verification and provisioning',themes:'Installed theme discovery',toolbar:'Toolbar initialization'};
+        const statuses={pending:'Waiting',running:'In progress',ready:'Ready',error:'Needs attention'};
+        const list=dom('ul','welcome-health-list',undefined,parent);
+        for(const task of snap.startup.tasks){
+          const label=labels[task.id];
+          if(!label)continue;
+          const row=dom('li','welcome-health-row',undefined,list);
+          const text=dom('div','welcome-health-details',undefined,row);
+          dom('strong','welcome-health-name',label,text);
+          if(task.message)dom('p','welcome-health-description',task.message,text);
+          dom('span','welcome-health-status',statuses[task.status]||'Unavailable',row);
+        }
+      }
+      if(running)return;
       const bootstrap=snap.bootstrap||{};
       const resources=Array.isArray(bootstrap.resources)?bootstrap.resources:[];
       const relevant=resources.filter(resource=>{
@@ -452,7 +472,7 @@
       if(step===0)back.setAttribute('disabled','');
       const nextLabel=step===pages.length-1?'Finish':pages[step]==='Setup'?'Continue with current setup':'Continue';
       const next=button(right,nextLabel,()=>step===pages.length-1?dismiss('completed'):move(1),'primary');
-      if(pages[step]==='Setup' && (waiting.has('bootstrap-retry') || waiting.has('repair-resource')))next.setAttribute('disabled','');
+      if(pages[step]==='Setup' && (snap.startup?.pending || waiting.has('bootstrap-retry') || waiting.has('repair-resource')))next.setAttribute('disabled','');
       status=dom('div','welcome-status',message|| (waiting.size?'Waiting for IDE confirmation…':'Step '+(step+1)+' of '+pages.length),app);
       status.setAttribute('role','status');status.setAttribute('aria-live','polite');
       inner.defaultView.WinUIControls.initialize(app);

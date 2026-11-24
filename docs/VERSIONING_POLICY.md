@@ -7,7 +7,7 @@ Decision: 2026-11-19. Status: **tbUI3IDE metadata migrated in 0.3.0.21; separate
 The tbUI3/tbIDE project as a whole remains prerelease until the planned control library is complete and the owner explicitly approves stable release. First-party components retain independent version sequences below major version 1 throughout this period; a first stable release starts at `1.0.0.0`. Existing minor, build, and revision components are preserved when correcting an erroneously used major version. GitHub "prerelease" status remains explicitly set on development releases. Accepted IDE add-in prereleases may be distributed internally before the control library is complete; this is not a stable release designation or permission to publish without approval. General IDE functionality must always work independently of the optional tbUI3 package, including after eventual stable release.
 
 Current identities and proposed separate corrections:
-- tbUI3IDE: `1.3.0.20` as originally recorded => `0.3.0.20` as corrected prerelease identity; initial baseline release tag `tbUI3IDE-v0.3.0.20`; current add-in source is `0.4.0.6`, with independently versioned Updater `0.2.0.3`.
+- tbUI3IDE: `1.3.0.20` as originally recorded => `0.3.0.20` as corrected prerelease identity; initial baseline release tag `tbUI3IDE-v0.3.0.20`; current add-in source is `0.4.0.7`, with independently versioned Updater `0.2.0.4`.
 - tbUI3 control package: `1.0.0.75` as originally recorded => `0.0.0.75` as corrected prerelease identity; any future control-package release must have its own tag namespace.
 - Earlier tbUI3IDE `1.1.x.x`, `1.2.x.x`, and `1.3.x.x` correspond to `0.1.x.x`, `0.2.x.x`, and `0.3.x.x` respectively; earlier tbUI3 package `1.0.0.x` corresponds to `0.0.0.x`.
 

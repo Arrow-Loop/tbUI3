@@ -73,9 +73,16 @@ Failed:
         End If
         UIX_Log "WebView2 Runtime " & version & "; " & method
         UIX_Log "Opening updater WebView2 form"
-        frmMain.Show
+        If UpdateMode = "Quiet" Then
+            Load frmMain
+            PresentQuietNotification frmMain.hWnd
+        Else
+            frmMain.Show
+            If UpdateMode = "Review" Or UpdateMode = "Settings" Then ActivateUpdaterReview frmMain.hWnd
+        End If
         Exit Sub
     Failed:
         RuntimeHelp "Opening WebView2 form (" & CStr(Err.Number) & "): " & Err.Description
+        If UpdateMode = "Quiet" Then Unload frmMain
     End Sub
 End Module

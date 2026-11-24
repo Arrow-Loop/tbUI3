@@ -11,7 +11,7 @@ test('startup fallback verifies complete typed UTF-8 output before opening the b
  assert(body.indexOf('Dim bytes() As Byte')<body.indexOf('UWriteRaw temp, bytes'));
  assert(body.indexOf('USize(temp) < 100')<body.indexOf('UReplace temp, path'));
  assert(body.indexOf('UReplace temp, path')<body.indexOf('If ShellExecuteW('));
- assert(body.includes('If mHelpShown Then Exit Sub'));assert(body.includes('Startup help failed ('));
+ assert(body.indexOf('If UpdateMode = "Quiet" Or mHelpShown Then Exit Sub')<body.indexOf('If ShellExecuteW('));assert(body.includes('Startup help failed ('));
 });
 test('WebView startup records stages and guards reentrant Ready using the Toolkit lifecycle',()=>{
  const form=source('frmMain');for(const stage of ['WebView2 Create:','Form_Load: begin','WebView2 Ready: begin','script resource filter','NavigateToString','updater:ready received'])assert(form.includes(stage),stage);

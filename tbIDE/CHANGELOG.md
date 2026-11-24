@@ -1,5 +1,9 @@
 # Changelog: tbIDE (WinUI 3 look for the twinBASIC IDE)
 
+## 2026-11-24 - Isolated remaining Welcome startup bottleneck
+
+Reviewed native 0.4.0.7 startup diagnostics: the 36.50 s observed Welcome delay is dominated by the 36,125 ms `InitializeUI` stage, with eligibility already determined at 234 ms and paint acknowledged at 36,468 ms. Source inspection identified bulk per-character `JQuote` concatenation as a likely contributor; inner-stage timing and correction are pending. Recorded measured evidence and next work in the Phase 1 handoff and roadmap. Also observed the add-in-only update engine reaching `complete`. Documentation/diagnostic review only; no runtime or release changes.
+
 ## 2026-11-24 - Documented completion-screen launch action
 
 Recorded the requested next-release `Launch twinBASIC` button beside Close in the installation specification, pending native contract, roadmap and acceptance checklist. The owner's screenshot shows Updater 0.2.0.3 reporting successful installation and verification; it does not independently establish the installed DLL version or verify hashes. Documentation only; no runtime or release changes.

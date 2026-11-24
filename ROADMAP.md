@@ -4,7 +4,7 @@ Outstanding and deferred work only. Completed implementation and actual validati
 
 ## Immediate priority: IDE add-in and updater Phase 1
 
-The active [IDE roadmap](tbIDE/ROADMAP.md) owns add-in/updater work, including the approved combined first-release gate and later installation-manager phases. The [Phase 1 handoff](tbIDE/PHASE1_HANDOFF.md) owns the live acceptance sequence. Do not substitute older candidate versions, source-only checks or helper self-tests for compiled DLL and live acceptance.
+The active [IDE roadmap](tbIDE/ROADMAP.md) owns add-in/updater work, including the approved combined first-release gate and later installation-manager phases. The [Phase 1 handoff](tbIDE/PHASE1_HANDOFF.md) owns the live acceptance sequence. Do not substitute older candidate versions, source-only checks or helper self-tests for compiled DLL and live acceptance. The first release distributes the add-in ZIP only; the IDE roadmap owns real package generation and embedded-resource upgrade acceptance.
 
 ## Core package: next acceptance
 

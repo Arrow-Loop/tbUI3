@@ -27,8 +27,6 @@ function Normalize-AddinVersion([string]$Version) {
 function Assert-Target($Id,$Target) {
     $ok=switch($Id){
         'addin' {$Target -cin @('addins/win32/tbUI3IDE.dll','addins/win64/tbUI3IDE.dll')}
-        'themes' {$Target -cin @('WinUI3 Dark.theme','WinUI3 Light.theme')}
-        'updater' {$Target -ceq 'Updater.exe'}
         default {$false}
     }
     if (!$ok) {throw "Unsupported packaging destination: $Target"}
@@ -52,6 +50,7 @@ foreach ($check in @(@($Win32Dll,'tbIDE/tbUI3IDE/tbUI3IDE.twinproj'),@($Win64Dll
 if (!$Output) {$Output=Join-Path $repo 'Build/Release'}
 [void][IO.Directory]::CreateDirectory($Output)
 $Output=$ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath($Output)
+if (@(Get-ChildItem -LiteralPath $Output -Force).Count -ne 0) {throw 'Use a fresh, empty release output directory; previous release assets must not be mixed with this package.'}
 $addinSettings=Get-Content -LiteralPath (Join-Path $repo 'tbIDE/tbUI3IDE/src/Settings') -Raw | ConvertFrom-Json
 $expectedAddin=('{0}.{1}.{2}.{3}' -f $addinSettings.'project.versionMajor',$addinSettings.'project.versionMinor',$addinSettings.'project.versionBuild',$addinSettings.'project.versionRevision')
 $updaterSettings=Get-Content -LiteralPath (Join-Path $repo 'tbIDE/Updater/src/Settings') -Raw | ConvertFrom-Json
@@ -72,7 +71,6 @@ try {
     if ($LASTEXITCODE -ne 0) {throw 'Both real DLLs must embed the exact accepted updater and themes before release packaging.'}
 } finally {Pop-Location}
 $tag='tbUI3IDE-v'+$version
-$components=@()
 function Pack($Id,$Version,$Name,$InputFiles,$Summary) {
     $zipPath=Join-Path $Output $Name
     if (Test-Path -LiteralPath $zipPath) {throw "Refusing to overwrite release asset: $zipPath"}
@@ -86,17 +84,14 @@ function Pack($Id,$Version,$Name,$InputFiles,$Summary) {
     $result=[pscustomobject]@{id=$Id;version=$Version;asset=$Name;summary=$Summary;files=@($files)}
     return $result
 }
-$c=Pack 'addin' $version ('tbUI3IDE-'+$version+'.zip') @(@{path=$Win32Dll;target='addins/win32/tbUI3IDE.dll'},@{path=$Win64Dll;target='addins/win64/tbUI3IDE.dll'}) 'Designer tools, selectable toolbar, styling and update checks.'
-$c | Add-Member NoteProperty minIdeBuild $MinIdeBuild;$c | Add-Member NoteProperty maxIdeBuild $MaxIdeBuild;$components += $c
-$components += Pack 'themes' $version ('WinUI3-Themes-'+$version+'.zip') @(@{path=(Join-Path $repo 'tbIDE/themes/WinUI3 Dark.theme');target='WinUI3 Dark.theme'},@{path=(Join-Path $repo 'tbIDE/themes/WinUI3 Light.theme');target='WinUI3 Light.theme'}) 'WinUI3 Light and Dark theme files; selected theme and preferences are preserved.'
-$updaterVersion=Binary-Version $UpdaterExe
-$components += Pack 'updater' $updaterVersion ('tbUI3-Updater-'+$updaterVersion+'.zip') @(@{path=$UpdaterExe;target='Updater.exe'}) 'Native twinBASIC WebView2 updater, verification and recovery engine.'
-$components[-1] | Add-Member NoteProperty protocolMin 1
-$components[-1] | Add-Member NoteProperty protocolMax 1
-$manifest=[pscustomobject]@{schema=2;protocolMin=1;protocolMax=1;deployment='perUser';releaseTag=$tag;channel=$Channel;components=@($components)}
+$c=Pack 'addin' $version ('tbUI3IDE-'+$version+'.zip') @(@{path=$Win32Dll;target='addins/win32/tbUI3IDE.dll'},@{path=$Win64Dll;target='addins/win64/tbUI3IDE.dll'}) 'Designer tools, selectable toolbar, styling and update checks; includes verified updater and themes.'
+$c | Add-Member NoteProperty minIdeBuild $MinIdeBuild;$c | Add-Member NoteProperty maxIdeBuild $MaxIdeBuild
+# The helper and themes remain independently versioned inside the verified DLL bundle.
+# Publish only the add-in component; bootstrap provisions/updates the embedded resources.
+$manifest=[pscustomobject]@{schema=2;protocolMin=1;protocolMax=1;deployment='perUser';releaseTag=$tag;channel=$Channel;components=@($c)}
 $manifestPath=Join-Path $Output 'tbUI3-update.json'
 if (Test-Path -LiteralPath $manifestPath) {throw 'Use a fresh release output directory.'}
 [IO.File]::WriteAllText($manifestPath,($manifest|ConvertTo-Json -Depth 20),[Text.UTF8Encoding]::new($false))
-$hashes=Get-ChildItem -LiteralPath $Output -File | ForEach-Object { (Hash $_.FullName)+'  '+$_.Name }
+$hashes=@($c.asset,'tbUI3-update.json') | ForEach-Object { (Hash (Join-Path $Output $_))+'  '+$_ }
 [IO.File]::WriteAllLines((Join-Path $Output 'SHA256SUMS.txt'),[string[]]$hashes)
-Write-Output "Prepared $tag ($Channel). Upload ZIPs and tbUI3-update.json to that same GitHub release; development releases MUST be marked prerelease. Publishing is a separate action."
+Write-Output "Prepared $tag ($Channel). Upload the add-in ZIP, tbUI3-update.json and SHA256SUMS.txt to that same GitHub release; development releases MUST be marked prerelease. Publishing is a separate action."

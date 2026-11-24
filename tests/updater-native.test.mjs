@@ -15,7 +15,7 @@ test('native updater has no distributed script engine or interpreter launch',()=
  assert.match(source('MainModule'),/ExitProcess RunNativeEngine\(UpdateMode\)/);
  assert.match(source('MainModule'),/If Not IsSessionRunner\(\) Then UFail/);
  const pack=fs.readFileSync('tbIDE/tools/package-updater-release.ps1','utf8');
- assert.match(pack,/@\(@\{path=\$UpdaterExe;target='Updater.exe'\}\)/);
+ assert.match(pack,/verify-phase1-release\.mjs \$Win32Dll \$Win64Dll \$UpdaterExe/);
  assert.doesNotMatch(pack,/Updater\.ps1|Mode Functions/);
 });
 
@@ -53,4 +53,22 @@ test('native transaction preserves consent, policy and durable intent ordering',
  assert.match(source('UpdaterPlatform'),/WinHttpReadData/);assert.match(source('UpdaterPlatform'),/BCryptHashData/);
  assert.match(source('UpdaterZip'),/Archive links forbidden/);
  assert.match(source('UpdaterProcesses'),/Hex\$\(created.high\)/);
+});
+
+test('release packaging publishes only the verified dual-architecture add-in and its metadata',()=>{
+ const pack=fs.readFileSync('tbIDE/tools/package-updater-release.ps1','utf8');
+ const calls=[...pack.matchAll(/\bPack\s+'([^']+)'/g)].map(m=>m[1]);
+ assert.deepEqual(calls,['addin']);
+ const call=pack.split(/\r?\n/).find(line=>line.startsWith('$c=Pack '));
+ assert.match(call,/\('tbUI3IDE-'\+\$version\+'\.zip'\)/);
+ assert.deepEqual([...call.matchAll(/target='([^']+)'/g)].map(m=>m[1]),['addins/win32/tbUI3IDE.dll','addins/win64/tbUI3IDE.dll']);
+ assert.match(pack,/schema=2;protocolMin=1;protocolMax=1;deployment='perUser';releaseTag=\$tag;channel=\$Channel;components=@\(\$c\)/);
+ assert.match(pack,/\$hashes=@\(\$c\.asset,'tbUI3-update\.json'\)/);
+ assert.doesNotMatch(pack,/WinUI3-Themes-|tbUI3-Updater-|target='Updater\.exe'/);
+ const guard=pack.indexOf('Get-ChildItem -LiteralPath $Output -Force');
+ const verify=pack.indexOf('verify-phase1-release.mjs $Win32Dll $Win64Dll $UpdaterExe');
+ const fail=pack.indexOf('if ($LASTEXITCODE -ne 0)',verify);
+ const write=pack.indexOf("$c=Pack 'addin'");
+ assert(guard>=0&&guard<write,'Reject stale release assets before packaging');
+ assert(verify>=0&&verify<fail&&fail<write,'Require successful compiled bundle verification before packaging');
 });

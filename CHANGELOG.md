@@ -1,5 +1,9 @@
 # Changelog
 
+## 2026-11-23 - Add-in-only release packaging
+
+Changed the development release packager to emit one versioned ZIP containing both architecture DLLs, the schema-2 update manifest listing only the add-in, and SHA256SUMS for those two assets. The independently versioned updater and themes remain embedded and subject to existing binary, version, compatibility and exact-payload verification; the native update engine and bootstrap are unchanged. Nonempty output directories are rejected to prevent publishing obsolete standalone ZIPs. Updated the packaging source regression assertions. Full repository regression, real-binary package generation and live upgrade acceptance remain pending; no release published.
+
 ## 2026-11-23 - Neutral updater stylesheet attribution and repository identity rule
 
 Replaced the organization-specific header comment in updater.css with neutral shared WinUI Master CSS wording in the canonical Updater.twinproj and its exact source mirror. No CSS rules, project identity or other packed entry changed. Verified all 37 original packed file entries against repository mirror blobs, confirmed the updated stylesheet matches its packed resource and all other packed bytes are identical. The previously accepted native executable and add-in bundle remain unchanged; they require a new native updater build, acceptance and re-embedding before distribution. Established a mandatory independent repository identity and confidentiality rule covering source, documents, metadata, embedded assets, binaries and release materials. No new native test or compiled binary is claimed.

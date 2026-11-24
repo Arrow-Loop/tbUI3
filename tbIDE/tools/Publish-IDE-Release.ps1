@@ -274,8 +274,8 @@ try {
     Write-Host "Draft: $draftUrl"
     Write-Host 'Review the draft and native acceptance evidence before publishing.'
     Write-Host "Tag: $tag | Target: $commit | Development prerelease (not Latest)"
-    $confirmation=Read-Host "Type $tag to publish, or press Enter to leave the verified draft unpublished"
-    if ($confirmation -cne $tag) {
+    $confirmation=Read-Host "Publish $tag now? [y/N]"
+    if ($confirmation.Trim() -ine 'Y') {
         Write-Host 'Draft retained. Nothing published.'
         $exitCode=0
     } else {

@@ -1,5 +1,9 @@
 # Changelog: tbIDE (WinUI 3 look for the twinBASIC IDE)
 
+## 2026-11-24 - Simplified publication confirmation
+
+Replaced the typed release-tag confirmation with a case-insensitive Y/N prompt defaulting to No. Only Y (with optional surrounding whitespace) proceeds; all other responses retain the verified draft. The exact version and commit remain visible, and account, source, package, draft, asset and tag checks are unchanged. Verified the script diff is confined to the prompt and its condition. No runtime version, binary or release changes.
+
 ## 2026-11-24 - Portable GitHub CLI and first-run publication sign-in
 
 After the owner completed and committed the guarded 0.4.0.8 project assembly, publication stopped on a workstation without GitHub CLI. The publisher now reuses installed gh or downloads the architecture-specific official v2.105.0 ZIP, verifies its pinned SHA-256 and caches the executable locally. On missing authentication it requests browser sign-in as Arrow-Loop without transcribing device login codes; wrong-account and repository-permission checks remain mandatory, as do all source, package, draft, asset and tag safeguards. No global installation, elevation or token handling by scripts. Source and lexical checks only; Windows first-use and live publication remain pending. No binaries or releases changed.

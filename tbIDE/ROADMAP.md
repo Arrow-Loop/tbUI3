@@ -4,7 +4,7 @@ Outstanding work and deferred decisions. [CHANGELOG](CHANGELOG.md) records compl
 
 ## Immediate priority: Phase 1 updater ownership correction and native acceptance
 
-- Confirm portable GitHub CLI first-use download/cache and browser login, wrong-account refusal, and unchanged exact-tag publication checks on both development PCs. The current 0.4.0.8 assembly is committed; native acceptance and publication remain pending.
+- Confirm portable GitHub CLI first-use download/cache and browser login, wrong-account refusal, Y/N confirmation (Y publishes, N/Enter retain draft), and unchanged exact-commit tag verification on both development PCs. The current 0.4.0.8 assembly is committed; native acceptance and publication remain pending.
 
 - Confirm the next preparation, packaging and publication transcripts appear in the common Diagnostics directory; retain the development cache and reset backups in their existing locations. No separate runtime work is needed for this routing change.
 

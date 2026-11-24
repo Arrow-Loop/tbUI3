@@ -21,16 +21,16 @@ Production bridge requests are structured objects from the add-in-hosted JS queu
 
 State snapshots (schema 1): `root`, `installationId`, `preferences` (schema 1, strategy `InPlace`), actual `theme` and `toolbar`, `bootstrap` (`status`, `message`, `resources[]`), `message` (native acknowledgement/error), and `recovery` (whether an unfinished native transaction is available). Resource entries carry `id`, `path`, `status`, `message`, `repairable` and an optional retained `backup` path. The wizard must show native errors instead of assuming a queued setting has succeeded.
 
-Automatic online opt-out does not disable bootstrap or manual checks. Wizard completion is per user; preferences and transaction approvals are per installation. Future schemas are preserved instead of overwritten by an older wizard. Native updater production compilation and binary payload generation remain acceptance/build steps; a resource must never be replaced by a mock EXE.
+Automatic online opt-out does not disable bootstrap or manual checks. Wizard completion is per user; preferences and transaction approvals are per installation. Future schemas are preserved instead of overwritten by an older wizard. The accepted helper and themes are embedded; compiled DLL verification remains required. A resource must never be replaced by a mock EXE.
 
 The prototype may choose its own documented JavaScript mounting API. The production adapter will translate that API to these native services and feed acknowledged snapshots back. Quill's committed interface documentation is the integration authority for its view lifecycle.
 
 ## Integrated source candidate
 
-Quill prototype through 5966da3 is embedded unchanged in production resources; the reserved directory has not been edited by Cody. The adapter adds correlated request ids/acknowledgements, modal HTML hosting, scoped Windows theme/accent tokens and Promise-based explicit repair confirmation. Actual native state is published after settled requests. See [INSTALLATION_CONTRACTS.md](INSTALLATION_CONTRACTS.md) and [PHASE1_HANDOFF.md](PHASE1_HANDOFF.md). Actual helper binary embedding is the separately authorized Phase 1 pass after native updater acceptance, per Shane's latest instruction.
+The production adapter adds correlated request ids/acknowledgements, modal HTML hosting, scoped Windows theme/accent tokens and Promise-based explicit repair confirmation. Actual native state is published after settled requests. See [INSTALLATION_CONTRACTS.md](INSTALLATION_CONTRACTS.md) and [PHASE1_HANDOFF.md](PHASE1_HANDOFF.md).
 
 ## Approved Toolkit view integration through 79be9e5
 
 The production adapter now embeds welcome.js, welcome.css, the full master.css and controls.js unchanged, with hashes in tbUI3IDE/WELCOME_REFERENCE.json. Shared component assets initialize only inside the same-origin iframe; the outer HTML dialog retains modality. Native InstalledThemeCatalog resolves data from the actual IDE loader's both-directory list and parent links. Only validated hex preview fields enter view snapshots; no raw theme text or arbitrary CSS enters the iframe. Exact inventory names gate selection. Native status vocabulary is projected into Quill's health contract, including conditional Setup and theme-discovery errors. Channel selectors are removed in both wizard and production settings; roadmap return remains deferred. Prototype sources remain Quill-owned and unmodified by Cody.
 
-Latest native engine evidence is 57/57 passed. GUI startup is a separate open acceptance issue; see ../docs/DIAGNOSTICS.md. Diagnostics are now centralized; no helper binary has been embedded during this pass.
+For current native evidence, embedded payload status and remaining acceptance, see [PHASE1_HANDOFF.md](PHASE1_HANDOFF.md). The prototype is approved; production integration and acceptance continue with the active development agent.

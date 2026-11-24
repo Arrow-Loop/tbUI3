@@ -1,5 +1,9 @@
 # Changelog: tbIDE (WinUI 3 look for the twinBASIC IDE)
 
+## 2026-11-23 - Double-click assembly launcher
+
+Added `tbIDE/Apply-Welcome-Repair.bat` to launch the existing guarded 0.4.0.3 assembly, validation and commit/push workflow from Explorer. It resolves the repository location, checks Node and Git availability, retains the command result and pauses for inspection. The launcher does not bypass validation, compile DLLs or publish a release.
+
 ## 2026-11-24 - Add-in 0.4.0.2 fixes the repeating "Invalid use of Null" updater error
 
 On BETA 1043, add-in 0.4.0.1 printed "[tbUI3 updater] Invalid use of Null" to the Debug Console every second and the updates and Welcome UI never appeared. Cause (inferred from source, not reproduced natively): UpdaterController.InitializeUI evaluates tbUI3-welcome.js, whose last statement yields no value, and Eval passed that Null straight to CStr. InitializeUI therefore stopped before marking itself installed and was retried on every poll. Eval now returns an empty string for Null or Empty results, and the welcome script evaluation ends with a string result. Add-in version bumped to 0.4.0.2 through phase1-config.json and sync-phase1-projects.mjs; the updater stays 0.2.0.1 because only its generated Phase1Config.AddinVersion constant changed. Pending: rebuild Updater.exe, re-embed it with prepare-phase1-bundle, rebuild both DLLs and confirm on 1043. Until then test 134 fails on the stale embedded bundle; the other 243 tests pass.

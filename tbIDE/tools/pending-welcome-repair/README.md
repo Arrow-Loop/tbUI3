@@ -2,7 +2,7 @@
 
 This is a one-time source candidate for tbUI3IDE 0.4.0.3 based on the reported 0.4.0.2 failure at development commit ef6e59d. The existing packed projects and active source mirrors are deliberately unchanged until the complete candidate can be assembled and validated.
 
-After synchronizing a clean tbui3-dev checkout, close twinBASIC and run from the repository root:
+After synchronizing a clean tbui3-dev checkout, close twinBASIC and double-click `tbIDE/Apply-Welcome-Repair.bat`. The launcher runs the following command from the repository root:
 
 ```powershell
 node tbIDE/tools/pending-welcome-repair/apply.mjs --commit-push

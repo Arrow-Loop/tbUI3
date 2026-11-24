@@ -28,7 +28,12 @@ The [Ribbon mapping](RIBBON_LAYOUT.md) is the command organization authority. Ke
 - Native Save Document and Form/Code: selected dirty/read-only state, two dirty documents (save one without affecting the other), unsaved project Save As/cancel, paired form/code vs standalone module, reopen and both replacement profiles/presentations.
 - Future adaptive group collapse/overflow and keytips; File > Add-ins actual enable/disable remains contingent on host API and restart behavior. Keep contributed command discovery and unknown-menu fallback accessible. The add-in's own Message Box Builder is approved future scope, not implemented.
 
-## TabView designer acceptance
+## TabView designer: initial release isolation
+
+- Retain the existing TabView/MultiPage implementation and tooling in the add-in; full control-package and designer feature acceptance is deferred to its independent development milestone. The initial IDE release requires non-interference with normal projects, not completed TabView functionality.
+- Before team distribution, gate all tbUI3-specific designer UI and behaviors on the active project's enabled, resolved tbUI3 package reference. Hide the entire MultiPage group/tab and its commands in Classic, Hybrid and Ribbon when the reference is absent, disabled, unresolved or the active project is unavailable. Do not enable based solely on a package installed in the local catalog. Within eligible projects retain the existing selected-host/context checks. Reevaluate on project/reference changes and clear stale context/owned UI or hooks when ineligible; leave ordinary controls, native commands, themes, toolbar and updater unaffected. Verify transitions without restarting the IDE where the host supports them. Implementation and native acceptance remain pending.
+
+## TabView designer acceptance (deferred independent milestone)
 
 Use [UI3TabView contract](../docs/controls/UI3TabView.md) and [architecture](ARCHITECTURE.md) for the bridge's ownership and lifecycle. Adapter v10 remains the current source checkpoint.
 

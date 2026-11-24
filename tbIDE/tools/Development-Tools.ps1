@@ -156,20 +156,67 @@ function Assert-Checkout([switch]$ForBuild) {
     }
     return $head
 }
+# Checkpoint normal Git-visible source and already tracked/staged diagnostics.
+# Never import fresh raw diagnostic files or the external Diagnostics directory.
+function Commit-Workspace([string]$message,[switch]$GeneratedOnly) {
+    Assert-Repository
+    $paths=@(Changed-Paths)
+    if ($GeneratedOnly) {$null=@(Fingerprint $paths)}
+    foreach ($operation in @('MERGE_HEAD','CHERRY_PICK_HEAD','REVERT_HEAD','rebase-merge','rebase-apply')) {
+        $operationPath=Git-Output @('rev-parse','--git-path',$operation)
+        if (Test-Path -LiteralPath $operationPath) {throw 'Finish the existing Git operation before using Development Tools.'}
+    }
+    if (@(Git-Output @('ls-files','--unmerged')).Count) {throw 'An unresolved Git conflict already exists.'}
+    # Update tracked files including existing tracked diagnostic logs; add only
+    # ordinary nonignored source files, not newly collected raw diagnostic output.
+    Run-Child $script:git @('add','-u','--','.')
+    Run-Child $script:git (@('add','-A','--')+$script:releaseSourcePaths)
+    & $script:git diff --cached --quiet
+    $diffCode=$LASTEXITCODE
+    if ($diffCode -eq 0) {return}
+    if ($diffCode -ne 1) {throw 'Could not inspect staged Git changes.'}
+    Add-Content -LiteralPath $sessionLog -Value ("Auto-commit: "+(@(Git-Output @('diff','--cached','--name-only')) -join ', '))
+    Run-Child $script:git @('commit','-m',$message)
+    if (@(Changed-Paths).Count) {throw 'Release source changed during the automatic commit. Retry the selected action.'}
+}
+function Merge-Remote([string]$remote) {
+    & $script:git merge --no-edit --no-autostash --no-overwrite-ignore $remote | Out-Host
+    if ($LASTEXITCODE -eq 0) {return}
+    & $script:git rev-parse --quiet --verify MERGE_HEAD 2>$null | Out-Null
+    if ($LASTEXITCODE -eq 0) {
+        $conflicts=@(Git-Output @('-c','core.quotepath=false','diff','--name-only','--diff-filter=U'))
+        $sourceConflicts=@(Git-Output (@('diff','--name-only','--diff-filter=U','--')+$script:releaseSourcePaths))
+        if ($conflicts.Count -and !$sourceConflicts.Count) {
+            # Both diagnostic versions are in the merge's parent commits.
+            # Prefer this workstation's diagnostic copy, never auto-resolve source.
+            Add-Content -LiteralPath $sessionLog -Value ('Diagnostic-only merge conflict; retaining local copies: '+($conflicts -join ', '))
+            try {
+                Run-Child $script:git (@('--literal-pathspecs','restore','--source=HEAD','--staged','--worktree','--')+$conflicts)
+                Run-Child $script:git @('commit','--no-edit')
+                return
+            } catch {
+                Run-Child $script:git @('merge','--abort')
+                throw
+            }
+        }
+        Run-Child $script:git @('merge','--abort')
+    }
+    throw 'Git could not merge incoming changes automatically. Your local checkpoint is preserved; resolve the reported conflict.'
+}
 function Sync-BeforeBuild {
     Assert-Repository
     Assert-Closed
     Say 'Checking for source updates...'
     Run-Child $script:git @('fetch','--quiet','origin',"refs/heads/$branch")
+    # Local edits are a normal development checkpoint, not a release-acceptance claim.
+    Commit-Workspace 'Checkpoint local development changes before build'
     $head=Git-Output @('rev-parse','HEAD')
     $remote=Git-Output @('rev-parse','FETCH_HEAD')
     if ($head -ceq $remote) {return $false}
     & $script:git merge-base --is-ancestor $remote $head
     if ($LASTEXITCODE -eq 0) {return $false}
-    & $script:git merge-base --is-ancestor $head $remote
-    if ($LASTEXITCODE -ne 0) {throw 'Local and remote source histories diverged. Resolve the Git conflict; nothing was overwritten.'}
     Say 'Applying incoming source updates...'
-    Run-Child $script:git @('merge','--ff-only','--no-autostash','--no-overwrite-ignore',$remote)
+    Merge-Remote $remote
     # Reload the updated tool before doing any build work.
     return $true
 }
@@ -195,11 +242,14 @@ function Save-Package([string]$package,[string]$head) {
     @{head=$head;package=$package;files=@(Package-Fingerprint $package)} | ConvertTo-Json -Depth 4 | Set-Content -LiteralPath $packageReceipt -Encoding UTF8
 }
 function Package-Existing {
+    Assert-Closed
     $head=Assert-Checkout
     $config=Get-Content -LiteralPath 'tbIDE\phase1-config.json' -Raw | ConvertFrom-Json
     $output=Join-Path $root ("Build\Release-"+$config.addinVersion+"-"+(Get-Date -Format 'yyyyMMdd-HHmmss-fff'))
     Run-Prep @('-Action','Package','-OutputDirectory',$output,'-NoExplorer')
     Save-Package $output $head
+    Commit-Workspace 'Checkpoint verified release package inputs' -GeneratedOnly
+    Save-Package $output (Git-Output @('rev-parse','HEAD'))
     Say "SUCCESS: $output" Green
     return $output
 }
@@ -210,26 +260,18 @@ function Sync-ForPublication([string]$package) {
     $remote=Git-Output @('rev-parse','FETCH_HEAD')
     & $script:git merge-base --is-ancestor $remote $head
     if ($LASTEXITCODE -ne 0) {
-        & $script:git merge-base --is-ancestor $head $remote
-        if ($LASTEXITCODE -ne 0) {throw 'Local and remote source histories diverged. Resolve the Git conflict; no release was published.'}
-        $incoming=@(Git-Output (@('diff','--no-renames','--name-only',$head,$remote,'--')+$script:releaseSourcePaths))
+        $base=Git-Output @('merge-base',$head,$remote)
+        $incoming=@(Git-Output (@('diff','--no-renames','--name-only',$base,$remote,'--')+$script:releaseSourcePaths))
         $buildChanges=@(Get-ReleaseBuildChanges $incoming)
         if ($buildChanges.Count) {throw ('Build inputs changed remotely. Choose option 1 again to synchronize and build the new source: '+($buildChanges -join ', '))}
         if ((Git-Output @('rev-parse','HEAD')) -cne $head) {throw 'Local source advanced while preparing publication.'}
-        Run-Child $script:git @('merge','--ff-only','--no-autostash','--no-overwrite-ignore',$remote)
+        # All generated inputs were already verified and checkpointed before this stage.
+        Merge-Remote $remote
         $head=Git-Output @('rev-parse','HEAD')
-        if (@(Changed-Paths).Count) {
-            if (!$package) {throw 'Verified package location is missing.'}
-            Save-Package $package $head
-        }
+        if (@(Changed-Paths).Count) {throw 'Release source changed during synchronization.'}
+        if ($package) {Save-Package $package $head}
     }
     if ((Git-Output @('rev-parse','HEAD')) -cne $head) {throw 'Local source advanced while preparing publication.'}
-    $paths=@(Changed-Paths)
-    if ($paths.Count) {
-        Run-Child $script:git (@('add','-A','--')+$paths)
-        Run-Child $script:git (@('commit','-m','Prepare verified native release payloads','--')+$paths)
-        if (Test-Path -LiteralPath $receipt) {Remove-Item -LiteralPath $receipt}
-    }
     Run-Child $script:git @('push','origin',"HEAD:refs/heads/$branch")
 }
 function Build-One([string]$project,[string]$arch,[string]$destination) {
@@ -269,17 +311,32 @@ function Build-Package {
     $output=Join-Path $root ("Build\Release-"+$script:config.addinVersion+"-"+(Get-Date -Format 'yyyyMMdd-HHmmss-fff'))
     Run-Prep @('-Action','Package','-OutputDirectory',$output,'-NoExplorer')
     Save-Package $output $head
+    Commit-Workspace 'Checkpoint verified native release inputs' -GeneratedOnly
+    Save-Package $output (Git-Output @('rev-parse','HEAD'))
     Say "SUCCESS: $output" Green
     return $output
 }
 function Publish([string]$package='') {
-    $head=Assert-Checkout
-    if (@(Changed-Paths).Count) {
-        if (!(Test-Path -LiteralPath $packageReceipt -PathType Leaf)) {throw 'Package the current native builds before synchronizing generated source.'}
-        $proof=Get-Content -LiteralPath $packageReceipt -Raw | ConvertFrom-Json
-        if (!$package) {$package=[string]$proof.package}
-        if ($proof.head -cne $head -or $proof.package -cne $package -or (@(Package-Fingerprint $package) -join '|') -cne (@($proof.files) -join '|')) {throw 'Generated source or package changed since verified packaging. Package the current native builds again.'}
+    Assert-Repository
+    $head=Git-Output @('rev-parse','HEAD')
+    if (!(Test-Path -LiteralPath $packageReceipt -PathType Leaf)) {throw 'No verified package receipt exists. Choose option 1, 2 or 6 to prepare a package.'}
+    $proof=Get-Content -LiteralPath $packageReceipt -Raw | ConvertFrom-Json
+    if (!$package) {$package=[string]$proof.package}
+    if ($proof.package -cne $package -or (@(Package-Fingerprint $package) -join '|') -cne (@($proof.files) -join '|')) {throw 'Package or native inputs changed since packaging. Choose option 1 or 6.'}
+    if ($proof.head -cne $head) {
+        if ($proof.head -notmatch '^[0-9a-f]{40}$') {throw 'Invalid package receipt. Repackage first.'}
+        & $script:git merge-base --is-ancestor $proof.head $head
+        if ($LASTEXITCODE -ne 0) {throw 'Package was built from different source history. Build again.'}
+        $changes=@(Git-Output (@('diff','--no-renames','--name-only',$proof.head,$head,'--')+$script:releaseSourcePaths))
+        if (@(Get-ReleaseBuildChanges $changes).Count) {throw 'Build inputs changed since packaging. Choose option 1 to rebuild.'}
     }
+    $dirty=@(Changed-Paths)
+    if (@(Get-ReleaseBuildChanges $dirty).Count) {
+        # Only accept the exact verified generated checkpoint, never arbitrary new source edits.
+        $null=Assert-Checkout
+    }
+    Commit-Workspace 'Checkpoint verified release inputs and development notes'
+    Save-Package $package (Git-Output @('rev-parse','HEAD'))
     Sync-ForPublication $package
     $arguments=@('-NoLogo','-NoProfile','-ExecutionPolicy','Bypass','-File',$publisher)
     if ($package) {$arguments+=@('-PackageDirectory',$package)}
@@ -298,9 +355,9 @@ try {
         if (!$nextChoice) {
         Write-Host ''
         Write-Host 'tbUI3IDE DEVELOPMENT TOOLS' -ForegroundColor Cyan
-        Write-Host '  1  Build, package and offer publication (sync generated inputs)'
+        Write-Host '  1  Sync, build, package and publish'
         Write-Host '  2  Build and package only'
-        Write-Host '  3  Publish existing package (sync generated inputs)'
+        Write-Host '  3  Sync and publish existing package'
         Write-Host '  4  Reset test state'
         Write-Host '  5  Prepare add-in only'
         Write-Host '  6  Package existing native builds'
@@ -320,7 +377,7 @@ try {
                 '1' {$package=Build-Package;Publish $package}
                 '2' {$package=Build-Package;Invoke-Item -LiteralPath $package}
                 '3' {Publish}
-                '5' {Assert-Closed; $head=Assert-Checkout -ForBuild;Run-Prep @('-Action','Embed');Save-Generated $head}
+                '5' {Assert-Closed; $head=Assert-Checkout -ForBuild;Run-Prep @('-Action','Embed');Save-Generated $head;Commit-Workspace 'Checkpoint prepared add-in resources' -GeneratedOnly;Save-Generated (Git-Output @('rev-parse','HEAD'))}
                 '6' {$package=Package-Existing;Invoke-Item -LiteralPath $package}
             }
         } catch {Say ("FAILED: "+$_.Exception.Message) Red; if ($_.ScriptStackTrace) {Add-Content -LiteralPath $sessionLog -Value $_.ScriptStackTrace}}

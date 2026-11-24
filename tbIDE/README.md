@@ -1,182 +1,80 @@
-# tbUI3 IDE: one add-in for designer tools and optional WinUI 3 styling
+# tbUI3IDE
 
-Current source: **tbUI3IDE 0.4.0.0**, with asynchronous update checks/notification and the embedded **Updater 0.2.0.0 WebView2 sidecar** plus both WinUI3 themes. Updater startup and 58/58 native self-tests are confirmed; both add-in architectures now require compilation and embedded-bootstrap acceptance. See [updater architecture and deployment](Updater/README.md). Historical add-in 1.3.0.20 is treated as corrected baseline 0.3.0.20; the control-package version is unchanged.
+tbUI3IDE is a single twinBASIC add-in that brings a WinUI 3 look to the IDE, offers Classic, Hybrid and Ribbon toolbar layouts, and adds TabView/MultiPage designer tools. It includes WinUI3 Dark and Light themes and a shared native updater. The add-in is a developer tool; applications built with the tbUI3 control package do not require it.
 
-Start with the [current Phase 1 handoff](PHASE1_HANDOFF.md) for the next build and acceptance sequence. The [Installation Manager specification](INSTALLATION_MANAGER_SPEC.md) defines approved scope; [technical contracts](INSTALLATION_CONTRACTS.md) define the interfaces. The accepted helper and themes are embedded in the canonical project; live DLL bootstrap and update acceptance remain open. The control package remains independently versioned.
+**Current version:** 0.4.0.0 (development)
 
-The add-in is built from `tbUI3IDE/tbUI3IDE.twinproj` as `tbUI3IDE.dll`, with TabView adapter v10, optional styling, and Classic/Hybrid/Ribbon. All Build icons use the embedded buildv3.svg geometry; Quick Access includes Build between Redo and Play while retaining the Project-tab command.
+## Requirements
 
-Adapter v10 additionally captures malformed native full-form snapshot JSON to tbUI3-tabview.log with a bounded context and stack, while preserving the original IDE error. If the form-load error recurs, collect the current diagnostic log after reopening the failing form. The captured response identified the TabStyle enum annotations as the cause; package 1.0.0.68 removes them. Shane confirms package 68 resolves the load failure.
+- twinBASIC BETA 1045 (the current supported build for this development candidate).
+- A matching Win32 or Win64 add-in DLL for your IDE architecture.
+- Microsoft Edge WebView2 Runtime for the updater interface. The Welcome Wizard uses the IDE's existing web host.
 
-TabView adapter v10 supports the current package's Edge/Explorer shape profiles, reserved curve space, right-hand add button and overflow arrows. Viewport scrolling uses the transient native FirstVisibleTabIndex and queued parent snapshots, preserving page selection/ownership. Ribbon/theme/document-command behavior from the previous pass is retained. Rebuild/re-import the package and rebuild/reload the add-in together; native acceptance remains pending.
+## Install
 
-Save Document follows the selected code/form document's dirty and read-only state. It uses the IDE's native per-editor writer, preserving its completion/failure behavior and leaving other dirty documents alone. A project without a saved path first opens native Save As. Form / Code enables only when the selected document has a matching designer/code file; standalone modules disable it. Both commands use the same behavior in Ribbon/Hybrid, full/simplified.
+Use the matching DLL from a verified build or release.
 
-The ribbon card's shadow and bottom border apply only to WinUI3 Dark/Light. Standard and third-party themes use a flat command surface in both Ribbon and Hybrid, full and simplified. Live theme changes preserve command/control nodes. This presentation choice is independent of additional styling; other layout and interaction behavior is unchanged.
+1. Close twinBASIC. Remove any older WinUI3IdeStyle.dll and TabViewDesigner.dll copies from both shared and IDE-local add-in folders. Avoid duplicate tbUI3IDE.dll installations.
+2. Copy tbUI3IDE.dll into the corresponding folder, creating it if necessary:
 
-WinUI3 Light uses neutral #F3F3F3 window/menu chrome. Optional styling fixes the IDE's native white caption text/icons and normalizes older installed Light theme chrome. Both WinUI3 themes use the current Windows accent palette while additional styling is enabled. The existing one-second options timer reads Windows.UI.ViewManagement.UISettings; theme changes, styling Off and unload remove the accent overrides. Static themes remain usable independently with fallback blue accents.
+   - Win32: %APPDATA%\twinBASIC\addins\win32
+   - Win64: %APPDATA%\twinBASIC\addins\win64
 
-In both Ribbon and Hybrid, full layouts retain the requested secondary labels and inline Grid options. Only Simplified hides the Center in Container, Lock Controls, Preview, Grid, Page Left/Right, TabView Refresh/Diagnostics and Insert Folder/Other file/Import labels and puts Grid options in a toggle-split flyout. Help, accessible names, original values and events remain. The original ten alignment/size commands stay icon-only in both presentations. The chevron sits inside both cards with a transparent resting background and hover fill; its glyph remains visible. Simplified controls are vertically centered. Quick Access retains 16px internal left padding.
+3. Start the IDE and open a project.
 
-Both replacement profiles support full/simplified presentation using the corner chevron or Ctrl+F1 and the same independently saved preference. Hybrid retains native menus, its smaller Home/Code/Form/Add-ins inventory and no Quick Access or Backstage. No fourth toolbar mode is added.
+On first load, the add-in provisions the bundled updater and themes in your user profile, then opens the Welcome Wizard. It does not need a separate installer or network access for this setup. Subsequent loads check for missing resources, preserve customized themes and avoid downgrading a newer updater. The wizard offers repair guidance if setup needs attention.
 
-Save Document and Form / Code share the leading Document group in Code and Form, in that order, for both profiles. The latter dispatches the native Switch Between Form and Code action with its native tooltip. Classic retains its original native toolbar inventory/order/handlers while showing the corresponding Ribbon glyphs and tooltips without button labels; selectors retain their native display.
+The current development candidate is undergoing native installation and update acceptance; see the contributor handoff before distributing builds.
 
-Only in WinUI3 Dark/Light with additional styling enabled, main-window surfaces receive 8px side insets and no bottom inset. An 8px top inset applies only with the real OS titlebar disabled. The caption/Quick Access row is excluded from side insets, retaining Quick Access padding and native caption-button geometry.
+## Features
 
-Current presentation uses Shane's explicit Segoe/Fluent icon selections, inline MultiPage commands with separators and a leading Save Document group on Code and Form in Ribbon and Hybrid. Ribbon File contains one Options page and no Save Document entry. Hybrid keeps its native menus and no quick access. See [icon pass and validation limits](../docs/validation/2026-11-12-requested-icons.md).
+### WinUI3 themes
 
-Tab management and toolbar layout are independent of the theme. Both work with the additional-styling switch off and with the IDE's standard themes. The switch controls optional additional restyling and window insets.
+- Select WinUI3 Dark or WinUI3 Light through Window > Theme or the IDE's Colour Theme setting.
+- Enable additional IDE theme styling via add-in for WinUI-style menus, dialogs, editor tabs, panels and controls, with the Windows system accent.
+- Turn additional styling off to retain the theme alone. The themes can also be installed independently by copying the .theme files from [themes/](themes/) into %APPDATA%\twinBASIC\themes and choosing Window > Theme > Reload from disk.
 
-**IDE Toolbar**, immediately below that switch, selects Classic (default), Hybrid or Ribbon. All modes follow the selected IDE theme independently of additional styling. Hybrid retains the menu bar with Home, Code, Form, contextual MultiPage and Add-ins groups. Ribbon organizes native commands by task with direct Form alignment/size controls, direct Insert options, fullscreen File/Help and quick access. The original Grid toggle is retained; Zoom has no duplicate visible caption. Code/Form follow changes to the native editor while stable editor state preserves manual ribbon selection.
+### Toolbar layouts
 
-The titlebar-colored tab strip is separate from the toolbar card, with indicator-only tab states, existing Fluent elevation, top-aligned full-size glyphs and active-theme controls. Dropdowns use top-layer auto popovers and outside window-input dismissal; File hides quick access. Commands retain original handlers/state and future options are discovered from native producers. The command area is capped at 100px with separate 26px tabs; full-size buttons in the current full-mode presentation are 73px high, 50px standard/minimum width and 86px maximum width including borders/padding. File > Add-ins lists native loaded add-ins; BETA 1044 does not expose enable/disable actions. Horizontal overflow and Ctrl+F1 collapse are implemented; automatic collapsed groups/keytips and native rendered acceptance remain open. See [command mapping](RIBBON_LAYOUT.md), [ROADMAP.md](ROADMAP.md) and [validation evidence](../docs/validation/2026-11-11-ribbon-geometry-theme-lifecycle.md).
+- **Classic:** The familiar native toolbar and menus with updated command icons.
+- **Hybrid:** Keeps the native menus and groups commands into task-oriented tabs.
+- **Ribbon:** Replaces the menu row with task-oriented tabs, Quick Access commands and a fullscreen File view within the IDE.
 
-Both replacement modes share centered 32px full-size / 16px small glyph canvases, compact widths, 7px top padding in the full 100px command card and 89px dividers. Grid controls share one group. File's rail reaches the top and its foreground follows the application palette. The additional-styling switch controls optional IDE restyling and window insets, including the subtle WinUI3 Light/Dark menu shadows; toolbar mode and page management remain independent. Theme changes through IDE Options now reconcile even when the host omits its theme notification.
+Hybrid and Ribbon support full and simplified layouts. Use the corner chevron or Ctrl+F1 to switch between them. The toolbar follows your selected IDE theme, independently of additional styling.
 
-### Migration from two add-ins
+### TabView/MultiPage designer
 
-Install the appropriate tbUI3IDE.dll architecture in the shared per-user AppData addins folder for the current Phase 1 acceptance candidate. See the handoff for the native loader compatibility gate. Remove the old **WinUI3IdeStyle.dll** and **TabViewDesigner.dll** from both `addins\win32` and `addins\win64` before loading the unified build, then restart the IDE. The standalone TabViewDesigner project has been retired. Its old DLL must not be distributed or loaded alongside this one. Existing theme preferences are retained.
+When a tbUI3 TabView is selected, use the contextual MultiPage commands to create, select, delete and reorder real pages. You can place controls on the selected page and use the usual native form designer. Page management remains available in all toolbar modes, including when optional styling is disabled.
 
-This folder provides:
+### Updates
 
-- Two IDE themes, **WinUI3 Dark** and **WinUI3 Light**, which set the IDE's colours, corners and borders through its own theme system.
-- **tbUI3 IDE**, the single twinBASIC add-in: TabView page management plus optional styling for the parts the IDE theme cannot reach. The theme files still work independently.
+The updater checks published releases for the twinBASIC IDE, tbUI3IDE, its updater, the bundled themes and developer icon resources. Open **Check for Updates** to review available versions and choose which components to update.
 
-The theme baseline targets twinBASIC **BETA 1043** and was checked against 1033, 1043 and 1044 (the add-in's stylesheet rules and the IDE plumbing it uses are unchanged between them; 1044 changed only Aurora's icon filters and the form designer's text selection). The themes need 1033 or later: older builds ignore the new dialog and panel properties, so dialogs stay in the IDE's defaults and panels lose their gaps.
+- **Update Now:** Stages approved updates and follows the IDE's normal save and exit prompts.
+- **Update on Exit:** Waits for an approved normal IDE shutdown.
+- **Remind Me Later:** Leaves the current installation untouched.
 
-| Path | Contents |
-| --- | --- |
-| `themes/WinUI3 Dark.theme` | Inherits the IDE's Dark theme and overrides 232 color/layout properties plus inherits |
-| `themes/WinUI3 Light.theme` | Inherits the IDE's Light theme and overrides 227 color/layout properties plus inherits |
-| `tools/build-themes.mjs` | Generates both theme files. Change colours there and rerun `node tools/build-themes.mjs themes` from this folder, rather than editing the .theme files by hand |
-| `tbUI3IDE/tbUI3IDE.twinproj` | The single add-in project, including both features (Standard DLL referencing the IDE Extensibility Package) |
-| `tbUI3IDE/src/` | Plain-text mirror of the add-in project |
-| `tools/build-addin-project.mjs` | Built the first `tbUI3IDE.twinproj` from `src/`, using the IDE's add-in sample as the container. Once the IDE has saved the project, sync it like the repository's other projects |
+Automatic checks do not authorize downloads or installations. Updates preserve user files and settings, use verified payloads and backups, and support recovery. Protected IDE locations may require approval through Windows UAC.
 
-`CHANGELOG.md` and `ROADMAP.md` in this folder track this work separately from the tbUI3 control library.
+## Settings
 
-## Where the colours come from
+In IDE Options, find the add-in settings near **Colour Theme**:
 
-Every value is a WinUI 3 theme resource from `Common_themeresources_any.xaml` in microsoft-ui-xaml, which is what WinUI Gallery renders with. The comment after each line names the token, for example `SolidBackgroundFillColorBase` (#202020 dark, #F3F3F3 light). Static theme files use fallback blue accents (#60CDFF on dark, #005FB8 on light). With additional styling enabled in either WinUI3 theme, the add-in replaces UI accent resources with the live Windows palette. Dark fill/link use SystemAccentColorLight2/Light3; Light fill/link use SystemAccentColorDark1/Dark2, following Microsoft's Common_themeresources_any.xaml. Native selection tint uses the base system accent. Semantic success/caution/error colors and inherited code syntax colors are unchanged.
+- **Enable additional IDE theme styling via add-in:** Turn optional styling on or off.
+- **IDE Toolbar:** Choose Classic, Hybrid or Ribbon.
+- **Check for Updates:** Open the update review.
+- **tbUI3 installations > Settings and repair:** Configure automatic checks, restart preference and resource repair.
+- **Welcome to tbUI3IDE:** Reopen the onboarding wizard.
 
-The layout follows WinUI Gallery:
-- The window, menu, toolbars, tab strip and status bar sit on the base colour.
-- Docked panels, including the code editor area, are rounded cards (8px corners) on a lighter layer (#282828 dark, #F9F9F9 light), with 4px gaps between them.
-- Dialogs follow WinUI's ContentDialog: 8px corners, a content area, a darker or greyer button bar, 4px-rounded buttons with a focus ring, and an accent line under the selected tab.
+Your toolbar and styling choices persist across restarts. Installation-specific update preferences are saved separately for each IDE installation. Welcome completion is saved per user.
 
-## How twinBASIC themes work (verified in BETA 1015, 1033 and 1043)
+## Troubleshooting
 
-- A theme is a `.theme` text file of `Name: value;` lines. `inherits: dark;` or `inherits: light;` at the top pulls in a built-in theme first.
-- The IDE turns each property into a CSS variable (`Name` becomes `--themeName`) that its stylesheets use (`ide/styles.css`, `ide/formDesigner.css`, `ide/configEditor.css`, and some CSS built inside `ide/main.js`, such as the new front page). A value ending in `!important` is set as important.
-- The parser splits on `; ` or `;` plus a line break, and on `: `. A missing semicolon silently drops that line and the next one (the shipped Dark and Light themes still do this to `DiagnosticsGroupFontSize` in 1033, which these themes set again).
-- The theme name in the menu is the file name without `.theme`. The shipped Dark.theme lists every property except a few that only Aurora uses (`DialogButtonFocusBackColor`, `DialogNavBarBackColor`, `DialogNavButtonBackColorSelected`).
-- The IDE reads themes from its own `themes` folder and from `%APPDATA%\twinBASIC\themes`. The second survives IDE upgrades.
+Open %LOCALAPPDATA%\tbUI3\Diagnostics in File Explorer for updater, designer and other diagnostic logs. Some tracing requires an explicit opt-in. See [Diagnostics](../docs/DIAGNOSTICS.md) for file names and troubleshooting instructions.
 
-## Optional standalone theme installation
+## For contributors
 
-The add-in provisions its bundled themes automatically on load. The following manual procedure is only for using the themes without the add-in; back up existing customized themes rather than overwriting them.
-
-1. In File Explorer, type `%APPDATA%\twinBASIC\themes` in the address bar and press Enter.
-2. Copy `WinUI3 Dark.theme` and `WinUI3 Light.theme` into that folder if absent; preserve or back up existing customized copies.
-3. In twinBASIC, choose **Window > Theme > Reload from disk**.
-4. Choose **Window > Theme > WinUI3 Dark** (or **WinUI3 Light**).
-
-To remove them, switch back to Dark or Light and delete the two files.
-
-## What to check
-
-Open a project with a form and a module, then look at each item in both themes:
-
-1. Title and menu bar: dark grey (#202020) in Dark, blue (#005FB8) in Light, with readable white text.
-2. Docked panels (Project Explorer, Properties, Toolbox, the code area): rounded cards on a slightly darker or greyer background, with even gaps, plain headers and no coloured title strip. Drag a panel to a new dock position and resize a splitter: nothing should overflow or leave a gap.
-3. Code tabs: unselected tabs blend into the strip, the selected tab matches the panel below it, hover shows a faint highlight.
-4. Code editor: the text area and line-number gutter are one colour (#1C1C1C dark, white light), indent guides are faint, selected text is blue.
-5. Status bar: the compiler badge is green, yellow or pink-red (Dark) or green, amber or red (Light), with rounded corners.
-6. Problems panel: group headings are semibold and slightly smaller.
-7. Form designer: the canvas shows a dot grid instead of stripes, the form has a soft shadow, the rulers are flat.
-8. Properties panel: rows have subtle dividers, category rows are dark with white text.
-9. Options dialog (Tools > Options or the IDE options button): rounded corners, dark content in WinUI3 Dark, readable text in every page, text boxes with a thin border, the focused button shows a ring.
-10. New Project dialog (File > New Project): cards with rounded corners, the selected card outlined in blue, side rail readable.
-11. A message box (for example, close a project with unsaved changes): rounded, with the button bar below a thin divider.
-12. Right-click menus: light, with rounded bottom corners, in both themes.
-13. Debug console: type `?` and part of a name, and check the suggestion pop-up is readable.
-14. Toolbar Run and Stop icons are green and red.
-
-## TabView management
-
-The same add-in supplies +/New page creation, switching, deletion, reordering, page geometry protection, page toolbox hiding and diagnostics. These remain available with styling disabled. [Page command details](TabViewDesigner/README.md) and [architecture/lifecycle](ARCHITECTURE.md) describe the contract.
-
-The earlier single-row toolbar is retained by Classic. Selectable Hybrid/Ribbon and the current task-based mapping are implemented as described above; remaining adaptive interaction work is tracked in ROADMAP.md.
-
-## Optional IDE styling
-
-### What it does
-
-Rule of thumb: anything a theme property can set lives in the .theme files; the add-in only covers what the IDE hard-codes or what no theme property reaches (shapes, sizes, fonts, states). While the active theme's name starts with `WinUI3`, the add-in adds one stylesheet to the IDE page; when you switch to any other theme it empties it again. It covers what the themes cannot:
-
-- Dialog buttons: the reference library's `.button` and `.button--primary` (WinUI's Button, with its 3px gradient elevation edge), (32px, 4px corners, 14px Segoe UI Variable, ContentDialog's 24px command area padding and 8px spacing), hover and pressed fills instead of the IDE's near-white `#ebeff5` hover, and the accept button as WinUI's accent button.
-- Progress bar: WinUI's ProgressBar, a 3px accent indicator with 1.5px corners on a 1px `ControlStrongStrokeColorDefault` track, with the text above it, instead of the green gradient box.
-- Menu bar and status bar hover: WinUI's MenuBarItem `SubtleFillColorSecondary` hover and `SubtleFillColorTertiary` selected fill, instead of fixed light grey with grey text.
-- Menus and context menus: WinUI's MenuFlyout, capped at the window height and scrolling when longer. Dark in WinUI3 Dark (#2C2C2C), 8px corners, 32px items with 4px corners inset 4px from the edge, 14px Segoe UI Variable, icons in a 16px column, shortcut text muted and 12px, thin divider separators.
-- Editor tabs: WinUI's TabView item shape. 8px top corners, 12px text that is muted until selected, thin separators between unselected tabs, a rounded close button. The IDE's tab height is kept.
-- Drop-downs (Options, toolbar, code navigation, find panel): WinUI's ComboBox, with a chevron, 4px corners and dark open lists in WinUI3 Dark. The toolbar and code navigation ones stay compact.
-- Check boxes and radio buttons in Options, project settings and the find panel: WinUI's CheckBox and RadioButton, 20px, accent when checked.
-- Scroll bars outside the code editor: WinUI's thin scroll bar, 8px, no arrow buttons, a slim thumb that widens under the pointer.
-- Tooltips: WinUI's ToolTip, 12px text on the flyout colour with 4px corners.
-- Toolbar: WinUI's CommandBar (WinUI 3 has no Ribbon), drawn as a floating rounded card like the new Outlook's single-line ribbon. Each button is an AppBarButton with a rounded hover plate and a 16px Fluent UI System Icon in the text colour, except comment, uncomment, indent, outdent, align and size, which keep the IDE's own clearer glyphs; the grid button is an accent toggle; Run is green and Stop red. Buttons added by other add-ins keep their own image.
-- IDE Options and Project Settings: a NavigationView list on the left and WinUI settings cards on the right. IDE Options' Yes / No become ToggleSwitches; Project Settings' No / Yes / Default become a row of radio buttons (the Default state cannot fit a two-state switch). Number fields get NumberBox spin buttons.
-- Library References and Compiler Warnings: the references tables become a ListView in a card with a column header, WinUI check boxes, hyperlink pencils and a critical InfoBar for load errors; each compiler warning is a list row with its drop-down in a fixed column.
-- Text boxes in dialogs and Options: WinUI's TextBox. 32px, 4px corners, a darker bottom edge at rest and a 2px accent bottom edge when focused. The property sheet's inputs are left alone.
-- Panels: pane headers with 28px subtle command buttons and the IDE's English panel titles in sentence case (Project explorer, Debug console; restored when the add-in's switch is off); Project Explorer and the other trees as WinUI TreeViews with chevrons and rounded, inset rows.
-- Its own switch in IDE Options: "Enable additional IDE theme styling via add-in", added under Colour Theme, on by default. Turning it off disables the add-in's stylesheet at once (the WinUI3 theme stays), and the choice is saved per user in the registry (`HKCU\Software\VB and VBA Program Settings\WinUI3IdeStyle\Options`, value `Enabled`). The switch and independent IDE Toolbar selector appear for all IDE themes.
-
-The stylesheet's source is `tbUI3IDE/css/winui3-ide.css`, and each rule there names the WinUI resource it comes from. Menus, tabs, text boxes and the shared colour tokens are taken from Shane's WinUI HTML/CSS reference library (Arrow-Loop/twinBASIC-Knowledge, branch `feature/winui3-html-css-js-reference`, `reference/winui-html/winui-baseline.css` at commit 20b438a), remapped onto the IDE's own class names. After editing the .css file, run `node tbIDE/tools/build-addin-css.mjs`, which writes `src/Sources/WinUI3IdeCss.twin` (do not edit that file by hand), (it also reads `css/winui3-ide-icons.css`, which `node tbIDE/tools/build-toolbar-icons.mjs` writes from the icon map in that script), then `node tools/twinproj-src.mjs patch tbIDE/tbUI3IDE/tbUI3IDE.twinproj tbIDE/tbUI3IDE/src Sources/WinUI3IdeCss.twin`.
-
-### How it works
-
-The IDE is an HTML page. The add-in opens a hidden tool window, whose body sits in a shadow root on that page, and reaches the page through it: `RootDomElement.Properties.ownerDocument.defaultView.eval(...)` runs one JavaScript expression in the IDE page to add, update or remove a `<style id=winui3IdeStyleCss>` element at the end of `<head>`. (Writing through a property path, such as `getElementById(...).textContent = ...`, reports success without changing the page, so the add-in does not use it.) `Host.Themes.ActiveThemeName` decides when, checked at start-up, on project load, two seconds after each, and on every theme change. It logs each step to the Debug Console with the prefix `[WinUI3 IDE Style]`.
-
-This is not a documented use of the add-in API. The official `ToolWindow.ApplyCss` only styles the tool window's own shadow root. A later BETA could block it, and the IDE's class names (`.msgBoxButton`, `.mainProgressBarOuter`, `.menuItem`) are not a stable contract, so the CSS needs re-checking per BETA.
-
-### Build and install
-
-Follow the [Phase 1 handoff](PHASE1_HANDOFF.md), which owns the exact build order, bundle verification and acceptance checklist. Current source targets BETA 1045 for add-in/updater acceptance. Reopen the canonical add-in project before building both architectures; avoid loading/locking an older DLL while compiling (hold Shift when opening a project to skip add-ins).
-
-The preferred test deployment uses only the matching DLL(s) in `%APPDATA%\twinBASIC\addins\win32` and/or `win64`. Remove obsolete duplicate unified/predecessor DLLs from the IDE-local and shared locations before testing normal first install. Launch with a project, verify offline provisioning of the embedded helper and both themes, and confirm the Welcome Wizard and normal operations. The wizard does not require successful provisioning to open; Setup appears only when attention is needed.
-
-To remove the add-in, close the IDE and remove its DLL(s) from the locations where installed. To disable only styling, use the additional-styling setting. Do not delete shared updater/settings or customized themes merely to disable styling.
-
-### What to check
-
-The consolidation gate also covers TabView add/delete/readd and page toolbox hiding with styling on and off, switching to a standard IDE theme, project reload and unload cleanup. Confirm only one set of page commands exists after removing the old DLL.
-
-1. Debug Console shows `loaded`, then `theme is winui3 dark`, `stylesheet applied` and a `check:` line reading `290 of 290 rules parsed, ... body.darkMode = True` (False on WinUI3 Light) `, last element in head = #winui3IdeStyleCss`. Switching to Dark or Light shows `stylesheet removed`.
-2. Any dialog (for example File > New Project): buttons are 32px tall with 4px corners and 14px text; the default button (Open, OK) is accent blue with dark text in WinUI3 Dark and white text in WinUI3 Light, with no white ring. Hovering a normal button gives a slightly lighter fill, not white; pressing it gives a slightly darker fill with dimmer text.
-3. A long operation with the progress dialog (for example, a build): a thin blue bar on a thin grey line, with the text above it on the left.
-4. Menu bar: hovering File, Edit and so on shows a faint highlight with the text unchanged; an open menu's item stays faintly highlighted.
-5. Status bar items: hover is faint and the text keeps its colour.
-6. Right-click in the code editor, and open File and a submenu: in WinUI3 Dark the menu is dark grey with white text, rounded corners, rounded item highlights inset from the edge, icons lined up in a column, muted shortcut text and thin separators. Disabled items are dim. Moving through the menu with the arrow keys shows the same faint highlight, not red.
-7. Editor tabs: open three or more files. Tabs have rounded top corners and smaller text, unselected tab text is a little dimmer, thin lines separate unselected tabs, and the close button gets a rounded faint highlight on hover.
-8. Tools > Options (or any page with text fields), and a rename or input box: text fields are 32px with rounded corners and a darker bottom line; clicking into one gives a blue bottom line. Check nothing in Options is cut off or overlaps because the fields are taller.
-9. Drop-downs, check boxes, scroll bars and tooltips: the toolbar's win32 drop-down and the code editor's three drop-downs are dark with a thin chevron, and their open lists are dark; Options check boxes are 20px rounded squares that use the Windows accent with a white or black tick; scroll bars in panels are thin with no arrows; hovering a variable while debugging shows a dark rounded tooltip.
-10. Switching to Dark, Light or Classic puts everything back to the IDE's own look.
-11. Toolbar: a rounded card with a soft shadow holding one row of 40px buttons with Fluent outline icons (the comment, indent, align and size buttons keep tB's own glyphs), faint rounded hover plates, a green Run and red Stop, greyed debug buttons when not running, the grid button filled with the accent colour when the grid is on, and thin divider lines between groups. Report any button that shows no icon.
-12. Tools > IDE Options: "Enable additional IDE theme styling via add-in" sits under Colour Theme. Switching it off returns the IDE to the theme alone straight away and the Debug Console says `additional styling turned off in IDE Options (saved)`; restart the IDE and it stays off; switch it on again and everything comes back.
-13. Restart the IDE: no empty "WinUI3 IDE Style" window should appear. If one does, report it.
-
-If the Debug Console shows `could not apply the stylesheet:` or nothing at all, copy the line (or say it is missing) and report it with the architecture.
-
-## Known limits
-
-The IDE still hard-codes some colours in BETA 1043, so no theme can change them. The add-in covers the dialog buttons, the progress bar, the menu bar hover, menus and context menus, editor tabs and dialog text boxes; the rest is on the roadmap for it:
-
-- Context menu text is fixed black, so without the add-in menus stay light in WinUI3 Dark. The code navigation drop-downs have fixed dark text, which the add-in overrides.
-- Native title text and caption artwork are fixed white; optional styling corrects the main-window caption for neutral Light chrome. With styling Off, the host's fixed title artwork remains a limitation. The modal dialog header keeps an accent fill for its native white title text.
-- Menu bar hover is fixed light grey, the middle panel's header has a fixed grey edge, and the property category text is fixed white.
-- A few Options pages still have fixed dark text (compiler warning lists, the not-signed-in warning, the filter bar), which may be hard to read on WinUI3 Dark's dark dialogs. The IDE's own Aurora theme has the same issue.
-- Dialog buttons share one text colour, so the default or focused button shows WinUI's focus ring rather than an accent fill.
-- The new front page draws a few details in fixed colours (search focus and card hover outlines in tB blue, a white version badge).
-- There is no theme property for fonts, tab shape or control heights, so the IDE keeps Segoe UI (not Segoe UI Variable) and its own tab shape. Mica and acrylic are not possible.
-- The toolbar has about 30 commands (one row needs about 1610px) and WinUI's overflow ("...") menu cannot be added with CSS, so its buttons are 36px wide rather than CommandBar's 68px and the bar wraps to a second row in narrow windows, as the IDE's own toolbar did.
-- Code syntax colours are inherited unchanged from the IDE's Dark and Light themes.
+- [Phase 1 handoff](PHASE1_HANDOFF.md): Current build and native acceptance sequence.
+- [Installation Manager specification](INSTALLATION_MANAGER_SPEC.md): Product requirements and safety boundaries.
+- [Architecture](ARCHITECTURE.md): Technical design and native integration.
+- [Build tools](tools/): Theme generation, project synchronization, embedding and release verification.

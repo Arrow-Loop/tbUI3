@@ -32,7 +32,7 @@ Use [UI3TabView contract](../docs/controls/UI3TabView.md) and [architecture](ARC
 
 ## Theme and optional styling follow-ups
 
-- Test both themes and current styling in BETA 1045 and recheck theme property map/selectors and private host hooks with each later beta. Verify menus, dialogs, text fields, Options, docking margins, headers, code tabs, context menus, hover, Windows accent and titlebar, no overflow/gaps; use [README checks](README.md#what-to-check).
+- Test both themes and current styling in BETA 1045 and recheck theme property map/selectors and private host hooks with each later beta. Verify menus, dialogs, text fields, Options, docking margins, headers, code tabs, context menus, hover, Windows accent and titlebar, no overflow/gaps; use [native theme and styling checks](PHASE1_HANDOFF.md#native-theme-and-optional-styling-visual-checks).
 - Remaining enhancements: property sheet list-row styling, possible accent Open button (requires approval), Segoe UI Variable across remaining surfaces, Monaco hover/scrollbar theme and other host-fixed details. If host blocks page access, retain standalone themes and Classic fallback; do not modify vendor IDE files for styling.
 - Exploratory upstream theme-property requests (only with approval), static accent variants and optional syntax palette. Fluent toolbox icon replacement was explicitly dropped: each control owns its toolbox icon.
 
@@ -41,6 +41,10 @@ Use [UI3TabView contract](../docs/controls/UI3TabView.md) and [architecture](ARC
 [Installation Manager specification](INSTALLATION_MANAGER_SPEC.md) owns approved constraints. Phase 2: InstallAlongside and ArchivePrevious strategies, configurable cross-volume archive locations and archive/new/both custom-content routing. Phase 3: conservative installation discovery/reorganization, optional shortcut management and advanced historical add-in override after loader behavior is verified. Do not expand Phase 1 to include them.
 
 Restore the visible stable/development channel selector only once a genuine stable twinBASIC channel exists. Consider optional control-package distribution when real release assets exist (never silently rewrite embedded packages), working-directory/launch-context capture where supported and automated release CI after native acceptance.
+
+## Public distribution hygiene
+
+- **Before public distribution: neutralize the remaining employer-specific CSS header in tbIDE/Updater/src/Resources/OTHER/updater.css** (use "shared WinUI toolkit CSS"). This resource is embedded in the accepted helper and add-in payload, so change the canonical updater and mirror together, rebuild the Win32 helper, repeat native self-test/startup acceptance, run prepare-phase1-bundle.mjs with the freshly accepted EXE, rebuild both DLLs and verify exact compiled payloads. Keep the currently accepted binary and its project/resource digests intact until that coordinated pass. Do not patch compiled EXE bytes or relax resource equality tests. Audit remaining source/embedded assets and tracked logs separately; preserve required legal attribution and historical evidence.
 
 ## Documentation maintenance
 

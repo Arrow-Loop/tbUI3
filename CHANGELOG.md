@@ -1,5 +1,9 @@
 # Changelog
 
+## 2026-11-23 - User-facing IDE README and private-reference cleanup
+
+Replaced the IDE README's change narrative with current requirements, install, features, settings and troubleshooting. Moved enduring theme/styling implementation details to architecture and the visual acceptance checklist to the Phase 1 handoff. Consolidated the diagnostic startup guidance. Neutralized the shared Toolkit provenance repository label, test title and private diagnostic origin without changing test assertions, recorded commit/blob hashes or native results. The remaining embedded CSS header cleanup requires a fresh accepted helper and verified DLL bundle; it is explicitly tracked in the IDE roadmap. Existing canonical projects, embedded payloads and accepted binaries are unchanged. No new native acceptance is claimed.
+
 ## 2026-11-23 - Consolidated current Wizard integration guide
 
 Replaced superseded implementation notices and pending-embedding instructions with one current integration reference, retaining the factory API, four pinned assets, six native intents, palette schema, selection/repair semantics, preview-server instructions and conditional Setup behavior. Production/native acceptance remains in the Phase 1 handoff. No view source or asset bytes changed.

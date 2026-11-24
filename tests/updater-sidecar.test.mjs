@@ -15,7 +15,7 @@ test('sidecar contains the complete embedded WebView2 resource set and canonical
  assert.equal(form._children.length,1);assert.equal(form._children[0]._className,'WebView2');
  assert.equal(form._children[0].AreHostObjectsAllowed,false);assert.equal(form._children[0].AreDefaultScriptDialogsEnabled,false);
 });
-test('shared toolkit assets retain the pinned Smith Debnam implementation',()=>{
+test('shared toolkit assets retain the pinned implementation',()=>{
  const reference=JSON.parse(fs.readFileSync(dir+'/REFERENCE.json'));
  assert.equal(reference.commit,'0babc88f55f4077df7d309826734240cc63796e5');
  for(const [name,entry]of Object.entries(reference.assets))assert.equal(createHash('sha256').update(fs.readFileSync(src+'/Resources/OTHER/'+name)).digest('hex'),entry.sha256,name);

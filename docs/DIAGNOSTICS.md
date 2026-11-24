@@ -26,8 +26,6 @@ A passing engine self-test does not establish that WebView2 or the add-in/wizard
 
 The earlier unqualified startup error is superseded by the accepted compiled startup run. The IDE argument path uses application `Command$` rather than the compiler host command line. If a new failure occurs, collect the current staged error and runtime version.
 
-## Current startup evidence and troubleshooting
-
 The 58/58 native report and successful compiled no-context startup are recorded in [native-startup-2026-11-23-passed.json](../tbIDE/Updater/validation/native-startup-2026-11-23-passed.json). The host authorizes only its exact generated UTF-8/Base64 document and about:blank, not arbitrary URLs. Embedded text conversion uses the package's whole-buffer UTF-8 conversion. Prior cumulative log entries and 42/54 and 57/57 reports are historical evidence; see CHANGELOG. IDE debug startup, integrated add-in launch and live update acceptance remain separate checks.
 
 If startup fails, inspect `updater-startup.log` for the stage/error number, navigation decision, script requests and `updater:ready received`. Report current diagnostics through the user's approved private channel; do not publish private diagnostic sources, credentials, paths or raw logs in this repository. Local logs are not automatically uploaded.

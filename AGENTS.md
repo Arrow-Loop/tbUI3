@@ -4,6 +4,12 @@
 
 For any tbUI3IDE updater, first-install, Welcome Wizard, per-user add-in, IDE update strategy, release-inventory, archive, or installation-discovery work, read **[tbIDE/INSTALLATION_MANAGER_SPEC.md](tbIDE/INSTALLATION_MANAGER_SPEC.md)** *before* development. It is Shane's consolidated approved requirements and phase boundaries, including deferred work, safety constraints and unresolved IDE loader questions. Cross-check [tbIDE/BOOTSTRAP_WELCOME_PLAN.md](tbIDE/BOOTSTRAP_WELCOME_PLAN.md), [tbIDE/Updater/README.md](tbIDE/Updater/README.md) and current roadmaps. Do not mistake approved design for implemented code or native acceptance. Do not merge to main or publish a release without Shane's approval.
 
+## Documentation authority and current handoff
+
+For the updater/add-in, start with [tbIDE/PHASE1_HANDOFF.md](tbIDE/PHASE1_HANDOFF.md) for the current acceptance checkpoint and next actions, [tbIDE/INSTALLATION_MANAGER_SPEC.md](tbIDE/INSTALLATION_MANAGER_SPEC.md) for approved requirements, and [tbIDE/INSTALLATION_CONTRACTS.md](tbIDE/INSTALLATION_CONTRACTS.md) for implementation interfaces. The updater README describes current deployment. Historical plans are reference material, not current instructions.
+
+Update current-state documentation in place. Do not stack dated notices that contradict the body. Record completed work/evidence in CHANGELOG and outstanding work/deferred decisions in ROADMAP, not copies of the same text. Prefer established documents; create another Markdown file only for a distinct enduring purpose. Do not expose private repository names, URLs or internal diagnostics in public-facing material. Keep approval boundaries, evidence, source and native acceptance distinct. Follow the current Arrow-Loop knowledge standards.
+
 ## Project files
 
 - Each `.twinproj` is the canonical project.

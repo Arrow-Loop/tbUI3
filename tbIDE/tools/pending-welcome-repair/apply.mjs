@@ -66,7 +66,7 @@ runNode('--test','tbIDE/prototypes/welcome-wizard/welcome.test.mjs');
 for(const file of ['CHANGELOG.md','tbIDE/CHANGELOG.md']){
  const content=fs.readFileSync(file,'utf8'),needle='Native updater engine and release packaging are unchanged.';
  if(!content.includes(needle))throw Error('Missing validation insertion point: '+file);
- fs.writeFileSync(file,content.replace(needle,needle+' The full repository Node regression suite, isolated Wizard suite, exact mirror/hex validation and add-in-only generator idempotence passed during assembly.'),'utf8');
+ fs.writeFileSync(file,content.replace(needle,needle+' The configured repository Node regression suite and isolated Wizard suite exited successfully, and exact mirror/hex validation and add-in-only generator idempotence passed during assembly. Optional installed-IDE fixture checks are reported as skipped if their inputs are absent.'),'utf8');
 }
 // The guarded handoff has served its purpose; do not ship duplicate candidate source files.
 for(const name of ['theme.json','bridge.json','updates.json','version-docs.json','README.md','apply.mjs'])fs.unlinkSync(path.join(dir,name));

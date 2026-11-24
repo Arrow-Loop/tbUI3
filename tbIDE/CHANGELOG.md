@@ -1,5 +1,9 @@
 # Changelog: tbIDE (WinUI 3 look for the twinBASIC IDE)
 
+## 2026-11-23 - Repair assembly first-run diagnostics and test harness corrections
+
+The Windows launcher successfully provisioned portable Node and jsdom, assembled 12 canonical entries, passed the second synchronization without changes, and verified 140 exact mirrors plus 86 canonical and mirrored hex checks. The first regression run reported 227 passes, 2 failures and 21 optional skips (250 total); the guard correctly withheld commit/push. The pending candidate now checks manual update results in the already-open dialog, retains separate background-toast coverage, and makes the pre-existing native theme-change test conditional on the required TB_IDE_MAIN_JS fixture, consistently with the other native contract tests. Known jsdom CSS-layer parser diagnostics are filtered only in the update UI test harness. No production behavior or integrity checks changed in this follow-up; repeat validation is pending.
+
 ## 2026-11-23 - Portable development runtime for the repair launcher
 
 The double-click repair launcher now prepares a cached official Node.js 22 LTS ZIP (verified against the published SHA-256 checksum) and pinned jsdom 26.1.0 test dependency outside the repository, without administrator rights or a system-wide Node installation. GitHub Desktop's Git remains supported. The launcher captures a transcript in the per-user development cache and retains all existing guarded assembly and validation checks. Windows execution remains to be verified.

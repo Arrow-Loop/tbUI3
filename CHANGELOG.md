@@ -1,5 +1,9 @@
 # Changelog
 
+## 2026-11-23 - Documentation consolidation: installation and reference authority
+
+Merged the retired updater design, original updater plan, bootstrap plan and coordination contract into the enduring Installation Manager specification, native contracts and AGENTS guidance. Removed four superseded Markdown files from the active tree while retaining their history in Git. Reconciled current add-in architecture/geometry descriptions, repaired diagnostic guide duplication, and removed private organizational/repository identifiers from first-party Markdown while retaining commit IDs, hashes and technical evidence. Updated navigation and roadmap boundaries. No application source, test code, canonical project, runtime resource, binary or release changed. Non-Markdown provenance/source/log review remains separately tracked.
+
 ## 2026-11-23 - Documentation consolidation: roadmap and handoff
 
 Replaced stale candidate narratives and duplicated completed work in the root and IDE roadmaps with pending-only, component-scoped acceptance and future work; kept historical evidence in the existing changelogs and Git history. Converted the root HANDOFF into an authoritative-document navigation entry, and synchronized the approved Wizard's pending native acceptance. Preserved the combined Phase 1 release scope, native validation gates, deferred installation strategies, separate core package migration and outstanding control/Ribbon requirements. No application code, canonical projects, assets, release policy or native test results changed.
@@ -34,13 +38,13 @@ The latest private diagnostic snapshot (12d1846, startup blob f1c6aa9) identifie
 
 Canonical updater and mirrors are synchronized. **237 Node tests pass**; the executable native suite now contains **58 cases**, adding an independent Unicode/Base64/navigation-policy test. Previous native evidence remains 57/57 before this patch. Native compilation, IDE and compiled-EXE page-ready confirmation remain pending Shane's acceptance; no GUI automation, binary embedding, release or main merge.
 
-## 2026-11-23 - Updater host aligned to the working Smith Debnam Toolkit
+## 2026-11-23 - Updater host aligned to the working shared Toolkit
 
-Shane designated the private **sdlaw-sdelorme/Diagnostics** repository as the ongoing incoming diagnostic source. Read it through the Smith Debnam connection; local output remains `%LOCALAPPDATA%\tbUI3\Diagnostics\`. No automatic upload or writes to the diagnostics repository are added.
+Shane designated a private incoming diagnostic channel. Local output remains `%LOCALAPPDATA%\tbUI3\Diagnostics\`. No automatic upload or remote writes were added.
 
 The latest snapshot again records 57/57 native self-tests passing. Its startup log shows one embedded-resource-assembly E_FAIL, then another run submitting a 192,315-character HTML document without a recorded page-ready handshake. This narrows the evidence without proving the precise blank-window cause.
 
-Compared the current Smith-Debnam Toolkit example at **218871daaae25c81df668d174b80284edae22ec2** against its canonical mirror hashes. Aligned updater event conventions, constructor DPI initialization, complete IDE-created form defaults, black native underlay, Ready reentrancy guard and navigation-completion lifecycle. Replaced the custom pointer-based UI resource conversion with the Toolkit's whole-buffer LoadResData/StrConv pattern, explicitly selecting UTF-8 for our resources. Per-resource error context is retained. Form identities, updater dimensions and security restrictions remain; Gallery, tab windows, splash and installer/message-box dependencies are not imported.
+Compared the current shared Toolkit example at **218871daaae25c81df668d174b80284edae22ec2** against its canonical mirror hashes. Aligned updater event conventions, constructor DPI initialization, complete IDE-created form defaults, black native underlay, Ready reentrancy guard and navigation-completion lifecycle. Replaced the custom pointer-based UI resource conversion with the Toolkit's whole-buffer LoadResData/StrConv pattern, explicitly selecting UTF-8 for our resources. Per-resource error context is retained. Form identities, updater dimensions and security restrictions remain; Gallery, tab windows, splash and installer/message-box dependencies are not imported.
 
 **Updater.exe retains its separate update/progress/recovery UI. The Welcome Wizard remains add-in-only.** Native form/UI launch and the changed resource reader still require rebuild/runtime confirmation; no native success is claimed by source/DOM checks. Canonical projects/mirrors are synchronized. No main merge, PR, release, binary embedding or GUI automation.
 
@@ -88,11 +92,11 @@ Added `tbIDE/INSTALLATION_MANAGER_SPEC.md` with a complete approved UX, implemen
 
 ## 2026-11-23 - Updater release sequencing decision recorded
 
-Documented combined first production milestone (native updater plus self-provisioning two-DLL install, themes and Welcome Wizard), with future-proof installation-management contracts and later separate-version/archive/reorganization phases. See `tbIDE/BOOTSTRAP_WELCOME_PLAN.md` and roadmaps. **No application or package code, binaries, tests or releases changed in this pass.**
+Documented combined first production milestone (native updater plus self-provisioning two-DLL install, themes and Welcome Wizard), with future-proof installation-management contracts and later separate-version/archive/reorganization phases. See the historical bootstrap plan (now consolidated in the Installation Manager specification) and roadmaps. **No application or package code, binaries, tests or releases changed in this pass.**
 
 ## 2026-11-23 - Add-in first-install and Welcome Wizard architecture documented
 
-Documented the approved future tbUI3IDE self-provisioning contract in `tbIDE/BOOTSTRAP_WELCOME_PLAN.md`: add-in DLLs embed updater/themes, use local and roaming per-user resource directories, independently track multiple IDE installations, preserve newer/customized files, and offer a reopenable HTML/CSS/JS Welcome Wizard. Updated both project roadmaps. **No implementation or compiled/released binaries changed; existing manual bootstrap behavior is unchanged.**
+Documented the approved future tbUI3IDE self-provisioning contract in the historical bootstrap plan (now consolidated in the Installation Manager specification): add-in DLLs embed updater/themes, use local and roaming per-user resource directories, independently track multiple IDE installations, preserve newer/customized files, and offer a reopenable HTML/CSS/JS Welcome Wizard. Updated both project roadmaps. **No implementation or compiled/released binaries changed; existing manual bootstrap behavior is unchanged.**
 
 
 ## 2026-11-23 - Updater hexadecimal widths and mandatory TB0012 guard
@@ -120,7 +124,7 @@ Validation performed: all 186 Node tests pass, including independent ZIP-fixture
 
 Implemented asynchronous release checks and an IDE Options update panel with automatic-check opt-out, per-component installed/available versions, notification, selection, Update Now/On Exit/Later and normal-shutdown approval. Source failures are independent. The add-in never replaces its loaded DLL.
 
-Added a native twinBASIC sidecar with an embedded WebView2 interface based on Smith-Debnam/twinBASIC-Knowledge 0babc88f: shared named controls/Master CSS, live Windows theme/accent, local browser profile, restricted bridge, in-memory script resources, progress, retry/recovery and Runtime remediation without classic message boxes. A separate Windows PowerShell 5.1 engine verifies/stages published assets, waits for the owning IDE/other installation processes, protects locally modified vendor files, journals replacements, backs up and rolls back selected components, handles detached self-update, rejects downgrades on retry and optionally restarts the same IDE. Projects/embedded control packages are not rewritten.
+Added a native twinBASIC sidecar with an embedded WebView2 interface based on the shared Toolkit snapshot 0babc88f: shared named controls/Master CSS, live Windows theme/accent, local browser profile, restricted bridge, in-memory script resources, progress, retry/recovery and Runtime remediation without classic message boxes. A separate Windows PowerShell 5.1 engine verifies/stages published assets, waits for the owning IDE/other installation processes, protects locally modified vendor files, journals replacements, backs up and rolls back selected components, handles detached self-update, rejects downgrades on retry and optionally restarts the same IDE. Projects/embedded control packages are not rewritten.
 
 Coordinated with Quill and incorporated the corrected add-in baseline 0.3.0.20; this feature pass is 0.3.0.21. Only the documented historical add-in identities are aliased; verified future stable receipts preserve real 1.x identities. Core tbUI3 1.0.0.75 and resource-library versions are unchanged. Added a release-manifest contract and architecture/version/stale-build-checked packager; no release was published.
 
@@ -234,7 +238,7 @@ Changed the Add, Previous and Next glyph literals in UI3TabView to explicit Long
 
 ### 2026-11-17 — TabView shape profiles and header interaction (package 1.0.0.66, add-in 1.3.0.16)
 
-- Added persisted UI3TabView.TabStyle with UI3TabStyle choices ui3TabEdge (Edge Style, default) and ui3TabExplorer (Explorer Style). Edge follows Shane's customized Toolkit at Smith-Debnam/twinBASIC-Knowledge commit 85432018090efc339d21ae7c47fd0e45ac8dea6b: 36-DIP tabs, 4-DIP top inset and 8-DIP concave feet. Explorer uses the prior WinUI 32/8/4 profile. Both retain a 40-DIP page origin; style changes do not alter page ownership or child coordinates.
+- Added persisted UI3TabView.TabStyle with UI3TabStyle choices ui3TabEdge (Edge Style, default) and ui3TabExplorer (Explorer Style). Edge follows Shane's customized Toolkit at the shared Toolkit snapshot commit 85432018090efc339d21ae7c47fd0e45ac8dea6b: 36-DIP tabs, 4-DIP top inset and 8-DIP concave feet. Explorer uses the prior WinUI 32/8/4 profile. Both retain a 40-DIP page origin; style changes do not alter page ownership or child coordinates.
 - Added native vector tab outlines, selected/page seams, neighbor separators, left-aligned ellipsized captions, theme hover/pressed/disabled states, keyboard-only focus indication, centered add/scroll glyphs, pointer capture/cancel and hover-leave cleanup. Selected tabs paint last so their joins remain intact. Explorer's unselected hover uses the rounded WinUI container; Edge hover uses the Toolkit outline.
 - Added overflow arrows that scroll the header viewport without selecting/moving pages, automatic reveal on selection, wrapping Left/Right and Ctrl+Tab navigation, Home/End and Ctrl+T add requests. Very narrow hosts retain a clipped selected tab and keyboard access instead of overlapping arrows. Transient FirstVisibleTabIndex is not written to PropertyBag. Pointer tracking uses pointer-width-safe comctl32 subclass APIs with no retained control reference or timer.
 - Adapter v9 mirrors both profiles, reserved feet, add-button position and overflow hit testing. Native viewport changes request header snapshots without structural edits or undo checkpoints. Existing designer page containers, names, locks, selection and insertion paths are retained. Updated canonical package/test/add-in projects and the full embedded package; existing control/project IDs and public-member order are preserved.

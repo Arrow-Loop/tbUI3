@@ -8,7 +8,7 @@ Package 68 removes enum-member Description attributes that BETA 1044 interpreted
 
 `TabStyle As UI3TabStyle` is saved per control. `ui3TabEdge = 0` (Edge Style) is the default, including when reading older forms without the property. `ui3TabExplorer = 1` (Explorer Style) is the alternate. Invalid assignments raise error 380; invalid stored numeric values fall back to Edge.
 
-Edge is Shane's explicit customized profile from [Smith-Debnam Toolkit 8543201](https://github.com/Smith-Debnam/twinBASIC-Knowledge/tree/85432018090efc339d21ae7c47fd0e45ac8dea6b/examples/WinUIElementToolbox): its canonical project and 23 mirrors matched. Sources are ui/winui.css tab tokens and shapes, ui/toolbox.js initializeTabView, and docs/fidelity/FIDELITY_068.md. This overrides the generic upstream shape default under Shane's instruction. The reference repository was read only.
+Edge is Shane's explicit customized profile from the approved shared Toolkit snapshot `85432018090efc339d21ae7c47fd0e45ac8dea6b`: its canonical project and 23 mirrors matched. Sources are ui/winui.css tab tokens and shapes, ui/toolbox.js initializeTabView, and docs/fidelity/FIDELITY_068.md. This overrides the generic upstream shape default under Shane's instruction. The reference repository was read only.
 
 | Profile | Track | Top inset | Tab height | Top radius | Concave foot radius |
 | --- | --- | --- | --- | --- | --- |

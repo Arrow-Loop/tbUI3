@@ -51,9 +51,27 @@ The privileged worker pins context, plan, staged inputs, recovery backups and di
 
 ## Wizard/native adapter
 
-Quill owns `prototypes/welcome-wizard`; production embeds its committed JS/CSS unchanged and never ships its preview/mock adapter. `PHASE1_COORDINATION.md` documents the allowlisted intents. Each queued request gains a native `requestId`; snapshots carry `ack:{id,ok}` and actual theme/toolbar/preferences. The adapter withholds authoritative wizard snapshots until all outstanding ids settle, so unrelated bootstrap refreshes cannot acknowledge pending choices. Native failures restore actual values and report an error. Theme reload has a 15-second cancellation token; toolbar failure restores the previous requested mode. Settings/repair views use scoped shared toolkit CSS; Wizard uses the full approved shared Master CSS/control runtime inside an isolated same-origin iframe under a modal HTML dialog, with live Windows accent. Resource reset requires a styled asynchronous confirmation plus explicit checkbox. Welcome schema 1 is user-global; dismiss/finish are independent of file provisioning. IDE Options exposes settings/repair and reopen in every toolbar mode.
+Quill owns `prototypes/welcome-wizard`; production embeds its committed JS/CSS unchanged and never ships its preview/mock adapter. The allowlisted intents are defined below. Each queued request gains a native `requestId`; snapshots carry `ack:{id,ok}` and actual theme/toolbar/preferences. The adapter withholds authoritative wizard snapshots until all outstanding ids settle, so unrelated bootstrap refreshes cannot acknowledge pending choices. Native failures restore actual values and report an error. Theme reload has a 15-second cancellation token; toolbar failure restores the previous requested mode. Settings/repair views use scoped shared toolkit CSS; Wizard uses the full approved shared Master CSS/control runtime inside an isolated same-origin iframe under a modal HTML dialog, with live Windows accent. Resource reset requires a styled asynchronous confirmation plus explicit checkbox. Welcome schema 1 is user-global; dismiss/finish are independent of file provisioning. IDE Options exposes settings/repair and reopen in every toolbar mode.
 
-## Installed-theme inventory and diagnostic routing update
+### Native services and snapshot
+
+Production bridge requests are structured objects from the add-in-hosted JS queue; no filesystem paths, executable names, arbitrary commands or update approvals are accepted from the wizard.
+
+| Intent | Payload | Native effect |
+|---|---|---|
+| `choose-theme` | `name`: exact current installed-theme inventory member | Reload actual IDE theme list, select/persist via the verified BETA 1045 IDE APIs, acknowledge actual result. No selection during preview. |
+| `choose-toolbar` | `name`: exact `Classic`, `Hybrid`, `Ribbon` | Existing toolbar controller and the existing per-user toolbar setting. |
+| `installation-preferences` | Optional Boolean `automatic`, Boolean `restart`, `channel`: `development` or `stable` | Persist versioned preferences for the originating installation; synchronize existing update UI. |
+| `welcome-record` | `schema`: 1; `disposition`: `completed` or `dismissed` | Persist user-global Welcome completion, independently of bootstrap and per-IDE settings. |
+| `bootstrap-retry` | none | Offline recheck/repair of missing/recognized bundled assets. Never overwrites unknown/customized files. |
+| `repair-resource` | exact resource `id`: `updater`, `themeDark`, `themeLight`; `confirmed`: true | Explicit reset retains a verified backup before replacing a customized resource. Never downgrades a newer updater. |
+
+State snapshots (schema 1): `root`, `installationId`, `preferences` (schema 1, strategy `InPlace`), actual `theme` and `toolbar`, `bootstrap` (`status`, `message`, `resources[]`), `message` (native acknowledgement/error), and `recovery` (whether an unfinished native transaction is available). Resource entries carry `id`, `path`, `status`, `message`, `repairable` and an optional retained `backup` path. The wizard must show native errors instead of assuming a queued setting has succeeded.
+
+Automatic online opt-out does not disable bootstrap or manual checks. Wizard completion is per user; preferences and transaction approvals are per installation. Future schemas are preserved instead of overwritten by an older wizard. The accepted helper and themes are embedded; compiled DLL verification remains required. A resource must never be replaced by a mock EXE.
+
+
+## Installed-theme inventory and diagnostic routing
 
 Snapshots now include installedThemes (exact names, base mode, validated preview colors) and themeDiscovery pending/error state. The trusted parent bridge exports BETA 1045 customThemes and its actual inheritsFromLink chains after reloadThemesFromDisk has enumerated both installation and AppData directories. It collapses names with the same case-insensitive first-match semantics as buildThemeData; async load order is not replaced by a guessed directory priority. Native InstalledThemeCatalog parses parent-first declarations into paint values without changing activeThemeData or selecting themes. Supports hex, RGB/RGBA percentages, black/white/transparent and bounded theme-variable references. Unresolvable colors remain unavailable. Only hex color fields enter the iframe; source declarations/files/URLs do not. Selection is checked against the current trusted inventory, refreshed and checked again before apply; failed saves restore the previous theme. Discovery timeout cancels late selection; repair reprovisions before refreshing the list.
 

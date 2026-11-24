@@ -33,4 +33,4 @@ Current project metadata: 1.0.0.75. The independent prerelease correction to 0.0
 
 ## Documentation maintenance
 
-This roadmap is now the pending-work index for the core package, with add-in work delegated to its component roadmap. Historical candidate notes remain available in Git history and CHANGELOG. The second documentation pass also consolidates overlapping updater plans, active handoffs and private-reference guidance; preserve source mirrors, third-party notices and validation evidence.
+This roadmap is now the pending-work index for the core package, with add-in work delegated to its component roadmap. Historical candidate notes remain available in Git history and CHANGELOG. The second documentation pass consolidates overlapping updater plans and active handoffs. Before public release, the production agent should review non-Markdown provenance metadata and test labels for private identifiers, and separately audit tracked diagnostics/logs and source/resource comments without invalidating hashes, notices or project mirrors. These are not runtime changes made by the documentation pass.

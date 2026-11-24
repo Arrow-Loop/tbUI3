@@ -1,8 +1,8 @@
 # TabView management in the unified tbUI3 IDE add-in
 
-TabView adapter v8 is now included in **tbUI3IDE 1.2.0.0**, alongside optional IDE theme styling. There is one project and DLL: [tbUI3IDE.twinproj](../tbUI3IDE/tbUI3IDE.twinproj), output tbUI3IDE.dll. The old standalone TabViewDesigner project/export has been retired. [Build, install and migration](../README.md) explains removing the legacy WinUI3IdeStyle.dll and TabViewDesigner.dll from both architecture folders before loading the unified add-in.
+TabView adapter v10 is included in **tbUI3IDE 0.4.0.0**, alongside optional IDE theme styling. There is one project and DLL: [tbUI3IDE.twinproj](../tbUI3IDE/tbUI3IDE.twinproj), output tbUI3IDE.dll. The old standalone TabViewDesigner project/export has been retired. [Build, install and migration](../README.md) explains removing the legacy WinUI3IdeStyle.dll and TabViewDesigner.dll from both architecture folders before loading the unified add-in.
 
-Page management works with standard IDE themes and with additional styling disabled. Package 1.0.0.65 remains the native control dependency; no add-in is needed by built consumer applications.
+Page management works with standard IDE themes and with additional styling disabled. The current independently versioned tbUI3 control package supplies the native controls; no add-in is needed by built consumer applications.
 
 | Command | Behavior |
 | --- | --- |

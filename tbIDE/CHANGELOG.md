@@ -1,5 +1,9 @@
 # Changelog: tbIDE (WinUI 3 look for the twinBASIC IDE)
 
+## 2026-11-24 - Self-contained development preparation prerequisites
+
+The owner reported that Prepare-Addin.bat now parsed but stopped because Node was not installed or cached on this PC. Reused the existing verified portable Node 22 download/cache routine and GitHub Desktop Git discovery in preparation, with pinned local jsdom setup when missing. No system installation, permanent PATH changes or administrator rights are required. Pending assembly now binds the verified helper before running add-in-only sync, accommodating the owner's freshly rebuilt helper without bypassing existing verification/self-tests or the original project hash guard. Static delimiter inspection only; Windows execution and assembly remain pending.
+
 ## 2026-11-24 - Corrected preparation script syntax
 
 Reconstructed Prepare-IDE-Release.ps1 from its last known working version with only the pending add-in assembly insertions. The previous source edit accidentally expanded the JavaScript replacement-string `$'` sequence inside the PowerShell hash regex, duplicating the script tail and preventing PowerShell parsing. Verified original script preservation outside the two inserts, intact regex, one exit and balanced lexical delimiters. Native preparation remains pending; no project, runtime or release changes in this repair.

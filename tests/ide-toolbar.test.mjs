@@ -267,6 +267,17 @@ test('one Options page contains IDE Options, language and keyboard shortcuts',()
     tasks[0].click();assert.deepEqual(f.calls,['tbIde_ShowIDEOptions']);assert(f.d.querySelector('.tbui3-backstage').hidden);f.dispose();
 });
 
+test('Ribbon File Options dispatches the existing installation update command once',()=>{
+    const f=fixture();let requests=0;
+    f.w.__tbUI3Installation={checkForUpdates:()=>{assert(f.d.querySelector('.tbui3-backstage').hidden);requests++;}};
+    f.adapter.setMode('Ribbon');f.adapter.openFile('Options');
+    const find=()=>[...f.d.querySelectorAll('.tbui3-backstage-tasks button')].filter(b=>b.getAttribute('aria-label')==='Check for Updates');
+    assert.equal(find().length,1);assert.equal(find()[0].querySelector('.tbui3-ribbon-icon').dataset.iconRef,'fluent/globe_search');
+    find()[0].click();assert.equal(requests,1);assert.equal(f.calls.length,0);
+    f.adapter.openFile('Options');assert.equal(find().length,1);f.adapter.setMode('Classic');
+    assert(!f.d.querySelector('.tbui3-backstage'));f.dispose();
+});
+
 test('original logo precedes Save only for the two WinUI3 themes with the real titlebar disabled',()=>{
     const f=fixture();let theme='WinUI3 Dark',real=false;f.api.themeName=()=>theme;f.api.realTitlebar=()=>real;f.api.brandImage='data:image/png;base64,AA==';f.adapter.setMode('Ribbon');
     for(const [name,titlebar,shown]of [['WinUI3 Dark',false,true],['WinUI3 Light',false,true],['winui3 dark',false,true],['winui3 light',false,true],['WINUI3 DARK',false,true],['Dark',false,false],['WinUI3 Custom',false,false],['WinUI3 Dark',true,false],['WinUI3 Light',false,true]]){

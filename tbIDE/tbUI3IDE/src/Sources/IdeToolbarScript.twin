@@ -1433,7 +1433,9 @@ Private Module IdeToolbarScript
         js = js & vbLf
         js = js & "        const items=layout?.file.get(fileSection)||[],projectName=api.projectName&&api.projectName();"
         js = js & vbLf
-        js = js & "        const sig=JSON.stringify([fileSection,projectName,items.map(itemKey),!!menus.get('rootMenuAddins')?.loading]);"
+        js = js & "        const updateAvailable=fileSection==='Options'&&typeof w.__tbUI3Installation?.checkForUpdates==='function';"
+        js = js & vbLf
+        js = js & "        const sig=JSON.stringify([fileSection,projectName,items.map(itemKey),!!menus.get('rootMenuAddins')?.loading,updateAvailable]);"
         js = js & vbLf
         js = js & "        if(sig===fileRenderSignature)return;fileRenderSignature=sig;"
         js = js & vbLf
@@ -1445,6 +1447,9 @@ Private Module IdeToolbarScript
         js = js & "        fileContent.append(el('h1','tbui3-backstage-heading',titles[fileSection]||fileSection));"
         js = js & vbLf
         js = js & "        const list=items.filter(i=>i.name);"
+        js = js & vbLf
+        js = js & "        if(updateAvailable)list.push({name:'Check for Updates',_ribbonIcon:'fluent/globe_search',action:()=>w.__tbUI3Installation?.checkForUpdates()})"
+        js = js & ";"
         js = js & vbLf
         js = js & "        if(fileSection==='Info'){"
         js = js & vbLf

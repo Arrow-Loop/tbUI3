@@ -509,12 +509,14 @@
     }
     function renderFile() {
         const items=layout?.file.get(fileSection)||[],projectName=api.projectName&&api.projectName();
-        const sig=JSON.stringify([fileSection,projectName,items.map(itemKey),!!menus.get('rootMenuAddins')?.loading]);
+        const updateAvailable=fileSection==='Options'&&typeof w.__tbUI3Installation?.checkForUpdates==='function';
+        const sig=JSON.stringify([fileSection,projectName,items.map(itemKey),!!menus.get('rootMenuAddins')?.loading,updateAvailable]);
         if(sig===fileRenderSignature)return;fileRenderSignature=sig;
         for(const [n]of bindings)if(fileContent.contains(n))bindings.delete(n);clear(fileContent);
         const titles={Info:'Project information',Open:'Open project',Export:'Export project','Add-ins':'Add-ins',Preferences:'Preferences',More:'More file commands',Help:'Help'};
         fileContent.append(el('h1','tbui3-backstage-heading',titles[fileSection]||fileSection));
         const list=items.filter(i=>i.name);
+        if(updateAvailable)list.push({name:'Check for Updates',_ribbonIcon:'fluent/globe_search',action:()=>w.__tbUI3Installation?.checkForUpdates()});
         if(fileSection==='Info'){
             fileContent.append(el('p','tbui3-backstage-project',projectName||'No project open'));
         }

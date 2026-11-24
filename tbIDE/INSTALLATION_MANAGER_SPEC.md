@@ -156,6 +156,8 @@ Shane identified two common layouts (examples only): (1) sibling version folders
 
 ## 7. IDE Options, onboarding and interaction policy
 
+**Ribbon File > Options:** provide a direct Check for Updates action using the existing standalone review request, in addition to the normal IDE Options category. Keep Classic/Hybrid entry points unchanged until direct Help-menu placement is agreed.
+
 **IDE Options entry points (owner feedback, 2026-11-24):** Move the four add-in commands out of Appearance into their own native Options navigation category, provisionally `IDE Updates`: Check for Updates, Update settings, Resource repair and Welcome to tbUI3IDE. Present each as an individually described settings row with an established themed WinUI button. Integrate with native navigation, All/filter, counts, keyboard and lifecycle rather than appending an unstyled stack or replacing native Options. Resource Repair remains add-in-owned and must reuse the approved Welcome modal shell, centered viewport placement, theme/accent handling, shared controls and typography, shadow, titlebar and close affordance, focus and keyboard behavior. Do not duplicate the Wizard's step navigation; preserve actual repair status, backup/reset authorization and offline operation. Apply the same shell conventions to nested repair confirmations where applicable. Ongoing update settings and review open in Updater.exe; offline provisioning repair and Welcome remain in the add-in. Persist preferences under `%LOCALAPPDATA%\tbUI3\Updater\` with schema version and per-installation scopes. Suggested fields:
 
 | Setting | Scope | Default |

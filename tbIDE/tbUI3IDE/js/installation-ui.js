@@ -189,6 +189,7 @@
  const themeObserver=new w.MutationObserver(syncTheme);themeObserver.observe(d.documentElement,{attributes:true,attributeFilter:['class','style','data-theme']});
  startupReady();
  return {startupReady,welcomeOpen:()=>autoPending||!!welcomeShell?.open,show:which=>which==='welcome'?showWelcome():showSettings(),toast:showToast,hide:()=>{if(welcome)welcome.close();closeDialog(settingsDialog);},
+  checkForUpdates:()=>{if(!disposed)return request('check');},
   take:()=>{const next=queue.shift();return next?JSON.stringify(next):'';},
   publish:next=>{state=next;if(next.ack?.id)pending.delete(next.ack.id);renderSettings();syncTheme();if(welcome&&pending.size===0){welcome.setSnapshot(wizardSnapshot(next));syncFrame();if(welcome.getState().open&&!confirmation?.open&&!welcomeShell.contains(d.activeElement))welcomeShell.querySelector('iframe')?.focus();}},
   dispose:()=>{disposed=true;if(repairDecision){repairDecision(false);repairDecision=null;}observer.disconnect();themeObserver.disconnect();if(welcome)welcome.destroy();for(const dialog of[welcomeShell,settingsDialog,confirmation,toastHost])if(dialog)dialog.remove();style.remove();d.querySelectorAll('.tbUI3InstallationOptions,.tbUI3InstallationNav').forEach(n=>n.remove());}

@@ -30,14 +30,10 @@ IDE first).
 
 ## Current development state
 
-Current TabView appearance candidate: package **1.0.0.67** with **tbUI3IDE 1.3.0.16 / adapter v9**. TabStyle offers Toolkit Edge (default) and Explorer profiles; state rendering and overflow navigation are implemented. Native compile/run acceptance and remaining close/icon/drag/accessibility work are still open. See [TabView contract](docs/controls/UI3TabView.md) and [validation](docs/validation/2026-11-17-tabview-profiles.md). Older development bullets below record their checkpoints.
-
-
-- The working Button, form theme, icon picker and stored-icon milestones have their validation history in CHANGELOG.md. IconList L3 was added in 1.0.0.60; L4 remains planned.
-- Package 1.0.0.66 contains the integrated UI3TabView/UI3TabPage candidate and designer paint lifecycle corrections and temporary diagnostics: real page ownership, sizing and runtime switching, plus [the unified tbUI3 IDE add-in](tbIDE/README.md) for designer authoring. [API, source matrix and validation boundary](docs/controls/UI3TabView.md).
-- tbUI3Test preserves the icon harness and adds **Open MultiPage test**, opening a three-page form. Its embedded package is synchronized with the canonical package.
-- The unified tbUI3IDE add-in 1.3.0.4 includes adapter v8 and selectable Classic/Hybrid/Ribbon layouts with active-theme presentation, function-based command sizes, complete command icon fallbacks and Help under File. The latest revision exposes Form/Insert commands directly, follows Code/Form editor changes, restores the Grid toggle and refines dropdown dismissal, centered 32px/16px glyph canvases, compact spacing, a single Grid group, the full-height File rail, selectors, optional WinUI3 dropdown shadows and theme-transition cleanup; see docs/validation/2026-11-11-ribbon-geometry-theme-lifecycle.md. It hides the page toolbox button and retains the v7 changes: it completes structural deletion and generates host-scoped page names, while native page locks, toolbar help and count diagnostics remain. Package 1.0.0.65 also skips invalid native entries individually so a deleted entry cannot stop later replacement-page discovery. Shane confirms locked pages still accept child controls. The current follow-up is delete/readd state and replacement-page bounds across multiple hosts.
-- Adapter fixture, BETA 1043 paste-contract and project/mirror checks are recorded separately from the pending full IDE-loop gate. This is a candidate, not a completed WinUI fidelity milestone.
+- Core package: **1.0.0.75** (prerelease metadata correction to 0.0.0.75 remains separate pending work). Shared flicker-free paint surface; TabView/TabPage and UI3Button use it. See [rendering](docs/RENDERING.md), [TabView contract](docs/controls/UI3TabView.md) and the control inventory.
+- IDE add-in: **0.4.0.0**, TabView designer adapter v10, optional styling, Classic/Hybrid/Ribbon and integrated Welcome Wizard. Native updater **0.2.0.0** and both themes are embedded in the canonical add-in. The helper passed 58/58 native self-tests and compiled startup; add-in and live update acceptance remain open.
+- [Current IDE/updater acceptance walkthrough](tbIDE/PHASE1_HANDOFF.md) is the starting point for continuation. [Product requirements](tbIDE/INSTALLATION_MANAGER_SPEC.md) and [technical contracts](tbIDE/INSTALLATION_CONTRACTS.md) define the approved scope and implementation boundaries.
+- Earlier development checkpoints and validation history belong in CHANGELOG; outstanding work belongs in ROADMAP. See [the IDE add-in README](tbIDE/README.md) for its features and deployment.
 
 ## WinUI fidelity contract
 

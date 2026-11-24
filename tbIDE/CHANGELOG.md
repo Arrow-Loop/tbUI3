@@ -1,5 +1,9 @@
 # Changelog: tbIDE (WinUI 3 look for the twinBASIC IDE)
 
+## 2026-11-24 - Separated public release notes from development history
+
+Verified that 0.4.0.8 was published as a prerelease at 584ef47, with all three expected asset digests recorded by GitHub. The owner's publisher output confirms local compiled payload and package verification; first-run native acceptance is not established. The automatic changelog extraction had copied an outdated pre-assembly entry into public release notes. Added curated 0.4.0.8 notes and changed the publisher to consume version-specific public notes on creation and final publication, including resumed drafts. Missing notes produce a minimal testing notice with a roadmap link, not a raw changelog dump or an extra confirmation. Release-note-only changes are eligible for existing non-build draft resumption. Updated current-state documentation. Static source checks only; the GitHub connection cannot edit an already published release body, and no published tag or assets were changed.
+
 ## 2026-11-24 - Resume verified drafts after publisher-only changes
 
 The 0.4.0.8 draft was created at f33c66b before the Y/N prompt update. The later 719dc20 commit changed only the publisher and documentation, yet the existing draft check rejected it despite successful local DLL/package verification. The publisher now accepts an unpublished prerelease draft at an ancestor commit only when every changed path is on a narrow non-build-input allowlist. It still verifies existing assets, freezes the draft identity and rechecks source/account/tag/assets before final confirmation, and publishes the exact current synchronized commit. No existing asset is overwritten and no published release or tag is altered. Static source inspection only; Windows resume and publication are pending. No project or binary changed.

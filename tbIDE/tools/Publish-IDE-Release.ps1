@@ -242,15 +242,21 @@ try {
     Run-Checked $nodePath @('tbIDE/tools/verify-phase1-release.mjs',$dlls['addins/win32/tbUI3IDE.dll'],$dlls['addins/win64/tbUI3IDE.dll'],$updater) | ForEach-Object {Write-Host $_}
     Write-Host 'Local package, DLLs, checksums and embedded payloads verified.'
     Assert-NoTag $tag
+    # Public notes are maintained independently of historical engineering logs.
+    # Use the same current version-specific notes when resuming an unpublished draft.
+    $notesPath=Join-Path $work 'ReleaseNotes.md'
+    $publicNotes=Join-Path $root ('tbIDE\release-notes\'+$version+'.md')
+    $notes="Development prerelease of tbUI3IDE $version. Configured IDE build range: $($config.minIdeBuild) through $($config.maxIdeBuild). Embedded updater: $($config.updaterVersion)."
+    if ((Test-Path -LiteralPath $publicNotes -PathType Leaf) -and -not [string]::IsNullOrWhiteSpace((Get-Content -LiteralPath $publicNotes -Raw))) {
+        $notes=(Get-Content -LiteralPath $publicNotes -Raw).Trim()
+    } else {
+        # Do not copy arbitrary changelog text, invent features, or claim acceptance.
+        Write-Warning "No version-specific public release notes found for $version. Using a minimal development-testing notice."
+        $notes += [Environment]::NewLine+[Environment]::NewLine+"Development testing only. Native acceptance has not been established by release packaging. See the [known issues and acceptance roadmap](https://github.com/$repository/blob/$commit/tbIDE/ROADMAP.md) for outstanding limitations."
+    }
+    [IO.File]::WriteAllText($notesPath,$notes,[Text.UTF8Encoding]::new($false))
     $releaseId=Find-ReleaseId $tag
     if (-not $releaseId) {
-        $notesPath=Join-Path $work 'ReleaseNotes.md'
-        $changelog=Get-Content -LiteralPath 'tbIDE\CHANGELOG.md' -Raw
-        $sections=@([regex]::Split($changelog,'(?m)(?=^## )') | Where-Object {($_ -split '\r?\n',2)[0] -match ('(?<![\d.])'+[regex]::Escape($version)+'(?![\d.])')})
-        $notes="Development prerelease of tbUI3IDE $version. Supported IDE builds: $($config.minIdeBuild) through $($config.maxIdeBuild). Embedded updater: $($config.updaterVersion)."+[Environment]::NewLine+[Environment]::NewLine
-        if ($sections.Count -gt 0) {$notes+=($sections -join [Environment]::NewLine).Trim()}
-        else {$notes+='See the source changelog for this development checkpoint.'}
-        [IO.File]::WriteAllText($notesPath,$notes,[Text.UTF8Encoding]::new($false))
         Write-Host "Creating unpublished draft $tag at $commit..."
         $release=((Gh @('api','--hostname','github.com','--method','POST',"repos/$repository/releases",'-f',"tag_name=$tag",'-f',"target_commitish=$commit",'-f',"name=tbUI3IDE v$version",'-F',"body=@$notesPath",'-F','draft=true','-F','prerelease=true','-f','make_latest=false')) -join [Environment]::NewLine) | ConvertFrom-Json
         $releaseId=[string]$release.id
@@ -268,7 +274,7 @@ try {
         if ($base -cne $draftCommit) {throw 'Existing draft targets a different source history. Review the existing draft.'}
         $changes=@(Git @('diff','--no-renames','--name-only',$draftCommit,$commit,'--'))
         $allowed=@('tbIDE/tools/Publish-IDE-Release.ps1','tbIDE/Publish-Release.bat','tbIDE/README.md','tbIDE/CHANGELOG.md','tbIDE/ROADMAP.md','tbIDE/PHASE1_HANDOFF.md','docs/DIAGNOSTICS.md','README.md','CHANGELOG.md','ROADMAP.md')
-        $buildChanges=@($changes | Where-Object {$_ -cnotin $allowed})
+        $buildChanges=@($changes | Where-Object {$_ -cnotin $allowed -and $_ -cnotmatch '^tbIDE/release-notes/\d+\.\d+\.\d+\.\d+\.md$'})
         if ($buildChanges.Count -gt 0) {
             $buildChanges | ForEach-Object {Write-Host "Changed build input or unapproved path: $_"}
             throw 'Existing draft targets different build inputs. Review that draft before replacing its assets.'
@@ -303,7 +309,7 @@ try {
         $finalIds=Assert-Assets $release $expected
         foreach ($name in $names) {if ($finalIds[$name] -cne $assetIds[$name]) {throw 'Draft assets changed during confirmation.'}}
         $publishAttempted=$true
-        $published=((Gh @('api','--hostname','github.com','--method','PATCH',"repos/$repository/releases/$releaseId",'-f',"tag_name=$tag",'-f',"target_commitish=$commit",'-F','draft=false','-F','prerelease=true','-f','make_latest=false')) -join [Environment]::NewLine) | ConvertFrom-Json
+        $published=((Gh @('api','--hostname','github.com','--method','PATCH',"repos/$repository/releases/$releaseId",'-f',"tag_name=$tag",'-f',"target_commitish=$commit",'-F',"body=@$notesPath",'-F','draft=false','-F','prerelease=true','-f','make_latest=false')) -join [Environment]::NewLine) | ConvertFrom-Json
         if ($published.draft -ne $false -or $published.prerelease -ne $true -or $published.tag_name -cne $tag -or $published.target_commitish -cne $commit) {throw 'GitHub did not confirm the expected published prerelease.'}
         $null=Assert-Assets $published $expected
         $tagRef=Api "repos/$repository/git/ref/tags/$tag"

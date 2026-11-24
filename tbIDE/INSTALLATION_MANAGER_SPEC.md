@@ -1,8 +1,6 @@
 # tbUI3IDE updater and installation manager: authoritative product and implementation specification
 
-> 2026-11-23 packaging update: the separate helper-embedding pass is complete in the canonical add-in and mirror. The committed 0.2.0.0 updater and both themes are included for either DLL architecture. Updater 58/58 self-tests and compiled startup are confirmed; native add-in DLL compilation, offline bootstrap and full live-update acceptance remain pending. Phase 2/3 scope is unchanged.
-
-> 2026-11-23 implementation status: native/integration source candidate is now in the canonical projects. [PHASE1_HANDOFF.md](PHASE1_HANDOFF.md) records actual evidence and pending native acceptance. Shane subsequently split actual compiled-helper embedding into a separate Phase 1 pass after the updater works; the combined public release gate and all Phase 2/3 requirements below remain intact. No compiled or runtime acceptance is claimed by source implementation.
+**Current implementation and testing:** [PHASE1_HANDOFF.md](PHASE1_HANDOFF.md) is authoritative for actual acceptance, not this product requirements document.
 
 **Decision owner:** Shane. **Conversation decision window:** 2026-11-19 through 2026-11-23. **Status:** Approved product behavior and staged architecture; implementation gaps explicitly identified below. **Branch:** `tbui3-dev`; do not merge to `main` or publish a release without Shane's authorization.
 
@@ -38,13 +36,13 @@ The original plan favored direct overwrite. The **agreed default/recommended IDE
 ```
 
 - Every Win32/Win64 add-in DLL embeds the **same** portable Win32 native `Updater.exe` and the exact two theme files as verified binary resources. Install only the DLL that matches a given IDE architecture or both for users of both architectures. No separate EXE, loose UI resources, setup binary, PowerShell runtime, or theme copying during first install.
-- Add-in bootstrap runs on **every load**, independent of whether the Welcome Wizard has already been completed or online update notifications are disabled. Missing managed resources are silently provisioned when safe. Same verified version => no action; installed newer updater => **never downgrade**. Recognized older unmodified resource => safely upgrade when not in use; unknown/modified resources => retain and offer an explicit repair/reset choice. Preserve user-customized themes, active theme selection and toolbar preferences.
+- Add-in bootstrap runs on **every load**, independent of whether the Welcome Wizard has already been completed or online update notifications are disabled. Missing managed resources are silently provisioned when safe, before first-run onboarding; failures must not prevent access to the wizard. Same verified version => no action; installed newer updater => **never downgrade**. Recognized older unmodified resource => safely upgrade when not in use; unknown/modified resources => retain and offer an explicit repair/reset choice. Preserve user-customized themes, active theme selection and toolbar preferences.
 - `Updater.exe` is a **per-user, machine-local executable** under `%LOCALAPPDATA%`, not roaming `%APPDATA%`. Themes and add-in DLLs live in roaming `%APPDATA%` paths if host loading is confirmed. One updater EXE is shared by all IDE installations for that Windows user, while their state is distinct.
 - Use resource version + SHA-256 verification, atomic replacement, cross-process lock, canonical path validation, no reparse-point escape, fail-safe warnings for locked/corrupt/unrecognized files. A newer or older add-in launched from a second IDE must not downgrade or corrupt the shared helper. Preserve updater self-update and recovery semantics.
 - Bootstrap must work offline and not require admin elevation even if IDE is in `Program Files`. Installing the initial DLL into a protected IDE-local directory, if the user chooses that route, may itself require permission; preferred per-user add-in location avoids this.
 - **Validate before committing to AppData DLL strategy:** Does twinBASIC load user add-ins on all supported builds? What is the load order if the same add-in exists in user and IDE-local addins? Can *both* copies load? What happens with different versions and older IDEs? Do not rely on an already-loaded DLL deregistering itself to avert duplicate commands or event handlers. Prefer preventing duplicate loads, clearly documented compatibility gating, and an advanced explicit local override only if host behavior is confirmed.
 
-**Present source reality:** As of this decision, `tbUI3IDE 0.3.0.22` expects `Updater.exe` beside `twinBASIC.exe` and the themes require manual copying. The source candidate `Updater 0.1.0.1` contains the native engine; successful native acceptance and a published release have not yet been established in the reviewed documentation. Migrate this contract and associated release packaging, context paths and tests together; do not describe planned self-provisioning as already implemented.
+The current deployment contract and remaining live acceptance are described in [PHASE1_HANDOFF.md](PHASE1_HANDOFF.md) and [INSTALLATION_CONTRACTS.md](INSTALLATION_CONTRACTS.md). The former beside-IDE helper placement is superseded.
 
 ## 3. Multiple IDE roots and state model
 
@@ -133,14 +131,16 @@ Shane identified two common layouts (examples only): (1) sibling version folders
 
 1. Welcome: tbUI3IDE purpose and capabilities.
 2. Automatic/manual updates: IDE and add-in updates, themes/resources, default once-daily metadata checks, opt-out, explicit Update Now/On Exit/Remind Me Later consent; make no promise of silent downloaded updates.
-3. WinUI3 Light/Dark: visual preview and *opt-in* theme selection, retain current theme unless chosen.
+3. Themes: feature WinUI3 Light/Dark, enumerate all effective installed themes from AppData and the active IDE, and render compact previews from resolved paint data. Selection is opt-in; retain the current theme unless chosen.
 4. Classic/Hybrid/Ribbon toolbar modes: preview + actual setting control.
-5. TabView/MultiPage designer and added IDE options/commands: clear discovery tour, link to actual locations.
-6. Finish: summarize preferences, bootstrap health and where to reopen the wizard.
+5. Features: explain actual add-in capabilities and where to find IDE options/commands, without marketing core-library controls.
+6. Finish: compact, extensible preference confirmation and where to reopen the wizard. No installation health dashboard.
+
+Insert Setup directly after Welcome only when native resource/recovery status requires attention; omit it entirely for healthy installations. Repair/recheck uses native authority. Use one isolated wizard iframe with one shared Toolkit runtime and lightweight schematic theme/toolbar previews, not a full IDE or Ribbon instance per preview. Hide the channel selector until a genuine stable twinBASIC channel exists.
 
 Provide **Welcome to tbUI3IDE** via discoverable Help/add-in/IDE Options entry. Store completion by wizard schema version. A future `What's New` view can reuse rendering infrastructure; not a first-release blocker. Make keyboard navigation, focus and accessibility credible, respect Windows light/dark/accent, and support skip/back/revisit. Bootstrap failure should not prevent wizard; wizard must show actual provisioning status rather than false success.
 
-**Protected installation:** Silent bootstrap in per-user dirs should not require elevation. A downloaded IDE update that modifies protected `Program Files` paths may need a separate, user-approved scoped UAC elevation worker, with validated plan and unchanged rollback guarantees. UAC cancellation must leave current installation intact. This elevation workflow is **planned**, not already proven in the current source.
+**Protected installation:** Silent bootstrap in per-user dirs should not require elevation. A downloaded IDE update that modifies protected `Program Files` paths may need a separate, user-approved scoped UAC elevation worker, with validated plan and unchanged rollback guarantees. UAC cancellation must leave current installation intact. The scoped elevation workflow is implemented in source; protected-folder native acceptance remains open.
 
 ## 8. Shared vs archived add-in compatibility (unresolved host behavior)
 
@@ -152,7 +152,7 @@ Shane asked whether the AppData add-in could detect the archived local add-in an
 
 The starting implementation described in [Updater/README.md](Updater/README.md) is native twinBASIC, a Win32 `Updater.exe` with embedded WebView2 UI and separate hidden worker instance; no distributed PowerShell runtime. Keep existing verified transactional concepts: staged checksums, authenticated release metadata and permitted hosts, caller-consent tied to normal IDE shutdown, process wait/lock checks, separate session staging, durable per-file journal/backups, rollback, recovery, optional restart, detached updater self-update, no arbitrary remote commands, no forced kill, no unapproved elevation. The release tool PowerShell is **development tooling**, not shipped runtime.
 
-The first release must provide **the embedded DLL payloads** and a matching versioned manifest/assets, not a ZIP that merely bundles loose helper/themes while claiming self-provisioning. Use the established four-part prerelease naming for the add-in (current source `0.3.0.22`, prior baseline `0.3.0.20`) and updater (current source `0.1.0.1`), adjusting actual future build numbers to match code. GitHub development releases must be marked prerelease and must have the appropriate metadata channel. Historical add-in `1.x` aliases apply only to documented mistaken dev identities, never legitimate future stable releases. **The separate core control package `1.0.0.75` has not been migrated by updater work; do not silently renumber it.** Upstream twinBASIC release versions remain vendor-controlled.
+The first release must provide **the embedded DLL payloads** and a matching versioned manifest/assets, not a ZIP that merely bundles loose helper/themes while claiming self-provisioning. Use the established four-part prerelease naming for the add-in (current source `0.4.0.0`, prior baseline `0.3.0.20`) and updater (current source `0.2.0.0`), adjusting actual future build numbers to match code. GitHub development releases must be marked prerelease and must have the appropriate metadata channel. Historical add-in `1.x` aliases apply only to documented mistaken dev identities, never legitimate future stable releases. **The separate core control package `1.0.0.75` has not been migrated by updater work; do not silently renumber it.** Upstream twinBASIC release versions remain vendor-controlled.
 
 Preserve both add-in architectures, existing project IDs and mirrors, and avoid distributing obsolete `WinUI3IdeStyle.dll`/`TabViewDesigner.dll` alongside the unified add-in.
 

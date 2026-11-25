@@ -4,6 +4,34 @@
 
 maxIdeBuild is now 1046. WinUI3 Light sets TreeItemSelectedForeColor (#1A1A1A), which 1046 newly applies to selected tree text. See the root CHANGELOG.
 
+## 2026-11-25 - Specify component Expanders and release-note review
+
+Documented the owner's requested simplified updater component review using shared Toolkit Expanders, independent selection checkboxes and installed-to-available version displays. Source inspection identified the existing Expander header slot/animation and the selected release objects used for IDE/add-in discovery. The library manifest identifies its exact release asset/tag; the current published library release has an empty notes body. Recorded safe version-specific notes display and fallback requirements. Documentation only; runtime implementation remains pending.
+
+## 2026-11-25 - Clarify visual gate scope for every project load
+
+Updated the installation specification and roadmap after the owner clarified that the delayed visible UI transformation occurs on every project load, independently of Welcome. The presentation gate is proposed as the first safe presentation step for each load, including successive projects within one IDE process. Earliest host lifecycle access and late layout restoration require investigation. Documentation only; no runtime change.
+
+## 2026-11-25 - Startup visual stability investigation
+
+Recorded owner feedback about the delayed visible Ribbon/theme transition. Source inspection confirms appearance initialization waits for Updater.CoreReady after staged setup and theme discovery; the later project-load path also has a two-second settle timer. Documented a proposed early fail-open workspace cover, appearance-first dependency review and native timing/interaction acceptance in the installation specification and roadmap. Documentation and source inspection only; no runtime change or new startup measurement.
+
+## 2026-11-25 - Add notification memory-regression acceptance requirements
+
+Recorded the owner's caution about recurring update checks reintroducing idle memory growth. The installation specification and roadmap now require preservation of the confirmed theme revision-counter fix, bounded scheduling and resource cleanup, and sustained native memory regression measurements. Documentation only; no runtime change or new memory test was performed.
+
+## 2026-11-25 - Clarify startup discovery and reminder scope
+
+Updated the specification and roadmap to record the owner's requirement for checks on every IDE launch regardless of the previous check time. The proposed hourly interval applies to background discovery only. Documented the distinction between ordinary session dismissal and explicit persisted version-specific reminder choices. Documentation only; runtime implementation remains pending.
+
+## 2026-11-25 - Notification scheduling requirements clarification
+
+Recorded the owner's approval of the SplitButton reminder concept and rejection of once-daily discovery in the installation specification and roadmap. Documented the proposed hourly check cadence and independent per-version notification policy. Source review confirms the existing date-based QuietCheckDue gate and session latch remain in place. Documentation only; no runtime or release change.
+
+## 2026-11-25 - Native update toast visual checkpoint
+
+Owner's BETA 1045 Dark screenshot verifies the revised notification's single-column layout, readable body text, equal-height actions and green system accent. The Close glyph is missing and the shadow is not visibly apparent; those remain open. Source review confirms that Dismiss only hides the card, automatic checks are gated by local calendar date and deferral, and standalone Remind Me Later persists 24-hour deferral. Recorded the visual corrections and proposed split-button reminder behavior in ROADMAP. No runtime code or release changed.
+
 ## 2026-11-25 - Store logs and diagnostics switch (add-in 0.4.0.19, updater 0.2.0.8 source)
 
 IDE Options category renamed "tbUI3" and gains the Store logs and diagnostics row; the add-in saves it to `tbUI3\Diagnostics\StoreLogs`. The add-in, updater and development tools stop storing logs while it is off. Details and limits: root [CHANGELOG](../CHANGELOG.md). Updater.exe needs a rebuild for 0.2.0.8.

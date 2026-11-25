@@ -151,6 +151,8 @@ function Remove-Addins {
     }
 }
 
+$resetErrors=@()
+$resetCompleted=0
 while ($true) {
     Clear-Host
     Write-Host 'twinBASIC / tbUI3IDE TEST RESET' -ForegroundColor Cyan
@@ -206,8 +208,10 @@ while ($true) {
                 } else { Archive-Path $diagnostics 'Diagnostics' }
             }
         }
+        $resetCompleted++
         Write-Host "Reset complete. Backup: $backup" -ForegroundColor Green
     } catch {
+        $resetErrors+=("Option "+$choice+": "+$_.Exception.Message)
         Write-Host "RESET STOPPED: $($_.Exception.Message)" -ForegroundColor Red
         if ($_.InvocationInfo.PositionMessage) { Write-Host $_.InvocationInfo.PositionMessage }
         if ($_.ScriptStackTrace) { Write-Host $_.ScriptStackTrace }
@@ -215,4 +219,8 @@ while ($true) {
         Write-Host 'Do not proceed with a fresh-install test until the issue is resolved.'
     }
     [void](Read-Host 'Press Enter to return to the menu')
+}
+if ($env:TBUI3_RESET_RESULT_PATH) {
+    @{schema=1;completed=$resetCompleted;errors=@($resetErrors)} | ConvertTo-Json -Compress |
+        Set-Content -LiteralPath $env:TBUI3_RESET_RESULT_PATH -Encoding UTF8
 }

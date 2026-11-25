@@ -1,6 +1,6 @@
 # Development-only convenience entry point; never installed with the add-in.
 [CmdletBinding()]
-param([Parameter(Mandatory=$true)][ValidateSet('Bootstrap','Embed','Package')][string]$Action,[string]$OutputDirectory,[switch]$NoExplorer)
+param([Parameter(Mandatory=$true)][ValidateSet('Bootstrap','Embed','Package')][string]$Action,[string]$OutputDirectory,[switch]$NoExplorer,[string]$ResultPath)
 $ErrorActionPreference='Stop'
 $root=(Resolve-Path -LiteralPath (Join-Path $PSScriptRoot '..\..')).Path
 $cache=Join-Path $env:LOCALAPPDATA 'ArrowLoop\tbUI3\DevTools'
@@ -8,6 +8,8 @@ $logs=Join-Path $env:LOCALAPPDATA 'tbUI3\Diagnostics'
 $null=New-Item -ItemType Directory -Path $logs -Force
 $log=Join-Path $logs ($Action+'-'+(Get-Date -Format 'yyyyMMdd-HHmmss-fff')+'.log')
 $exitCode=1
+$resultMessage=''
+$resultState='failed'
 $transcribing=$false
 function Invoke-NodeChecked {
     param([string[]]$Arguments)
@@ -178,14 +180,24 @@ try {
         if (-not $NoExplorer) {Start-Process explorer.exe -ArgumentList ('"'+$output+'"')}
     }
     }
+    $resultState='completed'
+    $resultMessage="$Action completed."
     $exitCode=0
 } catch {
-    Write-Host ('FAILED: '+$_.Exception.Message) -ForegroundColor Red
+    $resultState='failed'
+    $resultMessage=$_.Exception.Message
+    Write-Host ('FAILED: '+$resultMessage) -ForegroundColor Red
     if ($_.InvocationInfo.PositionMessage) {Write-Host $_.InvocationInfo.PositionMessage}
     if ($_.ScriptStackTrace) {Write-Host $_.ScriptStackTrace}
     Write-Host 'Inspect the log before continuing. No release was published.'
 } finally {
     Write-Host "Log: $log"
     if ($transcribing) {Stop-Transcript | Out-Null}
+    if ($ResultPath) {
+        try {
+            @{schema=1;exitCode=$exitCode;state=$resultState;message=$resultMessage;log=$log} |
+                ConvertTo-Json -Compress | Set-Content -LiteralPath $ResultPath -Encoding UTF8
+        } catch {Write-Warning 'Could not write the operation result; see the transcript.'}
+    }
 }
 exit $exitCode

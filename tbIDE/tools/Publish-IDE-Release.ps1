@@ -1,6 +1,6 @@
 # Development-only publishing tool; never distributed with the updater.
 [CmdletBinding()]
-param([string]$PackageDirectory)
+param([string]$PackageDirectory,[string]$ResultPath)
 $ErrorActionPreference='Stop'
 $root=(Resolve-Path -LiteralPath (Join-Path $PSScriptRoot '..\..')).Path
 . (Join-Path $PSScriptRoot 'Release-SourcePaths.ps1')
@@ -12,6 +12,8 @@ $null=New-Item -ItemType Directory -Path $logs -Force
 $log=Join-Path $logs ('Publish-'+(Get-Date -Format 'yyyyMMdd-HHmmss-fff')+'.log')
 $work=$null
 $exitCode=1
+$resultMessage=''
+$resultState='failed'
 $transcribing=$false
 $publishAttempted=$false
 $draftUrl=''
@@ -124,9 +126,11 @@ function Show-ExistingPublication($Release,[string]$Tag,[string]$Commit,$Expecte
         $tagRef=Api "repos/$repository/git/ref/tags/$Tag"
         if ($tagRef.object.type -cne 'commit' -or $tagRef.object.sha -cne $Commit) {throw 'Published tag does not match the current source commit.'}
         Write-Host 'The existing publication matches the verified local package and exact commit.' -ForegroundColor Green
+        return 'already-published'
     } catch {
         Write-Warning $_.Exception.Message
         Write-Warning 'Existing publication left unchanged. This pending package was NOT published. Use a new version if you want to publish it separately.'
+        return 'different-publication'
     }
 }
 try {
@@ -330,7 +334,8 @@ try {
             $release=Api "repos/$repository/releases/$releaseId"
             $draftUrl=[string]$release.html_url
             if ($release.draft -eq $false) {
-                Show-ExistingPublication $release $tag $commit $expected
+                $resultState=Show-ExistingPublication $release $tag $commit $expected
+                $resultMessage=if ($resultState -eq 'already-published') {'Existing publication verified against this package.'} else {'Existing publication differs; this package was not published.'}
                 $exitCode=0
                 break
             }
@@ -349,6 +354,7 @@ try {
                 $choice=(Read-Host 'Press Enter after resolving the draft to recheck GitHub, or Q to cancel').Trim()
                 if ($choice -ieq 'Q') {
                     Write-Host 'Publication canceled. Existing draft and local package retained.'
+                    $resultState='canceled';$resultMessage='Publication canceled; draft and package retained.'
                     $exitCode=0
                     break
                 }
@@ -392,6 +398,7 @@ try {
         $confirmation=Read-Host "Publish $tag now? [y/N]"
         if ($confirmation.Trim() -ine 'Y') {
             Write-Host 'Draft retained. Nothing published.'
+            $resultState='draft-retained';$resultMessage='Draft retained; nothing published.'
             $exitCode=0
         } else {
             Assert-Account
@@ -408,12 +415,15 @@ try {
             $tagRef=Api "repos/$repository/git/ref/tags/$tag"
             if ($tagRef.object.type -cne 'commit' -or $tagRef.object.sha -cne $commit) {throw 'Published tag does not match the expected source commit. Inspect GitHub immediately.'}
             Write-Host "SUCCESS: $($published.html_url)" -ForegroundColor Green
-            Start-Process $published.html_url
+            $resultState='published';$resultMessage="Published and verified: $($published.html_url)"
             $exitCode=0
+            try {Start-Process $published.html_url} catch {Write-Warning 'Release is published; could not open the browser.'}
         }
     }
 } catch {
-    Write-Host ('FAILED: '+$_.Exception.Message) -ForegroundColor Red
+    $resultState='failed'
+    $resultMessage=$_.Exception.Message
+    Write-Host ('FAILED: '+$resultMessage) -ForegroundColor Red
     if ($_.InvocationInfo.PositionMessage) {Write-Host $_.InvocationInfo.PositionMessage}
     if ($_.ScriptStackTrace) {Write-Host $_.ScriptStackTrace}
     if ($publishAttempted) {Write-Host 'Publication was attempted. Check the GitHub release status before retrying.'}
@@ -423,5 +433,11 @@ try {
     if ($work -and (Test-Path -LiteralPath $work)) {Remove-Item -LiteralPath $work -Recurse -Force -ErrorAction SilentlyContinue}
     Write-Host "Log: $log"
     if ($transcribing) {Stop-Transcript | Out-Null}
+    if ($ResultPath) {
+        try {
+            @{schema=1;exitCode=$exitCode;state=$resultState;message=$resultMessage;log=$log} |
+                ConvertTo-Json -Compress | Set-Content -LiteralPath $ResultPath -Encoding UTF8
+        } catch {Write-Warning 'Could not write the operation result; see the transcript.'}
+    }
 }
 exit $exitCode

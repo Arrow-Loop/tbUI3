@@ -1,5 +1,9 @@
 # Changelog
 
+## 2026-11-25 - Development Tools final operation reporting
+
+Added a final primary operation summary after diagnostics synchronization, with child failure details and distinct publication outcomes. See the [IDE changelog](tbIDE/CHANGELOG.md). Development tooling only.
+
 ## 2026-11-24 - Correct actionable IDE update notification layout
 
 Separated the actionable notification from the passive Master toast layout and restored shared Button variants and theme tokens. Part of the existing pending add-in-only 0.4.0.14 assembly. See [IDE changelog](tbIDE/CHANGELOG.md). No helper or release change.

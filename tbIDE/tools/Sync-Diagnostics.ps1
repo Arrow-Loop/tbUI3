@@ -237,7 +237,7 @@ try {
         $remoteLine=DGitNetwork $target @('ls-remote','--exit-code',$target.url,'refs/heads/main')
         if (($remoteLine -split '\s+')[0] -cne $head) {throw 'Diagnostics mirror verification failed. A remote may have advanced; retry synchronization.'}
     }
-    Write-Host "SUCCESS: Both private diagnostics repositories synchronized at $($head.Substring(0,12))." -ForegroundColor Green
+    Write-Host "Diagnostics synchronized: both private repositories at $($head.Substring(0,12))." -ForegroundColor Gray
 } finally {
     foreach ($name in $envNames) {[Environment]::SetEnvironmentVariable($name,$saved[$name],'Process')}
     if ($locked) {$mutex.ReleaseMutex()}

@@ -30,8 +30,34 @@ function Run-Child([string]$file,[string[]]$arguments) {
     & $file @arguments | Out-Host
     if ($LASTEXITCODE -ne 0) {throw "$([IO.Path]::GetFileName($file)) failed ($LASTEXITCODE). See Diagnostics."}
 }
+function Run-ReportedChild([string]$file,[string[]]$arguments,[string]$stage) {
+    $resultPath=Join-Path $cache ('operation-'+[guid]::NewGuid().ToString('N')+'.json')
+    try {
+        # Keep the real console for Read-Host and GitHub browser authentication.
+        # Only the small structured result is read; no credential prompts captured.
+        & 'powershell.exe' -NoLogo -NoProfile -ExecutionPolicy Bypass -File $file @arguments -ResultPath $resultPath | Out-Host
+        $code=$LASTEXITCODE
+        $report=$null
+        if (Test-Path -LiteralPath $resultPath -PathType Leaf) {
+            try {
+                $candidate=Get-Content -LiteralPath $resultPath -Raw | ConvertFrom-Json
+                if ($candidate.schema -eq 1 -and $candidate.exitCode -eq $code -and $candidate.state -in @('failed','completed','published','already-published','different-publication','canceled','draft-retained')) {$report=$candidate}
+            } catch {Write-Warning 'Child result could not be read; see its transcript.'}
+        }
+        if ($code -ne 0) {
+            $reason=if ($report -and $report.message) {[string]$report.message} else {"Child process exited with code $code. See Diagnostics."}
+            if ($report -and $report.log) {$reason+=" (Log: $($report.log))"}
+            throw "$stage failed: $reason"
+        }
+        if (!$report -or $report.state -eq 'failed') {
+            return [pscustomobject]@{state='unconfirmed';message="$stage returned without a confirmed result. See its transcript."}
+        }
+        return $report
+    } finally {Remove-Item -LiteralPath $resultPath -Force -ErrorAction SilentlyContinue}
+}
 function Run-Prep([string[]]$arguments) {
-    Run-Child 'powershell.exe' (@('-NoLogo','-NoProfile','-ExecutionPolicy','Bypass','-File',$prep)+$arguments)
+    $report=Run-ReportedChild $prep $arguments ("Preparation / "+$arguments[1])
+    if ($report.state -ne 'completed') {throw $report.message}
 }
 function Find-Git {
     $cmd=Get-Command git.exe -CommandType Application -ErrorAction SilentlyContinue | Select-Object -First 1
@@ -48,8 +74,12 @@ function Sync-Diagnostics([switch]$Configure) {
     & (Join-Path $PSScriptRoot 'Sync-Diagnostics.ps1') -GitPath $diagnosticGit -Configure:$Configure
 }
 function Sync-DiagnosticsBestEffort {
-    try {Sync-Diagnostics}
-    catch {Say ("Diagnostics sync warning: "+$_.Exception.Message) Yellow}
+    try {Sync-Diagnostics | Out-Host;return $null}
+    catch {
+        $message=$_.Exception.Message
+        Say ("Diagnostics sync warning: "+$message) Yellow
+        return $message
+    }
 }
 function Git-Output([string[]]$arguments) {
     $lines=@(& $script:git @arguments)
@@ -346,11 +376,9 @@ function Publish([string]$package='') {
     Commit-Workspace 'Checkpoint verified release inputs and development notes'
     Save-Package $package (Git-Output @('rev-parse','HEAD'))
     Sync-ForPublication $package
-    $arguments=@('-NoLogo','-NoProfile','-ExecutionPolicy','Bypass','-File',$publisher)
+    $arguments=@()
     if ($package) {$arguments+=@('-PackageDirectory',$package)}
-    # Do not capture device login codes in an outer transcript.
-    & 'powershell.exe' @arguments
-    if ($LASTEXITCODE -ne 0) {throw 'Publication stopped. See the Publish diagnostic log.'}
+    $script:publicationResult=Run-ReportedChild $publisher $arguments 'Publication'
 }
 $mutex=[Threading.Mutex]::new($false,("Local\tbUI3-Development-"+$key))
 $locked=$false
@@ -359,7 +387,9 @@ $nextChoice=$InitialChoice
 try {
     try {$locked=$mutex.WaitOne(0)} catch [Threading.AbandonedMutexException] {$locked=$true}
     if (!$locked) {throw 'Development Tools is already running for this checkout.'}
-    if (!$InitialChoice -and (Test-Path -LiteralPath (Join-Path $cache 'diagnostics-sync.json') -PathType Leaf)) {Sync-DiagnosticsBestEffort}
+    if (!$InitialChoice -and (Test-Path -LiteralPath (Join-Path $cache 'diagnostics-sync.json') -PathType Leaf)) {Sync-DiagnosticsBestEffort | Out-Null}
+    $operationNames=@{'1'='Sync, build, package and publish';'2'='Build and package';'3'='Publish existing package';'4'='Reset test state';'5'='Prepare add-in';'6'='Package existing native builds';'D'='Sync Diagnostics';'C'='Configure Diagnostics Sync';'L'='Open Diagnostics'}
+    $lastDevelopmentResult=$null
     while ($true) {
         if (!$nextChoice) {
         Write-Host ''
@@ -377,35 +407,110 @@ try {
         $choice=(Read-Host 'Choose an option').Trim().ToUpperInvariant()
         } else {$choice=$nextChoice;$nextChoice=''}
         if ($choice -eq 'Q') {
-            if (Test-Path -LiteralPath (Join-Path $cache 'diagnostics-sync.json') -PathType Leaf) {Sync-DiagnosticsBestEffort}
+            if (Test-Path -LiteralPath (Join-Path $cache 'diagnostics-sync.json') -PathType Leaf) {
+                $quitWarning=Sync-DiagnosticsBestEffort
+                if ($quitWarning) {Write-Host "Diagnostics sync warning: $quitWarning" -ForegroundColor Yellow}
+            }
+            if ($lastDevelopmentResult) {
+                Write-Host ("Last development operation: "+$lastDevelopmentResult.text) -ForegroundColor $lastDevelopmentResult.color
+            }
             break
         }
+        if (!$operationNames.ContainsKey($choice)) {continue}
+        $operation=$operationNames[$choice]
+        $failureMessage=''
+        $syncWarning=$null
+        $synced=$false
+        $detail=''
+        $resultColor='Green'
+        $resultText='COMPLETED'
+        $package=$null
+        $script:publicationResult=$null
         try {
-            if ($choice -eq 'C') {Sync-Diagnostics -Configure;continue}
-            if ($choice -eq 'D') {Sync-Diagnostics;continue}
-            if ($choice -eq 'L') {Invoke-Item -LiteralPath $logs;continue}
-            if ($choice -eq '4') {& (Join-Path $root 'tbIDE\Reset-TestState.bat');if ($LASTEXITCODE -ne 0) {throw 'Test reset failed. See Diagnostics.'};continue}
-            if ($choice -notin @('1','2','3','5','6')) {continue}
-            $script:git=Find-Git
-            $env:PATH=(Split-Path -Parent $script:git)+';'+$env:PATH
-            if ($choice -in @('1','2','5') -and (Sync-BeforeBuild)) {$restartChoice=$choice;break}
             switch ($choice) {
-                '1' {$package=Build-Package;Publish $package}
-                '2' {$package=Build-Package;Invoke-Item -LiteralPath $package}
-                '3' {Publish}
-                '5' {Assert-Closed; $head=Assert-Checkout -ForBuild;Run-Prep @('-Action','Embed');Save-Generated $head;Commit-Workspace 'Checkpoint prepared add-in resources' -GeneratedOnly;Save-Generated (Git-Output @('rev-parse','HEAD'))}
-                '6' {$package=Package-Existing;Invoke-Item -LiteralPath $package}
+                'C' {Sync-Diagnostics -Configure}
+                'D' {Sync-Diagnostics}
+                'L' {Invoke-Item -LiteralPath $logs}
+                '4' {
+                    $resetResult=Join-Path $cache ('reset-'+[guid]::NewGuid().ToString('N')+'.json')
+                    $previousResetResult=$env:TBUI3_RESET_RESULT_PATH
+                    try {
+                        $env:TBUI3_RESET_RESULT_PATH=$resetResult
+                        & (Join-Path $root 'tbIDE\Reset-TestState.bat')
+                        $resetExit=$LASTEXITCODE
+                        if ($resetExit -ne 0) {throw "Test reset process failed ($resetExit)."}
+                        if (Test-Path -LiteralPath $resetResult -PathType Leaf) {
+                            $report=Get-Content -LiteralPath $resetResult -Raw | ConvertFrom-Json
+                            if ($report.schema -ne 1) {throw 'Reset result could not be verified.'}
+                            if (@($report.errors).Count) {throw ('Reset issue(s): '+(@($report.errors) -join '; '))}
+                            $detail="$($report.completed) reset operation(s) completed."
+                            if (!$report.completed) {$resultText='NO RESET REQUESTED';$resultColor='Yellow'}
+                        } else {$resultText='RESET RESULT UNCONFIRMED';$resultColor='Yellow'}
+                    } finally {
+                        [Environment]::SetEnvironmentVariable('TBUI3_RESET_RESULT_PATH',$previousResetResult,'Process')
+                        Remove-Item -LiteralPath $resetResult -Force -ErrorAction SilentlyContinue
+                    }
+                }
+                default {
+                    $script:git=Find-Git
+                    $env:PATH=(Split-Path -Parent $script:git)+';'+$env:PATH
+                    if ($choice -in @('1','2','5') -and (Sync-BeforeBuild)) {$restartChoice=$choice}
+                    else {
+                        switch ($choice) {
+                            '1' {$package=Build-Package;Publish $package}
+                            '2' {$package=Build-Package;Invoke-Item -LiteralPath $package}
+                            '3' {Publish}
+                            '5' {Assert-Closed; $head=Assert-Checkout -ForBuild;Run-Prep @('-Action','Embed');Save-Generated $head;Commit-Workspace 'Checkpoint prepared add-in resources' -GeneratedOnly;Save-Generated (Git-Output @('rev-parse','HEAD'))}
+                            '6' {$package=Package-Existing;Invoke-Item -LiteralPath $package}
+                        }
+                        if ($script:publicationResult) {
+                            $detail=$script:publicationResult.message
+                            switch ($script:publicationResult.state) {
+                                'published' {$resultText='PUBLISHED'}
+                                'already-published' {$resultText='EXISTING PUBLICATION VERIFIED'}
+                                'draft-retained' {$resultText='DRAFT RETAINED';$resultColor='Yellow'}
+                                'canceled' {$resultText='PUBLICATION CANCELED';$resultColor='Yellow'}
+                                'different-publication' {$resultText='PACKAGE NOT PUBLISHED';$resultColor='Yellow'}
+                                default {$resultText='PUBLICATION RESULT UNCONFIRMED';$resultColor='Yellow'}
+                            }
+                        }
+                    }
+                }
             }
         } catch {
             $failure=$_
-            Say ("FAILED: "+$failure.Exception.Message) Red
+            $failureMessage=$failure.Exception.Message
+            Say ("FAILED: "+$failureMessage) Red
             if ($failure.ScriptStackTrace) {Add-Content -LiteralPath $sessionLog -Value $failure.ScriptStackTrace}
         } finally {
-            # Child tools have exited and flushed their logs, on success or failure.
-            # Never mask the original build/reset/publication result.
-            if ($choice -in @('1','2','3','4','5','6') -and !$restartChoice) {Sync-DiagnosticsBestEffort}
+            # Log the primary outcome before syncing; print it LAST after all
+            # network chatter. The diagnostics result never replaces it.
+            if (!$restartChoice) {
+                if ($failureMessage) {$resultText='FAILED';$resultColor='Red';$detail=$failureMessage}
+                $summary="$resultText - $operation"
+                if ($detail) {$summary+=": $detail"}
+                Say ("Operation result: "+$summary) $resultColor
+                if ($choice -in @('1','2','3','4','5','6')) {
+                    $syncWarning=Sync-DiagnosticsBestEffort
+                    $synced=!$syncWarning
+                    if ($syncWarning -and $resultColor -eq 'Green') {
+                        $resultText+=' WITH DIAGNOSTICS WARNING'
+                        $resultColor='Yellow'
+                        $summary="$resultText - $operation"
+                        if ($detail) {$summary+=": $detail"}
+                    }
+                }
+                Write-Host ''
+                Write-Host '-------------------- OPERATION SUMMARY --------------------' -ForegroundColor Cyan
+                if ($package) {Write-Host "Verified package: $package"}
+                Write-Host "Diagnostics: $logs"
+                if ($syncWarning) {Write-Host "Diagnostics sync failed: $syncWarning" -ForegroundColor Yellow}
+                elseif ($synced) {Write-Host 'Diagnostics sync: both repositories verified.' -ForegroundColor Gray}
+                Write-Host $summary -ForegroundColor $resultColor
+                if ($choice -in @('1','2','3','4','5','6')) {$lastDevelopmentResult=@{text=$summary;color=$resultColor}}
+            }
         }
-        Write-Host "Diagnostics: $logs"
+        if ($restartChoice) {break}
     }
 } finally {if ($locked) {$mutex.ReleaseMutex()};$mutex.Dispose()}
 if ($restartChoice) {

@@ -6,7 +6,7 @@ Outstanding and deferred work only. Completed implementation and actual validati
 
 The active [IDE roadmap](tbIDE/ROADMAP.md) owns add-in/updater work (including guarded 0.4.0.14 Options Button and update notification assembly and native visual acceptance), including the approved combined first-release gate and later installation-manager phases. The [Phase 1 handoff](tbIDE/PHASE1_HANDOFF.md) owns the live acceptance sequence. Do not substitute older candidate versions, source-only checks or helper self-tests for compiled DLL and live acceptance. The IDE roadmap tracks native Welcome-first startup and standalone updater acceptance on 0.4.0.7, following the published 0.4.0.6 checkpoint. The release distributes the add-in ZIP only; the IDE roadmap owns real package generation, embedded-resource upgrade acceptance and the current 0.4.0.6 designer isolation and Ribbon compatibility acceptance.
 
-The IDE roadmap also tracks Windows acceptance of the developer test reset utility, including the backup-path correction, and the unified development tool's dual-account private diagnostics mirroring and interactive conflicting-draft recovery; these are separate from shipped updater behavior.
+The IDE roadmap also tracks Windows acceptance of the developer test reset utility, including the backup-path correction, and the unified development tool's dual-account private diagnostics mirroring and interactive conflicting-draft recovery and final operation reporting; these are separate from shipped updater behavior.
 
 ## Future IDE authoring: Wizard Builder
 

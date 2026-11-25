@@ -1,5 +1,9 @@
 # Changelog: tbIDE (WinUI 3 look for the twinBASIC IDE)
 
+## 2026-11-25 - Native update toast visual checkpoint
+
+Owner's BETA 1045 Dark screenshot verifies the revised notification's single-column layout, readable body text, equal-height actions and green system accent. The Close glyph is missing and the shadow is not visibly apparent; those remain open. Source review confirms that Dismiss only hides the card, automatic checks are gated by local calendar date and deferral, and standalone Remind Me Later persists 24-hour deferral. Recorded the visual corrections and proposed split-button reminder behavior in ROADMAP. No runtime code or release changed.
+
 ## 2026-11-25 - Store logs and diagnostics switch (add-in 0.4.0.19, updater 0.2.0.8 source)
 
 IDE Options category renamed "tbUI3" and gains the Store logs and diagnostics row; the add-in saves it to `tbUI3\Diagnostics\StoreLogs`. The add-in, updater and development tools stop storing logs while it is off. Details and limits: root [CHANGELOG](../CHANGELOG.md). Updater.exe needs a rebuild for 0.2.0.8.

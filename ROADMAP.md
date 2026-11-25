@@ -2,7 +2,7 @@
 
 Outstanding and deferred work only. Completed implementation and actual validation belong in [CHANGELOG.md](CHANGELOG.md). Start with [README.md](README.md), [AGENTS.md](AGENTS.md) and the relevant technical reference. The core package and IDE add-in have independent version and acceptance gates.
 
-## Diagnostics switch alignment pass (committed; after the idle memory fix is confirmed)
+## Diagnostics switch alignment pass (committed; unblocked 2026-11-25, idle memory fix confirmed in add-in 0.4.0.17)
 
 Owner request, 2026-11-25. Implements the logging and diagnostics hard requirement in [AGENTS.md](AGENTS.md#logging-and-diagnostics-hard-requirement-owner-2026-11-25), which is already binding for new work:
 

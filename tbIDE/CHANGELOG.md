@@ -1,5 +1,9 @@
 # Changelog: tbIDE (WinUI 3 look for the twinBASIC IDE)
 
+## 2026-11-25 - Idle leak confirmed fixed; leak probe removed (add-in 0.4.0.18 source)
+
+Owner native check of 0.4.0.17 with probe 0: Commit size of the IDE process stays flat while idle (it briefly dropped), so the per-tick theme inventory read was the leak. The temporary LeakProbe registry switch is removed from MainModule and TabViewDesignerController, and option M is removed from Development-Tools.bat and the README. A leftover `LeakProbe` value in the registry is now ignored and harmless. Version bumped to 0.4.0.18 because 0.4.0.17 is published.
+
 ## 2026-11-25 - Idle leak traced to the updater poll; theme inventory no longer fetched every tick (add-in 0.4.0.17 source)
 
 Owner probe runs on 0.4.0.16: probe 1 (updater poll off after start-up) kept Commit size static, while probes 2 and 4 still leaked. The options timer kept running under probe 1 (several small page calls a second), so small page calls are not the leak. The only large per-tick read in the updater poll was `window.__tbUI3Themes.inventory()`, the full JSON of every installed theme, fetched every 750 ms only to compare it with the last copy. The theme service now keeps a change counter (`revision()`), and the poll reads that short value, fetching and republishing the inventory only when it changes. This is inferred from the probe results and has not yet been confirmed natively; the probe stays until it is.

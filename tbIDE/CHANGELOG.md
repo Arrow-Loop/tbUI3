@@ -1,5 +1,9 @@
 # Changelog: tbIDE (WinUI 3 look for the twinBASIC IDE)
 
+## 2026-11-25 - Startup visual stability investigation
+
+Recorded owner feedback about the delayed visible Ribbon/theme transition. Source inspection confirms appearance initialization waits for Updater.CoreReady after staged setup and theme discovery; the later project-load path also has a two-second settle timer. Documented a proposed early fail-open workspace cover, appearance-first dependency review and native timing/interaction acceptance in the installation specification and roadmap. Documentation and source inspection only; no runtime change or new startup measurement.
+
 ## 2026-11-25 - Add notification memory-regression acceptance requirements
 
 Recorded the owner's caution about recurring update checks reintroducing idle memory growth. The installation specification and roadmap now require preservation of the confirmed theme revision-counter fix, bounded scheduling and resource cleanup, and sustained native memory regression measurements. Documentation only; no runtime change or new memory test was performed.

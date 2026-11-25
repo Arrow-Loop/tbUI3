@@ -1,5 +1,9 @@
 # Changelog: tbIDE (WinUI 3 look for the twinBASIC IDE)
 
+## 2026-11-25 - Specify component Expanders and release-note review
+
+Documented the owner's requested simplified updater component review using shared Toolkit Expanders, independent selection checkboxes and installed-to-available version displays. Source inspection identified the existing Expander header slot/animation and the selected release objects used for IDE/add-in discovery. The library manifest identifies its exact release asset/tag; the current published library release has an empty notes body. Recorded safe version-specific notes display and fallback requirements. Documentation only; runtime implementation remains pending.
+
 ## 2026-11-25 - Clarify visual gate scope for every project load
 
 Updated the installation specification and roadmap after the owner clarified that the delayed visible UI transformation occurs on every project load, independently of Welcome. The presentation gate is proposed as the first safe presentation step for each load, including successive projects within one IDE process. Earliest host lifecycle access and late layout restoration require investigation. Documentation only; no runtime change.

@@ -29,6 +29,8 @@ Private Class TabViewDesignerController
         On Error GoTo Failed
         If Not m_Installed Then
             Install
+        ElseIf (CLng(Val(GetSetting("WinUI3IdeStyle", "Options", "LeakProbe", "0"))) And 4) <> 0 Then
+            LoadTimer.Enabled = False ' Temporary leak probe; see MainModule.
         Else
             Dim detail As String
             detail = RunJs("window.__tbUI3TabDesigner ? window.__tbUI3TabDesigner.lastError : ''")

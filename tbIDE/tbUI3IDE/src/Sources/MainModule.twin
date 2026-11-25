@@ -68,8 +68,15 @@ Private Class tbUI3IDEAddin
     Private Const OptionDesc As String = "The WinUI3 IDE Style add-in restyles what the theme cannot reach, such as the toolbar, " & _
         "dialogs and lists. Turn it off to see the WinUI3 theme on its own. Tab management stays enabled. Takes effect at once."
 
+    ' Temporary leak probe (2026-11-25): registry value WinUI3IdeStyle\Options\LeakProbe, read once at load.
+    ' Bits switch off one idle poller each so the owner can find which one grows the IDE process:
+    ' 1 = updater poll after start-up, 2 = options timer, 4 = TabView designer error poll. Remove once found.
+    Private LeakProbe As Long
+
     Public Sub New(ByVal Host As Host)
         Set Me.Host = Host
+        LeakProbe = CLng(Val(GetSetting(SettingsApp, SettingsSection, "LeakProbe", "0")))
+        If LeakProbe <> 0 Then Log "leak probe " & LeakProbe & ": idle pollers switched off: " & IIf(LeakProbe And 1, "updater ", "") & IIf(LeakProbe And 2, "options ", "") & IIf(LeakProbe And 4, "designer", "")
         On Error GoTo UpdaterFailed
         Set Updater = New UpdaterController(Host)
         Set StartupTimer = New AddinTimer
@@ -97,7 +104,7 @@ Private Class tbUI3IDEAddin
                 TabDesigner.ProjectLoaded
                 StartupLog "designer initialization", designerStarted
                 StartupTimer.Interval = 750
-            Else
+            ElseIf (LeakProbe And 1) = 0 Then
                 Updater.Poll
             End If
         End If
@@ -320,6 +327,7 @@ Private Class tbUI3IDEAddin
 
     Private Sub OptionTimer_Timer()
         On Error GoTo Failed
+        If (LeakProbe And 2) <> 0 And ToolbarInstalled Then Exit Sub
         If Not ToolbarInstalled Then
             InstallToolbar
             If ToolbarInstalled And Not Updater Is Nothing Then Updater.ToolbarStarted True

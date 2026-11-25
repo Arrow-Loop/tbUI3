@@ -354,6 +354,26 @@ function Build-Package {
     Say "SUCCESS: $output" Green
     return $output
 }
+# Temporary idle memory leak probe (2026-11-25). The add-in reads this value once when it loads;
+# each bit switches off one idle poller. Remove with the add-in probe once the leak is found.
+function Set-LeakProbe {
+    $key='HKCU:\Software\VB and VBA Program Settings\WinUI3IdeStyle\Options'
+    $current=(Get-ItemProperty -LiteralPath $key -Name 'LeakProbe' -ErrorAction SilentlyContinue).LeakProbe
+    if (!$current) {$current='0'}
+    Write-Host ''
+    Write-Host "MEMORY LEAK PROBE (current: $current)" -ForegroundColor Cyan
+    Write-Host '  0  Normal (all background checks on)'
+    Write-Host '  7  All three background checks off'
+    Write-Host '  1  Updater check off'
+    Write-Host '  2  IDE Options check off'
+    Write-Host '  4  TabView designer check off'
+    $value=(Read-Host 'Choose a probe value').Trim()
+    if ($value -notin @('0','1','2','4','7')) {throw "Unsupported probe value '$value'."}
+    if (!(Test-Path -LiteralPath $key)) {New-Item -Path $key -Force | Out-Null}
+    Set-ItemProperty -LiteralPath $key -Name 'LeakProbe' -Value $value -Type String
+    $script:probeDetail="LeakProbe set to $value. Restart twinBASIC, check the Debug Console for 'leak probe', then watch Commit size."
+}
+
 function Publish([string]$package='') {
     Assert-Repository
     $head=Git-Output @('rev-parse','HEAD')
@@ -388,7 +408,7 @@ try {
     try {$locked=$mutex.WaitOne(0)} catch [Threading.AbandonedMutexException] {$locked=$true}
     if (!$locked) {throw 'Development Tools is already running for this checkout.'}
     if (!$InitialChoice -and (Test-Path -LiteralPath (Join-Path $cache 'diagnostics-sync.json') -PathType Leaf)) {Sync-DiagnosticsBestEffort | Out-Null}
-    $operationNames=@{'1'='Sync, build, package and publish';'2'='Build and package';'3'='Publish existing package';'4'='Reset test state';'5'='Prepare add-in';'6'='Package existing native builds';'D'='Sync Diagnostics';'C'='Configure Diagnostics Sync';'L'='Open Diagnostics'}
+    $operationNames=@{'1'='Sync, build, package and publish';'2'='Build and package';'3'='Publish existing package';'4'='Reset test state';'5'='Prepare add-in';'6'='Package existing native builds';'D'='Sync Diagnostics';'C'='Configure Diagnostics Sync';'L'='Open Diagnostics';'M'='Memory leak probe'}
     $lastDevelopmentResult=$null
     while ($true) {
         if (!$nextChoice) {
@@ -403,6 +423,7 @@ try {
         Write-Host '  D  Sync Diagnostics (both repositories)'
         Write-Host '  C  Configure Diagnostics Sync'
         Write-Host '  L  Open Diagnostics'
+        Write-Host '  M  Memory leak probe (temporary)'
         Write-Host '  Q  Quit'
         $choice=(Read-Host 'Choose an option').Trim().ToUpperInvariant()
         } else {$choice=$nextChoice;$nextChoice=''}
@@ -431,6 +452,7 @@ try {
                 'C' {Sync-Diagnostics -Configure}
                 'D' {Sync-Diagnostics}
                 'L' {Invoke-Item -LiteralPath $logs}
+                'M' {Set-LeakProbe;$detail=$script:probeDetail}
                 '4' {
                     $resetResult=Join-Path $cache ('reset-'+[guid]::NewGuid().ToString('N')+'.json')
                     $previousResetResult=$env:TBUI3_RESET_RESULT_PATH

@@ -1,5 +1,9 @@
 # Changelog: tbIDE (WinUI 3 look for the twinBASIC IDE)
 
+## 2026-11-25 - Temporary leak probe (add-in 0.4.0.14 source)
+
+The owner's native measurement after 04d35a6 showed the same idle growth (about 0.5 to 1 MB per second), so the UISettings and page-object caching were not the cause. They stay as harmless efficiency changes. Since the add-in runs in the compiler process and every RunJs and Eval is a round trip to the IDE page, the leading suspect is now the native idle polling: the updater poll every 750 ms, the options timer every second and the designer error poll every 1.5 s, roughly ten page calls a second. A registry value `HKCU\Software\VB and VBA Program Settings\WinUI3IdeStyle\Options\LeakProbe`, read once at load and echoed to the debug console, switches these off by bits (1 updater, 2 options, 4 designer) so one build can isolate the source. It is temporary and is to be removed once the cause is found. Development-Tools.bat gains option M (Memory leak probe), which shows the current value and sets 0, 7, 1, 2 or 4 without editing the registry by hand.
+
 ## 2026-11-25 - Reconciled the 0.4.0.14 build inputs
 
 The pending assembly request still named the project before the idle-memory correction. Compared packed entries and mirrors to confirm that the current project contains both the updated notification and Options UI and the idle-memory correction. Reconciled the assembly pin to the reviewed project, then ran standard preparation, which refreshed the bundle and removed the fulfilled request. Only the updater payload and its manifest changed inside the reconciled add-in project.

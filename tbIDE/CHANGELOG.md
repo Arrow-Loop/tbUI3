@@ -1,5 +1,9 @@
 # Changelog: tbIDE (WinUI 3 look for the twinBASIC IDE)
 
+## 2026-11-25 - Single-step development release publication approval
+
+Selecting Development Tools option 1 or 3 now explicitly approves publication of the verified development prerelease. The publisher receives a per-invocation PublishApproved switch and skips the duplicate Y/N prompt only on that path. Standalone publication retains its confirmation. All source/account/asset/tag checks, conflicting-draft review and cancellation, immutable published-release handling and final result verification remain unchanged. No change to build-only options, runtime versions or published releases. Source inspection only; live publication acceptance remains pending.
+
 ## 2026-11-25 - Idle leak confirmed fixed; leak probe removed (add-in 0.4.0.18 source)
 
 Owner native check of 0.4.0.17 with probe 0: Commit size of the IDE process stays flat while idle (it briefly dropped), so the per-tick theme inventory read was the leak. The temporary LeakProbe registry switch is removed from MainModule and TabViewDesignerController, and option M is removed from Development-Tools.bat and the README. A leftover `LeakProbe` value in the registry is now ignored and harmless. Version bumped to 0.4.0.18 because 0.4.0.17 is published.

@@ -1,5 +1,9 @@
 # Changelog
 
+## 2026-11-25 - Remove redundant unified release publication prompt
+
+Development Tools publishing selections now authorize the verified development prerelease without a second Y/N prompt. Standalone confirmation and all release verification gates remain. See the [IDE changelog](tbIDE/CHANGELOG.md). Development tooling only.
+
 ## 2026-11-25 - Logging and diagnostics hard requirement documented
 
 Owner rule, recorded in AGENTS.md as a hard requirement for every person and AI agent: all logging and diagnostics in the repository, existing and future, must honor one tbUI3 IDE Options switch ("Store logs and diagnostics") and write only to `%LOCALAPPDATA%\tbUI3\Diagnostics\` through `DiagnosticPaths.twin`, with no TEMP, project-folder or EXE-folder fallback. Logging stays in the code between versions, and the switch controls it. docs/DIAGNOSTICS.md, README.md, HANDOFF.md and tbIDE/README.md point to the rule. docs/RENDERING.md and docs/PROPERTY_PAGE_GUIDE.md no longer describe the old next-to-project and `%TEMP%` log locations. Documentation only: no code changed, and the switch and logger alignment are a ROADMAP item.

@@ -376,7 +376,8 @@ function Publish([string]$package='') {
     Commit-Workspace 'Checkpoint verified release inputs and development notes'
     Save-Package $package (Git-Output @('rev-parse','HEAD'))
     Sync-ForPublication $package
-    $arguments=@()
+    # Selecting a publishing menu option is explicit approval for this verified development package.
+    $arguments=@('-PublishApproved')
     if ($package) {$arguments+=@('-PackageDirectory',$package)}
     $script:publicationResult=Run-ReportedChild $publisher $arguments 'Publication'
 }

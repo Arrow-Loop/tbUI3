@@ -9,7 +9,7 @@ Owner request, 2026-11-25. Implements the logging and diagnostics hard requireme
 - Add the "Store logs and diagnostics" toggle to the tbUI3 category in IDE Options, saved in one shared setting that the add-in, updater, control package (design and run time, including property pages and the paint trace), reference packages, test projects and development tools can all read.
 - Route every existing logger through `DiagnosticPaths.twin` and that switch. Known ones are listed in [docs/DIAGNOSTICS.md](docs/DIAGNOSTICS.md). Remove per-component on/off constants such as `PROPERTY_PAGE_LOG_ENABLED`, or keep them only as detail levels under the switch.
 - Add a test-suite check that fails on any file write that bypasses the shared helper or the switch, and on any TEMP, App.Path or project-folder log path.
-- Decide the default (on or off) and how a compiled app outside the IDE reads the setting. Both are open owner questions.
+- Owner decisions (2026-11-25): the switch defaults to **on** until tbUI3 1.0. Compiled apps running outside the IDE do **not** read the switch at run time; they write logs only if it was on when the app was compiled (bake the value in at build time, for example as a compiler constant), at least until 1.0.
 
 ## Immediate priority: IDE add-in and updater Phase 1
 

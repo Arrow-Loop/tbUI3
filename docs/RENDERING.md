@@ -81,4 +81,4 @@ End Class
 
 ## When something still flickers
 
-Set the environment variable `TBUI3_PAINT_TRACE=1` before starting the IDE or the built app. Every erase, paint (with its dirty rectangle, duration and HRESULT), invalidation and hover change is written to `tbUI3-paint.log` next to the project or EXE, or `%TEMP%` if that folder is read-only. A screen recorder often misses a flash shorter than one frame; a phone's slow-motion video does not.
+Set the environment variable `TBUI3_PAINT_TRACE=1` before starting the IDE or the built app. Every erase, paint (with its dirty rectangle, duration and HRESULT), invalidation and hover change is written to `tbUI3-paint.log` in `%LOCALAPPDATA%\tbUI3\Diagnostics\` (see [DIAGNOSTICS.md](DIAGNOSTICS.md); storage is governed by the tbUI3 "Store logs and diagnostics" switch once it exists). A screen recorder often misses a flash shorter than one frame; a phone's slow-motion video does not.

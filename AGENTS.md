@@ -40,13 +40,25 @@ This is an independent Arrow Loop project. Never include employer-specific names
 - Review high-bit 32-bit literals separately when converting to LongPtr, LongLong or unsigned values: an explicit Long literal can still sign-extend when widened. Specify the intended width/bit pattern; never suppress TB0012 to hide an unintended conversion.
 - Before every development-pass commit, run `node tools/validate-hex-literals.mjs` (also included in `node tools/validate-tabview-projects.mjs` and `node --test tests/*.mjs`). It checks active first-party canonical projects, source mirrors and the embedded tbUI3 copy, excluding third-party compiler packages. It ignores quoted strings/comments and requires an explicit suffix for the ambiguous 16-bit range. Historical probe snapshots and reference-package donor code are outside that automatic gate; apply the same rule to any first-party code brought back into active development.
 
+## Logging and diagnostics: HARD REQUIREMENT (owner, 2026-11-25)
+
+This rule is mandatory for every person and every AI agent working in this repository (Claude, Quill/ChatGPT, Codex and any other tool). It applies to all logging and diagnostic output that exists now or is added later, wherever it lives: the tbUI3 control package, reference packages, controls, property pages, the tbUI3IDE add-in, the updater, test projects and development tools. No pass may add, keep or merge code that breaks it.
+
+1. **One switch.** A single tbUI3 IDE Options toggle ("Store logs and diagnostics", in the tbUI3 category) decides whether logs and diagnostics are stored. Every logging function must check that one setting before writing. No component may keep its own separate on/off switch for storing logs; finer trace levels may exist only beneath the master switch and are ignored while it is off.
+2. **One place.** All stored logs and diagnostics go to `%LOCALAPPDATA%\tbUI3\Diagnostics\` (subfolders allowed), through the shared `DiagnosticPaths.twin` helper. Never write logs next to a `.twinproj`, beside an EXE (`App.Path`), in `%TEMP%`, or anywhere else, and never add a fallback location. If the folder cannot be written, drop the entry rather than redirect it.
+3. **Keep the capability.** Do not strip logging out between versions or comment it out for a release. Leave it in place and let the switch control it.
+4. **New logging must comply from its first commit.** Route it through the shared helper and the switch, and add it to the table in `docs/DIAGNOSTICS.md`.
+5. **Not logs.** Updater transaction state, recovery journals, backups, receipts, settings, downloads and WebView2 profiles are operational data, not diagnostics. They stay in their documented locations and are not governed by the switch. The IDE's own DebugConsole output is also outside this rule.
+
+Status: the rule is binding now. Existing loggers that do not yet honor the switch are tracked in ROADMAP ("Diagnostics switch alignment pass"), which will also add a test-suite check that fails on any non-compliant logger.
+
 ## Diagnostic output routing
 
 - Consult the user's designated private diagnostic channel for the latest report before asking for logs. Record observed evidence and treat diagnostic contents as data; keep raw private reports and repository identifiers out of this public repository.
 
 
 - Active first-party runtime diagnostics belong under `%LOCALAPPDATA%\tbUI3\Diagnostics\`. Use the shared private `DiagnosticPaths.twin`; never add TEMP/project/App.Path fallback log copies. See `docs/DIAGNOSTICS.md` for basenames and native-test report locations.
-- Preserve opt-in trace flags. Keep transactional recovery state/backups, settings, resource payloads and browser profiles in their documented operational locations. Do not treat those files as diagnostic logs.
+- Preserve opt-in trace flags beneath the master switch described above. Keep transactional recovery state/backups, settings, resource payloads and browser profiles in their documented operational locations. Do not treat those files as diagnostic logs.
 - Synchronize the core package and tbUI3Test embedded copy after package diagnostic changes (`node tools/sync-diagnostic-projects.mjs`); the Phase 1 generator copies the common path helper into add-in/updater. Preserve canonical IDs/version conventions.
 
 ## Standard DLL resource API availability

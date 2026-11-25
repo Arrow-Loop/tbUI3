@@ -4,7 +4,7 @@ This file is a navigation entry point, not a parallel status diary. Use the curr
 
 | Need | Authoritative document |
 | --- | --- |
-| Development rules and safe coordination | [AGENTS.md](AGENTS.md) |
+| Development rules and safe coordination (including the logging and diagnostics hard requirement) | [AGENTS.md](AGENTS.md) |
 | Project overview and current component versions | [README.md](README.md) |
 | Core controls, outstanding work and deferred decisions | [ROADMAP.md](ROADMAP.md) |
 | Add-in, Ribbon and updater outstanding work | [tbIDE/ROADMAP.md](tbIDE/ROADMAP.md) |

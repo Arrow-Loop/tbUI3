@@ -63,7 +63,7 @@ The OK, Cancel and Apply buttons, the tab and the dialog belong to the IDE's pro
 
 ## 6. Diagnosing
 
-- `PROPERTY_PAGE_LOG_ENABLED` in `UI3Window.twin` writes `%TEMP%\tbUI3-propertypage.log`. Shane wants it left on until the property page work is completely finished.
+- `PROPERTY_PAGE_LOG_ENABLED` in `UI3Window.twin` writes `tbUI3-propertypage.log` in `%LOCALAPPDATA%\tbUI3\Diagnostics\` (see [DIAGNOSTICS.md](DIAGNOSTICS.md)); it will sit beneath the tbUI3 "Store logs and diagnostics" switch after the alignment pass. Shane wants it left on until the property page work is completely finished.
 - Log the facts that settle a question: window classes, parents, rectangles, which hook answered, and the window's own pixel before and after a paint or erase. Several builds were spent on guesses that a log would have settled in one.
 - Present designs as proposals until Shane has built and run them, and record only observed results as validated.
 

@@ -2,6 +2,15 @@
 
 Outstanding and deferred work only. Completed implementation and actual validation belong in [CHANGELOG.md](CHANGELOG.md). Start with [README.md](README.md), [AGENTS.md](AGENTS.md) and the relevant technical reference. The core package and IDE add-in have independent version and acceptance gates.
 
+## Diagnostics switch alignment pass (committed; after the idle memory fix is confirmed)
+
+Owner request, 2026-11-25. Implements the logging and diagnostics hard requirement in [AGENTS.md](AGENTS.md#logging-and-diagnostics-hard-requirement-owner-2026-11-25), which is already binding for new work:
+
+- Add the "Store logs and diagnostics" toggle to the tbUI3 category in IDE Options, saved in one shared setting that the add-in, updater, control package (design and run time, including property pages and the paint trace), reference packages, test projects and development tools can all read.
+- Route every existing logger through `DiagnosticPaths.twin` and that switch. Known ones are listed in [docs/DIAGNOSTICS.md](docs/DIAGNOSTICS.md). Remove per-component on/off constants such as `PROPERTY_PAGE_LOG_ENABLED`, or keep them only as detail levels under the switch.
+- Add a test-suite check that fails on any file write that bypasses the shared helper or the switch, and on any TEMP, App.Path or project-folder log path.
+- Decide the default (on or off) and how a compiled app outside the IDE reads the setting. Both are open owner questions.
+
 ## Immediate priority: IDE add-in and updater Phase 1
 
 The active [IDE roadmap](tbIDE/ROADMAP.md) owns add-in/updater work (including native visual acceptance of the 0.4.0.14 Options buttons and update notification), including the approved combined first-release gate and later installation-manager phases. The [Phase 1 handoff](tbIDE/PHASE1_HANDOFF.md) owns the live acceptance sequence. Do not substitute older candidate versions, source-only checks or helper self-tests for compiled DLL and live acceptance. The IDE roadmap tracks native Welcome-first startup and standalone updater acceptance on 0.4.0.7, following the published 0.4.0.6 checkpoint. The release distributes the add-in ZIP only; the IDE roadmap owns real package generation, embedded-resource upgrade acceptance and the current 0.4.0.6 designer isolation and Ribbon compatibility acceptance.

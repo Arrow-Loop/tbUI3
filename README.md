@@ -53,7 +53,7 @@ The current inventory is reconciled against WinUI Gallery main commit `b927a6253
 
 - `CHANGELOG.md` records what was done. `ROADMAP.md` records what comes next.
 - `THIRD-PARTY-NOTICES.md` records the exact open-source implementation/resource provenance adapted into the self-contained package.
-- [AGENTS.md](AGENTS.md) describes development rules; [HANDOFF.md](HANDOFF.md) is a navigation entry for authoritative documents, not a separate status record.
+- [AGENTS.md](AGENTS.md) describes development rules, including the **hard requirement** that all logging and diagnostics honor one tbUI3 "Store logs and diagnostics" switch and write only to `%LOCALAPPDATA%\tbUI3\Diagnostics\`; [HANDOFF.md](HANDOFF.md) is a navigation entry for authoritative documents, not a separate status record.
 - `docs/CONTROL_FIDELITY_POLICY.md` defines the non-negotiable source-fidelity rule for every control and variant.
 - `docs/` holds the design notes, including the spike A plan in `docs/2026-10-06-spike-spec.md`.
 - `tools/` holds Node scripts that edit `.twinproj` files in place, keeping every entry they don't change byte-identical.

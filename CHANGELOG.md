@@ -1,5 +1,9 @@
 # Changelog
 
+## 2026-11-25 - Logging and diagnostics hard requirement documented
+
+Owner rule, recorded in AGENTS.md as a hard requirement for every person and AI agent: all logging and diagnostics in the repository, existing and future, must honor one tbUI3 IDE Options switch ("Store logs and diagnostics") and write only to `%LOCALAPPDATA%\tbUI3\Diagnostics\` through `DiagnosticPaths.twin`, with no TEMP, project-folder or EXE-folder fallback. Logging stays in the code between versions, and the switch controls it. docs/DIAGNOSTICS.md, README.md, HANDOFF.md and tbIDE/README.md point to the rule. docs/RENDERING.md and docs/PROPERTY_PAGE_GUIDE.md no longer describe the old next-to-project and `%TEMP%` log locations. Documentation only: no code changed, and the switch and logger alignment are a ROADMAP item.
+
 ## 2026-11-25 - Reconciled the 0.4.0.14 build inputs
 
 Completed guarded assembly of the combined notification, Options action and idle-memory changes. Both BETA 1045 add-in builds passed embedded resource verification. See the [IDE changelog](tbIDE/CHANGELOG.md).

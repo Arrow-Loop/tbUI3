@@ -1,5 +1,7 @@
 # Diagnostic files
 
+> **HARD REQUIREMENT (owner, 2026-11-25).** Every log and diagnostic written by anything in this repository, now or in future, must (1) be stored only under `%LOCALAPPDATA%\tbUI3\Diagnostics\` through the shared `DiagnosticPaths.twin` helper, with no TEMP, project-folder, EXE-folder or other fallback, and (2) honor the single tbUI3 IDE Options toggle "Store logs and diagnostics": when it is off, nothing is written. Per-component flags may only refine detail beneath that switch. This binds every person and AI agent (Claude, Quill/ChatGPT, Codex and others). Do not remove logging between versions; the switch controls it. Full rule: [AGENTS.md](../AGENTS.md#logging-and-diagnostics-hard-requirement-owner-2026-11-25). The switch itself and the alignment of existing loggers are pending; see ROADMAP.
+
 All active first-party runtime diagnostics and development-tool transcripts now use **`%LOCALAPPDATA%\tbUI3\Diagnostics\`**. Open that path in Explorer. The package, add-in and updater share the same private `DiagnosticPaths.twin` implementation. Diagnostic failures do not fall back to TEMP, an executable directory or the user's project directory.
 
 | Output | Location below Diagnostics | When written |

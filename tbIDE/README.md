@@ -75,7 +75,7 @@ Your toolbar and styling choices persist across restarts. Installation-specific 
 
 ## Troubleshooting
 
-Open %LOCALAPPDATA%\tbUI3\Diagnostics in File Explorer for updater, designer and other diagnostic logs. Some tracing requires an explicit opt-in. See [Diagnostics](../docs/DIAGNOSTICS.md) for file names and troubleshooting instructions.
+Open %LOCALAPPDATA%\tbUI3\Diagnostics in File Explorer for updater, designer and other diagnostic logs. Some tracing requires an explicit opt-in. A single tbUI3 IDE Options switch, "Store logs and diagnostics", will control whether anything is stored (planned; see ROADMAP). See [Diagnostics](../docs/DIAGNOSTICS.md) for file names and troubleshooting instructions.
 
 ## For contributors
 

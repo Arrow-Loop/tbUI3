@@ -1,5 +1,9 @@
 # Changelog: tbIDE (WinUI 3 look for the twinBASIC IDE)
 
+## 2026-11-25 - Add notification memory-regression acceptance requirements
+
+Recorded the owner's caution about recurring update checks reintroducing idle memory growth. The installation specification and roadmap now require preservation of the confirmed theme revision-counter fix, bounded scheduling and resource cleanup, and sustained native memory regression measurements. Documentation only; no runtime change or new memory test was performed.
+
 ## 2026-11-25 - Clarify startup discovery and reminder scope
 
 Updated the specification and roadmap to record the owner's requirement for checks on every IDE launch regardless of the previous check time. The proposed hourly interval applies to background discovery only. Documented the distinction between ordinary session dismissal and explicit persisted version-specific reminder choices. Documentation only; runtime implementation remains pending.

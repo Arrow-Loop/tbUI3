@@ -1,5 +1,11 @@
 # Changelog: tbIDE (WinUI 3 look for the twinBASIC IDE)
 
+## 2026-11-25 - Reconciled the 0.4.0.14 build inputs
+
+The pending assembly request still named the project before the idle-memory correction. Compared packed entries and mirrors to confirm that the current project contains both the updated notification and Options UI and the idle-memory correction. Reconciled the assembly pin to the reviewed project, then ran standard preparation, which refreshed the bundle and removed the fulfilled request. Only the updater payload and its manifest changed inside the reconciled add-in project.
+
+BETA 1045 built Updater 0.2.0.7 and tbUI3IDE 0.4.0.14 for Win32 and Win64. All 62 native updater self-tests, all 269 repository tests with BETA 1045 fixtures, canonical mirror checks and both DLL payload verifications passed. Interactive acceptance remains pending.
+
 ## 2026-11-25 - Development Tools final operation summary
 
 A failed build previously printed its error before automatic diagnostics synchronization, leaving a green diagnostics success message as the apparent outcome. Each selected operation now prints its overall result last, after the diagnostics upload, with the verified package location when available and a separate diagnostic-sync result. Prep and publication child scripts provide per-invocation structured results with the actual exception and transcript location; no login output is captured. The publisher distinguishes a verified publication from a retained draft, cancellation, or a different existing publication. The reset submenu reports all caught reset errors to its caller rather than hiding them on exit. Diagnostic sync uses neutral progress color, and quitting repeats the last development outcome after the final sync. The primary outcome is logged before sync, and a sync failure cannot replace a build failure or imply a successful build failed. No integrity gates or runtime components changed. Static source review; Windows acceptance pending.

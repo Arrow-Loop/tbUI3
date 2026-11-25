@@ -1,5 +1,9 @@
 # Changelog
 
+## 2026-11-25 - Reconciled the 0.4.0.14 build inputs
+
+Completed guarded assembly of the combined notification, Options action and idle-memory changes. Both BETA 1045 add-in builds passed embedded resource verification. See the [IDE changelog](tbIDE/CHANGELOG.md).
+
 ## 2026-11-25 - Development Tools final operation reporting
 
 Added a final primary operation summary after diagnostics synchronization, with child failure details and distinct publication outcomes. See the [IDE changelog](tbIDE/CHANGELOG.md). Development tooling only.

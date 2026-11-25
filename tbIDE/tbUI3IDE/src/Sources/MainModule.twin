@@ -32,6 +32,7 @@ Private Class tbUI3IDEAddin
     ' A hidden tool window. Its body lives in a shadow root inside the IDE page, so its
     ' ownerDocument is the IDE page itself, which is how the stylesheet reaches the whole IDE.
     Private StyleWindow As ToolWindow
+    Private PageView As Object ' The page's window object, resolved once instead of on every call.
     ' Re-checks the theme a moment after start-up and project load. The IDE restores the project's
     ' state and clears the Debug Console after loading add-ins, which hid the first log lines.
     Private WithEvents SettleTimer As AddinTimer
@@ -153,7 +154,8 @@ Private Class tbUI3IDEAddin
                 "document.querySelectorAll('.winui3IdeStyleOptionRow').forEach(function(r){r.remove();});" & _
                 "delete window.__winui3IdeStyle;return 'theme option removed';})()"
         End If
-        Set StyleWindow = Nothing
+        Set PageView = Nothing: Set StyleWindow = Nothing
+        WinUI3SystemAccent.ReleasePalette
         LEnd LoadToken: LoadToken = 0
     End Sub
 
@@ -379,9 +381,13 @@ Private Class tbUI3IDEAddin
             StyleWindow.Title = "tbUI3IDE"
             Log "created the hidden tool window"
         End If
-        Dim doc As Object
-        Set doc = StyleWindow.RootDomElement.Properties.ownerDocument
-        Return CStr(doc.defaultView.eval(Expr))
+        If PageView Is Nothing Then Set PageView = StyleWindow.RootDomElement.Properties.ownerDocument.defaultView
+        On Error GoTo Stale
+        Return CStr(PageView.eval(Expr))
+    Stale:
+        ' Never re-run the script (it may have side effects); resolve the page object afresh on the next call.
+        Set PageView = Nothing
+        Err.Raise Err.Number, Err.Source, Err.Description
     End Function
 
     ' Text as a single-quoted JavaScript string literal.
@@ -457,33 +463,50 @@ Private Module WinUI3SystemAccent
     Private Declare PtrSafe Function WindowsDeleteString Lib "combase" (ByVal value As LongPtr) As Long
     Private Declare PtrSafe Function RoActivateInstance Lib "combase" (ByVal classId As LongPtr, ByRef instance As stdole.IUnknown) As Long
 
+    ' One UISettings instance for the life of the add-in. Activating a new instance on every poll (the
+    ' updater poll every 750 ms plus the options timer every second) made the IDE process grow steadily
+    ' while idle (owner measurement 2026-11-25: 0.5 to 1 MB per second, flat without the add-in).
+    ' The palette is also reused for two seconds, since both timers ask for it.
+    Private mSettings As IWinUI3Settings3
+    Private mApartment As Boolean
+    Private mLastRead As Double
+    Private mLastPalette As String
+
     Public Function ReadPalette() As String
-        Dim initialized As Boolean
-        Dim classId As LongPtr
-        Dim instance As stdole.IUnknown
-        Dim settings As IWinUI3Settings3
+        If Len(mLastPalette) > 0 And Abs(Timer - mLastRead) < 2 Then Return mLastPalette
         ReadPalette = "null"
         On Error GoTo Failed
-        Dim hr As Long = RoInitialize(0) ' Single-threaded; use the existing apartment on RPC_E_CHANGED_MODE.
-        initialized = (hr >= 0)
-        If hr < 0 And hr <> &H80010106 Then GoTo Failed
-        Dim runtimeName As String = "Windows.UI.ViewManagement.UISettings"
-        If WindowsCreateString(StrPtr(runtimeName), Len(runtimeName), classId) < 0 Then GoTo Failed
-        If RoActivateInstance(classId, instance) < 0 Then GoTo Failed
-        Set settings = instance ' QueryInterface for IUISettings3, preserving HRESULT failures.
+        If mSettings Is Nothing Then
+            Dim hr As Long = RoInitialize(0) ' Single-threaded; use the existing apartment on RPC_E_CHANGED_MODE.
+            If hr < 0 And hr <> &H80010106 Then GoTo Failed
+            mApartment = (hr >= 0)
+            Dim classId As LongPtr, instance As stdole.IUnknown
+            Dim runtimeName As String = "Windows.UI.ViewManagement.UISettings"
+            If WindowsCreateString(StrPtr(runtimeName), Len(runtimeName), classId) < 0 Then GoTo Failed
+            hr = RoActivateInstance(classId, instance)
+            WindowsDeleteString classId
+            If hr < 0 Then GoTo Failed
+            Set mSettings = instance ' QueryInterface for IUISettings3, preserving HRESULT failures.
+        End If
         Dim json As String = "["
         Dim desired As Long
         For desired = 8 To 2 Step -1 ' Light3, Light2, Light1, Accent, Dark1, Dark2, Dark3.
-            Dim raw As String = Right$("00000000" & Hex$(settings.GetColorValue(desired)), 8)
+            Dim raw As String = Right$("00000000" & Hex$(mSettings.GetColorValue(desired)), 8)
             If desired <> 8 Then json = json & ","
             json = json & Chr$(34) & "#" & Mid$(raw, 5, 2) & Mid$(raw, 3, 2) & Left$(raw, 2) & Chr$(34)
         Next
         ReadPalette = json & "]"
+        mLastPalette = ReadPalette: mLastRead = Timer
+        Exit Function
     Failed:
-        On Error Resume Next
-        Set settings = Nothing
-        Set instance = Nothing
-        If classId <> 0 Then WindowsDeleteString classId
-        If initialized Then RoUninitialize
+        ' Failed reads retain static theme colors; the next call tries again with a fresh instance.
+        Set mSettings = Nothing
     End Function
+
+    Public Sub ReleasePalette()
+        On Error Resume Next
+        Set mSettings = Nothing
+        If mApartment Then RoUninitialize
+        mApartment = False: mLastPalette = ""
+    End Sub
 End Module

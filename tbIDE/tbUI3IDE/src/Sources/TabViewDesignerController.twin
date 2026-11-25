@@ -7,6 +7,7 @@ Private Class TabViewDesignerController
     Private WithEvents RefreshButton As Button
     Private WithEvents DiagnosticsButton As Button
     Private PageWindow As ToolWindow
+    Private PageView As Object ' The page's window object, resolved once instead of on every call.
     Private WithEvents LoadTimer As AddinTimer
     Private m_Installed As Boolean
     Private m_LastError As String
@@ -63,9 +64,13 @@ Private Class TabViewDesignerController
     End Sub
 
     Private Function RunJs(ByVal Text As String) As String
-        Dim doc As Object
-        Set doc = PageWindow.RootDomElement.Properties.ownerDocument
-        Return CStr(doc.defaultView.eval(Text))
+        If PageView Is Nothing Then Set PageView = PageWindow.RootDomElement.Properties.ownerDocument.defaultView
+        On Error GoTo Stale
+        Return CStr(PageView.eval(Text))
+    Stale:
+        ' Never re-run the script (it may have side effects); resolve the page object afresh on the next call.
+        Set PageView = Nothing
+        Err.Raise Err.Number, Err.Source, Err.Description
     End Function
 
     Private Sub RunCommand(ByVal Command As String)
@@ -108,7 +113,7 @@ Private Class TabViewDesignerController
         Set LoadTimer = Nothing
         If m_Installed Then RunJs "window.__tbUI3TabDesigner.dispose();'TabView Designer removed'"
         m_Installed = False
-        Set PageWindow = Nothing
+        Set PageView = Nothing: Set PageWindow = Nothing
         Set NewPageButton = Nothing
         Set DeletePageButton = Nothing
         Set MoveLeftButton = Nothing

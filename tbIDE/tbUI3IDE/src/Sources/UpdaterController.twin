@@ -3,6 +3,7 @@ Private Class UpdaterController
     Private Declare PtrSafe Function CurrentPid Lib "kernel32" Alias "GetCurrentProcessId" () As Long
     Private mHost As Host
     Private mWindow As ToolWindow
+    Private mView As Object ' The page's window object, resolved once instead of on every call.
     Private mRoot As String
     Private mHome As String
     Private mLaunches As Object
@@ -192,10 +193,16 @@ Private Class UpdaterController
     Private Function Eval(ByVal expression As String) As String
         If mWindow Is Nothing Then Set mWindow = mHost.ToolWindows.Add("tbUI3 updates", "tbUI3UpdaterHost")
         ' A script whose last statement yields no value comes back as Null or Empty; treat both as no text.
+        If mView Is Nothing Then Set mView = mWindow.RootDomElement.Properties.ownerDocument.defaultView
         Dim result As Variant
-        result = mWindow.RootDomElement.Properties.ownerDocument.defaultView.eval(expression)
+        On Error GoTo Stale
+        result = mView.eval(expression)
         If IsNull(result) Or IsEmpty(result) Then Return ""
         Return CStr(result)
+    Stale:
+        ' Never re-run the script (it may have side effects); resolve the page object afresh on the next call.
+        Set mView = Nothing
+        Err.Raise Err.Number, Err.Source, Err.Description
     End Function
     ' A quiet automatic check found updates: show the in-IDE notification. Review opens the updater.
     Private Sub ShowUpdateToast(ByVal path As String)
@@ -576,6 +583,6 @@ Private Class UpdaterController
     Public Sub Dispose()
         On Error Resume Next
         If mInstalled Then Eval "if(window.__tbUI3Installation)window.__tbUI3Installation.dispose();delete window.__tbUI3Installation;if(window.__tbUI3Shutdown)window.__tbUI3Shutdown.dispose();delete window.__tbUI3Shutdown;delete window.__tbUI3InstallationFactory;delete window.__tbUI3ThemeFactory;if(window.__tbUI3Themes)window.__tbUI3Themes.dispose();delete window.__tbUI3Themes;'hooks removed'"
-        Set mWindow = Nothing: Set mHost = Nothing
+        Set mView = Nothing: Set mWindow = Nothing: Set mHost = Nothing
     End Sub
 End Class

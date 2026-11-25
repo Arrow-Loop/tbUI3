@@ -346,6 +346,7 @@ const light = [
   '/* Lists and trees */',
   ['TreeItemHoverBackColor', 'rgba(0, 0, 0, 0.037)', 'SubtleFillColorSecondary'],
   ['TreeItemSelectedBackColor', 'rgba(0, 0, 0, 0.06)', ''],
+  ['TreeItemSelectedForeColor', '#1A1A1A', 'TextFillColorPrimary; BETA 1046 colors selected tree text with it, and Light inherits white'],
   ['PackageManagerHoverBackColor', 'rgba(0, 0, 0, 0.037) !important', ''],
   ['DiagnosticsGroupBackground', 'rgba(0, 0, 0, 0.024)', 'SubtleFillColorTertiary #06000000'],
   ['DiagnosticsGroupFontSize', '90%', ''],

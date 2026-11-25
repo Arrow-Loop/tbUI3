@@ -1,5 +1,9 @@
 # Changelog: tbIDE (WinUI 3 look for the twinBASIC IDE)
 
+## 2026-11-25 - BETA 1046 support (add-in 0.4.0.19 source)
+
+maxIdeBuild is now 1046. WinUI3 Light sets TreeItemSelectedForeColor (#1A1A1A), which 1046 newly applies to selected tree text. See the root CHANGELOG.
+
 ## 2026-11-25 - Store logs and diagnostics switch (add-in 0.4.0.19, updater 0.2.0.8 source)
 
 IDE Options category renamed "tbUI3" and gains the Store logs and diagnostics row; the add-in saves it to `tbUI3\Diagnostics\StoreLogs`. The add-in, updater and development tools stop storing logs while it is off. Details and limits: root [CHANGELOG](../CHANGELOG.md). Updater.exe needs a rebuild for 0.2.0.8.

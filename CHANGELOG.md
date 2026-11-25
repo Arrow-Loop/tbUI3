@@ -1,5 +1,9 @@
 # Changelog
 
+## 2026-11-25 - BETA 1046 support (add-in 0.4.0.19 source)
+
+Diffed BETA 1046 against 1045. The main.js globals the add-in, updater and theme service hook (customThemes, reloadThemesFromDisk, liveIDEOptions, saveIDEOptions, changedIdeOptions, notifyChangedTheme, closeProjectSafely, tips_initUI and the rest) are unchanged, and the existing Options classes are still there. Changes: `maxIdeBuild` raised to 1046 (minimum stays 1044), so the add-in loads on 1046. BETA 1046 now colors selected Project Explorer text with `TreeItemSelectedForeColor`, and WinUI3 Light inherited Light's white, which would have put white text on its near-white selection; WinUI3 Light now sets it to #1A1A1A (TextFillColorPrimary). The full suite passes against the 1046 main.js and formDesigner.css except the two built-updater checks that clear after the Updater.exe rebuild. Native 1046 acceptance pending.
+
 <<<<<<< HEAD
 ## 2026-11-25 - Store logs and diagnostics switch (alignment pass, source)
 

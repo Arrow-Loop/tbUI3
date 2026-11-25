@@ -2,6 +2,12 @@
 
 Outstanding and deferred work only. Completed implementation and actual validation belong in [CHANGELOG.md](CHANGELOG.md). Start with [README.md](README.md), [AGENTS.md](AGENTS.md) and the relevant technical reference. The core package and IDE add-in have independent version and acceptance gates.
 
+## BETA 1046 follow-ups (2026-11-25)
+
+- **Native acceptance:** load 0.4.0.19 on 1046 and 1044; check the Ribbon, Options category, theme switching, selected Project Explorer items in WinUI3 Light and Dark, and an IDE update from 1045 to 1046 through the updater.
+- **New IDE Options rows:** 1046 adds AI model settings to IDE Options (`tbis-model*` rows with text inputs, radios and permission flags, plus `tbis-groupSubTitle`, `tbis-flags` and `tbis-AInotice`). The WinUI3 IDE stylesheet has no rules for them yet; style them to match the existing Options controls after a native look.
+- **New add-in APIs (exploratory):** `Host.AI` (conversations with tool calls), `Integration`, Monaco hover and CodeLens providers, source commands, `ToolWindow.GetChildElementById` / `GetComputedStyleOfChild`. Still no build event or way to set a project constant, so the compiled-app logging gap below remains.
+
 ## Diagnostics switch: native acceptance and follow-ups (alignment pass implemented in source 2026-11-25; see CHANGELOG)
 
 - **Native acceptance (committed):** in BETA 1045 and 1044, check the tbUI3 Options category and its Store logs and diagnostics row (No | Yes, light and dark), that turning it off stops new lines in `addin-startup.log`, `updater-engine.log`, `updater-startup.log`, `tbUI3-tabview.log` and `tbUI3-propertypage.log` within a few seconds and that turning it on resumes them, that Development-Tools.bat keeps no Development-, CDP-, Embed- or Publish- files while it is off, and that Prepare refuses native self-tests with the switch off.

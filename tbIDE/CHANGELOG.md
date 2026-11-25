@@ -1,5 +1,9 @@
 # Changelog: tbIDE (WinUI 3 look for the twinBASIC IDE)
 
+## 2026-11-25 - Leak probe fix: updater bit no longer blocks start-up (add-in 0.4.0.16 source)
+
+Owner run of 0.4.0.15: probe 1 and 7 showed no growth, but the add-in never finished loading (no Ribbon, no options), because CoreReady and the first start-up stages are advanced by Updater.Poll, which bit 1 skipped from the start. Bit 1 now skips the poll only after start-up stage 2. Probe 2 (options timer off) still leaked, so the options timer is not the sole cause.
+
 ## 2026-11-25 - Temporary leak probe (add-in 0.4.0.15 source)
 
 Version bumped to 0.4.0.15: publication of the probe build failed because tbUI3IDE-v0.4.0.14 was already published from 7936a5a, and the publisher correctly refused to reuse it (Publish-20261125-120533-936.log).

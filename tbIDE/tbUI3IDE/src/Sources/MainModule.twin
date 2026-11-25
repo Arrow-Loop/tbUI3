@@ -104,7 +104,8 @@ Private Class tbUI3IDEAddin
                 TabDesigner.ProjectLoaded
                 StartupLog "designer initialization", designerStarted
                 StartupTimer.Interval = 750
-            ElseIf (LeakProbe And 1) = 0 Then
+            ElseIf (LeakProbe And 1) = 0 Or HostStartupStage < 2 Then
+                ' The probe may only skip idle polling: start-up (CoreReady) is driven by these polls.
                 Updater.Poll
             End If
         End If

@@ -1,5 +1,9 @@
 # Changelog: tbIDE (WinUI 3 look for the twinBASIC IDE)
 
+## 2026-11-25 - Notification scheduling requirements clarification
+
+Recorded the owner's approval of the SplitButton reminder concept and rejection of once-daily discovery in the installation specification and roadmap. Documented the proposed hourly check cadence and independent per-version notification policy. Source review confirms the existing date-based QuietCheckDue gate and session latch remain in place. Documentation only; no runtime or release change.
+
 ## 2026-11-25 - Native update toast visual checkpoint
 
 Owner's BETA 1045 Dark screenshot verifies the revised notification's single-column layout, readable body text, equal-height actions and green system accent. The Close glyph is missing and the shadow is not visibly apparent; those remain open. Source review confirms that Dismiss only hides the card, automatic checks are gated by local calendar date and deferral, and standalone Remind Me Later persists 24-hour deferral. Recorded the visual corrections and proposed split-button reminder behavior in ROADMAP. No runtime code or release changed.

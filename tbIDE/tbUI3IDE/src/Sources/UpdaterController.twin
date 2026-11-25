@@ -30,6 +30,7 @@ Private Class UpdaterController
     Private mAckId As String
     Private mAckOk As Boolean
     Private mThemeSource As String
+    Private mThemeRevision As String
     Private mThemeCatalog As UpdateJson
     Private mCatalogAccent As String
     Private mPolling As Boolean
@@ -560,8 +561,16 @@ Private Class UpdaterController
             End If
         End If
         If mThemeReady Then
-            Dim catalogRaw As String = Eval("window.__tbUI3Themes.inventory()")
-            If catalogRaw <> mThemeSource Then PublishPreferences
+            ' Poll only the short revision; the full inventory is read when it changes.
+            Dim revision As String = Eval("window.__tbUI3Themes.revision?window.__tbUI3Themes.revision():''")
+            If revision <> mThemeRevision Or Len(revision) = 0 Then
+                mThemeRevision = revision
+                If Len(revision) = 0 Then
+                    If Eval("window.__tbUI3Themes.inventory()") <> mThemeSource Then PublishPreferences
+                Else
+                    PublishPreferences
+                End If
+            End If
         End If
         Dim palette As String = WinUI3SystemAccent.ReadPalette(), actualTheme As String = mHost.Themes.ActiveThemeName
         Dim actualToolbar As String = Eval("window.__tbUI3Toolbar?window.__tbUI3Toolbar.mode:''")

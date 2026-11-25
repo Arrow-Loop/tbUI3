@@ -1,7 +1,7 @@
 // Trusted IDE adapter. Never evaluate theme declarations or activate themes to render previews.
 (function createThemeService(env){
  'use strict';
- let pending=false,error='',generation=0,cachedList,cachedThemes=[],completion=null;
+ let pending=false,error='',generation=0,cachedList,cachedThemes=[],completion=null,lastJson='',stamp=0;
  const normalized=value=>String(value||'').trim().toLowerCase();
  function collect(){
   const list=env.themes()||[],seen=new Set(),themes=[];
@@ -27,8 +27,14 @@
  }
  function inventory(){
   if(!pending&&(!cachedList||env.themes()!==cachedList))collect();
-  return JSON.stringify({themes:cachedThemes,pending,error});
+  const json=JSON.stringify({themes:cachedThemes,pending,error});
+  if(json!==lastJson){lastJson=json;stamp++;}
+  return json;
  }
+ // A short change counter for the add-in's idle poll. Returning the whole inventory every 750 ms
+ // made the IDE process grow while idle (owner probe, 2026-11-25), so the native side fetches the
+ // inventory only when this value changes.
+ function revision(){inventory();return String(stamp);}
  function refresh(){
   if(pending)return;
   if(!cachedList)collect();
@@ -69,5 +75,5 @@
   error='Theme refresh timed out; use Check again to retry.';
  }
  function dispose(){generation++;if(completion)completion();completion=null;pending=false;}
- return {inventory,refresh,choose,timeout,dispose};
+ return {inventory,revision,refresh,choose,timeout,dispose};
 })

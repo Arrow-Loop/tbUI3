@@ -335,6 +335,7 @@ Private Class UI3Surface
     End Sub
 
     Private Function AppendLine(ByVal FilePath As String, ByVal Text As String) As Boolean
+        If Len(FilePath) = 0 Then Exit Function ' Store logs and diagnostics is off.
         On Error GoTo Failed
         Dim file As Integer
         file = FreeFile

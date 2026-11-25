@@ -1,7 +1,7 @@
 (function createInstallationUI(env) {
  'use strict';
  const d=env.document,w=env.window,queue=[],pending=new Set();
- let state=env.state,toastHost,settingsDialog,shadow,content,welcomeShell,welcome,confirmation,confirmationContent,disposed=false,serial=0,previousFocus,repairDecision;
+ let diagnosticsChoice,state=env.state,toastHost,settingsDialog,shadow,content,welcomeShell,welcome,confirmation,confirmationContent,disposed=false,serial=0,previousFocus,repairDecision;
  let autoPending=!!env.showWelcome,painted=!autoPending,optionSheet;
  const wizardActions=new Set(['choose-theme','choose-toolbar','installation-preferences','welcome-record','bootstrap-retry','repair-resource']);
  function node(tag,text,parent,className){const n=d.createElement(tag);if(text!==undefined)n.textContent=text;if(className)n.className=className;if(parent)parent.append(n);return n;}
@@ -137,7 +137,7 @@
   card.addEventListener('keydown',e=>{if(e.key==='Escape'){e.stopPropagation();closeToast();}});
   tokens(toastHost);
  }
- // IDE Options gets its own "tbUI3 Updates" category beside the native ones. tips_initUI rebuilds the nav
+ // IDE Options gets its own "tbUI3" category beside the native ones. tips_initUI rebuilds the nav
  // list and pane on every native click or filter, so the observer re-adds both pieces after each rebuild.
  const optionRows=[
   ['Check for updates','Look for new twinBASIC, tbUI3IDE and icon library releases.','Check now',()=>request('check')],
@@ -155,18 +155,31 @@
   tokens(host);
   button(label,action,root).classList.add('tbUI3OptionButton');
  }
+ // The one "Store logs and diagnostics" switch (AGENTS.md hard requirement). It uses the IDE's own No | Yes
+ // control; native code saves it to tbUI3\Diagnostics\StoreLogs, which every tbUI3 logger reads.
+ const storeDiagnostics=()=>diagnosticsChoice??state.storeDiagnostics!==false;
+ function showDiagnostics(){for(const row of d.querySelectorAll('.tbUI3DiagnosticsOption')){const on=storeDiagnostics(),[no,yes]=row.querySelectorAll('.tbis-boolSegment');no.classList.toggle('tbis-boolSelected',!on);yes.classList.toggle('tbis-boolSelected',on);}}
+ function diagnosticsRow(rows){
+  const row=node('div',undefined,rows,'tbis-optionRow tbUI3DiagnosticsOption'),labels=node('div',undefined,row,'tbis-optionLabelCol');
+  node('div','Store logs and diagnostics',labels,'tbis-optionName');
+  node('div','Keep tbUI3 logs in %LOCALAPPDATA%\\tbUI3\\Diagnostics. Turn off to stop tbUI3 logging in the IDE, the add-in and the updater.',labels,'tbis-optionDesc');
+  const bool=node('div',undefined,node('div',undefined,row,'tbis-optionValueCol'),'tbis-bool');
+  for(const [text,on]of [['No',false],['Yes',true]])node('div',text,bool,'tbis-boolSegment').onclick=()=>{if(storeDiagnostics()===on)return;diagnosticsChoice=on;showDiagnostics();request('diagnostics-switch',{enabled:on});};
+  showDiagnostics();
+ }
  function attach(){
   const nav=d.querySelector('.tbis-settingsNavList'),pane=d.querySelector('.tbis-settingsPane');
   if(!nav||!pane)return;
   const filtered=!!d.querySelector('.tbis-settingsSearch')?.value;
   let item=nav.querySelector('.tbUI3InstallationNav'),section=pane.querySelector('.tbUI3InstallationOptions');
   if(!item&&!filtered){
-   item=node('div',undefined,nav,'tbis-navItem tbUI3InstallationNav');node('span','tbUI3 Updates',item,'tbis-navItemText');node('span',String(optionRows.length),item,'tbis-navItemCount');
+   item=node('div',undefined,nav,'tbis-navItem tbUI3InstallationNav');node('span','tbUI3',item,'tbis-navItemText');node('span',String(optionRows.length+1),item,'tbis-navItemCount');
    item.onclick=()=>{for(const n of nav.querySelectorAll('.tbis-navItem'))n.classList.toggle('tbis-navItemSelected',n===item);for(const n of pane.querySelectorAll('.tbis-groupSection'))n.classList.toggle('tbis-groupSectionHidden',n!==section);pane.scrollTop=0;};
   }
   if(!section){
-   section=node('div',undefined,pane,'tbis-groupSection tbUI3InstallationOptions');section.dataset.groupId='tbUI3Updates';node('h2','tbUI3 Updates',section,'tbis-groupTitle');
+   section=node('div',undefined,pane,'tbis-groupSection tbUI3InstallationOptions');section.dataset.groupId='tbUI3Updates';node('h2','tbUI3',section,'tbis-groupTitle');
    const rows=node('div',undefined,section,'tbis-groupRows');
+   diagnosticsRow(rows);
    for(const [name,description,label,action]of optionRows){const row=node('div',undefined,rows,'tbis-optionRow tbUI3OptionActions'),labels=node('div',undefined,row,'tbis-optionLabelCol');node('div',name,labels,'tbis-optionName');node('div',description,labels,'tbis-optionDesc');const value=node('div',undefined,row,'tbis-optionValueCol');optionButton(label,action,value);}
   }
   // Visible with All (no filter) or when its own category is selected; a filter never matches it.
@@ -180,7 +193,7 @@
  return {startupReady,welcomeOpen:()=>autoPending||!!welcomeShell?.open,show:which=>which==='welcome'?showWelcome():showSettings(),toast:showToast,hide:()=>{if(welcome)welcome.close();closeDialog(settingsDialog);},
   checkForUpdates:()=>{if(!disposed)return request('check');},
   take:()=>{const next=queue.shift();return next?JSON.stringify(next):'';},
-  publish:next=>{state=next;if(next.ack?.id)pending.delete(next.ack.id);renderSettings();syncTheme();if(welcome&&pending.size===0){welcome.setSnapshot(wizardSnapshot(next));syncFrame();if(welcome.getState().open&&!confirmation?.open&&!welcomeShell.contains(d.activeElement))welcomeShell.querySelector('iframe')?.focus();}},
+  publish:next=>{state=next;if(diagnosticsChoice===next.storeDiagnostics)diagnosticsChoice=undefined;showDiagnostics();if(next.ack?.id)pending.delete(next.ack.id);renderSettings();syncTheme();if(welcome&&pending.size===0){welcome.setSnapshot(wizardSnapshot(next));syncFrame();if(welcome.getState().open&&!confirmation?.open&&!welcomeShell.contains(d.activeElement))welcomeShell.querySelector('iframe')?.focus();}},
   dispose:()=>{disposed=true;if(repairDecision){repairDecision(false);repairDecision=null;}observer.disconnect();themeObserver.disconnect();if(welcome)welcome.destroy();for(const dialog of[welcomeShell,settingsDialog,confirmation,toastHost])if(dialog)dialog.remove();style.remove();d.querySelectorAll('.tbUI3InstallationOptions,.tbUI3InstallationNav').forEach(n=>n.remove());}
  };
 })

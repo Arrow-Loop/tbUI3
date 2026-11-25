@@ -7,7 +7,7 @@ Private Module UpdaterSelfTest
     Public Function RunUpdaterSelfTests() As Long
         On Error GoTo Fatal
         Dim diagnostics As String = DiagnosticsRoot()
-        If Len(diagnostics) = 0 Then UFail "The per-user diagnostics folder is unavailable."
+        If Len(diagnostics) = 0 Then UFail "The per-user diagnostics folder is unavailable, or Store logs and diagnostics is off in IDE Options (tbUI3)."
         mRoot = UFull(diagnostics & "\NativeSelfTests\tbUI3-native-updater-tests-" & UUnique())
         UNoLinks mRoot: UDirectory mRoot
         Set mResults = JA(): mFailed = 0

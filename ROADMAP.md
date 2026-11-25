@@ -2,14 +2,11 @@
 
 Outstanding and deferred work only. Completed implementation and actual validation belong in [CHANGELOG.md](CHANGELOG.md). Start with [README.md](README.md), [AGENTS.md](AGENTS.md) and the relevant technical reference. The core package and IDE add-in have independent version and acceptance gates.
 
-## Diagnostics switch alignment pass (committed; unblocked 2026-11-25, idle memory fix confirmed in add-in 0.4.0.17)
+## Diagnostics switch: native acceptance and follow-ups (alignment pass implemented in source 2026-11-25; see CHANGELOG)
 
-Owner request, 2026-11-25. Implements the logging and diagnostics hard requirement in [AGENTS.md](AGENTS.md#logging-and-diagnostics-hard-requirement-owner-2026-11-25), which is already binding for new work:
-
-- Add the "Store logs and diagnostics" toggle to the tbUI3 category in IDE Options, saved in one shared setting that the add-in, updater, control package (design and run time, including property pages and the paint trace), reference packages, test projects and development tools can all read.
-- Route every existing logger through `DiagnosticPaths.twin` and that switch. Known ones are listed in [docs/DIAGNOSTICS.md](docs/DIAGNOSTICS.md). Remove per-component on/off constants such as `PROPERTY_PAGE_LOG_ENABLED`, or keep them only as detail levels under the switch.
-- Add a test-suite check that fails on any file write that bypasses the shared helper or the switch, and on any TEMP, App.Path or project-folder log path.
-- Owner decisions (2026-11-25): the switch defaults to **on** until tbUI3 1.0. Compiled apps running outside the IDE do **not** read the switch at run time; they write logs only if it was on when the app was compiled (bake the value in at build time, for example as a compiler constant), at least until 1.0.
+- **Native acceptance (committed):** in BETA 1045 and 1044, check the tbUI3 Options category and its Store logs and diagnostics row (No | Yes, light and dark), that turning it off stops new lines in `addin-startup.log`, `updater-engine.log`, `updater-startup.log`, `tbUI3-tabview.log` and `tbUI3-propertypage.log` within a few seconds and that turning it on resumes them, that Development-Tools.bat keeps no Development-, CDP-, Embed- or Publish- files while it is off, and that Prepare refuses native self-tests with the switch off.
+- **Compile-time value for compiled apps (owner decision 2026-11-25, not yet achievable automatically):** compiled apps should log only if the switch was on when they were compiled. twinBASIC's add-in API (BETA 1045 `tbIDE` package) offers `Build()` but no build event and no way to set a conditional-compilation constant, so `CompiledAppsStoreLogs` is a fixed True for now, matching the default. Options: ask for a build event or project-constant API (a generic request, without naming tbUI3), or have the add-in set a project constant before builds once that API exists.
+- Remove `DESIGN_LOG_ENABLED` / `PROPERTY_PAGE_LOG_ENABLED` per-component constants once their detail is no longer needed, or turn them into named detail levels beneath the switch.
 
 ## Immediate priority: IDE add-in and updater Phase 1
 

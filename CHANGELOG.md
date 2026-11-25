@@ -1,5 +1,18 @@
 # Changelog
 
+## 2026-11-25 - Store logs and diagnostics switch (alignment pass, source)
+
+Implements the logging hard requirement. IDE Options now has a "tbUI3" category (renamed from "tbUI3 Updates") whose first row, **Store logs and diagnostics**, uses the IDE's own No | Yes control. The add-in saves it per user as `HKCU\Software\VB and VBA Program Settings\tbUI3\Diagnostics\StoreLogs`; a missing value means on, the default until 1.0.
+
+- `DiagnosticPaths.twin` (one identical copy in the package, add-in, updater and embedded test package) gained `DiagnosticsEnabled()`. `DiagnosticsRoot` and `DiagnosticsFile` return nothing while the switch is off, so every logger that already used them stops writing; each append helper now drops the entry explicitly on an empty path. Code inside the twinBASIC IDE process (add-in, controls at design time and in debug runs, property pages) re-reads the switch at most every two seconds, so a change applies without a restart. The updater calls `UseLiveDiagnosticsSwitch` at start-up and follows it too.
+- Compiled apps outside the IDE do not read the switch. They use `CompiledAppsStoreLogs` in DiagnosticPaths, which is True to match the default. twinBASIC's add-in API (checked in BETA 1045) has no build event or way to set a conditional constant, so the switch's value at compile time cannot yet be baked in automatically; see ROADMAP.
+- `PROPERTY_PAGE_LOG_ENABLED`, `DESIGN_LOG_ENABLED` and `TBUI3_PAINT_TRACE` remain as detail levels beneath the switch, as AGENTS.md allows.
+- Updater: with the switch off, the startup-help fallback page is not stored; the reason is shown in a message box instead. Native self-tests refuse with a clear message because their report lives in Diagnostics.
+- Development tools: new `tbIDE/tools/Diagnostics-Switch.ps1` (`Test-StoreLogs`). Development-*.log lines go through one gated writer, Prepare and Publish keep no transcript while it is off, CDP build reports are skipped (`-` report argument), and Prepare refuses native self-tests with a message to turn the switch on.
+- Tests: four new routing checks fail on any `.log` name outside `DiagnosticsFile`, any append without the helper and an empty-path drop, an ungated transcript or session-log write, or a missing Options wiring; a jsdom test covers the Options row.
+- Versions: add-in 0.4.0.18, updater 0.2.0.8 (source; Updater.exe needs a rebuild). Repository tests: 273 of 275 pass; both failures are the expected built-updater checks (version 0.2.0.7 still in the tracked Updater.exe). PowerShell changes were reviewed but not run (no PowerShell here). Native acceptance pending.
+- Scope (owner, 2026-11-25): the rule covers only our own tbUI3, tbIDE and WinUI3-for-twinBASIC code. Third-party packages and add-ins (for example TBMANLIB's `cLogs`) and the twinBASIC IDE's own logs are out of scope and unchanged; AGENTS.md now says so.
+
 ## 2026-11-25 - Logging and diagnostics hard requirement documented
 
 Owner rule, recorded in AGENTS.md as a hard requirement for every person and AI agent: all logging and diagnostics in the repository, existing and future, must honor one tbUI3 IDE Options switch ("Store logs and diagnostics") and write only to `%LOCALAPPDATA%\tbUI3\Diagnostics\` through `DiagnosticPaths.twin`, with no TEMP, project-folder or EXE-folder fallback. Logging stays in the code between versions, and the switch controls it. docs/DIAGNOSTICS.md, README.md, HANDOFF.md and tbIDE/README.md point to the rule. docs/RENDERING.md and docs/PROPERTY_PAGE_GUIDE.md no longer describe the old next-to-project and `%TEMP%` log locations. Documentation only: no code changed, and the switch and logger alignment are a ROADMAP item.

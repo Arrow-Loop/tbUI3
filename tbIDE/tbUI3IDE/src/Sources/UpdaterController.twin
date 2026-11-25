@@ -321,6 +321,7 @@ Private Class UpdaterController
         state.Assign "settingsError", JS(mPreferenceFault)
         state.Assign "preferences", settings: state.Assign "bootstrap", mBundle.Snapshot
         state.Assign "theme", JS(mHost.Themes.ActiveThemeName)
+        state.Assign "storeDiagnostics", JB(GetSetting(DiagnosticsSettingsApp, DiagnosticsSettingsSection, DiagnosticsSettingName, "1") <> "0")
         state.Assign "themeMode", JS(LCase$(mHost.Themes.ActiveThemeNameGroup))
         state.Assign "accent", JParse(WinUI3SystemAccent.ReadPalette())
         Dim themeStatus As UpdateJson = JO()
@@ -537,6 +538,10 @@ Private Class UpdaterController
                     SaveSetting "WinUI3IdeStyle", "Options", "ToolbarMode", mode
                     mMessage = "Toolbar preference saved.": PublishPreferences
                 Case "choose-theme": ApplyTheme JT(request, "name"), mAckId
+                Case "diagnostics-switch"
+                    ' The one Store logs and diagnostics switch; DiagnosticPaths reads it before every log write.
+                    SaveSetting DiagnosticsSettingsApp, DiagnosticsSettingsSection, DiagnosticsSettingName, IIf(JBool(request, "enabled"), "1", "0")
+                    mMessage = "Store logs and diagnostics turned " & IIf(JBool(request, "enabled"), "on.", "off.")
                 Case Else: UFail "Unsupported installation request."
             End Select
             PublishPreferences

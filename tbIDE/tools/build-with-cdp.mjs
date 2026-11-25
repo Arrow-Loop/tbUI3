@@ -76,5 +76,5 @@ try {
 finally {
  try{if(work&&cleanup)await cleanup(work);}
  catch(e){report.cleanupWarning=String(e.message);console.error('Temporary workspace cleanup: '+e.message);}
- if(reportArg)fs.writeFileSync(reportArg,JSON.stringify(report,null,2)+'\n');
+ if(reportArg&&reportArg!=='-')fs.writeFileSync(reportArg,JSON.stringify(report,null,2)+'\n');
 }

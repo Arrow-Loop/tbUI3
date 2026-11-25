@@ -134,6 +134,7 @@ Private Class TabViewDesignerController
     End Sub
 
     Private Sub AppendLog(ByVal Path As String, ByVal Text As String)
+        If Len(Path) = 0 Then Exit Sub ' Store logs and diagnostics is off.
         On Error Resume Next
         Dim file As Integer
         file = FreeFile

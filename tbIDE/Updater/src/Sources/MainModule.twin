@@ -8,6 +8,7 @@ Module MainModule
     Public AuthorizedContextHash As String
     Private Declare PtrSafe Sub ExitProcess Lib "kernel32" (ByVal exitCode As Long)
     Public Sub Main()
+        UseLiveDiagnosticsSwitch ' The updater is IDE tooling: it follows the live Store logs and diagnostics switch.
         On Error GoTo Failed
         Dim args As Collection = NativeArguments(), worker As Boolean, i As Long = 1, key As String, seen As Object = UMap()
         If args.Count = 1 Then

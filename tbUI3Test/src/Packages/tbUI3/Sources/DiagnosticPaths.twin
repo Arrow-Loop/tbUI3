@@ -1,9 +1,65 @@
 ' Common per-user diagnostic paths. This private module is shared by package/add-in/updater.
 ' Diagnostics never fall back into a project, executable directory or TEMP.
+' HARD REQUIREMENT (AGENTS.md): every log goes through DiagnosticsFile or DiagnosticsRoot, which return ""
+' while the tbUI3 IDE Options switch "Store logs and diagnostics" is off. Callers drop the entry on "".
 Private Module DiagnosticPaths
     Private mFileSystem As Object
+    Private mLiveSwitch As Boolean
+    Private mProcessChecked As Boolean
+    Private mSwitchKnown As Boolean
+    Private mSwitchValue As Boolean
+    Private mSwitchRead As Double
+    ' The switch is saved per user as HKCU\Software\VB and VBA Program Settings\tbUI3\Diagnostics\StoreLogs ("1" or "0").
+    Public Const DiagnosticsSettingsApp As String = "tbUI3"
+    Public Const DiagnosticsSettingsSection As String = "Diagnostics"
+    Public Const DiagnosticsSettingName As String = "StoreLogs"
+    ' Compiled apps running outside the IDE do not read the switch. Until tbUI3 1.0 they use this value,
+    ' which matches the switch's default (on); see ROADMAP "Diagnostics switch alignment pass".
+    Private Const CompiledAppsStoreLogs As Boolean = True
+    Private Declare PtrSafe Function GetModuleFileNameW Lib "kernel32" (ByVal hModule As LongPtr, ByVal lpFilename As LongPtr, ByVal nSize As Long) As Long
+
+    ' tbUI3 tooling that runs outside the IDE process (the updater) calls this once at start-up so it
+    ' follows the live switch. Code inside the twinBASIC IDE process follows it automatically.
+    Public Sub UseLiveDiagnosticsSwitch()
+        mLiveSwitch = True
+    End Sub
+
+    ' True when logs and diagnostics may be stored. Re-read at most every two seconds so a change in
+    ' IDE Options takes effect without restarting.
+    Public Function DiagnosticsEnabled() As Boolean
+        If Not mLiveSwitch Then
+            If Not mProcessChecked Then
+                mProcessChecked = True
+                mLiveSwitch = InTwinBasicIde()
+            End If
+            If Not mLiveSwitch Then Return CompiledAppsStoreLogs
+        End If
+        Dim tick As Double = VBA.Timer
+        If mSwitchKnown And Abs(tick - mSwitchRead) < 2 Then Return mSwitchValue
+        On Error Resume Next
+        mSwitchValue = (GetSetting(DiagnosticsSettingsApp, DiagnosticsSettingsSection, DiagnosticsSettingName, "1") <> "0")
+        If Err.Number <> 0 Then mSwitchValue = True
+        On Error GoTo 0
+        mSwitchRead = tick
+        mSwitchKnown = True
+        Return mSwitchValue
+    End Function
+
+    Private Function InTwinBasicIde() As Boolean
+        On Error GoTo Unknown
+        Dim buffer As String = String$(1024, vbNullChar)
+        Dim length As Long = GetModuleFileNameW(0, StrPtr(buffer), 1024)
+        If length <= 0 Then Return False
+        Dim path As String = Left$(buffer, length)
+        Dim name As String = LCase$(Mid$(path, InStrRev(path, "\") + 1))
+        Return Left$(name, 9) = "twinbasic"
+    Unknown:
+        Return False
+    End Function
+
     Public Function DiagnosticsRoot() As String
         On Error GoTo Unavailable
+        If Not DiagnosticsEnabled() Then Return ""
         Dim base As String = Environ$("LOCALAPPDATA")
         If Len(base) = 0 Then Return ""
         If mFileSystem Is Nothing Then Set mFileSystem = CreateObject("Scripting.FileSystemObject")

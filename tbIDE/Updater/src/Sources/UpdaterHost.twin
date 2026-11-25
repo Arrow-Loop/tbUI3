@@ -162,7 +162,11 @@ Private Module UpdaterHost
         Dim temp As String, memory As Object
         On Error GoTo Failed
         Dim base As String = DiagnosticsRoot(), path As String = DiagnosticsFile("updater-startup-help.html")
-        If Len(base) = 0 Or Len(path) = 0 Then UFail "The per-user diagnostics folder is unavailable."
+        If Len(base) = 0 Or Len(path) = 0 Then
+            ' Store logs and diagnostics is off (or the folder is unavailable): show the reason without storing a page.
+            MsgBox "The tbUI3 updater window could not start." & vbCrLf & vbCrLf & reason, vbExclamation, "tbUI3 Updater"
+            Exit Sub
+        End If
         UDirectory base
         temp = USafe(base, "help-" & UUnique() & ".html")
         Dim html As String = UIX_ResourceText("runtime-help.html")

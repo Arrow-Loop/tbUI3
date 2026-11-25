@@ -40,6 +40,7 @@ Private Module UI3TabDiagnostics
     End Sub
 
     Private Sub AppendLog(ByVal FilePath As String, ByVal Text As String)
+        If Len(FilePath) = 0 Then Exit Sub ' Store logs and diagnostics is off.
         On Error Resume Next
         Dim file As Integer
         file = FreeFile

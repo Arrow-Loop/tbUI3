@@ -8,8 +8,13 @@ $repository='Arrow-Loop/tbUI3'
 $branch='tbui3-dev'
 $cache=Join-Path $env:LOCALAPPDATA 'ArrowLoop\tbUI3\DevTools'
 $logs=Join-Path $env:LOCALAPPDATA 'tbUI3\Diagnostics'
-$null=New-Item -ItemType Directory -Path $logs -Force
-$log=Join-Path $logs ('Publish-'+(Get-Date -Format 'yyyyMMdd-HHmmss-fff')+'.log')
+. (Join-Path $PSScriptRoot 'Diagnostics-Switch.ps1')
+$storeLogs=Test-StoreLogs
+$log=''
+if ($storeLogs) {
+    $null=New-Item -ItemType Directory -Path $logs -Force
+    $log=Join-Path $logs ('Publish-'+(Get-Date -Format 'yyyyMMdd-HHmmss-fff')+'.log')
+}
 $work=$null
 $exitCode=1
 $resultMessage=''
@@ -134,8 +139,10 @@ function Show-ExistingPublication($Release,[string]$Tag,[string]$Commit,$Expecte
     }
 }
 try {
-    Start-Transcript -Path $log | Out-Null
-    $transcribing=$true
+    if ($storeLogs) {
+        Start-Transcript -Path $log | Out-Null
+        $transcribing=$true
+    } else {Write-Host 'Store logs and diagnostics is off in IDE Options (tbUI3): no transcript is kept.'}
     Set-Location -LiteralPath $root
     $work=Join-Path $cache ('PublishWork-'+[guid]::NewGuid().ToString('N'))
     $null=New-Item -ItemType Directory -Path $work
@@ -207,8 +214,10 @@ try {
             $loginCode=$LASTEXITCODE
         } finally {
             $env:GH_PROMPT_DISABLED='1'
-            Start-Transcript -Path $log -Append | Out-Null
-            $transcribing=$true
+            if ($storeLogs) {
+                Start-Transcript -Path $log -Append | Out-Null
+                $transcribing=$true
+            }
         }
         if ($loginCode -ne 0) {throw 'GitHub CLI sign-in did not complete. No release was created.'}
     } elseif ($activeLogin -cne 'Arrow-Loop') {
@@ -431,7 +440,7 @@ try {
     if ($draftUrl) {Write-Host "Draft/release: $draftUrl"}
 } finally {
     if ($work -and (Test-Path -LiteralPath $work)) {Remove-Item -LiteralPath $work -Recurse -Force -ErrorAction SilentlyContinue}
-    Write-Host "Log: $log"
+    if ($log) {Write-Host "Log: $log"}
     if ($transcribing) {Stop-Transcript | Out-Null}
     if ($ResultPath) {
         try {

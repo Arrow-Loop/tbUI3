@@ -967,6 +967,7 @@ CleanUp:
     End Sub
 
     Private Sub AppendLogLine(ByVal Path As String, ByVal text As String)
+        If Len(Path) = 0 Then Exit Sub ' Store logs and diagnostics is off.
         On Error Resume Next
         Dim f As Integer
         f = FreeFile

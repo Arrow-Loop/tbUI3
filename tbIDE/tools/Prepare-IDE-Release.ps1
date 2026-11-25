@@ -5,8 +5,13 @@ $ErrorActionPreference='Stop'
 $root=(Resolve-Path -LiteralPath (Join-Path $PSScriptRoot '..\..')).Path
 $cache=Join-Path $env:LOCALAPPDATA 'ArrowLoop\tbUI3\DevTools'
 $logs=Join-Path $env:LOCALAPPDATA 'tbUI3\Diagnostics'
-$null=New-Item -ItemType Directory -Path $logs -Force
-$log=Join-Path $logs ($Action+'-'+(Get-Date -Format 'yyyyMMdd-HHmmss-fff')+'.log')
+. (Join-Path $PSScriptRoot 'Diagnostics-Switch.ps1')
+$storeLogs=Test-StoreLogs
+$log=''
+if ($storeLogs) {
+    $null=New-Item -ItemType Directory -Path $logs -Force
+    $log=Join-Path $logs ($Action+'-'+(Get-Date -Format 'yyyyMMdd-HHmmss-fff')+'.log')
+}
 $exitCode=1
 $resultMessage=''
 $resultState='failed'
@@ -22,8 +27,10 @@ function Invoke-NodeChecked {
     if ($code -ne 0) { throw "Node command failed ($code): $($Arguments -join ' ')" }
 }
 try {
-    Start-Transcript -Path $log | Out-Null
-    $transcribing=$true
+    if ($storeLogs) {
+        Start-Transcript -Path $log | Out-Null
+        $transcribing=$true
+    } else {Write-Host 'Store logs and diagnostics is off in IDE Options (tbUI3): no transcript is kept.'}
     Set-Location -LiteralPath $root
     if (-not (Get-Command git.exe -ErrorAction SilentlyContinue)) {
         $desktop = Join-Path $env:LOCALAPPDATA 'GitHubDesktop'
@@ -129,6 +136,7 @@ try {
         Invoke-NodeChecked -Arguments @('--input-type=module','-e','const m=await import(process.env.TB_JSDOM_MODULE||String.fromCharCode(106,115,100,111,109)); if(!m.JSDOM)throw new Error()')
         Write-Host "Preparing add-in $($config.addinVersion) with updater $($config.updaterVersion)."
         $before=(Get-FileHash -LiteralPath $updater -Algorithm SHA256).Hash
+        if (!$storeLogs) {throw 'Native updater self-tests write their report to Diagnostics. Turn on Store logs and diagnostics in IDE Options (tbUI3) and retry.'}
         $pointer=Join-Path $env:LOCALAPPDATA 'tbUI3\Diagnostics\native-updater-latest.json'
         $start=[DateTime]::UtcNow
         Write-Host 'Running native updater self-tests...'
@@ -191,7 +199,7 @@ try {
     if ($_.ScriptStackTrace) {Write-Host $_.ScriptStackTrace}
     Write-Host 'Inspect the log before continuing. No release was published.'
 } finally {
-    Write-Host "Log: $log"
+    if ($log) {Write-Host "Log: $log"}
     if ($transcribing) {Stop-Transcript | Out-Null}
     if ($ResultPath) {
         try {

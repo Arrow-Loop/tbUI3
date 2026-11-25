@@ -6,7 +6,9 @@ Set-Location -LiteralPath $root
 . (Join-Path $PSScriptRoot 'Release-SourcePaths.ps1')
 $cache=Join-Path $env:LOCALAPPDATA 'ArrowLoop\tbUI3\DevTools'
 $logs=Join-Path $env:LOCALAPPDATA 'tbUI3\Diagnostics'
-$null=New-Item -ItemType Directory -Path $cache,$logs -Force
+. (Join-Path $PSScriptRoot 'Diagnostics-Switch.ps1')
+$null=New-Item -ItemType Directory -Path $cache -Force
+if (Test-StoreLogs) {$null=New-Item -ItemType Directory -Path $logs -Force}
 $stamp=Get-Date -Format 'yyyyMMdd-HHmmss-fff'
 $sessionLog=Join-Path $logs "Development-$stamp.log"
 $prep=Join-Path $PSScriptRoot 'Prepare-IDE-Release.ps1'
@@ -23,8 +25,13 @@ $receipt=Join-Path $cache "generated-$key.json"
 $packageReceipt=Join-Path $cache "package-$key.json"
 function Say([string]$message,[string]$color='Gray') {
     Write-Host $message -ForegroundColor $color
+    Write-SessionLog ((Get-Date -Format 'HH:mm:ss.fff')+' '+$message)
+}
+# Every Development-*.log line goes through here, so the Store logs and diagnostics switch is read at each write.
+function Write-SessionLog([string]$text) {
+    if (!(Test-StoreLogs)) {return}
     if (!(Test-Path -LiteralPath $logs)) {$null=New-Item -ItemType Directory -Path $logs -Force}
-    Add-Content -LiteralPath $sessionLog -Value ((Get-Date -Format 'HH:mm:ss.fff')+' '+$message)
+    Add-Content -LiteralPath $sessionLog -Value $text
 }
 function Run-Child([string]$file,[string[]]$arguments) {
     & $file @arguments | Out-Host
@@ -189,7 +196,7 @@ function Assert-Checkout([switch]$ForBuild) {
         }
         if (!$matchesReceipt) {
             if (!$ForBuild) {throw ('Generated inputs have not been verified by this tool. Choose option 1 or 2 to build and package: '+($paths -join ', '))}
-            Add-Content -LiteralPath $sessionLog -Value ('Existing generated inputs to verify during build: '+($paths -join ', '))
+            Write-SessionLog ('Existing generated inputs to verify during build: '+($paths -join ', '))
         }
     }
     return $head
@@ -213,7 +220,7 @@ function Commit-Workspace([string]$message,[switch]$GeneratedOnly) {
     $diffCode=$LASTEXITCODE
     if ($diffCode -eq 0) {return}
     if ($diffCode -ne 1) {throw 'Could not inspect staged Git changes.'}
-    Add-Content -LiteralPath $sessionLog -Value ("Auto-commit: "+(@(Git-Output @('diff','--cached','--name-only')) -join ', '))
+    Write-SessionLog ("Auto-commit: "+(@(Git-Output @('diff','--cached','--name-only')) -join ', '))
     Run-Child $script:git @('commit','-m',$message)
     if (@(Changed-Paths).Count) {throw 'Release source changed during the automatic commit. Retry the selected action.'}
 }
@@ -227,7 +234,7 @@ function Merge-Remote([string]$remote) {
         if ($conflicts.Count -and !$sourceConflicts.Count) {
             # Both diagnostic versions are in the merge's parent commits.
             # Prefer this workstation's diagnostic copy, never auto-resolve source.
-            Add-Content -LiteralPath $sessionLog -Value ('Diagnostic-only merge conflict; retaining local copies: '+($conflicts -join ', '))
+            Write-SessionLog ('Diagnostic-only merge conflict; retaining local copies: '+($conflicts -join ', '))
             try {
                 Run-Child $script:git (@('--literal-pathspecs','restore','--source=HEAD','--staged','--worktree','--')+$conflicts)
                 Run-Child $script:git @('commit','--no-edit')
@@ -313,10 +320,12 @@ function Sync-ForPublication([string]$package) {
     Run-Child $script:git @('push','origin',"HEAD:refs/heads/$branch")
 }
 function Build-One([string]$project,[string]$arch,[string]$destination) {
-    $report=Join-Path $logs ("CDP-"+(Get-Date -Format 'yyyyMMdd-HHmmss-fff')+"-"+[IO.Path]::GetFileNameWithoutExtension($project)+"-$arch.json")
+    # '-' tells the build script to keep no report while Store logs and diagnostics is off.
+    $report='-'
+    if (Test-StoreLogs) {$report=Join-Path $logs ("CDP-"+(Get-Date -Format 'yyyyMMdd-HHmmss-fff')+"-"+[IO.Path]::GetFileNameWithoutExtension($project)+"-$arch.json")}
     Say "Building $([IO.Path]::GetFileName($project)) $arch via CDP..."
     & $script:node (Join-Path $PSScriptRoot 'build-with-cdp.mjs') $script:harness $script:ide $project $arch $destination $report ([string]$script:config.maxIdeBuild) | Out-Host
-    if ($LASTEXITCODE -ne 0) {throw "Native build failed. See $report"}
+    if ($LASTEXITCODE -ne 0) {if ($report -eq '-') {throw 'Native build failed. Turn on Store logs and diagnostics to keep the build report.'} else {throw "Native build failed. See $report"}}
     Say "Built $arch : $destination" Green
 }
 function Build-Package {
@@ -481,7 +490,7 @@ try {
             $failure=$_
             $failureMessage=$failure.Exception.Message
             Say ("FAILED: "+$failureMessage) Red
-            if ($failure.ScriptStackTrace) {Add-Content -LiteralPath $sessionLog -Value $failure.ScriptStackTrace}
+            if ($failure.ScriptStackTrace) {Write-SessionLog $failure.ScriptStackTrace}
         } finally {
             # Log the primary outcome before syncing; print it LAST after all
             # network chatter. The diagnostics result never replaces it.

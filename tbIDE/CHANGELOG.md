@@ -1,5 +1,9 @@
 # Changelog: tbIDE (WinUI 3 look for the twinBASIC IDE)
 
+## 2026-11-25 - Store logs and diagnostics switch (add-in 0.4.0.18, updater 0.2.0.8 source)
+
+IDE Options category renamed "tbUI3" and gains the Store logs and diagnostics row; the add-in saves it to `tbUI3\Diagnostics\StoreLogs`. The add-in, updater and development tools stop storing logs while it is off. Details and limits: root [CHANGELOG](../CHANGELOG.md). Updater.exe needs a rebuild for 0.2.0.8.
+
 ## 2026-11-25 - Idle leak confirmed fixed; leak probe removed (add-in 0.4.0.18 source)
 
 Owner native check of 0.4.0.17 with probe 0: Commit size of the IDE process stays flat while idle (it briefly dropped), so the per-tick theme inventory read was the leak. The temporary LeakProbe registry switch is removed from MainModule and TabViewDesignerController, and option M is removed from Development-Tools.bat and the README. A leftover `LeakProbe` value in the registry is now ignored and harmless. Version bumped to 0.4.0.18 because 0.4.0.17 is published.

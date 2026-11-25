@@ -1,5 +1,9 @@
 # Changelog: tbIDE (WinUI 3 look for the twinBASIC IDE)
 
+## 2026-11-25 - Clarify startup discovery and reminder scope
+
+Updated the specification and roadmap to record the owner's requirement for checks on every IDE launch regardless of the previous check time. The proposed hourly interval applies to background discovery only. Documented the distinction between ordinary session dismissal and explicit persisted version-specific reminder choices. Documentation only; runtime implementation remains pending.
+
 ## 2026-11-25 - Notification scheduling requirements clarification
 
 Recorded the owner's approval of the SplitButton reminder concept and rejection of once-daily discovery in the installation specification and roadmap. Documented the proposed hourly check cadence and independent per-version notification policy. Source review confirms the existing date-based QuietCheckDue gate and session latch remain in place. Documentation only; no runtime or release change.

@@ -1,6 +1,6 @@
 # Development-only publishing tool; never distributed with the updater.
 [CmdletBinding()]
-param([string]$PackageDirectory,[string]$ResultPath)
+param([string]$PackageDirectory,[string]$ResultPath,[switch]$PublishApproved)
 $ErrorActionPreference='Stop'
 $root=(Resolve-Path -LiteralPath (Join-Path $PSScriptRoot '..\..')).Path
 . (Join-Path $PSScriptRoot 'Release-SourcePaths.ps1')
@@ -402,10 +402,16 @@ try {
         $assetIds=Assert-Assets $release $expected
         Write-Host 'All three GitHub asset SHA-256 digests and sizes verified.'
         Write-Host "Draft: $draftUrl"
-        Write-Host 'Review the draft and native acceptance evidence before publishing.'
         Write-Host "Tag: $tag | Target: $commit | Development prerelease (not Latest)"
-        $confirmation=Read-Host "Publish $tag now? [y/N]"
-        if ($confirmation.Trim() -ine 'Y') {
+        $approved=[bool]$PublishApproved
+        if ($approved) {
+            Write-Host 'Publication approved by the selected development operation. Publishing verified prerelease...'
+        } else {
+            Write-Host 'Review the draft and native acceptance evidence before publishing.'
+            $confirmation=Read-Host "Publish $tag now? [y/N]"
+            $approved=$confirmation.Trim() -ieq 'Y'
+        }
+        if (!$approved) {
             Write-Host 'Draft retained. Nothing published.'
             $resultState='draft-retained';$resultMessage='Draft retained; nothing published.'
             $exitCode=0

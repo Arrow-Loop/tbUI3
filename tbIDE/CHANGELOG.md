@@ -1,8 +1,12 @@
 # Changelog: tbIDE (WinUI 3 look for the twinBASIC IDE)
 
-## 2026-11-25 - Store logs and diagnostics switch (add-in 0.4.0.18, updater 0.2.0.8 source)
+## 2026-11-25 - Store logs and diagnostics switch (add-in 0.4.0.19, updater 0.2.0.8 source)
 
 IDE Options category renamed "tbUI3" and gains the Store logs and diagnostics row; the add-in saves it to `tbUI3\Diagnostics\StoreLogs`. The add-in, updater and development tools stop storing logs while it is off. Details and limits: root [CHANGELOG](../CHANGELOG.md). Updater.exe needs a rebuild for 0.2.0.8.
+
+## 2026-11-25 - Single-step development release publication approval
+
+Selecting Development Tools option 1 or 3 now explicitly approves publication of the verified development prerelease. The publisher receives a per-invocation PublishApproved switch and skips the duplicate Y/N prompt only on that path. Standalone publication retains its confirmation. All source/account/asset/tag checks, conflicting-draft review and cancellation, immutable published-release handling and final result verification remain unchanged. No change to build-only options, runtime versions or published releases. Source inspection only; live publication acceptance remains pending.
 
 ## 2026-11-25 - Idle leak confirmed fixed; leak probe removed (add-in 0.4.0.18 source)
 

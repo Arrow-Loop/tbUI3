@@ -1,5 +1,6 @@
 # Changelog
 
+<<<<<<< HEAD
 ## 2026-11-25 - Store logs and diagnostics switch (alignment pass, source)
 
 Implements the logging hard requirement. IDE Options now has a "tbUI3" category (renamed from "tbUI3 Updates") whose first row, **Store logs and diagnostics**, uses the IDE's own No | Yes control. The add-in saves it per user as `HKCU\Software\VB and VBA Program Settings\tbUI3\Diagnostics\StoreLogs`; a missing value means on, the default until 1.0.
@@ -10,8 +11,13 @@ Implements the logging hard requirement. IDE Options now has a "tbUI3" category 
 - Updater: with the switch off, the startup-help fallback page is not stored; the reason is shown in a message box instead. Native self-tests refuse with a clear message because their report lives in Diagnostics.
 - Development tools: new `tbIDE/tools/Diagnostics-Switch.ps1` (`Test-StoreLogs`). Development-*.log lines go through one gated writer, Prepare and Publish keep no transcript while it is off, CDP build reports are skipped (`-` report argument), and Prepare refuses native self-tests with a message to turn the switch on.
 - Tests: four new routing checks fail on any `.log` name outside `DiagnosticsFile`, any append without the helper and an empty-path drop, an ungated transcript or session-log write, or a missing Options wiring; a jsdom test covers the Options row.
-- Versions: add-in 0.4.0.18, updater 0.2.0.8 (source; Updater.exe needs a rebuild). Repository tests: 273 of 275 pass; both failures are the expected built-updater checks (version 0.2.0.7 still in the tracked Updater.exe). PowerShell changes were reviewed but not run (no PowerShell here). Native acceptance pending.
+- Versions: add-in 0.4.0.19 (0.4.0.18 was published with the probe removal), updater 0.2.0.8 (source; Updater.exe needs a rebuild). Repository tests: 273 of 275 pass; both failures are the expected built-updater checks (version 0.2.0.7 still in the tracked Updater.exe). PowerShell changes were reviewed but not run (no PowerShell here). Native acceptance pending.
 - Scope (owner, 2026-11-25): the rule covers only our own tbUI3, tbIDE and WinUI3-for-twinBASIC code. Third-party packages and add-ins (for example TBMANLIB's `cLogs`) and the twinBASIC IDE's own logs are out of scope and unchanged; AGENTS.md now says so.
+=======
+## 2026-11-25 - Remove redundant unified release publication prompt
+
+Development Tools publishing selections now authorize the verified development prerelease without a second Y/N prompt. Standalone confirmation and all release verification gates remain. See the [IDE changelog](tbIDE/CHANGELOG.md). Development tooling only.
+>>>>>>> origin/tbui3-dev
 
 ## 2026-11-25 - Logging and diagnostics hard requirement documented
 
